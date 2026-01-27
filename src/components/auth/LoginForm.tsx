@@ -1,23 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Phone, ArrowRight, ArrowLeft } from 'lucide-react';
+import { Mail, ArrowRight, ArrowLeft, Eye, EyeOff, Sparkles, Lock } from 'lucide-react';
 import { useTranslation } from '../../i18n';
 import { useAuth } from '../../contexts/AuthContext';
-import Button from '../ui/Button';
-import Input from '../ui/Input';
-
-// Validation schema for phone number
-const phoneSchema = z.object({
-    phone: z
-        .string()
-        .min(8, 'رقم الهاتف يجب أن يكون 8 أرقام')
-        .max(8, 'رقم الهاتف يجب أن يكون 8 أرقام')
-        .regex(/^[0-9]+$/, 'أدخل أرقام فقط'),
-});
-
-type PhoneFormData = z.infer<typeof phoneSchema>;
 
 interface LoginFormProps {
     onSuccess?: () => void;
@@ -26,129 +13,44 @@ interface LoginFormProps {
 
 function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
     const { t, dir } = useTranslation();
-    const { signInWithPhone, verifyOtp } = useAuth();
-    const [step, setStep] = useState<'phone' | 'otp'>('phone');
-    const [phone, setPhone] = useState('');
-    const [otp, setOtp] = useState(['', '', '', '', '', '']);
+    const { signInWithEmail } = useAuth();
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [resendTimer, setResendTimer] = useState(0);
+    const [showPassword, setShowPassword] = useState(false);
 
     const ArrowIcon = dir === 'rtl' ? ArrowLeft : ArrowRight;
+
+    const emailSchema = z.object({
+        email: z.string().email(t.auth.invalidEmail),
+        password: z.string().min(6, t.auth.passwordMinLength),
+    });
+
+    type EmailFormData = z.infer<typeof emailSchema>;
 
     const {
         register,
         handleSubmit,
         formState: { errors },
-    } = useForm<PhoneFormData>({
-        resolver: zodResolver(phoneSchema),
+    } = useForm<EmailFormData>({
+        resolver: zodResolver(emailSchema),
     });
 
-    // Resend timer countdown
-    useEffect(() => {
-        if (resendTimer > 0) {
-            const timer = setTimeout(() => setResendTimer(resendTimer - 1), 1000);
-            return () => clearTimeout(timer);
-        }
-    }, [resendTimer]);
-
-    // Handle phone submission
-    const onPhoneSubmit = async (data: PhoneFormData) => {
+    const onSubmit = async (data: EmailFormData) => {
         setIsLoading(true);
         setError(null);
 
         try {
-            await signInWithPhone(data.phone);
-            setPhone(data.phone);
-            setStep('otp');
-            setResendTimer(60);
-        } catch (err) {
-            setError((err as Error).message || 'حدث خطأ في إرسال الرمز');
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    // Handle OTP input
-    const handleOtpChange = (index: number, value: string) => {
-        if (value.length > 1) {
-            // Handle paste
-            const digits = value.replace(/\D/g, '').slice(0, 6).split('');
-            const newOtp = [...otp];
-            digits.forEach((digit, i) => {
-                if (index + i < 6) {
-                    newOtp[index + i] = digit;
-                }
-            });
-            setOtp(newOtp);
-
-            // Focus last filled input or next empty
-            const nextIndex = Math.min(index + digits.length, 5);
-            const nextInput = document.querySelector<HTMLInputElement>(`#otp-${nextIndex}`);
-            nextInput?.focus();
-        } else {
-            const newOtp = [...otp];
-            newOtp[index] = value;
-            setOtp(newOtp);
-
-            // Auto-focus next input
-            if (value && index < 5) {
-                const nextInput = document.querySelector<HTMLInputElement>(`#otp-${index + 1}`);
-                nextInput?.focus();
-            }
-        }
-    };
-
-    // Handle OTP backspace
-    const handleOtpKeyDown = (index: number, e: React.KeyboardEvent) => {
-        if (e.key === 'Backspace' && !otp[index] && index > 0) {
-            const prevInput = document.querySelector<HTMLInputElement>(`#otp-${index - 1}`);
-            prevInput?.focus();
-        }
-    };
-
-    // Verify OTP
-    const handleVerifyOtp = async () => {
-        const code = otp.join('');
-        if (code.length !== 6) {
-            setError('أدخل الرمز المكون من 6 أرقام');
-            return;
-        }
-
-        setIsLoading(true);
-        setError(null);
-
-        try {
-            await verifyOtp(phone, code);
+            await signInWithEmail(data.email, data.password);
             onSuccess?.();
         } catch (err) {
-            setError((err as Error).message || 'رمز التحقق غير صحيح');
-            setOtp(['', '', '', '', '', '']);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    // Auto-submit when OTP is complete
-    useEffect(() => {
-        if (otp.every((digit) => digit) && otp.length === 6) {
-            handleVerifyOtp();
-        }
-    }, [otp]);
-
-    // Resend OTP
-    const handleResend = async () => {
-        if (resendTimer > 0) return;
-
-        setIsLoading(true);
-        setError(null);
-
-        try {
-            await signInWithPhone(phone);
-            setResendTimer(60);
-            setOtp(['', '', '', '', '', '']);
-        } catch (err) {
-            setError((err as Error).message || 'حدث خطأ في إعادة الإرسال');
+            const message = (err as Error).message;
+            if (message.includes('Invalid login credentials')) {
+                setError(t.auth.invalidCredentials);
+            } else if (message.includes('Email not confirmed')) {
+                setError(t.auth.emailNotConfirmed);
+            } else {
+                setError(message || t.common.error);
+            }
         } finally {
             setIsLoading(false);
         }
@@ -156,139 +58,108 @@ function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
 
     return (
         <div className="w-full max-w-md mx-auto">
-            {step === 'phone' ? (
-                <form onSubmit={handleSubmit(onPhoneSubmit)} className="space-y-6">
-                    <div className="text-center mb-8">
-                        <div className="w-16 h-16 rounded-2xl bg-primary-100 flex items-center justify-center mx-auto mb-4">
-                            <Phone className="w-8 h-8 text-primary-600" />
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                {/* Header */}
+                <div className="text-center mb-8">
+                    <div className="relative inline-block">
+                        <div className="w-20 h-20 rounded-2xl gradient-primary flex items-center justify-center mx-auto mb-5 shadow-lg shadow-primary-600/30">
+                            <Mail className="w-10 h-10 text-white" />
                         </div>
-                        <h2 className="text-2xl font-bold text-foreground mb-2">
-                            {t.nav.login}
-                        </h2>
-                        <p className="text-muted">
-                            أدخل رقم هاتفك للمتابعة
-                        </p>
+                        <div className="absolute -top-1 -end-1 w-8 h-8 rounded-xl bg-gradient-to-r from-accent-400 to-accent-600 flex items-center justify-center shadow-lg">
+                            <Sparkles className="w-4 h-4 text-white" />
+                        </div>
+                    </div>
+                    <h2 className="text-2xl font-bold mb-2">
+                        {t.nav.login}
+                    </h2>
+                    <p className="text-muted">
+                        {t.auth.loginSubtitle}
+                    </p>
+                </div>
+
+                {/* Form Fields */}
+                <div className="space-y-5">
+                    <div className="relative">
+                        <label className="label flex items-center gap-2">
+                            <Mail className="w-4 h-4 text-primary-500" />
+                            {t.auth.email}
+                        </label>
+                        <input
+                            {...register('email')}
+                            type="email"
+                            placeholder={t.auth.emailPlaceholder}
+                            className="input"
+                            dir="ltr"
+                        />
+                        {errors.email && (
+                            <p className="text-accent-500 text-sm mt-1">{errors.email.message}</p>
+                        )}
                     </div>
 
                     <div className="relative">
-                        <Input
-                            {...register('phone')}
-                            type="tel"
-                            placeholder="XX XXX XXX"
-                            error={errors.phone?.message}
-                            className="text-center text-xl tracking-widest"
-                            dir="ltr"
-                        />
-                        <span className="absolute start-4 top-1/2 -translate-y-1/2 text-gray-500 font-medium">
-                            +216
-                        </span>
-                    </div>
-
-                    {error && (
-                        <p className="text-red-500 text-sm text-center">{error}</p>
-                    )}
-
-                    <Button
-                        type="submit"
-                        variant="primary"
-                        size="lg"
-                        className="w-full"
-                        isLoading={isLoading}
-                        rightIcon={<ArrowIcon className="w-5 h-5" />}
-                    >
-                        {t.auth.sendCode}
-                    </Button>
-
-                    {onSwitchToSignup && (
-                        <p className="text-center text-muted">
-                            ليس لديك حساب؟{' '}
+                        <label className="label flex items-center gap-2">
+                            <Lock className="w-4 h-4 text-primary-500" />
+                            {t.auth.password}
+                        </label>
+                        <div className="relative">
+                            <input
+                                {...register('password')}
+                                type={showPassword ? 'text' : 'password'}
+                                placeholder={t.auth.passwordPlaceholder}
+                                className="input pe-12"
+                                dir="ltr"
+                            />
                             <button
                                 type="button"
-                                onClick={onSwitchToSignup}
-                                className="text-primary-600 font-medium hover:underline"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute end-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg flex items-center justify-center text-dark-400 hover:text-dark-600 dark:hover:text-dark-300 hover:bg-dark-100 dark:hover:bg-dark-700 transition-colors"
                             >
-                                {t.nav.signup}
+                                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                             </button>
-                        </p>
-                    )}
-                </form>
-            ) : (
-                <div className="space-y-6">
-                    <div className="text-center mb-8">
-                        <h2 className="text-2xl font-bold text-foreground mb-2">
-                            {t.auth.verifyCode}
-                        </h2>
-                        <p className="text-muted">
-                            أرسلنا رمز التحقق إلى
-                            <span className="font-medium text-foreground block mt-1" dir="ltr">
-                                +216 {phone}
-                            </span>
-                        </p>
+                        </div>
+                        {errors.password && (
+                            <p className="text-accent-500 text-sm mt-1">{errors.password.message}</p>
+                        )}
                     </div>
+                </div>
 
-                    {/* OTP Input */}
-                    <div className="flex justify-center gap-2" dir="ltr">
-                        {otp.map((digit, index) => (
-                            <input
-                                key={index}
-                                id={`otp-${index}`}
-                                type="text"
-                                inputMode="numeric"
-                                maxLength={6}
-                                value={digit}
-                                onChange={(e) => handleOtpChange(index, e.target.value)}
-                                onKeyDown={(e) => handleOtpKeyDown(index, e)}
-                                className={`
-                  w-12 h-14 text-center text-2xl font-bold rounded-xl border-2
-                  focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent
-                  transition-all duration-200
-                  ${digit ? 'border-primary-600 bg-primary-50' : 'border-gray-200 bg-white'}
-                `}
-                            />
-                        ))}
+                {/* Error Message */}
+                {error && (
+                    <div className="p-4 rounded-xl bg-accent-50 dark:bg-accent-900/20 border border-accent-200 dark:border-accent-800">
+                        <p className="text-accent-600 dark:text-accent-400 text-sm text-center font-medium">{error}</p>
                     </div>
+                )}
 
-                    {error && (
-                        <p className="text-red-500 text-sm text-center">{error}</p>
+                {/* Submit Button */}
+                <button
+                    type="submit"
+                    disabled={isLoading}
+                    className="btn-primary btn-lg w-full group"
+                >
+                    {isLoading ? (
+                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    ) : (
+                        <>
+                            <span>{t.nav.login}</span>
+                            <ArrowIcon className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                        </>
                     )}
+                </button>
 
-                    <Button
-                        onClick={handleVerifyOtp}
-                        variant="primary"
-                        size="lg"
-                        className="w-full"
-                        isLoading={isLoading}
-                    >
-                        {t.auth.verify}
-                    </Button>
-
-                    <div className="text-center">
+                {/* Switch to Signup */}
+                {onSwitchToSignup && (
+                    <p className="text-center text-muted">
+                        {t.auth.noAccount}{' '}
                         <button
                             type="button"
-                            onClick={handleResend}
-                            disabled={resendTimer > 0}
-                            className={`text-sm ${resendTimer > 0 ? 'text-muted' : 'text-primary-600 hover:underline'
-                                }`}
+                            onClick={onSwitchToSignup}
+                            className="text-primary-600 dark:text-primary-400 font-semibold hover:underline"
                         >
-                            {resendTimer > 0
-                                ? `${t.auth.resendIn} ${resendTimer} ${t.auth.seconds}`
-                                : t.auth.resendCode}
+                            {t.nav.signup}
                         </button>
-                    </div>
-
-                    <button
-                        type="button"
-                        onClick={() => {
-                            setStep('phone');
-                            setOtp(['', '', '', '', '', '']);
-                            setError(null);
-                        }}
-                        className="w-full text-center text-muted hover:text-foreground transition-colors"
-                    >
-                        تغيير رقم الهاتف
-                    </button>
-                </div>
-            )}
+                    </p>
+                )}
+            </form>
         </div>
     );
 }

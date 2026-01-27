@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { User, Building, CheckCircle, Camera } from 'lucide-react';
+import { User, Building, CheckCircle, Camera, Briefcase } from 'lucide-react';
 import { useTranslation } from '../i18n';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../components/ui/Toast';
@@ -15,15 +15,6 @@ import Input from '../components/ui/Input';
 import Select from '../components/ui/Select';
 import { Header } from '../components/layout';
 
-// Validation schema
-const clientSchema = z.object({
-    full_name: z.string().min(3, 'الاسم يجب أن يكون 3 أحرف على الأقل'),
-    company_name: z.string().optional(),
-    location: z.string().min(1, 'اختر ولايتك'),
-});
-
-type ClientFormData = z.infer<typeof clientSchema>;
-
 function ClientOnboarding() {
     const { t } = useTranslation();
     const { user, updateProfile } = useAuth();
@@ -33,6 +24,19 @@ function ClientOnboarding() {
     const [avatarFile, setAvatarFile] = useState<File | null>(null);
     const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    // Validation schema inside component to access t for messages
+    // Or just generic messages if t is not available in schema definition normally.
+    // Ideally schemas are outside but messages inside. 
+    // Simplified: generic messages for now or use useMemo.
+
+    const clientSchema = z.object({
+        full_name: z.string().min(3, 'Minimum 3 characters'),
+        company_name: z.string().optional(),
+        location: z.string().min(1, 'Required'),
+    });
+
+    type ClientFormData = z.infer<typeof clientSchema>;
 
     const {
         register,
@@ -47,7 +51,7 @@ function ClientOnboarding() {
         const file = e.target.files?.[0];
         if (file) {
             if (file.size > 5 * 1024 * 1024) {
-                showToast('حجم الصورة يجب أن يكون أقل من 5 ميجا', 'error');
+                showToast('Image size must be less than 5MB', 'error');
                 return;
             }
             setAvatarFile(file);
@@ -68,54 +72,65 @@ function ClientOnboarding() {
             await updateProfile({
                 full_name: data.full_name,
                 location: data.location,
-                bio: data.company_name ? `شركة: ${data.company_name}` : undefined,
+                bio: data.company_name ? `Company: ${data.company_name}` : undefined,
                 avatar_url: avatarUrl,
             });
 
-            showToast('تم إكمال التسجيل بنجاح!', 'success');
+            showToast(t.payment.success || 'Success!', 'success');
             navigate('/client/dashboard');
         } catch (error) {
-            showToast('حدث خطأ في حفظ البيانات', 'error');
+            showToast(t.common.error, 'error');
         } finally {
             setIsLoading(false);
         }
     };
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-gray-50 dark:bg-dark-900 overflow-hidden relative transition-colors duration-300">
+            {/* Background Ambience */}
+            <div className="absolute inset-0 pointer-events-none">
+                <div className="absolute top-0 start-0 w-[500px] h-[500px] bg-secondary-500/5 rounded-full blur-[100px]" />
+                <div className="absolute bottom-0 end-0 w-[500px] h-[500px] bg-secondary-500/5 rounded-full blur-[100px]" />
+            </div>
+
             <Header />
 
-            <div className="container-custom py-12">
+            <div className="container-custom py-12 relative z-10">
                 <div className="max-w-lg mx-auto">
-                    <div className="card">
-                        <div className="flex items-center gap-3 mb-6">
-                            <div className="w-12 h-12 rounded-xl bg-secondary-100 flex items-center justify-center">
-                                <User className="w-6 h-6 text-secondary-600" />
+                    <div className="text-center mb-10">
+                        <h1 className="heading-md mb-2">{t.onboarding.client.welcome} {t.howItWorks.brandName}</h1>
+                        <p className="text-muted">{t.onboarding.client.welcomeDesc}</p>
+                    </div>
+
+                    <div className="card-glass shadow-xl dark:shadow-black/20 animate-fade-in p-8">
+                        <div className="flex items-center gap-4 mb-8">
+                            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-secondary-500 to-secondary-600 flex items-center justify-center shadow-lg shadow-secondary-500/30">
+                                <Briefcase className="w-7 h-7 text-white" />
                             </div>
                             <div>
-                                <h2 className="text-xl font-bold">أكمل ملفك الشخصي</h2>
-                                <p className="text-muted text-sm">معلومات بسيطة للبدء</p>
+                                <h2 className="text-xl font-bold">{t.onboarding.client.profileTitle}</h2>
+                                <p className="text-muted text-sm">{t.onboarding.client.profileDesc}</p>
                             </div>
                         </div>
 
                         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                             {/* Avatar Upload */}
-                            <div className="flex justify-center mb-6">
-                                <div className="relative">
+                            <div className="flex justify-center mb-8">
+                                <div className="relative group">
                                     <div
-                                        className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden cursor-pointer border-4 border-white shadow-lg"
+                                        className="w-28 h-28 rounded-full bg-gray-100 dark:bg-dark-800 flex items-center justify-center overflow-hidden cursor-pointer border-4 border-white dark:border-dark-700 shadow-xl group-hover:shadow-2xl transition-all"
                                         onClick={() => fileInputRef.current?.click()}
                                     >
                                         {avatarPreview ? (
                                             <img src={avatarPreview} alt="Avatar" className="w-full h-full object-cover" />
                                         ) : (
-                                            <User className="w-10 h-10 text-gray-400" />
+                                            <User className="w-10 h-10 text-gray-300 dark:text-dark-600" />
                                         )}
                                     </div>
                                     <button
                                         type="button"
                                         onClick={() => fileInputRef.current?.click()}
-                                        className="absolute -bottom-1 -end-1 w-8 h-8 rounded-full bg-secondary-600 text-white flex items-center justify-center shadow-lg hover:bg-secondary-700 transition-colors"
+                                        className="absolute -bottom-1 -end-1 w-9 h-9 rounded-full bg-secondary-600 text-white flex items-center justify-center shadow-lg hover:bg-secondary-700 hover:scale-110 transition-all border-2 border-white dark:border-dark-800"
                                     >
                                         <Camera className="w-4 h-4" />
                                     </button>
@@ -152,16 +167,18 @@ function ClientOnboarding() {
                                 options={GOVERNORATES.map((gov: Governorate) => ({ value: gov, label: gov }))}
                             />
 
-                            <Button
-                                type="submit"
-                                variant="secondary"
-                                size="lg"
-                                className="w-full"
-                                isLoading={isLoading}
-                                rightIcon={<CheckCircle className="w-5 h-5" />}
-                            >
-                                {t.auth.completeProfile}
-                            </Button>
+                            <div className="pt-2">
+                                <Button
+                                    type="submit"
+                                    variant="secondary"
+                                    size="lg"
+                                    className="w-full"
+                                    isLoading={isLoading}
+                                    rightIcon={<CheckCircle className="w-5 h-5" />}
+                                >
+                                    {t.auth.completeProfile}
+                                </Button>
+                            </div>
                         </form>
                     </div>
                 </div>

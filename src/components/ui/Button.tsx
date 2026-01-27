@@ -3,7 +3,7 @@ import type { ButtonHTMLAttributes } from 'react';
 import { Loader2 } from 'lucide-react';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-    variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger';
+    variant?: 'primary' | 'secondary' | 'accent' | 'outline' | 'ghost' | 'danger';
     size?: 'sm' | 'md' | 'lg';
     isLoading?: boolean;
     leftIcon?: React.ReactNode;
@@ -25,50 +25,21 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         },
         ref
     ) => {
-        const baseStyles = `
-      inline-flex items-center justify-center gap-2 font-medium rounded-xl
-      transition-all duration-200 focus:outline-none focus-visible:ring-2
-      focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed
-      disabled:transform-none
-    `;
+        const baseStyles = 'inline-flex items-center justify-center gap-2.5 font-semibold transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none active:scale-[0.98]';
 
         const variants = {
-            primary: `
-        bg-primary-600 text-white hover:bg-primary-700
-        focus-visible:ring-primary-600
-        shadow-lg shadow-primary-600/25
-        hover:shadow-xl hover:shadow-primary-600/30
-        hover:-translate-y-0.5 active:translate-y-0
-      `,
-            secondary: `
-        bg-secondary-600 text-white hover:bg-secondary-700
-        focus-visible:ring-secondary-600
-        shadow-lg shadow-secondary-600/25
-        hover:shadow-xl hover:shadow-secondary-600/30
-        hover:-translate-y-0.5 active:translate-y-0
-      `,
-            outline: `
-        border-2 border-primary-600 text-primary-600
-        hover:bg-primary-600 hover:text-white
-        focus-visible:ring-primary-600
-      `,
-            ghost: `
-        text-gray-600 hover:bg-gray-100
-        focus-visible:ring-gray-400
-      `,
-            danger: `
-        bg-red-600 text-white hover:bg-red-700
-        focus-visible:ring-red-600
-        shadow-lg shadow-red-600/25
-        hover:shadow-xl hover:shadow-red-600/30
-        hover:-translate-y-0.5 active:translate-y-0
-      `,
+            primary: 'bg-gradient-to-br from-primary-600 to-primary-700 text-white hover:to-primary-800 shadow-lg shadow-primary-600/30 hover:shadow-xl hover:shadow-primary-600/40 hover:-translate-y-0.5 focus-visible:ring-primary-500',
+            secondary: 'bg-gradient-to-br from-secondary-600 to-secondary-700 text-white hover:to-secondary-800 shadow-lg shadow-secondary-600/30 hover:shadow-xl hover:shadow-secondary-600/40 hover:-translate-y-0.5 focus-visible:ring-secondary-500',
+            accent: 'bg-gradient-to-br from-accent-500 to-accent-600 text-white hover:to-accent-700 shadow-lg shadow-accent-500/30 hover:shadow-xl hover:shadow-accent-500/40 hover:-translate-y-0.5 focus-visible:ring-accent-500',
+            outline: 'border-2 border-primary-600 dark:border-primary-400 text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 focus-visible:ring-primary-500',
+            ghost: 'text-dark-600 dark:text-dark-300 hover:bg-dark-100 dark:hover:bg-dark-800 focus-visible:ring-dark-400',
+            danger: 'bg-gradient-to-br from-red-500 to-red-600 text-white hover:to-red-700 shadow-lg shadow-red-500/30 hover:shadow-xl hover:shadow-red-500/40 hover:-translate-y-0.5 focus-visible:ring-red-500',
         };
 
         const sizes = {
             sm: 'px-4 py-2 text-sm rounded-lg',
-            md: 'px-6 py-3 text-base',
-            lg: 'px-8 py-4 text-lg rounded-2xl',
+            md: 'px-6 py-3 text-base rounded-xl',
+            lg: 'px-8 py-3.5 text-lg rounded-2xl',
         };
 
         return (

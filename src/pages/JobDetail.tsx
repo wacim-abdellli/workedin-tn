@@ -198,16 +198,16 @@ function ProposalModal({
         <Modal isOpen={isOpen} onClose={onClose} title={isPreview ? 'معاينة العرض' : 'تقديم عرض'} size="lg">
             {isPreview ? (
                 <div className="space-y-6">
-                    <div className="bg-gray-50 rounded-xl p-4">
+                    <div className="bg-gray-50 dark:bg-dark-800 rounded-xl p-4">
                         <h4 className="font-bold mb-2">رسالة التغطية</h4>
                         <p className="text-sm whitespace-pre-wrap">{coverLetter}</p>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
-                        <div className="bg-gray-50 rounded-xl p-4 text-center">
+                        <div className="bg-gray-50 dark:bg-dark-800 rounded-xl p-4 text-center">
                             <p className="text-sm text-muted">قيمة العرض</p>
                             <p className="text-xl font-bold text-primary-600">{bidAmount} د.ت</p>
                         </div>
-                        <div className="bg-gray-50 rounded-xl p-4 text-center">
+                        <div className="bg-gray-50 dark:bg-dark-800 rounded-xl p-4 text-center">
                             <p className="text-sm text-muted">ستستلم</p>
                             <p className="text-xl font-bold text-green-600">{netAmount} د.ت</p>
                         </div>
@@ -217,7 +217,7 @@ function ProposalModal({
                             <p className="text-sm text-muted mb-2">المرفقات ({attachments.length})</p>
                             <div className="flex flex-wrap gap-2">
                                 {attachments.map((file, i) => (
-                                    <span key={i} className="px-3 py-1 bg-gray-100 rounded-lg text-sm">
+                                    <span key={i} className="px-3 py-1 bg-gray-100 dark:bg-dark-700 rounded-lg text-sm">
                                         {file.name}
                                     </span>
                                 ))}
@@ -242,8 +242,8 @@ function ProposalModal({
             ) : (
                 <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
                     {/* Job Title */}
-                    <div className="bg-primary-50 rounded-xl p-4">
-                        <p className="text-sm text-primary-600 mb-1">تقديم عرض على:</p>
+                    <div className="bg-primary-50 dark:bg-primary-900/20 rounded-xl p-4">
+                        <p className="text-sm text-primary-600 dark:text-primary-400 mb-1">تقديم عرض على:</p>
                         <h3 className="font-bold text-foreground">{job.title}</h3>
                     </div>
 
@@ -285,7 +285,7 @@ function ProposalModal({
                             </p>
                         )}
                         {bidAmount > 0 && (
-                            <div className="mt-2 p-3 bg-gray-50 rounded-lg text-sm">
+                            <div className="mt-2 p-3 bg-gray-50 dark:bg-dark-800 rounded-lg text-sm">
                                 <div className="flex justify-between mb-1">
                                     <span>رسوم المنصة ({PLATFORM_FEE_PERCENT}%)</span>
                                     <span className="text-red-500">-{platformFee} د.ت</span>
@@ -331,7 +331,7 @@ function ProposalModal({
                         {attachments.length > 0 && (
                             <div className="mt-3 space-y-2">
                                 {attachments.map((file, index) => (
-                                    <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+                                    <div key={index} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-dark-800 rounded-lg">
                                         <div className="flex items-center gap-2">
                                             <FileText className="w-4 h-4 text-gray-400" />
                                             <span className="text-sm truncate max-w-[200px]">{file.name}</span>
@@ -386,7 +386,7 @@ function SimilarJobCard({ job, onClick }: { job: Job; onClick: () => void }) {
     return (
         <div
             onClick={onClick}
-            className="p-4 bg-gray-50 rounded-xl cursor-pointer hover:bg-gray-100 transition-colors"
+            className="p-4 bg-gray-50 dark:bg-dark-800 rounded-xl cursor-pointer hover:bg-gray-100 dark:hover:bg-dark-700 transition-colors"
         >
             <h4 className="font-medium text-foreground line-clamp-1 mb-1">{job.title}</h4>
             <p className="text-sm text-muted line-clamp-1 mb-2">{job.description}</p>
@@ -669,7 +669,7 @@ function JobDetail() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-gray-50 dark:bg-dark-900 transition-colors duration-300">
             <Header />
 
             <div className="container-custom py-8">
@@ -708,14 +708,14 @@ function JobDetail() {
                                 <div className="flex items-center gap-2">
                                     <button
                                         onClick={toggleSave}
-                                        className={`p-2 rounded-full transition-colors ${isSaved ? 'bg-red-50 text-red-500' : 'bg-gray-100 text-gray-500 hover:text-red-500'
+                                        className={`p-2 rounded-full transition-colors ${isSaved ? 'bg-red-50 dark:bg-red-900/20 text-red-500' : 'bg-gray-100 dark:bg-dark-800 text-gray-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400'
                                             }`}
                                     >
                                         <Heart className={`w-5 h-5 ${isSaved ? 'fill-current' : ''}`} />
                                     </button>
                                     <button
                                         onClick={shareJob}
-                                        className="p-2 rounded-full bg-gray-100 text-gray-500 hover:text-primary-600 transition-colors"
+                                        className="p-2 rounded-full bg-gray-100 dark:bg-dark-800 text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
                                     >
                                         <Share2 className="w-5 h-5" />
                                     </button>
@@ -725,12 +725,12 @@ function JobDetail() {
                             {/* Badges */}
                             <div className="flex flex-wrap gap-2 mb-6">
                                 <span className={`px-4 py-2 rounded-full text-sm font-medium ${job.job_type === 'fixed_price'
-                                    ? 'bg-blue-100 text-blue-700'
-                                    : 'bg-green-100 text-green-700'
+                                    ? 'bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400'
+                                    : 'bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400'
                                     }`}>
                                     {job.job_type === 'fixed_price' ? 'سعر ثابت' : 'بالساعة'}
                                 </span>
-                                <span className="px-4 py-2 rounded-full text-sm font-medium bg-gray-100 text-gray-700">
+                                <span className="px-4 py-2 rounded-full text-sm font-medium bg-gray-100 dark:bg-dark-800 text-gray-700 dark:text-gray-300">
                                     {EXPERIENCE_LABELS[job.experience_level] || job.experience_level}
                                 </span>
                                 {job.duration && (
@@ -741,9 +741,9 @@ function JobDetail() {
                             </div>
 
                             {/* Budget */}
-                            <div className="bg-primary-50 rounded-xl p-4 mb-6">
-                                <p className="text-sm text-primary-600 mb-1">الميزانية</p>
-                                <p className="text-3xl font-bold text-primary-700">
+                            <div className="bg-primary-50 dark:bg-primary-900/20 rounded-xl p-4 mb-6">
+                                <p className="text-sm text-primary-600 dark:text-primary-400 mb-1">الميزانية</p>
+                                <p className="text-3xl font-bold text-primary-700 dark:text-primary-300">
                                     {job.job_type === 'fixed_price' ? (
                                         job.budget_min === job.budget_max || !job.budget_max
                                             ? `${job.budget_min} د.ت`
@@ -782,8 +782,8 @@ function JobDetail() {
                                         <span
                                             key={index}
                                             className={`px-3 py-1.5 rounded-lg text-sm ${isMatch
-                                                ? 'bg-green-100 text-green-700 border border-green-200'
-                                                : 'bg-gray-100 text-gray-700'
+                                                ? 'bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800'
+                                                : 'bg-gray-100 dark:bg-dark-800 text-gray-700 dark:text-gray-300'
                                                 }`}
                                         >
                                             {isMatch && <CheckCircle className="w-3 h-3 inline me-1" />}

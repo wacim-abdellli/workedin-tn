@@ -85,7 +85,7 @@ function FreelancerDashboardPage() {
     });
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-gray-50 dark:bg-dark-900 transition-colors duration-300">
             <Header />
 
             <div className="container-custom py-8">
@@ -98,7 +98,7 @@ function FreelancerDashboardPage() {
                         <p className="text-muted">لوحة تحكم الموظف الحر</p>
                     </div>
                     <div className="flex items-center gap-3">
-                        <button className="p-2 rounded-xl bg-white shadow-sm hover:shadow-md transition-shadow relative">
+                        <button className="p-2 rounded-xl bg-white dark:bg-dark-800 shadow-sm hover:shadow-md transition-shadow relative">
                             <Bell className="w-5 h-5 text-muted" />
                             <span className="absolute -top-1 -end-1 w-4 h-4 bg-red-500 rounded-full text-white text-xs flex items-center justify-center">
                                 3
@@ -106,7 +106,7 @@ function FreelancerDashboardPage() {
                         </button>
                         <button
                             onClick={() => navigate('/settings')}
-                            className="p-2 rounded-xl bg-white shadow-sm hover:shadow-md transition-shadow"
+                            className="p-2 rounded-xl bg-white dark:bg-dark-800 shadow-sm hover:shadow-md transition-shadow"
                         >
                             <Settings className="w-5 h-5 text-muted" />
                         </button>
@@ -166,7 +166,7 @@ function FreelancerDashboardPage() {
                       px-4 py-2 rounded-full text-sm font-medium transition-all
                       ${filter === f
                                                 ? 'bg-primary-600 text-white'
-                                                : 'bg-white text-muted hover:bg-gray-100'
+                                                : 'bg-white dark:bg-dark-800 text-muted dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-700'
                                             }
                     `}
                                     >
@@ -187,12 +187,12 @@ function FreelancerDashboardPage() {
                                         <div className="flex-1">
                                             <div className="flex items-center gap-2 mb-1">
                                                 {job.isNew && (
-                                                    <span className="bg-green-100 text-green-700 text-xs font-medium px-2 py-0.5 rounded-full">
+                                                    <span className="bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400 text-xs font-medium px-2 py-0.5 rounded-full">
                                                         جديد
                                                     </span>
                                                 )}
                                                 {job.isUrgent && (
-                                                    <span className="bg-red-100 text-red-700 text-xs font-medium px-2 py-0.5 rounded-full flex items-center gap-1">
+                                                    <span className="bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400 text-xs font-medium px-2 py-0.5 rounded-full flex items-center gap-1">
                                                         <Zap className="w-3 h-3" />
                                                         مستعجل
                                                     </span>
@@ -220,7 +220,7 @@ function FreelancerDashboardPage() {
                                         </div>
                                         <div className="flex gap-2">
                                             {job.skills.slice(0, 2).map((skill, i) => (
-                                                <span key={i} className="text-xs px-2 py-1 bg-gray-100 rounded-full">
+                                                <span key={i} className="text-xs px-2 py-1 bg-gray-100 dark:bg-dark-700 rounded-full text-foreground">
                                                     {skill}
                                                 </span>
                                             ))}
@@ -248,7 +248,7 @@ function FreelancerDashboardPage() {
                                 </h3>
                                 <span className="text-primary-600 font-bold">{stats.profileCompletion}%</span>
                             </div>
-                            <div className="h-2 bg-gray-200 rounded-full overflow-hidden mb-4">
+                            <div className="h-2 bg-gray-200 dark:bg-dark-700 rounded-full overflow-hidden mb-4">
                                 <div
                                     className="h-full bg-primary-600 rounded-full transition-all duration-500"
                                     style={{ width: `${stats.profileCompletion}%` }}
@@ -274,8 +274,8 @@ function FreelancerDashboardPage() {
                                     <div key={item.id} className="flex items-start gap-3">
                                         <div className={`
                       w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0
-                      ${item.type === 'payment' ? 'bg-green-100' :
-                                                item.type === 'review' ? 'bg-yellow-100' : 'bg-blue-100'}
+                      ${item.type === 'payment' ? 'bg-green-100 dark:bg-green-900/20' :
+                                                item.type === 'review' ? 'bg-yellow-100 dark:bg-yellow-900/20' : 'bg-blue-100 dark:bg-blue-900/20'}
                     `}>
                                             {item.type === 'payment' && <DollarSign className="w-4 h-4 text-green-600" />}
                                             {item.type === 'review' && <Star className="w-4 h-4 text-yellow-600" />}
@@ -291,7 +291,7 @@ function FreelancerDashboardPage() {
                         </div>
 
                         {/* Quick Actions */}
-                        <div className="card bg-gradient-to-br from-primary-50 to-secondary-50">
+                        <div className="card bg-gradient-to-br from-primary-50 to-secondary-50 dark:from-primary-900/10 dark:to-secondary-900/10">
                             <h3 className="font-semibold text-foreground mb-4">إجراءات سريعة</h3>
                             <div className="space-y-3">
                                 <Button

@@ -12,9 +12,9 @@ function ForClients() {
 
     // Mock top freelancers (In real app, fetch from DB)
     const topFreelancers = [
-        { name: "أمين ب.", role: "مطور ويب", rating: 5.0, image: "https://i.pravatar.cc/150?img=68" },
-        { name: "سارة م.", role: "مصممة جرافيك", rating: 4.9, image: "https://i.pravatar.cc/150?img=49" },
-        { name: "ياسين ت.", role: "مترجم محلف", rating: 4.8, image: "https://i.pravatar.cc/150?img=33" },
+        { name: "Amine B.", role: t.categories.webDev, rating: 5.0, image: "https://i.pravatar.cc/150?img=68" },
+        { name: "Sarah M.", role: t.categories.graphicDesign, rating: 4.9, image: "https://i.pravatar.cc/150?img=49" },
+        { name: "Yassine T.", role: t.categories.translation, rating: 4.8, image: "https://i.pravatar.cc/150?img=33" },
     ];
 
     return (
@@ -56,10 +56,10 @@ function ForClients() {
             </section>
 
             {/* Benefits Grid */}
-            <section className="py-20 bg-gray-50">
+            <section className="py-20 bg-gray-50 dark:bg-dark-900 transition-colors duration-500">
                 <div className="container-custom">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                        <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
+                        <div className="bg-white dark:bg-dark-800 p-8 rounded-2xl shadow-sm border border-gray-100 dark:border-dark-700">
                             <div className="w-14 h-14 bg-secondary-100 rounded-xl flex items-center justify-center mb-6">
                                 <Zap className="w-8 h-8 text-secondary-600" />
                             </div>
@@ -68,7 +68,7 @@ function ForClients() {
                                 {t.forClients.benefits.speed.desc}
                             </p>
                         </div>
-                        <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
+                        <div className="bg-white dark:bg-dark-800 p-8 rounded-2xl shadow-sm border border-gray-100 dark:border-dark-700">
                             <div className="w-14 h-14 bg-green-100 rounded-xl flex items-center justify-center mb-6">
                                 <Shield className="w-8 h-8 text-green-600" />
                             </div>
@@ -77,7 +77,7 @@ function ForClients() {
                                 {t.forClients.benefits.secure.desc}
                             </p>
                         </div>
-                        <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
+                        <div className="bg-white dark:bg-dark-800 p-8 rounded-2xl shadow-sm border border-gray-100 dark:border-dark-700">
                             <div className="w-14 h-14 bg-primary-100 rounded-xl flex items-center justify-center mb-6">
                                 <Users className="w-8 h-8 text-primary-600" />
                             </div>
@@ -96,8 +96,8 @@ function ForClients() {
                     <h2 className="text-3xl font-bold text-center mb-12">{t.forClients.categories.title}</h2>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         {t.forClients.categories.items.map((cat, i) => (
-                            <div key={i} className="p-6 border border-gray-200 rounded-xl hover:border-secondary-500 hover:shadow-md transition-all cursor-pointer text-center group">
-                                <h3 className="font-bold text-gray-700 group-hover:text-secondary-600 transition-colors">{cat}</h3>
+                            <div key={i} className="p-6 border border-gray-200 dark:border-dark-700 rounded-xl hover:border-secondary-500 hover:shadow-md transition-all cursor-pointer text-center group bg-white dark:bg-dark-800">
+                                <h3 className="font-bold text-gray-700 dark:text-gray-200 group-hover:text-secondary-600 transition-colors">{cat}</h3>
                             </div>
                         ))}
                     </div>
@@ -105,7 +105,7 @@ function ForClients() {
             </section>
 
             {/* Top Talent Teaser (Mock) */}
-            <section className="py-20 bg-gray-50">
+            <section className="py-20 bg-gray-50 dark:bg-dark-900 transition-colors duration-500">
                 <div className="container-custom">
                     <div className="flex items-center justify-between mb-12">
                         <h2 className="text-3xl font-bold">{t.forClients.talent.title}</h2>

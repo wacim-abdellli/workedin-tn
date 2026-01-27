@@ -2,8 +2,10 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { I18nProvider } from './i18n';
 import { ToastProvider } from './components/ui/Toast';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { ThemeProvider } from './contexts/ThemeContext';
 import ErrorBoundary from './components/ui/ErrorBoundary';
 import Loading from './components/ui/Loading';
+import ScrollToTop from './components/ui/ScrollToTop';
 
 // Pages
 import Home from './pages/Home';
@@ -196,15 +198,20 @@ function AppRoutes() {
 function App() {
   return (
     <BrowserRouter>
-      <I18nProvider defaultLanguage="ar">
-        <ErrorBoundary>
-          <AuthProvider>
-            <ToastProvider>
-              <AppRoutes />
-            </ToastProvider>
-          </AuthProvider>
-        </ErrorBoundary>
-      </I18nProvider>
+      <ThemeProvider>
+        <I18nProvider defaultLanguage="ar">
+          <ErrorBoundary>
+            <AuthProvider>
+              <ToastProvider>
+                <div className="animate-fade-in">
+                  <ScrollToTop />
+                  <AppRoutes />
+                </div>
+              </ToastProvider>
+            </AuthProvider>
+          </ErrorBoundary>
+        </I18nProvider>
+      </ThemeProvider>
     </BrowserRouter>
   );
 }

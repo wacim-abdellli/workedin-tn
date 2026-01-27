@@ -88,30 +88,30 @@ export default function JobProposals() {
     const handleFilterChange = (filters: any) => console.log('Filters', filters);
 
     return (
-        <div className="min-h-screen bg-gray-50 pb-20">
+        <div className="min-h-screen bg-gray-50 dark:bg-dark-900 pb-20 transition-colors duration-300">
             <Header />
 
             {/* Top Section: Job Info */}
-            <div className="bg-white border-b border-gray-200 pt-8 pb-8">
+            <div className="bg-white dark:bg-dark-800 border-b border-gray-200 dark:border-dark-700 pt-8 pb-8 transition-colors duration-300">
                 <div className="container-custom">
                     <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
                         <div>
                             <div className="flex items-center gap-3 mb-2">
-                                <h1 className="text-2xl font-bold text-gray-900">{job.title}</h1>
-                                <span className="px-2.5 py-0.5 rounded-full bg-green-100 text-green-700 text-xs font-medium border border-green-200">
+                                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{job.title}</h1>
+                                <span className="px-2.5 py-0.5 rounded-full bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400 text-xs font-medium border border-green-200 dark:border-green-800">
                                     مفتوح
                                 </span>
                             </div>
 
-                            <div className="flex items-center gap-6 text-sm text-gray-500">
+                            <div className="flex items-center gap-6 text-sm text-gray-500 dark:text-gray-400">
                                 <span className="flex items-center gap-1">
-                                    <strong className="text-gray-900">{job.stats.proposals}</strong> عروض
+                                    <strong className="text-gray-900 dark:text-white">{job.stats.proposals}</strong> عروض
                                 </span>
                                 <span className="flex items-center gap-1">
-                                    <strong className="text-gray-900">{job.stats.interviewing}</strong> مقابلات
+                                    <strong className="text-gray-900 dark:text-white">{job.stats.interviewing}</strong> مقابلات
                                 </span>
                                 <span className="flex items-center gap-1">
-                                    <strong className="text-gray-900">{job.stats.shortlisted}</strong> قائمة قصيرة
+                                    <strong className="text-gray-900 dark:text-white">{job.stats.shortlisted}</strong> قائمة قصيرة
                                 </span>
                             </div>
                         </div>
@@ -154,7 +154,7 @@ export default function JobProposals() {
                         </div>
 
                         {/* Tabs */}
-                        <div className="bg-white rounded-xl border border-gray-100 p-1 flex overflow-x-auto">
+                        <div className="bg-white dark:bg-dark-800 rounded-xl border border-gray-100 dark:border-dark-700 p-1 flex overflow-x-auto">
                             {['all', 'new', 'shortlisted', 'archived'].map((tab) => (
                                 <button
                                     key={tab}
@@ -162,8 +162,8 @@ export default function JobProposals() {
                                     className={`
                                         flex-1 py-2 px-4 rounded-lg text-sm font-medium whitespace-nowrap transition-colors
                                         ${activeTab === tab
-                                            ? 'bg-primary-50 text-primary-700 shadow-sm'
-                                            : 'text-gray-600 hover:bg-gray-50'}
+                                            ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400 shadow-sm'
+                                            : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-700'}
                                     `}
                                 >
                                     {tab === 'all' && 'كل العروض'}

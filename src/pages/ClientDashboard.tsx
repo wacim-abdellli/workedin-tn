@@ -118,7 +118,7 @@ function ClientDashboardPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-gray-50 dark:bg-dark-900 transition-colors duration-300">
             <Header />
 
             <div className="container-custom py-8">
@@ -131,12 +131,12 @@ function ClientDashboardPage() {
                         <p className="text-muted">لوحة تحكم العميل</p>
                     </div>
                     <div className="flex items-center gap-3">
-                        <button className="p-2 rounded-xl bg-white shadow-sm hover:shadow-md transition-shadow relative">
+                        <button className="p-2 rounded-xl bg-white dark:bg-dark-800 shadow-sm hover:shadow-md transition-shadow relative">
                             <Bell className="w-5 h-5 text-muted" />
                         </button>
                         <button
                             onClick={() => navigate('/settings')}
-                            className="p-2 rounded-xl bg-white shadow-sm hover:shadow-md transition-shadow"
+                            className="p-2 rounded-xl bg-white dark:bg-dark-800 shadow-sm hover:shadow-md transition-shadow"
                         >
                             <Settings className="w-5 h-5 text-muted" />
                         </button>
@@ -244,7 +244,7 @@ function ClientDashboardPage() {
 
                                 {/* Status-specific content */}
                                 {job.status === 'matched' && (
-                                    <div className="flex items-center justify-between p-3 bg-yellow-50 rounded-xl">
+                                    <div className="flex items-center justify-between p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-xl">
                                         <div className="flex items-center gap-2">
                                             <Users className="w-5 h-5 text-yellow-600" />
                                             <span className="text-yellow-800 font-medium">
@@ -266,7 +266,7 @@ function ClientDashboardPage() {
                                             </div>
                                             <span className="text-primary-600 font-medium">{job.progress}%</span>
                                         </div>
-                                        <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                                        <div className="h-2 bg-gray-200 dark:bg-dark-700 rounded-full overflow-hidden">
                                             <div
                                                 className="h-full bg-primary-600 rounded-full transition-all duration-500"
                                                 style={{ width: `${job.progress}%` }}
@@ -276,7 +276,7 @@ function ClientDashboardPage() {
                                 )}
 
                                 {job.status === 'completed' && (
-                                    <div className="flex items-center justify-between p-3 bg-green-50 rounded-xl">
+                                    <div className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900/20 rounded-xl">
                                         <div className="flex items-center gap-2">
                                             <User className="w-5 h-5 text-green-600" />
                                             <span className="text-green-800">{job.freelancer}</span>

@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
-import { Bell, CheckCheck } from 'lucide-react';
+import { Bell, CheckCheck, Loader2 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
+import { useTranslation } from '../../i18n';
 
 interface Notification {
     id: string;
@@ -20,6 +21,7 @@ interface NotificationBellProps {
 
 export function NotificationBell({ className = '' }: NotificationBellProps) {
     const { user } = useAuth();
+    const { t, language } = useTranslation();
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [unreadCount, setUnreadCount] = useState(0);
     const [isOpen, setIsOpen] = useState(false);
@@ -152,10 +154,29 @@ export function NotificationBell({ className = '' }: NotificationBellProps) {
         const diffHours = Math.floor(diffMs / 3600000);
         const diffDays = Math.floor(diffMs / 86400000);
 
-        if (diffMins < 1) return 'الآن';
-        if (diffMins < 60) return `منذ ${diffMins} دقيقة`;
-        if (diffHours < 24) return `منذ ${diffHours} ساعة`;
-        return `منذ ${diffDays} يوم`;
+        if (diffMins < 1) return t.common.time.now;
+
+        let val = 0;
+        let unit = '';
+
+        if (diffMins < 60) {
+            val = diffMins;
+            unit = t.common.time.minute;
+        } else if (diffHours < 24) {
+            val = diffHours;
+            unit = t.common.time.hour;
+        } else {
+            val = diffDays;
+            unit = t.common.time.day;
+        }
+
+        // English format: "5m ago" (suffix)
+        // Arabic/French format: "ago 5 mins" (prefix)
+        if (language === 'en') {
+            return `${val}${unit} ${t.common.time.ago}`;
+        } else {
+            return `${t.common.time.ago} ${val} ${unit}`;
+        }
     };
 
     return (
@@ -163,11 +184,11 @@ export function NotificationBell({ className = '' }: NotificationBellProps) {
             {/* Bell Button */}
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="relative p-2 rounded-xl bg-white shadow-sm hover:shadow-md transition-all"
+                className="relative p-2.5 rounded-full hover:bg-gray-100 dark:hover:bg-dark-800 transition-all text-dark-500 hover:text-dark-900 dark:text-dark-300 dark:hover:text-white"
             >
-                <Bell className="w-5 h-5 text-gray-600" />
+                <Bell className="w-5 h-5" />
                 {unreadCount > 0 && (
-                    <span className="absolute -top-1 -end-1 w-5 h-5 bg-red-500 rounded-full text-white text-xs font-bold flex items-center justify-center animate-pulse">
+                    <span className="absolute top-0 end-0 min-w-[20px] h-5 px-1 bg-red-500 rounded-full text-white text-xs font-bold flex items-center justify-center animate-pulse border-2 border-white dark:border-dark-900">
                         {unreadCount > 9 ? '9+' : unreadCount}
                     </span>
                 )}
@@ -175,73 +196,80 @@ export function NotificationBell({ className = '' }: NotificationBellProps) {
 
             {/* Dropdown */}
             {isOpen && (
-                <div className="absolute top-full end-0 mt-2 w-80 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-50">
+                <div className="absolute top-full end-0 mt-3 w-80 sm:w-96 bg-white dark:bg-dark-900 rounded-2xl shadow-xl dark:shadow-black/50 border border-gray-100 dark:border-dark-700 overflow-hidden z-50 animate-slide-up transform origin-top-right">
                     {/* Header */}
-                    <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
-                        <h3 className="font-bold text-gray-900">الإشعارات</h3>
+                    <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-dark-700 bg-white/50 dark:bg-dark-900/50 backdrop-blur">
+                        <h3 className="font-bold text-dark-900 dark:text-white">{t.notifications.title}</h3>
                         {unreadCount > 0 && (
                             <button
                                 onClick={markAllAsRead}
-                                className="text-xs text-primary-600 hover:underline flex items-center gap-1"
+                                className="text-xs text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 hover:underline flex items-center gap-1 font-medium"
                             >
-                                <CheckCheck className="w-4 h-4" />
-                                قراءة الكل
+                                <CheckCheck className="w-3.5 h-3.5" />
+                                {t.notifications.readAll}
                             </button>
                         )}
                     </div>
 
                     {/* Notifications List */}
-                    <div className="max-h-80 overflow-y-auto">
+                    <div className="max-h-[70vh] overflow-y-auto custom-scrollbar">
                         {isLoading ? (
-                            <div className="p-8 text-center text-gray-500">
-                                <div className="animate-spin w-6 h-6 border-2 border-primary-600 border-t-transparent rounded-full mx-auto mb-2" />
-                                جاري التحميل...
+                            <div className="p-12 text-center text-dark-500">
+                                <Loader2 className="animate-spin w-8 h-8 text-primary-600/50 mx-auto mb-3" />
+                                <p className="text-sm">{t.common.loading}</p>
                             </div>
                         ) : notifications.length === 0 ? (
-                            <div className="p-8 text-center text-gray-500">
-                                <Bell className="w-10 h-10 text-gray-300 mx-auto mb-2" />
-                                لا توجد إشعارات
+                            <div className="p-12 text-center text-dark-400">
+                                <div className="w-16 h-16 bg-gray-50 dark:bg-dark-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <Bell className="w-8 h-8 text-dark-300" />
+                                </div>
+                                <p className="font-medium text-dark-900 dark:text-white mb-1">{t.notifications.empty}</p>
+                                <p className="text-sm text-dark-500">{t.notifications.emptyDesc}</p>
                             </div>
                         ) : (
-                            notifications.map((notification) => (
-                                <div
-                                    key={notification.id}
-                                    className={`
-                                        flex gap-3 p-4 border-b border-gray-50 cursor-pointer
-                                        hover:bg-gray-50 transition-colors
-                                        ${!notification.read ? 'bg-primary-50/50' : ''}
-                                    `}
-                                    onClick={() => {
-                                        if (!notification.read) markAsRead(notification.id);
-                                        if (notification.link) {
-                                            window.location.href = notification.link;
-                                        }
-                                    }}
-                                >
-                                    {/* Icon */}
-                                    <span className="text-xl">
-                                        {getNotificationIcon(notification.type)}
-                                    </span>
+                            <div>
+                                {notifications.map((notification) => (
+                                    <div
+                                        key={notification.id}
+                                        className={`
+                                            flex gap-4 p-4 border-b border-gray-50 dark:border-dark-800 cursor-pointer
+                                            hover:bg-gray-50 dark:hover:bg-dark-800/50 transition-colors group
+                                            ${!notification.read ? 'bg-primary-50/40 dark:bg-primary-900/10' : ''}
+                                        `}
+                                        onClick={() => {
+                                            if (!notification.read) markAsRead(notification.id);
+                                            if (notification.link) {
+                                                window.location.href = notification.link;
+                                            }
+                                        }}
+                                    >
+                                        {/* Icon */}
+                                        <div className="flex-shrink-0 mt-1">
+                                            <span className="text-2xl filter drop-shadow-sm">
+                                                {getNotificationIcon(notification.type)}
+                                            </span>
+                                        </div>
 
-                                    {/* Content */}
-                                    <div className="flex-1 min-w-0">
-                                        <p className="font-medium text-gray-900 text-sm">
-                                            {notification.title}
-                                        </p>
-                                        <p className="text-xs text-gray-600 truncate">
-                                            {notification.message}
-                                        </p>
-                                        <p className="text-xs text-gray-400 mt-1">
-                                            {formatTimeAgo(notification.created_at)}
-                                        </p>
+                                        {/* Content */}
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex justify-between items-start gap-2 mb-1">
+                                                <p className={`text-sm font-semibold ${!notification.read ? 'text-dark-900 dark:text-white' : 'text-dark-700 dark:text-dark-300'}`}>
+                                                    {notification.title}
+                                                </p>
+                                                {!notification.read && (
+                                                    <span className="w-2 h-2 bg-primary-500 rounded-full flex-shrink-0 mt-1.5 shadow-sm shadow-primary-500/50" />
+                                                )}
+                                            </div>
+                                            <p className="text-xs text-dark-500 dark:text-dark-400 line-clamp-2 leading-relaxed mb-1.5">
+                                                {notification.message}
+                                            </p>
+                                            <p className="text-[10px] text-dark-400 font-medium opacity-70 group-hover:opacity-100 transition-opacity">
+                                                {formatTimeAgo(notification.created_at)}
+                                            </p>
+                                        </div>
                                     </div>
-
-                                    {/* Unread indicator */}
-                                    {!notification.read && (
-                                        <span className="w-2 h-2 bg-primary-600 rounded-full self-center" />
-                                    )}
-                                </div>
-                            ))
+                                ))}
+                            </div>
                         )}
                     </div>
 
@@ -249,9 +277,9 @@ export function NotificationBell({ className = '' }: NotificationBellProps) {
                     {notifications.length > 0 && (
                         <a
                             href="/notifications"
-                            className="block text-center py-3 text-sm text-primary-600 hover:bg-gray-50 border-t border-gray-100"
+                            className="block text-center py-3 text-xs font-semibold text-primary-600 dark:text-primary-400 hover:bg-gray-50 dark:hover:bg-dark-800 border-t border-gray-100 dark:border-dark-700 transition-colors"
                         >
-                            عرض كل الإشعارات
+                            {t.notifications.viewAll}
                         </a>
                     )}
                 </div>

@@ -11,6 +11,8 @@ interface AuthContextType {
     freelancerProfile: FreelancerProfile | null;
     isLoading: boolean;
     isAuthenticated: boolean;
+    signInWithEmail: (email: string, password: string) => Promise<void>;
+    signUpWithEmail: (email: string, password: string) => Promise<void>;
     signInWithPhone: (phone: string) => Promise<void>;
     verifyOtp: (phone: string, token: string) => Promise<void>;
     signOut: () => Promise<void>;
@@ -108,7 +110,27 @@ export function AuthProvider({ children }: AuthProviderProps) {
         };
     }, [fetchProfile]);
 
-    // Send OTP to phone number
+    // Sign in with email and password
+    const signInWithEmail = async (email: string, password: string) => {
+        const { error } = await supabase.auth.signInWithPassword({
+            email,
+            password,
+        });
+
+        if (error) throw error;
+    };
+
+    // Sign up with email and password
+    const signUpWithEmail = async (email: string, password: string) => {
+        const { error } = await supabase.auth.signUp({
+            email,
+            password,
+        });
+
+        if (error) throw error;
+    };
+
+    // Send OTP to phone number (keeping for compatibility)
     const signInWithPhone = async (phone: string) => {
         const { error } = await supabase.auth.signInWithOtp({
             phone: phone.startsWith('+216') ? phone : `+216${phone}`,
@@ -202,6 +224,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
         freelancerProfile,
         isLoading,
         isAuthenticated: !!user,
+        signInWithEmail,
+        signUpWithEmail,
         signInWithPhone,
         verifyOtp,
         signOut,

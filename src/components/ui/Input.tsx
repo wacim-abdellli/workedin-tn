@@ -12,25 +12,29 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 const Input = forwardRef<HTMLInputElement, InputProps>(
     ({ label, error, hint, leftIcon, rightIcon, className = '', ...props }, ref) => {
         const inputStyles = `
-      w-full px-4 py-3 bg-white border rounded-xl
-      text-foreground placeholder-muted
-      focus:outline-none focus:ring-2 focus:border-transparent
-      transition-all duration-200
-      ${error ? 'border-red-500 focus:ring-red-500' : 'border-gray-200 focus:ring-primary-600'}
-      ${leftIcon ? 'ps-11' : ''}
-      ${rightIcon ? 'pe-11' : ''}
+      w-full bg-white dark:bg-dark-800 border rounded-xl
+      text-dark-900 dark:text-white placeholder-dark-400
+      focus:outline-none focus:ring-2 focus:ring-offset-0 focus:border-transparent
+      transition-all duration-200 shadow-sm
+      ${error
+                ? 'border-red-500 focus:ring-red-500/30'
+                : 'border-dark-200 dark:border-dark-700 hover:border-dark-300 dark:hover:border-dark-600 focus:ring-primary-500/30 dark:focus:ring-primary-400/30 focus:border-primary-500 dark:focus:border-primary-400'
+            }
+      ${leftIcon ? 'ps-11 py-3' : 'px-4 py-3'}
+      ${rightIcon ? 'pe-11 py-3' : 'px-4 py-3'}
+      disabled:opacity-50 disabled:bg-dark-100 dark:disabled:bg-dark-900 disabled:cursor-not-allowed
     `;
 
         return (
             <div className="w-full">
                 {label && (
-                    <label className="block text-sm font-medium text-foreground mb-2">
+                    <label className="block text-sm font-semibold text-dark-700 dark:text-dark-200 mb-2">
                         {label}
                     </label>
                 )}
                 <div className="relative">
                     {leftIcon && (
-                        <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none text-gray-400">
+                        <div className="absolute inset-y-0 start-0 flex items-center ps-4 pointer-events-none text-dark-400 transition-colors group-focus-within:text-primary-500">
                             {leftIcon}
                         </div>
                     )}
@@ -40,16 +44,16 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
                         {...props}
                     />
                     {rightIcon && (
-                        <div className="absolute inset-y-0 end-0 flex items-center pe-3 text-gray-400">
+                        <div className="absolute inset-y-0 end-0 flex items-center pe-4 text-dark-400">
                             {rightIcon}
                         </div>
                     )}
                 </div>
                 {error && (
-                    <p className="mt-1.5 text-sm text-red-500">{error}</p>
+                    <p className="mt-1.5 text-sm text-red-500 font-medium animate-slide-up">{error}</p>
                 )}
                 {hint && !error && (
-                    <p className="mt-1.5 text-sm text-muted">{hint}</p>
+                    <p className="mt-1.5 text-sm text-dark-500">{hint}</p>
                 )}
             </div>
         );

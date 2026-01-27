@@ -417,7 +417,7 @@ function Settings() {
             {notifications.map((notification) => (
                 <div
                     key={notification.id}
-                    className="flex items-center justify-between p-4 bg-gray-50 rounded-xl"
+                    className="flex items-center justify-between p-4 bg-gray-50 dark:bg-dark-800 rounded-xl"
                 >
                     <div>
                         <p className="font-medium text-foreground">{notification.label}</p>
@@ -427,7 +427,7 @@ function Settings() {
                         onClick={() => handleToggleNotification(notification.key)}
                         className={`
                             relative w-12 h-6 rounded-full transition-colors
-                            ${notification.enabled ? 'bg-primary-600' : 'bg-gray-300'}
+                            ${notification.enabled ? 'bg-primary-600' : 'bg-gray-300 dark:bg-dark-600'}
                         `}
                     >
                         <span
@@ -465,11 +465,11 @@ function Settings() {
                     {paymentMethods.map((method) => (
                         <div
                             key={method.id}
-                            className="flex items-center justify-between p-4 border border-gray-200 rounded-xl"
+                            className="flex items-center justify-between p-4 border border-gray-200 dark:border-dark-700 rounded-xl"
                         >
                             <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center">
-                                    <CreditCard className="w-6 h-6 text-gray-600" />
+                                <div className="w-12 h-12 bg-gray-100 dark:bg-dark-800 rounded-xl flex items-center justify-center">
+                                    <CreditCard className="w-6 h-6 text-gray-600 dark:text-gray-400" />
                                 </div>
                                 <div>
                                     <p className="font-medium text-foreground">{method.label}</p>
@@ -478,7 +478,7 @@ function Settings() {
                             </div>
                             <div className="flex items-center gap-2">
                                 {method.is_default ? (
-                                    <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium flex items-center gap-1">
+                                    <span className="px-3 py-1 bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400 rounded-full text-xs font-medium flex items-center gap-1">
                                         <Check className="w-3 h-3" />
                                         افتراضي
                                     </span>
@@ -504,7 +504,7 @@ function Settings() {
             )}
 
             {paymentMethods.length === 0 && !isLoading && (
-                <div className="text-center py-12 bg-gray-50 rounded-xl">
+                <div className="text-center py-12 bg-gray-50 dark:bg-dark-800 rounded-xl">
                     <CreditCard className="w-12 h-12 text-gray-300 mx-auto mb-3" />
                     <p className="text-muted">لم تضف أي طريقة دفع بعد</p>
                 </div>
@@ -515,8 +515,8 @@ function Settings() {
     const renderSecurityTab = () => (
         <div className="space-y-6">
             {/* Password Change */}
-            <div className="p-6 bg-gray-50 rounded-xl">
-                <h3 className="font-bold mb-2">تغيير كلمة المرور</h3>
+            <div className="p-6 bg-gray-50 dark:bg-dark-800 rounded-xl">
+                <h3 className="font-bold mb-2 text-foreground">تغيير كلمة المرور</h3>
                 <p className="text-muted text-sm mb-4">لا توجد كلمة مرور - أنت تستخدم تسجيل الدخول عبر الهاتف</p>
                 <Button variant="outline" disabled>
                     إضافة كلمة مرور
@@ -524,8 +524,8 @@ function Settings() {
             </div>
 
             {/* Session Info */}
-            <div className="p-6 bg-gray-50 rounded-xl">
-                <h3 className="font-bold mb-2">الجلسات النشطة</h3>
+            <div className="p-6 bg-gray-50 dark:bg-dark-800 rounded-xl">
+                <h3 className="font-bold mb-2 text-foreground">الجلسات النشطة</h3>
                 <p className="text-muted text-sm mb-4">هذا الجهاز هو الجهاز النشط الوحيد</p>
                 <Button variant="outline" onClick={handleLogout}>
                     تسجيل الخروج من كل الأجهزة
@@ -533,9 +533,9 @@ function Settings() {
             </div>
 
             {/* Delete Account */}
-            <div className="p-6 bg-red-50 rounded-xl border border-red-200">
-                <h3 className="font-bold text-red-700 mb-2">حذف الحساب</h3>
-                <p className="text-red-600 text-sm mb-4">
+            <div className="p-6 bg-red-50 dark:bg-red-900/10 rounded-xl border border-red-200 dark:border-red-900/30">
+                <h3 className="font-bold text-red-700 dark:text-red-400 mb-2">حذف الحساب</h3>
+                <p className="text-red-600 dark:text-red-300 text-sm mb-4">
                     سيتم حذف حسابك وجميع بياناتك بشكل نهائي. هذا الإجراء لا يمكن التراجع عنه.
                 </p>
                 <Button
@@ -550,7 +550,7 @@ function Settings() {
     );
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-gray-50 dark:bg-dark-900 transition-colors duration-300">
             <Header />
 
             <div className="container-custom py-8">
@@ -567,8 +567,8 @@ function Settings() {
                                     className={`
                                         w-full flex items-center gap-3 px-4 py-3 rounded-xl text-start transition-colors
                                         ${activeTab === tab.id
-                                            ? 'bg-primary-100 text-primary-700'
-                                            : 'hover:bg-gray-100 text-muted'
+                                            ? 'bg-primary-100 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400'
+                                            : 'hover:bg-gray-100 dark:hover:bg-dark-800 text-muted'
                                         }
                                     `}
                                 >

@@ -18,10 +18,47 @@ export const ar = {
 
     // Hero Section
     hero: {
-        title: 'منصة العمل الحر المصممة لتونس',
-        subtitle: 'لا مزايدات، لا تعقيدات، فقط مهارتك ومالك',
-        ctaFreelancer: 'ابدأ كعامل حر',
-        ctaClient: 'أنشر مهمة',
+        title: 'منصة تونسية %100 للعمل الحر',
+        subtitle: 'بدون مناقصات، بدون تعقيدات، خدمتك وفلوسك',
+        ctaFreelancer: 'ابدأ كفريلانسر',
+        ctaClient: 'أبحث عن محترفين',
+        badge: 'منصة تونسية 100% للعمل الحر',
+        trust: {
+            verified: 'تونسيون موثقون',
+            secure: 'دفع آمن 100%',
+            users: 'مستخدم',
+        },
+    },
+    home: {
+        stats: {
+            live: 'إحصائيات مباشرة',
+            activeJobs: 'مهمة نشطة',
+            users: 'مستخدم',
+            rating: 'تقييم',
+        },
+        sections: {
+            howItWorks: {
+                badge: 'كيف يعمل',
+                subtitle: 'نظام بسيط وفعال يوصلك بأفضل الكفاءات أو أفضل الفرص',
+                freelancerDesc: 'ابحث عن عمل بسهولة',
+                clientDesc: 'وظّف أفضل الكفاءات',
+            },
+            categories: {
+                badge: 'التخصصات',
+                subtitle: 'اكتشف المهارات المطلوبة في السوق التونسي',
+            },
+            testimonials: {
+                badge: 'قصص نجاح',
+                earned: 'ربح',
+            },
+            cta: {
+                badge: 'ابدأ رحلتك الآن',
+                title: 'هل أنت مستعد للبدء؟',
+                subtitle: 'انضم إلى آلاف التونسيين الذين يبنون مستقبلهم المهني معنا. التسجيل مجاني وسهل.',
+                btnStart: 'ابدأ الآن مجاناً',
+                btnWatch: 'شاهد كيف يعمل',
+            },
+        },
     },
 
     // Value Propositions
@@ -189,6 +226,12 @@ export const ar = {
     auth: {
         phone: 'رقم الهاتف',
         phonePlaceholder: 'أدخل رقم هاتفك',
+        email: 'البريد الإلكتروني',
+        emailPlaceholder: 'أدخل بريدك الإلكتروني',
+        password: 'كلمة المرور',
+        passwordPlaceholder: 'أدخل كلمة المرور',
+        confirmPassword: 'تأكيد كلمة المرور',
+        confirmPasswordPlaceholder: 'أعد إدخال كلمة المرور',
         sendCode: 'إرسال رمز التحقق',
         verifyCode: 'رمز التحقق',
         verify: 'تحقق',
@@ -200,6 +243,17 @@ export const ar = {
         client: 'عميل',
         both: 'كلاهما',
         completeProfile: 'إكمال التسجيل',
+        createAccount: 'إنشاء حساب',
+        loginSubtitle: 'أدخل بريدك الإلكتروني وكلمة المرور',
+        signupSubtitle: 'أنشئ حسابك للبدء',
+        noAccount: 'ليس لديك حساب؟',
+        hasAccount: 'لديك حساب بالفعل؟',
+        invalidCredentials: 'البريد الإلكتروني أو كلمة المرور غير صحيحة',
+        emailExists: 'هذا البريد الإلكتروني مسجل بالفعل',
+        passwordMismatch: 'كلمات المرور غير متطابقة',
+        passwordMinLength: 'كلمة المرور يجب أن تكون 6 أحرف على الأقل',
+        invalidEmail: 'أدخل بريد إلكتروني صحيح',
+        emailNotConfirmed: 'البريد الإلكتروني غير مؤكد',
     },
 
     // Profile Form
@@ -226,6 +280,29 @@ export const ar = {
         optional: 'اختياري',
         bio: 'نبذة عنك',
         bioPlaceholder: 'اكتب نبذة قصيرة عنك...',
+        education: {
+            title: 'التعليم (اختياري)',
+            add: 'إضافة مؤهل تعليمي',
+            institution: 'اسم الجامعة / المؤسسة',
+            degree: 'الشهادة',
+            field: 'التخصص',
+            startYear: 'سنة البداية',
+            endYear: 'سنة التخرج',
+            delete: 'حذف',
+            noEducation: 'إضافة التعليم يعزز من مصداقية ملفك الشخصي',
+        },
+        languages: {
+            title: 'اللغات',
+            add: 'إضافة لغة',
+            proficiency: 'المستوى',
+            select: 'اختر اللغة',
+            levels: {
+                native: 'اللغة الأم',
+                fluent: 'طلاقة',
+                conversational: 'محادثة',
+                basic: 'أساسي',
+            },
+        },
     },
 
     // Dashboard
@@ -316,6 +393,7 @@ export const ar = {
     publicProfile: {
         available: 'متاح',
         busy: 'مشغول',
+        offline: 'غير متاح',
         memberSince: 'منذ',
         months: 'أشهر',
         earned: 'ربح',
@@ -394,6 +472,86 @@ export const ar = {
         sort: 'ترتيب',
         dinar: 'دينار',
         tnd: 'د.ت',
+        time: {
+            now: 'الآن',
+            minute: 'دقيقة',
+            hour: 'ساعة',
+            day: 'يوم',
+            ago: 'منذ',
+        },
+    },
+
+    // Payment Modal
+    payment: {
+        completeTitle: 'إتمام الدفع',
+        payVia: 'دفع عبر',
+        d17Desc: 'أسرع طريقة للدفع في تونس',
+        scanD17: 'امسح الرمز بواسطة تطبيق D17',
+        amount: 'المبلغ',
+        recipient: 'المستفيد',
+        to: 'لـ',
+        orEnterPhone: 'أو أدخل رقم هاتفك',
+        d17PhoneLabel: 'رقم الهاتف المرتبط بـ D17',
+        flouciDesc: 'محفظتك الرقمية الآمنة',
+        flouciRedirect: 'سيتم تحويلك إلى تطبيق Flouci لإتمام عملية الدفع بشكل آمن',
+        openFlouci: 'فتح تطبيق Flouci',
+        secureTransaction: 'عملية دفع مشفرة وآمنة 100%',
+        creditCard: 'بطاقة بنكية',
+        cardNumber: 'رقم البطاقة',
+        expiryDate: 'تاريخ الانتهاء',
+        cardHolder: 'اسم حامل البطاقة',
+        processing: 'جاري معالجة الدفع...',
+        processingDesc: 'يرجى الانتظار، لا تغلق النافذة',
+        success: 'تم الدفع بنجاح!',
+        transferred: 'تم تحويل مبلغ',
+        transactionId: 'رقم المعاملة',
+        totalToPay: 'المجموع للدفع',
+        payNow: 'دفع الآن',
+    },
+
+    // Notifications
+    notifications: {
+        title: 'الإشعارات',
+        readAll: 'قراءة الكل',
+        empty: 'لا توجد إشعارات حالياً',
+        emptyDesc: 'سنخبرك عندما يصلك شيء جديد',
+        viewAll: 'عرض كل الإشعارات',
+    },
+
+    // Global Search
+    search: {
+        placeholder: 'بحث...',
+        trending: 'الأكثر بحثاً',
+        recent: 'عمليات البحث الأخيرة',
+        clearAll: 'مسح الكل',
+        jobs: 'وظائف',
+        freelancers: 'مستقلين',
+        skills: 'مهارات',
+        resultsFor: 'نتائج البحث عن',
+        noResults: 'لا توجد نتائج',
+        noResultsDesc: 'لم نجد أي نتيجة تطابق بحثك',
+    },
+
+    // Onboarding
+    onboarding: {
+        client: {
+            welcome: 'أهلاً بك',
+            welcomeDesc: 'دعنا نكمل إعداد حسابك لتبدأ في توظيف المحترفين',
+            profileTitle: 'الملف الشخصي',
+            profileDesc: 'معلوماتك الأساسية',
+        },
+        freelancer: {
+            welcome: 'أهلاً بك',
+            welcomeDesc: 'أكمل ملفك الشخصي لتبدأ العمل',
+            steps: {
+                skills: 'المهارات',
+                bio: 'نبذة',
+                experience: 'الخبرة',
+                portfolio: 'معرض الأعمال',
+            },
+            uploadAvatar: 'صورة شخصية',
+            uploadAvatarDesc: 'يفضل صورة رسمية واضحة',
+        }
     },
 
     // Footer

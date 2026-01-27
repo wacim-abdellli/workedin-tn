@@ -6,6 +6,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import type { Language } from '../../types';
 import Button from '../ui/Button';
 import NotificationBell from '../ui/NotificationBell';
+import ThemeToggle from '../ui/ThemeToggle';
 import GlobalSearch from '../search/GlobalSearch';
 
 function Header() {
@@ -39,12 +40,12 @@ function Header() {
 
     const authNavLinks = profile?.user_type === 'client'
         ? [
-            { href: '/client/dashboard', label: 'لوحة التحكم' },
-            { href: '/job/new', label: 'نشر مهمة' },
+            { href: '/client/dashboard', label: t.nav.dashboard },
+            { href: '/job/new', label: t.hero.ctaClient }, // Reusing 'Post a Job' or create new key
         ]
         : [
-            { href: '/freelancer/dashboard', label: 'لوحة التحكم' },
-            { href: '/freelancer/jobs', label: 'البحث عن مهام' },
+            { href: '/freelancer/dashboard', label: t.nav.dashboard },
+            { href: '/freelancer/jobs', label: t.nav.jobs }, // 'Available Jobs' or 'Search Jobs'
         ];
 
     const navLinks = isAuthenticated ? authNavLinks : publicNavLinks;
@@ -63,28 +64,28 @@ function Header() {
     };
 
     return (
-        <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-lg border-b border-gray-100">
+        <header className="sticky top-0 z-40 glass border-b border-gray-200/50 dark:border-dark-700/50">
             <div className="container-custom">
                 <div className="flex items-center justify-between h-16 md:h-20">
                     {/* Logo */}
-                    <Link to="/" className="flex items-center gap-2">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-600 to-secondary-600 flex items-center justify-center">
+                    <Link to="/" className="flex items-center gap-2.5 group">
+                        <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center shadow-lg shadow-primary-600/25 group-hover:shadow-xl group-hover:shadow-primary-600/30 transition-shadow duration-300">
                             <span className="text-white font-bold text-lg">خ</span>
                         </div>
                         <span className="text-xl font-bold">
-                            <span className="text-primary-600">Khedma</span>
-                            <span className="text-secondary-600">.tn</span>
+                            <span className="text-gradient">Khedma</span>
+                            <span className="text-accent-500">.tn</span>
                         </span>
                     </Link>
 
                     {/* Search Button */}
                     <button
                         onClick={() => setIsSearchOpen(true)}
-                        className="hidden md:flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-gray-500 transition-colors"
+                        className="hidden md:flex items-center gap-2 px-4 py-2.5 bg-dark-100 dark:bg-dark-800 hover:bg-dark-200 dark:hover:bg-dark-700 rounded-xl text-dark-500 dark:text-dark-400 transition-all duration-200 hover:ring-2 hover:ring-primary-500/20"
                     >
                         <Search className="w-4 h-4" />
-                        <span className="text-sm">بحث...</span>
-                        <kbd className="hidden lg:flex items-center gap-0.5 px-1.5 py-0.5 bg-white border border-gray-300 rounded text-xs text-gray-400">
+                        <span className="text-sm">{t.common.search}...</span>
+                        <kbd className="hidden lg:flex items-center gap-0.5 px-1.5 py-0.5 bg-white dark:bg-dark-700 border border-dark-200 dark:border-dark-600 rounded text-xs text-dark-400">
                             <span>⌘</span><span>K</span>
                         </kbd>
                     </button>
@@ -98,8 +99,8 @@ function Header() {
                                 className={`
                                     px-4 py-2 rounded-lg font-medium transition-colors
                                     ${isActive(link.href)
-                                        ? 'text-primary-600 bg-primary-50'
-                                        : 'text-gray-600 hover:text-primary-600 hover:bg-gray-50'
+                                        ? 'text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20'
+                                        : 'text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-dark-800'
                                     }
                                 `}
                             >
@@ -109,12 +110,15 @@ function Header() {
                     </nav>
 
                     {/* Actions */}
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2">
+                        {/* Theme Toggle */}
+                        <ThemeToggle />
+
                         {/* Language Switcher */}
                         <div className="relative">
                             <button
                                 onClick={() => setIsLangDropdownOpen(!isLangDropdownOpen)}
-                                className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors"
+                                className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-800 transition-colors"
                             >
                                 <Globe className="w-4 h-4" />
                                 <span className="hidden sm:inline text-sm font-medium">
@@ -129,7 +133,7 @@ function Header() {
                                         className="fixed inset-0 z-10"
                                         onClick={() => setIsLangDropdownOpen(false)}
                                     />
-                                    <div className="absolute top-full end-0 mt-2 w-40 bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-20 animate-slide-down">
+                                    <div className="absolute top-full end-0 mt-2 w-40 bg-white dark:bg-dark-800 rounded-xl shadow-lg border border-gray-100 dark:border-dark-700 py-1 z-20 animate-slide-down">
                                         {languages.map((lang) => (
                                             <button
                                                 key={lang.code}
@@ -140,8 +144,8 @@ function Header() {
                                                 className={`
                                                     w-full px-4 py-2 text-start text-sm font-medium transition-colors
                                                     ${language === lang.code
-                                                        ? 'bg-primary-50 text-primary-600'
-                                                        : 'text-gray-600 hover:bg-gray-50'
+                                                        ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400'
+                                                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-700'
                                                     }
                                                 `}
                                             >
@@ -162,13 +166,13 @@ function Header() {
                                 <div className="relative hidden md:block">
                                     <button
                                         onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
-                                        className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors"
+                                        className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-800 transition-colors"
                                     >
-                                        <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center">
-                                            <User className="w-4 h-4 text-primary-600" />
+                                        <div className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
+                                            <User className="w-4 h-4 text-primary-600 dark:text-primary-400" />
                                         </div>
-                                        <span className="text-sm font-medium text-gray-700">
-                                            {profile?.full_name || 'المستخدم'}
+                                        <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
+                                            {profile?.full_name || t.hero.trust.users} {/* Fallback 'Users' or 'User' key if specific */}
                                         </span>
                                         <ChevronDown className="w-4 h-4 text-gray-500" />
                                     </button>
@@ -179,21 +183,21 @@ function Header() {
                                                 className="fixed inset-0 z-10"
                                                 onClick={() => setIsProfileDropdownOpen(false)}
                                             />
-                                            <div className="absolute top-full end-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-20 animate-slide-down">
+                                            <div className="absolute top-full end-0 mt-2 w-48 bg-white dark:bg-dark-800 rounded-xl shadow-lg border border-gray-100 dark:border-dark-700 py-1 z-20 animate-slide-down">
                                                 <Link
                                                     to="/settings"
                                                     onClick={() => setIsProfileDropdownOpen(false)}
-                                                    className="flex items-center gap-2 px-4 py-2 text-sm text-gray-600 hover:bg-gray-50"
+                                                    className="flex items-center gap-2 px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-700"
                                                 >
                                                     <Settings className="w-4 h-4" />
-                                                    الإعدادات
+                                                    {t.nav.settings}
                                                 </Link>
                                                 <button
                                                     onClick={handleSignOut}
-                                                    className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                                                    className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
                                                 >
                                                     <LogOut className="w-4 h-4" />
-                                                    تسجيل الخروج
+                                                    {t.nav.logout}
                                                 </button>
                                             </div>
                                         </>
@@ -253,12 +257,12 @@ function Header() {
                                     <Link to="/settings" onClick={() => setIsMobileMenuOpen(false)}>
                                         <Button variant="outline" className="w-full">
                                             <Settings className="w-4 h-4 mr-2" />
-                                            الإعدادات
+                                            {t.nav.settings}
                                         </Button>
                                     </Link>
                                     <Button variant="ghost" className="w-full text-red-600" onClick={handleSignOut}>
                                         <LogOut className="w-4 h-4 mr-2" />
-                                        تسجيل الخروج
+                                        {t.nav.logout}
                                     </Button>
                                 </>
                             ) : (

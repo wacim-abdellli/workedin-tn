@@ -13,17 +13,21 @@ interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
 const Select = forwardRef<HTMLSelectElement, SelectProps>(
     ({ label, error, hint, options, placeholder, className = '', ...props }, ref) => {
         const selectStyles = `
-      w-full px-4 py-3 bg-white border rounded-xl
-      text-foreground appearance-none cursor-pointer
-      focus:outline-none focus:ring-2 focus:border-transparent
-      transition-all duration-200
-      ${error ? 'border-red-500 focus:ring-red-500' : 'border-gray-200 focus:ring-primary-600'}
+      w-full px-4 py-3 bg-white dark:bg-dark-800 border rounded-xl
+      text-dark-900 dark:text-white appearance-none cursor-pointer
+      focus:outline-none focus:ring-2 focus:ring-offset-0 focus:border-transparent
+      transition-all duration-200 shadow-sm
+      ${error
+                ? 'border-red-500 focus:ring-red-500/30'
+                : 'border-dark-200 dark:border-dark-700 hover:border-dark-300 dark:hover:border-dark-600 focus:ring-primary-500/30 dark:focus:ring-primary-400/30 focus:border-primary-500 dark:focus:border-primary-400'
+            }
+      disabled:opacity-50 disabled:bg-dark-100 dark:disabled:bg-dark-900 disabled:cursor-not-allowed
     `;
 
         return (
             <div className="w-full">
                 {label && (
-                    <label className="block text-sm font-medium text-foreground mb-2">
+                    <label className="block text-sm font-semibold text-dark-700 dark:text-dark-200 mb-2">
                         {label}
                     </label>
                 )}
@@ -34,23 +38,23 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
                         {...props}
                     >
                         {placeholder && (
-                            <option value="" disabled>
+                            <option value="" disabled className="bg-white dark:bg-dark-800 text-dark-500">
                                 {placeholder}
                             </option>
                         )}
                         {options.map((option) => (
-                            <option key={option.value} value={option.value}>
+                            <option key={option.value} value={option.value} className="bg-white dark:bg-dark-800 py-2">
                                 {option.label}
                             </option>
                         ))}
                     </select>
-                    <ChevronDown className="absolute end-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+                    <ChevronDown className="absolute end-3 top-1/2 -translate-y-1/2 w-5 h-5 text-dark-400 pointer-events-none" />
                 </div>
                 {error && (
-                    <p className="mt-1.5 text-sm text-red-500">{error}</p>
+                    <p className="mt-1.5 text-sm text-red-500 font-medium animate-slide-up">{error}</p>
                 )}
                 {hint && !error && (
-                    <p className="mt-1.5 text-sm text-muted">{hint}</p>
+                    <p className="mt-1.5 text-sm text-dark-500">{hint}</p>
                 )}
             </div>
         );

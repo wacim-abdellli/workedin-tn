@@ -10,7 +10,9 @@ import {
     TrendingUp,
     ArrowRight,
     Command,
+    Sparkles
 } from 'lucide-react';
+import { useTranslation } from '../../i18n';
 
 interface SearchResult {
     id: string;
@@ -22,7 +24,6 @@ interface SearchResult {
     budget?: string;
 }
 
-// Mock search results
 const MOCK_JOBS: SearchResult[] = [
     { id: 'j1', type: 'job', title: 'تصميم شعار احترافي', subtitle: 'تصميم جرافيكي', budget: '150-300 د.ت' },
     { id: 'j2', type: 'job', title: 'تطوير موقع تجارة إلكترونية', subtitle: 'برمجة وتطوير', budget: '1000-2000 د.ت' },
@@ -49,6 +50,7 @@ interface GlobalSearchProps {
 }
 
 export default function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const inputRef = useRef<HTMLInputElement>(null);
     const [query, setQuery] = useState('');
@@ -64,14 +66,12 @@ export default function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
     }>({ jobs: [], freelancers: [], skills: [] });
     const [isSearching, setIsSearching] = useState(false);
 
-    // Focus input when opened
     useEffect(() => {
         if (isOpen && inputRef.current) {
             inputRef.current.focus();
         }
     }, [isOpen]);
 
-    // Keyboard shortcut handler
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
             if (e.key === 'Escape' && isOpen) {
@@ -82,7 +82,6 @@ export default function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [isOpen, onClose]);
 
-    // Debounced search
     useEffect(() => {
         if (!query.trim()) {
             setResults({ jobs: [], freelancers: [], skills: [] });
@@ -91,7 +90,6 @@ export default function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
 
         setIsSearching(true);
         const timer = setTimeout(() => {
-            // Simulate search
             const filteredJobs = MOCK_JOBS.filter(j =>
                 j.title.includes(query) || j.subtitle?.includes(query)
             );
@@ -116,7 +114,6 @@ export default function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
     const handleSearch = (searchQuery: string) => {
         if (!searchQuery.trim()) return;
 
-        // Add to recent searches
         setRecentSearches(prev => {
             const filtered = prev.filter(s => s !== searchQuery);
             return [searchQuery, ...filtered].slice(0, 5);
@@ -138,41 +135,43 @@ export default function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
         <div className="fixed inset-0 z-50">
             {/* Backdrop */}
             <div
-                className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+                className="absolute inset-0 bg-dark-900/60 backdrop-blur-md animate-fade-in"
                 onClick={onClose}
             />
 
             {/* Search Modal */}
-            <div className="relative mx-auto mt-20 max-w-2xl px-4">
-                <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
+            <div className="relative mx-auto mt-20 max-w-2xl px-4 animate-slide-up">
+                <div className="bg-white dark:bg-dark-900 rounded-2xl shadow-2xl border border-dark-100 dark:border-dark-700 overflow-hidden ring-1 ring-black/5">
                     {/* Search Input */}
-                    <div className="flex items-center gap-3 p-4 border-b border-gray-100">
-                        <Search className="w-5 h-5 text-gray-400" />
+                    <div className="flex items-center gap-4 p-4 border-b border-dark-100 dark:border-dark-700 bg-white/50 dark:bg-dark-800/50">
+                        <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center flex-shrink-0 shadow-lg shadow-primary-500/20">
+                            <Search className="w-5 h-5 text-white" />
+                        </div>
                         <input
                             ref={inputRef}
                             type="text"
                             value={query}
                             onChange={(e) => setQuery(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && handleSearch(query)}
-                            placeholder="ابحث عن وظائف، موظفين، مهارات..."
-                            className="flex-1 bg-transparent outline-none text-lg"
+                            placeholder={t.search.placeholder}
+                            className="flex-1 bg-transparent outline-none text-xl text-dark-900 dark:text-white placeholder-dark-400"
                         />
                         {query && (
-                            <button onClick={() => setQuery('')} className="p-1 hover:bg-gray-100 rounded-lg">
-                                <X className="w-4 h-4 text-gray-400" />
+                            <button onClick={() => setQuery('')} className="p-2 hover:bg-dark-100 dark:hover:bg-dark-700 rounded-lg transition-colors">
+                                <X className="w-5 h-5 text-dark-400" />
                             </button>
                         )}
-                        <kbd className="hidden md:flex items-center gap-1 px-2 py-1 bg-gray-100 text-gray-500 text-xs rounded-lg">
-                            <span>ESC</span>
+                        <kbd className="hidden md:flex items-center gap-1.5 px-2 py-1 bg-dark-100 dark:bg-dark-800 border border-dark-200 dark:border-dark-700 rounded-lg text-xs font-medium text-dark-500">
+                            <span className="text-sm">ESC</span>
                         </kbd>
                     </div>
 
                     {/* Content */}
-                    <div className="max-h-[60vh] overflow-y-auto">
+                    <div className="max-h-[60vh] overflow-y-auto bg-white/50 dark:bg-dark-900/50">
                         {/* Loading */}
                         {isSearching && (
-                            <div className="p-8 text-center">
-                                <div className="w-6 h-6 border-2 border-primary-600 border-t-transparent rounded-full animate-spin mx-auto" />
+                            <div className="p-12 text-center">
+                                <div className="w-8 h-8 border-3 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto" />
                             </div>
                         )}
 
@@ -182,16 +181,16 @@ export default function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
                                 {/* Jobs */}
                                 {results.jobs.length > 0 && (
                                     <div>
-                                        <div className="flex items-center justify-between mb-3">
-                                            <h3 className="text-sm font-medium text-gray-500 flex items-center gap-2">
+                                        <div className="flex items-center justify-between mb-3 px-2">
+                                            <h3 className="text-sm font-bold text-dark-500 flex items-center gap-2">
                                                 <Briefcase className="w-4 h-4" />
-                                                وظائف
+                                                {t.search.jobs}
                                             </h3>
                                             <button
                                                 onClick={() => handleSearch(query)}
-                                                className="text-sm text-primary-600 hover:text-primary-700"
+                                                className="text-xs font-medium text-primary-600 dark:text-primary-400 hover:underline"
                                             >
-                                                عرض الكل
+                                                {t.publicProfile.showMore}
                                             </button>
                                         </div>
                                         <div className="space-y-2">
@@ -199,16 +198,16 @@ export default function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
                                                 <button
                                                     key={job.id}
                                                     onClick={() => navigate(`/jobs/${job.id}`)}
-                                                    className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 rounded-xl text-right transition-colors"
+                                                    className="w-full flex items-center gap-4 p-3 hover:bg-dark-50 dark:hover:bg-dark-800 rounded-xl text-right transition-all group"
                                                 >
-                                                    <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center">
-                                                        <Briefcase className="w-5 h-5 text-blue-600" />
+                                                    <div className="w-10 h-10 rounded-xl bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center group-hover:bg-primary-500 transition-colors duration-300">
+                                                        <Briefcase className="w-5 h-5 text-primary-600 dark:text-primary-400 group-hover:text-white" />
                                                     </div>
                                                     <div className="flex-1 min-w-0">
-                                                        <p className="font-medium text-foreground truncate">{job.title}</p>
-                                                        <p className="text-sm text-muted">{job.subtitle} • {job.budget}</p>
+                                                        <p className="font-semibold text-dark-900 dark:text-white truncate">{job.title}</p>
+                                                        <p className="text-sm text-dark-500">{job.subtitle} • <span className="text-success-600 dark:text-success-400 font-medium">{job.budget}</span></p>
                                                     </div>
-                                                    <ArrowRight className="w-4 h-4 text-gray-400" />
+                                                    <ArrowRight className="w-4 h-4 text-dark-300 group-hover:text-primary-500 group-hover:-translate-x-1 transition-all" />
                                                 </button>
                                             ))}
                                         </div>
@@ -218,16 +217,16 @@ export default function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
                                 {/* Freelancers */}
                                 {results.freelancers.length > 0 && (
                                     <div>
-                                        <div className="flex items-center justify-between mb-3">
-                                            <h3 className="text-sm font-medium text-gray-500 flex items-center gap-2">
+                                        <div className="flex items-center justify-between mb-3 px-2">
+                                            <h3 className="text-sm font-bold text-dark-500 flex items-center gap-2">
                                                 <User className="w-4 h-4" />
-                                                موظفين حرين
+                                                {t.search.freelancers}
                                             </h3>
                                             <button
                                                 onClick={() => navigate(`/find-freelancers?q=${encodeURIComponent(query)}`)}
-                                                className="text-sm text-primary-600 hover:text-primary-700"
+                                                className="text-xs font-medium text-primary-600 dark:text-primary-400 hover:underline"
                                             >
-                                                عرض الكل
+                                                {t.publicProfile.showMore}
                                             </button>
                                         </div>
                                         <div className="space-y-2">
@@ -235,16 +234,16 @@ export default function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
                                                 <button
                                                     key={freelancer.id}
                                                     onClick={() => navigate(`/freelancer/${freelancer.id}`)}
-                                                    className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 rounded-xl text-right transition-colors"
+                                                    className="w-full flex items-center gap-4 p-3 hover:bg-dark-50 dark:hover:bg-dark-800 rounded-xl text-right transition-all group"
                                                 >
-                                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-400 to-secondary-500 flex items-center justify-center text-white font-bold">
+                                                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent-400 to-accent-600 flex items-center justify-center text-white font-bold text-lg shadow-md group-hover:shadow-lg transition-shadow">
                                                         {freelancer.title.charAt(0)}
                                                     </div>
                                                     <div className="flex-1 min-w-0">
-                                                        <p className="font-medium text-foreground truncate">{freelancer.title}</p>
-                                                        <p className="text-sm text-muted">{freelancer.subtitle} • ⭐ {freelancer.rating}</p>
+                                                        <p className="font-semibold text-dark-900 dark:text-white truncate">{freelancer.title}</p>
+                                                        <p className="text-sm text-dark-500">{freelancer.subtitle} • <span className="text-warning-500">⭐ {freelancer.rating}</span></p>
                                                     </div>
-                                                    <ArrowRight className="w-4 h-4 text-gray-400" />
+                                                    <ArrowRight className="w-4 h-4 text-dark-300 group-hover:text-accent-500 group-hover:-translate-x-1 transition-all" />
                                                 </button>
                                             ))}
                                         </div>
@@ -254,16 +253,16 @@ export default function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
                                 {/* Skills */}
                                 {results.skills.length > 0 && (
                                     <div>
-                                        <h3 className="text-sm font-medium text-gray-500 flex items-center gap-2 mb-3">
+                                        <h3 className="text-sm font-bold text-dark-500 flex items-center gap-2 mb-3 px-2">
                                             <Tag className="w-4 h-4" />
-                                            مهارات
+                                            {t.search.skills}
                                         </h3>
-                                        <div className="flex flex-wrap gap-2">
+                                        <div className="flex flex-wrap gap-2 px-2">
                                             {results.skills.map(skill => (
                                                 <button
                                                     key={skill}
                                                     onClick={() => handleSearch(`skill:${skill}`)}
-                                                    className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-full text-sm transition-colors"
+                                                    className="px-4 py-2 bg-dark-50 dark:bg-dark-800 hover:bg-white dark:hover:bg-dark-700 border border-dark-100 dark:border-dark-700 hover:border-primary-500 dark:hover:border-primary-500 rounded-xl text-sm transition-all duration-200 shadow-sm hover:shadow-md hover:text-primary-600 dark:hover:text-primary-400"
                                                 >
                                                     {skill}
                                                 </button>
@@ -276,20 +275,20 @@ export default function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
 
                         {/* No Query State */}
                         {!query && !isSearching && (
-                            <div className="p-4 space-y-6">
+                            <div className="p-4 space-y-8">
                                 {/* Recent Searches */}
                                 {recentSearches.length > 0 && (
                                     <div>
-                                        <div className="flex items-center justify-between mb-3">
-                                            <h3 className="text-sm font-medium text-gray-500 flex items-center gap-2">
+                                        <div className="flex items-center justify-between mb-3 px-2">
+                                            <h3 className="text-sm font-bold text-dark-500 flex items-center gap-2">
                                                 <Clock className="w-4 h-4" />
-                                                عمليات البحث الأخيرة
+                                                {t.search.recent}
                                             </h3>
                                             <button
                                                 onClick={clearRecentSearches}
-                                                className="text-sm text-red-500 hover:text-red-600"
+                                                className="text-xs text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 px-2 py-1 rounded transition-colors"
                                             >
-                                                مسح
+                                                {t.search.clearAll}
                                             </button>
                                         </div>
                                         <div className="space-y-1">
@@ -297,10 +296,11 @@ export default function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
                                                 <button
                                                     key={i}
                                                     onClick={() => handleSearch(search)}
-                                                    className="w-full flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg text-right transition-colors"
+                                                    className="w-full flex items-center gap-3 p-3 hover:bg-dark-50 dark:hover:bg-dark-800 rounded-xl text-right transition-colors group"
                                                 >
-                                                    <Clock className="w-4 h-4 text-gray-400" />
-                                                    <span className="flex-1">{search}</span>
+                                                    <Clock className="w-4 h-4 text-dark-400 group-hover:text-primary-500 transition-colors" />
+                                                    <span className="flex-1 font-medium text-dark-700 dark:text-dark-300">{search}</span>
+                                                    <ArrowRight className="w-4 h-4 text-dark-300 opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all" />
                                                 </button>
                                             ))}
                                         </div>
@@ -309,17 +309,18 @@ export default function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
 
                                 {/* Trending */}
                                 <div>
-                                    <h3 className="text-sm font-medium text-gray-500 flex items-center gap-2 mb-3">
+                                    <h3 className="text-sm font-bold text-dark-500 flex items-center gap-2 mb-4 px-2">
                                         <TrendingUp className="w-4 h-4" />
-                                        عمليات بحث رائجة
+                                        {t.search.trending}
                                     </h3>
-                                    <div className="flex flex-wrap gap-2">
+                                    <div className="flex flex-wrap gap-2 px-2">
                                         {TRENDING_SEARCHES.map((search, i) => (
                                             <button
                                                 key={i}
                                                 onClick={() => handleSearch(search)}
-                                                className="px-3 py-1.5 bg-primary-50 text-primary-700 hover:bg-primary-100 rounded-full text-sm transition-colors"
+                                                className="px-4 py-2 bg-gradient-to-r from-primary-50 to-primary-100 dark:from-primary-900/20 dark:to-primary-900/40 text-primary-700 dark:text-primary-300 hover:from-primary-100 hover:to-primary-200 dark:hover:from-primary-900/40 dark:hover:to-primary-900/60 rounded-full text-sm font-medium transition-all duration-200 border border-transparent hover:border-primary-200 dark:hover:border-primary-700 flex items-center gap-2"
                                             >
+                                                <Sparkles className="w-3 h-3 text-primary-500" />
                                                 {search}
                                             </button>
                                         ))}
@@ -330,27 +331,29 @@ export default function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
 
                         {/* No Results */}
                         {query && !isSearching && !hasResults && (
-                            <div className="p-8 text-center">
-                                <Search className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                                <p className="text-gray-600 font-medium">لا توجد نتائج لـ "{query}"</p>
-                                <p className="text-sm text-muted mt-1">حاول استخدام كلمات مفتاحية مختلفة</p>
+                            <div className="p-12 text-center">
+                                <div className="w-20 h-20 bg-dark-50 dark:bg-dark-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <Search className="w-10 h-10 text-dark-300" />
+                                </div>
+                                <p className="text-xl font-bold text-dark-900 dark:text-white mb-2">{t.search.noResults} "{query}"</p>
+                                <p className="text-dark-500">{t.search.noResultsDesc}</p>
                             </div>
                         )}
                     </div>
 
                     {/* Footer */}
-                    <div className="flex items-center justify-between p-3 bg-gray-50 border-t border-gray-100 text-xs text-muted">
+                    <div className="flex items-center justify-between p-3 bg-dark-50 dark:bg-dark-800 border-t border-dark-100 dark:border-dark-700 text-xs text-dark-500 font-medium">
                         <div className="flex items-center gap-4">
-                            <span className="flex items-center gap-1">
-                                <kbd className="px-1.5 py-0.5 bg-white border border-gray-200 rounded">↵</kbd>
-                                للبحث
+                            <span className="flex items-center gap-1.5">
+                                <kbd className="hidden sm:inline-flex items-center justify-center min-w-[20px] h-5 px-1 bg-white dark:bg-dark-700 border border-dark-200 dark:border-dark-600 rounded text-[10px] font-sans">↵</kbd>
+                                <span className="hidden sm:inline">{t.common.search}</span>
                             </span>
-                            <span className="flex items-center gap-1">
-                                <kbd className="px-1.5 py-0.5 bg-white border border-gray-200 rounded">ESC</kbd>
-                                للإغلاق
+                            <span className="flex items-center gap-1.5">
+                                <kbd className="hidden sm:inline-flex items-center justify-center min-w-[28px] h-5 px-1 bg-white dark:bg-dark-700 border border-dark-200 dark:border-dark-600 rounded text-[10px] font-sans">ESC</kbd>
+                                <span className="hidden sm:inline">{t.common.close}</span>
                             </span>
                         </div>
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-1.5">
                             <Command className="w-3 h-3" />
                             <span>+ K</span>
                         </div>

@@ -445,7 +445,7 @@ function FilterSidebar({
 
     return (
         <div className="hidden lg:block w-72 flex-shrink-0">
-            <div className="bg-white rounded-2xl p-4 sticky top-4">
+            <div className="bg-white dark:bg-dark-800 rounded-2xl p-4 sticky top-4 border border-gray-100 dark:border-dark-700">
                 <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
                     <Filter className="w-5 h-5" />
                     الفلاتر
@@ -462,7 +462,7 @@ function SavedJobsSidebar({ savedJobs, onViewJob }: { savedJobs: Job[]; onViewJo
 
     return (
         <div className="hidden xl:block w-80 flex-shrink-0">
-            <div className="bg-white rounded-2xl p-4 sticky top-4">
+            <div className="bg-white dark:bg-dark-800 rounded-2xl p-4 sticky top-4 border border-gray-100 dark:border-dark-700">
                 <h3 className="font-bold mb-4 flex items-center gap-2">
                     <Heart className="w-5 h-5 text-red-500" />
                     الوظائف المحفوظة
@@ -769,7 +769,7 @@ function JobBoard() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-gray-50 dark:bg-dark-900 transition-colors duration-300">
             <Header />
 
             <div className="container-custom py-8">
@@ -782,7 +782,7 @@ function JobBoard() {
                             value={filters.search}
                             onChange={(e) => updateFilter('search', e.target.value)}
                             placeholder="ابحث عن وظائف..."
-                            className="w-full ps-12 pe-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                            className="w-full ps-12 pe-4 py-3 rounded-xl border border-gray-200 dark:border-dark-700 bg-white dark:bg-dark-800 text-foreground dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors"
                         />
                     </div>
                 </div>

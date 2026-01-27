@@ -22,6 +22,43 @@ export const en: Translations = {
         subtitle: 'No bidding, no complications, just your skills and your money',
         ctaFreelancer: 'Start as Freelancer',
         ctaClient: 'Post a Job',
+        badge: '100% Tunisian Freelance Platform',
+        trust: {
+            verified: 'Verified Tunisians',
+            secure: '100% Secure Payment',
+            users: 'Users',
+        },
+    },
+    home: {
+        stats: {
+            live: 'Live Stats',
+            activeJobs: 'Active Jobs',
+            users: 'Users',
+            rating: 'Rating',
+        },
+        sections: {
+            howItWorks: {
+                badge: 'How It Works',
+                subtitle: 'A simple and effective system connecting you with top talent or best opportunities',
+                freelancerDesc: 'Find work easily',
+                clientDesc: 'Hire top talent',
+            },
+            categories: {
+                badge: 'Categories',
+                subtitle: 'Discover skills in demand in the Tunisian market',
+            },
+            testimonials: {
+                badge: 'Success Stories',
+                earned: 'Earned',
+            },
+            cta: {
+                badge: 'Start Your Journey',
+                title: 'Ready to Start?',
+                subtitle: 'Join thousands of Tunisians building their careers with us. Registration is free and easy.',
+                btnStart: 'Start Now for Free',
+                btnWatch: 'Watch How It Works',
+            },
+        },
     },
 
     values: {
@@ -181,6 +218,12 @@ export const en: Translations = {
     auth: {
         phone: 'Phone Number',
         phonePlaceholder: 'Enter your phone number',
+        email: 'Email',
+        emailPlaceholder: 'Enter your email',
+        password: 'Password',
+        passwordPlaceholder: 'Enter your password',
+        confirmPassword: 'Confirm Password',
+        confirmPasswordPlaceholder: 'Re-enter your password',
         sendCode: 'Send Verification Code',
         verifyCode: 'Verification Code',
         verify: 'Verify',
@@ -192,6 +235,17 @@ export const en: Translations = {
         client: 'Client',
         both: 'Both',
         completeProfile: 'Complete Registration',
+        createAccount: 'Create Account',
+        loginSubtitle: 'Enter your email and password',
+        signupSubtitle: 'Create your account to get started',
+        noAccount: "Don't have an account?",
+        hasAccount: 'Already have an account?',
+        invalidCredentials: 'Invalid email or password',
+        emailExists: 'This email is already registered',
+        passwordMismatch: 'Passwords do not match',
+        passwordMinLength: 'Password must be at least 6 characters',
+        invalidEmail: 'Enter a valid email address',
+        emailNotConfirmed: 'Email not confirmed',
     },
 
     profile: {
@@ -217,6 +271,29 @@ export const en: Translations = {
         optional: 'Optional',
         bio: 'About You',
         bioPlaceholder: 'Write a short bio...',
+        education: {
+            title: 'Education (Optional)',
+            add: 'Add Education',
+            institution: 'Institution / University',
+            degree: 'Degree',
+            field: 'Field of Study',
+            startYear: 'Start Year',
+            endYear: 'Graduation Year',
+            delete: 'Delete',
+            noEducation: 'Adding education increases your profile credibility',
+        },
+        languages: {
+            title: 'Languages',
+            add: 'Add Language',
+            proficiency: 'Proficiency',
+            select: 'Select Language',
+            levels: {
+                native: 'Native',
+                fluent: 'Fluent',
+                conversational: 'Conversational',
+                basic: 'Basic',
+            },
+        },
     },
 
     dashboard: {
@@ -302,6 +379,7 @@ export const en: Translations = {
     publicProfile: {
         available: 'Available',
         busy: 'Busy',
+        offline: 'Offline',
         memberSince: 'Member since',
         months: 'months',
         earned: 'Earned',
@@ -378,6 +456,86 @@ export const en: Translations = {
         sort: 'Sort',
         dinar: 'dinars',
         tnd: 'TND',
+        time: {
+            now: 'Just now',
+            minute: 'm',
+            hour: 'h',
+            day: 'd',
+            ago: 'ago',
+        },
+    },
+
+    // Payment Modal
+    payment: {
+        completeTitle: 'Complete Payment',
+        payVia: 'Pay via',
+        d17Desc: 'Fastest payment method in Tunisia',
+        scanD17: 'Scan code with D17 app',
+        amount: 'Amount',
+        recipient: 'Beneficiary',
+        to: 'To',
+        orEnterPhone: 'Or enter phone number',
+        d17PhoneLabel: 'D17 Phone Number',
+        flouciDesc: 'Your secure digital wallet',
+        flouciRedirect: 'Redirecting to Flouci app for secure payment',
+        openFlouci: 'Open Flouci App',
+        secureTransaction: '100% Secure & Encrypted Transaction',
+        creditCard: 'Credit Card',
+        cardNumber: 'Card Number',
+        expiryDate: 'Expiry Date',
+        cardHolder: 'Card Holder Name',
+        processing: 'Processing Payment...',
+        processingDesc: 'Please wait, do not close this window',
+        success: 'Payment Successful!',
+        transferred: 'Transferred amount',
+        transactionId: 'Transaction ID',
+        totalToPay: 'Total to Pay',
+        payNow: 'Pay Now',
+    },
+
+    // Notifications
+    notifications: {
+        title: 'Notifications',
+        readAll: 'Read All',
+        empty: 'No notifications yet',
+        emptyDesc: 'We will notify you when something arrives',
+        viewAll: 'View All Notifications',
+    },
+
+    // Global Search
+    search: {
+        placeholder: 'Search...',
+        trending: 'Trending',
+        recent: 'Recent Searches',
+        clearAll: 'Clear All',
+        jobs: 'Jobs',
+        freelancers: 'Freelancers',
+        skills: 'Skills',
+        resultsFor: 'Results for',
+        noResults: 'No results found',
+        noResultsDesc: 'We couldn\'t find anything matching your search',
+    },
+
+    // Onboarding
+    onboarding: {
+        client: {
+            welcome: 'Welcome',
+            welcomeDesc: 'Let\'s complete your profile to start hiring',
+            profileTitle: 'Profile',
+            profileDesc: 'Basic Information',
+        },
+        freelancer: {
+            welcome: 'Welcome',
+            welcomeDesc: 'Complete your profile to start working',
+            steps: {
+                skills: 'Skills',
+                bio: 'Bio',
+                experience: 'Experience',
+                portfolio: 'Portfolio',
+            },
+            uploadAvatar: 'Profile Picture',
+            uploadAvatarDesc: 'Professional photo recommended',
+        }
     },
 
     footer: {
