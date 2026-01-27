@@ -1,0 +1,31 @@
+# Khedma TN - Freelance Marketplace
+# https://khedma.tn
+
+User-agent: *
+Allow: /
+
+# Sitemaps
+Sitemap: https://khedma.tn/sitemap.xml
+
+# Disallow authenticated pages from indexing
+Disallow: /freelancer/dashboard
+Disallow: /client/dashboard
+Disallow: /settings
+Disallow: /messages
+Disallow: /contracts
+Disallow: /admin
+Disallow: /freelancer/earnings
+Disallow: /freelancer/portfolio
+Disallow: /onboarding
+
+# Allow crawlers to index public pages
+Allow: /jobs
+Allow: /find-freelancers
+Allow: /search
+Allow: /how-it-works
+Allow: /for-freelancers
+Allow: /for-clients
+Allow: /freelancer/
+
+# Crawl delay for respectful crawling
+Crawl-delay: 1

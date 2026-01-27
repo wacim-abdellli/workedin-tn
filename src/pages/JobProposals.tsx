@@ -1,0 +1,213 @@
+import { useState } from 'react';
+import { useParams } from 'react-router-dom';
+import { Filter, Share2, MoreVertical, Edit } from 'lucide-react';
+import { Header } from '../components/layout';
+import Button from '../components/ui/Button';
+import ProposalCard from '../components/proposals/ProposalCard';
+import ProposalFiltersSidebar from '../components/proposals/ProposalFiltersSidebar';
+import JobSummaryCard from '../components/proposals/JobSummaryCard';
+
+import ProposalDetailModal from '../components/proposals/ProposalDetailModal';
+
+// Mock Data
+const MOCK_PROPOSALS = [
+    {
+        id: '1',
+        freelancer: {
+            full_name: 'أحمد محمد',
+            title: 'مطور ويب Full Stack',
+            avatar_url: 'https://i.pravatar.cc/150?img=68',
+            country: 'تونس',
+            rating: 4.9,
+            reviews_count: 42,
+            jobs_completed: 35,
+            success_rate: 98,
+            is_verified: true,
+            is_online: true,
+            bio: 'مطور برمجيات ذو خبرة واسعة في بناء تطبيقات الويب باستخدام أحدث التقنيات.'
+        },
+        cover_letter: 'مرحباً، قرأت تفاصيل مشروعك بعناية وأنا مستعد لتنفيذه باحترافية. لدي خبرة 5 سنوات في تطوير المتاجر الإلكترونية باستخدام React و Node.js. سأقوم بتسليم المشروع في الوقت المحدد مع ضمان الجودة...\n\nمميزاتي:\n- كود نظيف وقابل للصيانة\n- تصميم متجاوب مع جميع الشاشات\n- دعم فني لمدة شهر بعد التسليم',
+        bid_amount: 1500,
+        duration: 15,
+        created_at: new Date().toISOString(),
+        status: 'new',
+        attachments: [{ name: 'previous_work.pdf', size: '2.5MB' }]
+    },
+    {
+        id: '2',
+        freelancer: {
+            full_name: 'سارة التونسي',
+            title: 'مصممة UI/UX',
+            avatar_url: 'https://i.pravatar.cc/150?img=44',
+            country: 'صفاقس',
+            rating: 4.7,
+            reviews_count: 18,
+            jobs_completed: 12,
+            success_rate: 95,
+            is_verified: true,
+            is_online: false,
+            bio: 'مصممة واجهات مستخدم شغوفة بتقديم تجارب مستخدم فريدة وجذابة.'
+        },
+        cover_letter: 'أهلاً بك. يمكنني تصميم واجهة مستخدم عصرية وجذابة لمتجرك. أركز على تجربة المستخدم وسهولة الاستخدام. يمكنك الاطلاع على معرض أعمالي...',
+        bid_amount: 1200,
+        duration: 20,
+        created_at: new Date(Date.now() - 86400000).toISOString(),
+        status: 'shortlisted',
+        attachments: []
+    }
+];
+
+export default function JobProposals() {
+    const { jobId } = useParams<{ jobId: string }>();
+    const [activeTab, setActiveTab] = useState('all');
+    const [selectedProposal, setSelectedProposal] = useState<any | null>(null);
+
+    // Use jobId to fetch data (mock use)
+    console.log('Fetching proposals for job:', jobId);
+
+    // Mock Job Data
+    const job = {
+        title: "تصميم ومتجر إلكتروني متكامل",
+        status: "open",
+        budget_min: 1000,
+        budget_max: 2000,
+        job_type: 'fixed_price',
+        duration: '1_3_months',
+        created_at: new Date().toISOString(),
+        stats: {
+            proposals: 12,
+            interviewing: 3,
+            shortlisted: 5,
+            hired: 0
+        }
+    };
+
+    const handleMessage = (id: string) => console.log('Message', id);
+    const handleShortlist = (id: string) => console.log('Shortlist', id);
+    const handleHire = (id: string) => console.log('Hire', id);
+    const handleFilterChange = (filters: any) => console.log('Filters', filters);
+
+    return (
+        <div className="min-h-screen bg-gray-50 pb-20">
+            <Header />
+
+            {/* Top Section: Job Info */}
+            <div className="bg-white border-b border-gray-200 pt-8 pb-8">
+                <div className="container-custom">
+                    <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
+                        <div>
+                            <div className="flex items-center gap-3 mb-2">
+                                <h1 className="text-2xl font-bold text-gray-900">{job.title}</h1>
+                                <span className="px-2.5 py-0.5 rounded-full bg-green-100 text-green-700 text-xs font-medium border border-green-200">
+                                    مفتوح
+                                </span>
+                            </div>
+
+                            <div className="flex items-center gap-6 text-sm text-gray-500">
+                                <span className="flex items-center gap-1">
+                                    <strong className="text-gray-900">{job.stats.proposals}</strong> عروض
+                                </span>
+                                <span className="flex items-center gap-1">
+                                    <strong className="text-gray-900">{job.stats.interviewing}</strong> مقابلات
+                                </span>
+                                <span className="flex items-center gap-1">
+                                    <strong className="text-gray-900">{job.stats.shortlisted}</strong> قائمة قصيرة
+                                </span>
+                            </div>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                            <Button variant="outline" size="sm" leftIcon={<Share2 className="w-4 h-4" />}>
+                                مشاركة
+                            </Button>
+                            <Button variant="outline" size="sm" leftIcon={<Edit className="w-4 h-4" />}>
+                                تعديل
+                            </Button>
+                            <Button variant="ghost" size="sm">
+                                <MoreVertical className="w-4 h-4" />
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Main Content */}
+            <div className="container-custom py-8">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+                    {/* Left Sidebar: Filters */}
+                    <div className="hidden lg:block lg:col-span-3">
+                        <ProposalFiltersSidebar
+                            totalProposals={job.stats.proposals}
+                            filters={{}}
+                            onFilterChange={handleFilterChange}
+                        />
+                    </div>
+
+                    {/* Center: Proposals List */}
+                    <div className="lg:col-span-6 space-y-6">
+                        {/* Mobile Filter Toggle */}
+                        <div className="lg:hidden">
+                            <Button variant="outline" className="w-full" leftIcon={<Filter className="w-4 h-4" />}>
+                                تصفية وعرض
+                            </Button>
+                        </div>
+
+                        {/* Tabs */}
+                        <div className="bg-white rounded-xl border border-gray-100 p-1 flex overflow-x-auto">
+                            {['all', 'new', 'shortlisted', 'archived'].map((tab) => (
+                                <button
+                                    key={tab}
+                                    onClick={() => setActiveTab(tab)}
+                                    className={`
+                                        flex-1 py-2 px-4 rounded-lg text-sm font-medium whitespace-nowrap transition-colors
+                                        ${activeTab === tab
+                                            ? 'bg-primary-50 text-primary-700 shadow-sm'
+                                            : 'text-gray-600 hover:bg-gray-50'}
+                                    `}
+                                >
+                                    {tab === 'all' && 'كل العروض'}
+                                    {tab === 'new' && 'جديدة'}
+                                    {tab === 'shortlisted' && 'قائمة قصيرة'}
+                                    {tab === 'archived' && 'مؤرشفة'}
+                                </button>
+                            ))}
+                        </div>
+
+                        {/* List */}
+                        <div className="space-y-4">
+                            {MOCK_PROPOSALS.map(proposal => (
+                                <div key={proposal.id} onClick={() => setSelectedProposal(proposal)} className="cursor-pointer transition-transform hover:scale-[1.01]">
+                                    <ProposalCard
+                                        proposal={proposal}
+                                        onHire={handleHire}
+                                        onMessage={handleMessage}
+                                        onShortlist={handleShortlist}
+                                    />
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Right Sidebar: Job Summary */}
+                    <div className="hidden lg:block lg:col-span-3">
+                        <JobSummaryCard job={job} />
+                    </div>
+                </div>
+            </div>
+
+            {/* Detail Modal */}
+            <ProposalDetailModal
+                proposal={selectedProposal}
+                isOpen={!!selectedProposal}
+                onClose={() => setSelectedProposal(null)}
+                onHire={() => handleHire(selectedProposal?.id)}
+                onMessage={() => handleMessage(selectedProposal?.id)}
+                onShortlist={() => handleShortlist(selectedProposal?.id)}
+                onArchive={() => console.log('Archive', selectedProposal?.id)}
+            />
+        </div>
+
+
+    );
+}

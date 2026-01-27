@@ -1,0 +1,128 @@
+import { useFormContext } from 'react-hook-form';
+import { FileText, Grid, Lightbulb } from 'lucide-react';
+import Input from '../ui/Input';
+import { PREDEFINED_SKILLS } from '../../types';
+
+export default function StepJobBasics() {
+    const { register, formState: { errors }, watch, setValue } = useFormContext();
+    const description = watch('description') || '';
+    const selectedSkills = watch('required_skills') || [];
+
+    // Categories mock data - in real app, fetch from DB
+    const categories = [
+        { id: 'design', name: 'تصميم وإبداع' },
+        { id: 'development', name: 'برمجة وتطوير' },
+        { id: 'marketing', name: 'تسويق ومبيعات' },
+        { id: 'writing', name: 'كتابة وترجمة' },
+    ];
+
+    const toggleSkill = (skill: any) => {
+        const current = selectedSkills;
+        const exists = current.find((s: any) => s.id === skill.id);
+
+        if (exists) {
+            setValue('required_skills', current.filter((s: any) => s.id !== skill.id));
+        } else if (current.length < 5) {
+            setValue('required_skills', [...current, skill]);
+        }
+    };
+
+    return (
+        <div className="space-y-8">
+            <div className="space-y-4">
+                <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                    <FileText className="w-6 h-6 text-primary-600" />
+                    تفاصيل المهمة
+                </h3>
+                <p className="text-gray-500">
+                    ابدأ بعنوان واضح ووصف دقيق لمشروعك لجذب أفضل المستقلين.
+                </p>
+            </div>
+
+            <div className="space-y-6">
+                <Input
+                    label="عنوان المشروع"
+                    placeholder="مثال: تصميم شعار لشركة مواد غذائية"
+                    error={errors.title?.message as string}
+                    {...register('title')}
+                    leftIcon={<FileText className="w-5 h-5 text-gray-400" />}
+                />
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium text-gray-700 block">التصنيف الرئيسي</label>
+                        <div className="relative">
+                            <select
+                                {...register('category')}
+                                className="w-full pl-4 pr-10 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 appearance-none bg-white"
+                            >
+                                <option value="">اختر التصنيف</option>
+                                {categories.map(cat => (
+                                    <option key={cat.id} value={cat.id}>{cat.name}</option>
+                                ))}
+                            </select>
+                            <Grid className="w-5 h-5 text-gray-400 absolute left-3 top-3.5 pointer-events-none" />
+                        </div>
+                        {errors.category && (
+                            <p className="text-red-500 text-xs">{errors.category.message as string}</p>
+                        )}
+                    </div>
+                </div>
+
+                <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700 block">وصف المشروع</label>
+                    <textarea
+                        {...register('description')}
+                        rows={8}
+                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 resize-none"
+                        placeholder="اشرح تفاصيل المشروع، المخرجات المتوقعة، وأي متطلبات خاصة..."
+                    />
+                    <div className="flex justify-between text-xs text-gray-500 px-1">
+                        <span>{description.length} / 2000 حرف</span>
+                        {errors.description && (
+                            <span className="text-red-500">{errors.description.message as string}</span>
+                        )}
+                    </div>
+
+                    {/* Tips */}
+                    <div className="bg-blue-50 text-blue-700 p-4 rounded-xl text-sm flex gap-3 items-start mt-2">
+                        <Lightbulb className="w-5 h-5 flex-shrink-0" />
+                        <ul className="space-y-1 list-disc list-inside">
+                            <li>كن دقيقاً في وصف المطلوب</li>
+                            <li>حدد المخرجات النهائية بوضوح</li>
+                            <li>أضف روابط لمشاريع مشابهة إن وجدت</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div className="space-y-3">
+                    <label className="text-sm font-medium text-gray-700 block">المهارات المطلوبة (بحد أقصى 5)</label>
+                    <div className="flex flex-wrap gap-2">
+                        {PREDEFINED_SKILLS.map(skill => {
+                            const isSelected = selectedSkills.find((s: any) => s.id === skill.id);
+                            return (
+                                <button
+                                    key={skill.id}
+                                    type="button"
+                                    onClick={() => toggleSkill(skill)}
+                                    className={`
+                                        px-3 py-1.5 rounded-full text-sm font-medium border transition-colors
+                                        ${isSelected
+                                            ? 'bg-primary-50 border-primary-200 text-primary-700'
+                                            : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300'
+                                        }
+                                    `}
+                                >
+                                    {skill.name_ar}
+                                </button>
+                            );
+                        })}
+                    </div>
+                    {errors.required_skills && (
+                        <p className="text-red-500 text-xs">{errors.required_skills.message as string}</p>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+}

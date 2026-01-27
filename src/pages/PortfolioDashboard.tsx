@@ -1,0 +1,244 @@
+import { useState, useEffect } from 'react';
+import { Plus, LayoutGrid, List as ListIcon, Trash2, Edit2, Image as ImageIcon } from 'lucide-react';
+import { Header } from '../components/layout';
+import Button from '../components/ui/Button';
+import { useAuth } from '../contexts/AuthContext';
+import { supabase } from '../lib/supabase';
+import type { PortfolioItem } from '../types';
+import { useToast } from '../components/ui/Toast';
+import PortfolioModal from '../components/freelancer/PortfolioModal';
+
+export default function PortfolioDashboard() {
+    const { user } = useAuth();
+    const { showToast } = useToast();
+    const [items, setItems] = useState<PortfolioItem[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+
+    // Modal state
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingItem, setEditingItem] = useState<PortfolioItem | null>(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    useEffect(() => {
+        if (user) {
+            loadPortfolio();
+        }
+    }, [user]);
+
+    const loadPortfolio = async () => {
+        try {
+            const { data, error } = await supabase
+                .from('portfolio_items')
+                .select('*')
+                .eq('freelancer_id', user!.id)
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+            setItems(data || []);
+        } catch (error) {
+            console.error('Error loading portfolio:', error);
+            showToast('حدث خطأ أثناء تحميل المعرض', 'error');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleSave = async (data: any) => {
+        if (!user) return;
+        setIsSubmitting(true);
+
+        try {
+            if (editingItem) {
+                // Update
+                const { error } = await supabase
+                    .from('portfolio_items')
+                    .update({
+                        ...data,
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('id', editingItem.id);
+
+                if (error) throw error;
+                showToast('تم تحديث العمل بنجاح', 'success');
+            } else {
+                // Create
+                const { error } = await supabase
+                    .from('portfolio_items')
+                    .insert({
+                        ...data,
+                        freelancer_id: user.id,
+                        created_at: new Date().toISOString()
+                    });
+
+                if (error) throw error;
+                showToast('تم إضافة العمل بنجاح', 'success');
+            }
+
+            setIsModalOpen(false);
+            setEditingItem(null);
+            loadPortfolio();
+        } catch (error) {
+            console.error('Error saving item:', error);
+            showToast('حدث خطأ أثناء حفظ العمل', 'error');
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const handleDelete = async (id: string) => {
+        if (!confirm('هل أنت متأكد من حذف هذا العمل؟')) return;
+
+        try {
+            const { error } = await supabase
+                .from('portfolio_items')
+                .delete()
+                .eq('id', id);
+
+            if (error) throw error;
+
+            setItems(prev => prev.filter(item => item.id !== id));
+            showToast('تم حذف العمل بنجاح', 'success');
+        } catch (error) {
+            console.error('Error deleting item:', error);
+            showToast('حدث خطأ أثناء الحذف', 'error');
+        }
+    };
+
+    const openAddModal = () => {
+        setEditingItem(null);
+        setIsModalOpen(true);
+    };
+
+    const openEditModal = (item: PortfolioItem) => {
+        setEditingItem(item);
+        setIsModalOpen(true);
+    };
+
+    return (
+        <div className="min-h-screen bg-gray-50 pb-20">
+            <Header />
+
+            <div className="container-custom py-8">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+                    <div>
+                        <h1 className="text-2xl font-bold text-gray-900">إدارة معرض الأعمال</h1>
+                        <p className="text-gray-500 mt-1">قم بإضافة وتعديل أعمالك السابقة لزيادة فرصك في التوظيف</p>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                        <div className="flex bg-white rounded-lg p-1 border border-gray-200">
+                            <button
+                                onClick={() => setViewMode('grid')}
+                                className={`p-2 rounded-md transition-colors ${viewMode === 'grid' ? 'bg-gray-100 text-primary-600' : 'text-gray-400 hover:text-gray-600'}`}
+                            >
+                                <LayoutGrid className="w-5 h-5" />
+                            </button>
+                            <button
+                                onClick={() => setViewMode('list')}
+                                className={`p-2 rounded-md transition-colors ${viewMode === 'list' ? 'bg-gray-100 text-primary-600' : 'text-gray-400 hover:text-gray-600'}`}
+                            >
+                                <ListIcon className="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        <Button
+                            variant="primary"
+                            leftIcon={<Plus className="w-5 h-5" />}
+                            onClick={openAddModal}
+                        >
+                            إضافة عمل جديد
+                        </Button>
+                    </div>
+                </div>
+
+                {isLoading ? (
+                    <div className="flex justify-center py-12">
+                        <div className="animate-spin w-8 h-8 border-4 border-primary-600 border-t-transparent rounded-full" />
+                    </div>
+                ) : items.length > 0 ? (
+                    <div className={viewMode === 'grid' ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" : "space-y-4"}>
+                        {items.map((item) => (
+                            <div
+                                key={item.id}
+                                className={`bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm group hover:shadow-md transition-shadow ${viewMode === 'list' ? 'flex' : ''}`}
+                            >
+                                <div className={`relative ${viewMode === 'list' ? 'w-48 h-32 flex-shrink-0' : 'aspect-video'}`}>
+                                    {item.thumbnail_url || (item.media_urls && item.media_urls[0]) ? (
+                                        <img
+                                            src={item.thumbnail_url || item.media_urls[0]}
+                                            alt={item.title}
+                                            className="w-full h-full object-cover"
+                                        />
+                                    ) : (
+                                        <div className="w-full h-full bg-gray-100 flex items-center justify-center text-gray-400">
+                                            <ImageIcon className="w-10 h-10" />
+                                        </div>
+                                    )}
+
+                                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                        <button
+                                            className="p-2 bg-white rounded-full text-gray-700 hover:text-primary-600 transition-colors"
+                                            onClick={() => openEditModal(item)}
+                                        >
+                                            <Edit2 className="w-4 h-4" />
+                                        </button>
+                                        <button
+                                            className="p-2 bg-white rounded-full text-gray-700 hover:text-red-500 transition-colors"
+                                            onClick={() => handleDelete(item.id)}
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div className="p-4 flex-1 flex flex-col justify-between">
+                                    <div>
+                                        <h3 className="font-bold text-gray-900 mb-1">{item.title}</h3>
+                                        <p className="text-sm text-gray-500 line-clamp-2">{item.description}</p>
+                                    </div>
+
+                                    <div className="mt-4 flex flex-wrap gap-2">
+                                        {item.skills_used?.slice(0, 3).map((skill, i) => (
+                                            <span key={i} className="px-2 py-1 bg-gray-50 text-gray-600 text-xs rounded-md border border-gray-100">
+                                                {skill}
+                                            </span>
+                                        ))}
+                                        {item.skills_used && item.skills_used.length > 3 && (
+                                            <span className="px-2 py-1 bg-gray-50 text-gray-600 text-xs rounded-md border border-gray-100">
+                                                +{item.skills_used.length - 3}
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="text-center py-16 bg-white rounded-2xl border border-dashed border-gray-200">
+                        <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <ImageIcon className="w-8 h-8 text-gray-300" />
+                        </div>
+                        <h3 className="text-lg font-bold text-gray-900 mb-2">لا توجد أعمال لعرضها</h3>
+                        <p className="text-gray-500 mb-6 max-w-sm mx-auto">قم بإضافة نماذج من أعمالك السابقة لكي يتمكن العملاء من رؤية مهاراتك وجودة عملك</p>
+                        <Button
+                            variant="primary"
+                            leftIcon={<Plus className="w-5 h-5" />}
+                            onClick={openAddModal}
+                        >
+                            إضافة أول عمل
+                        </Button>
+                    </div>
+                )}
+            </div>
+
+            <PortfolioModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                onSubmit={handleSave}
+                initialData={editingItem}
+                isSubmitting={isSubmitting}
+            />
+        </div>
+    );
+}
