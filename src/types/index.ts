@@ -9,6 +9,7 @@ export type PaymentMethod = 'bank_transfer' | 'd17' | 'cash';
 export interface Profile {
     id: string;
     user_type: UserType;
+    username?: string;
     full_name: string;
     phone?: string;
     avatar_url?: string;

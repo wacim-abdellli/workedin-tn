@@ -46,12 +46,12 @@ function Modal({
     };
 
     const sizes = {
-        sm: 'max-w-sm',
-        md: 'max-w-md',
-        lg: 'max-w-lg',
-        xl: 'max-w-xl',
-        '2xl': 'max-w-2xl',
-        'full': 'max-w-[calc(100vw-2rem)]',
+        sm: 'sm:max-w-sm',
+        md: 'sm:max-w-md',
+        lg: 'sm:max-w-lg',
+        xl: 'sm:max-w-xl',
+        '2xl': 'sm:max-w-2xl',
+        'full': 'sm:max-w-[calc(100vw-4rem)]',
     };
 
     if (!isOpen) return null;
@@ -60,16 +60,19 @@ function Modal({
         <div
             ref={overlayRef}
             onClick={handleOverlayClick}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-dark-900/60 dark:bg-black/70 backdrop-blur-sm animate-fade-in"
+            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4 bg-dark-900/60 dark:bg-black/70 backdrop-blur-sm animate-fade-in"
         >
             <div
                 className={`
           w-full ${sizes[size]} 
           bg-white dark:bg-dark-900 
-          rounded-2xl shadow-2xl shadow-black/20
-          border border-dark-100 dark:border-dark-700
+          rounded-t-2xl sm:rounded-2xl shadow-2xl shadow-black/20
+          border-x border-t sm:border border-dark-100 dark:border-dark-700
           animate-scale-in overflow-hidden
-          flex flex-col max-h-[calc(100vh-2rem)]
+          flex flex-col 
+          fixed bottom-0 sm:relative sm:bottom-auto
+          h-[90vh] sm:h-auto sm:max-h-[calc(100vh-4rem)]
+          w-full sm:w-auto
         `}
                 role="dialog"
                 aria-modal="true"

@@ -16,11 +16,13 @@ import Button from '../components/ui/Button';
 import { supabase } from '../lib/supabase';
 import type { Skill } from '../types';
 import ContactModal from '../components/freelancer/ContactModal';
+import { OptimizedImage } from '../components/common';
 
 // Type definitions
 interface FreelancerData {
     id: string;
     full_name: string;
+    username?: string;
     title: string | null;
     avatar_url: string | null;
     cover_url?: string | null;
@@ -72,8 +74,8 @@ interface FreelancerData {
     }>;
 }
 
-function FreelancerProfile() {
-    const { freelancerId } = useParams<{ freelancerId: string }>();
+export default function FreelancerProfile() {
+    const { usernameOrId } = useParams<{ usernameOrId: string }>();
     const { language } = useTranslation();
     const navigate = useNavigate();
 
@@ -89,7 +91,7 @@ function FreelancerProfile() {
 
     useEffect(() => {
         loadFreelancer();
-    }, [freelancerId]);
+    }, [usernameOrId]);
 
     // Cleanup audio on unmount
     useEffect(() => {
@@ -102,17 +104,35 @@ function FreelancerProfile() {
     }, []);
 
     const loadFreelancer = async () => {
-        if (!freelancerId) return;
+        if (!usernameOrId) return;
         setIsLoading(true);
 
         try {
-            // Fetch profile & freelancer_profile data joined
+            // Determine if input is a UUID or a username
+            const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(usernameOrId);
+
+            let profileId = usernameOrId;
+
+            if (!isUUID) {
+                // It's a username, fetch profile ID first
+                const { data: userProfile, error: userError } = await supabase
+                    .from('profiles')
+                    .select('id')
+                    .eq('username', usernameOrId)
+                    .single();
+
+                if (userError || !userProfile) throw new Error('User not found');
+                profileId = userProfile.id;
+            }
+
+            // Fetch freelancer_profile data joined
             const { data: profile, error: profileError } = await supabase
                 .from('freelancer_profiles')
                 .select(`
                     *,
                     profile:profiles!id (
                         full_name,
+                        username,
                         avatar_url,
                         bio,
                         location,
@@ -121,10 +141,13 @@ function FreelancerProfile() {
                         user_type
                     )
                 `)
-                .eq('id', freelancerId)
+                .eq('id', profileId)
                 .single();
 
             if (profileError) throw profileError;
+
+            // Use the correct ID for subsequent queries
+            const targetFreelancerId = profile.id;
 
             // Fetch skills
             const { data: profileSkills } = await supabase
@@ -137,7 +160,7 @@ function FreelancerProfile() {
                         name_en
                     )
                 `)
-                .eq('profile_id', freelancerId);
+                .eq('profile_id', targetFreelancerId);
 
             // Fetch portfolio/work samples (using new portfolio_items table if available, else work_samples)
             // Note: For now using work_samples or assuming migration.
@@ -152,7 +175,7 @@ function FreelancerProfile() {
             const { data: portfolioItems } = await supabase
                 .from('portfolio_items')
                 .select('*')
-                .eq('freelancer_id', freelancerId)
+                .eq('freelancer_id', targetFreelancerId)
                 .order('order_index', { ascending: true });
 
             // Fetch reviews
@@ -174,7 +197,7 @@ function FreelancerProfile() {
                         )
                     )
                 `)
-                .eq('reviewee_id', freelancerId)
+                .eq('reviewee_id', targetFreelancerId)
                 .order('created_at', { ascending: false });
 
             // Format stats
@@ -193,6 +216,7 @@ function FreelancerProfile() {
             const formattedData: FreelancerData = {
                 id: profile.id,
                 full_name: profile.profile.full_name,
+                username: profile.profile.username,
                 title: profile.title,
                 avatar_url: profile.profile.avatar_url,
                 bio: profile.profile.bio || '',
@@ -329,10 +353,12 @@ function FreelancerProfile() {
             {/* Cover Photo */}
             <div className="h-64 bg-gradient-to-r from-primary-800 to-primary-600 relative overflow-hidden">
                 {freelancer.cover_url && (
-                    <img
+                    <OptimizedImage
                         src={freelancer.cover_url}
                         alt="Cover"
-                        className="w-full h-full object-cover opacity-50"
+                        className="w-full h-full"
+                        imgClassName="object-cover opacity-50"
+                        priority={true}
                     />
                 )}
                 <div className="absolute inset-0 bg-black/20" />
@@ -346,10 +372,12 @@ function FreelancerProfile() {
                         <div className="flex-shrink-0 relative mx-auto md:mx-0 -mt-16 md:-mt-10">
                             <div className="w-32 h-32 rounded-2xl border-4 border-white shadow-md bg-white overflow-hidden">
                                 {freelancer.avatar_url ? (
-                                    <img
+                                    <OptimizedImage
                                         src={freelancer.avatar_url}
                                         alt={freelancer.full_name}
-                                        className="w-full h-full object-cover"
+                                        className="w-full h-full"
+                                        imgClassName="object-cover"
+                                        priority={true}
                                     />
                                 ) : (
                                     <div className="w-full h-full bg-gray-100 flex items-center justify-center">
@@ -485,10 +513,11 @@ function FreelancerProfile() {
                                             onClick={() => setSelectedWorkSample(sample.id)}
                                             className="group relative aspect-video rounded-xl overflow-hidden cursor-pointer bg-gray-100"
                                         >
-                                            <img
+                                            <OptimizedImage
                                                 src={sample.thumbnail_url}
                                                 alt={sample.title}
-                                                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                                className="w-full h-full"
+                                                imgClassName="object-cover transition-transform duration-300 group-hover:scale-105"
                                             />
                                             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4">
                                                 <h3 className="text-white font-bold text-lg line-clamp-1">{sample.title}</h3>
@@ -548,7 +577,12 @@ function FreelancerProfile() {
                                             <div className="flex items-center gap-3">
                                                 <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
                                                     {review.client_avatar ? (
-                                                        <img src={review.client_avatar} className="w-full h-full object-cover" />
+                                                        <OptimizedImage
+                                                            src={review.client_avatar}
+                                                            alt={review.client_name}
+                                                            className="w-full h-full"
+                                                            imgClassName="object-cover"
+                                                        />
                                                     ) : (
                                                         <User className="w-5 h-5 text-gray-500" />
                                                     )}
@@ -673,10 +707,13 @@ function FreelancerProfile() {
                             return (
                                 <>
                                     <div className="flex-1 bg-black flex items-center justify-center relative">
-                                        <img
+                                        <OptimizedImage
                                             src={sample.thumbnail_url}
                                             alt={sample.title}
-                                            className="max-w-full max-h-full object-contain"
+                                            className="w-full h-full flex items-center justify-center"
+                                            imgClassName="max-w-full max-h-full object-contain"
+                                            fill={false}
+                                            priority={true}
                                         />
                                     </div>
                                     <div className="w-full md:w-80 bg-white p-6 overflow-y-auto">
@@ -727,5 +764,3 @@ function FreelancerProfile() {
         </div>
     );
 }
-
-export default FreelancerProfile;

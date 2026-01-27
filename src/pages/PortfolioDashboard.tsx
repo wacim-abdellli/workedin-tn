@@ -7,6 +7,7 @@ import { supabase } from '../lib/supabase';
 import type { PortfolioItem } from '../types';
 import { useToast } from '../components/ui/Toast';
 import PortfolioModal from '../components/freelancer/PortfolioModal';
+import OptimizedImage from '../components/common/OptimizedImage';
 
 export default function PortfolioDashboard() {
     const { user } = useAuth();
@@ -165,10 +166,11 @@ export default function PortfolioDashboard() {
                             >
                                 <div className={`relative ${viewMode === 'list' ? 'w-48 h-32 flex-shrink-0' : 'aspect-video'}`}>
                                     {item.thumbnail_url || (item.media_urls && item.media_urls[0]) ? (
-                                        <img
-                                            src={item.thumbnail_url || item.media_urls[0]}
+                                        <OptimizedImage
+                                            src={item.thumbnail_url || item.media_urls?.[0] || ''}
                                             alt={item.title}
-                                            className="w-full h-full object-cover"
+                                            className="w-full h-full"
+                                            imgClassName="object-cover"
                                         />
                                     ) : (
                                         <div className="w-full h-full bg-gray-100 flex items-center justify-center text-gray-400">

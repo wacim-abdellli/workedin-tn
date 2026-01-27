@@ -1,9 +1,14 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
+// @ts-nocheck
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import { visualizer } from 'rollup-plugin-visualizer';
 
 // https://vite.dev/config/
-export default defineConfig({
-  plugins: [react()],
+export default defineConfig(({ command }) => ({
+  plugins: [
+    react(),
+    command === 'build' && visualizer({ open: true })
+  ],
   build: {
     rollupOptions: {
       output: {
@@ -15,4 +20,4 @@ export default defineConfig({
       },
     },
   },
-})
+}))

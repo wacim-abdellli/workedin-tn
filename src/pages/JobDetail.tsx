@@ -1,14 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import {
     Heart,
     Clock,
     MapPin,
     Star,
-    DollarSign,
     Briefcase,
     User,
     Eye,
@@ -18,17 +14,19 @@ import {
     Share2,
     Flag,
     CheckCircle,
-    Upload,
     ChevronRight,
     Send,
-    Trash2,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase, uploadFile } from '../lib/supabase';
 import { Header, Footer } from '../components/layout';
 import Button from '../components/ui/Button';
 import { useToast } from '../components/ui/Toast';
-import Modal from '../components/ui/Modal';
+
+import ProposalModal from '../components/proposals/ProposalModal';
+import type { ProposalFormData } from '../components/proposals/ProposalModal';
+import SimilarJobCard from '../components/jobs/SimilarJobCard';
+import OptimizedImage from '../components/common/OptimizedImage';
 
 // Types
 interface Job {
@@ -73,22 +71,9 @@ interface Proposal {
     created_at: string;
 }
 
-// Validation schema
-const proposalSchema = z.object({
-    cover_letter: z.string()
-        .min(100, 'الرسالة يجب أن تكون 100 حرف على الأقل')
-        .max(1000, 'الرسالة يجب أن تكون أقل من 1000 حرف'),
-    bid_amount: z.number()
-        .min(5, 'الحد الأدنى للعرض 5 دينار')
-        .max(100000, 'الحد الأقصى للعرض 100,000 دينار'),
-    delivery_days: z.number()
-        .min(1, 'الحد الأدنى يوم واحد')
-        .max(365, 'الحد الأقصى 365 يوم'),
-});
 
-type ProposalFormData = z.infer<typeof proposalSchema>;
 
-// Helper functions
+// Helper functions (Restored)
 function timeAgo(date: string): string {
     const now = new Date();
     const posted = new Date(date);
@@ -127,278 +112,6 @@ const CATEGORY_LABELS: Record<string, string> = {
     data: 'بيانات',
     other: 'أخرى',
 };
-
-const DELIVERY_OPTIONS = [
-    { value: 1, label: 'يوم واحد' },
-    { value: 3, label: '3 أيام' },
-    { value: 5, label: '5 أيام' },
-    { value: 7, label: 'أسبوع' },
-    { value: 14, label: 'أسبوعين' },
-    { value: 30, label: 'شهر' },
-];
-
-const PLATFORM_FEE_PERCENT = 10;
-
-// Proposal Modal Component
-function ProposalModal({
-    isOpen,
-    onClose,
-    job,
-    onSubmit,
-    isSubmitting,
-}: {
-    isOpen: boolean;
-    onClose: () => void;
-    job: Job;
-    onSubmit: (data: ProposalFormData, files: File[]) => Promise<void>;
-    isSubmitting: boolean;
-}) {
-    const [attachments, setAttachments] = useState<File[]>([]);
-    const [isPreview, setIsPreview] = useState(false);
-
-    const {
-        register,
-        handleSubmit,
-        watch,
-        formState: { errors },
-    } = useForm<ProposalFormData>({
-        resolver: zodResolver(proposalSchema),
-        defaultValues: {
-            delivery_days: 7,
-        },
-    });
-
-    const bidAmount = watch('bid_amount') || 0;
-    const platformFee = Math.round(bidAmount * PLATFORM_FEE_PERCENT / 100);
-    const netAmount = bidAmount - platformFee;
-    const coverLetter = watch('cover_letter') || '';
-
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const files = e.target.files;
-        if (!files) return;
-
-        const newFiles: File[] = [];
-        for (let i = 0; i < files.length && attachments.length + newFiles.length < 5; i++) {
-            if (files[i].size <= 10 * 1024 * 1024) {
-                newFiles.push(files[i]);
-            }
-        }
-        setAttachments([...attachments, ...newFiles]);
-    };
-
-    const removeAttachment = (index: number) => {
-        setAttachments(attachments.filter((_, i) => i !== index));
-    };
-
-    const handleFormSubmit = async (data: ProposalFormData) => {
-        await onSubmit(data, attachments);
-    };
-
-    return (
-        <Modal isOpen={isOpen} onClose={onClose} title={isPreview ? 'معاينة العرض' : 'تقديم عرض'} size="lg">
-            {isPreview ? (
-                <div className="space-y-6">
-                    <div className="bg-gray-50 dark:bg-dark-800 rounded-xl p-4">
-                        <h4 className="font-bold mb-2">رسالة التغطية</h4>
-                        <p className="text-sm whitespace-pre-wrap">{coverLetter}</p>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="bg-gray-50 dark:bg-dark-800 rounded-xl p-4 text-center">
-                            <p className="text-sm text-muted">قيمة العرض</p>
-                            <p className="text-xl font-bold text-primary-600">{bidAmount} د.ت</p>
-                        </div>
-                        <div className="bg-gray-50 dark:bg-dark-800 rounded-xl p-4 text-center">
-                            <p className="text-sm text-muted">ستستلم</p>
-                            <p className="text-xl font-bold text-green-600">{netAmount} د.ت</p>
-                        </div>
-                    </div>
-                    {attachments.length > 0 && (
-                        <div>
-                            <p className="text-sm text-muted mb-2">المرفقات ({attachments.length})</p>
-                            <div className="flex flex-wrap gap-2">
-                                {attachments.map((file, i) => (
-                                    <span key={i} className="px-3 py-1 bg-gray-100 dark:bg-dark-700 rounded-lg text-sm">
-                                        {file.name}
-                                    </span>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-                    <div className="flex gap-3">
-                        <Button variant="ghost" onClick={() => setIsPreview(false)} className="flex-1">
-                            تعديل
-                        </Button>
-                        <Button
-                            variant="primary"
-                            onClick={handleSubmit(handleFormSubmit)}
-                            isLoading={isSubmitting}
-                            className="flex-1"
-                            rightIcon={<Send className="w-4 h-4" />}
-                        >
-                            إرسال العرض
-                        </Button>
-                    </div>
-                </div>
-            ) : (
-                <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
-                    {/* Job Title */}
-                    <div className="bg-primary-50 dark:bg-primary-900/20 rounded-xl p-4">
-                        <p className="text-sm text-primary-600 dark:text-primary-400 mb-1">تقديم عرض على:</p>
-                        <h3 className="font-bold text-foreground">{job.title}</h3>
-                    </div>
-
-                    {/* Cover Letter */}
-                    <div>
-                        <label className="label">رسالة التغطية</label>
-                        <textarea
-                            {...register('cover_letter')}
-                            rows={6}
-                            placeholder="اشرح لماذا أنت الشخص المناسب لهذا المشروع. اذكر خبرتك ذات الصلة وكيف ستنجز العمل..."
-                            className="input resize-none"
-                        />
-                        <div className="flex justify-between mt-1">
-                            {errors.cover_letter && (
-                                <p className="text-sm text-red-500">{errors.cover_letter.message}</p>
-                            )}
-                            <p className="text-xs text-muted me-auto">{coverLetter.length}/1000</p>
-                        </div>
-                    </div>
-
-                    {/* Bid Amount */}
-                    <div>
-                        <label className="label">قيمة العرض (د.ت)</label>
-                        <div className="relative">
-                            <DollarSign className="absolute start-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                            <input
-                                type="number"
-                                {...register('bid_amount', { valueAsNumber: true })}
-                                placeholder="0"
-                                className="input ps-10"
-                            />
-                        </div>
-                        {errors.bid_amount && (
-                            <p className="text-sm text-red-500 mt-1">{errors.bid_amount.message}</p>
-                        )}
-                        {job.budget_min && (
-                            <p className="text-xs text-muted mt-1">
-                                ميزانية العميل: {job.budget_min} - {job.budget_max || job.budget_min} د.ت
-                            </p>
-                        )}
-                        {bidAmount > 0 && (
-                            <div className="mt-2 p-3 bg-gray-50 dark:bg-dark-800 rounded-lg text-sm">
-                                <div className="flex justify-between mb-1">
-                                    <span>رسوم المنصة ({PLATFORM_FEE_PERCENT}%)</span>
-                                    <span className="text-red-500">-{platformFee} د.ت</span>
-                                </div>
-                                <div className="flex justify-between font-bold">
-                                    <span>ستستلم</span>
-                                    <span className="text-green-600">{netAmount} د.ت</span>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Delivery Time */}
-                    <div>
-                        <label className="label">مدة التسليم</label>
-                        <select
-                            {...register('delivery_days', { valueAsNumber: true })}
-                            className="input"
-                        >
-                            {DELIVERY_OPTIONS.map(opt => (
-                                <option key={opt.value} value={opt.value}>{opt.label}</option>
-                            ))}
-                        </select>
-                    </div>
-
-                    {/* Attachments */}
-                    <div>
-                        <label className="label">إرفاق ملفات (اختياري)</label>
-                        <label className="block">
-                            <div className="border-2 border-dashed border-gray-300 rounded-xl p-4 text-center cursor-pointer hover:border-primary-400 transition-colors">
-                                <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                                <p className="text-sm text-muted">اسحب الملفات أو اضغط للاختيار</p>
-                                <p className="text-xs text-muted mt-1">حتى 5 ملفات، 10 ميجا لكل ملف</p>
-                            </div>
-                            <input
-                                type="file"
-                                multiple
-                                className="hidden"
-                                onChange={handleFileChange}
-                                disabled={attachments.length >= 5}
-                            />
-                        </label>
-                        {attachments.length > 0 && (
-                            <div className="mt-3 space-y-2">
-                                {attachments.map((file, index) => (
-                                    <div key={index} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-dark-800 rounded-lg">
-                                        <div className="flex items-center gap-2">
-                                            <FileText className="w-4 h-4 text-gray-400" />
-                                            <span className="text-sm truncate max-w-[200px]">{file.name}</span>
-                                            <span className="text-xs text-muted">
-                                                ({(file.size / 1024 / 1024).toFixed(1)} MB)
-                                            </span>
-                                        </div>
-                                        <button
-                                            type="button"
-                                            onClick={() => removeAttachment(index)}
-                                            className="p-1 text-red-500 hover:bg-red-50 rounded"
-                                        >
-                                            <Trash2 className="w-4 h-4" />
-                                        </button>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Actions */}
-                    <div className="flex gap-3">
-                        <Button variant="ghost" onClick={onClose} type="button" className="flex-1">
-                            إلغاء
-                        </Button>
-                        <Button
-                            variant="outline"
-                            onClick={() => setIsPreview(true)}
-                            type="button"
-                            className="flex-1"
-                        >
-                            معاينة
-                        </Button>
-                        <Button
-                            variant="primary"
-                            type="submit"
-                            isLoading={isSubmitting}
-                            className="flex-1"
-                            rightIcon={<Send className="w-4 h-4" />}
-                        >
-                            إرسال
-                        </Button>
-                    </div>
-                </form>
-            )}
-        </Modal>
-    );
-}
-
-// Similar Job Card
-function SimilarJobCard({ job, onClick }: { job: Job; onClick: () => void }) {
-    return (
-        <div
-            onClick={onClick}
-            className="p-4 bg-gray-50 dark:bg-dark-800 rounded-xl cursor-pointer hover:bg-gray-100 dark:hover:bg-dark-700 transition-colors"
-        >
-            <h4 className="font-medium text-foreground line-clamp-1 mb-1">{job.title}</h4>
-            <p className="text-sm text-muted line-clamp-1 mb-2">{job.description}</p>
-            <div className="flex items-center justify-between">
-                <span className="text-sm font-bold text-primary-600">
-                    {job.job_type === 'fixed_price' ? `${job.budget_min} د.ت` : `${job.hourly_rate} د.ت/ساعة`}
-                </span>
-                <span className="text-xs text-muted">{job.proposals_count} عرض</span>
-            </div>
-        </div>
-    );
-}
 
 // Main Component
 function JobDetail() {
@@ -458,7 +171,9 @@ function JobDetail() {
                 .eq('job_id', jobId)
                 .single();
             setIsSaved(!!data);
-        } catch { }
+        } catch {
+            // ignore
+        }
     }, [user, jobId]);
 
     // Check if user has submitted a proposal
@@ -472,7 +187,9 @@ function JobDetail() {
                 .eq('freelancer_id', user.id)
                 .single();
             setMyProposal(data);
-        } catch { }
+        } catch {
+            // ignore
+        }
     }, [user, jobId]);
 
     // Fetch similar jobs
@@ -487,7 +204,9 @@ function JobDetail() {
                 .neq('id', job.id)
                 .limit(3);
             setSimilarJobs(data || []);
-        } catch { }
+        } catch {
+            // ignore
+        }
     }, [job]);
 
     // Fetch client stats
@@ -524,7 +243,9 @@ function JobDetail() {
                 totalSpent,
                 rating: avgRating,
             });
-        } catch { }
+        } catch {
+            // ignore
+        }
     }, [job?.client_id]);
 
     useEffect(() => {
@@ -893,10 +614,11 @@ function JobDetail() {
                             <h3 className="font-bold mb-4">عن العميل</h3>
                             <div className="flex items-center gap-3 mb-4">
                                 {job.client?.avatar_url ? (
-                                    <img
+                                    <OptimizedImage
                                         src={job.client.avatar_url}
                                         alt={job.client.full_name}
-                                        className="w-12 h-12 rounded-full object-cover"
+                                        className="w-12 h-12 rounded-full"
+                                        imgClassName="object-cover"
                                     />
                                 ) : (
                                     <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center">

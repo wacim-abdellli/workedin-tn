@@ -30,6 +30,7 @@ import { useTranslation } from '../i18n';
 import { Header, Footer } from '../components/layout';
 import Button from '../components/ui/Button';
 import { supabase } from '../lib/supabase';
+import OptimizedImage from '../components/common/OptimizedImage';
 
 // Animated counter hook
 function useAnimatedCounter(end: number, duration: number = 2000) {
@@ -470,11 +471,14 @@ function Home() {
                             </button>
 
                             <div className="text-center px-12">
-                                <img
-                                    src={testimonials[currentTestimonial].image}
-                                    alt={testimonials[currentTestimonial].name}
-                                    className="w-24 h-24 rounded-2xl mx-auto mb-6 ring-4 ring-primary-100 dark:ring-primary-900/50 shadow-xl object-cover"
-                                />
+                                <div className="w-24 h-24 mx-auto mb-6">
+                                    <OptimizedImage
+                                        src={testimonials[currentTestimonial].image}
+                                        alt={testimonials[currentTestimonial].name}
+                                        className="w-full h-full rounded-2xl ring-4 ring-primary-100 dark:ring-primary-900/50 shadow-xl"
+                                        imgClassName="object-cover"
+                                    />
+                                </div>
 
                                 <div className="flex items-center justify-center gap-1 mb-6">
                                     {[...Array(5)].map((_, i) => (

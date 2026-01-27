@@ -22,6 +22,7 @@ import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import Modal from '../components/ui/Modal';
 import { supabase } from '../lib/supabase';
+import OptimizedImage from '../components/common/OptimizedImage';
 
 type SettingsTab = 'profile' | 'notifications' | 'payment' | 'security';
 
@@ -334,10 +335,11 @@ function Settings() {
             <div className="flex items-center gap-6">
                 <div className="relative">
                     {profile?.avatar_url ? (
-                        <img
+                        <OptimizedImage
                             src={profile.avatar_url}
                             alt={profileForm.full_name}
-                            className="w-24 h-24 rounded-2xl object-cover"
+                            className="w-24 h-24 rounded-2xl"
+                            imgClassName="object-cover"
                         />
                     ) : (
                         <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-primary-500 to-secondary-500 flex items-center justify-center text-white text-3xl font-bold">

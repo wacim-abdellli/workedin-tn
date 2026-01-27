@@ -1,40 +1,43 @@
+import { Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { I18nProvider } from './i18n';
 import { ToastProvider } from './components/ui/Toast';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import ErrorBoundary from './components/ui/ErrorBoundary';
-import Loading from './components/ui/Loading';
+import { Loading } from './components/common';
 import ScrollToTop from './components/ui/ScrollToTop';
 
-// Pages
-import Home from './pages/Home';
-import Login from './pages/Login';
-import Signup from './pages/Signup';
-import FreelancerOnboarding from './pages/FreelancerOnboarding';
-import ClientOnboarding from './pages/ClientOnboarding';
-import JobPost from './pages/JobPost';
-import JobPostSuccess from './pages/JobPostSuccess';
-import JobProposals from './pages/JobProposals';
-import JobMatches from './pages/JobMatches';
-import ContractWorkspace from './pages/ContractWorkspace';
-import FreelancerDashboard from './pages/FreelancerDashboard';
-import ClientDashboard from './pages/ClientDashboard';
-import FreelancerProfile from './pages/FreelancerProfile';
-import Settings from './pages/Settings';
-import HowItWorks from './pages/HowItWorks';
-import ForClients from './pages/ForClients';
-import JobBoard from './pages/JobBoard';
-import JobDetail from './pages/JobDetail';
-import PortfolioDashboard from './pages/PortfolioDashboard';
-import FindFreelancers from './pages/FindFreelancers';
-import Messages from './pages/Messages';
-import AdminDashboard from './pages/AdminDashboard';
-import FreelancerEarnings from './pages/FreelancerEarnings';
-import SearchResults from './pages/SearchResults';
-import Terms from './pages/Terms';
-import Privacy from './pages/Privacy';
-import FAQ from './pages/FAQ';
+import { ProfileRedirect } from './components/routing/ProfileRedirect';
+
+// Lazy Load Pages
+const Home = lazy(() => import('./pages/Home'));
+const Login = lazy(() => import('./pages/Login'));
+const Signup = lazy(() => import('./pages/Signup'));
+const FreelancerOnboarding = lazy(() => import('./pages/FreelancerOnboarding'));
+const ClientOnboarding = lazy(() => import('./pages/ClientOnboarding'));
+const JobPost = lazy(() => import('./pages/JobPost'));
+const JobPostSuccess = lazy(() => import('./pages/JobPostSuccess'));
+const JobProposals = lazy(() => import('./pages/JobProposals'));
+const JobMatches = lazy(() => import('./pages/JobMatches'));
+const ContractWorkspace = lazy(() => import('./pages/ContractWorkspace'));
+const FreelancerDashboard = lazy(() => import('./pages/FreelancerDashboard'));
+const ClientDashboard = lazy(() => import('./pages/ClientDashboard'));
+const FreelancerProfile = lazy(() => import('./pages/FreelancerProfile'));
+const Settings = lazy(() => import('./pages/Settings'));
+const HowItWorks = lazy(() => import('./pages/HowItWorks'));
+const ForClients = lazy(() => import('./pages/ForClients'));
+const JobBoard = lazy(() => import('./pages/JobBoard'));
+const JobDetail = lazy(() => import('./pages/JobDetail'));
+const PortfolioDashboard = lazy(() => import('./pages/PortfolioDashboard'));
+const FindFreelancers = lazy(() => import('./pages/FindFreelancers'));
+const Messages = lazy(() => import('./pages/Messages'));
+const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
+const FreelancerEarnings = lazy(() => import('./pages/FreelancerEarnings'));
+const SearchResults = lazy(() => import('./pages/SearchResults'));
+const Terms = lazy(() => import('./pages/Terms'));
+const Privacy = lazy(() => import('./pages/Privacy'));
+const FAQ = lazy(() => import('./pages/FAQ'));
 
 // Protected Route wrapper
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -51,20 +54,10 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-// Placeholder component
-function PlaceholderPage({ title }: { title: string }) {
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="text-center">
-        <h1 className="text-3xl font-bold text-gray-900 mb-4">{title}</h1>
-        <p className="text-gray-600 mb-6">هذه الصفحة قيد التطوير</p>
-        <a href="/" className="btn-primary">
-          العودة للرئيسية
-        </a>
-      </div>
-    </div>
-  );
-}
+
+
+// Redirect /profile to the correct dashboard
+
 
 function AppRoutes() {
   return (
@@ -162,10 +155,10 @@ function AppRoutes() {
       {/* Profile & Settings */}
       <Route path="/profile" element={
         <ProtectedRoute>
-          <PlaceholderPage title="البروفايل" />
+          <ProfileRedirect />
         </ProtectedRoute>
       } />
-      <Route path="/freelancer/:freelancerId" element={
+      <Route path="/freelancer/:usernameOrId" element={
         <FreelancerProfile />
       } />
       <Route path="/settings" element={
@@ -205,7 +198,9 @@ function App() {
               <ToastProvider>
                 <div className="animate-fade-in">
                   <ScrollToTop />
-                  <AppRoutes />
+                  <Suspense fallback={<Loading fullScreen />}>
+                    <AppRoutes />
+                  </Suspense>
                 </div>
               </ToastProvider>
             </AuthProvider>

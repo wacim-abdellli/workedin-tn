@@ -256,65 +256,123 @@ export default function AdminDashboard() {
                                 </div>
 
                                 {/* Users Table */}
-                                <div className="card p-0 overflow-hidden">
-                                    <table className="w-full">
-                                        <thead className="bg-gray-50 border-b border-gray-200">
-                                            <tr>
-                                                <th className="px-6 py-4 text-right text-sm font-medium text-gray-500">المستخدم</th>
-                                                <th className="px-6 py-4 text-right text-sm font-medium text-gray-500">النوع</th>
-                                                <th className="px-6 py-4 text-right text-sm font-medium text-gray-500">الحالة</th>
-                                                <th className="px-6 py-4 text-right text-sm font-medium text-gray-500">آخر نشاط</th>
-                                                <th className="px-6 py-4 text-right text-sm font-medium text-gray-500">إجراءات</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-gray-100">
-                                            {filteredUsers.map(user => (
-                                                <tr key={user.id} className="hover:bg-gray-50">
-                                                    <td className="px-6 py-4">
-                                                        <div className="flex items-center gap-3">
-                                                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-400 to-secondary-500 flex items-center justify-center text-white font-bold">
-                                                                {user.name.charAt(0)}
-                                                            </div>
-                                                            <div>
-                                                                <p className="font-medium text-foreground">{user.name}</p>
-                                                                <p className="text-sm text-muted">{user.email}</p>
-                                                            </div>
-                                                        </div>
-                                                    </td>
-                                                    <td className="px-6 py-4">
-                                                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${user.type === 'freelancer'
-                                                            ? 'bg-blue-100 text-blue-700'
-                                                            : 'bg-purple-100 text-purple-700'
-                                                            }`}>
-                                                            {user.type === 'freelancer' ? 'موظف حر' : 'عميل'}
-                                                        </span>
-                                                    </td>
-                                                    <td className="px-6 py-4">
-                                                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${user.status === 'active'
-                                                            ? 'bg-green-100 text-green-700'
-                                                            : 'bg-red-100 text-red-700'
-                                                            }`}>
-                                                            {user.status === 'active' ? 'نشط' : 'معلق'}
-                                                        </span>
-                                                    </td>
-                                                    <td className="px-6 py-4 text-sm text-muted">{user.last_active}</td>
-                                                    <td className="px-6 py-4">
-                                                        <div className="flex items-center gap-2">
-                                                            <button className="p-2 hover:bg-gray-100 rounded-lg text-gray-500 hover:text-primary-600">
-                                                                <Eye className="w-4 h-4" />
-                                                            </button>
-                                                            <button className="p-2 hover:bg-gray-100 rounded-lg text-gray-500 hover:text-yellow-600">
-                                                                <Ban className="w-4 h-4" />
-                                                            </button>
-                                                            <button className="p-2 hover:bg-gray-100 rounded-lg text-gray-500 hover:text-red-600">
-                                                                <Trash2 className="w-4 h-4" />
-                                                            </button>
-                                                        </div>
-                                                    </td>
+                                {/* Desktop Table View */}
+                                <div className="hidden md:block card p-0 overflow-hidden">
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full">
+                                            <thead className="bg-gray-50 border-b border-gray-200 sticky top-0 z-10">
+                                                <tr>
+                                                    <th className="px-6 py-4 text-right text-sm font-medium text-gray-500 whitespace-nowrap">المستخدم</th>
+                                                    <th className="px-6 py-4 text-right text-sm font-medium text-gray-500 whitespace-nowrap">النوع</th>
+                                                    <th className="px-6 py-4 text-right text-sm font-medium text-gray-500 whitespace-nowrap">الحالة</th>
+                                                    <th className="px-6 py-4 text-right text-sm font-medium text-gray-500 whitespace-nowrap">آخر نشاط</th>
+                                                    <th className="px-6 py-4 text-right text-sm font-medium text-gray-500 whitespace-nowrap">إجراءات</th>
                                                 </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
+                                            </thead>
+                                            <tbody className="divide-y divide-gray-100">
+                                                {filteredUsers.map(user => (
+                                                    <tr key={user.id} className="hover:bg-gray-50">
+                                                        <td className="px-6 py-4">
+                                                            <div className="flex items-center gap-3">
+                                                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-400 to-secondary-500 flex items-center justify-center text-white font-bold shrink-0">
+                                                                    {user.name.charAt(0)}
+                                                                </div>
+                                                                <div>
+                                                                    <p className="font-medium text-foreground whitespace-nowrap">{user.name}</p>
+                                                                    <p className="text-sm text-muted whitespace-nowrap">{user.email}</p>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-6 py-4">
+                                                            <span className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap ${user.type === 'freelancer'
+                                                                ? 'bg-blue-100 text-blue-700'
+                                                                : 'bg-purple-100 text-purple-700'
+                                                                }`}>
+                                                                {user.type === 'freelancer' ? 'موظف حر' : 'عميل'}
+                                                            </span>
+                                                        </td>
+                                                        <td className="px-6 py-4">
+                                                            <span className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap ${user.status === 'active'
+                                                                ? 'bg-green-100 text-green-700'
+                                                                : 'bg-red-100 text-red-700'
+                                                                }`}>
+                                                                {user.status === 'active' ? 'نشط' : 'معلق'}
+                                                            </span>
+                                                        </td>
+                                                        <td className="px-6 py-4 text-sm text-muted whitespace-nowrap">{user.last_active}</td>
+                                                        <td className="px-6 py-4">
+                                                            <div className="flex items-center gap-2">
+                                                                <button className="p-2 hover:bg-gray-100 rounded-lg text-gray-500 hover:text-primary-600 transition-colors">
+                                                                    <Eye className="w-4 h-4" />
+                                                                </button>
+                                                                <button className="p-2 hover:bg-gray-100 rounded-lg text-gray-500 hover:text-yellow-600 transition-colors">
+                                                                    <Ban className="w-4 h-4" />
+                                                                </button>
+                                                                <button className="p-2 hover:bg-gray-100 rounded-lg text-gray-500 hover:text-red-600 transition-colors">
+                                                                    <Trash2 className="w-4 h-4" />
+                                                                </button>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                {/* Mobile Card View */}
+                                <div className="md:hidden space-y-4">
+                                    {filteredUsers.map(user => (
+                                        <div key={user.id} className="card p-4">
+                                            <div className="flex items-center justify-between mb-4">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-400 to-secondary-500 flex items-center justify-center text-white font-bold shrink-0">
+                                                        {user.name.charAt(0)}
+                                                    </div>
+                                                    <div>
+                                                        <p className="font-medium text-foreground">{user.name}</p>
+                                                        <p className="text-xs text-muted">{user.email}</p>
+                                                    </div>
+                                                </div>
+                                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${user.status === 'active'
+                                                    ? 'bg-green-100 text-green-700'
+                                                    : 'bg-red-100 text-red-700'
+                                                    }`}>
+                                                    {user.status === 'active' ? 'نشط' : 'معلق'}
+                                                </span>
+                                            </div>
+
+                                            <div className="flex items-center justify-between py-2 border-b border-gray-50">
+                                                <span className="text-sm text-gray-500">النوع</span>
+                                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${user.type === 'freelancer'
+                                                    ? 'bg-blue-100 text-blue-700'
+                                                    : 'bg-purple-100 text-purple-700'
+                                                    }`}>
+                                                    {user.type === 'freelancer' ? 'موظف حر' : 'عميل'}
+                                                </span>
+                                            </div>
+
+                                            <div className="flex items-center justify-between py-2 mb-4">
+                                                <span className="text-sm text-gray-500">آخر نشاط</span>
+                                                <span className="text-sm text-foreground">{user.last_active}</span>
+                                            </div>
+
+                                            <div className="flex items-center gap-2 pt-3 border-t border-gray-100">
+                                                <Button size="sm" variant="outline" className="flex-1 justify-center">
+                                                    <Eye className="w-4 h-4 ml-1" />
+                                                    عرض
+                                                </Button>
+                                                <Button size="sm" variant="ghost" className="text-yellow-600 hover:bg-yellow-50 flex-1 justify-center">
+                                                    <Ban className="w-4 h-4 ml-1" />
+                                                    حظر
+                                                </Button>
+                                                <Button size="sm" variant="ghost" className="text-red-600 hover:bg-red-50 flex-1 justify-center">
+                                                    <Trash2 className="w-4 h-4 ml-1" />
+                                                    حذف
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
                         )}

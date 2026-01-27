@@ -19,6 +19,7 @@ import Modal from '../components/ui/Modal';
 import Button from '../components/ui/Button';
 import { Header } from '../components/layout';
 import { supabase } from '../lib/supabase';
+import OptimizedImage from '../components/common/OptimizedImage';
 import type { Skill, Job, FreelancerProfile, Profile } from '../types';
 
 // MATCHING LOGIC AND TYPES
@@ -263,10 +264,11 @@ function JobMatches() {
                                         {/* Avatar */}
                                         <div className="w-16 h-16 rounded-full bg-primary-100 flex items-center justify-center flex-shrink-0">
                                             {freelancer.avatar_url ? (
-                                                <img
+                                                <OptimizedImage
                                                     src={freelancer.avatar_url}
                                                     alt={freelancer.full_name}
-                                                    className="w-full h-full rounded-full object-cover"
+                                                    className="w-full h-full rounded-full"
+                                                    imgClassName="object-cover"
                                                 />
                                             ) : (
                                                 <User className="w-8 h-8 text-primary-600" />
@@ -348,11 +350,12 @@ function JobMatches() {
                                             </p>
                                             <div className="flex gap-2 overflow-x-auto pb-2">
                                                 {freelancer.work_samples.slice(0, 3).map((sample) => (
-                                                    <img
+                                                    <OptimizedImage
                                                         key={sample.id}
-                                                        src={sample.thumbnail_url}
+                                                        src={sample.thumbnail_url || ''}
                                                         alt="Work sample"
-                                                        className="w-20 h-16 object-cover rounded-lg flex-shrink-0"
+                                                        className="w-20 h-16 rounded-lg flex-shrink-0"
+                                                        imgClassName="object-cover"
                                                     />
                                                 ))}
                                                 {freelancer.work_samples.length > 3 && (
