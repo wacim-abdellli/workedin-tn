@@ -1,0 +1,63 @@
+﻿
+> khedma-tn@0.0.0 test:coverage
+> vitest run --coverage
+
+
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90mC:/Users/pc/Desktop/khedma-tn[39m
+
+npm : 
+Au caractère Ligne:1 
+: 1
++ npm run 
+test:coverage 2>&1 | 
+Out-File -FilePath 
+coverage-output.txt - 
+...
++ ~~~~~~~~~~~~~~~~~~~~
+~~~~~~
+    + CategoryInfo    
+          : NotSpeci  
+  fied: (:String) [   
+ ], RemoteExceptio    
+n
+    + FullyQualifiedE 
+   rrorId : NativeCo  
+  mmandError
+ 
+[31mΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ
+»[39m[1m[41m 
+Unhandled Error [49m
+[22m[31mΓÄ»ΓÄ»ΓÄ»ΓÄ»Γ
+Ä»ΓÄ»ΓÄ»[39m
+[31m[1mError[22m: 
+No such built-in 
+module: node:inspector
+/promises[39m
+[90m [2mΓ¥»[22m 
+new NodeError node:int
+ernal/errors:[2m399:5
+[22m[39m
+[90m [2mΓ¥»[22m ESM
+Loader.builtinStrategy
+ node:internal/modules
+/esm/translators:[2m2
+59:11[22m[39m
+[90m [2mΓ¥»[22m ESM
+Loader.moduleProvider 
+node:internal/modules/
+esm/loader:[2m468:14
+[22m[39m
+
+[31m[2mΓÄ»ΓÄ»ΓÄ»ΓÄ»Γ
+Ä»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ
+»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»
+ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»Γ
+Ä»ΓÄ»ΓÄ»ΓÄ»[22m[39m
+[31m[1mSerialized 
+Error:[22m[39m 
+[90m{ code: 'ERR_UNKN
+OWN_BUILTIN_MODULE' 
+}[39m
+
+
+
