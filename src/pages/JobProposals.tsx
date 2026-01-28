@@ -6,64 +6,88 @@ import Button from '../components/ui/Button';
 import ProposalCard from '../components/proposals/ProposalCard';
 import ProposalFiltersSidebar from '../components/proposals/ProposalFiltersSidebar';
 import JobSummaryCard from '../components/proposals/JobSummaryCard';
-
+import type { Proposal } from '../types/proposal';
 import ProposalDetailModal from '../components/proposals/ProposalDetailModal';
 
 // Mock Data
-const MOCK_PROPOSALS = [
-    {
-        id: '1',
-        freelancer: {
-            full_name: 'أحمد محمد',
-            title: 'مطور ويب Full Stack',
-            avatar_url: 'https://i.pravatar.cc/150?img=68',
-            country: 'تونس',
-            rating: 4.9,
-            reviews_count: 42,
-            jobs_completed: 35,
-            success_rate: 98,
-            is_verified: true,
-            is_online: true,
-            bio: 'مطور برمجيات ذو خبرة واسعة في بناء تطبيقات الويب باستخدام أحدث التقنيات.'
+import type { ProposalStatus } from '../types/proposal';
+
+const MOCK_PROPOSALS: Array<{
+    id: string;
+    freelancer: {
+        full_name: string;
+        title: string;
+        avatar_url: string;
+        country: string;
+        rating: number;
+        reviews_count: number;
+        jobs_completed: number;
+        success_rate: number;
+        is_verified: boolean;
+        is_online: boolean;
+        bio: string;
+    };
+    cover_letter: string;
+    bid_amount: number;
+    duration: number;
+    created_at: string;
+    status: ProposalStatus;
+    attachments: Array<{ name: string; size: string }>;
+}> = [
+        {
+            id: '1',
+            freelancer: {
+                full_name: 'أحمد محمد',
+                title: 'مطور ويب Full Stack',
+                avatar_url: 'https://i.pravatar.cc/150?img=68',
+                country: 'تونس',
+                rating: 4.9,
+                reviews_count: 42,
+                jobs_completed: 35,
+                success_rate: 98,
+                is_verified: true,
+                is_online: true,
+                bio: 'مطور برمجيات ذو خبرة واسعة في بناء تطبيقات الويب باستخدام أحدث التقنيات.'
+            },
+            cover_letter: 'مرحباً، قرأت تفاصيل مشروعك بعناية وأنا مستعد لتنفيذه باحترافية. لدي خبرة 5 سنوات في تطوير المتاجر الإلكترونية باستخدام React و Node.js. سأقوم بتسليم المشروع في الوقت المحدد مع ضمان الجودة...\n\nمميزاتي:\n- كود نظيف وقابل للصيانة\n- تصميم متجاوب مع جميع الشاشات\n- دعم فني لمدة شهر بعد التسليم',
+            bid_amount: 1500,
+            duration: 15,
+            created_at: new Date().toISOString(),
+            status: 'new',
+            attachments: [{ name: 'previous_work.pdf', size: '2.5MB' }]
         },
-        cover_letter: 'مرحباً، قرأت تفاصيل مشروعك بعناية وأنا مستعد لتنفيذه باحترافية. لدي خبرة 5 سنوات في تطوير المتاجر الإلكترونية باستخدام React و Node.js. سأقوم بتسليم المشروع في الوقت المحدد مع ضمان الجودة...\n\nمميزاتي:\n- كود نظيف وقابل للصيانة\n- تصميم متجاوب مع جميع الشاشات\n- دعم فني لمدة شهر بعد التسليم',
-        bid_amount: 1500,
-        duration: 15,
-        created_at: new Date().toISOString(),
-        status: 'new',
-        attachments: [{ name: 'previous_work.pdf', size: '2.5MB' }]
-    },
-    {
-        id: '2',
-        freelancer: {
-            full_name: 'سارة التونسي',
-            title: 'مصممة UI/UX',
-            avatar_url: 'https://i.pravatar.cc/150?img=44',
-            country: 'صفاقس',
-            rating: 4.7,
-            reviews_count: 18,
-            jobs_completed: 12,
-            success_rate: 95,
-            is_verified: true,
-            is_online: false,
-            bio: 'مصممة واجهات مستخدم شغوفة بتقديم تجارب مستخدم فريدة وجذابة.'
-        },
-        cover_letter: 'أهلاً بك. يمكنني تصميم واجهة مستخدم عصرية وجذابة لمتجرك. أركز على تجربة المستخدم وسهولة الاستخدام. يمكنك الاطلاع على معرض أعمالي...',
-        bid_amount: 1200,
-        duration: 20,
-        created_at: new Date(Date.now() - 86400000).toISOString(),
-        status: 'shortlisted',
-        attachments: []
-    }
-];
+        {
+            id: '2',
+            freelancer: {
+                full_name: 'سارة التونسي',
+                title: 'مصممة UI/UX',
+                avatar_url: 'https://i.pravatar.cc/150?img=44',
+                country: 'صفاقس',
+                rating: 4.7,
+                reviews_count: 18,
+                jobs_completed: 12,
+                success_rate: 95,
+                is_verified: true,
+                is_online: false,
+                bio: 'مصممة واجهات مستخدم شغوفة بتقديم تجارب مستخدم فريدة وجذابة.'
+            },
+            cover_letter: 'أهلاً بك. يمكنني تصميم واجهة مستخدم عصرية وجذابة لمتجرك. أركز على تجربة المستخدم وسهولة الاستخدام. يمكنك الاطلاع على معرض أعمالي...',
+            bid_amount: 1200,
+            duration: 20,
+            created_at: new Date(Date.now() - 86400000).toISOString(),
+            status: 'shortlisted',
+            attachments: []
+        }
+    ];
 
 export default function JobProposals() {
     const { jobId } = useParams<{ jobId: string }>();
     const [activeTab, setActiveTab] = useState('all');
-    const [selectedProposal, setSelectedProposal] = useState<any | null>(null);
+    const [selectedProposal, setSelectedProposal] = useState<Proposal | null>(null);
 
-    // Use jobId to fetch data (mock use)
-    console.log('Fetching proposals for job:', jobId);
+    // TODO: Replace with actual API call to fetch proposals
+    // This should use the jobId to fetch data from Supabase
+    void jobId; // Acknowledge jobId usage for linter
 
     // Mock Job Data
     const job = {
@@ -82,10 +106,25 @@ export default function JobProposals() {
         }
     };
 
-    const handleMessage = (id: string) => console.log('Message', id);
-    const handleShortlist = (id: string) => console.log('Shortlist', id);
-    const handleHire = (id: string) => console.log('Hire', id);
-    const handleFilterChange = (filters: any) => console.log('Filters', filters);
+    // TODO: Implement message freelancer - should open chat/messaging modal
+    const handleMessage = (_id: string) => {
+        // Navigate to message page or open chat modal
+    };
+
+    // TODO: Implement shortlist functionality - add to shortlisted proposals
+    const handleShortlist = (_id: string) => {
+        // Update proposal status to 'shortlisted' via Supabase
+    };
+
+    // TODO: Implement hire functionality - create contract
+    const handleHire = (_id: string) => {
+        // Navigate to contract creation or open hire modal
+    };
+
+    // TODO: Implement filter change - filter proposals list
+    const handleFilterChange = (_filters: Record<string, unknown>) => {
+        // Apply filters to proposals list
+    };
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-dark-900 pb-20 transition-colors duration-300">
@@ -201,10 +240,13 @@ export default function JobProposals() {
                 proposal={selectedProposal}
                 isOpen={!!selectedProposal}
                 onClose={() => setSelectedProposal(null)}
-                onHire={() => handleHire(selectedProposal?.id)}
-                onMessage={() => handleMessage(selectedProposal?.id)}
-                onShortlist={() => handleShortlist(selectedProposal?.id)}
-                onArchive={() => console.log('Archive', selectedProposal?.id)}
+                onHire={() => selectedProposal?.id && handleHire(selectedProposal.id)}
+                onMessage={() => selectedProposal?.id && handleMessage(selectedProposal.id)}
+                onShortlist={() => selectedProposal?.id && handleShortlist(selectedProposal.id)}
+                onArchive={() => {
+                    // TODO: Implement archive functionality
+                    void selectedProposal?.id;
+                }}
             />
         </div>
 

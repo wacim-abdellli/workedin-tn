@@ -1,8 +1,10 @@
 import { Header, Footer } from '../components/layout';
+import SEO, { SEO_CONFIG } from '../components/common/SEO';
 
 export default function Privacy() {
     return (
         <div className="min-h-screen bg-gray-50">
+            <SEO {...SEO_CONFIG.privacy} url="/privacy" />
             <Header />
 
             <div className="container-custom py-12">

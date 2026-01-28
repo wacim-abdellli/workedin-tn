@@ -8,8 +8,8 @@
    CSS VARIABLES - Light & Dark Mode
    ======================================== */
 :root {
-  /* Light Mode Colors */
-  --color-bg: #fafbfc;
+  /* Light Mode Colors - Premium */
+  --color-bg: #f8fafc;
   --color-bg-secondary: #ffffff;
   --color-bg-tertiary: #f1f5f9;
   --color-fg: #0f172a;
@@ -18,41 +18,55 @@
   --color-border: #e2e8f0;
   --color-border-subtle: #f1f5f9;
 
-  /* Primary gradient */
-  --gradient-primary: linear-gradient(135deg, #1554f7 0%, #0e41e3 50%, #9333ea 100%);
-  --gradient-accent: linear-gradient(135deg, #f86545 0%, #e54a26 100%);
-  --gradient-hero: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+  /* Premium Gradients - Matching New Logo (Blue -> Purple -> Pink) */
+  --gradient-primary: linear-gradient(135deg, #06b6d4 0%, #7c3aed 50%, #d946ef 100%);
+  /* Cyan -> Purple -> Pink */
+  --gradient-accent: linear-gradient(135deg, #d946ef 0%, #7c3aed 100%);
+  /* Pink -> Purple */
+  --gradient-glass: linear-gradient(180deg, rgba(255, 255, 255, 0.7) 0%, rgba(255, 255, 255, 0.3) 100%);
+  --gradient-surface: linear-gradient(145deg, #ffffff, #f3f4f6);
 
-  /* Shadows */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
-  --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
-  --shadow-xl: 0 20px 40px -12px rgba(0, 0, 0, 0.15);
-  --shadow-glow: 0 0 40px -8px rgba(21, 84, 247, 0.25);
-  --shadow-glow-accent: 0 0 40px -8px rgba(248, 101, 69, 0.25);
+  /* Premium Shadows */
+  --shadow-sm: 0 2px 4px rgba(148, 163, 184, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(148, 163, 184, 0.1), 0 2px 4px -2px rgba(148, 163, 184, 0.05);
+  --shadow-lg: 0 10px 15px -3px rgba(148, 163, 184, 0.1), 0 4px 6px -4px rgba(148, 163, 184, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(148, 163, 184, 0.1), 0 8px 10px -6px rgba(148, 163, 184, 0.05);
+  --shadow-2xl: 0 25px 50px -12px rgba(148, 163, 184, 0.25);
+
+  /* Colored Glows */
+  --shadow-glow: 0 0 20px rgba(79, 70, 229, 0.15);
+  --shadow-glow-accent: 0 0 20px rgba(249, 115, 22, 0.15);
 }
 
 .dark {
-  /* Dark Mode Colors */
-  --color-bg: #0a0f1a;
-  --color-bg-secondary: #111827;
+  /* Dark Mode Colors - Deep Blue/Purple Tint (Not flat grey) */
+  --color-bg: #030712;
+  /* Richer black */
+  --color-bg-secondary: #0f172a;
+  /* Slate 900 */
   --color-bg-tertiary: #1e293b;
+  /* Slate 800 */
   --color-fg: #f8fafc;
-  --color-fg-secondary: #e2e8f0;
+  --color-fg-secondary: #cbd5e1;
   --color-fg-muted: #94a3b8;
-  --color-border: #334155;
-  --color-border-subtle: #1e293b;
+  --color-border: #1e293b;
+  --color-border-subtle: #0f172a;
 
-  /* Dark mode gradients */
-  --gradient-hero: linear-gradient(135deg, #020617 0%, #0f172a 50%, #020617 100%);
+  /* Premium Dark Gradients */
+  --gradient-primary: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
+  --gradient-accent: linear-gradient(135deg, #fb923c 0%, #ea580c 100%);
+  --gradient-glass: linear-gradient(180deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.3) 100%);
+  --gradient-surface: linear-gradient(145deg, #1e293b, #0f172a);
 
-  /* Dark shadows */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
-  --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
-  --shadow-xl: 0 20px 40px -12px rgba(0, 0, 0, 0.6);
-  --shadow-glow: 0 0 50px -10px rgba(21, 84, 247, 0.4);
-  --shadow-glow-accent: 0 0 50px -10px rgba(248, 101, 69, 0.4);
+  /* Deep Colored Shadows */
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -4px rgba(0, 0, 0, 0.3);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.6), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
+  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+
+  --shadow-glow: 0 0 30px rgba(99, 102, 241, 0.2);
+  --shadow-glow-accent: 0 0 30px rgba(249, 115, 22, 0.2);
 }
 
 /* ========================================
@@ -216,10 +230,23 @@ body {
   /* ===== CARDS ===== */
   .card {
     background: var(--color-bg-secondary);
-    border: 1px solid var(--color-border-subtle);
-    @apply rounded-2xl p-6;
-    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--color-border);
+    @apply rounded-2xl p-6 relative overflow-hidden;
+    box-shadow: var(--shadow-md);
     @apply transition-all duration-300;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.1), transparent);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
   }
 
   .card-hover {
@@ -229,20 +256,39 @@ body {
   .card-hover:hover {
     transform: translateY(-4px);
     box-shadow: var(--shadow-xl);
-    border-color: rgba(21, 84, 247, 0.2);
+    border-color: rgba(79, 70, 229, 0.3);
   }
 
   .card-glass {
     background: rgba(255, 255, 255, 0.7);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
     @apply rounded-2xl p-6;
   }
 
   .dark .card-glass {
-    background: rgba(17, 24, 39, 0.7);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+  }
+
+  /* Premium Modal/Popup Animation */
+  @keyframes modalPop {
+    0% {
+      opacity: 0;
+      transform: scale(0.95) translateY(10px);
+    }
+
+    100% {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+  }
+
+  .animate-modal-pop {
+    animation: modalPop 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
 
   /* ===== INPUTS ===== */

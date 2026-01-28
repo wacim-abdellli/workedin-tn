@@ -11,9 +11,11 @@ import {
     X,
     Bookmark,
     Bell,
+
 } from 'lucide-react';
 import { Header, Footer } from '../components/layout';
 import Button from '../components/ui/Button';
+import SEO, { SEO_CONFIG } from '../components/common/SEO';
 
 // Mock results
 const MOCK_JOBS = [
@@ -60,7 +62,8 @@ export default function SearchResults() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-gray-50 dark:bg-dark-950 transition-colors duration-300">
+            <SEO {...SEO_CONFIG.search} url="/search" />
             <Header />
 
             <div className="container-custom py-8">
@@ -68,7 +71,7 @@ export default function SearchResults() {
                 <div className="mb-8">
                     <div className="flex items-center gap-4 mb-4">
                         <div className="flex-1 relative">
-                            <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                            <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
                             <input
                                 type="text"
                                 defaultValue={query}
@@ -78,38 +81,38 @@ export default function SearchResults() {
                                     }
                                 }}
                                 placeholder="ابحث..."
-                                className="w-full pr-12 pl-4 py-3 border border-gray-200 rounded-xl text-lg"
+                                className="w-full pr-12 pl-4 py-3 border border-gray-200 dark:border-dark-700 rounded-xl text-lg bg-white dark:bg-dark-900 text-dark-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
                             />
                         </div>
                         <Button
                             variant="outline"
                             onClick={() => setShowFilters(!showFilters)}
-                            className={showFilters ? 'bg-primary-50 border-primary-200' : ''}
+                            className={showFilters ? 'bg-primary-50 dark:bg-primary-900/20 border-primary-200 dark:border-primary-800 text-primary-700 dark:text-primary-400' : 'bg-white dark:bg-dark-900 border-gray-200 dark:border-dark-700 text-dark-700 dark:text-dark-200'}
                         >
                             <Filter className="w-5 h-5 ml-2" />
                             فلترة
                         </Button>
-                        <Button variant="ghost" onClick={() => setShowSaveModal(true)}>
+                        <Button variant="ghost" onClick={() => setShowSaveModal(true)} className="bg-white dark:bg-dark-900 border border-gray-200 dark:border-dark-700 text-dark-700 dark:text-dark-200 hover:bg-gray-50 dark:hover:bg-dark-800">
                             <Bookmark className="w-5 h-5" />
                         </Button>
                     </div>
 
                     {query && (
-                        <p className="text-muted">
-                            نتائج البحث عن: <span className="font-medium text-foreground">"{query}"</span>
+                        <p className="text-gray-500 dark:text-gray-400">
+                            نتائج البحث عن: <span className="font-medium text-dark-900 dark:text-white">"{query}"</span>
                         </p>
                     )}
                 </div>
 
                 {/* Tabs */}
-                <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
+                <div className="flex gap-2 mb-6 overflow-x-auto pb-2 scrollbar-none">
                     {tabs.map(tab => (
                         <button
                             key={tab.id}
                             onClick={() => handleTabChange(tab.id)}
-                            className={`px-4 py-2 rounded-xl whitespace-nowrap transition-colors ${activeTab === tab.id
-                                ? 'bg-primary-600 text-white'
-                                : 'bg-white text-gray-700 hover:bg-gray-100'
+                            className={`px-4 py-2 rounded-xl whitespace-nowrap transition-colors border ${activeTab === tab.id
+                                ? 'bg-primary-600 border-primary-600 text-white shadow-lg shadow-primary-500/25'
+                                : 'bg-white dark:bg-dark-900 border-gray-200 dark:border-dark-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-800'
                                 }`}
                         >
                             {tab.label} ({tab.count})
@@ -119,17 +122,17 @@ export default function SearchResults() {
 
                 {/* Filters Panel */}
                 {showFilters && (
-                    <div className="card mb-6">
+                    <div className="card mb-6 bg-white dark:bg-dark-900 border border-gray-200 dark:border-dark-700 shadow-sm animate-in slide-in-from-top-2 duration-200">
                         <div className="flex items-center justify-between mb-4">
-                            <h3 className="font-bold">فلترة متقدمة</h3>
-                            <button onClick={() => setShowFilters(false)}>
-                                <X className="w-5 h-5 text-gray-400" />
+                            <h3 className="font-bold text-dark-900 dark:text-white">فلترة متقدمة</h3>
+                            <button onClick={() => setShowFilters(false)} className="p-1 hover:bg-gray-100 dark:hover:bg-dark-800 rounded-full transition-colors">
+                                <X className="w-5 h-5 text-gray-400 dark:text-gray-500" />
                             </button>
                         </div>
                         <div className="grid md:grid-cols-4 gap-4">
                             <div>
-                                <label className="block text-sm font-medium mb-2">التصنيف</label>
-                                <select className="w-full px-3 py-2 border border-gray-200 rounded-xl bg-white">
+                                <label className="block text-sm font-medium mb-2 text-dark-700 dark:text-dark-300">التصنيف</label>
+                                <select className="w-full px-3 py-2 border border-gray-200 dark:border-dark-700 rounded-xl bg-white dark:bg-dark-800 text-dark-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 transition-all">
                                     <option>الكل</option>
                                     <option>تصميم جرافيكي</option>
                                     <option>برمجة وتطوير</option>
@@ -137,8 +140,8 @@ export default function SearchResults() {
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium mb-2">الموقع</label>
-                                <select className="w-full px-3 py-2 border border-gray-200 rounded-xl bg-white">
+                                <label className="block text-sm font-medium mb-2 text-dark-700 dark:text-dark-300">الموقع</label>
+                                <select className="w-full px-3 py-2 border border-gray-200 dark:border-dark-700 rounded-xl bg-white dark:bg-dark-800 text-dark-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 transition-all">
                                     <option>الكل</option>
                                     <option>عن بعد</option>
                                     <option>تونس العاصمة</option>
@@ -146,8 +149,8 @@ export default function SearchResults() {
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium mb-2">الميزانية</label>
-                                <select className="w-full px-3 py-2 border border-gray-200 rounded-xl bg-white">
+                                <label className="block text-sm font-medium mb-2 text-dark-700 dark:text-dark-300">الميزانية</label>
+                                <select className="w-full px-3 py-2 border border-gray-200 dark:border-dark-700 rounded-xl bg-white dark:bg-dark-800 text-dark-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 transition-all">
                                     <option>الكل</option>
                                     <option>أقل من 100 د.ت</option>
                                     <option>100-500 د.ت</option>
@@ -155,8 +158,8 @@ export default function SearchResults() {
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium mb-2">التقييم</label>
-                                <select className="w-full px-3 py-2 border border-gray-200 rounded-xl bg-white">
+                                <label className="block text-sm font-medium mb-2 text-dark-700 dark:text-dark-300">التقييم</label>
+                                <select className="w-full px-3 py-2 border border-gray-200 dark:border-dark-700 rounded-xl bg-white dark:bg-dark-800 text-dark-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 transition-all">
                                     <option>الكل</option>
                                     <option>4+ نجوم</option>
                                     <option>4.5+ نجوم</option>
@@ -165,7 +168,7 @@ export default function SearchResults() {
                         </div>
                         <div className="flex gap-3 mt-4">
                             <Button variant="primary" size="sm">تطبيق</Button>
-                            <Button variant="ghost" size="sm">إعادة تعيين</Button>
+                            <Button variant="ghost" size="sm" className="text-dark-600 dark:text-dark-300 hover:bg-gray-100 dark:hover:bg-dark-800">إعادة تعيين</Button>
                         </div>
                     </div>
                 )}
@@ -177,21 +180,21 @@ export default function SearchResults() {
                         <div
                             key={job.id}
                             onClick={() => navigate(`/jobs/${job.id}`)}
-                            className="card cursor-pointer hover:shadow-md transition-shadow"
+                            className="card cursor-pointer hover:shadow-md transition-all duration-200 bg-white dark:bg-dark-900 border border-gray-200 dark:border-dark-700 dark:shadow-none dark:hover:bg-dark-800 group"
                         >
                             <div className="flex items-start gap-4">
-                                <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center shrink-0">
-                                    <Briefcase className="w-6 h-6 text-blue-600" />
+                                <div className="w-12 h-12 rounded-xl bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                                    <Briefcase className="w-6 h-6 text-primary-600 dark:text-primary-400" />
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-start justify-between gap-4">
                                         <div>
-                                            <span className="text-xs text-primary-600 font-medium">{job.category}</span>
-                                            <h3 className="font-bold text-foreground mt-1">{job.title}</h3>
+                                            <span className="text-xs text-primary-600 dark:text-primary-400 font-medium">{job.category}</span>
+                                            <h3 className="font-bold text-dark-900 dark:text-white mt-1 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">{job.title}</h3>
                                         </div>
-                                        <span className="text-primary-600 font-bold whitespace-nowrap">{job.budget}</span>
+                                        <span className="text-primary-600 dark:text-white font-bold whitespace-nowrap bg-primary-50 dark:bg-primary-900/30 px-2 py-1 rounded-lg text-sm">{job.budget}</span>
                                     </div>
-                                    <div className="flex flex-wrap items-center gap-4 mt-3 text-sm text-muted">
+                                    <div className="flex flex-wrap items-center gap-4 mt-3 text-sm text-gray-500 dark:text-gray-400">
                                         <span className="flex items-center gap-1">
                                             <MapPin className="w-4 h-4" />
                                             {job.location}
@@ -203,7 +206,7 @@ export default function SearchResults() {
                                     </div>
                                     <div className="flex flex-wrap gap-2 mt-3">
                                         {job.skills.map(skill => (
-                                            <span key={skill} className="px-2 py-1 bg-gray-100 text-gray-700 rounded-lg text-xs">
+                                            <span key={skill} className="px-2 py-1 bg-gray-100 dark:bg-dark-800 text-gray-700 dark:text-gray-300 rounded-lg text-xs border border-transparent dark:border-dark-700">
                                                 {skill}
                                             </span>
                                         ))}
@@ -218,33 +221,33 @@ export default function SearchResults() {
                         <div
                             key={freelancer.id}
                             onClick={() => navigate(`/freelancer/${freelancer.id}`)}
-                            className="card cursor-pointer hover:shadow-md transition-shadow"
+                            className="card cursor-pointer hover:shadow-md transition-all duration-200 bg-white dark:bg-dark-900 border border-gray-200 dark:border-dark-700 dark:shadow-none dark:hover:bg-dark-800 group"
                         >
                             <div className="flex items-start gap-4">
-                                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary-400 to-secondary-500 flex items-center justify-center text-white font-bold text-xl shrink-0">
+                                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary-400 to-secondary-500 flex items-center justify-center text-white font-bold text-xl shrink-0 shadow-lg shadow-primary-500/20">
                                     {freelancer.name.charAt(0)}
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-start justify-between gap-4">
                                         <div>
-                                            <h3 className="font-bold text-foreground">{freelancer.name}</h3>
-                                            <p className="text-muted">{freelancer.title}</p>
+                                            <h3 className="font-bold text-dark-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">{freelancer.name}</h3>
+                                            <p className="text-gray-500 dark:text-gray-400">{freelancer.title}</p>
                                         </div>
-                                        <span className="text-primary-600 font-bold whitespace-nowrap">{freelancer.hourlyRate} د.ت/س</span>
+                                        <span className="text-primary-600 dark:text-primary-400 font-bold whitespace-nowrap">{freelancer.hourlyRate} د.ت/س</span>
                                     </div>
                                     <div className="flex flex-wrap items-center gap-4 mt-2 text-sm">
-                                        <span className="flex items-center gap-1 text-yellow-600">
-                                            <Star className="w-4 h-4 fill-yellow-500" />
+                                        <span className="flex items-center gap-1 text-warning-600 dark:text-warning-400">
+                                            <Star className="w-4 h-4 fill-current" />
                                             {freelancer.rating} ({freelancer.reviews})
                                         </span>
-                                        <span className="flex items-center gap-1 text-muted">
+                                        <span className="flex items-center gap-1 text-gray-500 dark:text-gray-400">
                                             <MapPin className="w-4 h-4" />
                                             {freelancer.location}
                                         </span>
                                     </div>
                                     <div className="flex flex-wrap gap-2 mt-3">
                                         {freelancer.skills.map(skill => (
-                                            <span key={skill} className="px-2 py-1 bg-gray-100 text-gray-700 rounded-lg text-xs">
+                                            <span key={skill} className="px-2 py-1 bg-gray-100 dark:bg-dark-800 text-gray-700 dark:text-gray-300 rounded-lg text-xs border border-transparent dark:border-dark-700">
                                                 {skill}
                                             </span>
                                         ))}
@@ -256,20 +259,20 @@ export default function SearchResults() {
 
                     {/* Skills Tab */}
                     {activeTab === 'skills' && (
-                        <div className="card">
-                            <h3 className="font-bold mb-4">مهارات ذات صلة</h3>
+                        <div className="card bg-white dark:bg-dark-900 border border-gray-200 dark:border-dark-700">
+                            <h3 className="font-bold mb-4 text-dark-900 dark:text-white">مهارات ذات صلة</h3>
                             <div className="grid md:grid-cols-3 gap-4">
                                 {['تصميم شعارات', 'تصميم UI/UX', 'برمجة React', 'ترجمة عربي-إنجليزي', 'تسويق رقمي'].map(skill => (
                                     <button
                                         key={skill}
                                         onClick={() => setSearchParams({ q: skill, type: 'all' })}
-                                        className="p-4 bg-gray-50 hover:bg-gray-100 rounded-xl text-right transition-colors"
+                                        className="p-4 bg-gray-50 dark:bg-dark-800 hover:bg-gray-100 dark:hover:bg-dark-700 rounded-xl text-right transition-colors group"
                                     >
                                         <div className="flex items-center justify-between">
-                                            <Tag className="w-5 h-5 text-primary-600" />
-                                            <span className="text-sm text-muted">150 نتيجة</span>
+                                            <Tag className="w-5 h-5 text-primary-600 dark:text-primary-400 group-hover:scale-110 transition-transform" />
+                                            <span className="text-sm text-gray-500 dark:text-gray-400">150 نتيجة</span>
                                         </div>
-                                        <p className="font-medium mt-2">{skill}</p>
+                                        <p className="font-medium mt-2 text-dark-900 dark:text-white">{skill}</p>
                                     </button>
                                 ))}
                             </div>
@@ -281,25 +284,25 @@ export default function SearchResults() {
             {/* Save Search Modal */}
             {showSaveModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-black/50" onClick={() => setShowSaveModal(false)} />
-                    <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
-                        <h3 className="text-xl font-bold mb-4">حفظ البحث</h3>
+                    <div className="absolute inset-0 bg-dark-900/60 backdrop-blur-sm" onClick={() => setShowSaveModal(false)} />
+                    <div className="relative bg-white dark:bg-dark-900 rounded-2xl shadow-xl w-full max-w-md p-6 border border-gray-100 dark:border-dark-700 animate-scale-in">
+                        <h3 className="text-xl font-bold mb-4 text-dark-900 dark:text-white">حفظ البحث</h3>
                         <input
                             type="text"
                             value={savedSearchName}
                             onChange={(e) => setSavedSearchName(e.target.value)}
                             placeholder="اسم البحث المحفوظ"
-                            className="w-full px-4 py-3 border border-gray-200 rounded-xl mb-4"
+                            className="w-full px-4 py-3 border border-gray-200 dark:border-dark-700 rounded-xl mb-4 bg-white dark:bg-dark-800 text-dark-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
                         />
                         <div className="space-y-2 mb-4">
-                            <label className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl cursor-pointer">
-                                <input type="checkbox" className="w-4 h-4" />
-                                <Bell className="w-5 h-5 text-gray-500" />
-                                <span>إشعاري عند وجود نتائج جديدة</span>
+                            <label className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-dark-800 rounded-xl cursor-pointer hover:bg-gray-100 dark:hover:bg-dark-700 transition-colors">
+                                <input type="checkbox" className="w-4 h-4 rounded text-primary-600 focus:ring-primary-500 bg-white dark:bg-dark-900 border-gray-300 dark:border-dark-600" />
+                                <Bell className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                                <span className="text-dark-700 dark:text-gray-300">إشعاري عند وجود نتائج جديدة</span>
                             </label>
                         </div>
                         <div className="flex gap-3">
-                            <Button variant="ghost" className="flex-1" onClick={() => setShowSaveModal(false)}>
+                            <Button variant="ghost" className="flex-1 text-dark-600 dark:text-dark-300 hover:bg-gray-100 dark:hover:bg-dark-800" onClick={() => setShowSaveModal(false)}>
                                 إلغاء
                             </Button>
                             <Button variant="primary" className="flex-1" onClick={handleSaveSearch}>

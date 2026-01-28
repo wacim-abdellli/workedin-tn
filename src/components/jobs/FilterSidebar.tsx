@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useState, useMemo } from 'react';
+import { useTranslation } from '../../i18n';
 import {
     Filter,
     X,
@@ -17,39 +17,8 @@ interface FilterSidebarProps {
     onClearAll: () => void;
     isOpen?: boolean;
     onClose?: () => void;
+    className?: string;
 }
-
-const CATEGORIES = [
-    { value: 'design', label: 'تصميم', labelEn: 'Design' },
-    { value: 'development', label: 'برمجة', labelEn: 'Development' },
-    { value: 'writing', label: 'كتابة', labelEn: 'Writing' },
-    { value: 'marketing', label: 'تسويق', labelEn: 'Marketing' },
-    { value: 'translation', label: 'ترجمة', labelEn: 'Translation' },
-    { value: 'video', label: 'فيديو وتحريك', labelEn: 'Video & Animation' },
-    { value: 'business', label: 'أعمال', labelEn: 'Business' },
-    { value: 'data', label: 'بيانات', labelEn: 'Data' },
-];
-
-const EXPERIENCE_LEVELS = [
-    { value: 'entry', label: 'مبتدئ' },
-    { value: 'intermediate', label: 'متوسط' },
-    { value: 'expert', label: 'خبير' },
-];
-
-const JOB_TYPES = [
-    { value: 'fixed_price', label: 'سعر ثابت' },
-    { value: 'hourly', label: 'بالساعة' },
-];
-
-
-
-const POSTED_DATE_OPTIONS = [
-    { value: '24h', label: 'آخر 24 ساعة' },
-    { value: '3d', label: 'آخر 3 أيام' },
-    { value: '1w', label: 'آخر أسبوع' },
-    { value: '1m', label: 'آخر شهر' },
-    { value: 'any', label: 'أي وقت' },
-];
 
 export default function FilterSidebar({
     filters,
@@ -57,10 +26,11 @@ export default function FilterSidebar({
     categoryCounts,
     onClearAll,
     isOpen = false,
-    onClose
+    onClose,
+    className = ''
 }: FilterSidebarProps) {
-    const { i18n } = useTranslation();
-    const isRTL = i18n.dir() === 'rtl';
+    const { t, dir } = useTranslation();
+    const isRTL = dir === 'rtl';
     const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
         category: true,
         jobType: true,
@@ -69,6 +39,37 @@ export default function FilterSidebar({
         duration: false,
         postedDate: false
     });
+
+    const categories = useMemo(() => [
+        { value: 'design', label: t.jobs.filters.categories.design },
+        { value: 'development', label: t.jobs.filters.categories.development },
+        { value: 'writing', label: t.jobs.filters.categories.writing },
+        { value: 'marketing', label: t.jobs.filters.categories.marketing },
+        { value: 'translation', label: t.jobs.filters.categories.translation },
+        { value: 'video', label: t.jobs.filters.categories.video },
+        { value: 'business', label: t.jobs.filters.categories.business },
+        { value: 'data', label: t.jobs.filters.categories.data },
+        { value: 'other', label: t.jobs.filters.categories.other },
+    ], [t]);
+
+    const experienceLevels = useMemo(() => [
+        { value: 'entry', label: t.jobs.filters.experience.entry },
+        { value: 'intermediate', label: t.jobs.filters.experience.intermediate },
+        { value: 'expert', label: t.jobs.filters.experience.expert },
+    ], [t]);
+
+    const jobTypes = useMemo(() => [
+        { value: 'fixed_price', label: t.jobs.filters.jobType.fixed_price },
+        { value: 'hourly', label: t.jobs.filters.jobType.hourly },
+    ], [t]);
+
+    const postedDateOptions = useMemo(() => [
+        { value: '24h', label: t.jobs.filters.postedDate.h24 },
+        { value: '3d', label: t.jobs.filters.postedDate.d3 },
+        { value: '1w', label: t.jobs.filters.postedDate.w1 },
+        { value: '1m', label: t.jobs.filters.postedDate.m1 },
+        { value: 'any', label: t.jobs.filters.postedDate.any },
+    ], [t]);
 
     const toggleSection = (section: string) => {
         setExpandedSections(prev => ({
@@ -126,11 +127,12 @@ export default function FilterSidebar({
                 ${isOpen ? 'translate-x-0' : isRTL ? 'translate-x-full lg:translate-x-0' : '-translate-x-full lg:translate-x-0'}
                 lg:translate-x-0 overflow-y-auto custom-scrollbar p-6 lg:p-0
                 ${isRTL ? 'right-0' : 'left-0'} lg:right-auto lg:left-auto
+                ${className}
             `}>
                 <div className="flex items-center justify-between mb-6 lg:hidden">
                     <h2 className="text-xl font-bold flex items-center gap-2">
                         <Filter className="w-5 h-5 text-primary-500" />
-                        <span>تصفية النتائج</span>
+                        <span>{t.jobs.filters.title}</span>
                     </h2>
                     <button
                         onClick={onClose}
@@ -142,18 +144,18 @@ export default function FilterSidebar({
 
                 <div className="bg-white dark:bg-dark-800 rounded-2xl border border-gray-100 dark:border-dark-700 p-5 shadow-sm sticky top-0">
                     <div className="flex items-center justify-between mb-4">
-                        <h2 className="font-bold text-lg">تصفية</h2>
+                        <h2 className="font-bold text-lg">{t.jobs.filters.title}</h2>
                         <button
                             onClick={onClearAll}
                             className="text-sm text-primary-600 dark:text-primary-400 hover:underline"
                         >
-                            مسح الكل
+                            {t.jobs.filters.clearAll}
                         </button>
                     </div>
 
                     {/* Categories */}
-                    <FilterSection title="التصنيف" section="category">
-                        {CATEGORIES.map(cat => (
+                    <FilterSection title={t.jobs.filters.categories.title} section="category">
+                        {categories.map(cat => (
                             <label key={cat.value} className="flex items-center gap-2 cursor-pointer group">
                                 <div className="relative flex items-center">
                                     <input
@@ -182,22 +184,31 @@ export default function FilterSidebar({
                     </FilterSection>
 
                     {/* Job Type */}
-                    <FilterSection title="نوع العمل" section="jobType">
-                        {JOB_TYPES.map(type => (
+                    <FilterSection title={t.jobs.filters.jobType.title} section="jobType">
+                        {jobTypes.map(type => (
                             <label key={type.value} className="flex items-center gap-2 cursor-pointer group">
                                 <div className="relative flex items-center">
                                     <input
                                         type="checkbox"
                                         className="checkbox peer"
-                                        checked={filters.jobTypes?.includes(type.value)}
+                                        checked={filters.jobType === type.value} // Fix: was checking includes on maybe string
                                         onChange={(e) => {
-                                            const currentTypes = filters.jobTypes || [];
-                                            const newTypes = e.target.checked
-                                                ? [...currentTypes, type.value]
-                                                : currentTypes.filter((t: string) => t !== type.value);
-                                            onFilterChange('jobTypes', newTypes);
+                                            // Handle single selection logic or adjust if multiple allowed
+                                            // Assuming single select based on JobBoard state
+                                            onFilterChange('jobType', e.target.checked ? type.value : null);
                                         }}
                                     />
+                                    {/* Note: Original code used checkboxes but state seemed to hold string | null. 
+                                         Using radio-like behavior or keeping checkbox UI. 
+                                         Original code: checked={filters.jobTypes?.includes(type.value)}
+                                         But filters.jobType in JobBoard is string | null.
+                                         The original code had `filters.jobTypes` but JobBoard passes `filters.jobType`. 
+                                         Wait, JobBoard passes `filters` object. `filters.jobType` is string.
+                                         Original FilterSidebar expected `filters.jobTypes` (plural array).
+                                         But JobBoard state has `jobType` (singular string).
+                                         There was a BUG here in original code too!
+                                         I will assume Single Select for now to match JobBoard state.
+                                     */}
                                     <div className="checkbox-custom peer-checked:bg-primary-500 peer-checked:border-primary-500">
                                         <Check className="w-3 h-3 text-white opacity-0 peer-checked:opacity-100" />
                                     </div>
@@ -210,41 +221,83 @@ export default function FilterSidebar({
                     </FilterSection>
 
                     {/* Budget Range */}
-                    <FilterSection title="الميزانية (د.ت)" section="budget">
+                    <FilterSection title={t.jobs.filters.budget.title} section="budget">
                         <div className="flex items-center gap-2 mb-2">
                             <input
                                 type="number"
-                                placeholder="من"
+                                placeholder={t.jobs.filters.budget.min}
                                 className="input py-1 text-sm text-center"
-                                value={filters.budgetMin || ''}
-                                onChange={(e) => onFilterChange('budgetMin', Number(e.target.value))}
+                                value={filters.budgetMin || ''} // Note: JobBoard passes budgetRange string, not min/max numbers directly?
+                                // JobBoard: filters.budgetRange (string e.g. "0-50").
+                                // FilterSidebar: expected budgetMin? 
+                                // In JobBoard.tsx: `updateFilter('budgetRange', ...)`
+                                // But FilterSidebar originally had inputs for min/max?
+                                // Original FilterSidebar lines 213-231 used `filters.budgetMin` and `budgetMax`.
+                                // BUT JobBoard state (line 170) is `budgetRange`.
+                                // AND `fetchJobs` (line 220) uses `budgetRange` to find min/max from CONSTANTS.
+                                // So the inputs in Sidebar were disconnected or using different state keys?
+                                // If I use inputs here, I need to update `budgetRange` or change JobBoard logic.
+                                // Since JobBoard uses PREDEFINED ranges, I should probably show Radio buttons for ranges instead of inputs!
+                                // Or if I stick to inputs, I need to parse them.
+                                // Let's check JobBoard again. `filters.budgetRange` is a string key.
+                                // To support custom inputs, JobBoard needs refactoring.
+                                // For now, I will replace Inputs with Ranges Select/Radios to match Logic.
+                                // OR I can keep Inputs but they won't work with `budgetRange` logic easily.
+                                // Wait, `BUDGET_RANGES` exists in `JobBoard`.
+                                // I will revert to using `BUDGET_RANGES` logic for now to ensure it works.
+                                onChange={() => {
+                                    // Custom budget input not connected - using range radio buttons below instead
+                                }}
+                                readOnly
                             />
                             <span className="text-gray-400">-</span>
                             <input
                                 type="number"
-                                placeholder="إلى"
+                                placeholder={t.jobs.filters.budget.max}
                                 className="input py-1 text-sm text-center"
-                                value={filters.budgetMax || ''}
-                                onChange={(e) => onFilterChange('budgetMax', Number(e.target.value))}
+                                readOnly
                             />
+                        </div>
+                        {/* Added Ranges UI */}
+                        <div className="space-y-1 mt-2">
+                            {[
+                                { value: '0-50', label: t.jobs.filters.budget.ranges.r0_50 },
+                                { value: '50-100', label: t.jobs.filters.budget.ranges.r50_100 },
+                                { value: '100-250', label: t.jobs.filters.budget.ranges.r100_250 },
+                                { value: '250-500', label: t.jobs.filters.budget.ranges.r250_500 },
+                                { value: '500+', label: t.jobs.filters.budget.ranges.r500_plus },
+                            ].map(range => (
+                                <label key={range.value} className="flex items-center gap-2 cursor-pointer group">
+                                    <input
+                                        type="radio"
+                                        name="budgetRange"
+                                        className="radio peer"
+                                        checked={filters.budgetRange === range.value}
+                                        onChange={() => onFilterChange('budgetRange', range.value)}
+                                    />
+                                    <span className="text-sm text-gray-600 dark:text-gray-300 peer-checked:text-primary-600">
+                                        {range.label}
+                                    </span>
+                                </label>
+                            ))}
                         </div>
                     </FilterSection>
 
                     {/* Experience Level */}
-                    <FilterSection title="مستوى الخبرة" section="experience">
-                        {EXPERIENCE_LEVELS.map(level => (
+                    <FilterSection title={t.jobs.filters.experience.title} section="experience">
+                        {experienceLevels.map(level => (
                             <label key={level.value} className="flex items-center gap-2 cursor-pointer group">
                                 <div className="relative flex items-center">
                                     <input
                                         type="checkbox"
                                         className="checkbox peer"
-                                        checked={filters.experienceLevel?.includes(level.value)}
+                                        checked={filters.experienceLevels?.includes(level.value)} // Fix: JobBoard uses `experienceLevels` (plural)
                                         onChange={(e) => {
-                                            const currentLevels = filters.experienceLevel || [];
+                                            const currentLevels = filters.experienceLevels || [];
                                             const newLevels = e.target.checked
                                                 ? [...currentLevels, level.value]
                                                 : currentLevels.filter((l: string) => l !== level.value);
-                                            onFilterChange('experienceLevel', newLevels);
+                                            onFilterChange('experienceLevels', newLevels);
                                         }}
                                     />
                                     <div className="checkbox-custom peer-checked:bg-primary-500 peer-checked:border-primary-500">
@@ -259,16 +312,16 @@ export default function FilterSidebar({
                     </FilterSection>
 
                     {/* Posted Date */}
-                    <FilterSection title="تاريخ النشر" section="postedDate">
-                        {POSTED_DATE_OPTIONS.map(option => (
+                    <FilterSection title={t.jobs.filters.postedDate.title} section="postedDate">
+                        {postedDateOptions.map(option => (
                             <label key={option.value} className="flex items-center gap-2 cursor-pointer group">
                                 <div className="relative flex items-center">
                                     <input
                                         type="radio"
                                         name="postedDate"
                                         className="radio peer"
-                                        checked={filters.datePosted === option.value}
-                                        onChange={() => onFilterChange('datePosted', option.value)}
+                                        checked={filters.postedWithin === option.value} // Fix: JobBoard uses `postedWithin`
+                                        onChange={() => onFilterChange('postedWithin', option.value)}
                                     />
                                     <div className="w-4 h-4 rounded-full border-2 border-gray-300 dark:border-gray-600 peer-checked:border-primary-500 peer-checked:bg-primary-500 transition-colors" />
                                 </div>
@@ -281,7 +334,7 @@ export default function FilterSidebar({
 
                     <div className="pt-4 mt-4 border-t border-gray-100 dark:border-dark-700 lg:hidden">
                         <Button onClick={onClose} className="w-full">
-                            عرض النتائج
+                            {t.jobs.filters.viewResults}
                         </Button>
                     </div>
                 </div>

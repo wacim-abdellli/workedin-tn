@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { Header } from '../components/layout';
 import Button from '../components/ui/Button';
+import SEO, { SEO_CONFIG } from '../components/common/SEO';
 
 // Mock conversations
 const MOCK_CONVERSATIONS = [
@@ -438,6 +439,7 @@ export default function Messages() {
 
     return (
         <div className="min-h-screen bg-white">
+            <SEO {...SEO_CONFIG.messages} url="/messages" noIndex />
             <Header />
 
             <div className="h-[calc(100vh-64px)] flex">

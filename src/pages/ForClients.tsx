@@ -6,6 +6,7 @@ import {
     Zap, Shield, Users, Star
 } from 'lucide-react';
 import { useTranslation } from '../i18n';
+import SEO, { SEO_CONFIG } from '../components/common/SEO';
 
 function ForClients() {
     const { t } = useTranslation();
@@ -19,6 +20,7 @@ function ForClients() {
 
     return (
         <div className="min-h-screen bg-white">
+            <SEO {...SEO_CONFIG.forClients} url="/for-clients" />
             <Header />
 
             {/* Hero */}

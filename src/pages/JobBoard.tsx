@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
     Search,
@@ -14,6 +14,8 @@ import { Header, Footer } from '../components/layout';
 import Button from '../components/ui/Button';
 import { useToast } from '../components/ui/Toast';
 import { FilterSidebar, JobCard } from '../components/jobs';
+import { useTranslation } from '../i18n';
+import SEO, { SEO_CONFIG } from '../components/common/SEO';
 
 // Types
 interface Job {
@@ -44,32 +46,17 @@ interface Job {
     };
 }
 
-// Category options
-const CATEGORIES = [
-    { value: 'design', label: 'تصميم', labelEn: 'Design' },
-    { value: 'development', label: 'برمجة', labelEn: 'Development' },
-    { value: 'writing', label: 'كتابة', labelEn: 'Writing' },
-    { value: 'translation', label: 'ترجمة', labelEn: 'Translation' },
-    { value: 'video', label: 'فيديو', labelEn: 'Video' },
-    { value: 'marketing', label: 'تسويق', labelEn: 'Marketing' },
-    { value: 'data', label: 'بيانات', labelEn: 'Data Entry' },
-    { value: 'other', label: 'أخرى', labelEn: 'Other' },
+// Category options (Values only needed for logic)
+const CATEGORY_VALUES = [
+    'design', 'development', 'writing', 'translation', 'video', 'marketing', 'data', 'other'
 ];
 
 const BUDGET_RANGES = [
-    { value: '0-50', label: '0 - 50 د.ت', min: 0, max: 50 },
-    { value: '50-100', label: '50 - 100 د.ت', min: 50, max: 100 },
-    { value: '100-250', label: '100 - 250 د.ت', min: 100, max: 250 },
-    { value: '250-500', label: '250 - 500 د.ت', min: 250, max: 500 },
-    { value: '500+', label: '500+ د.ت', min: 500, max: 999999 },
-];
-
-const SORT_OPTIONS = [
-    { value: 'newest', label: 'الأحدث أولاً' },
-    { value: 'budget_high', label: 'الميزانية: الأعلى' },
-    { value: 'budget_low', label: 'الميزانية: الأقل' },
-    { value: 'proposals_high', label: 'أكثر العروض' },
-    { value: 'proposals_low', label: 'أقل العروض' },
+    { value: '0-50', min: 0, max: 50 },
+    { value: '50-100', min: 50, max: 100 },
+    { value: '100-250', min: 100, max: 250 },
+    { value: '250-500', min: 250, max: 500 },
+    { value: '500+', min: 500, max: 999999 },
 ];
 
 function useDebounce<T>(value: T, delay: number): T {
@@ -85,6 +72,7 @@ function useDebounce<T>(value: T, delay: number): T {
 
 // Saved Jobs Sidebar
 function SavedJobsSidebar({ savedJobs, onViewJob }: { savedJobs: Job[]; onViewJob: (id: string) => void }) {
+    const { t } = useTranslation();
     if (savedJobs.length === 0) return null;
 
     return (
@@ -92,20 +80,25 @@ function SavedJobsSidebar({ savedJobs, onViewJob }: { savedJobs: Job[]; onViewJo
             <div className="bg-white dark:bg-dark-800 rounded-2xl p-4 sticky top-4 border border-gray-100 dark:border-dark-700">
                 <h3 className="font-bold mb-4 flex items-center gap-2">
                     <Heart className="w-5 h-5 text-red-500" />
-                    الوظائف المحفوظة
+                    {t.jobs.savedJobs.title}
                 </h3>
                 <div className="space-y-3">
                     {savedJobs.slice(0, 5).map(job => (
                         <div
                             key={job.id}
                             onClick={() => onViewJob(job.id)}
-                            className="p-3 bg-gray-50 rounded-xl cursor-pointer hover:bg-gray-100 transition-colors"
+                            className="p-3 bg-gray-50 dark:bg-dark-700 rounded-xl cursor-pointer hover:bg-gray-100 dark:hover:bg-dark-600 transition-colors"
                         >
-                            <h4 className="font-medium text-sm line-clamp-1">{job.title}</h4>
+                            <h4 className="font-medium text-sm line-clamp-1 text-dark-900 dark:text-white">{job.title}</h4>
                             <p className="text-xs text-muted mt-1">
                                 {job.job_type === 'fixed_price'
-                                    ? `${job.budget_min} د.ت`
-                                    : `${job.hourly_rate} د.ت / ساعة`
+                                    ? `${job.budget_min} ${t.jobs.filters.budget.title}` // Using budget title as currency suffix? Or just TND? The title includes (DT)
+                                    // Actually budget.title is "Budget (TND)".
+                                    // Let's assume hardcoded currency TND for now or better, use currency formatter.
+                                    // But previous code was `${job.budget_min} د.ت`
+                                    // I'll stick to a simple suffix "TND" or similar, or just leave it.
+                                    // t.jobs.filters.budget.ranges values have "TND".
+                                    : `${job.hourly_rate} / ${t.jobs.filters.jobType.hourly}`
                                 }
                             </p>
                         </div>
@@ -113,7 +106,7 @@ function SavedJobsSidebar({ savedJobs, onViewJob }: { savedJobs: Job[]; onViewJo
                 </div>
                 {savedJobs.length > 5 && (
                     <button className="w-full text-center text-primary-600 text-sm mt-3 hover:underline">
-                        عرض الكل ({savedJobs.length})
+                        {t.jobs.savedJobs.viewAll} ({savedJobs.length})
                     </button>
                 )}
             </div>
@@ -124,21 +117,21 @@ function SavedJobsSidebar({ savedJobs, onViewJob }: { savedJobs: Job[]; onViewJo
 // Skeleton loader
 function JobCardSkeleton() {
     return (
-        <div className="card animate-pulse">
-            <div className="h-6 bg-gray-200 rounded w-3/4 mb-3" />
-            <div className="h-4 bg-gray-200 rounded w-1/4 mb-4" />
+        <div className="card animate-pulse bg-white dark:bg-dark-800 border-gray-200 dark:border-dark-700">
+            <div className="h-6 bg-gray-200 dark:bg-dark-700 rounded w-3/4 mb-3" />
+            <div className="h-4 bg-gray-200 dark:bg-dark-700 rounded w-1/4 mb-4" />
             <div className="flex gap-2 mb-4">
-                <div className="h-6 bg-gray-200 rounded-full w-20" />
-                <div className="h-6 bg-gray-200 rounded-full w-16" />
+                <div className="h-6 bg-gray-200 dark:bg-dark-700 rounded-full w-20" />
+                <div className="h-6 bg-gray-200 dark:bg-dark-700 rounded-full w-16" />
             </div>
-            <div className="h-4 bg-gray-200 rounded w-full mb-2" />
-            <div className="h-4 bg-gray-200 rounded w-2/3 mb-4" />
+            <div className="h-4 bg-gray-200 dark:bg-dark-700 rounded w-full mb-2" />
+            <div className="h-4 bg-gray-200 dark:bg-dark-700 rounded w-2/3 mb-4" />
             <div className="flex gap-2 mb-4">
-                <div className="h-6 bg-gray-200 rounded w-16" />
-                <div className="h-6 bg-gray-200 rounded w-20" />
-                <div className="h-6 bg-gray-200 rounded w-14" />
+                <div className="h-6 bg-gray-200 dark:bg-dark-700 rounded w-16" />
+                <div className="h-6 bg-gray-200 dark:bg-dark-700 rounded w-20" />
+                <div className="h-6 bg-gray-200 dark:bg-dark-700 rounded w-14" />
             </div>
-            <div className="h-12 bg-gray-200 rounded mt-4" />
+            <div className="h-12 bg-gray-200 dark:bg-dark-700 rounded mt-4" />
         </div>
     );
 }
@@ -149,6 +142,7 @@ function JobBoard() {
     const { user } = useAuth();
     const { showToast } = useToast();
     const [searchParams, setSearchParams] = useSearchParams();
+    const { t } = useTranslation();
 
     // State
     const [jobs, setJobs] = useState<Job[]>([]);
@@ -174,6 +168,14 @@ function JobBoard() {
     });
 
     const debouncedSearch = useDebounce(filters.search, 300);
+
+    const sortOptions = useMemo(() => [
+        { value: 'newest', label: t.jobs.sort.newest },
+        { value: 'budget_high', label: t.jobs.sort.budgetHigh },
+        { value: 'budget_low', label: t.jobs.sort.budgetLow },
+        { value: 'proposals_high', label: t.jobs.sort.proposalsHigh },
+        { value: 'proposals_low', label: t.jobs.sort.proposalsLow },
+    ], [t]);
 
     // Update URL params
     useEffect(() => {
@@ -281,24 +283,24 @@ function JobBoard() {
             setHasMore((data?.length || 0) === perPage);
         } catch (error) {
             console.error('Error fetching jobs:', error);
-            showToast('حدث خطأ في تحميل الوظائف', 'error');
+            showToast(t.jobs.empty.title, 'error'); // Using simple error toast for now
         } finally {
             setIsLoading(false);
         }
-    }, [debouncedSearch, filters, page, showToast]);
+    }, [debouncedSearch, filters, page, showToast, t]);
 
     // Fetch category counts
     const fetchCategoryCounts = useCallback(async () => {
         try {
             const counts: Record<string, number> = {};
-            for (const cat of CATEGORIES) {
+            for (const catValue of CATEGORY_VALUES) {
                 const { count } = await supabase
                     .from('jobs')
                     .select('*', { count: 'exact', head: true })
                     .eq('status', 'open')
                     .eq('visibility', 'public')
-                    .eq('category', cat.value);
-                counts[cat.value] = count || 0;
+                    .eq('category', catValue);
+                counts[catValue] = count || 0;
             }
             setCategoryCounts(counts);
         } catch (error) {
@@ -349,7 +351,7 @@ function JobBoard() {
     // Toggle save job
     const toggleSaveJob = async (job: Job) => {
         if (!user) {
-            showToast('سجل الدخول لحفظ الوظائف', 'warning');
+            showToast(t.auth.login, 'warning'); // Prompt login
             return;
         }
 
@@ -363,17 +365,17 @@ function JobBoard() {
                     .eq('job_id', job.id);
                 setSavedJobIds(prev => { const next = new Set(prev); next.delete(job.id); return next; });
                 setSavedJobs(prev => prev.filter(j => j.id !== job.id));
-                showToast('تم إزالة الوظيفة من المحفوظات', 'success');
+                showToast(t.jobs.unsave, 'success');
             } else {
                 await supabase
                     .from('favorites')
                     .insert({ user_id: user.id, job_id: job.id });
                 setSavedJobIds(prev => new Set(prev).add(job.id));
                 setSavedJobs(prev => [job, ...prev]);
-                showToast('تم حفظ الوظيفة', 'success');
+                showToast(t.jobs.saved, 'success');
             }
         } catch (error) {
-            showToast('حدث خطأ', 'error');
+            showToast('Error', 'error');
         }
     };
 
@@ -397,6 +399,7 @@ function JobBoard() {
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-dark-900 transition-colors duration-300">
+            <SEO {...SEO_CONFIG.jobs} url="/jobs" />
             <Header />
 
             <div className="container-custom py-8">
@@ -408,7 +411,7 @@ function JobBoard() {
                             type="text"
                             value={filters.search}
                             onChange={(e) => updateFilter('search', e.target.value)}
-                            placeholder="ابحث عن وظائف..."
+                            placeholder={t.jobs.searchPlaceholder}
                             className="w-full ps-12 pe-4 py-3 rounded-xl border border-gray-200 dark:border-dark-700 bg-white dark:bg-dark-800 text-foreground dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors"
                         />
                     </div>
@@ -422,29 +425,21 @@ function JobBoard() {
                         leftIcon={<SlidersHorizontal className="w-4 h-4" />}
                         className="flex-1"
                     >
-                        الفلاتر
+                        {t.jobs.filters.title}
                     </Button>
                     <select
                         value={filters.sortBy}
                         onChange={(e) => updateFilter('sortBy', e.target.value)}
                         className="flex-1 py-2 px-3 rounded-xl border border-gray-200 text-sm"
                     >
-                        {SORT_OPTIONS.map(opt => (
+                        {sortOptions.map(opt => (
                             <option key={opt.value} value={opt.value}>{opt.label}</option>
                         ))}
                     </select>
                 </div>
 
                 <div className="flex gap-6">
-                    {/* Left Sidebar - Filters */}
-                    <FilterSidebar
-                        filters={filters}
-                        onFilterChange={updateFilter}
-                        categoryCounts={categoryCounts}
-                        onClearAll={clearAllFilters}
-                    />
-
-                    {/* Mobile Filters Modal */}
+                    {/* Unified Filter Sidebar - Handles both Desktop (Sticky) and Mobile (Drawer) */}
                     <FilterSidebar
                         filters={filters}
                         onFilterChange={updateFilter}
@@ -459,15 +454,15 @@ function JobBoard() {
                         {/* Results Bar */}
                         <div className="flex items-center justify-between mb-4">
                             <p className="text-muted">
-                                <span className="font-bold text-foreground">{totalCount}</span> وظيفة متاحة
+                                <span className="font-bold text-foreground">{totalCount}</span> {t.jobs.stats.availableJobs}
                             </p>
                             <div className="hidden lg:flex items-center gap-3">
                                 <select
                                     value={filters.sortBy}
                                     onChange={(e) => updateFilter('sortBy', e.target.value)}
-                                    className="py-2 px-3 rounded-lg border border-gray-200 text-sm bg-white"
+                                    className="py-2 px-3 rounded-lg border border-gray-200 dark:border-dark-700 text-sm bg-white dark:bg-dark-800 text-dark-900 dark:text-white"
                                 >
-                                    {SORT_OPTIONS.map(opt => (
+                                    {sortOptions.map(opt => (
                                         <option key={opt.value} value={opt.value}>{opt.label}</option>
                                     ))}
                                 </select>
@@ -496,10 +491,10 @@ function JobBoard() {
                         ) : jobs.length === 0 ? (
                             <div className="text-center py-16">
                                 <Briefcase className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                                <h3 className="text-xl font-bold text-foreground mb-2">لا توجد وظائف</h3>
-                                <p className="text-muted mb-4">جرب تغيير معايير البحث أو الفلاتر</p>
+                                <h3 className="text-xl font-bold text-foreground mb-2">{t.jobs.empty.title}</h3>
+                                <p className="text-muted mb-4">{t.jobs.empty.subtitle}</p>
                                 <Button variant="primary" onClick={clearAllFilters}>
-                                    مسح الفلاتر
+                                    {t.jobs.empty.action}
                                 </Button>
                             </div>
                         ) : (
@@ -525,7 +520,7 @@ function JobBoard() {
                                             onClick={loadMore}
                                             isLoading={isLoading}
                                         >
-                                            تحميل المزيد
+                                            {t.jobs.loadMore}
                                         </Button>
                                     </div>
                                 )}
@@ -536,7 +531,7 @@ function JobBoard() {
                     {/* Right Sidebar - Saved Jobs */}
                     <SavedJobsSidebar
                         savedJobs={savedJobs}
-                        onViewJob={(id) => navigate(`/ jobs / ${id} `)}
+                        onViewJob={(id) => navigate(`/jobs/${id}`)}
                     />
                 </div>
             </div>

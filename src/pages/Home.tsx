@@ -31,6 +31,7 @@ import { Header, Footer } from '../components/layout';
 import Button from '../components/ui/Button';
 import { supabase } from '../lib/supabase';
 import OptimizedImage from '../components/common/OptimizedImage';
+import SEO, { SEO_CONFIG } from '../components/common/SEO';
 
 // Animated counter hook
 function useAnimatedCounter(end: number, duration: number = 2000) {
@@ -135,6 +136,7 @@ function Home() {
 
     return (
         <div className="min-h-screen">
+            <SEO {...SEO_CONFIG.home} url="/" />
             <Header />
 
             {/* Hero Section - Adaptive Light/Dark */}
@@ -160,10 +162,16 @@ function Home() {
                         </div>
 
                         {/* Main Headline */}
-                        <h1 className="heading-xl text-dark-900 dark:text-white mb-8 animate-slide-up">
+                        <h1 className="heading-xl text-dark-900 dark:text-white mb-8 animate-slide-up flex flex-wrap justify-center gap-x-3 gap-y-1">
                             {t.hero.title.split(' ').map((word, i) => (
-                                <span key={i} className={i === 3 ? 'text-gradient inline-block hover:scale-105 transition-transform cursor-default' : 'inline-block'}>
-                                    {word}{' '}
+                                <span
+                                    key={i}
+                                    className={`inline-block transition-transform duration-300 ${i === 3
+                                        ? 'text-gradient font-extrabold hover:scale-110 cursor-default'
+                                        : 'hover:text-primary-600 dark:hover:text-primary-400'
+                                        }`}
+                                >
+                                    {word}
                                 </span>
                             ))}
                         </h1>

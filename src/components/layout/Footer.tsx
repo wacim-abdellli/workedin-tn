@@ -31,14 +31,13 @@ function Footer() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
                     {/* Brand */}
                     <div className="lg:col-span-2">
-                        <Link to="/" className="flex items-center gap-3 mb-6 group">
-                            <div className="w-12 h-12 rounded-xl gradient-primary flex items-center justify-center shadow-lg shadow-primary-600/30 group-hover:shadow-xl group-hover:shadow-primary-600/40 transition-shadow">
-                                <span className="text-white font-bold text-xl">خ</span>
-                            </div>
-                            <span className="text-2xl font-bold">
-                                <span className="text-gradient">Khedma</span>
-                                <span className="text-accent-400">.tn</span>
-                            </span>
+                        <Link to="/" className="flex items-center group mb-10 -ms-4">
+                            <img src="/logo-icon.png" alt="Khedma" className="w-32 h-32 object-contain" />
+                            <img
+                                src="/logo-text.png"
+                                alt="Khedma.tn"
+                                className="h-24 sm:h-32 w-auto object-contain -ms-10 brightness-0 invert dark:brightness-100 dark:invert-0"
+                            />
                         </Link>
                         <p className="text-dark-400 max-w-md mb-8 leading-relaxed">
                             {t.hero.subtitle}

@@ -14,11 +14,15 @@ export const ar = {
         profile: 'البروفايل',
         settings: 'الإعدادات',
         logout: 'تسجيل الخروج',
+        findWork: 'ابحث عن عمل',
+        findFreelancers: 'ابحث عن موظفين',
+        myJobs: 'وظائفي',
+        saved: 'المحفوظة',
     },
 
     // Hero Section
     hero: {
-        title: 'منصة تونسية %100 للعمل الحر',
+        title: 'منصة العمل الحر المصممة لتونس',
         subtitle: 'بدون مناقصات، بدون تعقيدات، خدمتك وفلوسك',
         ctaFreelancer: 'ابدأ كفريلانسر',
         ctaClient: 'أبحث عن محترفين',
@@ -253,7 +257,104 @@ export const ar = {
         passwordMismatch: 'كلمات المرور غير متطابقة',
         passwordMinLength: 'كلمة المرور يجب أن تكون 6 أحرف على الأقل',
         invalidEmail: 'أدخل بريد إلكتروني صحيح',
-        emailNotConfirmed: 'البريد الإلكتروني غير مؤكد',
+        emailNotConfirmed: 'البريد الإلكتروني غير مفعل',
+        login: 'تسجيل الدخول',
+        signup: 'إنشاء حساب',
+        signOut: 'تسجيل الخروج',
+    },
+    jobs: {
+        title: 'الوظائف المتاحة',
+        searchPlaceholder: 'ابحث عن وظائف...',
+        filters: {
+            title: 'تصفية النتائج',
+            clearAll: 'مسح الكل',
+            categories: {
+                title: 'التصنيف',
+                design: 'تصميم',
+                development: 'برمجة',
+                writing: 'كتابة',
+                marketing: 'تسويق',
+                translation: 'ترجمة',
+                video: 'فيديو وتحريك',
+                business: 'أعمال',
+                data: 'بيانات',
+                other: 'أخرى'
+            },
+            jobType: {
+                title: 'نوع العمل',
+                fixed_price: 'سعر ثابت',
+                hourly: 'بالساعة'
+            },
+            budget: {
+                title: 'الميزانية (د.ت)',
+                min: 'من',
+                max: 'إلى',
+                ranges: {
+                    r0_50: '0 - 50 د.ت',
+                    r50_100: '50 - 100 د.ت',
+                    r100_250: '100 - 250 د.ت',
+                    r250_500: '250 - 500 د.ت',
+                    r500_plus: '500+ د.ت'
+                }
+            },
+            experience: {
+                title: 'مستوى الخبرة',
+                entry: 'مبتدئ',
+                intermediate: 'متوسط',
+                expert: 'خبير'
+            },
+            postedDate: {
+                title: 'تاريخ النشر',
+                any: 'أي وقت',
+                h24: 'آخر 24 ساعة',
+                d3: 'آخر 3 أيام',
+                w1: 'آخر أسبوع',
+                m1: 'آخر شهر'
+            },
+            viewResults: 'عرض النتائج'
+        },
+        sort: {
+            newest: 'الأحدث أولاً',
+            budgetHigh: 'الميزانية: الأعلى',
+            budgetLow: 'الميزانية: الأقل',
+            proposalsHigh: 'أكثر العروض',
+            proposalsLow: 'أقل العروض'
+        },
+        stats: {
+            availableJobs: 'وظيفة متاحة'
+        },
+        empty: {
+            title: 'لا توجد وظائف',
+            subtitle: 'جرب تغيير معايير البحث أو الفلاتر',
+            action: 'مسح الفلاتر'
+        },
+        loadMore: 'تحميل المزيد',
+        save: 'حفظ الوظيفة',
+        saved: 'تم حفظ الوظيفة',
+        unsave: 'إزالة من المحفوظات',
+        apply: 'قدم الآن',
+        postedAgo: 'نشر {{time}}',
+        budget: 'الميزانية',
+        hourlyRate: 'سعر الساعة',
+        proposals: 'عرض',
+        verifiedPayment: 'تم التحقق من الدفع',
+        unverifiedPayment: 'الدفع غير متحقق منه',
+        newClient: 'عميل جديد',
+        savedJobs: {
+            title: 'الوظائف المحفوظة',
+            viewAll: 'عرض الكل'
+        },
+        time: {
+            now: 'الآن',
+            minute: 'دقيقة',
+            hour: 'ساعة',
+            day: 'يوم',
+            ago_prefix: 'منذ',
+            ago: ''
+        },
+        location: {
+            remote: 'عن بعد'
+        }
     },
 
     // Profile Form
@@ -470,6 +571,8 @@ export const ar = {
         search: 'بحث',
         filter: 'تصفية',
         sort: 'ترتيب',
+        navigate: 'تنقل',
+        select: 'اختيار',
         dinar: 'دينار',
         tnd: 'د.ت',
         time: {
@@ -530,6 +633,16 @@ export const ar = {
         resultsFor: 'نتائج البحث عن',
         noResults: 'لا توجد نتائج',
         noResultsDesc: 'لم نجد أي نتيجة تطابق بحثك',
+        suggestions: {
+            mobileApp: 'تطبيقات الجوال',
+            logo: 'شعار',
+            seo: 'سيو',
+            logoDesign: 'تصميم شعار',
+            reactJs: 'React JS',
+            translation: 'ترجمة',
+            videoEditing: 'مونتاج فيديو',
+            python: 'Python',
+        }
     },
 
     // Onboarding

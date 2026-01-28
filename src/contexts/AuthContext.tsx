@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, useCallback } from 'rea
 import type { ReactNode } from 'react';
 import type { User, Session } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
+import { logger } from '../lib/logger';
 import type { Profile, FreelancerProfile, UserType } from '../types';
 
 interface AuthContextType {
@@ -45,7 +46,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
                 .single();
 
             if (profileError && profileError.code !== 'PGRST116') {
-                console.error('Error fetching profile:', profileError);
+                logger.error('Error fetching profile:', profileError);
                 return;
             }
 
@@ -66,7 +67,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
                 }
             }
         } catch (error) {
-            console.error('Error fetching profile:', error);
+            logger.error('Error fetching profile:', error);
         }
     }, []);
 
@@ -82,7 +83,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
                     await fetchProfile(currentSession.user.id);
                 }
             } catch (error) {
-                console.error('Error initializing auth:', error);
+                logger.error('Error initializing auth:', error);
             } finally {
                 setIsLoading(false);
             }

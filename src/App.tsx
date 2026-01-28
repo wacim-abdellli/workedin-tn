@@ -1,5 +1,6 @@
 import { Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
 import { I18nProvider } from './i18n';
 import { ToastProvider } from './components/ui/Toast';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
@@ -190,24 +191,26 @@ function AppRoutes() {
 
 function App() {
   return (
-    <BrowserRouter>
-      <ThemeProvider>
-        <I18nProvider defaultLanguage="ar">
-          <ErrorBoundary>
-            <AuthProvider>
-              <ToastProvider>
-                <div className="animate-fade-in">
-                  <ScrollToTop />
-                  <Suspense fallback={<Loading fullScreen />}>
-                    <AppRoutes />
-                  </Suspense>
-                </div>
-              </ToastProvider>
-            </AuthProvider>
-          </ErrorBoundary>
-        </I18nProvider>
-      </ThemeProvider>
-    </BrowserRouter>
+    <HelmetProvider>
+      <BrowserRouter>
+        <ThemeProvider>
+          <I18nProvider defaultLanguage="ar">
+            <ErrorBoundary>
+              <AuthProvider>
+                <ToastProvider>
+                  <div className="animate-fade-in">
+                    <ScrollToTop />
+                    <Suspense fallback={<Loading fullScreen />}>
+                      <AppRoutes />
+                    </Suspense>
+                  </div>
+                </ToastProvider>
+              </AuthProvider>
+            </ErrorBoundary>
+          </I18nProvider>
+        </ThemeProvider>
+      </BrowserRouter>
+    </HelmetProvider>
   );
 }
 

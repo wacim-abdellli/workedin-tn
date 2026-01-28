@@ -15,6 +15,104 @@ export const en: Translations = {
         profile: 'Profile',
         settings: 'Settings',
         logout: 'Logout',
+        findWork: 'Find Work',
+        findFreelancers: 'Find Freelancers',
+        myJobs: 'My Jobs',
+        saved: 'Saved',
+    },
+    jobs: {
+        title: 'Available Jobs',
+        searchPlaceholder: 'Search for jobs...',
+        filters: {
+            title: 'Filters',
+            clearAll: 'Clear All',
+            categories: {
+                title: 'Category',
+                design: 'Design',
+                development: 'Development',
+                writing: 'Writing',
+                marketing: 'Marketing',
+                translation: 'Translation',
+                video: 'Video & Animation',
+                business: 'Business',
+                data: 'Data Entry',
+                other: 'Other'
+            },
+            jobType: {
+                title: 'Job Type',
+                fixed_price: 'Fixed Price',
+                hourly: 'Hourly'
+            },
+            budget: {
+                title: 'Budget (TND)',
+                min: 'Min',
+                max: 'Max',
+                ranges: {
+                    r0_50: '0 - 50 TND',
+                    r50_100: '50 - 100 TND',
+                    r100_250: '100 - 250 TND',
+                    r250_500: '250 - 500 TND',
+                    r500_plus: '500+ TND'
+                }
+            },
+            experience: {
+                title: 'Experience Level',
+                entry: 'Entry Level',
+                intermediate: 'Intermediate',
+                expert: 'Expert'
+            },
+            postedDate: {
+                title: 'Posted Date',
+                any: 'Any Time',
+                h24: 'Last 24 Hours',
+                d3: 'Last 3 Days',
+                w1: 'Last Week',
+                m1: 'Last Month'
+            },
+            viewResults: 'View Results'
+        },
+        sort: {
+            newest: 'Newest First',
+            budgetHigh: 'Budget: High to Low',
+            budgetLow: 'Budget: Low to High',
+            proposalsHigh: 'Most Proposals',
+            proposalsLow: 'Fewest Proposals'
+        },
+        stats: {
+            availableJobs: 'jobs available'
+        },
+        empty: {
+            title: 'No jobs found',
+            subtitle: 'Try changing your search criteria or filters',
+            action: 'Clear Filters'
+        },
+        loadMore: 'Load More',
+        save: 'Save Job',
+        saved: 'Job Saved',
+        unsave: 'Unsave Job',
+        apply: 'Apply Now',
+        postedAgo: 'Posted {{time}}',
+        budget: 'Budget',
+        hourlyRate: 'Hourly Rate',
+        proposals: 'proposals',
+        verifiedPayment: 'Payment Verified',
+        unverifiedPayment: 'Payment Unverified',
+        newClient: 'New Client',
+        savedJobs: {
+            title: 'Saved Jobs',
+            viewAll: 'View All'
+        },
+        time: {
+            now: 'Just now',
+            minute: 'min',
+            hour: 'h',
+            day: 'd',
+            ago_prefix: '',
+            ago: 'ago'
+        },
+        location: {
+            remote: 'Remote'
+        }
     },
 
     hero: {
@@ -246,6 +344,9 @@ export const en: Translations = {
         passwordMinLength: 'Password must be at least 6 characters',
         invalidEmail: 'Enter a valid email address',
         emailNotConfirmed: 'Email not confirmed',
+        login: 'Login',
+        signup: 'Sign Up',
+        signOut: 'Sign Out',
     },
 
     profile: {
@@ -454,6 +555,8 @@ export const en: Translations = {
         search: 'Search',
         filter: 'Filter',
         sort: 'Sort',
+        navigate: 'Navigate',
+        select: 'Select',
         dinar: 'dinars',
         tnd: 'TND',
         time: {
@@ -514,6 +617,16 @@ export const en: Translations = {
         resultsFor: 'Results for',
         noResults: 'No results found',
         noResultsDesc: 'We couldn\'t find anything matching your search',
+        suggestions: {
+            mobileApp: 'Mobile App',
+            logo: 'Logo',
+            seo: 'SEO',
+            logoDesign: 'Logo Design',
+            reactJs: 'React JS',
+            translation: 'Translation',
+            videoEditing: 'Video Editing',
+            python: 'Python',
+        }
     },
 
     // Onboarding

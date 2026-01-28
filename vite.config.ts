@@ -2,6 +2,7 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { visualizer } from 'rollup-plugin-visualizer';
+import * as path from 'path';
 
 // https://vite.dev/config/
 export default defineConfig(({ command }) => ({
@@ -9,6 +10,11 @@ export default defineConfig(({ command }) => ({
     react(),
     command === 'build' && visualizer({ open: true })
   ],
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "./src"),
+    },
+  },
   build: {
     rollupOptions: {
       output: {

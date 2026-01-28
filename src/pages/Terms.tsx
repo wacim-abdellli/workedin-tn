@@ -1,8 +1,10 @@
 import { Header, Footer } from '../components/layout';
+import SEO, { SEO_CONFIG } from '../components/common/SEO';
 
 export default function Terms() {
     return (
         <div className="min-h-screen bg-gray-50">
+            <SEO {...SEO_CONFIG.terms} url="/terms" />
             <Header />
 
             <div className="container-custom py-12">

@@ -3,6 +3,7 @@ import { LoginForm } from '../components/auth';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useEffect } from 'react';
+import SEO, { SEO_CONFIG } from '../components/common/SEO';
 
 function Login() {
     const navigate = useNavigate();
@@ -31,6 +32,7 @@ function Login() {
                 <div className="absolute bottom-0 end-0 w-[500px] h-[500px] bg-accent-500/10 rounded-full blur-[100px] mix-blend-multiply dark:mix-blend-screen animate-pulse animation-delay-200" />
             </div>
 
+            <SEO {...SEO_CONFIG.login} url="/login" noIndex />
             <Header />
 
             <div className="flex-1 flex items-center justify-center py-16 px-4 relative z-10">

@@ -15,6 +15,10 @@ export const fr: Translations = {
         profile: 'Profil',
         settings: 'Paramètres',
         logout: 'Déconnexion',
+        findWork: 'Trouver du travail',
+        findFreelancers: 'Trouver des freelances',
+        myJobs: 'Mes missions',
+        saved: 'Enregistré',
     },
 
     hero: {
@@ -246,6 +250,103 @@ export const fr: Translations = {
         passwordMinLength: 'Le mot de passe doit contenir au moins 6 caractères',
         invalidEmail: 'Entrez une adresse email valide',
         emailNotConfirmed: 'Email non confirmé',
+        login: 'Connexion',
+        signup: 'Inscription',
+        signOut: 'Déconnexion',
+    },
+    jobs: {
+        title: 'Offres disponibles',
+        searchPlaceholder: 'Rechercher des offres...',
+        filters: {
+            title: 'Filtres',
+            clearAll: 'Tout effacer',
+            categories: {
+                title: 'Catégorie',
+                design: 'Design',
+                development: 'Développement',
+                writing: 'Rédaction',
+                marketing: 'Marketing',
+                translation: 'Traduction',
+                video: 'Vidéo & Animation',
+                business: 'Affaires',
+                data: 'Saisie de données',
+                other: 'Autre'
+            },
+            jobType: {
+                title: 'Type de contrat',
+                fixed_price: 'Prix fixe',
+                hourly: 'Horaire'
+            },
+            budget: {
+                title: 'Budget (TND)',
+                min: 'Min',
+                max: 'Max',
+                ranges: {
+                    r0_50: '0 - 50 TND',
+                    r50_100: '50 - 100 TND',
+                    r100_250: '100 - 250 TND',
+                    r250_500: '250 - 500 TND',
+                    r500_plus: '500+ TND'
+                }
+            },
+            experience: {
+                title: 'Niveau d\'expérience',
+                entry: 'Débutant',
+                intermediate: 'Intermédiaire',
+                expert: 'Expert'
+            },
+            postedDate: {
+                title: 'Date de publication',
+                any: 'Tout le temps',
+                h24: 'Dernières 24h',
+                d3: '3 derniers jours',
+                w1: 'Dernière semaine',
+                m1: 'Dernier mois'
+            },
+            viewResults: 'Voir les résultats'
+        },
+        sort: {
+            newest: 'Plus récents',
+            budgetHigh: 'Budget: Élevé à Faible',
+            budgetLow: 'Budget: Faible à Élevé',
+            proposalsHigh: 'Plus de propositions',
+            proposalsLow: 'Moins de propositions'
+        },
+        stats: {
+            availableJobs: 'offres disponibles'
+        },
+        empty: {
+            title: 'Aucune offre trouvée',
+            subtitle: 'Essayez de changer vos critères de recherche',
+            action: 'Effacer les filtres'
+        },
+        loadMore: 'Charger plus',
+        save: 'Sauvegarder',
+        saved: 'Offre sauvegardée',
+        unsave: 'Retirer des favoris',
+        apply: 'Postuler',
+        postedAgo: 'Publié {{time}}',
+        budget: 'Budget',
+        hourlyRate: 'Taux horaire',
+        proposals: 'propositions',
+        verifiedPayment: 'Paiement vérifié',
+        unverifiedPayment: 'Paiement non vérifié',
+        newClient: 'Nouveau client',
+        savedJobs: {
+            title: 'Offres sauvegardées',
+            viewAll: 'Voir tout'
+        },
+        time: {
+            now: "À l'instant",
+            minute: 'min',
+            hour: 'h',
+            day: 'j',
+            ago_prefix: 'Il y a',
+            ago: ''
+        },
+        location: {
+            remote: 'Télétravail'
+        }
     },
 
     profile: {
@@ -454,6 +555,8 @@ export const fr: Translations = {
         search: 'Rechercher',
         filter: 'Filtrer',
         sort: 'Trier',
+        navigate: 'Naviguer',
+        select: 'Sélectionner',
         dinar: 'dinars',
         tnd: 'TND',
         time: {
@@ -514,6 +617,16 @@ export const fr: Translations = {
         resultsFor: 'Résultats pour',
         noResults: 'Aucun résultat trouvé',
         noResultsDesc: 'Nous n\'avons rien trouvé correspondant à votre recherche',
+        suggestions: {
+            mobileApp: 'Application mobile',
+            logo: 'Logo',
+            seo: 'SEO',
+            logoDesign: 'Création de logo',
+            reactJs: 'React JS',
+            translation: 'Traduction',
+            videoEditing: 'Montage vidéo',
+            python: 'Python',
+        }
     },
 
     // Onboarding

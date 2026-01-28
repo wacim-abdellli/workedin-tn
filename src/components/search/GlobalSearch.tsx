@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import {
     Search,
@@ -6,14 +7,10 @@ import {
     Clock,
     Briefcase,
     User,
-    Tag,
-    TrendingUp,
-    ArrowRight,
-    Command,
-    Sparkles
 } from 'lucide-react';
 import { useTranslation } from '../../i18n';
 
+// --- Types ---
 interface SearchResult {
     id: string;
     type: 'job' | 'freelancer' | 'skill';
@@ -24,25 +21,19 @@ interface SearchResult {
     budget?: string;
 }
 
+// --- Mock Data ---
 const MOCK_JOBS: SearchResult[] = [
-    { id: 'j1', type: 'job', title: 'تصميم شعار احترافي', subtitle: 'تصميم جرافيكي', budget: '150-300 د.ت' },
-    { id: 'j2', type: 'job', title: 'تطوير موقع تجارة إلكترونية', subtitle: 'برمجة وتطوير', budget: '1000-2000 د.ت' },
-    { id: 'j3', type: 'job', title: 'ترجمة وثائق قانونية', subtitle: 'كتابة وترجمة', budget: '200-400 د.ت' },
+    { id: 'j1', type: 'job', title: 'تصميم شعار احترافي', subtitle: 'Design & Creative', budget: '150-300 TND' },
+    { id: 'j2', type: 'job', title: 'Développement Site E-commerce', subtitle: 'Development', budget: '2000+ TND' },
+    { id: 'j3', type: 'job', title: 'ترجمة وثائق قانونية', subtitle: 'Writing', budget: '50/page' },
 ];
 
 const MOCK_FREELANCERS: SearchResult[] = [
-    { id: 'f1', type: 'freelancer', title: 'أحمد بن علي', subtitle: 'مصمم جرافيكي', rating: 4.9 },
-    { id: 'f2', type: 'freelancer', title: 'سارة المنصوري', subtitle: 'مطورة ويب', rating: 4.8 },
-    { id: 'f3', type: 'freelancer', title: 'محمد الشريف', subtitle: 'مترجم محترف', rating: 4.7 },
+    { id: 'f1', type: 'freelancer', title: 'Ahmed Ben Ali', subtitle: 'Senior Graphic Designer', rating: 4.9 },
+    { id: 'f2', type: 'freelancer', title: 'Sarah Mansouri', subtitle: 'Full Stack Developer', rating: 5.0 },
 ];
 
-const TRENDING_SEARCHES = [
-    'تصميم شعار',
-    'تطوير موقع',
-    'ترجمة',
-    'تسويق رقمي',
-    'كتابة محتوى',
-];
+const TRENDING_SEARCHES = ['Logo Design', 'React JS', 'Translation', 'Video Editing', 'Python'];
 
 interface GlobalSearchProps {
     isOpen: boolean;
@@ -53,25 +44,30 @@ export default function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
     const { t } = useTranslation();
     const navigate = useNavigate();
     const inputRef = useRef<HTMLInputElement>(null);
-    const [query, setQuery] = useState('');
-    const [recentSearches, setRecentSearches] = useState<string[]>([
-        'تصميم',
-        'مطور React',
-        'ترجمة عربي انجليزي',
-    ]);
-    const [results, setResults] = useState<{
-        jobs: SearchResult[];
-        freelancers: SearchResult[];
-        skills: string[];
-    }>({ jobs: [], freelancers: [], skills: [] });
-    const [isSearching, setIsSearching] = useState(false);
+    const modalRef = useRef<HTMLDivElement>(null);
 
+    // State
+    const [query, setQuery] = useState('');
+    const [isSearching, setIsSearching] = useState(false);
+    const [results, setResults] = useState<{ jobs: SearchResult[], freelancers: SearchResult[] }>({ jobs: [], freelancers: [] });
+    const [recentSearches, setRecentSearches] = useState<string[]>(['Mobile App', 'Logo', 'SEO']);
+
+    // Focus input on open
     useEffect(() => {
-        if (isOpen && inputRef.current) {
-            inputRef.current.focus();
+        if (isOpen) {
+            // Small delay to ensure render
+            setTimeout(() => inputRef.current?.focus(), 50);
+            document.body.style.overflow = 'hidden'; // Lock Body Scroll
+        } else {
+            document.body.style.overflow = ''; // Unlock Body Scroll
         }
+
+        return () => {
+            document.body.style.overflow = '';
+        };
     }, [isOpen]);
 
+    // Keyboard Events (ESC to close)
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
             if (e.key === 'Escape' && isOpen) {
@@ -82,284 +78,215 @@ export default function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [isOpen, onClose]);
 
+    // Search Logic (Mock)
     useEffect(() => {
         if (!query.trim()) {
-            setResults({ jobs: [], freelancers: [], skills: [] });
+            setResults({ jobs: [], freelancers: [] });
             return;
         }
 
         setIsSearching(true);
         const timer = setTimeout(() => {
-            const filteredJobs = MOCK_JOBS.filter(j =>
-                j.title.includes(query) || j.subtitle?.includes(query)
-            );
-            const filteredFreelancers = MOCK_FREELANCERS.filter(f =>
-                f.title.includes(query) || f.subtitle?.includes(query)
-            );
-            const skills = ['تصميم', 'برمجة', 'ترجمة', 'تسويق'].filter(s =>
-                s.includes(query)
-            );
+            const filteredJobs = MOCK_JOBS.filter(j => j.title.toLowerCase().includes(query.toLowerCase()));
+            const filteredFreelancers = MOCK_FREELANCERS.filter(f => f.title.toLowerCase().includes(query.toLowerCase()));
 
-            setResults({
-                jobs: filteredJobs,
-                freelancers: filteredFreelancers,
-                skills,
-            });
+            setResults({ jobs: filteredJobs, freelancers: filteredFreelancers });
             setIsSearching(false);
         }, 300);
 
         return () => clearTimeout(timer);
     }, [query]);
 
-    const handleSearch = (searchQuery: string) => {
-        if (!searchQuery.trim()) return;
-
-        setRecentSearches(prev => {
-            const filtered = prev.filter(s => s !== searchQuery);
-            return [searchQuery, ...filtered].slice(0, 5);
-        });
-
-        navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
+    const handleSelectSearch = (term: string) => {
+        navigate(`/search?q=${encodeURIComponent(term)}`);
+        setRecentSearches(prev => [term, ...prev.filter(i => i !== term)].slice(0, 5));
         onClose();
     };
 
-    const clearRecentSearches = () => {
-        setRecentSearches([]);
-    };
-
-    const hasResults = results.jobs.length > 0 || results.freelancers.length > 0 || results.skills.length > 0;
-
     if (!isOpen) return null;
 
-    return (
-        <div className="fixed inset-0 z-50">
-            {/* Backdrop */}
+    return createPortal(
+        <div
+            className="fixed inset-0 z-[100] flex items-start justify-center pt-[15vh] px-4"
+            role="dialog"
+            aria-modal="true"
+        >
+            {/* Backdrop with Blur */}
             <div
-                className="absolute inset-0 bg-dark-900/60 backdrop-blur-md animate-fade-in"
+                className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300 animate-fade-in"
                 onClick={onClose}
             />
 
-            {/* Search Modal */}
-            <div className="relative mx-auto mt-20 max-w-2xl px-4 animate-slide-up">
-                <div className="bg-white dark:bg-dark-900 rounded-2xl shadow-2xl border border-dark-100 dark:border-dark-700 overflow-hidden ring-1 ring-black/5">
-                    {/* Search Input */}
-                    <div className="flex items-center gap-4 p-4 border-b border-dark-100 dark:border-dark-700 bg-white/50 dark:bg-dark-800/50">
-                        <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center flex-shrink-0 shadow-lg shadow-primary-500/20">
-                            <Search className="w-5 h-5 text-white" />
-                        </div>
-                        <input
-                            ref={inputRef}
-                            type="text"
-                            value={query}
-                            onChange={(e) => setQuery(e.target.value)}
-                            onKeyDown={(e) => e.key === 'Enter' && handleSearch(query)}
-                            placeholder={t.search.placeholder}
-                            className="flex-1 bg-transparent outline-none text-xl text-dark-900 dark:text-white placeholder-dark-400"
-                        />
-                        {query && (
-                            <button onClick={() => setQuery('')} className="p-2 hover:bg-dark-100 dark:hover:bg-dark-700 rounded-lg transition-colors">
-                                <X className="w-5 h-5 text-dark-400" />
-                            </button>
-                        )}
-                        <kbd className="hidden md:flex items-center gap-1.5 px-2 py-1 bg-dark-100 dark:bg-dark-800 border border-dark-200 dark:border-dark-700 rounded-lg text-xs font-medium text-dark-500">
-                            <span className="text-sm">ESC</span>
-                        </kbd>
-                    </div>
+            {/* Modal Content - Command Palette Style */}
+            <div
+                ref={modalRef}
+                className="relative w-full max-w-xl bg-white dark:bg-dark-900 rounded-2xl shadow-2xl border border-dark-100 dark:border-dark-700 overflow-hidden flex flex-col max-h-[70vh] animate-scale-in duration-200"
+                style={{ boxShadow: '0 0 0 1px rgba(0,0,0,0.05), 0 20px 50px -12px rgba(0,0,0,0.5)' }}
+            >
+                {/* Search Header */}
+                <div className="flex items-center gap-3 px-4 py-4 border-b border-dark-100 dark:border-dark-800 shrink-0">
+                    <Search className="w-5 h-5 text-dark-400" />
+                    <input
+                        ref={inputRef}
+                        type="text"
+                        value={query}
+                        onChange={(e) => setQuery(e.target.value)}
+                        placeholder="Search jobs, freelancers, skills..."
+                        className="flex-1 bg-transparent text-lg font-medium text-dark-900 dark:text-white placeholder-dark-400 outline-none border-none p-0"
+                    />
+                    {query && (
+                        <button onClick={() => setQuery('')} className="p-1 rounded-full hover:bg-dark-100 dark:hover:bg-dark-800 text-dark-400">
+                            <X className="w-4 h-4" />
+                        </button>
+                    )}
+                    <kbd className="hidden sm:inline-flex items-center gap-1 px-2 py-1 bg-dark-50 dark:bg-dark-800 rounded text-[10px] font-bold text-dark-400 font-mono border border-dark-200 dark:border-dark-700">
+                        ESC
+                    </kbd>
+                </div>
 
-                    {/* Content */}
-                    <div className="max-h-[60vh] overflow-y-auto bg-white/50 dark:bg-dark-900/50">
-                        {/* Loading */}
-                        {isSearching && (
-                            <div className="p-12 text-center">
-                                <div className="w-8 h-8 border-3 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto" />
-                            </div>
-                        )}
+                {/* Results Area */}
+                <div className="flex-1 overflow-y-auto custom-scrollbar p-2">
 
-                        {/* Results */}
-                        {!isSearching && hasResults && (
-                            <div className="p-4 space-y-6">
-                                {/* Jobs */}
-                                {results.jobs.length > 0 && (
-                                    <div>
-                                        <div className="flex items-center justify-between mb-3 px-2">
-                                            <h3 className="text-sm font-bold text-dark-500 flex items-center gap-2">
-                                                <Briefcase className="w-4 h-4" />
-                                                {t.search.jobs}
-                                            </h3>
+                    {/* Empty State / Initial View */}
+                    {!query && (
+                        <>
+                            {/* Recent Searches */}
+                            {recentSearches.length > 0 && (
+                                <div className="mb-4">
+                                    <div className="px-3 py-2 text-xs font-semibold text-dark-400 uppercase tracking-wider">{t.search?.recent || "Recent"}</div>
+                                    <div className="space-y-1">
+                                        {recentSearches.map(term => (
                                             <button
-                                                onClick={() => handleSearch(query)}
-                                                className="text-xs font-medium text-primary-600 dark:text-primary-400 hover:underline"
+                                                key={term}
+                                                onClick={() => handleSelectSearch(term)}
+                                                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-dark-50 dark:hover:bg-dark-800/80 text-left transition-colors group"
                                             >
-                                                {t.publicProfile.showMore}
-                                            </button>
-                                        </div>
-                                        <div className="space-y-2">
-                                            {results.jobs.map(job => (
-                                                <button
-                                                    key={job.id}
-                                                    onClick={() => navigate(`/jobs/${job.id}`)}
-                                                    className="w-full flex items-center gap-4 p-3 hover:bg-dark-50 dark:hover:bg-dark-800 rounded-xl text-right transition-all group"
-                                                >
-                                                    <div className="w-10 h-10 rounded-xl bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center group-hover:bg-primary-500 transition-colors duration-300">
-                                                        <Briefcase className="w-5 h-5 text-primary-600 dark:text-primary-400 group-hover:text-white" />
-                                                    </div>
-                                                    <div className="flex-1 min-w-0">
-                                                        <p className="font-semibold text-dark-900 dark:text-white truncate">{job.title}</p>
-                                                        <p className="text-sm text-dark-500">{job.subtitle} • <span className="text-success-600 dark:text-success-400 font-medium">{job.budget}</span></p>
-                                                    </div>
-                                                    <ArrowRight className="w-4 h-4 text-dark-300 group-hover:text-primary-500 group-hover:-translate-x-1 transition-all" />
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* Freelancers */}
-                                {results.freelancers.length > 0 && (
-                                    <div>
-                                        <div className="flex items-center justify-between mb-3 px-2">
-                                            <h3 className="text-sm font-bold text-dark-500 flex items-center gap-2">
-                                                <User className="w-4 h-4" />
-                                                {t.search.freelancers}
-                                            </h3>
-                                            <button
-                                                onClick={() => navigate(`/find-freelancers?q=${encodeURIComponent(query)}`)}
-                                                className="text-xs font-medium text-primary-600 dark:text-primary-400 hover:underline"
-                                            >
-                                                {t.publicProfile.showMore}
-                                            </button>
-                                        </div>
-                                        <div className="space-y-2">
-                                            {results.freelancers.map(freelancer => (
-                                                <button
-                                                    key={freelancer.id}
-                                                    onClick={() => navigate(`/freelancer/${freelancer.id}`)}
-                                                    className="w-full flex items-center gap-4 p-3 hover:bg-dark-50 dark:hover:bg-dark-800 rounded-xl text-right transition-all group"
-                                                >
-                                                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent-400 to-accent-600 flex items-center justify-center text-white font-bold text-lg shadow-md group-hover:shadow-lg transition-shadow">
-                                                        {freelancer.title.charAt(0)}
-                                                    </div>
-                                                    <div className="flex-1 min-w-0">
-                                                        <p className="font-semibold text-dark-900 dark:text-white truncate">{freelancer.title}</p>
-                                                        <p className="text-sm text-dark-500">{freelancer.subtitle} • <span className="text-warning-500">⭐ {freelancer.rating}</span></p>
-                                                    </div>
-                                                    <ArrowRight className="w-4 h-4 text-dark-300 group-hover:text-accent-500 group-hover:-translate-x-1 transition-all" />
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* Skills */}
-                                {results.skills.length > 0 && (
-                                    <div>
-                                        <h3 className="text-sm font-bold text-dark-500 flex items-center gap-2 mb-3 px-2">
-                                            <Tag className="w-4 h-4" />
-                                            {t.search.skills}
-                                        </h3>
-                                        <div className="flex flex-wrap gap-2 px-2">
-                                            {results.skills.map(skill => (
-                                                <button
-                                                    key={skill}
-                                                    onClick={() => handleSearch(`skill:${skill}`)}
-                                                    className="px-4 py-2 bg-dark-50 dark:bg-dark-800 hover:bg-white dark:hover:bg-dark-700 border border-dark-100 dark:border-dark-700 hover:border-primary-500 dark:hover:border-primary-500 rounded-xl text-sm transition-all duration-200 shadow-sm hover:shadow-md hover:text-primary-600 dark:hover:text-primary-400"
-                                                >
-                                                    {skill}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        )}
-
-                        {/* No Query State */}
-                        {!query && !isSearching && (
-                            <div className="p-4 space-y-8">
-                                {/* Recent Searches */}
-                                {recentSearches.length > 0 && (
-                                    <div>
-                                        <div className="flex items-center justify-between mb-3 px-2">
-                                            <h3 className="text-sm font-bold text-dark-500 flex items-center gap-2">
-                                                <Clock className="w-4 h-4" />
-                                                {t.search.recent}
-                                            </h3>
-                                            <button
-                                                onClick={clearRecentSearches}
-                                                className="text-xs text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 px-2 py-1 rounded transition-colors"
-                                            >
-                                                {t.search.clearAll}
-                                            </button>
-                                        </div>
-                                        <div className="space-y-1">
-                                            {recentSearches.map((search, i) => (
-                                                <button
-                                                    key={i}
-                                                    onClick={() => handleSearch(search)}
-                                                    className="w-full flex items-center gap-3 p-3 hover:bg-dark-50 dark:hover:bg-dark-800 rounded-xl text-right transition-colors group"
-                                                >
-                                                    <Clock className="w-4 h-4 text-dark-400 group-hover:text-primary-500 transition-colors" />
-                                                    <span className="flex-1 font-medium text-dark-700 dark:text-dark-300">{search}</span>
-                                                    <ArrowRight className="w-4 h-4 text-dark-300 opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all" />
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* Trending */}
-                                <div>
-                                    <h3 className="text-sm font-bold text-dark-500 flex items-center gap-2 mb-4 px-2">
-                                        <TrendingUp className="w-4 h-4" />
-                                        {t.search.trending}
-                                    </h3>
-                                    <div className="flex flex-wrap gap-2 px-2">
-                                        {TRENDING_SEARCHES.map((search, i) => (
-                                            <button
-                                                key={i}
-                                                onClick={() => handleSearch(search)}
-                                                className="px-4 py-2 bg-gradient-to-r from-primary-50 to-primary-100 dark:from-primary-900/20 dark:to-primary-900/40 text-primary-700 dark:text-primary-300 hover:from-primary-100 hover:to-primary-200 dark:hover:from-primary-900/40 dark:hover:to-primary-900/60 rounded-full text-sm font-medium transition-all duration-200 border border-transparent hover:border-primary-200 dark:hover:border-primary-700 flex items-center gap-2"
-                                            >
-                                                <Sparkles className="w-3 h-3 text-primary-500" />
-                                                {search}
+                                                <Clock className="w-4 h-4 text-dark-400 group-hover:text-primary-500 transition-colors" />
+                                                <span className="text-dark-700 dark:text-dark-200">{term}</span>
                                             </button>
                                         ))}
                                     </div>
                                 </div>
-                            </div>
-                        )}
+                            )}
 
-                        {/* No Results */}
-                        {query && !isSearching && !hasResults && (
-                            <div className="p-12 text-center">
-                                <div className="w-20 h-20 bg-dark-50 dark:bg-dark-800 rounded-full flex items-center justify-center mx-auto mb-4">
-                                    <Search className="w-10 h-10 text-dark-300" />
+                            {/* Suggestions */}
+                            <div>
+                                <div className="px-3 py-2 text-xs font-semibold text-dark-400 uppercase tracking-wider">{t.search?.trending || "Suggestions"}</div>
+                                <div className="flex flex-wrap gap-2 px-3 pb-2">
+                                    {TRENDING_SEARCHES.map(term => (
+                                        <button
+                                            key={term}
+                                            onClick={() => handleSelectSearch(term)}
+                                            className="px-3 py-1.5 rounded-lg bg-dark-50 dark:bg-dark-800 text-sm text-dark-700 dark:text-dark-300 hover:bg-primary-50 hover:text-primary-600 dark:hover:bg-primary-900/20 dark:hover:text-primary-400 border border-transparent hover:border-primary-200 dark:hover:border-primary-800 transition-all"
+                                        >
+                                            {term}
+                                        </button>
+                                    ))}
                                 </div>
-                                <p className="text-xl font-bold text-dark-900 dark:text-white mb-2">{t.search.noResults} "{query}"</p>
-                                <p className="text-dark-500">{t.search.noResultsDesc}</p>
                             </div>
-                        )}
-                    </div>
+                        </>
+                    )}
 
-                    {/* Footer */}
-                    <div className="flex items-center justify-between p-3 bg-dark-50 dark:bg-dark-800 border-t border-dark-100 dark:border-dark-700 text-xs text-dark-500 font-medium">
-                        <div className="flex items-center gap-4">
-                            <span className="flex items-center gap-1.5">
-                                <kbd className="hidden sm:inline-flex items-center justify-center min-w-[20px] h-5 px-1 bg-white dark:bg-dark-700 border border-dark-200 dark:border-dark-600 rounded text-[10px] font-sans">↵</kbd>
-                                <span className="hidden sm:inline">{t.common.search}</span>
-                            </span>
-                            <span className="flex items-center gap-1.5">
-                                <kbd className="hidden sm:inline-flex items-center justify-center min-w-[28px] h-5 px-1 bg-white dark:bg-dark-700 border border-dark-200 dark:border-dark-600 rounded text-[10px] font-sans">ESC</kbd>
-                                <span className="hidden sm:inline">{t.common.close}</span>
-                            </span>
+                    {/* Results Loading */}
+                    {isSearching && (
+                        <div className="py-12 flex flex-col items-center justify-center text-dark-400">
+                            <div className="w-6 h-6 border-2 border-primary-500 border-t-transparent rounded-full animate-spin mb-3"></div>
+                            <span className="text-sm">Searching...</span>
                         </div>
-                        <div className="flex items-center gap-1.5">
-                            <Command className="w-3 h-3" />
-                            <span>+ K</span>
+                    )}
+
+                    {/* Active Results */}
+                    {query && !isSearching && (
+                        <div className="space-y-4">
+                            {/* Jobs */}
+                            {results.jobs.length > 0 && (
+                                <div>
+                                    <div className="px-3 py-2 text-xs font-semibold text-dark-400 uppercase tracking-wider flex items-center gap-2">
+                                        <Briefcase className="w-3 h-3" /> Jobs
+                                    </div>
+                                    {results.jobs.map(job => (
+                                        <button
+                                            key={job.id}
+                                            onClick={() => navigate(`/jobs/${job.id}`)}
+                                            className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-dark-50 dark:hover:bg-dark-800 text-left group transition-colors"
+                                        >
+                                            <div className="flex items-center gap-3 overflow-hidden">
+                                                <div className="w-8 h-8 rounded-lg bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center shrink-0">
+                                                    <Briefcase className="w-4 h-4 text-primary-600 dark:text-primary-400" />
+                                                </div>
+                                                <div className="min-w-0">
+                                                    <div className="text-sm font-semibold text-dark-900 dark:text-white truncate group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+                                                        {job.title}
+                                                    </div>
+                                                    <div className="text-xs text-dark-500 truncate">{job.subtitle}</div>
+                                                </div>
+                                            </div>
+                                            <div className="px-2 py-1 rounded text-xs font-medium bg-white dark:bg-dark-700 shadow-sm border border-dark-100 dark:border-dark-600 shrink-0">
+                                                {job.budget}
+                                            </div>
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+
+                            {/* Freelancers */}
+                            {results.freelancers.length > 0 && (
+                                <div>
+                                    <div className="px-3 py-2 text-xs font-semibold text-dark-400 uppercase tracking-wider flex items-center gap-2">
+                                        <User className="w-3 h-3" /> Freelancers
+                                    </div>
+                                    {results.freelancers.map(freelancer => (
+                                        <button
+                                            key={freelancer.id}
+                                            onClick={() => navigate(`/freelancer/${freelancer.id}`)}
+                                            className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-dark-50 dark:hover:bg-dark-800 text-left group transition-colors"
+                                        >
+                                            <div className="flex items-center gap-3 overflow-hidden">
+                                                <div className="w-8 h-8 rounded-full bg-accent-100 dark:bg-accent-900/30 flex items-center justify-center shrink-0">
+                                                    <span className="text-xs font-bold text-accent-700 dark:text-accent-400">{freelancer.title.charAt(0)}</span>
+                                                </div>
+                                                <div className="min-w-0">
+                                                    <div className="text-sm font-semibold text-dark-900 dark:text-white truncate group-hover:text-accent-600 transition-colors">
+                                                        {freelancer.title}
+                                                    </div>
+                                                    <div className="text-xs text-dark-500 truncate">{freelancer.subtitle}</div>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-1 text-xs font-medium text-warning-600">
+                                                <span>★</span> {freelancer.rating}
+                                            </div>
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+
+                            {/* Nothing Found */}
+                            {results.jobs.length === 0 && results.freelancers.length === 0 && (
+                                <div className="py-12 text-center text-dark-500">
+                                    <p>No results found for "{query}"</p>
+                                    <button onClick={() => setQuery('')} className="text-sm text-primary-600 hover:underline mt-2">Clear search</button>
+                                </div>
+                            )}
                         </div>
+                    )}
+                </div>
+
+                {/* Footer Tips */}
+                <div className="bg-dark-50 dark:bg-dark-800/50 px-4 py-2 text-[10px] text-dark-400 border-t border-dark-100 dark:border-dark-800 flex items-center justify-between shrink-0">
+                    <div className="flex gap-4">
+                        <span className="flex items-center gap-1">
+                            <kbd className="px-1 bg-white dark:bg-dark-700 rounded border border-dark-200 dark:border-dark-600">↵</kbd>
+                            <span>to select</span>
+                        </span>
+                        <span className="flex items-center gap-1">
+                            <kbd className="px-1 bg-white dark:bg-dark-700 rounded border border-dark-200 dark:border-dark-600">↑↓</kbd>
+                            <span>to navigate</span>
+                        </span>
                     </div>
                 </div>
+
             </div>
-        </div>
+        </div>,
+        document.body
     );
 }

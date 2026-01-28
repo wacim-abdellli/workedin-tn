@@ -1,12 +1,11 @@
 import { memo } from 'react';
-// import { useNavigate } from 'react-router-dom'; // Removed unused
-// import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../../i18n';
+
 import {
     Heart,
     MapPin,
     Clock,
     Briefcase,
-    // DollarSign, // Removed unused
     Star,
     ShieldCheck
 } from 'lucide-react';
@@ -46,8 +45,7 @@ interface JobCardProps {
 }
 
 const JobCard = memo(({ job, isSaved, onToggleSave, onClick }: JobCardProps) => {
-    // const { t, i18n } = useTranslation(); // Removed unused
-    // const isRTL = i18n.dir() === 'rtl'; // Removed unused
+    const { t, language } = useTranslation();
 
     // Helper for time ago (simple version, or import shared utility)
     const timeAgo = (dateStr: string) => {
@@ -55,12 +53,21 @@ const JobCard = memo(({ job, isSaved, onToggleSave, onClick }: JobCardProps) => 
         const now = new Date();
         const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
-        // Very basic implementation matching the one likely in JobBoard
-        // Consider importing the robust one if available
-        if (seconds < 60) return 'الآن';
-        if (seconds < 3600) return `منذ ${Math.floor(seconds / 60)} دقيقة`;
-        if (seconds < 86400) return `منذ ${Math.floor(seconds / 3600)} ساعة`;
-        return `منذ ${Math.floor(seconds / 86400)} يوم`;
+        if (seconds < 60) return t.jobs.time.now;
+
+        const prefix = t.jobs.time.ago_prefix ? t.jobs.time.ago_prefix + ' ' : '';
+        const suffix = t.jobs.time.ago ? ' ' + t.jobs.time.ago : '';
+
+        if (seconds < 3600) {
+            const mins = Math.floor(seconds / 60);
+            return `${prefix}${mins}${language === 'en' ? ' ' : ''}${t.jobs.time.minute}${suffix}`;
+        }
+        if (seconds < 86400) {
+            const hours = Math.floor(seconds / 3600);
+            return `${prefix}${hours}${language === 'en' ? ' ' : ''}${t.jobs.time.hour}${suffix}`;
+        }
+        const days = Math.floor(seconds / 86400);
+        return `${prefix}${days}${language === 'en' ? ' ' : ''}${t.jobs.time.day}${suffix}`;
     };
 
     return (
@@ -100,12 +107,12 @@ const JobCard = memo(({ job, isSaved, onToggleSave, onClick }: JobCardProps) => 
                                 <span className="w-1 h-1 rounded-full bg-gray-300 dark:bg-gray-600" />
                                 <span className="flex items-center gap-1">
                                     <MapPin className="w-3.5 h-3.5" />
-                                    {job.location || 'عن بعد'}
+                                    {job.location || t.jobs.location.remote}
                                 </span>
                                 <span className="w-1 h-1 rounded-full bg-gray-300 dark:bg-gray-600" />
                                 <span className="flex items-center gap-1">
                                     <Briefcase className="w-3.5 h-3.5" />
-                                    {job.proposals_count} عرض
+                                    {job.proposals_count} {t.jobs.proposals}
                                 </span>
                             </div>
                         </div>
@@ -114,13 +121,14 @@ const JobCard = memo(({ job, isSaved, onToggleSave, onClick }: JobCardProps) => 
                             <div className="text-lg font-bold text-dark-900 dark:text-white flex items-center gap-1">
                                 {job.job_type === 'fixed_price' ? (
                                     <>
-                                        <span className="text-sm text-gray-500 font-normal">ميزانية:</span>
-                                        {job.budget_min} - {job.budget_max} د.ت
+                                        <span className="text-sm text-gray-500 font-normal">{t.jobs.budget}:</span>
+                                        {job.budget_min} - {job.budget_max} {t.jobs.filters.budget.title.includes('TND') || t.jobs.filters.budget.title.includes('د.ت') ? '' : 'TND'}
+                                        {/* Using TND suffix implicitly or relies on budget being number. */}
                                     </>
                                 ) : (
                                     <>
-                                        <span className="text-sm text-gray-500 font-normal">بالساعة:</span>
-                                        {job.hourly_rate} د.ت/س
+                                        <span className="text-sm text-gray-500 font-normal">{t.jobs.hourlyRate}:</span>
+                                        {job.hourly_rate} {t.jobs.filters.budget.title.includes('TND') ? 'TND' : ''}/h
                                     </>
                                 )}
                             </div>
@@ -168,14 +176,14 @@ const JobCard = memo(({ job, isSaved, onToggleSave, onClick }: JobCardProps) => 
                         {/* Client Mini Info (Mobile only or simplified) */}
                         <div className="flex items-center gap-2 text-sm text-gray-500">
                             {job.client?.is_verified && (
-                                <span className="flex items-center gap-1 text-primary-600 dark:text-primary-400" title="تم التحقق من الدفع">
+                                <span className="flex items-center gap-1 text-primary-600 dark:text-primary-400" title={t.jobs.verifiedPayment}>
                                     <ShieldCheck className="w-4 h-4" />
-                                    <span className="hidden sm:inline text-xs">تم التحقق</span>
+                                    <span className="hidden sm:inline text-xs">{t.jobs.verifiedPayment}</span>
                                 </span>
                             )}
                             <span className="flex items-center gap-1">
                                 <Star className="w-3.5 h-3.5 text-amber-400 fill-current" />
-                                <span>{job.client?.rating || 'جديد'}</span>
+                                <span>{job.client?.rating || t.jobs.newClient}</span>
                             </span>
                         </div>
                     </div>

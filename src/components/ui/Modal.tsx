@@ -60,38 +60,41 @@ function Modal({
         <div
             ref={overlayRef}
             onClick={handleOverlayClick}
-            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4 bg-dark-900/60 dark:bg-black/70 backdrop-blur-sm animate-fade-in"
+            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4"
         >
+            {/* Backdrop with Blur */}
+            <div className="absolute inset-0 bg-dark-900/40 dark:bg-black/60 backdrop-blur-sm animate-fade-in transition-all duration-300" />
+
+            {/* Modal Content */}
             <div
                 className={`
+          relative z-10
           w-full ${sizes[size]} 
           bg-white dark:bg-dark-900 
-          rounded-t-2xl sm:rounded-2xl shadow-2xl shadow-black/20
-          border-x border-t sm:border border-dark-100 dark:border-dark-700
-          animate-scale-in overflow-hidden
+          rounded-t-3xl sm:rounded-3xl shadow-2xl shadow-black/20
+          border border-white/20 dark:border-white/10
+          animate-modal-pop overflow-hidden
           flex flex-col 
-          fixed bottom-0 sm:relative sm:bottom-auto
-          h-[90vh] sm:h-auto sm:max-h-[calc(100vh-4rem)]
-          w-full sm:w-auto
+          max-h-[85vh] sm:max-h-[calc(100vh-8rem)]
         `}
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby={title ? 'modal-title' : undefined}
             >
                 {(title || showCloseButton) && (
-                    <div className="flex items-center justify-between p-6 border-b border-gray-100 dark:border-dark-700 bg-white/50 dark:bg-dark-900/50 backdrop-blur sticky top-0 z-10">
+                    <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100 dark:border-dark-700/50 bg-white/80 dark:bg-dark-900/80 backdrop-blur sticky top-0 z-20">
                         {title && (
-                            <h2 id="modal-title" className="text-xl font-bold text-dark-900 dark:text-white">
+                            <h2 id="modal-title" className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-dark-900 to-dark-700 dark:from-white dark:to-gray-300">
                                 {title}
                             </h2>
                         )}
                         {showCloseButton && (
                             <button
                                 onClick={onClose}
-                                className="p-2 -m-2 text-dark-400 hover:text-dark-600 dark:hover:text-dark-200 transition-colors rounded-lg hover:bg-dark-100 dark:hover:bg-dark-800"
+                                className="group p-2 -m-2 text-gray-400 hover:text-red-500 transition-colors rounded-full hover:bg-red-50 dark:hover:bg-red-900/20"
                                 aria-label="Close modal"
                             >
-                                <X className="w-5 h-5" />
+                                <X className="w-5 h-5 transition-transform group-hover:rotate-90" />
                             </button>
                         )}
                     </div>

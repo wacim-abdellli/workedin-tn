@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { ChevronDown, ChevronUp, Search, HelpCircle, MessageCircle, FileText, CreditCard, Shield, User } from 'lucide-react';
 import { Header, Footer } from '../components/layout';
+import SEO, { SEO_CONFIG } from '../components/common/SEO';
 
 const FAQ_CATEGORIES = [
     {
@@ -115,6 +116,7 @@ export default function FAQ() {
 
     return (
         <div className="min-h-screen bg-gray-50">
+            <SEO {...SEO_CONFIG.faq} url="/faq" />
             <Header />
 
             <div className="container-custom py-12">

@@ -1,27 +1,86 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- Homepage - Highest Priority -->
   <url>
     <loc>https://khedma.tn/</loc>
-    <lastmod>2024-03-20</lastmod>
-    <changefreq>weekly</changefreq>
+    <lastmod>2026-01-28</lastmod>
+    <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
+
+  <!-- Main Features - High Priority -->
+  <url>
+    <loc>https://khedma.tn/jobs</loc>
+    <lastmod>2026-01-28</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://khedma.tn/find-freelancers</loc>
+    <lastmod>2026-01-28</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://khedma.tn/search</loc>
+    <lastmod>2026-01-28</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Secondary Pages - Medium Priority -->
   <url>
     <loc>https://khedma.tn/how-it-works</loc>
-    <lastmod>2024-03-20</lastmod>
+    <lastmod>2026-01-28</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://khedma.tn/for-clients</loc>
-    <lastmod>2024-03-20</lastmod>
+    <lastmod>2026-01-28</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
+
+  <!-- Informational Pages -->
+  <url>
+    <loc>https://khedma.tn/faq</loc>
+    <lastmod>2026-01-28</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Authentication Pages (indexable for discovery) -->
   <url>
     <loc>https://khedma.tn/signup</loc>
-    <lastmod>2024-03-20</lastmod>
+    <lastmod>2026-01-28</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
+  <url>
+    <loc>https://khedma.tn/login</loc>
+    <lastmod>2026-01-28</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
+  <!-- Legal Pages - Lower Priority -->
+  <url>
+    <loc>https://khedma.tn/terms</loc>
+    <lastmod>2026-01-28</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://khedma.tn/privacy</loc>
+    <lastmod>2026-01-28</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+
+  <!-- Public Freelancer Profile Pages (template - dynamic profiles would be added programmatically) -->
+  <!-- Note: Individual freelancer profiles (e.g., /freelancer/:id) should be generated dynamically -->
+  
+  <!-- Public Job Detail Pages (template - dynamic jobs would be added programmatically) -->
+  <!-- Note: Individual job pages (e.g., /jobs/:id) should be generated dynamically -->
 </urlset>

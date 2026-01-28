@@ -8,6 +8,7 @@ import {
     CreditCard, Star, Shield, HelpCircle, ChevronDown, ChevronUp
 } from 'lucide-react';
 import { useTranslation } from '../i18n';
+import SEO, { SEO_CONFIG } from '../components/common/SEO';
 
 function HowItWorks() {
     const { t } = useTranslation();
@@ -44,7 +45,8 @@ function HowItWorks() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-gray-50 dark:bg-dark-950 transition-colors duration-300">
+            <SEO {...SEO_CONFIG.howItWorks} url="/how-it-works" />
             <Header />
 
             {/* Hero */}
@@ -152,7 +154,7 @@ function HowItWorks() {
                             <div key={index} className="card overflow-hidden">
                                 <button
                                     onClick={() => toggleFaq(index)}
-                                    className="w-full flex items-center justify-between p-6 text-right font-bold hover:bg-gray-50 transition-colors"
+                                    className="w-full flex items-center justify-between p-6 text-right font-bold hover:bg-gray-50 dark:hover:bg-dark-800 transition-colors"
                                 >
                                     <span>{faq.q}</span>
                                     {openFaq === index ? (

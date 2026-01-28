@@ -23,6 +23,7 @@ import Input from '../components/ui/Input';
 import Modal from '../components/ui/Modal';
 import { supabase } from '../lib/supabase';
 import OptimizedImage from '../components/common/OptimizedImage';
+import SEO, { SEO_CONFIG } from '../components/common/SEO';
 
 type SettingsTab = 'profile' | 'notifications' | 'payment' | 'security';
 
@@ -553,6 +554,7 @@ function Settings() {
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-dark-900 transition-colors duration-300">
+            <SEO {...SEO_CONFIG.settings} url="/settings" noIndex />
             <Header />
 
             <div className="container-custom py-8">
