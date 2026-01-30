@@ -364,13 +364,18 @@ function Settings() {
                     <div className="flex flex-wrap gap-2 mt-2">
                         {/* User Type Badge */}
                         <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${profile?.user_type === 'freelancer'
-                                ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400'
-                                : profile?.user_type === 'client'
-                                    ? 'bg-secondary-100 dark:bg-secondary-900/30 text-secondary-700 dark:text-secondary-400'
-                                    : 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400'
+                            ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400'
+                            : profile?.user_type === 'client'
+                                ? 'bg-secondary-100 dark:bg-secondary-900/30 text-secondary-700 dark:text-secondary-400'
+                                : profile?.user_type === 'both'
+                                    ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400'
+                                    : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'
                             }`}>
                             <User className="w-3 h-3" />
-                            {profile?.user_type === 'freelancer' ? 'مستقل' : profile?.user_type === 'client' ? 'صاحب مشروع' : 'كلاهما'}
+                            {profile?.user_type === 'freelancer' ? 'مستقل'
+                                : profile?.user_type === 'client' ? 'صاحب مشروع'
+                                    : profile?.user_type === 'both' ? 'كلاهما'
+                                        : 'غير محدد'}
                         </span>
 
                         {/* Verification Status Badge */}
@@ -394,12 +399,20 @@ function Settings() {
                             </button>
                         )}
 
-                        {/* Onboarding Status */}
-                        {profile?.onboarding_completed && (
+                        {/* Onboarding Status - show button to complete if not done */}
+                        {profile?.onboarding_completed ? (
                             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400">
                                 <Check className="w-3 h-3" />
                                 الملف مكتمل
                             </span>
+                        ) : (
+                            <button
+                                onClick={() => navigate(profile?.user_type === 'client' ? '/onboarding/client' : '/onboarding/freelancer')}
+                                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 hover:bg-orange-200 dark:hover:bg-orange-900/50 transition-colors"
+                            >
+                                <User className="w-3 h-3" />
+                                أكمل ملفك الشخصي
+                            </button>
                         )}
                     </div>
                 </div>

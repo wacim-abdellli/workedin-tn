@@ -1,11 +1,33 @@
 import { Link } from 'react-router-dom';
 import { Users, Briefcase, ArrowRight, ArrowLeft } from 'lucide-react';
 import { useTranslation } from '@/i18n';
+import { useAuth } from '@/contexts/AuthContext';
 import Button from '@/components/ui/Button';
 
 export default function HowItWorksSection() {
     const { t, dir } = useTranslation();
+    const { isAuthenticated, profile } = useAuth();
     const ArrowIcon = dir === 'rtl' ? ArrowLeft : ArrowRight;
+
+    const getFreelancerLink = () => {
+        if (isAuthenticated) {
+            if (profile?.user_type === 'freelancer' || profile?.user_type === 'both') {
+                return profile?.onboarding_completed ? '/freelancer/dashboard' : '/onboarding/freelancer';
+            }
+            return '/onboarding/freelancer';
+        }
+        return '/signup?type=freelancer';
+    };
+
+    const getClientLink = () => {
+        if (isAuthenticated) {
+            if (profile?.user_type === 'client' || profile?.user_type === 'both') {
+                return profile?.onboarding_completed ? '/client/dashboard' : '/onboarding/client';
+            }
+            return '/onboarding/client';
+        }
+        return '/signup?type=client';
+    };
 
     return (
         <section className="section bg-dark-50 dark:bg-dark-900">
@@ -45,7 +67,7 @@ export default function HowItWorksSection() {
                             ))}
                         </div>
 
-                        <Link to="/signup?type=freelancer" className="mt-8 block">
+                        <Link to={getFreelancerLink()} className="mt-8 block">
                             <Button variant="primary" className="w-full" rightIcon={<ArrowIcon className="w-5 h-5" />}>
                                 {t.howItWorks.cta.freelancer}
                             </Button>
@@ -76,7 +98,7 @@ export default function HowItWorksSection() {
                             ))}
                         </div>
 
-                        <Link to="/signup?type=client" className="mt-8 block">
+                        <Link to={getClientLink()} className="mt-8 block">
                             <button className="btn-accent w-full btn-lg">
                                 <span>{t.howItWorks.cta.client}</span>
                                 <ArrowIcon className="w-5 h-5" />
@@ -88,3 +110,4 @@ export default function HowItWorksSection() {
         </section>
     );
 }
+

@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Sparkles, ArrowRight, ArrowLeft, Shield, CheckCircle, Users, Briefcase } from 'lucide-react';
 import { useTranslation } from '@/i18n';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface HeroSectionProps {
     stats: {
@@ -10,7 +11,31 @@ interface HeroSectionProps {
 
 export default function HeroSection({ stats }: HeroSectionProps) {
     const { t, dir } = useTranslation();
+    const { isAuthenticated, profile } = useAuth();
     const ArrowIcon = dir === 'rtl' ? ArrowLeft : ArrowRight;
+
+    // Determine where to redirect based on auth status
+    const getFreelancerLink = () => {
+        if (isAuthenticated) {
+            // If logged in, go to dashboard or onboarding
+            if (profile?.user_type === 'freelancer' || profile?.user_type === 'both') {
+                return profile?.onboarding_completed ? '/freelancer/dashboard' : '/onboarding/freelancer';
+            }
+            // If client, redirect to onboarding as freelancer
+            return '/onboarding/freelancer';
+        }
+        return '/signup?type=freelancer';
+    };
+
+    const getClientLink = () => {
+        if (isAuthenticated) {
+            if (profile?.user_type === 'client' || profile?.user_type === 'both') {
+                return profile?.onboarding_completed ? '/client/dashboard' : '/onboarding/client';
+            }
+            return '/onboarding/client';
+        }
+        return '/signup?type=client';
+    };
 
     return (
         <section className="relative min-h-[90vh] flex items-center overflow-hidden">
@@ -56,7 +81,7 @@ export default function HeroSection({ stats }: HeroSectionProps) {
 
                     {/* CTA Buttons */}
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-slide-up opacity-0 [animation-fill-mode:forwards]" style={{ animationDelay: '200ms' }}>
-                        <Link to="/signup?type=freelancer">
+                        <Link to={getFreelancerLink()}>
                             <button className="btn-primary btn-lg group relative overflow-hidden">
                                 <span className="relative z-10 flex items-center gap-2">
                                     {t.hero.ctaFreelancer}
@@ -64,7 +89,7 @@ export default function HeroSection({ stats }: HeroSectionProps) {
                                 </span>
                             </button>
                         </Link>
-                        <Link to="/signup?type=client">
+                        <Link to={getClientLink()}>
                             <button className="btn btn-lg bg-white/50 dark:bg-white/10 text-dark-700 dark:text-white border-2 border-dark-200 dark:border-white/20 hover:bg-dark-50 dark:hover:bg-white/20 backdrop-blur-sm transition-all hover:scale-105">
                                 <Briefcase className="w-5 h-5" />
                                 <span>{t.hero.ctaClient}</span>
@@ -105,3 +130,4 @@ export default function HeroSection({ stats }: HeroSectionProps) {
         </section>
     );
 }
+

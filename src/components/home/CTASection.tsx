@@ -1,11 +1,24 @@
 import { Link } from 'react-router-dom';
 import { Sparkles, ArrowRight, ArrowLeft, Play } from 'lucide-react';
 import { useTranslation } from '@/i18n';
+import { useAuth } from '@/contexts/AuthContext';
 import Button from '@/components/ui/Button';
 
 export default function CTASection() {
     const { t, dir } = useTranslation();
+    const { isAuthenticated, profile } = useAuth();
     const ArrowIcon = dir === 'rtl' ? ArrowLeft : ArrowRight;
+
+    // Determine where to redirect based on auth status
+    const getStartLink = () => {
+        if (isAuthenticated) {
+            if (profile?.user_type === 'freelancer' || profile?.user_type === 'both') {
+                return profile?.onboarding_completed ? '/freelancer/dashboard' : '/onboarding/freelancer';
+            }
+            return '/onboarding/freelancer';
+        }
+        return '/signup?type=freelancer';
+    };
 
     return (
         <section className="py-24 relative overflow-hidden">
@@ -25,7 +38,7 @@ export default function CTASection() {
                     </p>
 
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                        <Link to="/signup?type=freelancer">
+                        <Link to={getStartLink()}>
                             <button className="btn-primary btn-lg">
                                 <span>{t.home.sections.cta.btnStart}</span>
                                 <ArrowIcon className="w-5 h-5" />
@@ -42,3 +55,4 @@ export default function CTASection() {
         </section>
     );
 }
+
