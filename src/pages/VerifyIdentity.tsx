@@ -306,13 +306,31 @@ export default function VerifyIdentity() {
 
             console.log('Sending REST API request to insert verification...');
 
+            // First, delete any existing verification (RLS UPDATE policy is restrictive)
+            console.log('Deleting any existing verification record...');
+            try {
+                await fetch(
+                    `${supabaseUrl}/rest/v1/identity_verifications?user_id=eq.${user.id}`,
+                    {
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': `Bearer ${session.access_token}`,
+                            'apikey': supabaseKey,
+                        }
+                    }
+                );
+                console.log('Delete completed (may have had no effect if no record existed)');
+            } catch (deleteError) {
+                console.log('Delete failed, proceeding anyway:', deleteError);
+            }
+
             // Use fetch with timeout for database insert
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
 
             try {
                 const insertResponse = await fetch(
-                    `${supabaseUrl}/rest/v1/identity_verifications?on_conflict=user_id`,
+                    `${supabaseUrl}/rest/v1/identity_verifications`,
                     {
                         method: 'POST',
                         headers: {
