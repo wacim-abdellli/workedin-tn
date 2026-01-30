@@ -74,12 +74,14 @@ function ClientOnboarding() {
                 location: data.location,
                 bio: data.company_name ? `Company: ${data.company_name}` : undefined,
                 avatar_url: avatarUrl,
+                onboarding_completed: true, // Mark onboarding as complete
             });
 
             showToast(t.payment.success || 'Success!', 'success');
             navigate('/client/dashboard');
-        } catch (error) {
-            showToast(t.common.error, 'error');
+        } catch (error: any) {
+            console.error('Client onboarding error:', error);
+            showToast(error.message || t.common.error, 'error');
         } finally {
             setIsLoading(false);
         }

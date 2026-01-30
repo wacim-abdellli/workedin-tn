@@ -18,6 +18,7 @@ export interface Profile {
     preferred_language: Language;
     cin_verified?: boolean;
     cin_submitted?: boolean;
+    onboarding_completed?: boolean;
     created_at: string;
     updated_at: string;
 }

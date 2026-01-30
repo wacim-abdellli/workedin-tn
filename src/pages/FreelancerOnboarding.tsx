@@ -191,8 +191,9 @@ function FreelancerOnboarding() {
             });
             await updateFreelancerProfile({ title: data.title });
             setStep(2);
-        } catch {
-            showToast(t.common.error, 'error');
+        } catch (error: any) {
+            console.error('Step 1 error:', error);
+            showToast(error.message || t.common.error, 'error');
         } finally {
             setIsLoading(false);
         }
@@ -211,8 +212,9 @@ function FreelancerOnboarding() {
                 availability: data.availability as 'available' | 'busy' | 'offline',
             });
             setStep(3);
-        } catch {
-            showToast(t.common.error, 'error');
+        } catch (error: any) {
+            console.error('Step 2 error:', error);
+            showToast(error.message || t.common.error, 'error');
         } finally {
             setIsLoading(false);
         }
@@ -228,8 +230,9 @@ function FreelancerOnboarding() {
                 education: validEducation,
             });
             setStep(4);
-        } catch {
-            showToast(t.common.error, 'error');
+        } catch (error: any) {
+            console.error('Step 3 error:', error);
+            showToast(error.message || t.common.error, 'error');
         } finally {
             setIsLoading(false);
         }
@@ -259,12 +262,15 @@ function FreelancerOnboarding() {
                 if (url) await updateFreelancerProfile({ voice_intro_url: url });
             }
 
+            // Mark onboarding as complete - THIS IS THE CRITICAL FIX!
+            await updateProfile({ onboarding_completed: true });
+
             await refreshProfile();
             showToast(t.payment.success, 'success');
             navigate('/freelancer/dashboard');
-        } catch (error) {
-            console.error(error);
-            showToast(t.common.error, 'error');
+        } catch (error: any) {
+            console.error('Complete onboarding error:', error);
+            showToast(error.message || t.common.error, 'error');
         } finally {
             setIsLoading(false);
         }
