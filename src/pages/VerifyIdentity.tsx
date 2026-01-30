@@ -417,7 +417,46 @@ export default function VerifyIdentity() {
                             حسابك موثق الآن وحصلت على شارة التحقق الزرقاء. يمكنك الآن الاستمتاع بجميع ميزات المنصة.
                         </p>
                         <button
-                            onClick={() => navigate('/dashboard')}
+                            onClick={() => navigate('/freelancer/dashboard')}
+                            className="bg-primary-600 hover:bg-primary-700 text-white px-8 py-3 rounded-xl font-medium transition-colors shadow-lg shadow-primary-600/20"
+                        >
+                            العودة للوحة التحكم
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    // If verification is pending (submitted but not yet verified), show pending state
+    if (profile?.cin_submitted && !profile?.cin_verified) {
+        return (
+            <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 py-12">
+                <SEO title="طلب التحقق قيد المراجعة" description="طلب التحقق من الهوية قيد المراجعة من قبل فريقنا" />
+                <div className="container mx-auto px-4">
+                    <div className="max-w-2xl mx-auto text-center bg-white dark:bg-gray-800 rounded-3xl p-12 shadow-xl border-2 border-orange-200 dark:border-orange-900">
+                        <div className="w-24 h-24 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <Shield className="w-12 h-12 text-orange-500 dark:text-orange-400" />
+                        </div>
+                        <div className="inline-flex items-center gap-2 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 px-4 py-2 rounded-full text-sm font-medium mb-4">
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            قيد المراجعة
+                        </div>
+                        <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">طلبك قيد المراجعة</h2>
+                        <p className="text-gray-600 dark:text-gray-300 text-lg mb-6">
+                            تم استلام طلب التحقق من هويتك بنجاح. فريقنا يعمل على مراجعة مستنداتك.
+                        </p>
+                        <div className="bg-gray-50 dark:bg-gray-700/50 rounded-2xl p-6 mb-8">
+                            <div className="flex items-center justify-center gap-3 text-gray-700 dark:text-gray-300">
+                                <AlertCircle className="w-5 h-5 text-orange-500" />
+                                <span>مدة المراجعة: <strong>24 ساعة كحد أقصى</strong></span>
+                            </div>
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                                سيتم إشعارك عبر البريد الإلكتروني فور اكتمال المراجعة
+                            </p>
+                        </div>
+                        <button
+                            onClick={() => navigate('/freelancer/dashboard')}
                             className="bg-primary-600 hover:bg-primary-700 text-white px-8 py-3 rounded-xl font-medium transition-colors shadow-lg shadow-primary-600/20"
                         >
                             العودة للوحة التحكم
@@ -443,7 +482,7 @@ export default function VerifyIdentity() {
                             سيقوم فريقنا بمراجعة مستنداتك والرد عليك في أقرب وقت ممكن (عادة خلال 24 ساعة). سنقوم بإشعارك عبر البريد الإلكتروني عند اكتمال المراجعة.
                         </p>
                         <button
-                            onClick={() => navigate('/dashboard')}
+                            onClick={() => navigate('/freelancer/dashboard')}
                             className="bg-primary-600 hover:bg-primary-700 text-white px-8 py-3 rounded-xl font-medium transition-colors shadow-lg shadow-primary-600/20"
                         >
                             العودة للوحة التحكم
