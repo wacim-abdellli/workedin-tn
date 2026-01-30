@@ -99,6 +99,11 @@ function AppRoutes() {
       } />
 
       {/* Dashboard routes */}
+      <Route path="/dashboard" element={
+        <ProtectedRoute>
+          <ProfileRedirect />
+        </ProtectedRoute>
+      } />
       <Route path="/freelancer/dashboard" element={
         <ProtectedRoute>
           <FreelancerDashboard />

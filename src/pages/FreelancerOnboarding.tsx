@@ -180,14 +180,23 @@ function FreelancerOnboarding() {
         setIsLoading(true);
         try {
             let avatarUrl = undefined;
+
+            // Try to upload avatar, but don't fail if bucket doesn't exist
             if (avatarFile && user) {
-                const path = `${user.id}/avatar-${Date.now()}.${avatarFile.name.split('.').pop()}`;
-                avatarUrl = await uploadFile('avatars', path, avatarFile);
+                try {
+                    const path = `${user.id}/avatar-${Date.now()}.${avatarFile.name.split('.').pop()}`;
+                    avatarUrl = await uploadFile('avatars', path, avatarFile);
+                } catch (uploadError: any) {
+                    console.warn('Avatar upload failed (bucket may not exist):', uploadError);
+                    // Continue without avatar - don't block the user
+                    showToast('تعذر رفع الصورة الشخصية، يمكنك إضافتها لاحقاً من الإعدادات', 'warning');
+                }
             }
+
             await updateProfile({
                 full_name: data.full_name,
                 location: data.location,
-                avatar_url: avatarUrl,
+                ...(avatarUrl && { avatar_url: avatarUrl }),
             });
             await updateFreelancerProfile({ title: data.title });
             setStep(2);

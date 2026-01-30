@@ -418,6 +418,54 @@ function Settings() {
                 </div>
             </div>
 
+            {/* Profile Completion Widget */}
+            {(() => {
+                // Calculate profile completion
+                const fields = [
+                    { key: 'full_name', label: 'الاسم', value: profile?.full_name },
+                    { key: 'avatar_url', label: 'الصورة الشخصية', value: profile?.avatar_url },
+                    { key: 'location', label: 'الموقع', value: profile?.location },
+                    { key: 'bio', label: 'نبذة عني', value: profile?.bio },
+                    { key: 'user_type', label: 'نوع الحساب', value: profile?.user_type },
+                    { key: 'cin_submitted', label: 'توثيق الهوية', value: profile?.cin_submitted },
+                    { key: 'onboarding_completed', label: 'إكمال الملف', value: profile?.onboarding_completed },
+                ];
+                const completed = fields.filter(f => f.value).length;
+                const total = fields.length;
+                const percentage = Math.round((completed / total) * 100);
+                const missing = fields.filter(f => !f.value);
+
+                return (
+                    <div className={`p-4 rounded-2xl border-2 ${percentage === 100
+                            ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
+                            : 'bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800'
+                        }`}>
+                        <div className="flex items-center justify-between mb-3">
+                            <span className="font-medium text-sm">اكتمال الملف الشخصي</span>
+                            <span className={`text-lg font-bold ${percentage === 100 ? 'text-green-600' : 'text-orange-600'
+                                }`}>{percentage}%</span>
+                        </div>
+                        <div className="h-2.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                            <div
+                                className={`h-full rounded-full transition-all duration-500 ${percentage === 100 ? 'bg-green-500' : 'bg-gradient-to-r from-orange-400 to-orange-500'
+                                    }`}
+                                style={{ width: `${percentage}%` }}
+                            />
+                        </div>
+                        {missing.length > 0 && (
+                            <div className="mt-3 flex flex-wrap gap-2">
+                                <span className="text-xs text-muted">المطلوب:</span>
+                                {missing.slice(0, 3).map(m => (
+                                    <span key={m.key} className="text-xs px-2 py-0.5 bg-white dark:bg-gray-800 rounded border">{m.label}</span>
+                                ))}
+                                {missing.length > 3 && (
+                                    <span className="text-xs text-muted">+{missing.length - 3} آخرين</span>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                );
+            })()}
             {/* Form */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Input
@@ -442,6 +490,40 @@ function Settings() {
                     value={profileForm.location}
                     onChange={(e) => setProfileForm({ ...profileForm, location: e.target.value })}
                 />
+            </div>
+
+            {/* User Type Selection */}
+            <div className="mt-6">
+                <label className="block text-sm font-medium text-foreground mb-3">نوع الحساب</label>
+                <div className="grid grid-cols-3 gap-3">
+                    {[
+                        { type: 'freelancer', label: 'مستقل', desc: 'أقدم خدماتي' },
+                        { type: 'client', label: 'صاحب مشروع', desc: 'أبحث عن مستقلين' },
+                        { type: 'both', label: 'كلاهما', desc: 'الاثنين معاً' },
+                    ].map(({ type, label, desc }) => (
+                        <button
+                            key={type}
+                            type="button"
+                            onClick={async () => {
+                                try {
+                                    await supabase.from('profiles').update({ user_type: type }).eq('id', user?.id);
+                                    await refreshProfile();
+                                    showToast('تم تحديث نوع الحساب', 'success');
+                                } catch (err) {
+                                    console.error(err);
+                                    showToast('فشل التحديث', 'error');
+                                }
+                            }}
+                            className={`p-3 rounded-xl border-2 transition-all text-center ${profile?.user_type === type
+                                ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
+                                : 'border-gray-200 dark:border-gray-700 hover:border-primary-300'
+                                }`}
+                        >
+                            <span className={`font-medium block ${profile?.user_type === type ? 'text-primary-600' : ''}`}>{label}</span>
+                            <span className="text-xs text-muted">{desc}</span>
+                        </button>
+                    ))}
+                </div>
             </div>
 
             <div>

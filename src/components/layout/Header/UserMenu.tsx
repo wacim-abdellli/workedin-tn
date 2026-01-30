@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Bell, User, LogOut, Settings,
-    Briefcase, MessageSquare, Heart, Shield
+    Briefcase, MessageSquare, Heart
 } from 'lucide-react';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 import { hardLogout, clearAllAuthData } from '@/lib/authUtils';
@@ -138,20 +138,17 @@ export function UserMenu({ user, profile, signOut, t }: UserMenuProps) {
                             </div>
 
                             <div className="py-2" role="none">
-                                <UserMenuItem icon={User} to="/dashboard" onClick={() => setMenuOpen(false)}>
+                                <UserMenuItem icon={User} to="/profile" onClick={() => setMenuOpen(false)}>
                                     {t.nav.dashboard}
                                 </UserMenuItem>
-                                <UserMenuItem icon={Briefcase} to="/my-jobs" onClick={() => setMenuOpen(false)}>
+                                <UserMenuItem icon={Briefcase} to="/jobs" onClick={() => setMenuOpen(false)}>
                                     {t.nav.myJobs}
                                 </UserMenuItem>
                                 <UserMenuItem icon={MessageSquare} to="/messages" onClick={() => setMenuOpen(false)}>
                                     {t.nav.messages}
                                 </UserMenuItem>
-                                <UserMenuItem icon={Heart} to="/saved" onClick={() => setMenuOpen(false)}>
+                                <UserMenuItem icon={Heart} to="/jobs" onClick={() => setMenuOpen(false)}>
                                     {t.nav.saved}
-                                </UserMenuItem>
-                                <UserMenuItem icon={Shield} to="/verify-identity" onClick={() => setMenuOpen(false)}>
-                                    توثيق الهوية
                                 </UserMenuItem>
                                 <UserMenuItem icon={Settings} to="/settings" onClick={() => setMenuOpen(false)}>
                                     {t.nav.settings}
