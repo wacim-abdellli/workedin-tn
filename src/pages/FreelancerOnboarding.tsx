@@ -178,27 +178,38 @@ function FreelancerOnboarding() {
     // Step Submits
     const onStep1Submit = async (data: Step1FormData) => {
         setIsLoading(true);
+
+        // Timeout function - 15 second max per operation
+        const withTimeout = <T,>(promise: Promise<T>, ms = 15000): Promise<T> =>
+            Promise.race([
+                promise,
+                new Promise<T>((_, reject) => setTimeout(() => reject(new Error('انتهت مهلة الاتصال')), ms))
+            ]);
+
         try {
             let avatarUrl = undefined;
 
-            // Try to upload avatar, but don't fail if bucket doesn't exist
+            // Try to upload avatar (with timeout), but don't fail if bucket doesn't exist
             if (avatarFile && user) {
                 try {
                     const path = `${user.id}/avatar-${Date.now()}.${avatarFile.name.split('.').pop()}`;
-                    avatarUrl = await uploadFile('avatars', path, avatarFile);
+                    avatarUrl = await withTimeout(uploadFile('avatars', path, avatarFile), 10000);
                 } catch (uploadError: any) {
-                    console.warn('Avatar upload failed (bucket may not exist):', uploadError);
-                    // Continue without avatar - don't block the user
-                    showToast('تعذر رفع الصورة الشخصية، يمكنك إضافتها لاحقاً من الإعدادات', 'warning');
+                    console.warn('Avatar upload failed:', uploadError);
+                    showToast('تعذر رفع الصورة، يمكنك إضافتها لاحقاً', 'warning');
                 }
             }
 
-            await updateProfile({
+            // Update profile with timeout
+            await withTimeout(updateProfile({
                 full_name: data.full_name,
                 location: data.location,
                 ...(avatarUrl && { avatar_url: avatarUrl }),
-            });
-            await updateFreelancerProfile({ title: data.title });
+            }));
+
+            // Update freelancer profile with timeout
+            await withTimeout(updateFreelancerProfile({ title: data.title }));
+
             setStep(2);
         } catch (error: any) {
             console.error('Step 1 error:', error);

@@ -7,12 +7,15 @@ import {
 } from 'lucide-react';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 import { hardLogout, clearAllAuthData } from '@/lib/authUtils';
+import { supabase } from '@/lib/supabase';
 
 export interface UserMenuProps {
     user: SupabaseUser;
     profile: {
         full_name?: string;
         avatar_url?: string;
+        user_type?: 'freelancer' | 'client' | 'both' | null;
+        id?: string;
     } | null;
     signOut: () => Promise<void>;
     t: {
@@ -135,6 +138,43 @@ export function UserMenu({ user, profile, signOut, t }: UserMenuProps) {
                                     {profile?.full_name || user.email}
                                 </p>
                                 <p className="text-sm text-gray-600 dark:text-gray-400 truncate">{user.email}</p>
+                            </div>
+
+                            {/* Upwork-style Mode Switcher */}
+                            <div className="p-2 border-b border-gray-200 dark:border-gray-700">
+                                <div className="flex items-center justify-between p-2 rounded-xl bg-gray-100 dark:bg-gray-800">
+                                    <button
+                                        onClick={async () => {
+                                            if (profile?.id) {
+                                                await supabase.from('profiles').update({ user_type: 'freelancer' }).eq('id', profile.id);
+                                                window.location.reload();
+                                            }
+                                        }}
+                                        className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-medium transition-all ${profile?.user_type === 'freelancer' || profile?.user_type === 'both'
+                                            ? 'bg-violet-600 text-white shadow-lg'
+                                            : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+                                            }`}
+                                    >
+                                        <User className="w-3.5 h-3.5" />
+                                        مستقل
+                                    </button>
+                                    <div className="w-px h-6 bg-gray-300 dark:bg-gray-600 mx-1" />
+                                    <button
+                                        onClick={async () => {
+                                            if (profile?.id) {
+                                                await supabase.from('profiles').update({ user_type: 'client' }).eq('id', profile.id);
+                                                window.location.reload();
+                                            }
+                                        }}
+                                        className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-medium transition-all ${profile?.user_type === 'client'
+                                            ? 'bg-emerald-600 text-white shadow-lg'
+                                            : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+                                            }`}
+                                    >
+                                        <Briefcase className="w-3.5 h-3.5" />
+                                        صاحب عمل
+                                    </button>
+                                </div>
                             </div>
 
                             <div className="py-2" role="none">

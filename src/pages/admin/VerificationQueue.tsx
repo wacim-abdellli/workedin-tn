@@ -40,6 +40,7 @@ export default function VerificationQueue() {
     const [verifications, setVerifications] = useState<VerificationRequest[]>([]);
     const [selectedVerification, setSelectedVerification] = useState<VerificationRequest | null>(null);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const [actionLoading, setActionLoading] = useState(false);
     const [rejectionReason, setRejectionReason] = useState('');
     const [showRejectModal, setShowRejectModal] = useState(false);
@@ -49,8 +50,13 @@ export default function VerificationQueue() {
     }, []);
 
     const fetchPendingVerifications = async () => {
+        setError(null);
         try {
-            const { data, error } = await supabase
+            // Add timeout of 10 seconds
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+            const { data, error: fetchError } = await supabase
                 .from('identity_verifications')
                 .select(`
                     *,
@@ -59,10 +65,21 @@ export default function VerificationQueue() {
                 .eq('status', 'pending')
                 .order('submitted_at', { ascending: true });
 
-            if (error) throw error;
+            clearTimeout(timeoutId);
+
+            if (fetchError) {
+                console.error('Supabase error:', fetchError);
+                setError(`خطأ: ${fetchError.message}`);
+                return;
+            }
             setVerifications(data || []);
-        } catch (error) {
-            console.error('Error fetching verifications:', error);
+        } catch (err: any) {
+            console.error('Error fetching verifications:', err);
+            if (err.name === 'AbortError') {
+                setError('انتهت مهلة الاتصال. تحقق من اتصالك بالإنترنت أو من إعدادات Supabase.');
+            } else {
+                setError(err.message || 'فشل في تحميل طلبات التحقق');
+            }
             showToast('فشل في تحميل طلبات التحقق', 'error');
         } finally {
             setLoading(false);
@@ -211,6 +228,27 @@ export default function VerificationQueue() {
         return (
             <div className="min-h-screen flex items-center justify-center">
                 <Loader2 className="w-8 h-8 animate-spin text-primary-600" />
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="text-center p-8 bg-white dark:bg-gray-800 rounded-2xl shadow-lg max-w-md">
+                    <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+                    <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">خطأ في التحميل</h2>
+                    <p className="text-gray-600 dark:text-gray-400 mb-4">{error}</p>
+                    <button
+                        onClick={() => {
+                            setLoading(true);
+                            fetchPendingVerifications();
+                        }}
+                        className="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+                    >
+                        إعادة المحاولة
+                    </button>
+                </div>
             </div>
         );
     }
