@@ -437,8 +437,8 @@ function Settings() {
 
                 return (
                     <div className={`p-4 rounded-2xl border-2 ${percentage === 100
-                            ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
-                            : 'bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800'
+                        ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
+                        : 'bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800'
                         }`}>
                         <div className="flex items-center justify-between mb-3">
                             <span className="font-medium text-sm">اكتمال الملف الشخصي</span>
@@ -504,19 +504,36 @@ function Settings() {
                         <button
                             key={type}
                             type="button"
-                            onClick={async () => {
+                            onClick={async (e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                console.log('Settings: Switching to', type, 'user?.id:', user?.id);
+                                if (!user?.id) {
+                                    showToast('خطأ: لا يوجد مستخدم', 'error');
+                                    return;
+                                }
                                 try {
-                                    await supabase.from('profiles').update({ user_type: type }).eq('id', user?.id);
+                                    const { error } = await supabase
+                                        .from('profiles')
+                                        .update({ user_type: type })
+                                        .eq('id', user.id);
+
+                                    if (error) {
+                                        console.error('Supabase update error:', error);
+                                        showToast('فشل التحديث: ' + error.message, 'error');
+                                        return;
+                                    }
+
                                     await refreshProfile();
-                                    showToast('تم تحديث نوع الحساب', 'success');
-                                } catch (err) {
-                                    console.error(err);
-                                    showToast('فشل التحديث', 'error');
+                                    showToast('تم تحديث نوع الحساب بنجاح!', 'success');
+                                } catch (err: any) {
+                                    console.error('Exception:', err);
+                                    showToast('خطأ غير متوقع: ' + err.message, 'error');
                                 }
                             }}
                             className={`p-3 rounded-xl border-2 transition-all text-center ${profile?.user_type === type
-                                ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
-                                : 'border-gray-200 dark:border-gray-700 hover:border-primary-300'
+                                    ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
+                                    : 'border-gray-200 dark:border-gray-700 hover:border-primary-300'
                                 }`}
                         >
                             <span className={`font-medium block ${profile?.user_type === type ? 'text-primary-600' : ''}`}>{label}</span>
