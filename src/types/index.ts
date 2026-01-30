@@ -16,6 +16,8 @@ export interface Profile {
     bio?: string;
     location?: string;
     preferred_language: Language;
+    cin_verified?: boolean;
+    cin_submitted?: boolean;
     created_at: string;
     updated_at: string;
 }

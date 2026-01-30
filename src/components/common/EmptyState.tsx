@@ -1,41 +1,76 @@
+import React from 'react';
 import type { LucideIcon } from 'lucide-react';
 import Button from '../ui/Button';
 
 interface EmptyStateProps {
-    icon?: LucideIcon;
+    icon: LucideIcon;
     title: string;
     description: string;
-    actionLabel?: string;
-    onAction?: () => void;
+    action?: {
+        label: string;
+        onClick: () => void;
+        variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger';
+    };
+    secondaryAction?: {
+        label: string;
+        onClick: () => void;
+        variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger';
+    };
+    illustration?: React.ReactNode;
     className?: string;
 }
 
-export default function EmptyState({
+export const EmptyState: React.FC<EmptyStateProps> = ({
     icon: Icon,
     title,
     description,
-    actionLabel,
-    onAction,
+    action,
+    secondaryAction,
+    illustration,
     className = ''
-}: EmptyStateProps) {
+}) => {
     return (
-        <div className={`flex flex-col items-center justify-center text-center p-8 border-2 border-dashed border-gray-200 dark:border-dark-700 rounded-2xl bg-gray-50/50 dark:bg-dark-800/50 ${className}`}>
-            {Icon && (
-                <div className="w-16 h-16 bg-gray-100 dark:bg-dark-700 rounded-full flex items-center justify-center mb-4">
-                    <Icon className="w-8 h-8 text-gray-400 dark:text-gray-500" />
+        <div className={`flex flex-col items-center justify-center py-16 px-4 text-center ${className}`}>
+            {illustration ? (
+                <div className="mb-6">{illustration}</div>
+            ) : (
+                <div className="w-20 h-20 rounded-full bg-gray-100 dark:bg-dark-800 flex items-center justify-center mb-6 animate-pulse-slow">
+                    <Icon className="w-10 h-10 text-gray-400 dark:text-gray-600" />
                 </div>
             )}
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
+
+            <h3 className="text-xl font-bold text-dark-900 dark:text-white mb-2">
                 {title}
             </h3>
-            <p className="text-gray-500 dark:text-gray-400 max-w-sm mb-6">
+
+            <p className="text-gray-600 dark:text-gray-400 max-w-md mb-8 leading-relaxed">
                 {description}
             </p>
-            {actionLabel && onAction && (
-                <Button onClick={onAction} variant="outline">
-                    {actionLabel}
-                </Button>
+
+            {(action || secondaryAction) && (
+                <div className="flex flex-col sm:flex-row gap-3">
+                    {action && (
+                        <Button
+                            onClick={action.onClick}
+                            variant={action.variant || 'primary'}
+                            className="shadow-lg shadow-primary-500/20"
+                        >
+                            {action.label}
+                        </Button>
+                    )}
+
+                    {secondaryAction && (
+                        <Button
+                            onClick={secondaryAction.onClick}
+                            variant={secondaryAction.variant || 'outline'}
+                        >
+                            {secondaryAction.label}
+                        </Button>
+                    )}
+                </div>
             )}
         </div>
     );
-}
+};
+
+export default EmptyState;

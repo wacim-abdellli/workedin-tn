@@ -8,6 +8,7 @@ import ProposalFiltersSidebar from '../components/proposals/ProposalFiltersSideb
 import JobSummaryCard from '../components/proposals/JobSummaryCard';
 import type { Proposal } from '../types/proposal';
 import ProposalDetailModal from '../components/proposals/ProposalDetailModal';
+import EmptyState from '../components/common/EmptyState';
 
 // Mock Data
 import type { ProposalStatus } from '../types/proposal';
@@ -215,16 +216,29 @@ export default function JobProposals() {
 
                         {/* List */}
                         <div className="space-y-4">
-                            {MOCK_PROPOSALS.map(proposal => (
-                                <div key={proposal.id} onClick={() => setSelectedProposal(proposal)} className="cursor-pointer transition-transform hover:scale-[1.01]">
-                                    <ProposalCard
-                                        proposal={proposal}
-                                        onHire={handleHire}
-                                        onMessage={handleMessage}
-                                        onShortlist={handleShortlist}
-                                    />
-                                </div>
-                            ))}
+                            {MOCK_PROPOSALS.length > 0 ? (
+                                MOCK_PROPOSALS.map(proposal => (
+                                    <div key={proposal.id} onClick={() => setSelectedProposal(proposal)} className="cursor-pointer transition-transform hover:scale-[1.01]">
+                                        <ProposalCard
+                                            proposal={proposal}
+                                            onHire={handleHire}
+                                            onMessage={handleMessage}
+                                            onShortlist={handleShortlist}
+                                        />
+                                    </div>
+                                ))
+                            ) : (
+                                <EmptyState
+                                    icon={Filter}
+                                    title="لا توجد عروض بعد"
+                                    description="لم تتلقى أي عروض لهذا المشروع حتى الآن. جرب مشاركة المشروع لزيادة المشاهدات."
+                                    action={{
+                                        label: "مشاركة المشروع",
+                                        onClick: () => { },
+                                        variant: "outline"
+                                    }}
+                                />
+                            )}
                         </div>
                     </div>
 

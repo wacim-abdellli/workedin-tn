@@ -1,14 +1,16 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm, FormProvider, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, ArrowLeft, Save } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Save, Loader2, Check } from 'lucide-react';
 import { Header } from '../components/layout';
 import Button from '../components/ui/Button';
+import Modal from '../components/ui/Modal';
 import { useToast } from '../components/ui/Toast';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
+import { useAutosave } from '../hooks/useAutosave';
 
 // Components
 import JobWizardLayout from '../components/job-post/JobWizardLayout';
@@ -23,7 +25,9 @@ const jobSchema = z.object({
     category: z.string().min(1, 'يرجى اختيار التصنيف'),
     description: z.string().min(50, 'الوصف يجب أن يكون 50 حرف على الأقل'),
     required_skills: z.array(z.any()).min(1, 'يرجى اختيار مهارة واحدة على الأقل').max(5),
-    attachments_files: z.any().optional(),
+    attachments_files: z.array(z.instanceof(File))
+        .max(5, 'الحد الأقصى 5 ملفات')
+        .optional(),
 
     // Step 2
     job_type: z.enum(['fixed_price', 'hourly']),
@@ -55,6 +59,10 @@ export default function JobPost() {
     const [currentStep, setCurrentStep] = useState(1);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    // Autosave state
+    const [showRestoreDraftModal, setShowRestoreDraftModal] = useState(false);
+    const [draftToRestore, setDraftToRestore] = useState<{ data: JobFormData, timestamp: Date } | null>(null);
+
     const methods = useForm<JobFormData>({
         resolver: zodResolver(jobSchema),
         defaultValues: {
@@ -65,6 +73,56 @@ export default function JobPost() {
         },
         mode: 'onChange'
     });
+
+    const formData = methods.watch();
+
+    const { status, lastSaved, loadFromStorage, clearStorage } = useAutosave<JobFormData>({
+        data: formData,
+        storageKey: 'khedma_job_draft',
+        // Optional: onSave callback if needed
+    });
+
+    // Check for saved draft on mount
+    useEffect(() => {
+        // Prevent hydration mismatch or immediate overwrite
+        const saved = loadFromStorage();
+        if (saved && saved.data && Object.keys(saved.data).length > 0) {
+            // Check if draft has meaningful data (e.g. at least a title or category)
+            if (saved.data.title || saved.data.category) {
+                setDraftToRestore(saved);
+                setShowRestoreDraftModal(true);
+            }
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    // Warn before unload
+    useEffect(() => {
+        const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+            // Check if form is dirty or has data
+            const isDirty = methods.formState.isDirty;
+            if (isDirty && !isSubmitting) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        };
+
+        window.addEventListener('beforeunload', handleBeforeUnload);
+        return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+    }, [methods.formState.isDirty, isSubmitting]);
+
+    const handleRestoreDraft = () => {
+        if (draftToRestore) {
+            methods.reset(draftToRestore.data);
+            showToast('تم استعادة المسودة بنجاح', 'success');
+        }
+        setShowRestoreDraftModal(false);
+    };
+
+    const handleDiscardDraft = () => {
+        clearStorage();
+        setShowRestoreDraftModal(false);
+    };
 
     const steps = [
         { id: 1, title: 'تفاصيل المهمة' },
@@ -119,6 +177,9 @@ export default function JobPost() {
             // Upload attachments if any
             const uploadedUrls: string[] = [];
             if (data.attachments_files && data.attachments_files.length > 0) {
+                // ... (Keep existing upload logic)
+                // Note: File lists cannot be easily autosaved/restored from localStorage
+                // We might need to handle this gracefully or ignore files in autosave
                 for (const file of data.attachments_files as File[]) {
                     const fileExt = file.name.split('.').pop();
                     const fileName = `${Math.random()}.${fileExt}`;
@@ -179,6 +240,9 @@ export default function JobPost() {
                 if (skillsError) throw skillsError;
             }
 
+            // Clean up autosave
+            clearStorage();
+
             if (status === 'draft') {
                 showToast('تم حفظ المسودة بنجاح', 'success');
             } else {
@@ -194,11 +258,42 @@ export default function JobPost() {
         }
     };
 
+    // Helper for relative time (since date-fns is missing)
+    const timeAgo = (date: Date) => {
+        const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
+        if (seconds < 60) return 'الآن';
+        if (seconds < 3600) return `منذ ${Math.floor(seconds / 60)} دقيقة`;
+        return `منذ ${Math.floor(seconds / 3600)} ساعة`;
+    };
+
     return (
         <div className="min-h-screen bg-gray-50 pb-20">
             <Header />
 
             <div className="container-custom py-12">
+                <div className="flex items-center justify-between mb-6">
+                    {/* Autosave Indicator */}
+                    <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 h-6">
+                        {status === 'saving' && (
+                            <>
+                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                <span className="text-xs">جاري الحفظ...</span>
+                            </>
+                        )}
+                        {status === 'saved' && (
+                            <>
+                                <Check className="w-3.5 h-3.5 text-green-500" />
+                                <span className="text-xs">تم الحفظ</span>
+                            </>
+                        )}
+                        {status === 'idle' && lastSaved && (
+                            <span className="text-xs text-gray-400">
+                                آخر حفظ: {timeAgo(lastSaved)}
+                            </span>
+                        )}
+                    </div>
+                </div>
+
                 <JobWizardLayout currentStep={currentStep} steps={steps}>
                     <FormProvider {...methods}>
                         <form onSubmit={methods.handleSubmit(onSubmit as any)} className="space-y-8">
@@ -264,6 +359,31 @@ export default function JobPost() {
                     </FormProvider>
                 </JobWizardLayout>
             </div>
+
+            {/* Restore Draft Modal */}
+            <Modal
+                isOpen={showRestoreDraftModal}
+                onClose={() => setShowRestoreDraftModal(false)}
+                title="استعادة المسودة"
+            >
+                <div className="space-y-4">
+                    <p className="text-gray-600 dark:text-gray-300">
+                        لدينا مسودة محفوظة من {draftToRestore && timeAgo(draftToRestore.timestamp)}.
+                        هل تريد استعادة البيانات والمتابعة من حيث توقفت؟
+                    </p>
+                    <div className="bg-gray-50 dark:bg-dark-800 p-3 rounded-lg text-sm text-gray-500">
+                        <strong>العنوان:</strong> {draftToRestore?.data.title || '(بدون عنوان)'}
+                    </div>
+                    <div className="flex justify-end gap-3 mt-6">
+                        <Button variant="outline" onClick={handleDiscardDraft}>
+                            بدء من جديد
+                        </Button>
+                        <Button variant="primary" onClick={handleRestoreDraft}>
+                            استعادة المسودة
+                        </Button>
+                    </div>
+                </div>
+            </Modal>
         </div>
     );
 }

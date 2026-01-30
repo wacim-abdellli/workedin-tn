@@ -10,6 +10,13 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
     rightIcon?: React.ReactNode;
 }
 
+/**
+ * Primary UI Button component supports multiple variants and sizes.
+ * 
+ * @component
+ * @example
+ * <Button variant="primary" onClick={() => {}}>Click me</Button>
+ */
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     (
         {

@@ -12,6 +12,9 @@ import ScrollToTop from './components/ui/ScrollToTop';
 import { ProfileRedirect } from './components/routing/ProfileRedirect';
 
 // Lazy Load Pages
+import SkipLinks from './components/layout/SkipLinks';
+import { useRouteFocus } from './hooks/useRouteFocus';
+
 const Home = lazy(() => import('./pages/Home'));
 const Login = lazy(() => import('./pages/Login'));
 const Signup = lazy(() => import('./pages/Signup'));
@@ -39,6 +42,13 @@ const SearchResults = lazy(() => import('./pages/SearchResults'));
 const Terms = lazy(() => import('./pages/Terms'));
 const Privacy = lazy(() => import('./pages/Privacy'));
 const FAQ = lazy(() => import('./pages/FAQ'));
+const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
+const ResetPassword = lazy(() => import('./pages/ResetPassword'));
+const AuthCallback = lazy(() => import('./pages/AuthCallback'));
+const PaymentSuccess = lazy(() => import('./pages/PaymentSuccess'));
+const PaymentFailed = lazy(() => import('./pages/PaymentFailed'));
+const VerifyIdentity = lazy(() => import('./pages/VerifyIdentity'));
+const VerificationQueue = lazy(() => import('./pages/admin/VerificationQueue'));
 
 // Protected Route wrapper
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -72,6 +82,9 @@ function AppRoutes() {
       <Route path="/terms" element={<Terms />} />
       <Route path="/privacy" element={<Privacy />} />
       <Route path="/faq" element={<FAQ />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/auth/callback" element={<AuthCallback />} />
 
       {/* Onboarding routes */}
       <Route path="/onboarding/freelancer" element={
@@ -153,6 +166,10 @@ function AppRoutes() {
         </ProtectedRoute>
       } />
 
+      {/* Payment routes */}
+      <Route path="/payment/success" element={<PaymentSuccess />} />
+      <Route path="/payment/failed" element={<PaymentFailed />} />
+
       {/* Profile & Settings */}
       <Route path="/profile" element={
         <ProtectedRoute>
@@ -179,6 +196,18 @@ function AppRoutes() {
           <AdminDashboard />
         </ProtectedRoute>
       } />
+      <Route path="/admin/verifications" element={
+        <ProtectedRoute>
+          <VerificationQueue />
+        </ProtectedRoute>
+      } />
+
+      {/* Identity Verification */}
+      <Route path="/verify-identity" element={
+        <ProtectedRoute>
+          <VerifyIdentity />
+        </ProtectedRoute>
+      } />
 
       {/* Search */}
       <Route path="/search" element={<SearchResults />} />
@@ -186,6 +215,22 @@ function AppRoutes() {
       {/* 404 */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
+  );
+}
+
+function AppContent() {
+  useRouteFocus();
+
+  return (
+    <div className="animate-fade-in">
+      <ScrollToTop />
+      <SkipLinks />
+      <Suspense fallback={<Loading fullScreen />}>
+        <div id="main-content" className="min-h-screen">
+          <AppRoutes />
+        </div>
+      </Suspense>
+    </div>
   );
 }
 
@@ -198,12 +243,7 @@ function App() {
             <ErrorBoundary>
               <AuthProvider>
                 <ToastProvider>
-                  <div className="animate-fade-in">
-                    <ScrollToTop />
-                    <Suspense fallback={<Loading fullScreen />}>
-                      <AppRoutes />
-                    </Suspense>
-                  </div>
+                  <AppContent />
                 </ToastProvider>
               </AuthProvider>
             </ErrorBoundary>

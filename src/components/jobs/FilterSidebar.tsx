@@ -220,62 +220,43 @@ export default function FilterSidebar({
                         ))}
                     </FilterSection>
 
-                    {/* Budget Range */}
                     <FilterSection title={t.jobs.filters.budget.title} section="budget">
-                        <div className="flex items-center gap-2 mb-2">
-                            <input
-                                type="number"
-                                placeholder={t.jobs.filters.budget.min}
-                                className="input py-1 text-sm text-center"
-                                value={filters.budgetMin || ''} // Note: JobBoard passes budgetRange string, not min/max numbers directly?
-                                // JobBoard: filters.budgetRange (string e.g. "0-50").
-                                // FilterSidebar: expected budgetMin? 
-                                // In JobBoard.tsx: `updateFilter('budgetRange', ...)`
-                                // But FilterSidebar originally had inputs for min/max?
-                                // Original FilterSidebar lines 213-231 used `filters.budgetMin` and `budgetMax`.
-                                // BUT JobBoard state (line 170) is `budgetRange`.
-                                // AND `fetchJobs` (line 220) uses `budgetRange` to find min/max from CONSTANTS.
-                                // So the inputs in Sidebar were disconnected or using different state keys?
-                                // If I use inputs here, I need to update `budgetRange` or change JobBoard logic.
-                                // Since JobBoard uses PREDEFINED ranges, I should probably show Radio buttons for ranges instead of inputs!
-                                // Or if I stick to inputs, I need to parse them.
-                                // Let's check JobBoard again. `filters.budgetRange` is a string key.
-                                // To support custom inputs, JobBoard needs refactoring.
-                                // For now, I will replace Inputs with Ranges Select/Radios to match Logic.
-                                // OR I can keep Inputs but they won't work with `budgetRange` logic easily.
-                                // Wait, `BUDGET_RANGES` exists in `JobBoard`.
-                                // I will revert to using `BUDGET_RANGES` logic for now to ensure it works.
-                                onChange={() => {
-                                    // Custom budget input not connected - using range radio buttons below instead
-                                }}
-                                readOnly
-                            />
-                            <span className="text-gray-400">-</span>
-                            <input
-                                type="number"
-                                placeholder={t.jobs.filters.budget.max}
-                                className="input py-1 text-sm text-center"
-                                readOnly
-                            />
-                        </div>
-                        {/* Added Ranges UI */}
-                        <div className="space-y-1 mt-2">
-                            {[
-                                { value: '0-50', label: t.jobs.filters.budget.ranges.r0_50 },
-                                { value: '50-100', label: t.jobs.filters.budget.ranges.r50_100 },
-                                { value: '100-250', label: t.jobs.filters.budget.ranges.r100_250 },
-                                { value: '250-500', label: t.jobs.filters.budget.ranges.r250_500 },
-                                { value: '500+', label: t.jobs.filters.budget.ranges.r500_plus },
-                            ].map(range => (
-                                <label key={range.value} className="flex items-center gap-2 cursor-pointer group">
+                        <div className="space-y-1">
+                            <label className="flex items-center gap-2 cursor-pointer group p-2 hover:bg-gray-50 dark:hover:bg-dark-700/50 rounded-lg transition-colors">
+                                <div className="relative flex items-center">
                                     <input
                                         type="radio"
                                         name="budgetRange"
                                         className="radio peer"
-                                        checked={filters.budgetRange === range.value}
-                                        onChange={() => onFilterChange('budgetRange', range.value)}
+                                        checked={!filters.budgetRange}
+                                        onChange={() => onFilterChange('budgetRange', null)}
                                     />
-                                    <span className="text-sm text-gray-600 dark:text-gray-300 peer-checked:text-primary-600">
+                                    <div className="w-4 h-4 rounded-full border-2 border-gray-300 dark:border-gray-600 peer-checked:border-primary-500 peer-checked:bg-primary-500 transition-colors" />
+                                </div>
+                                <span className={`text-sm group-hover:text-primary-600 transition-colors ${!filters.budgetRange ? 'text-primary-600 font-medium' : 'text-gray-600 dark:text-gray-300'}`}>
+                                    {t.jobs.filters.budget.all || 'الكل'}
+                                </span>
+                            </label>
+
+                            {[
+                                { value: '0-50', label: t.jobs.filters.budget.ranges?.r0_50 || 'أقل من 50 د.ت' },
+                                { value: '50-100', label: t.jobs.filters.budget.ranges?.r50_100 || '50-100 د.ت' },
+                                { value: '100-250', label: t.jobs.filters.budget.ranges?.r100_250 || '100-250 د.ت' },
+                                { value: '250-500', label: t.jobs.filters.budget.ranges?.r250_500 || '250-500 د.ت' },
+                                { value: '500+', label: t.jobs.filters.budget.ranges?.r500_plus || 'أكثر من 500 د.ت' },
+                            ].map(range => (
+                                <label key={range.value} className="flex items-center gap-2 cursor-pointer group p-2 hover:bg-gray-50 dark:hover:bg-dark-700/50 rounded-lg transition-colors">
+                                    <div className="relative flex items-center">
+                                        <input
+                                            type="radio"
+                                            name="budgetRange"
+                                            className="radio peer"
+                                            checked={filters.budgetRange === range.value}
+                                            onChange={() => onFilterChange('budgetRange', range.value)}
+                                        />
+                                        <div className="w-4 h-4 rounded-full border-2 border-gray-300 dark:border-gray-600 peer-checked:border-primary-500 peer-checked:bg-primary-500 transition-colors" />
+                                    </div>
+                                    <span className={`text-sm group-hover:text-primary-600 transition-colors ${filters.budgetRange === range.value ? 'text-primary-600 font-medium' : 'text-gray-600 dark:text-gray-300'}`}>
                                         {range.label}
                                     </span>
                                 </label>

@@ -5,7 +5,6 @@ import {
     Grid3X3,
     List,
     Heart,
-    Briefcase,
     SlidersHorizontal,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
@@ -14,8 +13,11 @@ import { Header, Footer } from '../components/layout';
 import Button from '../components/ui/Button';
 import { useToast } from '../components/ui/Toast';
 import { FilterSidebar, JobCard } from '../components/jobs';
+import type { JobForCard } from '../components/jobs/JobCard';
 import { useTranslation } from '../i18n';
 import SEO, { SEO_CONFIG } from '../components/common/SEO';
+import { SkeletonCard } from '../components/common';
+import EmptyState from '../components/common/EmptyState';
 
 // Types
 interface Job {
@@ -114,27 +116,7 @@ function SavedJobsSidebar({ savedJobs, onViewJob }: { savedJobs: Job[]; onViewJo
     );
 }
 
-// Skeleton loader
-function JobCardSkeleton() {
-    return (
-        <div className="card animate-pulse bg-white dark:bg-dark-800 border-gray-200 dark:border-dark-700">
-            <div className="h-6 bg-gray-200 dark:bg-dark-700 rounded w-3/4 mb-3" />
-            <div className="h-4 bg-gray-200 dark:bg-dark-700 rounded w-1/4 mb-4" />
-            <div className="flex gap-2 mb-4">
-                <div className="h-6 bg-gray-200 dark:bg-dark-700 rounded-full w-20" />
-                <div className="h-6 bg-gray-200 dark:bg-dark-700 rounded-full w-16" />
-            </div>
-            <div className="h-4 bg-gray-200 dark:bg-dark-700 rounded w-full mb-2" />
-            <div className="h-4 bg-gray-200 dark:bg-dark-700 rounded w-2/3 mb-4" />
-            <div className="flex gap-2 mb-4">
-                <div className="h-6 bg-gray-200 dark:bg-dark-700 rounded w-16" />
-                <div className="h-6 bg-gray-200 dark:bg-dark-700 rounded w-20" />
-                <div className="h-6 bg-gray-200 dark:bg-dark-700 rounded w-14" />
-            </div>
-            <div className="h-12 bg-gray-200 dark:bg-dark-700 rounded mt-4" />
-        </div>
-    );
-}
+// Skeleton loader removed in favor of shared component
 
 // Main Component
 function JobBoard() {
@@ -486,25 +468,30 @@ function JobBoard() {
                         {/* Jobs List */}
                         {isLoading && jobs.length === 0 ? (
                             <div className={viewMode === 'grid' ? 'grid md:grid-cols-2 gap-4' : 'space-y-4'}>
-                                {[...Array(6)].map((_, i) => <JobCardSkeleton key={i} />)}
+                                {[...Array(6)].map((_, i) => <SkeletonCard key={i} />)}
                             </div>
                         ) : jobs.length === 0 ? (
-                            <div className="text-center py-16">
-                                <Briefcase className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                                <h3 className="text-xl font-bold text-foreground mb-2">{t.jobs.empty.title}</h3>
-                                <p className="text-muted mb-4">{t.jobs.empty.subtitle}</p>
-                                <Button variant="primary" onClick={clearAllFilters}>
-                                    {t.jobs.empty.action}
-                                </Button>
-                            </div>
+                            <EmptyState
+                                icon={Search}
+                                title={t.jobs.empty.title}
+                                description={t.jobs.empty.subtitle}
+                                action={{
+                                    label: t.jobs.empty.action,
+                                    onClick: clearAllFilters,
+                                    variant: 'primary'
+                                }}
+                                secondaryAction={{
+                                    label: "تصفح الفئات",
+                                    onClick: () => navigate('/categories')
+                                }}
+                            />
                         ) : (
                             <>
                                 <div className={viewMode === 'grid' ? 'grid md:grid-cols-2 gap-4' : 'space-y-4'}>
                                     {jobs.map(job => (
                                         <JobCard
                                             key={job.id}
-                                            // @ts-ignore - mismatch between local Job type and JobCard Job type
-                                            job={{ ...job, skills: job.required_skills || [] }}
+                                            job={{ ...job, skills: job.required_skills || [] } as JobForCard}
                                             isSaved={savedJobIds.has(job.id)}
                                             onToggleSave={() => toggleSaveJob(job)}
                                             onClick={() => navigate(`/jobs/${job.id}`)}

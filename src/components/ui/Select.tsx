@@ -10,6 +10,13 @@ interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
     placeholder?: string;
 }
 
+/**
+ * Form Select component with standard styling and error handling.
+ * 
+ * @component
+ * @param {SelectProps} props
+ * @returns {JSX.Element}
+ */
 const Select = forwardRef<HTMLSelectElement, SelectProps>(
     ({ label, error, hint, options, placeholder, className = '', ...props }, ref) => {
         const selectStyles = `
@@ -24,16 +31,27 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
       disabled:opacity-50 disabled:bg-dark-100 dark:disabled:bg-dark-900 disabled:cursor-not-allowed
     `;
 
+        const selectId = props.id || props.name;
+        const errorId = error ? `${selectId}-error` : undefined;
+        const hintId = hint ? `${selectId}-hint` : undefined;
+        const descriptionIds = [errorId, hintId].filter(Boolean).join(' ');
+
         return (
             <div className="w-full">
                 {label && (
-                    <label className="block text-sm font-semibold text-dark-700 dark:text-dark-200 mb-2">
+                    <label
+                        htmlFor={selectId}
+                        className="block text-sm font-semibold text-dark-700 dark:text-dark-200 mb-2"
+                    >
                         {label}
                     </label>
                 )}
                 <div className="relative">
                     <select
                         ref={ref}
+                        id={selectId}
+                        aria-invalid={!!error}
+                        aria-describedby={descriptionIds || undefined}
                         className={`${selectStyles} ${className}`}
                         {...props}
                     >
@@ -51,10 +69,21 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
                     <ChevronDown className="absolute end-3 top-1/2 -translate-y-1/2 w-5 h-5 text-dark-400 pointer-events-none" />
                 </div>
                 {error && (
-                    <p className="mt-1.5 text-sm text-red-500 font-medium animate-slide-up">{error}</p>
+                    <p
+                        id={errorId}
+                        role="alert"
+                        className="mt-1.5 text-sm text-red-500 font-medium animate-slide-up"
+                    >
+                        {error}
+                    </p>
                 )}
                 {hint && !error && (
-                    <p className="mt-1.5 text-sm text-dark-500">{hint}</p>
+                    <p
+                        id={hintId}
+                        className="mt-1.5 text-sm text-dark-500"
+                    >
+                        {hint}
+                    </p>
                 )}
             </div>
         );

@@ -91,7 +91,7 @@ function HowItWorks() {
                 <div className="container-custom">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                         {steps[activeTab].map((step, index) => (
-                            <div key={index} className="card p-8 relative group hover:-translate-y-2 transition-transform duration-300">
+                            <div key={index} className="card p-8 relative group hover:-translate-y-2 transition-transform duration-300 !overflow-visible">
                                 <div className="absolute -top-6 right-8 w-12 h-12 rounded-2xl bg-white dark:bg-dark-800 shadow-lg flex items-center justify-center text-xl font-bold text-gray-300 border border-gray-100 dark:border-dark-700 group-hover:text-primary-600 group-hover:border-primary-200 transition-colors">
                                     {index + 1}
                                 </div>

@@ -8,16 +8,24 @@ interface LoadingProps {
 export default function Loading({ fullScreen = false, text }: LoadingProps) {
     if (fullScreen) {
         return (
-            <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white/80 dark:bg-dark-900/80 backdrop-blur-sm transition-all duration-300">
+            <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white/80 dark:bg-gray-950/80 backdrop-blur-md transition-all duration-300">
                 <div className="relative">
-                    <div className="w-16 h-16 rounded-full border-4 border-primary-100 dark:border-primary-900/30"></div>
-                    <div className="absolute top-0 start-0 w-16 h-16 rounded-full border-4 border-t-primary-600 border-e-transparent border-b-transparent border-l-transparent animate-spin"></div>
-                    <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="w-8 h-8 rounded-full bg-primary-600/10 dark:bg-primary-400/10 blur-xl animate-pulse"></div>
+                    {/* Outer glow */}
+                    <div className="absolute inset-0 bg-primary-500/20 blur-xl rounded-full animate-pulse"></div>
+
+                    {/* Spinner */}
+                    <div className="relative w-20 h-20">
+                        <div className="absolute inset-0 border-4 border-primary-200/30 dark:border-primary-900/30 rounded-full"></div>
+                        <div className="absolute inset-0 border-4 border-primary-600 border-t-transparent border-l-transparent rounded-full animate-spin"></div>
+
+                        {/* Center dot */}
+                        <div className="absolute inset-0 flex items-center justify-center">
+                            <div className="w-3 h-3 bg-primary-600 rounded-full animate-ping"></div>
+                        </div>
                     </div>
                 </div>
                 {text && (
-                    <p className="mt-6 text-dark-500 dark:text-dark-300 font-medium animate-pulse">
+                    <p className="mt-8 text-gray-600 dark:text-gray-300 font-medium tracking-wide animate-pulse">
                         {text}
                     </p>
                 )}

@@ -9,12 +9,13 @@ import {
     Star,
     ShieldCheck
 } from 'lucide-react';
-import Button from '../ui/Button';
+import IconButton from '../ui/IconButton';
 import OptimizedImage from '../common/OptimizedImage';
+import { cn } from '../../lib/utils';
 
 // Define Job interface locally or import it if you have a shared types file
 // For now assuming existing Job type structure from JobBoard
-interface Job {
+export interface JobForCard {
     id: string;
     title: string;
     description: string;
@@ -38,7 +39,7 @@ interface Job {
 }
 
 interface JobCardProps {
-    job: Job;
+    job: JobForCard;
     isSaved: boolean;
     onToggleSave: () => void;
     onClick: () => void;
@@ -73,8 +74,16 @@ const JobCard = memo(({ job, isSaved, onToggleSave, onClick }: JobCardProps) => 
     return (
         <div
             onClick={onClick}
-            className="group card-hover p-6 cursor-pointer border border-transparent hover:border-primary-100 dark:hover:border-primary-900/30 transition-all duration-300"
+            className={`
+                group card-hover-shine p-6 cursor-pointer bg-white dark:bg-dark-900 rounded-2xl
+                border border-gray-200 dark:border-dark-700
+                hover:border-primary-500/30 dark:hover:border-primary-500/30
+                shadow-sm hover:shadow-xl hover:shadow-primary-500/10
+                transition-all duration-300 ease-out transform hover:-translate-y-1
+            `}
         >
+            {/* Top Shine Effect - synced with FreelancerCard */}
+            <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-primary-500 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
             <div className="flex flex-col md:flex-row gap-6">
                 {/* Client Avatar (Optional) */}
                 <div className="hidden md:block flex-shrink-0">
@@ -132,20 +141,18 @@ const JobCard = memo(({ job, isSaved, onToggleSave, onClick }: JobCardProps) => 
                                     </>
                                 )}
                             </div>
-                            <Button
-                                variant="ghost"
-                                size="sm"
+                            <IconButton
+                                icon={<Heart className={cn("w-5 h-5 transition-all", isSaved && "fill-current")} />}
+                                label={isSaved ? t.jobs.unsave : t.jobs.save}
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     onToggleSave();
                                 }}
-                                className={`
-                                    !p-2 rounded-full hover:bg-red-50 dark:hover:bg-red-900/20
-                                    ${isSaved ? 'text-red-500 bg-red-50 dark:bg-red-900/10' : 'text-gray-400 hover:text-red-500'}
-                                `}
-                            >
-                                <Heart className={`w-5 h-5 ${isSaved ? 'fill-current' : ''}`} />
-                            </Button>
+                                isActive={isSaved}
+                                variant="danger"
+                                size="sm"
+                                className="!rounded-full"
+                            />
                         </div>
                     </div>
 

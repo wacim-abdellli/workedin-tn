@@ -64,7 +64,7 @@ export default function AdminDashboard() {
     const [searchQuery, setSearchQuery] = useState('');
     const [userFilter, setUserFilter] = useState<'all' | 'freelancer' | 'client'>('all');
 
-    const StatCard = ({ icon: Icon, label, value, trend, color }: { icon: any; label: string; value: string | number; trend?: number; color: string }) => (
+    const StatCard = ({ icon: Icon, label, value, trend, color }: { icon: React.ElementType; label: string; value: string | number; trend?: number; color: string }) => (
         <div className="card">
             <div className="flex items-start justify-between">
                 <div className={`w-12 h-12 rounded-xl ${color} flex items-center justify-center`}>

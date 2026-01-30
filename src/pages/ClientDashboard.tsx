@@ -19,6 +19,7 @@ import { useTranslation } from '../i18n';
 import { useAuth } from '../contexts/AuthContext';
 import { Header } from '../components/layout';
 import Button from '../components/ui/Button';
+import { Skeleton, SkeletonCard } from '../components/common';
 
 // Mock data for demo
 const MOCK_STATS = {
@@ -64,6 +65,12 @@ function ClientDashboardPage() {
 
     const [stats] = useState(MOCK_STATS);
     const [jobs] = useState(MOCK_JOBS);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useState(() => {
+        const timer = setTimeout(() => setIsLoading(false), 1000);
+        return () => clearTimeout(timer);
+    });
 
     const ArrowIcon = dir === 'rtl' ? ChevronLeft : ChevronRight;
 
@@ -166,45 +173,57 @@ function ClientDashboardPage() {
 
                 {/* Stats Grid */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                    <div className="card">
-                        <div className="flex items-center gap-3 mb-3">
-                            <div className="w-10 h-10 rounded-xl bg-primary-100 flex items-center justify-center">
-                                <Briefcase className="w-5 h-5 text-primary-600" />
+                    {isLoading ? (
+                        [...Array(4)].map((_, i) => (
+                            <div key={i} className="card h-24 flex flex-col justify-center">
+                                <Skeleton className="w-10 h-10 rounded-xl mb-3" />
+                                <Skeleton className="w-8 h-8 mb-1" />
+                                <Skeleton className="w-20 h-4" />
                             </div>
-                        </div>
-                        <p className="text-2xl font-bold text-foreground">{stats.activeJobs}</p>
-                        <p className="text-sm text-muted">مهام نشطة</p>
-                    </div>
+                        ))
+                    ) : (
+                        <>
+                            <div className="card">
+                                <div className="flex items-center gap-3 mb-3">
+                                    <div className="w-10 h-10 rounded-xl bg-primary-100 flex items-center justify-center">
+                                        <Briefcase className="w-5 h-5 text-primary-600" />
+                                    </div>
+                                </div>
+                                <p className="text-2xl font-bold text-foreground">{stats.activeJobs}</p>
+                                <p className="text-sm text-muted">مهام نشطة</p>
+                            </div>
 
-                    <div className="card">
-                        <div className="flex items-center gap-3 mb-3">
-                            <div className="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center">
-                                <DollarSign className="w-5 h-5 text-green-600" />
+                            <div className="card">
+                                <div className="flex items-center gap-3 mb-3">
+                                    <div className="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center">
+                                        <DollarSign className="w-5 h-5 text-green-600" />
+                                    </div>
+                                </div>
+                                <p className="text-2xl font-bold text-foreground">{stats.totalSpent}</p>
+                                <p className="text-sm text-muted">د.ت إجمالي الإنفاق</p>
                             </div>
-                        </div>
-                        <p className="text-2xl font-bold text-foreground">{stats.totalSpent}</p>
-                        <p className="text-sm text-muted">د.ت إجمالي الإنفاق</p>
-                    </div>
 
-                    <div className="card">
-                        <div className="flex items-center gap-3 mb-3">
-                            <div className="w-10 h-10 rounded-xl bg-secondary-100 flex items-center justify-center">
-                                <CheckCircle className="w-5 h-5 text-secondary-600" />
+                            <div className="card">
+                                <div className="flex items-center gap-3 mb-3">
+                                    <div className="w-10 h-10 rounded-xl bg-secondary-100 flex items-center justify-center">
+                                        <CheckCircle className="w-5 h-5 text-secondary-600" />
+                                    </div>
+                                </div>
+                                <p className="text-2xl font-bold text-foreground">{stats.contractsCompleted}</p>
+                                <p className="text-sm text-muted">عقود مكتملة</p>
                             </div>
-                        </div>
-                        <p className="text-2xl font-bold text-foreground">{stats.contractsCompleted}</p>
-                        <p className="text-sm text-muted">عقود مكتملة</p>
-                    </div>
 
-                    <div className="card">
-                        <div className="flex items-center gap-3 mb-3">
-                            <div className="w-10 h-10 rounded-xl bg-yellow-100 flex items-center justify-center">
-                                <Clock className="w-5 h-5 text-yellow-600" />
+                            <div className="card">
+                                <div className="flex items-center gap-3 mb-3">
+                                    <div className="w-10 h-10 rounded-xl bg-yellow-100 flex items-center justify-center">
+                                        <Clock className="w-5 h-5 text-yellow-600" />
+                                    </div>
+                                </div>
+                                <p className="text-2xl font-bold text-foreground">{stats.avgResponseDays}</p>
+                                <p className="text-sm text-muted">يوم متوسط الاستجابة</p>
                             </div>
-                        </div>
-                        <p className="text-2xl font-bold text-foreground">{stats.avgResponseDays}</p>
-                        <p className="text-sm text-muted">يوم متوسط الاستجابة</p>
-                    </div>
+                        </>
+                    )}
                 </div>
 
                 {/* Jobs List */}
@@ -221,87 +240,93 @@ function ClientDashboardPage() {
                     </div>
 
                     <div className="space-y-4">
-                        {jobs.map((job) => (
-                            <div
-                                key={job.id}
-                                className="card hover:shadow-lg transition-shadow cursor-pointer group"
-                                onClick={() => handleJobClick(job)}
-                            >
-                                <div className="flex items-start justify-between mb-4">
-                                    <div className="flex-1">
-                                        <div className="flex items-center gap-3 mb-2">
-                                            <h3 className="font-bold text-foreground group-hover:text-primary-600 transition-colors">
-                                                {job.title}
-                                            </h3>
-                                            {getStatusBadge(job.status)}
-                                        </div>
-                                        <p className="text-sm text-muted">{job.created_at}</p>
-                                    </div>
-                                    <span className="text-lg font-bold text-primary-600">
-                                        {job.budget} د.ت
-                                    </span>
-                                </div>
-
-                                {/* Status-specific content */}
-                                {job.status === 'matched' && (
-                                    <div className="flex items-center justify-between p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-xl">
-                                        <div className="flex items-center gap-2">
-                                            <Users className="w-5 h-5 text-yellow-600" />
-                                            <span className="text-yellow-800 font-medium">
-                                                {job.matchCount} موظفين متاحين
+                        {isLoading ? (
+                            [...Array(3)].map((_, i) => <SkeletonCard key={i} />)
+                        ) : (
+                            <>
+                                {jobs.map((job) => (
+                                    <div
+                                        key={job.id}
+                                        className="card hover:shadow-lg transition-shadow cursor-pointer group"
+                                        onClick={() => handleJobClick(job)}
+                                    >
+                                        <div className="flex items-start justify-between mb-4">
+                                            <div className="flex-1">
+                                                <div className="flex items-center gap-3 mb-2">
+                                                    <h3 className="font-bold text-foreground group-hover:text-primary-600 transition-colors">
+                                                        {job.title}
+                                                    </h3>
+                                                    {getStatusBadge(job.status)}
+                                                </div>
+                                                <p className="text-sm text-muted">{job.created_at}</p>
+                                            </div>
+                                            <span className="text-lg font-bold text-primary-600">
+                                                {job.budget} د.ت
                                             </span>
                                         </div>
-                                        <Button variant="secondary" size="sm">
-                                            عرض المطابقات
+
+                                        {/* Status-specific content */}
+                                        {job.status === 'matched' && (
+                                            <div className="flex items-center justify-between p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-xl">
+                                                <div className="flex items-center gap-2">
+                                                    <Users className="w-5 h-5 text-yellow-600" />
+                                                    <span className="text-yellow-800 font-medium">
+                                                        {job.matchCount} موظفين متاحين
+                                                    </span>
+                                                </div>
+                                                <Button variant="secondary" size="sm">
+                                                    عرض المطابقات
+                                                </Button>
+                                            </div>
+                                        )}
+
+                                        {job.status === 'in_progress' && (
+                                            <div className="space-y-2">
+                                                <div className="flex items-center justify-between text-sm">
+                                                    <div className="flex items-center gap-2">
+                                                        <User className="w-4 h-4 text-muted" />
+                                                        <span className="text-foreground">{job.freelancer}</span>
+                                                    </div>
+                                                    <span className="text-primary-600 font-medium">{job.progress}%</span>
+                                                </div>
+                                                <div className="h-2 bg-gray-200 dark:bg-dark-700 rounded-full overflow-hidden">
+                                                    <div
+                                                        className="h-full bg-primary-600 rounded-full transition-all duration-500"
+                                                        style={{ width: `${job.progress}%` }}
+                                                    />
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {job.status === 'completed' && (
+                                            <div className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900/20 rounded-xl">
+                                                <div className="flex items-center gap-2">
+                                                    <User className="w-5 h-5 text-green-600" />
+                                                    <span className="text-green-800">{job.freelancer}</span>
+                                                </div>
+                                                <div className="flex items-center gap-1">
+                                                    {[...Array(job.rating)].map((_, i) => (
+                                                        <span key={i} className="text-yellow-500">★</span>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+
+                                {jobs.length === 0 && (
+                                    <div className="card text-center py-12">
+                                        <Briefcase className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                                        <p className="text-muted mb-4">لم تنشر أي مهام بعد</p>
+                                        <Button
+                                            variant="primary"
+                                            onClick={() => navigate('/jobs/new')}
+                                        >
+                                            نشر مهمة جديدة
                                         </Button>
                                     </div>
                                 )}
-
-                                {job.status === 'in_progress' && (
-                                    <div className="space-y-2">
-                                        <div className="flex items-center justify-between text-sm">
-                                            <div className="flex items-center gap-2">
-                                                <User className="w-4 h-4 text-muted" />
-                                                <span className="text-foreground">{job.freelancer}</span>
-                                            </div>
-                                            <span className="text-primary-600 font-medium">{job.progress}%</span>
-                                        </div>
-                                        <div className="h-2 bg-gray-200 dark:bg-dark-700 rounded-full overflow-hidden">
-                                            <div
-                                                className="h-full bg-primary-600 rounded-full transition-all duration-500"
-                                                style={{ width: `${job.progress}%` }}
-                                            />
-                                        </div>
-                                    </div>
-                                )}
-
-                                {job.status === 'completed' && (
-                                    <div className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900/20 rounded-xl">
-                                        <div className="flex items-center gap-2">
-                                            <User className="w-5 h-5 text-green-600" />
-                                            <span className="text-green-800">{job.freelancer}</span>
-                                        </div>
-                                        <div className="flex items-center gap-1">
-                                            {[...Array(job.rating)].map((_, i) => (
-                                                <span key={i} className="text-yellow-500">★</span>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        ))}
-
-                        {jobs.length === 0 && (
-                            <div className="card text-center py-12">
-                                <Briefcase className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                                <p className="text-muted mb-4">لم تنشر أي مهام بعد</p>
-                                <Button
-                                    variant="primary"
-                                    onClick={() => navigate('/jobs/new')}
-                                >
-                                    نشر مهمة جديدة
-                                </Button>
-                            </div>
+                            </>
                         )}
                     </div>
                 </div>

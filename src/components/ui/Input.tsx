@@ -9,6 +9,13 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
     rightIcon?: React.ReactNode;
 }
 
+/**
+ * Form Input component with standard styling and error handling.
+ * 
+ * @component
+ * @param {InputProps} props
+ * @returns {JSX.Element}
+ */
 const Input = forwardRef<HTMLInputElement, InputProps>(
     ({ label, error, hint, leftIcon, rightIcon, className = '', ...props }, ref) => {
         const inputStyles = `
@@ -25,10 +32,18 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
       disabled:opacity-50 disabled:bg-dark-100 dark:disabled:bg-dark-900 disabled:cursor-not-allowed
     `;
 
+        const inputId = props.id || props.name;
+        const errorId = error ? `${inputId}-error` : undefined;
+        const hintId = hint ? `${inputId}-hint` : undefined;
+        const descriptionIds = [errorId, hintId].filter(Boolean).join(' ');
+
         return (
             <div className="w-full">
                 {label && (
-                    <label className="block text-sm font-semibold text-dark-700 dark:text-dark-200 mb-2">
+                    <label
+                        htmlFor={inputId}
+                        className="block text-sm font-semibold text-dark-700 dark:text-dark-200 mb-2"
+                    >
                         {label}
                     </label>
                 )}
@@ -40,6 +55,9 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
                     )}
                     <input
                         ref={ref}
+                        id={inputId}
+                        aria-invalid={!!error}
+                        aria-describedby={descriptionIds || undefined}
                         className={`${inputStyles} ${className}`}
                         {...props}
                     />
@@ -50,10 +68,21 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
                     )}
                 </div>
                 {error && (
-                    <p className="mt-1.5 text-sm text-red-500 font-medium animate-slide-up">{error}</p>
+                    <p
+                        id={errorId}
+                        role="alert"
+                        className="mt-1.5 text-sm text-red-500 font-medium animate-slide-up"
+                    >
+                        {error}
+                    </p>
                 )}
                 {hint && !error && (
-                    <p className="mt-1.5 text-sm text-dark-500">{hint}</p>
+                    <p
+                        id={hintId}
+                        className="mt-1.5 text-sm text-dark-500"
+                    >
+                        {hint}
+                    </p>
                 )}
             </div>
         );

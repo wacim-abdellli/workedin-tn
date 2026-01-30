@@ -274,6 +274,31 @@ body {
     box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
   }
 
+  /* Card Hover Shine Effect */
+  .card-hover-shine {
+    @apply relative overflow-hidden;
+  }
+
+  .card-hover-shine::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(to right,
+        transparent,
+        rgba(255, 255, 255, 0.3),
+        transparent);
+    transform: skewX(-25deg);
+    transition: left 0.5s ease;
+    pointer-events: none;
+  }
+
+  .card-hover-shine:hover::after {
+    left: 100%;
+  }
+
   /* Premium Modal/Popup Animation */
   @keyframes modalPop {
     0% {

@@ -22,6 +22,7 @@ import {
 import { Header } from '../components/layout';
 import Button from '../components/ui/Button';
 import SEO, { SEO_CONFIG } from '../components/common/SEO';
+import EmptyState from '../components/common/EmptyState';
 
 // Mock conversations
 const MOCK_CONVERSATIONS = [
@@ -348,14 +349,17 @@ export default function Messages() {
                     </div>
                 </>
             ) : (
-                <div className="h-full flex items-center justify-center bg-gray-50">
-                    <div className="text-center">
-                        <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center mx-auto mb-4">
-                            <Send className="w-8 h-8 text-gray-400" />
-                        </div>
-                        <h3 className="text-lg font-bold text-foreground mb-2">اختر محادثة</h3>
-                        <p className="text-muted">اختر محادثة من القائمة للبدء</p>
-                    </div>
+                <div className="h-full flex items-center justify-center bg-gray-50 dark:bg-dark-900 border-l border-gray-200 dark:border-dark-700">
+                    <EmptyState
+                        icon={Send}
+                        title="اختر محادثة"
+                        description="اختر محادثة من القائمة للبدء في المراسلة"
+                        illustration={
+                            <div className="w-32 h-32 bg-primary-50 dark:bg-primary-900/10 rounded-full flex items-center justify-center mb-6 animate-pulse-slow">
+                                <Send className="w-12 h-12 text-primary-500" />
+                            </div>
+                        }
+                    />
                 </div>
             )}
         </div>

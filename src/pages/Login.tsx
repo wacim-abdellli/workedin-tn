@@ -9,19 +9,20 @@ function Login() {
     const navigate = useNavigate();
     const { isAuthenticated, profile } = useAuth();
 
-    // Redirect if already logged in
+    // Redirect logic
     useEffect(() => {
+        // Only redirect if fully authenticated with a complete profile
         if (isAuthenticated && profile?.user_type) {
-            navigate(profile.user_type === 'client' ? '/client/dashboard' : '/freelancer/dashboard');
+            navigate('/');
+        } else if (isAuthenticated && profile && !profile.user_type) {
+            navigate('/signup');
         }
+        // If authenticated but no profile, stay on login page to allow re-attempt or logout
     }, [isAuthenticated, profile, navigate]);
 
     const handleSuccess = () => {
-        if (!profile?.user_type) {
-            navigate('/signup');
-        } else {
-            navigate(profile.user_type === 'client' ? '/client/dashboard' : '/freelancer/dashboard');
-        }
+        // Navigation is handled by the useEffect above to avoid race conditions
+        // where profile might not be loaded yet when this callback fires
     };
 
     return (

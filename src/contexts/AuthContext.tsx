@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import type { User, Session } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 import { logger } from '../lib/logger';
+import { clearAllAuthData } from '../lib/authUtils';
 import type { Profile, FreelancerProfile, UserType } from '../types';
 
 interface AuthContextType {
@@ -73,27 +74,47 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     // Initialize auth state
     useEffect(() => {
+        let mounted = true;
+
         const initAuth = async () => {
             try {
                 const { data: { session: currentSession } } = await supabase.auth.getSession();
 
-                if (currentSession) {
+                if (mounted && currentSession) {
                     setSession(currentSession);
                     setUser(currentSession.user);
-                    await fetchProfile(currentSession.user.id);
+                    // Non-blocking profile fetch for speed
+                    fetchProfile(currentSession.user.id).catch(e => logger.error('Profile fetch error', e));
                 }
             } catch (error) {
                 logger.error('Error initializing auth:', error);
             } finally {
-                setIsLoading(false);
+                if (mounted) {
+                    setIsLoading(false);
+                }
             }
         };
 
         initAuth();
 
+        // Safety timeout (reduced to 2s)
+        const timeoutId = setTimeout(() => {
+            if (mounted) {
+                setIsLoading((prev) => {
+                    if (prev) {
+                        logger.warn('Auth initialization slow, forcing completion');
+                        return false;
+                    }
+                    return prev;
+                });
+            }
+        }, 2000);
+
         // Listen for auth changes
         const { data: { subscription } } = supabase.auth.onAuthStateChange(
             async (_event, newSession) => {
+                if (!mounted) return;
+
                 setSession(newSession);
                 setUser(newSession?.user ?? null);
 
@@ -107,6 +128,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
         );
 
         return () => {
+            mounted = false;
+            clearTimeout(timeoutId);
             subscription.unsubscribe();
         };
     }, [fetchProfile]);
@@ -153,15 +176,37 @@ export function AuthProvider({ children }: AuthProviderProps) {
         if (error) throw error;
     };
 
-    // Sign out
+    // Sign out - comprehensive logout with multiple cleanup strategies
     const signOut = async () => {
-        const { error } = await supabase.auth.signOut();
-        if (error) throw error;
-
+        // STEP 1: Immediately clear React state (synchronous)
+        // This prevents any component from reading stale user data
         setUser(null);
         setSession(null);
         setProfile(null);
         setFreelancerProfile(null);
+
+        // STEP 2: Clear all browser storage (synchronous)
+        // This prevents re-authentication from cached tokens
+        clearAllAuthData();
+
+        // STEP 3: Try to sign out from Supabase (async, but non-blocking)
+        // We don't await this because we've already cleared local data
+        try {
+            // Use 'local' scope for immediate local token invalidation
+            // Use 'global' would also invalidate tokens on other devices
+            await Promise.race([
+                supabase.auth.signOut({ scope: 'local' }),
+                new Promise((_, reject) =>
+                    setTimeout(() => reject(new Error('Signout timeout')), 3000)
+                )
+            ]);
+        } catch (error) {
+            // Log but don't throw - local cleanup already done
+            logger.warn('Supabase signOut call failed, but local cleanup completed:', error);
+        }
+
+        // STEP 4: Final cleanup pass - ensure nothing remains
+        clearAllAuthData();
     };
 
     // Update user profile
@@ -239,6 +284,17 @@ export function AuthProvider({ children }: AuthProviderProps) {
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
+/**
+ * Custom hook to access the authentication context.
+ * Provides user object, session, profile data, and auth methods (login, signup, logout).
+ * 
+ * @hook
+ * @returns {AuthContextType} Authentication context value
+ * @throws {Error} If used outside of AuthProvider
+ * 
+ * @example
+ * const { user, signInWithEmail } = useAuth();
+ */
 export function useAuth() {
     const context = useContext(AuthContext);
     if (!context) {

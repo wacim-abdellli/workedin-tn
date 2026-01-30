@@ -1,10 +1,11 @@
-import { useFormContext } from 'react-hook-form';
+import { useFormContext, Controller } from 'react-hook-form';
 import { FileText, Grid, Lightbulb } from 'lucide-react';
 import Input from '../ui/Input';
+import { FileUpload } from '../common/FileUpload';
 import { PREDEFINED_SKILLS } from '../../types';
 
 export default function StepJobBasics() {
-    const { register, formState: { errors }, watch, setValue } = useFormContext();
+    const { register, control, formState: { errors }, watch, setValue } = useFormContext();
     const description = watch('description') || '';
     const selectedSkills = watch('required_skills') || [];
 
@@ -122,6 +123,24 @@ export default function StepJobBasics() {
                         <p className="text-red-500 text-xs">{errors.required_skills.message as string}</p>
                     )}
                 </div>
+            </div>
+
+            <div className="space-y-3">
+                <Controller
+                    name="attachments_files"
+                    control={control}
+                    render={({ field }) => (
+                        <FileUpload
+                            value={field.value || []}
+                            onChange={field.onChange}
+                            label="المرفقات (اختياري)"
+                            description="PDF, DOC, DOCX, TXT - حد أقصى 10MB لكل ملف"
+                            accept=".pdf,.doc,.docx,.txt"
+                            maxSize={10}
+                            maxFiles={5}
+                        />
+                    )}
+                />
             </div>
         </div>
     );
