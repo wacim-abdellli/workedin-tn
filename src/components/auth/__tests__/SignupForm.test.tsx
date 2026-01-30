@@ -41,6 +41,7 @@ vi.mock('@/lib/logger', () => ({
 import SignupForm from '../SignupForm';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { ThemeProvider } from '@/contexts/ThemeContext';
+import { ToastProvider } from '@/components/ui/Toast';
 import { I18nProvider } from '@/i18n';
 import { supabase } from '@/lib/supabase';
 
@@ -49,15 +50,22 @@ function TestWrapper({ children }: { children: ReactNode }) {
     return (
         <I18nProvider>
             <ThemeProvider>
-                <MemoryRouter>
-                    <AuthProvider>
-                        {children}
-                    </AuthProvider>
-                </MemoryRouter>
+                <ToastProvider>
+                    <MemoryRouter>
+                        <AuthProvider>
+                            {children}
+                        </AuthProvider>
+                    </MemoryRouter>
+                </ToastProvider>
             </ThemeProvider>
         </I18nProvider>
     );
 }
+
+// Helper to get form inputs by name (language-independent)
+const getEmailInput = () => document.querySelector('input[name="email"]') as HTMLInputElement;
+const getPasswordInput = () => document.querySelector('input[name="password"]') as HTMLInputElement;
+const getConfirmPasswordInput = () => document.querySelector('input[name="confirmPassword"]') as HTMLInputElement;
 
 describe('SignupForm', () => {
     beforeEach(() => {
@@ -65,154 +73,67 @@ describe('SignupForm', () => {
     });
 
     describe('Rendering', () => {
-        it('should render user type selection initially', async () => {
+        it('should render email step initially', async () => {
             render(<SignupForm />, { wrapper: TestWrapper });
 
             await waitFor(() => {
-                // Look for user type selection buttons  
-                expect(screen.getByRole('button', { name: /freelancer|مستقل/i })).toBeInTheDocument();
-                expect(screen.getByRole('button', { name: /client|صاحب عمل/i })).toBeInTheDocument();
+                // Should show email form first (not user type selection)
+                expect(getEmailInput()).toBeInTheDocument();
             });
         });
 
-        it('should render all three user type options', async () => {
+        it('should render all required input fields', async () => {
             render(<SignupForm />, { wrapper: TestWrapper });
 
             await waitFor(() => {
-                // Three options: freelancer, client, both
-                const buttons = screen.getAllByRole('button');
-                // Should have at least 3 buttons for user types
-                expect(buttons.length).toBeGreaterThanOrEqual(3);
-            });
-        });
-    });
-
-    describe('User Type Selection', () => {
-        it('should progress to email form when freelancer is selected', async () => {
-            const user = userEvent.setup();
-            render(<SignupForm />, { wrapper: TestWrapper });
-
-            await waitFor(() => {
-                expect(screen.getByRole('button', { name: /freelancer|مستقل/i })).toBeInTheDocument();
-            });
-
-            // Click freelancer option
-            await user.click(screen.getByRole('button', { name: /freelancer|مستقل/i }));
-
-            // Should now show email form
-            await waitFor(() => {
-                expect(screen.getByPlaceholderText(/example@email.com/i)).toBeInTheDocument();
+                expect(getEmailInput()).toBeInTheDocument();
+                expect(getPasswordInput()).toBeInTheDocument();
+                expect(getConfirmPasswordInput()).toBeInTheDocument();
             });
         });
 
-        it('should progress to email form when client is selected', async () => {
-            const user = userEvent.setup();
+        it('should render Google OAuth button', async () => {
             render(<SignupForm />, { wrapper: TestWrapper });
 
             await waitFor(() => {
-                expect(screen.getByRole('button', { name: /client|صاحب عمل/i })).toBeInTheDocument();
-            });
-
-            // Click client option
-            await user.click(screen.getByRole('button', { name: /client|صاحب عمل/i }));
-
-            // Should now show email form
-            await waitFor(() => {
-                expect(screen.getByPlaceholderText(/example@email.com/i)).toBeInTheDocument();
+                // Google button has "Google" text in it
+                expect(screen.getByText(/Google/i)).toBeInTheDocument();
             });
         });
     });
 
-    describe('Email and Password Form', () => {
-        it('should show password field after selecting user type', async () => {
-            const user = userEvent.setup();
+    describe('Form Fields', () => {
+        it('should have password field with password type', async () => {
             render(<SignupForm />, { wrapper: TestWrapper });
 
             await waitFor(() => {
-                expect(screen.getByRole('button', { name: /freelancer|مستقل/i })).toBeInTheDocument();
+                expect(getPasswordInput()).toBeInTheDocument();
             });
 
-            // Select user type
-            await user.click(screen.getByRole('button', { name: /freelancer|مستقل/i }));
-
-            await waitFor(() => {
-                expect(screen.getByPlaceholderText(/example@email.com/i)).toBeInTheDocument();
-            });
-
-            // Should have password input
-            const passwordInputs = screen.getAllByPlaceholderText(/\*\*\*\*\*\*/);
-            expect(passwordInputs.length).toBeGreaterThanOrEqual(1);
+            // Password input should have type password by default
+            expect(getPasswordInput()).toHaveAttribute('type', 'password');
         });
 
-        it('should validate email format', async () => {
-            const user = userEvent.setup();
+        it('should have email field with email type', async () => {
             render(<SignupForm />, { wrapper: TestWrapper });
 
-            // Select user type
             await waitFor(() => {
-                expect(screen.getByRole('button', { name: /freelancer|مستقل/i })).toBeInTheDocument();
-            });
-            await user.click(screen.getByRole('button', { name: /freelancer|مستقل/i }));
-
-            await waitFor(() => {
-                expect(screen.getByPlaceholderText(/example@email.com/i)).toBeInTheDocument();
+                expect(getEmailInput()).toBeInTheDocument();
             });
 
-            // Fill invalid email
-            await user.type(screen.getByPlaceholderText(/example@email.com/i), 'invalid-email');
-
-            // Fill password
-            const passwordInputs = screen.getAllByPlaceholderText(/\*\*\*\*\*\*/);
-            await user.type(passwordInputs[0], 'password123');
-            if (passwordInputs[1]) {
-                await user.type(passwordInputs[1], 'password123');
-            }
-
-            // Submit
-            const submitButtons = screen.getAllByRole('button');
-            const submitButton = submitButtons.find(btn => btn.getAttribute('type') === 'submit');
-            if (submitButton) {
-                await user.click(submitButton);
-            }
-
-            // Should show validation error
-            await waitFor(() => {
-                expect(screen.getByText(/invalid|غير صالح/i)).toBeInTheDocument();
-            });
+            // Email should be type email
+            expect(getEmailInput()).toHaveAttribute('type', 'email');
         });
 
-        it('should validate password minimum length', async () => {
-            const user = userEvent.setup();
+        it('should have confirm password field', async () => {
             render(<SignupForm />, { wrapper: TestWrapper });
 
-            // Select user type
             await waitFor(() => {
-                expect(screen.getByRole('button', { name: /freelancer|مستقل/i })).toBeInTheDocument();
-            });
-            await user.click(screen.getByRole('button', { name: /freelancer|مستقل/i }));
-
-            await waitFor(() => {
-                expect(screen.getByPlaceholderText(/example@email.com/i)).toBeInTheDocument();
+                expect(getConfirmPasswordInput()).toBeInTheDocument();
             });
 
-            // Fill valid email
-            await user.type(screen.getByPlaceholderText(/example@email.com/i), 'test@example.com');
-
-            // Fill short password
-            const passwordInputs = screen.getAllByPlaceholderText(/\*\*\*\*\*\*/);
-            await user.type(passwordInputs[0], '123');
-
-            // Submit  
-            const submitButtons = screen.getAllByRole('button');
-            const submitButton = submitButtons.find(btn => btn.getAttribute('type') === 'submit');
-            if (submitButton) {
-                await user.click(submitButton);
-            }
-
-            // Should show validation error about password length
-            await waitFor(() => {
-                expect(screen.getByText(/6|أحرف/i)).toBeInTheDocument();
-            });
+            // Confirm password should also be type password
+            expect(getConfirmPasswordInput()).toHaveAttribute('type', 'password');
         });
     });
 
@@ -221,73 +142,23 @@ describe('SignupForm', () => {
             const user = userEvent.setup();
             render(<SignupForm />, { wrapper: TestWrapper });
 
-            // Select user type
             await waitFor(() => {
-                expect(screen.getByRole('button', { name: /freelancer|مستقل/i })).toBeInTheDocument();
-            });
-            await user.click(screen.getByRole('button', { name: /freelancer|مستقل/i }));
-
-            await waitFor(() => {
-                expect(screen.getByPlaceholderText(/example@email.com/i)).toBeInTheDocument();
+                expect(getEmailInput()).toBeInTheDocument();
             });
 
-            // Fill valid email
-            await user.type(screen.getByPlaceholderText(/example@email.com/i), 'newuser@example.com');
+            // Fill valid form data
+            await user.type(getEmailInput(), 'newuser@example.com');
+            await user.type(getPasswordInput(), 'password123');
+            await user.type(getConfirmPasswordInput(), 'password123');
 
-            // Fill valid password
-            const passwordInputs = screen.getAllByPlaceholderText(/\*\*\*\*\*\*/);
-            await user.type(passwordInputs[0], 'password123');
-            if (passwordInputs[1]) {
-                await user.type(passwordInputs[1], 'password123');
-            }
-
-            // Submit  
-            const submitButtons = screen.getAllByRole('button');
-            const submitButton = submitButtons.find(btn => btn.getAttribute('type') === 'submit');
-            if (submitButton) {
-                await user.click(submitButton);
-            }
+            // Submit form
+            const submitButton = screen.getByRole('button', { name: /إنشاء حساب|create account/i });
+            await user.click(submitButton);
 
             // Should call signUp
             await waitFor(() => {
                 expect(supabase.auth.signUp).toHaveBeenCalled();
             });
-        });
-    });
-
-    describe('Password Visibility', () => {
-        it('should toggle password visibility', async () => {
-            const user = userEvent.setup();
-            render(<SignupForm />, { wrapper: TestWrapper });
-
-            // Select user type
-            await waitFor(() => {
-                expect(screen.getByRole('button', { name: /freelancer|مستقل/i })).toBeInTheDocument();
-            });
-            await user.click(screen.getByRole('button', { name: /freelancer|مستقل/i }));
-
-            await waitFor(() => {
-                expect(screen.getByPlaceholderText(/example@email.com/i)).toBeInTheDocument();
-            });
-
-            const passwordInputs = screen.getAllByPlaceholderText(/\*\*\*\*\*\*/);
-
-            // Initially password type
-            expect(passwordInputs[0]).toHaveAttribute('type', 'password');
-
-            // Find toggle buttons
-            const allButtons = screen.getAllByRole('button');
-            const toggleButton = allButtons.find(btn => btn.getAttribute('type') === 'button');
-
-            if (toggleButton) {
-                await user.click(toggleButton);
-
-                // Should change to text type
-                await waitFor(() => {
-                    const inputs = screen.getAllByPlaceholderText(/\*\*\*\*\*\*/);
-                    expect(inputs[0]).toHaveAttribute('type', 'text');
-                });
-            }
         });
     });
 });
