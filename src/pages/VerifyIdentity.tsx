@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Upload, Camera, CheckCircle2, AlertCircle, ChevronRight, ChevronLeft, Shield, Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from '@/i18n';
-import { supabase } from '@/lib/supabase';
+// supabase SDK not needed - using direct REST API calls
 import { useToast } from '@/components/ui/Toast';
 import SEO from '@/components/common/SEO';
 
@@ -125,7 +125,7 @@ const UploadCard = ({
 
 export default function VerifyIdentity() {
     const { user, profile, session } = useAuth();
-    const { t } = useTranslation();
+    // t is used in nested UploadCard component, not here
     const navigate = useNavigate();
     const { showToast } = useToast();
 
