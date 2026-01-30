@@ -332,7 +332,7 @@ function Settings() {
 
     const renderProfileTab = () => (
         <div className="space-y-6">
-            {/* Avatar */}
+            {/* Avatar and User Info */}
             <div className="flex items-center gap-6">
                 <div className="relative">
                     {profile?.avatar_url ? (
@@ -357,9 +357,51 @@ function Settings() {
                         />
                     </label>
                 </div>
-                <div>
+                <div className="flex-1">
                     <h3 className="font-bold text-lg">{profileForm.full_name || 'المستخدم'}</h3>
                     <p className="text-muted">{profileForm.phone}</p>
+                    {/* User Type and Status Badges */}
+                    <div className="flex flex-wrap gap-2 mt-2">
+                        {/* User Type Badge */}
+                        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${profile?.user_type === 'freelancer'
+                                ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400'
+                                : profile?.user_type === 'client'
+                                    ? 'bg-secondary-100 dark:bg-secondary-900/30 text-secondary-700 dark:text-secondary-400'
+                                    : 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400'
+                            }`}>
+                            <User className="w-3 h-3" />
+                            {profile?.user_type === 'freelancer' ? 'مستقل' : profile?.user_type === 'client' ? 'صاحب مشروع' : 'كلاهما'}
+                        </span>
+
+                        {/* Verification Status Badge */}
+                        {profile?.cin_verified ? (
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">
+                                <Check className="w-3 h-3" />
+                                هوية موثقة
+                            </span>
+                        ) : profile?.cin_submitted ? (
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400">
+                                <Loader2 className="w-3 h-3 animate-spin" />
+                                قيد المراجعة
+                            </span>
+                        ) : (
+                            <button
+                                onClick={() => navigate('/verify-identity')}
+                                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                            >
+                                <Shield className="w-3 h-3" />
+                                وثّق هويتك
+                            </button>
+                        )}
+
+                        {/* Onboarding Status */}
+                        {profile?.onboarding_completed && (
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400">
+                                <Check className="w-3 h-3" />
+                                الملف مكتمل
+                            </span>
+                        )}
+                    </div>
                 </div>
             </div>
 
