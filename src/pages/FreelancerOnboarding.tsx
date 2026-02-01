@@ -195,6 +195,16 @@ function FreelancerOnboarding() {
     const onStep1Submit = async (data: Step1FormData) => {
         setIsLoading(true);
 
+        // Timeout wrapper to prevent infinite loading
+        const withTimeout = <T,>(promise: Promise<T>, ms: number): Promise<T> => {
+            return Promise.race([
+                promise,
+                new Promise<T>((_, reject) =>
+                    setTimeout(() => reject(new Error('طلب تجاوز الوقت المحدد')), ms)
+                )
+            ]);
+        };
+
         try {
             let avatarUrl = undefined;
 
@@ -204,13 +214,16 @@ function FreelancerOnboarding() {
                     const fileExt = avatarFile.name.split('.').pop()?.toLowerCase() || 'jpg';
                     const fileName = `${user.id}-${Date.now()}.${fileExt}`;
 
-                    // Upload file directly - bucket should already exist in Supabase
-                    const { error: uploadError } = await supabase.storage
-                        .from('avatars')
-                        .upload(fileName, avatarFile, {
-                            cacheControl: '3600',
-                            upsert: true // Allow overwriting
-                        });
+                    // Upload file with 15s timeout
+                    const { error: uploadError } = await withTimeout(
+                        supabase.storage
+                            .from('avatars')
+                            .upload(fileName, avatarFile, {
+                                cacheControl: '3600',
+                                upsert: true
+                            }),
+                        15000
+                    );
 
                     if (uploadError) {
                         console.error('Upload error:', uploadError);
@@ -229,15 +242,21 @@ function FreelancerOnboarding() {
                 }
             }
 
-            // Update profile
-            await updateProfile({
-                full_name: data.full_name,
-                location: data.location,
-                ...(avatarUrl && { avatar_url: avatarUrl }),
-            });
+            // Update profile with 10s timeout
+            await withTimeout(
+                updateProfile({
+                    full_name: data.full_name,
+                    location: data.location,
+                    ...(avatarUrl && { avatar_url: avatarUrl }),
+                }),
+                10000
+            );
 
-            // Update freelancer profile
-            await updateFreelancerProfile({ title: data.title });
+            // Update freelancer profile with 10s timeout
+            await withTimeout(
+                updateFreelancerProfile({ title: data.title }),
+                10000
+            );
 
             setStep(2);
         } catch (error: any) {
