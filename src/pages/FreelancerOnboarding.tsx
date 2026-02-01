@@ -244,23 +244,46 @@ function FreelancerOnboarding() {
                 }
             }
 
-            // Update profile with 30s timeout
-            await withTimeout(
-                updateProfile({
-                    full_name: data.full_name,
-                    location: data.location,
-                    ...(avatarUrl && { avatar_url: avatarUrl }),
-                }),
-                30000,
-                'تحديث الملف الشخصي'
-            );
+            // Direct Supabase call for profile update (bypassing AuthContext)
+            console.log('[Onboarding] Updating profile for user:', user?.id);
+            const profileData = {
+                id: user!.id,
+                email: user!.email,
+                full_name: data.full_name,
+                location: data.location,
+                ...(avatarUrl && { avatar_url: avatarUrl }),
+                updated_at: new Date().toISOString()
+            };
+            console.log('[Onboarding] Profile data:', profileData);
 
-            // Update freelancer profile with 30s timeout
-            await withTimeout(
-                updateFreelancerProfile({ title: data.title }),
-                30000,
-                'تحديث ملف المستقل'
-            );
+            const { error: profileError } = await supabase
+                .from('profiles')
+                .upsert(profileData);
+
+            if (profileError) {
+                console.error('[Onboarding] Profile update error:', profileError);
+                throw new Error(`فشل تحديث الملف الشخصي: ${profileError.message}`);
+            }
+            console.log('[Onboarding] Profile updated successfully');
+
+            // Direct Supabase call for freelancer profile
+            console.log('[Onboarding] Updating freelancer profile');
+            const { error: freelancerError } = await supabase
+                .from('freelancer_profiles')
+                .upsert({
+                    id: user!.id,
+                    title: data.title,
+                    updated_at: new Date().toISOString()
+                });
+
+            if (freelancerError) {
+                console.error('[Onboarding] Freelancer profile error:', freelancerError);
+                throw new Error(`فشل تحديث ملف المستقل: ${freelancerError.message}`);
+            }
+            console.log('[Onboarding] Freelancer profile updated successfully');
+
+            // Refresh profile in context
+            await refreshProfile();
 
             setStep(2);
         } catch (error: any) {
