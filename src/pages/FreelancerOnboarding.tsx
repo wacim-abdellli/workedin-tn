@@ -195,12 +195,12 @@ function FreelancerOnboarding() {
     const onStep1Submit = async (data: Step1FormData) => {
         setIsLoading(true);
 
-        // Timeout wrapper to prevent infinite loading
-        const withTimeout = <T,>(promise: Promise<T>, ms: number): Promise<T> => {
+        // Timeout wrapper to prevent infinite loading (30s for database, 20s for upload)
+        const withTimeout = <T,>(promise: Promise<T>, ms: number, label: string): Promise<T> => {
             return Promise.race([
                 promise,
                 new Promise<T>((_, reject) =>
-                    setTimeout(() => reject(new Error('طلب تجاوز الوقت المحدد')), ms)
+                    setTimeout(() => reject(new Error(`${label}: انتهت مهلة الطلب`)), ms)
                 )
             ]);
         };
@@ -214,7 +214,7 @@ function FreelancerOnboarding() {
                     const fileExt = avatarFile.name.split('.').pop()?.toLowerCase() || 'jpg';
                     const fileName = `${user.id}-${Date.now()}.${fileExt}`;
 
-                    // Upload file with 15s timeout
+                    // Upload file with 20s timeout
                     const { error: uploadError } = await withTimeout(
                         supabase.storage
                             .from('avatars')
@@ -222,7 +222,8 @@ function FreelancerOnboarding() {
                                 cacheControl: '3600',
                                 upsert: true
                             }),
-                        15000
+                        20000,
+                        'رفع الصورة'
                     );
 
                     if (uploadError) {
@@ -239,23 +240,26 @@ function FreelancerOnboarding() {
                 } catch (uploadError: any) {
                     console.warn('Avatar upload failed:', uploadError);
                     showToast(t.common.uploadFailed, 'warning');
+                    // Continue without avatar
                 }
             }
 
-            // Update profile with 10s timeout
+            // Update profile with 30s timeout
             await withTimeout(
                 updateProfile({
                     full_name: data.full_name,
                     location: data.location,
                     ...(avatarUrl && { avatar_url: avatarUrl }),
                 }),
-                10000
+                30000,
+                'تحديث الملف الشخصي'
             );
 
-            // Update freelancer profile with 10s timeout
+            // Update freelancer profile with 30s timeout
             await withTimeout(
                 updateFreelancerProfile({ title: data.title }),
-                10000
+                30000,
+                'تحديث ملف المستقل'
             );
 
             setStep(2);
