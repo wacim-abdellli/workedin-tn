@@ -248,9 +248,10 @@ function FreelancerOnboarding() {
             console.log('[Onboarding] Updating profile for user:', user?.id);
             const profileData = {
                 id: user!.id,
-                email: user!.email,
+                // NOTE: email is in auth.users, NOT in profiles table
                 full_name: data.full_name,
                 location: data.location,
+                user_type: 'freelancer' as const, // Set user type during onboarding
                 ...(avatarUrl && { avatar_url: avatarUrl }),
                 updated_at: new Date().toISOString()
             };

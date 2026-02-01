@@ -214,11 +214,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
         if (!user) throw new Error('No user logged in');
 
         // Use upsert to handle both new and existing profiles
+        // NOTE: email is stored in auth.users, NOT in profiles table
         const { error } = await supabase
             .from('profiles')
             .upsert({
                 id: user.id,
-                email: user.email, // Ensure email is set
                 ...data,
                 updated_at: new Date().toISOString()
             });
