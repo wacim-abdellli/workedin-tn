@@ -249,7 +249,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
                 .upsert({
                     id: user.id,
                     skills: [],
-                    is_available: true,
+                    availability: 'available', // ✅ FIXED: Match schema (enum) instead of is_available boolean
                 });
 
             if (error) throw error;

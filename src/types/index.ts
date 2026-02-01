@@ -8,7 +8,8 @@ export type PaymentMethod = 'bank_transfer' | 'd17' | 'cash';
 
 export interface Profile {
     id: string;
-    user_type: UserType;
+    user_type: UserType | null; // ✅ FIXED: Allow null (database allows NULL)
+    email?: string; // ✅ ADDED: For Settings.tsx compatibility
     username?: string;
     full_name: string;
     phone?: string;
@@ -59,7 +60,7 @@ export interface FreelancerProfile {
     response_time_hours?: number;
     repeat_clients: number;
     cin_verified: boolean;
-    is_available: boolean;
+    // is_available: boolean; // ❌ REMOVED: Redundant with availability enum
     total_earnings: number;
     created_at: string;
     work_samples?: WorkSample[];
@@ -129,6 +130,9 @@ export interface Contract {
     job_id: string;
     freelancer_id: string;
     client_id: string;
+    amount: number; // ✅ ADDED: Match database
+    escrow_amount?: number; // ✅ ADDED
+    escrow_funded?: boolean; // ✅ ADDED
     status: ContractStatus;
     payment_status: PaymentStatus;
     payment_method?: PaymentMethod;
@@ -154,10 +158,14 @@ export interface Message {
     id: string;
     contract_id: string;
     sender_id: string;
+    receiver_id: string; // ✅ ADDED: Required by schema
     content: string;
-    file_url?: string;
+    attachments?: any[]; // ✅ FIXED: Allow objects (JSONB)
+    file_url?: string; // Deprecated, kept for backward compatibility
+    is_read?: boolean;
     created_at: string;
     sender?: Profile;
+    receiver?: Profile;
 }
 
 // Tunisian Governorates

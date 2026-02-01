@@ -14,6 +14,7 @@ interface OnboardingStep1Props {
     isLoading: boolean;
     avatarPreview: string | null;
     onAvatarChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    onRemoveAvatar: () => void;
 }
 
 export default function OnboardingStep1({
@@ -22,6 +23,7 @@ export default function OnboardingStep1({
     isLoading,
     avatarPreview,
     onAvatarChange,
+    onRemoveAvatar,
 }: OnboardingStep1Props) {
     const { t, dir } = useTranslation();
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -43,7 +45,7 @@ export default function OnboardingStep1({
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                 {/* Avatar Upload */}
-                <div className="flex justify-center mb-8">
+                <div className="flex flex-col items-center mb-8">
                     <div className="relative group">
                         <div
                             className="w-28 h-28 rounded-full bg-gray-100 dark:bg-dark-800 flex items-center justify-center overflow-hidden cursor-pointer border-4 border-white dark:border-dark-700 shadow-xl group-hover:shadow-2xl transition-all"
@@ -70,6 +72,18 @@ export default function OnboardingStep1({
                             onChange={onAvatarChange}
                         />
                     </div>
+                    {avatarPreview && (
+                        <button
+                            type="button"
+                            onClick={onRemoveAvatar}
+                            className="mt-2 text-sm text-red-500 hover:text-red-600"
+                        >
+                            {t.common.removeImage}
+                        </button>
+                    )}
+                    <p className="mt-2 text-xs text-muted">
+                        {t.common.skipForNow}
+                    </p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

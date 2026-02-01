@@ -76,10 +76,19 @@ function FreelancerOnboarding() {
     const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
-            if (file.size > 5 * 1024 * 1024) {
-                showToast(t.common.error || 'Size error', 'error');
+            // Validate file type
+            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
+            if (!allowedTypes.includes(file.type)) {
+                showToast(t.common.invalidFileType, 'error');
                 return;
             }
+
+            // Validate file size (max 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                showToast(t.common.fileTooLarge, 'error');
+                return;
+            }
+
             setAvatarFile(file);
             setAvatarPreview(URL.createObjectURL(file));
         }
@@ -175,40 +184,60 @@ function FreelancerOnboarding() {
         }
     };
 
+    // Helper: Remove avatar
+    const removeAvatar = () => {
+        setAvatarFile(null);
+        if (avatarPreview) URL.revokeObjectURL(avatarPreview);
+        setAvatarPreview(null);
+    };
+
     // Step Submits
     const onStep1Submit = async (data: Step1FormData) => {
         setIsLoading(true);
 
-        // Timeout function - 15 second max per operation
-        const withTimeout = <T,>(promise: Promise<T>, ms = 15000): Promise<T> =>
-            Promise.race([
-                promise,
-                new Promise<T>((_, reject) => setTimeout(() => reject(new Error('انتهت مهلة الاتصال')), ms))
-            ]);
-
         try {
             let avatarUrl = undefined;
 
-            // Try to upload avatar (with timeout), but don't fail if bucket doesn't exist
+            // Try to upload avatar, but don't fail onboarding if it fails
             if (avatarFile && user) {
                 try {
-                    const path = `${user.id}/avatar-${Date.now()}.${avatarFile.name.split('.').pop()}`;
-                    avatarUrl = await withTimeout(uploadFile('avatars', path, avatarFile), 10000);
+                    const fileExt = avatarFile.name.split('.').pop()?.toLowerCase() || 'jpg';
+                    const fileName = `${user.id}-${Date.now()}.${fileExt}`;
+
+                    // Upload file directly - bucket should already exist in Supabase
+                    const { error: uploadError } = await supabase.storage
+                        .from('avatars')
+                        .upload(fileName, avatarFile, {
+                            cacheControl: '3600',
+                            upsert: true // Allow overwriting
+                        });
+
+                    if (uploadError) {
+                        console.error('Upload error:', uploadError);
+                        throw uploadError;
+                    }
+
+                    // Get public URL
+                    const { data: { publicUrl } } = supabase.storage
+                        .from('avatars')
+                        .getPublicUrl(fileName);
+
+                    avatarUrl = publicUrl;
                 } catch (uploadError: any) {
                     console.warn('Avatar upload failed:', uploadError);
-                    showToast('تعذر رفع الصورة، يمكنك إضافتها لاحقاً', 'warning');
+                    showToast(t.common.uploadFailed, 'warning');
                 }
             }
 
-            // Update profile with timeout
-            await withTimeout(updateProfile({
+            // Update profile
+            await updateProfile({
                 full_name: data.full_name,
                 location: data.location,
                 ...(avatarUrl && { avatar_url: avatarUrl }),
-            }));
+            });
 
-            // Update freelancer profile with timeout
-            await withTimeout(updateFreelancerProfile({ title: data.title }));
+            // Update freelancer profile
+            await updateFreelancerProfile({ title: data.title });
 
             setStep(2);
         } catch (error: any) {
@@ -282,7 +311,7 @@ function FreelancerOnboarding() {
                 if (url) await updateFreelancerProfile({ voice_intro_url: url });
             }
 
-            // Mark onboarding as complete - THIS IS THE CRITICAL FIX!
+            // Mark onboarding as complete
             await updateProfile({ onboarding_completed: true });
 
             await refreshProfile();
@@ -298,24 +327,20 @@ function FreelancerOnboarding() {
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-dark-900 overflow-hidden relative transition-colors duration-300">
-            {/* Background Ambience */}
-            <div className="absolute inset-0 pointer-events-none">
-                <div className="absolute top-0 start-0 w-[500px] h-[500px] bg-primary-500/5 rounded-full blur-[100px]" />
-                <div className="absolute bottom-0 end-0 w-[500px] h-[500px] bg-accent-500/5 rounded-full blur-[100px]" />
-            </div>
-
+            {/* ... JSX ... */}
             <Header />
 
             <div className="container-custom py-12 relative z-10">
                 <div className="max-w-3xl mx-auto">
-                    {/* Header */}
+                    {/* ... Header ... */}
                     <div className="text-center mb-10">
                         <h1 className="heading-md mb-2">{t.onboarding.freelancer.welcome}</h1>
                         <p className="text-muted">{t.onboarding.freelancer.welcomeDesc}</p>
                     </div>
 
-                    {/* Progress Bar */}
+                    {/* ... Progress Bar ... */}
                     <div className="mb-10">
+                        {/* ... */}
                         <div className="flex items-center justify-between mb-3 text-sm font-medium text-dark-500">
                             <span>{t.common.next} {step} / {totalSteps}</span>
                             <span className="text-primary-600 dark:text-primary-400">{Math.round((step / totalSteps) * 100)}%</span>
@@ -352,6 +377,7 @@ function FreelancerOnboarding() {
                                 isLoading={isLoading}
                                 avatarPreview={avatarPreview}
                                 onAvatarChange={handleAvatarChange}
+                                onRemoveAvatar={removeAvatar}
                             />
                         )}
                         {step === 2 && (

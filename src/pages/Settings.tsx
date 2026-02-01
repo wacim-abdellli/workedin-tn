@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import {
     User,
     Bell,
@@ -63,8 +63,17 @@ function Settings() {
     const { user, profile, signOut, refreshProfile } = useAuth();
     const { showToast } = useToast();
     const navigate = useNavigate();
+    const { tab } = useParams<{ tab: string }>();
+    const [searchParams] = useSearchParams();
 
     const [activeTab, setActiveTab] = useState<SettingsTab>('profile');
+
+    useEffect(() => {
+        const targetTab = tab || searchParams.get('tab');
+        if (targetTab && TABS.some(t => t.id === targetTab)) {
+            setActiveTab(targetTab as SettingsTab);
+        }
+    }, [tab, searchParams]);
     const [isSaving, setIsSaving] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -532,8 +541,8 @@ function Settings() {
                                 }
                             }}
                             className={`p-3 rounded-xl border-2 transition-all text-center ${profile?.user_type === type
-                                    ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
-                                    : 'border-gray-200 dark:border-gray-700 hover:border-primary-300'
+                                ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
+                                : 'border-gray-200 dark:border-gray-700 hover:border-primary-300'
                                 }`}
                         >
                             <span className={`font-medium block ${profile?.user_type === type ? 'text-primary-600' : ''}`}>{label}</span>

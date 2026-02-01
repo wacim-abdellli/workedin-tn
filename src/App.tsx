@@ -10,6 +10,9 @@ import { Loading } from './components/common';
 import ScrollToTop from './components/ui/ScrollToTop';
 
 import { ProfileRedirect } from './components/routing/ProfileRedirect';
+import { DashboardRedirect } from './components/navigation/DashboardRedirect';
+import { MyJobsRedirect } from './components/navigation/MyJobsRedirect';
+import { SavedRedirect } from './components/navigation/SavedRedirect';
 
 // Lazy Load Pages
 import SkipLinks from './components/layout/SkipLinks';
@@ -101,7 +104,17 @@ function AppRoutes() {
       {/* Dashboard routes */}
       <Route path="/dashboard" element={
         <ProtectedRoute>
-          <ProfileRedirect />
+          <DashboardRedirect />
+        </ProtectedRoute>
+      } />
+      <Route path="/my-jobs" element={
+        <ProtectedRoute>
+          <MyJobsRedirect />
+        </ProtectedRoute>
+      } />
+      <Route path="/saved" element={
+        <ProtectedRoute>
+          <SavedRedirect />
         </ProtectedRoute>
       } />
       <Route path="/freelancer/dashboard" element={

@@ -417,10 +417,10 @@ export default function VerifyIdentity() {
                             حسابك موثق الآن وحصلت على شارة التحقق الزرقاء. يمكنك الآن الاستمتاع بجميع ميزات المنصة.
                         </p>
                         <button
-                            onClick={() => navigate('/settings')}
+                            onClick={() => navigate('/settings?tab=profile')}
                             className="bg-primary-600 hover:bg-primary-700 text-white px-8 py-3 rounded-xl font-medium transition-colors shadow-lg shadow-primary-600/20"
                         >
-                            العودة للوحة التحكم
+                            العودة إلى الإعدادات
                         </button>
                     </div>
                 </div>
@@ -456,10 +456,10 @@ export default function VerifyIdentity() {
                             </p>
                         </div>
                         <button
-                            onClick={() => navigate('/settings')}
+                            onClick={() => navigate('/settings?tab=profile')}
                             className="bg-primary-600 hover:bg-primary-700 text-white px-8 py-3 rounded-xl font-medium transition-colors shadow-lg shadow-primary-600/20"
                         >
-                            العودة للوحة التحكم
+                            العودة إلى الإعدادات
                         </button>
                     </div>
                 </div>
@@ -482,10 +482,10 @@ export default function VerifyIdentity() {
                             سيقوم فريقنا بمراجعة مستنداتك والرد عليك في أقرب وقت ممكن (عادة خلال 24 ساعة). سنقوم بإشعارك عبر البريد الإلكتروني عند اكتمال المراجعة.
                         </p>
                         <button
-                            onClick={() => navigate('/settings')}
+                            onClick={() => navigate('/settings?tab=profile')}
                             className="bg-primary-600 hover:bg-primary-700 text-white px-8 py-3 rounded-xl font-medium transition-colors shadow-lg shadow-primary-600/20"
                         >
-                            العودة للوحة التحكم
+                            العودة إلى الإعدادات
                         </button>
                     </div>
                 </div>

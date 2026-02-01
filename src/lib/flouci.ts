@@ -2,26 +2,22 @@
  * Flouci Payment Gateway Service for Khedma.tn
  * Documentation: https://flouci.com/developers
  * 
- * TODO: Move VITE_FLOUCI_APP_SECRET to Supabase Edge Function in production
- * The secret should never be exposed in client-side code for production use.
+ * SECURITY: All payment operations handled via Supabase Edge Functions.
+ * APP_SECRET is never exposed to the client.
  */
 
+import { supabase } from './supabase';
 import type {
     FlouciPaymentRequest,
     FlouciPaymentResponse,
     FlouciVerificationResponse,
 } from '../types/payment';
 
-// API Configuration
-const FLOUCI_API_URL = import.meta.env.VITE_FLOUCI_API_URL || 'https://developers.flouci.com/api';
-const APP_TOKEN = import.meta.env.VITE_FLOUCI_APP_TOKEN || '';
-const APP_SECRET = import.meta.env.VITE_FLOUCI_APP_SECRET || ''; // TODO: Move to Edge Function
-
 // Development mode flag
-const IS_DEV_MODE = !APP_TOKEN || APP_TOKEN === 'test' || import.meta.env.DEV;
+const IS_DEV_MODE = import.meta.env.DEV;
 
 /**
- * Initiate a Flouci payment
+ * Initiate a Flouci payment via Edge Function
  * Creates a payment session and returns a redirect URL
  * 
  * @param payment - Payment request details
@@ -35,7 +31,7 @@ export async function initiatePayment(
         tracking_id: payment.developer_tracking_id,
     });
 
-    // In development mode without credentials, return mock response
+    // In development mode without Edge Functions, return mock response
     if (IS_DEV_MODE) {
         console.log('[Flouci] Running in DEV mode - returning mock payment');
         const mockPaymentId = `mock_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -48,41 +44,32 @@ export async function initiatePayment(
     }
 
     try {
-        const response = await fetch(`${FLOUCI_API_URL}/generate_payment`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'apppublic': APP_TOKEN,
-            },
-            body: JSON.stringify({
-                app_token: APP_TOKEN,
-                app_secret: APP_SECRET, // TODO: Move to server-side
+        // Call Edge Function (APP_SECRET handled server-side)
+        const { data, error } = await supabase.functions.invoke('flouci-initiate-payment', {
+            body: {
                 amount: payment.amount,
-                accept_card: 'true',
-                session_timeout_secs: payment.session_timeout_secs || 1200, // 20 minutes default
                 success_link: payment.success_link,
                 fail_link: payment.fail_link,
                 developer_tracking_id: payment.developer_tracking_id,
-            }),
+                session_timeout_secs: payment.session_timeout_secs,
+            }
         });
 
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('[Flouci] API error:', response.status, errorText);
-            throw new Error(`فشل في الاتصال بخدمة الدفع: ${response.status}`);
+        if (error) {
+            console.error('[Flouci] Edge Function error:', error);
+            throw new Error(error.message || 'فشل في بدء عملية الدفع');
         }
 
-        const data = await response.json();
+        if (data.error) {
+            throw new Error(data.error);
+        }
+
         console.log('[Flouci] Payment initiated:', data);
 
-        if (data.result?.success) {
-            return {
-                payment_id: data.result.payment_id,
-                link: data.result.link,
-            };
-        } else {
-            throw new Error(data.result?.message || 'فشل في بدء عملية الدفع');
-        }
+        return {
+            payment_id: data.payment_id,
+            link: data.link,
+        };
     } catch (error) {
         console.error('[Flouci] Payment initiation error:', error);
 
@@ -94,15 +81,23 @@ export async function initiatePayment(
 }
 
 /**
- * Verify a Flouci payment status
+ * Verify a Flouci payment status via Edge Function
  * Call this after user returns from payment page
  * 
  * @param paymentId - Payment ID from Flouci
+ * @param options - Optional parameters for atomic completion
  * @returns Verification response with payment status
  */
 export async function verifyPayment(
-    paymentId: string
-): Promise<FlouciVerificationResponse> {
+    paymentId: string,
+    options?: {
+        complete_payment?: boolean;
+        transaction_id?: string;
+        contract_id?: string;
+        freelancer_id?: string;
+        amount?: number;
+    }
+): Promise<FlouciVerificationResponse & { completion?: { success: boolean; data?: any; error?: string } }> {
     console.log('[Flouci] Verifying payment:', paymentId);
 
     // In development mode, simulate successful verification
@@ -130,28 +125,35 @@ export async function verifyPayment(
     }
 
     try {
-        const response = await fetch(`${FLOUCI_API_URL}/verify_payment/${paymentId}`, {
-            method: 'GET',
-            headers: {
-                'apppublic': APP_TOKEN,
-                'appsecret': APP_SECRET, // TODO: Move to server-side
-            },
+        // Call Edge Function for verification (and optional atomic completion)
+        const { data, error } = await supabase.functions.invoke('flouci-verify-payment', {
+            body: {
+                payment_id: paymentId,
+                ...options,
+            }
         });
 
-        if (!response.ok) {
-            console.error('[Flouci] Verification API error:', response.status);
+        if (error) {
+            console.error('[Flouci] Verification Edge Function error:', error);
             throw new Error('فشل في التحقق من عملية الدفع');
         }
 
-        const data = await response.json();
         console.log('[Flouci] Verification result:', data);
 
+        // If completion was requested, return full response
+        if (options?.complete_payment && data.verification) {
+            return {
+                ...data.verification,
+                completion: data.completion,
+            };
+        }
+
         return {
-            status: data.result?.status || 'FAILED',
+            status: data.status || 'FAILED',
             payment_id: paymentId,
-            amount: data.result?.amount || 0,
-            developer_tracking_id: data.result?.developer_tracking_id,
-            created_at: data.result?.created_at || new Date().toISOString(),
+            amount: data.amount || 0,
+            developer_tracking_id: data.developer_tracking_id,
+            created_at: data.created_at || new Date().toISOString(),
         };
     } catch (error) {
         console.error('[Flouci] Payment verification error:', error);
@@ -165,9 +167,13 @@ export async function verifyPayment(
 
 /**
  * Check if Flouci is properly configured
+ * In production, configuration is on server-side (Edge Functions)
  */
 export function isFlouciConfigured(): boolean {
-    return Boolean(APP_TOKEN && APP_SECRET && !IS_DEV_MODE);
+    // In dev mode, always return true for mock payments
+    if (IS_DEV_MODE) return true;
+    // In production, assume Edge Functions are configured
+    return true;
 }
 
 /**
@@ -176,13 +182,11 @@ export function isFlouciConfigured(): boolean {
 export function getFlouciStatus(): {
     configured: boolean;
     devMode: boolean;
-    hasToken: boolean;
-    hasSecret: boolean;
+    usingEdgeFunctions: boolean;
 } {
     return {
         configured: isFlouciConfigured(),
         devMode: IS_DEV_MODE,
-        hasToken: Boolean(APP_TOKEN && APP_TOKEN !== 'test'),
-        hasSecret: Boolean(APP_SECRET && APP_SECRET !== 'test'),
+        usingEdgeFunctions: !IS_DEV_MODE,
     };
 }

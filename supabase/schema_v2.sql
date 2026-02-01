@@ -653,3 +653,159 @@ ALTER PUBLICATION supabase_realtime ADD TABLE contracts;
 -- 2. "portfolio" - Public bucket for portfolio items
 -- 3. "attachments" - Private bucket for contract/proposal attachments
 -- 4. "voice-intros" - Public bucket for voice introductions
+
+-- ============================================
+-- PAYMENT SYSTEM TABLES
+-- Added from migrations/20260129_payments_schema.sql
+-- ============================================
+
+-- Create enum types for payment system
+DO $$ BEGIN
+    CREATE TYPE transaction_type_enum AS ENUM ('deposit', 'escrow_fund', 'escrow_release', 'withdrawal', 'refund', 'platform_fee');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+    CREATE TYPE transaction_status_enum AS ENUM ('pending', 'processing', 'completed', 'failed', 'cancelled');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+    CREATE TYPE withdrawal_status_enum AS ENUM ('pending', 'processing', 'completed', 'rejected');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+-- WALLETS TABLE: Tracks user balances
+CREATE TABLE IF NOT EXISTS wallets (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE UNIQUE,
+    balance DECIMAL(12, 2) DEFAULT 0 CHECK (balance >= 0),
+    pending_balance DECIMAL(12, 2) DEFAULT 0,
+    total_earned DECIMAL(12, 2) DEFAULT 0,
+    total_withdrawn DECIMAL(12, 2) DEFAULT 0,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- TRANSACTIONS TABLE: All financial movements
+CREATE TABLE IF NOT EXISTS transactions (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+    wallet_id UUID REFERENCES wallets(id) ON DELETE SET NULL,
+    contract_id UUID REFERENCES contracts(id) ON DELETE SET NULL,
+    type transaction_type_enum NOT NULL,
+    amount DECIMAL(12, 2) NOT NULL CHECK (amount > 0),
+    fee DECIMAL(12, 2) DEFAULT 0,
+    status transaction_status_enum DEFAULT 'pending',
+    payment_gateway VARCHAR(50), -- 'flouci', 'd17', etc.
+    payment_gateway_id VARCHAR(255), -- External payment reference
+    payment_gateway_response JSONB,
+    description TEXT,
+    completed_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- WITHDRAWALS TABLE: Payout requests
+CREATE TABLE IF NOT EXISTS withdrawals (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+    wallet_id UUID NOT NULL REFERENCES wallets(id) ON DELETE CASCADE,
+    amount DECIMAL(12, 2) NOT NULL CHECK (amount > 0),
+    fee DECIMAL(12, 2) DEFAULT 0,
+    net_amount DECIMAL(12, 2) GENERATED ALWAYS AS (amount - fee) STORED,
+    method VARCHAR(50) NOT NULL, -- 'bank_transfer', 'd17', etc.
+    status withdrawal_status_enum DEFAULT 'pending',
+    bank_name VARCHAR(100),
+    iban VARCHAR(50),
+    d17_phone VARCHAR(20),
+    notes TEXT,
+    admin_notes TEXT,
+    processed_by UUID REFERENCES profiles(id),
+    processed_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- PAYMENT_METHODS TABLE: Saved payment methods
+CREATE TABLE IF NOT EXISTS payment_methods (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+    type VARCHAR(50) NOT NULL, -- 'bank', 'd17', 'card'
+    is_default BOOLEAN DEFAULT false,
+    bank_name VARCHAR(100),
+    iban VARCHAR(50),
+    card_last_four VARCHAR(4),
+    card_brand VARCHAR(20),
+    d17_phone VARCHAR(20),
+    label VARCHAR(100),
+    verified BOOLEAN DEFAULT false,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Indexes for payment tables
+CREATE INDEX IF NOT EXISTS idx_wallets_user_id ON wallets(user_id);
+CREATE INDEX IF NOT EXISTS idx_transactions_user_id ON transactions(user_id);
+CREATE INDEX IF NOT EXISTS idx_transactions_contract_id ON transactions(contract_id);
+CREATE INDEX IF NOT EXISTS idx_transactions_payment_gateway_id ON transactions(payment_gateway_id);
+CREATE INDEX IF NOT EXISTS idx_transactions_status ON transactions(status);
+CREATE INDEX IF NOT EXISTS idx_withdrawals_user_id ON withdrawals(user_id);
+CREATE INDEX IF NOT EXISTS idx_withdrawals_status ON withdrawals(status);
+CREATE INDEX IF NOT EXISTS idx_payment_methods_user_id ON payment_methods(user_id);
+
+-- RLS Policies for wallets
+ALTER TABLE wallets ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view own wallet" ON wallets
+    FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "System creates wallets" ON wallets
+    FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update own wallet" ON wallets
+    FOR UPDATE USING (auth.uid() = user_id);
+
+-- RLS Policies for transactions
+ALTER TABLE transactions ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view own transactions" ON transactions
+    FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can create transactions" ON transactions
+    FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+-- RLS Policies for withdrawals
+ALTER TABLE withdrawals ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view own withdrawals" ON withdrawals
+    FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can request withdrawals" ON withdrawals
+    FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+-- RLS Policies for payment_methods
+ALTER TABLE payment_methods ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users manage own payment methods" ON payment_methods
+    FOR ALL USING (auth.uid() = user_id);
+
+-- Trigger for auto-creating wallet on profile creation
+CREATE OR REPLACE FUNCTION create_wallet_for_user()
+RETURNS TRIGGER AS $$
+BEGIN
+    INSERT INTO wallets (user_id)
+    VALUES (NEW.id)
+    ON CONFLICT (user_id) DO NOTHING;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER create_user_wallet
+    AFTER INSERT ON profiles
+    FOR EACH ROW EXECUTE FUNCTION create_wallet_for_user();
+
+-- Add realtime for payment tables
+ALTER PUBLICATION supabase_realtime ADD TABLE transactions;
+ALTER PUBLICATION supabase_realtime ADD TABLE wallets;
+

@@ -109,19 +109,22 @@ export const getContractMessages = async (contractId: string) => {
 };
 
 // Send message
+// FIX: Added receiver_id (required), changed attachment_url to attachments JSONB array
 export const sendMessage = async (
     contractId: string,
     senderId: string,
+    receiverId: string, // ✅ Required field
     content: string,
-    attachmentUrl?: string
+    attachments?: any[] // ✅ JSONB array (can contain objects)
 ) => {
     const { data, error } = await supabase
         .from('messages')
         .insert({
             contract_id: contractId,
             sender_id: senderId,
+            receiver_id: receiverId, // ✅ Required by schema
             content,
-            attachment_url: attachmentUrl || null,
+            attachments: attachments || [], // ✅ Correct column name (JSONB array)
         })
         .select()
         .single();
@@ -131,22 +134,25 @@ export const sendMessage = async (
 };
 
 // Create notification
+// FIX: Changed 'message' to 'content', 'read' to 'is_read'
 export const createNotification = async (
     userId: string,
     title: string,
-    message: string,
+    content: string, // ✅ Renamed from 'message' to 'content'
     type: 'message' | 'match' | 'payment' | 'delivery' | 'dispute' | 'system',
-    link?: string
+    link?: string,
+    data?: Record<string, any> // ✅ Optional JSONB data
 ) => {
     const { error } = await supabase
         .from('notifications')
         .insert({
             user_id: userId,
             title,
-            message,
+            content, // ✅ Correct column name
             type,
             link,
-            read: false,
+            is_read: false, // ✅ Correct column name
+            data: data || null,
         });
 
     if (error) throw error;

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { Loader2, CheckCircle, ArrowRight } from 'lucide-react';
 import { verifyPayment } from '../lib/flouci';
@@ -11,12 +11,19 @@ type VerificationStatus = 'verifying' | 'success' | 'failed';
 /**
  * PaymentSuccess Page
  * Handles redirect after successful Flouci payment
- * Verifies payment and updates database records
+ * 
+ * FIXES APPLIED:
+ * - Added idempotency check (prevents duplicate processing on refresh)
+ * - Uses atomic payment completion via SQL function
+ * - Fixed field name: 'amount' instead of 'budget'
  */
 const PaymentSuccess = () => {
     const { dir } = useTranslation();
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
+
+    // Prevent double processing with ref
+    const processingRef = useRef(false);
 
     const [status, setStatus] = useState<VerificationStatus>('verifying');
     const [error, setError] = useState<string | null>(null);
@@ -25,6 +32,10 @@ const PaymentSuccess = () => {
 
     useEffect(() => {
         const verifyAndProcess = async () => {
+            // Prevent double execution
+            if (processingRef.current) return;
+            processingRef.current = true;
+
             const payment_id = searchParams.get('payment_id');
             const contract_id = searchParams.get('contract_id');
 
@@ -39,7 +50,35 @@ const PaymentSuccess = () => {
             }
 
             try {
-                // Step 1: Verify with Flouci
+                // ================================================
+                // STEP 1: IDEMPOTENCY CHECK
+                // Check if payment was already processed
+                // ================================================
+                const { data: existingTransaction } = await supabase
+                    .from('transactions')
+                    .select('id, status, amount')
+                    .eq('payment_gateway_id', payment_id)
+                    .single();
+
+                if (existingTransaction?.status === 'completed') {
+                    console.log('[PaymentSuccess] Payment already processed (idempotent)');
+                    setAmount(existingTransaction.amount || 0);
+                    setStatus('success');
+
+                    // Redirect after delay
+                    setTimeout(() => {
+                        if (contract_id) {
+                            navigate(`/contracts/${contract_id}`);
+                        } else {
+                            navigate('/client/dashboard');
+                        }
+                    }, 3000);
+                    return; // EXIT - Already completed
+                }
+
+                // ================================================
+                // STEP 2: VERIFY WITH FLOUCI
+                // ================================================
                 const verification = await verifyPayment(payment_id);
                 console.log('[PaymentSuccess] Verification result:', verification);
 
@@ -49,90 +88,111 @@ const PaymentSuccess = () => {
                     return;
                 }
 
-                // Step 2: Find the pending transaction
-                const { data: transaction, error: txFindError } = await supabase
-                    .from('transactions')
-                    .select('*')
-                    .eq('payment_gateway_id', payment_id)
+                // ================================================
+                // STEP 3: GET CONTRACT DETAILS
+                // ================================================
+                if (!contract_id) {
+                    // No contract - just update transaction if exists
+                    if (existingTransaction) {
+                        await supabase
+                            .from('transactions')
+                            .update({
+                                status: 'completed',
+                                completed_at: new Date().toISOString(),
+                                payment_gateway_response: verification,
+                            })
+                            .eq('id', existingTransaction.id);
+                        setAmount(existingTransaction.amount || 0);
+                    }
+                    setStatus('success');
+                    setTimeout(() => navigate('/client/dashboard'), 4000);
+                    return;
+                }
+
+                // Get contract with correct field name (amount, not budget)
+                const { data: contract, error: contractFetchError } = await supabase
+                    .from('contracts')
+                    .select('id, freelancer_id, amount, escrow_funded') // ✅ FIXED: 'amount' not 'budget'
+                    .eq('id', contract_id)
                     .single();
 
-                if (txFindError || !transaction) {
-                    console.error('[PaymentSuccess] Transaction not found:', txFindError);
-                    // Payment succeeded but transaction not found - still proceed
+                if (contractFetchError || !contract) {
+                    console.error('[PaymentSuccess] Contract fetch error:', contractFetchError);
+                    setStatus('failed');
+                    setError('لم يتم العثور على العقد');
+                    return;
                 }
 
-                if (transaction) {
-                    setAmount(transaction.amount);
+                // Check if already funded
+                if (contract.escrow_funded) {
+                    console.log('[PaymentSuccess] Contract already funded (idempotent)');
+                    setAmount(contract.amount || 0);
+                    setStatus('success');
+                    setTimeout(() => navigate(`/contracts/${contract_id}`), 3000);
+                    return;
+                }
 
-                    // Step 3: Update transaction status
-                    const { error: txUpdateError } = await supabase
-                        .from('transactions')
-                        .update({
-                            status: 'completed',
-                            completed_at: new Date().toISOString(),
-                            payment_gateway_response: verification,
-                        })
-                        .eq('id', transaction.id);
+                // ================================================
+                // STEP 4: ATOMIC PAYMENT COMPLETION
+                // Uses SQL function to update all in single transaction
+                // ================================================
+                if (existingTransaction && contract.freelancer_id) {
+                    console.log('[PaymentSuccess] Completing payment atomically...');
 
-                    if (txUpdateError) {
-                        console.error('[PaymentSuccess] Transaction update error:', txUpdateError);
+                    const { data: completionResult, error: completionError } = await supabase.rpc(
+                        'complete_escrow_payment',
+                        {
+                            p_transaction_id: existingTransaction.id,
+                            p_contract_id: contract_id,
+                            p_freelancer_id: contract.freelancer_id,
+                            p_amount: contract.amount,
+                        }
+                    );
+
+                    if (completionError) {
+                        console.error('[PaymentSuccess] Atomic payment error:', completionError);
+
+                        // Check if it was an idempotent failure (already completed)
+                        if (completionError.message?.includes('already completed')) {
+                            setAmount(contract.amount || 0);
+                            setStatus('success');
+                            setTimeout(() => navigate(`/contracts/${contract_id}`), 3000);
+                            return;
+                        }
+
+                        setStatus('failed');
+                        setError('فشل في إتمام الدفع');
+                        return;
                     }
-                }
 
-                // Step 4: Update contract if provided
-                if (contract_id) {
-                    // Get contract details
-                    const { data: contract, error: contractFetchError } = await supabase
+                    console.log('[PaymentSuccess] Atomic completion result:', completionResult);
+                    setAmount(contract.amount || 0);
+                } else {
+                    // Fallback: Manual updates if no transaction found
+                    // This shouldn't happen in normal flow but handle it gracefully
+                    console.log('[PaymentSuccess] No transaction found, updating contract directly');
+
+                    await supabase
                         .from('contracts')
-                        .select('freelancer_id, budget')
-                        .eq('id', contract_id)
-                        .single();
+                        .update({
+                            escrow_funded: true,
+                            escrow_amount: contract.amount,
+                            funded_at: new Date().toISOString(),
+                        })
+                        .eq('id', contract_id);
 
-                    if (contractFetchError) {
-                        console.error('[PaymentSuccess] Contract fetch error:', contractFetchError);
-                    } else if (contract) {
-                        // Update contract status
-                        const { error: contractUpdateError } = await supabase
-                            .from('contracts')
-                            .update({
-                                escrow_funded: true,
-                                escrow_amount: contract.budget,
-                                funded_at: new Date().toISOString(),
-                            })
-                            .eq('id', contract_id);
-
-                        if (contractUpdateError) {
-                            console.error('[PaymentSuccess] Contract update error:', contractUpdateError);
-                        }
-
-                        // Step 5: Update freelancer wallet pending balance
-                        if (contract.freelancer_id) {
-                            const { error: walletError } = await supabase.rpc('update_wallet_balance', {
-                                p_user_id: contract.freelancer_id,
-                                p_amount: contract.budget,
-                                p_type: 'add_pending',
-                            });
-
-                            if (walletError) {
-                                console.error('[PaymentSuccess] Wallet update error:', walletError);
-                            }
-                        }
-
-                        setAmount(contract.budget);
-                    }
+                    setAmount(contract.amount || 0);
                 }
 
-                // Success!
+                // ================================================
+                // SUCCESS!
+                // ================================================
                 setStatus('success');
                 console.log('[PaymentSuccess] Payment verified and processed successfully');
 
                 // Redirect after 4 seconds
                 setTimeout(() => {
-                    if (contract_id) {
-                        navigate(`/contracts/${contract_id}`);
-                    } else {
-                        navigate('/client/dashboard');
-                    }
+                    navigate(`/contracts/${contract_id}`);
                 }, 4000);
 
             } catch (err) {

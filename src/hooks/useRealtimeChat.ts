@@ -21,7 +21,7 @@ interface UseRealtimeChatReturn {
     messages: ChatMessage[];
     isLoading: boolean;
     error: Error | null;
-    sendMessage: (content: string, attachments?: any[]) => Promise<void>;
+    sendMessage: (content: string, receiverId: string, attachments?: any[]) => Promise<void>;
     isSending: boolean;
     isTyping: boolean;
     setTyping: (typing: boolean) => void;
@@ -158,9 +158,9 @@ export function useRealtimeChat({
 
     // Send message function
     const sendMessage = useCallback(
-        async (content: string, attachments?: any[]) => {
+        async (content: string, receiverId: string, attachments?: any[]) => {
             if (!content.trim() && (!attachments || attachments.length === 0)) return;
-            if (!contractId || !userId) return;
+            if (!contractId || !userId || !receiverId) return;
 
             setIsSending(true);
 
@@ -170,6 +170,7 @@ export function useRealtimeChat({
                     .insert({
                         contract_id: contractId,
                         sender_id: userId,
+                        receiver_id: receiverId, // ✅ ADDED: Required by schema
                         content: content.trim(),
                         attachments: attachments || [],
                     });

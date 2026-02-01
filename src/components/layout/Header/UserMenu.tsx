@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Bell, User, LogOut, Settings,
-    Briefcase, MessageSquare, Heart
+    Briefcase, MessageSquare, Heart, Shield
 } from 'lucide-react';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 import { hardLogout, clearAllAuthData } from '@/lib/authUtils';
@@ -16,6 +16,7 @@ export interface UserMenuProps {
         avatar_url?: string;
         user_type?: 'freelancer' | 'client' | 'both' | null;
         id?: string;
+        is_admin?: boolean;
     } | null;
     signOut: () => Promise<void>;
     t: {
@@ -34,6 +35,11 @@ export function UserMenu({ user, profile, signOut, t }: UserMenuProps) {
     const [menuOpen, setMenuOpen] = useState(false);
     const [isLoggingOut, setIsLoggingOut] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
+
+    // Check if user is admin
+    const isAdmin = profile?.is_admin || false;
+
+    // ... (existing useEffects)
 
     // Close menu when clicking outside
     useEffect(() => {
@@ -70,6 +76,7 @@ export function UserMenu({ user, profile, signOut, t }: UserMenuProps) {
     }, [menuOpen]);
 
     const handleLogout = async () => {
+        // ... (existing handleLogout)
         setIsLoggingOut(true);
         setMenuOpen(false);
 
@@ -87,7 +94,6 @@ export function UserMenu({ user, profile, signOut, t }: UserMenuProps) {
         }
 
         // Step 3: ALWAYS do hard redirect regardless of success/failure
-        // This is the nuclear option that guarantees logout
         hardLogout('/login');
     };
 
@@ -165,8 +171,8 @@ export function UserMenu({ user, profile, signOut, t }: UserMenuProps) {
                                             }
                                         }}
                                         className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-medium transition-all ${profile?.user_type === 'freelancer'
-                                                ? 'bg-violet-600 text-white shadow-lg'
-                                                : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+                                            ? 'bg-violet-600 text-white shadow-lg'
+                                            : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
                                             }`}
                                     >
                                         <User className="w-3.5 h-3.5" />
@@ -195,8 +201,8 @@ export function UserMenu({ user, profile, signOut, t }: UserMenuProps) {
                                             }
                                         }}
                                         className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-medium transition-all ${profile?.user_type === 'client'
-                                                ? 'bg-emerald-600 text-white shadow-lg'
-                                                : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+                                            ? 'bg-emerald-600 text-white shadow-lg'
+                                            : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
                                             }`}
                                     >
                                         <Briefcase className="w-3.5 h-3.5" />
@@ -206,16 +212,26 @@ export function UserMenu({ user, profile, signOut, t }: UserMenuProps) {
                             </div>
 
                             <div className="py-2" role="none">
-                                <UserMenuItem icon={User} to="/profile" onClick={() => setMenuOpen(false)}>
+                                {/* Admin Link */}
+                                {isAdmin && (
+                                    <>
+                                        <UserMenuItem icon={Shield} to="/admin" onClick={() => setMenuOpen(false)}>
+                                            لوحة الإدارة
+                                        </UserMenuItem>
+                                        <div className="border-t border-gray-200 dark:border-gray-700 my-1" />
+                                    </>
+                                )}
+
+                                <UserMenuItem icon={User} to="/dashboard" onClick={() => setMenuOpen(false)}>
                                     {t.nav.dashboard}
                                 </UserMenuItem>
-                                <UserMenuItem icon={Briefcase} to="/jobs" onClick={() => setMenuOpen(false)}>
+                                <UserMenuItem icon={Briefcase} to="/my-jobs" onClick={() => setMenuOpen(false)}>
                                     {t.nav.myJobs}
                                 </UserMenuItem>
                                 <UserMenuItem icon={MessageSquare} to="/messages" onClick={() => setMenuOpen(false)}>
                                     {t.nav.messages}
                                 </UserMenuItem>
-                                <UserMenuItem icon={Heart} to="/jobs" onClick={() => setMenuOpen(false)}>
+                                <UserMenuItem icon={Heart} to="/saved" onClick={() => setMenuOpen(false)}>
                                     {t.nav.saved}
                                 </UserMenuItem>
                                 <UserMenuItem icon={Settings} to="/settings" onClick={() => setMenuOpen(false)}>

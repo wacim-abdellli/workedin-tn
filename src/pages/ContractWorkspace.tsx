@@ -169,8 +169,11 @@ export default function ContractWorkspace() {
     }, [contractId, user?.id]);
 
     const handleSendMessage = async (content: string) => {
+        if (!contractData || !user) return;
+        const receiverId = userRole === 'client' ? contractData.freelancer.id : contractData.client.id;
+
         try {
-            await sendMessage(content);
+            await sendMessage(content, receiverId);
             setTyping(false);
         } catch {
             showToast('حدث خطأ في إرسال الرسالة', 'error');
@@ -178,9 +181,12 @@ export default function ContractWorkspace() {
     };
 
     const handleFileUpload = async (file: File) => {
+        if (!contractData || !user) return;
+        const receiverId = userRole === 'client' ? contractData.freelancer.id : contractData.client.id;
+
         try {
             const uploaded = await upload(file, `${contractId}/${Date.now()}_${file.name}`);
-            await sendMessage(`📎 ${file.name}`, [
+            await sendMessage(`📎 ${file.name}`, receiverId, [
                 { name: file.name, url: uploaded.url, type: file.type, size: (file.size / 1024).toFixed(1) + 'KB' }
             ]);
             showToast(`تم رفع: ${file.name}`, 'success');
