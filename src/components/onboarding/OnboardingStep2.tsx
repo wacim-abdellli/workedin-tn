@@ -38,29 +38,45 @@ export default function OnboardingStep2({
         { value: 'offline', label: t.publicProfile.offline },
     ];
 
+    const OTHER_SKILL: Skill = {
+        id: 'other',
+        name_en: 'Other',
+        name_fr: 'Autre',
+        name_ar: 'أخرى',
+    };
+
+    const allSkills = [...PREDEFINED_SKILLS, OTHER_SKILL];
+
     return (
-        <div className="p-8">
-            <div className="flex items-center gap-4 mb-8">
-                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-accent-500 to-accent-600 flex items-center justify-center shadow-lg shadow-accent-500/30">
-                    <Sparkles className="w-7 h-7 text-white" />
+        <div className="p-1">
+            <div className="mb-8 text-center sm:text-start">
+                <div className="inline-flex items-center gap-3 mb-2 px-4 py-2 rounded-full bg-primary-50/50 dark:bg-primary-900/10 border border-primary-100 dark:border-primary-800 backdrop-blur-sm">
+                    <Sparkles className="w-4 h-4 text-primary-600 dark:text-primary-400" />
+                    <span className="text-sm font-medium text-primary-700 dark:text-primary-300">
+                        {t.profile.skills} & {t.job.budget}
+                    </span>
                 </div>
-                <div>
-                    <h2 className="text-xl font-bold">{t.profile.skills} & {t.job.budget}</h2>
-                    <p className="text-muted text-sm">{t.onboarding.client.profileDesc}</p>
-                </div>
+                <h2 className="heading-md mb-2">{t.onboarding.client.profileDesc}</h2>
             </div>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
                 {/* Skills Selection */}
-                <div>
-                    <div className="flex items-center justify-between mb-3">
-                        <label className="label mb-0">{t.profile.skills}</label>
-                        <span className="text-xs font-medium px-2 py-1 rounded bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400">
+                <div className="bg-white/50 dark:bg-dark-800/50 rounded-2xl border border-gray-100 dark:border-dark-700 p-6 backdrop-blur-sm">
+                    <div className="flex items-center justify-between mb-4">
+                        <label className="text-base font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                            {t.profile.skills}
+                            <span className="text-xs font-normal text-muted">({t.profile.optional})</span>
+                        </label>
+                        <span className={`text-xs font-bold px-2.5 py-1 rounded-full border ${selectedSkills.length === 5
+                            ? 'bg-orange-50 text-orange-600 border-orange-100'
+                            : 'bg-gray-100 text-gray-600 border-gray-200 dark:bg-dark-700 dark:text-gray-400 dark:border-dark-600'
+                            }`}>
                             {selectedSkills.length}/5
                         </span>
                     </div>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
-                        {PREDEFINED_SKILLS.map((skill) => {
+
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                        {allSkills.map((skill) => {
                             const isSelected = selectedSkills.find((s) => s.id === skill.id);
                             return (
                                 <button
@@ -68,19 +84,20 @@ export default function OnboardingStep2({
                                     type="button"
                                     onClick={() => toggleSkill(skill)}
                                     className={`
-                                        p-3 rounded-xl border transition-all duration-200 text-start relative overflow-hidden group
+                                        relative group p-4 rounded-xl text-start transition-all duration-300
+                                        flex items-center justify-between
                                         ${isSelected
-                                            ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/30 shadow-md ring-1 ring-primary-500'
-                                            : 'border-gray-200 dark:border-dark-700 bg-white dark:bg-dark-800 hover:border-primary-300 dark:hover:border-dark-500'
+                                            ? 'bg-gradient-to-br from-primary-500 to-primary-600 text-white shadow-lg shadow-primary-500/25 ring-2 ring-primary-500 ring-offset-2 dark:ring-offset-dark-900'
+                                            : 'bg-white dark:bg-dark-800 border border-gray-200 dark:border-dark-700 hover:border-primary-300 dark:hover:border-primary-700 hover:shadow-md'
                                         }
                                     `}
                                 >
-                                    <span className={`text-sm font-medium relative z-10 ${isSelected ? 'text-primary-700 dark:text-primary-300' : 'text-dark-700 dark:text-dark-300'}`}>
+                                    <span className={`text-sm font-medium ${isSelected ? 'text-white' : 'text-gray-700 dark:text-gray-300'}`}>
                                         {getSkillName(skill)}
                                     </span>
                                     {isSelected && (
-                                        <div className="absolute top-2 end-2">
-                                            <CheckCircle className="w-4 h-4 text-primary-600 dark:text-primary-400" />
+                                        <div className="bg-white/20 rounded-full p-1">
+                                            <CheckCircle className="w-3.5 h-3.5 text-white" />
                                         </div>
                                     )}
                                 </button>
@@ -90,31 +107,38 @@ export default function OnboardingStep2({
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <Input
-                        {...register('hourly_rate')}
-                        type="number"
-                        label={`${t.job.budget} (${t.common.tnd})`}
-                        placeholder="50"
-                        min="0"
-                        leftIcon={<DollarSign className="w-5 h-5 text-success-600" />}
-                        hint={t.profile.optional}
-                        error={errors.hourly_rate?.message}
-                    />
+                    <div className="bg-white/50 dark:bg-dark-800/50 rounded-2xl border border-gray-100 dark:border-dark-700 p-6 backdrop-blur-sm">
+                        <Input
+                            {...register('hourly_rate')}
+                            type="number"
+                            label={`${t.job.budget} (${t.common.tnd})`}
+                            placeholder="e.g. 50"
+                            min="0"
+                            className="bg-white dark:bg-dark-900/50"
+                            leftIcon={<DollarSign className="w-5 h-5 text-gray-400" />}
+                            hint={t.profile.optional}
+                            error={errors.hourly_rate?.message}
+                        />
+                    </div>
 
-                    <Select
-                        {...register('availability')}
-                        label={t.publicProfile.available}
-                        options={AVAILABILITY_OPTIONS}
-                        error={errors.availability?.message}
-                    />
+                    <div className="bg-white/50 dark:bg-dark-800/50 rounded-2xl border border-gray-100 dark:border-dark-700 p-6 backdrop-blur-sm">
+                        <Select
+                            {...register('availability')}
+                            label={t.publicProfile.available}
+                            options={AVAILABILITY_OPTIONS}
+                            className="bg-white dark:bg-dark-900/50"
+                            error={errors.availability?.message}
+                        />
+                    </div>
                 </div>
 
-                <div className="flex gap-4 pt-4">
+                <div className="flex gap-4 pt-4 border-t border-gray-100 dark:border-dark-800">
                     <Button
                         type="button"
                         variant="ghost"
                         size="lg"
                         onClick={onBack}
+                        className="px-8"
                         leftIcon={<BackArrowIcon className="w-5 h-5" />}
                     >
                         {t.common.back}
@@ -123,7 +147,7 @@ export default function OnboardingStep2({
                         type="submit"
                         variant="primary"
                         size="lg"
-                        className="flex-1"
+                        className="flex-1 shadow-xl shadow-primary-500/20 hover:shadow-primary-500/30"
                         isLoading={isLoading}
                         rightIcon={<ArrowIcon className="w-5 h-5" />}
                     >
