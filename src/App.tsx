@@ -91,14 +91,18 @@ function AppRoutes() {
 
       {/* Onboarding routes */}
       <Route path="/onboarding/freelancer" element={
-        <ProtectedRoute>
-          <FreelancerOnboarding />
-        </ProtectedRoute>
+        <ErrorBoundary>
+          <ProtectedRoute>
+            <FreelancerOnboarding />
+          </ProtectedRoute>
+        </ErrorBoundary>
       } />
       <Route path="/onboarding/client" element={
-        <ProtectedRoute>
-          <ClientOnboarding />
-        </ProtectedRoute>
+        <ErrorBoundary>
+          <ProtectedRoute>
+            <ClientOnboarding />
+          </ProtectedRoute>
+        </ErrorBoundary>
       } />
 
       {/* Dashboard routes */}
