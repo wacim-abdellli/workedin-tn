@@ -209,18 +209,26 @@ export function AuthProvider({ children }: AuthProviderProps) {
         clearAllAuthData();
     };
 
-    // Update user profile
+    // Update user profile (uses UPSERT to handle new users in onboarding)
     const updateProfile = async (data: Partial<Profile>) => {
         if (!user) throw new Error('No user logged in');
 
+        // Use upsert to handle both new and existing profiles
         const { error } = await supabase
             .from('profiles')
-            .update(data)
-            .eq('id', user.id);
+            .upsert({
+                id: user.id,
+                email: user.email, // Ensure email is set
+                ...data,
+                updated_at: new Date().toISOString()
+            });
 
-        if (error) throw error;
+        if (error) {
+            logger.error('updateProfile error:', error);
+            throw error;
+        }
 
-        setProfile((prev) => (prev ? { ...prev, ...data } : null));
+        setProfile((prev) => (prev ? { ...prev, ...data } : data as Profile));
     };
 
     // Update freelancer profile
@@ -229,9 +237,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
         const { error } = await supabase
             .from('freelancer_profiles')
-            .upsert({ id: user.id, ...data });
+            .upsert({
+                id: user.id,
+                ...data,
+                updated_at: new Date().toISOString()
+            });
 
-        if (error) throw error;
+        if (error) {
+            logger.error('updateFreelancerProfile error:', error);
+            throw error;
+        }
 
         setFreelancerProfile((prev) => (prev ? { ...prev, ...data } : data as FreelancerProfile));
     };
