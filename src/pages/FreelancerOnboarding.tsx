@@ -257,34 +257,41 @@ function FreelancerOnboarding() {
             };
             console.log('[Onboarding] Profile data:', profileData);
 
-            const { error: profileError } = await supabase
-                .from('profiles')
-                .upsert(profileData);
+            // Wrap Supabase query with timeout
+            const profileResult = await Promise.race([
+                supabase.from('profiles').upsert(profileData).select('id').single(),
+                new Promise<never>((_, reject) =>
+                    setTimeout(() => reject(new Error('انتهت مهلة الاتصال بقاعدة البيانات')), 15000)
+                )
+            ]);
 
-            if (profileError) {
-                console.error('[Onboarding] Profile update error:', profileError);
-                throw new Error(`فشل تحديث الملف الشخصي: ${profileError.message}`);
+            if (profileResult.error) {
+                console.error('[Onboarding] Profile update error:', profileResult.error);
+                throw new Error(`فشل تحديث الملف الشخصي: ${profileResult.error.message}`);
             }
             console.log('[Onboarding] Profile updated successfully');
 
-            // Direct Supabase call for freelancer profile
+            // Direct Supabase call for freelancer profile with timeout
             console.log('[Onboarding] Updating freelancer profile');
-            const { error: freelancerError } = await supabase
-                .from('freelancer_profiles')
-                .upsert({
+            const freelancerResult = await Promise.race([
+                supabase.from('freelancer_profiles').upsert({
                     id: user!.id,
                     title: data.title,
                     updated_at: new Date().toISOString()
-                });
+                }).select('id').single(),
+                new Promise<never>((_, reject) =>
+                    setTimeout(() => reject(new Error('انتهت مهلة تحديث ملف المستقل')), 15000)
+                )
+            ]);
 
-            if (freelancerError) {
-                console.error('[Onboarding] Freelancer profile error:', freelancerError);
-                throw new Error(`فشل تحديث ملف المستقل: ${freelancerError.message}`);
+            if (freelancerResult.error) {
+                console.error('[Onboarding] Freelancer profile error:', freelancerResult.error);
+                throw new Error(`فشل تحديث ملف المستقل: ${freelancerResult.error.message}`);
             }
             console.log('[Onboarding] Freelancer profile updated successfully');
 
-            // Refresh profile in context
-            await refreshProfile();
+            // Refresh profile in context (non-blocking)
+            refreshProfile().catch(e => console.warn('Profile refresh failed:', e));
 
             setStep(2);
         } catch (error: any) {
