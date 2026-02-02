@@ -27,7 +27,6 @@ function FreelancerOnboarding() {
     const [step, setStep] = useState(1);
     const [isLoading, setIsLoading] = useState(false);
     const [selectedSkills, setSelectedSkills] = useState<Skill[]>([]);
-    // @ts-ignore - temporarily unused while upload is disabled
     const [avatarFile, setAvatarFile] = useState<File | null>(null);
     const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
 
@@ -208,48 +207,39 @@ function FreelancerOnboarding() {
         };
 
         try {
-            let avatarUrl = undefined;
+            let avatarUrl: string | undefined = undefined;
 
-            // TEMPORARILY DISABLED - TESTING DATABASE SAVES FIRST
-            /*
+            // Upload avatar if selected
             if (avatarFile && user) {
                 try {
+                    console.log('[Onboarding] Uploading avatar...');
                     const fileExt = avatarFile.name.split('.').pop()?.toLowerCase() || 'jpg';
                     const fileName = `${user.id}-${Date.now()}.${fileExt}`;
-                    const { error: uploadError } = await withTimeout(
-                        supabase.storage
-                            .from('avatars')
-                            .upload(fileName, avatarFile, {
-                                cacheControl: '3600',
-                                upsert: true
-                            }),
-                        20000,
-                        'رفع الصورة'
-                    );
-                    if (uploadError) {
-                        console.error('❌ Upload error details:', {
-                            message: uploadError.message,
-                            statusCode: uploadError.statusCode,
-                            fullError: JSON.stringify(uploadError, null, 2)
-                        });
-                        throw uploadError;
-                    }
-                    const { data: { publicUrl } } = supabase.storage
+
+                    const { error: uploadError } = await supabase.storage
                         .from('avatars')
-                        .getPublicUrl(fileName);
-                    avatarUrl = publicUrl;
-                    console.log('✅ Avatar uploaded successfully:', publicUrl);
+                        .upload(fileName, avatarFile, {
+                            cacheControl: '3600',
+                            upsert: true
+                        });
+
+                    if (uploadError) {
+                        console.error('[Onboarding] Avatar upload error:', uploadError);
+                        showToast(t.common.uploadFailed || 'فشل رفع الصورة', 'warning');
+                        // Continue without avatar - don't block onboarding
+                    } else {
+                        const { data: { publicUrl } } = supabase.storage
+                            .from('avatars')
+                            .getPublicUrl(fileName);
+                        avatarUrl = publicUrl;
+                        console.log('[Onboarding] ✅ Avatar uploaded:', publicUrl);
+                    }
                 } catch (uploadError: any) {
-                    console.error('❌ Avatar upload failed - Full error:', {
-                        message: uploadError?.message,
-                        name: uploadError?.name,
-                        stack: uploadError?.stack,
-                        raw: uploadError
-                    });
-                    showToast(t.common.uploadFailed, 'warning');
+                    console.error('[Onboarding] Avatar upload exception:', uploadError);
+                    showToast(t.common.uploadFailed || 'فشل رفع الصورة', 'warning');
+                    // Continue without avatar
                 }
             }
-            */
 
             // Build profile data
             const profileData: Record<string, any> = {
@@ -302,12 +292,10 @@ function FreelancerOnboarding() {
 
             // Save freelancer profile - NO TIMEOUT to see real error
             console.log('[Onboarding] Saving freelancer profile...', freelancerData);
-
             const { data: freelancerResult, error: freelancerError } = await supabase
                 .from('freelancer_profiles')
                 .upsert(freelancerData)
                 .select();
-
             if (freelancerError) {
                 console.error('[Onboarding] ❌ Freelancer profile save error:', {
                     message: freelancerError.message,
@@ -320,10 +308,8 @@ function FreelancerOnboarding() {
             } else {
                 console.log('[Onboarding] ✅ Freelancer profile saved successfully:', freelancerResult);
             }
-
             // Refresh profile context (non-blocking)
             refreshProfile().catch(e => console.warn('Profile refresh failed:', e));
-
             showToast('تم حفظ البيانات بنجاح', 'success');
             setStep(2);
         } catch (error: any) {
