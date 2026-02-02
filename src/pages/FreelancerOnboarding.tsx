@@ -253,31 +253,34 @@ function FreelancerOnboarding() {
                 profileData.avatar_url = avatarUrl;
             }
 
-            // Save profile to Supabase with 10s timeout (removed .select() which can cause RLS issues)
+            // Save profile to Supabase with 8s hard timeout using Promise.race
             console.log('[Onboarding] Saving profile to database...', profileData);
 
+            const profileSavePromise = supabase
+                .from('profiles')
+                .upsert(profileData, { onConflict: 'id' });
+
+            const timeoutPromise = new Promise<{ error: { message: string } }>((resolve) =>
+                setTimeout(() => resolve({ error: { message: 'TIMEOUT' } }), 8000)
+            );
+
             try {
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 10000);
-
-                const { error: profileError } = await supabase
-                    .from('profiles')
-                    .upsert(profileData, { onConflict: 'id' });
-
-                clearTimeout(timeoutId);
+                const { error: profileError } = await Promise.race([profileSavePromise, timeoutPromise]);
 
                 if (profileError) {
                     console.error('[Onboarding] ❌ Profile save error:', profileError);
-                    showToast('فشل حفظ الملف الشخصي - سيتم المحاولة مرة أخرى', 'warning');
+                    if (profileError.message === 'TIMEOUT') {
+                        showToast('انتهت مهلة الحفظ - متابعة...', 'warning');
+                    } else {
+                        showToast('فشل الحفظ - متابعة...', 'warning');
+                    }
                     localStorage.setItem('pending_profile', JSON.stringify(profileData));
                 } else {
                     console.log('[Onboarding] ✅ Profile saved successfully!');
                 }
             } catch (saveError: any) {
                 console.error('[Onboarding] Profile save exception:', saveError);
-                showToast('فشل الاتصال بالخادم', 'warning');
                 localStorage.setItem('pending_profile', JSON.stringify(profileData));
-                // Continue anyway - don't block onboarding
             }
 
             // Build freelancer data
@@ -287,12 +290,20 @@ function FreelancerOnboarding() {
                 updated_at: new Date().toISOString()
             };
 
-            // Save freelancer profile (simplified, non-blocking)
+            // Save freelancer profile with 8s timeout
             console.log('[Onboarding] Saving freelancer profile...', freelancerData);
+
+            const freelancerPromise = supabase
+                .from('freelancer_profiles')
+                .upsert(freelancerData, { onConflict: 'id' });
+
             try {
-                const { error: freelancerError } = await supabase
-                    .from('freelancer_profiles')
-                    .upsert(freelancerData, { onConflict: 'id' });
+                const { error: freelancerError } = await Promise.race([
+                    freelancerPromise,
+                    new Promise<{ error: { message: string } }>((resolve) =>
+                        setTimeout(() => resolve({ error: { message: 'TIMEOUT' } }), 8000)
+                    )
+                ]);
 
                 if (freelancerError) {
                     console.error('[Onboarding] ❌ Freelancer profile error:', freelancerError);
