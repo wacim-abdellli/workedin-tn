@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Storage Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body {
+            font-family: monospace;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+
+        .result {
+            background: #f0f0f0;
+            padding: 15px;
+            margin: 10px 0;
+            border-left: 4px solid #007bff;
+        }
+
+        .error {
+            border-color: #dc3545;
+            background: #ffe6e6;
+        }
+
+        .success {
+            border-color: #28a745;
+            background: #e6ffe6;
+        }
+
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+
+        pre {
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🔍 Quick Storage Test</h1>
+
+    <h2>Test Avatar Upload</h2>
+    <input type="file" id="file" accept="image/*">
+    <button onclick="testUpload()">Test Upload</button>
+    <div id="result"></div>
+
+    <script>
+        // PASTE YOUR CREDENTIALS HERE
+        const SUPABASE_URL = prompt('Paste VITE_SUPABASE_URL:') || '';
+        const SUPABASE_KEY = prompt('Paste VITE_SUPABASE_ANON_KEY:') || '';
+
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        async function testUpload() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<div class="result">⏳ Testing...</div>';
+
+            try {
+                // Check auth
+                const { data: { user }, error: authError } = await supabase.auth.getUser();
+                if (authError) throw new Error(`Auth failed: ${authError.message}`);
+                if (!user) throw new Error('Not logged in! Open your app in another tab and log in first.');
+
+                resultDiv.innerHTML += `<div class="result success">✅ Authenticated as: ${user.email}</div>`;
+
+                // Check file
+                const file = document.getElementById('file').files[0];
+                if (!file) throw new Error('Please select a file first!');
+
+                resultDiv.innerHTML += `<div class="result">📁 File: ${file.name} (${(file.size / 1024).toFixed(1)} KB)</div>`;
+
+                // Test upload
+                const fileName = `test-${user.id}-${Date.now()}.${file.name.split('.').pop()}`;
+
+                resultDiv.innerHTML += `<div class="result">⏳ Uploading to avatars/${fileName}...</div>`;
+
+                const startTime = Date.now();
+                const { data, error } = await supabase.storage
+                    .from('avatars')
+                    .upload(fileName, file, {
+                        cacheControl: '3600',
+                        upsert: true
+                    });
+
+                const duration = Date.now() - startTime;
+
+                if (error) {
+                    resultDiv.innerHTML += `<div class="result error">
+                        <h3>❌ Upload Failed (${duration}ms)</h3>
+                        <strong>Error Message:</strong> ${error.message}<br>
+                        <strong>Status Code:</strong> ${error.statusCode || 'N/A'}<br>
+                        <strong>Full Error:</strong><br>
+                        <pre>${JSON.stringify(error, null, 2)}</pre>
+                    </div>`;
+                    return;
+                }
+
+                // Get public URL
+                const { data: { publicUrl } } = supabase.storage
+                    .from('avatars')
+                    .getPublicUrl(fileName);
+
+                resultDiv.innerHTML += `<div class="result success">
+                    <h3>✅ Upload Successful! (${duration}ms)</h3>
+                    <strong>Public URL:</strong><br>
+                    <a href="${publicUrl}" target="_blank">${publicUrl}</a><br><br>
+                    <img src="${publicUrl}" style="max-width: 200px; margin-top: 10px;">
+                </div>`;
+
+            } catch (err) {
+                resultDiv.innerHTML += `<div class="result error">
+                    <h3>❌ Test Failed</h3>
+                    <pre>${err.message}\n\n${err.stack}</pre>
+                </div>`;
+            }
+        }
+    </script>
+</body>
+
+</html>

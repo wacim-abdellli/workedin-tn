@@ -227,7 +227,11 @@ function FreelancerOnboarding() {
                     );
 
                     if (uploadError) {
-                        console.error('Upload error:', uploadError);
+                        console.error('❌ Upload error details:', {
+                            message: uploadError.message,
+                            statusCode: uploadError.statusCode,
+                            fullError: JSON.stringify(uploadError, null, 2)
+                        });
                         throw uploadError;
                     }
 
@@ -237,8 +241,14 @@ function FreelancerOnboarding() {
                         .getPublicUrl(fileName);
 
                     avatarUrl = publicUrl;
+                    console.log('✅ Avatar uploaded successfully:', publicUrl);
                 } catch (uploadError: any) {
-                    console.warn('Avatar upload failed:', uploadError);
+                    console.error('❌ Avatar upload failed - Full error:', {
+                        message: uploadError?.message,
+                        name: uploadError?.name,
+                        stack: uploadError?.stack,
+                        raw: uploadError
+                    });
                     showToast(t.common.uploadFailed, 'warning');
                     // Continue without avatar
                 }
