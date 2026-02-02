@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -9,13 +9,10 @@ import { useToast } from '../components/ui/Toast';
 import { supabase, uploadFile } from '../lib/supabase';
 import type { Skill } from '../types';
 import { Header } from '../components/layout';
-import useVoiceRecording from '../hooks/useVoiceRecording';
 
 // Step Components
 import OnboardingStep1 from '../components/onboarding/OnboardingStep1';
 import OnboardingStep2 from '../components/onboarding/OnboardingStep2';
-import OnboardingStep3, { type LanguageEntry, type EducationEntry } from '../components/onboarding/OnboardingStep3';
-import OnboardingStep4 from '../components/onboarding/OnboardingStep4';
 import { step1Schema, type Step1FormData, step2Schema, type Step2FormData } from '../components/onboarding/schemas';
 
 function FreelancerOnboarding() {
@@ -30,25 +27,6 @@ function FreelancerOnboarding() {
     const [avatarFile, setAvatarFile] = useState<File | null>(null);
     const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
 
-    // Languages state
-    const [languages, setLanguages] = useState<LanguageEntry[]>([
-        { language: 'ar', proficiency: 'native' }
-    ]);
-
-    // Education state
-    const [education, setEducation] = useState<EducationEntry[]>([]);
-
-    // Bio & Portfolio state
-    const [bio, setBio] = useState('');
-    const [workSamples, setWorkSamples] = useState<{ file: File; preview: string; title: string; description: string }[]>([]);
-
-    // Voice Recording
-    const voiceRecording = useVoiceRecording();
-    const { audioBlob: voiceBlob, audioUrl } = voiceRecording;
-
-    const [isPlaying, setIsPlaying] = useState(false);
-    const audioRef = useRef<HTMLAudioElement | null>(null);
-
     const step1Form = useForm<Step1FormData>({
         resolver: zodResolver(step1Schema),
     });
@@ -61,7 +39,8 @@ function FreelancerOnboarding() {
         }
     });
 
-    const totalSteps = 4;
+    // SIMPLIFIED: Only 2 steps now!
+    const totalSteps = 2;
 
     // Helper: Get skill name
     const getSkillName = (skill: Skill) => {
@@ -105,85 +84,6 @@ function FreelancerOnboarding() {
         }
     };
 
-    // Helper: Languages
-    const addLanguage = () => {
-        if (languages.length < 5) {
-            setLanguages([...languages, { language: '', proficiency: 'conversational' }]);
-        }
-    };
-    const removeLanguage = (index: number) => {
-        setLanguages(languages.filter((_, i) => i !== index));
-    };
-    const updateLanguage = (index: number, field: keyof LanguageEntry, value: string) => {
-        const newLanguages = [...languages];
-        if (field === 'proficiency') {
-            newLanguages[index].proficiency = value as LanguageEntry['proficiency'];
-        } else {
-            newLanguages[index].language = value;
-        }
-        setLanguages(newLanguages);
-    };
-
-    // Helper: Education
-    const addEducation = () => {
-        if (education.length < 3) {
-            setEducation([...education, { institution: '', degree: '', field: '', startYear: '', endYear: '' }]);
-        }
-    };
-    const removeEducation = (index: number) => {
-        setEducation(education.filter((_, i) => i !== index));
-    };
-    const updateEducation = (index: number, field: keyof EducationEntry, value: string) => {
-        const newEducation = [...education];
-        newEducation[index][field] = value;
-        setEducation(newEducation);
-    };
-
-    // Helper: Portfolio
-    const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const files = e.target.files;
-        if (!files) return;
-
-        const maxFiles = 5 - workSamples.length;
-        const newSamples: { file: File; preview: string; title: string; description: string }[] = [];
-
-        for (let i = 0; i < Math.min(files.length, maxFiles); i++) {
-            const file = files[i];
-            if (file.size > 10 * 1024 * 1024) {
-                showToast('Max size 10MB', 'error');
-                continue;
-            }
-            const preview = file.type.startsWith('image/') ? URL.createObjectURL(file) : '';
-            newSamples.push({ file, preview, title: file.name.split('.')[0], description: '' });
-        }
-        setWorkSamples([...workSamples, ...newSamples]);
-    };
-    const removeWorkSample = (index: number) => {
-        const newSamples = [...workSamples];
-        if (newSamples[index].preview) URL.revokeObjectURL(newSamples[index].preview);
-        newSamples.splice(index, 1);
-        setWorkSamples(newSamples);
-    };
-    const updateWorkSample = (index: number, field: 'title' | 'description', value: string) => {
-        const newSamples = [...workSamples];
-        newSamples[index][field] = value;
-        setWorkSamples(newSamples);
-    };
-
-    // Helper: Play voice
-    const playRecording = () => {
-        if (audioUrl && !isPlaying) {
-            const audio = new Audio(audioUrl);
-            audioRef.current = audio;
-            audio.onended = () => setIsPlaying(false);
-            audio.play();
-            setIsPlaying(true);
-        } else if (audioRef.current && isPlaying) {
-            audioRef.current.pause();
-            setIsPlaying(false);
-        }
-    };
-
     // Helper: Remove avatar
     const removeAvatar = () => {
         setAvatarFile(null);
@@ -191,131 +91,91 @@ function FreelancerOnboarding() {
         setAvatarPreview(null);
     };
 
-    // Step Submits
+    // STEP 1: Personal Info (name, title, location, avatar)
     const onStep1Submit = async (data: Step1FormData) => {
         setIsLoading(true);
 
-        // Timeout wrapper to prevent infinite loading (30s for database, 20s for upload)
-        // @ts-ignore - temporarily unused while upload is disabled
-        const withTimeout = <T,>(promise: Promise<T>, ms: number, label: string): Promise<T> => {
-            return Promise.race([
-                promise,
-                new Promise<T>((_, reject) =>
-                    setTimeout(() => reject(new Error(`${label}: انتهت مهلة الطلب`)), ms)
-                )
-            ]);
-        };
-
         try {
-            let avatarUrl: string | undefined = undefined;
-
-            // Upload avatar if selected
-            if (avatarFile && user) {
-                try {
-                    console.log('[Onboarding] Uploading avatar...');
-                    const fileExt = avatarFile.name.split('.').pop()?.toLowerCase() || 'jpg';
-                    const fileName = `${user.id}-${Date.now()}.${fileExt}`;
-
-                    const { error: uploadError } = await supabase.storage
-                        .from('avatars')
-                        .upload(fileName, avatarFile, {
-                            cacheControl: '3600',
-                            upsert: true
-                        });
-
-                    if (uploadError) {
-                        console.error('[Onboarding] Avatar upload error:', uploadError);
-                        showToast(t.common.uploadFailed || 'فشل رفع الصورة', 'warning');
-                        // Continue without avatar - don't block onboarding
-                    } else {
-                        const { data: { publicUrl } } = supabase.storage
-                            .from('avatars')
-                            .getPublicUrl(fileName);
-                        avatarUrl = publicUrl;
-                        console.log('[Onboarding] ✅ Avatar uploaded:', publicUrl);
-                    }
-                } catch (uploadError: any) {
-                    console.error('[Onboarding] Avatar upload exception:', uploadError);
-                    showToast(t.common.uploadFailed || 'فشل رفع الصورة', 'warning');
-                    // Continue without avatar
-                }
-            }
-
             // Build profile data
             const profileData: Record<string, any> = {
                 id: user!.id,
                 full_name: data.full_name,
                 location: data.location,
-                user_type: 'freelancer' as const,
+                user_type: 'freelancer',
                 updated_at: new Date().toISOString()
             };
-            if (avatarUrl) {
-                profileData.avatar_url = avatarUrl;
+
+            // Upload avatar if selected (with timeout)
+            if (avatarFile) {
+                try {
+                    const fileExt = avatarFile.name.split('.').pop();
+                    const filePath = `${user!.id}/avatar-${Date.now()}.${fileExt}`;
+
+                    const avatarUrl = await Promise.race([
+                        uploadFile('avatars', filePath, avatarFile),
+                        new Promise<string>((_, reject) =>
+                            setTimeout(() => reject(new Error('Avatar upload timeout')), 10000)
+                        )
+                    ]);
+
+                    if (avatarUrl) {
+                        profileData.avatar_url = avatarUrl;
+                        console.log('[Onboarding] Avatar uploaded:', avatarUrl);
+                    }
+                } catch (avatarErr) {
+                    console.warn('[Onboarding] Avatar upload failed, continuing:', avatarErr);
+                    // Continue without avatar - not critical
+                }
             }
 
-            // Save profile to Supabase with 8s hard timeout using Promise.race
-            console.log('[Onboarding] Saving profile to database...', profileData);
-
-            const profileSavePromise = supabase
-                .from('profiles')
-                .upsert(profileData, { onConflict: 'id' });
-
-            const timeoutPromise = new Promise<{ error: { message: string } }>((resolve) =>
-                setTimeout(() => resolve({ error: { message: 'TIMEOUT' } }), 8000)
-            );
+            // Save profile with 8s timeout
+            console.log('[Onboarding] Saving profile...', profileData);
 
             try {
-                const { error: profileError } = await Promise.race([profileSavePromise, timeoutPromise]);
+                const { error: profileError } = await Promise.race([
+                    supabase.from('profiles').upsert(profileData, { onConflict: 'id' }),
+                    new Promise<{ error: { message: string } }>((resolve) =>
+                        setTimeout(() => resolve({ error: { message: 'TIMEOUT' } }), 8000)
+                    )
+                ]);
 
                 if (profileError) {
-                    console.error('[Onboarding] ❌ Profile save error:', profileError);
-                    if (profileError.message === 'TIMEOUT') {
-                        showToast('انتهت مهلة الحفظ - متابعة...', 'warning');
-                    } else {
-                        showToast('فشل الحفظ - متابعة...', 'warning');
-                    }
+                    console.warn('[Onboarding] Profile save issue:', profileError);
                     localStorage.setItem('pending_profile', JSON.stringify(profileData));
                 } else {
-                    console.log('[Onboarding] ✅ Profile saved successfully!');
+                    console.log('[Onboarding] ✅ Profile saved!');
                 }
-            } catch (saveError: any) {
-                console.error('[Onboarding] Profile save exception:', saveError);
+            } catch (saveErr) {
+                console.warn('[Onboarding] Profile save exception:', saveErr);
                 localStorage.setItem('pending_profile', JSON.stringify(profileData));
             }
 
-            // Build freelancer data
+            // Create freelancer profile entry
             const freelancerData = {
                 id: user!.id,
                 title: data.title,
                 updated_at: new Date().toISOString()
             };
 
-            // Save freelancer profile with 8s timeout
-            console.log('[Onboarding] Saving freelancer profile...', freelancerData);
-
-            const freelancerPromise = supabase
-                .from('freelancer_profiles')
-                .upsert(freelancerData, { onConflict: 'id' });
-
             try {
-                const { error: freelancerError } = await Promise.race([
-                    freelancerPromise,
+                const { error: flError } = await Promise.race([
+                    supabase.from('freelancer_profiles').upsert(freelancerData, { onConflict: 'id' }),
                     new Promise<{ error: { message: string } }>((resolve) =>
                         setTimeout(() => resolve({ error: { message: 'TIMEOUT' } }), 8000)
                     )
                 ]);
 
-                if (freelancerError) {
-                    console.error('[Onboarding] ❌ Freelancer profile error:', freelancerError);
+                if (flError) {
+                    console.warn('[Onboarding] Freelancer profile save issue:', flError);
                 } else {
-                    console.log('[Onboarding] ✅ Freelancer profile saved!');
+                    console.log('[Onboarding] ✅ Freelancer profile created!');
                 }
-            } catch (err) {
-                console.error('[Onboarding] Freelancer save exception:', err);
+            } catch (flErr) {
+                console.warn('[Onboarding] Freelancer save exception:', flErr);
             }
-            // Refresh profile context (non-blocking)
-            refreshProfile().catch(e => console.warn('Profile refresh failed:', e));
-            showToast('تم حفظ البيانات بنجاح', 'success');
+
+            // Move to step 2
+            showToast('تم حفظ البيانات الأساسية', 'success');
             setStep(2);
         } catch (error: any) {
             console.error('Step 1 error:', error);
@@ -325,39 +185,54 @@ function FreelancerOnboarding() {
         }
     };
 
+    // STEP 2: Skills & Availability - THEN COMPLETE ONBOARDING
     const onStep2Submit = async (data: Step2FormData) => {
         if (selectedSkills.length === 0) {
-            showToast(t.common.error, 'warning');
+            showToast('يرجى اختيار مهارة واحدة على الأقل', 'warning');
             return;
         }
+
         setIsLoading(true);
         try {
-            console.log('[Onboarding] Saving skills and availability...');
+            console.log('[Onboarding] Saving skills and completing onboarding...');
+
             const skillsData = {
                 skills: selectedSkills,
                 hourly_rate: data.hourly_rate ? parseFloat(data.hourly_rate) : undefined,
                 availability: data.availability as 'available' | 'busy' | 'offline',
             };
 
-            // Save with timeout (8s)
-            const savePromise = updateFreelancerProfile(skillsData);
-            const timeoutPromise = new Promise((_, reject) =>
-                setTimeout(() => reject(new Error('timeout')), 8000)
-            );
-
+            // Save skills with timeout
             try {
-                await Promise.race([savePromise, timeoutPromise]);
-                console.log('[Onboarding] Skills saved successfully');
-                localStorage.removeItem('pending_onboarding_step2');
-            } catch (saveError: any) {
-                console.warn('[Onboarding] Skills save failed:', saveError.message);
-                localStorage.setItem('pending_onboarding_step2', JSON.stringify(skillsData));
-                showToast('سيتم حفظ البيانات لاحقاً', 'warning');
-                // Continue anyway - don't block
+                await Promise.race([
+                    updateFreelancerProfile(skillsData),
+                    new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 8000))
+                ]);
+                console.log('[Onboarding] ✅ Skills saved!');
+            } catch (skillsErr) {
+                console.warn('[Onboarding] Skills save failed:', skillsErr);
+                localStorage.setItem('pending_skills', JSON.stringify(skillsData));
             }
 
-            showToast('تم حفظ المهارات بنجاح', 'success');
-            setStep(3);
+            // Mark onboarding as complete!
+            try {
+                await Promise.race([
+                    updateProfile({ onboarding_completed: true }),
+                    new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 8000))
+                ]);
+                console.log('[Onboarding] ✅ Onboarding marked complete!');
+            } catch (completeErr) {
+                console.warn('[Onboarding] Could not mark complete:', completeErr);
+                localStorage.setItem('pending_onboarding_complete', 'true');
+            }
+
+            // Refresh profile
+            refreshProfile().catch(e => console.warn('Profile refresh failed:', e));
+
+            // SUCCESS! Navigate to dashboard
+            showToast('مرحباً بك في خدمة! 🎉', 'success');
+            navigate('/freelancer/dashboard');
+
         } catch (error: any) {
             console.error('Step 2 error:', error);
             showToast(error.message || t.common.error, 'error');
@@ -366,155 +241,22 @@ function FreelancerOnboarding() {
         }
     };
 
-    const saveLanguagesAndEducation = async () => {
-        setIsLoading(true);
-        try {
-            console.log('[Onboarding] Saving languages and education...');
-            const validLanguages = languages.filter(l => l.language);
-            const validEducation = education.filter(e => e.institution && e.degree);
-
-            const savePromise = updateFreelancerProfile({
-                languages: validLanguages,
-                education: validEducation,
-            });
-            const timeoutPromise = new Promise((_, reject) =>
-                setTimeout(() => reject(new Error('timeout')), 8000)
-            );
-
-            try {
-                await Promise.race([savePromise, timeoutPromise]);
-                console.log('[Onboarding] Languages/education saved successfully');
-            } catch (saveError: any) {
-                console.warn('[Onboarding] Languages/education save failed:', saveError.message);
-                localStorage.setItem('pending_step3', JSON.stringify({ languages: validLanguages, education: validEducation }));
-                showToast('سيتم حفظ البيانات لاحقاً', 'warning');
-                // Continue anyway
-            }
-
-            setStep(4);
-        } catch (error: any) {
-            console.error('Step 3 error:', error);
-            showToast(error.message || t.common.error, 'error');
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    const completeOnboarding = async () => {
-        setIsLoading(true);
-        const errors: string[] = [];
-
-        try {
-            // Step 1: Save bio (optional, non-blocking)
-            if (bio) {
-                try {
-                    await Promise.race([
-                        updateProfile({ bio }),
-                        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 15000))
-                    ]);
-                } catch (bioError: any) {
-                    console.warn('[Onboarding] Bio save failed:', bioError);
-                    localStorage.setItem('pending_bio', bio);
-                    errors.push('حفظ نبذة عنك');
-                }
-            }
-
-            // Step 2: Upload portfolio items (optional, non-blocking)
-            for (const sample of workSamples) {
-                try {
-                    const path = `${user?.id}/${Date.now()}-${sample.file.name}`;
-                    const url = await Promise.race([
-                        uploadFile('portfolio', path, sample.file),
-                        new Promise<string>((_, reject) => setTimeout(() => reject(new Error('timeout')), 15000))
-                    ]);
-
-                    // Also timeout the database insert
-                    await Promise.race([
-                        supabase.from('portfolio_items').insert({
-                            freelancer_id: user?.id,
-                            title: sample.title,
-                            description: sample.description,
-                            thumbnail_url: sample.file.type.startsWith('image/') ? url : null,
-                            media_urls: [url],
-                        }),
-                        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 8000))
-                    ]);
-                } catch (portfolioError: any) {
-                    console.warn('[Onboarding] Portfolio upload failed:', portfolioError);
-                    errors.push(`رفع ${sample.title}`);
-                }
-            }
-
-            // Step 3: Upload voice intro (optional, non-blocking)
-            if (voiceBlob) {
-                try {
-                    const path = `${user?.id}/voice-intro-${Date.now()}.webm`;
-                    const file = new File([voiceBlob], 'voice-intro.webm', { type: 'audio/webm' });
-                    const url = await Promise.race([
-                        uploadFile('voice_intros', path, file),
-                        new Promise<string>((_, reject) => setTimeout(() => reject(new Error('timeout')), 15000))
-                    ]);
-                    if (url) {
-                        await Promise.race([
-                            updateFreelancerProfile({ voice_intro_url: url }),
-                            new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 8000))
-                        ]);
-                    }
-                } catch (voiceError: any) {
-                    console.warn('[Onboarding] Voice intro upload failed:', voiceError);
-                    errors.push('التسجيل الصوتي');
-                }
-            }
-
-            // Step 4: Mark onboarding as complete (try, but don't block if fails)
-            try {
-                await Promise.race([
-                    updateProfile({ onboarding_completed: true }),
-                    new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 8000))
-                ]);
-            } catch (completeError: any) {
-                console.error('[Onboarding] Failed to mark onboarding complete:', completeError);
-                // Save locally - user can retry later
-                localStorage.setItem('pending_onboarding_complete', 'true');
-                errors.push('تحديث حالة التسجيل');
-            }
-
-            // Refresh profile (non-blocking)
-            refreshProfile().catch(e => console.warn('Profile refresh failed:', e));
-
-            // Show appropriate success message and navigate
-            if (errors.length > 0) {
-                showToast(`تم إكمال التسجيل مع بعض الأخطاء`, 'warning');
-            } else {
-                showToast(t.payment.success || 'تم إكمال التسجيل بنجاح!', 'success');
-            }
-            navigate('/freelancer/dashboard');
-        } catch (error: any) {
-            console.error('Complete onboarding error:', error);
-            showToast(error.message || t.common.error, 'error');
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-dark-900 overflow-hidden relative transition-colors duration-300">
-            {/* ... JSX ... */}
             <Header />
 
             <div className="container-custom py-12 relative z-10">
                 <div className="max-w-3xl mx-auto">
-                    {/* ... Header ... */}
+                    {/* Header */}
                     <div className="text-center mb-10">
                         <h1 className="heading-md mb-2">{t.onboarding.freelancer.welcome}</h1>
                         <p className="text-muted">{t.onboarding.freelancer.welcomeDesc}</p>
                     </div>
 
-                    {/* ... Progress Bar ... */}
+                    {/* Simplified Progress Bar - 2 Steps Only */}
                     <div className="mb-10">
-                        {/* ... */}
                         <div className="flex items-center justify-between mb-3 text-sm font-medium text-dark-500">
-                            <span>{t.common.next} {step} / {totalSteps}</span>
+                            <span>الخطوة {step} من {totalSteps}</span>
                             <span className="text-primary-600 dark:text-primary-400">{Math.round((step / totalSteps) * 100)}%</span>
                         </div>
                         <div className="h-2.5 bg-gray-100 dark:bg-dark-800 rounded-full overflow-hidden shadow-inner">
@@ -524,19 +266,12 @@ function FreelancerOnboarding() {
                             />
                         </div>
                         <div className="flex justify-between mt-3 text-xs text-muted">
-                            {[
-                                t.onboarding.freelancer.steps.skills,
-                                t.profile.skills,
-                                t.profile.languages.title,
-                                t.onboarding.freelancer.steps.portfolio
-                            ].map((label, i) => (
-                                <span
-                                    key={i}
-                                    className={`transition-colors duration-300 ${step >= i + 1 ? 'text-primary-600 dark:text-primary-400 font-bold' : ''}`}
-                                >
-                                    {label}
-                                </span>
-                            ))}
+                            <span className={`transition-colors duration-300 ${step >= 1 ? 'text-primary-600 dark:text-primary-400 font-bold' : ''}`}>
+                                المعلومات الأساسية
+                            </span>
+                            <span className={`transition-colors duration-300 ${step >= 2 ? 'text-primary-600 dark:text-primary-400 font-bold' : ''}`}>
+                                المهارات والخبرة
+                            </span>
                         </div>
                     </div>
 
@@ -563,38 +298,14 @@ function FreelancerOnboarding() {
                                 getSkillName={getSkillName}
                             />
                         )}
-                        {step === 3 && (
-                            <OnboardingStep3
-                                languages={languages}
-                                addLanguage={addLanguage}
-                                removeLanguage={removeLanguage}
-                                updateLanguage={updateLanguage}
-                                education={education}
-                                addEducation={addEducation}
-                                removeEducation={removeEducation}
-                                updateEducation={updateEducation}
-                                onNext={saveLanguagesAndEducation}
-                                onBack={() => setStep(2)}
-                                isLoading={isLoading}
-                            />
-                        )}
-                        {step === 4 && (
-                            <OnboardingStep4
-                                bio={bio}
-                                setBio={setBio}
-                                workSamples={workSamples}
-                                handleFileUpload={handleFileUpload}
-                                removeWorkSample={removeWorkSample}
-                                updateWorkSample={updateWorkSample}
-                                voiceRecording={voiceRecording}
-                                isPlaying={isPlaying}
-                                playRecording={playRecording}
-                                onComplete={completeOnboarding}
-                                onBack={() => setStep(3)}
-                                isLoading={isLoading}
-                            />
-                        )}
                     </div>
+
+                    {/* Post-onboarding hint */}
+                    {step === 2 && (
+                        <div className="mt-6 text-center text-sm text-muted">
+                            <p>💡 يمكنك إضافة الشهادات والمعرض ووسائل التعريف لاحقاً من الإعدادات</p>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
