@@ -1,8 +1,9 @@
 -- ============================================
--- COMPLETE ONBOARDING FIX SCRIPT
--- Run this ONCE in Supabase SQL Editor
+-- STORAGE POLICIES ONLY FIX
+-- Run this in Supabase SQL Editor
 -- ============================================
--- This script fixes all storage and database issues
+-- This script ONLY adds storage policies
+-- It does NOT touch database tables
 
 -- 1. CREATE MISSING STORAGE BUCKETS
 INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
@@ -101,21 +102,14 @@ USING (
     AND auth.role() = 'authenticated'
 );
 
--- 5. REFRESH SCHEMA CACHE
-NOTIFY pgrst, 'reload config';
-
--- VERIFICATION QUERIES
+-- DONE!
 SELECT 
-    'Storage Buckets' as check_type,
-    COUNT(*) as count 
-FROM storage.buckets 
-WHERE id IN ('avatars', 'portfolio', 'voice_intros');
+    b.name as bucket_name,
+    COUNT(p.policyname) as policy_count
+FROM storage.buckets b
+LEFT JOIN pg_policies p ON p.schemaname = 'storage'
+WHERE b.id IN ('avatars', 'portfolio', 'voice_intros')
+GROUP BY b.name
+ORDER BY b.name;
 
-SELECT 
-    'Storage Policies' as check_type,
-    COUNT(*) as count 
-FROM pg_policies 
-WHERE schemaname = 'storage';
-
--- Done!
-SELECT '✅ All storage policies created successfully!' AS status;
+SELECT '✅ Storage policies created successfully!' AS status;
