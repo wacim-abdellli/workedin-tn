@@ -287,8 +287,11 @@ function FreelancerOnboarding() {
             };
 
             const freelancerSavePromise = supabase.from('freelancer_profiles').upsert(freelancerData);
+            const freelancerTimeout = new Promise((_, reject) =>
+                setTimeout(() => reject(new Error('timeout')), 30000)
+            );
             try {
-                const freelancerResult = await Promise.race([freelancerSavePromise, timeoutPromise]) as any;
+                const freelancerResult = await Promise.race([freelancerSavePromise, freelancerTimeout]) as any;
                 if (freelancerResult?.error) {
                     console.error('[Onboarding] Freelancer profile save error:', freelancerResult.error);
                     // Non-critical, continue anyway
