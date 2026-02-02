@@ -27,6 +27,7 @@ function FreelancerOnboarding() {
     const [step, setStep] = useState(1);
     const [isLoading, setIsLoading] = useState(false);
     const [selectedSkills, setSelectedSkills] = useState<Skill[]>([]);
+    // @ts-ignore - temporarily unused while upload is disabled
     const [avatarFile, setAvatarFile] = useState<File | null>(null);
     const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
 
@@ -196,6 +197,7 @@ function FreelancerOnboarding() {
         setIsLoading(true);
 
         // Timeout wrapper to prevent infinite loading (30s for database, 20s for upload)
+        // @ts-ignore - temporarily unused while upload is disabled
         const withTimeout = <T,>(promise: Promise<T>, ms: number, label: string): Promise<T> => {
             return Promise.race([
                 promise,
@@ -208,13 +210,12 @@ function FreelancerOnboarding() {
         try {
             let avatarUrl = undefined;
 
-            // Try to upload avatar, but don't fail onboarding if it fails
+            // TEMPORARILY DISABLED - TESTING DATABASE SAVES FIRST
+            /*
             if (avatarFile && user) {
                 try {
                     const fileExt = avatarFile.name.split('.').pop()?.toLowerCase() || 'jpg';
                     const fileName = `${user.id}-${Date.now()}.${fileExt}`;
-
-                    // Upload file with 20s timeout
                     const { error: uploadError } = await withTimeout(
                         supabase.storage
                             .from('avatars')
@@ -225,7 +226,6 @@ function FreelancerOnboarding() {
                         20000,
                         'رفع الصورة'
                     );
-
                     if (uploadError) {
                         console.error('❌ Upload error details:', {
                             message: uploadError.message,
@@ -234,12 +234,9 @@ function FreelancerOnboarding() {
                         });
                         throw uploadError;
                     }
-
-                    // Get public URL
                     const { data: { publicUrl } } = supabase.storage
                         .from('avatars')
                         .getPublicUrl(fileName);
-
                     avatarUrl = publicUrl;
                     console.log('✅ Avatar uploaded successfully:', publicUrl);
                 } catch (uploadError: any) {
@@ -250,19 +247,21 @@ function FreelancerOnboarding() {
                         raw: uploadError
                     });
                     showToast(t.common.uploadFailed, 'warning');
-                    // Continue without avatar
                 }
             }
+            */
 
             // Build profile data
-            const profileData = {
+            const profileData: Record<string, any> = {
                 id: user!.id,
                 full_name: data.full_name,
                 location: data.location,
                 user_type: 'freelancer' as const,
-                ...(avatarUrl && { avatar_url: avatarUrl }),
                 updated_at: new Date().toISOString()
             };
+            if (avatarUrl) {
+                profileData.avatar_url = avatarUrl;
+            }
 
             // Save profile to Supabase - NO TIMEOUT to see real error
             console.log('[Onboarding] Saving profile to database...', profileData);
