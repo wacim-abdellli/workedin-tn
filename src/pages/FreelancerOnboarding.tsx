@@ -253,34 +253,38 @@ function FreelancerOnboarding() {
                 profileData.avatar_url = avatarUrl;
             }
 
-            // Save profile to Supabase - NO TIMEOUT to see real error
+            // Save profile to Supabase with 15s timeout
             console.log('[Onboarding] Saving profile to database...', profileData);
 
+            const profileSaveTimeout = new Promise((_, reject) =>
+                setTimeout(() => reject(new Error('TIMEOUT: Profile save took more than 15 seconds')), 15000)
+            );
+
             try {
-                const { data: profileResult, error: profileError } = await supabase
+                const savePromise = supabase
                     .from('profiles')
                     .upsert(profileData)
                     .select();
 
+                const { data: profileResult, error: profileError } = await Promise.race([
+                    savePromise,
+                    profileSaveTimeout.then(() => { throw new Error('TIMEOUT'); })
+                ]) as any;
+
                 if (profileError) {
-                    console.error('[Onboarding] ❌ Profile save error:', {
-                        message: profileError.message,
-                        code: profileError.code,
-                        details: profileError.details,
-                        hint: profileError.hint,
-                        fullError: JSON.stringify(profileError, null, 2)
-                    });
+                    console.error('[Onboarding] ❌ Profile save error:', profileError);
+                    showToast(`خطأ في الحفظ: ${profileError.message}`, 'error');
                     throw new Error(`فشل حفظ الملف الشخصي: ${profileError.message}`);
                 }
-                console.log('[Onboarding] ✅ Profile saved successfully:', profileResult);
+                console.log('[Onboarding] ✅ Profile saved:', profileResult);
             } catch (saveError: any) {
-                if (saveError.message === 'timeout') {
-                    console.warn('[Onboarding] Profile save timed out, saving locally');
+                console.error('[Onboarding] Profile save failed:', saveError.message);
+                if (saveError.message?.includes('TIMEOUT')) {
+                    showToast('انتهت مهلة الحفظ - يرجى المحاولة مرة أخرى', 'error');
+                    // Save locally and continue
                     localStorage.setItem('pending_profile', JSON.stringify(profileData));
-                    showToast('تم حفظ البيانات مؤقتاً', 'warning');
-                } else {
-                    throw saveError;
                 }
+                throw saveError;
             }
 
             // Build freelancer data
