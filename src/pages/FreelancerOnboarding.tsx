@@ -244,48 +244,68 @@ function FreelancerOnboarding() {
                 }
             }
 
-            // EMERGENCY FIX: Skip database saves for now - Supabase is timing out
-            // Store form data in localStorage to save later
-            console.log('[Onboarding] Saving form data locally (database unavailable)');
-            const pendingData = {
-                profile: {
-                    id: user!.id,
-                    full_name: data.full_name,
-                    location: data.location,
-                    title: data.title,
-                    user_type: 'freelancer',
-                    avatar_url: avatarUrl || null
-                },
-                timestamp: new Date().toISOString()
-            };
-            localStorage.setItem('pending_onboarding_data', JSON.stringify(pendingData));
-
-            // Try database in background (non-blocking)
-            supabase.from('profiles').upsert({
+            // Save profile to Supabase with timeout
+            console.log('[Onboarding] Saving profile to database...');
+            const profileData = {
                 id: user!.id,
                 full_name: data.full_name,
                 location: data.location,
-                user_type: 'freelancer',
+                user_type: 'freelancer' as const,
                 ...(avatarUrl && { avatar_url: avatarUrl }),
                 updated_at: new Date().toISOString()
-            }).then(res => {
-                if (res.error) console.error('Background profile save failed:', res.error);
-                else {
-                    console.log('Background profile save succeeded!');
-                    localStorage.removeItem('pending_onboarding_data');
-                }
-            });
+            };
 
-            supabase.from('freelancer_profiles').upsert({
+            // Use Promise.race with timeout for profile save
+            const profileSavePromise = supabase.from('profiles').upsert(profileData);
+            const timeoutPromise = new Promise((_, reject) =>
+                setTimeout(() => reject(new Error('timeout')), 10000)
+            );
+
+            try {
+                const profileResult = await Promise.race([profileSavePromise, timeoutPromise]) as any;
+                if (profileResult?.error) {
+                    console.error('[Onboarding] Profile save error:', profileResult.error);
+                    throw new Error(`فشل حفظ الملف الشخصي: ${profileResult.error.message}`);
+                }
+                console.log('[Onboarding] Profile saved successfully');
+            } catch (saveError: any) {
+                if (saveError.message === 'timeout') {
+                    console.warn('[Onboarding] Profile save timed out, saving locally');
+                    localStorage.setItem('pending_profile', JSON.stringify(profileData));
+                    showToast('تم حفظ البيانات مؤقتاً', 'warning');
+                } else {
+                    throw saveError;
+                }
+            }
+
+            // Save freelancer profile
+            console.log('[Onboarding] Saving freelancer profile...');
+            const freelancerData = {
                 id: user!.id,
                 title: data.title,
                 updated_at: new Date().toISOString()
-            }).then(res => {
-                if (res.error) console.error('Background freelancer save failed:', res.error);
-                else console.log('Background freelancer save succeeded!');
-            });
+            };
 
-            showToast('تم حفظ البيانات', 'success');
+            const freelancerSavePromise = supabase.from('freelancer_profiles').upsert(freelancerData);
+            try {
+                const freelancerResult = await Promise.race([freelancerSavePromise, timeoutPromise]) as any;
+                if (freelancerResult?.error) {
+                    console.error('[Onboarding] Freelancer profile save error:', freelancerResult.error);
+                    // Non-critical, continue anyway
+                } else {
+                    console.log('[Onboarding] Freelancer profile saved successfully');
+                }
+            } catch (saveError: any) {
+                if (saveError.message === 'timeout') {
+                    console.warn('[Onboarding] Freelancer save timed out');
+                    localStorage.setItem('pending_freelancer', JSON.stringify(freelancerData));
+                }
+            }
+
+            // Refresh profile context (non-blocking)
+            refreshProfile().catch(e => console.warn('Profile refresh failed:', e));
+
+            showToast('تم حفظ البيانات بنجاح', 'success');
             setStep(2);
         } catch (error: any) {
             console.error('Step 1 error:', error);
@@ -302,24 +322,34 @@ function FreelancerOnboarding() {
         }
         setIsLoading(true);
         try {
-            // EMERGENCY FIX: Skip blocking database saves
-            // Save locally
-            const pendingData = {
+            console.log('[Onboarding] Saving skills and availability...');
+            const skillsData = {
                 skills: selectedSkills,
                 hourly_rate: data.hourly_rate ? parseFloat(data.hourly_rate) : undefined,
                 availability: data.availability as 'available' | 'busy' | 'offline',
-                timestamp: new Date().toISOString()
             };
-            localStorage.setItem('pending_onboarding_step2', JSON.stringify(pendingData));
 
-            // Try background save
-            updateFreelancerProfile({
-                skills: selectedSkills,
-                hourly_rate: data.hourly_rate ? parseFloat(data.hourly_rate) : undefined,
-                availability: data.availability as 'available' | 'busy' | 'offline',
-            }).catch(e => console.error('Background step 2 save failed:', e));
+            // Save with timeout
+            const savePromise = updateFreelancerProfile(skillsData);
+            const timeoutPromise = new Promise((_, reject) =>
+                setTimeout(() => reject(new Error('timeout')), 10000)
+            );
 
-            showToast('تم حفظ المهارات', 'success');
+            try {
+                await Promise.race([savePromise, timeoutPromise]);
+                console.log('[Onboarding] Skills saved successfully');
+                localStorage.removeItem('pending_onboarding_step2');
+            } catch (saveError: any) {
+                if (saveError.message === 'timeout') {
+                    console.warn('[Onboarding] Skills save timed out, saving locally');
+                    localStorage.setItem('pending_onboarding_step2', JSON.stringify(skillsData));
+                    showToast('تم حفظ البيانات مؤقتاً', 'warning');
+                } else {
+                    throw saveError;
+                }
+            }
+
+            showToast('تم حفظ المهارات بنجاح', 'success');
             setStep(3);
         } catch (error: any) {
             console.error('Step 2 error:', error);
@@ -332,12 +362,31 @@ function FreelancerOnboarding() {
     const saveLanguagesAndEducation = async () => {
         setIsLoading(true);
         try {
+            console.log('[Onboarding] Saving languages and education...');
             const validLanguages = languages.filter(l => l.language);
             const validEducation = education.filter(e => e.institution && e.degree);
-            await updateFreelancerProfile({
+
+            const savePromise = updateFreelancerProfile({
                 languages: validLanguages,
                 education: validEducation,
             });
+            const timeoutPromise = new Promise((_, reject) =>
+                setTimeout(() => reject(new Error('timeout')), 10000)
+            );
+
+            try {
+                await Promise.race([savePromise, timeoutPromise]);
+                console.log('[Onboarding] Languages/education saved successfully');
+            } catch (saveError: any) {
+                if (saveError.message === 'timeout') {
+                    console.warn('[Onboarding] Languages/education save timed out');
+                    localStorage.setItem('pending_step3', JSON.stringify({ languages: validLanguages, education: validEducation }));
+                    showToast('تم حفظ البيانات مؤقتاً', 'warning');
+                } else {
+                    throw saveError;
+                }
+            }
+
             setStep(4);
         } catch (error: any) {
             console.error('Step 3 error:', error);
