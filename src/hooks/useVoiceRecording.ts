@@ -107,8 +107,16 @@ export function useVoiceRecording({
             }, 1000);
         } catch (err) {
             console.error('Recording error:', err);
-            if (err instanceof DOMException && err.name === 'NotAllowedError') {
-                setError('لم يتم السماح بالوصول للميكروفون');
+            if (err instanceof DOMException) {
+                if (err.name === 'NotAllowedError') {
+                    setError('يرجى السماح بالوصول للميكروفون من إعدادات المتصفح');
+                } else if (err.name === 'NotFoundError') {
+                    setError('لم يتم العثور على ميكروفون');
+                } else if (err.name === 'NotSupportedError') {
+                    setError('المتصفح لا يدعم التسجيل الصوتي');
+                } else {
+                    setError('حدث خطأ في بدء التسجيل');
+                }
             } else {
                 setError('حدث خطأ في بدء التسجيل');
             }

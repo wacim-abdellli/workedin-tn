@@ -1,4 +1,4 @@
-import { Upload, Mic, Play, Pause, Trash2, FileText, CheckCircle, ArrowRight, ArrowLeft } from 'lucide-react';
+import { Upload, Mic, Play, Pause, Trash2, FileText, CheckCircle, ArrowRight, ArrowLeft, AlertCircle } from 'lucide-react';
 import { useTranslation } from '../../i18n';
 import Button from '../ui/Button';
 
@@ -8,6 +8,7 @@ interface VoiceRecordingState {
     duration: number;
     audioBlob: Blob | null;
     audioUrl: string | null;
+    error: string | null;
     startRecording: () => Promise<void>;
     stopRecording: () => void;
     clearRecording: () => void;
@@ -49,29 +50,30 @@ export default function OnboardingStep4({
         isRecording,
         duration: recordingTime,
         audioBlob: voiceBlob,
+        error: voiceError,
         startRecording,
         stopRecording,
         clearRecording: deleteRecording,
     } = voiceRecording;
 
     return (
-        <div className="p-8">
+        <div className="p-6 sm:p-8">
             <div className="flex items-center gap-4 mb-8">
                 <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center shadow-lg shadow-purple-500/30">
                     <Upload className="w-7 h-7 text-white" />
                 </div>
                 <div>
-                    <h2 className="text-xl font-bold">{t.profile.workSamples}</h2>
+                    <h2 className="text-xl font-bold text-gray-900 dark:text-white">{t.profile.workSamples}</h2>
                     <p className="text-muted text-sm">{t.onboarding.freelancer.steps.portfolio}</p>
                 </div>
             </div>
 
             <div className="space-y-8">
                 {/* Bio */}
-                <div>
-                    <label className="label">
+                <div className="bg-gray-50/50 dark:bg-dark-800/30 rounded-2xl p-5 border border-gray-100 dark:border-dark-700">
+                    <label className="label text-base font-semibold">
                         {t.profile.bio}
-                        <span className="text-xs font-normal text-muted ms-2">(500 chars max)</span>
+                        <span className="text-xs font-normal text-muted ms-2">(500 حرف كحد أقصى)</span>
                     </label>
                     <div className="relative">
                         <textarea
@@ -79,56 +81,75 @@ export default function OnboardingStep4({
                             onChange={(e) => setBio(e.target.value.slice(0, 500))}
                             placeholder={t.profile.bioPlaceholder}
                             rows={4}
-                            className="input resize-none w-full p-4 min-h-[120px]"
+                            className="input resize-none w-full p-4 min-h-[120px] text-base"
                         />
-                        <div className="absolute bottom-3 end-3 text-xs text-muted bg-white dark:bg-dark-800 px-2 py-1 rounded">
+                        <div className={`absolute bottom-3 end-3 text-xs px-2 py-1 rounded-md ${bio.length > 400
+                                ? 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400'
+                                : 'bg-gray-100 text-gray-500 dark:bg-dark-700 dark:text-gray-400'
+                            }`}>
                             {bio.length}/500
                         </div>
                     </div>
                 </div>
 
                 {/* Voice Intro */}
-                <div className="bg-gradient-to-br from-primary-50 to-primary-100 dark:from-primary-900/20 dark:to-primary-900/10 rounded-2xl p-6 border border-primary-100 dark:border-primary-900/30">
-                    <label className="label flex items-center gap-2 mb-3">
-                        <Mic className="w-5 h-5 text-primary-600" />
-                        {t.profile.voiceIntro} ({t.profile.optional})
+                <div className="bg-gradient-to-br from-primary-50/80 to-primary-100/50 dark:from-primary-900/20 dark:to-primary-900/10 rounded-2xl p-5 border border-primary-100 dark:border-primary-900/30">
+                    <label className="label flex items-center gap-2 mb-4 text-base font-semibold">
+                        <div className="w-8 h-8 rounded-lg bg-primary-100 dark:bg-primary-900/40 flex items-center justify-center">
+                            <Mic className="w-4 h-4 text-primary-600 dark:text-primary-400" />
+                        </div>
+                        {t.profile.voiceIntro}
+                        <span className="text-xs font-normal text-muted">({t.profile.optional})</span>
                     </label>
+
+                    {/* Error Display */}
+                    {voiceError && (
+                        <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl flex items-center gap-3">
+                            <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
+                            <p className="text-sm text-red-600 dark:text-red-400">{voiceError}</p>
+                        </div>
+                    )}
+
                     <div className="flex items-center gap-4">
                         {!isRecording && !voiceBlob && (
                             <button
                                 onClick={startRecording}
-                                className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-colors shadow-lg shadow-red-500/20"
+                                className="flex items-center gap-3 px-5 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl hover:from-red-600 hover:to-red-700 transition-all shadow-lg shadow-red-500/25 hover:shadow-red-500/40 hover:scale-[1.02]"
                                 title={t.profile.recordVoice}
                             >
                                 <div className="w-3 h-3 rounded-full bg-white animate-pulse" />
-                                {t.profile.recordVoice}
+                                <span className="font-medium">{t.profile.recordVoice}</span>
                             </button>
                         )}
 
                         {isRecording && (
                             <button
                                 onClick={stopRecording}
-                                className="flex items-center gap-2 px-4 py-2 bg-gray-800 text-white rounded-xl hover:bg-black transition-colors"
+                                className="flex items-center gap-3 px-5 py-3 bg-gradient-to-r from-gray-800 to-gray-900 text-white rounded-xl hover:from-gray-900 hover:to-black transition-all shadow-lg"
                             >
-                                <div className="w-3 h-3 bg-white rounded-sm" />
-                                {t.profile.stopRecording || 'Stop'} ({Math.round(recordingTime)}s)
+                                <div className="w-3 h-3 bg-red-500 rounded-sm animate-pulse" />
+                                <span className="font-medium">{t.profile.stopRecording || 'إيقاف'}</span>
+                                <span className="bg-white/20 px-2 py-0.5 rounded-md text-sm">{Math.round(recordingTime)}s</span>
                             </button>
                         )}
 
                         {voiceBlob && (
-                            <div className="flex items-center gap-3 w-full">
+                            <div className="flex items-center gap-3 w-full bg-white dark:bg-dark-800 rounded-xl p-3 border border-gray-200 dark:border-dark-600">
                                 <button
                                     onClick={playRecording}
-                                    className="w-10 h-10 rounded-full bg-primary-600 text-white flex items-center justify-center hover:bg-primary-700 transition-colors shadow-lg"
+                                    className="w-12 h-12 rounded-full bg-gradient-to-r from-primary-500 to-primary-600 text-white flex items-center justify-center hover:shadow-lg hover:shadow-primary-500/30 transition-all flex-shrink-0"
                                 >
-                                    {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 ps-0.5" />}
+                                    {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 ps-0.5" />}
                                 </button>
-                                <div className="h-1 flex-1 bg-gray-200 dark:bg-dark-600 rounded-full overflow-hidden">
-                                    <div className={`h-full bg-primary-500 ${isPlaying ? 'animate-progress origin-left w-full duration-[2000ms]' : 'w-full'}`} />
+                                <div className="flex-1">
+                                    <div className="h-2 bg-gray-100 dark:bg-dark-600 rounded-full overflow-hidden">
+                                        <div className={`h-full bg-gradient-to-r from-primary-400 to-primary-500 ${isPlaying ? 'animate-progress origin-left w-full duration-[2000ms]' : 'w-full'}`} />
+                                    </div>
+                                    <p className="text-xs text-muted mt-1">تم تسجيل مقدمتك الصوتية</p>
                                 </div>
                                 <button
                                     onClick={deleteRecording}
-                                    className="p-2 text-red-500 hover:bg-red-100 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                                    className="p-2.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
                                 >
                                     <Trash2 className="w-5 h-5" />
                                 </button>

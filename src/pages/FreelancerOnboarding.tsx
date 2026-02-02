@@ -255,10 +255,10 @@ function FreelancerOnboarding() {
                 updated_at: new Date().toISOString()
             };
 
-            // Use Promise.race with timeout for profile save
+            // Use Promise.race with timeout for profile save (30s for slow connections)
             const profileSavePromise = supabase.from('profiles').upsert(profileData);
             const timeoutPromise = new Promise((_, reject) =>
-                setTimeout(() => reject(new Error('timeout')), 10000)
+                setTimeout(() => reject(new Error('timeout')), 30000)
             );
 
             try {
@@ -329,10 +329,10 @@ function FreelancerOnboarding() {
                 availability: data.availability as 'available' | 'busy' | 'offline',
             };
 
-            // Save with timeout
+            // Save with timeout (30s for slow connections)
             const savePromise = updateFreelancerProfile(skillsData);
             const timeoutPromise = new Promise((_, reject) =>
-                setTimeout(() => reject(new Error('timeout')), 10000)
+                setTimeout(() => reject(new Error('timeout')), 30000)
             );
 
             try {
@@ -371,7 +371,7 @@ function FreelancerOnboarding() {
                 education: validEducation,
             });
             const timeoutPromise = new Promise((_, reject) =>
-                setTimeout(() => reject(new Error('timeout')), 10000)
+                setTimeout(() => reject(new Error('timeout')), 30000)
             );
 
             try {
@@ -398,33 +398,87 @@ function FreelancerOnboarding() {
 
     const completeOnboarding = async () => {
         setIsLoading(true);
+        const errors: string[] = [];
+
         try {
-            if (bio) await updateProfile({ bio });
+            // Step 1: Save bio (optional, non-blocking)
+            if (bio) {
+                try {
+                    await Promise.race([
+                        updateProfile({ bio }),
+                        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 15000))
+                    ]);
+                } catch (bioError: any) {
+                    console.warn('[Onboarding] Bio save failed:', bioError);
+                    localStorage.setItem('pending_bio', bio);
+                    errors.push('حفظ نبذة عنك');
+                }
+            }
 
+            // Step 2: Upload portfolio items (optional, non-blocking)
             for (const sample of workSamples) {
-                const path = `${user?.id}/${Date.now()}-${sample.file.name}`;
-                const url = await uploadFile('portfolio', path, sample.file);
-                await supabase.from('portfolio_items').insert({
-                    freelancer_id: user?.id,
-                    title: sample.title,
-                    description: sample.description,
-                    thumbnail_url: sample.file.type.startsWith('image/') ? url : null,
-                    media_urls: [url],
-                });
+                try {
+                    const path = `${user?.id}/${Date.now()}-${sample.file.name}`;
+                    const url = await Promise.race([
+                        uploadFile('portfolio', path, sample.file),
+                        new Promise<string>((_, reject) => setTimeout(() => reject(new Error('timeout')), 30000))
+                    ]);
+                    await supabase.from('portfolio_items').insert({
+                        freelancer_id: user?.id,
+                        title: sample.title,
+                        description: sample.description,
+                        thumbnail_url: sample.file.type.startsWith('image/') ? url : null,
+                        media_urls: [url],
+                    });
+                } catch (portfolioError: any) {
+                    console.warn('[Onboarding] Portfolio upload failed:', portfolioError);
+                    errors.push(`رفع ${sample.title}`);
+                }
             }
 
+            // Step 3: Upload voice intro (optional, non-blocking)
             if (voiceBlob) {
-                const path = `${user?.id}/voice-intro-${Date.now()}.webm`;
-                const file = new File([voiceBlob], 'voice-intro.webm', { type: 'audio/webm' });
-                const url = await uploadFile('voice_intros', path, file);
-                if (url) await updateFreelancerProfile({ voice_intro_url: url });
+                try {
+                    const path = `${user?.id}/voice-intro-${Date.now()}.webm`;
+                    const file = new File([voiceBlob], 'voice-intro.webm', { type: 'audio/webm' });
+                    const url = await Promise.race([
+                        uploadFile('voice_intros', path, file),
+                        new Promise<string>((_, reject) => setTimeout(() => reject(new Error('timeout')), 30000))
+                    ]);
+                    if (url) {
+                        await updateFreelancerProfile({ voice_intro_url: url });
+                    }
+                } catch (voiceError: any) {
+                    console.warn('[Onboarding] Voice intro upload failed:', voiceError);
+                    errors.push('التسجيل الصوتي');
+                }
             }
 
-            // Mark onboarding as complete
-            await updateProfile({ onboarding_completed: true });
+            // Step 4: Mark onboarding as complete (CRITICAL - must succeed)
+            try {
+                await Promise.race([
+                    updateProfile({ onboarding_completed: true }),
+                    new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 30000))
+                ]);
+            } catch (completeError: any) {
+                console.error('[Onboarding] Critical: Failed to mark onboarding complete:', completeError);
+                // Try one more time directly
+                const { error: directError } = await supabase
+                    .from('profiles')
+                    .update({ onboarding_completed: true })
+                    .eq('id', user!.id);
+                if (directError) throw directError;
+            }
 
-            await refreshProfile();
-            showToast(t.payment.success, 'success');
+            // Refresh profile (non-blocking)
+            refreshProfile().catch(e => console.warn('Profile refresh failed:', e));
+
+            // Show appropriate success message
+            if (errors.length > 0) {
+                showToast(`تم إكمال التسجيل مع بعض الأخطاء: ${errors.join(', ')}`, 'warning');
+            } else {
+                showToast(t.payment.success || 'تم إكمال التسجيل بنجاح!', 'success');
+            }
             navigate('/freelancer/dashboard');
         } catch (error: any) {
             console.error('Complete onboarding error:', error);

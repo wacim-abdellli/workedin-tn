@@ -48,15 +48,16 @@ export default function OnboardingStep2({
     const allSkills = [...PREDEFINED_SKILLS, OTHER_SKILL];
 
     return (
-        <div className="p-1">
+        <div className="p-6 sm:p-8">
             <div className="mb-8 text-center sm:text-start">
-                <div className="inline-flex items-center gap-3 mb-2 px-4 py-2 rounded-full bg-primary-50/50 dark:bg-primary-900/10 border border-primary-100 dark:border-primary-800 backdrop-blur-sm">
+                <div className="inline-flex items-center gap-3 mb-3 px-4 py-2 rounded-full bg-gradient-to-r from-primary-50 to-secondary-50 dark:from-primary-900/20 dark:to-secondary-900/20 border border-primary-100 dark:border-primary-800/50 shadow-sm">
                     <Sparkles className="w-4 h-4 text-primary-600 dark:text-primary-400" />
-                    <span className="text-sm font-medium text-primary-700 dark:text-primary-300">
+                    <span className="text-sm font-semibold text-primary-700 dark:text-primary-300">
                         {t.profile.skills} & {t.job.budget}
                     </span>
                 </div>
-                <h2 className="heading-md mb-2">{t.onboarding.client.profileDesc}</h2>
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-2">{t.onboarding.client.profileDesc}</h2>
+                <p className="text-muted text-sm">اختر مهاراتك وحدد سعرك بالساعة</p>
             </div>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
