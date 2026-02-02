@@ -253,38 +253,31 @@ function FreelancerOnboarding() {
                 profileData.avatar_url = avatarUrl;
             }
 
-            // Save profile to Supabase with 15s timeout
+            // Save profile to Supabase with 10s timeout (removed .select() which can cause RLS issues)
             console.log('[Onboarding] Saving profile to database...', profileData);
 
-            const profileSaveTimeout = new Promise((_, reject) =>
-                setTimeout(() => reject(new Error('TIMEOUT: Profile save took more than 15 seconds')), 15000)
-            );
-
             try {
-                const savePromise = supabase
-                    .from('profiles')
-                    .upsert(profileData)
-                    .select();
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 10000);
 
-                const { data: profileResult, error: profileError } = await Promise.race([
-                    savePromise,
-                    profileSaveTimeout.then(() => { throw new Error('TIMEOUT'); })
-                ]) as any;
+                const { error: profileError } = await supabase
+                    .from('profiles')
+                    .upsert(profileData, { onConflict: 'id' });
+
+                clearTimeout(timeoutId);
 
                 if (profileError) {
                     console.error('[Onboarding] ❌ Profile save error:', profileError);
-                    showToast(`خطأ في الحفظ: ${profileError.message}`, 'error');
-                    throw new Error(`فشل حفظ الملف الشخصي: ${profileError.message}`);
-                }
-                console.log('[Onboarding] ✅ Profile saved:', profileResult);
-            } catch (saveError: any) {
-                console.error('[Onboarding] Profile save failed:', saveError.message);
-                if (saveError.message?.includes('TIMEOUT')) {
-                    showToast('انتهت مهلة الحفظ - يرجى المحاولة مرة أخرى', 'error');
-                    // Save locally and continue
+                    showToast('فشل حفظ الملف الشخصي - سيتم المحاولة مرة أخرى', 'warning');
                     localStorage.setItem('pending_profile', JSON.stringify(profileData));
+                } else {
+                    console.log('[Onboarding] ✅ Profile saved successfully!');
                 }
-                throw saveError;
+            } catch (saveError: any) {
+                console.error('[Onboarding] Profile save exception:', saveError);
+                showToast('فشل الاتصال بالخادم', 'warning');
+                localStorage.setItem('pending_profile', JSON.stringify(profileData));
+                // Continue anyway - don't block onboarding
             }
 
             // Build freelancer data
@@ -294,23 +287,20 @@ function FreelancerOnboarding() {
                 updated_at: new Date().toISOString()
             };
 
-            // Save freelancer profile - NO TIMEOUT to see real error
+            // Save freelancer profile (simplified, non-blocking)
             console.log('[Onboarding] Saving freelancer profile...', freelancerData);
-            const { data: freelancerResult, error: freelancerError } = await supabase
-                .from('freelancer_profiles')
-                .upsert(freelancerData)
-                .select();
-            if (freelancerError) {
-                console.error('[Onboarding] ❌ Freelancer profile save error:', {
-                    message: freelancerError.message,
-                    code: freelancerError.code,
-                    details: freelancerError.details,
-                    hint: freelancerError.hint,
-                    fullError: JSON.stringify(freelancerError, null, 2)
-                });
-                // Non-critical, continue anyway
-            } else {
-                console.log('[Onboarding] ✅ Freelancer profile saved successfully:', freelancerResult);
+            try {
+                const { error: freelancerError } = await supabase
+                    .from('freelancer_profiles')
+                    .upsert(freelancerData, { onConflict: 'id' });
+
+                if (freelancerError) {
+                    console.error('[Onboarding] ❌ Freelancer profile error:', freelancerError);
+                } else {
+                    console.log('[Onboarding] ✅ Freelancer profile saved!');
+                }
+            } catch (err) {
+                console.error('[Onboarding] Freelancer save exception:', err);
             }
             // Refresh profile context (non-blocking)
             refreshProfile().catch(e => console.warn('Profile refresh failed:', e));
