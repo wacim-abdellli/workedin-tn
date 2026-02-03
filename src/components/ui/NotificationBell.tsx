@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState, useEffect, useRef } from 'react';
 import { Bell, CheckCheck, Loader2 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
@@ -47,7 +48,7 @@ export function NotificationBell({ className = '' }: NotificationBellProps) {
                 setNotifications(data || []);
                 setUnreadCount(data?.filter((n) => !n.read).length || 0);
             } catch (error) {
-                console.error('Error fetching notifications:', error);
+                logger.error('Error fetching notifications:', error);
                 // Optionally show toast or just keep empty
                 setNotifications([]);
                 setUnreadCount(0);
@@ -107,7 +108,7 @@ export function NotificationBell({ className = '' }: NotificationBellProps) {
             );
             setUnreadCount((prev) => Math.max(0, prev - 1));
         } catch (error) {
-            console.error('Error marking notification as read:', error);
+            logger.error('Error marking notification as read:', error);
         }
     };
 
@@ -123,7 +124,7 @@ export function NotificationBell({ className = '' }: NotificationBellProps) {
             setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
             setUnreadCount(0);
         } catch (error) {
-            console.error('Error marking all as read:', error);
+            logger.error('Error marking all as read:', error);
         }
     };
 

@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState, useRef, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 
@@ -106,7 +107,7 @@ export function useVoiceRecording({
                 });
             }, 1000);
         } catch (err) {
-            console.error('Recording error:', err);
+            logger.error('Recording error:', err);
             if (err instanceof DOMException) {
                 if (err.name === 'NotAllowedError') {
                     setError('يرجى السماح بالوصول للميكروفون من إعدادات المتصفح');
@@ -198,7 +199,7 @@ export function useVoiceRecording({
 
             return { url: urlData.publicUrl };
         } catch (err) {
-            console.error('Upload error:', err);
+            logger.error('Upload error:', err);
             setError('حدث خطأ في رفع التسجيل');
             return null;
         }

@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import {
@@ -152,7 +153,7 @@ function Settings() {
                 })));
             }
         } catch (error) {
-            console.error('Error loading settings:', error);
+            logger.error('Error loading settings:', error);
         } finally {
             setIsLoading(false);
         }
@@ -179,7 +180,7 @@ function Settings() {
             await refreshProfile?.();
             showToast('تم حفظ التغييرات بنجاح', 'success');
         } catch (error) {
-            console.error('Error saving profile:', error);
+            logger.error('Error saving profile:', error);
             showToast('حدث خطأ في حفظ التغييرات', 'error');
         } finally {
             setIsSaving(false);
@@ -211,7 +212,7 @@ function Settings() {
 
             if (error) throw error;
         } catch (error) {
-            console.error('Error updating notification:', error);
+            logger.error('Error updating notification:', error);
             // Revert on error
             setNotifications((prev) =>
                 prev.map((n) => (n.key === key ? { ...n, enabled: !n.enabled } : n))
@@ -242,7 +243,7 @@ function Settings() {
             );
             showToast('تم تحديث طريقة الدفع الافتراضية', 'success');
         } catch (error) {
-            console.error('Error setting default payment:', error);
+            logger.error('Error setting default payment:', error);
             showToast('حدث خطأ', 'error');
         }
     };
@@ -259,7 +260,7 @@ function Settings() {
             setPaymentMethods((prev) => prev.filter((p) => p.id !== id));
             showToast('تم حذف طريقة الدفع', 'success');
         } catch (error) {
-            console.error('Error deleting payment method:', error);
+            logger.error('Error deleting payment method:', error);
             showToast('حدث خطأ في الحذف', 'error');
         }
     };
@@ -293,7 +294,7 @@ function Settings() {
             setIsAddPaymentModalOpen(false);
             showToast('تم إضافة طريقة الدفع', 'success');
         } catch (error) {
-            console.error('Error adding payment method:', error);
+            logger.error('Error adding payment method:', error);
             showToast('حدث خطأ في الإضافة', 'error');
         }
     };
@@ -334,7 +335,7 @@ function Settings() {
             await refreshProfile?.();
             showToast('تم تحديث الصورة الشخصية', 'success');
         } catch (error) {
-            console.error('Error uploading avatar:', error);
+            logger.error('Error uploading avatar:', error);
             showToast('حدث خطأ في رفع الصورة', 'error');
         }
     };
@@ -516,7 +517,7 @@ function Settings() {
                             onClick={async (e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
-                                console.log('Settings: Switching to', type, 'user?.id:', user?.id);
+                                logger.log('Settings: Switching to', type, 'user?.id:', user?.id);
                                 if (!user?.id) {
                                     showToast('خطأ: لا يوجد مستخدم', 'error');
                                     return;
@@ -528,16 +529,17 @@ function Settings() {
                                         .eq('id', user.id);
 
                                     if (error) {
-                                        console.error('Supabase update error:', error);
+                                        logger.error('Supabase update error:', error);
                                         showToast('فشل التحديث: ' + error.message, 'error');
                                         return;
                                     }
 
                                     await refreshProfile();
                                     showToast('تم تحديث نوع الحساب بنجاح!', 'success');
-                                } catch (err: any) {
-                                    console.error('Exception:', err);
-                                    showToast('خطأ غير متوقع: ' + err.message, 'error');
+                                } catch (err) {
+                                    logger.error('Exception:', err);
+                                    const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+                                    showToast('خطأ غير متوقع: ' + errorMessage, 'error');
                                 }
                             }}
                             className={`p-3 rounded-xl border-2 transition-all text-center ${profile?.user_type === type

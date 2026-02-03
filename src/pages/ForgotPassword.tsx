@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -54,7 +55,7 @@ const ForgotPassword = () => {
             setIsSuccess(true);
             showToast('تم إرسال رابط إعادة التعيين', 'success');
         } catch (error: any) {
-            console.error('Password reset error:', error);
+            logger.error('Password reset error:', error);
             showToast(error.message || 'حدث خطأ أثناء إرسال الرابط', 'error');
         } finally {
             setIsLoading(false);

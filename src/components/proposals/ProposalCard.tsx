@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, memo } from 'react';
 import {
     MessageSquare, Star, Clock, MapPin,
     CheckCircle, Shield,
@@ -13,7 +13,7 @@ interface ProposalCardProps {
     onHire: (id: string) => void;
 }
 
-export default function ProposalCard({ proposal, onMessage, onShortlist, onHire }: ProposalCardProps) {
+function ProposalCard({ proposal, onMessage, onShortlist, onHire }: ProposalCardProps) {
     const [expanded, setExpanded] = useState(false);
     const { freelancer, cover_letter, bid_amount, duration, created_at, status } = proposal;
 
@@ -180,3 +180,5 @@ export default function ProposalCard({ proposal, onMessage, onShortlist, onHire 
         </div>
     );
 }
+
+export default memo(ProposalCard);

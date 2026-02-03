@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Upload, Camera, CheckCircle2, AlertCircle, ChevronRight, ChevronLeft, Shield, Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from '@/i18n';
+import { logger } from '@/lib/logger';
 // supabase SDK not needed - using direct REST API calls
 import { useToast } from '@/components/ui/Toast';
 import SEO from '@/components/common/SEO';
@@ -183,7 +184,7 @@ export default function VerifyIdentity() {
                 return;
             }
 
-            console.log('Starting verification submission...');
+            logger.log('Starting verification submission...');
 
             // Use session from context (already available)
             const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -191,7 +192,7 @@ export default function VerifyIdentity() {
             if (!session?.access_token) {
                 throw new Error('No auth session - please login again');
             }
-            console.log('Session available, starting uploads...');
+            logger.log('Session available, starting uploads...');
 
             // Timeout helper - defined with explicit comma to avoid JSX confusion
             const withTimeout = <T,>(promise: Promise<T>, ms: number, message: string): Promise<T> => {
@@ -205,7 +206,7 @@ export default function VerifyIdentity() {
 
             // Upload file with timeout using Promise.race
             const uploadFile = async (file: File, path: string): Promise<string> => {
-                console.log(`📤 Uploading ${path} (${(file.size / 1024).toFixed(1)}KB)...`);
+                logger.log(`📤 Uploading ${path} (${(file.size / 1024).toFixed(1)}KB)...`);
 
                 const storageUrl = `${supabaseUrl}/storage/v1/object/identity-documents/${path}`;
 
@@ -223,12 +224,12 @@ export default function VerifyIdentity() {
 
                 if (!response.ok) {
                     const errorText = await response.text();
-                    console.error(`❌ Upload failed (${response.status}):`, errorText);
+                    logger.error(`❌ Upload failed (${response.status}):`, errorText);
                     throw new Error(`Upload failed: ${response.status} - ${errorText}`);
                 }
 
                 const data = await response.json();
-                console.log(`✅ Upload success: ${path}`);
+                logger.log(`✅ Upload success: ${path}`);
                 return data.Key || path;
             };
 
@@ -236,20 +237,20 @@ export default function VerifyIdentity() {
 
             // Upload sequentially - use folder structure to match RLS policy
             // Policy checks: auth.uid()::text = (storage.foldername(name))[1]
-            console.log('Uploading front...');
+            logger.log('Uploading front...');
             const frontPath = await uploadFile(uploads.front, `${user.id}/cin_front_${timestamp}.jpg`);
-            console.log('Uploading back...');
+            logger.log('Uploading back...');
             const backPath = await uploadFile(uploads.back, `${user.id}/cin_back_${timestamp}.jpg`);
-            console.log('Uploading selfie...');
+            logger.log('Uploading selfie...');
             const selfiePath = await uploadFile(uploads.selfie, `${user.id}/selfie_${timestamp}.jpg`);
 
-            console.log('All files uploaded, inserting to database...');
+            logger.log('All files uploaded, inserting to database...');
 
             // Use direct REST API instead of SDK (SDK hangs during Supabase maintenance)
             const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
             // First, ensure profile exists (foreign key constraint requires it)
-            console.log('Checking if profile exists...');
+            logger.log('Checking if profile exists...');
             const profileCheckResponse = await fetch(
                 `${supabaseUrl}/rest/v1/profiles?id=eq.${user.id}&select=id`,
                 {
@@ -261,11 +262,11 @@ export default function VerifyIdentity() {
             );
 
             const profileData = await profileCheckResponse.json();
-            console.log('Profile check result:', profileData);
+            logger.log('Profile check result:', profileData);
 
             if (!profileData || profileData.length === 0) {
                 // Profile doesn't exist, create it with required fields only
-                console.log('Profile not found, creating...');
+                logger.log('Profile not found, creating...');
                 const createProfileResponse = await fetch(
                     `${supabaseUrl}/rest/v1/profiles`,
                     {
@@ -286,12 +287,12 @@ export default function VerifyIdentity() {
 
                 if (!createProfileResponse.ok) {
                     const errorText = await createProfileResponse.text();
-                    console.error('Profile creation failed:', errorText);
+                    logger.error('Profile creation failed:', errorText);
                     throw new Error(`Failed to create profile: ${errorText}`);
                 }
-                console.log('Profile created successfully');
+                logger.log('Profile created successfully');
             } else {
-                console.log('Profile exists, proceeding...');
+                logger.log('Profile exists, proceeding...');
             }
 
             const verificationData = {
@@ -304,10 +305,10 @@ export default function VerifyIdentity() {
                 submitted_at: new Date().toISOString(),
             };
 
-            console.log('Sending REST API request to insert verification...');
+            logger.log('Sending REST API request to insert verification...');
 
             // First, delete any existing verification (RLS UPDATE policy is restrictive)
-            console.log('Deleting any existing verification record...');
+            logger.log('Deleting any existing verification record...');
             try {
                 await fetch(
                     `${supabaseUrl}/rest/v1/identity_verifications?user_id=eq.${user.id}`,
@@ -319,9 +320,9 @@ export default function VerifyIdentity() {
                         }
                     }
                 );
-                console.log('Delete completed (may have had no effect if no record existed)');
+                logger.log('Delete completed (may have had no effect if no record existed)');
             } catch (deleteError) {
-                console.log('Delete failed, proceeding anyway:', deleteError);
+                logger.log('Delete failed, proceeding anyway:', deleteError);
             }
 
             // Use fetch with timeout for database insert
@@ -348,21 +349,21 @@ export default function VerifyIdentity() {
 
                 if (!insertResponse.ok) {
                     const errorText = await insertResponse.text();
-                    console.error('Insert failed:', insertResponse.status, errorText);
+                    logger.error('Insert failed:', insertResponse.status, errorText);
                     throw new Error(`Database error: ${insertResponse.status} - ${errorText}`);
                 }
 
                 const insertResult = await insertResponse.json();
-                console.log('Insert success:', insertResult);
-            } catch (fetchError: any) {
+                logger.log('Insert success:', insertResult);
+            } catch (fetchError) {
                 clearTimeout(timeoutId);
-                if (fetchError.name === 'AbortError') {
+                if (fetchError instanceof Error && fetchError.name === 'AbortError') {
                     throw new Error('Database insert timed out after 30 seconds. Supabase may be under maintenance.');
                 }
                 throw fetchError;
             }
 
-            console.log('Database insert success, updating profile...');
+            logger.log('Database insert success, updating profile...');
 
             // Update profile using REST API too
             try {
@@ -380,18 +381,18 @@ export default function VerifyIdentity() {
                 );
 
                 if (!updateResponse.ok) {
-                    console.error('Profile update failed:', await updateResponse.text());
+                    logger.error('Profile update failed:', await updateResponse.text());
                 }
             } catch (updateError) {
-                console.error('Profile update error:', updateError);
+                logger.error('Profile update error:', updateError);
                 // Don't throw - verification was submitted successfully
             }
 
             setStep('submitted');
             showToast('تم تقديم طلب التحقق بنجاح', 'success');
-        } catch (error: any) {
-            console.error('Verification submission error:', error);
-            const errorMessage = error.message || error.error_description || JSON.stringify(error);
+        } catch (error) {
+            logger.error('Verification submission error:', error);
+            const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
             showToast(`خطأ: ${errorMessage}`, 'error');
         } finally {
             setLoading(false);

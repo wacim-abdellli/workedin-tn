@@ -100,7 +100,7 @@ function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
                                 },
                             });
                             if (error) throw error;
-                        } catch (err: any) {
+                        } catch {
                             showToast(t.auth.googleLoginError, 'error');
                         }
                     }}

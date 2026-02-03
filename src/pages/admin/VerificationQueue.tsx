@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState, useEffect } from 'react';
 import {
     CheckCircle2,
@@ -68,13 +69,13 @@ export default function VerificationQueue() {
             clearTimeout(timeoutId);
 
             if (fetchError) {
-                console.error('Supabase error:', fetchError);
+                logger.error('Supabase error:', fetchError);
                 setError(`خطأ: ${fetchError.message}`);
                 return;
             }
             setVerifications(data || []);
         } catch (err: any) {
-            console.error('Error fetching verifications:', err);
+            logger.error('Error fetching verifications:', err);
             if (err.name === 'AbortError') {
                 setError('انتهت مهلة الاتصال. تحقق من اتصالك بالإنترنت أو من إعدادات Supabase.');
             } else {
@@ -92,7 +93,7 @@ export default function VerificationQueue() {
             .createSignedUrl(path, 3600); // 1 hour expiry
 
         if (error) {
-            console.error('Error getting signed URL:', error);
+            logger.error('Error getting signed URL:', error);
             return '';
         }
         return data.signedUrl;
@@ -159,7 +160,7 @@ export default function VerificationQueue() {
             setSelectedVerification(null);
             fetchPendingVerifications();
         } catch (error) {
-            console.error('Error approving verification:', error);
+            logger.error('Error approving verification:', error);
             showToast('فشل في الموافقة على التحقق', 'error');
         } finally {
             setActionLoading(false);
@@ -205,7 +206,7 @@ export default function VerificationQueue() {
             setRejectionReason('');
             fetchPendingVerifications();
         } catch (error) {
-            console.error('Error rejecting verification:', error);
+            logger.error('Error rejecting verification:', error);
             showToast('فشل في رفض التحقق', 'error');
         } finally {
             setActionLoading(false);

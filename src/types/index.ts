@@ -6,6 +6,28 @@ export type ContractStatus = 'active' | 'completed' | 'cancelled' | 'disputed';
 export type PaymentStatus = 'pending' | 'paid' | 'released';
 export type PaymentMethod = 'bank_transfer' | 'd17' | 'cash';
 
+// ============================================
+// ATTACHMENT & FILE TYPES
+// ============================================
+
+export interface Attachment {
+    id?: string;
+    url: string;
+    name: string;
+    type: string; // MIME type
+    size: number | string; // bytes (number) or formatted string (e.g., "2.5KB")
+    uploaded_at?: string;
+    uploaded_by?: string;
+}
+
+export interface MessageAttachment extends Attachment {
+    message_id?: string;
+}
+
+export interface ProposalAttachment extends Attachment {
+    proposal_id?: string;
+}
+
 export interface Profile {
     id: string;
     user_type: UserType | null; // ✅ FIXED: Allow null (database allows NULL)
@@ -160,7 +182,7 @@ export interface Message {
     sender_id: string;
     receiver_id: string; // ✅ ADDED: Required by schema
     content: string;
-    attachments?: any[]; // ✅ FIXED: Allow objects (JSONB)
+    attachments?: MessageAttachment[]; // ✅ FIXED: Proper type instead of any[]
     file_url?: string; // Deprecated, kept for backward compatibility
     is_read?: boolean;
     created_at: string;

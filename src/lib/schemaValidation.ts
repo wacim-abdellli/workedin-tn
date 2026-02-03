@@ -2,6 +2,7 @@
  * Schema validation helpers to prevent database schema mismatches
  * Ensures only valid columns are sent to Supabase tables
  */
+import { logger } from './logger';
 
 // Profile table allowed fields (based on schema_v2.sql)
 const PROFILE_ALLOWED_FIELDS = [
@@ -52,7 +53,7 @@ export const sanitizeProfileData = <T extends Record<string, any>>(data: T): Par
     for (const [key, value] of Object.entries(data)) {
         // Block auth fields
         if (BLOCKED_FIELDS.includes(key as any)) {
-            console.warn(`⚠️ [SchemaValidation] Blocked field "${key}" - managed by Supabase Auth, not profiles table`);
+            logger.warn(`⚠️ [SchemaValidation] Blocked field "${key}" - managed by Supabase Auth, not profiles table`);
             continue;
         }
 
@@ -60,7 +61,7 @@ export const sanitizeProfileData = <T extends Record<string, any>>(data: T): Par
         if (PROFILE_ALLOWED_FIELDS.includes(key as any)) {
             sanitized[key] = value;
         } else {
-            console.warn(`⚠️ [SchemaValidation] Unknown field "${key}" - not in profiles schema`);
+            logger.warn(`⚠️ [SchemaValidation] Unknown field "${key}" - not in profiles schema`);
         }
     }
 
@@ -77,7 +78,7 @@ export const sanitizeFreelancerProfileData = <T extends Record<string, any>>(dat
         if (FREELANCER_PROFILE_ALLOWED_FIELDS.includes(key as any)) {
             sanitized[key] = value;
         } else {
-            console.warn(`⚠️ [SchemaValidation] Unknown field "${key}" - not in freelancer_profiles schema`);
+            logger.warn(`⚠️ [SchemaValidation] Unknown field "${key}" - not in freelancer_profiles schema`);
         }
     }
 

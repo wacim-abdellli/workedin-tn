@@ -2,14 +2,9 @@ import React, { useRef, useEffect, useState } from 'react';
 import { Send, Paperclip, Loader2, FileText, Download, Check, CheckCheck } from 'lucide-react';
 import Button from '../ui/Button';
 import { useTranslation } from '../../i18n';
+import type { Message } from '../../types';
 
-interface Message {
-    id: string;
-    content: string;
-    sender_id: string;
-    created_at: string;
-    is_read?: boolean;
-    attachments?: Array<{ name: string; url: string; type: string; size: string }>;
+interface ChatMessage extends Omit<Message, 'sender'> {
     type?: 'text' | 'system'; // System messages like "Contract Started"
     sender?: {
         full_name: string;
@@ -18,8 +13,8 @@ interface Message {
 }
 
 interface ChatSectionProps {
-    messages: Message[];
-    currentUser: any;
+    messages: ChatMessage[];
+    currentUser: { id: string } | null;
     onSendMessage: (content: string) => Promise<void>;
     onFileUpload: (file: File) => Promise<void>;
     isSending: boolean;
@@ -42,19 +37,19 @@ export default function ChatSection({
     onTyping,
     isLoadingHistory
 }: ChatSectionProps) {
-    const { t } = useTranslation() as any;
+    const { t } = useTranslation();
     const [newMessage, setNewMessage] = useState('');
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const scrollToBottom = () => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    };
 
     // Auto-scroll to bottom
     useEffect(() => {
         scrollToBottom();
     }, [messages, otherUserTyping]);
-
-    const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    };
 
     const handleSend = async (e: React.FormEvent) => {
         e.preventDefault();

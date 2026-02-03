@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -90,7 +91,7 @@ export function UserMenu({ user, profile, signOut, t }: UserMenuProps) {
                 new Promise(resolve => setTimeout(resolve, 2000))
             ]);
         } catch (error) {
-            console.error('Logout error:', error);
+            logger.error('Logout error:', error);
         }
 
         // Step 3: ALWAYS do hard redirect regardless of success/failure
@@ -154,20 +155,20 @@ export function UserMenu({ user, profile, signOut, t }: UserMenuProps) {
                                         onClick={async (e) => {
                                             e.stopPropagation();
                                             e.preventDefault();
-                                            console.log('Switching to freelancer, user.id:', user.id);
+                                            logger.log('Switching to freelancer, user.id:', user.id);
                                             try {
                                                 const { error } = await supabase
                                                     .from('profiles')
                                                     .update({ user_type: 'freelancer' })
                                                     .eq('id', user.id);
                                                 if (error) {
-                                                    console.error('Update error:', error);
+                                                    logger.error('Update error:', error);
                                                     alert('فشل التحديث: ' + error.message);
                                                 } else {
                                                     window.location.reload();
                                                 }
                                             } catch (err) {
-                                                console.error('Exception:', err);
+                                                logger.error('Exception:', err);
                                             }
                                         }}
                                         className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-medium transition-all ${profile?.user_type === 'freelancer'
@@ -184,20 +185,20 @@ export function UserMenu({ user, profile, signOut, t }: UserMenuProps) {
                                         onClick={async (e) => {
                                             e.stopPropagation();
                                             e.preventDefault();
-                                            console.log('Switching to client, user.id:', user.id);
+                                            logger.log('Switching to client, user.id:', user.id);
                                             try {
                                                 const { error } = await supabase
                                                     .from('profiles')
                                                     .update({ user_type: 'client' })
                                                     .eq('id', user.id);
                                                 if (error) {
-                                                    console.error('Update error:', error);
+                                                    logger.error('Update error:', error);
                                                     alert('فشل التحديث: ' + error.message);
                                                 } else {
                                                     window.location.reload();
                                                 }
                                             } catch (err) {
-                                                console.error('Exception:', err);
+                                                logger.error('Exception:', err);
                                             }
                                         }}
                                         className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-medium transition-all ${profile?.user_type === 'client'

@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState, useEffect } from 'react';
 import { Plus, LayoutGrid, List as ListIcon, Trash2, Edit2, Image as ImageIcon } from 'lucide-react';
 import { Header } from '../components/layout';
@@ -38,7 +39,7 @@ export default function PortfolioDashboard() {
             if (error) throw error;
             setItems(data || []);
         } catch (error) {
-            console.error('Error loading portfolio:', error);
+            logger.error('Error loading portfolio:', error);
             showToast('حدث خطأ أثناء تحميل المعرض', 'error');
         } finally {
             setIsLoading(false);
@@ -80,7 +81,7 @@ export default function PortfolioDashboard() {
             setEditingItem(null);
             loadPortfolio();
         } catch (error) {
-            console.error('Error saving item:', error);
+            logger.error('Error saving item:', error);
             showToast('حدث خطأ أثناء حفظ العمل', 'error');
         } finally {
             setIsSubmitting(false);
@@ -101,7 +102,7 @@ export default function PortfolioDashboard() {
             setItems(prev => prev.filter(item => item.id !== id));
             showToast('تم حذف العمل بنجاح', 'success');
         } catch (error) {
-            console.error('Error deleting item:', error);
+            logger.error('Error deleting item:', error);
             showToast('حدث خطأ أثناء الحذف', 'error');
         }
     };

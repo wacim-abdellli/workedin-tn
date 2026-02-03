@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { User } from 'lucide-react';
@@ -194,7 +195,7 @@ export default function FreelancerProfile() {
 
             setFreelancer(formattedData);
         } catch (error) {
-            console.error('Error loading freelancer:', error);
+            logger.error('Error loading freelancer:', error);
             setFreelancer(null);
         } finally {
             setIsLoading(false);

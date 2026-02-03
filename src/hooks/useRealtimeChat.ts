@@ -1,6 +1,7 @@
+import { logger } from '@/lib/logger';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../lib/supabase';
-import type { Message } from '../types';
+import type { Message, MessageAttachment } from '../types';
 
 interface ChatMessage extends Omit<Message, 'sender'> {
     sender?: {
@@ -21,7 +22,7 @@ interface UseRealtimeChatReturn {
     messages: ChatMessage[];
     isLoading: boolean;
     error: Error | null;
-    sendMessage: (content: string, receiverId: string, attachments?: any[]) => Promise<void>;
+    sendMessage: (content: string, receiverId: string, attachments?: MessageAttachment[]) => Promise<void>;
     isSending: boolean;
     isTyping: boolean;
     setTyping: (typing: boolean) => void;
@@ -69,7 +70,7 @@ export function useRealtimeChat({
 
             setMessages(data || []);
         } catch (err) {
-            console.error('Error fetching messages:', err);
+            logger.error('Error fetching messages:', err);
             setError(err as Error);
         } finally {
             setIsLoading(false);
@@ -158,7 +159,7 @@ export function useRealtimeChat({
 
     // Send message function
     const sendMessage = useCallback(
-        async (content: string, receiverId: string, attachments?: any[]) => {
+        async (content: string, receiverId: string, attachments?: MessageAttachment[]) => {
             if (!content.trim() && (!attachments || attachments.length === 0)) return;
             if (!contractId || !userId || !receiverId) return;
 
@@ -179,7 +180,7 @@ export function useRealtimeChat({
 
                 // Message will be added via real-time subscription
             } catch (err) {
-                console.error('Error sending message:', err);
+                logger.error('Error sending message:', err);
                 throw err;
             } finally {
                 setIsSending(false);

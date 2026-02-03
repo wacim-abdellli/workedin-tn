@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useEffect, useState, useRef } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { Loader2, CheckCircle, ArrowRight } from 'lucide-react';
@@ -39,11 +40,11 @@ const PaymentSuccess = () => {
             const payment_id = searchParams.get('payment_id');
             const contract_id = searchParams.get('contract_id');
 
-            console.log('[PaymentSuccess] Verifying payment:', { payment_id, contract_id });
+            logger.log('[PaymentSuccess] Verifying payment:', { payment_id, contract_id });
             setContractId(contract_id);
 
             if (!payment_id) {
-                console.error('[PaymentSuccess] No payment_id in URL');
+                logger.error('[PaymentSuccess] No payment_id in URL');
                 setStatus('failed');
                 setError('معرف الدفع غير موجود');
                 return;
@@ -61,7 +62,7 @@ const PaymentSuccess = () => {
                     .single();
 
                 if (existingTransaction?.status === 'completed') {
-                    console.log('[PaymentSuccess] Payment already processed (idempotent)');
+                    logger.log('[PaymentSuccess] Payment already processed (idempotent)');
                     setAmount(existingTransaction.amount || 0);
                     setStatus('success');
 
@@ -80,7 +81,7 @@ const PaymentSuccess = () => {
                 // STEP 2: VERIFY WITH FLOUCI
                 // ================================================
                 const verification = await verifyPayment(payment_id);
-                console.log('[PaymentSuccess] Verification result:', verification);
+                logger.log('[PaymentSuccess] Verification result:', verification);
 
                 if (verification.status !== 'SUCCESS') {
                     setStatus('failed');
@@ -117,7 +118,7 @@ const PaymentSuccess = () => {
                     .single();
 
                 if (contractFetchError || !contract) {
-                    console.error('[PaymentSuccess] Contract fetch error:', contractFetchError);
+                    logger.error('[PaymentSuccess] Contract fetch error:', contractFetchError);
                     setStatus('failed');
                     setError('لم يتم العثور على العقد');
                     return;
@@ -125,7 +126,7 @@ const PaymentSuccess = () => {
 
                 // Check if already funded
                 if (contract.escrow_funded) {
-                    console.log('[PaymentSuccess] Contract already funded (idempotent)');
+                    logger.log('[PaymentSuccess] Contract already funded (idempotent)');
                     setAmount(contract.amount || 0);
                     setStatus('success');
                     setTimeout(() => navigate(`/contracts/${contract_id}`), 3000);
@@ -137,7 +138,7 @@ const PaymentSuccess = () => {
                 // Uses SQL function to update all in single transaction
                 // ================================================
                 if (existingTransaction && contract.freelancer_id) {
-                    console.log('[PaymentSuccess] Completing payment atomically...');
+                    logger.log('[PaymentSuccess] Completing payment atomically...');
 
                     const { data: completionResult, error: completionError } = await supabase.rpc(
                         'complete_escrow_payment',
@@ -150,7 +151,7 @@ const PaymentSuccess = () => {
                     );
 
                     if (completionError) {
-                        console.error('[PaymentSuccess] Atomic payment error:', completionError);
+                        logger.error('[PaymentSuccess] Atomic payment error:', completionError);
 
                         // Check if it was an idempotent failure (already completed)
                         if (completionError.message?.includes('already completed')) {
@@ -165,12 +166,12 @@ const PaymentSuccess = () => {
                         return;
                     }
 
-                    console.log('[PaymentSuccess] Atomic completion result:', completionResult);
+                    logger.log('[PaymentSuccess] Atomic completion result:', completionResult);
                     setAmount(contract.amount || 0);
                 } else {
                     // Fallback: Manual updates if no transaction found
                     // This shouldn't happen in normal flow but handle it gracefully
-                    console.log('[PaymentSuccess] No transaction found, updating contract directly');
+                    logger.log('[PaymentSuccess] No transaction found, updating contract directly');
 
                     await supabase
                         .from('contracts')
@@ -188,7 +189,7 @@ const PaymentSuccess = () => {
                 // SUCCESS!
                 // ================================================
                 setStatus('success');
-                console.log('[PaymentSuccess] Payment verified and processed successfully');
+                logger.log('[PaymentSuccess] Payment verified and processed successfully');
 
                 // Redirect after 4 seconds
                 setTimeout(() => {
@@ -196,7 +197,7 @@ const PaymentSuccess = () => {
                 }, 4000);
 
             } catch (err) {
-                console.error('[PaymentSuccess] Error:', err);
+                logger.error('[PaymentSuccess] Error:', err);
                 setStatus('failed');
                 setError(err instanceof Error ? err.message : 'خطأ في التحقق من الدفع');
             }

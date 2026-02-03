@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
@@ -264,7 +265,7 @@ function JobBoard() {
             setTotalCount(count || 0);
             setHasMore((data?.length || 0) === perPage);
         } catch (error) {
-            console.error('Error fetching jobs:', error);
+            logger.error('Error fetching jobs:', error);
             showToast(t.jobs.empty.title, 'error'); // Using simple error toast for now
         } finally {
             setIsLoading(false);
@@ -286,7 +287,7 @@ function JobBoard() {
             }
             setCategoryCounts(counts);
         } catch (error) {
-            console.error('Error fetching category counts:', error);
+            logger.error('Error fetching category counts:', error);
         }
     }, []);
 
@@ -306,7 +307,7 @@ function JobBoard() {
                 setSavedJobs(data.map(f => f.jobs).filter(Boolean) as unknown as Job[]);
             }
         } catch (error) {
-            console.error('Error fetching saved jobs:', error);
+            logger.error('Error fetching saved jobs:', error);
         }
     }, [user]);
 

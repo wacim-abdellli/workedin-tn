@@ -1,4 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
+import type { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
+import type { MessageAttachment } from '../types';
 
 // Environment variables for Supabase
 // You'll need to create a .env file with these values from your Supabase project
@@ -18,6 +20,34 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
         },
     },
 });
+
+/**
+ * Wraps a promise with a timeout
+ * @param promise The promise to wrap
+ * @param timeoutMs Timeout in milliseconds (default: 8000)
+ * @returns The promise result or throws if timeout exceeded
+ */
+export async function withTimeout<T>(
+    promise: PromiseLike<T>,
+    timeoutMs: number = 8000
+): Promise<T> {
+    let timeoutId: ReturnType<typeof setTimeout>;
+
+    const timeoutPromise = new Promise<never>((_, reject) => {
+        timeoutId = setTimeout(() => {
+            reject(new Error(`Operation timed out after ${timeoutMs}ms`));
+        }, timeoutMs);
+    });
+
+    try {
+        const result = await Promise.race([promise, timeoutPromise]);
+        clearTimeout(timeoutId!);
+        return result;
+    } catch (error) {
+        clearTimeout(timeoutId!);
+        throw error;
+    }
+}
 
 // Helper function to get the current user
 export const getCurrentUser = async () => {
@@ -115,7 +145,7 @@ export const sendMessage = async (
     senderId: string,
     receiverId: string, // ✅ Required field
     content: string,
-    attachments?: any[] // ✅ JSONB array (can contain objects)
+    attachments?: MessageAttachment[] // ✅ Proper type instead of any[]
 ) => {
     const { data, error } = await supabase
         .from('messages')
@@ -141,7 +171,7 @@ export const createNotification = async (
     content: string, // ✅ Renamed from 'message' to 'content'
     type: 'message' | 'match' | 'payment' | 'delivery' | 'dispute' | 'system',
     link?: string,
-    data?: Record<string, any> // ✅ Optional JSONB data
+    data?: Record<string, unknown> // ✅ Proper type instead of any
 ) => {
     const { error } = await supabase
         .from('notifications')
@@ -161,8 +191,8 @@ export const createNotification = async (
 // Subscribe to realtime changes
 export const subscribeToContract = (
     contractId: string,
-    onMessage: (payload: any) => void,
-    onStatusChange: (payload: any) => void
+    onMessage: (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => void,
+    onStatusChange: (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => void
 ) => {
     const channel = supabase
         .channel(`contract:${contractId}`)

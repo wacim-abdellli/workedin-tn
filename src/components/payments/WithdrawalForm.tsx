@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState } from 'react';
 import { Loader2, Building, Phone, X, AlertCircle, CheckCircle } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
@@ -52,7 +53,7 @@ const WithdrawalForm = ({ wallet, onSuccess, onCancel }: WithdrawalFormProps) =>
         }
 
         setLoading(true);
-        console.log('[WithdrawalForm] Submitting withdrawal request');
+        logger.log('[WithdrawalForm] Submitting withdrawal request');
 
         try {
             // Get current user
@@ -88,11 +89,11 @@ const WithdrawalForm = ({ wallet, onSuccess, onCancel }: WithdrawalFormProps) =>
                 });
 
             if (updateError) {
-                console.error('[WithdrawalForm] Wallet update error:', updateError);
+                logger.error('[WithdrawalForm] Wallet update error:', updateError);
                 // Withdrawal was created, but wallet not updated - admin will handle
             }
 
-            console.log('[WithdrawalForm] Withdrawal submitted successfully');
+            logger.log('[WithdrawalForm] Withdrawal submitted successfully');
             setSubmitted(true);
             showToast('تم إرسال طلب السحب بنجاح', 'success');
 
@@ -101,7 +102,7 @@ const WithdrawalForm = ({ wallet, onSuccess, onCancel }: WithdrawalFormProps) =>
                 onSuccess?.();
             }, 2000);
         } catch (error) {
-            console.error('[WithdrawalForm] Error:', error);
+            logger.error('[WithdrawalForm] Error:', error);
             const message = error instanceof Error ? error.message : 'فشل في إرسال طلب السحب';
             showToast(message, 'error');
         } finally {

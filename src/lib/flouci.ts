@@ -7,6 +7,7 @@
  */
 
 import { supabase } from './supabase';
+import { logger } from './logger';
 import type {
     FlouciPaymentRequest,
     FlouciPaymentResponse,
@@ -26,14 +27,14 @@ const IS_DEV_MODE = import.meta.env.DEV;
 export async function initiatePayment(
     payment: FlouciPaymentRequest
 ): Promise<FlouciPaymentResponse> {
-    console.log('[Flouci] Initiating payment:', {
+    logger.log('[Flouci] Initiating payment:', {
         amount: payment.amount,
         tracking_id: payment.developer_tracking_id,
     });
 
     // In development mode without Edge Functions, return mock response
     if (IS_DEV_MODE) {
-        console.log('[Flouci] Running in DEV mode - returning mock payment');
+        logger.log('[Flouci] Running in DEV mode - returning mock payment');
         const mockPaymentId = `mock_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
         return {
@@ -56,7 +57,7 @@ export async function initiatePayment(
         });
 
         if (error) {
-            console.error('[Flouci] Edge Function error:', error);
+            logger.error('[Flouci] Edge Function error:', error);
             throw new Error(error.message || 'فشل في بدء عملية الدفع');
         }
 
@@ -64,14 +65,14 @@ export async function initiatePayment(
             throw new Error(data.error);
         }
 
-        console.log('[Flouci] Payment initiated:', data);
+        logger.log('[Flouci] Payment initiated:', data);
 
         return {
             payment_id: data.payment_id,
             link: data.link,
         };
     } catch (error) {
-        console.error('[Flouci] Payment initiation error:', error);
+        logger.error('[Flouci] Payment initiation error:', error);
 
         if (error instanceof Error) {
             throw error;
@@ -98,11 +99,11 @@ export async function verifyPayment(
         amount?: number;
     }
 ): Promise<FlouciVerificationResponse & { completion?: { success: boolean; data?: any; error?: string } }> {
-    console.log('[Flouci] Verifying payment:', paymentId);
+    logger.log('[Flouci] Verifying payment:', paymentId);
 
     // In development mode, simulate successful verification
     if (IS_DEV_MODE) {
-        console.log('[Flouci] Running in DEV mode - returning mock verification');
+        logger.log('[Flouci] Running in DEV mode - returning mock verification');
 
         // Simulate successful payment for mock IDs
         if (paymentId.startsWith('mock_')) {
@@ -134,11 +135,11 @@ export async function verifyPayment(
         });
 
         if (error) {
-            console.error('[Flouci] Verification Edge Function error:', error);
+            logger.error('[Flouci] Verification Edge Function error:', error);
             throw new Error('فشل في التحقق من عملية الدفع');
         }
 
-        console.log('[Flouci] Verification result:', data);
+        logger.log('[Flouci] Verification result:', data);
 
         // If completion was requested, return full response
         if (options?.complete_payment && data.verification) {
@@ -156,7 +157,7 @@ export async function verifyPayment(
             created_at: data.created_at || new Date().toISOString(),
         };
     } catch (error) {
-        console.error('[Flouci] Payment verification error:', error);
+        logger.error('[Flouci] Payment verification error:', error);
 
         if (error instanceof Error) {
             throw error;

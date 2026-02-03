@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
@@ -153,7 +154,7 @@ function JobDetail() {
                 .eq('id', jobId);
 
         } catch (error) {
-            console.error('Error fetching job:', error);
+            logger.error('Error fetching job:', error);
             showToast('حدث خطأ في تحميل الوظيفة', 'error');
         } finally {
             setIsLoading(false);
@@ -323,7 +324,7 @@ function JobDetail() {
             setShowProposalModal(false);
             checkMyProposal();
         } catch (error) {
-            console.error('Error submitting proposal:', error);
+            logger.error('Error submitting proposal:', error);
             showToast('حدث خطأ في إرسال العرض', 'error');
         } finally {
             setIsSubmittingProposal(false);

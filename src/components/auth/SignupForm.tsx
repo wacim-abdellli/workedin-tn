@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -108,7 +109,7 @@ function SignupForm({ onComplete }: SignupFormProps) {
             }
             onComplete?.();
         } catch (error) {
-            console.error('Error setting user type:', error);
+            logger.error('Error setting user type:', error);
         } finally {
             setIsLoading(false);
         }
@@ -157,7 +158,7 @@ function SignupForm({ onComplete }: SignupFormProps) {
                                     },
                                 });
                                 if (error) throw error;
-                            } catch (err: any) {
+                            } catch {
                                 showToast('فشل التسجيل عبر Google', 'error');
                             }
                         }}

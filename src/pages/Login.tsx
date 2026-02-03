@@ -9,15 +9,26 @@ function Login() {
     const navigate = useNavigate();
     const { isAuthenticated, profile } = useAuth();
 
-    // Redirect logic
+    // Redirect authenticated users to appropriate dashboard
     useEffect(() => {
-        // Only redirect if fully authenticated with a complete profile
-        if (isAuthenticated && profile?.user_type) {
-            navigate('/');
-        } else if (isAuthenticated && profile && !profile.user_type) {
-            navigate('/signup');
+        if (isAuthenticated && profile) {
+            if (!profile.user_type) {
+                // No user type selected - go to signup for role selection
+                navigate('/signup?step=select-type');
+            } else if (!profile.onboarding_completed) {
+                // Not onboarded - go to onboarding
+                const onboardingRoute = profile.user_type === 'client'
+                    ? '/onboarding/client'
+                    : '/onboarding/freelancer';
+                navigate(onboardingRoute);
+            } else {
+                // Fully onboarded - go to dashboard
+                const dashboardRoute = profile.user_type === 'client'
+                    ? '/client/dashboard'
+                    : '/freelancer/dashboard';
+                navigate(dashboardRoute);
+            }
         }
-        // If authenticated but no profile, stay on login page to allow re-attempt or logout
     }, [isAuthenticated, profile, navigate]);
 
     const handleSuccess = () => {

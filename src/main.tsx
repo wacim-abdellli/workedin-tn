@@ -1,26 +1,19 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import * as Sentry from '@sentry/react'
 import './index.css'
 import App from './App.tsx'
 import { initAnalytics } from './lib/analytics'
+import { initSentry } from './lib/sentry'
+import { validateEnv } from './lib/validateEnv'
+
+// Validate environment variables
+validateEnv()
 
 // Initialize Analytics
 initAnalytics()
 
-// Initialize Sentry
-if (import.meta.env.PROD) {
-  Sentry.init({
-    dsn: import.meta.env.VITE_SENTRY_DSN,
-    integrations: [
-      Sentry.browserTracingIntegration(),
-      Sentry.replayIntegration(),
-    ],
-    tracesSampleRate: 1.0,
-    replaysSessionSampleRate: 0.1,
-    replaysOnErrorSampleRate: 1.0,
-  })
-}
+// Initialize Sentry for production error tracking
+initSentry()
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

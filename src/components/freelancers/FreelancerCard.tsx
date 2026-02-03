@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Shield, Heart, Star, MapPin, Briefcase, Clock } from 'lucide-react';
 import Button from '../ui/Button';
@@ -30,7 +31,7 @@ interface FreelancerCardProps {
     onToggleSave?: (id: string) => void;
 }
 
-export default function FreelancerCard({
+function FreelancerCard({
     freelancer,
     viewMode = 'grid',
     isSaved = false,
@@ -198,3 +199,5 @@ export default function FreelancerCard({
         </div>
     );
 }
+
+export default memo(FreelancerCard);

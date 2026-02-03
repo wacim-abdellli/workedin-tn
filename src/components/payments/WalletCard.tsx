@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Wallet, TrendingUp, Clock, ArrowUpRight, RefreshCw } from 'lucide-react';
@@ -39,7 +40,7 @@ const WalletCard = ({ className = '', showWithdrawal = true }: WalletCardProps) 
             if (walletError) {
                 // If wallet doesn't exist, it might not have been created yet
                 if (walletError.code === 'PGRST116') {
-                    console.log('[WalletCard] No wallet found, user may need to refresh');
+                    logger.log('[WalletCard] No wallet found, user may need to refresh');
                     setWallet(null);
                 } else {
                     throw walletError;
@@ -57,12 +58,12 @@ const WalletCard = ({ className = '', showWithdrawal = true }: WalletCardProps) 
                 .limit(5);
 
             if (txError) {
-                console.error('[WalletCard] Transaction fetch error:', txError);
+                logger.error('[WalletCard] Transaction fetch error:', txError);
             } else {
                 setTransactions(txData || []);
             }
         } catch (err) {
-            console.error('[WalletCard] Error:', err);
+            logger.error('[WalletCard] Error:', err);
             setError('فشل في تحميل بيانات المحفظة');
         } finally {
             setLoading(false);

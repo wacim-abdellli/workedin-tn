@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
@@ -123,7 +124,7 @@ function JobMatches() {
 
                 setMatches(sortedMatches);
             } catch (err) {
-                console.error('Error fetching matches:', err);
+                logger.error('Error fetching matches:', err);
                 showToast('حدث خطأ في البحث عن تطابقات', 'error');
             } finally {
                 setIsLoading(false);
@@ -195,7 +196,7 @@ function JobMatches() {
             setIsInviteModalOpen(false);
             navigate(`/contracts/${contract.id}`);
         } catch (error) {
-            console.error('Error creating contract:', error);
+            logger.error('Error creating contract:', error);
             showToast('حدث خطأ في إنشاء العقد', 'error');
         } finally {
             setIsLoading(false);

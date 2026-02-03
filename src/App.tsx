@@ -122,9 +122,11 @@ function AppRoutes() {
         </ProtectedRoute>
       } />
       <Route path="/freelancer/dashboard" element={
-        <ProtectedRoute>
-          <FreelancerDashboard />
-        </ProtectedRoute>
+        <ErrorBoundary>
+          <ProtectedRoute>
+            <FreelancerDashboard />
+          </ProtectedRoute>
+        </ErrorBoundary>
       } />
       <Route path="/freelancer/portfolio" element={
         <ProtectedRoute>
@@ -137,9 +139,11 @@ function AppRoutes() {
         </ProtectedRoute>
       } />
       <Route path="/client/dashboard" element={
-        <ProtectedRoute>
-          <ClientDashboard />
-        </ProtectedRoute>
+        <ErrorBoundary>
+          <ProtectedRoute>
+            <ClientDashboard />
+          </ProtectedRoute>
+        </ErrorBoundary>
       } />
       <Route path="/client/jobs/:jobId/proposals" element={
         <ProtectedRoute>
@@ -183,9 +187,11 @@ function AppRoutes() {
 
       {/* Contract routes */}
       <Route path="/contracts/:contractId" element={
-        <ProtectedRoute>
-          <ContractWorkspace />
-        </ProtectedRoute>
+        <ErrorBoundary>
+          <ProtectedRoute>
+            <ContractWorkspace />
+          </ProtectedRoute>
+        </ErrorBoundary>
       } />
 
       {/* Payment routes */}
@@ -214,14 +220,18 @@ function AppRoutes() {
 
       {/* Admin */}
       <Route path="/admin" element={
-        <ProtectedRoute>
-          <AdminDashboard />
-        </ProtectedRoute>
+        <ErrorBoundary>
+          <ProtectedRoute>
+            <AdminDashboard />
+          </ProtectedRoute>
+        </ErrorBoundary>
       } />
       <Route path="/admin/verifications" element={
-        <ProtectedRoute>
-          <VerificationQueue />
-        </ProtectedRoute>
+        <ErrorBoundary>
+          <ProtectedRoute>
+            <VerificationQueue />
+          </ProtectedRoute>
+        </ErrorBoundary>
       } />
 
       {/* Identity Verification */}

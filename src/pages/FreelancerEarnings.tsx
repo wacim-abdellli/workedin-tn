@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
@@ -90,7 +91,7 @@ export default function FreelancerEarnings() {
                 .order('created_at', { ascending: false });
 
             if (txError) {
-                console.error('[FreelancerEarnings] Transaction error:', txError);
+                logger.error('[FreelancerEarnings] Transaction error:', txError);
             }
             setTransactions(txData || []);
 
@@ -124,7 +125,7 @@ export default function FreelancerEarnings() {
             });
 
         } catch (err) {
-            console.error('[FreelancerEarnings] Error:', err);
+            logger.error('[FreelancerEarnings] Error:', err);
             setError('فشل في تحميل البيانات');
         } finally {
             setLoading(false);

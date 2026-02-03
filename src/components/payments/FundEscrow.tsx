@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState } from 'react';
 import { Loader2, CreditCard, Shield, AlertCircle } from 'lucide-react';
 import { initiatePayment } from '../../lib/flouci';
@@ -24,7 +25,7 @@ const FundEscrow = ({ contract, onSuccess, onError }: FundEscrowProps) => {
 
     const handleFundEscrow = async () => {
         setLoading(true);
-        console.log('[FundEscrow] Starting escrow funding for contract:', contract.id);
+        logger.log('[FundEscrow] Starting escrow funding for contract:', contract.id);
 
         try {
             // Get current user
@@ -50,7 +51,7 @@ const FundEscrow = ({ contract, onSuccess, onError }: FundEscrowProps) => {
                 developer_tracking_id: `contract_${contract.id}_${Date.now()}`,
             });
 
-            console.log('[FundEscrow] Payment initiated:', payment.payment_id);
+            logger.log('[FundEscrow] Payment initiated:', payment.payment_id);
 
             // Create pending transaction record
             const { error: txError } = await supabase.from('transactions').insert({
@@ -72,7 +73,7 @@ const FundEscrow = ({ contract, onSuccess, onError }: FundEscrowProps) => {
             });
 
             if (txError) {
-                console.error('[FundEscrow] Transaction record error:', txError);
+                logger.error('[FundEscrow] Transaction record error:', txError);
                 // Continue anyway - payment can still work
             }
 
@@ -83,7 +84,7 @@ const FundEscrow = ({ contract, onSuccess, onError }: FundEscrowProps) => {
 
             onSuccess?.();
         } catch (error) {
-            console.error('[FundEscrow] Error:', error);
+            logger.error('[FundEscrow] Error:', error);
             const message = error instanceof Error ? error.message : 'فشل في بدء عملية الدفع';
             showToast(message, 'error');
             onError?.(message);

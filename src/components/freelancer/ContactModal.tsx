@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -61,7 +62,7 @@ export default function ContactModal({ isOpen, onClose, freelancerId, freelancer
             reset();
             onClose();
         } catch (error) {
-            console.error('Error sending message:', error);
+            logger.error('Error sending message:', error);
             showToast('حدث خطأ أثناء إرسال الرسالة', 'error');
         } finally {
             setIsSubmitting(false);

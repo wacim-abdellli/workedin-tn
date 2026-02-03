@@ -1,5 +1,13 @@
 import posthog from 'posthog-js'
 
+// ============================================
+// ANALYTICS TYPES
+// ============================================
+
+export interface AnalyticsProperties {
+    [key: string]: string | number | boolean | null | undefined;
+}
+
 export const initAnalytics = () => {
     if (import.meta.env.PROD) {
         posthog.init(import.meta.env.VITE_POSTHOG_KEY, {
@@ -8,7 +16,7 @@ export const initAnalytics = () => {
     }
 }
 
-export const trackEvent = (event: string, properties?: any) => {
+export const trackEvent = (event: string, properties?: AnalyticsProperties) => {
     posthog.capture(event, properties)
 }
 
@@ -16,3 +24,4 @@ export const trackEvent = (event: string, properties?: any) => {
 export const trackPageView = () => {
     posthog.capture('$pageview')
 }
+

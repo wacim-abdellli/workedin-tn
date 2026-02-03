@@ -482,6 +482,8 @@ export const en: Translations = {
         openDispute: 'Open Dispute',
         disputeOpened: 'Dispute Opened',
         disputeReview: 'Review within 48 hours',
+        startConversation: 'Start the conversation',
+        typeMessage: 'Type your message here...',
     },
 
     publicProfile: {
@@ -573,6 +575,7 @@ export const en: Translations = {
             day: 'd',
             ago: 'ago',
         },
+        today: 'Today',
         toggleDarkMode: 'Toggle dark mode',
         toggleLightMode: 'Toggle light mode',
         openMenu: 'Open menu',

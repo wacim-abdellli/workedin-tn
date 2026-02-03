@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState, useEffect } from 'react';
 import { useForm, FormProvider, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -251,7 +252,7 @@ export default function JobPost() {
             }
 
         } catch (error) {
-            console.error('Error posting job:', error);
+            logger.error('Error posting job:', error);
             showToast('حدث خطأ أثناء حفظ الوظيفة', 'error');
         } finally {
             setIsSubmitting(false);

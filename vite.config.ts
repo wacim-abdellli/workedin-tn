@@ -16,14 +16,40 @@ export default defineConfig(({ command }) => ({
     },
   },
   build: {
+    // Increase chunk size warning limit
+    chunkSizeWarningLimit: 1000,
+
+    // Source maps for production debugging
+    sourcemap: true,
+
     rollupOptions: {
       output: {
         manualChunks: {
-          vendor: ['react', 'react-dom', 'react-router-dom'],
-          ui: ['lucide-react', 'zod', 'react-hook-form'],
-          supabase: ['@supabase/supabase-js'],
+          // Core React
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          // Supabase
+          'supabase-vendor': ['@supabase/supabase-js'],
+          // UI libraries
+          'ui-vendor': ['lucide-react'],
+          // Form handling
+          'form-vendor': ['react-hook-form', 'zod', '@hookform/resolvers'],
         },
       },
     },
+
+    // Minify configuration
+    minify: 'esbuild',
+    target: 'es2020',
+  },
+
+  // Performance optimizations
+  optimizeDeps: {
+    include: [
+      'react',
+      'react-dom',
+      'react-router-dom',
+      '@supabase/supabase-js',
+      'lucide-react',
+    ],
   },
 }))

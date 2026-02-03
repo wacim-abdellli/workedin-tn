@@ -3,7 +3,7 @@
  */
 
 /** Status of a proposal */
-export type ProposalStatus = 'new' | 'shortlisted' | 'rejected' | 'archived' | 'hired';
+export type ProposalStatus = 'new' | 'shortlisted' | 'rejected' | 'archived' | 'hired' | 'accepted';
 
 /** Attachment on a proposal */
 export interface ProposalAttachment {

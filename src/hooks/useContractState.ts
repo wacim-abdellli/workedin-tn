@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import type { ContractStatus } from '../types';
@@ -78,7 +79,7 @@ export function useContractState({
             if (fetchError) throw fetchError;
             setContract(data);
         } catch (err) {
-            console.error('Error fetching contract:', err);
+            logger.error('Error fetching contract:', err);
             setError(err as Error);
         } finally {
             setIsLoading(false);

@@ -1,7 +1,8 @@
+import { logger } from '@/lib/logger';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
-import { supabase } from '../lib/supabase';
+import { supabase, withTimeout } from '../lib/supabase';
 import { useTranslation } from '../i18n';
 
 const AuthCallback = () => {
@@ -18,19 +19,22 @@ const AuthCallback = () => {
                 if (sessionError) throw sessionError;
 
                 if (session) {
-                    // Check if user has completed onboarding
-                    const { data: profile, error: profileError } = await supabase
-                        .from('profiles')
-                        .select('user_type, onboarding_completed')
-                        .eq('id', session.user.id)
-                        .single();
+                    // Check if user has completed onboarding with timeout protection
+                    const { data: profile, error: profileError } = await withTimeout(
+                        supabase
+                            .from('profiles')
+                            .select('user_type, onboarding_completed')
+                            .eq('id', session.user.id)
+                            .single(),
+                        5000
+                    );
 
                     if (profileError) {
                         // Handle critical schema/connection errors
                         if (profileError.code !== 'PGRST116') {
-                            console.error('Profile fetch error:', profileError);
+                            logger.error('Profile fetch error:', profileError);
                             // If schema cache error, show specific message
-                            if (profileError.message.includes('schema cache')) {
+                            if (profileError.message?.includes('schema cache')) {
                                 throw new Error('Database schema synchronization required. Please contact admin.');
                             }
                             throw profileError;
@@ -62,9 +66,10 @@ const AuthCallback = () => {
                     setError('فشل تسجيل الدخول. يرجى المحاولة مرة أخرى.');
                     setTimeout(() => navigate('/login'), 3000);
                 }
-            } catch (err: any) {
-                console.error('Auth callback error:', err);
-                setError(err.message || 'حدث خطأ أثناء تسجيل الدخول');
+            } catch (err) {
+                const errorMessage = err instanceof Error ? err.message : 'حدث خطأ أثناء تسجيل الدخول';
+                logger.error('Auth callback error:', err);
+                setError(errorMessage);
                 setIsStuck(true); // Show manual logout button
             }
         };

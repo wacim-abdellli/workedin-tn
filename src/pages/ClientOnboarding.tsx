@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -80,7 +81,7 @@ function ClientOnboarding() {
             showToast(t.payment.success || 'Success!', 'success');
             navigate('/client/dashboard');
         } catch (error: any) {
-            console.error('Client onboarding error:', error);
+            logger.error('Client onboarding error:', error);
             showToast(error.message || t.common.error, 'error');
         } finally {
             setIsLoading(false);

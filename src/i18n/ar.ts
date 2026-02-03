@@ -495,6 +495,8 @@ export const ar = {
         openDispute: 'فتح نزاع',
         disputeOpened: 'تم فتح نزاع',
         disputeReview: 'سيتم المراجعة خلال 48 ساعة',
+        startConversation: 'ابدأ المحادثة الآن',
+        typeMessage: 'اكتب رسالتك هنا...',
     },
 
     // Public Profile
@@ -589,6 +591,7 @@ export const ar = {
             day: 'يوم',
             ago: 'منذ',
         },
+        today: 'اليوم',
         toggleDarkMode: 'تبديل الوضع الداكن',
         toggleLightMode: 'تبديل الوضع الفاتح',
         openMenu: 'فتح القائمة',

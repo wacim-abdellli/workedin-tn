@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -82,7 +83,7 @@ const ResetPassword = () => {
                     setIsValidToken(false);
                 }
             } catch (error) {
-                console.error('Session check error:', error);
+                logger.error('Session check error:', error);
                 setIsValidToken(false);
             } finally {
                 setIsCheckingToken(false);
@@ -120,7 +121,7 @@ const ResetPassword = () => {
                 navigate('/login');
             }, 3000);
         } catch (error: any) {
-            console.error('Password update error:', error);
+            logger.error('Password update error:', error);
             showToast(error.message || 'حدث خطأ أثناء تغيير كلمة المرور', 'error');
         } finally {
             setIsLoading(false);

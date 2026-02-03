@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -97,7 +98,7 @@ function FreelancerOnboarding() {
 
         try {
             // Build profile data
-            const profileData: Record<string, any> = {
+            const profileData: Record<string, unknown> = {
                 id: user!.id,
                 full_name: data.full_name,
                 location: data.location,
@@ -120,16 +121,16 @@ function FreelancerOnboarding() {
 
                     if (avatarUrl) {
                         profileData.avatar_url = avatarUrl;
-                        console.log('[Onboarding] Avatar uploaded:', avatarUrl);
+                        logger.log('[Onboarding] Avatar uploaded:', avatarUrl);
                     }
                 } catch (avatarErr) {
-                    console.warn('[Onboarding] Avatar upload failed, continuing:', avatarErr);
+                    logger.warn('[Onboarding] Avatar upload failed, continuing:', avatarErr);
                     // Continue without avatar - not critical
                 }
             }
 
             // Save profile with 8s timeout
-            console.log('[Onboarding] Saving profile...', profileData);
+            logger.log('[Onboarding] Saving profile...', profileData);
 
             try {
                 const { error: profileError } = await Promise.race([
@@ -140,13 +141,13 @@ function FreelancerOnboarding() {
                 ]);
 
                 if (profileError) {
-                    console.warn('[Onboarding] Profile save issue:', profileError);
+                    logger.warn('[Onboarding] Profile save issue:', profileError);
                     localStorage.setItem('pending_profile', JSON.stringify(profileData));
                 } else {
-                    console.log('[Onboarding] ✅ Profile saved!');
+                    logger.log('[Onboarding] ✅ Profile saved!');
                 }
             } catch (saveErr) {
-                console.warn('[Onboarding] Profile save exception:', saveErr);
+                logger.warn('[Onboarding] Profile save exception:', saveErr);
                 localStorage.setItem('pending_profile', JSON.stringify(profileData));
             }
 
@@ -166,20 +167,21 @@ function FreelancerOnboarding() {
                 ]);
 
                 if (flError) {
-                    console.warn('[Onboarding] Freelancer profile save issue:', flError);
+                    logger.warn('[Onboarding] Freelancer profile save issue:', flError);
                 } else {
-                    console.log('[Onboarding] ✅ Freelancer profile created!');
+                    logger.log('[Onboarding] ✅ Freelancer profile created!');
                 }
             } catch (flErr) {
-                console.warn('[Onboarding] Freelancer save exception:', flErr);
+                logger.warn('[Onboarding] Freelancer save exception:', flErr);
             }
 
             // Move to step 2
             showToast('تم حفظ البيانات الأساسية', 'success');
             setStep(2);
-        } catch (error: any) {
-            console.error('Step 1 error:', error);
-            showToast(error.message || t.common.error, 'error');
+        } catch (error) {
+            logger.error('Step 1 error:', error);
+            const errorMessage = error instanceof Error ? error.message : t.common.error;
+            showToast(errorMessage, 'error');
         } finally {
             setIsLoading(false);
         }
@@ -194,7 +196,7 @@ function FreelancerOnboarding() {
 
         setIsLoading(true);
         try {
-            console.log('[Onboarding] Saving skills and completing onboarding...');
+            logger.log('[Onboarding] Saving skills and completing onboarding...');
 
             const skillsData = {
                 skills: selectedSkills,
@@ -208,9 +210,9 @@ function FreelancerOnboarding() {
                     updateFreelancerProfile(skillsData),
                     new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 8000))
                 ]);
-                console.log('[Onboarding] ✅ Skills saved!');
+                logger.log('[Onboarding] ✅ Skills saved!');
             } catch (skillsErr) {
-                console.warn('[Onboarding] Skills save failed:', skillsErr);
+                logger.warn('[Onboarding] Skills save failed:', skillsErr);
                 localStorage.setItem('pending_skills', JSON.stringify(skillsData));
             }
 
@@ -220,22 +222,23 @@ function FreelancerOnboarding() {
                     updateProfile({ onboarding_completed: true }),
                     new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 8000))
                 ]);
-                console.log('[Onboarding] ✅ Onboarding marked complete!');
+                logger.log('[Onboarding] ✅ Onboarding marked complete!');
             } catch (completeErr) {
-                console.warn('[Onboarding] Could not mark complete:', completeErr);
+                logger.warn('[Onboarding] Could not mark complete:', completeErr);
                 localStorage.setItem('pending_onboarding_complete', 'true');
             }
 
             // Refresh profile
-            refreshProfile().catch(e => console.warn('Profile refresh failed:', e));
+            refreshProfile().catch(e => logger.warn('Profile refresh failed:', e));
 
             // SUCCESS! Navigate to dashboard
             showToast('مرحباً بك في خدمة! 🎉', 'success');
             navigate('/freelancer/dashboard');
 
-        } catch (error: any) {
-            console.error('Step 2 error:', error);
-            showToast(error.message || t.common.error, 'error');
+        } catch (error) {
+            logger.error('Step 2 error:', error);
+            const errorMessage = error instanceof Error ? error.message : t.common.error;
+            showToast(errorMessage, 'error');
         } finally {
             setIsLoading(false);
         }

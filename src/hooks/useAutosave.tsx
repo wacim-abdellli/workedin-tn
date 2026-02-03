@@ -1,8 +1,10 @@
+import { logger } from '@/lib/logger';
 import { useEffect, useRef, useState, useCallback } from 'react';
 
 /**
  * Custom debounce implementation to avoid lodash dependency
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function useDebounce<T extends (...args: any[]) => void>(callback: T, delay: number) {
     const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -52,7 +54,7 @@ export const useAutosave = <T,>({
             }, 500);
 
         } catch (error) {
-            console.error('Autosave failed:', error);
+            logger.error('Autosave failed:', error);
             setStatus('error');
         }
     }, [storageKey, onSave]);
@@ -67,7 +69,7 @@ export const useAutosave = <T,>({
         }
 
         // Only save if data is not empty/null (basic check)
-        if (data && Object.keys(data as any).length > 0) {
+        if (data && typeof data === 'object' && Object.keys(data as Record<string, unknown>).length > 0) {
             debouncedSave(data);
         }
     }, [data, debouncedSave]);
@@ -75,7 +77,7 @@ export const useAutosave = <T,>({
     // Save on interval
     useEffect(() => {
         const timer = setInterval(() => {
-            if (data && Object.keys(data as any).length > 0) {
+            if (data && typeof data === 'object' && Object.keys(data as Record<string, unknown>).length > 0) {
                 saveToStorage(data);
             }
         }, interval);
