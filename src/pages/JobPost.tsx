@@ -20,7 +20,7 @@ import StepBudget from '../components/job-post/StepBudget';
 import StepVisibility from '../components/job-post/StepVisibility';
 import StepReview from '../components/job-post/StepReview';
 
-// Schema
+// Schema - Using z.coerce.number() to handle string-to-number conversion from form inputs
 const jobSchema = z.object({
     title: z.string().min(5, 'العنوان يجب أن يكون 5 أحرف على الأقل').max(100),
     category: z.string().min(1, 'يرجى اختيار التصنيف'),
@@ -30,11 +30,11 @@ const jobSchema = z.object({
         .max(5, 'الحد الأقصى 5 ملفات')
         .optional(),
 
-    // Step 2
+    // Step 2 - Using coerce.number to handle string inputs from HTML number fields
     job_type: z.enum(['fixed_price', 'hourly']),
-    budget_min: z.number().optional(),
-    budget_max: z.number().optional(),
-    hourly_rate: z.number().optional(),
+    budget_min: z.coerce.number().min(1, 'الحد الأدنى يجب أن يكون 1 على الأقل').optional().nullable(),
+    budget_max: z.coerce.number().min(1, 'الحد الأقصى يجب أن يكون 1 على الأقل').optional().nullable(),
+    hourly_rate: z.coerce.number().min(1, 'السعر بالساعة يجب أن يكون 1 على الأقل').optional().nullable(),
     estimated_hours: z.string().optional(),
     duration: z.string().min(1, 'يرجى تحديد المدة'),
     experience_level: z.enum(['beginner', 'intermediate', 'expert']),
@@ -43,9 +43,13 @@ const jobSchema = z.object({
     visibility: z.enum(['public', 'invite_only']),
 }).refine((data) => {
     if (data.job_type === 'fixed_price') {
-        return !!data.budget_min && !!data.budget_max;
+        // Check for valid numbers (not NaN, not null/undefined)
+        const minValid = typeof data.budget_min === 'number' && !isNaN(data.budget_min) && data.budget_min > 0;
+        const maxValid = typeof data.budget_max === 'number' && !isNaN(data.budget_max) && data.budget_max > 0;
+        return minValid && maxValid;
     }
-    return !!data.hourly_rate;
+    const rateValid = typeof data.hourly_rate === 'number' && !isNaN(data.hourly_rate) && data.hourly_rate > 0;
+    return rateValid;
 }, {
     message: "يرجى تحديد الميزانية",
     path: ["budget_min"],
@@ -65,7 +69,7 @@ export default function JobPost() {
     const [draftToRestore, setDraftToRestore] = useState<{ data: JobFormData, timestamp: Date } | null>(null);
 
     const methods = useForm<JobFormData>({
-        resolver: zodResolver(jobSchema),
+        resolver: zodResolver(jobSchema) as any, // Type assertion to fix resolver compatibility
         defaultValues: {
             job_type: 'fixed_price',
             visibility: 'public',
@@ -173,6 +177,15 @@ export default function JobPost() {
             return;
         }
 
+        // Debug logging
+        console.log('=== JOB SUBMISSION DEBUG ===');
+        console.log('User ID:', user.id);
+        console.log('Form data:', JSON.stringify(data, null, 2));
+        console.log('Budget min:', data.budget_min, 'type:', typeof data.budget_min);
+        console.log('Budget max:', data.budget_max, 'type:', typeof data.budget_max);
+        console.log('Job type:', data.job_type);
+        console.log('Required skills:', data.required_skills);
+
         setIsSubmitting(true);
         try {
             // Upload attachments if any
@@ -199,16 +212,24 @@ export default function JobPost() {
                 }
             }
 
-            // Transform data for DB
+            // Helper function to safely convert to number or null
+            const toNumberOrNull = (value: unknown): number | null => {
+                if (value === null || value === undefined || value === '') return null;
+                const num = Number(value);
+                return isNaN(num) ? null : num;
+            };
+
+            // Transform data for DB with proper type conversions
+            // Skills are stored as JSONB in required_skills column (not separate table)
             const jobData = {
                 client_id: user.id,
                 title: data.title,
                 description: data.description,
                 category: data.category,
                 job_type: data.job_type,
-                budget_min: data.budget_min,
-                budget_max: data.budget_max,
-                hourly_rate: data.hourly_rate,
+                budget_min: toNumberOrNull(data.budget_min),
+                budget_max: toNumberOrNull(data.budget_max),
+                hourly_rate: toNumberOrNull(data.hourly_rate),
                 duration: data.duration,
                 experience_level: data.experience_level,
                 visibility: data.visibility,
@@ -217,7 +238,10 @@ export default function JobPost() {
                 currency: 'TND',
                 proposals_count: 0,
                 views_count: 0,
+                required_skills: data.required_skills || [], // JSONB array of skill objects
             };
+
+            console.log('Final job data for DB:', JSON.stringify(jobData, null, 2));
 
             const { data: job, error } = await supabase
                 .from('jobs')
@@ -225,21 +249,14 @@ export default function JobPost() {
                 .select()
                 .single();
 
-            if (error) throw error;
+            console.log('Supabase response:', { job, error });
 
-            // Insert skills
-            if (data.required_skills && data.required_skills.length > 0) {
-                const jobSkillsData = data.required_skills.map((skill: any) => ({
-                    job_id: job.id,
-                    skill_id: skill.id
-                }));
-
-                const { error: skillsError } = await supabase
-                    .from('job_skills')
-                    .insert(jobSkillsData);
-
-                if (skillsError) throw skillsError;
+            if (error) {
+                console.error('Supabase error details:', error);
+                throw error;
             }
+
+            // Skills are already included in jobData as JSONB - no separate table insert needed
 
             // Clean up autosave
             clearStorage();

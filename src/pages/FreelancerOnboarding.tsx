@@ -129,50 +129,54 @@ function FreelancerOnboarding() {
                 }
             }
 
-            // Save profile with 8s timeout
-            logger.log('[Onboarding] Saving profile...', profileData);
+            // Save profile - wait for actual response (20s timeout)
+            logger.log('[Onboarding] Saving profile to Supabase...', profileData);
 
-            try {
-                const { error: profileError } = await Promise.race([
-                    supabase.from('profiles').upsert(profileData, { onConflict: 'id' }),
-                    new Promise<{ error: { message: string } }>((resolve) =>
-                        setTimeout(() => resolve({ error: { message: 'TIMEOUT' } }), 8000)
-                    )
-                ]);
+            const profileResponse = await Promise.race([
+                supabase.from('profiles').upsert(profileData, { onConflict: 'id' }),
+                new Promise<{ error: { message: string; code?: string } }>((resolve) =>
+                    setTimeout(() => resolve({ error: { message: 'انتهت مهلة الاتصال - يرجى المحاولة مرة أخرى', code: 'TIMEOUT' } }), 20000)
+                )
+            ]);
 
-                if (profileError) {
-                    logger.warn('[Onboarding] Profile save issue:', profileError);
-                    localStorage.setItem('pending_profile', JSON.stringify(profileData));
+            if (profileResponse.error) {
+                const errMsg = profileResponse.error.message;
+                logger.error('[Onboarding] ❌ Profile save FAILED:', profileResponse.error);
+
+                // Show actual error to user
+                if (errMsg.includes('TIMEOUT') || profileResponse.error.code === 'TIMEOUT') {
+                    throw new Error('فشل الاتصال بالخادم - يرجى التحقق من اتصالك بالإنترنت والمحاولة مرة أخرى');
+                } else if (errMsg.includes('violates')) {
+                    throw new Error('خطأ في البيانات - يرجى التأكد من صحة المعلومات');
                 } else {
-                    logger.log('[Onboarding] ✅ Profile saved!');
+                    throw new Error(`فشل حفظ البيانات: ${errMsg}`);
                 }
-            } catch (saveErr) {
-                logger.warn('[Onboarding] Profile save exception:', saveErr);
-                localStorage.setItem('pending_profile', JSON.stringify(profileData));
             }
 
-            // Create freelancer profile entry
+            logger.log('[Onboarding] ✅ Profile saved to Supabase!');
+
+            // Create freelancer profile entry (20s timeout)
             const freelancerData = {
                 id: user!.id,
                 title: data.title,
                 updated_at: new Date().toISOString()
             };
 
-            try {
-                const { error: flError } = await Promise.race([
-                    supabase.from('freelancer_profiles').upsert(freelancerData, { onConflict: 'id' }),
-                    new Promise<{ error: { message: string } }>((resolve) =>
-                        setTimeout(() => resolve({ error: { message: 'TIMEOUT' } }), 8000)
-                    )
-                ]);
+            logger.log('[Onboarding] Saving freelancer profile...', freelancerData);
 
-                if (flError) {
-                    logger.warn('[Onboarding] Freelancer profile save issue:', flError);
-                } else {
-                    logger.log('[Onboarding] ✅ Freelancer profile created!');
-                }
-            } catch (flErr) {
-                logger.warn('[Onboarding] Freelancer save exception:', flErr);
+            const flResponse = await Promise.race([
+                supabase.from('freelancer_profiles').upsert(freelancerData, { onConflict: 'id' }),
+                new Promise<{ error: { message: string; code?: string } }>((resolve) =>
+                    setTimeout(() => resolve({ error: { message: 'TIMEOUT', code: 'TIMEOUT' } }), 20000)
+                )
+            ]);
+
+            if (flResponse.error) {
+                logger.error('[Onboarding] ❌ Freelancer profile save FAILED:', flResponse.error);
+                // This is not fatal - continue anyway but warn
+                showToast('تحذير: لم يتم حفظ بعض البيانات', 'warning');
+            } else {
+                logger.log('[Onboarding] ✅ Freelancer profile saved!');
             }
 
             // Move to step 2
@@ -196,7 +200,7 @@ function FreelancerOnboarding() {
 
         setIsLoading(true);
         try {
-            logger.log('[Onboarding] Saving skills and completing onboarding...');
+            logger.log('[Onboarding] Step 2: Saving skills and completing onboarding...');
 
             const skillsData = {
                 skills: selectedSkills,
@@ -204,32 +208,42 @@ function FreelancerOnboarding() {
                 availability: data.availability as 'available' | 'busy' | 'offline',
             };
 
-            // Save skills with timeout
+            // Save skills (20s timeout) - MUST succeed
+            logger.log('[Onboarding] Saving skills to Supabase...', skillsData);
             try {
                 await Promise.race([
                     updateFreelancerProfile(skillsData),
-                    new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 8000))
+                    new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 20000))
                 ]);
                 logger.log('[Onboarding] ✅ Skills saved!');
-            } catch (skillsErr) {
-                logger.warn('[Onboarding] Skills save failed:', skillsErr);
-                localStorage.setItem('pending_skills', JSON.stringify(skillsData));
+            } catch (skillsErr: any) {
+                logger.error('[Onboarding] ❌ Skills save FAILED:', skillsErr);
+                if (skillsErr.message === 'TIMEOUT') {
+                    throw new Error('فشل الاتصال - يرجى التحقق من اتصالك بالإنترنت والمحاولة مرة أخرى');
+                } else {
+                    throw new Error(`فشل حفظ المهارات: ${skillsErr.message}`);
+                }
             }
 
-            // Mark onboarding as complete!
+            // Mark onboarding as complete - CRITICAL, MUST succeed
+            logger.log('[Onboarding] Marking onboarding as complete...');
             try {
                 await Promise.race([
                     updateProfile({ onboarding_completed: true }),
-                    new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 8000))
+                    new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 20000))
                 ]);
                 logger.log('[Onboarding] ✅ Onboarding marked complete!');
-            } catch (completeErr) {
-                logger.warn('[Onboarding] Could not mark complete:', completeErr);
-                localStorage.setItem('pending_onboarding_complete', 'true');
+            } catch (completeErr: any) {
+                logger.error('[Onboarding] ❌ Failed to mark complete:', completeErr);
+                if (completeErr.message === 'TIMEOUT') {
+                    throw new Error('فشل إكمال التسجيل - يرجى المحاولة مرة أخرى');
+                } else {
+                    throw new Error(`فشل إكمال التسجيل: ${completeErr.message}`);
+                }
             }
 
-            // Refresh profile
-            refreshProfile().catch(e => logger.warn('Profile refresh failed:', e));
+            // Refresh profile to update context
+            await refreshProfile().catch(e => logger.warn('Profile refresh failed:', e));
 
             // SUCCESS! Navigate to dashboard
             showToast('مرحباً بك في خدمة! 🎉', 'success');

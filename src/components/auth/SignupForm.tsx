@@ -20,7 +20,10 @@ function SignupForm({ onComplete }: SignupFormProps) {
     const { showToast } = useToast();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
-    const [step, setStep] = useState<'email' | 'userType'>('email');
+
+    // Read step from URL - if 'select-type' is in URL, show user type selection
+    const urlStep = searchParams.get('step');
+    const [step, setStep] = useState<'email' | 'userType'>(urlStep === 'select-type' ? 'userType' : 'email');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [showPassword, setShowPassword] = useState(false);
