@@ -129,6 +129,38 @@ function FreelancerOnboarding() {
                 }
             }
 
+            // Test connection first (5s timeout) - diagnostic
+            logger.log('[Onboarding] Testing Supabase connection...');
+            const testStart = Date.now();
+            try {
+                const { data: testData, error: testError } = await Promise.race([
+                    supabase.from('profiles').select('id').eq('id', user!.id).limit(1),
+                    new Promise<{ data: null; error: { message: string } }>((resolve) =>
+                        setTimeout(() => resolve({ data: null, error: { message: 'CONNECTION_TEST_TIMEOUT' } }), 5000)
+                    )
+                ]);
+                const testDuration = Date.now() - testStart;
+                logger.log(`[Onboarding] Connection test completed in ${testDuration}ms`, { testData, testError });
+
+                if (testError?.message === 'CONNECTION_TEST_TIMEOUT') {
+                    throw new Error('لا يمكن الاتصال بقاعدة البيانات - الرجاء التحقق من اتصالك بالإنترنت');
+                }
+                if (testError) {
+                    logger.error('[Onboarding] Connection test error:', testError);
+                    throw new Error(`خطأ في الاتصال: ${testError.message}`);
+                }
+
+                // Check if row exists - for better debug info
+                if (testData && testData.length > 0) {
+                    logger.log('[Onboarding] Profile row exists, will UPDATE');
+                } else {
+                    logger.log('[Onboarding] Profile row does NOT exist, will INSERT');
+                }
+            } catch (connErr: any) {
+                logger.error('[Onboarding] Connection test FAILED:', connErr);
+                throw new Error(connErr.message || 'فشل الاتصال بالخادم');
+            }
+
             // Save profile - wait for actual response (20s timeout)
             logger.log('[Onboarding] Saving profile to Supabase...', profileData);
 
