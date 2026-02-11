@@ -27,4 +27,6 @@ coverage
 *.sw?
 
 .vercel
+.env
 .env*.local
+*.tmp

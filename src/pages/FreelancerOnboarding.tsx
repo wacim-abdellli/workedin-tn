@@ -129,14 +129,14 @@ function FreelancerOnboarding() {
                 }
             }
 
-            // Test connection first (5s timeout) - diagnostic
+            /* CONNECTION TEST REMOVED
             logger.log('[Onboarding] Testing Supabase connection...');
             const testStart = Date.now();
             try {
                 const { data: testData, error: testError } = await Promise.race([
                     supabase.from('profiles').select('id').eq('id', user!.id).limit(1),
                     new Promise<{ data: null; error: { message: string } }>((resolve) =>
-                        setTimeout(() => resolve({ data: null, error: { message: 'CONNECTION_TEST_TIMEOUT' } }), 5000)
+                        setTimeout(() => resolve({ data: null, error: { message: 'CONNECTION_TEST_TIMEOUT' } }), 30000)
                     )
                 ]);
                 const testDuration = Date.now() - testStart;
@@ -160,14 +160,44 @@ function FreelancerOnboarding() {
                 logger.error('[Onboarding] Connection test FAILED:', connErr);
                 throw new Error(connErr.message || 'فشل الاتصال بالخادم');
             }
+            CONNECTION TEST END */
 
-            // Save profile - wait for actual response (20s timeout)
-            logger.log('[Onboarding] Saving profile to Supabase...', profileData);
+            // Try direct fetch to bypass Supabase client library
+            logger.log('[Onboarding] STEP 1: Starting profile save...');
+            const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+            const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+            logger.log('[Onboarding] STEP 2: Getting session...');
+            const { data: { session } } = await supabase.auth.getSession();
+            logger.log('[Onboarding] STEP 3: Got session:', !!session);
+            const accessToken = session?.access_token || supabaseKey;
+
+            logger.log('[Onboarding] STEP 4: Using direct fetch to Supabase REST API...');
 
             const profileResponse = await Promise.race([
-                supabase.from('profiles').upsert(profileData, { onConflict: 'id' }),
+                fetch(`${supabaseUrl}/rest/v1/profiles?id=eq.${user!.id}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'apikey': supabaseKey,
+                        'Authorization': `Bearer ${accessToken}`,
+                        'Prefer': 'return=minimal'
+                    },
+                    body: JSON.stringify({
+                        full_name: profileData.full_name,
+                        location: profileData.location,
+                        user_type: profileData.user_type,
+                        updated_at: profileData.updated_at
+                    })
+                }).then(async res => {
+                    if (!res.ok) {
+                        const text = await res.text();
+                        return { error: { message: text, code: res.status.toString() } };
+                    }
+                    return { error: null };
+                }),
                 new Promise<{ error: { message: string; code?: string } }>((resolve) =>
-                    setTimeout(() => resolve({ error: { message: 'انتهت مهلة الاتصال - يرجى المحاولة مرة أخرى', code: 'TIMEOUT' } }), 20000)
+                    setTimeout(() => resolve({ error: { message: 'انتهت مهلة الاتصال - يرجى المحاولة مرة أخرى', code: 'TIMEOUT' } }), 15000)
                 )
             ]);
 

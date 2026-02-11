@@ -3,7 +3,6 @@ import { Send, Paperclip, Loader2, FileText, Download, Check, CheckCheck } from 
 import Button from '../ui/Button';
 import { useTranslation } from '../../i18n';
 import type { Message } from '../../types';
-
 interface ChatMessage extends Omit<Message, 'sender'> {
     type?: 'text' | 'system'; // System messages like "Contract Started"
     sender?: {
