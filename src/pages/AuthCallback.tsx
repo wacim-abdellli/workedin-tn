@@ -1,88 +1,74 @@
-import { logger } from '@/lib/logger';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
-import { supabase, withTimeout } from '../lib/supabase';
+import { supabase } from '../lib/supabase';
+import { useAuth } from '../contexts/AuthContext';
 import { useTranslation } from '../i18n';
 
 const AuthCallback = () => {
     const { dir } = useTranslation();
     const navigate = useNavigate();
+    const { isAuthenticated, isLoading, profile } = useAuth();
     const [error, setError] = useState<string | null>(null);
     const [isStuck, setIsStuck] = useState(false);
+    const hasRedirected = useRef(false);
 
+    // Route the user once AuthContext has both a session AND a profile
     useEffect(() => {
-        let timeoutId: ReturnType<typeof setTimeout>;
+        if (hasRedirected.current) return;
+        if (isLoading) return; // AuthContext still initializing
+        if (!isAuthenticated) return; // No session yet, keep waiting
 
-        // Supabase's `detectSessionInUrl: true` (in supabase.ts) automatically
-        // exchanges the OAuth code from the URL. We just need to listen for
-        // the resulting session via onAuthStateChange.
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(
-            async (event, session) => {
-                // Only act on sign-in events
-                if (event !== 'SIGNED_IN' || !session) return;
+        // We have a session. If profile is loaded, route now.
+        if (profile) {
+            hasRedirected.current = true;
 
-                // Clear the safety timeout since we got a session
-                clearTimeout(timeoutId);
-
-                try {
-                    const { data: profile, error: profileError } = await withTimeout(
-                        supabase
-                            .from('profiles')
-                            .select('user_type, onboarding_completed')
-                            .eq('id', session.user.id)
-                            .single(),
-                        5000,
-                        'fetchProfile'
-                    );
-
-                    if (profileError && profileError.code !== 'PGRST116') {
-                        logger.error('Profile fetch error:', profileError);
-                        if (profileError.message?.includes('schema cache')) {
-                            throw new Error('Database schema synchronization required. Please contact admin.');
-                        }
-                        throw profileError;
-                    }
-
-                    if (!profile) {
-                        navigate('/signup?step=select-type');
-                    } else if (profile.user_type === 'admin') {
-                        navigate('/admin');
-                    } else if (!profile.user_type) {
-                        navigate('/signup?step=select-type');
-                    } else if (!profile.onboarding_completed) {
-                        if (profile.user_type === 'freelancer' || profile.user_type === 'both') {
-                            navigate('/onboarding/freelancer');
-                        } else {
-                            navigate('/onboarding/client');
-                        }
-                    } else {
-                        if (profile.user_type === 'freelancer' || profile.user_type === 'both') {
-                            navigate('/freelancer/dashboard');
-                        } else {
-                            navigate('/client/dashboard');
-                        }
-                    }
-                } catch (err) {
-                    const errorMessage = err instanceof Error ? err.message : 'حدث خطأ أثناء تسجيل الدخول';
-                    logger.error('Auth callback error:', err);
-                    setError(errorMessage);
-                    setIsStuck(true);
+            if (profile.user_type === 'admin') {
+                navigate('/admin', { replace: true });
+            } else if (!profile.user_type) {
+                navigate('/signup?step=select-type', { replace: true });
+            } else if (!profile.onboarding_completed) {
+                if (profile.user_type === 'freelancer' || profile.user_type === 'both') {
+                    navigate('/onboarding/freelancer', { replace: true });
+                } else {
+                    navigate('/onboarding/client', { replace: true });
+                }
+            } else {
+                if (profile.user_type === 'freelancer' || profile.user_type === 'both') {
+                    navigate('/freelancer/dashboard', { replace: true });
+                } else {
+                    navigate('/client/dashboard', { replace: true });
                 }
             }
-        );
+        }
+    }, [isAuthenticated, isLoading, profile, navigate]);
 
-        // Safety timeout: if no SIGNED_IN event fires within 10s, show error
-        timeoutId = setTimeout(() => {
-            setError('انتهت مهلة تسجيل الدخول. يرجى المحاولة مرة أخرى.');
-            setIsStuck(true);
-        }, 10000);
+    // Handle case where session exists but no profile (new OAuth user)
+    useEffect(() => {
+        if (hasRedirected.current) return;
+        if (isLoading) return;
+        if (isAuthenticated && !profile) {
+            // Wait a moment for profile to load, then redirect to signup
+            const timer = setTimeout(() => {
+                if (!hasRedirected.current && !profile) {
+                    hasRedirected.current = true;
+                    navigate('/signup?step=select-type', { replace: true });
+                }
+            }, 3000);
+            return () => clearTimeout(timer);
+        }
+    }, [isAuthenticated, isLoading, profile, navigate]);
 
-        return () => {
-            clearTimeout(timeoutId);
-            subscription.unsubscribe();
-        };
-    }, [navigate]);
+    // Safety timeout: if nothing happens within 12s, show error
+    useEffect(() => {
+        const timeoutId = setTimeout(() => {
+            if (!hasRedirected.current) {
+                setError('انتهت مهلة تسجيل الدخول. يرجى المحاولة مرة أخرى.');
+                setIsStuck(true);
+            }
+        }, 12000);
+        return () => clearTimeout(timeoutId);
+    }, []);
 
     const handleLogout = async () => {
         await supabase.auth.signOut();
@@ -113,14 +99,8 @@ const AuthCallback = () => {
                                 >
                                     تسجيل الخروج والمحاولة مرة أخرى
                                 </button>
-                                {error.includes('schema') && (
-                                    <p className="text-xs text-gray-500 mt-2">
-                                        تنبيه للمسؤول: يرجى تحديث "Schema Cache" من لوحة تحكم Supabase.
-                                    </p>
-                                )}
                             </div>
                         )}
-                        {!isStuck && <p className="text-sm text-gray-500">جاري التحويل لصفحة تسجيل الدخول...</p>}
                     </div>
                 ) : (
                     <>
