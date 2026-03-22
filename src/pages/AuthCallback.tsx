@@ -3,19 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useTranslation } from '../i18n';
+import { logger } from '@/lib/logger';
 
 /**
- * AuthCallback — handles the OAuth redirect.
+ * AuthCallback — handles the OAuth redirect after Google sign-in.
  *
- * The Supabase client (`detectSessionInUrl: true`) automatically exchanges
- * the code in the URL for a session and stores it in localStorage.
- *
- * We simply wait for the SIGNED_IN event, then redirect to "/".
- * The rest of the app (AuthContext, ProtectedRoute, etc.) will read
- * the session from localStorage and route the user to the correct page.
- *
- * We intentionally do NOT query the database here because the Supabase
- * JS client can stall on DB calls immediately after a PKCE code exchange.
+ * Strategy:
+ * 1. Try to exchange the code from the URL manually (in case detectSessionInUrl missed it)
+ * 2. Then poll getSession() until a session appears
+ * 3. Redirect to "/" and let the app's routing handle it
  */
 const AuthCallback = () => {
     const { dir } = useTranslation();
@@ -23,26 +19,72 @@ const AuthCallback = () => {
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(
-            (event) => {
-                if (event === 'SIGNED_IN') {
-                    // Session is now in localStorage.
-                    // Redirect to home — the app's normal routing will take over.
+        let cancelled = false;
+
+        const handleAuth = async () => {
+            try {
+                // Step 1: Check if there's already a session (e.g., detectSessionInUrl worked)
+                const { data: { session: existingSession } } = await supabase.auth.getSession();
+                if (existingSession && !cancelled) {
+                    logger.info('AuthCallback: existing session found');
                     navigate('/', { replace: true });
+                    return;
+                }
+
+                // Step 2: Manually exchange the code from the URL
+                const url = new URL(window.location.href);
+                const code = url.searchParams.get('code');
+
+                if (code) {
+                    logger.info('AuthCallback: exchanging code manually');
+                    const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+
+                    if (exchangeError) {
+                        // Code might have already been used by detectSessionInUrl
+                        logger.warn('AuthCallback: code exchange error (may be already used):', exchangeError.message);
+                    }
+
+                    if (data?.session && !cancelled) {
+                        logger.info('AuthCallback: session created via manual exchange');
+                        navigate('/', { replace: true });
+                        return;
+                    }
+                }
+
+                // Step 3: Poll getSession() as last resort — the session might appear
+                // after detectSessionInUrl finishes in the background
+                for (let i = 0; i < 15 && !cancelled; i++) {
+                    await new Promise(r => setTimeout(r, 500));
+                    const { data: { session } } = await supabase.auth.getSession();
+                    if (session && !cancelled) {
+                        logger.info('AuthCallback: session found after polling attempt', i + 1);
+                        navigate('/', { replace: true });
+                        return;
+                    }
+                }
+
+                // If we get here, nothing worked
+                if (!cancelled) {
+                    setError('انتهت مهلة تسجيل الدخول. يرجى المحاولة مرة أخرى.');
+                }
+            } catch (err) {
+                if (!cancelled) {
+                    logger.error('AuthCallback error:', err);
+                    setError('حدث خطأ أثناء تسجيل الدخول. يرجى المحاولة مرة أخرى.');
                 }
             }
-        );
+        };
 
-        // Safety: if nothing happens in 10s, show error
-        const timeoutId = setTimeout(() => {
-            setError('انتهت مهلة تسجيل الدخول. يرجى المحاولة مرة أخرى.');
-        }, 10000);
+        handleAuth();
 
         return () => {
-            clearTimeout(timeoutId);
-            subscription.unsubscribe();
+            cancelled = true;
         };
     }, [navigate]);
+
+    const handleRetry = () => {
+        navigate('/login');
+    };
 
     const handleLogout = async () => {
         await supabase.auth.signOut();
@@ -64,12 +106,18 @@ const AuthCallback = () => {
                         </div>
                         <h3 className="text-lg font-bold text-gray-900 dark:text-white">حدث خطأ</h3>
                         <p className="text-red-600 dark:text-red-400 text-sm mb-4">{error}</p>
-                        <div className="pt-4 border-t border-gray-100 dark:border-gray-700">
+                        <div className="pt-4 border-t border-gray-100 dark:border-gray-700 space-y-2">
+                            <button
+                                onClick={handleRetry}
+                                className="w-full btn-primary justify-center"
+                            >
+                                إعادة المحاولة
+                            </button>
                             <button
                                 onClick={handleLogout}
                                 className="w-full btn-secondary justify-center"
                             >
-                                تسجيل الخروج والمحاولة مرة أخرى
+                                تسجيل الخروج
                             </button>
                         </div>
                     </div>
