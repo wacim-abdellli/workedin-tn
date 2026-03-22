@@ -7,7 +7,7 @@ import { Loading } from '../common';
  * Non-admin users are redirected to the home page.
  */
 export function AdminRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, isLoading, profile } = useAuth();
+  const { isAuthenticated, isLoading, profile, user } = useAuth();
 
   if (isLoading) {
     return <Loading fullScreen />;
@@ -24,7 +24,7 @@ export function AdminRoute({ children }: { children: React.ReactNode }) {
     // Add your admin email(s) here
   ];
 
-  const userEmail = profile?.email || '';
+  const userEmail = user?.email || profile?.email || '';
   const isAdmin = ADMIN_EMAILS.includes(userEmail);
 
   if (!isAdmin) {

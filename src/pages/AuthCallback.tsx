@@ -14,6 +14,18 @@ const AuthCallback = () => {
     useEffect(() => {
         const handleCallback = async () => {
             try {
+                // Exchange code for session if present (PKCE flow)
+                const urlParams = new URLSearchParams(window.location.search);
+                const code = urlParams.get('code');
+                
+                if (code) {
+                    // We don't throw an error here because the Supabase client
+                    // might have already exchanged the code in the background automatically.
+                    await supabase.auth.exchangeCodeForSession(code).catch(err => {
+                        logger.warn('Code exchange warning (can be ignored if session exists):', err);
+                    });
+                }
+
                 const { data: { session }, error: sessionError } = await supabase.auth.getSession();
 
                 if (sessionError) throw sessionError;
@@ -45,6 +57,8 @@ const AuthCallback = () => {
                     if (!profile) {
                         // New OAuth user -> Redirect to signup for role selection
                         navigate('/signup?step=select-type');
+                    } else if (profile.user_type === 'admin') {
+                        navigate('/admin');
                     } else if (!profile.user_type) {
                         navigate('/signup?step=select-type');
                     } else if (!profile.onboarding_completed) {
