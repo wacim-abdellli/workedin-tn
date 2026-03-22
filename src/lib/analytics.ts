@@ -9,9 +9,11 @@ export interface AnalyticsProperties {
 }
 
 export const initAnalytics = () => {
-    if (import.meta.env.PROD) {
-        posthog.init(import.meta.env.VITE_POSTHOG_KEY, {
-            api_host: 'https://app.posthog.com',
+    const key = import.meta.env.VITE_POSTHOG_KEY;
+    const host = import.meta.env.VITE_POSTHOG_HOST || 'https://app.posthog.com';
+    if (import.meta.env.PROD && key) {
+        posthog.init(key, {
+            api_host: host,
         })
     }
 }

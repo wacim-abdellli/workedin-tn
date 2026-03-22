@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     Users,
@@ -20,8 +20,13 @@ import {
     TrendingUp,
     UserPlus,
     Activity,
+    RefreshCw,
+    CreditCard,
+    Loader2,
 } from 'lucide-react';
 import Button from '../components/ui/Button';
+import { getStuckTransactions, reconcilePayment, type StuckTransaction } from '../services/payments';
+import { useToast } from '../components/ui/Toast';
 
 // Mock admin stats
 const MOCK_STATS = {
@@ -56,13 +61,39 @@ const MOCK_USERS = [
     { id: 'u4', name: 'فاطمة حسن', email: 'fatma@example.com', type: 'freelancer', status: 'suspended', joined: '2024-01-05', last_active: 'منذ أسبوع' },
 ];
 
-type Tab = 'overview' | 'users' | 'jobs' | 'verifications' | 'disputes' | 'reports' | 'settings';
+type Tab = 'overview' | 'users' | 'jobs' | 'payments' | 'verifications' | 'disputes' | 'reports' | 'settings';
 
 export default function AdminDashboard() {
     const navigate = useNavigate();
+    const { showToast } = useToast();
     const [activeTab, setActiveTab] = useState<Tab>('overview');
     const [searchQuery, setSearchQuery] = useState('');
     const [userFilter, setUserFilter] = useState<'all' | 'freelancer' | 'client'>('all');
+    const [stuckPayments, setStuckPayments] = useState<StuckTransaction[]>([]);
+    const [loadingPayments, setLoadingPayments] = useState(false);
+    const [retryingId, setRetryingId] = useState<string | null>(null);
+
+    // Fetch stuck payments when payments tab is active
+    useEffect(() => {
+        if (activeTab === 'payments') {
+            setLoadingPayments(true);
+            getStuckTransactions()
+                .then(setStuckPayments)
+                .finally(() => setLoadingPayments(false));
+        }
+    }, [activeTab]);
+
+    const handleRetryPayment = async (txId: string) => {
+        setRetryingId(txId);
+        const result = await reconcilePayment(txId);
+        setRetryingId(null);
+        if (result.success) {
+            showToast(result.message, 'success');
+            setStuckPayments(prev => prev.filter(t => t.id !== txId));
+        } else {
+            showToast(result.message, 'error');
+        }
+    };
 
     const StatCard = ({ icon: Icon, label, value, trend, color }: { icon: React.ElementType; label: string; value: string | number; trend?: number; color: string }) => (
         <div className="card">
@@ -82,10 +113,11 @@ export default function AdminDashboard() {
         </div>
     );
 
-    const tabs: { id: Tab; label: string; icon: any }[] = [
+    const tabs: { id: Tab; label: string; icon: React.ElementType }[] = [
         { id: 'overview', label: 'نظرة عامة', icon: BarChart3 },
         { id: 'users', label: 'المستخدمون', icon: Users },
         { id: 'jobs', label: 'الوظائف', icon: Briefcase },
+        { id: 'payments', label: 'المدفوعات المعلقة', icon: CreditCard },
         { id: 'verifications', label: 'التحقق', icon: Shield },
         { id: 'disputes', label: 'النزاعات', icon: AlertTriangle },
         { id: 'reports', label: 'البلاغات', icon: Flag },
@@ -411,6 +443,81 @@ export default function AdminDashboard() {
                                             </div>
                                         ))}
                                     </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {activeTab === 'payments' && (
+                            <div className="space-y-6">
+                                <div className="card">
+                                    <div className="flex items-center justify-between mb-6">
+                                        <h3 className="font-bold text-foreground flex items-center gap-2">
+                                            <CreditCard className="w-5 h-5 text-yellow-600" />
+                                            المدفوعات المعلقة (أكثر من ساعة)
+                                        </h3>
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => {
+                                                setLoadingPayments(true);
+                                                getStuckTransactions()
+                                                    .then(setStuckPayments)
+                                                    .finally(() => setLoadingPayments(false));
+                                            }}
+                                        >
+                                            <RefreshCw className={`w-4 h-4 ml-1 ${loadingPayments ? 'animate-spin' : ''}`} />
+                                            تحديث
+                                        </Button>
+                                    </div>
+
+                                    {loadingPayments ? (
+                                        <div className="text-center py-12">
+                                            <Loader2 className="w-8 h-8 animate-spin text-primary-600 mx-auto mb-2" />
+                                            <p className="text-muted">جاري التحميل...</p>
+                                        </div>
+                                    ) : stuckPayments.length === 0 ? (
+                                        <div className="text-center py-12">
+                                            <Check className="w-12 h-12 text-green-500 mx-auto mb-2" />
+                                            <p className="text-foreground font-medium">لا توجد مدفوعات معلقة</p>
+                                            <p className="text-sm text-muted">جميع المعاملات تمت بنجاح</p>
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-3">
+                                            {stuckPayments.map(tx => (
+                                                <div key={tx.id} className="flex items-center justify-between p-4 bg-yellow-50 border border-yellow-200 rounded-xl">
+                                                    <div>
+                                                        <div className="flex items-center gap-2 mb-1">
+                                                            <span className="px-2 py-0.5 bg-yellow-200 text-yellow-800 text-xs rounded-full">
+                                                                {tx.type}
+                                                            </span>
+                                                            <span className="font-medium text-foreground">
+                                                                {tx.amount} د.ت
+                                                            </span>
+                                                        </div>
+                                                        <p className="text-sm text-muted">
+                                                            ID: {tx.id.slice(0, 8)}... • 
+                                                            {new Date(tx.created_at).toLocaleString('ar-TN')}
+                                                        </p>
+                                                    </div>
+                                                    <Button
+                                                        variant="primary"
+                                                        size="sm"
+                                                        disabled={retryingId === tx.id}
+                                                        onClick={() => handleRetryPayment(tx.id)}
+                                                    >
+                                                        {retryingId === tx.id ? (
+                                                            <Loader2 className="w-4 h-4 animate-spin" />
+                                                        ) : (
+                                                            <>
+                                                                <RefreshCw className="w-4 h-4 ml-1" />
+                                                                إعادة المحاولة
+                                                            </>
+                                                        )}
+                                                    </Button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         )}

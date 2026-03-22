@@ -82,3 +82,54 @@ export async function getEarningsStats(userId: string) {
         transactionCount: transactions.length,
     };
 }
+
+// --- ADMIN: STUCK TRANSACTIONS ---
+
+export interface StuckTransaction {
+    id: string;
+    user_id: string;
+    amount: number;
+    type: string;
+    status: string;
+    reference_id: string;
+    created_at: string;
+    user_name: string | null;
+    email: string | null;
+}
+
+export async function getStuckTransactions(): Promise<StuckTransaction[]> {
+    const { data, error } = await supabase
+        .from('transactions')
+        .select('id, user_id, amount, type, status, reference_id, created_at')
+        .eq('status', 'pending')
+        .lt('created_at', new Date(Date.now() - 60 * 60 * 1000).toISOString())
+        .order('created_at', { ascending: true });
+
+    if (error || !data) return [];
+    return data as unknown as StuckTransaction[];
+}
+
+export async function reconcilePayment(transactionId: string): Promise<{ success: boolean; message: string }> {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return { success: false, message: 'Not authenticated' };
+
+    const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/reconcile-payment`,
+        {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${session.access_token}`,
+                'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+            },
+            body: JSON.stringify({ transaction_id: transactionId }),
+        }
+    );
+
+    const result = await response.json();
+    if (!response.ok) {
+        return { success: false, message: result.error || 'Reconciliation failed' };
+    }
+    return { success: true, message: result.message };
+}
+
