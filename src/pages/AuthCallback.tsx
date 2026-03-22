@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useTranslation } from '../i18n';
@@ -8,67 +7,57 @@ import { logger } from '@/lib/logger';
 /**
  * AuthCallback — handles the OAuth redirect after Google sign-in.
  *
- * Strategy (React Strict Mode Safe):
- * By enabling `detectSessionInUrl: true` in the Supabase client, the OAuth code
- * exchange is handled automatically in the background. We simply poll `getSession()`
- * until the session appears. This avoids race conditions where strict mode double-invocations
- * try to exchange the identical single-use OAuth code twice.
+ * Strategy (Hard Reload):
+ * The Supabase JS client (`detectSessionInUrl: true`) automatically exchanges
+ * the code in the URL. However, in certain environments (like React Strict Mode
+ * + Vite SPA), this background exchange can deadlock the client's internal locks,
+ * causing any subsequent `getSession()` calls to hang infinitely during single-page
+ * navigation.
+ *
+ * FIX: We simply give Supabase 2.5 seconds to finish its background HTTP request
+ * and save the tokens to localStorage. Then, we FORCE a hard browser refresh
+ * (`window.location.replace('/')`). This destroys the deadlocked client instance
+ * and builds a fresh one that reads the perfectly saved localStorage session.
  */
 const AuthCallback = () => {
     const { dir } = useTranslation();
-    const navigate = useNavigate();
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        let mounted = true;
+        let timer: ReturnType<typeof setTimeout>;
 
-        const handleAuth = async () => {
-            try {
-                // Poll for up to 15 seconds (30 * 500ms) to give detectSessionInUrl enough time
-                for (let i = 0; i < 30 && mounted; i++) {
-                    const { data: { session } } = await supabase.auth.getSession();
-                    if (session && mounted) {
-                        logger.info('AuthCallback: session found after polling attempt', i + 1);
-                        navigate('/', { replace: true });
-                        return;
-                    }
-                    await new Promise(r => setTimeout(r, 500));
-                }
-
-                if (mounted) {
-                    setError('انتهت مهلة تسجيل الدخول. يرجى المحاولة مرة أخرى.');
-                }
-            } catch (err) {
-                if (mounted) {
-                    logger.error('AuthCallback polling error:', err);
-                    setError('حدث خطأ أثناء تسجيل الدخول. يرجى المحاولة مرة أخرى.');
-                }
-            }
-        };
-
-        handleAuth();
-
-        // Also listen for auth state changes as a backup
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-            if (event === 'SIGNED_IN' && session && mounted) {
-                logger.info('AuthCallback: session found via onAuthStateChange');
-                navigate('/', { replace: true });
+        // 1. Listen for the native SIGNED_IN event from the background exchange.
+        // If it fires, trigger the hard reload immediately.
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+            if (event === 'SIGNED_IN') {
+                logger.info('AuthCallback: SIGNED_IN detected, forcing hard reload...');
+                window.location.replace('/');
             }
         });
 
+        // 2. Fallback: If the event was missed or silenced by the lock bug,
+        // just hard reload after 2.5 seconds anyway. 2.5s is plenty of time
+        // for the background fetch to exchange the code and save to localStorage.
+        timer = setTimeout(() => {
+            logger.info('AuthCallback: Timed out waiting for event, forcing hard reload as fallback...');
+            window.location.replace('/');
+        }, 2500);
+
         return () => {
-            mounted = false;
+            clearTimeout(timer);
             subscription.unsubscribe();
         };
-    }, [navigate]);
+    }, []);
 
     const handleRetry = () => {
-        navigate('/login');
+        window.location.replace('/login');
     };
 
     const handleLogout = async () => {
-        await supabase.auth.signOut();
-        navigate('/login');
+        // We use localStorage directly in case supabase.auth is deadlocked
+        localStorage.clear();
+        sessionStorage.clear();
+        window.location.replace('/login');
     };
 
     return (
