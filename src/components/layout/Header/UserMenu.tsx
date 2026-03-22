@@ -32,13 +32,16 @@ export interface UserMenuProps {
     };
 }
 
+import { ADMIN_EMAILS } from '@/components/routing/AdminRoute';
+
 export function UserMenu({ user, profile, signOut, t }: UserMenuProps) {
     const [menuOpen, setMenuOpen] = useState(false);
     const [isLoggingOut, setIsLoggingOut] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
 
-    // Check if user is admin
-    const isAdmin = profile?.is_admin || false;
+    // Check if user is admin using the email allowlist
+    const userEmail = user.email || '';
+    const isAdmin = profile?.is_admin || ADMIN_EMAILS.includes(userEmail);
 
     // ... (existing useEffects)
 
