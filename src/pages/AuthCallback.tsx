@@ -1,74 +1,48 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
-import { useAuth } from '../contexts/AuthContext';
 import { useTranslation } from '../i18n';
 
+/**
+ * AuthCallback — handles the OAuth redirect.
+ *
+ * The Supabase client (`detectSessionInUrl: true`) automatically exchanges
+ * the code in the URL for a session and stores it in localStorage.
+ *
+ * We simply wait for the SIGNED_IN event, then redirect to "/".
+ * The rest of the app (AuthContext, ProtectedRoute, etc.) will read
+ * the session from localStorage and route the user to the correct page.
+ *
+ * We intentionally do NOT query the database here because the Supabase
+ * JS client can stall on DB calls immediately after a PKCE code exchange.
+ */
 const AuthCallback = () => {
     const { dir } = useTranslation();
     const navigate = useNavigate();
-    const { isAuthenticated, isLoading, profile } = useAuth();
     const [error, setError] = useState<string | null>(null);
-    const [isStuck, setIsStuck] = useState(false);
-    const hasRedirected = useRef(false);
 
-    // Route the user once AuthContext has both a session AND a profile
     useEffect(() => {
-        if (hasRedirected.current) return;
-        if (isLoading) return; // AuthContext still initializing
-        if (!isAuthenticated) return; // No session yet, keep waiting
-
-        // We have a session. If profile is loaded, route now.
-        if (profile) {
-            hasRedirected.current = true;
-
-            if (profile.user_type === 'admin') {
-                navigate('/admin', { replace: true });
-            } else if (!profile.user_type) {
-                navigate('/signup?step=select-type', { replace: true });
-            } else if (!profile.onboarding_completed) {
-                if (profile.user_type === 'freelancer' || profile.user_type === 'both') {
-                    navigate('/onboarding/freelancer', { replace: true });
-                } else {
-                    navigate('/onboarding/client', { replace: true });
-                }
-            } else {
-                if (profile.user_type === 'freelancer' || profile.user_type === 'both') {
-                    navigate('/freelancer/dashboard', { replace: true });
-                } else {
-                    navigate('/client/dashboard', { replace: true });
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(
+            (event) => {
+                if (event === 'SIGNED_IN') {
+                    // Session is now in localStorage.
+                    // Redirect to home — the app's normal routing will take over.
+                    navigate('/', { replace: true });
                 }
             }
-        }
-    }, [isAuthenticated, isLoading, profile, navigate]);
+        );
 
-    // Handle case where session exists but no profile (new OAuth user)
-    useEffect(() => {
-        if (hasRedirected.current) return;
-        if (isLoading) return;
-        if (isAuthenticated && !profile) {
-            // Wait a moment for profile to load, then redirect to signup
-            const timer = setTimeout(() => {
-                if (!hasRedirected.current && !profile) {
-                    hasRedirected.current = true;
-                    navigate('/signup?step=select-type', { replace: true });
-                }
-            }, 3000);
-            return () => clearTimeout(timer);
-        }
-    }, [isAuthenticated, isLoading, profile, navigate]);
-
-    // Safety timeout: if nothing happens within 12s, show error
-    useEffect(() => {
+        // Safety: if nothing happens in 10s, show error
         const timeoutId = setTimeout(() => {
-            if (!hasRedirected.current) {
-                setError('انتهت مهلة تسجيل الدخول. يرجى المحاولة مرة أخرى.');
-                setIsStuck(true);
-            }
-        }, 12000);
-        return () => clearTimeout(timeoutId);
-    }, []);
+            setError('انتهت مهلة تسجيل الدخول. يرجى المحاولة مرة أخرى.');
+        }, 10000);
+
+        return () => {
+            clearTimeout(timeoutId);
+            subscription.unsubscribe();
+        };
+    }, [navigate]);
 
     const handleLogout = async () => {
         await supabase.auth.signOut();
@@ -90,17 +64,14 @@ const AuthCallback = () => {
                         </div>
                         <h3 className="text-lg font-bold text-gray-900 dark:text-white">حدث خطأ</h3>
                         <p className="text-red-600 dark:text-red-400 text-sm mb-4">{error}</p>
-
-                        {isStuck && (
-                            <div className="pt-4 border-t border-gray-100 dark:border-gray-700">
-                                <button
-                                    onClick={handleLogout}
-                                    className="w-full btn-secondary justify-center"
-                                >
-                                    تسجيل الخروج والمحاولة مرة أخرى
-                                </button>
-                            </div>
-                        )}
+                        <div className="pt-4 border-t border-gray-100 dark:border-gray-700">
+                            <button
+                                onClick={handleLogout}
+                                className="w-full btn-secondary justify-center"
+                            >
+                                تسجيل الخروج والمحاولة مرة أخرى
+                            </button>
+                        </div>
                     </div>
                 ) : (
                     <>
