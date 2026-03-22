@@ -1,14 +1,19 @@
 /**
  * Supabase Edge Function: Flouci Payment Verification
- * 
- * This function securely verifies payment status with Flouci.
- * Can optionally complete the payment atomically in the database.
+ *
+ * SECURITY:
+ * - Requires authenticated user
+ * - Verifies caller is the contract's client before completing payment
+ * - CORS restricted to production domain
+ * - APP_SECRET stays server-side
  */
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
+const ALLOWED_ORIGIN = Deno.env.get('ALLOWED_ORIGIN') || 'https://khedma.tn'
+
 const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
@@ -16,25 +21,46 @@ const FLOUCI_API_URL = Deno.env.get('FLOUCI_API_URL') || 'https://developers.flo
 const APP_TOKEN = Deno.env.get('FLOUCI_APP_TOKEN')!
 const APP_SECRET = Deno.env.get('FLOUCI_APP_SECRET')!
 
-serve(async (req) => {
+serve(async (req: Request) => {
     // Handle CORS preflight
     if (req.method === 'OPTIONS') {
         return new Response('ok', { headers: corsHeaders })
     }
 
     try {
+        // --- AUTH CHECK ---
+        const supabase = createClient(
+            Deno.env.get('SUPABASE_URL')!,
+            Deno.env.get('SUPABASE_ANON_KEY')!,
+            {
+                global: {
+                    headers: { Authorization: req.headers.get('Authorization')! }
+                }
+            }
+        )
+
+        const { data: { user }, error: authError } = await supabase.auth.getUser()
+        if (authError || !user) {
+            console.error('[Flouci Edge] Auth error:', authError)
+            return new Response(
+                JSON.stringify({ error: 'Unauthorized', details: 'You must be logged in to verify a payment' }),
+                { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            )
+        }
+
+        // --- INPUT VALIDATION ---
         const { payment_id, complete_payment, transaction_id, contract_id, freelancer_id, amount } = await req.json()
 
-        if (!payment_id) {
+        if (!payment_id || typeof payment_id !== 'string') {
             return new Response(
-                JSON.stringify({ error: 'payment_id is required' }),
+                JSON.stringify({ error: 'payment_id is required and must be a string' }),
                 { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
             )
         }
 
-        console.log('[Flouci Edge] Verifying payment:', payment_id)
+        console.log('[Flouci Edge] Verifying payment:', payment_id, 'for user:', user.id)
 
-        // Verify with Flouci
+        // --- VERIFY WITH FLOUCI ---
         const response = await fetch(`${FLOUCI_API_URL}/verify_payment/${payment_id}`, {
             method: 'GET',
             headers: {
@@ -62,7 +88,7 @@ serve(async (req) => {
             created_at: data.result?.created_at || new Date().toISOString(),
         }
 
-        // If payment is successful and complete_payment flag is set, complete atomically
+        // --- ATOMIC PAYMENT COMPLETION ---
         if (complete_payment && verificationResult.status === 'SUCCESS' && transaction_id && contract_id && freelancer_id) {
             console.log('[Flouci Edge] Completing payment atomically...')
 
@@ -71,6 +97,29 @@ serve(async (req) => {
                 Deno.env.get('SUPABASE_URL')!,
                 Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
             )
+
+            // SECURITY: Verify the authenticated user is the contract's client
+            const { data: contract, error: contractError } = await supabaseAdmin
+                .from('contracts')
+                .select('client_id')
+                .eq('id', contract_id)
+                .single()
+
+            if (contractError || !contract) {
+                console.error('[Flouci Edge] Contract not found:', contractError)
+                return new Response(
+                    JSON.stringify({ error: 'Contract not found' }),
+                    { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+                )
+            }
+
+            if (contract.client_id !== user.id) {
+                console.error('[Flouci Edge] User', user.id, 'is not the client of contract', contract_id)
+                return new Response(
+                    JSON.stringify({ error: 'Forbidden: you are not the client of this contract' }),
+                    { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+                )
+            }
 
             // Call atomic function
             const { data: completionResult, error: completionError } = await supabaseAdmin.rpc('complete_escrow_payment', {
@@ -104,10 +153,11 @@ serve(async (req) => {
             JSON.stringify(verificationResult),
             { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
-    } catch (error) {
-        console.error('[Flouci Edge] Verification error:', error)
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'Internal server error'
+        console.error('[Flouci Edge] Verification error:', message)
         return new Response(
-            JSON.stringify({ error: error.message || 'Internal server error' }),
+            JSON.stringify({ error: message }),
             { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
     }

@@ -54,6 +54,22 @@ export interface Skill {
     icon?: string;
 }
 
+/** DB-compatible skill entry — matches the JSONB format in freelancer_profiles.skills */
+export interface SkillEntry {
+    name: string;  // skill ID (matches Skill.id)
+    level: 'beginner' | 'intermediate' | 'expert';
+}
+
+/** Convert a frontend Skill to a DB SkillEntry */
+export function skillToEntry(skill: Skill, level: SkillEntry['level'] = 'intermediate'): SkillEntry {
+    return { name: skill.id, level };
+}
+
+/** Convert a DB SkillEntry back to a frontend Skill using a lookup map */
+export function entryToSkill(entry: SkillEntry, skillsMap: Record<string, Skill>): Skill | null {
+    return skillsMap[entry.name] || null;
+}
+
 export type Availability = 'available' | 'busy' | 'offline';
 
 export interface LanguageEntry {
@@ -74,7 +90,7 @@ export interface FreelancerProfile {
     title?: string;
     hourly_rate?: number;
     availability?: Availability;
-    skills: Skill[];
+    skills: Skill[] | SkillEntry[];
     languages?: LanguageEntry[];
     education?: EducationEntry[];
     voice_intro_url?: string;

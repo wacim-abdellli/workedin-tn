@@ -498,7 +498,7 @@ function JobDetail() {
                             <div className="flex flex-wrap gap-2">
                                 {job.required_skills?.map((skill, index) => {
                                     const isMatch = freelancerProfile?.skills?.some(
-                                        s => s.name_ar === skill || s.name_en === skill
+                                        s => ('name_ar' in s) ? (s.name_ar === skill || s.name_en === skill) : s.name === skill
                                     );
                                     return (
                                         <span

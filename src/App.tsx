@@ -1,6 +1,8 @@
 import { Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { queryClient } from './lib/queryClient';
 import { I18nProvider } from './i18n';
 import { ToastProvider } from './components/ui/Toast';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
@@ -10,6 +12,7 @@ import { Loading } from './components/common';
 import ScrollToTop from './components/ui/ScrollToTop';
 
 import { ProfileRedirect } from './components/routing/ProfileRedirect';
+import { AdminRoute } from './components/routing/AdminRoute';
 import { DashboardRedirect } from './components/navigation/DashboardRedirect';
 import { MyJobsRedirect } from './components/navigation/MyJobsRedirect';
 import { SavedRedirect } from './components/navigation/SavedRedirect';
@@ -157,11 +160,7 @@ function AppRoutes() {
           <JobPost />
         </ProtectedRoute>
       } />
-      <Route path="/post-job" element={
-        <ProtectedRoute>
-          <JobPost />
-        </ProtectedRoute>
-      } />
+      <Route path="/post-job" element={<Navigate to="/jobs/new" replace />} />
       <Route path="/jobs/posted/:jobId" element={
         <ProtectedRoute>
           <JobPostSuccess />
@@ -172,7 +171,7 @@ function AppRoutes() {
           <JobMatches />
         </ProtectedRoute>
       } />
-      <Route path="/jobs/:jobId" element={<JobDetail />} />
+      <Route path="/jobs/:jobId" element={<ErrorBoundary><JobDetail /></ErrorBoundary>} />
       <Route path="/jobs" element={<JobBoard />} />
 
       {/* Freelancer Discovery */}
@@ -195,8 +194,16 @@ function AppRoutes() {
       } />
 
       {/* Payment routes */}
-      <Route path="/payment/success" element={<PaymentSuccess />} />
-      <Route path="/payment/failed" element={<PaymentFailed />} />
+      <Route path="/payment/success" element={
+        <ProtectedRoute>
+          <PaymentSuccess />
+        </ProtectedRoute>
+      } />
+      <Route path="/payment/failed" element={
+        <ProtectedRoute>
+          <PaymentFailed />
+        </ProtectedRoute>
+      } />
 
       {/* Profile & Settings */}
       <Route path="/profile" element={
@@ -205,7 +212,9 @@ function AppRoutes() {
         </ProtectedRoute>
       } />
       <Route path="/freelancer/:usernameOrId" element={
-        <FreelancerProfile />
+        <ErrorBoundary>
+          <FreelancerProfile />
+        </ErrorBoundary>
       } />
       <Route path="/settings" element={
         <ProtectedRoute>
@@ -221,16 +230,16 @@ function AppRoutes() {
       {/* Admin */}
       <Route path="/admin" element={
         <ErrorBoundary>
-          <ProtectedRoute>
+          <AdminRoute>
             <AdminDashboard />
-          </ProtectedRoute>
+          </AdminRoute>
         </ErrorBoundary>
       } />
       <Route path="/admin/verifications" element={
         <ErrorBoundary>
-          <ProtectedRoute>
+          <AdminRoute>
             <VerificationQueue />
-          </ProtectedRoute>
+          </AdminRoute>
         </ErrorBoundary>
       } />
 
@@ -269,19 +278,21 @@ function AppContent() {
 function App() {
   return (
     <HelmetProvider>
-      <BrowserRouter>
-        <ThemeProvider>
-          <I18nProvider defaultLanguage="ar">
-            <ErrorBoundary>
-              <AuthProvider>
-                <ToastProvider>
-                  <AppContent />
-                </ToastProvider>
-              </AuthProvider>
-            </ErrorBoundary>
-          </I18nProvider>
-        </ThemeProvider>
-      </BrowserRouter>
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
+          <ThemeProvider>
+            <I18nProvider defaultLanguage="ar">
+              <ErrorBoundary>
+                <AuthProvider>
+                  <ToastProvider>
+                    <AppContent />
+                  </ToastProvider>
+                </AuthProvider>
+              </ErrorBoundary>
+            </I18nProvider>
+          </ThemeProvider>
+        </BrowserRouter>
+      </QueryClientProvider>
     </HelmetProvider>
   );
 }

@@ -13,6 +13,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
         persistSession: true,
         autoRefreshToken: true,
         detectSessionInUrl: true,
+        flowType: 'pkce', // Secure OAuth flow — prevents auth code interception
     },
     realtime: {
         params: {
@@ -46,6 +47,70 @@ export async function withTimeout<T>(
     } catch (error) {
         clearTimeout(timeoutId!);
         throw error;
+    }
+}
+
+/**
+ * Direct insert via REST API - completely bypasses the Supabase JS client
+ * which hangs on both .insert() and .getSession() calls.
+ * Reads auth token directly from localStorage.
+ */
+export async function directInsert<T = any>(
+    table: string,
+    data: Record<string, unknown>
+): Promise<{ data: T | null; error: { message: string; code: string } | null }> {
+    // Extract the project ref from the Supabase URL (e.g., "wvgkezmboewtlpnyjnyd")
+    const ref = supabaseUrl.match(/https:\/\/([^.]+)/)?.[1];
+    if (!ref) {
+        return { data: null, error: { message: 'Invalid Supabase URL', code: 'CONFIG_ERROR' } };
+    }
+
+    // Read auth token directly from localStorage - bypasses buggy JS client
+    const storageKey = `sb-${ref}-auth-token`;
+    const raw = localStorage.getItem(storageKey);
+    if (!raw) {
+        return { data: null, error: { message: 'Not authenticated (no session in storage)', code: 'AUTH_ERROR' } };
+    }
+
+    let accessToken: string;
+    try {
+        const parsed = JSON.parse(raw);
+        accessToken = parsed.access_token;
+        if (!accessToken) {
+            return { data: null, error: { message: 'No access token in session', code: 'AUTH_ERROR' } };
+        }
+    } catch {
+        return { data: null, error: { message: 'Invalid session data', code: 'AUTH_ERROR' } };
+    }
+
+    try {
+        const response = await fetch(`${supabaseUrl}/rest/v1/${table}`, {
+            method: 'POST',
+            headers: {
+                'apikey': supabaseAnonKey,
+                'Authorization': `Bearer ${accessToken}`,
+                'Content-Type': 'application/json',
+                'Prefer': 'return=representation',
+            },
+            body: JSON.stringify(data),
+        });
+
+        if (!response.ok) {
+            const errorBody = await response.json().catch(() => ({ message: 'Unknown error', code: String(response.status) }));
+            return {
+                data: null,
+                error: {
+                    message: errorBody.message || `HTTP ${response.status}`,
+                    code: errorBody.code || String(response.status),
+                },
+            };
+        }
+
+        const result = await response.json();
+        // PostgREST returns an array; return first item
+        return { data: Array.isArray(result) ? result[0] : result, error: null };
+    } catch (err: any) {
+        return { data: null, error: { message: err.message, code: 'FETCH_ERROR' } };
     }
 }
 

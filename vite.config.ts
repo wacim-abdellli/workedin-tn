@@ -5,10 +5,10 @@ import { visualizer } from 'rollup-plugin-visualizer';
 import * as path from 'path';
 
 // https://vite.dev/config/
-export default defineConfig(({ command }) => ({
+export default defineConfig(({ command, mode }) => ({
   plugins: [
     react(),
-    command === 'build' && visualizer({ open: true })
+    command === 'build' && visualizer({ open: false, filename: 'dist/stats.html' })
   ],
   resolve: {
     alias: {
@@ -19,8 +19,8 @@ export default defineConfig(({ command }) => ({
     // Increase chunk size warning limit
     chunkSizeWarningLimit: 1000,
 
-    // Source maps for production debugging
-    sourcemap: true,
+    // No source maps in production (saves ~3MB deploy size)
+    sourcemap: false,
 
     rollupOptions: {
       output: {
@@ -37,10 +37,15 @@ export default defineConfig(({ command }) => ({
       },
     },
 
-    // Minify configuration
+    // Minify with esbuild — strip console/debugger in production
     minify: 'esbuild',
     target: 'es2020',
   },
+
+  // Strip console.log and debugger statements in production
+  esbuild: mode === 'production' ? {
+    drop: ['console', 'debugger'],
+  } : undefined,
 
   // Performance optimizations
   optimizeDeps: {

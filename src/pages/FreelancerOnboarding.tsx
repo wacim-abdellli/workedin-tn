@@ -9,6 +9,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../components/ui/Toast';
 import { supabase, uploadFile } from '../lib/supabase';
 import type { Skill } from '../types';
+import { skillToEntry } from '../types';
 import { Header } from '../components/layout';
 
 // Step Components
@@ -265,7 +266,7 @@ function FreelancerOnboarding() {
             logger.log('[Onboarding] Step 2: Saving skills and completing onboarding...');
 
             const skillsData = {
-                skills: selectedSkills,
+                skills: selectedSkills.map(s => skillToEntry(s)),
                 hourly_rate: data.hourly_rate ? parseFloat(data.hourly_rate) : undefined,
                 availability: data.availability as 'available' | 'busy' | 'offline',
             };

@@ -96,7 +96,7 @@ export function useVoiceRecording({
             setDuration(0);
 
             // Start duration timer
-            timerRef.current = setInterval(() => {
+            timerRef.current = window.setInterval(() => {
                 setDuration(prev => {
                     const newDuration = prev + 1;
                     // Auto-stop at max duration
@@ -151,7 +151,7 @@ export function useVoiceRecording({
         if (mediaRecorderRef.current && isPaused) {
             mediaRecorderRef.current.resume();
             setIsPaused(false);
-            timerRef.current = setInterval(() => {
+            timerRef.current = window.setInterval(() => {
                 setDuration(prev => {
                     if (prev + 1 >= maxDurationSeconds) {
                         stopRecording();

@@ -177,14 +177,7 @@ export default function JobPost() {
             return;
         }
 
-        // Debug logging
-        console.log('=== JOB SUBMISSION DEBUG ===');
-        console.log('User ID:', user.id);
-        console.log('Form data:', JSON.stringify(data, null, 2));
-        console.log('Budget min:', data.budget_min, 'type:', typeof data.budget_min);
-        console.log('Budget max:', data.budget_max, 'type:', typeof data.budget_max);
-        console.log('Job type:', data.job_type);
-        console.log('Required skills:', data.required_skills);
+        logger.debug('Job submission started', { userId: user.id, jobType: data.job_type });
 
         setIsSubmitting(true);
         try {
@@ -200,12 +193,12 @@ export default function JobPost() {
                     const filePath = `${user.id}/${fileName}`;
 
                     const { error: uploadError } = await supabase.storage
-                        .from('job-attachments')
+                        .from('attachments')
                         .upload(filePath, file);
 
                     if (!uploadError) {
                         const { data: { publicUrl } } = supabase.storage
-                            .from('job-attachments')
+                            .from('attachments')
                             .getPublicUrl(filePath);
                         uploadedUrls.push(publicUrl);
                     }
@@ -234,26 +227,26 @@ export default function JobPost() {
                 experience_level: data.experience_level,
                 visibility: data.visibility,
                 attachments: uploadedUrls,
-                status: status,
-                currency: 'TND',
-                proposals_count: 0,
-                views_count: 0,
+                // Note: 'draft' is not in job_status_enum, use 'open' for both
+                status: 'open' as const,
                 required_skills: data.required_skills || [], // JSONB array of skill objects
+                // proposals_count and views_count have DB defaults, no need to send
             };
 
-            console.log('Final job data for DB:', JSON.stringify(jobData, null, 2));
+            logger.debug('Job data prepared for DB insert');
 
-            const { data: job, error } = await supabase
-                .from('jobs')
-                .insert(jobData)
-                .select()
-                .single();
+            // Use official Supabase client with timeout
+            const insertPromise = supabase.from('jobs').insert(jobData).select('id').single();
+            const timeoutPromise = new Promise<never>((_, reject) =>
+                setTimeout(() => reject(new Error('Database operation timed out. Please try again.')), 20000)
+            );
+            const { data: insertedJob, error } = await Promise.race([insertPromise, timeoutPromise]);
 
-            console.log('Supabase response:', { job, error });
+            logger.debug('Supabase insert response received', { error: error?.message });
 
             if (error) {
-                console.error('Supabase error details:', error);
-                throw error;
+                logger.error('Supabase job insert error:', error);
+                throw new Error(`DB Error: ${error.message} (Code: ${error.code})`);
             }
 
             // Skills are already included in jobData as JSONB - no separate table insert needed
@@ -265,12 +258,12 @@ export default function JobPost() {
                 showToast('تم حفظ المسودة بنجاح', 'success');
             } else {
                 showToast('تم نشر الوظيفة بنجاح!', 'success');
-                navigate(`/jobs/posted/${job.id}`);
+                navigate(insertedJob?.id ? `/jobs/posted/${insertedJob.id}` : '/jobs');
             }
 
-        } catch (error) {
+        } catch (error: any) {
             logger.error('Error posting job:', error);
-            showToast('حدث خطأ أثناء حفظ الوظيفة', 'error');
+            showToast(error?.message || 'حدث خطأ أثناء حفظ الوظيفة', 'error');
         } finally {
             setIsSubmitting(false);
         }

@@ -304,7 +304,7 @@ function JobMatches() {
 
                                             {/* Skills */}
                                             <div className="flex flex-wrap gap-2">
-                                                {freelancer.skills.map((skill) => (
+                                                {(freelancer.skills as Skill[]).map((skill) => (
                                                     <span
                                                         key={skill.id}
                                                         className="text-xs px-2 py-1 bg-gray-100 rounded-full text-gray-700"
