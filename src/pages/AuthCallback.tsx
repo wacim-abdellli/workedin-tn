@@ -8,10 +8,11 @@ import { logger } from '@/lib/logger';
 /**
  * AuthCallback — handles the OAuth redirect after Google sign-in.
  *
- * Strategy:
- * 1. Try to exchange the code from the URL manually (in case detectSessionInUrl missed it)
- * 2. Then poll getSession() until a session appears
- * 3. Redirect to "/" and let the app's routing handle it
+ * Strategy (React Strict Mode Safe):
+ * By enabling `detectSessionInUrl: true` in the Supabase client, the OAuth code
+ * exchange is handled automatically in the background. We simply poll `getSession()`
+ * until the session appears. This avoids race conditions where strict mode double-invocations
+ * try to exchange the identical single-use OAuth code twice.
  */
 const AuthCallback = () => {
     const { dir } = useTranslation();
@@ -19,57 +20,27 @@ const AuthCallback = () => {
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        let cancelled = false;
+        let mounted = true;
 
         const handleAuth = async () => {
             try {
-                // Step 1: Check if there's already a session (e.g., detectSessionInUrl worked)
-                const { data: { session: existingSession } } = await supabase.auth.getSession();
-                if (existingSession && !cancelled) {
-                    logger.info('AuthCallback: existing session found');
-                    navigate('/', { replace: true });
-                    return;
-                }
-
-                // Step 2: Manually exchange the code from the URL
-                const url = new URL(window.location.href);
-                const code = url.searchParams.get('code');
-
-                if (code) {
-                    logger.info('AuthCallback: exchanging code manually');
-                    const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
-
-                    if (exchangeError) {
-                        // Code might have already been used by detectSessionInUrl
-                        logger.warn('AuthCallback: code exchange error (may be already used):', exchangeError.message);
-                    }
-
-                    if (data?.session && !cancelled) {
-                        logger.info('AuthCallback: session created via manual exchange');
-                        navigate('/', { replace: true });
-                        return;
-                    }
-                }
-
-                // Step 3: Poll getSession() as last resort — the session might appear
-                // after detectSessionInUrl finishes in the background
-                for (let i = 0; i < 15 && !cancelled; i++) {
-                    await new Promise(r => setTimeout(r, 500));
+                // Poll for up to 15 seconds (30 * 500ms) to give detectSessionInUrl enough time
+                for (let i = 0; i < 30 && mounted; i++) {
                     const { data: { session } } = await supabase.auth.getSession();
-                    if (session && !cancelled) {
+                    if (session && mounted) {
                         logger.info('AuthCallback: session found after polling attempt', i + 1);
                         navigate('/', { replace: true });
                         return;
                     }
+                    await new Promise(r => setTimeout(r, 500));
                 }
 
-                // If we get here, nothing worked
-                if (!cancelled) {
+                if (mounted) {
                     setError('انتهت مهلة تسجيل الدخول. يرجى المحاولة مرة أخرى.');
                 }
             } catch (err) {
-                if (!cancelled) {
-                    logger.error('AuthCallback error:', err);
+                if (mounted) {
+                    logger.error('AuthCallback polling error:', err);
                     setError('حدث خطأ أثناء تسجيل الدخول. يرجى المحاولة مرة أخرى.');
                 }
             }
@@ -77,8 +48,17 @@ const AuthCallback = () => {
 
         handleAuth();
 
+        // Also listen for auth state changes as a backup
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+            if (event === 'SIGNED_IN' && session && mounted) {
+                logger.info('AuthCallback: session found via onAuthStateChange');
+                navigate('/', { replace: true });
+            }
+        });
+
         return () => {
-            cancelled = true;
+            mounted = false;
+            subscription.unsubscribe();
         };
     }, [navigate]);
 
