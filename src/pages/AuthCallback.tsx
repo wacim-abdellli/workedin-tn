@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useTranslation } from '../i18n';
@@ -21,7 +21,6 @@ import { logger } from '@/lib/logger';
  */
 const AuthCallback = () => {
     const { dir } = useTranslation();
-    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         let timer: ReturnType<typeof setTimeout>;
@@ -49,53 +48,14 @@ const AuthCallback = () => {
         };
     }, []);
 
-    const handleRetry = () => {
-        window.location.replace('/login');
-    };
-
-    const handleLogout = async () => {
-        // We use localStorage directly in case supabase.auth is deadlocked
-        localStorage.clear();
-        sessionStorage.clear();
-        window.location.replace('/login');
-    };
-
     return (
         <div
             className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-primary-50 dark:from-gray-900 dark:via-gray-800 dark:to-primary-900 flex items-center justify-center p-4"
             dir={dir}
         >
             <div className="text-center max-w-md w-full bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl">
-                {error ? (
-                    <div className="space-y-4">
-                        <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                        </div>
-                        <h3 className="text-lg font-bold text-gray-900 dark:text-white">حدث خطأ</h3>
-                        <p className="text-red-600 dark:text-red-400 text-sm mb-4">{error}</p>
-                        <div className="pt-4 border-t border-gray-100 dark:border-gray-700 space-y-2">
-                            <button
-                                onClick={handleRetry}
-                                className="w-full btn-primary justify-center"
-                            >
-                                إعادة المحاولة
-                            </button>
-                            <button
-                                onClick={handleLogout}
-                                className="w-full btn-secondary justify-center"
-                            >
-                                تسجيل الخروج
-                            </button>
-                        </div>
-                    </div>
-                ) : (
-                    <>
-                        <Loader2 className="w-12 h-12 animate-spin text-primary-600 mx-auto mb-4" />
-                        <p className="text-gray-600 dark:text-gray-400 font-medium">جاري تسجيل الدخول...</p>
-                    </>
-                )}
+                <Loader2 className="w-12 h-12 animate-spin text-primary-600 mx-auto mb-4" />
+                <p className="text-gray-600 dark:text-gray-400 font-medium">جاري تسجيل الدخول...</p>
             </div>
         </div>
     );
