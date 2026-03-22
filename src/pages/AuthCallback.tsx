@@ -12,33 +12,20 @@ const AuthCallback = () => {
     const [isStuck, setIsStuck] = useState(false);
 
     useEffect(() => {
-        const handleCallback = async () => {
-            try {
-                const urlParams = new URLSearchParams(window.location.search);
-                const code = urlParams.get('code');
+        let timeoutId: ReturnType<typeof setTimeout>;
 
-                if (code) {
-                    // CRITICAL: Sign out any existing session first to prevent
-                    // stale tokens from blocking the new code exchange (account switching fix)
-                    await supabase.auth.signOut({ scope: 'local' }).catch(() => {});
-                    
-                    // Now exchange the fresh code for a new session
-                    const { error: exchangeError } = await withTimeout(
-                        supabase.auth.exchangeCodeForSession(code),
-                        8000,
-                        'exchangeCode'
-                    );
-                    if (exchangeError) throw exchangeError;
-                }
+        // Supabase's `detectSessionInUrl: true` (in supabase.ts) automatically
+        // exchanges the OAuth code from the URL. We just need to listen for
+        // the resulting session via onAuthStateChange.
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(
+            async (event, session) => {
+                // Only act on sign-in events
+                if (event !== 'SIGNED_IN' || !session) return;
 
-                const { data: { session }, error: sessionError } = await withTimeout(
-                    supabase.auth.getSession(), 5000, 'getSession'
-                );
+                // Clear the safety timeout since we got a session
+                clearTimeout(timeoutId);
 
-                if (sessionError) throw sessionError;
-
-                if (session) {
-                    // Check if user has completed onboarding
+                try {
                     const { data: profile, error: profileError } = await withTimeout(
                         supabase
                             .from('profiles')
@@ -49,14 +36,12 @@ const AuthCallback = () => {
                         'fetchProfile'
                     );
 
-                    if (profileError) {
-                        if (profileError.code !== 'PGRST116') {
-                            logger.error('Profile fetch error:', profileError);
-                            if (profileError.message?.includes('schema cache')) {
-                                throw new Error('Database schema synchronization required. Please contact admin.');
-                            }
-                            throw profileError;
+                    if (profileError && profileError.code !== 'PGRST116') {
+                        logger.error('Profile fetch error:', profileError);
+                        if (profileError.message?.includes('schema cache')) {
+                            throw new Error('Database schema synchronization required. Please contact admin.');
                         }
+                        throw profileError;
                     }
 
                     if (!profile) {
@@ -78,19 +63,25 @@ const AuthCallback = () => {
                             navigate('/client/dashboard');
                         }
                     }
-                } else {
-                    setError('فشل تسجيل الدخول. يرجى المحاولة مرة أخرى.');
-                    setTimeout(() => navigate('/login'), 3000);
+                } catch (err) {
+                    const errorMessage = err instanceof Error ? err.message : 'حدث خطأ أثناء تسجيل الدخول';
+                    logger.error('Auth callback error:', err);
+                    setError(errorMessage);
+                    setIsStuck(true);
                 }
-            } catch (err) {
-                const errorMessage = err instanceof Error ? err.message : 'حدث خطأ أثناء تسجيل الدخول';
-                logger.error('Auth callback error:', err);
-                setError(errorMessage);
-                setIsStuck(true);
             }
-        };
+        );
 
-        handleCallback();
+        // Safety timeout: if no SIGNED_IN event fires within 10s, show error
+        timeoutId = setTimeout(() => {
+            setError('انتهت مهلة تسجيل الدخول. يرجى المحاولة مرة أخرى.');
+            setIsStuck(true);
+        }, 10000);
+
+        return () => {
+            clearTimeout(timeoutId);
+            subscription.unsubscribe();
+        };
     }, [navigate]);
 
     const handleLogout = async () => {
