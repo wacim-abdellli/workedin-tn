@@ -30,13 +30,14 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
  */
 export async function withTimeout<T>(
     promise: PromiseLike<T>,
-    timeoutMs: number = 8000
+    timeoutMs: number = 8000,
+    operationName: string = 'Operation'
 ): Promise<T> {
     let timeoutId: ReturnType<typeof setTimeout>;
 
     const timeoutPromise = new Promise<never>((_, reject) => {
         timeoutId = setTimeout(() => {
-            reject(new Error(`Operation timed out after ${timeoutMs}ms`));
+            reject(new Error(`${operationName} timed out after ${timeoutMs}ms`));
         }, timeoutMs);
     });
 

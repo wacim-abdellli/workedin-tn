@@ -14,48 +14,52 @@ const AuthCallback = () => {
     useEffect(() => {
         const handleCallback = async () => {
             try {
-                // Exchange code for session if present (PKCE flow)
                 const urlParams = new URLSearchParams(window.location.search);
                 const code = urlParams.get('code');
-                
+
                 if (code) {
-                    // We don't throw an error here because the Supabase client
-                    // might have already exchanged the code in the background automatically.
-                    await supabase.auth.exchangeCodeForSession(code).catch(err => {
-                        logger.warn('Code exchange warning (can be ignored if session exists):', err);
-                    });
+                    // CRITICAL: Sign out any existing session first to prevent
+                    // stale tokens from blocking the new code exchange (account switching fix)
+                    await supabase.auth.signOut({ scope: 'local' }).catch(() => {});
+                    
+                    // Now exchange the fresh code for a new session
+                    const { error: exchangeError } = await withTimeout(
+                        supabase.auth.exchangeCodeForSession(code),
+                        8000,
+                        'exchangeCode'
+                    );
+                    if (exchangeError) throw exchangeError;
                 }
 
-                const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+                const { data: { session }, error: sessionError } = await withTimeout(
+                    supabase.auth.getSession(), 5000, 'getSession'
+                );
 
                 if (sessionError) throw sessionError;
 
                 if (session) {
-                    // Check if user has completed onboarding with timeout protection
+                    // Check if user has completed onboarding
                     const { data: profile, error: profileError } = await withTimeout(
                         supabase
                             .from('profiles')
                             .select('user_type, onboarding_completed')
                             .eq('id', session.user.id)
                             .single(),
-                        5000
+                        5000,
+                        'fetchProfile'
                     );
 
                     if (profileError) {
-                        // Handle critical schema/connection errors
                         if (profileError.code !== 'PGRST116') {
                             logger.error('Profile fetch error:', profileError);
-                            // If schema cache error, show specific message
                             if (profileError.message?.includes('schema cache')) {
                                 throw new Error('Database schema synchronization required. Please contact admin.');
                             }
                             throw profileError;
                         }
-                        // PGRST116 = Row not found (new user) -> Continue to creation/selection
                     }
 
                     if (!profile) {
-                        // New OAuth user -> Redirect to signup for role selection
                         navigate('/signup?step=select-type');
                     } else if (profile.user_type === 'admin') {
                         navigate('/admin');
@@ -68,7 +72,6 @@ const AuthCallback = () => {
                             navigate('/onboarding/client');
                         }
                     } else {
-                        // Success -> Dashboard
                         if (profile.user_type === 'freelancer' || profile.user_type === 'both') {
                             navigate('/freelancer/dashboard');
                         } else {
@@ -76,7 +79,6 @@ const AuthCallback = () => {
                         }
                     }
                 } else {
-                    // No session logic
                     setError('فشل تسجيل الدخول. يرجى المحاولة مرة أخرى.');
                     setTimeout(() => navigate('/login'), 3000);
                 }
@@ -84,7 +86,7 @@ const AuthCallback = () => {
                 const errorMessage = err instanceof Error ? err.message : 'حدث خطأ أثناء تسجيل الدخول';
                 logger.error('Auth callback error:', err);
                 setError(errorMessage);
-                setIsStuck(true); // Show manual logout button
+                setIsStuck(true);
             }
         };
 
