@@ -22,7 +22,7 @@ import {
 
 function FreelancerOnboarding() {
     const { t, language } = useTranslation();
-    const { user, updateProfile, updateFreelancerProfile, refreshProfile } = useAuth();
+    const { user, session, updateProfile, updateFreelancerProfile, refreshProfile } = useAuth();
     const { showToast } = useToast();
     const navigate = useNavigate();
 
@@ -131,11 +131,47 @@ function FreelancerOnboarding() {
                 }
             }
 
-            logger.log('[Onboarding] STEP 1: Updating profile...');
-            await Promise.race([
-                updateProfile(profileUpdate),
-                new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 15000)),
-            ]);
+            if (!session?.access_token) {
+                throw new Error('No auth session - please login again');
+            }
+
+            logger.log('[Onboarding] STEP 1: Updating profile via REST PATCH...');
+            const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+            const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 15000);
+
+            try {
+                const response = await fetch(`${supabaseUrl}/rest/v1/profiles?id=eq.${user.id}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        apikey: supabaseKey,
+                        Authorization: `Bearer ${session.access_token}`,
+                        Prefer: 'return=minimal',
+                    },
+                    body: JSON.stringify({
+                        full_name: profileUpdate.full_name,
+                        location: profileUpdate.location,
+                        user_type: profileUpdate.user_type,
+                        avatar_url: profileUpdate.avatar_url,
+                        updated_at: new Date().toISOString(),
+                    }),
+                    signal: controller.signal,
+                });
+
+                if (!response.ok) {
+                    const text = await response.text();
+                    throw new Error(`Profile update failed: ${response.status} ${text}`);
+                }
+            } catch (error) {
+                if (error instanceof DOMException && error.name === 'AbortError') {
+                    throw new Error('TIMEOUT');
+                }
+                throw error;
+            } finally {
+                clearTimeout(timeoutId);
+            }
             logger.log('[Onboarding] Profile saved to Supabase!');
 
             const freelancerData = {
