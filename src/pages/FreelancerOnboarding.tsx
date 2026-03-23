@@ -251,7 +251,10 @@ function FreelancerOnboarding() {
                 throw new Error(`فشل إكمال التسجيل: ${completeErr.message}`);
             }
 
-            await refreshProfile().catch((e) => logger.warn('Profile refresh failed:', e));
+            void Promise.race([
+                refreshProfile(),
+                new Promise((_, reject) => setTimeout(() => reject(new Error('REFRESH_TIMEOUT')), 3000)),
+            ]).catch((e) => logger.warn('Profile refresh failed:', e));
 
             showToast('مرحباً بك في خدمة!', 'success');
             navigate('/freelancer/dashboard');
