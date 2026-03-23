@@ -52,17 +52,11 @@ function HeroStat({
       ref={ref}
       className="rounded-[24px] border border-primary-100/80 bg-white/88 p-4 shadow-[0_16px_40px_-28px_rgba(124,58,237,0.35)] dark:border-white/10 dark:bg-white/[0.04]"
     >
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-purple-50 text-purple-600 shadow-sm dark:bg-purple-900/30 dark:text-purple-300">
-          <Icon className="h-5 w-5" />
-        </div>
-        <div className="text-right text-[11px] font-semibold uppercase tracking-[0.16em] text-gray-500 dark:text-gray-400">
-          {label}
-        </div>
+      <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-purple-50 text-purple-600 shadow-sm dark:bg-purple-900/30 dark:text-purple-300">
+        <Icon className="h-5 w-5" />
       </div>
-      <div className="mt-6 text-3xl font-bold tracking-[-0.03em] text-gray-900 dark:text-white">
-        {formatCompact(count)}
-      </div>
+      <div className="mt-5 text-3xl font-bold tracking-[-0.03em] text-gray-900 dark:text-white">{formatCompact(count)}</div>
+      <div className="mt-2 text-sm font-medium leading-snug text-gray-500 dark:text-gray-400">{label}</div>
     </div>
   );
 }

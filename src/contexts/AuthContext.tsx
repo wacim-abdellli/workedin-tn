@@ -5,6 +5,7 @@ import { supabase } from '../lib/supabase';
 import { logger } from '../lib/logger';
 import { clearAllAuthData } from '../lib/authUtils';
 import {
+    canAccessMode,
     getAvailableModes,
     persistAccountMode,
     promoteUserTypeForMode,
@@ -45,6 +46,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const [profile, setProfile] = useState<Profile | null>(null);
     const [freelancerProfile, setFreelancerProfile] = useState<FreelancerProfile | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [modeOverride, setModeOverride] = useState<AccountMode | null>(null);
 
     const getPreferredLanguage = useCallback((): Language => {
         if (typeof window === 'undefined') return 'ar';
@@ -208,6 +210,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
                     await fetchProfile(newSession.user.id, newSession.user);
                     if (mounted) setIsLoading(false);
                 } else {
+                    setModeOverride(null);
                     setProfile(null);
                     setFreelancerProfile(null);
                     setIsLoading(false);
@@ -287,6 +290,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         // This prevents any component from reading stale user data
         setUser(null);
         setSession(null);
+        setModeOverride(null);
         setProfile(null);
         setFreelancerProfile(null);
 
@@ -369,11 +373,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
             await ensureProfileExists(user);
         }
 
+        persistAccountMode(nextMode, user.id);
+        setModeOverride(nextMode);
         await updateProfile({
             user_type: userType,
-            active_mode: nextMode,
         });
-        persistAccountMode(nextMode, user.id);
 
         // Create freelancer profile if user is freelancer or both
         if (userType === 'freelancer' || userType === 'both') {
@@ -398,30 +402,40 @@ export function AuthProvider({ children }: AuthProviderProps) {
             await ensureProfileExists(user);
         }
 
+        const previousMode = canAccessMode(profile, activeMode) ? activeMode : resolveAccountMode(profile, freelancerProfile);
         const nextUserType = promoteUserTypeForMode(profile?.user_type, mode);
 
-        await updateProfile({
-            user_type: nextUserType,
-            active_mode: mode,
-        });
+        try {
+            persistAccountMode(mode, user.id);
+            setModeOverride(mode);
 
-        if (mode === 'freelancer') {
-            const { error } = await supabase
-                .from('freelancer_profiles')
-                .upsert({
-                    id: user.id,
-                    skills: [],
-                    availability: 'available',
+            if (nextUserType !== profile?.user_type) {
+                await updateProfile({
+                    user_type: nextUserType,
                 });
-
-            if (error) {
-                logger.error('switchAccountMode freelancer upsert error:', error);
-                throw error;
             }
-        }
 
-        persistAccountMode(mode, user.id);
-        await fetchProfile(user.id, user);
+            if (mode === 'freelancer') {
+                const { error } = await supabase
+                    .from('freelancer_profiles')
+                    .upsert({
+                        id: user.id,
+                        skills: [],
+                        availability: 'available',
+                    });
+
+                if (error) {
+                    logger.error('switchAccountMode freelancer upsert error:', error);
+                    throw error;
+                }
+            }
+
+            await fetchProfile(user.id, user);
+        } catch (error) {
+            persistAccountMode(previousMode, user.id);
+            setModeOverride(previousMode);
+            throw error;
+        }
 
         return mode;
     };
@@ -433,7 +447,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
         }
     };
 
-    const activeMode = resolveAccountMode(profile, freelancerProfile);
+    const resolvedMode = resolveAccountMode(profile, freelancerProfile);
+    const activeMode = modeOverride && canAccessMode(profile, modeOverride) ? modeOverride : resolvedMode;
     const availableModes = getAvailableModes(profile);
 
     const value: AuthContextType = {

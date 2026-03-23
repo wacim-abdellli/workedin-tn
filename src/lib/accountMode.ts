@@ -43,16 +43,16 @@ export function resolveAccountMode(
     profile: RoleCapableProfile,
     freelancerProfile?: FreelancerProfile | null
 ): AccountMode {
+    const storedMode = getStoredAccountMode(profile?.id);
+    if (storedMode && canAccessMode(profile, storedMode)) {
+        return storedMode;
+    }
+
     const profileMode = profile?.active_mode;
     if (profileMode === 'freelancer' || profileMode === 'client') {
         if (canAccessMode(profile, profileMode)) {
             return profileMode;
         }
-    }
-
-    const storedMode = getStoredAccountMode(profile?.id);
-    if (storedMode && canAccessMode(profile, storedMode)) {
-        return storedMode;
     }
 
     if (profile?.user_type === 'freelancer') {

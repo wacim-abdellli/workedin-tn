@@ -2,7 +2,7 @@ import { logger } from '@/lib/logger';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Bell, BriefcaseBusiness, ChevronDown, ChevronLeft, ChevronRight, Heart, LayoutDashboard, Loader2, LogOut, MessageSquareText, Plus, Settings, Shield, User } from 'lucide-react';
+import { Bell, BriefcaseBusiness, ChevronDown, ChevronLeft, ChevronRight, LayoutDashboard, Loader2, LogOut, MessageSquareText, Plus, Settings, Shield, User } from 'lucide-react';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 
 import { hardLogout, clearAllAuthData } from '@/lib/authUtils';
@@ -62,7 +62,7 @@ const copy = {
         switch: 'Switch',
         enable: 'Enable',
         switching: 'Switching',
-        main: 'Important',
+        main: 'Quick access',
         more: 'More',
         profileFreelancer: 'Portfolio, profile, and trust signals',
         profileClient: 'Company details, trust signals, and billing',
@@ -134,7 +134,7 @@ const copy = {
         switch: 'Basculer',
         enable: 'Activer',
         switching: 'Changement',
-        main: 'Essentiel',
+        main: 'Acces rapide',
         more: 'Plus',
         profileFreelancer: 'Profil public, portfolio et signaux de confiance',
         profileClient: 'Infos client, confiance et facturation',
@@ -184,20 +184,14 @@ export function UserMenu({ user, profile, signOut, t }: UserMenuProps) {
         ? 'border-violet-500/20 bg-violet-500/12 text-violet-700 dark:text-violet-200'
         : 'border-emerald-500/20 bg-emerald-500/12 text-emerald-700 dark:text-emerald-200';
 
-    const primaryActions = useMemo(() => ([
+    const actionRows = useMemo(() => ([
         { to: dashboardPath, label: t.nav.dashboard, description: text.dashboardDesc, icon: LayoutDashboard },
         { to: profileActionTo, label: t.nav.profile, description: activeMode === 'freelancer' ? text.profileFreelancer : text.profileClient, icon: User },
+        { to: '/my-jobs', label: t.nav.myJobs, description: activeMode === 'freelancer' ? text.jobsFreelancer : text.jobsClient, icon: BriefcaseBusiness },
         { to: '/messages', label: t.nav.messages, description: text.messages, icon: MessageSquareText },
         { to: '/settings', label: t.nav.settings, description: text.settings, icon: Settings },
-    ]), [activeMode, dashboardPath, profileActionTo, t.nav.dashboard, t.nav.messages, t.nav.profile, t.nav.settings, text.dashboardDesc, text.messages, text.profileClient, text.profileFreelancer, text.settings]);
-
-    const secondaryActions = useMemo(() => {
-        const base = [
-            { to: '/my-jobs', label: t.nav.myJobs, description: activeMode === 'freelancer' ? text.jobsFreelancer : text.jobsClient, icon: BriefcaseBusiness },
-            { to: '/saved', label: t.nav.saved, description: text.saved, icon: Heart },
-        ];
-        return isAdmin ? [...base, { to: '/admin', label: text.admin, description: text.adminDesc, icon: Shield }] : base;
-    }, [activeMode, isAdmin, t.nav.myJobs, t.nav.saved, text.admin, text.adminDesc, text.jobsClient, text.jobsFreelancer, text.saved]);
+        ...(isAdmin ? [{ to: '/admin', label: text.admin, description: text.adminDesc, icon: Shield }] : []),
+    ]), [activeMode, dashboardPath, isAdmin, profileActionTo, t.nav.dashboard, t.nav.messages, t.nav.myJobs, t.nav.profile, t.nav.settings, text.admin, text.adminDesc, text.dashboardDesc, text.jobsClient, text.jobsFreelancer, text.messages, text.profileClient, text.profileFreelancer, text.settings]);
 
     const workspaces = [
         { mode: 'freelancer' as const, title: i18n.auth.freelancer, description: activeMode === 'freelancer' ? text.hintFreelancer : text.freelancerDesc, icon: User, accent: 'violet' as const },
@@ -218,6 +212,12 @@ export function UserMenu({ user, profile, signOut, t }: UserMenuProps) {
         };
         if (menuOpen) document.addEventListener('keydown', handleEscape);
         return () => document.removeEventListener('keydown', handleEscape);
+    }, [menuOpen]);
+
+    useEffect(() => {
+        const handleScroll = () => setMenuOpen(false);
+        if (menuOpen) window.addEventListener('scroll', handleScroll, { passive: true });
+        return () => window.removeEventListener('scroll', handleScroll);
     }, [menuOpen]);
 
     const handleLogout = async () => {
@@ -284,7 +284,7 @@ export function UserMenu({ user, profile, signOut, t }: UserMenuProps) {
                             animate={{ opacity: 1, y: 0, scale: 1 }}
                             exit={{ opacity: 0, y: -12, scale: 0.96 }}
                             transition={{ duration: 0.16, ease: 'easeOut' }}
-                            className="premium-panel absolute right-0 z-[70] mt-3 max-h-[min(85vh,760px)] w-[420px] max-w-[calc(100vw-1rem)] overflow-y-auto rounded-[30px] border border-slate-200/70 shadow-[0_28px_70px_rgba(15,23,42,0.18)] dark:border-white/10 dark:shadow-[0_32px_90px_rgba(0,0,0,0.48)]"
+                            className="premium-panel absolute right-0 z-[70] mt-3 max-h-[min(78vh,720px)] w-[392px] max-w-[calc(100vw-1rem)] overflow-y-auto rounded-[30px] border border-slate-200/70 shadow-[0_28px_70px_rgba(15,23,42,0.18)] dark:border-white/10 dark:shadow-[0_32px_90px_rgba(0,0,0,0.48)]"
                             role="menu"
                             dir={dir}
                         >
@@ -311,8 +311,8 @@ export function UserMenu({ user, profile, signOut, t }: UserMenuProps) {
                                         </div>
                                     </div>
 
-                                    <div className="mt-4 grid gap-3">
-                                        <div className="flex flex-wrap items-center justify-between gap-3 rounded-[22px] border border-slate-200/80 bg-slate-50/85 px-3.5 py-3 dark:border-white/8 dark:bg-white/[0.04]">
+                                    <div className="mt-4 rounded-[22px] border border-slate-200/80 bg-slate-50/85 p-3.5 dark:border-white/8 dark:bg-white/[0.04]">
+                                        <div className="flex flex-wrap items-center justify-between gap-3">
                                             <div>
                                                 <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#7f7893] dark:text-[#938da7]">{text.currentWorkspace}</div>
                                                 <div className="mt-2 flex flex-wrap items-center gap-2">
@@ -324,16 +324,12 @@ export function UserMenu({ user, profile, signOut, t }: UserMenuProps) {
                                                 {setupActionLabel}
                                             </Link>
                                         </div>
-
-                                        <div className="rounded-[22px] border border-slate-200/80 bg-white/80 p-3.5 dark:border-white/8 dark:bg-white/[0.04]">
-                                            <div className="flex items-center justify-between gap-3">
-                                                <p className="text-sm font-semibold text-[#171420] dark:text-white">{activeWorkspaceLabel}</p>
-                                                <span className="text-sm font-semibold text-[#645d79] dark:text-[#d7d0ea]">{setupProgress}%</span>
-                                            </div>
-                                            <p className="mt-2 text-xs leading-relaxed text-[#6f6984] dark:text-[#a39db7]">{activeMode === 'freelancer' ? text.hintFreelancer : text.hintClient}</p>
-                                            <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-200/80 dark:bg-white/8">
-                                                <div className={cn('h-full rounded-full transition-all duration-300', activeMode === 'freelancer' ? 'bg-gradient-to-r from-violet-500 to-fuchsia-400' : 'bg-gradient-to-r from-emerald-500 to-teal-400')} style={{ width: `${setupProgress}%` }} />
-                                            </div>
+                                        <div className="mt-3 flex items-center justify-between gap-3">
+                                            <p className="text-xs leading-relaxed text-[#6f6984] dark:text-[#a39db7]">{activeMode === 'freelancer' ? text.hintFreelancer : text.hintClient}</p>
+                                            <span className="text-sm font-semibold text-[#645d79] dark:text-[#d7d0ea]">{setupProgress}%</span>
+                                        </div>
+                                        <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-200/80 dark:bg-white/8">
+                                            <div className={cn('h-full rounded-full transition-all duration-300', activeMode === 'freelancer' ? 'bg-gradient-to-r from-violet-500 to-fuchsia-400' : 'bg-gradient-to-r from-emerald-500 to-teal-400')} style={{ width: `${setupProgress}%` }} />
                                         </div>
                                     </div>
                                 </div>
@@ -384,14 +380,8 @@ export function UserMenu({ user, profile, signOut, t }: UserMenuProps) {
 
                             <div className="p-4">
                                 <div className="px-1 pb-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#8a849d] dark:text-[#9d97af]">{text.main}</div>
-                                <div className="grid grid-cols-2 gap-2">
-                                    {primaryActions.map((item) => (
-                                        <ActionTile key={item.to} to={item.to} icon={item.icon} label={item.label} description={item.description} onClick={() => setMenuOpen(false)} />
-                                    ))}
-                                </div>
-                                <div className="mt-4 px-1 pb-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#8a849d] dark:text-[#9d97af]">{text.more}</div>
                                 <div className="space-y-1">
-                                    {secondaryActions.map((item) => (
+                                    {actionRows.map((item) => (
                                         <ActionRow key={item.to} to={item.to} icon={item.icon} label={item.label} description={item.description} arrowIcon={ArrowIcon} onClick={() => setMenuOpen(false)} />
                                     ))}
                                 </div>
@@ -412,18 +402,6 @@ export function UserMenu({ user, profile, signOut, t }: UserMenuProps) {
                 </AnimatePresence>
             </div>
         </>
-    );
-}
-
-function ActionTile({ to, icon: Icon, label, description, onClick }: { to: string; icon: React.ComponentType<{ className?: string }>; label: string; description: string; onClick?: () => void; }) {
-    return (
-        <Link to={to} onClick={onClick} className="group rounded-[22px] border border-slate-200/80 bg-white/82 p-4 transition-all hover:-translate-y-0.5 hover:border-violet-300/40 hover:bg-white dark:border-white/8 dark:bg-white/[0.04] dark:hover:border-white/15 dark:hover:bg-white/[0.06]" role="menuitem">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-100 text-[#49445d] transition-colors group-hover:bg-violet-100 group-hover:text-violet-700 dark:bg-white/[0.06] dark:text-[#c1bcd0] dark:group-hover:bg-violet-500/10 dark:group-hover:text-violet-200"><Icon className="h-[18px] w-[18px]" /></div>
-            <div className="mt-4">
-                <div className="truncate text-sm font-semibold text-[#171420] dark:text-white">{label}</div>
-                <div className="mt-1 text-xs leading-relaxed text-[#6f6984] dark:text-[#9d97af]">{description}</div>
-            </div>
-        </Link>
     );
 }
 

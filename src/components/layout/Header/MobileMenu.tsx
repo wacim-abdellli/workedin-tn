@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Briefcase, Search, TrendingUp, User, X } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import { useEffect } from 'react';
 
 export interface MobileMenuProps {
   isOpen: boolean;
@@ -35,6 +36,17 @@ const itemVariants = {
 };
 
 export function MobileMenu({ isOpen, onClose, onSearchOpen, t }: MobileMenuProps) {
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isOpen]);
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -42,7 +54,7 @@ export function MobileMenu({ isOpen, onClose, onSearchOpen, t }: MobileMenuProps
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[90] 2xl:hidden"
+          className="fixed inset-0 z-[90] xl:hidden"
         >
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(167,139,250,0.2),transparent_32%),linear-gradient(180deg,rgba(249,247,255,0.97),rgba(241,237,255,0.94))] backdrop-blur-2xl dark:bg-[radial-gradient(circle_at_top,rgba(139,92,246,0.18),transparent_28%),linear-gradient(180deg,rgba(11,10,18,0.98),rgba(15,14,23,0.96))]" />
           <motion.div

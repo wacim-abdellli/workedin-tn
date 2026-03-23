@@ -18,7 +18,7 @@ export interface NavigationProps {
 
 export function Navigation({ isScrolled, theme, items }: NavigationProps) {
   return (
-    <nav className="hidden 2xl:flex items-center gap-1">
+    <nav className="hidden xl:flex items-center gap-1">
       {items.map((item) => (
         item.to === '/jobs' ? (
           <MegaMenuLink key={item.to} item={item} isScrolled={isScrolled} theme={theme} />

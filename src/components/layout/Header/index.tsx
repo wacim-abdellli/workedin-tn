@@ -104,7 +104,7 @@ export default function Header() {
                                 isActive={mobileMenuOpen}
                                 size="sm"
                                 className={cn(
-                                    "2xl:hidden",
+                                    "xl:hidden",
                                     isScrolled || theme === 'dark'
                                         ? "text-gray-300 hover:text-white"
                                         : "text-gray-700 hover:text-gray-900"
