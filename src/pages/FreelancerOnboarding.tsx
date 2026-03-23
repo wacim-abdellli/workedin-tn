@@ -22,7 +22,7 @@ import {
 
 function FreelancerOnboarding() {
     const { t, language } = useTranslation();
-    const { user, session, updateProfile, updateFreelancerProfile, refreshProfile } = useAuth();
+    const { user, session, refreshProfile } = useAuth();
     const { showToast } = useToast();
     const navigate = useNavigate();
 
@@ -188,6 +188,16 @@ function FreelancerOnboarding() {
             return;
         }
 
+        if (!user) {
+            showToast(t.common.error, 'error');
+            return;
+        }
+
+        if (!session?.access_token) {
+            showToast('No auth session - please login again', 'error');
+            return;
+        }
+
         setIsLoading(true);
         try {
             logger.log('[Onboarding] Step 2: Saving skills and completing onboarding...');
@@ -199,10 +209,18 @@ function FreelancerOnboarding() {
             };
 
             try {
-                await Promise.race([
-                    updateFreelancerProfile(skillsData),
-                    new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 20000)),
-                ]);
+                await patchWithTimeout(
+                    `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/freelancer_profiles?id=eq.${user.id}`,
+                    session.access_token,
+                    import.meta.env.VITE_SUPABASE_ANON_KEY,
+                    {
+                        skills: skillsData.skills,
+                        hourly_rate: skillsData.hourly_rate,
+                        availability: skillsData.availability,
+                        updated_at: new Date().toISOString(),
+                    },
+                    20000
+                );
                 logger.log('[Onboarding] Skills saved!');
             } catch (skillsErr: any) {
                 logger.error('[Onboarding] Skills save FAILED:', skillsErr);
@@ -214,10 +232,16 @@ function FreelancerOnboarding() {
 
             logger.log('[Onboarding] Marking onboarding as complete...');
             try {
-                await Promise.race([
-                    updateProfile({ onboarding_completed: true }),
-                    new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 20000)),
-                ]);
+                await patchWithTimeout(
+                    `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/profiles?id=eq.${user.id}`,
+                    session.access_token,
+                    import.meta.env.VITE_SUPABASE_ANON_KEY,
+                    {
+                        onboarding_completed: true,
+                        updated_at: new Date().toISOString(),
+                    },
+                    20000
+                );
                 logger.log('[Onboarding] Onboarding marked complete!');
             } catch (completeErr: any) {
                 logger.error('[Onboarding] Failed to mark complete:', completeErr);
@@ -313,10 +337,11 @@ async function patchWithTimeout(
     url: string,
     accessToken: string,
     anonKey: string,
-    body: Record<string, unknown>
+    body: Record<string, unknown>,
+    timeoutMs: number = 15000
 ) {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000);
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
     try {
         const response = await fetch(url, {
