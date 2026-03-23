@@ -7,7 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from '../i18n';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../components/ui/Toast';
-import { supabase, uploadFile } from '../lib/supabase';
+import { uploadFile } from '../lib/supabase';
 import type { Skill } from '../types';
 import { skillToEntry } from '../types';
 import { Header } from '../components/layout';
@@ -98,6 +98,11 @@ function FreelancerOnboarding() {
             return;
         }
 
+        if (!session?.access_token) {
+            showToast('No auth session - please login again', 'error');
+            return;
+        }
+
         setIsLoading(true);
 
         try {
@@ -131,69 +136,35 @@ function FreelancerOnboarding() {
                 }
             }
 
-            if (!session?.access_token) {
-                throw new Error('No auth session - please login again');
-            }
-
-            logger.log('[Onboarding] STEP 1: Updating profile via REST PATCH...');
             const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
             const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 15000);
 
-            try {
-                const response = await fetch(`${supabaseUrl}/rest/v1/profiles?id=eq.${user.id}`, {
-                    method: 'PATCH',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        apikey: supabaseKey,
-                        Authorization: `Bearer ${session.access_token}`,
-                        Prefer: 'return=minimal',
-                    },
-                    body: JSON.stringify({
-                        full_name: profileUpdate.full_name,
-                        location: profileUpdate.location,
-                        user_type: profileUpdate.user_type,
-                        avatar_url: profileUpdate.avatar_url,
-                        updated_at: new Date().toISOString(),
-                    }),
-                    signal: controller.signal,
-                });
-
-                if (!response.ok) {
-                    const text = await response.text();
-                    throw new Error(`Profile update failed: ${response.status} ${text}`);
+            logger.log('[Onboarding] STEP 1: Updating profile via REST PATCH...');
+            await patchWithTimeout(
+                `${supabaseUrl}/rest/v1/profiles?id=eq.${user.id}`,
+                session.access_token,
+                supabaseKey,
+                {
+                    full_name: profileUpdate.full_name,
+                    location: profileUpdate.location,
+                    user_type: profileUpdate.user_type,
+                    avatar_url: profileUpdate.avatar_url,
+                    updated_at: new Date().toISOString(),
                 }
-            } catch (error) {
-                if (error instanceof DOMException && error.name === 'AbortError') {
-                    throw new Error('TIMEOUT');
-                }
-                throw error;
-            } finally {
-                clearTimeout(timeoutId);
-            }
+            );
             logger.log('[Onboarding] Profile saved to Supabase!');
 
-            const freelancerData = {
-                id: user.id,
-                title: data.title,
-                updated_at: new Date().toISOString(),
-            };
-
-            logger.log('[Onboarding] Saving freelancer profile...', freelancerData);
-            const flResponse = await Promise.race([
-                supabase.from('freelancer_profiles').upsert(freelancerData, { onConflict: 'id' }),
-                new Promise<{ error: { message: string; code?: string } }>((resolve) =>
-                    setTimeout(() => resolve({ error: { message: 'TIMEOUT', code: 'TIMEOUT' } }), 20000)
-                ),
-            ]);
-
-            if (flResponse.error) {
-                logger.error('[Onboarding] Freelancer profile save FAILED:', flResponse.error);
-                showToast('تحذير: لم يتم حفظ بعض البيانات', 'warning');
-            } else {
-                logger.log('[Onboarding] Freelancer profile saved!');
-            }
+            logger.log('[Onboarding] Saving freelancer profile via REST PATCH...');
+            await patchWithTimeout(
+                `${supabaseUrl}/rest/v1/freelancer_profiles?id=eq.${user.id}`,
+                session.access_token,
+                supabaseKey,
+                {
+                    title: data.title,
+                    updated_at: new Date().toISOString(),
+                }
+            );
+            logger.log('[Onboarding] Freelancer profile saved!');
 
             showToast('تم حفظ البيانات الأساسية', 'success');
             setStep(2);
@@ -258,7 +229,7 @@ function FreelancerOnboarding() {
 
             await refreshProfile().catch((e) => logger.warn('Profile refresh failed:', e));
 
-            showToast('مرحباً بك في خدمة! ', 'success');
+            showToast('مرحباً بك في خدمة!', 'success');
             navigate('/freelancer/dashboard');
         } catch (error) {
             logger.error('Step 2 error:', error);
@@ -336,6 +307,42 @@ function FreelancerOnboarding() {
             </div>
         </div>
     );
+}
+
+async function patchWithTimeout(
+    url: string,
+    accessToken: string,
+    anonKey: string,
+    body: Record<string, unknown>
+) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
+
+    try {
+        const response = await fetch(url, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                apikey: anonKey,
+                Authorization: `Bearer ${accessToken}`,
+                Prefer: 'return=minimal',
+            },
+            body: JSON.stringify(body),
+            signal: controller.signal,
+        });
+
+        if (!response.ok) {
+            const text = await response.text();
+            throw new Error(`${response.status}: ${text}`);
+        }
+    } catch (error) {
+        if (error instanceof DOMException && error.name === 'AbortError') {
+            throw new Error('TIMEOUT');
+        }
+        throw error;
+    } finally {
+        clearTimeout(timeoutId);
+    }
 }
 
 export default FreelancerOnboarding;
