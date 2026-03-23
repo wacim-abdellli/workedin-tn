@@ -6,6 +6,12 @@ import { useMemo, useRef } from 'react';
 import { useTranslation } from '@/i18n';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAnimatedCounter } from '@/hooks/useAnimatedCounter';
+import {
+  getDashboardPath,
+  getJobsPath,
+  getOnboardingPath,
+  isModeOnboarded,
+} from '@/lib/accountMode';
 
 interface HeroSectionProps {
   stats: {
@@ -56,7 +62,7 @@ function HeroStat({
 
 export default function HeroSection({ stats }: HeroSectionProps) {
   const { t, dir } = useTranslation();
-  const { isAuthenticated, profile } = useAuth();
+  const { isAuthenticated, profile, freelancerProfile, activeMode } = useAuth();
   const ArrowIcon = dir === 'rtl' ? ArrowLeft : ArrowRight;
   const sectionRef = useRef<HTMLElement | null>(null);
   const pointerX = useMotionValue(0);
@@ -75,27 +81,27 @@ export default function HeroSection({ stats }: HeroSectionProps) {
 
   const getFreelancerLink = () => {
     if (isAuthenticated) {
-      if (profile?.user_type === 'freelancer' || profile?.user_type === 'both') {
-        return profile?.onboarding_completed ? '/freelancer/dashboard' : '/onboarding/freelancer';
-      }
-      return '/onboarding/freelancer';
+      return isModeOnboarded({ ...profile, user_type: 'freelancer' }, freelancerProfile, 'freelancer')
+        ? getDashboardPath('freelancer')
+        : getOnboardingPath('freelancer');
     }
     return '/signup?type=freelancer';
   };
 
   const getClientLink = () => {
     if (isAuthenticated) {
-      if (profile?.user_type === 'client' || profile?.user_type === 'both') {
-        return profile?.onboarding_completed ? '/client/dashboard' : '/onboarding/client';
-      }
-      return '/onboarding/client';
+      return isModeOnboarded({ ...profile, user_type: 'client' }, freelancerProfile, 'client')
+        ? getDashboardPath('client')
+        : getOnboardingPath('client');
     }
     return '/signup?type=client';
   };
 
   const primaryCta = isAuthenticated
     ? {
-      to: profile?.user_type === 'client' ? '/client/dashboard' : '/freelancer/dashboard',
+      to: isModeOnboarded(profile, freelancerProfile, activeMode)
+        ? getDashboardPath(activeMode)
+        : getOnboardingPath(activeMode),
       label: t.nav.dashboard,
     }
     : {
@@ -105,8 +111,8 @@ export default function HeroSection({ stats }: HeroSectionProps) {
 
   const secondaryCta = isAuthenticated
     ? {
-      to: profile?.user_type === 'client' ? '/jobs/new' : '/jobs',
-      label: profile?.user_type === 'client' ? t.hero.ctaClient : t.nav.findWork,
+      to: getJobsPath(activeMode),
+      label: activeMode === 'client' ? t.hero.ctaClient : t.nav.findWork,
     }
     : {
       to: getClientLink(),

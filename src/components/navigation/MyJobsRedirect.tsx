@@ -2,7 +2,7 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 
 export const MyJobsRedirect = () => {
-    const { profile, isLoading } = useAuth();
+    const { profile, activeMode, isLoading } = useAuth();
 
     if (isLoading) return null; // Or loader
 
@@ -10,10 +10,9 @@ export const MyJobsRedirect = () => {
         return <Navigate to="/login" replace />;
     }
 
-    // Redirect based on user type
-    if (profile.user_type === 'freelancer' || profile.user_type === 'both') {
+    if (activeMode === 'freelancer') {
         return <Navigate to="/freelancer/proposals" replace />; // Their submitted proposals
-    } else {
-        return <Navigate to="/client/jobs" replace />; // Posted jobs
     }
+
+    return <Navigate to="/client/jobs" replace />; // Posted jobs
 };

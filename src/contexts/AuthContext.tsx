@@ -4,13 +4,21 @@ import type { User, Session } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 import { logger } from '../lib/logger';
 import { clearAllAuthData } from '../lib/authUtils';
-import type { Profile, FreelancerProfile, UserType } from '../types';
+import {
+    getAvailableModes,
+    persistAccountMode,
+    promoteUserTypeForMode,
+    resolveAccountMode,
+} from '@/lib/accountMode';
+import type { Profile, FreelancerProfile, UserType, AccountMode } from '../types';
 
 interface AuthContextType {
     user: User | null;
     session: Session | null;
     profile: Profile | null;
     freelancerProfile: FreelancerProfile | null;
+    activeMode: AccountMode;
+    availableModes: AccountMode[];
     isLoading: boolean;
     isAuthenticated: boolean;
     signInWithEmail: (email: string, password: string) => Promise<void>;
@@ -21,6 +29,7 @@ interface AuthContextType {
     updateProfile: (data: Partial<Profile>) => Promise<void>;
     updateFreelancerProfile: (data: Partial<FreelancerProfile>) => Promise<void>;
     setUserType: (userType: UserType) => Promise<void>;
+    switchAccountMode: (mode: AccountMode) => Promise<AccountMode>;
     refreshProfile: () => Promise<void>;
 }
 
@@ -292,7 +301,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const setUserType = async (userType: UserType) => {
         if (!user) throw new Error('No user logged in');
 
+        const nextMode: AccountMode = userType === 'client' ? 'client' : 'freelancer';
+
         await updateProfile({ user_type: userType });
+        persistAccountMode(nextMode, user.id);
 
         // Create freelancer profile if user is freelancer or both
         if (userType === 'freelancer' || userType === 'both') {
@@ -306,6 +318,38 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
             if (error) throw error;
         }
+
+        await fetchProfile(user.id);
+    };
+
+    const switchAccountMode = async (mode: AccountMode) => {
+        if (!user) throw new Error('No user logged in');
+
+        const nextUserType = promoteUserTypeForMode(profile?.user_type, mode);
+
+        if (nextUserType !== profile?.user_type) {
+            await updateProfile({ user_type: nextUserType });
+        }
+
+        if (mode === 'freelancer') {
+            const { error } = await supabase
+                .from('freelancer_profiles')
+                .upsert({
+                    id: user.id,
+                    skills: [],
+                    availability: 'available',
+                });
+
+            if (error) {
+                logger.error('switchAccountMode freelancer upsert error:', error);
+                throw error;
+            }
+        }
+
+        persistAccountMode(mode, user.id);
+        await fetchProfile(user.id);
+
+        return mode;
     };
 
     // Refresh profile data
@@ -315,11 +359,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
         }
     };
 
+    const activeMode = resolveAccountMode(profile, freelancerProfile);
+    const availableModes = getAvailableModes(profile);
+
     const value: AuthContextType = {
         user,
         session,
         profile,
         freelancerProfile,
+        activeMode,
+        availableModes,
         isLoading,
         isAuthenticated: !!user,
         signInWithEmail,
@@ -330,6 +379,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         updateProfile,
         updateFreelancerProfile,
         setUserType,
+        switchAccountMode,
         refreshProfile,
     };
 

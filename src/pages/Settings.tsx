@@ -26,6 +26,7 @@ import { supabase } from '../lib/supabase';
 import OptimizedImage from '../components/common/OptimizedImage';
 import SEO, { SEO_CONFIG } from '../components/common/SEO';
 import { getAvatarGradient, getInitials } from '@/lib/avatar';
+import { getOnboardingPath, isModeOnboarded } from '@/lib/accountMode';
 
 type SettingsTab = 'profile' | 'notifications' | 'payment' | 'security';
 
@@ -62,7 +63,7 @@ const DEFAULT_NOTIFICATION_SETTINGS: NotificationSetting[] = [
 
 function Settings() {
     const { dir } = useTranslation();
-    const { user, profile, signOut, refreshProfile } = useAuth();
+    const { user, profile, freelancerProfile, activeMode, signOut, refreshProfile, switchAccountMode } = useAuth();
     const { showToast } = useToast();
     const navigate = useNavigate();
     const { tab } = useParams<{ tab: string }>();
@@ -341,6 +342,45 @@ function Settings() {
         }
     };
 
+    const handleWorkspaceSelection = async (type: 'freelancer' | 'client' | 'both') => {
+        const userId = user?.id;
+        if (!userId) return;
+
+        try {
+            if (type === 'both') {
+                const { error } = await supabase
+                    .from('profiles')
+                    .update({ user_type: 'both' })
+                    .eq('id', userId);
+
+                if (error) throw error;
+
+                if (!freelancerProfile) {
+                    const { error: freelancerError } = await supabase
+                        .from('freelancer_profiles')
+                        .upsert({
+                            id: userId,
+                            skills: [],
+                            availability: 'available',
+                        });
+
+                    if (freelancerError) throw freelancerError;
+                }
+
+                await refreshProfile();
+                showToast('ØªÙ… ØªÙØ¹ÙŠÙ„ Ù…Ø³Ø§Ø­ØªÙŠ Ø§Ù„Ø¹Ù…Ù„ ÙÙŠ Ù†ÙØ³ Ø§Ù„Ø­Ø³Ø§Ø¨.', 'success');
+                return;
+            }
+
+            await switchAccountMode(type);
+            showToast('ØªÙ… ØªØ­Ø¯ÙŠØ« Ù…Ø³Ø§Ø­Ø© Ø§Ù„Ø¹Ù…Ù„ Ø¨Ù†Ø¬Ø§Ø­.', 'success');
+        } catch (error) {
+            logger.error('Workspace selection error:', error);
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+            showToast('Ø®Ø·Ø£ ØºÙŠØ± Ù…ØªÙˆÙ‚Ø¹: ' + errorMessage, 'error');
+        }
+    };
+
     const renderProfileTab = () => (
         <div className="space-y-6">
             {/* Avatar and User Info */}
@@ -414,14 +454,14 @@ function Settings() {
                         )}
 
                         {/* Onboarding Status - show button to complete if not done */}
-                        {profile?.onboarding_completed ? (
+                        {isModeOnboarded(profile, freelancerProfile, activeMode) ? (
                             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400">
                                 <Check className="w-3 h-3" />
                                 الملف مكتمل
                             </span>
                         ) : (
                             <button
-                                onClick={() => navigate(profile?.user_type === 'client' ? '/onboarding/client' : '/onboarding/freelancer')}
+                                onClick={() => navigate(getOnboardingPath(activeMode))}
                                 className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 hover:bg-orange-200 dark:hover:bg-orange-900/50 transition-colors"
                             >
                                 <User className="w-3 h-3" />
@@ -518,40 +558,17 @@ function Settings() {
                         <button
                             key={type}
                             type="button"
-                            onClick={async (e) => {
+                            onClick={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
-                                logger.log('Settings: Switching to', type, 'user?.id:', user?.id);
-                                if (!user?.id) {
-                                    showToast('خطأ: لا يوجد مستخدم', 'error');
-                                    return;
-                                }
-                                try {
-                                    const { error } = await supabase
-                                        .from('profiles')
-                                        .update({ user_type: type })
-                                        .eq('id', user.id);
-
-                                    if (error) {
-                                        logger.error('Supabase update error:', error);
-                                        showToast('فشل التحديث: ' + error.message, 'error');
-                                        return;
-                                    }
-
-                                    await refreshProfile();
-                                    showToast('تم تحديث نوع الحساب بنجاح!', 'success');
-                                } catch (err) {
-                                    logger.error('Exception:', err);
-                                    const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-                                    showToast('خطأ غير متوقع: ' + errorMessage, 'error');
-                                }
+                                void handleWorkspaceSelection(type as 'freelancer' | 'client' | 'both');
                             }}
-                            className={`p-3 rounded-xl border-2 transition-all text-center ${profile?.user_type === type
+                            className={`p-3 rounded-xl border-2 transition-all text-center ${((type === 'both' && profile?.user_type === 'both') || (type !== 'both' && activeMode === type))
                                 ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
                                 : 'border-gray-200 dark:border-gray-700 hover:border-primary-300'
                                 }`}
                         >
-                            <span className={`font-medium block ${profile?.user_type === type ? 'text-primary-600' : ''}`}>{label}</span>
+                            <span className={`font-medium block ${((type === 'both' && profile?.user_type === 'both') || (type !== 'both' && activeMode === type)) ? 'text-primary-600' : ''}`}>{label}</span>
                             <span className="text-xs text-muted">{desc}</span>
                         </button>
                     ))}

@@ -3,38 +3,41 @@ import { Sparkles, ArrowRight, ArrowLeft, Play } from 'lucide-react';
 import { useTranslation } from '@/i18n';
 import { useAuth } from '@/contexts/AuthContext';
 import Button from '@/components/ui/Button';
+import {
+    getDashboardPath,
+    getJobsPath,
+    getOnboardingPath,
+    isModeOnboarded,
+} from '@/lib/accountMode';
 
 export default function CTASection() {
     const { t, dir } = useTranslation();
-    const { isAuthenticated, profile } = useAuth();
+    const { isAuthenticated, profile, freelancerProfile, activeMode } = useAuth();
     const ArrowIcon = dir === 'rtl' ? ArrowLeft : ArrowRight;
 
     // Determine where to redirect based on auth status
     const getStartLink = () => {
         if (isAuthenticated) {
-            if (profile?.user_type === 'freelancer' || profile?.user_type === 'both') {
-                return profile?.onboarding_completed ? '/freelancer/dashboard' : '/onboarding/freelancer';
-            }
-            return '/onboarding/freelancer';
+            return isModeOnboarded({ ...profile, user_type: 'freelancer' }, freelancerProfile, 'freelancer')
+                ? getDashboardPath('freelancer')
+                : getOnboardingPath('freelancer');
         }
         return '/signup?type=freelancer';
     };
 
     const primaryLabel = isAuthenticated ? t.nav.dashboard : t.home.sections.cta.btnStart;
     const primaryLink = isAuthenticated
-        ? profile?.user_type === 'client'
-            ? '/client/dashboard'
-            : '/freelancer/dashboard'
+        ? isModeOnboarded(profile, freelancerProfile, activeMode)
+            ? getDashboardPath(activeMode)
+            : getOnboardingPath(activeMode)
         : getStartLink();
 
     const secondaryLink = isAuthenticated
-        ? profile?.user_type === 'client'
-            ? '/jobs/new'
-            : '/jobs'
+        ? getJobsPath(activeMode)
         : '/how-it-works';
 
     const secondaryLabel = isAuthenticated
-        ? profile?.user_type === 'client'
+        ? activeMode === 'client'
             ? t.hero.ctaClient
             : t.nav.findWork
         : t.home.sections.cta.btnWatch;

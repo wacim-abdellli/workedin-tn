@@ -3,28 +3,27 @@ import { Users, Briefcase, ArrowRight, ArrowLeft } from 'lucide-react';
 import { useTranslation } from '@/i18n';
 import { useAuth } from '@/contexts/AuthContext';
 import Button from '@/components/ui/Button';
+import { getDashboardPath, getOnboardingPath, isModeOnboarded } from '@/lib/accountMode';
 
 export default function HowItWorksSection() {
     const { t, dir } = useTranslation();
-    const { isAuthenticated, profile } = useAuth();
+    const { isAuthenticated, profile, freelancerProfile } = useAuth();
     const ArrowIcon = dir === 'rtl' ? ArrowLeft : ArrowRight;
 
     const getFreelancerLink = () => {
         if (isAuthenticated) {
-            if (profile?.user_type === 'freelancer' || profile?.user_type === 'both') {
-                return profile?.onboarding_completed ? '/freelancer/dashboard' : '/onboarding/freelancer';
-            }
-            return '/onboarding/freelancer';
+            return isModeOnboarded({ ...profile, user_type: 'freelancer' }, freelancerProfile, 'freelancer')
+                ? getDashboardPath('freelancer')
+                : getOnboardingPath('freelancer');
         }
         return '/signup?type=freelancer';
     };
 
     const getClientLink = () => {
         if (isAuthenticated) {
-            if (profile?.user_type === 'client' || profile?.user_type === 'both') {
-                return profile?.onboarding_completed ? '/client/dashboard' : '/onboarding/client';
-            }
-            return '/onboarding/client';
+            return isModeOnboarded({ ...profile, user_type: 'client' }, freelancerProfile, 'client')
+                ? getDashboardPath('client')
+                : getOnboardingPath('client');
         }
         return '/signup?type=client';
     };

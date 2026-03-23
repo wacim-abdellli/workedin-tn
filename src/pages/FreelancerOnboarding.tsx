@@ -23,7 +23,7 @@ import {
 
 function FreelancerOnboarding() {
     const { t, language } = useTranslation();
-    const { user, session, refreshProfile } = useAuth();
+    const { user, session, profile, refreshProfile } = useAuth();
     const { showToast } = useToast();
     const navigate = useNavigate();
 
@@ -110,12 +110,12 @@ function FreelancerOnboarding() {
             const profileUpdate: {
                 full_name: string;
                 location: string;
-                user_type: 'freelancer';
+                user_type: 'freelancer' | 'both';
                 avatar_url?: string;
             } = {
                 full_name: data.full_name,
                 location: data.location,
-                user_type: 'freelancer',
+                user_type: profile?.user_type === 'client' || profile?.user_type === 'both' ? 'both' : 'freelancer',
             };
 
             if (avatarFile) {

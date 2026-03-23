@@ -6,11 +6,12 @@ import { useEffect } from 'react';
 import SEO, { SEO_CONFIG } from '../components/common/SEO';
 import { useTheme } from '../contexts/ThemeContext';
 import { Loader2 } from 'lucide-react';
+import { getPostAuthPath } from '@/lib/accountMode';
 
 function Login() {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
-    const { isAuthenticated, isLoading, profile } = useAuth();
+    const { isAuthenticated, isLoading, profile, freelancerProfile, activeMode } = useAuth();
     const { theme } = useTheme();
     const isOAuthResume = searchParams.get('oauth') === 'resume';
 
@@ -18,24 +19,8 @@ function Login() {
     useEffect(() => {
         if (isLoading || !isAuthenticated) return;
 
-        if (!profile?.user_type) {
-            navigate('/signup?step=select-type');
-            return;
-        }
-
-        if (!profile.onboarding_completed) {
-            const onboardingRoute = profile.user_type === 'client'
-                ? '/onboarding/client'
-                : '/onboarding/freelancer';
-            navigate(onboardingRoute);
-            return;
-        }
-
-        const dashboardRoute = profile.user_type === 'client'
-            ? '/client/dashboard'
-            : '/freelancer/dashboard';
-        navigate(dashboardRoute);
-    }, [isAuthenticated, isLoading, profile, navigate]);
+        navigate(getPostAuthPath(profile, freelancerProfile));
+    }, [activeMode, freelancerProfile, isAuthenticated, isLoading, navigate, profile]);
 
     const handleSuccess = () => {
         // Navigation is handled by the useEffect above to avoid race conditions

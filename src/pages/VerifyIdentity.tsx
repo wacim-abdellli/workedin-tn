@@ -280,7 +280,7 @@ export default function VerifyIdentity() {
                         body: JSON.stringify({
                             id: user.id,
                             full_name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'User',
-                            user_type: 'freelancer',
+                            user_type: profile?.user_type || 'client',
                         })
                     }
                 );

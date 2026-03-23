@@ -10,6 +10,7 @@ import { useTranslation } from '../../i18n';
 import { useAuth } from '../../contexts/AuthContext';
 import type { UserType } from '../../types';
 import { useToast } from '../ui/Toast';
+import { getPostAuthPath, getOnboardingPath, isModeOnboarded } from '@/lib/accountMode';
 
 interface SignupFormProps {
     onComplete?: () => void;
@@ -17,7 +18,7 @@ interface SignupFormProps {
 
 function SignupForm({ onComplete }: SignupFormProps) {
     const { t, dir } = useTranslation();
-    const { profile, setUserType, signUpWithEmail, signInWithEmail } = useAuth();
+    const { profile, freelancerProfile, setUserType, signUpWithEmail, signInWithEmail } = useAuth();
     const { showToast } = useToast();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
@@ -30,8 +31,8 @@ function SignupForm({ onComplete }: SignupFormProps) {
     useEffect(() => {
         if (!profile?.user_type) return;
 
-        navigate(profile.user_type === 'client' ? '/client/dashboard' : '/freelancer/dashboard');
-    }, [navigate, profile]);
+        navigate(getPostAuthPath(profile, freelancerProfile));
+    }, [freelancerProfile, navigate, profile]);
 
     const ArrowIcon = dir === 'rtl' ? ArrowLeft : ArrowRight;
     const preSelectedType = searchParams.get('type') as UserType | null;
@@ -107,11 +108,15 @@ function SignupForm({ onComplete }: SignupFormProps) {
         setIsLoading(true);
         try {
             await setUserType(userType);
-            if (userType === 'freelancer' || userType === 'both') {
-                navigate('/onboarding/freelancer');
-            } else {
-                navigate('/onboarding/client');
-            }
+            const nextMode = userType === 'client' ? 'client' : 'freelancer';
+            const nextPath = isModeOnboarded(
+                { ...profile, user_type: userType },
+                freelancerProfile,
+                nextMode
+            )
+                ? getPostAuthPath({ ...profile, user_type: userType }, freelancerProfile)
+                : getOnboardingPath(nextMode);
+            navigate(nextPath);
             onComplete?.();
         } catch (selectError) {
             logger.error('Error setting user type:', selectError);

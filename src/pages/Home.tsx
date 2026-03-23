@@ -28,7 +28,7 @@ function Home() {
             const { count: freelancerCount } = await supabase
                 .from('profiles')
                 .select('*', { count: 'exact', head: true })
-                .eq('user_type', 'freelancer');
+                .in('user_type', ['freelancer', 'both']);
 
             const { data: contracts } = await supabase
                 .from('contracts')

@@ -1,10 +1,11 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { getProfilePath } from '@/lib/accountMode';
 import Loading from '../ui/Loading';
 
 export function ProfileRedirect() {
-    const { user, profile, isLoading } = useAuth();
+    const { user, profile, activeMode, isLoading } = useAuth();
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -15,19 +16,8 @@ export function ProfileRedirect() {
             return;
         }
 
-        if (profile?.user_type === 'freelancer') {
-            // Get username or use id
-            const identifier = profile.username || profile.id;
-            navigate(`/freelancer/${identifier}`, { replace: true });
-        } else if (profile?.user_type === 'client') {
-            // Check if client has a username/public profile (future proofing), 
-            // otherwise /client/dashboard is standard
-            navigate('/client/dashboard', { replace: true });
-        } else {
-            // Fallback for 'both' or undefined, usually freelancer dashboard or role selection
-            navigate('/freelancer/dashboard', { replace: true });
-        }
-    }, [user, profile, isLoading, navigate]);
+        navigate(getProfilePath(profile, activeMode), { replace: true });
+    }, [activeMode, user, profile, isLoading, navigate]);
 
     return <Loading fullScreen />;
 }

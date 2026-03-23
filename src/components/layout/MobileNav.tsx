@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
+import { getDashboardPath, getProfilePath } from '@/lib/accountMode';
 
 const NAV_ITEMS = [
     { id: 'home', path: '/', icon: Home, label: 'الرئيسية' },
@@ -27,7 +28,7 @@ const NAV_ITEMS = [
 export default function MobileNav() {
     const location = useLocation();
     const navigate = useNavigate();
-    const { profile, signOut } = useAuth();
+    const { profile, activeMode, signOut } = useAuth();
     const [showMenu, setShowMenu] = useState(false);
     const [showSearch, setShowSearch] = useState(false);
 
@@ -46,11 +47,19 @@ export default function MobileNav() {
     };
 
     const menuItems = [
-        { icon: User, label: 'الملف الشخصي', path: profile?.user_type === 'freelancer' ? `/freelancer/${profile?.id}` : '/profile' },
-        { icon: DollarSign, label: 'الأرباح', path: '/freelancer/earnings' },
+        { icon: User, label: 'الملف الشخصي', path: getProfilePath(profile, activeMode) },
+        { icon: DollarSign, label: 'لوحة التحكم', path: getDashboardPath(activeMode) },
         { icon: Settings, label: 'الإعدادات', path: '/settings' },
         { icon: HelpCircle, label: 'المساعدة', path: '/help' },
     ];
+
+    const workspaceLabel = profile?.user_type === 'both'
+        ? activeMode === 'freelancer'
+            ? 'وضع المستقل'
+            : 'وضع العميل'
+        : profile?.user_type === 'freelancer'
+            ? 'مستقل'
+            : 'عميل';
 
     return (
         <>
@@ -150,7 +159,7 @@ export default function MobileNav() {
                                 </div>
                                 <div>
                                     <p className="font-bold text-foreground">{profile?.full_name || 'المستخدم'}</p>
-                                    <p className="text-sm text-muted">{profile?.user_type === 'freelancer' ? 'موظف حر' : 'عميل'}</p>
+                                    <p className="text-sm text-muted">{workspaceLabel}</p>
                                 </div>
                             </div>
                         </div>

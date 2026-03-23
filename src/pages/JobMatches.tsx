@@ -75,7 +75,7 @@ function JobMatches() {
                         ),
                         work_samples(*)
                     `)
-                    .eq('user_type', 'freelancer');
+                    .in('user_type', ['freelancer', 'both']);
 
                 if (flError) throw flError;
 

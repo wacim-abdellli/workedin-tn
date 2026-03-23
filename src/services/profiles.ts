@@ -31,7 +31,7 @@ export async function getFreelancers(filters: {
     let query = supabase
         .from('profiles')
         .select(`*, freelancer_profiles(*)`, { count: 'exact' })
-        .eq('user_type', 'freelancer');
+        .in('user_type', ['freelancer', 'both']);
 
     if (filters.search) {
         query = query.or(`full_name.ilike.%${filters.search}%,username.ilike.%${filters.search}%`);

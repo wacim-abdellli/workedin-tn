@@ -1,4 +1,5 @@
 export type UserType = 'freelancer' | 'client' | 'both';
+export type AccountMode = 'freelancer' | 'client';
 export type Language = 'ar' | 'fr' | 'en';
 export type JobStatus = 'open' | 'matched' | 'in_progress' | 'completed' | 'cancelled' | 'disputed';
 export type MatchStatus = 'suggested' | 'accepted' | 'rejected';
@@ -29,6 +30,7 @@ export interface ProposalAttachment extends Attachment {
 }
 
 export interface Profile {
+    active_mode?: AccountMode | null;
     id: string;
     user_type: UserType | null; // ✅ FIXED: Allow null (database allows NULL)
     email?: string; // ✅ ADDED: For Settings.tsx compatibility
