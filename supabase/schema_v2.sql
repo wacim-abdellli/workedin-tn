@@ -33,12 +33,18 @@ CREATE TYPE notification_type_enum AS ENUM ('new_job', 'new_proposal', 'message'
 CREATE TABLE profiles (
     id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
     user_type user_type_enum DEFAULT 'client',
+    email TEXT,
+    username TEXT,
+    is_admin BOOLEAN DEFAULT false,
     full_name TEXT NOT NULL,
     phone TEXT UNIQUE,
     avatar_url TEXT,
     bio TEXT CHECK (char_length(bio) <= 500),
     location TEXT, -- Tunisian governorate
     preferred_language language_enum DEFAULT 'ar',
+    cin_verified BOOLEAN DEFAULT false,
+    cin_submitted BOOLEAN DEFAULT false,
+    onboarding_completed BOOLEAN DEFAULT false,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -568,14 +574,58 @@ CREATE TRIGGER update_contracts_updated_at
 -- Auto-create profile on user signup
 CREATE OR REPLACE FUNCTION handle_new_user()
 RETURNS TRIGGER AS $$
+DECLARE
+    raw_meta JSONB := COALESCE(NEW.raw_user_meta_data, '{}'::jsonb);
+    locale_value TEXT;
+    preferred_language_value language_enum := 'ar';
+    generated_name TEXT;
 BEGIN
-    INSERT INTO profiles (id, full_name, phone, preferred_language)
+    locale_value := LOWER(
+        COALESCE(
+            NULLIF(raw_meta->>'preferred_language', ''),
+            NULLIF(raw_meta->>'locale', ''),
+            'ar'
+        )
+    );
+
+    IF locale_value LIKE 'fr%' THEN
+        preferred_language_value := 'fr';
+    ELSIF locale_value LIKE 'en%' THEN
+        preferred_language_value := 'en';
+    ELSE
+        preferred_language_value := 'ar';
+    END IF;
+
+    generated_name := TRIM(
+        COALESCE(
+            NULLIF(raw_meta->>'full_name', ''),
+            NULLIF(raw_meta->>'name', ''),
+            NULLIF(CONCAT_WS(' ', raw_meta->>'given_name', raw_meta->>'family_name'), ''),
+            NULLIF(SPLIT_PART(COALESCE(NEW.email, ''), '@', 1), ''),
+            'New user'
+        )
+    );
+
+    INSERT INTO profiles (id, email, full_name, phone, avatar_url, preferred_language, onboarding_completed)
     VALUES (
         NEW.id,
-        COALESCE(NEW.raw_user_meta_data->>'full_name', 'مستخدم جديد'),
+        NEW.email,
+        generated_name,
         NEW.phone,
-        COALESCE(NEW.raw_user_meta_data->>'preferred_language', 'ar')::language_enum
-    );
+        COALESCE(NULLIF(raw_meta->>'avatar_url', ''), NULLIF(raw_meta->>'picture', '')),
+        preferred_language_value,
+        false
+    )
+    ON CONFLICT (id) DO UPDATE
+    SET
+        email = COALESCE(EXCLUDED.email, profiles.email),
+        full_name = CASE
+            WHEN profiles.full_name IS NULL OR BTRIM(profiles.full_name) = '' THEN EXCLUDED.full_name
+            ELSE profiles.full_name
+        END,
+        phone = COALESCE(profiles.phone, EXCLUDED.phone),
+        avatar_url = COALESCE(profiles.avatar_url, EXCLUDED.avatar_url),
+        preferred_language = COALESCE(profiles.preferred_language, EXCLUDED.preferred_language);
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;

@@ -1,9 +1,3 @@
--- =====================================================
--- KHEDMA.TN - Emergency Auth/Profile Repair
--- Run this in Supabase SQL Editor if Google signup/login
--- fails with "Database error saving new user"
--- =====================================================
-
 begin;
 
 alter table public.profiles add column if not exists email text;
@@ -147,11 +141,3 @@ left join public.profiles as p on p.id = u.id
 where p.id is null;
 
 commit;
-
-select column_name, data_type, column_default
-from information_schema.columns
-where table_schema = 'public'
-  and table_name = 'profiles'
-order by ordinal_position;
-
-select 'Auth/profile repair applied successfully.' as status;
