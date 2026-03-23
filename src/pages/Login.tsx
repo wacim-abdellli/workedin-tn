@@ -1,15 +1,18 @@
 import { Header, Footer } from '../components/layout';
 import { LoginForm } from '../components/auth';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useEffect } from 'react';
 import SEO, { SEO_CONFIG } from '../components/common/SEO';
 import { useTheme } from '../contexts/ThemeContext';
+import { Loader2 } from 'lucide-react';
 
 function Login() {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
     const { isAuthenticated, isLoading, profile } = useAuth();
     const { theme } = useTheme();
+    const isOAuthResume = searchParams.get('oauth') === 'resume';
 
     // Redirect authenticated users to appropriate dashboard
     useEffect(() => {
@@ -57,12 +60,22 @@ function Login() {
                         alt="Khedma TN"
                         style={{ height: '80px', width: 'auto', margin: '0 auto 2rem' }}
                     />
-                    <div className="mx-auto max-w-md rounded-2xl bg-white p-8 shadow-xl shadow-gray-200/50 dark:border dark:border-white/8 dark:bg-[#1a1825] dark:shadow-black/50">
-                        <LoginForm
-                            onSuccess={handleSuccess}
-                            onSwitchToSignup={() => navigate('/signup')}
-                        />
-                    </div>
+                    {isOAuthResume && isLoading ? (
+                        <div className="mx-auto max-w-md rounded-2xl bg-white p-8 text-center shadow-xl shadow-gray-200/50 dark:border dark:border-white/8 dark:bg-[#1a1825] dark:shadow-black/50">
+                            <Loader2 className="mx-auto mb-4 h-12 w-12 animate-spin text-primary-600" />
+                            <h1 className="mb-2 text-2xl font-bold text-[#171420] dark:text-white">Finishing your sign in</h1>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                                We are confirming your secure session and sending you to the right workspace.
+                            </p>
+                        </div>
+                    ) : (
+                        <div className="mx-auto max-w-md rounded-2xl bg-white p-8 shadow-xl shadow-gray-200/50 dark:border dark:border-white/8 dark:bg-[#1a1825] dark:shadow-black/50">
+                            <LoginForm
+                                onSuccess={handleSuccess}
+                                onSwitchToSignup={() => navigate('/signup')}
+                            />
+                        </div>
+                    )}
                 </div>
             </div>
 

@@ -12,6 +12,7 @@ const MAX_WAIT_MS = 12000;
 const POLL_INTERVAL_MS = 400;
 const PRE_EXCHANGE_WAIT_MS = 1800;
 const EXCHANGE_TIMEOUT_MS = 5000;
+const POST_AUTH_ROUTE = '/login?oauth=resume';
 
 const sleep = (ms: number) => new Promise((resolve) => window.setTimeout(resolve, ms));
 
@@ -23,8 +24,8 @@ const AuthCallback = () => {
     useEffect(() => {
         let cancelled = false;
 
-        const redirectToHome = () => {
-            window.location.replace('/');
+        const redirectToPostAuth = () => {
+            window.location.replace(POST_AUTH_ROUTE);
         };
 
         const waitForSession = async (deadline: number) => {
@@ -81,7 +82,7 @@ const AuthCallback = () => {
 
             if (existingSession) {
                 logger.info('AuthCallback: existing session detected, redirecting');
-                redirectToHome();
+                redirectToPostAuth();
                 return;
             }
 
@@ -97,7 +98,7 @@ const AuthCallback = () => {
                         logger.error('AuthCallback: exchangeCodeForSession failed', error);
                     } else if (data.session) {
                         logger.info('AuthCallback: code exchanged successfully, redirecting');
-                        redirectToHome();
+                        redirectToPostAuth();
                         return;
                     }
                 } catch (error) {
@@ -109,14 +110,13 @@ const AuthCallback = () => {
 
             if (session) {
                 logger.info('AuthCallback: session detected after polling, redirecting to home');
-                redirectToHome();
+                redirectToPostAuth();
                 return;
             }
 
             if (!cancelled) {
-                logger.warn('AuthCallback: no session detected before timeout');
-                setErrorDetails({ message: 'No session was created before the callback timed out.' });
-                setStatus('error');
+                logger.warn('AuthCallback: no session detected before timeout, falling back to login route');
+                redirectToPostAuth();
             }
         };
 
@@ -127,7 +127,7 @@ const AuthCallback = () => {
 
             if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && session) {
                 logger.info(`AuthCallback: ${event} detected, redirecting`);
-                redirectToHome();
+                redirectToPostAuth();
             }
         });
 
