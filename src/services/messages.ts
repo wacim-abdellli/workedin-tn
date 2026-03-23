@@ -1,7 +1,16 @@
 /**
- * Messages Service — Chat/messaging Supabase queries
+ * Messages Service - Chat/messaging Supabase queries
  */
 import { supabase } from '@/lib/supabase';
+import type { MessageAttachment } from '@/types';
+
+function normalizeMessageError(error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    if (message.includes('rate_limit_exceeded')) {
+        return new Error('Slow down - max 30 messages per minute.');
+    }
+    return error instanceof Error ? error : new Error(message);
+}
 
 // --- READ ---
 
@@ -32,9 +41,27 @@ export async function sendMessage(data: {
     sender_id: string;
     receiver_id: string;
     content: string;
-    attachments?: string[];
+    attachments?: MessageAttachment[];
+    message_type?: string | null;
 }) {
-    return supabase.from('messages').insert(data);
+    try {
+        const { data: messageId, error } = await supabase.rpc('send_message', {
+            p_contract_id: data.contract_id,
+            p_sender_id: data.sender_id,
+            p_receiver_id: data.receiver_id,
+            p_content: data.content,
+            p_attachments: data.attachments ?? [],
+            p_message_type: data.message_type ?? null,
+        });
+
+        if (error) {
+            throw error;
+        }
+
+        return { data: messageId, error: null };
+    } catch (error) {
+        return { data: null, error: normalizeMessageError(error) };
+    }
 }
 
 export async function markMessageRead(messageId: string) {

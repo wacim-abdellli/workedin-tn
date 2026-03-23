@@ -82,6 +82,14 @@ export async function toggleFavorite(userId: string, jobId: string, isSaved: boo
     return supabase.from('favorites').insert({ user_id: userId, job_id: jobId });
 }
 
+export async function getSavedJobs(userId: string) {
+    return supabase
+        .from('favorites')
+        .select('job_id, jobs(*)')
+        .eq('user_id', userId)
+        .not('job_id', 'is', null);
+}
+
 // --- REVIEWS ---
 
 export async function getReviewsByUser(userId: string) {

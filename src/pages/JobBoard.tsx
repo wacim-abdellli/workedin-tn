@@ -1,5 +1,4 @@
-import { logger } from '@/lib/logger';
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
     Search,
@@ -8,8 +7,10 @@ import {
     Heart,
     SlidersHorizontal,
 } from 'lucide-react';
+import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../contexts/AuthContext';
-import { supabase } from '../lib/supabase';
+import * as jobsService from '../services/jobs';
+import * as profilesService from '../services/profiles';
 import { Header, Footer } from '../components/layout';
 import Button from '../components/ui/Button';
 import { useToast } from '../components/ui/Toast';
@@ -52,14 +53,6 @@ interface Job {
 // Category options (Values only needed for logic)
 const CATEGORY_VALUES = [
     'design', 'development', 'writing', 'translation', 'video', 'marketing', 'data', 'other'
-];
-
-const BUDGET_RANGES = [
-    { value: '0-50', min: 0, max: 50 },
-    { value: '50-100', min: 50, max: 100 },
-    { value: '100-250', min: 100, max: 250 },
-    { value: '250-500', min: 250, max: 500 },
-    { value: '500+', min: 500, max: 999999 },
 ];
 
 function useDebounce<T>(value: T, delay: number): T {
@@ -126,18 +119,11 @@ function JobBoard() {
     const { showToast } = useToast();
     const [searchParams, setSearchParams] = useSearchParams();
     const { t } = useTranslation();
+    const queryClient = useQueryClient();
 
     // State
-    const [jobs, setJobs] = useState<Job[]>([]);
-    const [savedJobIds, setSavedJobIds] = useState<Set<string>>(new Set());
-    const [savedJobs, setSavedJobs] = useState<Job[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
     const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
     const [showMobileFilters, setShowMobileFilters] = useState(false);
-    const [totalCount, setTotalCount] = useState(0);
-    const [page, setPage] = useState(1);
-    const [hasMore, setHasMore] = useState(true);
-    const [categoryCounts, setCategoryCounts] = useState<Record<string, number>>({});
 
     // Filters from URL params
     const [filters, setFilters] = useState({
@@ -174,192 +160,65 @@ function JobBoard() {
     }, [filters, setSearchParams]);
 
     // Fetch jobs
-    const fetchJobs = useCallback(async (reset = false) => {
-        setIsLoading(true);
-        try {
-            let query = supabase
-                .from('jobs')
-                .select(`
-    *,
-    client: profiles!client_id(id, full_name, avatar_url, location)
-                `, { count: 'exact' })
-                .eq('status', 'open')
-                .eq('visibility', 'public');
+    const {
+        data: jobsData,
+        fetchNextPage,
+        hasNextPage,
+        isFetching,
+        isFetchingNextPage,
+    } = useInfiniteQuery({
+        queryKey: ['jobs', filters, debouncedSearch],
+        queryFn: ({ pageParam }) => jobsService.getJobs({ ...filters, search: debouncedSearch }, pageParam as number, 10),
+        initialPageParam: 1,
+        getNextPageParam: (lastPage: any, pages: any[]) => 
+            lastPage.data?.length === 10 ? pages.length + 1 : undefined,
+    });
 
-            // Search
-            if (debouncedSearch) {
-                query = query.or(`title.ilike.% ${debouncedSearch}%, description.ilike.% ${debouncedSearch}% `);
-            }
-
-            // Category filter
-            if (filters.categories.length > 0) {
-                query = query.in('category', filters.categories);
-            }
-
-            // Job type filter
-            if (filters.jobType) {
-                query = query.eq('job_type', filters.jobType);
-            }
-
-            // Budget range filter
-            if (filters.budgetRange) {
-                const range = BUDGET_RANGES.find(r => r.value === filters.budgetRange);
-                if (range) {
-                    query = query.gte('budget_min', range.min).lte('budget_min', range.max);
-                }
-            }
-
-            // Experience level filter
-            if (filters.experienceLevels.length > 0) {
-                query = query.in('experience_level', filters.experienceLevels);
-            }
-
-            // Posted date filter
-            if (filters.postedWithin && filters.postedWithin !== 'any') {
-                const now = new Date();
-                let since: Date;
-                switch (filters.postedWithin) {
-                    case '24h': since = new Date(now.getTime() - 24 * 60 * 60 * 1000); break;
-                    case '3d': since = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000); break;
-                    case '1w': since = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000); break;
-                    case '1m': since = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000); break;
-                    default: since = new Date(0);
-                }
-                query = query.gte('posted_at', since.toISOString());
-            }
-
-            // Sorting
-            switch (filters.sortBy) {
-                case 'budget_high':
-                    query = query.order('budget_max', { ascending: false, nullsFirst: false });
-                    break;
-                case 'budget_low':
-                    query = query.order('budget_min', { ascending: true });
-                    break;
-                case 'proposals_high':
-                    query = query.order('proposals_count', { ascending: false });
-                    break;
-                case 'proposals_low':
-                    query = query.order('proposals_count', { ascending: true });
-                    break;
-                default:
-                    query = query.order('posted_at', { ascending: false });
-            }
-
-            // Pagination
-            const currentPage = reset ? 1 : page;
-            const perPage = 20;
-            query = query.range((currentPage - 1) * perPage, currentPage * perPage - 1);
-
-            const { data, error, count } = await query;
-
-            if (error) throw error;
-
-            if (reset) {
-                setJobs(data || []);
-                setPage(1);
-            } else {
-                setJobs(prev => [...prev, ...(data || [])]);
-            }
-
-            setTotalCount(count || 0);
-            setHasMore((data?.length || 0) === perPage);
-        } catch (error) {
-            logger.error('Error fetching jobs:', error);
-            showToast(t.jobs.empty.title, 'error'); // Using simple error toast for now
-        } finally {
-            setIsLoading(false);
-        }
-    }, [debouncedSearch, filters, page, showToast, t]);
+    const jobs = useMemo(() => jobsData?.pages.flatMap((p: any) => p.data || []) || [], [jobsData]);
+    const totalCount = jobsData?.pages[0]?.count || 0;
+    const isLoading = isFetching && !isFetchingNextPage;
 
     // Fetch category counts
-    const fetchCategoryCounts = useCallback(async () => {
-        try {
-            const counts: Record<string, number> = {};
-            for (const catValue of CATEGORY_VALUES) {
-                const { count } = await supabase
-                    .from('jobs')
-                    .select('*', { count: 'exact', head: true })
-                    .eq('status', 'open')
-                    .eq('visibility', 'public')
-                    .eq('category', catValue);
-                counts[catValue] = count || 0;
-            }
-            setCategoryCounts(counts);
-        } catch (error) {
-            logger.error('Error fetching category counts:', error);
-        }
-    }, []);
+    const { data: categoryCounts = {} } = useQuery({
+        queryKey: ['categoryCounts'],
+        queryFn: () => jobsService.getCategoryCounts(CATEGORY_VALUES),
+    });
 
     // Fetch saved jobs
-    const fetchSavedJobs = useCallback(async () => {
-        if (!user) return;
-        try {
-            const { data } = await supabase
-                .from('favorites')
-                .select('job_id, jobs(*)')
-                .eq('user_id', user.id)
-                .not('job_id', 'is', null);
+    const { data: savedJobsData = [] } = useQuery({
+        queryKey: ['savedJobs', user?.id],
+        queryFn: async () => {
+            if (!user) return [];
+            const { data } = await profilesService.getSavedJobs(user.id);
+            return (data?.map(f => f.jobs).filter(Boolean) as unknown as Job[]) || [];
+        },
+        enabled: !!user,
+    });
 
-            if (data) {
-                const jobIds = new Set(data.map(f => f.job_id));
-                setSavedJobIds(jobIds as Set<string>);
-                setSavedJobs(data.map(f => f.jobs).filter(Boolean) as unknown as Job[]);
-            }
-        } catch (error) {
-            logger.error('Error fetching saved jobs:', error);
-        }
-    }, [user]);
-
-    // Initial fetch
-    useEffect(() => {
-        fetchJobs(true);
-        fetchCategoryCounts();
-        fetchSavedJobs();
-    }, []);
-
-    // Re-fetch on filter change
-    useEffect(() => {
-        fetchJobs(true);
-    }, [debouncedSearch, filters.categories, filters.jobType, filters.budgetRange, filters.experienceLevels, filters.postedWithin, filters.sortBy]);
-
-    // Load more
-    const loadMore = () => {
-        if (!isLoading && hasMore) {
-            setPage(prev => prev + 1);
-            fetchJobs(false);
-        }
-    };
+    const savedJobIds = useMemo(() => new Set(savedJobsData.map(j => j.id)), [savedJobsData]);
+    const savedJobs = savedJobsData;
 
     // Toggle save job
-    const toggleSaveJob = async (job: Job) => {
+    const toggleSaveJobMutation = useMutation({
+        mutationFn: async ({ job, isSaved }: { job: Job, isSaved: boolean }) => {
+            await profilesService.toggleFavorite(user!.id, job.id, isSaved);
+            return { job, isSaved };
+        },
+        onSuccess: ({ isSaved }) => {
+            queryClient.invalidateQueries({ queryKey: ['savedJobs', user?.id] });
+            showToast(isSaved ? t.jobs.unsave : t.jobs.saved, 'success');
+        },
+        onError: () => {
+             showToast('Error', 'error');
+        }
+    });
+
+    const toggleSaveJob = (job: Job) => {
         if (!user) {
-            showToast(t.auth.login, 'warning'); // Prompt login
+            showToast(t.auth.login, 'warning');
             return;
         }
-
-        const isSaved = savedJobIds.has(job.id);
-        try {
-            if (isSaved) {
-                await supabase
-                    .from('favorites')
-                    .delete()
-                    .eq('user_id', user.id)
-                    .eq('job_id', job.id);
-                setSavedJobIds(prev => { const next = new Set(prev); next.delete(job.id); return next; });
-                setSavedJobs(prev => prev.filter(j => j.id !== job.id));
-                showToast(t.jobs.unsave, 'success');
-            } else {
-                await supabase
-                    .from('favorites')
-                    .insert({ user_id: user.id, job_id: job.id });
-                setSavedJobIds(prev => new Set(prev).add(job.id));
-                setSavedJobs(prev => [job, ...prev]);
-                showToast(t.jobs.saved, 'success');
-            }
-        } catch (error) {
-            showToast('Error', 'error');
-        }
+        toggleSaveJobMutation.mutate({ job, isSaved: savedJobIds.has(job.id) });
     };
 
     // Update filter
@@ -501,14 +360,15 @@ function JobBoard() {
                                 </div>
 
                                 {/* Load More */}
-                                {hasMore && (
+                                {hasNextPage && (
                                     <div className="text-center mt-8">
                                         <Button
                                             variant="outline"
-                                            onClick={loadMore}
-                                            isLoading={isLoading}
+                                            onClick={() => fetchNextPage()}
+                                            disabled={isFetchingNextPage}
+                                            isLoading={isFetchingNextPage}
                                         >
-                                            {t.jobs.loadMore}
+                                            {isFetchingNextPage ? 'Loading...' : t.jobs.loadMore}
                                         </Button>
                                     </div>
                                 )}

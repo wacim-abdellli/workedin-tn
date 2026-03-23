@@ -1,60 +1,106 @@
 /**
- * Service Layer Tests — Critical Path Coverage
+ * Service Layer Tests - Critical Path Coverage
  * Tests the service functions return correct query structures
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-// Mock supabase before imports
-const mockSelect = vi.fn().mockReturnThis();
-const mockInsert = vi.fn().mockReturnThis();
-const mockUpdate = vi.fn().mockReturnThis();
-const mockDelete = vi.fn().mockReturnThis();
-const mockEq = vi.fn().mockReturnThis();
-const mockNeq = vi.fn().mockReturnThis();
-const mockOr = vi.fn().mockReturnThis();
-const mockOrder = vi.fn().mockReturnThis();
-const mockLimit = vi.fn().mockReturnThis();
-const mockRange = vi.fn().mockReturnThis();
-const mockSingle = vi.fn().mockReturnThis();
-const mockMaybeSingle = vi.fn().mockReturnThis();
-const mockIlike = vi.fn().mockReturnThis();
-const mockGte = vi.fn().mockReturnThis();
-const mockLte = vi.fn().mockReturnThis();
-const mockUpsert = vi.fn().mockReturnThis();
+const {
+    mockSelect,
+    mockInsert,
+    mockUpdate,
+    mockDelete,
+    mockEq,
+    mockNeq,
+    mockOr,
+    mockOrder,
+    mockLimit,
+    mockRange,
+    mockSingle,
+    mockMaybeSingle,
+    mockIlike,
+    mockGte,
+    mockLte,
+    mockUpsert,
+    mockRpc,
+    mockFrom,
+} = vi.hoisted(() => {
+    const mockSelect = vi.fn().mockReturnThis();
+    const mockInsert = vi.fn().mockReturnThis();
+    const mockUpdate = vi.fn().mockReturnThis();
+    const mockDelete = vi.fn().mockReturnThis();
+    const mockEq = vi.fn().mockReturnThis();
+    const mockNeq = vi.fn().mockReturnThis();
+    const mockOr = vi.fn().mockReturnThis();
+    const mockOrder = vi.fn().mockReturnThis();
+    const mockLimit = vi.fn().mockReturnThis();
+    const mockRange = vi.fn().mockReturnThis();
+    const mockSingle = vi.fn().mockReturnThis();
+    const mockMaybeSingle = vi.fn().mockReturnThis();
+    const mockIlike = vi.fn().mockReturnThis();
+    const mockGte = vi.fn().mockReturnThis();
+    const mockLte = vi.fn().mockReturnThis();
+    const mockUpsert = vi.fn().mockReturnThis();
+    const mockRpc = vi.fn();
 
-const mockFrom = vi.fn(() => ({
-    select: mockSelect,
-    insert: mockInsert,
-    update: mockUpdate,
-    delete: mockDelete,
-    eq: mockEq,
-    neq: mockNeq,
-    or: mockOr,
-    order: mockOrder,
-    limit: mockLimit,
-    range: mockRange,
-    single: mockSingle,
-    maybeSingle: mockMaybeSingle,
-    ilike: mockIlike,
-    gte: mockGte,
-    lte: mockLte,
-    upsert: mockUpsert,
-}));
+    const mockFrom = vi.fn(() => ({
+        select: mockSelect,
+        insert: mockInsert,
+        update: mockUpdate,
+        delete: mockDelete,
+        eq: mockEq,
+        neq: mockNeq,
+        or: mockOr,
+        order: mockOrder,
+        limit: mockLimit,
+        range: mockRange,
+        single: mockSingle,
+        maybeSingle: mockMaybeSingle,
+        ilike: mockIlike,
+        gte: mockGte,
+        lte: mockLte,
+        upsert: mockUpsert,
+    }));
+
+    return {
+        mockSelect,
+        mockInsert,
+        mockUpdate,
+        mockDelete,
+        mockEq,
+        mockNeq,
+        mockOr,
+        mockOrder,
+        mockLimit,
+        mockRange,
+        mockSingle,
+        mockMaybeSingle,
+        mockIlike,
+        mockGte,
+        mockLte,
+        mockUpsert,
+        mockRpc,
+        mockFrom,
+    };
+});
 
 vi.mock('@/lib/supabase', () => ({
-    supabase: { from: mockFrom },
+    supabase: { from: mockFrom, rpc: mockRpc },
     uploadFile: vi.fn().mockResolvedValue('https://example.com/file.jpg'),
 }));
 
-// Now import services
 import * as jobsService from '@/services/jobs';
 import * as proposalsService from '@/services/proposals';
 import * as profilesService from '@/services/profiles';
 import * as notificationsService from '@/services/notifications';
 
+function resetMocks() {
+    vi.clearAllMocks();
+    mockRpc.mockResolvedValue({ data: null, error: null });
+}
+
 describe('Jobs Service', () => {
     beforeEach(() => {
-        vi.clearAllMocks();
+        resetMocks();
     });
 
     it('getJobs calls supabase with default filters', async () => {
@@ -63,7 +109,7 @@ describe('Jobs Service', () => {
     });
 
     it('getJobs applies category filter', async () => {
-        await jobsService.getJobs({ category: 'design' });
+        await jobsService.getJobs({ category: 'design' } as never);
         expect(mockFrom).toHaveBeenCalledWith('jobs');
     });
 
@@ -90,7 +136,7 @@ describe('Jobs Service', () => {
 
 describe('Proposals Service', () => {
     beforeEach(() => {
-        vi.clearAllMocks();
+        resetMocks();
     });
 
     it('getMyProposal queries by job and freelancer', async () => {
@@ -106,7 +152,7 @@ describe('Proposals Service', () => {
 
 describe('Profiles Service', () => {
     beforeEach(() => {
-        vi.clearAllMocks();
+        resetMocks();
     });
 
     it('getProfileById fetches single profile', async () => {
@@ -132,7 +178,7 @@ describe('Profiles Service', () => {
 
 describe('Notifications Service', () => {
     beforeEach(() => {
-        vi.clearAllMocks();
+        resetMocks();
     });
 
     it('getNotifications fetches with limit', async () => {

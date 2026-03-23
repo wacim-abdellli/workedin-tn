@@ -1,5 +1,5 @@
 /**
- * Proposals Service — All proposal-related Supabase queries
+ * Proposals Service - All proposal-related Supabase queries
  */
 import { supabase, uploadFile } from '@/lib/supabase';
 
@@ -9,6 +9,14 @@ export interface CreateProposalInput {
     cover_letter: string;
     bid_amount: number;
     delivery_days: number;
+}
+
+function normalizeProposalError(error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    if (message.includes('rate_limit_exceeded')) {
+        return new Error("You've reached the proposal limit. Try again in an hour.");
+    }
+    return error instanceof Error ? error : new Error(message);
 }
 
 // --- READ ---
@@ -41,19 +49,32 @@ export async function getProposalsByFreelancer(freelancerId: string) {
 // --- WRITE ---
 
 export async function createProposal(data: CreateProposalInput, files: File[] = []) {
-    // Upload attachments
-    const attachmentUrls: string[] = [];
-    for (const file of files) {
-        const path = `${data.freelancer_id}/${data.job_id}/${Date.now()}-${file.name}`;
-        const url = await uploadFile('attachments', path, file);
-        if (url) attachmentUrls.push(url);
-    }
+    try {
+        const attachmentUrls: string[] = [];
 
-    return supabase.from('proposals').insert({
-        ...data,
-        attachments: attachmentUrls,
-        status: 'pending',
-    });
+        for (const file of files) {
+            const path = `${data.freelancer_id}/${data.job_id}/${Date.now()}-${file.name}`;
+            const uploadedUrl = await uploadFile('attachments', path, file);
+            attachmentUrls.push(uploadedUrl);
+        }
+
+        const { data: proposalId, error } = await supabase.rpc('submit_proposal', {
+            p_job_id: data.job_id,
+            p_freelancer_id: data.freelancer_id,
+            p_cover_letter: data.cover_letter,
+            p_bid_amount: data.bid_amount,
+            p_delivery_days: data.delivery_days,
+            p_attachments: attachmentUrls,
+        });
+
+        if (error) {
+            throw error;
+        }
+
+        return { data: proposalId, error: null };
+    } catch (error) {
+        return { data: null, error: normalizeProposalError(error) };
+    }
 }
 
 export async function withdrawProposal(proposalId: string) {

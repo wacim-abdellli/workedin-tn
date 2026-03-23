@@ -18,7 +18,9 @@ import { Header } from '../components/layout';
 import { useRealtimeChat } from '../hooks/useRealtimeChat';
 import { useFileUpload } from '../hooks/useFileUpload';
 import { useContractState } from '../hooks/useContractState';
-import { getContract, supabase } from '../lib/supabase';
+import { supabase } from '../lib/supabase';
+import { getContractById } from '../services/contracts';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 // Components
 import ChatSection from '../components/contracts/ChatSection';
@@ -56,8 +58,8 @@ export default function ContractWorkspace() {
     const { user } = useAuth();
     const { showToast } = useToast();
     const navigate = useNavigate();
+    const queryClient = useQueryClient();
 
-    const [contractData, setContractData] = useState<ContractData | null>(null);
     const [activeMobileTab, setActiveMobileTab] = useState<'chat' | 'details' | 'files'>('chat');
 
     // Modals
@@ -66,10 +68,29 @@ export default function ContractWorkspace() {
     const [isDisputeModalOpen, setIsDisputeModalOpen] = useState(false);
     const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
 
-    const [isInitialLoading, setIsInitialLoading] = useState(true);
     const [deliveryNote, setDeliveryNote] = useState('');
     const [disputeReason, setDisputeReason] = useState('');
-    const [hasLeftReview, setHasLeftReview] = useState(false);
+
+    // Load initial contract data
+    const { data: contractData, isLoading: isInitialLoading } = useQuery({
+        queryKey: ['contract', contractId],
+        queryFn: async () => {
+            if (!contractId) throw new Error('No contract id');
+            const { data, error } = await getContractById(contractId);
+            if (error || !data) throw error || new Error('Not found');
+            return {
+                id: data.id,
+                job: data.job as ContractData['job'],
+                freelancer: data.freelancer as ContractData['freelancer'],
+                client: data.client as ContractData['client'],
+                status: data.status,
+                payment_status: data.payment_status,
+                amount: data.amount,
+                started_at: data.started_at,
+            };
+        },
+        enabled: !!contractId,
+    });
 
     // Determine user role
     const userRole: 'client' | 'freelancer' =
@@ -116,57 +137,28 @@ export default function ContractWorkspace() {
         userRole,
     });
 
-    // Load initial contract data
-    useEffect(() => {
-        loadContract();
-    }, [contractId]);
-
     // Refresh contract state on mount
     useEffect(() => {
         if (contractId && user?.id) {
             refreshContractState();
         }
-    }, [contractId, user?.id]);
-
-    const loadContract = async () => {
-        if (!contractId) return;
-        setIsInitialLoading(true);
-
-        try {
-            const data = await getContract(contractId);
-            if (data) {
-                setContractData({
-                    id: data.id,
-                    job: data.job as ContractData['job'],
-                    freelancer: data.freelancer as ContractData['freelancer'],
-                    client: data.client as ContractData['client'],
-                    status: data.status,
-                    payment_status: data.payment_status,
-                    amount: data.amount,
-                    started_at: data.started_at,
-                });
-            }
-        } catch (error) {
-            showToast('حدث خطأ في تحميل العقد', 'error');
-        } finally {
-            setIsInitialLoading(false);
-        }
-    };
+    }, [contractId, user?.id, refreshContractState]);
 
     // Check review status
-    useEffect(() => {
-        const checkReview = async () => {
-            if (!contractId || !user?.id) return;
+    const { data: hasLeftReview = false } = useQuery({
+        queryKey: ['review', contractId, user?.id],
+        queryFn: async () => {
+            if (!contractId || !user?.id) return false;
             const { data } = await supabase
                 .from('reviews')
                 .select('id')
                 .eq('contract_id', contractId)
                 .eq('reviewer_id', user.id)
                 .single();
-            if (data) setHasLeftReview(true);
-        };
-        checkReview();
-    }, [contractId, user?.id]);
+            return !!data;
+        },
+        enabled: !!contractId && !!user?.id,
+    });
 
     const handleSendMessage = async (content: string) => {
         if (!contractData || !user) return;
@@ -175,8 +167,8 @@ export default function ContractWorkspace() {
         try {
             await sendMessage(content, receiverId);
             setTyping(false);
-        } catch {
-            showToast('حدث خطأ في إرسال الرسالة', 'error');
+        } catch (error) {
+            showToast(error instanceof Error ? error.message : 'حدث خطأ في إرسال الرسالة', 'error');
         }
     };
 
@@ -190,8 +182,8 @@ export default function ContractWorkspace() {
                 { name: file.name, url: uploaded.url, type: file.type, size: (file.size / 1024).toFixed(1) + 'KB' }
             ]);
             showToast(`تم رفع: ${file.name}`, 'success');
-        } catch (err) {
-            showToast('حدث خطأ في رفع الملف', 'error');
+        } catch (error) {
+            showToast(error instanceof Error ? error.message : 'حدث خطأ في رفع الملف', 'error');
         }
     };
 
@@ -239,24 +231,35 @@ export default function ContractWorkspace() {
         }
     };
 
+    const submitReviewMutation = useMutation({
+        mutationFn: async ({ rating, comment }: { rating: number; comment: string }) => {
+            if (!contractId || !user?.id || !contractData) throw new Error('Missing data');
+            const revieweeId = userRole === 'client' ? contractData.freelancer.id : contractData.client.id;
+
+            const { error } = await supabase
+                .from('reviews')
+                .insert({
+                    contract_id: contractId,
+                    reviewer_id: user.id,
+                    reviewee_id: revieweeId,
+                    rating,
+                    comment,
+                });
+
+            if (error) throw error;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['review', contractId, user?.id] });
+            setIsReviewModalOpen(false);
+            showToast('تم إرسال تقييمك بنجاح', 'success');
+        },
+        onError: () => {
+            showToast('حدث خطأ', 'error');
+        }
+    });
+
     const handleSubmitReview = async (rating: number, comment: string) => {
-        if (!contractId || !user?.id || !contractData) return;
-        const revieweeId = userRole === 'client' ? contractData.freelancer.id : contractData.client.id;
-
-        const { error } = await supabase
-            .from('reviews')
-            .insert({
-                contract_id: contractId,
-                reviewer_id: user.id,
-                reviewee_id: revieweeId,
-                rating,
-                comment,
-            });
-
-        if (error) throw error;
-        setHasLeftReview(true);
-        setIsReviewModalOpen(false);
-        showToast('تم إرسال تقييمك بنجاح', 'success');
+        submitReviewMutation.mutate({ rating, comment });
     };
 
     const currentStatus = contractState?.status || contractData?.status || 'active';

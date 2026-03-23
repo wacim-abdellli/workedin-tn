@@ -5,12 +5,13 @@ import { supabase } from '@/lib/supabase';
 import type { Skill } from '@/types';
 
 export interface JobFilters {
-    category?: string;
-    jobType?: 'fixed_price' | 'hourly';
-    experienceLevel?: string;
-    budgetMin?: number;
-    budgetMax?: number;
     search?: string;
+    categories?: string[];
+    jobType?: string | null;
+    budgetRange?: string | null;
+    experienceLevels?: string[];
+    postedWithin?: string;
+    sortBy?: string;
     status?: string;
 }
 
@@ -30,26 +31,78 @@ export interface CreateJobInput {
     required_skills?: Skill[];
 }
 
+const BUDGET_RANGES = [
+    { value: '0-50', min: 0, max: 50 },
+    { value: '50-100', min: 50, max: 100 },
+    { value: '100-250', min: 100, max: 250 },
+    { value: '250-500', min: 250, max: 500 },
+    { value: '500+', min: 500, max: 999999 },
+];
+
 // --- READ ---
 
-export async function getJobs(filters: JobFilters = {}, page = 1, pageSize = 20) {
+export async function getJobs(filters: JobFilters = {}, page = 1, pageSize = 10) {
     let query = supabase
         .from('jobs')
         .select('*, client:profiles!client_id(id, full_name, avatar_url, location)', { count: 'exact' })
         .eq('status', filters.status || 'open')
-        .order('created_at', { ascending: false });
+        .eq('visibility', 'public');
 
-    if (filters.category) query = query.eq('category', filters.category);
+    if (filters.search) query = query.or(`title.ilike.%${filters.search}%,description.ilike.%${filters.search}%`);
+    if (filters.categories && filters.categories.length > 0) query = query.in('category', filters.categories);
     if (filters.jobType) query = query.eq('job_type', filters.jobType);
-    if (filters.experienceLevel) query = query.eq('experience_level', filters.experienceLevel);
-    if (filters.budgetMin) query = query.gte('budget_min', filters.budgetMin);
-    if (filters.budgetMax) query = query.lte('budget_max', filters.budgetMax);
-    if (filters.search) query = query.ilike('title', `%${filters.search}%`);
+    if (filters.experienceLevels && filters.experienceLevels.length > 0) query = query.in('experience_level', filters.experienceLevels);
+    
+    if (filters.budgetRange) {
+        const range = BUDGET_RANGES.find(r => r.value === filters.budgetRange);
+        if (range) {
+            query = query.gte('budget_min', range.min).lte('budget_min', range.max);
+        }
+    }
+
+    if (filters.postedWithin && filters.postedWithin !== 'any') {
+        const now = new Date();
+        let since: Date;
+        switch (filters.postedWithin) {
+            case '24h': since = new Date(now.getTime() - 24 * 60 * 60 * 1000); break;
+            case '3d': since = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000); break;
+            case '1w': since = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000); break;
+            case '1m': since = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000); break;
+            default: since = new Date(0);
+        }
+        query = query.gte('posted_at', since.toISOString());
+    }
+
+    switch (filters.sortBy) {
+        case 'budget_high': query = query.order('budget_max', { ascending: false, nullsFirst: false }); break;
+        case 'budget_low': query = query.order('budget_min', { ascending: true }); break;
+        case 'proposals_high': query = query.order('proposals_count', { ascending: false }); break;
+        case 'proposals_low': query = query.order('proposals_count', { ascending: true }); break;
+        default: query = query.order('posted_at', { ascending: false });
+    }
 
     const from = (page - 1) * pageSize;
     query = query.range(from, from + pageSize - 1);
 
-    return query;
+    const { data, error, count } = await query;
+    if (error) throw error;
+    return { data, count };
+}
+
+export async function getCategoryCounts(categories: string[]) {
+    const counts: Record<string, number> = {};
+    await Promise.all(
+        categories.map(async (cat) => {
+            const { count } = await supabase
+                .from('jobs')
+                .select('*', { count: 'exact', head: true })
+                .eq('status', 'open')
+                .eq('visibility', 'public')
+                .eq('category', cat);
+            counts[cat] = count || 0;
+        })
+    );
+    return counts;
 }
 
 export async function getJobById(jobId: string) {

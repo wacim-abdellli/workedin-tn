@@ -2,19 +2,12 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { Loading } from '../common';
 
-// Check if user is admin — uses email allowlist as a simple check.
-// TODO: Replace with a proper `is_admin` column in the profiles table.
-export const ADMIN_EMAILS = [
-  'wacimabdelli01@gmail.com',
-  // Add your admin email(s) here
-];
-
 /**
- * AdminRoute — Only allows access if user is authenticated AND has admin role.
+ * AdminRoute - Only allows access if user is authenticated and has admin role.
  * Non-admin users are redirected to the home page.
  */
 export function AdminRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, isLoading, profile, user } = useAuth();
+  const { isAuthenticated, isLoading, profile } = useAuth();
 
   if (isLoading) {
     return <Loading fullScreen />;
@@ -24,10 +17,7 @@ export function AdminRoute({ children }: { children: React.ReactNode }) {
     return <Navigate to="/login" replace />;
   }
 
-  const userEmail = user?.email || profile?.email || '';
-  const isAdmin = ADMIN_EMAILS.includes(userEmail);
-
-  if (!isAdmin) {
+  if (profile?.is_admin !== true) {
     return <Navigate to="/" replace />;
   }
 

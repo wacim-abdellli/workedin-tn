@@ -1,6 +1,7 @@
 import { logger } from '@/lib/logger';
 import { useState, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
+import { sendMessage as sendContractMessage } from '../services/messages';
 import type { ContractStatus } from '../types';
 
 interface ContractData {
@@ -26,29 +27,30 @@ interface UseContractStateReturn {
     contract: ContractData | null;
     isLoading: boolean;
     error: Error | null;
-    // Actions
     deliverWork: (note: string) => Promise<void>;
     acceptWork: () => Promise<void>;
     requestChanges: (feedback: string) => Promise<void>;
     openDispute: (reason: string) => Promise<void>;
-    // Status helpers
     canDeliver: boolean;
     canAccept: boolean;
     canDispute: boolean;
     isDelivering: boolean;
     isAccepting: boolean;
     isDisputing: boolean;
-    // Fetch
     refresh: () => Promise<void>;
 }
 
-// Valid state transitions
 const VALID_TRANSITIONS: Record<ContractStatus, ContractStatus[]> = {
     active: ['completed', 'disputed'],
     completed: [],
     cancelled: [],
     disputed: ['active', 'cancelled'],
 };
+
+function getCounterpartyId(contract: ContractData | null, userRole: 'client' | 'freelancer') {
+    if (!contract) return null;
+    return userRole === 'client' ? contract.freelancer_id : contract.client_id;
+}
 
 export function useContractState({
     contractId,
@@ -62,7 +64,6 @@ export function useContractState({
     const [isAccepting, setIsAccepting] = useState(false);
     const [isDisputing, setIsDisputing] = useState(false);
 
-    // Fetch contract data
     const refresh = useCallback(async () => {
         if (!contractId) return;
 
@@ -86,7 +87,6 @@ export function useContractState({
         }
     }, [contractId]);
 
-    // Validate state transition
     const canTransition = useCallback(
         (to: ContractStatus): boolean => {
             if (!contract) return false;
@@ -95,7 +95,6 @@ export function useContractState({
         [contract]
     );
 
-    // Update contract status
     const updateStatus = useCallback(
         async (
             newStatus: ContractStatus,
@@ -116,7 +115,6 @@ export function useContractState({
 
             if (updateError) throw updateError;
 
-            // Optimistic update
             setContract({
                 ...contract,
                 status: newStatus,
@@ -126,7 +124,6 @@ export function useContractState({
         [contract, contractId, canTransition]
     );
 
-    // Deliver work (freelancer action)
     const deliverWork = useCallback(
         async (note: string) => {
             if (userRole !== 'freelancer') {
@@ -135,15 +132,19 @@ export function useContractState({
 
             setIsDelivering(true);
             try {
-                // Insert delivery message
-                await supabase.from('messages').insert({
+                const receiverId = getCounterpartyId(contract, userRole);
+                if (!receiverId) throw new Error('Unable to determine message recipient');
+
+                const { error: messageError } = await sendContractMessage({
                     contract_id: contractId,
                     sender_id: userId,
+                    receiver_id: receiverId,
                     content: `📦 تم تسليم العمل: ${note}`,
                     message_type: 'delivery',
                 });
 
-                // Update contract
+                if (messageError) throw messageError;
+
                 await supabase
                     .from('contracts')
                     .update({
@@ -158,10 +159,9 @@ export function useContractState({
                 setIsDelivering(false);
             }
         },
-        [contractId, userId, userRole, refresh]
+        [contract, contractId, userId, userRole, refresh]
     );
 
-    // Accept work and release payment (client action)
     const acceptWork = useCallback(async () => {
         if (userRole !== 'client') {
             throw new Error('فقط العميل يمكنه قبول العمل');
@@ -169,65 +169,77 @@ export function useContractState({
 
         setIsAccepting(true);
         try {
+            const receiverId = getCounterpartyId(contract, userRole);
+            if (!receiverId) throw new Error('Unable to determine message recipient');
+
             await updateStatus('completed', {
                 payment_status: 'released',
                 completed_at: new Date().toISOString(),
             });
 
-            // Insert completion message
-            await supabase.from('messages').insert({
+            const { error: messageError } = await sendContractMessage({
                 contract_id: contractId,
                 sender_id: userId,
+                receiver_id: receiverId,
                 content: '✅ تم قبول العمل وإتمام الدفع',
                 message_type: 'system',
             });
+
+            if (messageError) throw messageError;
         } finally {
             setIsAccepting(false);
         }
-    }, [contractId, userId, userRole, updateStatus]);
+    }, [contract, contractId, userId, userRole, updateStatus]);
 
-    // Request changes (client action)
     const requestChanges = useCallback(
         async (feedback: string) => {
             if (userRole !== 'client') {
                 throw new Error('فقط العميل يمكنه طلب تعديلات');
             }
 
-            // Insert feedback message
-            await supabase.from('messages').insert({
+            const receiverId = getCounterpartyId(contract, userRole);
+            if (!receiverId) throw new Error('Unable to determine message recipient');
+
+            const { error: messageError } = await sendContractMessage({
                 contract_id: contractId,
                 sender_id: userId,
+                receiver_id: receiverId,
                 content: `🔄 طلب تعديلات: ${feedback}`,
                 message_type: 'feedback',
             });
+
+            if (messageError) throw messageError;
         },
-        [contractId, userId, userRole]
+        [contract, contractId, userId, userRole]
     );
 
-    // Open dispute
     const openDispute = useCallback(
         async (reason: string) => {
             setIsDisputing(true);
             try {
+                const receiverId = getCounterpartyId(contract, userRole);
+                if (!receiverId) throw new Error('Unable to determine message recipient');
+
                 await updateStatus('disputed', {
                     dispute_reason: reason,
                 });
 
-                // Insert dispute message
-                await supabase.from('messages').insert({
+                const { error: messageError } = await sendContractMessage({
                     contract_id: contractId,
                     sender_id: userId,
+                    receiver_id: receiverId,
                     content: `⚠️ تم فتح نزاع: ${reason}`,
                     message_type: 'dispute',
                 });
+
+                if (messageError) throw messageError;
             } finally {
                 setIsDisputing(false);
             }
         },
-        [contractId, userId, updateStatus]
+        [contract, contractId, userId, userRole, updateStatus]
     );
 
-    // Permission helpers
     const canDeliver = userRole === 'freelancer' && contract?.status === 'active';
     const canAccept = userRole === 'client' && contract?.status === 'active';
     const canDispute = contract?.status === 'active';

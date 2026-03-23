@@ -3,10 +3,8 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
-const ADMIN_EMAILS = ['wacimabdelli01@gmail.com']
-
 const corsHeaders = {
-  'Access-Control-Allow-Origin': Deno.env.get('ALLOWED_ORIGIN') || '*',
+  'Access-Control-Allow-Origin': Deno.env.get('ALLOWED_ORIGIN') || 'https://khedma.tn',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }
@@ -52,9 +50,15 @@ Deno.serve(async (req) => {
     }
 
     // 2. Check admin
-    if (!ADMIN_EMAILS.includes(user.email || '')) {
+    const { data: profile, error: profileError } = await userClient
+      .from('profiles')
+      .select('is_admin')
+      .eq('id', user.id)
+      .single()
+
+    if (profileError || !profile?.is_admin) {
       return new Response(JSON.stringify({ error: 'Admin access required' }), {
-        status: 403,
+        status: 401,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }

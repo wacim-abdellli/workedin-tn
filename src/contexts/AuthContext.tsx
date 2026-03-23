@@ -77,13 +77,29 @@ export function AuthProvider({ children }: AuthProviderProps) {
         let mounted = true;
 
         const initAuth = async () => {
+            // Fast-path: If we are on the AuthCallback route, skip initializing.
+            // Let the background provider exchange the code and the callback component handle reload.
+            // This completely avoids the React StrictMode + getSession() deadlock.
+            if (window.location.pathname === '/auth/callback') {
+                if (mounted) setIsLoading(false);
+                return;
+            }
+
             try {
-                const { data: { session: currentSession } } = await supabase.auth.getSession();
+                const { data: { session: currentSession }, error } = await Promise.race([
+                    supabase.auth.getSession(),
+                    new Promise<{data: { session: null }, error: any}>((_, reject) => 
+                        setTimeout(() => reject(new Error('getSession timeout')), 4000)
+                    )
+                ]);
+
+                if (error) {
+                    logger.error('Error in getSession:', error);
+                }
 
                 if (mounted && currentSession) {
                     setSession(currentSession);
                     setUser(currentSession.user);
-                    // Non-blocking profile fetch for speed
                     fetchProfile(currentSession.user.id).catch(e => logger.error('Profile fetch error', e));
                 }
             } catch (error) {

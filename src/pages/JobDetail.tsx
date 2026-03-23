@@ -1,5 +1,5 @@
 import { logger } from '@/lib/logger';
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
     Heart,
@@ -19,7 +19,10 @@ import {
     Send,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { supabase, uploadFile } from '../lib/supabase';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import * as jobsService from '../services/jobs';
+import * as profilesService from '../services/profiles';
+import * as proposalsService from '../services/proposals';
 import { Header, Footer } from '../components/layout';
 import Button from '../components/ui/Button';
 import { useToast } from '../components/ui/Toast';
@@ -120,231 +123,133 @@ function JobDetail() {
     const navigate = useNavigate();
     const { user, freelancerProfile } = useAuth();
     const { showToast } = useToast();
+    const queryClient = useQueryClient();
 
-    const [job, setJob] = useState<Job | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
-    const [isSaved, setIsSaved] = useState(false);
-    const [myProposal, setMyProposal] = useState<Proposal | null>(null);
-    const [similarJobs, setSimilarJobs] = useState<Job[]>([]);
-    const [clientStats, setClientStats] = useState({ totalJobs: 0, totalSpent: 0, rating: 0 });
     const [showProposalModal, setShowProposalModal] = useState(false);
-    const [isSubmittingProposal, setIsSubmittingProposal] = useState(false);
 
-    // Fetch job details
-    const fetchJob = useCallback(async () => {
-        if (!jobId) return;
-        setIsLoading(true);
-        try {
-            const { data, error } = await supabase
-                .from('jobs')
-                .select(`
-                    *,
-                    client:profiles!client_id (id, full_name, avatar_url, location, created_at)
-                `)
-                .eq('id', jobId)
-                .single();
-
+    // Job Fetch
+    const { data: job, isLoading } = useQuery({
+        queryKey: ['job', jobId],
+        queryFn: async () => {
+            if (!jobId) throw new Error('No job ID');
+            const { data, error } = await jobsService.getJobById(jobId);
             if (error) throw error;
-            setJob(data);
+            
+            // Increment view count in background
+            jobsService.incrementJobViews(jobId, data.views_count || 0).catch(console.error);
+            
+            return data as Job;
+        },
+        enabled: !!jobId,
+    });
 
-            // Increment view count
-            await supabase
-                .from('jobs')
-                .update({ views_count: (data.views_count || 0) + 1 })
-                .eq('id', jobId);
+    // Saved Status
+    const { data: isSaved = false } = useQuery({
+        queryKey: ['savedStatus', jobId, user?.id],
+        queryFn: async () => {
+            if (!user || !jobId) return false;
+            const { data } = await profilesService.getFavoriteStatus(user.id, jobId);
+            return !!data;
+        },
+        enabled: !!user && !!jobId,
+    });
 
-        } catch (error) {
-            logger.error('Error fetching job:', error);
-            showToast('حدث خطأ في تحميل الوظيفة', 'error');
-        } finally {
-            setIsLoading(false);
-        }
-    }, [jobId, showToast]);
+    // My Proposal
+    const { data: myProposal = null } = useQuery({
+        queryKey: ['myProposal', jobId, user?.id],
+        queryFn: async () => {
+            if (!user || !jobId) return null;
+            const { data } = await proposalsService.getMyProposal(jobId, user.id);
+            return data as Proposal | null;
+        },
+        enabled: !!user && !!jobId,
+    });
 
-    // Check if job is saved
-    const checkSaved = useCallback(async () => {
-        if (!user || !jobId) return;
-        try {
-            const { data } = await supabase
-                .from('favorites')
-                .select('id')
-                .eq('user_id', user.id)
-                .eq('job_id', jobId)
-                .single();
-            setIsSaved(!!data);
-        } catch {
-            // ignore
-        }
-    }, [user, jobId]);
+    // Similar Jobs
+    const { data: similarJobs = [] } = useQuery({
+        queryKey: ['similarJobs', job?.category],
+        queryFn: async () => {
+            if (!job) return [];
+            const { data } = await jobsService.getSimilarJobs(job.id, job.category);
+            return (data as Job[]) || [];
+        },
+        enabled: !!job,
+    });
 
-    // Check if user has submitted a proposal
-    const checkMyProposal = useCallback(async () => {
-        if (!user || !jobId) return;
-        try {
-            const { data } = await supabase
-                .from('proposals')
-                .select('*')
-                .eq('job_id', jobId)
-                .eq('freelancer_id', user.id)
-                .single();
-            setMyProposal(data);
-        } catch {
-            // ignore
-        }
-    }, [user, jobId]);
+    // Client Stats
+    const { data: clientStats = { totalJobs: 0, totalSpent: 0, rating: 0 } } = useQuery({
+        queryKey: ['clientStats', job?.client_id],
+        queryFn: async () => {
+            if (!job?.client_id) return { totalJobs: 0, totalSpent: 0, rating: 0 };
+            return profilesService.getClientStats(job.client_id);
+        },
+        enabled: !!job?.client_id,
+    });
 
-    // Fetch similar jobs
-    const fetchSimilarJobs = useCallback(async () => {
-        if (!job) return;
-        try {
-            const { data } = await supabase
-                .from('jobs')
-                .select('*')
-                .eq('category', job.category)
-                .eq('status', 'open')
-                .neq('id', job.id)
-                .limit(3);
-            setSimilarJobs(data || []);
-        } catch {
-            // ignore
-        }
-    }, [job]);
+    // Toggle Save Mutation
+    const toggleSaveMutation = useMutation({
+        mutationFn: async () => {
+            await profilesService.toggleFavorite(user!.id, jobId!, isSaved);
+            return !isSaved;
+        },
+        onSuccess: (newSavedStatus) => {
+            queryClient.setQueryData(['savedStatus', jobId, user?.id], newSavedStatus);
+            showToast(newSavedStatus ? 'تم حفظ الوظيفة' : 'تم إزالة الوظيفة من المحفوظات', 'success');
+        },
+        onError: () => showToast('حدث خطأ', 'error')
+    });
 
-    // Fetch client stats
-    const fetchClientStats = useCallback(async () => {
-        if (!job?.client_id) return;
-        try {
-            // Total jobs
-            const { count: totalJobs } = await supabase
-                .from('jobs')
-                .select('*', { count: 'exact', head: true })
-                .eq('client_id', job.client_id);
-
-            // Total spent
-            const { data: contracts } = await supabase
-                .from('contracts')
-                .select('total_amount')
-                .eq('client_id', job.client_id)
-                .eq('status', 'completed');
-
-            const totalSpent = contracts?.reduce((sum, c) => sum + (c.total_amount || 0), 0) || 0;
-
-            // Rating
-            const { data: reviews } = await supabase
-                .from('reviews')
-                .select('rating')
-                .eq('reviewee_id', job.client_id);
-
-            const avgRating = reviews?.length
-                ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
-                : 0;
-
-            setClientStats({
-                totalJobs: totalJobs || 0,
-                totalSpent,
-                rating: avgRating,
-            });
-        } catch {
-            // ignore
-        }
-    }, [job?.client_id]);
-
-    useEffect(() => {
-        fetchJob();
-    }, [fetchJob]);
-
-    useEffect(() => {
-        checkSaved();
-        checkMyProposal();
-    }, [checkSaved, checkMyProposal]);
-
-    useEffect(() => {
-        if (job) {
-            fetchSimilarJobs();
-            fetchClientStats();
-        }
-    }, [job, fetchSimilarJobs, fetchClientStats]);
-
-    // Toggle save
-    const toggleSave = async () => {
+    const toggleSave = () => {
         if (!user || !jobId) {
             showToast('سجل الدخول لحفظ الوظيفة', 'warning');
             return;
         }
-        try {
-            if (isSaved) {
-                await supabase
-                    .from('favorites')
-                    .delete()
-                    .eq('user_id', user.id)
-                    .eq('job_id', jobId);
-                setIsSaved(false);
-                showToast('تم إزالة الوظيفة من المحفوظات', 'success');
-            } else {
-                await supabase
-                    .from('favorites')
-                    .insert({ user_id: user.id, job_id: jobId });
-                setIsSaved(true);
-                showToast('تم حفظ الوظيفة', 'success');
-            }
-        } catch {
-            showToast('حدث خطأ', 'error');
-        }
+        toggleSaveMutation.mutate();
     };
 
-    // Submit proposal
-    const submitProposal = async (data: ProposalFormData, files: File[]) => {
-        if (!user || !jobId || !job) return;
-        setIsSubmittingProposal(true);
-        try {
-            // Upload attachments
-            const attachmentUrls: string[] = [];
-            for (const file of files) {
-                const path = `${user.id}/${jobId}/${Date.now()}-${file.name}`;
-                const url = await uploadFile('attachments', path, file);
-                if (url) attachmentUrls.push(url);
-            }
-
-            // Create proposal
-            const { error } = await supabase
-                .from('proposals')
-                .insert({
-                    job_id: jobId,
-                    freelancer_id: user.id,
-                    cover_letter: data.cover_letter,
-                    bid_amount: data.bid_amount,
-                    delivery_days: data.delivery_days,
-                    attachments: attachmentUrls,
-                    status: 'pending',
-                });
-
+    // Submit Proposal Mutation
+    const submitProposalMutation = useMutation({
+        mutationFn: async ({ data, files }: { data: ProposalFormData, files: File[] }) => {
+            if (!user || !jobId) throw new Error('Missing auth or job');
+            const { error } = await proposalsService.createProposal({
+                job_id: jobId,
+                freelancer_id: user.id,
+                cover_letter: data.cover_letter,
+                bid_amount: data.bid_amount,
+                delivery_days: data.delivery_days
+            }, files);
             if (error) throw error;
-
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['myProposal', jobId, user?.id] });
             showToast('تم إرسال العرض بنجاح!', 'success');
             setShowProposalModal(false);
-            checkMyProposal();
-        } catch (error) {
-            logger.error('Error submitting proposal:', error);
-            showToast('حدث خطأ في إرسال العرض', 'error');
-        } finally {
-            setIsSubmittingProposal(false);
+        },
+        onError: (err) => {
+            logger.error('Error submitting proposal:', err);
+            showToast(err instanceof Error ? err.message : 'حدث خطأ في إرسال العرض', 'error');
         }
+    });
+
+    const submitProposal = async (data: ProposalFormData, files: File[]) => {
+        submitProposalMutation.mutate({ data, files });
     };
 
-    // Withdraw proposal
-    const withdrawProposal = async () => {
-        if (!myProposal) return;
-        try {
-            await supabase
-                .from('proposals')
-                .delete()
-                .eq('id', myProposal.id);
-            setMyProposal(null);
+    // Withdraw Proposal Mutation
+    const withdrawProposalMutation = useMutation({
+        mutationFn: async () => {
+            if (!myProposal) throw new Error('No proposal to withdraw');
+            const { error } = await proposalsService.withdrawProposal(myProposal.id);
+            if (error) throw error;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['myProposal', jobId, user?.id] });
             showToast('تم سحب العرض', 'success');
-        } catch {
-            showToast('حدث خطأ في سحب العرض', 'error');
-        }
-    };
+        },
+        onError: () => showToast('حدث خطأ في سحب العرض', 'error')
+    });
+
+    const withdrawProposal = () => withdrawProposalMutation.mutate();
 
     // Share
     const shareJob = () => {
@@ -703,14 +608,15 @@ function JobDetail() {
 
             <Footer />
 
-            {/* Proposal Modal */}
-            <ProposalModal
-                isOpen={showProposalModal}
-                onClose={() => setShowProposalModal(false)}
-                job={job}
-                onSubmit={submitProposal}
-                isSubmitting={isSubmittingProposal}
-            />
+            {job && (
+                <ProposalModal
+                    isOpen={showProposalModal}
+                    onClose={() => setShowProposalModal(false)}
+                    job={job}
+                    onSubmit={submitProposal}
+                    isSubmitting={submitProposalMutation.isPending}
+                />
+            )}
         </div>
     );
 }

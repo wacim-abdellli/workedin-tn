@@ -1,6 +1,7 @@
 import { logger } from '@/lib/logger';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../lib/supabase';
+import { sendMessage as sendMessageRecord } from '../services/messages';
 import type { Message, MessageAttachment } from '../types';
 
 interface ChatMessage extends Omit<Message, 'sender'> {
@@ -44,7 +45,6 @@ export function useRealtimeChat({
     const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
-    // Fetch initial messages
     const fetchMessages = useCallback(async () => {
         if (!contractId || !enabled) return;
 
@@ -77,17 +77,13 @@ export function useRealtimeChat({
         }
     }, [contractId, enabled]);
 
-    // Subscribe to real-time updates
     useEffect(() => {
         if (!contractId || !enabled) return;
 
-        // Fetch initial data
         fetchMessages();
 
-        // Create real-time channel
         const channel = supabase
             .channel(`contract:${contractId}`)
-            // Listen for new messages
             .on(
                 'postgres_changes',
                 {
@@ -97,7 +93,6 @@ export function useRealtimeChat({
                     filter: `contract_id=eq.${contractId}`,
                 },
                 async (payload) => {
-                    // Fetch the sender profile for the new message
                     const { data: sender } = await supabase
                         .from('profiles')
                         .select('id, full_name, avatar_url, user_type')
@@ -115,30 +110,28 @@ export function useRealtimeChat({
                     };
 
                     setMessages((prev) => {
-                        // Avoid duplicates
-                        if (prev.some((m) => m.id === newMessage.id)) {
+                        if (prev.some((message) => message.id === newMessage.id)) {
                             return prev;
                         }
                         return [...prev, newMessage];
                     });
                 }
             )
-            // Listen for typing indicators via presence
             .on('presence', { event: 'sync' }, () => {
                 const state = channel.presenceState();
                 const otherTyping = Object.values(state).some(
                     (users) =>
                         Array.isArray(users) &&
                         users.some(
-                            (u) =>
-                                (u as any).user_id !== userId && (u as any).typing
+                            (presence) =>
+                                (presence as { user_id?: string; typing?: boolean }).user_id !== userId &&
+                                (presence as { typing?: boolean }).typing
                         )
                 );
                 setOtherUserTyping(otherTyping);
             })
             .subscribe(async (status) => {
                 if (status === 'SUBSCRIBED') {
-                    // Track presence
                     await channel.track({
                         user_id: userId,
                         typing: false,
@@ -149,7 +142,6 @@ export function useRealtimeChat({
 
         channelRef.current = channel;
 
-        // Cleanup
         return () => {
             if (channelRef.current) {
                 supabase.removeChannel(channelRef.current);
@@ -157,7 +149,6 @@ export function useRealtimeChat({
         };
     }, [contractId, userId, enabled, fetchMessages]);
 
-    // Send message function
     const sendMessage = useCallback(
         async (content: string, receiverId: string, attachments?: MessageAttachment[]) => {
             if (!content.trim() && (!attachments || attachments.length === 0)) return;
@@ -166,19 +157,15 @@ export function useRealtimeChat({
             setIsSending(true);
 
             try {
-                const { error: insertError } = await supabase
-                    .from('messages')
-                    .insert({
-                        contract_id: contractId,
-                        sender_id: userId,
-                        receiver_id: receiverId, // ✅ ADDED: Required by schema
-                        content: content.trim(),
-                        attachments: attachments || [],
-                    });
+                const { error: insertError } = await sendMessageRecord({
+                    contract_id: contractId,
+                    sender_id: userId,
+                    receiver_id: receiverId,
+                    content: content.trim(),
+                    attachments: attachments || [],
+                });
 
                 if (insertError) throw insertError;
-
-                // Message will be added via real-time subscription
             } catch (err) {
                 logger.error('Error sending message:', err);
                 throw err;
@@ -189,17 +176,14 @@ export function useRealtimeChat({
         [contractId, userId]
     );
 
-    // Update typing status
     const setTyping = useCallback(
         (typing: boolean) => {
             setIsTyping(typing);
 
-            // Clear existing timeout
             if (typingTimeoutRef.current) {
                 clearTimeout(typingTimeoutRef.current);
             }
 
-            // Update presence
             if (channelRef.current) {
                 channelRef.current.track({
                     user_id: userId,
@@ -208,7 +192,6 @@ export function useRealtimeChat({
                 });
             }
 
-            // Auto-clear typing after 3 seconds
             if (typing) {
                 typingTimeoutRef.current = setTimeout(() => {
                     setTyping(false);

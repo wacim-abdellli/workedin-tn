@@ -12,7 +12,6 @@ interface LoginFormProps {
     onSuccess?: () => void;
     onSwitchToSignup?: () => void;
 }
-
 function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
     const { t, dir } = useTranslation();
     const { signInWithEmail } = useAuth();
@@ -29,7 +28,6 @@ function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
     });
 
     type EmailFormData = z.infer<typeof emailSchema>;
-
     const {
         register,
         handleSubmit,
@@ -37,11 +35,9 @@ function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
     } = useForm<EmailFormData>({
         resolver: zodResolver(emailSchema),
     });
-
     const onSubmit = async (data: EmailFormData) => {
         setIsLoading(true);
         setError(null);
-
         try {
             await signInWithEmail(data.email, data.password);
             onSuccess?.();
@@ -61,7 +57,6 @@ function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
             setIsLoading(false);
         }
     };
-
     return (
         <div className="w-full max-w-md mx-auto">
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
