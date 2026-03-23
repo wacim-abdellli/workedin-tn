@@ -11,6 +11,7 @@ import { uploadFile } from '../lib/supabase';
 import type { Skill } from '../types';
 import { skillToEntry } from '../types';
 import { Header } from '../components/layout';
+import SEO from '../components/common/SEO';
 import OnboardingStep1 from '../components/onboarding/OnboardingStep1';
 import OnboardingStep2 from '../components/onboarding/OnboardingStep2';
 import {
@@ -269,6 +270,7 @@ function FreelancerOnboarding() {
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-dark-900 overflow-hidden relative transition-colors duration-300">
+            <SEO title="إكمال حساب المستقل" description="أكمل ملفك كمستقل وابدأ استقبال فرص العمل على خدمة" noIndex />
             <Header />
 
             <div className="container-custom py-12 relative z-10">

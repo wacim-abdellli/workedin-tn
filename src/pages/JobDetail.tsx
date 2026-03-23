@@ -26,6 +26,7 @@ import * as proposalsService from '../services/proposals';
 import { Header, Footer } from '../components/layout';
 import Button from '../components/ui/Button';
 import { useToast } from '../components/ui/Toast';
+import SEO from '../components/common/SEO';
 
 import ProposalModal from '../components/proposals/ProposalModal';
 import type { ProposalFormData } from '../components/proposals/ProposalModal';
@@ -297,6 +298,10 @@ function JobDetail() {
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-dark-900 transition-colors duration-300">
+            <SEO
+                title={job ? `${job.title} | تفاصيل المشروع` : 'تفاصيل المشروع'}
+                description={job?.description || 'اطلع على تفاصيل المشروع والميزانية والمتطلبات قبل التقديم.'}
+            />
             <Header />
 
             <div className="container-custom py-8">

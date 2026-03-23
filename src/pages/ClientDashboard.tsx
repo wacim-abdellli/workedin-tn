@@ -20,6 +20,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { Header } from '../components/layout';
 import Button from '../components/ui/Button';
 import { Skeleton, SkeletonCard } from '../components/common';
+import SEO from '../components/common/SEO';
 
 // Mock data for demo
 const MOCK_STATS = {
@@ -126,6 +127,7 @@ function ClientDashboardPage() {
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-dark-900 transition-colors duration-300">
+            <SEO title="لوحة تحكم العميل" description="إدارة مشاريعك وعروض المستقلين من لوحة تحكم العميل على خدمة" noIndex />
             <Header />
 
             <div className="container-custom py-8">

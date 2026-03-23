@@ -18,6 +18,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { Header } from '../components/layout';
 import Button from '../components/ui/Button';
 import { Skeleton, SkeletonCard, SkeletonList } from '../components/common';
+import SEO from '../components/common/SEO';
 import ProfileCompletionCard from '../components/freelancer/ProfileCompletionCard';
 
 // Mock data for demo
@@ -94,6 +95,7 @@ function FreelancerDashboardPage() {
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-dark-900 transition-colors duration-300">
+            <SEO title="لوحة تحكم المستقل" description="تابع مشاريعك ورسائلك وأرباحك من لوحة تحكم المستقل على خدمة" noIndex />
             <Header />
 
             <div className="container-custom py-8">

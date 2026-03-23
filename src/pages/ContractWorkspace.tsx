@@ -21,6 +21,7 @@ import { useContractState } from '../hooks/useContractState';
 import { supabase } from '../lib/supabase';
 import { getContractById } from '../services/contracts';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import SEO from '../components/common/SEO';
 
 // Components
 import ChatSection from '../components/contracts/ChatSection';
@@ -279,6 +280,11 @@ export default function ContractWorkspace() {
 
     return (
         <div className="flex flex-col h-screen bg-white">
+            <SEO
+                title={contractData ? `${contractData.job.title} | مساحة العمل` : 'مساحة العمل'}
+                description="تابع المحادثة والملفات وحالة الدفع الخاصة بالعقد من مساحة العمل."
+                noIndex
+            />
             <Header />
 
             {/* Contract Header Bar */}
