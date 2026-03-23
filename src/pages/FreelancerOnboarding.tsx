@@ -19,7 +19,7 @@ import { step1Schema, type Step1FormData, step2Schema, type Step2FormData } from
 
 function FreelancerOnboarding() {
     const { t, language } = useTranslation();
-    const { user, updateProfile, updateFreelancerProfile, refreshProfile } = useAuth();
+    const { user, session, updateProfile, updateFreelancerProfile, refreshProfile } = useAuth();
     const { showToast } = useToast();
     const navigate = useNavigate();
 
@@ -168,26 +168,25 @@ function FreelancerOnboarding() {
             const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
             const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-            logger.log('[Onboarding] STEP 2: Getting session...');
-            const { data: { session } } = await supabase.auth.getSession();
-            logger.log('[Onboarding] STEP 3: Got session:', !!session);
             const accessToken = session?.access_token || supabaseKey;
-
-            logger.log('[Onboarding] STEP 4: Using direct fetch to Supabase REST API...');
+            logger.log('[Onboarding] STEP 2: Using auth context session:', !!session);
+            logger.log('[Onboarding] STEP 3: Using direct fetch to Supabase REST API...');
 
             const profileResponse = await Promise.race([
-                fetch(`${supabaseUrl}/rest/v1/profiles?id=eq.${user!.id}`, {
-                    method: 'PATCH',
+                fetch(`${supabaseUrl}/rest/v1/profiles`, {
+                    method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'apikey': supabaseKey,
                         'Authorization': `Bearer ${accessToken}`,
-                        'Prefer': 'return=minimal'
+                        'Prefer': 'resolution=merge-duplicates,return=minimal'
                     },
                     body: JSON.stringify({
+                        id: user!.id,
                         full_name: profileData.full_name,
                         location: profileData.location,
                         user_type: profileData.user_type,
+                        avatar_url: profileData.avatar_url,
                         updated_at: profileData.updated_at
                     })
                 }).then(async res => {
