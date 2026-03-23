@@ -243,7 +243,7 @@ export function UserAccountPanel({ profile, signOut, onClose }: UserAccountPanel
                             {profile?.user_type === 'both' ? copy.switchWorkspaceBoth : copy.switchWorkspaceSingle}
                         </p>
                     </div>
-                    <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="flex flex-col gap-3">
                         {workspaceCards.map((item) => {
                             const isActive = activeMode === item.mode;
                             const isAvailable = availableModes.includes(item.mode);
@@ -256,34 +256,48 @@ export function UserAccountPanel({ profile, signOut, onClose }: UserAccountPanel
                                     onClick={() => void handleSwitchMode(item.mode)}
                                     disabled={isActive || isSwitchingMode !== null}
                                     className={cn(
-                                        'rounded-[24px] border p-4 text-left transition-all duration-200',
-                                        'border-slate-200/80 bg-white/78 hover:-translate-y-0.5 hover:border-violet-300/40 dark:border-white/8 dark:bg-white/[0.04] dark:hover:border-white/15',
+                                        'group rounded-[24px] border p-4 text-left transition-all duration-200',
+                                        'border-slate-200/80 bg-white/78',
+                                        !isActive && 'hover:-translate-y-0.5 hover:border-violet-300/40 hover:shadow-sm dark:hover:border-white/15',
+                                        'dark:border-white/8 dark:bg-white/[0.04]',
                                         isActive && item.tone.surface,
                                         isActive && 'cursor-default'
                                     )}
                                 >
-                                    <div className="flex items-start gap-3">
-                                        <div className={cn('flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-2xl', item.tone.icon)}>
-                                            {item.mode === 'freelancer' ? <User className="h-[18px] w-[18px]" /> : <BriefcaseBusiness className="h-[18px] w-[18px]" />}
+                                    <div className="flex items-start gap-4">
+                                        <div className={cn('flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl transition-transform group-hover:scale-105', item.tone.icon)}>
+                                            {item.mode === 'freelancer' ? <User className="h-5 w-5" /> : <BriefcaseBusiness className="h-5 w-5" />}
                                         </div>
                                         <div className="min-w-0 flex-1">
-                                            <div className="flex items-center justify-between gap-3">
-                                                <div className="text-sm font-semibold text-[#171420] dark:text-white">{item.title}</div>
-                                                <span className={cn('inline-flex min-h-8 items-center gap-1 rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em]', item.tone.chip)}>
-                                                    {isSwitchingMode === item.mode ? (
-                                                        <>
-                                                            <Loader2 className="h-3 w-3 animate-spin" />
-                                                            {copy.switching}
-                                                        </>
-                                                    ) : !isActive && !isAvailable ? (
-                                                        <>
-                                                            <Plus className="h-3 w-3" />
-                                                            {actionLabel}
-                                                        </>
-                                                    ) : actionLabel}
-                                                </span>
+                                            <div className="flex items-center gap-3">
+                                                <div className="text-sm font-bold text-[#171420] dark:text-white">{item.title}</div>
+                                                {isActive && (
+                                                    <span className={cn('inline-flex items-center rounded-full border px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.16em]', item.tone.chip)}>
+                                                        {actionLabel}
+                                                    </span>
+                                                )}
                                             </div>
-                                            <p className="mt-2 text-sm leading-relaxed text-[#6f6984] dark:text-[#9d97af]">{item.description}</p>
+                                            <p className="mt-1 text-xs leading-relaxed text-[#6f6984] dark:text-[#9d97af]">{item.description}</p>
+                                            
+                                            {!isActive && (
+                                                <div className="mt-3">
+                                                    <span className={cn('inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold shadow-sm transition-colors', item.tone.chip)}>
+                                                        {isSwitchingMode === item.mode ? (
+                                                            <>
+                                                                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                                                {copy.switching}
+                                                            </>
+                                                        ) : !isAvailable ? (
+                                                            <>
+                                                                <Plus className="h-3.5 w-3.5" />
+                                                                {actionLabel}
+                                                            </>
+                                                        ) : (
+                                                            actionLabel
+                                                        )}
+                                                    </span>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 </button>
@@ -292,24 +306,29 @@ export function UserAccountPanel({ profile, signOut, onClose }: UserAccountPanel
                     </div>
                 </div>
 
-                <div className="mt-4 rounded-[24px] border border-slate-200/80 bg-white/75 p-3 dark:border-white/8 dark:bg-white/[0.04]">
-                    <div className="mb-2 px-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#8a849d] dark:text-[#9d97af]">
+                <div className="mt-4 rounded-[24px] border border-slate-200/80 bg-white/75 p-3 shadow-sm dark:border-white/8 dark:bg-white/[0.04]">
+                    <div className="mb-2 px-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#8a849d] dark:text-[#9d97af]">
                         {copy.tools}
                     </div>
-                    <div className="grid gap-2 sm:grid-cols-3">
-                        <PanelLink to={profileActionTo} onClick={onClose} icon={<User className="h-4 w-4" />} label={copy.profileAction} />
-                        <PanelLink to="/settings" onClick={onClose} icon={<Settings className="h-4 w-4" />} label={copy.settingsAction} />
+                    <div className="flex flex-col gap-1.5">
+                        <PanelLink to={profileActionTo} onClick={onClose} icon={<User className="h-[18px] w-[18px]" />} label={copy.profileAction} />
+                        <PanelLink to="/settings" onClick={onClose} icon={<Settings className="h-[18px] w-[18px]" />} label={copy.settingsAction} />
+                        
+                        <div className="my-1 border-t border-slate-200/60 dark:border-white/10" />
+                        
                         <button
                             type="button"
                             onClick={() => void handleLogout()}
                             disabled={isLoggingOut}
-                            className="flex min-h-[52px] items-center justify-center gap-2 rounded-2xl border border-red-200/70 bg-red-50/90 px-3 text-sm font-semibold text-red-700 transition-all hover:bg-red-100/90 disabled:cursor-not-allowed disabled:opacity-60 dark:border-red-500/15 dark:bg-red-500/10 dark:text-red-300 dark:hover:bg-red-500/15"
+                            className="group flex min-h-[44px] items-center justify-start gap-3 rounded-2xl border border-transparent bg-transparent px-4 text-sm font-semibold text-red-600 transition-all hover:bg-red-50 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-60 dark:text-red-400 dark:hover:bg-red-500/10 dark:hover:text-red-300"
                         >
-                            {isLoggingOut ? <Loader2 className="h-4 w-4 animate-spin" /> : <LogOut className="h-4 w-4" />}
+                            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-red-100/50 text-red-600 transition-colors group-hover:bg-red-100 dark:bg-red-500/10 dark:text-red-400 dark:group-hover:bg-red-500/20">
+                                {isLoggingOut ? <Loader2 className="h-4 w-4 animate-spin" /> : <LogOut className="h-4 w-4" />}
+                            </div>
                             <span>{copy.logoutAction}</span>
                         </button>
                     </div>
-                    <p className="mt-3 text-right text-xs text-[#7b748f] dark:text-[#9d97af]">{copy.logoutDesc}</p>
+                    <p className="mt-3 px-2 text-right text-xs text-[#7b748f] dark:text-[#9d97af]">{copy.logoutDesc}</p>
                 </div>
             </motion.div>
         </AnimatePresence>
@@ -331,9 +350,11 @@ function PanelLink({
         <Link
             to={to}
             onClick={onClick}
-            className="flex min-h-[52px] items-center justify-center gap-2 rounded-2xl border border-slate-200/80 bg-white/90 px-3 text-sm font-semibold text-[#171420] transition-all hover:border-violet-300/40 hover:bg-violet-50/70 dark:border-white/8 dark:bg-white/[0.04] dark:text-white dark:hover:border-violet-500/25 dark:hover:bg-violet-500/[0.08]"
+            className="group flex min-h-[44px] items-center justify-start gap-3 rounded-2xl border border-transparent bg-transparent px-4 text-sm font-semibold text-[#171420] transition-all hover:bg-violet-50/80 dark:text-white dark:hover:bg-white/[0.06]"
         >
-            {icon}
+            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-100/80 text-[#5a546d] transition-colors group-hover:bg-violet-100 group-hover:text-violet-700 dark:bg-white/10 dark:text-[#a39db7] dark:group-hover:bg-violet-500/20 dark:group-hover:text-violet-300">
+                {icon}
+            </div>
             <span>{label}</span>
         </Link>
     );
