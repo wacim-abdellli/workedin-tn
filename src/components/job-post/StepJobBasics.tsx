@@ -31,11 +31,11 @@ export default function StepJobBasics() {
     return (
         <div className="space-y-8">
             <div className="space-y-4">
-                <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                <h3 className="flex items-center gap-2 text-xl font-bold text-gray-900 dark:text-white">
                     <FileText className="w-6 h-6 text-primary-600" />
                     تفاصيل المهمة
                 </h3>
-                <p className="text-gray-500">
+                <p className="text-gray-500 dark:text-gray-400">
                     ابدأ بعنوان واضح ووصف دقيق لمشروعك لجذب أفضل المستقلين.
                 </p>
             </div>
@@ -55,7 +55,7 @@ export default function StepJobBasics() {
                         <div className="relative">
                             <select
                                 {...register('category')}
-                                className="w-full pl-4 pr-10 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 appearance-none bg-white"
+                                className="w-full appearance-none rounded-xl border border-gray-200 bg-white pl-4 pr-10 py-3 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:border-white/10 dark:bg-[#14111d] dark:text-white dark:focus:border-primary-400"
                             >
                                 <option value="">اختر التصنيف</option>
                                 {categories.map(cat => (
@@ -75,10 +75,10 @@ export default function StepJobBasics() {
                     <textarea
                         {...register('description')}
                         rows={8}
-                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 resize-none"
+                        className="w-full resize-none rounded-xl border border-gray-200 bg-white px-4 py-3 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:border-white/10 dark:bg-[#14111d] dark:text-white dark:focus:border-primary-400"
                         placeholder="اشرح تفاصيل المشروع، المخرجات المتوقعة، وأي متطلبات خاصة..."
                     />
-                    <div className="flex justify-between text-xs text-gray-500 px-1">
+                    <div className="flex justify-between px-1 text-xs text-gray-500 dark:text-gray-400">
                         <span>{description.length} / 2000 حرف</span>
                         {errors.description && (
                             <span className="text-red-500">{errors.description.message as string}</span>
@@ -86,7 +86,7 @@ export default function StepJobBasics() {
                     </div>
 
                     {/* Tips */}
-                    <div className="bg-blue-50 text-blue-700 p-4 rounded-xl text-sm flex gap-3 items-start mt-2">
+                    <div className="mt-2 flex items-start gap-3 rounded-xl bg-blue-50 p-4 text-sm text-blue-700 dark:bg-blue-500/10 dark:text-blue-200">
                         <Lightbulb className="w-5 h-5 flex-shrink-0" />
                         <ul className="space-y-1 list-disc list-inside">
                             <li>كن دقيقاً في وصف المطلوب</li>
@@ -109,8 +109,8 @@ export default function StepJobBasics() {
                                     className={`
                                         px-3 py-1.5 rounded-full text-sm font-medium border transition-colors
                                         ${isSelected
-                                            ? 'bg-primary-50 border-primary-200 text-primary-700'
-                                            : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300'
+                                            ? 'border-primary-200 bg-primary-50 text-primary-700 dark:border-primary-500/30 dark:bg-primary-500/10 dark:text-primary-300'
+                                            : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300 dark:border-white/10 dark:bg-[#14111d] dark:text-gray-300'
                                         }
                                     `}
                                 >

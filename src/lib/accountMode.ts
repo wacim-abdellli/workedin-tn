@@ -102,7 +102,11 @@ export function getProfilePath(profile: RoleCapableProfile, mode: AccountMode): 
         return `/freelancer/${profile.username || profile.id}`;
     }
 
-    return '/client/dashboard';
+    return '/settings?tab=profile';
+}
+
+export function getSettingsPath(): string {
+    return '/settings?tab=account';
 }
 
 export function isClientModeOnboarded(profile: RoleCapableProfile): boolean {

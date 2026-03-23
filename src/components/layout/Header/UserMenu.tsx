@@ -11,7 +11,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from '@/i18n';
 import { cn } from '@/lib/utils';
 import { getAvatarGradient, getInitials } from '@/lib/avatar';
-import { getModeSetupProgress, getModeTarget, getProfilePath } from '@/lib/accountMode';
+import { getModeSetupProgress, getModeTarget, getProfilePath, getSettingsPath } from '@/lib/accountMode';
 import { useToast } from '@/components/ui/Toast';
 
 type Mode = 'freelancer' | 'client';
@@ -72,7 +72,7 @@ export function UserMenu({ user, profile, isOpen, onToggle }: UserMenuProps) {
                 className={cn(
                     'group flex items-center gap-3 rounded-[22px] border px-2.5 py-2 transition-all duration-200',
                     isOpen
-                        ? 'border-violet-300/50 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(243,239,249,0.94))] shadow-[0_18px_40px_-28px_rgba(76,29,149,0.28)] dark:border-violet-500/30 dark:bg-white/10'
+                        ? 'border-violet-300/50 bg-white/95 shadow-[0_18px_40px_-28px_rgba(76,29,149,0.28)] dark:border-violet-500/30 dark:bg-[#171421]/96'
                         : 'border-transparent hover:border-[rgba(124,58,237,0.14)] hover:bg-[rgba(255,255,255,0.86)] dark:hover:border-white/10 dark:hover:bg-white/5'
                 )}
                 aria-expanded={isOpen}
@@ -121,7 +121,8 @@ export function UserAccountPanel({ profile, signOut, onClose }: UserAccountPanel
 
     const copy = t.auth.accountPanel;
     const activeWorkspaceLabel = activeMode === 'freelancer' ? copy.freelancerLabel : copy.clientLabel;
-    const profileActionTo = activeMode === 'freelancer' ? getProfilePath(profile, activeMode) : '/settings?tab=profile';
+    const profileActionTo = getProfilePath(profile, activeMode);
+    const settingsActionTo = getSettingsPath();
     const { isOnboarded, path: setupTargetPath } = getModeTarget(profile, freelancerProfile, activeMode);
     const setupProgress = getModeSetupProgress(profile, freelancerProfile, activeMode);
     const setupActionTo = isOnboarded ? profileActionTo : setupTargetPath;
@@ -202,7 +203,7 @@ export function UserAccountPanel({ profile, signOut, onClose }: UserAccountPanel
                 aria-label={copy.sectionLabel}
                 data-account-panel
             >
-                <div className="rounded-[24px] border border-slate-200/90 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(244,240,250,0.95))] p-4 shadow-[0_14px_28px_-22px_rgba(15,23,42,0.18)] dark:border-white/10 dark:bg-[#171421]/92">
+                <div className="rounded-[24px] border border-slate-200/90 bg-white/96 p-4 shadow-[0_14px_28px_-22px_rgba(15,23,42,0.18)] dark:border-white/10 dark:bg-[#171421]/94">
                     <div className="flex items-center justify-between gap-3">
                         <div>
                             <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-violet-600 dark:text-violet-300">
@@ -258,9 +259,9 @@ export function UserAccountPanel({ profile, signOut, onClose }: UserAccountPanel
                                     disabled={isActive || isSwitchingMode !== null}
                                     className={cn(
                                         'group rounded-[24px] border p-4 text-left transition-all duration-200',
-                                        'border-slate-200/85 bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(246,242,251,0.92))]',
+                                        'border-slate-200/85 bg-white/95',
                                         !isActive && 'hover:-translate-y-0.5 hover:border-violet-300/40 hover:shadow-sm dark:hover:border-white/15',
-                                        'dark:border-white/8 dark:bg-white/[0.04]',
+                                        'dark:border-white/8 dark:bg-[#14111d]',
                                         isActive && item.tone.surface,
                                         isActive && 'cursor-default'
                                     )}
@@ -307,13 +308,13 @@ export function UserAccountPanel({ profile, signOut, onClose }: UserAccountPanel
                     </div>
                 </div>
 
-                <div className="mt-4 rounded-[24px] border border-slate-200/90 bg-[linear-gradient(180deg,rgba(255,255,255,0.97),rgba(244,240,250,0.93))] p-3 shadow-[0_14px_28px_-22px_rgba(15,23,42,0.16)] dark:border-white/8 dark:bg-white/[0.04]">
+                <div className="mt-4 rounded-[24px] border border-slate-200/90 bg-white/96 p-3 shadow-[0_14px_28px_-22px_rgba(15,23,42,0.16)] dark:border-white/8 dark:bg-[#14111d]">
                     <div className="mb-2 px-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#8a849d] dark:text-[#9d97af]">
                         {copy.tools}
                     </div>
                     <div className="flex flex-col gap-1.5">
                         <PanelLink to={profileActionTo} onClick={onClose} icon={<User className="h-[18px] w-[18px]" />} label={copy.profileAction} />
-                        <PanelLink to="/settings" onClick={onClose} icon={<Settings className="h-[18px] w-[18px]" />} label={copy.settingsAction} />
+                        <PanelLink to={settingsActionTo} onClick={onClose} icon={<Settings className="h-[18px] w-[18px]" />} label={copy.settingsAction} />
                         
                         <div className="my-1 border-t border-slate-200/60 dark:border-white/10" />
                         

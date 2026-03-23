@@ -9,11 +9,11 @@ export default function StepBudget() {
     return (
         <div className="space-y-8">
             <div className="space-y-4">
-                <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                <h3 className="flex items-center gap-2 text-xl font-bold text-gray-900 dark:text-white">
                     <DollarSign className="w-6 h-6 text-primary-600" />
                     الميزانية والمدة
                 </h3>
-                <p className="text-gray-500">
+                <p className="text-gray-500 dark:text-gray-400">
                     حدد طريقة الدفع المناسبة وميزانية المشروع
                 </p>
             </div>
@@ -23,8 +23,8 @@ export default function StepBudget() {
                 <label className={`
                     cursor-pointer p-6 rounded-2xl border-2 transition-all
                     ${jobType === 'fixed_price'
-                        ? 'border-primary-600 bg-primary-50 ring-1 ring-primary-600'
-                        : 'border-gray-100 hover:border-gray-200 bg-white'
+                        ? 'border-primary-600 bg-primary-50 ring-1 ring-primary-600 dark:bg-primary-500/10'
+                        : 'border-gray-100 bg-white hover:border-gray-200 dark:border-white/10 dark:bg-[#14111d]'
                     }
                 `}>
                     <input
@@ -47,8 +47,8 @@ export default function StepBudget() {
                 <label className={`
                     cursor-pointer p-6 rounded-2xl border-2 transition-all
                     ${jobType === 'hourly'
-                        ? 'border-primary-600 bg-primary-50 ring-1 ring-primary-600'
-                        : 'border-gray-100 hover:border-gray-200 bg-white'
+                        ? 'border-primary-600 bg-primary-50 ring-1 ring-primary-600 dark:bg-primary-500/10'
+                        : 'border-gray-100 bg-white hover:border-gray-200 dark:border-white/10 dark:bg-[#14111d]'
                     }
                 `}>
                     <input
@@ -70,7 +70,7 @@ export default function StepBudget() {
             </div>
 
             {/* Budget Inputs */}
-            <div className="bg-gray-50 rounded-2xl p-6 border border-gray-100">
+            <div className="rounded-2xl border border-gray-100 bg-gray-50 p-6 dark:border-white/10 dark:bg-white/[0.03]">
                 {jobType === 'fixed_price' ? (
                     <div className="space-y-4">
                         <label className="font-medium text-gray-900 block">ميزانية المشروع التقديرية (د.ت)</label>

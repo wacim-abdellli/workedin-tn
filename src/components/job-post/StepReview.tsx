@@ -21,16 +21,16 @@ export default function StepReview() {
 
     return (
         <div className="space-y-8">
-            <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 flex gap-3 text-sm text-yellow-800">
+            <div className="flex gap-3 rounded-xl border border-yellow-200 bg-yellow-50 p-4 text-sm text-yellow-800 dark:border-yellow-500/20 dark:bg-yellow-500/10 dark:text-yellow-200">
                 <FileText className="w-5 h-5 flex-shrink-0" />
                 <p>يرجى مراجعة تفاصيل الوظيفة بدقة قبل النشر. بعد النشر، ستتمكن من تعديل بعض التفاصيل فقط.</p>
             </div>
 
             <div className="space-y-6">
                 {/* Header Preview */}
-                <div className="border-b border-gray-100 pb-6">
-                    <h2 className="text-2xl font-bold text-gray-900 mb-2">{values.title}</h2>
-                    <div className="flex flex-wrap gap-4 text-sm text-gray-500">
+                <div className="border-b border-gray-100 pb-6 dark:border-white/10">
+                    <h2 className="mb-2 text-2xl font-bold text-gray-900 dark:text-white">{values.title}</h2>
+                    <div className="flex flex-wrap gap-4 text-sm text-gray-500 dark:text-gray-400">
                         <span className="flex items-center gap-1 bg-gray-100 px-3 py-1 rounded-full">
                             <Briefcase className="w-4 h-4" />
                             {values.category}
@@ -45,13 +45,13 @@ export default function StepReview() {
                 {/* Description */}
                 <div>
                     <h3 className="font-bold text-gray-900 mb-3">وصف المشروع</h3>
-                    <p className="text-gray-600 whitespace-pre-line leading-relaxed">
+                    <p className="whitespace-pre-line leading-relaxed text-gray-600 dark:text-gray-300">
                         {values.description}
                     </p>
                 </div>
 
                 {/* Details Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50 rounded-2xl p-6">
+                <div className="grid grid-cols-1 gap-6 rounded-2xl bg-gray-50 p-6 dark:bg-white/[0.03] md:grid-cols-2">
                     <div className="space-y-4">
                         <div className="flex gap-4">
                             <DollarSign className="w-5 h-5 text-gray-400 mt-1" />
@@ -95,7 +95,7 @@ export default function StepReview() {
                 </div>
 
                 {/* Visibility */}
-                <div className="flex items-center gap-3 pt-6 border-t border-gray-100">
+                <div className="flex items-center gap-3 border-t border-gray-100 pt-6 dark:border-white/10">
                     <div className="p-2 bg-purple-50 rounded-lg text-purple-600">
                         {values.visibility === 'public' ? <Globe className="w-5 h-5" /> : <Lock className="w-5 h-5" />}
                     </div>
@@ -109,7 +109,7 @@ export default function StepReview() {
 
                 {/* Attachments */}
                 {values.attachments_files && values.attachments_files.length > 0 && (
-                    <div className="flex items-start gap-3 pt-6 border-t border-gray-100">
+                    <div className="flex items-start gap-3 border-t border-gray-100 pt-6 dark:border-white/10">
                         <div className="p-2 bg-gray-50 rounded-lg text-gray-500">
                             <File className="w-5 h-5" />
                         </div>
@@ -117,7 +117,7 @@ export default function StepReview() {
                             <p className="text-sm text-gray-500 mb-2">الملفات المرفقة</p>
                             <div className="space-y-2">
                                 {values.attachments_files.map((file: File, index: number) => (
-                                    <div key={index} className="flex items-center gap-2 text-sm bg-gray-50 p-2 rounded-lg border border-gray-100">
+                                    <div key={index} className="flex items-center gap-2 rounded-lg border border-gray-100 bg-gray-50 p-2 text-sm dark:border-white/10 dark:bg-white/[0.03]">
                                         <span className="font-medium text-gray-700 truncate">{file.name}</span>
                                         <span className="text-muted text-xs">({(file.size / 1024 / 1024).toFixed(2)} MB)</span>
                                     </div>

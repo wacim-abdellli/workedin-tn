@@ -20,7 +20,7 @@ export default function JobWizardLayout({ currentStep, steps, children }: JobWiz
             <div className="mb-8">
                 <div className="flex items-center justify-between relative">
                     {/* Background Line */}
-                    <div className="absolute top-1/2 left-0 right-0 h-1 bg-gray-200 -z-10 rounded-full" />
+                    <div className="absolute top-1/2 left-0 right-0 h-1 -z-10 rounded-full bg-gray-200 dark:bg-white/10" />
 
                     {/* Active Line */}
                     <div
@@ -36,7 +36,7 @@ export default function JobWizardLayout({ currentStep, steps, children }: JobWiz
                             <div key={step.id} className="flex flex-col items-center gap-2">
                                 <div
                                     className={`
-                                        w-10 h-10 rounded-full flex items-center justify-center border-4 transition-all duration-300 bg-white
+                                        flex h-10 w-10 items-center justify-center rounded-full border-4 bg-white transition-all duration-300 dark:bg-[#14111d]
                                         ${isCompleted
                                             ? 'border-primary-600 bg-primary-600 text-white'
                                             : isCurrent
@@ -52,7 +52,7 @@ export default function JobWizardLayout({ currentStep, steps, children }: JobWiz
                                     )}
                                 </div>
                                 <div className="hidden md:block text-center">
-                                    <p className={`text-sm font-bold ${isCurrent ? 'text-primary-600' : 'text-gray-500'}`}>
+                                    <p className={`text-sm font-bold ${isCurrent ? 'text-primary-600' : 'text-gray-500 dark:text-gray-400'}`}>
                                         {step.title}
                                     </p>
                                 </div>
@@ -63,17 +63,17 @@ export default function JobWizardLayout({ currentStep, steps, children }: JobWiz
 
                 {/* Mobile Step Title */}
                 <div className="md:hidden text-center mt-4">
-                    <h2 className="text-lg font-bold text-gray-900">
+                    <h2 className="text-lg font-bold text-gray-900 dark:text-white">
                         {steps[currentStep - 1].title}
                     </h2>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
                         الخطوة {currentStep} من {steps.length}
                     </p>
                 </div>
             </div>
 
             {/* Content */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="animate-in slide-in-from-bottom-4 rounded-[28px] border border-gray-200/80 bg-white/95 p-6 shadow-[0_18px_40px_-28px_rgba(15,23,42,0.14)] fade-in duration-500 dark:border-white/10 dark:bg-[#14111d] dark:shadow-[0_24px_48px_-32px_rgba(0,0,0,0.5)] md:p-8">
                 {children}
             </div>
         </div>
