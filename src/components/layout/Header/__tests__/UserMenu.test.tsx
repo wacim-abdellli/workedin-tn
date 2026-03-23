@@ -104,6 +104,7 @@ describe('UserMenu', () => {
                 dashboard: 'Dashboard',
                 myJobs: 'My Jobs',
                 messages: 'Messages',
+                profile: 'Profile',
                 saved: 'Saved',
                 settings: 'Settings',
                 logout: 'Logout',
@@ -121,7 +122,7 @@ describe('UserMenu', () => {
         fireEvent.click(screen.getByRole('button', { expanded: false }));
 
         expect(screen.getByText('Account')).toBeInTheDocument();
-        expect(screen.getByText('Workspaces')).toBeInTheDocument();
+        expect(screen.getByText('Switch workspace')).toBeInTheDocument();
         expect(screen.getByText('Dashboard')).toBeInTheDocument();
         expect(screen.getByText('Admin')).toBeInTheDocument();
         expect(screen.getByText('@amina')).toBeInTheDocument();
@@ -129,7 +130,7 @@ describe('UserMenu', () => {
         fireEvent.keyDown(document, { key: 'Escape' });
 
         await waitFor(() => {
-            expect(screen.queryByText('Workspaces')).not.toBeInTheDocument();
+            expect(screen.queryByText('Switch workspace')).not.toBeInTheDocument();
         });
     });
 

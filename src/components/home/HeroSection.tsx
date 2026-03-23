@@ -48,13 +48,20 @@ function HeroStat({
   const count = useAnimatedCounter(isInView ? value : 0, 1500);
 
   return (
-    <div ref={ref} className="flex min-w-[150px] items-center gap-3 px-5 py-4">
-      <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-purple-50 text-purple-600 shadow-sm dark:bg-purple-900/30 dark:text-purple-300">
-        <Icon className="h-5 w-5" />
+    <div
+      ref={ref}
+      className="rounded-[24px] border border-primary-100/80 bg-white/88 p-4 shadow-[0_16px_40px_-28px_rgba(124,58,237,0.35)] dark:border-white/10 dark:bg-white/[0.04]"
+    >
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-purple-50 text-purple-600 shadow-sm dark:bg-purple-900/30 dark:text-purple-300">
+          <Icon className="h-5 w-5" />
+        </div>
+        <div className="text-right text-[11px] font-semibold uppercase tracking-[0.16em] text-gray-500 dark:text-gray-400">
+          {label}
+        </div>
       </div>
-      <div>
-        <div className="text-2xl font-bold text-gray-900 dark:text-white">{formatCompact(count)}</div>
-        <div className="text-sm text-gray-500 dark:text-gray-400">{label}</div>
+      <div className="mt-6 text-3xl font-bold tracking-[-0.03em] text-gray-900 dark:text-white">
+        {formatCompact(count)}
       </div>
     </div>
   );
@@ -245,38 +252,38 @@ export default function HeroSection({ stats }: HeroSectionProps) {
             variants={fadeUp}
             initial="hidden"
             animate="visible"
-            className="glass-card hero-surface-panel relative overflow-hidden p-4 sm:p-6"
+            className="glass-card hero-surface-panel relative overflow-hidden p-5 sm:p-6"
           >
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(139,92,246,0.16),transparent_55%)]" />
-            <div className="relative rounded-[24px] border border-white/65 bg-white/85 p-6 shadow-2xl backdrop-blur-xl dark:border-white/10 dark:bg-[#14111d]/94">
-              <div className="flex items-center justify-between">
+            <div className="premium-panel relative rounded-[30px] border border-white/65 p-6 shadow-2xl dark:border-white/10 sm:p-7">
+              <div className="flex items-start justify-between gap-4">
                 <div>
                   <p className="text-sm font-medium text-[#5f5975] dark:text-[#a7a2ba]">{t.hero.activity.eyebrow}</p>
-                  <h2 className="mt-2 text-2xl font-bold text-[#171420] dark:text-white">{t.hero.activity.title}</h2>
+                  <h2 className="mt-2 max-w-sm text-[1.9rem] font-bold tracking-[-0.03em] text-[#171420] dark:text-white">
+                    {t.hero.activity.title}
+                  </h2>
                 </div>
-                <div className="rounded-2xl border border-primary-200/60 bg-primary-50 px-3 py-2 text-sm font-semibold text-primary-700 dark:border-primary-500/20 dark:bg-primary-500/10 dark:text-primary-300">
+                <div className="rounded-2xl border border-primary-200/60 bg-primary-50 px-3 py-2 text-sm font-semibold text-primary-700 shadow-sm dark:border-primary-500/20 dark:bg-primary-500/10 dark:text-primary-300">
                   {t.hero.activity.tag}
                 </div>
               </div>
 
-              <div className="mt-6 divide-y divide-primary-100/80 overflow-hidden rounded-[24px] border border-primary-100/80 bg-white/82 shadow-inner dark:divide-white/5 dark:border-white/10 dark:bg-white/6">
-                <div className="grid gap-2 sm:grid-cols-3 sm:divide-x sm:divide-gray-200 dark:sm:divide-white/10">
-                  <HeroStat icon={Users} value={stats.freelancers} label={t.hero.stats.professionals} />
-                  <HeroStat icon={Briefcase} value={stats.jobs ?? 142} label={t.hero.stats.projects} />
-                  <HeroStat icon={TrendingUp} value={Math.round((stats.earnings ?? 127850) / 100)} label={t.hero.stats.escrow} />
-                </div>
+              <div className="mt-6 grid gap-3 md:grid-cols-3">
+                <HeroStat icon={Users} value={stats.freelancers} label={t.hero.stats.professionals} />
+                <HeroStat icon={Briefcase} value={stats.jobs ?? 142} label={t.hero.stats.projects} />
+                <HeroStat icon={TrendingUp} value={Math.round((stats.earnings ?? 127850) / 100)} label={t.hero.stats.escrow} />
               </div>
 
-              <div className="mt-6 grid gap-4 sm:grid-cols-2">
+              <div className="mt-6 grid gap-3 sm:grid-cols-2">
                 {[
                   { icon: Shield, title: t.hero.trust.verified, copy: t.hero.trust.verifiedBody },
                   { icon: Star, title: t.hero.trust.secure, copy: t.hero.trust.secureBody },
                 ].map((item) => (
-                  <div key={item.title} className="rounded-[22px] border border-primary-100/80 bg-white/88 p-5 dark:border-white/10 dark:bg-white/6">
-                    <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-500 to-primary-700 text-white">
+                  <div key={item.title} className="rounded-[24px] border border-primary-100/80 bg-white/88 p-5 shadow-[0_18px_40px_-30px_rgba(124,58,237,0.35)] dark:border-white/10 dark:bg-white/[0.04]">
+                    <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-500 to-primary-700 text-white">
                       <item.icon className="h-5 w-5" />
                     </div>
-                    <div className="text-base font-semibold text-[#1a1825] dark:text-white">{item.title}</div>
+                    <div className="text-base font-semibold leading-snug text-[#1a1825] dark:text-white">{item.title}</div>
                     <p className="mt-2 text-sm leading-relaxed text-[#6b6880] dark:text-[#8b8aa0]">{item.copy}</p>
                   </div>
                 ))}

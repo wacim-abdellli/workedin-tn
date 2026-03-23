@@ -369,7 +369,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
             await ensureProfileExists(user);
         }
 
-        await updateProfile({ user_type: userType });
+        await updateProfile({
+            user_type: userType,
+            active_mode: nextMode,
+        });
         persistAccountMode(nextMode, user.id);
 
         // Create freelancer profile if user is freelancer or both
@@ -385,7 +388,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
             if (error) throw error;
         }
 
-        await fetchProfile(user.id);
+        await fetchProfile(user.id, user);
     };
 
     const switchAccountMode = async (mode: AccountMode) => {
@@ -397,9 +400,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
         const nextUserType = promoteUserTypeForMode(profile?.user_type, mode);
 
-        if (nextUserType !== profile?.user_type) {
-            await updateProfile({ user_type: nextUserType });
-        }
+        await updateProfile({
+            user_type: nextUserType,
+            active_mode: mode,
+        });
 
         if (mode === 'freelancer') {
             const { error } = await supabase
@@ -417,7 +421,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         }
 
         persistAccountMode(mode, user.id);
-        await fetchProfile(user.id);
+        await fetchProfile(user.id, user);
 
         return mode;
     };

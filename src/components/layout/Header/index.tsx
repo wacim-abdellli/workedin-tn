@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Menu, X, Briefcase, User, TrendingUp } from 'lucide-react';
 
@@ -23,6 +23,7 @@ export default function Header() {
     const { user, profile, signOut } = useAuth();
     const { theme } = useTheme();
     const { t, language, setLanguage } = useTranslation();
+    const navigate = useNavigate();
 
     // Scroll detection
     useEffect(() => {
@@ -128,7 +129,7 @@ export default function Header() {
                 <MobileMenu
                     isOpen={mobileMenuOpen}
                     onClose={() => setMobileMenuOpen(false)}
-                    onSearchOpen={() => { }}
+                    onSearchOpen={() => navigate('/search')}
                     t={t}
                 />
             </header>
