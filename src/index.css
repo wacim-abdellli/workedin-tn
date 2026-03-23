@@ -544,18 +544,18 @@ h6 {
   }
 
   .hero-display-line {
-    font-size: var(--text-5xl);
-    line-height: 1.05;
-    letter-spacing: -0.02em;
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    line-height: 1.08;
+    letter-spacing: -0.03em;
   }
 
   .hero-display-base {
-    color: #191627;
-    text-shadow: 0 10px 30px rgba(139, 92, 246, 0.12);
+    color: #111827;
+    text-shadow: 0 10px 30px rgba(139, 92, 246, 0.08);
   }
 
   .dark .hero-display-base {
-    color: rgba(247, 244, 255, 0.96);
+    color: #ffffff;
     text-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
   }
 
@@ -575,7 +575,7 @@ h6 {
   .hero-display-emphasis {
     font-family: 'Syne', 'Plus Jakarta Sans', sans-serif;
     font-style: italic;
-    background: linear-gradient(135deg, #8b5cf6, #f59e0b);
+    background: linear-gradient(135deg, #a78bfa 0%, #f59e0b 100%);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;

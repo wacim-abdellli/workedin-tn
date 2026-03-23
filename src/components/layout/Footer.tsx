@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Facebook, Twitter, Instagram, Linkedin, Mail, MapPin, Phone, Heart } from 'lucide-react';
+
 import { useTranslation } from '../../i18n';
 import { useTheme } from '../../contexts/ThemeContext';
 
@@ -24,16 +25,14 @@ function Footer() {
 
     return (
         <footer className="relative overflow-hidden">
-            {/* Gradient Background */}
             <div className="absolute inset-0 bg-gradient-to-b from-dark-900 to-dark-950" />
-            <div className="absolute top-0 start-1/4 w-96 h-96 bg-primary-600/10 rounded-full blur-[120px]" />
-            <div className="absolute bottom-0 end-1/4 w-96 h-96 bg-accent-500/10 rounded-full blur-[120px]" />
+            <div className="absolute start-1/4 top-0 h-96 w-96 rounded-full bg-primary-600/10 blur-[120px]" />
+            <div className="absolute bottom-0 end-1/4 h-96 w-96 rounded-full bg-accent-500/10 blur-[120px]" />
 
-            <div className="container-custom py-16 md:py-20 relative">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
-                    {/* Brand */}
+            <div className="container-custom relative py-16 md:py-20">
+                <div className="grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-4">
                     <div className="lg:col-span-2">
-                        <Link to="/" className="inline-flex items-center group mb-10">
+                        <Link to="/" className="group mb-10 inline-flex items-center">
                             <img
                                 src={theme === 'dark' ? '/logos/logo-stacked-dark.svg' : '/logos/logo-stacked.svg'}
                                 alt="Khedma TN"
@@ -43,58 +42,56 @@ function Footer() {
                                 className="object-contain"
                             />
                         </Link>
-                        <p className="text-dark-400 max-w-md mb-8 leading-relaxed">
-                            {t.hero.subtitle}
+
+                        <p className="mb-8 max-w-md leading-relaxed text-dark-400">
+                            {t.footer.description}
                         </p>
 
-                        {/* Contact Info */}
-                        <div className="space-y-3 mb-8">
+                        <div className="mb-8 space-y-3">
                             <div className="flex items-center gap-3 text-dark-400">
-                                <div className="w-10 h-10 rounded-lg bg-dark-800 flex items-center justify-center">
-                                    <MapPin className="w-5 h-5 text-primary-400" />
+                                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-dark-800">
+                                    <MapPin className="h-5 w-5 text-primary-400" />
                                 </div>
-                                <span>تونس العاصمة، تونس</span>
+                                <span>{t.footer.city}</span>
                             </div>
                             <div className="flex items-center gap-3 text-dark-400">
-                                <div className="w-10 h-10 rounded-lg bg-dark-800 flex items-center justify-center">
-                                    <Mail className="w-5 h-5 text-primary-400" />
+                                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-dark-800">
+                                    <Mail className="h-5 w-5 text-primary-400" />
                                 </div>
                                 <span>contact@khedma.tn</span>
                             </div>
                             <div className="flex items-center gap-3 text-dark-400">
-                                <div className="w-10 h-10 rounded-lg bg-dark-800 flex items-center justify-center">
-                                    <Phone className="w-5 h-5 text-primary-400" />
+                                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-dark-800">
+                                    <Phone className="h-5 w-5 text-primary-400" />
                                 </div>
                                 <span dir="ltr">+216 XX XXX XXX</span>
                             </div>
                         </div>
 
-                        {/* Social Links */}
                         <div className="flex items-center gap-3">
                             {socialLinks.map((social) => (
                                 <a
                                     key={social.label}
                                     href={social.href}
                                     aria-label={social.label}
-                                    className={`w-11 h-11 rounded-xl bg-dark-800 flex items-center justify-center text-dark-400 hover:text-white ${social.color} transition-all duration-300 hover:scale-110 hover:shadow-lg`}
+                                    className={`flex h-11 w-11 items-center justify-center rounded-xl bg-dark-800 text-dark-400 transition-all duration-300 hover:scale-110 hover:text-white hover:shadow-lg ${social.color}`}
                                 >
-                                    <social.icon className="w-5 h-5" />
+                                    <social.icon className="h-5 w-5" />
                                 </a>
                             ))}
                         </div>
                     </div>
 
-                    {/* Quick Links */}
                     <div>
-                        <h3 className="font-bold text-lg text-white mb-6">روابط سريعة</h3>
+                        <h3 className="mb-6 text-lg font-bold text-white">{t.footer.quickLinks}</h3>
                         <ul className="space-y-4">
                             {footerLinks.slice(0, 3).map((link) => (
                                 <li key={link.href}>
                                     <Link
                                         to={link.href}
-                                        className="text-dark-400 hover:text-white transition-colors flex items-center gap-2 group"
+                                        className="group flex items-center gap-2 text-dark-400 transition-colors hover:text-white"
                                     >
-                                        <span className="w-1.5 h-1.5 rounded-full bg-primary-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                        <span className="h-1.5 w-1.5 rounded-full bg-primary-500 opacity-0 transition-opacity group-hover:opacity-100" />
                                         {link.label}
                                     </Link>
                                 </li>
@@ -102,65 +99,63 @@ function Footer() {
                             <li>
                                 <Link
                                     to="/how-it-works"
-                                    className="text-dark-400 hover:text-white transition-colors flex items-center gap-2 group"
+                                    className="group flex items-center gap-2 text-dark-400 transition-colors hover:text-white"
                                 >
-                                    <span className="w-1.5 h-1.5 rounded-full bg-primary-500 opacity-0 group-hover:opacity-100 transition-opacity" />
-                                    كيف يعمل
+                                    <span className="h-1.5 w-1.5 rounded-full bg-primary-500 opacity-0 transition-opacity group-hover:opacity-100" />
+                                    {t.nav.howItWorks}
                                 </Link>
                             </li>
                             <li>
                                 <Link
                                     to="/jobs"
-                                    className="text-dark-400 hover:text-white transition-colors flex items-center gap-2 group"
+                                    className="group flex items-center gap-2 text-dark-400 transition-colors hover:text-white"
                                 >
-                                    <span className="w-1.5 h-1.5 rounded-full bg-primary-500 opacity-0 group-hover:opacity-100 transition-opacity" />
-                                    تصفح المهام
+                                    <span className="h-1.5 w-1.5 rounded-full bg-primary-500 opacity-0 transition-opacity group-hover:opacity-100" />
+                                    {t.nav.jobs}
                                 </Link>
                             </li>
                         </ul>
                     </div>
 
-                    {/* Legal */}
                     <div>
-                        <h3 className="font-bold text-lg text-white mb-6">قانوني</h3>
+                        <h3 className="mb-6 text-lg font-bold text-white">{t.footer.legal}</h3>
                         <ul className="space-y-4">
                             {footerLinks.slice(3).map((link) => (
                                 <li key={link.href}>
                                     <Link
                                         to={link.href}
-                                        className="text-dark-400 hover:text-white transition-colors flex items-center gap-2 group"
+                                        className="group flex items-center gap-2 text-dark-400 transition-colors hover:text-white"
                                     >
-                                        <span className="w-1.5 h-1.5 rounded-full bg-accent-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                        <span className="h-1.5 w-1.5 rounded-full bg-accent-500 opacity-0 transition-opacity group-hover:opacity-100" />
                                         {link.label}
                                     </Link>
                                 </li>
                             ))}
                         </ul>
 
-                        {/* Newsletter */}
                         <div className="mt-8">
-                            <h4 className="font-semibold text-white mb-3">النشرة البريدية</h4>
+                            <h4 className="mb-3 font-semibold text-white">{t.footer.newsletterTitle}</h4>
                             <div className="flex gap-2">
                                 <input
                                     type="email"
-                                    placeholder="بريدك الإلكتروني"
-                                    className="flex-1 px-4 py-2.5 rounded-xl bg-dark-800 border border-dark-700 text-white placeholder-dark-500 focus:outline-none focus:border-primary-500 transition-colors"
+                                    placeholder={t.footer.newsletterPlaceholder}
+                                    className="flex-1 rounded-xl border border-dark-700 bg-dark-800 px-4 py-2.5 text-white placeholder-dark-500 transition-colors focus:border-primary-500 focus:outline-none"
                                 />
-                                <button className="px-4 py-2.5 rounded-xl gradient-primary text-white font-medium hover:shadow-lg hover:shadow-primary-600/30 transition-shadow">
-                                    اشترك
+                                <button className="rounded-xl px-4 py-2.5 font-medium text-white transition-shadow hover:shadow-lg hover:shadow-primary-600/30 gradient-primary">
+                                    {t.footer.newsletterAction}
                                 </button>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                {/* Bottom Bar */}
-                <div className="mt-16 pt-8 border-t border-dark-800">
-                    <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-                        <div className="text-dark-400 text-sm flex items-center gap-1">
-                            صنع بـ <Heart className="w-4 h-4 text-accent-500 fill-current" /> في تونس 🇹🇳
+                <div className="mt-16 border-t border-dark-800 pt-8">
+                    <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
+                        <div className="flex items-center gap-1 text-sm text-dark-400">
+                            {t.footer.madeInTunisia}
+                            <Heart className="h-4 w-4 fill-current text-accent-500" />
                         </div>
-                        <div className="text-dark-400 text-sm">
+                        <div className="text-sm text-dark-400">
                             {t.footer.copyright}
                         </div>
                     </div>

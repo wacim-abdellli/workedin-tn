@@ -70,10 +70,10 @@ function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
                             <Sparkles className="w-4 h-4 text-white" />
                         </div>
                     </div>
-                    <h2 className="text-2xl font-bold mb-2">
-                        {t.nav.login}
+                    <h2 className="text-center text-2xl font-bold text-[#171420] dark:text-white mb-2">
+                        {t.auth.loginTitle}
                     </h2>
-                    <p className="text-muted">
+                    <p className="mt-1 text-center text-sm text-gray-500 dark:text-gray-400">
                         {t.auth.loginSubtitle}
                     </p>
                 </div>
@@ -99,7 +99,7 @@ function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
                             showToast(t.auth.googleLoginError, 'error');
                         }
                     }}
-                    className="w-full flex items-center justify-center gap-3 px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-200 font-medium"
+                    className="w-full flex items-center justify-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3 font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-white/10 dark:bg-[#221d30] dark:text-gray-200 dark:hover:bg-[#2a2338]"
                 >
                     <svg className="w-5 h-5" viewBox="0 0 24 24">
                         <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -116,7 +116,7 @@ function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
                         <div className="w-full border-t border-gray-200 dark:border-gray-600" />
                     </div>
                     <div className="relative flex justify-center text-sm">
-                        <span className="px-3 bg-white dark:bg-gray-900 text-gray-500">{t.auth.or}</span>
+                        <span className="px-3 bg-white text-gray-500 dark:bg-[#1a1825]">{t.auth.or}</span>
                     </div>
                 </div>
 
@@ -185,7 +185,7 @@ function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
                 <button
                     type="submit"
                     disabled={isLoading}
-                    className="btn-primary btn-lg w-full group"
+                    className="group inline-flex w-full items-center justify-center gap-2 rounded-xl bg-purple-600 px-6 py-3 font-semibold text-white shadow-lg shadow-purple-500/20 transition-all duration-200 hover:bg-purple-500 hover:shadow-xl hover:shadow-purple-500/30"
                 >
                     {isLoading ? (
                         <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />

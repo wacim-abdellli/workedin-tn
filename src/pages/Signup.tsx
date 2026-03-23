@@ -24,7 +24,7 @@ function Signup() {
                         alt="Khedma TN"
                         style={{ height: '80px', width: 'auto', margin: '0 auto 2rem' }}
                     />
-                    <div className="card-glass shadow-2xl shadow-primary-500/10 dark:shadow-black/50">
+                    <div className="mx-auto max-w-md rounded-2xl bg-white p-8 shadow-xl shadow-gray-200/50 dark:border dark:border-white/8 dark:bg-[#1a1825] dark:shadow-black/50">
                         <SignupForm />
                     </div>
                 </div>

@@ -45,17 +45,20 @@ function HowItWorks() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-dark-950 transition-colors duration-300">
+        <div className="min-h-screen bg-gray-50 dark:bg-[#0b0912] transition-colors duration-300">
             <SEO {...SEO_CONFIG.howItWorks} url="/how-it-works" />
             <Header />
 
             {/* Hero */}
-            <section className="bg-white dark:bg-dark-950 py-20 relative overflow-hidden transition-colors duration-500">
+            <section className="relative overflow-hidden bg-white py-20 transition-colors duration-500 dark:bg-[#0b0912]">
                 <div className="container-custom relative z-10 text-center">
-                    <h1 className="text-4xl md:text-6xl font-bold text-dark-900 dark:text-white mb-6">
-                        {t.howItWorks.heroTitle} <span className="text-primary-600 dark:text-primary-500">{t.howItWorks.brandName}</span>
+                    <h1 className="text-[clamp(2.5rem,5vw,4rem)] font-bold leading-[1.08] tracking-[-0.03em] text-gray-900 dark:text-white">
+                        {t.howItWorks.heroTitle}
+                        <span className="block bg-gradient-to-br from-purple-400 to-amber-400 bg-clip-text text-transparent">
+                            {t.howItWorks.heroTitleHighlight}
+                        </span>
                     </h1>
-                    <p className="text-xl text-muted dark:text-dark-300 max-w-2xl mx-auto mb-12">
+                    <p className="mx-auto mb-12 mt-6 max-w-2xl text-lg leading-relaxed text-gray-600 dark:text-gray-300">
                         {t.howItWorks.subtitle}
                     </p>
 
@@ -91,16 +94,18 @@ function HowItWorks() {
                 <div className="container-custom">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                         {steps[activeTab].map((step, index) => (
-                            <div key={index} className="card p-8 relative group hover:-translate-y-2 transition-transform duration-300 !overflow-visible">
-                                <div className="absolute -top-6 right-8 w-12 h-12 rounded-2xl bg-white dark:bg-dark-800 shadow-lg flex items-center justify-center text-xl font-bold text-gray-300 border border-gray-100 dark:border-dark-700 group-hover:text-primary-600 group-hover:border-primary-200 transition-colors">
+                            <div key={index} className="relative rounded-[24px] border border-gray-100 bg-white p-8 shadow-sm transition-transform duration-300 hover:-translate-y-2 dark:border-white/5 dark:bg-[#1a1825]">
+                                {index !== steps[activeTab].length - 1 ? (
+                                    <div className="absolute left-[calc(50%+1.5rem)] top-[2rem] hidden h-[2px] w-[calc(100%-2rem)] bg-gradient-to-r from-purple-200 to-amber-200 lg:block dark:from-purple-800/30 dark:to-amber-800/30" />
+                                ) : null}
+                                <div className="mb-6 flex h-8 w-8 items-center justify-center rounded-full bg-purple-600 text-sm font-semibold text-white">
                                     {index + 1}
                                 </div>
-                                <div className={`w-16 h-16 rounded-2xl mb-6 flex items-center justify-center ${activeTab === 'freelancer' ? 'bg-primary-50 dark:bg-primary-900/20' : 'bg-secondary-50 dark:bg-secondary-900/20'
-                                    }`}>
+                                <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-purple-100 dark:bg-purple-900/30">
                                     {step.icon}
                                 </div>
-                                <h3 className="text-xl font-bold mb-3">{step.title}</h3>
-                                <p className="text-muted leading-relaxed">
+                                <h3 className="mb-3 text-xl font-semibold dark:text-white">{step.title}</h3>
+                                <p className="text-sm leading-relaxed text-gray-600 dark:text-gray-400">
                                     {step.description}
                                 </p>
                             </div>
@@ -122,23 +127,29 @@ function HowItWorks() {
             </section>
 
             {/* Trust Badges */}
-            <section className="py-16 bg-white dark:bg-dark-900 border-y border-gray-100 dark:border-dark-800">
+            <section className="border-y border-gray-100 bg-white py-16 dark:border-white/5 dark:bg-[#120f1c]">
                 <div className="container-custom">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-                        <div className="flex flex-col items-center">
-                            <Shield className="w-12 h-12 text-green-500 mb-4" />
-                            <h3 className="font-bold text-lg mb-2">{t.howItWorks.trust.money.title}</h3>
-                            <p className="text-muted text-sm">{t.howItWorks.trust.money.desc}</p>
+                        <div className="flex flex-col items-center rounded-[24px] border border-gray-100 bg-white px-6 py-8 dark:border-white/5 dark:bg-[#1a1825]">
+                            <div className="mb-4 rounded-xl bg-purple-100 p-3 dark:bg-purple-900/30">
+                                <Shield className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                            </div>
+                            <h3 className="mb-2 text-lg font-semibold text-gray-900 dark:text-white">{t.howItWorks.trust.money.title}</h3>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">{t.howItWorks.trust.money.desc}</p>
                         </div>
-                        <div className="flex flex-col items-center">
-                            <CheckCircle className="w-12 h-12 text-primary-500 mb-4" />
-                            <h3 className="font-bold text-lg mb-2">{t.howItWorks.trust.verified.title}</h3>
-                            <p className="text-muted text-sm">{t.howItWorks.trust.verified.desc}</p>
+                        <div className="flex flex-col items-center rounded-[24px] border border-gray-100 bg-white px-6 py-8 dark:border-white/5 dark:bg-[#1a1825]">
+                            <div className="mb-4 rounded-xl bg-purple-100 p-3 dark:bg-purple-900/30">
+                                <CheckCircle className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                            </div>
+                            <h3 className="mb-2 text-lg font-semibold text-gray-900 dark:text-white">{t.howItWorks.trust.verified.title}</h3>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">{t.howItWorks.trust.verified.desc}</p>
                         </div>
-                        <div className="flex flex-col items-center">
-                            <HelpCircle className="w-12 h-12 text-secondary-500 mb-4" />
-                            <h3 className="font-bold text-lg mb-2">{t.howItWorks.trust.support.title}</h3>
-                            <p className="text-muted text-sm">{t.howItWorks.trust.support.desc}</p>
+                        <div className="flex flex-col items-center rounded-[24px] border border-gray-100 bg-white px-6 py-8 dark:border-white/5 dark:bg-[#1a1825]">
+                            <div className="mb-4 rounded-xl bg-purple-100 p-3 dark:bg-purple-900/30">
+                                <HelpCircle className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                            </div>
+                            <h3 className="mb-2 text-lg font-semibold text-gray-900 dark:text-white">{t.howItWorks.trust.support.title}</h3>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">{t.howItWorks.trust.support.desc}</p>
                         </div>
                     </div>
                 </div>

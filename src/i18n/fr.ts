@@ -7,8 +7,8 @@ export const fr: Translations = {
         forFreelancers: 'Pour les freelances',
         forClients: 'Pour les clients',
         pricing: 'Tarifs',
-        login: 'Connexion',
-        signup: 'Inscription',
+        login: 'Se connecter',
+        signup: 'Créer un compte',
         dashboard: 'Tableau de bord',
         jobs: 'Missions disponibles',
         messages: 'Messages',
@@ -23,14 +23,30 @@ export const fr: Translations = {
     },
 
     hero: {
-        title: 'La plateforme freelance conçue pour la Tunisie',
-        subtitle: 'Pas d\'enchères, pas de complications, juste vos compétences et votre argent',
-        ctaFreelancer: 'Devenir freelance',
-        ctaClient: 'Poster une mission',
-        badge: 'Plateforme Freelance 100% Tunisienne',
+        title: 'Là où le talent tunisien est payé justement',
+        headlineStart: 'Là où le talent tunisien',
+        headlineHighlight: 'Est payé justement',
+        subtitle: 'Sans enchères. Sans intermédiaires. Publiez un projet, convenez des termes, soyez payé en TND — sécurisé par escrow.',
+        ctaFreelancer: 'Commencez à gagner',
+        ctaClient: 'Publiez un projet gratuitement',
+        badge: 'Conçu en Tunisie. Pour la Tunisie.',
+        socialProof: '2 500+ professionnels travaillent déjà sur Khedma',
+        rating: '4.9/5 — noté par des freelances et clients vérifiés',
+        activity: {
+            eyebrow: 'Activité en temps réel',
+            title: 'Vrai travail. Vrais paiements.',
+            tag: 'Désormais disponible en Tunisie',
+        },
+        stats: {
+            professionals: 'Professionnels actifs',
+            projects: 'Projets complétés',
+            escrow: 'TND en escrow',
+        },
         trust: {
-            verified: 'Tunisiens Vérifiés',
-            secure: 'Paiement 100% Sécurisé',
+            verified: 'Professionnels vérifiés',
+            verifiedBody: "Chaque freelance est vérifié avant d'accepter son premier projet.",
+            secure: 'Paiements protégés par escrow',
+            secureBody: 'Les fonds sont sécurisés et libérés uniquement à la validation.',
             users: 'Utilisateurs',
         },
     },
@@ -44,23 +60,23 @@ export const fr: Translations = {
         sections: {
             howItWorks: {
                 badge: 'Comment ça marche',
-                subtitle: 'Un système simple et efficace vous connectant aux meilleurs talents ou opportunités',
-                freelancerDesc: 'Trouvez du travail facilement',
-                clientDesc: 'Recrutez les meilleurs talents',
+                subtitle: 'Quatre étapes claires entre l’idée, l’exécution et le paiement.',
+                freelancerDesc: 'Construisez votre présence et commencez à gagner',
+                clientDesc: 'Trouvez le bon professionnel sans friction',
             },
             categories: {
                 badge: 'Catégories',
-                subtitle: 'Découvrez les compétences demandées sur le marché tunisien',
+                subtitle: 'Découvrez les compétences les plus demandées sur le marché tunisien.',
             },
             testimonials: {
-                badge: 'Histoires de succès',
+                badge: 'Histoires de réussite',
                 earned: 'Gagné',
             },
             cta: {
-                badge: 'Commencez votre parcours',
-                title: 'Prêt à commencer ?',
-                subtitle: 'Rejoignez des milliers de Tunisiens qui construisent leur carrière avec nous. L\'inscription est gratuite et facile.',
-                btnStart: 'Commencer Gratuitement',
+                badge: 'Commencer maintenant',
+                title: 'Commencez en Tunisie. Travaillez avec confiance.',
+                subtitle: 'Freelance ou client, Khedma vous offre un parcours plus clair du premier brief au paiement final.',
+                btnStart: 'Créer un compte',
                 btnWatch: 'Voir comment ça marche',
             },
         },
@@ -69,79 +85,80 @@ export const fr: Translations = {
     values: {
         noBidding: {
             title: 'Sans enchères',
-            description: 'Nous sélectionnons les 3 meilleurs pour vous',
+            description: 'Un bon profil et un matching intelligent plutôt qu’une guerre des prix',
         },
         localPayment: {
             title: 'Paiement local',
-            description: 'D17, virement bancaire ou espèces',
+            description: 'TND, D17 et moyens adaptés au marché tunisien',
         },
         microJobs: {
-            title: 'Missions rapides',
-            description: 'À partir de 10 dinars',
+            title: 'Vrais projets',
+            description: 'Des missions rapides aux contrats plus ambitieux',
         },
     },
 
     howItWorks: {
-        title: 'Comment ça marche',
-        heroTitle: 'Comment ça marche',
+        title: 'Comment Khedma fonctionne',
+        heroTitle: 'Simple par conception.',
+        heroTitleHighlight: 'Sécurisé par défaut.',
         brandName: 'Khedma',
-        subtitle: 'Votre plateforme de freelance sécurisée en Tunisie. Nous connectons les talents tunisiens aux porteurs de projets ambitieux, simplement et en toute sécurité.',
+        subtitle: "Quatre étapes de l'idée au paiement — chaque étape protégée, chaque dinar comptabilisé.",
         tabs: {
             freelancer: 'Pour les freelances',
             client: 'Pour les clients',
         },
         cta: {
-            freelancer: 'Commencez votre carrière',
-            client: 'Publiez votre premier projet',
+            freelancer: 'Commencez à gagner',
+            client: 'Publier un projet gratuitement',
         },
         freelancerSteps: [
             {
-                title: "Créez votre profil pro",
-                description: "Inscrivez-vous gratuitement et complétez votre profil. Ajoutez vos compétences, votre portfolio et une intro vocale pour vous présenter."
+                title: "Créez votre profil une seule fois",
+                description: "Ajoutez vos compétences, votre portfolio et votre tarif. Les clients vous trouvent — sans enchères."
             },
             {
-                title: "Recevez des offres",
-                description: "Pas besoin d'enchérir ! Notre algorithme vous propose des missions adaptées à vos compétences et vous connecte directement aux clients."
+                title: "Recevez de vrais projets",
+                description: "Notre système vous met en avant auprès des clients qui recherchent précisément vos compétences."
             },
             {
-                title: "Discutez et validez",
-                description: "Échangez via le chat, mettez-vous d'accord sur le prix et le délai, et commencez le travail immédiatement après validation."
+                title: "Validez les termes, puis commencez",
+                description: "Discutez, négociez et verrouillez le périmètre avant que l'argent ne bouge."
             },
             {
-                title: "Paiement sécurisé",
-                description: "Nous garantissons votre paiement à la livraison. Retirez vos gains via D17, virement bancaire ou en espèces."
+                title: "Soyez payé à validation",
+                description: "Les fonds sont en escrow dès le premier jour. Validez l'étape — recevez vos TND."
             }
         ],
         clientSteps: [
             {
-                title: "Publiez votre projet",
-                description: "Décrivez votre besoin, définissez le budget et le délai. C'est gratuit et très simple."
+                title: "Publiez en 2 minutes",
+                description: "Décrivez le travail, fixez votre budget, choisissez un tarif fixe ou horaire."
             },
             {
-                title: "Choisissez le meilleur",
-                description: "Nous sélectionnons les 3 meilleurs freelances pour vous. Comparez-les, écoutez leurs intros vocales et voyez leurs portfolios."
+                title: "Analysez des propositions vérifiées",
+                description: "Chaque freelance est vérifié. Filtrez par note, compétence et prix."
             },
             {
-                title: "Suivez l'avancement",
-                description: "Communiquez avec le freelance, suivez l'avancement du travail et demandez des modifications si nécessaire."
+                title: "Suivez des étapes, pas des promesses",
+                description: "Livrables clairs, délais précis et progression visible — dans un seul espace."
             },
             {
-                title: "Recevez et notez",
-                description: "Ne payez que lorsque vous êtes satisfait du résultat. Notez le freelance pour aider les autres à choisir."
+                title: "Libérez le paiement, laissez un avis",
+                description: "Validez le travail, libérez les fonds de l'escrow et notez l'expérience."
             }
         ],
         trust: {
-            money: { title: 'Garantie satisfait ou remboursé', desc: 'Fonds sécurisés jusqu\'à validation du travail' },
-            verified: { title: 'Identités vérifiées', desc: 'Nous vérifions tous les utilisateurs pour un environnement sûr' },
-            support: { title: 'Support local', desc: 'Équipe de support tunisienne prête à aider à tout moment' },
+            money: { title: 'Remboursement total si non satisfait', desc: 'Si le travail ne respecte pas les termes convenus, vous récupérez vos TND.' },
+            verified: { title: 'Chaque professionnel est vérifié', desc: "Nous vérifions l'identité nationale avant toute mise en ligne sur Khedma." },
+            support: { title: 'Support en arabe, français et anglais', desc: 'De vraies personnes, fuseau local, trois langues.' },
         },
         faq: {
             title: 'Questions fréquentes',
             items: [
-                { q: "L'inscription est-elle gratuite ?", a: "Oui, l'inscription est 100% gratuite pour les freelances et les clients. Nous prenons une petite commission uniquement sur les projets réussis." },
-                { q: "Mon argent est-il en sécurité ?", a: "Khedma agit comme tiers de confiance. Le client nous paie, nous gardons les fonds jusqu'à validation, puis nous payons le freelance." },
-                { q: "Quels moyens de paiement ?", a: "Nous acceptons toutes les méthodes locales : cartes, D17, virement bancaire et même espèces pour les petits montants." },
-                { q: "Puis-je m'inscrire en tant qu'entreprise ?", a: "Oui, vous pouvez créer un compte entreprise pour recruter ou offrir des services en équipe." }
+                { q: "L'inscription est-elle gratuite ?", a: "Oui, l'inscription est gratuite pour les freelances comme pour les clients. Une petite commission s'applique seulement aux projets réalisés." },
+                { q: "Comment mon argent est-il protégé ?", a: "Khedma agit comme tiers de confiance. Les fonds restent sécurisés jusqu'à la validation du travail." },
+                { q: "Quels moyens de paiement sont disponibles ?", a: "Nous prenons en charge les cartes, D17, le virement bancaire et d'autres méthodes adaptées au marché tunisien." },
+                { q: "Puis-je m'inscrire en tant qu'entreprise ?", a: "Oui, vous pouvez créer un compte entreprise pour recruter ou proposer vos services en équipe." }
             ]
         }
     },
@@ -149,28 +166,29 @@ export const fr: Translations = {
     // For Clients Page
     forClients: {
         hero: {
-            badge: "Les meilleurs talents tunisiens au même endroit",
-            title: "Réalisez vos projets rapidement et avec qualité avec",
-            subtitle: "Publiez votre projet gratuitement et recevez des offres de professionnels tunisiens vérifiés. Ne payez qu'à la livraison et la satisfaction.",
-            cta: "Publiez votre projet maintenant",
-            secondary: "Comment ça marche ?"
+            badge: "Recrutez des talents tunisiens vérifiés",
+            title: "Votre projet, livré.",
+            titleHighlight: "Dans les délais. Dans le budget.",
+            subtitle: "Publiez gratuitement. Recevez des propositions de professionnels vérifiés. Payez uniquement à votre validation — chaque paiement protégé par escrow.",
+            cta: "Publier un projet — c'est gratuit",
+            secondary: "Voir comment ça marche"
         },
         benefits: {
-            speed: { title: "Recrutement rapide", desc: "Obtenez les meilleurs candidats en quelques minutes. Nos algorithmes intelligents vous trouvent les meilleurs profils immédiatement." },
-            secure: { title: "Paiement sécurisé", desc: "Nous ne libérons les fonds au freelance qu'après réception et validation du travail." },
-            local: { title: "Compétences locales", desc: "Travaillez avec des professionnels qui comprennent votre culture, parlent votre langue et acceptent les paiements locaux." },
+            speed: { title: "Recrutez en 24h", desc: "Publiez et recevez des propositions vérifiées le jour même." },
+            secure: { title: "Payez quand vous êtes satisfait", desc: "Fonds en escrow. Libérés à votre validation." },
+            local: { title: "Professionnels tunisiens", desc: "Travaillez avec des personnes qui comprennent le marché local." },
         },
         categories: {
-            title: "Réalisez tout, dans n'importe quel domaine",
-            items: ['Développement', 'Design et Graphisme', 'Rédaction et Traduction', 'Marketing et Vente', 'Vidéo et Animation', 'Ingénierie', 'Support', 'Éducation']
+            title: "Toutes les compétences. Une plateforme.",
+            items: ['Développement', 'Design et Création', 'Rédaction et Traduction', 'Vente et Marketing', 'Vidéo et Animation', 'Ingénierie', 'Support', 'Éducation']
         },
         talent: {
-            title: "Exemples de nos talents",
+            title: "Avec qui vous allez travailler",
         },
         cta: {
-            title: "Prêt à passer au niveau supérieur ?",
-            text: "Des milliers de professionnels tunisiens attendent votre opportunité. Ne perdez pas de temps, commencez maintenant.",
-            button: "Inscrivez-vous gratuitement",
+            title: "Votre prochain projet commence ici.",
+            text: "2 500+ professionnels vérifiés prêts à travailler. Publiez gratuitement — sans abonnement, sans engagement.",
+            button: "Créer un compte client gratuit",
         }
     },
 
@@ -235,30 +253,36 @@ export const fr: Translations = {
         resendCode: 'Renvoyer le code',
         resendIn: 'Renvoyer dans',
         seconds: 'secondes',
-        selectUserType: 'Choisissez votre type de compte',
+        selectUserType: 'Comment allez-vous utiliser Khedma ?',
+        selectUserTypeSubtitle: "Vous pouvez toujours ajouter l'autre rôle plus tard dans les paramètres.",
         freelancer: 'Freelance',
         client: 'Client',
         both: 'Les deux',
-        completeProfile: 'Compléter l\'inscription',
+        completeProfile: "Compléter l'inscription",
         createAccount: 'Créer un compte',
-        loginSubtitle: 'Entrez votre email et mot de passe',
-        signupSubtitle: 'Créez votre compte pour commencer',
-        noAccount: 'Pas encore de compte?',
-        hasAccount: 'Déjà un compte?',
+        loginTitle: 'Se connecter à Khedma',
+        loginSubtitle: 'Bon retour. Votre travail vous attend.',
+        signupTitle: 'Créer votre compte',
+        signupSubtitle: 'Rejoignez 2 500+ professionnels qui construisent leur carrière sur Khedma.',
+        noAccount: 'Pas encore de compte ?',
+        hasAccount: 'Déjà un compte ?',
         invalidCredentials: 'Email ou mot de passe incorrect',
         emailExists: 'Cet email est déjà enregistré',
         passwordMismatch: 'Les mots de passe ne correspondent pas',
         passwordMinLength: 'Le mot de passe doit contenir au moins 6 caractères',
         invalidEmail: 'Entrez une adresse email valide',
         emailNotConfirmed: 'Email non confirmé',
-        login: 'Connexion',
-        signup: 'Inscription',
+        login: 'Se connecter',
+        signup: 'Créer un compte',
         signOut: 'Déconnexion',
         googleLogin: 'Continuer avec Google',
         googleLoginError: 'Échec de la connexion Google',
         forgotPassword: 'Mot de passe oublié ?',
         or: 'ou',
         loggingOut: 'Déconnexion en cours...',
+        userTypeFreelancerDesc: "J'offre des compétences et veux être payé pour mon travail",
+        userTypeClientDesc: "J'ai des projets et besoin de professionnels fiables",
+        userTypeBothDesc: 'Je fais les deux — je travaille et je recrute',
     },
     jobs: {
         title: 'Offres disponibles',
@@ -702,13 +726,13 @@ export const fr: Translations = {
     onboarding: {
         client: {
             welcome: 'Bienvenue',
-            welcomeDesc: 'Complétons votre profil pour commencer à recruter',
-            profileTitle: 'Profil',
-            profileDesc: 'Informations de base',
+            welcomeDesc: 'Finalisez votre profil client pour publier vos projets avec confiance.',
+            profileTitle: 'Profil client',
+            profileDesc: 'Les informations de base que les freelances verront en premier.',
         },
         freelancer: {
             welcome: 'Bienvenue',
-            welcomeDesc: 'Complétez votre profil pour commencer à travailler',
+            welcomeDesc: 'Complétez votre profil freelance et commencez à recevoir de vraies opportunités.',
             steps: {
                 skills: 'Compétences',
                 bio: 'Bio',
@@ -716,7 +740,7 @@ export const fr: Translations = {
                 portfolio: 'Portfolio',
             },
             uploadAvatar: 'Photo de profil',
-            uploadAvatarDesc: 'Photo professionnelle recommandée',
+            uploadAvatarDesc: 'Une photo professionnelle est recommandée',
         }
     },
 
@@ -726,36 +750,58 @@ export const fr: Translations = {
         terms: 'Conditions',
         privacy: 'Confidentialité',
         contact: 'Contact',
-        copyright: '© 2026 Khedma.tn - Tous droits réservés',
+        quickLinks: 'Liens rapides',
+        legal: 'Légal',
+        description: 'Pensé pour les professionnels tunisiens, avec identités vérifiées, paiements protégés par escrow et projets payés en TND.',
+        city: 'Tunis, Tunisie',
+        newsletterTitle: 'Nouveautés produit',
+        newsletterPlaceholder: 'Votre adresse e-mail',
+        newsletterAction: 'S’abonner',
+        madeInTunisia: 'Conçu en Tunisie.',
+        copyright: '(c) 2026 Khedma.tn - Tous droits réservés',
     },
 
     findFreelancers: {
         searchPlaceholder: 'Rechercher des freelances...',
-        availableNow: 'Disponible immédiatement',
+        availableNow: 'Disponible maintenant',
+        availableNowDesc: 'Disponible pour commencer immédiatement',
         category: 'Catégorie',
         skills: 'Compétences',
         hourlyRate: 'Taux horaire (TND)',
         clearFilters: 'Effacer tous les filtres',
+        verifiedOnly: 'Identité vérifiée uniquement',
+        verifiedOnlyDesc: 'Les mieux notés (4.5+)',
         hero: {
-            badge: 'Top Talents Tunisiens',
-            title: 'Découvrez',
-            titleHighlight: 'Les Meilleurs Talents',
-            subtitle: 'Parcourez des milliers de créatifs prêts à travailler sur votre prochain projet.',
-            subtitleDesktop: ' Recherchez par compétence, prix ou évaluation.',
+            badge: 'Professionnels tunisiens vérifiés',
+            title: 'Trouvez la bonne personne,',
+            titleHighlight: "pas n'importe qui.",
+            subtitle: '2 500+ développeurs, designers, traducteurs et consultants tunisiens — vérifiés, notés et disponibles.',
+            subtitleDesktop: '',
+        },
+        heroStats: {
+            talentPool: 'Profils vérifiés',
+            verified: 'Identité contrôlée',
+            fastReplies: 'Note moyenne',
         },
         filterToggle: 'Filtrer les résultats',
         filterTitle: 'Filtrer la recherche',
         clearAll: 'Tout effacer',
         resultsCount: 'Afficher {{count}} résultats',
+        activeFilters: 'actifs',
         sort: {
             label: 'Trier par :',
             recommended: 'Recommandé',
             rating: 'Mieux notés',
             priceLow: 'Prix croissant',
         },
+        resultStats: {
+            availableNow: 'Disponibles maintenant',
+            averageRate: 'Tarif moyen',
+            topRating: 'Meilleure note',
+        },
         noResults: {
             title: 'Aucun résultat correspondant',
-            description: 'Nous n\'avons trouvé aucun freelance correspondant à vos critères. Essayez de modifier les termes de recherche ou d\'assouplir les filtres.',
+            description: "Nous n'avons trouvé aucun freelance correspondant à vos critères. Essayez de modifier les termes de recherche ou d'assouplir les filtres.",
             action: 'Effacer tous les filtres'
         }
     }

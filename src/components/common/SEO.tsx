@@ -1,4 +1,5 @@
 import { Helmet } from 'react-helmet-async';
+
 import { useTranslation } from '../../i18n';
 import type { Language } from '../../types';
 
@@ -16,10 +17,12 @@ interface SEOProps {
     noIndex?: boolean;
 }
 
+type SEOConfigEntry = Pick<SEOProps, 'title' | 'description' | 'keywords' | 'image' | 'type'>;
+
 const SITE_NAME: Record<Language, string> = {
-    ar: 'خدمة',
-    en: 'Khedma',
-    fr: 'Khedma',
+    ar: 'خدمة TN',
+    en: 'Khedma TN',
+    fr: 'Khedma TN',
 };
 
 const OG_LOCALE: Record<Language, string> = {
@@ -31,72 +34,11 @@ const OG_LOCALE: Record<Language, string> = {
 const DEFAULT_IMAGE = '/logos/logo-og.svg';
 const SITE_URL = 'https://khedma-tn.vercel.app';
 
-const STRING_REPLACEMENTS: Record<string, Partial<Record<Language, string>>> = {
-    'إكمال حساب المستقل': { en: 'Complete Freelancer Setup', fr: 'Finaliser le profil freelance' },
-    'أكمل ملفك كمستقل وابدأ استقبال فرص العمل على خدمة': {
-        en: 'Complete your freelancer profile and start receiving job opportunities on Khedma',
-        fr: 'Finalisez votre profil freelance et commencez à recevoir des opportunités sur Khedma',
-    },
-    'إكمال حساب العميل': { en: 'Complete Client Setup', fr: 'Finaliser le profil client' },
-    'أكمل حسابك كعميل وابدأ نشر مشاريعك على خدمة': {
-        en: 'Complete your client account and start posting projects on Khedma',
-        fr: 'Finalisez votre compte client et commencez à publier vos projets sur Khedma',
-    },
-    'لوحة تحكم المستقل': { en: 'Freelancer Dashboard', fr: 'Tableau de bord freelance' },
-    'تابع مشاريعك ورسائلك وأرباحك من لوحة تحكم المستقل على خدمة': {
-        en: 'Track your projects, messages, and earnings from your freelancer dashboard on Khedma',
-        fr: 'Suivez vos projets, vos messages et vos revenus depuis votre tableau de bord freelance sur Khedma',
-    },
-    'لوحة تحكم العميل': { en: 'Client Dashboard', fr: 'Tableau de bord client' },
-    'إدارة مشاريعك وعروض المستقلين من لوحة تحكم العميل على خدمة': {
-        en: 'Manage your projects and freelancer offers from your client dashboard on Khedma',
-        fr: 'Gérez vos projets et les offres des freelances depuis votre tableau de bord client sur Khedma',
-    },
-    'التحقق من الهوية': { en: 'Identity Verification', fr: 'Vérification d’identité' },
-    'قم بتوثيق هويتك لزيادة ثقة العملاء وفتح جميع ميزات المنصة': {
-        en: 'Verify your identity to build trust with clients and unlock all platform features',
-        fr: 'Vérifiez votre identité pour renforcer la confiance des clients et débloquer toutes les fonctionnalités',
-    },
-    'طلب التحقق قيد المراجعة': { en: 'Verification Request Under Review', fr: 'Demande de vérification en cours' },
-    'طلب التحقق من الهوية قيد المراجعة من قبل فريقنا': {
-        en: 'Your identity verification request is currently under review by our team',
-        fr: 'Votre demande de vérification d’identité est en cours de traitement par notre équipe',
-    },
-    'تم تقديم الطلب': { en: 'Request Submitted', fr: 'Demande envoyée' },
-    'تم استلام طلب التحقق من الهوية': {
-        en: 'Your identity verification request has been received',
-        fr: 'Votre demande de vérification d’identité a bien été reçue',
-    },
-    'تفاصيل المشروع': { en: 'Project Details', fr: 'Détails du projet' },
-    'اطلع على تفاصيل المشروع والميزانية والمتطلبات قبل التقديم.': {
-        en: 'Review the project details, budget, and requirements before applying.',
-        fr: 'Consultez les détails du projet, le budget et les exigences avant de postuler.',
-    },
-    'مساحة العمل': { en: 'Workspace', fr: 'Espace de travail' },
-    'تابع المحادثة والملفات وحالة الدفع الخاصة بالعقد من مساحة العمل.': {
-        en: 'Track messages, files, and payment status for the contract from your workspace.',
-        fr: 'Suivez les messages, les fichiers et le statut de paiement du contrat depuis votre espace de travail.',
-    },
-};
-
-const replaceLocalizedPhrases = (value: string, language: Language): string => {
-    if (language === 'ar') return value;
-
-    let localized = value;
-    for (const [arabic, translations] of Object.entries(STRING_REPLACEMENTS)) {
-        const replacement = translations[language];
-        if (replacement) {
-            localized = localized.replaceAll(arabic, replacement);
-        }
-    }
-
-    return localized;
-};
-
 const resolveLocalizedText = (value: LocalizedText | undefined, language: Language): string => {
     if (!value) return '';
-    if (typeof value === 'string') return replaceLocalizedPhrases(value, language);
-    return value[language] || value.ar || value.en || value.fr || '';
+    if (typeof value === 'string') return value;
+
+    return value[language] || value.en || value.fr || value.ar || '';
 };
 
 export default function SEO({
@@ -118,7 +60,11 @@ export default function SEO({
     const resolvedKeywords = resolveLocalizedText(keywords, language);
     const resolvedLocale = locale || OG_LOCALE[language];
 
-    const fullTitle = `Khedma TN — ${resolvedTitle || siteName}`;
+    const fullTitle =
+        resolvedTitle && resolvedTitle !== siteName && resolvedTitle !== 'Khedma TN'
+            ? `Khedma TN — ${resolvedTitle}`
+            : siteName;
+
     const fullImageUrl = image.startsWith('http') ? image : `${SITE_URL}${image}`;
     const canonicalUrl = url ? (url.startsWith('http') ? url : `${SITE_URL}${url}`) : undefined;
 
@@ -152,90 +98,90 @@ export default function SEO({
     );
 }
 
-export const SEO_CONFIG = {
+export const SEO_CONFIG: Record<string, SEOConfigEntry> = {
     home: {
         title: {
-            ar: 'Khedma TN',
+            ar: 'خدمة TN',
             en: 'Khedma TN',
             fr: 'Khedma TN',
         },
         description: {
-            ar: 'لا مزايدات ولا تعقيدات، فقط مهاراتك وأعمالك. خدمة تربط أصحاب المشاريع بالمستقلين المحترفين في تونس.',
-            en: 'No bidding, no complications, just your skills and your work. Khedma connects Tunisian businesses with professional freelancers.',
-            fr: 'Pas d’enchères ni de complications, juste vos compétences et votre travail. Khedma relie les entreprises tunisiennes aux freelances qualifiés.',
+            ar: 'منصة تونسية تربط بين المشاريع والمحترفين. بدون مزايدات، بدون وسطاء، ومدفوعات بالدينار التونسي محمية بالضمان.',
+            en: 'Tunisia’s freelance platform for verified professionals, escrow-protected payments, and projects paid in TND.',
+            fr: 'La plateforme freelance tunisienne pour des professionnels vérifiés, des paiements protégés par escrow et des projets payés en TND.',
         },
         keywords: {
-            ar: 'عمل حر, فريلانس, تونس, مستقلين, وظائف, خدمات, مشاريع',
-            en: 'freelance, Tunisia, jobs, freelancers, services, projects',
-            fr: 'freelance, Tunisie, missions, freelances, services, projets',
+            ar: 'عمل حر, تونس, مستقلون, مشاريع, وظائف, دينار تونسي, ضمان',
+            en: 'freelance Tunisia, Tunisian freelancers, TND payments, escrow, projects, talent marketplace',
+            fr: 'freelance Tunisie, freelances tunisiens, paiements TND, escrow, projets, talents',
         },
     },
     jobs: {
         title: {
-            ar: 'تصفح وظائف العمل الحر',
-            en: 'Browse Freelance Jobs',
-            fr: 'Parcourir les missions freelance',
+            ar: 'وظائف ومشاريع مستقلة',
+            en: 'Freelance Jobs',
+            fr: 'Missions freelance',
         },
         description: {
-            ar: 'اكتشف فرص العمل الحر في تونس وابحث عن مشاريع تناسب مهاراتك.',
-            en: 'Discover freelance opportunities in Tunisia and find projects that match your skills.',
-            fr: 'Découvrez des missions freelance en Tunisie et trouvez des projets adaptés à vos compétences.',
+            ar: 'استكشف مشاريع جديدة في تونس وابحث عن فرص تناسب مهاراتك وسعرك وخبرتك.',
+            en: 'Browse freelance jobs in Tunisia and find projects that match your skills, rate, and availability.',
+            fr: 'Parcourez les missions freelance en Tunisie et trouvez des projets adaptés à vos compétences, votre tarif et votre disponibilité.',
         },
         keywords: {
-            ar: 'وظائف, عمل حر, مشاريع, فرص عمل, تونس',
-            en: 'jobs, freelance, projects, Tunisia',
-            fr: 'missions, freelance, projets, Tunisie',
+            ar: 'وظائف, مشاريع, عمل حر, تونس',
+            en: 'freelance jobs, Tunisia jobs, projects, remote work',
+            fr: 'missions freelance, projets, Tunisie, travail indépendant',
         },
     },
     findFreelancers: {
         title: {
-            ar: 'ابحث عن مستقلين موهوبين',
-            en: 'Find Skilled Freelancers',
-            fr: 'Trouver des freelances qualifiés',
+            ar: 'اعثر على محترفين تونسيين موثوقين',
+            en: 'Find Verified Tunisian Professionals',
+            fr: 'Trouvez des professionnels tunisiens vérifiés',
         },
         description: {
-            ar: 'وظف أفضل المستقلين في تونس في التصميم والتطوير والكتابة والتسويق.',
-            en: 'Hire top Tunisian freelancers across design, development, writing, and marketing.',
-            fr: 'Recrutez les meilleurs freelances tunisiens en design, développement, rédaction et marketing.',
+            ar: 'أكثر من 2500 محترف تونسي موثق ومُقيَّم وجاهز للعمل عبر التصميم، التطوير، الترجمة والاستشارة.',
+            en: 'Find 2,500+ verified Tunisian developers, designers, translators, and consultants ready to start.',
+            fr: 'Trouvez 2 500+ développeurs, designers, traducteurs et consultants tunisiens vérifiés, notés et disponibles.',
         },
         keywords: {
-            ar: 'مستقلين, محترفين, توظيف, فريلانسر, تونس',
-            en: 'freelancers, hiring, Tunisia',
-            fr: 'freelances, recrutement, Tunisie',
+            ar: 'مستقلون, توظيف, تونس, محترفون, موثوقون',
+            en: 'hire freelancers Tunisia, verified professionals, Tunisian talent',
+            fr: 'recruter freelances Tunisie, talents vérifiés, professionnels tunisiens',
         },
     },
     howItWorks: {
         title: {
-            ar: 'كيف تعمل المنصة',
+            ar: 'كيف تعمل خدمة',
             en: 'How Khedma Works',
-            fr: 'Comment Khedma fonctionne',
+            fr: 'Comment fonctionne Khedma',
         },
         description: {
-            ar: 'تعرف على كيفية استخدام خدمة للعثور على مشاريع أو توظيف مستقلين بخطوات بسيطة.',
-            en: 'Learn how to use Khedma to find projects or hire freelancers with a simple workflow.',
-            fr: 'Découvrez comment utiliser Khedma pour trouver des missions ou recruter des freelances avec un parcours simple.',
+            ar: 'أربع خطوات من فكرة المشروع إلى استلام الدفع، مع ضمان، تحقق هوية، وتتبع واضح لكل دينار.',
+            en: 'See how Khedma takes you from project idea to approved payment in four protected steps.',
+            fr: 'Découvrez comment Khedma vous fait passer de l’idée au paiement validé en quatre étapes protégées.',
         },
         keywords: {
-            ar: 'كيف تعمل, دليل الاستخدام, البدء, خدمة',
-            en: 'how it works, guide, getting started',
-            fr: 'fonctionnement, guide, démarrer',
+            ar: 'كيف يعمل, منصة عمل حر, ضمان, تحقق هوية',
+            en: 'how it works, escrow, verified freelancers, freelance platform',
+            fr: 'fonctionnement, escrow, freelances vérifiés, plateforme freelance',
         },
     },
     forClients: {
         title: {
             ar: 'للعملاء وأصحاب المشاريع',
-            en: 'For Clients & Project Owners',
-            fr: 'Pour les clients et porteurs de projet',
+            en: 'Hire Verified Tunisian Talent',
+            fr: 'Recrutez des talents tunisiens vérifiés',
         },
         description: {
-            ar: 'انشر مشروعك واحصل على عروض من مستقلين محترفين في تونس.',
-            en: 'Post your project and receive offers from vetted Tunisian professionals.',
-            fr: 'Publiez votre projet et recevez des offres de professionnels tunisiens qualifiés.',
+            ar: 'انشر مشروعك مجاناً، استقبل عروضاً من محترفين موثقين، وادفع فقط عند الموافقة مع حماية كاملة بالضمان.',
+            en: 'Post your project for free, receive proposals from verified professionals, and pay only when work is approved.',
+            fr: 'Publiez gratuitement, recevez des propositions de professionnels vérifiés et payez uniquement à la validation.',
         },
         keywords: {
-            ar: 'أصحاب مشاريع, عملاء, توظيف, مستقلين',
-            en: 'clients, hiring, projects',
-            fr: 'clients, recrutement, projets',
+            ar: 'عملاء, مشاريع, توظيف, تونس, ضمان',
+            en: 'hire Tunisian freelancers, client marketplace, escrow payments, post a project',
+            fr: 'recruter freelances tunisiens, publier un projet, escrow, clients',
         },
     },
     faq: {
@@ -245,12 +191,12 @@ export const SEO_CONFIG = {
             fr: 'Questions fréquentes',
         },
         description: {
-            ar: 'إجابات على أكثر الأسئلة شيوعاً حول خدمة والعمل الحر في تونس.',
-            en: 'Answers to the most common questions about Khedma and freelance work in Tunisia.',
-            fr: 'Réponses aux questions les plus fréquentes sur Khedma et le freelance en Tunisie.',
+            ar: 'إجابات واضحة حول طريقة العمل، الدفع، الضمان، والهوية على خدمة.',
+            en: 'Find answers about payments, escrow, identity verification, and how Khedma works.',
+            fr: 'Retrouvez des réponses sur les paiements, l’escrow, la vérification d’identité et le fonctionnement de Khedma.',
         },
         keywords: {
-            ar: 'أسئلة شائعة, مساعدة, دعم',
+            ar: 'أسئلة شائعة, دعم, مساعدة',
             en: 'faq, help, support',
             fr: 'faq, aide, support',
         },
@@ -262,7 +208,7 @@ export const SEO_CONFIG = {
             fr: 'Conditions d’utilisation',
         },
         description: {
-            ar: 'اقرأ شروط وأحكام استخدام منصة خدمة.',
+            ar: 'اطلع على شروط وأحكام استخدام منصة خدمة.',
             en: 'Read the terms and conditions for using the Khedma platform.',
             fr: 'Consultez les conditions d’utilisation de la plateforme Khedma.',
         },
@@ -279,9 +225,9 @@ export const SEO_CONFIG = {
             fr: 'Politique de confidentialité',
         },
         description: {
-            ar: 'تعرف على كيفية حماية بياناتك وخصوصيتك على منصة خدمة.',
-            en: 'Learn how your data and privacy are protected on Khedma.',
-            fr: 'Découvrez comment vos données et votre vie privée sont protégées sur Khedma.',
+            ar: 'تعرّف على كيفية حماية بياناتك وخصوصيتك على خدمة.',
+            en: 'Learn how Khedma protects your data and privacy.',
+            fr: 'Découvrez comment Khedma protège vos données et votre vie privée.',
         },
         keywords: {
             ar: 'خصوصية, حماية البيانات, أمان',
@@ -291,36 +237,36 @@ export const SEO_CONFIG = {
     },
     login: {
         title: {
-            ar: 'تسجيل الدخول',
-            en: 'Login',
-            fr: 'Connexion',
+            ar: 'سجّل الدخول إلى خدمة',
+            en: 'Sign in to Khedma',
+            fr: 'Connectez-vous à Khedma',
         },
         description: {
-            ar: 'سجل دخولك إلى حسابك على خدمة للوصول إلى مشاريعك ورسائلك.',
-            en: 'Sign in to your Khedma account to access your projects and messages.',
-            fr: 'Connectez-vous à votre compte Khedma pour accéder à vos projets et messages.',
+            ar: 'عد إلى حسابك على خدمة وتابع مشاريعك ورسائلك ومدفوعاتك.',
+            en: 'Sign in to your Khedma account to manage projects, messages, and payments.',
+            fr: 'Connectez-vous à votre compte Khedma pour gérer vos projets, messages et paiements.',
         },
         keywords: {
-            ar: 'تسجيل دخول, حساب',
-            en: 'login, account',
-            fr: 'connexion, compte',
+            ar: 'تسجيل الدخول, حساب, خدمة',
+            en: 'sign in, account, Khedma login',
+            fr: 'connexion, compte, Khedma',
         },
     },
     signup: {
         title: {
-            ar: 'إنشاء حساب جديد',
-            en: 'Create an Account',
-            fr: 'Créer un compte',
+            ar: 'أنشئ حسابك على خدمة',
+            en: 'Create your Khedma account',
+            fr: 'Créez votre compte Khedma',
         },
         description: {
-            ar: 'انضم إلى خدمة اليوم وابدأ رحلتك في العمل الحر أو التوظيف.',
-            en: 'Join Khedma today to start freelancing or hire top independent talent.',
-            fr: 'Rejoignez Khedma pour lancer votre activité freelance ou recruter des talents indépendants.',
+            ar: 'انضم إلى أكثر من 2500 محترف يبنون مسيرتهم ويُديرون مشاريعهم على خدمة.',
+            en: 'Create your account and join 2,500+ professionals building their career on Khedma.',
+            fr: 'Créez votre compte et rejoignez 2 500+ professionnels qui développent leur carrière sur Khedma.',
         },
         keywords: {
-            ar: 'تسجيل, حساب جديد, انضمام',
-            en: 'signup, new account, join',
-            fr: 'inscription, nouveau compte, rejoindre',
+            ar: 'إنشاء حساب, تسجيل, مستقل, عميل',
+            en: 'create account, signup, freelance marketplace, client account',
+            fr: 'créer un compte, inscription, freelance, client',
         },
     },
     dashboard: {
@@ -330,14 +276,14 @@ export const SEO_CONFIG = {
             fr: 'Tableau de bord',
         },
         description: {
-            ar: 'إدارة مشاريعك وعروضك ورسائلك من لوحة التحكم الخاصة بك.',
-            en: 'Manage your projects, offers, and messages from your dashboard.',
-            fr: 'Gérez vos projets, vos offres et vos messages depuis votre tableau de bord.',
+            ar: 'تابع مشاريعك ورسائلك وأرباحك من لوحة التحكم الخاصة بك على خدمة.',
+            en: 'Track projects, messages, and earnings from your Khedma dashboard.',
+            fr: 'Suivez vos projets, messages et revenus depuis votre tableau de bord Khedma.',
         },
         keywords: {
-            ar: 'لوحة تحكم, إدارة',
-            en: 'dashboard, management',
-            fr: 'tableau de bord, gestion',
+            ar: 'لوحة تحكم, مشاريع, أرباح',
+            en: 'dashboard, earnings, projects',
+            fr: 'tableau de bord, revenus, projets',
         },
     },
     messages: {
@@ -347,9 +293,9 @@ export const SEO_CONFIG = {
             fr: 'Messages',
         },
         description: {
-            ar: 'تواصل بأمان مع العملاء والمستقلين عبر نظام الرسائل.',
+            ar: 'تواصل بأمان مع العملاء والمستقلين عبر رسائل خدمة.',
             en: 'Chat securely with clients and freelancers through Khedma messaging.',
-            fr: 'Échangez en toute sécurité avec les clients et freelances via la messagerie Khedma.',
+            fr: 'Échangez en toute sécurité avec clients et freelances via la messagerie Khedma.',
         },
         keywords: {
             ar: 'رسائل, تواصل, محادثات',
@@ -364,9 +310,9 @@ export const SEO_CONFIG = {
             fr: 'Paramètres',
         },
         description: {
-            ar: 'إدارة إعدادات حسابك والإشعارات والخصوصية.',
-            en: 'Manage your account settings, notifications, and privacy preferences.',
-            fr: 'Gérez les paramètres de votre compte, vos notifications et vos préférences de confidentialité.',
+            ar: 'أدر إعدادات الحساب والإشعارات والخصوصية من مكان واحد.',
+            en: 'Manage your account settings, notifications, and privacy from one place.',
+            fr: 'Gérez vos paramètres de compte, notifications et préférences de confidentialité depuis un seul endroit.',
         },
         keywords: {
             ar: 'إعدادات, حساب, تفضيلات',
@@ -374,38 +320,21 @@ export const SEO_CONFIG = {
             fr: 'paramètres, compte, préférences',
         },
     },
-    profile: {
+    search: {
         title: {
-            ar: 'الملف الشخصي',
-            en: 'Profile',
-            fr: 'Profil',
+            ar: 'نتائج البحث',
+            en: 'Search Results',
+            fr: 'Résultats de recherche',
         },
         description: {
-            ar: 'عرض وتعديل ملفك الشخصي على خدمة.',
-            en: 'View and edit your Khedma profile.',
-            fr: 'Consultez et modifiez votre profil Khedma.',
+            ar: 'استعرض نتائج البحث عبر الوظائف والمستقلين والمحتوى على خدمة.',
+            en: 'Browse search results across jobs, freelancers, and content on Khedma.',
+            fr: 'Parcourez les résultats de recherche parmi les missions, freelances et contenus sur Khedma.',
         },
         keywords: {
-            ar: 'ملف شخصي, حساب',
-            en: 'profile, account',
-            fr: 'profil, compte',
-        },
-    },
-    postJob: {
-        title: {
-            ar: 'نشر مشروع جديد',
-            en: 'Post a New Project',
-            fr: 'Publier un nouveau projet',
-        },
-        description: {
-            ar: 'انشر مشروعك واحصل على عروض من أفضل المستقلين في تونس.',
-            en: 'Publish your project and receive offers from top freelancers in Tunisia.',
-            fr: 'Publiez votre projet et recevez des offres des meilleurs freelances en Tunisie.',
-        },
-        keywords: {
-            ar: 'نشر مشروع, توظيف, عرض عمل',
-            en: 'post project, hiring, job post',
-            fr: 'publier projet, recrutement, mission',
+            ar: 'بحث, نتائج',
+            en: 'search, results',
+            fr: 'recherche, résultats',
         },
     },
     freelancerOnboarding: {
@@ -416,13 +345,13 @@ export const SEO_CONFIG = {
         },
         description: {
             ar: 'أكمل ملفك كمستقل وابدأ استقبال فرص العمل على خدمة.',
-            en: 'Complete your freelancer profile and start receiving job opportunities on Khedma.',
-            fr: 'Finalisez votre profil freelance et commencez à recevoir des opportunités sur Khedma.',
+            en: 'Complete your freelancer profile and start getting matched to real work on Khedma.',
+            fr: 'Finalisez votre profil freelance et commencez à recevoir de vraies opportunités sur Khedma.',
         },
         keywords: {
-            ar: 'انضمام, مستقل, فريلانسر',
-            en: 'freelancer onboarding, setup, profile',
-            fr: 'onboarding freelance, configuration, profil',
+            ar: 'مستقل, ملف شخصي, إعداد',
+            en: 'freelancer onboarding, profile setup',
+            fr: 'onboarding freelance, configuration du profil',
         },
     },
     clientOnboarding: {
@@ -437,77 +366,9 @@ export const SEO_CONFIG = {
             fr: 'Finalisez votre compte client et commencez à publier vos projets sur Khedma.',
         },
         keywords: {
-            ar: 'انضمام, عميل, صاحب مشروع',
-            en: 'client onboarding, setup, projects',
-            fr: 'onboarding client, configuration, projets',
+            ar: 'عميل, مشروع, إعداد حساب',
+            en: 'client onboarding, project setup',
+            fr: 'onboarding client, configuration projet',
         },
     },
-    earnings: {
-        title: {
-            ar: 'الأرباح',
-            en: 'Earnings',
-            fr: 'Revenus',
-        },
-        description: {
-            ar: 'تتبع أرباحك ومدفوعاتك على منصة خدمة.',
-            en: 'Track your earnings and payouts on Khedma.',
-            fr: 'Suivez vos revenus et vos paiements sur Khedma.',
-        },
-        keywords: {
-            ar: 'أرباح, مدفوعات, مالية',
-            en: 'earnings, payouts, finance',
-            fr: 'revenus, paiements, finance',
-        },
-    },
-    portfolio: {
-        title: {
-            ar: 'معرض الأعمال',
-            en: 'Portfolio',
-            fr: 'Portfolio',
-        },
-        description: {
-            ar: 'اعرض أعمالك السابقة أمام العملاء المحتملين.',
-            en: 'Showcase your past work to potential clients.',
-            fr: 'Présentez vos réalisations aux clients potentiels.',
-        },
-        keywords: {
-            ar: 'معرض أعمال, بورتفوليو, نماذج',
-            en: 'portfolio, work samples, showcase',
-            fr: 'portfolio, réalisations, vitrine',
-        },
-    },
-    contracts: {
-        title: {
-            ar: 'العقود',
-            en: 'Contracts',
-            fr: 'Contrats',
-        },
-        description: {
-            ar: 'إدارة عقودك النشطة والمكتملة.',
-            en: 'Manage your active and completed contracts.',
-            fr: 'Gérez vos contrats actifs et terminés.',
-        },
-        keywords: {
-            ar: 'عقود, مشاريع, اتفاقيات',
-            en: 'contracts, agreements, projects',
-            fr: 'contrats, accords, projets',
-        },
-    },
-    search: {
-        title: {
-            ar: 'نتائج البحث',
-            en: 'Search Results',
-            fr: 'Résultats de recherche',
-        },
-        description: {
-            ar: 'نتائج البحث عبر الوظائف والمستقلين والمحتوى على خدمة.',
-            en: 'Search results across jobs, freelancers, and content on Khedma.',
-            fr: 'Résultats de recherche parmi les missions, freelances et contenus sur Khedma.',
-        },
-        keywords: {
-            ar: 'بحث, نتائج',
-            en: 'search, results',
-            fr: 'recherche, résultats',
-        },
-    },
-} as const;
+};

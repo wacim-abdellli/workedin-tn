@@ -15,7 +15,7 @@ import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import Select from '../components/ui/Select';
 import { Header } from '../components/layout';
-import SEO from '../components/common/SEO';
+import SEO, { SEO_CONFIG } from '../components/common/SEO';
 
 function ClientOnboarding() {
     const { t } = useTranslation();
@@ -91,7 +91,7 @@ function ClientOnboarding() {
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-dark-900 overflow-hidden relative transition-colors duration-300">
-            <SEO title="إكمال حساب العميل" description="أكمل حسابك كعميل وابدأ نشر مشاريعك على خدمة" noIndex />
+            <SEO {...SEO_CONFIG.clientOnboarding} url="/onboarding/client" noIndex />
             {/* Background Ambience */}
             <div className="absolute inset-0 pointer-events-none">
                 <div className="absolute top-0 start-0 w-[500px] h-[500px] bg-secondary-500/5 rounded-full blur-[100px]" />

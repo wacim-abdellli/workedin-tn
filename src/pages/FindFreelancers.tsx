@@ -252,7 +252,7 @@ export default function FindFreelancers() {
                 <label className="flex cursor-pointer items-center justify-between gap-4">
                     <div>
                         <div className="font-semibold text-[#191627] dark:text-white">{copy.availableNow}</div>
-                        <div className="mt-1 text-sm text-[#6e6884] dark:text-[#9a95ad]">Only show talent ready to start now</div>
+                        <div className="mt-1 text-sm text-[#6e6884] dark:text-[#9a95ad]">{copy.availableNowDesc}</div>
                     </div>
                     <div className={`flex h-7 w-12 items-center rounded-full p-1 transition-colors ${availableOnly ? 'bg-emerald-500' : 'bg-gray-300 dark:bg-white/10'}`}>
                         <div className={`h-5 w-5 rounded-full bg-white shadow transition-transform ${availableOnly ? 'translate-x-5' : ''}`} />
@@ -359,8 +359,8 @@ export default function FindFreelancers() {
             <div className="rounded-3xl border border-blue-200/60 bg-gradient-to-br from-blue-50 to-white p-4 shadow-sm dark:border-blue-500/10 dark:bg-[linear-gradient(135deg,rgba(59,130,246,0.12),rgba(255,255,255,0.03))]">
                 <label className="flex cursor-pointer items-center justify-between gap-4">
                     <div>
-                        <div className="font-semibold text-[#191627] dark:text-white">Verified only</div>
-                        <div className="mt-1 text-sm text-[#6e6884] dark:text-[#9a95ad]">Show profiles with stronger trust signals</div>
+                        <div className="font-semibold text-[#191627] dark:text-white">{copy.verifiedOnly}</div>
+                        <div className="mt-1 text-sm text-[#6e6884] dark:text-[#9a95ad]">{copy.verifiedOnlyDesc}</div>
                     </div>
                     <div className={`flex h-7 w-12 items-center rounded-full p-1 transition-colors ${verifiedOnly ? 'bg-blue-500' : 'bg-gray-300 dark:bg-white/10'}`}>
                         <div className={`h-5 w-5 rounded-full bg-white shadow transition-transform ${verifiedOnly ? 'translate-x-5' : ''}`} />
@@ -406,15 +406,15 @@ export default function FindFreelancers() {
                             </p>
                             <div className="mt-6 grid gap-3 sm:grid-cols-3">
                                 <div className="glass-card rounded-[24px] px-4 py-4">
-                                    <div className="text-xs uppercase tracking-[0.18em] text-[#7a7590] dark:text-[#918ba8]">Talent pool</div>
+                                    <div className="text-xs uppercase tracking-[0.18em] text-[#7a7590] dark:text-[#918ba8]">{copy.heroStats.talentPool}</div>
                                     <div className="mt-2 text-2xl font-bold">{MOCK_FREELANCERS.length.toLocaleString()}+</div>
                                 </div>
                                 <div className="glass-card rounded-[24px] px-4 py-4">
-                                    <div className="text-xs uppercase tracking-[0.18em] text-[#7a7590] dark:text-[#918ba8]">Verified</div>
+                                    <div className="text-xs uppercase tracking-[0.18em] text-[#7a7590] dark:text-[#918ba8]">{copy.heroStats.verified}</div>
                                     <div className="mt-2 text-2xl font-bold">{MOCK_FREELANCERS.filter((freelancer) => freelancer.is_verified).length}</div>
                                 </div>
                                 <div className="glass-card rounded-[24px] px-4 py-4">
-                                    <div className="text-xs uppercase tracking-[0.18em] text-[#7a7590] dark:text-[#918ba8]">Fast replies</div>
+                                    <div className="text-xs uppercase tracking-[0.18em] text-[#7a7590] dark:text-[#918ba8]">{copy.heroStats.fastReplies}</div>
                                     <div className="mt-2 text-2xl font-bold">4.9/5</div>
                                 </div>
                             </div>
@@ -476,7 +476,7 @@ export default function FindFreelancers() {
                                 <span>{copy.resultsCount.replace('{{count}}', filteredFreelancers.length.toString())}</span>
                                 {activeFilterCount > 0 ? (
                                     <span className="rounded-full border border-primary-200/70 bg-primary-50 px-3 py-1 text-xs font-semibold text-primary-700 dark:border-primary-500/20 dark:bg-primary-500/10 dark:text-primary-300">
-                                        {activeFilterCount} active
+                                        {activeFilterCount} {copy.activeFilters}
                                     </span>
                                 ) : null}
                             </div>
@@ -498,17 +498,17 @@ export default function FindFreelancers() {
                         {!isLoading && filteredFreelancers.length > 0 ? (
                             <div className="mb-6 grid gap-3 sm:grid-cols-3">
                                 <div className="rounded-[24px] border border-white/70 bg-white/80 px-4 py-4 shadow-sm backdrop-blur dark:border-white/8 dark:bg-white/5">
-                                    <div className="text-xs uppercase tracking-[0.18em] text-[#7a7590] dark:text-[#918ba8]">Available now</div>
+                                    <div className="text-xs uppercase tracking-[0.18em] text-[#7a7590] dark:text-[#918ba8]">{copy.resultStats.availableNow}</div>
                                     <div className="mt-2 text-2xl font-bold">
                                         {filteredFreelancers.filter((freelancer) => freelancer.is_available).length}
                                     </div>
                                 </div>
                                 <div className="rounded-[24px] border border-white/70 bg-white/80 px-4 py-4 shadow-sm backdrop-blur dark:border-white/8 dark:bg-white/5">
-                                    <div className="text-xs uppercase tracking-[0.18em] text-[#7a7590] dark:text-[#918ba8]">Avg. rate</div>
+                                    <div className="text-xs uppercase tracking-[0.18em] text-[#7a7590] dark:text-[#918ba8]">{copy.resultStats.averageRate}</div>
                                     <div className="mt-2 text-2xl font-bold">{averageRate} TND</div>
                                 </div>
                                 <div className="rounded-[24px] border border-white/70 bg-white/80 px-4 py-4 shadow-sm backdrop-blur dark:border-white/8 dark:bg-white/5">
-                                    <div className="text-xs uppercase tracking-[0.18em] text-[#7a7590] dark:text-[#918ba8]">Top rating</div>
+                                    <div className="text-xs uppercase tracking-[0.18em] text-[#7a7590] dark:text-[#918ba8]">{copy.resultStats.topRating}</div>
                                     <div className="mt-2 text-2xl font-bold">{topRating}</div>
                                 </div>
                             </div>
