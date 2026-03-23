@@ -11,15 +11,18 @@ import { supabase, uploadFile } from '../lib/supabase';
 import type { Skill } from '../types';
 import { skillToEntry } from '../types';
 import { Header } from '../components/layout';
-
-// Step Components
 import OnboardingStep1 from '../components/onboarding/OnboardingStep1';
 import OnboardingStep2 from '../components/onboarding/OnboardingStep2';
-import { step1Schema, type Step1FormData, step2Schema, type Step2FormData } from '../components/onboarding/schemas';
+import {
+    step1Schema,
+    type Step1FormData,
+    step2Schema,
+    type Step2FormData,
+} from '../components/onboarding/schemas';
 
 function FreelancerOnboarding() {
     const { t, language } = useTranslation();
-    const { user, session, updateProfile, updateFreelancerProfile, refreshProfile } = useAuth();
+    const { user, updateProfile, updateFreelancerProfile, refreshProfile } = useAuth();
     const { showToast } = useToast();
     const navigate = useNavigate();
 
@@ -38,44 +41,41 @@ function FreelancerOnboarding() {
         defaultValues: {
             hourly_rate: '',
             availability: 'available',
-        }
+        },
     });
 
-    // SIMPLIFIED: Only 2 steps now!
     const totalSteps = 2;
 
-    // Helper: Get skill name
     const getSkillName = (skill: Skill) => {
         switch (language) {
-            case 'fr': return skill.name_fr;
-            case 'en': return skill.name_en;
-            default: return skill.name_ar;
+            case 'fr':
+                return skill.name_fr;
+            case 'en':
+                return skill.name_en;
+            default:
+                return skill.name_ar;
         }
     };
 
-    // Helper: Handle avatar
     const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
-        if (file) {
-            // Validate file type
-            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
-            if (!allowedTypes.includes(file.type)) {
-                showToast(t.common.invalidFileType, 'error');
-                return;
-            }
+        if (!file) return;
 
-            // Validate file size (max 5MB)
-            if (file.size > 5 * 1024 * 1024) {
-                showToast(t.common.fileTooLarge, 'error');
-                return;
-            }
-
-            setAvatarFile(file);
-            setAvatarPreview(URL.createObjectURL(file));
+        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
+        if (!allowedTypes.includes(file.type)) {
+            showToast(t.common.invalidFileType, 'error');
+            return;
         }
+
+        if (file.size > 5 * 1024 * 1024) {
+            showToast(t.common.fileTooLarge, 'error');
+            return;
+        }
+
+        setAvatarFile(file);
+        setAvatarPreview(URL.createObjectURL(file));
     };
 
-    // Helper: Toggle skill
     const toggleSkill = (skill: Skill) => {
         if (selectedSkills.find((s) => s.id === skill.id)) {
             setSelectedSkills(selectedSkills.filter((s) => s.id !== skill.id));
@@ -86,174 +86,95 @@ function FreelancerOnboarding() {
         }
     };
 
-    // Helper: Remove avatar
     const removeAvatar = () => {
         setAvatarFile(null);
         if (avatarPreview) URL.revokeObjectURL(avatarPreview);
         setAvatarPreview(null);
     };
 
-    // STEP 1: Personal Info (name, title, location, avatar)
     const onStep1Submit = async (data: Step1FormData) => {
+        if (!user) {
+            showToast(t.common.error, 'error');
+            return;
+        }
+
         setIsLoading(true);
 
         try {
-            // Build profile data
-            const profileData: Record<string, unknown> = {
-                id: user!.id,
+            const profileUpdate: {
+                full_name: string;
+                location: string;
+                user_type: 'freelancer';
+                avatar_url?: string;
+            } = {
                 full_name: data.full_name,
                 location: data.location,
                 user_type: 'freelancer',
-                updated_at: new Date().toISOString()
             };
 
-            // Upload avatar if selected (with timeout)
             if (avatarFile) {
                 try {
                     const fileExt = avatarFile.name.split('.').pop();
-                    const filePath = `${user!.id}/avatar-${Date.now()}.${fileExt}`;
+                    const filePath = `${user.id}/avatar-${Date.now()}.${fileExt}`;
 
                     const avatarUrl = await Promise.race([
                         uploadFile('avatars', filePath, avatarFile),
                         new Promise<string>((_, reject) =>
                             setTimeout(() => reject(new Error('Avatar upload timeout')), 10000)
-                        )
+                        ),
                     ]);
 
-                    if (avatarUrl) {
-                        profileData.avatar_url = avatarUrl;
-                        logger.log('[Onboarding] Avatar uploaded:', avatarUrl);
-                    }
+                    profileUpdate.avatar_url = avatarUrl;
+                    logger.log('[Onboarding] Avatar uploaded:', avatarUrl);
                 } catch (avatarErr) {
                     logger.warn('[Onboarding] Avatar upload failed, continuing:', avatarErr);
-                    // Continue without avatar - not critical
                 }
             }
 
-            /* CONNECTION TEST REMOVED
-            logger.log('[Onboarding] Testing Supabase connection...');
-            const testStart = Date.now();
-            try {
-                const { data: testData, error: testError } = await Promise.race([
-                    supabase.from('profiles').select('id').eq('id', user!.id).limit(1),
-                    new Promise<{ data: null; error: { message: string } }>((resolve) =>
-                        setTimeout(() => resolve({ data: null, error: { message: 'CONNECTION_TEST_TIMEOUT' } }), 30000)
-                    )
-                ]);
-                const testDuration = Date.now() - testStart;
-                logger.log(`[Onboarding] Connection test completed in ${testDuration}ms`, { testData, testError });
-
-                if (testError?.message === 'CONNECTION_TEST_TIMEOUT') {
-                    throw new Error('لا يمكن الاتصال بقاعدة البيانات - الرجاء التحقق من اتصالك بالإنترنت');
-                }
-                if (testError) {
-                    logger.error('[Onboarding] Connection test error:', testError);
-                    throw new Error(`خطأ في الاتصال: ${testError.message}`);
-                }
-
-                // Check if row exists - for better debug info
-                if (testData && testData.length > 0) {
-                    logger.log('[Onboarding] Profile row exists, will UPDATE');
-                } else {
-                    logger.log('[Onboarding] Profile row does NOT exist, will INSERT');
-                }
-            } catch (connErr: any) {
-                logger.error('[Onboarding] Connection test FAILED:', connErr);
-                throw new Error(connErr.message || 'فشل الاتصال بالخادم');
-            }
-            CONNECTION TEST END */
-
-            // Try direct fetch to bypass Supabase client library
-            logger.log('[Onboarding] STEP 1: Starting profile save...');
-            const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-            const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-            const accessToken = session?.access_token || supabaseKey;
-            logger.log('[Onboarding] STEP 2: Using auth context session:', !!session);
-            logger.log('[Onboarding] STEP 3: Using direct fetch to Supabase REST API...');
-
-            const profileResponse = await Promise.race([
-                fetch(`${supabaseUrl}/rest/v1/profiles`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'apikey': supabaseKey,
-                        'Authorization': `Bearer ${accessToken}`,
-                        'Prefer': 'resolution=merge-duplicates,return=minimal'
-                    },
-                    body: JSON.stringify({
-                        id: user!.id,
-                        full_name: profileData.full_name,
-                        location: profileData.location,
-                        user_type: profileData.user_type,
-                        avatar_url: profileData.avatar_url,
-                        updated_at: profileData.updated_at
-                    })
-                }).then(async res => {
-                    if (!res.ok) {
-                        const text = await res.text();
-                        return { error: { message: text, code: res.status.toString() } };
-                    }
-                    return { error: null };
-                }),
-                new Promise<{ error: { message: string; code?: string } }>((resolve) =>
-                    setTimeout(() => resolve({ error: { message: 'انتهت مهلة الاتصال - يرجى المحاولة مرة أخرى', code: 'TIMEOUT' } }), 15000)
-                )
+            logger.log('[Onboarding] STEP 1: Updating profile...');
+            await Promise.race([
+                updateProfile(profileUpdate),
+                new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 15000)),
             ]);
+            logger.log('[Onboarding] Profile saved to Supabase!');
 
-            if (profileResponse.error) {
-                const errMsg = profileResponse.error.message;
-                logger.error('[Onboarding] ❌ Profile save FAILED:', profileResponse.error);
-
-                // Show actual error to user
-                if (errMsg.includes('TIMEOUT') || profileResponse.error.code === 'TIMEOUT') {
-                    throw new Error('فشل الاتصال بالخادم - يرجى التحقق من اتصالك بالإنترنت والمحاولة مرة أخرى');
-                } else if (errMsg.includes('violates')) {
-                    throw new Error('خطأ في البيانات - يرجى التأكد من صحة المعلومات');
-                } else {
-                    throw new Error(`فشل حفظ البيانات: ${errMsg}`);
-                }
-            }
-
-            logger.log('[Onboarding] ✅ Profile saved to Supabase!');
-
-            // Create freelancer profile entry (20s timeout)
             const freelancerData = {
-                id: user!.id,
+                id: user.id,
                 title: data.title,
-                updated_at: new Date().toISOString()
+                updated_at: new Date().toISOString(),
             };
 
             logger.log('[Onboarding] Saving freelancer profile...', freelancerData);
-
             const flResponse = await Promise.race([
                 supabase.from('freelancer_profiles').upsert(freelancerData, { onConflict: 'id' }),
                 new Promise<{ error: { message: string; code?: string } }>((resolve) =>
                     setTimeout(() => resolve({ error: { message: 'TIMEOUT', code: 'TIMEOUT' } }), 20000)
-                )
+                ),
             ]);
 
             if (flResponse.error) {
-                logger.error('[Onboarding] ❌ Freelancer profile save FAILED:', flResponse.error);
-                // This is not fatal - continue anyway but warn
+                logger.error('[Onboarding] Freelancer profile save FAILED:', flResponse.error);
                 showToast('تحذير: لم يتم حفظ بعض البيانات', 'warning');
             } else {
-                logger.log('[Onboarding] ✅ Freelancer profile saved!');
+                logger.log('[Onboarding] Freelancer profile saved!');
             }
 
-            // Move to step 2
             showToast('تم حفظ البيانات الأساسية', 'success');
             setStep(2);
         } catch (error) {
             logger.error('Step 1 error:', error);
-            const errorMessage = error instanceof Error ? error.message : t.common.error;
-            showToast(errorMessage, 'error');
+            const message =
+                error instanceof Error && error.message === 'TIMEOUT'
+                    ? 'فشل الاتصال بالخادم - يرجى التحقق من اتصالك بالإنترنت والمحاولة مرة أخرى'
+                    : error instanceof Error
+                        ? error.message
+                        : t.common.error;
+            showToast(message, 'error');
         } finally {
             setIsLoading(false);
         }
     };
 
-    // STEP 2: Skills & Availability - THEN COMPLETE ONBOARDING
     const onStep2Submit = async (data: Step2FormData) => {
         if (selectedSkills.length === 0) {
             showToast('يرجى اختيار مهارة واحدة على الأقل', 'warning');
@@ -265,52 +186,44 @@ function FreelancerOnboarding() {
             logger.log('[Onboarding] Step 2: Saving skills and completing onboarding...');
 
             const skillsData = {
-                skills: selectedSkills.map(s => skillToEntry(s)),
+                skills: selectedSkills.map((s) => skillToEntry(s)),
                 hourly_rate: data.hourly_rate ? parseFloat(data.hourly_rate) : undefined,
                 availability: data.availability as 'available' | 'busy' | 'offline',
             };
 
-            // Save skills (20s timeout) - MUST succeed
-            logger.log('[Onboarding] Saving skills to Supabase...', skillsData);
             try {
                 await Promise.race([
                     updateFreelancerProfile(skillsData),
-                    new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 20000))
+                    new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 20000)),
                 ]);
-                logger.log('[Onboarding] ✅ Skills saved!');
+                logger.log('[Onboarding] Skills saved!');
             } catch (skillsErr: any) {
-                logger.error('[Onboarding] ❌ Skills save FAILED:', skillsErr);
+                logger.error('[Onboarding] Skills save FAILED:', skillsErr);
                 if (skillsErr.message === 'TIMEOUT') {
                     throw new Error('فشل الاتصال - يرجى التحقق من اتصالك بالإنترنت والمحاولة مرة أخرى');
-                } else {
-                    throw new Error(`فشل حفظ المهارات: ${skillsErr.message}`);
                 }
+                throw new Error(`فشل حفظ المهارات: ${skillsErr.message}`);
             }
 
-            // Mark onboarding as complete - CRITICAL, MUST succeed
             logger.log('[Onboarding] Marking onboarding as complete...');
             try {
                 await Promise.race([
                     updateProfile({ onboarding_completed: true }),
-                    new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 20000))
+                    new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 20000)),
                 ]);
-                logger.log('[Onboarding] ✅ Onboarding marked complete!');
+                logger.log('[Onboarding] Onboarding marked complete!');
             } catch (completeErr: any) {
-                logger.error('[Onboarding] ❌ Failed to mark complete:', completeErr);
+                logger.error('[Onboarding] Failed to mark complete:', completeErr);
                 if (completeErr.message === 'TIMEOUT') {
                     throw new Error('فشل إكمال التسجيل - يرجى المحاولة مرة أخرى');
-                } else {
-                    throw new Error(`فشل إكمال التسجيل: ${completeErr.message}`);
                 }
+                throw new Error(`فشل إكمال التسجيل: ${completeErr.message}`);
             }
 
-            // Refresh profile to update context
-            await refreshProfile().catch(e => logger.warn('Profile refresh failed:', e));
+            await refreshProfile().catch((e) => logger.warn('Profile refresh failed:', e));
 
-            // SUCCESS! Navigate to dashboard
-            showToast('مرحباً بك في خدمة! 🎉', 'success');
+            showToast('مرحباً بك في خدمة! ', 'success');
             navigate('/freelancer/dashboard');
-
         } catch (error) {
             logger.error('Step 2 error:', error);
             const errorMessage = error instanceof Error ? error.message : t.common.error;
@@ -326,17 +239,17 @@ function FreelancerOnboarding() {
 
             <div className="container-custom py-12 relative z-10">
                 <div className="max-w-3xl mx-auto">
-                    {/* Header */}
                     <div className="text-center mb-10">
                         <h1 className="heading-md mb-2">{t.onboarding.freelancer.welcome}</h1>
                         <p className="text-muted">{t.onboarding.freelancer.welcomeDesc}</p>
                     </div>
 
-                    {/* Simplified Progress Bar - 2 Steps Only */}
                     <div className="mb-10">
                         <div className="flex items-center justify-between mb-3 text-sm font-medium text-dark-500">
                             <span>الخطوة {step} من {totalSteps}</span>
-                            <span className="text-primary-600 dark:text-primary-400">{Math.round((step / totalSteps) * 100)}%</span>
+                            <span className="text-primary-600 dark:text-primary-400">
+                                {Math.round((step / totalSteps) * 100)}%
+                            </span>
                         </div>
                         <div className="h-2.5 bg-gray-100 dark:bg-dark-800 rounded-full overflow-hidden shadow-inner">
                             <div
@@ -354,7 +267,6 @@ function FreelancerOnboarding() {
                         </div>
                     </div>
 
-                    {/* Step Content */}
                     <div className="card-glass shadow-xl dark:shadow-black/20 animate-fade-in">
                         {step === 1 && (
                             <OnboardingStep1
@@ -379,10 +291,9 @@ function FreelancerOnboarding() {
                         )}
                     </div>
 
-                    {/* Post-onboarding hint */}
                     {step === 2 && (
                         <div className="mt-6 text-center text-sm text-muted">
-                            <p>💡 يمكنك إضافة الشهادات والمعرض ووسائل التعريف لاحقاً من الإعدادات</p>
+                            <p>يمكنك إضافة الشهادات والمعرض ووسائل التعريف لاحقاً من الإعدادات</p>
                         </div>
                     )}
                 </div>
