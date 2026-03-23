@@ -20,6 +20,25 @@ export default function CTASection() {
         return '/signup?type=freelancer';
     };
 
+    const primaryLabel = isAuthenticated ? t.nav.dashboard : t.home.sections.cta.btnStart;
+    const primaryLink = isAuthenticated
+        ? profile?.user_type === 'client'
+            ? '/client/dashboard'
+            : '/freelancer/dashboard'
+        : getStartLink();
+
+    const secondaryLink = isAuthenticated
+        ? profile?.user_type === 'client'
+            ? '/jobs/new'
+            : '/jobs'
+        : '/how-it-works';
+
+    const secondaryLabel = isAuthenticated
+        ? profile?.user_type === 'client'
+            ? t.hero.ctaClient
+            : t.nav.findWork
+        : t.home.sections.cta.btnWatch;
+
     return (
         <section className="py-24 relative overflow-hidden">
             <div className="absolute inset-0 gradient-mesh" />
@@ -38,15 +57,15 @@ export default function CTASection() {
                     </p>
 
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                        <Link to={getStartLink()}>
+                        <Link to={primaryLink}>
                             <button className="btn-primary btn-lg">
-                                <span>{t.home.sections.cta.btnStart}</span>
+                                <span>{primaryLabel}</span>
                                 <ArrowIcon className="w-5 h-5" />
                             </button>
                         </Link>
-                        <Link to="/how-it-works">
+                        <Link to={secondaryLink}>
                             <Button variant="outline" size="lg" leftIcon={<Play className="w-5 h-5" />}>
-                                {t.home.sections.cta.btnWatch}
+                                {secondaryLabel}
                             </Button>
                         </Link>
                     </div>

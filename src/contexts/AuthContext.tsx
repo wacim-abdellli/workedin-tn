@@ -64,8 +64,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
                     if (!freelancerError && freelancerData) {
                         setFreelancerProfile(freelancerData as FreelancerProfile);
+                    } else {
+                        setFreelancerProfile(null);
                     }
+                } else {
+                    setFreelancerProfile(null);
                 }
+            } else {
+                setProfile(null);
+                setFreelancerProfile(null);
             }
         } catch (error) {
             logger.error('Error fetching profile:', error);
@@ -100,7 +107,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
                 if (mounted && currentSession) {
                     setSession(currentSession);
                     setUser(currentSession.user);
-                    fetchProfile(currentSession.user.id).catch(e => logger.error('Profile fetch error', e));
+                    await fetchProfile(currentSession.user.id);
                 }
             } catch (error) {
                 logger.error('Error initializing auth:', error);
@@ -124,7 +131,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
                     return prev;
                 });
             }
-        }, 2000);
+        }, 6000);
 
         // Listen for auth changes
         const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -135,10 +142,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
                 setUser(newSession?.user ?? null);
 
                 if (newSession?.user) {
+                    setIsLoading(true);
                     await fetchProfile(newSession.user.id);
+                    if (mounted) setIsLoading(false);
                 } else {
                     setProfile(null);
                     setFreelancerProfile(null);
+                    setIsLoading(false);
                 }
             }
         );

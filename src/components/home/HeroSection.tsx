@@ -37,6 +37,26 @@ export default function HeroSection({ stats }: HeroSectionProps) {
         return '/signup?type=client';
     };
 
+    const primaryCta = isAuthenticated
+        ? {
+            to: profile?.user_type === 'client' ? '/client/dashboard' : '/freelancer/dashboard',
+            label: t.nav.dashboard,
+        }
+        : {
+            to: getFreelancerLink(),
+            label: t.hero.ctaFreelancer,
+        };
+
+    const secondaryCta = isAuthenticated
+        ? {
+            to: profile?.user_type === 'client' ? '/jobs/new' : '/jobs',
+            label: profile?.user_type === 'client' ? t.hero.ctaClient : t.nav.findWork,
+        }
+        : {
+            to: getClientLink(),
+            label: t.hero.ctaClient,
+        };
+
     return (
         <section className="relative min-h-[90vh] flex items-center overflow-hidden">
             {/* Animated Background */}
@@ -81,18 +101,18 @@ export default function HeroSection({ stats }: HeroSectionProps) {
 
                     {/* CTA Buttons */}
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-slide-up opacity-0 [animation-fill-mode:forwards]" style={{ animationDelay: '200ms' }}>
-                        <Link to={getFreelancerLink()}>
+                        <Link to={primaryCta.to}>
                             <button className="btn-primary btn-lg group relative overflow-hidden">
                                 <span className="relative z-10 flex items-center gap-2">
-                                    {t.hero.ctaFreelancer}
+                                    {primaryCta.label}
                                     <ArrowIcon className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                                 </span>
                             </button>
                         </Link>
-                        <Link to={getClientLink()}>
+                        <Link to={secondaryCta.to}>
                             <button className="btn btn-lg bg-white/50 dark:bg-white/10 text-dark-700 dark:text-white border-2 border-dark-200 dark:border-white/20 hover:bg-dark-50 dark:hover:bg-white/20 backdrop-blur-sm transition-all hover:scale-105">
                                 <Briefcase className="w-5 h-5" />
-                                <span>{t.hero.ctaClient}</span>
+                                <span>{secondaryCta.label}</span>
                             </button>
                         </Link>
                     </div>
