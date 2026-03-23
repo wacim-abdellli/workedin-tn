@@ -14,6 +14,7 @@ const POLL_INTERVAL_MS = 400;
 const AuthCallback = () => {
     const { dir } = useTranslation();
     const [status, setStatus] = useState<CallbackState>('loading');
+    const [errorDetails, setErrorDetails] = useState<{ code?: string; message?: string } | null>(null);
 
     useEffect(() => {
         let cancelled = false;
@@ -22,10 +23,14 @@ const AuthCallback = () => {
             const currentUrl = new URL(window.location.href);
             const authCode = currentUrl.searchParams.get('code');
             const authError = currentUrl.searchParams.get('error_description') || currentUrl.searchParams.get('error');
+            const authErrorCode = currentUrl.searchParams.get('error_code') || undefined;
 
             if (authError) {
-                logger.error('AuthCallback: provider returned error', authError);
-                if (!cancelled) setStatus('error');
+                logger.error('AuthCallback: provider returned error', { authError, authErrorCode });
+                if (!cancelled) {
+                    setErrorDetails({ code: authErrorCode, message: authError });
+                    setStatus('error');
+                }
                 return;
             }
 
@@ -35,7 +40,10 @@ const AuthCallback = () => {
 
                     if (error) {
                         logger.error('AuthCallback: exchangeCodeForSession failed', error);
-                        if (!cancelled) setStatus('error');
+                        if (!cancelled) {
+                            setErrorDetails({ message: error.message });
+                            setStatus('error');
+                        }
                         return;
                     }
 
@@ -46,7 +54,10 @@ const AuthCallback = () => {
                     }
                 } catch (error) {
                     logger.error('AuthCallback: explicit code exchange failed', error);
-                    if (!cancelled) setStatus('error');
+                    if (!cancelled) {
+                        setErrorDetails({ message: error instanceof Error ? error.message : 'Unexpected callback error' });
+                        setStatus('error');
+                    }
                     return;
                 }
             }
@@ -75,6 +86,7 @@ const AuthCallback = () => {
 
             if (!cancelled) {
                 logger.warn('AuthCallback: no session detected before timeout');
+                setErrorDetails({ message: 'No session was created before the callback timed out.' });
                 setStatus('error');
             }
         };
@@ -127,6 +139,16 @@ const AuthCallback = () => {
                         <p className="mb-6 text-[#625c78] dark:text-[#a7a2ba]">
                             We could not confirm your session yet. Try again, or return to login and retry the provider sign-in.
                         </p>
+                        {errorDetails ? (
+                            <div className="mb-6 rounded-2xl border border-amber-200/70 bg-amber-50 px-4 py-3 text-left text-sm text-amber-900 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-100">
+                                {errorDetails.code ? (
+                                    <p className="font-semibold">Error code: {errorDetails.code}</p>
+                                ) : null}
+                                {errorDetails.message ? (
+                                    <p className={errorDetails.code ? 'mt-1' : ''}>{errorDetails.message}</p>
+                                ) : null}
+                            </div>
+                        ) : null}
                         <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
                             <Button variant="outline" onClick={() => window.location.reload()}>
                                 Try again
