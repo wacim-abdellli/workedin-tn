@@ -1,0 +1,20 @@
+<svg viewBox="0 0 140 120" width="140" height="120" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="gp" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#a78bfa"/>
+      <stop offset="100%" stop-color="#8b5cf6"/>
+    </linearGradient>
+    <linearGradient id="ga" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#f59e0b"/>
+    </linearGradient>
+  </defs>
+  <rect x="46" y="0" width="48" height="48" rx="12" fill="#242235"/>
+  <circle cx="66" cy="24" r="12" fill="url(#gp)" opacity="0.95"/>
+  <circle cx="78" cy="24" r="12" fill="url(#ga)" opacity="0.75"/>
+  <text x="70" y="72" text-anchor="middle" font-size="20" font-weight="700" fill="#f8f7ff" font-family="system-ui,sans-serif" letter-spacing="-0.5">Khedma</text>
+  <rect x="88" y="58" width="22" height="12" rx="3" fill="#a78bfa"/>
+  <text x="99" y="67" text-anchor="middle" font-size="7" font-weight="700" fill="#1a1825" font-family="system-ui,sans-serif">TN</text>
+  <text x="70" y="92" text-anchor="middle" font-size="9" fill="#8b8aa0" font-family="system-ui,sans-serif" letter-spacing="1.5">FREELANCE</text>
+  <text x="70" y="106" text-anchor="middle" font-size="9" fill="#8b8aa0" font-family="system-ui,sans-serif" letter-spacing="1.5">PLATFORM</text>
+</svg>

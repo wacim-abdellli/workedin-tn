@@ -1,0 +1,9 @@
+<svg viewBox="0 0 220 44" width="220" height="44" xmlns="http://www.w3.org/2000/svg">
+  <rect x="0" y="2" width="40" height="40" rx="10" fill="#1a1825"/>
+  <circle cx="16" cy="22" r="10" fill="#1a1825" opacity="0.7"/>
+  <circle cx="26" cy="22" r="10" fill="#1a1825" opacity="0.4"/>
+  <text x="52" y="20" font-size="19" font-weight="700" fill="#1a1825" font-family="system-ui,sans-serif" letter-spacing="-0.5">Khedma</text>
+  <rect x="152" y="7" width="24" height="12" rx="3" fill="#1a1825"/>
+  <text x="164" y="16" text-anchor="middle" font-size="7" font-weight="700" fill="white" font-family="system-ui,sans-serif">TN</text>
+  <text x="52" y="36" font-size="9" fill="#1a1825" font-family="system-ui,sans-serif" letter-spacing="1.5">FREELANCE PLATFORM</text>
+</svg>

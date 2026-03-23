@@ -28,8 +28,8 @@ const OG_LOCALE: Record<Language, string> = {
     fr: 'fr_FR',
 };
 
-const DEFAULT_IMAGE = '/og-image.png';
-const SITE_URL = 'https://khedma.tn';
+const DEFAULT_IMAGE = '/logos/logo-og.svg';
+const SITE_URL = 'https://khedma-tn.vercel.app';
 
 const STRING_REPLACEMENTS: Record<string, Partial<Record<Language, string>>> = {
     'إكمال حساب المستقل': { en: 'Complete Freelancer Setup', fr: 'Finaliser le profil freelance' },
@@ -147,7 +147,7 @@ export default function SEO({
             <meta name="twitter:description" content={resolvedDescription} />
             <meta name="twitter:image" content={fullImageUrl} />
 
-            <meta name="theme-color" content="#8B5A2B" />
+            <meta name="theme-color" content="#8b5cf6" />
         </Helmet>
     );
 }

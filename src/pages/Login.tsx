@@ -4,10 +4,12 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useEffect } from 'react';
 import SEO, { SEO_CONFIG } from '../components/common/SEO';
+import { useTheme } from '../contexts/ThemeContext';
 
 function Login() {
     const navigate = useNavigate();
     const { isAuthenticated, profile } = useAuth();
+    const { theme } = useTheme();
 
     // Redirect authenticated users to appropriate dashboard
     useEffect(() => {
@@ -49,6 +51,11 @@ function Login() {
 
             <div className="flex-1 flex items-center justify-center py-16 px-4 relative z-10">
                 <div className="w-full max-w-md animate-slide-up">
+                    <img
+                        src={theme === 'dark' ? '/logos/logo-stacked-dark.svg' : '/logos/logo-stacked.svg'}
+                        alt="Khedma TN"
+                        style={{ height: '80px', width: 'auto', margin: '0 auto 2rem' }}
+                    />
                     <div className="card-glass shadow-2xl shadow-primary-500/10 dark:shadow-black/50">
                         <LoginForm
                             onSuccess={handleSuccess}

@@ -17,9 +17,6 @@ import { UserMenu } from './UserMenu';
 import { AuthButtons } from './AuthButtons';
 import { MobileMenu } from './MobileMenu';
 
-import logoIcon from '/logo-icon.png';
-import logoText from '/logo-text.png';
-
 export default function Header() {
     const [isScrolled, setIsScrolled] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -54,7 +51,7 @@ export default function Header() {
                     <div className="flex items-center justify-between h-16 lg:h-20 gap-2 lg:gap-4">
                         {/* Left: Logo & Navigation */}
                         <div className="flex items-center gap-2 lg:gap-6">
-                            <Logo isScrolled={isScrolled} theme={theme} />
+                            <Logo language={language} />
                             <Navigation isScrolled={isScrolled} theme={theme} items={navItems} />
                         </div>
 
@@ -142,35 +139,33 @@ export default function Header() {
     );
 }
 
-// Logo subcomponent (kept inline as it's small and specific)
-function Logo({ isScrolled, theme }: { isScrolled: boolean; theme: string }) {
+function Logo({ language }: { language: string }) {
+    const { theme } = useTheme();
+    const logoSrc = language === 'ar'
+        ? (theme === 'dark' ? '/logos/logo-arabic-dark.svg' : '/logos/logo-arabic.svg')
+        : (theme === 'dark' ? '/logos/logo-primary-dark.svg' : '/logos/logo-primary.svg');
+
     return (
-        <Link to="/" className="flex items-center group relative z-10 -ml-3">
+        <Link to="/" className="flex items-center group relative z-10">
             <motion.div
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="relative w-12 h-12 lg:w-16 lg:h-16 flex-shrink-0"
+                className="relative"
             >
-                <div className="absolute -inset-3 bg-gradient-to-r from-violet-600/30 to-indigo-600/30 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
-                <img src={logoIcon} alt="Khedma.tn" className="w-full h-full object-contain relative" />
-            </motion.div>
-
-            <div className="hidden md:block">
-                <div className="flex items-center -ml-4 lg:-ml-6">
-                    <img
-                        src={logoText}
-                        alt="Khedma.tn"
-                        className={cn(
-                            "h-10 lg:h-14 w-auto object-contain transition-all duration-300",
-                            isScrolled || theme === 'dark' ? "brightness-0 invert" : "brightness-0"
-                        )}
-                    />
-                    <div className="flex items-center gap-1 px-2 py-0.5 bg-violet-600/10 rounded-full border border-violet-500/20 whitespace-nowrap -mt-8 lg:-mt-10 ml-0 relative z-10 shadow-lg scale-90">
-                        <Sparkles className="w-3 h-3 text-violet-500" />
-                        <span className="text-[10px] font-bold text-violet-500 uppercase tracking-wide">TN</span>
-                    </div>
+                <div className="absolute -inset-3 rounded-3xl bg-gradient-to-r from-violet-600/20 via-fuchsia-500/15 to-amber-400/20 blur-xl opacity-0 transition-opacity group-hover:opacity-100" />
+                <img
+                    src={logoSrc}
+                    alt={language === 'ar' ? 'خدمة TN' : 'Khedma TN'}
+                    width="180"
+                    height="40"
+                    style={{ height: '36px', width: 'auto' }}
+                    className="relative block"
+                />
+                <div className="absolute -end-2 -top-2 hidden rounded-full border border-violet-500/20 bg-violet-600/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-violet-500 shadow-lg md:flex md:items-center md:gap-1">
+                    <Sparkles className="h-3 w-3" />
+                    <span>TN</span>
                 </div>
-            </div>
+            </motion.div>
         </Link>
     );
 }

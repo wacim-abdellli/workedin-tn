@@ -1,38 +1,19 @@
 {
-    "name": "Khedma TN - منصة العمل الحر",
-    "short_name": "Khedma.tn",
-    "description": "أول منصة تونسية للعمل الحر - وظّف أو اشتغل بكل سهولة",
-    "start_url": "/",
-    "display": "standalone",
-    "background_color": "#ffffff",
-    "theme_color": "#7c3aed",
-    "orientation": "portrait-primary",
-    "dir": "rtl",
-    "lang": "ar",
-    "icons": [
-        {
-            "src": "/icon-192.png",
-            "sizes": "192x192",
-            "type": "image/png",
-            "purpose": "any maskable"
-        },
-        {
-            "src": "/icon-512.png",
-            "sizes": "512x512",
-            "type": "image/png",
-            "purpose": "any maskable"
-        }
-    ],
-    "categories": [
-        "business",
-        "productivity"
-    ],
-    "screenshots": [
-        {
-            "src": "/screenshot-1.png",
-            "sizes": "1280x720",
-            "type": "image/png",
-            "form_factor": "wide"
-        }
-    ]
+  "name": "Khedma TN",
+  "short_name": "Khedma",
+  "icons": [
+    {
+      "src": "/logos/logo-favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "/logos/logo-social.svg",
+      "sizes": "400x400",
+      "type": "image/svg+xml"
+    }
+  ],
+  "theme_color": "#8b5cf6",
+  "background_color": "#0f0e17",
+  "display": "standalone"
 }

@@ -1,8 +1,11 @@
 import { Header, Footer } from '../components/layout';
 import { SignupForm } from '../components/auth';
 import SEO, { SEO_CONFIG } from '../components/common/SEO';
+import { useTheme } from '../contexts/ThemeContext';
 
 function Signup() {
+    const { theme } = useTheme();
+
     return (
         <div className="min-h-screen flex flex-col relative overflow-hidden bg-dark-50 dark:bg-dark-900">
             {/* Ambient Background */}
@@ -16,6 +19,11 @@ function Signup() {
 
             <div className="flex-1 flex items-center justify-center py-16 px-4 relative z-10">
                 <div className="w-full max-w-md animate-slide-up">
+                    <img
+                        src={theme === 'dark' ? '/logos/logo-stacked-dark.svg' : '/logos/logo-stacked.svg'}
+                        alt="Khedma TN"
+                        style={{ height: '80px', width: 'auto', margin: '0 auto 2rem' }}
+                    />
                     <div className="card-glass shadow-2xl shadow-primary-500/10 dark:shadow-black/50">
                         <SignupForm />
                     </div>

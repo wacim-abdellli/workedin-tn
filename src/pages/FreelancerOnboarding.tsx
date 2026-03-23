@@ -276,6 +276,11 @@ function FreelancerOnboarding() {
             <div className="container-custom py-12 relative z-10">
                 <div className="max-w-3xl mx-auto">
                     <div className="text-center mb-10">
+                        <img
+                            src="/logos/logo-primary.svg"
+                            alt="Khedma TN"
+                            style={{ height: '32px', width: 'auto', margin: '0 auto 1rem' }}
+                        />
                         <h1 className="heading-md mb-2">{t.onboarding.freelancer.welcome}</h1>
                         <p className="text-muted">{t.onboarding.freelancer.welcomeDesc}</p>
                     </div>

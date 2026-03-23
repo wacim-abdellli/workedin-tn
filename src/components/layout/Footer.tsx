@@ -1,9 +1,11 @@
 import { Link } from 'react-router-dom';
 import { Facebook, Twitter, Instagram, Linkedin, Mail, MapPin, Phone, Heart } from 'lucide-react';
 import { useTranslation } from '../../i18n';
+import { useTheme } from '../../contexts/ThemeContext';
 
 function Footer() {
     const { t } = useTranslation();
+    const { theme } = useTheme();
 
     const footerLinks = [
         { href: '/about', label: t.footer.about },
@@ -31,12 +33,14 @@ function Footer() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
                     {/* Brand */}
                     <div className="lg:col-span-2">
-                        <Link to="/" className="flex items-center group mb-10 -ms-4">
-                            <img src="/logo-icon.png" alt="Khedma" className="w-32 h-32 object-contain" />
+                        <Link to="/" className="inline-flex items-center group mb-10">
                             <img
-                                src="/logo-text.png"
-                                alt="Khedma.tn"
-                                className="h-24 sm:h-32 w-auto object-contain -ms-10 brightness-0 invert dark:brightness-100 dark:invert-0"
+                                src={theme === 'dark' ? '/logos/logo-stacked-dark.svg' : '/logos/logo-stacked.svg'}
+                                alt="Khedma TN"
+                                width="100"
+                                height="90"
+                                style={{ height: '72px', width: 'auto' }}
+                                className="object-contain"
                             />
                         </Link>
                         <p className="text-dark-400 max-w-md mb-8 leading-relaxed">
