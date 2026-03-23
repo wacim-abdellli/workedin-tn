@@ -38,6 +38,10 @@ export function UserMenu({ user, profile, signOut, t }: UserMenuProps) {
     const menuRef = useRef<HTMLDivElement>(null);
 
     const isAdmin = profile?.is_admin === true;
+    const dashboardPath =
+        profile?.user_type === 'client'
+            ? '/client/dashboard'
+            : '/freelancer/dashboard';
 
     // ... (existing useEffects)
 
@@ -222,7 +226,7 @@ export function UserMenu({ user, profile, signOut, t }: UserMenuProps) {
                                     </>
                                 )}
 
-                                <UserMenuItem icon={User} to="/dashboard" onClick={() => setMenuOpen(false)}>
+                                <UserMenuItem icon={User} to={dashboardPath} onClick={() => setMenuOpen(false)}>
                                     {t.nav.dashboard}
                                 </UserMenuItem>
                                 <UserMenuItem icon={Briefcase} to="/my-jobs" onClick={() => setMenuOpen(false)}>
