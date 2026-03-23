@@ -118,12 +118,12 @@ export default function SEO({
     const resolvedKeywords = resolveLocalizedText(keywords, language);
     const resolvedLocale = locale || OG_LOCALE[language];
 
-    const fullTitle = `${resolvedTitle} | ${siteName}`;
+    const fullTitle = `Khedma TN — ${resolvedTitle || siteName}`;
     const fullImageUrl = image.startsWith('http') ? image : `${SITE_URL}${image}`;
     const canonicalUrl = url ? (url.startsWith('http') ? url : `${SITE_URL}${url}`) : undefined;
 
     return (
-        <Helmet>
+        <Helmet htmlAttributes={{ lang: language, dir: language === 'ar' ? 'rtl' : 'ltr' }}>
             <title>{fullTitle}</title>
             <meta name="title" content={fullTitle} />
             <meta name="description" content={resolvedDescription} />

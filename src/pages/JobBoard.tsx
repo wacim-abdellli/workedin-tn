@@ -333,16 +333,32 @@ function JobBoard() {
                         ) : jobs.length === 0 ? (
                             <EmptyState
                                 icon={Search}
-                                title={t.jobs.empty.title}
-                                description={t.jobs.empty.subtitle}
+                                title="No jobs match your search"
+                                description="Try different keywords or clear your filters to see more relevant freelance opportunities."
+                                illustration={(
+                                    <svg width="220" height="160" viewBox="0 0 220 160" fill="none" aria-hidden="true">
+                                        <rect x="52" y="26" width="102" height="76" rx="18" fill="url(#empty-card)" />
+                                        <rect x="68" y="48" width="70" height="8" rx="4" fill="rgba(255,255,255,0.72)" />
+                                        <rect x="68" y="64" width="52" height="8" rx="4" fill="rgba(255,255,255,0.48)" />
+                                        <path d="M149 95L174 120" stroke="#8B5CF6" strokeWidth="10" strokeLinecap="round" />
+                                        <circle cx="132" cy="79" r="30" fill="rgba(139,92,246,0.12)" stroke="#8B5CF6" strokeWidth="8" />
+                                        <path d="M120 79L128 87L145 70" stroke="#8B5CF6" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" />
+                                        <defs>
+                                            <linearGradient id="empty-card" x1="52" y1="26" x2="154" y2="102" gradientUnits="userSpaceOnUse">
+                                                <stop stopColor="#8B5CF6" />
+                                                <stop offset="1" stopColor="#F59E0B" />
+                                            </linearGradient>
+                                        </defs>
+                                    </svg>
+                                )}
                                 action={{
-                                    label: t.jobs.empty.action,
+                                    label: "Clear filters",
                                     onClick: clearAllFilters,
                                     variant: 'primary'
                                 }}
                                 secondaryAction={{
                                     label: "تصفح الفئات",
-                                    onClick: () => navigate('/categories')
+                                    onClick: () => navigate('/jobs/new')
                                 }}
                             />
                         ) : (

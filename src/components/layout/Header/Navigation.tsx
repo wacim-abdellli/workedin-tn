@@ -1,76 +1,162 @@
 import { Link, useLocation } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import type { LucideIcon } from 'lucide-react';
+import { ArrowRight, BriefcaseBusiness, Compass, SearchCheck, Sparkles, UserRoundSearch } from 'lucide-react';
+import { useState } from 'react';
+
 import { cn } from '@/lib/utils';
 
 export interface NavigationProps {
-    isScrolled: boolean;
-    theme: string;
-    items: Array<{
-        to: string;
-        icon: LucideIcon;
-        label: string;
-    }>;
+  isScrolled: boolean;
+  theme: string;
+  items: Array<{
+    to: string;
+    icon: LucideIcon;
+    label: string;
+  }>;
 }
 
 export function Navigation({ isScrolled, theme, items }: NavigationProps) {
-    return (
-        <nav className="hidden 2xl:flex items-center gap-1">
-            {items.map((item) => (
-                <NavLink
-                    key={item.to}
-                    to={item.to}
-                    icon={item.icon}
-                    isScrolled={isScrolled}
-                    theme={theme}
-                >
-                    {item.label}
-                </NavLink>
-            ))}
-        </nav>
-    );
+  return (
+    <nav className="hidden 2xl:flex items-center gap-1">
+      {items.map((item) => (
+        item.to === '/jobs' ? (
+          <MegaMenuLink key={item.to} item={item} isScrolled={isScrolled} theme={theme} />
+        ) : (
+          <NavLink key={item.to} to={item.to} icon={item.icon} isScrolled={isScrolled} theme={theme}>
+            {item.label}
+          </NavLink>
+        )
+      ))}
+    </nav>
+  );
 }
 
 interface NavLinkProps {
-    to: string;
-    icon: LucideIcon;
-    children: React.ReactNode;
-    isScrolled: boolean;
-    theme: string;
+  to: string;
+  icon: LucideIcon;
+  children: React.ReactNode;
+  isScrolled: boolean;
+  theme: string;
 }
 
 function NavLink({ to, icon: Icon, children, isScrolled, theme }: NavLinkProps) {
-    const location = useLocation();
-    const isActive = location.pathname === to;
+  const location = useLocation();
+  const isActive = location.pathname === to;
 
-    return (
-        <Link
-            to={to}
-            className={cn(
-                "relative flex items-center gap-1.5 px-2.5 py-2 text-sm font-medium transition-all duration-200 rounded-xl group whitespace-nowrap",
-                isActive
-                    ? "text-violet-400 bg-violet-600/10"
-                    : isScrolled || theme === 'dark'
-                        ? "text-gray-300 hover:text-white hover:bg-gray-800/50"
-                        : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-            )}
-        >
-            {isActive && (
-                <motion.div
-                    layoutId="activeNav"
-                    className="absolute inset-0 bg-violet-600/10 rounded-xl border border-violet-500/30"
-                    transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                />
-            )}
-            <div className="relative flex items-center gap-2">
-                <Icon className="w-4 h-4 transition-transform duration-200 group-hover:scale-110" />
-                <span>{children}</span>
+  return (
+    <Link
+      to={to}
+      className={cn(
+        'nav-link-premium relative flex items-center gap-2 rounded-2xl px-3.5 py-2.5 text-sm whitespace-nowrap group',
+        isActive
+          ? 'bg-violet-600/10 font-semibold tracking-[-0.01em] text-violet-500'
+          : isScrolled || theme === 'dark'
+            ? 'font-normal text-gray-300 hover:bg-white/5 hover:text-white hover:font-semibold'
+            : 'font-normal text-gray-700 hover:bg-white/70 hover:text-[#1a1825] hover:font-semibold'
+      )}
+    >
+      {isActive && (
+        <motion.div
+          layoutId="activeNav"
+          className="absolute inset-0 rounded-2xl border border-violet-500/20 bg-violet-600/10"
+          transition={{ type: 'spring', bounce: 0.2, duration: 0.5 }}
+        />
+      )}
+      <span className="relative flex items-center gap-2">
+        <Icon className="h-4 w-4 transition-transform duration-200 group-hover:scale-110" />
+        <span>{children}</span>
+      </span>
+    </Link>
+  );
+}
+
+function MegaMenuLink({
+  item,
+  isScrolled,
+  theme,
+}: {
+  item: NavigationProps['items'][number];
+  isScrolled: boolean;
+  theme: string;
+}) {
+  const location = useLocation();
+  const isActive = location.pathname === item.to;
+  const [open, setOpen] = useState(false);
+  const categories = [
+    { label: 'Design & Brand', to: '/jobs', icon: Sparkles, description: 'UI, visual identity, product polish' },
+    { label: 'Development', to: '/jobs', icon: Compass, description: 'Web apps, MVPs, integrations' },
+    { label: 'Marketing', to: '/jobs', icon: SearchCheck, description: 'Growth, content, paid acquisition' },
+    { label: 'Browse talent', to: '/find-freelancers', icon: UserRoundSearch, description: 'Discover vetted Tunisian experts' },
+  ];
+
+  return (
+    <div className="relative" onMouseEnter={() => setOpen(true)} onMouseLeave={() => setOpen(false)}>
+      <Link
+        to={item.to}
+        className={cn(
+          'nav-link-premium relative flex items-center gap-2 rounded-2xl px-3.5 py-2.5 text-sm whitespace-nowrap group',
+          isActive
+            ? 'bg-violet-600/10 font-semibold tracking-[-0.01em] text-violet-500'
+            : isScrolled || theme === 'dark'
+              ? 'font-normal text-gray-300 hover:bg-white/5 hover:text-white hover:font-semibold'
+              : 'font-normal text-gray-700 hover:bg-white/70 hover:text-[#1a1825] hover:font-semibold'
+        )}
+      >
+        <item.icon className="h-4 w-4 transition-transform duration-200 group-hover:scale-110" />
+        <span>{item.label}</span>
+      </Link>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: 10, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 10, scale: 0.98 }}
+            transition={{ duration: 0.18, ease: 'easeOut' }}
+            className="absolute left-0 top-full z-50 mt-4 w-[620px]"
+          >
+            <div className="glass-card overflow-hidden p-2">
+              <div className="grid gap-2 md:grid-cols-[1.2fr_0.8fr]">
+                <div className="rounded-[22px] border border-primary-100/70 bg-white/80 p-3 dark:border-white/8 dark:bg-white/5">
+                  {categories.map((category) => (
+                    <Link
+                      key={category.label}
+                      to={category.to}
+                      className="group flex items-center gap-3 rounded-2xl px-3 py-3 transition-colors hover:bg-primary-50 dark:hover:bg-white/5"
+                    >
+                      <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary-50 text-primary-600 dark:bg-primary-500/10 dark:text-primary-300">
+                        <category.icon className="h-5 w-5" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="font-semibold text-[#1a1825] dark:text-white">{category.label}</div>
+                        <div className="text-sm text-[#6b6880] dark:text-[#8b8aa0]">{category.description}</div>
+                      </div>
+                      <ArrowRight className="h-4 w-4 text-[#8b8aa0] transition-transform group-hover:translate-x-1" />
+                    </Link>
+                  ))}
+                </div>
+                <div className="rounded-[22px] border border-primary-100/70 bg-gradient-to-br from-primary-600 to-[#140c2d] p-5 text-white">
+                  <div className="inline-flex rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em]">
+                    Featured
+                  </div>
+                  <h3 className="mt-4 text-xl font-bold">Post a serious project</h3>
+                  <p className="mt-3 text-sm leading-relaxed text-white/75">
+                    Reach Tunisian freelancers with polished profiles, verified trust signals, and cleaner proposals.
+                  </p>
+                  <Link
+                    to="/jobs/new"
+                    className="mt-5 inline-flex items-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-[#1a1825]"
+                  >
+                    <BriefcaseBusiness className="h-4 w-4" />
+                    Post a job
+                  </Link>
+                </div>
+              </div>
             </div>
-            <motion.div
-                className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-violet-500 to-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity rounded-full"
-                initial={{ scaleX: 0 }}
-                whileHover={{ scaleX: 1 }}
-            />
-        </Link>
-    );
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
 }

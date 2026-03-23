@@ -8,7 +8,7 @@ export function Skeleton({ className }: SkeletonProps) {
     return (
         <div
             className={cn(
-                "rounded-lg bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 dark:from-[#242235] dark:via-[#2a2840] dark:to-[#242235] bg-[length:200%_100%] animate-shimmer",
+                "shimmer rounded-lg bg-gradient-to-r from-[#f8f7ff] via-[#ede9fe] to-[#f8f7ff] dark:from-[#1a1825] dark:via-[#242235] dark:to-[#1a1825] bg-[length:200%_100%]",
                 className
             )}
         />
@@ -17,7 +17,7 @@ export function Skeleton({ className }: SkeletonProps) {
 
 export default function SkeletonCard() {
     return (
-        <div className="bg-white dark:bg-[#1a1825] p-6 rounded-2xl shadow-sm border border-[#e8e6f0] dark:border-[#2a2840] overflow-hidden">
+        <div className="premium-panel overflow-hidden rounded-[28px] border border-[#e8e6f0] p-6 shadow-sm dark:border-[#2a2840]">
             <div className="flex justify-between items-start mb-4">
                 <Skeleton className="h-6 w-3/4 mb-2" />
                 <Skeleton className="h-8 w-8 rounded-full" />

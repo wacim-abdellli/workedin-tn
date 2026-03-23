@@ -35,7 +35,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-            className={`flex flex-col items-center justify-center py-20 px-6 text-center ${className}`}
+            className={`glass-card flex flex-col items-center justify-center overflow-hidden py-20 px-6 text-center ${className}`}
         >
             {illustration ? (
                 <div className="mb-8">{illustration}</div>

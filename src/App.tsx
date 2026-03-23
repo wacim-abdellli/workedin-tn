@@ -10,6 +10,8 @@ import { ThemeProvider } from './contexts/ThemeContext';
 import ErrorBoundary from './components/ui/ErrorBoundary';
 import { Loading } from './components/common';
 import ScrollToTop from './components/ui/ScrollToTop';
+import CustomCursor from './components/ui/CustomCursor';
+import RouteProgress from './components/ui/RouteProgress';
 
 import { ProfileRedirect } from './components/routing/ProfileRedirect';
 import { AdminRoute } from './components/routing/AdminRoute';
@@ -264,6 +266,8 @@ function AppContent() {
 
   return (
     <div className="animate-fade-in">
+      <RouteProgress />
+      <CustomCursor />
       <ScrollToTop />
       <SkipLinks />
       <Suspense fallback={<Loading fullScreen />}>

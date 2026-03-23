@@ -19,10 +19,10 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 const Input = forwardRef<HTMLInputElement, InputProps>(
     ({ label, error, hint, leftIcon, rightIcon, className = '', ...props }, ref) => {
         const inputStyles = `
-      w-full bg-white dark:bg-dark-800 border rounded-xl
+      w-full bg-white/85 dark:bg-dark-800/90 border rounded-2xl
       text-dark-900 dark:text-white placeholder-dark-400
       focus:outline-none focus:ring-2 focus:ring-offset-0 focus:border-transparent
-      transition-all duration-200 shadow-sm
+      transition-all duration-200 shadow-sm backdrop-blur-sm
       ${error
                 ? 'border-red-500 focus:ring-red-500/30'
                 : 'border-dark-200 dark:border-dark-700 hover:border-dark-300 dark:hover:border-dark-600 focus:ring-primary-500/30 dark:focus:ring-primary-400/30 focus:border-primary-500 dark:focus:border-primary-400'
@@ -42,7 +42,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
                 {label && (
                     <label
                         htmlFor={inputId}
-                        className="block text-sm font-semibold text-dark-700 dark:text-dark-200 mb-2"
+                        className="mb-2 block text-sm font-semibold text-dark-700 dark:text-dark-200"
                     >
                         {label}
                     </label>

@@ -1,348 +1,223 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-    Briefcase,
-    DollarSign,
-    Clock,
-    Star,
-    TrendingUp,
-    CheckCircle,
-    Bell,
-    Settings,
-    User,
-    Calendar,
-    Zap,
-} from 'lucide-react';
-import { useTranslation } from '../i18n';
-import { useAuth } from '../contexts/AuthContext';
+import { Activity, ArrowUpRight, Bell, Briefcase, Calendar, DollarSign, Eye, FileText, Plus, Send, Sparkles } from 'lucide-react';
+import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+
 import { Header } from '../components/layout';
-import Button from '../components/ui/Button';
-import { Skeleton, SkeletonCard, SkeletonList } from '../components/common';
-import SEO from '../components/common/SEO';
+import SEO, { SEO_CONFIG } from '../components/common/SEO';
 import ProfileCompletionCard from '../components/freelancer/ProfileCompletionCard';
+import Button from '../components/ui/Button';
+import { Skeleton } from '../components/common/SkeletonCard';
+import { useAuth } from '../contexts/AuthContext';
 
-// Mock data for demo
-const MOCK_STATS = {
-    jobsCompleted: 12,
-    totalEarnings: 2450,
-    avgResponseTime: 2.5,
-    rating: 4.8,
-    reviews: 8,
-    profileCompletion: 85,
-};
-
-const MOCK_JOBS = [
-    {
-        id: 'j1',
-        title: 'تصميم لوجو لمتجر إلكتروني',
-        budget: 75,
-        deadline: '2 أيام',
-        skills: ['تصميم جرافيكي'],
-        isNew: true,
-        isUrgent: false,
-        match_score: 95,
-    },
-    {
-        id: 'j2',
-        title: 'ترجمة وثائق قانونية',
-        budget: 120,
-        deadline: '5 أيام',
-        skills: ['ترجمة'],
-        isNew: true,
-        isUrgent: false,
-        match_score: 88,
-    },
-    {
-        id: 'j3',
-        title: 'تصميم منشورات سوشيال ميديا',
-        budget: 40,
-        deadline: 'يوم واحد',
-        skills: ['تصميم جرافيكي', 'تسويق رقمي'],
-        isNew: false,
-        isUrgent: true,
-        match_score: 92,
-    },
+const stats = [
+  { label: 'Active Contracts', value: '08', change: '+12% this month', icon: Briefcase, tone: 'from-primary-500/20 to-primary-500/5 text-primary-600 dark:text-primary-300' },
+  { label: 'Pending Proposals', value: '14', change: '+4 new this week', icon: Send, tone: 'from-amber-400/20 to-amber-400/5 text-amber-600 dark:text-amber-300' },
+  { label: 'Total Earnings', value: '24,500 TND', change: '+18% this month', icon: DollarSign, tone: 'from-emerald-500/20 to-emerald-500/5 text-emerald-600 dark:text-emerald-300' },
+  { label: 'Profile Views', value: '1,284', change: '+23% this month', icon: Eye, tone: 'from-sky-500/20 to-sky-500/5 text-sky-600 dark:text-sky-300' },
 ];
 
-const MOCK_ACTIVITY = [
-    { id: 'a1', type: 'payment', message: 'استلمت 75 د.ت من "محمد العميل"', time: 'منذ 2 ساعة' },
-    { id: 'a2', type: 'review', message: 'حصلت على تقييم 5 نجوم', time: 'منذ يوم' },
-    { id: 'a3', type: 'match', message: 'تطابق جديد: تصميم هوية بصرية', time: 'منذ يومين' },
+const chartData = [
+  { month: 'Oct', earnings: 1800 },
+  { month: 'Nov', earnings: 2600 },
+  { month: 'Dec', earnings: 3100 },
+  { month: 'Jan', earnings: 4200 },
+  { month: 'Feb', earnings: 3900 },
+  { month: 'Mar', earnings: 4900 },
+];
+
+const activityFeed = [
+  { icon: Sparkles, title: 'Proposal accepted', time: '2 hours ago', detail: 'Brand refresh for a DTC skincare client.' },
+  { icon: Bell, title: 'New client message', time: '5 hours ago', detail: 'Kickoff notes received for the next sprint.' },
+  { icon: Calendar, title: 'Milestone completed', time: 'Yesterday', detail: 'Landing page audit delivered and approved.' },
+  { icon: DollarSign, title: 'Payment received', time: '2 days ago', detail: '1,200 TND released from escrow.' },
+];
+
+const milestones = [
+  { title: 'Product design handoff', due: 'Tomorrow', amount: '850 TND' },
+  { title: 'Client review call', due: 'Friday', amount: 'Discovery' },
+  { title: 'Escrow release', due: 'Next week', amount: '1,200 TND' },
 ];
 
 function FreelancerDashboardPage() {
-    const { t } = useTranslation();
-    const { profile, signOut } = useAuth();
-    const navigate = useNavigate();
+  const { profile, signOut } = useAuth();
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
 
-    const [filter, setFilter] = useState<'all' | 'new' | 'urgent'>('all');
-    const [stats] = useState(MOCK_STATS);
-    const [jobs] = useState(MOCK_JOBS);
-    const [activity] = useState(MOCK_ACTIVITY);
-    const [isLoading, setIsLoading] = useState(true);
+  useEffect(() => {
+    const timer = window.setTimeout(() => setLoading(false), 900);
+    return () => window.clearTimeout(timer);
+  }, []);
 
-    useState(() => {
-        const timer = setTimeout(() => setIsLoading(false), 1000);
-        return () => clearTimeout(timer);
-    });
+  const greeting = useMemo(() => profile?.full_name?.split(' ')[0] || 'there', [profile?.full_name]);
 
+  return (
+    <div className="min-h-screen bg-[#f6f3ff] dark:bg-[#0b0a12]">
+      <SEO {...SEO_CONFIG.dashboard} url="/freelancer/dashboard" noIndex />
+      <Header />
 
-    const filteredJobs = jobs.filter((job) => {
-        if (filter === 'new') return job.isNew;
-        if (filter === 'urgent') return job.isUrgent;
-        return true;
-    });
+      <main className="container-custom py-8">
+        <section className="glass-card overflow-hidden rounded-[32px] p-6 sm:p-8">
+          <div className="grid gap-6 xl:grid-cols-[260px_minmax(0,1fr)_320px]">
+            <aside className="space-y-5">
+              <div className="premium-panel rounded-[28px] p-5">
+                <p className="text-sm font-medium text-[#6b6880] dark:text-[#8b8aa0]">Welcome back</p>
+                <h1 className="mt-2 text-3xl font-bold text-[#1a1825] dark:text-white">{greeting}</h1>
+                <p className="mt-3 text-sm leading-relaxed text-[#6b6880] dark:text-[#8b8aa0]">
+                  Your freelancer business is looking sharper. Keep the momentum high and the profile polished.
+                </p>
+              </div>
 
-    return (
-        <div className="min-h-screen bg-gray-50 dark:bg-dark-900 transition-colors duration-300">
-            <SEO title="لوحة تحكم المستقل" description="تابع مشاريعك ورسائلك وأرباحك من لوحة تحكم المستقل على خدمة" noIndex />
-            <Header />
+              <ProfileCompletionCard />
 
-            <div className="container-custom py-8">
-                {/* Welcome Header */}
-                <div className="flex items-center justify-between mb-8">
-                    <div>
-                        <h1 className="text-2xl font-bold text-foreground">
-                            {t.dashboard.welcome}، {profile?.full_name || 'مستخدم'}!
-                        </h1>
-                        <p className="text-muted">{t.dashboard.freelancerSubtitle}</p>
-                    </div>
-                    <div className="flex items-center gap-3">
-                        <button className="p-2 rounded-xl bg-white dark:bg-dark-800 shadow-sm hover:shadow-md transition-shadow relative">
-                            <Bell className="w-5 h-5 text-muted" />
-                            <span className="absolute -top-1 -end-1 w-4 h-4 bg-red-500 rounded-full text-white text-xs flex items-center justify-center">
-                                3
-                            </span>
-                        </button>
-                        <button
-                            onClick={() => navigate('/settings')}
-                            className="p-2 rounded-xl bg-white dark:bg-dark-800 shadow-sm hover:shadow-md transition-shadow"
-                        >
-                            <Settings className="w-5 h-5 text-muted" />
-                        </button>
-                    </div>
+              <div className="premium-panel rounded-[28px] p-5">
+                <div className="text-sm font-semibold text-[#1a1825] dark:text-white">Quick actions</div>
+                <div className="mt-4 space-y-3">
+                  <Button className="w-full justify-start" leftIcon={<Plus className="h-4 w-4" />} onClick={() => navigate('/jobs')}>
+                    Browse premium jobs
+                  </Button>
+                  <Button variant="outline" className="w-full justify-start" leftIcon={<FileText className="h-4 w-4" />} onClick={() => navigate('/settings')}>
+                    Refine profile settings
+                  </Button>
+                  <button
+                    onClick={() => signOut()}
+                    className="w-full rounded-2xl border border-red-200 px-4 py-3 text-left text-sm font-semibold text-red-600 transition-colors hover:bg-red-50 dark:border-red-500/20 dark:hover:bg-red-500/10"
+                  >
+                    Sign out
+                  </button>
                 </div>
+              </div>
+            </aside>
 
-                {/* Stats Grid */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                    {isLoading ? (
-                        [...Array(4)].map((_, i) => (
-                            <div key={i} className="card h-32 flex flex-col justify-between">
-                                <div className="flex justify-between">
-                                    <Skeleton className="w-8 h-8 rounded-full" />
-                                    <Skeleton className="w-5 h-5 rounded-full" />
-                                </div>
-                                <div>
-                                    <Skeleton className="w-16 h-8 mb-1" />
-                                    <Skeleton className="w-24 h-4" />
-                                </div>
-                            </div>
-                        ))
+            <section className="space-y-5">
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                {stats.map((item) => (
+                  <div key={item.label} className="premium-panel rounded-[28px] p-5">
+                    {loading ? (
+                      <div className="space-y-4">
+                        <Skeleton className="h-11 w-11 rounded-2xl" />
+                        <Skeleton className="h-8 w-28" />
+                        <Skeleton className="h-4 w-24" />
+                      </div>
                     ) : (
-                        <>
-                            <div className="card bg-gradient-to-br from-primary-500 to-primary-700 text-white">
-                                <div className="flex items-center justify-between mb-3">
-                                    <Briefcase className="w-8 h-8 opacity-80" />
-                                    <TrendingUp className="w-5 h-5 opacity-60" />
-                                </div>
-                                <p className="text-3xl font-bold">{stats.jobsCompleted}</p>
-                                <p className="text-primary-100 text-sm">{t.dashboard.jobsCompleted}</p>
-                            </div>
-
-                            <div className="card bg-gradient-to-br from-green-500 to-green-700 text-white">
-                                <div className="flex items-center justify-between mb-3">
-                                    <DollarSign className="w-8 h-8 opacity-80" />
-                                    <TrendingUp className="w-5 h-5 opacity-60" />
-                                </div>
-                                <p className="text-3xl font-bold">{stats.totalEarnings}</p>
-                                <p className="text-green-100 text-sm">{t.dashboard.totalEarnings}</p>
-                            </div>
-
-                            <div className="card bg-gradient-to-br from-secondary-500 to-secondary-700 text-white">
-                                <div className="flex items-center justify-between mb-3">
-                                    <Clock className="w-8 h-8 opacity-80" />
-                                </div>
-                                <p className="text-3xl font-bold">{stats.avgResponseTime}</p>
-                                <p className="text-secondary-100 text-sm">{t.dashboard.responseTime}</p>
-                            </div>
-
-                            <div className="card bg-gradient-to-br from-yellow-500 to-orange-600 text-white">
-                                <div className="flex items-center justify-between mb-3">
-                                    <Star className="w-8 h-8 opacity-80" />
-                                </div>
-                                <p className="text-3xl font-bold">{stats.rating}</p>
-                                <p className="text-yellow-100 text-sm">{t.dashboard.rating} ({stats.reviews})</p>
-                            </div>
-                        </>
+                      <>
+                        <div className={`flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br ${item.tone}`}>
+                          <item.icon className="h-5 w-5" />
+                        </div>
+                        <div className="mt-5 text-3xl font-bold text-[#1a1825] dark:text-white">{item.value}</div>
+                        <div className="mt-1 text-sm font-medium text-[#4e4a63] dark:text-[#aba9bc]">{item.label}</div>
+                        <div className="mt-4 inline-flex items-center gap-1 text-xs font-semibold text-emerald-600 dark:text-emerald-300">
+                          <ArrowUpRight className="h-3.5 w-3.5" />
+                          {item.change}
+                        </div>
+                      </>
                     )}
+                  </div>
+                ))}
+              </div>
+
+              <div className="premium-panel rounded-[30px] p-6">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <h2 className="text-xl font-bold text-[#1a1825] dark:text-white">Earnings trajectory</h2>
+                    <p className="mt-2 text-sm text-[#6b6880] dark:text-[#8b8aa0]">Last 6 months of billed work, released escrow, and completed milestones.</p>
+                  </div>
+                  <div className="rounded-2xl border border-primary-100 bg-primary-50 px-3 py-2 text-xs font-semibold text-primary-700 dark:border-white/8 dark:bg-white/5 dark:text-primary-200">
+                    6 month trend
+                  </div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    {/* Available Jobs - 2/3 width */}
-                    <div className="lg:col-span-2 space-y-6">
-                        <div className="flex items-center justify-between">
-                            <h2 className="text-xl font-bold text-foreground">
-                                {t.dashboard.availableJobs}
-                            </h2>
-                            <div className="flex gap-2">
-                                {(['all', 'new', 'urgent'] as const).map((f) => (
-                                    <button
-                                        key={f}
-                                        onClick={() => setFilter(f)}
-                                        className={`
-                      px-4 py-2 rounded-full text-sm font-medium transition-all
-                      ${filter === f
-                                                ? 'bg-primary-600 text-white'
-                                                : 'bg-white dark:bg-dark-800 text-muted dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-700'
-                                            }
-                    `}
-                                    >
-                                        {f === 'all' ? t.dashboard.all : f === 'new' ? t.dashboard.new : t.dashboard.urgent}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-
-                        <div className="space-y-4">
-                            {isLoading ? (
-                                [...Array(3)].map((_, i) => <SkeletonCard key={i} />)
-                            ) : (
-                                <>
-                                    {filteredJobs.map((job) => (
-                                        <div
-                                            key={job.id}
-                                            className="card hover:shadow-lg transition-shadow cursor-pointer group"
-                                            onClick={() => navigate(`/jobs/${job.id}`)}
-                                        >
-                                            <div className="flex items-start justify-between mb-3">
-                                                <div className="flex-1">
-                                                    <div className="flex items-center gap-2 mb-1">
-                                                        {job.isNew && (
-                                                            <span className="bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400 text-xs font-medium px-2 py-0.5 rounded-full">
-                                                                جديد
-                                                            </span>
-                                                        )}
-                                                        {job.isUrgent && (
-                                                            <span className="bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400 text-xs font-medium px-2 py-0.5 rounded-full flex items-center gap-1">
-                                                                <Zap className="w-3 h-3" />
-                                                                مستعجل
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                    <h3 className="font-bold text-foreground group-hover:text-primary-600 transition-colors">
-                                                        {job.title}
-                                                    </h3>
-                                                </div>
-                                                <span className="badge-primary text-lg">
-                                                    {job.budget} د.ت
-                                                </span>
-                                            </div>
-
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex items-center gap-4 text-sm text-muted">
-                                                    <span className="flex items-center gap-1">
-                                                        <Calendar className="w-4 h-4" />
-                                                        {job.deadline}
-                                                    </span>
-                                                    <span className="flex items-center gap-1">
-                                                        <CheckCircle className="w-4 h-4 text-green-500" />
-                                                        {job.match_score}% تطابق
-                                                    </span>
-                                                </div>
-                                                <div className="flex gap-2">
-                                                    {job.skills.slice(0, 2).map((skill, i) => (
-                                                        <span key={i} className="text-xs px-2 py-1 bg-gray-100 dark:bg-dark-700 rounded-full text-foreground">
-                                                            {skill}
-                                                        </span>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))}
-
-                                    {filteredJobs.length === 0 && (
-                                        <div className="card text-center py-12">
-                                            <Briefcase className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                                            <p className="text-muted">لا توجد وظائف متاحة</p>
-                                        </div>
-                                    )}
-                                </>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Sidebar - 1/3 width */}
-                    <div className="space-y-6">
-                        {/* Profile Completion */}
-                        <ProfileCompletionCard />
-
-                        {/* Recent Activity */}
-                        <div className="card">
-                            <h3 className="font-semibold text-foreground mb-4">
-                                {t.dashboard.recentActivity}
-                            </h3>
-                            <div className="space-y-4">
-                                {isLoading ? (
-                                    <SkeletonList count={3} />
-                                ) : (
-                                    activity.map((item) => (
-                                        <div key={item.id} className="flex items-start gap-3">
-                                            <div className={`
-                       w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0
-                       ${item.type === 'payment' ? 'bg-green-100 dark:bg-green-900/20' :
-                                                    item.type === 'review' ? 'bg-yellow-100 dark:bg-yellow-900/20' : 'bg-blue-100 dark:bg-blue-900/20'}
-                     `}>
-                                                {item.type === 'payment' && <DollarSign className="w-4 h-4 text-green-600" />}
-                                                {item.type === 'review' && <Star className="w-4 h-4 text-yellow-600" />}
-                                                {item.type === 'match' && <Briefcase className="w-4 h-4 text-blue-600" />}
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <p className="text-sm text-foreground">{item.message}</p>
-                                                <p className="text-xs text-muted">{item.time}</p>
-                                            </div>
-                                        </div>
-                                    ))
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Quick Actions */}
-                        <div className="card bg-gradient-to-br from-primary-50 to-secondary-50 dark:from-primary-900/10 dark:to-secondary-900/10">
-                            <h3 className="font-semibold text-foreground mb-4">{t.dashboard.quickActions}</h3>
-                            <div className="space-y-3">
-                                <Button
-                                    variant="primary"
-                                    size="md"
-                                    className="w-full justify-start"
-                                    leftIcon={<User className="w-5 h-5" />}
-                                    onClick={() => navigate('/profile')}
-                                >
-                                    {t.dashboard.viewProfile}
-                                </Button>
-                                <Button
-                                    variant="secondary"
-                                    size="md"
-                                    className="w-full justify-start"
-                                    leftIcon={<Briefcase className="w-5 h-5" />}
-                                    onClick={() => navigate('/jobs')}
-                                >
-                                    {t.dashboard.browseJobs}
-                                </Button>
-                            </div>
-                        </div>
-
-                        {/* Logout */}
-                        <button
-                            onClick={signOut}
-                            className="w-full text-center text-muted hover:text-red-600 py-2 text-sm transition-colors"
-                        >
-                            {t.nav.logout}
-                        </button>
-                    </div>
+                <div className="mt-6 h-[320px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={chartData} margin={{ left: 0, right: 12, top: 10, bottom: 0 }}>
+                      <defs>
+                        <linearGradient id="earningsFill" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#8b5cf6" stopOpacity={0.35} />
+                          <stop offset="100%" stopColor="#8b5cf6" stopOpacity={0} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(139, 92, 246, 0.12)" vertical={false} />
+                      <XAxis dataKey="month" tickLine={false} axisLine={false} tick={{ fill: '#8b8aa0', fontSize: 12 }} />
+                      <YAxis tickLine={false} axisLine={false} tick={{ fill: '#8b8aa0', fontSize: 12 }} tickFormatter={(value) => `${value} TND`} width={72} />
+                      <Tooltip
+                        contentStyle={{
+                          borderRadius: 18,
+                          border: '1px solid rgba(139, 92, 246, 0.14)',
+                          background: 'rgba(17, 14, 28, 0.92)',
+                          color: '#fff',
+                        }}
+                        formatter={(value) => [`${Number(value ?? 0).toLocaleString()} TND`, 'Earnings']}
+                      />
+                      <Area type="monotone" dataKey="earnings" stroke="#8b5cf6" strokeWidth={3} fill="url(#earningsFill)" />
+                    </AreaChart>
+                  </ResponsiveContainer>
                 </div>
-            </div>
-        </div>
-    );
+              </div>
+
+              <div className="premium-panel rounded-[30px] p-6">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary-50 text-primary-600 dark:bg-white/5 dark:text-primary-300">
+                    <Activity className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-[#1a1825] dark:text-white">Recent activity</h2>
+                    <p className="text-sm text-[#6b6880] dark:text-[#8b8aa0]">A clean timeline of the work that keeps revenue moving.</p>
+                  </div>
+                </div>
+
+                <div className="mt-6 space-y-5">
+                  {activityFeed.map((item, index) => (
+                    <div key={item.title} className="relative flex gap-4">
+                      {index !== activityFeed.length - 1 ? <div className="absolute left-[18px] top-11 h-[calc(100%-1rem)] w-px bg-primary-100 dark:bg-white/10" /> : null}
+                      <div className="relative z-10 flex h-9 w-9 items-center justify-center rounded-2xl bg-primary-50 text-primary-600 dark:bg-white/5 dark:text-primary-300">
+                        <item.icon className="h-4 w-4" />
+                      </div>
+                      <div>
+                        <div className="font-semibold text-[#1a1825] dark:text-white">{item.title}</div>
+                        <div className="mt-1 text-sm text-[#4e4a63] dark:text-[#aba9bc]">{item.detail}</div>
+                        <div className="mt-1 text-xs font-medium text-[#8b8aa0]">{item.time}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </section>
+
+            <aside className="space-y-5">
+              <div className="premium-panel rounded-[28px] p-5">
+                <div className="text-sm font-semibold text-[#1a1825] dark:text-white">Upcoming milestones</div>
+                <div className="mt-4 space-y-3">
+                  {milestones.map((item) => (
+                    <div key={item.title} className="rounded-2xl border border-primary-100/80 bg-white/80 p-4 dark:border-white/8 dark:bg-white/5">
+                      <div className="font-semibold text-[#1a1825] dark:text-white">{item.title}</div>
+                      <div className="mt-1 text-sm text-[#6b6880] dark:text-[#8b8aa0]">{item.due}</div>
+                      <div className="mt-3 text-sm font-semibold text-primary-600 dark:text-primary-300">{item.amount}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="premium-panel rounded-[28px] p-5">
+                <div className="text-sm font-semibold text-[#1a1825] dark:text-white">Notifications</div>
+                <div className="mt-4 space-y-3">
+                  {[
+                    'Client approved your last delivery.',
+                    'Profile views increased 23% after the redesign.',
+                    'Two saved jobs match your current skills.',
+                  ].map((note) => (
+                    <div key={note} className="flex gap-3 rounded-2xl bg-white/75 p-4 dark:bg-white/5">
+                      <div className="mt-1 h-2.5 w-2.5 rounded-full bg-primary-500" />
+                      <p className="text-sm leading-relaxed text-[#4e4a63] dark:text-[#aba9bc]">{note}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </aside>
+          </div>
+        </section>
+      </main>
+    </div>
+  );
 }
 
 export default FreelancerDashboardPage;

@@ -29,7 +29,7 @@ export default function Header() {
 
     // Scroll detection
     useEffect(() => {
-        const handleScroll = () => setIsScrolled(window.scrollY > 20);
+        const handleScroll = () => setIsScrolled(window.scrollY > 50);
         window.addEventListener('scroll', handleScroll);
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
@@ -46,8 +46,8 @@ export default function Header() {
                 'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
                 isScrolled
                     ? theme === 'dark'
-                        ? 'backdrop-blur-2xl bg-[#0f0e17]/85 shadow-lg border-b border-white/[0.06]'
-                        : 'backdrop-blur-2xl bg-white/85 shadow-lg shadow-primary-500/[0.04] border-b border-primary-200/40'
+                        ? 'backdrop-blur-xl bg-[#0f0e17]/80 shadow-sm border-b border-white/[0.05]'
+                        : 'backdrop-blur-xl bg-white/80 shadow-sm border-b border-gray-200/50'
                     : 'bg-transparent'
             )}>
                 <div className="max-w-7xl 2xl:max-w-[90%] mx-auto px-4 sm:px-6 lg:px-8">
@@ -66,9 +66,9 @@ export default function Header() {
                             <Link
                                 to="/jobs"
                                 className={cn(
-                                    "hidden md:flex flex-1 max-w-md mx-auto items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-200 group",
-                                    "bg-primary-50/80 dark:bg-white/[0.05] border border-primary-200/50 dark:border-primary-500/20",
-                                    "hover:bg-primary-100 dark:hover:bg-white/10 hover:border-primary-300 dark:hover:border-primary-400/30",
+                                    "hidden md:flex flex-1 max-w-md mx-auto items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-200 group",
+                                    "bg-white/70 dark:bg-white/[0.05] border border-primary-200/50 dark:border-primary-500/20 backdrop-blur-md",
+                                    "hover:bg-white dark:hover:bg-white/10 hover:border-primary-300 dark:hover:border-primary-400/30",
                                     isScrolled || theme === 'dark' ? "text-[#6b6880]" : "text-[#3d3a4e]"
                                 )}
                             >
@@ -108,8 +108,8 @@ export default function Header() {
                                 className={cn(
                                     "2xl:hidden",
                                     isScrolled || theme === 'dark'
-                                        ? "text-gray-400 hover:text-white"
-                                        : "text-gray-600 hover:text-gray-900"
+                                        ? "text-gray-300 hover:text-white"
+                                        : "text-gray-700 hover:text-gray-900"
                                 )}
                                 aria-expanded={mobileMenuOpen}
                                 aria-controls="mobile-menu"
