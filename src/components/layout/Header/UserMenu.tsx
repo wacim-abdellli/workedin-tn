@@ -1,5 +1,6 @@
 import { logger } from '@/lib/logger';
 import { useMemo, useState } from 'react';
+import type { ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Bell, BriefcaseBusiness, ChevronDown, Loader2, LogOut, Plus, Settings, User } from 'lucide-react';
@@ -196,7 +197,7 @@ export function UserAccountPanel({ profile, signOut, onClose }: UserAccountPanel
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.18, ease: 'easeOut' }}
-                className="premium-panel w-full max-w-[430px] rounded-[30px] border border-slate-200/70 p-4 shadow-[0_24px_70px_rgba(15,23,42,0.16)] dark:border-white/10 dark:shadow-[0_32px_90px_rgba(0,0,0,0.46)]"
+                className="premium-panel max-h-[min(78vh,42rem)] w-full overflow-y-auto rounded-[30px] border border-slate-200/70 p-4 shadow-[0_24px_70px_rgba(15,23,42,0.16)] dark:border-white/10 dark:shadow-[0_32px_90px_rgba(0,0,0,0.46)]"
                 role="dialog"
                 aria-label={copy.sectionLabel}
                 data-account-panel
@@ -342,7 +343,7 @@ function PanelLink({
     onClick,
 }: {
     to: string;
-    icon: React.ReactNode;
+    icon: ReactNode;
     label: string;
     onClick?: () => void;
 }) {

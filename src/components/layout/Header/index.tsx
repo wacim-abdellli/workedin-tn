@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Menu, X, Briefcase, User, TrendingUp } from 'lucide-react';
@@ -21,13 +21,11 @@ export default function Header() {
     const [isScrolled, setIsScrolled] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [accountPanelOpen, setAccountPanelOpen] = useState(false);
-    const [headerHeight, setHeaderHeight] = useState(80);
     const { user, profile, signOut } = useAuth();
     const { theme } = useTheme();
     const { t, language, setLanguage } = useTranslation();
     const navigate = useNavigate();
     const location = useLocation();
-    const headerRef = useRef<HTMLElement>(null);
 
     // Scroll detection
     useEffect(() => {
@@ -69,14 +67,6 @@ export default function Header() {
     }, [accountPanelOpen, mobileMenuOpen]);
 
     useEffect(() => {
-        if (!accountPanelOpen) return;
-
-        const handleScroll = () => setAccountPanelOpen(false);
-        window.addEventListener('scroll', handleScroll, { passive: true });
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, [accountPanelOpen]);
-
-    useEffect(() => {
         const handleResize = () => {
             if (window.innerWidth >= 1280) {
                 setMobileMenuOpen(false);
@@ -99,23 +89,6 @@ export default function Header() {
         }
     }, [mobileMenuOpen]);
 
-    useEffect(() => {
-        const element = headerRef.current;
-        if (!element) return;
-
-        const updateHeight = () => setHeaderHeight(element.offsetHeight);
-        updateHeight();
-
-        const observer = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(updateHeight) : null;
-        observer?.observe(element);
-        window.addEventListener('resize', updateHeight);
-
-        return () => {
-            observer?.disconnect();
-            window.removeEventListener('resize', updateHeight);
-        };
-    }, [accountPanelOpen, mobileMenuOpen, user]);
-
     const navItems = [
         { to: '/jobs', icon: Briefcase, label: t.nav.findWork },
         { to: '/find-freelancers', icon: User, label: t.nav.findFreelancers },
@@ -124,7 +97,7 @@ export default function Header() {
 
     return (
         <>
-            <header ref={headerRef} className={cn(
+            <header className={cn(
                 'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
                 isScrolled
                     ? theme === 'dark'
@@ -175,12 +148,24 @@ export default function Header() {
                             <ThemeToggle isScrolled={isScrolled} />
 
                             {user ? (
-                                <UserMenu
-                                    user={user}
-                                    profile={profile}
-                                    isOpen={accountPanelOpen}
-                                    onToggle={() => setAccountPanelOpen((open) => !open)}
-                                />
+                                <div className="relative" data-account-panel>
+                                    <UserMenu
+                                        user={user}
+                                        profile={profile}
+                                        isOpen={accountPanelOpen}
+                                        onToggle={() => setAccountPanelOpen((open) => !open)}
+                                    />
+                                    {accountPanelOpen ? (
+                                        <div className="absolute right-0 top-full z-[80] mt-3 w-[min(26rem,calc(100vw-1rem))]">
+                                            <UserAccountPanel
+                                                user={user}
+                                                profile={profile}
+                                                signOut={signOut}
+                                                onClose={() => setAccountPanelOpen(false)}
+                                            />
+                                        </div>
+                                    ) : null}
+                                </div>
                             ) : (
                                 <AuthButtons isScrolled={isScrolled} theme={theme} t={t} />
                             )}
@@ -203,21 +188,10 @@ export default function Header() {
                             />
                         </div>
                     </div>
-
-                    {user && accountPanelOpen ? (
-                        <div className="flex justify-end pb-4 pt-3">
-                            <UserAccountPanel
-                                user={user}
-                                profile={profile}
-                                signOut={signOut}
-                                onClose={() => setAccountPanelOpen(false)}
-                            />
-                        </div>
-                    ) : null}
                 </div>
 
                 {/* Gradient line */}
-                {(isScrolled || accountPanelOpen) && (
+                {isScrolled && (
                     <motion.div
                         initial={{ scaleX: 0 }}
                         animate={{ scaleX: 1 }}
@@ -235,7 +209,7 @@ export default function Header() {
             </header>
 
             {/* Spacer */}
-            <div style={{ height: `${headerHeight}px` }} />
+            <div className="h-16 lg:h-20" />
         </>
     );
 }
