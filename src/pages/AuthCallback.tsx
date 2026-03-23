@@ -3,13 +3,17 @@ import { Loader2, RefreshCw } from 'lucide-react';
 
 import { logger } from '@/lib/logger';
 import Button from '@/components/ui/Button';
-import { supabase } from '../lib/supabase';
+import { supabase, withTimeout } from '../lib/supabase';
 import { useTranslation } from '../i18n';
 
 type CallbackState = 'loading' | 'error';
 
 const MAX_WAIT_MS = 12000;
 const POLL_INTERVAL_MS = 400;
+const PRE_EXCHANGE_WAIT_MS = 1800;
+const EXCHANGE_TIMEOUT_MS = 5000;
+
+const sleep = (ms: number) => new Promise((resolve) => window.setTimeout(resolve, ms));
 
 const AuthCallback = () => {
     const { dir } = useTranslation();
@@ -19,11 +23,50 @@ const AuthCallback = () => {
     useEffect(() => {
         let cancelled = false;
 
+        const redirectToHome = () => {
+            window.location.replace('/');
+        };
+
+        const waitForSession = async (deadline: number) => {
+            while (!cancelled && Date.now() < deadline) {
+                try {
+                    const { data, error } = await withTimeout(
+                        supabase.auth.getSession(),
+                        2000,
+                        'AuthCallback.getSession'
+                    );
+
+                    if (error) {
+                        logger.error('AuthCallback: failed to read session', error);
+                    }
+
+                    if (data.session) {
+                        return data.session;
+                    }
+                } catch (error) {
+                    logger.error('AuthCallback: polling getSession failed', error);
+                }
+
+                await sleep(POLL_INTERVAL_MS);
+            }
+
+            return null;
+        };
+
         const finishSignIn = async () => {
             const currentUrl = new URL(window.location.href);
             const authCode = currentUrl.searchParams.get('code');
             const authError = currentUrl.searchParams.get('error_description') || currentUrl.searchParams.get('error');
             const authErrorCode = currentUrl.searchParams.get('error_code') || undefined;
+
+            if (authCode || authError || authErrorCode) {
+                currentUrl.searchParams.delete('code');
+                currentUrl.searchParams.delete('error');
+                currentUrl.searchParams.delete('error_code');
+                currentUrl.searchParams.delete('error_description');
+                currentUrl.searchParams.delete('state');
+                window.history.replaceState({}, document.title, `${currentUrl.pathname}${currentUrl.hash}`);
+            }
 
             if (authError) {
                 logger.error('AuthCallback: provider returned error', { authError, authErrorCode });
@@ -34,54 +77,40 @@ const AuthCallback = () => {
                 return;
             }
 
+            const existingSession = await waitForSession(Date.now() + PRE_EXCHANGE_WAIT_MS);
+
+            if (existingSession) {
+                logger.info('AuthCallback: existing session detected, redirecting');
+                redirectToHome();
+                return;
+            }
+
             if (authCode) {
                 try {
-                    const { data, error } = await supabase.auth.exchangeCodeForSession(authCode);
+                    const { data, error } = await withTimeout(
+                        supabase.auth.exchangeCodeForSession(authCode),
+                        EXCHANGE_TIMEOUT_MS,
+                        'AuthCallback.exchangeCodeForSession'
+                    );
 
                     if (error) {
                         logger.error('AuthCallback: exchangeCodeForSession failed', error);
-                        if (!cancelled) {
-                            setErrorDetails({ message: error.message });
-                            setStatus('error');
-                        }
-                        return;
-                    }
-
-                    if (data.session) {
+                    } else if (data.session) {
                         logger.info('AuthCallback: code exchanged successfully, redirecting');
-                        window.location.replace('/');
+                        redirectToHome();
                         return;
                     }
                 } catch (error) {
-                    logger.error('AuthCallback: explicit code exchange failed', error);
-                    if (!cancelled) {
-                        setErrorDetails({ message: error instanceof Error ? error.message : 'Unexpected callback error' });
-                        setStatus('error');
-                    }
-                    return;
+                    logger.warn('AuthCallback: explicit code exchange timed out, continuing to poll for session', error);
                 }
             }
 
-            const deadline = Date.now() + MAX_WAIT_MS;
+            const session = await waitForSession(Date.now() + MAX_WAIT_MS);
 
-            while (!cancelled && Date.now() < deadline) {
-                try {
-                    const { data, error } = await supabase.auth.getSession();
-
-                    if (error) {
-                        logger.error('AuthCallback: failed to read session', error);
-                    }
-
-                    if (data.session) {
-                        logger.info('AuthCallback: session detected, redirecting to home');
-                        window.location.replace('/');
-                        return;
-                    }
-                } catch (error) {
-                    logger.error('AuthCallback: polling getSession failed', error);
-                }
-
-                await new Promise((resolve) => window.setTimeout(resolve, POLL_INTERVAL_MS));
+            if (session) {
+                logger.info('AuthCallback: session detected after polling, redirecting to home');
+                redirectToHome();
+                return;
             }
 
             if (!cancelled) {
@@ -98,7 +127,7 @@ const AuthCallback = () => {
 
             if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && session) {
                 logger.info(`AuthCallback: ${event} detected, redirecting`);
-                window.location.replace('/');
+                redirectToHome();
             }
         });
 
