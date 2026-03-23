@@ -7,6 +7,7 @@ const serviceState = vi.hoisted(() => {
         eqCalls: [] as Array<{ table: string; column: string; value: unknown }>,
         orCalls: [] as Array<{ table: string; value: string }>,
         orderCalls: [] as Array<{ table: string; column: string; options?: unknown }>,
+        limitCalls: [] as Array<{ table: string; value: number }>,
         rangeCalls: [] as Array<{ table: string; from: number; to: number }>,
         insertCalls: [] as Array<{ table: string; value: unknown }>,
         updateCalls: [] as Array<{ table: string; value: unknown }>,
@@ -15,8 +16,14 @@ const serviceState = vi.hoisted(() => {
         ltCalls: [] as Array<{ table: string; column: string; value: unknown }>,
         rpcCalls: [] as Array<{ fn: string; params: unknown }>,
         singleCalls: [] as string[],
+        maybeSingleCalls: [] as string[],
+        channelCalls: [] as string[],
+        onCalls: [] as Array<{ channel: string; event: string; config: unknown }>,
+        removeChannelCalls: [] as string[],
         tableResults: {} as Record<string, unknown>,
         session: { access_token: 'session-token' } as { access_token: string } | null,
+        uploadFileResult: { url: 'https://files.example/avatar.png' } as unknown,
+        uploadFileCalls: [] as Array<{ bucket: string; path: string; file: File }>,
     };
 
     const reset = () => {
@@ -25,6 +32,7 @@ const serviceState = vi.hoisted(() => {
         state.eqCalls = [];
         state.orCalls = [];
         state.orderCalls = [];
+        state.limitCalls = [];
         state.rangeCalls = [];
         state.insertCalls = [];
         state.updateCalls = [];
@@ -33,8 +41,14 @@ const serviceState = vi.hoisted(() => {
         state.ltCalls = [];
         state.rpcCalls = [];
         state.singleCalls = [];
+        state.maybeSingleCalls = [];
+        state.channelCalls = [];
+        state.onCalls = [];
+        state.removeChannelCalls = [];
         state.tableResults = {};
         state.session = { access_token: 'session-token' };
+        state.uploadFileResult = { url: 'https://files.example/avatar.png' };
+        state.uploadFileCalls = [];
     };
 
     return { state, reset };
@@ -63,6 +77,10 @@ vi.mock('@/lib/supabase', () => {
             }),
             order: vi.fn((column: string, options?: unknown) => {
                 serviceState.state.orderCalls.push({ table, column, options });
+                return builder;
+            }),
+            limit: vi.fn((value: number) => {
+                serviceState.state.limitCalls.push({ table, value });
                 return builder;
             }),
             range: vi.fn((from: number, to: number) => {
@@ -94,6 +112,10 @@ vi.mock('@/lib/supabase', () => {
                 serviceState.state.singleCalls.push(table);
                 return getTableResult(table);
             }),
+            maybeSingle: vi.fn(async () => {
+                serviceState.state.maybeSingleCalls.push(table);
+                return getTableResult(table);
+            }),
             then: (resolve: (value: unknown) => unknown) => Promise.resolve(resolve(getTableResult(table))),
         };
 
@@ -111,11 +133,29 @@ vi.mock('@/lib/supabase', () => {
                 serviceState.state.rpcCalls.push({ fn, params });
                 return { data: { ok: true }, error: null };
             }),
+            channel: vi.fn((name: string) => {
+                serviceState.state.channelCalls.push(name);
+                const channel = {
+                    on: vi.fn((event: string, config: unknown, callback: unknown) => {
+                        void callback;
+                        serviceState.state.onCalls.push({ channel: name, event, config });
+                        return channel;
+                    }),
+                    subscribe: vi.fn(() => ({ id: name })),
+                };
+                return channel;
+            }),
+            removeChannel: vi.fn((channel: { id: string }) => {
+                serviceState.state.removeChannelCalls.push(channel.id);
+            }),
             auth: {
                 getSession: vi.fn(async () => ({ data: { session: serviceState.state.session } })),
             },
         },
-        uploadFile: vi.fn(),
+        uploadFile: vi.fn(async (bucket: string, path: string, file: File) => {
+            serviceState.state.uploadFileCalls.push({ bucket, path, file });
+            return serviceState.state.uploadFileResult;
+        }),
     };
 });
 
@@ -129,10 +169,24 @@ import {
     updateMilestoneStatus,
 } from '@/services/contracts';
 import {
+    createNotification,
+    getNotifications,
+    getUnreadCount,
+    markAllRead,
+    markNotificationRead,
+    subscribeToNotifications,
+} from '@/services/notifications';
+import {
     getClientStats,
+    getFavoriteStatus,
+    getFreelancerProfile,
+    getFreelancerWithProfile,
+    getFreelancers,
     getProfileById,
+    getReviewsByUser,
     getSavedJobs,
     toggleFavorite,
+    uploadAvatar,
     updateFreelancerProfile,
     updateProfile,
 } from '@/services/profiles';
@@ -274,6 +328,42 @@ describe('profiles service coverage', () => {
         });
     });
 
+    it('fetches freelancer-specific profile data and upload helpers', async () => {
+        serviceState.state.tableResults.favorites = {
+            data: { id: 'favorite-1' },
+            error: null,
+        };
+
+        await getFreelancerProfile('user-1');
+        await getFreelancerWithProfile('user-1');
+        await getFreelancers({ search: 'amine' }, 2, 10);
+        await getFavoriteStatus('user-1', 'job-2');
+        await getReviewsByUser('user-1');
+        const upload = await uploadAvatar('user-1', new File(['avatar'], 'avatar.png', { type: 'image/png' }));
+
+        expect(serviceState.state.selectCalls).toEqual(expect.arrayContaining([
+            expect.objectContaining({ table: 'freelancer_profiles', columns: '*' }),
+            expect.objectContaining({ table: 'profiles', columns: expect.stringContaining('freelancer_profiles(*)') }),
+            expect.objectContaining({ table: 'profiles', columns: expect.stringContaining('freelancer_profiles(*)'), options: { count: 'exact' } }),
+            expect.objectContaining({ table: 'favorites', columns: 'id' }),
+            expect.objectContaining({ table: 'reviews', columns: '*' }),
+        ]));
+        expect(serviceState.state.orCalls).toContainEqual({
+            table: 'profiles',
+            value: 'full_name.ilike.%amine%,username.ilike.%amine%',
+        });
+        expect(serviceState.state.rangeCalls).toContainEqual({
+            table: 'profiles',
+            from: 10,
+            to: 19,
+        });
+        expect(serviceState.state.maybeSingleCalls).toContain('favorites');
+        expect(serviceState.state.uploadFileCalls).toHaveLength(1);
+        expect(serviceState.state.uploadFileCalls[0].bucket).toBe('avatars');
+        expect(serviceState.state.uploadFileCalls[0].path).toMatch(/^user-1\/avatar-\d+\.png$/);
+        expect(upload).toEqual({ url: 'https://files.example/avatar.png' });
+    });
+
     it('aggregates client stats from jobs, contracts, and reviews', async () => {
         serviceState.state.tableResults.jobs = { data: null, error: null, count: 3 };
         serviceState.state.tableResults.contracts = {
@@ -292,6 +382,74 @@ describe('profiles service coverage', () => {
             totalSpent: 350,
             rating: 4.5,
         });
+    });
+});
+
+describe('notifications service coverage', () => {
+    beforeEach(() => {
+        serviceState.reset();
+    });
+
+    it('lists notifications and unread counts', async () => {
+        await getNotifications('user-1');
+        await getUnreadCount('user-1');
+
+        expect(serviceState.state.selectCalls).toEqual(expect.arrayContaining([
+            { table: 'notifications', columns: '*', options: undefined },
+            { table: 'notifications', columns: '*', options: { count: 'exact', head: true } },
+        ]));
+        expect(serviceState.state.orderCalls).toContainEqual({
+            table: 'notifications',
+            column: 'created_at',
+            options: { ascending: false },
+        });
+        expect(serviceState.state.limitCalls).toContainEqual({
+            table: 'notifications',
+            value: 50,
+        });
+        expect(serviceState.state.eqCalls).toEqual(expect.arrayContaining([
+            { table: 'notifications', column: 'user_id', value: 'user-1' },
+            { table: 'notifications', column: 'is_read', value: false },
+        ]));
+    });
+
+    it('creates notifications, marks reads, and subscribes to realtime inserts', async () => {
+        await createNotification({
+            user_id: 'user-1',
+            type: 'message',
+            content: 'New message',
+            link: '/messages',
+        });
+        await markNotificationRead('notif-1');
+        await markAllRead('user-1');
+        const subscription = subscribeToNotifications('user-1', vi.fn());
+
+        expect(serviceState.state.insertCalls).toContainEqual({
+            table: 'notifications',
+            value: {
+                user_id: 'user-1',
+                type: 'message',
+                content: 'New message',
+                link: '/messages',
+                is_read: false,
+            },
+        });
+        expect(serviceState.state.updateCalls).toEqual(expect.arrayContaining([
+            { table: 'notifications', value: { is_read: true } },
+            { table: 'notifications', value: { is_read: true } },
+        ]));
+        expect(serviceState.state.channelCalls).toContain('notifications:user-1');
+        expect(serviceState.state.onCalls).toContainEqual({
+            channel: 'notifications:user-1',
+            event: 'postgres_changes',
+            config: {
+                event: 'INSERT',
+                schema: 'public',
+                table: 'notifications',
+                filter: 'user_id=eq.user-1',
+            },
+        });
+        expect(subscription).toEqual({ id: 'notifications:user-1' });
     });
 });
 
