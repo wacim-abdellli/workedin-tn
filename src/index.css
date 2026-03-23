@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Syne:wght@700;800&family=Cairo:wght@300;400;500;600;700;800;900&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -8,65 +8,60 @@
    CSS VARIABLES - Light & Dark Mode
    ======================================== */
 :root {
-  /* Light Mode Colors - Premium */
-  --color-bg: #f8fafc;
+  /* Light Mode Colors - Premium Purple-tinted */
+  --color-bg: #faf9ff;
   --color-bg-secondary: #ffffff;
-  --color-bg-tertiary: #f1f5f9;
-  --color-fg: #0f172a;
-  --color-fg-secondary: #334155;
-  --color-fg-muted: #64748b;
-  --color-border: #e2e8f0;
-  --color-border-subtle: #f1f5f9;
+  --color-bg-tertiary: #f1f0fe;
+  --color-fg: #1a1825;
+  --color-fg-secondary: #3d3a4e;
+  --color-fg-muted: #6b6880;
+  --color-border: #e8e6f0;
+  --color-border-subtle: #f1f0fe;
 
-  /* Premium Gradients - Matching New Logo (Blue -> Purple -> Pink) */
-  --gradient-primary: linear-gradient(135deg, #06b6d4 0%, #7c3aed 50%, #d946ef 100%);
-  /* Cyan -> Purple -> Pink */
-  --gradient-accent: linear-gradient(135deg, #d946ef 0%, #7c3aed 100%);
-  /* Pink -> Purple */
+  /* Premium Gradients */
+  --gradient-primary: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 50%, #a78bfa 100%);
+  --gradient-accent: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
   --gradient-glass: linear-gradient(180deg, rgba(255, 255, 255, 0.7) 0%, rgba(255, 255, 255, 0.3) 100%);
-  --gradient-surface: linear-gradient(145deg, #ffffff, #f3f4f6);
+  --gradient-surface: linear-gradient(145deg, #ffffff, #f8f7ff);
 
   /* Premium Shadows */
-  --shadow-sm: 0 2px 4px rgba(148, 163, 184, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(148, 163, 184, 0.1), 0 2px 4px -2px rgba(148, 163, 184, 0.05);
-  --shadow-lg: 0 10px 15px -3px rgba(148, 163, 184, 0.1), 0 4px 6px -4px rgba(148, 163, 184, 0.05);
-  --shadow-xl: 0 20px 25px -5px rgba(148, 163, 184, 0.1), 0 8px 10px -6px rgba(148, 163, 184, 0.05);
-  --shadow-2xl: 0 25px 50px -12px rgba(148, 163, 184, 0.25);
+  --shadow-sm: 0 2px 4px rgba(139, 92, 246, 0.04);
+  --shadow-md: 0 4px 12px -1px rgba(139, 92, 246, 0.08), 0 2px 4px -2px rgba(139, 92, 246, 0.04);
+  --shadow-lg: 0 10px 20px -3px rgba(139, 92, 246, 0.1), 0 4px 6px -4px rgba(139, 92, 246, 0.05);
+  --shadow-xl: 0 20px 40px -5px rgba(139, 92, 246, 0.12), 0 8px 10px -6px rgba(139, 92, 246, 0.06);
+  --shadow-2xl: 0 25px 50px -12px rgba(139, 92, 246, 0.2);
 
-  /* Colored Glows */
-  --shadow-glow: 0 0 20px rgba(79, 70, 229, 0.15);
-  --shadow-glow-accent: 0 0 20px rgba(249, 115, 22, 0.15);
+  /* Purple Glows */
+  --shadow-glow: 0 0 20px rgba(139, 92, 246, 0.2);
+  --shadow-glow-accent: 0 0 20px rgba(245, 158, 11, 0.2);
 }
 
 .dark {
-  /* Dark Mode Colors - Deep Blue/Purple Tint (Not flat grey) */
-  --color-bg: #030712;
-  /* Richer black */
-  --color-bg-secondary: #0f172a;
-  /* Slate 900 */
-  --color-bg-tertiary: #1e293b;
-  /* Slate 800 */
-  --color-fg: #f8fafc;
-  --color-fg-secondary: #cbd5e1;
-  --color-fg-muted: #94a3b8;
-  --color-border: #1e293b;
-  --color-border-subtle: #0f172a;
+  /* Dark Mode — Deep purple-tinted, not flat grey */
+  --color-bg: #0f0e17;
+  --color-bg-secondary: #1a1825;
+  --color-bg-tertiary: #242235;
+  --color-fg: #f8f7ff;
+  --color-fg-secondary: #c4b5fd;
+  --color-fg-muted: #8b8aa0;
+  --color-border: #2a2840;
+  --color-border-subtle: #1a1825;
 
-  /* Premium Dark Gradients */
-  --gradient-primary: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
-  --gradient-accent: linear-gradient(135deg, #fb923c 0%, #ea580c 100%);
-  --gradient-glass: linear-gradient(180deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.3) 100%);
-  --gradient-surface: linear-gradient(145deg, #1e293b, #0f172a);
+  /* Dark Gradients */
+  --gradient-primary: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+  --gradient-accent: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
+  --gradient-glass: linear-gradient(180deg, rgba(26, 24, 37, 0.7) 0%, rgba(15, 14, 23, 0.3) 100%);
+  --gradient-surface: linear-gradient(145deg, #1a1825, #0f0e17);
 
-  /* Deep Colored Shadows */
-  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.2);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -4px rgba(0, 0, 0, 0.3);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.6), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
-  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+  /* Deep Shadows with purple tint */
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 12px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 20px -3px rgba(0, 0, 0, 0.6), 0 4px 6px -4px rgba(0, 0, 0, 0.4);
+  --shadow-xl: 0 20px 40px -5px rgba(0, 0, 0, 0.7), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
+  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
 
-  --shadow-glow: 0 0 30px rgba(99, 102, 241, 0.2);
-  --shadow-glow-accent: 0 0 30px rgba(249, 115, 22, 0.2);
+  --shadow-glow: 0 0 30px rgba(139, 92, 246, 0.25);
+  --shadow-glow-accent: 0 0 30px rgba(245, 158, 11, 0.2);
 }
 
 /* ========================================
@@ -96,7 +91,7 @@ body {
 }
 
 [dir="ltr"] {
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
 }
 
 /* ========================================
@@ -130,13 +125,13 @@ body {
 
 /* Focus styles */
 :focus-visible {
-  outline: 2px solid #1554f7;
+  outline: 2px solid #8b5cf6;
   outline-offset: 2px;
 }
 
 /* Selection */
 ::selection {
-  background: rgba(21, 84, 247, 0.2);
+  background: rgba(139, 92, 246, 0.2);
   color: inherit;
 }
 
@@ -157,9 +152,9 @@ body {
 
   .btn-primary {
     @apply btn relative overflow-hidden;
-    background: linear-gradient(135deg, #1554f7 0%, #0e41e3 100%);
+    background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
     @apply text-white;
-    box-shadow: 0 4px 15px -3px rgba(21, 84, 247, 0.4);
+    box-shadow: 0 4px 15px -3px rgba(124, 58, 237, 0.4);
     isolation: isolate;
   }
 
@@ -186,7 +181,7 @@ body {
 
   .btn-primary:hover:not(:disabled) {
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px -5px rgba(21, 84, 247, 0.5);
+    box-shadow: 0 8px 25px -5px rgba(124, 58, 237, 0.5);
   }
 
   .btn-accent {
@@ -331,8 +326,8 @@ body {
 
   .input:focus {
     @apply outline-none;
-    border-color: #1554f7;
-    box-shadow: 0 0 0 4px rgba(21, 84, 247, 0.15);
+    border-color: #8b5cf6;
+    box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.15);
     transform: translateY(-1px);
   }
 
@@ -395,15 +390,14 @@ body {
 
   .gradient-mesh {
     background:
-      radial-gradient(at 0% 0%, rgba(21, 84, 247, 0.15) 0px, transparent 50%),
-      radial-gradient(at 100% 0%, rgba(147, 51, 234, 0.15) 0px, transparent 50%),
-      radial-gradient(at 100% 100%, rgba(248, 101, 69, 0.1) 0px, transparent 50%),
-      radial-gradient(at 0% 100%, rgba(21, 84, 247, 0.1) 0px, transparent 50%);
+      radial-gradient(ellipse at 20% 50%, rgba(124, 58, 237, 0.12) 0px, transparent 50%),
+      radial-gradient(ellipse at 80% 20%, rgba(245, 158, 11, 0.08) 0px, transparent 50%),
+      radial-gradient(ellipse at 50% 100%, rgba(139, 92, 246, 0.06) 0px, transparent 50%);
   }
 
   .gradient-text {
     @apply bg-clip-text text-transparent;
-    background-image: linear-gradient(135deg, #1554f7 0%, #9333ea 50%, #f86545 100%);
+    background-image: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 50%, #f59e0b 100%);
   }
 
   /* ===== GLASS EFFECT ===== */
@@ -435,7 +429,7 @@ body {
   /* ===== TEXT STYLES ===== */
   .text-gradient {
     @apply bg-clip-text text-transparent;
-    background-image: linear-gradient(135deg, #1554f7, #9333ea);
+    background-image: linear-gradient(135deg, #8b5cf6, #7c3aed);
   }
 
   .heading-xl {

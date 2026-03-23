@@ -1,5 +1,6 @@
 import React from 'react';
 import type { LucideIcon } from 'lucide-react';
+import { motion } from 'framer-motion';
 import Button from '../ui/Button';
 
 interface EmptyStateProps {
@@ -30,20 +31,33 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
     className = ''
 }) => {
     return (
-        <div className={`flex flex-col items-center justify-center py-16 px-4 text-center ${className}`}>
+        <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+            className={`flex flex-col items-center justify-center py-20 px-6 text-center ${className}`}
+        >
             {illustration ? (
-                <div className="mb-6">{illustration}</div>
+                <div className="mb-8">{illustration}</div>
             ) : (
-                <div className="w-20 h-20 rounded-full bg-gray-100 dark:bg-dark-800 flex items-center justify-center mb-6 animate-pulse-slow">
-                    <Icon className="w-10 h-10 text-gray-400 dark:text-gray-600" />
-                </div>
+                <motion.div
+                    animate={{ y: [0, -6, 0] }}
+                    transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+                    className="relative mb-8"
+                >
+                    {/* Glow ring behind icon */}
+                    <div className="absolute inset-0 bg-primary-500/10 dark:bg-primary-500/5 rounded-full blur-xl scale-150" />
+                    <div className="relative w-24 h-24 rounded-full bg-gradient-to-br from-primary-100 to-primary-50 dark:from-primary-900/30 dark:to-primary-950/20 border border-primary-200/50 dark:border-primary-500/20 flex items-center justify-center">
+                        <Icon className="w-10 h-10 text-primary-500 dark:text-primary-400" />
+                    </div>
+                </motion.div>
             )}
 
-            <h3 className="text-xl font-bold text-dark-900 dark:text-white mb-2">
+            <h3 className="text-xl font-bold text-[#1a1825] dark:text-white mb-3">
                 {title}
             </h3>
 
-            <p className="text-gray-600 dark:text-gray-400 max-w-md mb-8 leading-relaxed">
+            <p className="text-[#6b6880] dark:text-[#8b8aa0] max-w-md mb-8 leading-relaxed">
                 {description}
             </p>
 
@@ -69,7 +83,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
                     )}
                 </div>
             )}
-        </div>
+        </motion.div>
     );
 };
 

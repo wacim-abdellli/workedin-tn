@@ -45,7 +45,9 @@ export default function Header() {
             <header className={cn(
                 'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
                 isScrolled
-                    ? 'backdrop-blur-2xl bg-gray-900/80 shadow-lg border-b border-gray-800/50'
+                    ? theme === 'dark'
+                        ? 'backdrop-blur-2xl bg-[#0f0e17]/85 shadow-lg border-b border-white/[0.06]'
+                        : 'backdrop-blur-2xl bg-white/85 shadow-lg shadow-primary-500/[0.04] border-b border-primary-200/40'
                     : 'bg-transparent'
             )}>
                 <div className="max-w-7xl 2xl:max-w-[90%] mx-auto px-4 sm:px-6 lg:px-8">
@@ -65,15 +67,15 @@ export default function Header() {
                                 to="/jobs"
                                 className={cn(
                                     "hidden md:flex flex-1 max-w-md mx-auto items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-200 group",
-                                    "bg-gray-100 dark:bg-gray-800/50 border border-transparent dark:border-gray-700/50",
-                                    "hover:bg-gray-200 dark:hover:bg-gray-800/80 hover:border-violet-500/30",
-                                    isScrolled || theme === 'dark' ? "text-gray-400" : "text-gray-600"
+                                    "bg-primary-50/80 dark:bg-white/[0.05] border border-primary-200/50 dark:border-primary-500/20",
+                                    "hover:bg-primary-100 dark:hover:bg-white/10 hover:border-primary-300 dark:hover:border-primary-400/30",
+                                    isScrolled || theme === 'dark' ? "text-[#6b6880]" : "text-[#3d3a4e]"
                                 )}
                             >
                                 <Briefcase className="w-4 h-4 text-violet-500" />
                                 <span className={cn(
                                     "flex-1 text-sm font-medium text-left truncate",
-                                    isScrolled || theme === 'dark' ? "text-gray-300" : "text-gray-600"
+                                    isScrolled || theme === 'dark' ? "text-[#c4b5fd]" : "text-[#3d3a4e]"
                                 )}>
                                     {t.nav.findWork}
                                 </span>
@@ -121,7 +123,7 @@ export default function Header() {
                     <motion.div
                         initial={{ scaleX: 0 }}
                         animate={{ scaleX: 1 }}
-                        className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-violet-500 to-transparent"
+                        className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary-500 to-transparent"
                     />
                 )}
 
