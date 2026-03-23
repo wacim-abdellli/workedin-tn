@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Menu, X, Briefcase, User, TrendingUp, Sparkles } from 'lucide-react';
+import { Menu, X, Briefcase, User, TrendingUp } from 'lucide-react';
 
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -161,10 +161,6 @@ function Logo({ language }: { language: string }) {
                     style={{ height: '36px', width: 'auto' }}
                     className="relative block"
                 />
-                <div className="absolute -end-2 -top-2 hidden rounded-full border border-violet-500/20 bg-violet-600/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-violet-500 shadow-lg md:flex md:items-center md:gap-1">
-                    <Sparkles className="h-3 w-3" />
-                    <span>TN</span>
-                </div>
             </motion.div>
         </Link>
     );
