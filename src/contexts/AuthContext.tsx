@@ -7,10 +7,12 @@ import { clearAllAuthData } from '../lib/authUtils';
 import {
     canAccessMode,
     getAvailableModes,
+    getModeTarget,
     persistAccountMode,
     promoteUserTypeForMode,
     resolveAccountMode,
 } from '@/lib/accountMode';
+import type { WorkspaceSwitchResult } from '@/lib/accountMode';
 import type { Profile, FreelancerProfile, UserType, AccountMode, Language } from '../types';
 
 interface AuthContextType {
@@ -30,7 +32,7 @@ interface AuthContextType {
     updateProfile: (data: Partial<Profile>) => Promise<void>;
     updateFreelancerProfile: (data: Partial<FreelancerProfile>) => Promise<void>;
     setUserType: (userType: UserType) => Promise<void>;
-    switchAccountMode: (mode: AccountMode) => Promise<AccountMode>;
+    switchAccountMode: (mode: AccountMode) => Promise<WorkspaceSwitchResult>;
     refreshProfile: () => Promise<void>;
 }
 
@@ -377,6 +379,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         setModeOverride(nextMode);
         await updateProfile({
             user_type: userType,
+            active_mode: nextMode,
         });
 
         // Create freelancer profile if user is freelancer or both
@@ -395,7 +398,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         await fetchProfile(user.id, user);
     };
 
-    const switchAccountMode = async (mode: AccountMode) => {
+    const switchAccountMode = async (mode: AccountMode): Promise<WorkspaceSwitchResult> => {
         if (!user) throw new Error('No user logged in');
 
         if (!profile) {
@@ -409,9 +412,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
             persistAccountMode(mode, user.id);
             setModeOverride(mode);
 
-            if (nextUserType !== profile?.user_type) {
+            if (nextUserType !== profile?.user_type || profile?.active_mode !== mode) {
                 await updateProfile({
                     user_type: nextUserType,
+                    active_mode: mode,
                 });
             }
 
@@ -437,7 +441,21 @@ export function AuthProvider({ children }: AuthProviderProps) {
             throw error;
         }
 
-        return mode;
+        const nextProfile = {
+            ...profile,
+            id: user.id,
+            user_type: nextUserType,
+            active_mode: mode,
+        };
+        const nextFreelancerProfile = mode === 'freelancer' ? freelancerProfile ?? null : freelancerProfile;
+        const target = getModeTarget(nextProfile, nextFreelancerProfile, mode);
+
+        return {
+            mode,
+            userType: nextUserType,
+            targetPath: target.path,
+            isOnboarded: target.isOnboarded,
+        };
     };
 
     // Refresh profile data
@@ -446,6 +464,25 @@ export function AuthProvider({ children }: AuthProviderProps) {
             await fetchProfile(user.id, user);
         }
     };
+
+    useEffect(() => {
+        if (!profile?.id) return;
+
+        if (profile.active_mode && canAccessMode(profile, profile.active_mode)) {
+            persistAccountMode(profile.active_mode, profile.id);
+        }
+
+        if (!modeOverride) return;
+
+        if (!canAccessMode(profile, modeOverride)) {
+            setModeOverride(null);
+            return;
+        }
+
+        if (profile.active_mode === modeOverride || resolveAccountMode(profile, freelancerProfile) === modeOverride) {
+            setModeOverride(null);
+        }
+    }, [freelancerProfile, modeOverride, profile]);
 
     const resolvedMode = resolveAccountMode(profile, freelancerProfile);
     const activeMode = modeOverride && canAccessMode(profile, modeOverride) ? modeOverride : resolvedMode;

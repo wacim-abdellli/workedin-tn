@@ -2,6 +2,13 @@ import type { AccountMode, FreelancerProfile, Profile, UserType } from '@/types'
 
 const STORAGE_KEY_PREFIX = 'khedma-active-mode';
 
+export interface WorkspaceSwitchResult {
+    mode: AccountMode;
+    userType: UserType;
+    targetPath: string;
+    isOnboarded: boolean;
+}
+
 type RoleCapableProfile =
     | Partial<Pick<Profile, 'id' | 'user_type' | 'active_mode' | 'full_name' | 'location' | 'onboarding_completed' | 'username'>>
     | null
@@ -43,16 +50,16 @@ export function resolveAccountMode(
     profile: RoleCapableProfile,
     freelancerProfile?: FreelancerProfile | null
 ): AccountMode {
-    const storedMode = getStoredAccountMode(profile?.id);
-    if (storedMode && canAccessMode(profile, storedMode)) {
-        return storedMode;
-    }
-
     const profileMode = profile?.active_mode;
     if (profileMode === 'freelancer' || profileMode === 'client') {
         if (canAccessMode(profile, profileMode)) {
             return profileMode;
         }
+    }
+
+    const storedMode = getStoredAccountMode(profile?.id);
+    if (storedMode && canAccessMode(profile, storedMode)) {
+        return storedMode;
     }
 
     if (profile?.user_type === 'freelancer') {
@@ -124,6 +131,56 @@ export function isModeOnboarded(
         : isFreelancerModeOnboarded(profile, freelancerProfile);
 }
 
+export function getModeSetupChecklist(
+    profile: RoleCapableProfile,
+    freelancerProfile: FreelancerProfile | null | undefined,
+    mode: AccountMode
+): boolean[] {
+    if (mode === 'client') {
+        return [
+            Boolean(profile?.full_name),
+            Boolean(profile?.location),
+            Boolean(profile?.bio && profile.bio.length > 20),
+        ];
+    }
+
+    const hasSkills = Array.isArray(freelancerProfile?.skills) && freelancerProfile.skills.length > 0;
+
+    return [
+        Boolean(profile?.full_name),
+        Boolean(profile?.location),
+        Boolean(freelancerProfile?.title),
+        hasSkills,
+    ];
+}
+
+export function getModeSetupProgress(
+    profile: RoleCapableProfile,
+    freelancerProfile: FreelancerProfile | null | undefined,
+    mode: AccountMode
+): number {
+    const checks = getModeSetupChecklist(profile, freelancerProfile, mode);
+    const completed = checks.filter(Boolean).length;
+
+    return Math.max(
+        isModeOnboarded(profile, freelancerProfile, mode) ? 100 : 0,
+        Math.round((completed / checks.length) * 100)
+    );
+}
+
+export function getModeTarget(
+    profile: RoleCapableProfile,
+    freelancerProfile: FreelancerProfile | null | undefined,
+    mode: AccountMode
+): { path: string; isOnboarded: boolean } {
+    const isOnboarded = isModeOnboarded(profile, freelancerProfile, mode);
+
+    return {
+        path: isOnboarded ? getDashboardPath(mode) : getOnboardingPath(mode),
+        isOnboarded,
+    };
+}
+
 export function getPostAuthPath(
     profile: RoleCapableProfile,
     freelancerProfile?: FreelancerProfile | null
@@ -133,7 +190,5 @@ export function getPostAuthPath(
     }
 
     const mode = resolveAccountMode(profile, freelancerProfile);
-    return isModeOnboarded(profile, freelancerProfile, mode)
-        ? getDashboardPath(mode)
-        : getOnboardingPath(mode);
+    return getModeTarget(profile, freelancerProfile, mode).path;
 }

@@ -26,7 +26,7 @@ import { supabase } from '../lib/supabase';
 import OptimizedImage from '../components/common/OptimizedImage';
 import SEO, { SEO_CONFIG } from '../components/common/SEO';
 import { getAvatarGradient, getInitials } from '@/lib/avatar';
-import { getOnboardingPath, isModeOnboarded } from '@/lib/accountMode';
+import { getModeSetupProgress, getOnboardingPath, isModeOnboarded } from '@/lib/accountMode';
 
 type SettingsTab = 'profile' | 'notifications' | 'payment' | 'security';
 
@@ -62,7 +62,7 @@ const DEFAULT_NOTIFICATION_SETTINGS: NotificationSetting[] = [
 ];
 
 function Settings() {
-    const { dir } = useTranslation();
+    const { dir, t } = useTranslation();
     const { user, profile, freelancerProfile, activeMode, signOut, refreshProfile, switchAccountMode } = useAuth();
     const { showToast } = useToast();
     const navigate = useNavigate();
@@ -81,6 +81,7 @@ function Settings() {
     const [isLoading, setIsLoading] = useState(true);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [isAddPaymentModalOpen, setIsAddPaymentModalOpen] = useState(false);
+    const [isSwitchingWorkspace, setIsSwitchingWorkspace] = useState<'freelancer' | 'client' | null>(null);
 
     // Profile form state
     const [profileForm, setProfileForm] = useState({
@@ -346,6 +347,29 @@ function Settings() {
         const userId = user?.id;
         if (!userId) return;
 
+        if (type !== 'both') {
+            setIsSwitchingWorkspace(type);
+        }
+
+        if (type !== 'both') {
+            try {
+                const result = await switchAccountMode(type);
+                showToast(
+                    result.mode === 'freelancer'
+                        ? t.auth.accountPanel.switchedFreelancer
+                        : t.auth.accountPanel.switchedClient,
+                    'success'
+                );
+                navigate(result.targetPath);
+            } catch (error) {
+                logger.error('Workspace selection error:', error);
+                showToast(t.auth.accountPanel.switchError, 'error');
+            } finally {
+                setIsSwitchingWorkspace(null);
+            }
+            return;
+        }
+
         try {
             if (type === 'both') {
                 const { error } = await supabase
@@ -546,8 +570,117 @@ function Settings() {
                 />
             </div>
 
+            <div className="mt-6 rounded-2xl border border-gray-200/80 bg-white/80 p-4 shadow-sm dark:border-white/10 dark:bg-white/[0.03]">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary-500">{t.auth.accountPanel.sectionLabel}</p>
+                        <h4 className="mt-2 text-lg font-semibold text-foreground">{t.auth.accountPanel.switchWorkspace}</h4>
+                        <p className="mt-1 text-sm text-muted">
+                            {profile?.user_type === 'both'
+                                ? t.auth.accountPanel.switchWorkspaceBoth
+                                : t.auth.accountPanel.switchWorkspaceSingle}
+                        </p>
+                    </div>
+                    {!isModeOnboarded(profile, freelancerProfile, activeMode) ? (
+                        <Button variant="primary" onClick={() => navigate(getOnboardingPath(activeMode))}>
+                            {t.auth.accountPanel.completeSetup}
+                        </Button>
+                    ) : null}
+                </div>
+
+                <div className="mt-4 rounded-2xl border border-gray-200/80 bg-gray-50/90 p-4 dark:border-white/8 dark:bg-white/[0.04]">
+                    <div className="flex items-center justify-between gap-3">
+                        <div className="flex flex-wrap items-center gap-2">
+                            <span className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium ${activeMode === 'freelancer'
+                                ? 'border-violet-500/20 bg-violet-500/12 text-violet-700 dark:text-violet-200'
+                                : 'border-emerald-500/20 bg-emerald-500/12 text-emerald-700 dark:text-emerald-200'
+                                }`}>
+                                {activeMode === 'freelancer' ? t.auth.accountPanel.freelancerLabel : t.auth.accountPanel.clientLabel}
+                            </span>
+                            <span className="text-sm font-medium text-foreground">
+                                {isModeOnboarded(profile, freelancerProfile, activeMode)
+                                    ? t.auth.accountPanel.ready
+                                    : t.auth.accountPanel.needsSetup}
+                            </span>
+                        </div>
+                        <span className="text-sm font-semibold text-muted">
+                            {getModeSetupProgress(profile, freelancerProfile, activeMode)}%
+                        </span>
+                    </div>
+                    <div className="mt-3 h-2 overflow-hidden rounded-full bg-gray-200 dark:bg-white/10">
+                        <div
+                            className={`h-full rounded-full transition-all duration-300 ${activeMode === 'freelancer'
+                                ? 'bg-gradient-to-r from-violet-500 to-fuchsia-400'
+                                : 'bg-gradient-to-r from-emerald-500 to-teal-400'
+                                }`}
+                            style={{ width: `${getModeSetupProgress(profile, freelancerProfile, activeMode)}%` }}
+                        />
+                    </div>
+                    <p className="mt-2 text-xs text-muted">{t.auth.accountPanel.progressLabel}</p>
+                </div>
+
+                <div className="mt-4 grid gap-3 md:grid-cols-2">
+                    {[
+                        {
+                            type: 'freelancer' as const,
+                            label: t.auth.accountPanel.freelancerLabel,
+                            desc: t.auth.accountPanel.freelancerDesc,
+                            tone: 'border-violet-300/30 bg-violet-500/[0.05] dark:border-violet-500/20 dark:bg-violet-500/[0.08]',
+                            chip: 'border-violet-400/20 bg-violet-500/12 text-violet-700 dark:text-violet-200',
+                        },
+                        {
+                            type: 'client' as const,
+                            label: t.auth.accountPanel.clientLabel,
+                            desc: t.auth.accountPanel.clientDesc,
+                            tone: 'border-emerald-300/30 bg-emerald-500/[0.05] dark:border-emerald-500/20 dark:bg-emerald-500/[0.08]',
+                            chip: 'border-emerald-400/20 bg-emerald-500/12 text-emerald-700 dark:text-emerald-200',
+                        },
+                    ].map(({ type, label, desc, tone, chip }) => {
+                        const isActive = activeMode === type;
+                        const isAvailable = profile?.user_type === 'both' || profile?.user_type === type;
+                        const actionLabel = isActive
+                            ? t.auth.accountPanel.current
+                            : isAvailable
+                                ? t.auth.accountPanel.switchAction
+                                : t.auth.accountPanel.enable;
+
+                        return (
+                            <button
+                                key={type}
+                                type="button"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    void handleWorkspaceSelection(type);
+                                }}
+                                disabled={isActive || isSwitchingWorkspace !== null}
+                                className={`rounded-2xl border p-4 text-left transition-all ${isActive
+                                    ? tone
+                                    : 'border-gray-200 bg-white hover:border-primary-300 dark:border-white/10 dark:bg-white/[0.03] dark:hover:border-primary-500/30'
+                                    } ${isActive ? 'cursor-default' : 'hover:-translate-y-0.5'}`}
+                            >
+                                <div className="flex items-start justify-between gap-3">
+                                    <div>
+                                        <div className="text-sm font-semibold text-foreground">{label}</div>
+                                        <p className="mt-2 text-sm leading-relaxed text-muted">{desc}</p>
+                                    </div>
+                                    <span className={`inline-flex min-h-8 items-center gap-1 rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] ${chip}`}>
+                                        {isSwitchingWorkspace === type ? (
+                                            <>
+                                                <Loader2 className="h-3 w-3 animate-spin" />
+                                                {t.auth.accountPanel.switching}
+                                            </>
+                                        ) : actionLabel}
+                                    </span>
+                                </div>
+                            </button>
+                        );
+                    })}
+                </div>
+            </div>
+
             {/* User Type Selection */}
-            <div className="mt-6">
+            <div className="hidden mt-6">
                 <label className="block text-sm font-medium text-foreground mb-3">نوع الحساب</label>
                 <div className="grid grid-cols-3 gap-3">
                     {[
