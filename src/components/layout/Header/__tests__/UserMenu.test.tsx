@@ -9,14 +9,33 @@ const authUtilsState = vi.hoisted(() => ({
 
 const loggerState = vi.hoisted(() => ({
     error: vi.fn(),
-    log: vi.fn(),
 }));
 
-const supabaseState = vi.hoisted(() => ({
-    updateError: null as null | { message: string },
-    reload: vi.fn(),
-    alert: vi.fn(),
+const navigateMock = vi.hoisted(() => vi.fn());
+const switchAccountModeMock = vi.hoisted(() => vi.fn(async () => 'client'));
+
+const useAuthState = vi.hoisted(() => ({
+    activeMode: 'freelancer' as const,
+    availableModes: ['freelancer'] as Array<'freelancer' | 'client'>,
+    freelancerProfile: {
+        id: 'user-1',
+        title: 'Designer',
+        skills: [],
+        completion_rate: 80,
+        repeat_clients: 0,
+        cin_verified: false,
+        total_earnings: 0,
+        created_at: '',
+    },
 }));
+
+vi.mock('react-router-dom', async () => {
+    const actual = await vi.importActual<typeof import('react-router-dom')>('react-router-dom');
+    return {
+        ...actual,
+        useNavigate: () => navigateMock,
+    };
+});
 
 vi.mock('framer-motion', () => ({
     AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
@@ -34,30 +53,36 @@ vi.mock('@/lib/logger', () => ({
     logger: loggerState,
 }));
 
-vi.mock('@/lib/supabase', () => {
-    const builder = {
-        update: vi.fn(() => builder),
-        eq: vi.fn(async () => ({ error: supabaseState.updateError })),
-    };
+vi.mock('@/contexts/AuthContext', () => ({
+    useAuth: () => ({
+        activeMode: useAuthState.activeMode,
+        availableModes: useAuthState.availableModes,
+        freelancerProfile: useAuthState.freelancerProfile,
+        switchAccountMode: switchAccountModeMock,
+    }),
+}));
 
-    return {
-        supabase: {
-            from: vi.fn(() => builder),
+vi.mock('@/i18n', () => ({
+    useTranslation: () => ({
+        language: 'en',
+        dir: 'ltr',
+        t: {
+            auth: {
+                freelancer: 'Freelancer',
+                client: 'Client',
+                loggingOut: 'Logging out...',
+            },
         },
-    };
-});
+    }),
+}));
 
 import { UserMenu } from '@/components/layout/Header/UserMenu';
 
 describe('UserMenu', () => {
     beforeEach(() => {
         vi.clearAllMocks();
-        supabaseState.updateError = null;
-        Object.defineProperty(window, 'location', {
-            value: { reload: supabaseState.reload },
-            writable: true,
-        });
-        vi.stubGlobal('alert', supabaseState.alert);
+        useAuthState.activeMode = 'freelancer';
+        useAuthState.availableModes = ['freelancer'];
     });
 
     const baseProps = {
@@ -67,16 +92,17 @@ describe('UserMenu', () => {
             user_metadata: {},
         } as never,
         profile: {
-            full_name: 'Amina',
+            full_name: 'Amina Ben Salah',
             avatar_url: null,
             user_type: 'freelancer' as const,
             is_admin: true,
+            username: 'amina',
         },
         signOut: vi.fn(async () => undefined),
         t: {
             nav: {
                 dashboard: 'Dashboard',
-                myJobs: 'My jobs',
+                myJobs: 'My Jobs',
                 messages: 'Messages',
                 saved: 'Saved',
                 settings: 'Settings',
@@ -85,7 +111,7 @@ describe('UserMenu', () => {
         },
     };
 
-    it('opens the menu, handles mode switching, closes on escape, and falls back avatar errors', async () => {
+    it('renders a polished account panel with quick actions and admin link', async () => {
         render(
             <MemoryRouter>
                 <UserMenu {...baseProps} />
@@ -93,45 +119,45 @@ describe('UserMenu', () => {
         );
 
         fireEvent.click(screen.getByRole('button', { expanded: false }));
+
+        expect(screen.getByText('Account')).toBeInTheDocument();
+        expect(screen.getByText('Workspaces')).toBeInTheDocument();
         expect(screen.getByText('Dashboard')).toBeInTheDocument();
-        expect(screen.getByText('لوحة الإدارة')).toBeInTheDocument();
+        expect(screen.getByText('Admin')).toBeInTheDocument();
+        expect(screen.getByText('@amina')).toBeInTheDocument();
 
-        const avatar = screen.getByAltText('Amina') as HTMLImageElement;
-        fireEvent.error(avatar);
-        expect(avatar.src).toContain('/default-avatar.png');
-
-        fireEvent.click(screen.getByText('مستقل'));
-        await waitFor(() => {
-            expect(supabaseState.reload).toHaveBeenCalled();
-        });
-
-        fireEvent.click(screen.getByRole('button', { expanded: true }));
         fireEvent.keyDown(document, { key: 'Escape' });
+
         await waitFor(() => {
-            expect(screen.queryByText('Dashboard')).not.toBeInTheDocument();
+            expect(screen.queryByText('Workspaces')).not.toBeInTheDocument();
         });
     });
 
-    it('handles client switching failures and logout flow', async () => {
-        supabaseState.updateError = { message: 'boom' };
-
+    it('switches to the client workspace and navigates to the client onboarding flow', async () => {
         render(
             <MemoryRouter>
-                <UserMenu
-                    {...baseProps}
-                    profile={{ ...baseProps.profile, user_type: 'client' }}
-                />
+                <UserMenu {...baseProps} />
             </MemoryRouter>
         );
 
         fireEvent.click(screen.getByRole('button', { expanded: false }));
-        fireEvent.click(screen.getByText('صاحب عمل'));
+        fireEvent.click(screen.getByRole('button', { name: /enable client/i }));
 
         await waitFor(() => {
-            expect(supabaseState.alert).toHaveBeenCalled();
+            expect(switchAccountModeMock).toHaveBeenCalledWith('client');
+            expect(navigateMock).toHaveBeenCalledWith('/onboarding/client');
         });
+    });
 
-        fireEvent.click(screen.getByRole('menuitem', { name: 'Logout' }));
+    it('clears auth data and hard redirects on logout', async () => {
+        render(
+            <MemoryRouter>
+                <UserMenu {...baseProps} />
+            </MemoryRouter>
+        );
+
+        fireEvent.click(screen.getByRole('button', { expanded: false }));
+        fireEvent.click(screen.getByRole('menuitem', { name: /logout/i }));
 
         await waitFor(() => {
             expect(authUtilsState.clearAllAuthData).toHaveBeenCalled();
