@@ -155,9 +155,9 @@ export default function SEO({
 export const SEO_CONFIG = {
     home: {
         title: {
-            ar: 'منصة العمل الحر المصممة لتونس',
-            en: 'The Freelance Platform Built for Tunisia',
-            fr: 'La plateforme freelance conçue pour la Tunisie',
+            ar: 'Khedma TN',
+            en: 'Khedma TN',
+            fr: 'Khedma TN',
         },
         description: {
             ar: 'لا مزايدات ولا تعقيدات، فقط مهاراتك وأعمالك. خدمة تربط أصحاب المشاريع بالمستقلين المحترفين في تونس.',
