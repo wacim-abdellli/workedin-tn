@@ -10,7 +10,7 @@ export interface WorkspaceSwitchResult {
 }
 
 type RoleCapableProfile =
-    | Partial<Pick<Profile, 'id' | 'user_type' | 'active_mode' | 'full_name' | 'location' | 'onboarding_completed' | 'username'>>
+    | Partial<Pick<Profile, 'id' | 'user_type' | 'active_mode' | 'full_name' | 'location' | 'onboarding_completed' | 'username' | 'bio'>>
     | null
     | undefined;
 

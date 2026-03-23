@@ -110,7 +110,7 @@ export function UserMenu({ user, profile, isOpen, onToggle }: UserMenuProps) {
     );
 }
 
-export function UserAccountPanel({ user, profile, signOut, onClose }: UserAccountPanelProps) {
+export function UserAccountPanel({ profile, signOut, onClose }: UserAccountPanelProps) {
     const [isLoggingOut, setIsLoggingOut] = useState(false);
     const [isSwitchingMode, setIsSwitchingMode] = useState<Mode | null>(null);
     const navigate = useNavigate();
