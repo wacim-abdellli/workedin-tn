@@ -329,13 +329,13 @@ h6 {
     -webkit-backdrop-filter: blur(16px);
     border: 1px solid rgba(139, 92, 246, 0.1);
     border-radius: 20px;
-    box-shadow: 0 20px 40px -28px rgba(124, 58, 237, 0.35);
+    box-shadow: 0 20px 40px -28px rgba(124, 58, 237, 0.22);
   }
 
   .dark .glass-card {
-    background: linear-gradient(180deg, rgba(22, 19, 33, 0.92), rgba(12, 10, 18, 0.9));
-    border: 1px solid rgba(221, 214, 254, 0.09);
-    box-shadow: 0 24px 60px -36px rgba(0, 0, 0, 0.72);
+    background: linear-gradient(180deg, rgba(24, 21, 36, 0.96), rgba(10, 9, 16, 0.94));
+    border: 1px solid rgba(221, 214, 254, 0.13);
+    box-shadow: 0 24px 60px -36px rgba(0, 0, 0, 0.72), inset 0 1px 0 rgba(255, 255, 255, 0.03);
   }
 
   /* Card Hover Shine Effect */
@@ -520,7 +520,7 @@ h6 {
   }
 
   .text-muted {
-    color: var(--color-fg-muted);
+    color: color-mix(in srgb, var(--color-fg-muted) 92%, white 8%);
   }
 
   .text-secondary {
@@ -537,8 +537,8 @@ h6 {
 
   .dark .hero-gradient {
     background:
-      radial-gradient(circle at top, rgba(139, 92, 246, 0.18), transparent 34%),
-      linear-gradient(-45deg, #0b0a12, #140f23, #0f1628, #171127);
+      radial-gradient(circle at top, rgba(139, 92, 246, 0.24), transparent 34%),
+      linear-gradient(-45deg, #0a0911, #140f24, #10192c, #18112a);
     background-size: 400% 400%;
     animation: gradient-shift 15s ease infinite;
   }
@@ -547,6 +547,29 @@ h6 {
     font-size: var(--text-5xl);
     line-height: 1.05;
     letter-spacing: -0.02em;
+  }
+
+  .hero-display-base {
+    color: #191627;
+    text-shadow: 0 10px 30px rgba(139, 92, 246, 0.12);
+  }
+
+  .dark .hero-display-base {
+    color: rgba(247, 244, 255, 0.96);
+    text-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
+  }
+
+  .hero-display-chip {
+    display: inline-block;
+    padding: 0.02em 0.12em 0.1em;
+    border-radius: 0.18em;
+    background: linear-gradient(135deg, rgba(124, 58, 237, 0.14), rgba(245, 158, 11, 0.08));
+    box-shadow: 0 20px 40px -30px rgba(124, 58, 237, 0.32);
+  }
+
+  .dark .hero-display-chip {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.22), rgba(245, 158, 11, 0.08));
+    box-shadow: 0 26px 50px -34px rgba(0, 0, 0, 0.7);
   }
 
   .hero-display-emphasis {
@@ -561,6 +584,20 @@ h6 {
 
   .dark .hero-display-emphasis {
     text-shadow: 0 16px 40px rgba(139, 92, 246, 0.28);
+  }
+
+  .hero-surface-panel {
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.86), rgba(248, 247, 255, 0.8));
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    box-shadow: 0 24px 60px -36px rgba(124, 58, 237, 0.3);
+  }
+
+  .dark .hero-surface-panel {
+    background:
+      linear-gradient(180deg, rgba(21, 19, 31, 0.96), rgba(14, 12, 21, 0.94));
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 26px 70px -42px rgba(0, 0, 0, 0.82);
   }
 
   .nav-link-premium {

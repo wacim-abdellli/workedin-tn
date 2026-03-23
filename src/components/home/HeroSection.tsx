@@ -157,7 +157,9 @@ export default function HeroSection({ stats }: HeroSectionProps) {
             </motion.div>
 
             <motion.div custom={1} variants={fadeUp} initial="hidden" animate="visible" className="mt-8">
-              <p className="hero-display-line text-[#1a1825] dark:text-white/88">The Freelance Platform</p>
+              <p className="hero-display-line hero-display-base">
+                <span className="hero-display-chip">The Freelance Platform</span>
+              </p>
               <h1 className="hero-display-line hero-display-emphasis mt-1">Built for Tunisia</h1>
             </motion.div>
 
@@ -233,21 +235,21 @@ export default function HeroSection({ stats }: HeroSectionProps) {
             variants={fadeUp}
             initial="hidden"
             animate="visible"
-            className="glass-card relative overflow-hidden p-4 sm:p-6"
+            className="glass-card hero-surface-panel relative overflow-hidden p-4 sm:p-6"
           >
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(139,92,246,0.16),transparent_55%)]" />
-            <div className="relative rounded-[24px] border border-white/60 bg-white/75 p-6 shadow-2xl backdrop-blur-xl dark:border-white/8 dark:bg-[#13111d]/90">
+            <div className="relative rounded-[24px] border border-white/65 bg-white/85 p-6 shadow-2xl backdrop-blur-xl dark:border-white/10 dark:bg-[#14111d]/94">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-[#6b6880] dark:text-[#8b8aa0]">Momentum this month</p>
-                  <h2 className="mt-2 text-2xl font-bold text-[#1a1825] dark:text-white">Designed to earn trust</h2>
+                  <p className="text-sm font-medium text-[#5f5975] dark:text-[#a7a2ba]">Momentum this month</p>
+                  <h2 className="mt-2 text-2xl font-bold text-[#171420] dark:text-white">Designed to earn trust</h2>
                 </div>
                 <div className="rounded-2xl border border-primary-200/60 bg-primary-50 px-3 py-2 text-sm font-semibold text-primary-700 dark:border-primary-500/20 dark:bg-primary-500/10 dark:text-primary-300">
                   Premium launch
                 </div>
               </div>
 
-              <div className="mt-6 divide-y divide-primary-100/80 overflow-hidden rounded-[24px] border border-primary-100/70 bg-white/70 shadow-inner dark:divide-white/5 dark:border-white/8 dark:bg-white/5">
+              <div className="mt-6 divide-y divide-primary-100/80 overflow-hidden rounded-[24px] border border-primary-100/80 bg-white/82 shadow-inner dark:divide-white/5 dark:border-white/10 dark:bg-white/6">
                 <div className="grid gap-2 sm:grid-cols-3 sm:divide-x sm:divide-primary-100/80 dark:sm:divide-white/5">
                   <HeroStat icon={Users} value={stats.freelancers} label="Professionals onboarded" />
                   <HeroStat icon={Briefcase} value={stats.jobs ?? 142} label="Projects posted" />
@@ -260,7 +262,7 @@ export default function HeroSection({ stats }: HeroSectionProps) {
                   { icon: Shield, title: t.hero.trust.verified, copy: 'Verified identities and safer payouts from day one.' },
                   { icon: Star, title: t.hero.trust.secure, copy: 'Premium experience, clear profiles, and serious client signals.' },
                 ].map((item) => (
-                  <div key={item.title} className="rounded-[22px] border border-primary-100/80 bg-white/80 p-5 dark:border-white/8 dark:bg-white/5">
+                  <div key={item.title} className="rounded-[22px] border border-primary-100/80 bg-white/88 p-5 dark:border-white/10 dark:bg-white/6">
                     <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-500 to-primary-700 text-white">
                       <item.icon className="h-5 w-5" />
                     </div>
