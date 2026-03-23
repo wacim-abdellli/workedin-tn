@@ -48,14 +48,14 @@
 
 .dark {
   /* Dark Mode — Deep purple-tinted, not flat grey */
-  --color-bg: #0f0e17;
-  --color-bg-secondary: #1a1825;
-  --color-bg-tertiary: #242235;
-  --color-fg: #f8f7ff;
-  --color-fg-secondary: #c4b5fd;
-  --color-fg-muted: #8b8aa0;
-  --color-border: #2a2840;
-  --color-border-subtle: #1a1825;
+  --color-bg: #0b0a12;
+  --color-bg-secondary: #15131f;
+  --color-bg-tertiary: #201d2d;
+  --color-fg: #f7f4ff;
+  --color-fg-secondary: #ddd6fe;
+  --color-fg-muted: #aca7c3;
+  --color-border: #312b45;
+  --color-border-subtle: #171421;
 
   /* Dark Gradients */
   --gradient-primary: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
@@ -94,7 +94,7 @@ body {
   min-height: 100vh;
   transition: background-color 0.3s ease, color 0.3s ease;
   font-size: var(--text-base);
-  cursor: none;
+  cursor: auto;
 }
 
 /* RTL Support */
@@ -318,9 +318,9 @@ h6 {
   }
 
   .dark .card-glass {
-    background: rgba(15, 23, 42, 0.6);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+    background: rgba(21, 19, 31, 0.82);
+    border: 1px solid rgba(221, 214, 254, 0.1);
+    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.3);
   }
 
   .glass-card {
@@ -333,8 +333,9 @@ h6 {
   }
 
   .dark .glass-card {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: linear-gradient(180deg, rgba(22, 19, 33, 0.92), rgba(12, 10, 18, 0.9));
+    border: 1px solid rgba(221, 214, 254, 0.09);
+    box-shadow: 0 24px 60px -36px rgba(0, 0, 0, 0.72);
   }
 
   /* Card Hover Shine Effect */
@@ -535,7 +536,9 @@ h6 {
   }
 
   .dark .hero-gradient {
-    background: linear-gradient(-45deg, #0f0e17, #1a0533, #0f172a, #150d2e);
+    background:
+      radial-gradient(circle at top, rgba(139, 92, 246, 0.18), transparent 34%),
+      linear-gradient(-45deg, #0b0a12, #140f23, #0f1628, #171127);
     background-size: 400% 400%;
     animation: gradient-shift 15s ease infinite;
   }
@@ -578,8 +581,9 @@ h6 {
 
   .dark .premium-panel {
     background:
-      linear-gradient(180deg, rgba(26, 24, 37, 0.92), rgba(15, 14, 23, 0.88));
-    border-color: rgba(255, 255, 255, 0.08);
+      linear-gradient(180deg, rgba(25, 22, 37, 0.96), rgba(14, 12, 21, 0.94));
+    border-color: rgba(221, 214, 254, 0.08);
+    box-shadow: 0 24px 60px -42px rgba(0, 0, 0, 0.75);
   }
 }
 
@@ -727,17 +731,6 @@ h6 {
   }
 }
 
-.custom-cursor {
-  mix-blend-mode: difference;
-}
-
 .page-progress {
   box-shadow: 0 0 24px rgba(139, 92, 246, 0.5);
-}
-
-@media (max-width: 1023px),
-(pointer: coarse) {
-  body {
-    cursor: auto;
-  }
 }
