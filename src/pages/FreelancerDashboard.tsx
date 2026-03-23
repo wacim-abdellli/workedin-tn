@@ -103,7 +103,7 @@ function FreelancerDashboardPage() {
                         <h1 className="text-2xl font-bold text-foreground">
                             {t.dashboard.welcome}، {profile?.full_name || 'مستخدم'}!
                         </h1>
-                        <p className="text-muted">لوحة تحكم الموظف الحر</p>
+                        <p className="text-muted">{t.dashboard.freelancerSubtitle}</p>
                     </div>
                     <div className="flex items-center gap-3">
                         <button className="p-2 rounded-xl bg-white dark:bg-dark-800 shadow-sm hover:shadow-md transition-shadow relative">
@@ -306,7 +306,7 @@ function FreelancerDashboardPage() {
 
                         {/* Quick Actions */}
                         <div className="card bg-gradient-to-br from-primary-50 to-secondary-50 dark:from-primary-900/10 dark:to-secondary-900/10">
-                            <h3 className="font-semibold text-foreground mb-4">إجراءات سريعة</h3>
+                            <h3 className="font-semibold text-foreground mb-4">{t.dashboard.quickActions}</h3>
                             <div className="space-y-3">
                                 <Button
                                     variant="primary"
@@ -315,7 +315,7 @@ function FreelancerDashboardPage() {
                                     leftIcon={<User className="w-5 h-5" />}
                                     onClick={() => navigate('/profile')}
                                 >
-                                    عرض البروفايل
+                                    {t.dashboard.viewProfile}
                                 </Button>
                                 <Button
                                     variant="secondary"
@@ -324,7 +324,7 @@ function FreelancerDashboardPage() {
                                     leftIcon={<Briefcase className="w-5 h-5" />}
                                     onClick={() => navigate('/jobs')}
                                 >
-                                    تصفح الوظائف
+                                    {t.dashboard.browseJobs}
                                 </Button>
                             </div>
                         </div>
@@ -334,7 +334,7 @@ function FreelancerDashboardPage() {
                             onClick={signOut}
                             className="w-full text-center text-muted hover:text-red-600 py-2 text-sm transition-colors"
                         >
-                            تسجيل الخروج
+                            {t.nav.logout}
                         </button>
                     </div>
                 </div>

@@ -418,6 +418,15 @@ export const fr: Translations = {
         recentActivity: 'Activité récente',
         updateProfile: 'Mettre à jour le profil',
         profileCompletion: 'Profil complété',
+        freelancerSubtitle: 'Tableau de bord freelance',
+        clientSubtitle: 'Tableau de bord client',
+        quickActions: 'Actions rapides',
+        viewProfile: 'Voir le profil',
+        browseJobs: 'Parcourir les missions',
+        postNewJob: 'Publier une nouvelle mission',
+        postNewJobDesc: 'Décrivez votre mission et nous trouverons les 3 meilleurs freelances',
+        yourJobs: 'Vos missions',
+        viewAll: 'Voir tout',
     },
 
     job: {

@@ -428,6 +428,15 @@ export const ar = {
         recentActivity: 'النشاط الأخير',
         updateProfile: 'تحديث البروفايل',
         profileCompletion: 'اكتمال البروفايل',
+        freelancerSubtitle: 'لوحة تحكم الموظف الحر',
+        clientSubtitle: 'لوحة تحكم العميل',
+        quickActions: 'إجراءات سريعة',
+        viewProfile: 'عرض البروفايل',
+        browseJobs: 'تصفح الوظائف',
+        postNewJob: 'نشر مهمة جديدة',
+        postNewJobDesc: 'أخبرنا عن مهمتك وسنجد لك أفضل 3 موظفين',
+        yourJobs: 'مهامك',
+        viewAll: 'عرض الكل',
     },
 
     // Job Posting

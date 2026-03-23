@@ -165,9 +165,9 @@ export default function Messages() {
     });
 
     const ConversationList = () => (
-        <div className="h-full flex flex-col border-l border-gray-200">
+        <div className="h-full flex flex-col border-l border-gray-200 dark:border-dark-700">
             {/* Header */}
-            <div className="p-4 border-b border-gray-200">
+            <div className="p-4 border-b border-gray-200 dark:border-dark-700">
                 <div className="flex items-center justify-between mb-4">
                     <h2 className="text-lg font-bold text-foreground">الرسائل</h2>
                     <Button variant="primary" size="sm">
@@ -181,13 +181,13 @@ export default function Messages() {
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         placeholder="بحث في المحادثات..."
-                        className="w-full pr-10 pl-4 py-2 border border-gray-200 rounded-xl text-sm"
+                        className="w-full pr-10 pl-4 py-2 border border-gray-200 dark:border-dark-700 rounded-xl text-sm bg-white dark:bg-dark-800 text-foreground"
                     />
                 </div>
             </div>
 
             {/* Tabs */}
-            <div className="flex border-b border-gray-200">
+            <div className="flex border-b border-gray-200 dark:border-dark-700">
                 {(['all', 'unread', 'starred'] as const).map(f => (
                     <button
                         key={f}
@@ -211,7 +211,7 @@ export default function Messages() {
                             setSelectedConversation(conversation);
                             setShowMobileThread(true);
                         }}
-                        className={`p-4 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors ${selectedConversation?.id === conversation.id ? 'bg-primary-50' : ''
+                        className={`p-4 border-b border-gray-100 dark:border-dark-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-dark-800 transition-colors ${selectedConversation?.id === conversation.id ? 'bg-primary-50 dark:bg-primary-900/20' : ''
                             }`}
                     >
                         <div className="flex items-start gap-3">
@@ -254,11 +254,11 @@ export default function Messages() {
             {selectedConversation ? (
                 <>
                     {/* Thread Header */}
-                    <div className="p-4 border-b border-gray-200 bg-white flex items-center justify-between">
+                    <div className="p-4 border-b border-gray-200 dark:border-dark-700 bg-white dark:bg-dark-900 flex items-center justify-between">
                         <div className="flex items-center gap-3">
                             <button
                                 onClick={() => setShowMobileThread(false)}
-                                className="lg:hidden p-2 hover:bg-gray-100 rounded-lg"
+                                className="lg:hidden p-2 hover:bg-gray-100 dark:hover:bg-dark-700 rounded-lg"
                             >
                                 <ChevronLeft className="w-5 h-5" />
                             </button>
@@ -273,20 +273,20 @@ export default function Messages() {
                             </div>
                         </div>
                         <div className="flex items-center gap-2">
-                            <button className="p-2 hover:bg-gray-100 rounded-lg text-muted">
+                            <button className="p-2 hover:bg-gray-100 dark:hover:bg-dark-700 rounded-lg text-muted">
                                 <Phone className="w-5 h-5" />
                             </button>
-                            <button className="p-2 hover:bg-gray-100 rounded-lg text-muted">
+                            <button className="p-2 hover:bg-gray-100 dark:hover:bg-dark-700 rounded-lg text-muted">
                                 <Video className="w-5 h-5" />
                             </button>
-                            <button className="p-2 hover:bg-gray-100 rounded-lg text-muted">
+                            <button className="p-2 hover:bg-gray-100 dark:hover:bg-dark-700 rounded-lg text-muted">
                                 <MoreVertical className="w-5 h-5" />
                             </button>
                         </div>
                     </div>
 
                     {/* Messages */}
-                    <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
+                    <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 dark:bg-dark-950">
                         {messages.map(message => (
                             <div
                                 key={message.id}
@@ -294,13 +294,13 @@ export default function Messages() {
                             >
                                 <div className={`max-w-[70%] ${message.sender_id === 'me'
                                     ? 'bg-primary-600 text-white rounded-2xl rounded-tl-md'
-                                    : 'bg-white text-foreground rounded-2xl rounded-tr-md shadow-sm'
+                                    : 'bg-white dark:bg-dark-800 text-foreground rounded-2xl rounded-tr-md shadow-sm'
                                     } px-4 py-3`}>
                                     <p className="text-sm">{message.content}</p>
                                     {message.attachments && (
                                         <div className="mt-2 space-y-2">
                                             {message.attachments.map((att, i) => (
-                                                <div key={i} className={`flex items-center gap-2 p-2 rounded-lg ${message.sender_id === 'me' ? 'bg-primary-700' : 'bg-gray-100'
+                                                <div key={i} className={`flex items-center gap-2 p-2 rounded-lg ${message.sender_id === 'me' ? 'bg-primary-700' : 'bg-gray-100 dark:bg-dark-700'
                                                     }`}>
                                                     <FileText className="w-4 h-4" />
                                                     <span className="text-sm flex-1">{att.name}</span>
@@ -325,9 +325,9 @@ export default function Messages() {
                     </div>
 
                     {/* Input */}
-                    <div className="p-4 border-t border-gray-200 bg-white">
+                    <div className="p-4 border-t border-gray-200 dark:border-dark-700 bg-white dark:bg-dark-900">
                         <div className="flex items-center gap-3">
-                            <button className="p-2 hover:bg-gray-100 rounded-lg text-muted">
+                            <button className="p-2 hover:bg-gray-100 dark:hover:bg-dark-700 rounded-lg text-muted">
                                 <Paperclip className="w-5 h-5" />
                             </button>
                             <input
@@ -336,7 +336,7 @@ export default function Messages() {
                                 onChange={(e) => setNewMessage(e.target.value)}
                                 onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
                                 placeholder="اكتب رسالتك..."
-                                className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-100 focus:border-primary-500"
+                                className="flex-1 px-4 py-2.5 border border-gray-200 dark:border-dark-700 rounded-xl bg-white dark:bg-dark-800 text-foreground focus:ring-2 focus:ring-primary-100 focus:border-primary-500"
                             />
                             <Button
                                 variant="primary"
@@ -366,7 +366,7 @@ export default function Messages() {
     );
 
     const ContactDetails = () => (
-        <div className="h-full border-r border-gray-200 p-6 overflow-y-auto">
+        <div className="h-full border-r border-gray-200 dark:border-dark-700 p-6 overflow-y-auto">
             {selectedConversation ? (
                 <div className="space-y-6">
                     {/* Profile */}
@@ -398,7 +398,7 @@ export default function Messages() {
                     {/* Related Job */}
                     <div>
                         <h4 className="font-medium text-foreground mb-3">المشروع المرتبط</h4>
-                        <div className="p-3 bg-gray-50 rounded-xl">
+                        <div className="p-3 bg-gray-50 dark:bg-dark-800 rounded-xl">
                             <p className="font-medium text-foreground">{selectedConversation.job_title}</p>
                             <p className="text-sm text-muted mt-1">قيد التنفيذ</p>
                         </div>
@@ -408,13 +408,13 @@ export default function Messages() {
                     <div>
                         <h4 className="font-medium text-foreground mb-3">الملفات المشتركة</h4>
                         <div className="space-y-2">
-                            <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+                            <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-dark-800 rounded-xl">
                                 <FileText className="w-8 h-8 text-red-500" />
                                 <div className="flex-1">
                                     <p className="text-sm font-medium">portfolio.pdf</p>
                                     <p className="text-xs text-muted">2.3 MB</p>
                                 </div>
-                                <button className="p-2 hover:bg-gray-200 rounded-lg">
+                                <button className="p-2 hover:bg-gray-200 dark:hover:bg-dark-700 rounded-lg">
                                     <Download className="w-4 h-4 text-muted" />
                                 </button>
                             </div>
@@ -422,12 +422,12 @@ export default function Messages() {
                     </div>
 
                     {/* Actions */}
-                    <div className="pt-4 border-t border-gray-200 space-y-2">
-                        <button className="w-full flex items-center gap-3 p-3 text-muted hover:bg-gray-50 rounded-xl transition-colors">
+                    <div className="pt-4 border-t border-gray-200 dark:border-dark-700 space-y-2">
+                        <button className="w-full flex items-center gap-3 p-3 text-muted hover:bg-gray-50 dark:hover:bg-dark-800 rounded-xl transition-colors">
                             <Archive className="w-5 h-5" />
                             <span>أرشفة المحادثة</span>
                         </button>
-                        <button className="w-full flex items-center gap-3 p-3 text-red-600 hover:bg-red-50 rounded-xl transition-colors">
+                        <button className="w-full flex items-center gap-3 p-3 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors">
                             <Trash2 className="w-5 h-5" />
                             <span>حذف المحادثة</span>
                         </button>
@@ -442,7 +442,7 @@ export default function Messages() {
     );
 
     return (
-        <div className="min-h-screen bg-white">
+        <div className="min-h-screen bg-white dark:bg-dark-900">
             <SEO {...SEO_CONFIG.messages} url="/messages" noIndex />
             <Header />
 

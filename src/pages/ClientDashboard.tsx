@@ -135,7 +135,7 @@ function ClientDashboardPage() {
                         <h1 className="text-2xl font-bold text-foreground">
                             {t.dashboard.welcome}، {profile?.full_name || 'عميل'}!
                         </h1>
-                        <p className="text-muted">لوحة تحكم العميل</p>
+                        <p className="text-muted">{t.dashboard.clientSubtitle}</p>
                     </div>
                     <div className="flex items-center gap-3">
                         <button className="p-2 rounded-xl bg-white dark:bg-dark-800 shadow-sm hover:shadow-md transition-shadow relative">
@@ -161,9 +161,9 @@ function ClientDashboardPage() {
                                 <Plus className="w-8 h-8" />
                             </div>
                             <div>
-                                <h2 className="text-xl font-bold mb-1">نشر مهمة جديدة</h2>
+                                <h2 className="text-xl font-bold mb-1">{t.dashboard.postNewJob}</h2>
                                 <p className="text-secondary-100">
-                                    أخبرنا عن مهمتك وسنجد لك أفضل 3 موظفين
+                                    {t.dashboard.postNewJobDesc}
                                 </p>
                             </div>
                         </div>
@@ -229,7 +229,7 @@ function ClientDashboardPage() {
                 {/* Jobs List */}
                 <div className="space-y-6">
                     <div className="flex items-center justify-between">
-                        <h2 className="text-xl font-bold text-foreground">مهامك</h2>
+                        <h2 className="text-xl font-bold text-foreground">{t.dashboard.yourJobs}</h2>
                         <Button
                             variant="ghost"
                             size="sm"
@@ -337,7 +337,7 @@ function ClientDashboardPage() {
                         onClick={signOut}
                         className="text-muted hover:text-red-600 py-2 text-sm transition-colors"
                     >
-                        تسجيل الخروج
+                        {t.nav.logout}
                     </button>
                 </div>
             </div>
