@@ -1,5 +1,5 @@
 import { logger } from '@/lib/logger';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -23,7 +23,7 @@ import {
 
 function FreelancerOnboarding() {
     const { t, language } = useTranslation();
-    const { user, session, profile, refreshProfile } = useAuth();
+    const { user, session, profile, freelancerProfile, refreshProfile } = useAuth();
     const { showToast } = useToast();
     const navigate = useNavigate();
 
@@ -44,6 +44,19 @@ function FreelancerOnboarding() {
             availability: 'available',
         },
     });
+
+    useEffect(() => {
+        step1Form.reset({
+            full_name: profile?.full_name || '',
+            title: freelancerProfile?.title || '',
+            location: profile?.location || '',
+        });
+
+        step2Form.reset({
+            hourly_rate: freelancerProfile?.hourly_rate ? String(freelancerProfile.hourly_rate) : '',
+            availability: freelancerProfile?.availability || 'available',
+        });
+    }, [freelancerProfile, profile, step1Form, step2Form]);
 
     const totalSteps = 2;
 

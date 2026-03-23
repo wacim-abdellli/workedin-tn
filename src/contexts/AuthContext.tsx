@@ -10,7 +10,7 @@ import {
     promoteUserTypeForMode,
     resolveAccountMode,
 } from '@/lib/accountMode';
-import type { Profile, FreelancerProfile, UserType, AccountMode } from '../types';
+import type { Profile, FreelancerProfile, UserType, AccountMode, Language } from '../types';
 
 interface AuthContextType {
     user: User | null;
@@ -46,47 +46,100 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const [freelancerProfile, setFreelancerProfile] = useState<FreelancerProfile | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
+    const getPreferredLanguage = useCallback((): Language => {
+        if (typeof window === 'undefined') return 'ar';
+
+        const storedLanguage = window.localStorage.getItem('language');
+        if (storedLanguage === 'ar' || storedLanguage === 'fr' || storedLanguage === 'en') {
+            return storedLanguage;
+        }
+
+        const htmlLanguage = document.documentElement.lang;
+        if (htmlLanguage === 'ar' || htmlLanguage === 'fr' || htmlLanguage === 'en') {
+            return htmlLanguage;
+        }
+
+        return 'ar';
+    }, []);
+
+    const ensureProfileExists = useCallback(async (authUser: User) => {
+        const fallbackName =
+            authUser.user_metadata?.full_name ||
+            authUser.user_metadata?.name ||
+            authUser.email?.split('@')[0] ||
+            'Khedma User';
+
+        const { error } = await supabase
+            .from('profiles')
+            .upsert({
+                id: authUser.id,
+                email: authUser.email ?? null,
+                full_name: fallbackName,
+                preferred_language: getPreferredLanguage(),
+                onboarding_completed: false,
+            });
+
+        if (error) {
+            logger.error('ensureProfileExists error:', error);
+            throw error;
+        }
+    }, [getPreferredLanguage]);
+
     // Fetch user profile from database
-    const fetchProfile = useCallback(async (userId: string) => {
+    const fetchProfile = useCallback(async (userId: string, authUser?: User) => {
         try {
-            const { data: profileData, error: profileError } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('id', userId)
-                .single();
+            const loadProfile = async () => {
+                const { data, error } = await supabase
+                    .from('profiles')
+                    .select('*')
+                    .eq('id', userId)
+                    .single();
+
+                return { data, error };
+            };
+
+            let { data: profileData, error: profileError } = await loadProfile();
+
+            if (profileError?.code === 'PGRST116' && authUser) {
+                await ensureProfileExists(authUser);
+                const retryResult = await loadProfile();
+                profileData = retryResult.data;
+                profileError = retryResult.error;
+            }
 
             if (profileError && profileError.code !== 'PGRST116') {
                 logger.error('Error fetching profile:', profileError);
                 return;
             }
 
-            if (profileData) {
-                setProfile(profileData as Profile);
+            if (!profileData) {
+                setProfile(null);
+                setFreelancerProfile(null);
+                return;
+            }
 
-                // If user is a freelancer, fetch freelancer profile
-                if (profileData.user_type === 'freelancer' || profileData.user_type === 'both') {
-                    const { data: freelancerData, error: freelancerError } = await supabase
-                        .from('freelancer_profiles')
-                        .select('*')
-                        .eq('id', userId)
-                        .single();
+            setProfile(profileData as Profile);
 
-                    if (!freelancerError && freelancerData) {
-                        setFreelancerProfile(freelancerData as FreelancerProfile);
-                    } else {
-                        setFreelancerProfile(null);
-                    }
+            // If user is a freelancer, fetch freelancer profile
+            if (profileData.user_type === 'freelancer' || profileData.user_type === 'both') {
+                const { data: freelancerData, error: freelancerError } = await supabase
+                    .from('freelancer_profiles')
+                    .select('*')
+                    .eq('id', userId)
+                    .single();
+
+                if (!freelancerError && freelancerData) {
+                    setFreelancerProfile(freelancerData as FreelancerProfile);
                 } else {
                     setFreelancerProfile(null);
                 }
             } else {
-                setProfile(null);
                 setFreelancerProfile(null);
             }
         } catch (error) {
             logger.error('Error fetching profile:', error);
         }
-    }, []);
+    }, [ensureProfileExists]);
 
     // Initialize auth state
     useEffect(() => {
@@ -116,7 +169,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
                 if (mounted && currentSession) {
                     setSession(currentSession);
                     setUser(currentSession.user);
-                    await fetchProfile(currentSession.user.id);
+                    await fetchProfile(currentSession.user.id, currentSession.user);
                 }
             } catch (error) {
                 logger.error('Error initializing auth:', error);
@@ -152,7 +205,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
                 if (newSession?.user) {
                     setIsLoading(true);
-                    await fetchProfile(newSession.user.id);
+                    await fetchProfile(newSession.user.id, newSession.user);
                     if (mounted) setIsLoading(false);
                 } else {
                     setProfile(null);
@@ -181,7 +234,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         if (data.session) {
             setSession(data.session);
             setUser(data.session.user);
-            await fetchProfile(data.session.user.id);
+            await fetchProfile(data.session.user.id, data.session.user);
         }
     };
 
@@ -190,6 +243,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
         const { data, error } = await supabase.auth.signUp({
             email,
             password,
+            options: {
+                data: {
+                    preferred_language: getPreferredLanguage(),
+                },
+            },
         });
 
         if (error) throw error;
@@ -197,7 +255,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         if (data.session) {
             setSession(data.session);
             setUser(data.session.user);
-            await fetchProfile(data.session.user.id);
+            await fetchProfile(data.session.user.id, data.session.user);
         }
     };
 
@@ -260,6 +318,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const updateProfile = async (data: Partial<Profile>) => {
         if (!user) throw new Error('No user logged in');
 
+        if (!profile) {
+            await ensureProfileExists(user);
+        }
+
         // Use UPDATE (not upsert) for partial updates to avoid NOT NULL violations
         const { error } = await supabase
             .from('profiles')
@@ -303,6 +365,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
         const nextMode: AccountMode = userType === 'client' ? 'client' : 'freelancer';
 
+        if (!profile) {
+            await ensureProfileExists(user);
+        }
+
         await updateProfile({ user_type: userType });
         persistAccountMode(nextMode, user.id);
 
@@ -324,6 +390,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     const switchAccountMode = async (mode: AccountMode) => {
         if (!user) throw new Error('No user logged in');
+
+        if (!profile) {
+            await ensureProfileExists(user);
+        }
 
         const nextUserType = promoteUserTypeForMode(profile?.user_type, mode);
 
@@ -355,7 +425,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     // Refresh profile data
     const refreshProfile = async () => {
         if (user) {
-            await fetchProfile(user.id);
+            await fetchProfile(user.id, user);
         }
     };
 

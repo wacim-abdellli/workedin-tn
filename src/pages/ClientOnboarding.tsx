@@ -1,5 +1,5 @@
 import { logger } from '@/lib/logger';
-import { useState, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -19,7 +19,7 @@ import SEO, { SEO_CONFIG } from '../components/common/SEO';
 
 function ClientOnboarding() {
     const { t } = useTranslation();
-    const { user, updateProfile } = useAuth();
+    const { user, profile, updateProfile } = useAuth();
     const { showToast } = useToast();
     const navigate = useNavigate();
     const [isLoading, setIsLoading] = useState(false);
@@ -43,10 +43,24 @@ function ClientOnboarding() {
     const {
         register,
         handleSubmit,
+        reset,
         formState: { errors },
     } = useForm<ClientFormData>({
         resolver: zodResolver(clientSchema),
+        defaultValues: {
+            full_name: profile?.full_name || '',
+            company_name: profile?.bio?.startsWith('Company: ') ? profile.bio.replace('Company: ', '') : '',
+            location: profile?.location || '',
+        },
     });
+
+    useEffect(() => {
+        reset({
+            full_name: profile?.full_name || '',
+            company_name: profile?.bio?.startsWith('Company: ') ? profile.bio.replace('Company: ', '') : '',
+            location: profile?.location || '',
+        });
+    }, [profile, reset]);
 
     // Handle avatar upload
     const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {

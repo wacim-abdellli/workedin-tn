@@ -10,7 +10,7 @@ import { useTranslation } from '../../i18n';
 import { useAuth } from '../../contexts/AuthContext';
 import type { UserType } from '../../types';
 import { useToast } from '../ui/Toast';
-import { getPostAuthPath, getOnboardingPath, isModeOnboarded } from '@/lib/accountMode';
+import { getPostAuthPath, getOnboardingPath } from '@/lib/accountMode';
 
 interface SignupFormProps {
     onComplete?: () => void;
@@ -18,7 +18,7 @@ interface SignupFormProps {
 
 function SignupForm({ onComplete }: SignupFormProps) {
     const { t, dir } = useTranslation();
-    const { profile, freelancerProfile, setUserType, signUpWithEmail, signInWithEmail } = useAuth();
+    const { profile, freelancerProfile, refreshProfile, setUserType, signUpWithEmail, signInWithEmail } = useAuth();
     const { showToast } = useToast();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
@@ -29,10 +29,11 @@ function SignupForm({ onComplete }: SignupFormProps) {
     const [showPassword, setShowPassword] = useState(false);
 
     useEffect(() => {
+        if (step === 'userType') return;
         if (!profile?.user_type) return;
 
         navigate(getPostAuthPath(profile, freelancerProfile));
-    }, [freelancerProfile, navigate, profile]);
+    }, [freelancerProfile, navigate, profile, step]);
 
     const ArrowIcon = dir === 'rtl' ? ArrowLeft : ArrowRight;
     const preSelectedType = searchParams.get('type') as UserType | null;
@@ -106,26 +107,25 @@ function SignupForm({ onComplete }: SignupFormProps) {
 
     const handleSelectUserType = async (userType: UserType) => {
         setIsLoading(true);
+        setError(null);
         try {
             await setUserType(userType);
+            await refreshProfile();
+
             const nextMode = userType === 'client' ? 'client' : 'freelancer';
-            const nextPath = isModeOnboarded(
-                { ...profile, user_type: userType },
-                freelancerProfile,
-                nextMode
-            )
-                ? getPostAuthPath({ ...profile, user_type: userType }, freelancerProfile)
-                : getOnboardingPath(nextMode);
-            navigate(nextPath);
+            navigate(getOnboardingPath(nextMode), { replace: true });
             onComplete?.();
         } catch (selectError) {
             logger.error('Error setting user type:', selectError);
+            const message = selectError instanceof Error ? selectError.message : t.common.error;
+            setError(message);
+            showToast(message, 'error');
         } finally {
             setIsLoading(false);
         }
     };
 
-    if (profile?.user_type) return null;
+    if (profile?.user_type && step !== 'userType') return null;
 
     return (
         <div className="mx-auto w-full max-w-md">
@@ -294,6 +294,7 @@ function SignupForm({ onComplete }: SignupFormProps) {
                         {userTypes.map((item) => (
                             <button
                                 key={item.type}
+                                type="button"
                                 onClick={() => handleSelectUserType(item.type)}
                                 disabled={isLoading}
                                 className={`group relative w-full overflow-hidden rounded-2xl border-2 p-5 text-start transition-all duration-300 focus:outline-none focus:ring-2 ring-offset-2 hover:-translate-y-1 hover:shadow-xl ${
@@ -321,9 +322,15 @@ function SignupForm({ onComplete }: SignupFormProps) {
                         ))}
                     </div>
 
-                    <p className="text-center text-sm text-gray-500 dark:text-gray-400">
-                        {t.auth.selectUserTypeSubtitle}
-                    </p>
+                    {error ? (
+                        <div className="rounded-xl border border-accent-200 bg-accent-50 p-4 dark:border-accent-800 dark:bg-accent-900/20">
+                            <p className="text-center text-sm font-medium text-accent-600 dark:text-accent-400">{error}</p>
+                        </div>
+                    ) : (
+                        <p className="text-center text-sm text-gray-500 dark:text-gray-400">
+                            {t.auth.selectUserTypeSubtitle}
+                        </p>
+                    )}
                 </div>
             )}
         </div>
