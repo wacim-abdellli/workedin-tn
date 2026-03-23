@@ -102,8 +102,10 @@ export default function Header() {
                 isScrolled
                     ? theme === 'dark'
                         ? 'backdrop-blur-xl bg-[#0f0e17]/80 shadow-sm border-b border-white/[0.05]'
-                        : 'backdrop-blur-xl bg-white/80 shadow-sm border-b border-gray-200/50'
-                    : 'bg-transparent'
+                        : 'backdrop-blur-xl bg-[rgba(252,250,255,0.94)] shadow-[0_16px_36px_-28px_rgba(15,23,42,0.28)] border-b border-[rgba(124,58,237,0.12)]'
+                    : theme === 'dark'
+                        ? 'bg-transparent'
+                        : 'bg-[rgba(248,245,252,0.88)] border-b border-[rgba(124,58,237,0.08)] backdrop-blur-md'
             )}>
                 <div className="max-w-7xl 2xl:max-w-[90%] mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-16 lg:h-20 gap-2 lg:gap-4">
@@ -122,7 +124,7 @@ export default function Header() {
                                 to="/jobs"
                                 className={cn(
                                     "hidden md:flex flex-1 max-w-md mx-auto items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-200 group",
-                                    "bg-white/70 dark:bg-white/[0.05] border border-primary-200/50 dark:border-primary-500/20 backdrop-blur-md",
+                                    "bg-white/90 dark:bg-white/[0.05] border border-[rgba(124,58,237,0.12)] dark:border-primary-500/20 backdrop-blur-md shadow-[0_10px_24px_-20px_rgba(15,23,42,0.18)]",
                                     "hover:bg-white dark:hover:bg-white/10 hover:border-primary-300 dark:hover:border-primary-400/30",
                                     isScrolled || theme === 'dark' ? "text-[#6b6880]" : "text-[#3d3a4e]"
                                 )}

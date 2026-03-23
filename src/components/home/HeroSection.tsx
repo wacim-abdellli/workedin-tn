@@ -50,7 +50,7 @@ function HeroStat({
   return (
     <div
       ref={ref}
-      className="rounded-[24px] border border-primary-100/80 bg-white/88 p-4 shadow-[0_16px_40px_-28px_rgba(124,58,237,0.35)] dark:border-white/10 dark:bg-white/[0.04]"
+      className="rounded-[24px] border border-[rgba(124,58,237,0.14)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(243,239,249,0.94))] p-4 shadow-[0_16px_40px_-28px_rgba(76,29,149,0.16)] dark:border-white/10 dark:bg-white/[0.04]"
     >
       <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-purple-50 text-purple-600 shadow-sm dark:bg-purple-900/30 dark:text-purple-300">
         <Icon className="h-5 w-5" />
@@ -156,7 +156,7 @@ export default function HeroSection({ stats }: HeroSectionProps) {
               variants={fadeUp}
               initial="hidden"
               animate="visible"
-              className="inline-flex items-center gap-3 rounded-full border border-purple-100 bg-purple-50 px-4 py-2 text-sm font-medium text-purple-700 shadow-sm backdrop-blur-md dark:border-purple-800/30 dark:bg-purple-950/50 dark:text-purple-300"
+              className="inline-flex items-center gap-3 rounded-full border border-[rgba(124,58,237,0.14)] bg-[rgba(255,255,255,0.9)] px-4 py-2 text-sm font-medium text-purple-700 shadow-[0_14px_30px_-24px_rgba(76,29,149,0.2)] backdrop-blur-md dark:border-purple-800/30 dark:bg-purple-950/50 dark:text-purple-300"
               style={{ transform: badgeGlow }}
             >
               <span className="h-2.5 w-2.5 rounded-full bg-green-400 shadow-[0_0_16px_rgba(74,222,128,0.65)] animate-pulse" />
@@ -257,7 +257,7 @@ export default function HeroSection({ stats }: HeroSectionProps) {
                     {t.hero.activity.title}
                   </h2>
                 </div>
-                <div className="rounded-2xl border border-primary-200/60 bg-primary-50 px-3 py-2 text-sm font-semibold text-primary-700 shadow-sm dark:border-primary-500/20 dark:bg-primary-500/10 dark:text-primary-300">
+                <div className="rounded-2xl border border-[rgba(124,58,237,0.16)] bg-[rgba(255,255,255,0.84)] px-3 py-2 text-sm font-semibold text-primary-700 shadow-[0_12px_24px_-20px_rgba(76,29,149,0.2)] dark:border-primary-500/20 dark:bg-primary-500/10 dark:text-primary-300">
                   {t.hero.activity.tag}
                 </div>
               </div>
@@ -273,7 +273,7 @@ export default function HeroSection({ stats }: HeroSectionProps) {
                   { icon: Shield, title: t.hero.trust.verified, copy: t.hero.trust.verifiedBody },
                   { icon: Star, title: t.hero.trust.secure, copy: t.hero.trust.secureBody },
                 ].map((item) => (
-                  <div key={item.title} className="rounded-[24px] border border-primary-100/80 bg-white/88 p-5 shadow-[0_18px_40px_-30px_rgba(124,58,237,0.35)] dark:border-white/10 dark:bg-white/[0.04]">
+                  <div key={item.title} className="rounded-[24px] border border-[rgba(124,58,237,0.14)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(243,239,249,0.94))] p-5 shadow-[0_18px_40px_-30px_rgba(76,29,149,0.16)] dark:border-white/10 dark:bg-white/[0.04]">
                     <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-500 to-primary-700 text-white">
                       <item.icon className="h-5 w-5" />
                     </div>

@@ -72,8 +72,8 @@ export function UserMenu({ user, profile, isOpen, onToggle }: UserMenuProps) {
                 className={cn(
                     'group flex items-center gap-3 rounded-[22px] border px-2.5 py-2 transition-all duration-200',
                     isOpen
-                        ? 'border-violet-400/35 bg-white/90 shadow-lg shadow-violet-500/10 dark:border-violet-500/30 dark:bg-white/10'
-                        : 'border-transparent hover:border-white/10 hover:bg-black/5 dark:hover:bg-white/5'
+                        ? 'border-violet-300/50 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(243,239,249,0.94))] shadow-[0_18px_40px_-28px_rgba(76,29,149,0.28)] dark:border-violet-500/30 dark:bg-white/10'
+                        : 'border-transparent hover:border-[rgba(124,58,237,0.14)] hover:bg-[rgba(255,255,255,0.86)] dark:hover:border-white/10 dark:hover:bg-white/5'
                 )}
                 aria-expanded={isOpen}
                 aria-haspopup="dialog"
@@ -197,12 +197,12 @@ export function UserAccountPanel({ profile, signOut, onClose }: UserAccountPanel
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.18, ease: 'easeOut' }}
-                className="premium-panel max-h-[min(78vh,42rem)] w-full overflow-y-auto rounded-[30px] border border-slate-200/70 p-4 shadow-[0_24px_70px_rgba(15,23,42,0.16)] dark:border-white/10 dark:shadow-[0_32px_90px_rgba(0,0,0,0.46)]"
+                className="premium-panel max-h-[min(78vh,42rem)] w-full overflow-y-auto rounded-[30px] border border-slate-200/85 p-4 shadow-[0_26px_72px_-36px_rgba(15,23,42,0.22)] dark:border-white/10 dark:shadow-[0_32px_90px_rgba(0,0,0,0.46)]"
                 role="dialog"
                 aria-label={copy.sectionLabel}
                 data-account-panel
             >
-                <div className="rounded-[24px] border border-slate-200/80 bg-white/80 p-4 shadow-sm dark:border-white/10 dark:bg-[#171421]/92">
+                <div className="rounded-[24px] border border-slate-200/90 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(244,240,250,0.95))] p-4 shadow-[0_14px_28px_-22px_rgba(15,23,42,0.18)] dark:border-white/10 dark:bg-[#171421]/92">
                     <div className="flex items-center justify-between gap-3">
                         <div>
                             <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-violet-600 dark:text-violet-300">
@@ -258,7 +258,7 @@ export function UserAccountPanel({ profile, signOut, onClose }: UserAccountPanel
                                     disabled={isActive || isSwitchingMode !== null}
                                     className={cn(
                                         'group rounded-[24px] border p-4 text-left transition-all duration-200',
-                                        'border-slate-200/80 bg-white/78',
+                                        'border-slate-200/85 bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(246,242,251,0.92))]',
                                         !isActive && 'hover:-translate-y-0.5 hover:border-violet-300/40 hover:shadow-sm dark:hover:border-white/15',
                                         'dark:border-white/8 dark:bg-white/[0.04]',
                                         isActive && item.tone.surface,
@@ -307,7 +307,7 @@ export function UserAccountPanel({ profile, signOut, onClose }: UserAccountPanel
                     </div>
                 </div>
 
-                <div className="mt-4 rounded-[24px] border border-slate-200/80 bg-white/75 p-3 shadow-sm dark:border-white/8 dark:bg-white/[0.04]">
+                <div className="mt-4 rounded-[24px] border border-slate-200/90 bg-[linear-gradient(180deg,rgba(255,255,255,0.97),rgba(244,240,250,0.93))] p-3 shadow-[0_14px_28px_-22px_rgba(15,23,42,0.16)] dark:border-white/8 dark:bg-white/[0.04]">
                     <div className="mb-2 px-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#8a849d] dark:text-[#9d97af]">
                         {copy.tools}
                     </div>
@@ -351,9 +351,9 @@ function PanelLink({
         <Link
             to={to}
             onClick={onClick}
-            className="group flex min-h-[44px] items-center justify-start gap-3 rounded-2xl border border-transparent bg-transparent px-4 text-sm font-semibold text-[#171420] transition-all hover:bg-violet-50/80 dark:text-white dark:hover:bg-white/[0.06]"
+            className="group flex min-h-[44px] items-center justify-start gap-3 rounded-2xl border border-transparent bg-transparent px-4 text-sm font-semibold text-[#171420] transition-all hover:bg-[rgba(124,58,237,0.08)] dark:text-white dark:hover:bg-white/[0.06]"
         >
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-100/80 text-[#5a546d] transition-colors group-hover:bg-violet-100 group-hover:text-violet-700 dark:bg-white/10 dark:text-[#a39db7] dark:group-hover:bg-violet-500/20 dark:group-hover:text-violet-300">
+            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[rgba(236,232,247,0.92)] text-[#5a546d] transition-colors group-hover:bg-violet-100 group-hover:text-violet-700 dark:bg-white/10 dark:text-[#a39db7] dark:group-hover:bg-violet-500/20 dark:group-hover:text-violet-300">
                 {icon}
             </div>
             <span>{label}</span>

@@ -19,20 +19,20 @@
   --text-5xl: clamp(3rem, 8vw, 5rem);
 
   /* Light Mode Colors - Premium Purple-tinted */
-  --color-bg: #faf9ff;
+  --color-bg: #f6f4fb;
   --color-bg-secondary: #ffffff;
-  --color-bg-tertiary: #f1f0fe;
+  --color-bg-tertiary: #ece8f7;
   --color-fg: #1a1825;
   --color-fg-secondary: #3d3a4e;
   --color-fg-muted: #6b6880;
-  --color-border: #e8e6f0;
-  --color-border-subtle: #f1f0fe;
+  --color-border: #ddd7eb;
+  --color-border-subtle: #ece8f7;
 
   /* Premium Gradients */
   --gradient-primary: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 50%, #a78bfa 100%);
   --gradient-accent: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-  --gradient-glass: linear-gradient(180deg, rgba(255, 255, 255, 0.7) 0%, rgba(255, 255, 255, 0.3) 100%);
-  --gradient-surface: linear-gradient(145deg, #ffffff, #f8f7ff);
+  --gradient-glass: linear-gradient(180deg, rgba(255, 255, 255, 0.88) 0%, rgba(246, 243, 252, 0.82) 100%);
+  --gradient-surface: linear-gradient(145deg, #ffffff, #f3effa);
 
   /* Premium Shadows */
   --shadow-sm: 0 2px 4px rgba(139, 92, 246, 0.04);
@@ -324,12 +324,12 @@ h6 {
   }
 
   .glass-card {
-    background: rgba(255, 255, 255, 0.7);
-    backdrop-filter: blur(16px);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(246, 242, 251, 0.9));
+    backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(139, 92, 246, 0.1);
+    border: 1px solid rgba(124, 58, 237, 0.14);
     border-radius: 20px;
-    box-shadow: 0 20px 40px -28px rgba(124, 58, 237, 0.22);
+    box-shadow: 0 20px 45px -30px rgba(76, 29, 149, 0.18), 0 10px 22px -18px rgba(15, 23, 42, 0.1);
   }
 
   .dark .glass-card {
@@ -471,10 +471,10 @@ h6 {
 
   /* ===== GLASS EFFECT ===== */
   .glass {
-    background: rgba(255, 255, 255, 0.85);
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
-    border: 1px solid rgba(255, 255, 255, 0.4);
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(18px) saturate(160%);
+    -webkit-backdrop-filter: blur(18px) saturate(160%);
+    border: 1px solid rgba(124, 58, 237, 0.12);
   }
 
   .dark .glass {
@@ -529,9 +529,10 @@ h6 {
 
   .hero-gradient {
     background:
-      radial-gradient(ellipse 80% 60% at 50% -20%, rgba(139, 92, 246, 0.15), transparent),
-      linear-gradient(-45deg, #faf9ff, #f4efff, #fff7ed, #f7f5ff);
-    background-size: 100% 100%, 400% 400%;
+      radial-gradient(ellipse 78% 58% at 50% -16%, rgba(139, 92, 246, 0.12), transparent 62%),
+      radial-gradient(circle at 85% 14%, rgba(245, 158, 11, 0.08), transparent 26%),
+      linear-gradient(-45deg, #f6f4fb, #f1edf8, #f8f4ec, #f3eff9);
+    background-size: 100% 100%, 100% 100%, 400% 400%;
     animation: gradient-shift 15s ease infinite;
   }
 
@@ -588,9 +589,9 @@ h6 {
 
   .hero-surface-panel {
     background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.86), rgba(248, 247, 255, 0.8));
-    border: 1px solid rgba(255, 255, 255, 0.7);
-    box-shadow: 0 24px 60px -36px rgba(124, 58, 237, 0.3);
+      linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(244, 239, 250, 0.9));
+    border: 1px solid rgba(124, 58, 237, 0.12);
+    box-shadow: 0 24px 60px -38px rgba(76, 29, 149, 0.22), 0 14px 28px -24px rgba(15, 23, 42, 0.18);
   }
 
   .dark .hero-surface-panel {
@@ -611,9 +612,9 @@ h6 {
 
   .premium-panel {
     background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 247, 255, 0.88));
-    border: 1px solid rgba(139, 92, 246, 0.1);
-    box-shadow: 0 24px 60px -40px rgba(124, 58, 237, 0.55);
+      linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(243, 239, 249, 0.94));
+    border: 1px solid rgba(124, 58, 237, 0.14);
+    box-shadow: 0 28px 65px -42px rgba(76, 29, 149, 0.28), 0 18px 36px -30px rgba(15, 23, 42, 0.22);
   }
 
   .dark .premium-panel {
