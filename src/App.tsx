@@ -176,7 +176,7 @@ function AppRoutes() {
       <Route path="/jobs" element={<JobBoard />} />
 
       {/* Freelancer Discovery */}
-      <Route path="/find-freelancers" element={<FindFreelancers />} />
+      <Route path="/find-freelancers" element={<ErrorBoundary><FindFreelancers /></ErrorBoundary>} />
 
       {/* Messages */}
       <Route path="/messages" element={

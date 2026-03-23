@@ -162,22 +162,34 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     // Sign in with email and password
     const signInWithEmail = async (email: string, password: string) => {
-        const { error } = await supabase.auth.signInWithPassword({
+        const { data, error } = await supabase.auth.signInWithPassword({
             email,
             password,
         });
 
         if (error) throw error;
+
+        if (data.session) {
+            setSession(data.session);
+            setUser(data.session.user);
+            await fetchProfile(data.session.user.id);
+        }
     };
 
     // Sign up with email and password
     const signUpWithEmail = async (email: string, password: string) => {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
             email,
             password,
         });
 
         if (error) throw error;
+
+        if (data.session) {
+            setSession(data.session);
+            setUser(data.session.user);
+            await fetchProfile(data.session.user.id);
+        }
     };
 
     // Send OTP to phone number (keeping for compatibility)

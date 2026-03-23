@@ -89,7 +89,7 @@ function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
                                     redirectTo: `${window.location.origin}/auth/callback`,
                                     queryParams: {
                                         access_type: 'offline',
-                                        prompt: 'select_account consent',
+                                        prompt: 'select_account',
                                         hl: dir === 'rtl' ? 'ar' : 'fr',
                                     },
                                 },

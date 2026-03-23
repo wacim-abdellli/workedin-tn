@@ -8,30 +8,31 @@ import { useTheme } from '../contexts/ThemeContext';
 
 function Login() {
     const navigate = useNavigate();
-    const { isAuthenticated, profile } = useAuth();
+    const { isAuthenticated, isLoading, profile } = useAuth();
     const { theme } = useTheme();
 
     // Redirect authenticated users to appropriate dashboard
     useEffect(() => {
-        if (isAuthenticated && profile) {
-            if (!profile.user_type) {
-                // No user type selected - go to signup for role selection
-                navigate('/signup?step=select-type');
-            } else if (!profile.onboarding_completed) {
-                // Not onboarded - go to onboarding
-                const onboardingRoute = profile.user_type === 'client'
-                    ? '/onboarding/client'
-                    : '/onboarding/freelancer';
-                navigate(onboardingRoute);
-            } else {
-                // Fully onboarded - go to dashboard
-                const dashboardRoute = profile.user_type === 'client'
-                    ? '/client/dashboard'
-                    : '/freelancer/dashboard';
-                navigate(dashboardRoute);
-            }
+        if (isLoading || !isAuthenticated) return;
+
+        if (!profile?.user_type) {
+            navigate('/signup?step=select-type');
+            return;
         }
-    }, [isAuthenticated, profile, navigate]);
+
+        if (!profile.onboarding_completed) {
+            const onboardingRoute = profile.user_type === 'client'
+                ? '/onboarding/client'
+                : '/onboarding/freelancer';
+            navigate(onboardingRoute);
+            return;
+        }
+
+        const dashboardRoute = profile.user_type === 'client'
+            ? '/client/dashboard'
+            : '/freelancer/dashboard';
+        navigate(dashboardRoute);
+    }, [isAuthenticated, isLoading, profile, navigate]);
 
     const handleSuccess = () => {
         // Navigation is handled by the useEffect above to avoid race conditions

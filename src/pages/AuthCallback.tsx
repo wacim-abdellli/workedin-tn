@@ -1,61 +1,142 @@
-import { useEffect } from 'react';
-import { Loader2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Loader2, RefreshCw } from 'lucide-react';
+
+import { logger } from '@/lib/logger';
+import Button from '@/components/ui/Button';
 import { supabase } from '../lib/supabase';
 import { useTranslation } from '../i18n';
-import { logger } from '@/lib/logger';
 
-/**
- * AuthCallback — handles the OAuth redirect after Google sign-in.
- *
- * Strategy (Hard Reload):
- * The Supabase JS client (`detectSessionInUrl: true`) automatically exchanges
- * the code in the URL. However, in certain environments (like React Strict Mode
- * + Vite SPA), this background exchange can deadlock the client's internal locks,
- * causing any subsequent `getSession()` calls to hang infinitely during single-page
- * navigation.
- *
- * FIX: We simply give Supabase 2.5 seconds to finish its background HTTP request
- * and save the tokens to localStorage. Then, we FORCE a hard browser refresh
- * (`window.location.replace('/')`). This destroys the deadlocked client instance
- * and builds a fresh one that reads the perfectly saved localStorage session.
- */
+type CallbackState = 'loading' | 'error';
+
+const MAX_WAIT_MS = 12000;
+const POLL_INTERVAL_MS = 400;
+
 const AuthCallback = () => {
     const { dir } = useTranslation();
+    const [status, setStatus] = useState<CallbackState>('loading');
 
     useEffect(() => {
-        let timer: ReturnType<typeof setTimeout>;
+        let cancelled = false;
 
-        // 1. Listen for the native SIGNED_IN event from the background exchange.
-        // If it fires, trigger the hard reload immediately.
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-            if (event === 'SIGNED_IN') {
-                logger.info('AuthCallback: SIGNED_IN detected, forcing hard reload...');
+        const finishSignIn = async () => {
+            const currentUrl = new URL(window.location.href);
+            const authCode = currentUrl.searchParams.get('code');
+            const authError = currentUrl.searchParams.get('error_description') || currentUrl.searchParams.get('error');
+
+            if (authError) {
+                logger.error('AuthCallback: provider returned error', authError);
+                if (!cancelled) setStatus('error');
+                return;
+            }
+
+            if (authCode) {
+                try {
+                    const { data, error } = await supabase.auth.exchangeCodeForSession(authCode);
+
+                    if (error) {
+                        logger.error('AuthCallback: exchangeCodeForSession failed', error);
+                        if (!cancelled) setStatus('error');
+                        return;
+                    }
+
+                    if (data.session) {
+                        logger.info('AuthCallback: code exchanged successfully, redirecting');
+                        window.location.replace('/');
+                        return;
+                    }
+                } catch (error) {
+                    logger.error('AuthCallback: explicit code exchange failed', error);
+                    if (!cancelled) setStatus('error');
+                    return;
+                }
+            }
+
+            const deadline = Date.now() + MAX_WAIT_MS;
+
+            while (!cancelled && Date.now() < deadline) {
+                try {
+                    const { data, error } = await supabase.auth.getSession();
+
+                    if (error) {
+                        logger.error('AuthCallback: failed to read session', error);
+                    }
+
+                    if (data.session) {
+                        logger.info('AuthCallback: session detected, redirecting to home');
+                        window.location.replace('/');
+                        return;
+                    }
+                } catch (error) {
+                    logger.error('AuthCallback: polling getSession failed', error);
+                }
+
+                await new Promise((resolve) => window.setTimeout(resolve, POLL_INTERVAL_MS));
+            }
+
+            if (!cancelled) {
+                logger.warn('AuthCallback: no session detected before timeout');
+                setStatus('error');
+            }
+        };
+
+        finishSignIn();
+
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+            if (cancelled) return;
+
+            if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && session) {
+                logger.info(`AuthCallback: ${event} detected, redirecting`);
                 window.location.replace('/');
             }
         });
 
-        // 2. Fallback: If the event was missed or silenced by the lock bug,
-        // just hard reload after 2.5 seconds anyway. 2.5s is plenty of time
-        // for the background fetch to exchange the code and save to localStorage.
-        timer = setTimeout(() => {
-            logger.info('AuthCallback: Timed out waiting for event, forcing hard reload as fallback...');
-            window.location.replace('/');
-        }, 2500);
-
         return () => {
-            clearTimeout(timer);
+            cancelled = true;
             subscription.unsubscribe();
         };
     }, []);
 
     return (
         <div
-            className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-primary-50 dark:from-gray-900 dark:via-gray-800 dark:to-primary-900 flex items-center justify-center p-4"
+            className="flex min-h-screen items-center justify-center bg-gradient-to-br from-[#f7f5ff] via-white to-primary-50 p-4 dark:from-[#09070f] dark:via-[#0f0d16] dark:to-primary-950"
             dir={dir}
         >
-            <div className="text-center max-w-md w-full bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl">
-                <Loader2 className="w-12 h-12 animate-spin text-primary-600 mx-auto mb-4" />
-                <p className="text-gray-600 dark:text-gray-400 font-medium">جاري تسجيل الدخول...</p>
+            <div className="w-full max-w-md rounded-[28px] border border-white/70 bg-white/90 p-8 text-center shadow-2xl shadow-primary-500/10 backdrop-blur-xl dark:border-white/8 dark:bg-white/5 dark:shadow-none">
+                <img
+                    src="/logos/logo-social.svg"
+                    alt="Khedma TN"
+                    width="88"
+                    height="88"
+                    className="mx-auto mb-6 h-[88px] w-[88px] rounded-[24px] shadow-xl shadow-primary-500/15"
+                />
+
+                {status === 'loading' ? (
+                    <>
+                        <Loader2 className="mx-auto mb-4 h-12 w-12 animate-spin text-primary-600" />
+                        <h1 className="mb-3 text-2xl font-bold text-[#171420] dark:text-white">Signing you in</h1>
+                        <p className="text-[#625c78] dark:text-[#a7a2ba]">
+                            We are finishing your secure login. This should only take a moment.
+                        </p>
+                    </>
+                ) : (
+                    <>
+                        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-amber-100 text-amber-600 dark:bg-amber-500/10 dark:text-amber-300">
+                            <RefreshCw className="h-7 w-7" />
+                        </div>
+                        <h1 className="mb-3 text-2xl font-bold text-[#171420] dark:text-white">Login did not complete</h1>
+                        <p className="mb-6 text-[#625c78] dark:text-[#a7a2ba]">
+                            We could not confirm your session yet. Try again, or return to login and retry the provider sign-in.
+                        </p>
+                        <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
+                            <Button variant="outline" onClick={() => window.location.reload()}>
+                                Try again
+                            </Button>
+                            <Button variant="primary" onClick={() => { window.location.replace('/login'); }}>
+                                Back to login
+                            </Button>
+                        </div>
+                    </>
+                )}
             </div>
         </div>
     );

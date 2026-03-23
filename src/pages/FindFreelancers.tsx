@@ -1,107 +1,151 @@
-import { useState, useEffect } from 'react';
-import {
-    Search,
-    Filter,
-    Grid,
-    List,
-    X,
-    Briefcase,
-    Award,
-    Sparkles,
-} from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { Award, Briefcase, Filter, Grid, List, Search, SlidersHorizontal, Sparkles, X } from 'lucide-react';
+
+import SEO, { SEO_CONFIG } from '../components/common/SEO';
+import EmptyState from '../components/common/EmptyState';
+import { SkeletonList, SkeletonProfile } from '../components/common';
+import FreelancerCard from '../components/freelancers/FreelancerCard';
 import { Header } from '../components/layout';
 import Button from '../components/ui/Button';
-import SEO, { SEO_CONFIG } from '../components/common/SEO';
-import { SkeletonProfile, SkeletonList } from '../components/common';
-import EmptyState from '../components/common/EmptyState';
-import FreelancerCard from '../components/freelancers/FreelancerCard';
 import { useTranslation } from '../i18n';
 
-// Mock freelancers (Reduced for brevity in example, imagine full list)
-const MOCK_FREELANCERS = [
+type FreelancerCategory =
+    | 'Design'
+    | 'Development'
+    | 'Writing'
+    | 'Marketing'
+    | 'Video'
+    | 'Consulting';
+
+type FreelancerRecord = {
+    id: string;
+    category: FreelancerCategory;
+    name: string;
+    title: string;
+    avatar: string | null;
+    rating: number;
+    reviews: number;
+    hourly_rate: number;
+    location: string;
+    skills: string[];
+    success_rate: number;
+    jobs_completed: number;
+    response_time: string;
+    is_verified: boolean;
+    is_available: boolean;
+};
+
+const MOCK_FREELANCERS: FreelancerRecord[] = [
     {
         id: 'f1',
-        name: 'أحمد بن علي',
-        title: 'مصمم جرافيكي محترف',
+        category: 'Design',
+        name: 'Ahmed Ben Ali',
+        title: 'Brand and Visual Designer',
         avatar: null,
         rating: 4.9,
         reviews: 24,
         hourly_rate: 25,
-        location: 'تونس العاصمة',
-        skills: ['تصميم جرافيكي', 'لوجو', 'هوية بصرية'],
+        location: 'Tunis',
+        skills: ['Branding', 'Logo Design', 'Figma'],
         success_rate: 98,
         jobs_completed: 32,
-        response_time: '< 1 ساعة',
+        response_time: '< 1 hour',
         is_verified: true,
         is_available: true,
     },
     {
         id: 'f2',
-        name: 'سارة المنصوري',
-        title: 'مترجمة محترفة',
+        category: 'Writing',
+        name: 'Sarra Mansouri',
+        title: 'Translator and Content Strategist',
         avatar: null,
-        rating: 5.0,
+        rating: 5,
         reviews: 18,
         hourly_rate: 20,
-        location: 'صفاقس',
-        skills: ['ترجمة', 'كتابة محتوى', 'تدقيق لغوي'],
+        location: 'Sfax',
+        skills: ['Translation', 'Content Writing', 'Proofreading'],
         success_rate: 100,
         jobs_completed: 45,
-        response_time: '< 2 ساعة',
+        response_time: '< 2 hours',
         is_verified: true,
         is_available: true,
     },
-    // ... duplicates for grid demo
     {
         id: 'f3',
-        name: 'محمد الشريف',
-        title: 'مطور ويب Full Stack',
+        category: 'Development',
+        name: 'Mohamed Cherif',
+        title: 'Full Stack React Engineer',
         avatar: null,
         rating: 4.7,
         reviews: 12,
         hourly_rate: 35,
-        location: 'سوسة',
+        location: 'Sousse',
         skills: ['React', 'Node.js', 'TypeScript'],
         success_rate: 95,
         jobs_completed: 28,
-        response_time: '< 3 ساعة',
+        response_time: '< 3 hours',
         is_verified: true,
         is_available: false,
     },
     {
         id: 'f4',
-        name: 'فاطمة الزهراء',
-        title: 'كاتبة محتوى إبداعي',
+        category: 'Marketing',
+        name: 'Fatma Zahra',
+        title: 'Creative Content and Growth Marketer',
         avatar: null,
         rating: 4.8,
         reviews: 31,
         hourly_rate: 15,
-        location: 'نابل',
-        skills: ['كتابة محتوى', 'تسويق رقمي', 'سوشيال ميديا'],
+        location: 'Nabeul',
+        skills: ['Content', 'SEO', 'Social Media'],
         success_rate: 97,
         jobs_completed: 56,
-        response_time: '< 1 ساعة',
+        response_time: '< 1 hour',
         is_verified: false,
         is_available: true,
     },
+    {
+        id: 'f5',
+        category: 'Video',
+        name: 'Yassine Trabelsi',
+        title: 'Video Editor and Motion Designer',
+        avatar: null,
+        rating: 4.8,
+        reviews: 22,
+        hourly_rate: 30,
+        location: 'Monastir',
+        skills: ['Premiere Pro', 'After Effects', 'Motion'],
+        success_rate: 96,
+        jobs_completed: 34,
+        response_time: '< 2 hours',
+        is_verified: true,
+        is_available: true,
+    },
+    {
+        id: 'f6',
+        category: 'Consulting',
+        name: 'Nour Haddad',
+        title: 'Business Consultant for SMEs',
+        avatar: null,
+        rating: 4.6,
+        reviews: 14,
+        hourly_rate: 40,
+        location: 'Sousse',
+        skills: ['Strategy', 'Operations', 'Pitch Decks'],
+        success_rate: 93,
+        jobs_completed: 18,
+        response_time: '< 4 hours',
+        is_verified: true,
+        is_available: false,
+    },
 ];
 
-const CATEGORIES = [
-    'تصميم جرافيكي',
-    'برمجة وتطوير',
-    'كتابة وترجمة',
-    'تسويق رقمي',
-    'فيديو وصوت',
-    'استشارات',
-];
-
-const SKILLS = [
-    'React', 'Node.js', 'تصميم لوجو', 'ترجمة', 'كتابة محتوى',
-    'Figma', 'تصوير', 'مونتاج', 'SEO', 'سوشيال ميديا',
-];
+const CATEGORY_OPTIONS: FreelancerCategory[] = ['Design', 'Development', 'Writing', 'Marketing', 'Video', 'Consulting'];
+const SKILL_OPTIONS = ['React', 'Node.js', 'Logo Design', 'Translation', 'Content Writing', 'Figma', 'Motion', 'SEO'];
 
 export default function FindFreelancers() {
     const { t } = useTranslation();
+    const copy = t.findFreelancers;
 
     const [searchQuery, setSearchQuery] = useState('');
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -109,27 +153,20 @@ export default function FindFreelancers() {
     const [showFilters, setShowFilters] = useState(false);
     const [savedFreelancers, setSavedFreelancers] = useState<string[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-
-    useEffect(() => {
-        // Simulate data fetching
-        const timer = setTimeout(() => {
-            setIsLoading(false);
-        }, 1000);
-        return () => clearTimeout(timer);
-    }, []);
-
-    // Filter states
-    const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+    const [selectedCategories, setSelectedCategories] = useState<FreelancerCategory[]>([]);
     const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
     const [minRating, setMinRating] = useState(0);
     const [rateRange, setRateRange] = useState<[number, number]>([0, 100]);
     const [availableOnly, setAvailableOnly] = useState(false);
     const [verifiedOnly, setVerifiedOnly] = useState(false);
 
+    useEffect(() => {
+        const timer = window.setTimeout(() => setIsLoading(false), 900);
+        return () => window.clearTimeout(timer);
+    }, []);
+
     const toggleSaved = (id: string) => {
-        setSavedFreelancers(prev =>
-            prev.includes(id) ? prev.filter(f => f !== id) : [...prev, id]
-        );
+        setSavedFreelancers((prev) => (prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]));
     };
 
     const clearFilters = () => {
@@ -139,249 +176,358 @@ export default function FindFreelancers() {
         setRateRange([0, 100]);
         setAvailableOnly(false);
         setVerifiedOnly(false);
+        setSearchQuery('');
     };
 
-    const filteredFreelancers = MOCK_FREELANCERS.filter(f => {
-        if (searchQuery && !f.name.includes(searchQuery) && !f.title.includes(searchQuery)) return false;
-        if (minRating && f.rating < minRating) return false;
-        if (f.hourly_rate < rateRange[0] || f.hourly_rate > rateRange[1]) return false;
-        if (availableOnly && !f.is_available) return false;
-        if (verifiedOnly && !f.is_verified) return false;
-        if (selectedSkills.length > 0 && !selectedSkills.some(s => f.skills.includes(s))) return false;
-        return true;
-    });
+    const filteredFreelancers = useMemo(() => {
+        return [...MOCK_FREELANCERS]
+            .filter((freelancer) => {
+                const query = searchQuery.trim().toLowerCase();
+                if (
+                    query &&
+                    ![
+                        freelancer.name,
+                        freelancer.title,
+                        freelancer.location,
+                        freelancer.category,
+                        ...freelancer.skills,
+                    ].some((value) => value.toLowerCase().includes(query))
+                ) {
+                    return false;
+                }
+
+                if (selectedCategories.length > 0 && !selectedCategories.includes(freelancer.category)) return false;
+                if (selectedSkills.length > 0 && !selectedSkills.some((skill) => freelancer.skills.includes(skill))) return false;
+                if (minRating > 0 && freelancer.rating < minRating) return false;
+                if (freelancer.hourly_rate < rateRange[0] || freelancer.hourly_rate > rateRange[1]) return false;
+                if (availableOnly && !freelancer.is_available) return false;
+                if (verifiedOnly && !freelancer.is_verified) return false;
+
+                return true;
+            })
+            .sort((left, right) => {
+                switch (sortBy) {
+                    case 'rating':
+                        return right.rating - left.rating;
+                    case 'rate_low':
+                        return left.hourly_rate - right.hourly_rate;
+                    default:
+                        return right.success_rate - left.success_rate;
+                }
+            });
+    }, [availableOnly, minRating, rateRange, searchQuery, selectedCategories, selectedSkills, sortBy, verifiedOnly]);
+
+    const activeFilterCount =
+        selectedCategories.length +
+        selectedSkills.length +
+        (availableOnly ? 1 : 0) +
+        (verifiedOnly ? 1 : 0) +
+        (minRating > 0 ? 1 : 0) +
+        (rateRange[0] > 0 || rateRange[1] < 100 ? 1 : 0);
+
+    const averageRate = filteredFreelancers.length
+        ? Math.round(filteredFreelancers.reduce((sum, freelancer) => sum + freelancer.hourly_rate, 0) / filteredFreelancers.length)
+        : 0;
+
+    const topRating = filteredFreelancers.length
+        ? Math.max(...filteredFreelancers.map((freelancer) => freelancer.rating)).toFixed(1)
+        : '0.0';
 
     const FilterSidebar = () => (
         <div className="space-y-8">
-            {/* Search */}
             <div className="relative group">
-                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                    <Search className="w-5 h-5 text-gray-400 group-focus-within:text-primary-500 transition-colors" />
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                    <Search className="h-5 w-5 text-[#8a839f] transition-colors group-focus-within:text-primary-500" />
                 </div>
                 <input
                     type="text"
                     value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder={t.findFreelancers.searchPlaceholder}
-                    className="block w-full p-4 pr-10 text-sm text-gray-900 border border-gray-200 rounded-xl bg-gray-50 focus:ring-primary-500 focus:border-primary-500 dark:bg-dark-800 dark:border-dark-700 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500 transition-all shadow-sm focus:shadow-md"
+                    onChange={(event) => setSearchQuery(event.target.value)}
+                    placeholder={copy.searchPlaceholder}
+                    className="block w-full rounded-2xl border border-white/70 bg-white/85 p-4 pr-11 text-sm text-[#191627] shadow-sm backdrop-blur transition-all focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-200 dark:border-white/8 dark:bg-white/5 dark:text-white dark:focus:ring-primary-500/20"
                 />
             </div>
 
-            {/* Availability Toggle - Prominent */}
-            <div className="p-4 rounded-xl bg-gradient-to-br from-primary-50 to-white dark:from-dark-800 dark:to-dark-700 border border-primary-100 dark:border-dark-600 shadow-sm">
-                <label className="flex items-center justify-between cursor-pointer group">
-                    <div className="flex items-center gap-3">
-                        <div className={`w-10 h-6 rounded-full p-1 transition-colors duration-300 ${availableOnly ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'}`}>
-                            <div className={`w-4 h-4 bg-white rounded-full shadow-md transform transition-transform duration-300 ${availableOnly ? 'translate-x-full' : ''}`} />
-                        </div>
-                        <span className="font-medium text-dark-900 dark:text-white group-hover:text-primary-600 transition-colors">{t.findFreelancers.availableNow}</span>
+            <div className="rounded-3xl border border-emerald-200/60 bg-gradient-to-br from-emerald-50 to-white p-4 shadow-sm dark:border-emerald-500/10 dark:bg-[linear-gradient(135deg,rgba(16,185,129,0.12),rgba(255,255,255,0.03))]">
+                <label className="flex cursor-pointer items-center justify-between gap-4">
+                    <div>
+                        <div className="font-semibold text-[#191627] dark:text-white">{copy.availableNow}</div>
+                        <div className="mt-1 text-sm text-[#6e6884] dark:text-[#9a95ad]">Only show talent ready to start now</div>
+                    </div>
+                    <div className={`flex h-7 w-12 items-center rounded-full p-1 transition-colors ${availableOnly ? 'bg-emerald-500' : 'bg-gray-300 dark:bg-white/10'}`}>
+                        <div className={`h-5 w-5 rounded-full bg-white shadow transition-transform ${availableOnly ? 'translate-x-5' : ''}`} />
                     </div>
                     <input
                         type="checkbox"
                         checked={availableOnly}
-                        onChange={(e) => setAvailableOnly(e.target.checked)}
+                        onChange={(event) => setAvailableOnly(event.target.checked)}
                         className="hidden"
                     />
                 </label>
             </div>
 
-            {/* Categories */}
             <div>
-                <h3 className="font-bold text-dark-900 dark:text-white mb-4 flex items-center gap-2">
-                    <Briefcase className="w-4 h-4 text-primary-500" />
-                    {t.findFreelancers.category}
+                <h3 className="mb-4 flex items-center gap-2 text-sm font-bold uppercase tracking-[0.18em] text-[#7a7590] dark:text-[#918ba8]">
+                    <Briefcase className="h-4 w-4 text-primary-500" />
+                    {copy.category}
                 </h3>
                 <div className="space-y-2">
-                    {CATEGORIES.map(cat => (
-                        <label key={cat} className="flex items-center gap-3 cursor-pointer group p-2 hover:bg-gray-50 dark:hover:bg-dark-800/50 rounded-lg transition-colors">
-                            <div className="relative flex items-center">
-                                <input
-                                    type="checkbox"
-                                    checked={selectedCategories.includes(cat)}
-                                    onChange={() => setSelectedCategories(prev =>
-                                        prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat]
-                                    )}
-                                    className="peer h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500 dark:border-gray-600 dark:bg-dark-700 dark:ring-offset-gray-800"
-                                />
-                            </div>
-                            <span className="text-sm text-gray-600 dark:text-gray-300 group-hover:text-dark-900 dark:group-hover:text-white transition-colors">{cat}</span>
+                    {CATEGORY_OPTIONS.map((category) => (
+                        <label key={category} className="flex cursor-pointer items-center gap-3 rounded-2xl px-3 py-2.5 transition-colors hover:bg-white/70 dark:hover:bg-white/5">
+                            <input
+                                type="checkbox"
+                                checked={selectedCategories.includes(category)}
+                                onChange={() =>
+                                    setSelectedCategories((prev) =>
+                                        prev.includes(category) ? prev.filter((item) => item !== category) : [...prev, category]
+                                    )
+                                }
+                                className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                            />
+                            <span className="text-sm text-[#413c54] dark:text-[#cecadd]">{category}</span>
                         </label>
                     ))}
                 </div>
             </div>
 
-            {/* Skills - Tags Style */}
             <div>
-                <h3 className="font-bold text-dark-900 dark:text-white mb-4 flex items-center gap-2">
-                    <Award className="w-4 h-4 text-accent-500" />
-                    {t.findFreelancers.skills}
+                <h3 className="mb-4 flex items-center gap-2 text-sm font-bold uppercase tracking-[0.18em] text-[#7a7590] dark:text-[#918ba8]">
+                    <Award className="h-4 w-4 text-amber-500" />
+                    {copy.skills}
                 </h3>
                 <div className="flex flex-wrap gap-2">
-                    {SKILLS.slice(0, 8).map(skill => (
-                        <button
-                            key={skill}
-                            onClick={() => setSelectedSkills(prev =>
-                                prev.includes(skill) ? prev.filter(s => s !== skill) : [...prev, skill]
-                            )}
-                            className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all transform active:scale-95 ${selectedSkills.includes(skill)
-                                ? 'bg-primary-600 text-white shadow-md shadow-primary-500/20'
-                                : 'bg-white dark:bg-dark-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-dark-700 hover:border-primary-400 dark:hover:border-primary-600 hover:text-primary-600'
+                    {SKILL_OPTIONS.map((skill) => {
+                        const active = selectedSkills.includes(skill);
+                        return (
+                            <button
+                                key={skill}
+                                type="button"
+                                onClick={() =>
+                                    setSelectedSkills((prev) => (prev.includes(skill) ? prev.filter((item) => item !== skill) : [...prev, skill]))
+                                }
+                                className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-all ${
+                                    active
+                                        ? 'bg-primary-600 text-white shadow-lg shadow-primary-500/25'
+                                        : 'border border-white/70 bg-white/80 text-[#5f5974] hover:border-primary-200 hover:text-primary-700 dark:border-white/8 dark:bg-white/5 dark:text-[#b9b4c8] dark:hover:border-primary-500/20 dark:hover:text-primary-200'
                                 }`}
+                            >
+                                {skill}
+                            </button>
+                        );
+                    })}
+                </div>
+            </div>
+
+            <div>
+                <h3 className="mb-4 text-sm font-bold uppercase tracking-[0.18em] text-[#7a7590] dark:text-[#918ba8]">{copy.hourlyRate}</h3>
+                <div className="grid grid-cols-2 gap-3">
+                    <input
+                        type="number"
+                        value={rateRange[0]}
+                        onChange={(event) => setRateRange([Number(event.target.value), rateRange[1]])}
+                        className="rounded-2xl border border-white/70 bg-white/80 px-3 py-3 text-center text-sm shadow-sm focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-200 dark:border-white/8 dark:bg-white/5 dark:focus:ring-primary-500/20"
+                    />
+                    <input
+                        type="number"
+                        value={rateRange[1]}
+                        onChange={(event) => setRateRange([rateRange[0], Number(event.target.value)])}
+                        className="rounded-2xl border border-white/70 bg-white/80 px-3 py-3 text-center text-sm shadow-sm focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-200 dark:border-white/8 dark:bg-white/5 dark:focus:ring-primary-500/20"
+                    />
+                </div>
+            </div>
+
+            <div>
+                <h3 className="mb-4 text-sm font-bold uppercase tracking-[0.18em] text-[#7a7590] dark:text-[#918ba8]">Rating</h3>
+                <div className="grid grid-cols-4 gap-2">
+                    {[0, 4, 4.5, 4.8].map((rating) => (
+                        <button
+                            key={rating}
+                            type="button"
+                            onClick={() => setMinRating(rating)}
+                            className={`rounded-2xl px-3 py-2 text-sm font-semibold transition-all ${
+                                minRating === rating
+                                    ? 'bg-primary-600 text-white shadow-lg shadow-primary-500/20'
+                                    : 'border border-white/70 bg-white/80 text-[#5f5974] dark:border-white/8 dark:bg-white/5 dark:text-[#b9b4c8]'
+                            }`}
                         >
-                            {skill}
+                            {rating === 0 ? 'All' : `${rating}+`}
                         </button>
                     ))}
                 </div>
             </div>
 
-            {/* Price Range */}
-            <div>
-                <h3 className="font-bold text-dark-900 dark:text-white mb-4">{t.findFreelancers.hourlyRate}</h3>
-                <div className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-dark-800 rounded-xl border border-gray-100 dark:border-dark-700">
+            <div className="rounded-3xl border border-blue-200/60 bg-gradient-to-br from-blue-50 to-white p-4 shadow-sm dark:border-blue-500/10 dark:bg-[linear-gradient(135deg,rgba(59,130,246,0.12),rgba(255,255,255,0.03))]">
+                <label className="flex cursor-pointer items-center justify-between gap-4">
+                    <div>
+                        <div className="font-semibold text-[#191627] dark:text-white">Verified only</div>
+                        <div className="mt-1 text-sm text-[#6e6884] dark:text-[#9a95ad]">Show profiles with stronger trust signals</div>
+                    </div>
+                    <div className={`flex h-7 w-12 items-center rounded-full p-1 transition-colors ${verifiedOnly ? 'bg-blue-500' : 'bg-gray-300 dark:bg-white/10'}`}>
+                        <div className={`h-5 w-5 rounded-full bg-white shadow transition-transform ${verifiedOnly ? 'translate-x-5' : ''}`} />
+                    </div>
                     <input
-                        type="number"
-                        value={rateRange[0]}
-                        onChange={(e) => setRateRange([Number(e.target.value), rateRange[1]])}
-                        className="w-full bg-white dark:bg-dark-900 border border-gray-200 dark:border-dark-600 rounded-lg px-2 py-1 text-center text-sm"
+                        type="checkbox"
+                        checked={verifiedOnly}
+                        onChange={(event) => setVerifiedOnly(event.target.checked)}
+                        className="hidden"
                     />
-                    <span className="text-gray-400 font-bold">-</span>
-                    <input
-                        type="number"
-                        value={rateRange[1]}
-                        onChange={(e) => setRateRange([rateRange[0], Number(e.target.value)])}
-                        className="w-full bg-white dark:bg-dark-900 border border-gray-200 dark:border-dark-600 rounded-lg px-2 py-1 text-center text-sm"
-                    />
-                </div>
+                </label>
             </div>
 
-            <Button variant="outline" className="w-full border-red-200 text-red-500 hover:bg-red-50 hover:border-red-300 dark:border-red-900/30 dark:hover:bg-red-900/10 transition-colors" onClick={clearFilters}>
-                {t.findFreelancers.clearFilters}
+            <Button variant="outline" className="w-full" onClick={clearFilters}>
+                {copy.clearFilters}
             </Button>
         </div>
     );
 
-
     return (
-        <div className="min-h-screen bg-gray-50/50 dark:bg-black transition-colors duration-300 font-arabic">
+        <div className="min-h-screen bg-[#f8f7ff] text-[#191627] transition-colors duration-300 dark:bg-[#09070f] dark:text-white">
             <SEO {...SEO_CONFIG.findFreelancers} url="/find-freelancers" />
             <Header />
 
-            {/* Page Title & Hero */}
-            <div className="relative bg-white dark:bg-dark-900 border-b border-gray-100 dark:border-dark-800 pt-12 pb-16 overflow-hidden">
-                <div className="absolute inset-0 bg-grid-slate-100 [mask-image:linear-gradient(0deg,white,rgba(255,255,255,0.6))] dark:bg-grid-slate-700/25 dark:[mask-image:linear-gradient(0deg,rgba(255,255,255,0.1),rgba(255,255,255,0.5))]" />
+            <section className="relative overflow-hidden border-b border-white/40 bg-white/80 pt-10 pb-16 backdrop-blur-xl dark:border-white/5 dark:bg-[#0f0d16]">
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(139,92,246,0.18),transparent_35%),radial-gradient(circle_at_top_right,rgba(245,158,11,0.14),transparent_28%),linear-gradient(180deg,rgba(255,255,255,0.92),rgba(248,247,255,0.74))] dark:bg-[radial-gradient(circle_at_top_left,rgba(139,92,246,0.24),transparent_35%),radial-gradient(circle_at_top_right,rgba(245,158,11,0.1),transparent_25%),linear-gradient(180deg,rgba(15,13,22,0.96),rgba(9,7,15,0.94))]" />
                 <div className="container-custom relative z-10">
-                    <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-                        <div>
-                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 text-xs font-bold mb-4 border border-primary-100 dark:border-primary-800">
-                                <Sparkles className="w-3 h-3" />
-                                <span>{t.findFreelancers.hero.badge}</span>
+                    <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
+                        <div className="max-w-3xl">
+                            <div className="inline-flex items-center gap-2 rounded-full border border-primary-200/70 bg-white/80 px-3 py-1 text-xs font-bold text-primary-700 shadow-sm backdrop-blur dark:border-primary-500/20 dark:bg-white/5 dark:text-primary-300">
+                                <Sparkles className="h-3 w-3" />
+                                <span>{copy.hero.badge}</span>
                             </div>
-                            <h1 className="text-3xl md:text-4xl font-extrabold text-dark-900 dark:text-white mb-3">
-                                {t.findFreelancers.hero.title} <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-600 to-secondary-500">{t.findFreelancers.hero.titleHighlight}</span>
+                            <h1 className="mt-4 text-4xl font-extrabold tracking-[-0.03em] text-[#171420] dark:text-white md:text-5xl">
+                                {copy.hero.title}{' '}
+                                <span className="bg-gradient-to-r from-primary-500 via-fuchsia-400 to-amber-400 bg-clip-text text-transparent">
+                                    {copy.hero.titleHighlight}
+                                </span>
                             </h1>
-                            <p className="text-lg text-muted max-w-xl">
-                                {t.findFreelancers.hero.subtitle}
-                                <span className="hidden md:inline">{t.findFreelancers.hero.subtitleDesktop}</span>
+                            <p className="mt-4 max-w-2xl text-base leading-7 text-[#5e5973] dark:text-[#a8a4b9] md:text-lg">
+                                {copy.hero.subtitle}
+                                <span className="hidden md:inline">{copy.hero.subtitleDesktop}</span>
                             </p>
+                            <div className="mt-6 grid gap-3 sm:grid-cols-3">
+                                <div className="glass-card rounded-[24px] px-4 py-4">
+                                    <div className="text-xs uppercase tracking-[0.18em] text-[#7a7590] dark:text-[#918ba8]">Talent pool</div>
+                                    <div className="mt-2 text-2xl font-bold">{MOCK_FREELANCERS.length.toLocaleString()}+</div>
+                                </div>
+                                <div className="glass-card rounded-[24px] px-4 py-4">
+                                    <div className="text-xs uppercase tracking-[0.18em] text-[#7a7590] dark:text-[#918ba8]">Verified</div>
+                                    <div className="mt-2 text-2xl font-bold">{MOCK_FREELANCERS.filter((freelancer) => freelancer.is_verified).length}</div>
+                                </div>
+                                <div className="glass-card rounded-[24px] px-4 py-4">
+                                    <div className="text-xs uppercase tracking-[0.18em] text-[#7a7590] dark:text-[#918ba8]">Fast replies</div>
+                                    <div className="mt-2 text-2xl font-bold">4.9/5</div>
+                                </div>
+                            </div>
                         </div>
 
-                        {/* Global Actions */}
-                        <div className="flex items-center gap-3 bg-white dark:bg-dark-800 p-1.5 rounded-2xl border border-gray-200 dark:border-dark-700 shadow-sm">
+                        <div className="inline-flex w-fit items-center gap-2 rounded-2xl border border-white/70 bg-white/80 p-1.5 shadow-lg shadow-primary-500/10 backdrop-blur dark:border-white/8 dark:bg-white/5">
                             <button
+                                type="button"
                                 onClick={() => setViewMode('grid')}
-                                className={`p-2.5 rounded-xl transition-all duration-200 ${viewMode === 'grid'
-                                    ? 'bg-primary-50 text-primary-600 shadow-sm dark:bg-primary-900/30 dark:text-primary-400'
-                                    : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
+                                className={`rounded-xl p-2.5 transition-all ${viewMode === 'grid' ? 'bg-primary-50 text-primary-600 dark:bg-primary-500/15 dark:text-primary-300' : 'text-[#87819a] hover:text-[#1d1a28] dark:hover:text-white'}`}
                             >
-                                <Grid className="w-5 h-5" />
+                                <Grid className="h-5 w-5" />
                             </button>
-                            <div className="w-px h-6 bg-gray-200 dark:bg-dark-700" />
+                            <div className="h-6 w-px bg-gray-200 dark:bg-white/10" />
                             <button
+                                type="button"
                                 onClick={() => setViewMode('list')}
-                                className={`p-2.5 rounded-xl transition-all duration-200 ${viewMode === 'list'
-                                    ? 'bg-primary-50 text-primary-600 shadow-sm dark:bg-primary-900/30 dark:text-primary-400'
-                                    : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
+                                className={`rounded-xl p-2.5 transition-all ${viewMode === 'list' ? 'bg-primary-50 text-primary-600 dark:bg-primary-500/15 dark:text-primary-300' : 'text-[#87819a] hover:text-[#1d1a28] dark:hover:text-white'}`}
                             >
-                                <List className="w-5 h-5" />
+                                <List className="h-5 w-5" />
                             </button>
                         </div>
                     </div>
                 </div>
-            </div>
+            </section>
 
             <div className="container-custom py-10">
-                {/* Mobile Filter Toggle Button */}
-                <div className="lg:hidden mb-6">
-                    <Button
-                        onClick={() => setShowFilters(true)}
-                        className="w-full justify-between bg-white dark:bg-dark-900 border border-gray-200 dark:border-dark-700 shadow-sm h-12"
-                    >
+                <div className="mb-6 lg:hidden">
+                    <Button onClick={() => setShowFilters(true)} className="w-full justify-between">
                         <span className="flex items-center gap-2">
-                            <Filter className="w-5 h-5" />
-                            {t.findFreelancers.filterToggle}
+                            <SlidersHorizontal className="h-5 w-5" />
+                            {copy.filterToggle}
                         </span>
-                        <span className="bg-primary-600 text-white text-xs px-2 py-0.5 rounded-full">
-                            {filteredFreelancers.length}
-                        </span>
+                        <span className="rounded-full bg-white/20 px-2 py-0.5 text-xs">{filteredFreelancers.length}</span>
                     </Button>
                 </div>
 
-                <div className="flex gap-10 items-start">
-                    {/* Filter Sidebar - Desktop (Sticky) */}
-                    <div className="hidden lg:block w-80 shrink-0 sticky top-28">
-                        <div className="bg-white dark:bg-dark-900 rounded-2xl border border-gray-200 dark:border-dark-700 shadow-lg shadow-gray-200/50 dark:shadow-none p-6">
-                            <div className="flex items-center justify-between mb-6">
-                                <h3 className="font-bold text-lg text-foreground flex items-center gap-2">
-                                    <Filter className="w-5 h-5 text-primary-500" />
-                                    {t.findFreelancers.filterTitle}
-                                </h3>
-                                {(selectedCategories.length > 0 || selectedSkills.length > 0) && (
-                                    <button onClick={clearFilters} className="text-xs text-red-500 hover:underline">
-                                        {t.findFreelancers.clearAll}
+                <div className="flex items-start gap-8">
+                    <aside className="sticky top-28 hidden w-80 shrink-0 lg:block">
+                        <div className="glass-card rounded-[28px] p-6 shadow-xl shadow-primary-500/8">
+                            <div className="mb-6 flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                    <Filter className="h-5 w-5 text-primary-500" />
+                                    <h2 className="text-lg font-bold">{copy.filterTitle}</h2>
+                                </div>
+                                {activeFilterCount > 0 ? (
+                                    <button type="button" onClick={clearFilters} className="text-xs font-semibold text-red-500 hover:underline">
+                                        {copy.clearAll}
                                     </button>
-                                )}
+                                ) : null}
                             </div>
                             <FilterSidebar />
                         </div>
-                    </div>
+                    </aside>
 
-                    {/* Results Grid */}
-                    <div className="flex-1 min-w-0">
-                        {/* Sort Options Helper */}
-                        <div className="flex items-center justify-between mb-6">
-                            <p className="text-sm text-muted">
-                                {t.findFreelancers.resultsCount.replace('{{count}}', filteredFreelancers.length.toString())}
-                            </p>
-                            <div className="flex items-center gap-2">
-                                <span className="text-sm text-muted hidden sm:inline">{t.findFreelancers.sort.label}</span>
+                    <main className="min-w-0 flex-1">
+                        <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                            <div className="flex flex-wrap items-center gap-3 text-sm text-[#6e6884] dark:text-[#9a95ad]">
+                                <span>{copy.resultsCount.replace('{{count}}', filteredFreelancers.length.toString())}</span>
+                                {activeFilterCount > 0 ? (
+                                    <span className="rounded-full border border-primary-200/70 bg-primary-50 px-3 py-1 text-xs font-semibold text-primary-700 dark:border-primary-500/20 dark:bg-primary-500/10 dark:text-primary-300">
+                                        {activeFilterCount} active
+                                    </span>
+                                ) : null}
+                            </div>
+
+                            <div className="flex items-center gap-2 rounded-full border border-white/70 bg-white/80 px-3 py-2 shadow-sm backdrop-blur dark:border-white/8 dark:bg-white/5">
+                                <span className="hidden text-sm text-[#6e6884] dark:text-[#9a95ad] sm:inline">{copy.sort.label}</span>
                                 <select
                                     value={sortBy}
-                                    onChange={(e) => setSortBy(e.target.value)}
-                                    className="bg-transparent border-none text-sm font-bold text-foreground focus:ring-0 cursor-pointer pr-8"
+                                    onChange={(event) => setSortBy(event.target.value)}
+                                    className="cursor-pointer border-none bg-transparent pr-8 text-sm font-semibold focus:outline-none"
                                 >
-                                    <option value="recommended">{t.findFreelancers.sort.recommended}</option>
-                                    <option value="rating">{t.findFreelancers.sort.rating}</option>
-                                    <option value="rate_low">{t.findFreelancers.sort.priceLow}</option>
+                                    <option value="recommended">{copy.sort.recommended}</option>
+                                    <option value="rating">{copy.sort.rating}</option>
+                                    <option value="rate_low">{copy.sort.priceLow}</option>
                                 </select>
                             </div>
                         </div>
 
+                        {!isLoading && filteredFreelancers.length > 0 ? (
+                            <div className="mb-6 grid gap-3 sm:grid-cols-3">
+                                <div className="rounded-[24px] border border-white/70 bg-white/80 px-4 py-4 shadow-sm backdrop-blur dark:border-white/8 dark:bg-white/5">
+                                    <div className="text-xs uppercase tracking-[0.18em] text-[#7a7590] dark:text-[#918ba8]">Available now</div>
+                                    <div className="mt-2 text-2xl font-bold">
+                                        {filteredFreelancers.filter((freelancer) => freelancer.is_available).length}
+                                    </div>
+                                </div>
+                                <div className="rounded-[24px] border border-white/70 bg-white/80 px-4 py-4 shadow-sm backdrop-blur dark:border-white/8 dark:bg-white/5">
+                                    <div className="text-xs uppercase tracking-[0.18em] text-[#7a7590] dark:text-[#918ba8]">Avg. rate</div>
+                                    <div className="mt-2 text-2xl font-bold">{averageRate} TND</div>
+                                </div>
+                                <div className="rounded-[24px] border border-white/70 bg-white/80 px-4 py-4 shadow-sm backdrop-blur dark:border-white/8 dark:bg-white/5">
+                                    <div className="text-xs uppercase tracking-[0.18em] text-[#7a7590] dark:text-[#918ba8]">Top rating</div>
+                                    <div className="mt-2 text-2xl font-bold">{topRating}</div>
+                                </div>
+                            </div>
+                        ) : null}
+
                         {isLoading ? (
                             viewMode === 'grid' ? (
-                                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                                    {[...Array(6)].map((_, i) => <SkeletonProfile key={i} />)}
+                                <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+                                    {Array.from({ length: 6 }).map((_, index) => (
+                                        <SkeletonProfile key={index} />
+                                    ))}
                                 </div>
                             ) : (
                                 <SkeletonList count={6} />
                             )
                         ) : filteredFreelancers.length > 0 ? (
-                            <div className={
-                                viewMode === 'grid'
-                                    ? 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6'
-                                    : 'space-y-4'
-                            }>
-                                {filteredFreelancers.map((freelancer, idx) => (
-                                    <div key={freelancer.id} className="animate-slide-up" style={{ animationDelay: `${idx * 50}ms` }}>
+                            <div className={viewMode === 'grid' ? 'grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3' : 'space-y-4'}>
+                                {filteredFreelancers.map((freelancer, index) => (
+                                    <div key={freelancer.id} className="animate-slide-up" style={{ animationDelay: `${index * 50}ms` }}>
                                         <FreelancerCard
                                             freelancer={freelancer}
                                             viewMode={viewMode}
@@ -394,41 +540,45 @@ export default function FindFreelancers() {
                         ) : (
                             <EmptyState
                                 icon={Search}
-                                title={t.findFreelancers.noResults.title}
-                                description={t.findFreelancers.noResults.description}
+                                title={copy.noResults.title}
+                                description={copy.noResults.description}
                                 action={{
-                                    label: t.findFreelancers.noResults.action,
+                                    label: copy.noResults.action,
                                     onClick: clearFilters,
-                                    variant: "primary"
+                                    variant: 'primary',
                                 }}
+                                className="rounded-[32px]"
                             />
                         )}
-                    </div>
+                    </main>
                 </div>
             </div>
 
-            {/* Mobile Filter Modal (Using new Premium Modal styling implicitly via portal if we refactored, but here simple fixed div for now or component) */}
-            {showFilters && (
+            {showFilters ? (
                 <div className="fixed inset-0 z-50 lg:hidden">
-                    <div className="absolute inset-0 bg-dark-900/60 backdrop-blur-sm transition-opacity" onClick={() => setShowFilters(false)} />
-                    <div className="absolute inset-y-0 right-0 w-full sm:w-96 bg-white dark:bg-dark-900 p-0 shadow-2xl animate-slide-in-right flex flex-col">
-                        <div className="p-6 border-b border-gray-100 dark:border-dark-800 flex items-center justify-between bg-white/90 dark:bg-dark-900/90 backdrop-blur z-10">
-                            <h3 className="font-bold text-xl text-foreground">{t.findFreelancers.filterTitle}</h3>
-                            <button onClick={() => setShowFilters(false)} className="p-2 -mr-2 text-gray-400 hover:text-dark-900 dark:hover:text-white transition-colors">
-                                <X className="w-6 h-6" />
+                    <button
+                        type="button"
+                        className="absolute inset-0 bg-[#09070f]/70 backdrop-blur-sm"
+                        onClick={() => setShowFilters(false)}
+                    />
+                    <div className="absolute inset-x-0 bottom-0 top-16 flex flex-col rounded-t-[32px] border border-white/10 bg-[#120f1d] text-white shadow-2xl">
+                        <div className="flex items-center justify-between border-b border-white/10 px-6 py-5">
+                            <h2 className="text-lg font-bold">{copy.filterTitle}</h2>
+                            <button type="button" onClick={() => setShowFilters(false)} className="rounded-full bg-white/5 p-2">
+                                <X className="h-5 w-5" />
                             </button>
                         </div>
-                        <div className="flex-1 overflow-y-auto p-6">
+                        <div className="flex-1 overflow-y-auto px-6 py-6">
                             <FilterSidebar />
                         </div>
-                        <div className="p-6 border-t border-gray-100 dark:border-dark-800 bg-gray-50 dark:bg-dark-950">
-                            <Button className="w-full py-4 text-lg shadow-lg shadow-primary-500/20" onClick={() => setShowFilters(false)}>
-                                {t.findFreelancers.resultsCount.replace('{{count}}', filteredFreelancers.length.toString())}
+                        <div className="border-t border-white/10 p-6">
+                            <Button className="w-full" onClick={() => setShowFilters(false)}>
+                                {copy.resultsCount.replace('{{count}}', filteredFreelancers.length.toString())}
                             </Button>
                         </div>
                     </div>
                 </div>
-            )}
+            ) : null}
         </div>
     );
 }

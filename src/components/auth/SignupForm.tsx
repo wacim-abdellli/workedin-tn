@@ -1,5 +1,5 @@
 import { logger } from '@/lib/logger';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -27,6 +27,12 @@ function SignupForm({ onComplete }: SignupFormProps) {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [showPassword, setShowPassword] = useState(false);
+
+    useEffect(() => {
+        if (!profile?.user_type) return;
+
+        navigate(profile.user_type === 'client' ? '/client/dashboard' : '/freelancer/dashboard');
+    }, [navigate, profile]);
 
     const ArrowIcon = dir === 'rtl' ? ArrowLeft : ArrowRight;
     const preSelectedType = searchParams.get('type') as UserType | null;
@@ -118,10 +124,7 @@ function SignupForm({ onComplete }: SignupFormProps) {
         }
     };
 
-    if (profile?.user_type) {
-        navigate(profile.user_type === 'client' ? '/client/dashboard' : '/freelancer/dashboard');
-        return null;
-    }
+    if (profile?.user_type) return null;
 
     return (
         <div className="w-full max-w-md mx-auto">
@@ -151,14 +154,15 @@ function SignupForm({ onComplete }: SignupFormProps) {
                         onClick={async () => {
                             try {
                                 const { error } = await (await import('../../lib/supabase')).supabase.auth.signInWithOAuth({
-                                    provider: 'google',
-                                    options: {
-                                        redirectTo: `${window.location.origin}/auth/callback`,
-                                        queryParams: {
-                                            access_type: 'offline',
-                                            prompt: 'select_account consent',
-                                        },
+                                provider: 'google',
+                                options: {
+                                    redirectTo: `${window.location.origin}/auth/callback`,
+                                    queryParams: {
+                                        access_type: 'offline',
+                                        prompt: 'select_account',
+                                        hl: dir === 'rtl' ? 'ar' : 'fr',
                                     },
+                                },
                                 });
                                 if (error) throw error;
                             } catch {
