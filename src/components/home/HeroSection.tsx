@@ -50,7 +50,7 @@ function HeroStat({
   return (
     <div
       ref={ref}
-      className="rounded-[24px] border border-[rgba(124,58,237,0.14)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(243,239,249,0.94))] p-4 shadow-[0_16px_40px_-28px_rgba(76,29,149,0.16)] dark:border-white/10 dark:bg-white/[0.04]"
+      className="rounded-[24px] border border-gray-100 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-white/[0.04]"
     >
       <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-purple-50 text-purple-600 shadow-sm dark:bg-purple-900/30 dark:text-purple-300">
         <Icon className="h-5 w-5" />
@@ -131,22 +131,22 @@ export default function HeroSection({ stats }: HeroSectionProps) {
   return (
     <section
       ref={sectionRef}
-      className="hero-gradient relative flex min-h-screen items-center overflow-hidden"
+      className="relative flex min-h-screen items-center overflow-hidden bg-white dark:bg-[#0f0e17]"
       onMouseMove={handlePointerMove}
     >
       <motion.div
-        className="absolute left-[6%] top-[8%] h-72 w-72 rounded-full bg-primary-500/20 blur-3xl"
+        className="pointer-events-none absolute left-1/4 top-0 h-96 w-96 rounded-full bg-purple-100 opacity-40 blur-3xl dark:bg-purple-900 dark:opacity-15"
         style={{ x: orbLeft, y: useTransform(smoothY, [-0.5, 0.5], [-18, 18]) }}
       />
       <motion.div
-        className="absolute right-[8%] top-[18%] h-52 w-52 rounded-full bg-amber-400/15 blur-3xl"
+        className="pointer-events-none absolute right-1/4 top-20 h-64 w-64 rounded-full bg-amber-100 opacity-30 blur-3xl dark:bg-amber-900 dark:opacity-10"
         style={{ x: orbRight, y: useTransform(smoothY, [-0.5, 0.5], [12, -12]) }}
       />
       <motion.div
-        className="absolute bottom-[-4rem] left-1/2 h-80 w-80 -translate-x-1/2 rounded-full bg-primary-900/15 blur-3xl"
+        className="pointer-events-none absolute bottom-[-4rem] left-1/2 h-80 w-80 -translate-x-1/2 rounded-full bg-purple-200 opacity-35 blur-3xl dark:bg-purple-900 dark:opacity-10"
         style={{ y: orbBottom }}
       />
-      <div className="absolute inset-0 pattern-grid opacity-[0.04] dark:opacity-[0.05]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(139,92,246,0.08),transparent_40%)] dark:bg-[radial-gradient(circle_at_top,rgba(139,92,246,0.16),transparent_34%)]" />
 
       <div className="container-custom relative z-10 py-20 lg:py-28">
         <div className="mx-auto grid max-w-7xl items-center gap-14 lg:grid-cols-[minmax(0,1.15fr)_minmax(340px,0.85fr)]">
@@ -164,10 +164,10 @@ export default function HeroSection({ stats }: HeroSectionProps) {
             </motion.div>
 
             <motion.div custom={1} variants={fadeUp} initial="hidden" animate="visible" className="mt-8">
-              <p className="hero-display-line hero-display-base">
+              <p className="hero-display-line font-bold tracking-tight text-gray-900 dark:text-white">
                 <span className="hero-display-chip">{t.hero.headlineStart}</span>
               </p>
-              <h1 className="hero-display-line hero-display-emphasis mt-1">{t.hero.headlineHighlight}</h1>
+              <h1 className="hero-display-line mt-1 bg-gradient-to-r from-purple-500 to-amber-400 bg-clip-text font-bold italic tracking-tight text-transparent">{t.hero.headlineHighlight}</h1>
             </motion.div>
 
             <motion.p
@@ -246,10 +246,10 @@ export default function HeroSection({ stats }: HeroSectionProps) {
             variants={fadeUp}
             initial="hidden"
             animate="visible"
-            className="glass-card hero-surface-panel relative overflow-hidden p-5 sm:p-6"
+            className="relative overflow-hidden rounded-[30px] border border-gray-100 bg-white p-5 shadow-sm dark:border-white/8 dark:bg-[#14121f] sm:p-6"
           >
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(139,92,246,0.16),transparent_55%)]" />
-            <div className="premium-panel relative rounded-[30px] border border-white/65 p-6 shadow-2xl dark:border-white/10 sm:p-7">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(139,92,246,0.12),transparent_55%)] dark:bg-[radial-gradient(circle_at_top,rgba(139,92,246,0.16),transparent_55%)]" />
+            <div className="relative rounded-[30px] border border-gray-100 bg-white p-6 shadow-sm dark:border-white/8 dark:bg-[#1a1825] sm:p-7">
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <p className="text-sm font-medium text-[#5f5975] dark:text-[#a7a2ba]">{t.hero.activity.eyebrow}</p>
@@ -257,7 +257,7 @@ export default function HeroSection({ stats }: HeroSectionProps) {
                     {t.hero.activity.title}
                   </h2>
                 </div>
-                <div className="rounded-2xl border border-[rgba(124,58,237,0.16)] bg-[rgba(255,255,255,0.84)] px-3 py-2 text-sm font-semibold text-primary-700 shadow-[0_12px_24px_-20px_rgba(76,29,149,0.2)] dark:border-primary-500/20 dark:bg-primary-500/10 dark:text-primary-300">
+                <div className="rounded-2xl border border-purple-100 bg-purple-50 px-3 py-2 text-sm font-semibold text-primary-700 shadow-sm dark:border-primary-500/20 dark:bg-primary-500/10 dark:text-primary-300">
                   {t.hero.activity.tag}
                 </div>
               </div>
@@ -273,7 +273,7 @@ export default function HeroSection({ stats }: HeroSectionProps) {
                   { icon: Shield, title: t.hero.trust.verified, copy: t.hero.trust.verifiedBody },
                   { icon: Star, title: t.hero.trust.secure, copy: t.hero.trust.secureBody },
                 ].map((item) => (
-                  <div key={item.title} className="rounded-[24px] border border-[rgba(124,58,237,0.14)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(243,239,249,0.94))] p-5 shadow-[0_18px_40px_-30px_rgba(76,29,149,0.16)] dark:border-white/10 dark:bg-white/[0.04]">
+                  <div key={item.title} className="rounded-[24px] border border-gray-100 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
                     <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-500 to-primary-700 text-white">
                       <item.icon className="h-5 w-5" />
                     </div>

@@ -19,17 +19,17 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 const Input = forwardRef<HTMLInputElement, InputProps>(
     ({ label, error, hint, leftIcon, rightIcon, className = '', ...props }, ref) => {
         const inputStyles = `
-      w-full bg-white/85 dark:bg-dark-800/90 border rounded-2xl
-      text-dark-900 dark:text-white placeholder-dark-400
-      focus:outline-none focus:ring-2 focus:ring-offset-0 focus:border-transparent
-      transition-all duration-200 shadow-sm backdrop-blur-sm
+      w-full rounded-xl border bg-white text-gray-900 shadow-sm transition-all duration-200
+      dark:bg-[#1a1825] dark:text-white
+      placeholder:text-gray-400 dark:placeholder:text-gray-600
+      focus:outline-none focus:ring-2 focus:ring-purple-500/20
       ${error
-                ? 'border-red-500 focus:ring-red-500/30'
-                : 'border-dark-200 dark:border-dark-700 hover:border-dark-300 dark:hover:border-dark-600 focus:ring-primary-500/30 dark:focus:ring-primary-400/30 focus:border-primary-500 dark:focus:border-primary-400'
+                ? 'border-red-500 focus:border-red-500'
+                : 'border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/15 focus:border-purple-500'
             }
       ${leftIcon ? 'ps-11 py-3' : 'px-4 py-3'}
       ${rightIcon ? 'pe-11 py-3' : 'px-4 py-3'}
-      disabled:opacity-50 disabled:bg-dark-100 dark:disabled:bg-dark-900 disabled:cursor-not-allowed
+      disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-gray-100 dark:disabled:bg-[#14121f]
     `;
 
         const inputId = props.id || props.name;
@@ -42,14 +42,14 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
                 {label && (
                     <label
                         htmlFor={inputId}
-                        className="mb-2 block text-sm font-semibold text-dark-700 dark:text-dark-200"
+                        className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"
                     >
                         {label}
                     </label>
                 )}
                 <div className="relative">
                     {leftIcon && (
-                        <div className="absolute inset-y-0 start-0 flex items-center ps-4 pointer-events-none text-dark-400 transition-colors group-focus-within:text-primary-500">
+                        <div className="pointer-events-none absolute inset-y-0 start-0 flex items-center ps-4 text-gray-400 transition-colors group-focus-within:text-purple-500 dark:text-gray-500">
                             {leftIcon}
                         </div>
                     )}
@@ -62,7 +62,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
                         {...props}
                     />
                     {rightIcon && (
-                        <div className="absolute inset-y-0 end-0 flex items-center pe-4 text-dark-400">
+                        <div className="absolute inset-y-0 end-0 flex items-center pe-4 text-gray-400 dark:text-gray-500">
                             {rightIcon}
                         </div>
                     )}
@@ -79,7 +79,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
                 {hint && !error && (
                     <p
                         id={hintId}
-                        className="mt-1.5 text-sm text-dark-500"
+                        className="mt-1.5 text-sm text-gray-500 dark:text-gray-400"
                     >
                         {hint}
                     </p>

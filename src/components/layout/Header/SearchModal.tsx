@@ -90,16 +90,24 @@ export function SearchModal({ isScrolled, theme, language, t }: SearchModalProps
                     onClick={() => setSearchOpen(true)}
                     className={cn(
                         "group relative w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-200",
-                        "bg-gray-800/50 backdrop-blur-sm border border-gray-700/50",
-                        "hover:bg-gray-800/80 hover:border-violet-500/50",
-                        isScrolled || theme === 'dark' ? "text-gray-400" : "text-gray-600"
+                        isScrolled || theme === 'dark'
+                            ? "bg-white/5 backdrop-blur-sm border border-white/10 text-gray-400 hover:bg-white/10 hover:border-violet-500/30"
+                            : "bg-white border border-gray-200 text-gray-600 shadow-sm hover:bg-gray-50 hover:border-purple-200"
                     )}
                 >
                     <Search className="w-4 h-4 flex-shrink-0 text-gray-500 group-hover:text-violet-400 transition-colors" />
-                    <span className="flex-1 text-sm text-left group-hover:text-gray-300 transition-colors truncate">
+                    <span className={cn(
+                        "flex-1 text-sm text-left transition-colors truncate",
+                        isScrolled || theme === 'dark' ? "group-hover:text-gray-200" : "group-hover:text-gray-900"
+                    )}>
                         {t.search.placeholder}
                     </span>
-                    <div className="hidden sm:flex items-center gap-1 px-2 py-1 bg-gray-700/50 rounded border border-gray-600/50 group-hover:border-violet-500/30 transition-colors">
+                    <div className={cn(
+                        "hidden sm:flex items-center gap-1 px-2 py-1 rounded border transition-colors",
+                        isScrolled || theme === 'dark'
+                            ? "bg-white/5 border-white/10 group-hover:border-violet-500/30"
+                            : "bg-gray-50 border-gray-200 group-hover:border-purple-200"
+                    )}>
                         <Command className="w-3 h-3" />
                         <span className="text-xs">K</span>
                     </div>
@@ -114,10 +122,15 @@ export function SearchModal({ isScrolled, theme, language, t }: SearchModalProps
                             initial={{ opacity: 0, y: -10, scale: 0.95 }}
                             animate={{ opacity: 1, y: 0, scale: 1 }}
                             exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                            className="absolute top-full left-0 right-0 mt-3 w-full min-w-[400px] backdrop-blur-2xl bg-gray-900/95 rounded-2xl shadow-2xl border border-gray-700/50 overflow-hidden z-50"
+                            className={cn(
+                                "absolute top-full left-0 right-0 z-50 mt-3 w-full min-w-[400px] overflow-hidden rounded-2xl border shadow-2xl backdrop-blur-2xl",
+                                isScrolled || theme === 'dark'
+                                    ? "border-white/10 bg-[#12101d]/95"
+                                    : "border-gray-200 bg-white/95 shadow-gray-200/70"
+                            )}
                         >
                             {/* Input Section */}
-                            <div className="p-4 border-b border-gray-700/50">
+                            <div className={cn("p-4", isScrolled || theme === 'dark' ? "border-b border-white/10" : "border-b border-gray-100")}>
                                 <div className="relative">
                                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                                     <input
@@ -126,7 +139,12 @@ export function SearchModal({ isScrolled, theme, language, t }: SearchModalProps
                                         onChange={(e) => setSearchQuery(e.target.value)}
                                         placeholder={t.search.placeholder}
                                         autoFocus
-                                        className="w-full pl-12 pr-12 py-3.5 bg-gray-800/50 rounded-xl border border-gray-700 focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 text-white placeholder-gray-500 transition-all font-sans"
+                                        className={cn(
+                                            "w-full rounded-xl border py-3.5 pl-12 pr-12 font-sans transition-all",
+                                            isScrolled || theme === 'dark'
+                                                ? "border-white/10 bg-white/5 text-white placeholder-gray-500 focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20"
+                                                : "border-gray-200 bg-white text-gray-900 placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20"
+                                        )}
                                         dir={language === 'ar' ? 'rtl' : 'ltr'}
                                         onKeyDown={(e) => {
                                             if (e.key === 'Enter' && searchQuery) {

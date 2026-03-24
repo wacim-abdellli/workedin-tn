@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Menu, X, Briefcase, User, TrendingUp } from 'lucide-react';
@@ -13,14 +13,17 @@ import { SearchModal } from './SearchModal';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { ThemeToggle } from './ThemeToggle';
 import IconButton from '@/components/ui/IconButton';
-import { UserAccountPanel, UserMenu } from './UserMenu';
+import { UserMenu } from './UserMenu';
 import { AuthButtons } from './AuthButtons';
 import { MobileMenu } from './MobileMenu';
+import AccountPanel from '../AccountPanel';
 
 export default function Header() {
     const [isScrolled, setIsScrolled] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [accountPanelOpen, setAccountPanelOpen] = useState(false);
+    const [headerHeight, setHeaderHeight] = useState(64);
+    const headerRef = useRef<HTMLElement | null>(null);
     const { user, profile, signOut } = useAuth();
     const { theme } = useTheme();
     const { t, language, setLanguage } = useTranslation();
@@ -29,9 +32,26 @@ export default function Header() {
 
     // Scroll detection
     useEffect(() => {
-        const handleScroll = () => setIsScrolled(window.scrollY > 50);
+        const handleScroll = () => setIsScrolled(window.scrollY > 24);
         window.addEventListener('scroll', handleScroll);
         return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
+    useEffect(() => {
+        const node = headerRef.current;
+        if (!node) return;
+
+        const updateHeight = () => setHeaderHeight(node.offsetHeight || 64);
+        updateHeight();
+
+        const resizeObserver = new ResizeObserver(updateHeight);
+        resizeObserver.observe(node);
+        window.addEventListener('resize', updateHeight);
+
+        return () => {
+            resizeObserver.disconnect();
+            window.removeEventListener('resize', updateHeight);
+        };
     }, []);
 
     useEffect(() => {
@@ -97,15 +117,15 @@ export default function Header() {
 
     return (
         <>
-            <header className={cn(
+            <header ref={headerRef} className={cn(
                 'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
                 isScrolled
                     ? theme === 'dark'
-                        ? 'backdrop-blur-xl bg-[#0f0e17]/80 shadow-sm border-b border-white/[0.05]'
-                        : 'backdrop-blur-xl bg-[rgba(252,250,255,0.94)] shadow-[0_16px_36px_-28px_rgba(15,23,42,0.28)] border-b border-[rgba(124,58,237,0.12)]'
+                        ? 'bg-[#0f0e17]/95 backdrop-blur-sm border-b border-white/5 shadow-lg shadow-black/20'
+                        : 'bg-white/95 backdrop-blur-sm border-b border-gray-100 shadow-sm'
                     : theme === 'dark'
-                        ? 'bg-transparent'
-                        : 'bg-[rgba(248,245,252,0.88)] border-b border-[rgba(124,58,237,0.08)] backdrop-blur-md'
+                        ? 'bg-[#0f0e17] border-b border-white/5'
+                        : 'bg-white border-b border-gray-100'
             )}>
                 <div className="max-w-7xl 2xl:max-w-[90%] mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-16 lg:h-20 gap-2 lg:gap-4">
@@ -124,15 +144,15 @@ export default function Header() {
                                 to="/jobs"
                                 className={cn(
                                     "hidden md:flex flex-1 max-w-md mx-auto items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-200 group",
-                                    "bg-white/90 dark:bg-white/[0.05] border border-[rgba(124,58,237,0.12)] dark:border-primary-500/20 backdrop-blur-md shadow-[0_10px_24px_-20px_rgba(15,23,42,0.18)]",
-                                    "hover:bg-white dark:hover:bg-white/10 hover:border-primary-300 dark:hover:border-primary-400/30",
-                                    isScrolled || theme === 'dark' ? "text-[#6b6880]" : "text-[#3d3a4e]"
+                                    "bg-white dark:bg-white/[0.05] border border-gray-200 dark:border-white/10 backdrop-blur-md shadow-sm",
+                                    "hover:bg-gray-50 dark:hover:bg-white/10 hover:border-purple-200 dark:hover:border-purple-400/20",
+                                    isScrolled || theme === 'dark' ? "text-[#6b6880] dark:text-[#c4b5fd]" : "text-[#3d3a4e]"
                                 )}
                             >
                                 <Briefcase className="w-4 h-4 text-violet-500" />
                                 <span className={cn(
                                     "flex-1 text-sm font-medium text-left truncate",
-                                    isScrolled || theme === 'dark' ? "text-[#c4b5fd]" : "text-[#3d3a4e]"
+                                    isScrolled || theme === 'dark' ? "text-[#4b4869] dark:text-[#c4b5fd]" : "text-[#3d3a4e]"
                                 )}>
                                     {t.nav.findWork}
                                 </span>
@@ -157,16 +177,6 @@ export default function Header() {
                                         isOpen={accountPanelOpen}
                                         onToggle={() => setAccountPanelOpen((open) => !open)}
                                     />
-                                    {accountPanelOpen ? (
-                                        <div className="absolute right-0 top-full z-[80] mt-3 w-[min(26rem,calc(100vw-1rem))]">
-                                            <UserAccountPanel
-                                                user={user}
-                                                profile={profile}
-                                                signOut={signOut}
-                                                onClose={() => setAccountPanelOpen(false)}
-                                            />
-                                        </div>
-                                    ) : null}
                                 </div>
                             ) : (
                                 <AuthButtons isScrolled={isScrolled} theme={theme} t={t} />
@@ -210,6 +220,17 @@ export default function Header() {
                 />
             </header>
 
+            {user ? (
+                <AccountPanel
+                    isOpen={accountPanelOpen}
+                    headerHeight={headerHeight}
+                    user={user}
+                    profile={profile}
+                    signOut={signOut}
+                    onClose={() => setAccountPanelOpen(false)}
+                />
+            ) : null}
+
             {/* Spacer */}
             <div className="h-16 lg:h-20" />
         </>
@@ -223,7 +244,7 @@ function Logo({ language }: { language: string }) {
         : (theme === 'dark' ? '/logos/logo-primary-dark.svg' : '/logos/logo-primary.svg');
 
     return (
-        <Link to="/" className="flex items-center group relative z-10">
+        <Link to="/" className="group relative z-10 flex items-center">
             <motion.div
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -235,8 +256,8 @@ function Logo({ language }: { language: string }) {
                     alt={language === 'ar' ? 'خدمة TN' : 'Khedma TN'}
                     width="180"
                     height="40"
-                    style={{ height: '36px', width: 'auto' }}
-                    className="relative block"
+                    style={{ width: 'auto' }}
+                    className="relative block h-7 align-middle sm:h-8"
                 />
             </motion.div>
         </Link>

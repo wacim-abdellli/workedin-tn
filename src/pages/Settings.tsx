@@ -997,7 +997,7 @@ function Settings() {
     );
 
     return (
-        <div className="min-h-screen bg-[#f6f3ff] dark:bg-[#0b0a12] transition-colors duration-300">
+        <div className="min-h-screen bg-gray-50 dark:bg-[#0f0e17] transition-colors duration-300">
             <SEO {...SEO_CONFIG.settings} url="/settings" noIndex />
             <Header />
 
@@ -1007,7 +1007,7 @@ function Settings() {
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
                     {/* Sidebar */}
                     <div className="lg:col-span-1">
-                        <nav className="glass-card sticky top-28 space-y-2 rounded-[28px] p-3">
+                        <nav className="sticky top-28 space-y-2 rounded-[28px] border border-gray-100 bg-white p-3 shadow-sm dark:border-white/5 dark:bg-[#1a1825]">
                             {tabs.map((tab) => (
                                 <button
                                     key={tab.id}
@@ -1016,7 +1016,7 @@ function Settings() {
                                         w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-start transition-colors
                                         ${activeTab === tab.id
                                             ? 'bg-primary-100 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400'
-                                            : 'hover:bg-gray-100 dark:hover:bg-dark-800 text-muted'
+                                            : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-white/5'
                                         }
                                     `}
                                 >
@@ -1030,7 +1030,7 @@ function Settings() {
                         {/* Logout */}
                         <button
                             onClick={handleLogout}
-                            className="glass-card mt-4 flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-red-600 transition-colors hover:bg-red-50/80"
+                            className="mt-4 flex w-full items-center gap-3 rounded-2xl border border-red-200 bg-white px-4 py-3 text-red-600 transition-colors hover:bg-red-50/80 dark:border-red-500/20 dark:bg-[#1a1825] dark:text-red-400 dark:hover:bg-red-500/10"
                         >
                             <ChevronRight className="w-5 h-5" />
                             <span className="font-medium">تسجيل الخروج</span>
@@ -1039,7 +1039,7 @@ function Settings() {
 
                     {/* Content */}
                     <div className="lg:col-span-3">
-                        <div className="glass-card rounded-[32px] p-6 sm:p-8">
+                        <div className="rounded-[32px] border border-gray-100 bg-white p-6 shadow-sm dark:border-white/5 dark:bg-[#1a1825] sm:p-8">
                             <h2 className="mb-6 text-xl font-bold text-[#1a1825] dark:text-white">
                                 {tabs.find((t) => t.id === activeTab)?.label}
                             </h2>

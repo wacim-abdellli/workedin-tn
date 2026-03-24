@@ -51,11 +51,11 @@ export default function StepJobBasics() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-700 block">التصنيف الرئيسي</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">التصنيف الرئيسي</label>
                         <div className="relative">
                             <select
                                 {...register('category')}
-                                className="w-full appearance-none rounded-xl border border-gray-200 bg-white pl-4 pr-10 py-3 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:border-white/10 dark:bg-[#14111d] dark:text-white dark:focus:border-primary-400"
+                                className="w-full appearance-none rounded-xl border border-gray-200 bg-white pl-4 pr-10 py-3 text-gray-900 transition-all duration-200 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20 dark:border-white/10 dark:bg-[#1a1825] dark:text-white"
                             >
                                 <option value="">اختر التصنيف</option>
                                 {categories.map(cat => (
@@ -71,11 +71,11 @@ export default function StepJobBasics() {
                 </div>
 
                 <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700 block">وصف المشروع</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">وصف المشروع</label>
                     <textarea
                         {...register('description')}
                         rows={8}
-                        className="w-full resize-none rounded-xl border border-gray-200 bg-white px-4 py-3 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:border-white/10 dark:bg-[#14111d] dark:text-white dark:focus:border-primary-400"
+                        className="w-full resize-none rounded-xl border border-gray-200 bg-white px-4 py-3 text-gray-900 placeholder:text-gray-400 transition-all duration-200 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20 dark:border-white/10 dark:bg-[#1a1825] dark:text-white dark:placeholder:text-gray-600"
                         placeholder="اشرح تفاصيل المشروع، المخرجات المتوقعة، وأي متطلبات خاصة..."
                     />
                     <div className="flex justify-between px-1 text-xs text-gray-500 dark:text-gray-400">
@@ -97,7 +97,7 @@ export default function StepJobBasics() {
                 </div>
 
                 <div className="space-y-3">
-                    <label className="text-sm font-medium text-gray-700 block">المهارات المطلوبة (بحد أقصى 5)</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">المهارات المطلوبة (بحد أقصى 5)</label>
                     <div className="flex flex-wrap gap-2">
                         {PREDEFINED_SKILLS.map(skill => {
                             const isSelected = selectedSkills.find((s: any) => s.id === skill.id);
@@ -110,7 +110,7 @@ export default function StepJobBasics() {
                                         px-3 py-1.5 rounded-full text-sm font-medium border transition-colors
                                         ${isSelected
                                             ? 'border-primary-200 bg-primary-50 text-primary-700 dark:border-primary-500/30 dark:bg-primary-500/10 dark:text-primary-300'
-                                            : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300 dark:border-white/10 dark:bg-[#14111d] dark:text-gray-300'
+                                        : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300 dark:border-white/10 dark:bg-[#1a1825] dark:text-gray-300'
                                         }
                                     `}
                                 >

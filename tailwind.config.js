@@ -89,6 +89,18 @@ export default {
                     'dark-2': '#1a1825',
                     'dark-3': '#242235',
                 },
+                card: {
+                    light: '#ffffff',
+                    dark: '#1a1825',
+                },
+                input: {
+                    light: '#ffffff',
+                    dark: '#1a1825',
+                },
+                page: {
+                    light: '#ffffff',
+                    dark: '#0f0e17',
+                },
             },
             fontFamily: {
                 sans: ['Plus Jakarta Sans', 'Inter', 'system-ui', 'sans-serif'],

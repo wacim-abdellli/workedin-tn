@@ -48,12 +48,12 @@ function NavLink({ to, icon: Icon, children, isScrolled, theme }: NavLinkProps) 
     <Link
       to={to}
       className={cn(
-        'nav-link-premium relative flex items-center gap-2 rounded-2xl px-3.5 py-2.5 text-sm whitespace-nowrap group',
+        'nav-link-premium relative flex items-center gap-2 rounded-2xl px-3.5 py-2.5 text-sm whitespace-nowrap group transition-colors duration-150',
         isActive
-          ? 'bg-violet-600/10 font-semibold tracking-[-0.01em] text-violet-500'
+          ? 'bg-violet-600/10 font-semibold tracking-[-0.01em] text-purple-600 dark:text-purple-400'
           : isScrolled || theme === 'dark'
-            ? 'font-normal text-gray-300 hover:bg-white/5 hover:text-white hover:font-semibold'
-            : 'font-normal text-gray-700 hover:bg-white/70 hover:text-[#1a1825] hover:font-semibold'
+            ? 'font-medium text-gray-400 hover:bg-white/5 hover:text-white'
+            : 'font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900'
       )}
     >
       {isActive && (
@@ -95,12 +95,12 @@ function MegaMenuLink({
       <Link
         to={item.to}
         className={cn(
-          'nav-link-premium relative flex items-center gap-2 rounded-2xl px-3.5 py-2.5 text-sm whitespace-nowrap group',
+          'nav-link-premium relative flex items-center gap-2 rounded-2xl px-3.5 py-2.5 text-sm whitespace-nowrap group transition-colors duration-150',
           isActive
-            ? 'bg-violet-600/10 font-semibold tracking-[-0.01em] text-violet-500'
+            ? 'bg-violet-600/10 font-semibold tracking-[-0.01em] text-purple-600 dark:text-purple-400'
             : isScrolled || theme === 'dark'
-              ? 'font-normal text-gray-300 hover:bg-white/5 hover:text-white hover:font-semibold'
-              : 'font-normal text-gray-700 hover:bg-white/70 hover:text-[#1a1825] hover:font-semibold'
+              ? 'font-medium text-gray-400 hover:bg-white/5 hover:text-white'
+              : 'font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900'
         )}
       >
         <item.icon className="h-4 w-4 transition-transform duration-200 group-hover:scale-110" />
@@ -118,12 +118,12 @@ function MegaMenuLink({
           >
             <div className="glass-card overflow-hidden p-2">
               <div className="grid gap-2 md:grid-cols-[1.2fr_0.8fr]">
-                <div className="rounded-[22px] border border-primary-100/70 bg-white/80 p-3 dark:border-white/8 dark:bg-white/5">
+                <div className="rounded-[22px] border border-gray-100 bg-white p-3 shadow-sm dark:border-white/8 dark:bg-[#14121f]">
                   {categories.map((category) => (
                     <Link
                       key={category.label}
                       to={category.to}
-                      className="group flex items-center gap-3 rounded-2xl px-3 py-3 transition-colors hover:bg-primary-50 dark:hover:bg-white/5"
+                      className="group flex items-center gap-3 rounded-2xl px-3 py-3 transition-colors hover:bg-gray-50 dark:hover:bg-white/5"
                     >
                       <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary-50 text-primary-600 dark:bg-primary-500/10 dark:text-primary-300">
                         <category.icon className="h-5 w-5" />

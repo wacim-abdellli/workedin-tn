@@ -35,24 +35,27 @@ export default function JobWizardLayout({ currentStep, steps, children }: JobWiz
                         return (
                             <div key={step.id} className="flex flex-col items-center gap-2">
                                 <div
-                                    className={`
-                                        flex h-10 w-10 items-center justify-center rounded-full border-4 bg-white transition-all duration-300 dark:bg-[#14111d]
-                                        ${isCompleted
-                                            ? 'border-primary-600 bg-primary-600 text-white'
+                                    className={
+                                        isCompleted
+                                            ? 'flex h-10 w-10 items-center justify-center rounded-full border border-green-200 bg-green-100 text-green-600 transition-all duration-300 dark:border-green-800/30 dark:bg-green-900/30 dark:text-green-400'
                                             : isCurrent
-                                                ? 'border-primary-600 text-primary-600'
-                                                : 'border-gray-200 text-gray-400'
-                                        }
-                                    `}
+                                                ? 'flex h-10 w-10 items-center justify-center rounded-full bg-purple-600 text-sm font-semibold text-white transition-all duration-300'
+                                                : 'flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 bg-gray-100 text-sm font-semibold text-gray-400 transition-all duration-300 dark:border-white/10 dark:bg-white/5 dark:text-gray-600'
+                                    }
                                 >
                                     {isCompleted ? (
                                         <Check className="w-5 h-5" />
                                     ) : (
-                                        <span className="font-bold">{step.id}</span>
+                                        <span className="font-semibold text-sm">{step.id}</span>
                                     )}
                                 </div>
                                 <div className="hidden md:block text-center">
-                                    <p className={`text-sm font-bold ${isCurrent ? 'text-primary-600' : 'text-gray-500 dark:text-gray-400'}`}>
+                                    <p className={isCompleted
+                                        ? 'text-sm text-green-600 dark:text-green-400'
+                                        : isCurrent
+                                            ? 'text-sm font-medium text-purple-600 dark:text-purple-400'
+                                            : 'text-sm text-gray-400 dark:text-gray-600'
+                                    }>
                                         {step.title}
                                     </p>
                                 </div>
@@ -73,7 +76,7 @@ export default function JobWizardLayout({ currentStep, steps, children }: JobWiz
             </div>
 
             {/* Content */}
-            <div className="animate-in slide-in-from-bottom-4 rounded-[28px] border border-gray-200/80 bg-white/95 p-6 shadow-[0_18px_40px_-28px_rgba(15,23,42,0.14)] fade-in duration-500 dark:border-white/10 dark:bg-[#14111d] dark:shadow-[0_24px_48px_-32px_rgba(0,0,0,0.5)] md:p-8">
+            <div className="animate-in fade-in slide-in-from-bottom-4 rounded-2xl border border-gray-100 bg-white p-6 shadow-sm duration-500 dark:border-white/5 dark:bg-[#1a1825] md:p-8">
                 {children}
             </div>
         </div>

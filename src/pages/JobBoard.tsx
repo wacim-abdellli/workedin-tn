@@ -73,7 +73,7 @@ function SavedJobsSidebar({ savedJobs, onViewJob }: { savedJobs: Job[]; onViewJo
 
     return (
         <div className="hidden xl:block w-80 flex-shrink-0">
-            <div className="bg-white dark:bg-dark-800 rounded-2xl p-4 sticky top-4 border border-gray-100 dark:border-dark-700">
+            <div className="sticky top-4 rounded-2xl border border-gray-100 bg-white p-4 dark:border-white/8 dark:bg-[#1a1825]">
                 <h3 className="font-bold mb-4 flex items-center gap-2">
                     <Heart className="w-5 h-5 text-red-500" />
                     {t.jobs.savedJobs.title}
@@ -240,7 +240,7 @@ function JobBoard() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-dark-900 transition-colors duration-300">
+        <div className="min-h-screen bg-gray-50 dark:bg-[#0f0e17] transition-colors duration-300">
             <SEO {...SEO_CONFIG.jobs} url="/jobs" />
             <Header />
 
@@ -254,7 +254,7 @@ function JobBoard() {
                             value={filters.search}
                             onChange={(e) => updateFilter('search', e.target.value)}
                             placeholder={t.jobs.searchPlaceholder}
-                            className="w-full ps-12 pe-4 py-3 rounded-xl border border-gray-200 dark:border-dark-700 bg-white dark:bg-dark-800 text-foreground dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors"
+                            className="w-full rounded-xl border border-gray-200 bg-white py-3 ps-12 pe-4 text-gray-900 transition-colors focus:border-transparent focus:ring-2 focus:ring-primary-500 dark:border-white/10 dark:bg-[#1a1825] dark:text-white"
                         />
                     </div>
                 </div>
@@ -272,7 +272,7 @@ function JobBoard() {
                     <select
                         value={filters.sortBy}
                         onChange={(e) => updateFilter('sortBy', e.target.value)}
-                        className="flex-1 py-2 px-3 rounded-xl border border-gray-200 text-sm"
+                        className="flex-1 rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 dark:border-white/10 dark:bg-[#1a1825] dark:text-white"
                     >
                         {sortOptions.map(opt => (
                             <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -302,13 +302,13 @@ function JobBoard() {
                                 <select
                                     value={filters.sortBy}
                                     onChange={(e) => updateFilter('sortBy', e.target.value)}
-                                    className="py-2 px-3 rounded-lg border border-gray-200 dark:border-dark-700 text-sm bg-white dark:bg-dark-800 text-dark-900 dark:text-white"
+                                    className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 dark:border-white/10 dark:bg-[#1a1825] dark:text-white"
                                 >
                                     {sortOptions.map(opt => (
                                         <option key={opt.value} value={opt.value}>{opt.label}</option>
                                     ))}
                                 </select>
-                                <div className="flex border border-gray-200 rounded-lg overflow-hidden">
+                                <div className="flex overflow-hidden rounded-lg border border-gray-200 dark:border-white/10">
                                     <button
                                         onClick={() => setViewMode('list')}
                                         className={`p - 2 ${viewMode === 'list' ? 'bg-primary-50 text-primary-600' : 'text-gray-400'} `}

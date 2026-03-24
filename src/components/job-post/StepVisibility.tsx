@@ -18,36 +18,36 @@ export default function StepVisibility() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <label className={`cursor-pointer rounded-2xl border-2 p-6 transition-all ${visibility === 'public' ? 'border-primary-600 bg-primary-50 ring-1 ring-primary-600 dark:bg-primary-500/10' : 'border-gray-100 bg-white hover:border-gray-200 dark:border-white/10 dark:bg-[#14111d]'}`}>
+                <label className={`cursor-pointer rounded-2xl border-2 p-6 transition-all ${visibility === 'public' ? 'border-primary-600 bg-primary-50 ring-1 ring-primary-600 dark:bg-primary-500/10' : 'border-gray-200 bg-white hover:border-gray-300 dark:border-white/10 dark:bg-[#1a1825] dark:hover:border-white/20'}`}>
                     <input type="radio" value="public" {...register('visibility')} className="sr-only" />
                     <div className="flex items-center gap-4 mb-2">
-                        <div className={`p-2 rounded-lg ${visibility === 'public' ? 'bg-primary-100 text-primary-600' : 'bg-gray-100 text-gray-500'}`}>
+                        <div className={`rounded-lg p-2 ${visibility === 'public' ? 'bg-primary-100 text-primary-600 dark:bg-primary-900/30 dark:text-primary-300' : 'bg-gray-100 text-gray-500 dark:bg-white/10 dark:text-gray-400'}`}>
                             <Globe className="w-6 h-6" />
                         </div>
-                        <span className="font-bold text-lg">عام للجميع</span>
+                        <span className="text-lg font-bold text-gray-900 dark:text-white">عام للجميع</span>
                     </div>
-                    <p className="text-sm text-gray-500 pr-14 leading-relaxed">
+                    <p className="pr-14 text-sm leading-relaxed text-gray-500 dark:text-gray-400">
                         يمكن لجميع المستقلين رؤية الوظيفة وتقديم عروضهم. الخيار الأفضل للحصول على أكبر عدد من العروض.
                     </p>
                 </label>
 
-                <label className={`cursor-pointer rounded-2xl border-2 p-6 transition-all ${visibility === 'invite_only' ? 'border-primary-600 bg-primary-50 ring-1 ring-primary-600 dark:bg-primary-500/10' : 'border-gray-100 bg-white hover:border-gray-200 dark:border-white/10 dark:bg-[#14111d]'}`}>
+                <label className={`cursor-pointer rounded-2xl border-2 p-6 transition-all ${visibility === 'invite_only' ? 'border-primary-600 bg-primary-50 ring-1 ring-primary-600 dark:bg-primary-500/10' : 'border-gray-200 bg-white hover:border-gray-300 dark:border-white/10 dark:bg-[#1a1825] dark:hover:border-white/20'}`}>
                     <input type="radio" value="invite_only" {...register('visibility')} className="sr-only" />
                     <div className="flex items-center gap-4 mb-2">
-                        <div className={`p-2 rounded-lg ${visibility === 'invite_only' ? 'bg-primary-100 text-primary-600' : 'bg-gray-100 text-gray-500'}`}>
+                        <div className={`rounded-lg p-2 ${visibility === 'invite_only' ? 'bg-primary-100 text-primary-600 dark:bg-primary-900/30 dark:text-primary-300' : 'bg-gray-100 text-gray-500 dark:bg-white/10 dark:text-gray-400'}`}>
                             <Lock className="w-6 h-6" />
                         </div>
-                        <span className="font-bold text-lg">دعوة فقط</span>
+                        <span className="text-lg font-bold text-gray-900 dark:text-white">دعوة فقط</span>
                     </div>
-                    <p className="text-sm text-gray-500 pr-14 leading-relaxed">
+                    <p className="pr-14 text-sm leading-relaxed text-gray-500 dark:text-gray-400">
                         لن تظهر الوظيفة في البحث. فقط المستقلون الذين تقوم بدعوتهم يمكنهم تقديم العروض.
                     </p>
                 </label>
             </div>
 
             <div className="flex gap-3 rounded-xl border border-blue-100 bg-blue-50 p-4 dark:border-blue-500/20 dark:bg-blue-500/10">
-                <Users className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                <div className="text-sm text-blue-800">
+                <Users className="mt-0.5 h-5 w-5 flex-shrink-0 text-blue-600 dark:text-blue-300" />
+                <div className="text-sm text-blue-800 dark:text-blue-100">
                     <p className="font-bold mb-1">نصيحة:</p>
                     <p>
                         إذا كنت تبحث عن مهارات نادرة أو لديك مشروع حساس، فإن خيار "دعوة فقط" يمنحك تحكماً أكبر. أما للمشاريع العامة، فإن "عام للجميع" يضمن لك تنافسية أفضل في الأسعار.

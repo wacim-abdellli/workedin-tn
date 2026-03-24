@@ -18,15 +18,29 @@
   --text-4xl: clamp(2.25rem, 6vw, 3.5rem);
   --text-5xl: clamp(3rem, 8vw, 5rem);
 
-  /* Light Mode Colors - Premium Purple-tinted */
-  --color-bg: #f6f4fb;
-  --color-bg-secondary: #ffffff;
-  --color-bg-tertiary: #ece8f7;
-  --color-fg: #1a1825;
-  --color-fg-secondary: #3d3a4e;
-  --color-fg-muted: #6b6880;
-  --color-border: #ddd7eb;
-  --color-border-subtle: #ece8f7;
+  --page-bg: #ffffff;
+  --surface-bg: #f8f7ff;
+  --card-bg: #ffffff;
+  --sidebar-bg: #f5f4fc;
+  --input-bg: #ffffff;
+  --input-border: #e5e7eb;
+  --input-border-focus: #8b5cf6;
+  --text-primary: #1a1825;
+  --text-secondary: #4b4869;
+  --text-muted: #6b6880;
+  --text-placeholder: #9ca3af;
+  --border: #e5e7eb;
+  --border-strong: #d1d5db;
+
+  /* Legacy aliases kept for existing component classes */
+  --color-bg: var(--page-bg);
+  --color-bg-secondary: var(--card-bg);
+  --color-bg-tertiary: var(--surface-bg);
+  --color-fg: var(--text-primary);
+  --color-fg-secondary: var(--text-secondary);
+  --color-fg-muted: var(--text-muted);
+  --color-border: var(--border);
+  --color-border-subtle: var(--border-strong);
 
   /* Premium Gradients */
   --gradient-primary: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 50%, #a78bfa 100%);
@@ -48,14 +62,28 @@
 
 .dark {
   /* Dark Mode — Deep purple-tinted, not flat grey */
-  --color-bg: #0b0a12;
-  --color-bg-secondary: #15131f;
-  --color-bg-tertiary: #201d2d;
-  --color-fg: #f7f4ff;
-  --color-fg-secondary: #ddd6fe;
-  --color-fg-muted: #aca7c3;
-  --color-border: #312b45;
-  --color-border-subtle: #171421;
+  --page-bg: #0f0e17;
+  --surface-bg: #14121f;
+  --card-bg: #1a1825;
+  --sidebar-bg: #0c0b14;
+  --input-bg: #1a1825;
+  --input-border: rgba(255, 255, 255, 0.1);
+  --input-border-focus: #8b5cf6;
+  --text-primary: #f8f7ff;
+  --text-secondary: #c4b5fd;
+  --text-muted: #8b8aa0;
+  --text-placeholder: #6b6880;
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.15);
+
+  --color-bg: var(--page-bg);
+  --color-bg-secondary: var(--card-bg);
+  --color-bg-tertiary: var(--surface-bg);
+  --color-fg: var(--text-primary);
+  --color-fg-secondary: var(--text-secondary);
+  --color-fg-muted: var(--text-muted);
+  --color-border: var(--border);
+  --color-border-subtle: var(--border-strong);
 
   /* Dark Gradients */
   --gradient-primary: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
@@ -86,15 +114,28 @@ html {
 }
 
 body {
-  background-color: var(--color-bg);
-  color: var(--color-fg);
+  background-color: var(--page-bg);
+  color: var(--text-primary);
   font-feature-settings: "cv11", "ss01";
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   min-height: 100vh;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition: background-color 0.2s ease, color 0.15s ease;
   font-size: var(--text-base);
   cursor: auto;
+}
+
+input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']),
+textarea,
+select {
+  background-color: var(--input-bg) !important;
+  border-color: var(--input-border) !important;
+  color: var(--text-primary) !important;
+}
+
+input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file'])::placeholder,
+textarea::placeholder {
+  color: var(--text-muted) !important;
 }
 
 /* RTL Support */

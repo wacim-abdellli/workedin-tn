@@ -278,10 +278,10 @@ export default function JobPost() {
     };
 
     return (
-        <div className="min-h-screen bg-[#f6f4fb] pb-20 dark:bg-[#0b0a12]">
+        <div className="min-h-screen bg-gray-50 pb-20 dark:bg-[#0f0e17]">
             <Header />
 
-            <div className="container-custom py-12">
+            <div className="container-custom py-8">
                 <div className="flex items-center justify-between mb-6">
                     {/* Autosave Indicator */}
                     <div className="flex h-6 items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
@@ -298,7 +298,7 @@ export default function JobPost() {
                             </>
                         )}
                         {status === 'idle' && lastSaved && (
-                            <span className="text-xs text-gray-400 dark:text-gray-500">
+                            <span className="flex items-center gap-1 text-xs text-gray-400 dark:text-gray-600">
                                 آخر حفظ: {timeAgo(lastSaved)}
                             </span>
                         )}
@@ -318,7 +318,7 @@ export default function JobPost() {
                             </div>
 
                             {/* Actions */}
-                            <div className="mt-8 flex items-center justify-between border-t border-gray-200/80 pt-6 dark:border-white/10">
+                            <div className="mt-8 flex items-center justify-between border-t border-gray-200 pt-6 dark:border-white/10">
                                 {currentStep > 1 ? (
                                     <Button
                                         type="button"

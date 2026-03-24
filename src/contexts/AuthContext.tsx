@@ -119,10 +119,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
             if (!profileData) {
                 setProfile(null);
                 setFreelancerProfile(null);
-                return;
+                return { profile: null, freelancerProfile: null };
             }
 
             setProfile(profileData as Profile);
+            let nextFreelancerProfile: FreelancerProfile | null = null;
 
             // If user is a freelancer, fetch freelancer profile
             if (profileData.user_type === 'freelancer' || profileData.user_type === 'both') {
@@ -133,15 +134,22 @@ export function AuthProvider({ children }: AuthProviderProps) {
                     .single();
 
                 if (!freelancerError && freelancerData) {
-                    setFreelancerProfile(freelancerData as FreelancerProfile);
+                    nextFreelancerProfile = freelancerData as FreelancerProfile;
+                    setFreelancerProfile(nextFreelancerProfile);
                 } else {
                     setFreelancerProfile(null);
                 }
             } else {
                 setFreelancerProfile(null);
             }
+
+            return {
+                profile: profileData as Profile,
+                freelancerProfile: nextFreelancerProfile,
+            };
         } catch (error) {
             logger.error('Error fetching profile:', error);
+            return { profile: null, freelancerProfile: null };
         }
     }, [ensureProfileExists]);
 
@@ -401,6 +409,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const switchAccountMode = async (mode: AccountMode): Promise<WorkspaceSwitchResult> => {
         if (!user) throw new Error('No user logged in');
 
+        if (mode === activeMode && profile) {
+            const currentTarget = getModeTarget(profile, freelancerProfile, mode);
+            return {
+                mode,
+                userType: profile.user_type ?? mode,
+                targetPath: currentTarget.path,
+                isOnboarded: currentTarget.isOnboarded,
+            };
+        }
+
         if (!profile) {
             await ensureProfileExists(user);
         }
@@ -434,28 +452,27 @@ export function AuthProvider({ children }: AuthProviderProps) {
                 }
             }
 
-            await fetchProfile(user.id, user);
+            const refreshed = await fetchProfile(user.id, user);
+            const nextProfile = (refreshed?.profile ?? {
+                ...profile,
+                id: user.id,
+                user_type: nextUserType,
+                active_mode: mode,
+            }) as Profile;
+            const nextFreelancerProfile = refreshed?.freelancerProfile ?? freelancerProfile;
+            const target = getModeTarget(nextProfile, nextFreelancerProfile, mode);
+
+            return {
+                mode,
+                userType: nextUserType,
+                targetPath: target.path,
+                isOnboarded: target.isOnboarded,
+            };
         } catch (error) {
             persistAccountMode(previousMode, user.id);
             setModeOverride(previousMode);
             throw error;
         }
-
-        const nextProfile = {
-            ...profile,
-            id: user.id,
-            user_type: nextUserType,
-            active_mode: mode,
-        };
-        const nextFreelancerProfile = mode === 'freelancer' ? freelancerProfile ?? null : freelancerProfile;
-        const target = getModeTarget(nextProfile, nextFreelancerProfile, mode);
-
-        return {
-            mode,
-            userType: nextUserType,
-            targetPath: target.path,
-            isOnboarded: target.isOnboarded,
-        };
     };
 
     // Refresh profile data
