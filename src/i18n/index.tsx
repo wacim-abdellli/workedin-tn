@@ -6,6 +6,12 @@ import { fr } from './fr';
 import { en } from './en';
 import type { Language } from '../types';
 
+// Immediately set HTML attributes to prevent flash of wrong direction
+const savedLang = (localStorage.getItem('i18n-language') || localStorage.getItem('language') || navigator.language.split('-')[0] || 'ar') as Language;
+const validLang = ['ar', 'fr', 'en'].includes(savedLang) ? savedLang : 'ar';
+document.documentElement.lang = validLang;
+document.documentElement.dir = validLang === 'ar' ? 'rtl' : 'ltr';
+
 const translations: Record<Language, Translations> = { ar, fr, en };
 
 interface I18nContextType {
