@@ -1,9 +1,13 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, X, Clock, TrendingUp, Command } from 'lucide-react';
+import { Search, X, TrendingUp, RotateCcw, Briefcase, FileText, Wallet, User as UserIcon, Plus, FolderOpen, Users, ClipboardList, Settings, ArrowUpRight } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
+import { useWorkspace } from '@/contexts/WorkspaceContext';
+import { getJobs } from '@/services/jobs';
+import { getFreelancers } from '@/services/profiles';
+import { getAvatarGradient, getInitials } from '@/lib/avatar';
 
 export interface SearchModalProps {
     isScrolled: boolean;
@@ -34,12 +38,78 @@ export interface SearchModalProps {
     };
 }
 
+const LOCAL_STORAGE_KEY = 'khedma_recent_searches';
+
+function highlightMatch(text: string, query: string) {
+    if (!query || !text) return <span>{text}</span>;
+    const index = text.toLowerCase().indexOf(query.toLowerCase());
+    if (index === -1) return <span>{text}</span>;
+    return (
+        <span className="truncate">
+            {text.slice(0, index)}
+            <mark className="bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 rounded px-0.5 not-italic font-medium">
+                {text.slice(index, index + query.length)}
+            </mark>
+            {text.slice(index + query.length)}
+        </span>
+    );
+}
+
+function getCategoryColor(skill: string) {
+    const s = skill.toLowerCase();
+    if (s.includes('design') || s.includes('logo')) return 'bg-pink-500';
+    if (s.includes('react') || s.includes('python')) return 'bg-blue-500';
+    if (s.includes('translation') || s.includes('seo')) return 'bg-emerald-500';
+    return 'bg-violet-500';
+}
+
 export function SearchModal({ isScrolled, theme, language, t }: SearchModalProps) {
     const [searchOpen, setSearchOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
+    const [recentSearches, setRecentSearches] = useState<string[]>([]);
+    
+    // Live results state
+    const [isLoading, setIsLoading] = useState(false);
+    const [jobs, setJobs] = useState<any[]>([]);
+    const [freelancers, setFreelancers] = useState<any[]>([]);
+    const [pages, setPages] = useState<any[]>([]);
+    
+    // Keyboard nav state
+    const [selectedIndex, setSelectedIndex] = useState(0);
+
     const searchRef = useRef<HTMLDivElement>(null);
+    const inputRef = useRef<HTMLInputElement>(null);
     const navigate = useNavigate();
     const isDarkShell = isScrolled || theme === 'dark';
+    const { isFreelancer, isClient } = useWorkspace();
+
+    // Load recent searches on mount
+    useEffect(() => {
+        try {
+            const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
+            if (saved) setRecentSearches(JSON.parse(saved));
+        } catch {}
+    }, []);
+
+    const saveRecentSearch = (query: string) => {
+        const trimmed = query.trim();
+        if (!trimmed) return;
+        const newSearches = [trimmed, ...recentSearches.filter(s => s !== trimmed)].slice(0, 5);
+        setRecentSearches(newSearches);
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(newSearches));
+    };
+
+    const removeRecentSearch = (e: React.MouseEvent, query: string) => {
+        e.stopPropagation();
+        const newSearches = recentSearches.filter(s => s !== query);
+        setRecentSearches(newSearches);
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(newSearches));
+    };
+
+    const clearAllRecent = () => {
+        setRecentSearches([]);
+        localStorage.removeItem(LOCAL_STORAGE_KEY);
+    };
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -56,20 +126,134 @@ export function SearchModal({ isScrolled, theme, language, t }: SearchModalProps
         const handleKeyDown = (e: KeyboardEvent) => {
             if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
                 e.preventDefault();
-                setSearchOpen(true);
+                setSearchOpen(open => !open);
             }
-            if (e.key === 'Escape') setSearchOpen(false);
+            if (searchOpen && e.key === 'Escape') {
+                setSearchOpen(false);
+            }
         };
 
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, []);
+    }, [searchOpen]);
 
-    const recentSearches = [
-        t.search.suggestions.mobileApp,
-        t.search.suggestions.logo,
-        t.search.suggestions.seo,
-    ];
+    // Live Search Effect
+    useEffect(() => {
+        if (searchQuery.trim().length < 2) {
+            setJobs([]);
+            setFreelancers([]);
+            setPages([]);
+            setIsLoading(false);
+            return;
+        }
+
+        const timer = setTimeout(async () => {
+            setIsLoading(true);
+            try {
+                // Determine matching pages
+                const allPages = isFreelancer ? [
+                    { title: 'Find Work', url: '/jobs', icon: Briefcase },
+                    { title: 'My Proposals', url: '/my-proposals', icon: FileText },
+                    { title: 'Contracts', url: '/contracts', icon: ClipboardList },
+                    { title: 'Earnings', url: '/freelancer/earnings', icon: Wallet },
+                    { title: 'Profile Settings', url: '/settings', icon: Settings },
+                ] : [
+                    { title: 'Post a Project', url: '/jobs/new', icon: Plus },
+                    { title: 'My Projects', url: '/client/jobs', icon: FolderOpen },
+                    { title: 'Find Freelancers', url: '/find-freelancers', icon: Users },
+                    { title: 'Contracts', url: '/contracts', icon: ClipboardList },
+                    { title: 'Account Settings', url: '/settings', icon: Settings },
+                ];
+                
+                const q = searchQuery.toLowerCase();
+                setPages(allPages.filter(p => p.title.toLowerCase().includes(q)).slice(0, 3));
+
+                // Fetch real data
+                const [jobsRes, freelancersRes] = await Promise.all([
+                    getJobs({ search: searchQuery }, 1, 4),
+                    isClient ? getFreelancers({ search: searchQuery }, 1, 3) : Promise.resolve({ data: [] }),
+                ]);
+
+                if (jobsRes.data) setJobs(jobsRes.data);
+                if (freelancersRes && freelancersRes.data) setFreelancers(freelancersRes.data);
+            } catch(e) {
+                console.error(e);
+            } finally {
+                setIsLoading(false);
+            }
+        }, 300);
+
+        return () => clearTimeout(timer);
+    }, [searchQuery, isFreelancer, isClient]);
+
+    // Keyboard Navigation inside Modal
+    const selectableItems = useMemo(() => {
+        const items: any[] = [];
+        if (!searchQuery) {
+            recentSearches.forEach(s => items.push({ type: 'recent', query: s }));
+            if (isFreelancer) {
+                items.push({ type: 'nav', to: '/jobs' });
+                items.push({ type: 'nav', to: '/my-proposals' });
+                items.push({ type: 'nav', to: '/freelancer/earnings' });
+                items.push({ type: 'nav', to: '/settings' });
+            } else {
+                items.push({ type: 'nav', to: '/jobs/new' });
+                items.push({ type: 'nav', to: '/client/jobs' });
+                items.push({ type: 'nav', to: '/find-freelancers' });
+                items.push({ type: 'nav', to: '/contracts' });
+            }
+        } else {
+            jobs.forEach(j => items.push({ type: 'job', job: j, to: `/jobs/${j.id}` }));
+            freelancers.forEach(f => items.push({ type: 'freelancer', freelancer: f, to: `/freelancer/${f.username}` }));
+            pages.forEach(p => items.push({ type: 'page', page: p, to: p.url }));
+        }
+        return items;
+    }, [searchQuery, recentSearches, jobs, freelancers, pages, isFreelancer]);
+
+    useEffect(() => {
+        setSelectedIndex(0);
+    }, [searchQuery, selectableItems.length]);
+
+    const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            setSelectedIndex(prev => (prev + 1) % selectableItems.length);
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            setSelectedIndex(prev => (prev - 1 + selectableItems.length) % selectableItems.length);
+        } else if (e.key === 'Tab') {
+            e.preventDefault();
+            setSelectedIndex(prev => (prev + 1) % selectableItems.length);
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            const item = selectableItems[selectedIndex];
+            if (item) {
+                if (item.type === 'recent') {
+                    setSearchQuery(item.query);
+                } else if (item.to) {
+                    saveRecentSearch(searchQuery || item.title || '');
+                    navigate(item.to);
+                    setSearchOpen(false);
+                }
+            } else if (searchQuery.trim()) {
+                handleSearch(searchQuery);
+            }
+        } else if (e.key === 'Backspace' && searchQuery === '') {
+            e.preventDefault();
+            setSearchOpen(false);
+        }
+    };
+
+    const handleSearch = (query: string) => {
+        const trimmed = query.trim();
+        if (!trimmed) return;
+
+        saveRecentSearch(trimmed);
+        
+        setSearchQuery(trimmed);
+        navigate(`/search?q=${encodeURIComponent(trimmed)}`);
+        setSearchOpen(false);
+    };
 
     const trendingSkills = [
         t.search.suggestions.logoDesign,
@@ -79,222 +263,445 @@ export function SearchModal({ isScrolled, theme, language, t }: SearchModalProps
         t.search.suggestions.python,
     ];
 
-    const handleSearch = (query: string) => {
-        const trimmed = query.trim();
-        if (!trimmed) return;
+    const quickNavFreelancer = [
+        { label: 'Browse all jobs', icon: Briefcase, to: '/jobs', shortcut: 'G J' },
+        { label: 'My proposals', icon: FileText, to: '/my-proposals', shortcut: 'G P' },
+        { label: 'My earnings', icon: Wallet, to: '/freelancer/earnings', shortcut: 'G E' },
+        { label: 'Profile settings', icon: UserIcon, to: '/settings', shortcut: 'G S' },
+    ];
 
-        setSearchQuery(trimmed);
-        navigate(`/search?q=${encodeURIComponent(trimmed)}`);
-        setSearchOpen(false);
-    };
+    const quickNavClient = [
+        { label: 'Post a project', icon: Plus, to: '/jobs/new', shortcut: 'P P' },
+        { label: 'My projects', icon: FolderOpen, to: '/client/jobs', shortcut: 'G P' },
+        { label: 'Find freelancers', icon: Users, to: '/find-freelancers', shortcut: 'G F' },
+        { label: 'Contract workspace', icon: ClipboardList, to: '/contracts', shortcut: 'G C' },
+    ];
+
+    const activeQuickNav = isFreelancer ? quickNavFreelancer : quickNavClient;
+    
+    // Calculate global index for keyboard nav
+    let globalIndexCounter = 0;
 
     return (
         <div className="hidden md:flex flex-1 max-w-xl mx-auto px-3 lg:px-4" ref={searchRef}>
-            <div className="relative w-full">
+            <div className="relative w-full flex justify-center">
+                {/* Header Search Trigger */}
                 <button
                     onClick={() => setSearchOpen(true)}
                     className={cn(
-                        'group relative flex h-10 sm:h-11 w-full items-center gap-2 sm:gap-3 overflow-hidden rounded-xl px-3 sm:px-4 text-start transition-all duration-200',
+                        'group relative flex h-10 sm:h-11 items-center gap-2 sm:gap-3 overflow-hidden rounded-xl px-3 sm:px-4 text-start transition-all duration-200 ease-out focus:outline-none focus-visible:w-64 w-48 xl:w-64',
                         isDarkShell
-                            ? 'border border-white/10 bg-white/[0.04] text-gray-400 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] hover:border-violet-500/30 hover:bg-white/[0.07]'
-                            : 'border border-gray-200 bg-[#fbfbfe] text-gray-600 shadow-sm shadow-gray-200/40 hover:border-purple-200 hover:bg-white'
+                            ? 'border border-transparent bg-white/8 text-white placeholder-gray-500 hover:bg-white/12 focus-visible:border-violet-500/40 focus-visible:ring-2 focus-visible:ring-violet-500/10 focus-visible:bg-[#1a1825]'
+                            : 'border border-transparent bg-gray-100 text-gray-900 placeholder-gray-400 hover:bg-gray-200 focus-visible:border-purple-300 focus-visible:ring-2 focus-visible:ring-purple-100 focus-visible:bg-white'
                     )}
                 >
-                    <Search className="h-4 w-4 flex-shrink-0 text-gray-500 transition-colors group-hover:text-violet-400" />
+                    <Search className="h-4 w-4 flex-shrink-0 text-gray-400 transition-colors group-hover:text-violet-500" />
                     <span
                         className={cn(
                             'flex-1 truncate text-sm transition-colors',
-                            isDarkShell ? 'text-gray-400 group-hover:text-gray-100' : 'text-gray-500 group-hover:text-gray-900'
+                            isDarkShell ? 'text-gray-400 group-hover:text-gray-300' : 'text-gray-500 group-hover:text-gray-700'
                         )}
                     >
-                        {t.search.placeholder}
+                        {isFreelancer ? "Search jobs, skills..." : "Search freelancers, skills..."}
                     </span>
                     <div
                         className={cn(
-                            'hidden shrink-0 items-center gap-1 rounded-md border px-2 py-0.5 text-[11px] font-medium sm:flex bg-gray-50 dark:bg-white/5',
+                            'hidden shrink-0 items-center justify-center rounded-md border px-1.5 py-0.5 text-[10px] font-mono shadow-sm sm:flex transition-colors',
                             isDarkShell
-                                ? 'border-white/10 text-gray-400 group-hover:border-violet-500/30'
-                                : 'border-gray-200 text-gray-500 group-hover:border-purple-200'
+                                ? 'border-white/10 bg-white/10 text-gray-400'
+                                : 'border-gray-200 bg-white text-gray-400'
                         )}
                     >
-                        <Command className="h-3 w-3" />
-                        <span>K</span>
+                        ⌘K
                     </div>
-                    <div className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-r from-violet-600/8 to-indigo-600/8 opacity-0 transition-opacity group-hover:opacity-100" />
                 </button>
 
                 <AnimatePresence>
                     {searchOpen && (
-                        <motion.div
-                            initial={{ opacity: 0, y: -10, scale: 0.97 }}
-                            animate={{ opacity: 1, y: 0, scale: 1 }}
-                            exit={{ opacity: 0, y: -10, scale: 0.97 }}
-                            transition={{ duration: 0.18, ease: 'easeOut' }}
-                            className={cn(
-                                'absolute left-0 right-0 top-full z-50 mt-3 w-full min-w-[430px] overflow-hidden rounded-[24px] border backdrop-blur-2xl',
-                                isDarkShell
-                                    ? 'border-white/10 bg-[#12101d]/95 shadow-2xl shadow-black/40'
-                                    : 'border-gray-200 bg-white/95 shadow-2xl shadow-gray-200/70'
-                            )}
-                        >
-                            <div className={cn('border-b p-4', isDarkShell ? 'border-white/10' : 'border-gray-100')}>
-                                <div className="relative">
-                                    <Search className="absolute start-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+                        <>
+                            {/* Backdrop */}
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm"
+                            />
+                            
+                            {/* Modal */}
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.98, y: -20 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 0.98, y: -20 }}
+                                transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                                className={cn(
+                                    'fixed left-1/2 top-[10vh] z-[101] w-full max-w-2xl -translate-x-1/2 overflow-hidden rounded-2xl shadow-2xl',
+                                    theme === 'dark'
+                                        ? 'border border-white/8 bg-[#1a1825] shadow-black/60'
+                                        : 'border border-gray-200 bg-white shadow-gray-300/50'
+                                )}
+                            >
+                                {/* Search Input */}
+                                <div className={cn('flex items-center px-4 border-b', theme === 'dark' ? 'border-white/5' : 'border-gray-100')}>
+                                    <Search className="h-5 w-5 flex-shrink-0 text-gray-400" />
                                     <input
+                                        ref={inputRef}
                                         type="text"
                                         value={searchQuery}
                                         onChange={(e) => setSearchQuery(e.target.value)}
-                                        placeholder={t.search.placeholder}
+                                        onKeyDown={handleInputKeyDown}
+                                        placeholder={isFreelancer ? "Search jobs, skills..." : "Search freelancers, skills..."}
                                         autoFocus
                                         dir={language === 'ar' ? 'rtl' : 'ltr'}
                                         className={cn(
-                                            'w-full rounded-2xl border py-3.5 px-12 text-sm transition-all focus:outline-none focus:ring-2',
-                                            isDarkShell
-                                                ? 'border-white/10 bg-white/5 text-white placeholder-gray-500 focus:border-violet-500 focus:ring-violet-500/20'
-                                                : 'border-gray-200 bg-white text-gray-900 placeholder-gray-400 focus:border-purple-500 focus:ring-purple-500/20'
+                                            'flex-1 h-[56px] bg-transparent px-4 text-lg focus:outline-none',
+                                            theme === 'dark' ? 'text-white placeholder:text-gray-500' : 'text-gray-900 placeholder:text-gray-400'
                                         )}
-                                        onKeyDown={(e) => {
-                                            if (e.key === 'Enter') {
-                                                handleSearch(searchQuery);
-                                            }
-                                        }}
                                     />
                                     {searchQuery ? (
-                                        <button
-                                            onClick={() => setSearchQuery('')}
-                                            className={cn(
-                                                'absolute end-4 top-1/2 -translate-y-1/2 rounded-lg p-1.5 transition-colors',
-                                                isDarkShell ? 'hover:bg-white/10' : 'hover:bg-gray-100'
-                                            )}
-                                        >
-                                            <X className="h-4 w-4 text-gray-400" />
-                                        </button>
-                                    ) : null}
+                                        <div className="flex items-center gap-2">
+                                            <span className={cn("text-[10px] font-mono px-1.5 py-0.5 rounded border", theme === 'dark' ? "border-white/10 text-gray-500" : "border-gray-200 text-gray-400")}>
+                                                ESC
+                                            </span>
+                                            <button
+                                                onClick={() => setSearchQuery('')}
+                                                className={cn('rounded-full p-1 transition-colors', theme === 'dark' ? 'hover:bg-white/10 text-gray-400' : 'hover:bg-gray-100 text-gray-500')}
+                                            >
+                                                <X className="h-4 w-4" />
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <span className={cn("text-[10px] font-mono px-1.5 py-0.5 rounded border", theme === 'dark' ? "border-white/10 text-gray-500" : "border-gray-200 text-gray-400")}>
+                                            ESC
+                                        </span>
+                                    )}
                                 </div>
-                            </div>
 
-                            <div className="max-h-[500px] overflow-y-auto">
-                                {!searchQuery ? (
-                                    <div className="space-y-6 p-4">
-                                        <div>
-                                            <div className="mb-3 flex items-center gap-2 px-2">
-                                                <Clock className="h-4 w-4 text-gray-500" />
-                                                <span className="text-xs font-semibold uppercase tracking-wider text-gray-400">
-                                                    {t.search.recent}
-                                                </span>
-                                            </div>
-                                            <div className="space-y-1">
-                                                {recentSearches.map((search) => (
-                                                    <button
-                                                        key={search}
-                                                        onClick={() => handleSearch(search)}
-                                                        className={cn(
-                                                            'group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors',
-                                                            isDarkShell ? 'hover:bg-white/5' : 'hover:bg-gray-50'
-                                                        )}
-                                                    >
-                                                        <div
-                                                            className={cn(
-                                                                'flex h-8 w-8 items-center justify-center rounded-lg transition-colors',
-                                                                isDarkShell
-                                                                    ? 'bg-white/5 group-hover:bg-violet-600/20'
-                                                                    : 'bg-gray-100 group-hover:bg-purple-100'
-                                                            )}
-                                                        >
-                                                            <Clock className="h-4 w-4 text-gray-500 transition-colors group-hover:text-violet-400" />
-                                                        </div>
-                                                        <span
-                                                            className={cn(
-                                                                'text-sm transition-colors',
-                                                                isDarkShell ? 'text-gray-300 group-hover:text-white' : 'text-gray-700 group-hover:text-gray-900'
-                                                            )}
-                                                        >
-                                                            {search}
+                                <div className="max-h-[60vh] overflow-y-auto">
+                                    {!searchQuery.trim() ? (
+                                        <div className="p-4 space-y-6">
+                                            {/* Recent Searches */}
+                                            {recentSearches.length > 0 && (
+                                                <section>
+                                                    <div className="mb-3 flex items-center justify-between px-2">
+                                                        <span className={cn("text-xs font-semibold uppercase tracking-widest", theme === 'dark' ? 'text-gray-600' : 'text-gray-400')}>
+                                                            Recent searches
                                                         </span>
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        </div>
+                                                        <button 
+                                                            onClick={clearAllRecent}
+                                                            className="text-xs text-purple-500 hover:text-purple-600 cursor-pointer font-medium"
+                                                        >
+                                                            Clear all
+                                                        </button>
+                                                    </div>
+                                                    <div className="space-y-0.5">
+                                                        {recentSearches.map((search) => {
+                                                            const isFocused = globalIndexCounter === selectedIndex;
+                                                            globalIndexCounter++;
+                                                            return (
+                                                                <button
+                                                                    key={search}
+                                                                    onClick={() => {
+                                                                        setSearchQuery(search);
+                                                                    }}
+                                                                    className={cn(
+                                                                        'group relative flex w-full items-center justify-between rounded-xl px-3 py-2 text-left transition-all',
+                                                                        isFocused 
+                                                                          ? (theme === 'dark' ? 'bg-purple-900/20 shadow-[inset_2px_0_0_0_#8b5cf6]' : 'bg-purple-50 shadow-[inset_2px_0_0_0_#8b5cf6]') 
+                                                                          : (theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-gray-50')
+                                                                    )}
+                                                                >
+                                                                    <div className="flex items-center gap-3">
+                                                                        <RotateCcw className="h-3.5 w-3.5 text-gray-400 group-hover:text-gray-500" />
+                                                                        <span className={cn('text-sm', theme === 'dark' ? 'text-gray-300' : 'text-gray-700')}>
+                                                                            {search}
+                                                                        </span>
+                                                                    </div>
+                                                                    <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                                        <span 
+                                                                            onClick={(e) => removeRecentSearch(e, search)}
+                                                                            className="p-1 rounded bg-gray-200/50 hover:bg-red-100 text-gray-500 hover:text-red-500 dark:bg-black/20 dark:hover:bg-red-500/20 dark:text-gray-400 transition-colors"
+                                                                        >
+                                                                            <X className="h-3.5 w-3.5" />
+                                                                        </span>
+                                                                        <ArrowUpRight className="h-4 w-4 text-gray-400" />
+                                                                    </div>
+                                                                </button>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                </section>
+                                            )}
 
-                                        <div>
-                                            <div className="mb-3 flex items-center gap-2 px-2">
-                                                <TrendingUp className="h-4 w-4 text-gray-500" />
-                                                <span className="text-xs font-semibold uppercase tracking-wider text-gray-400">
-                                                    {t.search.trending}
-                                                </span>
-                                            </div>
-                                            <div className="flex flex-wrap gap-2">
-                                                {trendingSkills.map((skill) => (
-                                                    <button
-                                                        key={skill}
-                                                        onClick={() => handleSearch(skill)}
-                                                        className={cn(
-                                                            'rounded-xl border px-4 py-2 text-sm font-medium transition-all',
-                                                            isDarkShell
-                                                                ? 'border-violet-500/30 bg-gradient-to-r from-violet-600/20 to-indigo-600/20 text-violet-300 hover:border-violet-500/50 hover:from-violet-600/30 hover:to-indigo-600/30'
-                                                                : 'border-purple-200 bg-purple-50 text-purple-700 hover:border-purple-300 hover:bg-purple-100'
-                                                        )}
-                                                    >
-                                                        {skill}
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <div className="px-4 pb-4">
-                                        <p className="p-4 text-sm text-gray-500 dark:text-gray-400">
-                                            {t.search.resultsFor} "{searchQuery}"...
-                                        </p>
-                                    </div>
-                                )}
-                            </div>
+                                            {/* Trending */}
+                                            <section>
+                                                <div className="mb-3 flex items-center gap-2 px-2">
+                                                    <TrendingUp className="h-3.5 w-3.5 text-purple-500" />
+                                                    <span className={cn("text-xs font-semibold uppercase tracking-widest", theme === 'dark' ? 'text-gray-600' : 'text-gray-400')}>
+                                                        Trending now
+                                                    </span>
+                                                </div>
+                                                <div className="flex flex-wrap gap-2 px-2">
+                                                    {trendingSkills.map((skill) => (
+                                                        <button
+                                                            key={skill}
+                                                            onClick={() => handleSearch(skill)}
+                                                            className={cn(
+                                                                'flex items-center gap-2 rounded-lg border px-3 py-1.5 text-sm transition-all duration-150',
+                                                                theme === 'dark'
+                                                                    ? 'border-purple-800/20 bg-purple-900/30 text-purple-300 hover:bg-purple-900/50'
+                                                                    : 'border-purple-100 bg-purple-50 text-purple-700 hover:bg-purple-100'
+                                                            )}
+                                                        >
+                                                            <div className={cn("w-1.5 h-1.5 rounded-full", getCategoryColor(skill))} />
+                                                            {skill}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </section>
 
-                            <div
-                                className={cn(
-                                    'border-t px-4 py-3',
-                                    isDarkShell ? 'border-white/10 bg-white/[0.03]' : 'border-gray-100 bg-[#faf9fd]'
-                                )}
-                            >
-                                <div className="flex items-center justify-between text-xs text-gray-500">
+                                            {/* Quick Navigate */}
+                                            <section>
+                                                <div className="mt-6 mb-3 px-2">
+                                                    <span className={cn("text-xs font-semibold uppercase tracking-widest", theme === 'dark' ? 'text-gray-600' : 'text-gray-400')}>
+                                                        Go to
+                                                    </span>
+                                                </div>
+                                                <div className="grid grid-cols-2 gap-2">
+                                                    {activeQuickNav.map((nav) => {
+                                                        const isFocused = globalIndexCounter === selectedIndex;
+                                                        globalIndexCounter++;
+                                                        return (
+                                                            <button
+                                                                key={nav.to}
+                                                                onClick={() => {
+                                                                    navigate(nav.to);
+                                                                    setSearchOpen(false);
+                                                                }}
+                                                                className={cn(
+                                                                    'group flex items-center justify-between rounded-xl p-2.5 text-left transition-all',
+                                                                    isFocused 
+                                                                          ? (theme === 'dark' ? 'bg-purple-900/20 shadow-[inset_2px_0_0_0_#8b5cf6]' : 'bg-purple-50 shadow-[inset_2px_0_0_0_#8b5cf6]') 
+                                                                          : (theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-gray-50')
+                                                                )}
+                                                            >
+                                                                <div className="flex items-center gap-3">
+                                                                    <div className={cn("flex h-8 w-8 items-center justify-center rounded-lg", theme === 'dark' ? 'bg-white/5 text-gray-300' : 'bg-gray-100 text-gray-600')}>
+                                                                        <nav.icon className="h-4 w-4" />
+                                                                    </div>
+                                                                    <div>
+                                                                        <div className={cn("text-sm font-medium", theme === 'dark' ? 'text-gray-200' : 'text-gray-700')}>{nav.label}</div>
+                                                                    </div>
+                                                                </div>
+                                                                <kbd className={cn("text-[10px] font-mono px-1.5 py-0.5 rounded border opacity-0 group-hover:opacity-100 transition-opacity", theme === 'dark' ? 'border-white/10 text-gray-500' : 'border-gray-200 text-gray-400')}>
+                                                                    {nav.shortcut}
+                                                                </kbd>
+                                                            </button>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </section>
+                                        </div>
+                                    ) : (
+                                        <div className="p-2 py-4">
+                                            {isLoading ? (
+                                                <div className="space-y-4 px-2">
+                                                    {[1, 2, 3].map(i => (
+                                                        <div key={i} className="flex gap-3 items-center w-full animate-pulse">
+                                                            <div className={cn("h-8 w-8 rounded-full", theme === 'dark' ? 'bg-white/10' : 'bg-gray-200')} />
+                                                            <div className="space-y-2 flex-1">
+                                                                <div className={cn("h-3 w-1/3 rounded", theme === 'dark' ? 'bg-white/10' : 'bg-gray-200')} />
+                                                                <div className={cn("h-2.5 w-1/4 rounded", theme === 'dark' ? 'bg-white/5' : 'bg-gray-100')} />
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            ) : jobs.length === 0 && freelancers.length === 0 && pages.length === 0 ? (
+                                                <div className="flex flex-col items-center justify-center py-12 text-center">
+                                                    <Search className={cn("h-8 w-8 mb-4", theme === 'dark' ? 'text-white/20' : 'text-gray-300')} />
+                                                    <p className={cn("text-sm font-medium", theme === 'dark' ? 'text-gray-300' : 'text-gray-800')}>No results for "{searchQuery}"</p>
+                                                    <p className={cn("text-xs mt-1", theme === 'dark' ? 'text-gray-500' : 'text-gray-400')}>Try searching for jobs, freelancers, or skills</p>
+                                                </div>
+                                            ) : (
+                                                <div className="space-y-6">
+                                                    {/* Jobs */}
+                                                    {jobs.length > 0 && (
+                                                        <section>
+                                                            <div className="mb-2 flex items-center gap-2 px-3">
+                                                                <span className={cn("text-xs font-semibold uppercase tracking-widest", theme === 'dark' ? 'text-gray-500' : 'text-gray-400')}>
+                                                                    Jobs
+                                                                </span>
+                                                                <span className={cn("text-[10px] font-medium px-1.5 py-0.5 rounded-full", theme === 'dark' ? 'bg-white/10 text-gray-400' : 'bg-gray-100 text-gray-500')}>
+                                                                    {jobs.length}
+                                                                </span>
+                                                            </div>
+                                                            <div className="space-y-0.5">
+                                                                {jobs.map(job => {
+                                                                    const isFocused = globalIndexCounter === selectedIndex;
+                                                                    globalIndexCounter++;
+                                                                    return (
+                                                                        <button
+                                                                            key={job.id}
+                                                                            onClick={() => {
+                                                                                saveRecentSearch(searchQuery);
+                                                                                navigate(`/jobs/${job.id}`);
+                                                                                setSearchOpen(false);
+                                                                            }}
+                                                                            className={cn(
+                                                                                'group flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-left transition-all',
+                                                                                isFocused 
+                                                                                    ? (theme === 'dark' ? 'bg-purple-900/20 shadow-[inset_2px_0_0_0_#8b5cf6]' : 'bg-purple-50 shadow-[inset_2px_0_0_0_#8b5cf6]') 
+                                                                                    : (theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-gray-50')
+                                                                            )}
+                                                                        >
+                                                                            <div className="flex items-center gap-3">
+                                                                                <div className={cn("w-2 h-2 rounded-full", getCategoryColor(job.category))} />
+                                                                                <div>
+                                                                                    <div className={cn('text-sm font-medium', theme === 'dark' ? 'text-gray-200' : 'text-gray-800')}>
+                                                                                        {highlightMatch(job.title, searchQuery)}
+                                                                                    </div>
+                                                                                    <div className={cn("text-xs flex gap-2", theme === 'dark' ? 'text-gray-500' : 'text-gray-400')}>
+                                                                                        <span>{job.job_type === 'hourly' ? `$${job.hourly_rate}/hr` : `$${job.budget_min}-$${job.budget_max}`}</span>
+                                                                                        <span>• {job.experience_level}</span>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                            <ArrowUpRight className="h-4 w-4 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                                        </button>
+                                                                    );
+                                                                })}
+                                                            </div>
+                                                        </section>
+                                                    )}
+
+                                                    {/* Freelancers */}
+                                                    {freelancers.length > 0 && (
+                                                        <section>
+                                                            <div className="mb-2 flex items-center px-3">
+                                                                <span className={cn("text-xs font-semibold uppercase tracking-widest", theme === 'dark' ? 'text-gray-500' : 'text-gray-400')}>
+                                                                    Freelancers
+                                                                </span>
+                                                            </div>
+                                                            <div className="space-y-0.5">
+                                                                {freelancers.map(worker => {
+                                                                    const isFocused = globalIndexCounter === selectedIndex;
+                                                                    globalIndexCounter++;
+                                                                    const name = worker.full_name || worker.username;
+                                                                    const [from, to] = getAvatarGradient(name);
+                                                                    return (
+                                                                        <button
+                                                                            key={worker.id}
+                                                                            onClick={() => {
+                                                                                saveRecentSearch(searchQuery);
+                                                                                navigate(`/freelancer/${worker.username}`);
+                                                                                setSearchOpen(false);
+                                                                            }}
+                                                                            className={cn(
+                                                                                'group flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-left transition-all',
+                                                                                isFocused 
+                                                                                    ? (theme === 'dark' ? 'bg-purple-900/20 shadow-[inset_2px_0_0_0_#8b5cf6]' : 'bg-purple-50 shadow-[inset_2px_0_0_0_#8b5cf6]') 
+                                                                                    : (theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-gray-50')
+                                                                            )}
+                                                                        >
+                                                                            <div className="flex items-center gap-3">
+                                                                                {worker.avatar_url ? (
+                                                                                    <img src={worker.avatar_url} alt="" className="w-7 h-7 rounded-full object-cover ring-1 ring-black/5" />
+                                                                                ) : (
+                                                                                    <div className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-inner" style={{ background: `linear-gradient(135deg, ${from}, ${to})` }}>
+                                                                                        {getInitials(name)}
+                                                                                    </div>
+                                                                                )}
+                                                                                <div>
+                                                                                    <div className={cn('text-sm font-medium', theme === 'dark' ? 'text-gray-200' : 'text-gray-800')}>
+                                                                                        {highlightMatch(name, searchQuery)}
+                                                                                    </div>
+                                                                                    <div className={cn("text-xs", theme === 'dark' ? 'text-gray-500' : 'text-gray-400')}>
+                                                                                        {worker.freelancer_profiles?.[0]?.title || worker.location}
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                            <ArrowUpRight className="h-4 w-4 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                                        </button>
+                                                                    );
+                                                                })}
+                                                            </div>
+                                                        </section>
+                                                    )}
+
+                                                    {/* Pages */}
+                                                    {pages.length > 0 && (
+                                                        <section>
+                                                            <div className="mb-2 flex items-center px-3">
+                                                                <span className={cn("text-xs font-semibold uppercase tracking-widest", theme === 'dark' ? 'text-gray-500' : 'text-gray-400')}>
+                                                                    Pages
+                                                                </span>
+                                                            </div>
+                                                            <div className="space-y-0.5">
+                                                                {pages.map(page => {
+                                                                    const isFocused = globalIndexCounter === selectedIndex;
+                                                                    globalIndexCounter++;
+                                                                    return (
+                                                                        <button
+                                                                            key={page.url}
+                                                                            onClick={() => {
+                                                                                saveRecentSearch(searchQuery);
+                                                                                navigate(page.url);
+                                                                                setSearchOpen(false);
+                                                                            }}
+                                                                            className={cn(
+                                                                                'group flex w-full items-center justify-between rounded-xl px-3 py-2 text-left transition-all',
+                                                                                isFocused 
+                                                                                    ? (theme === 'dark' ? 'bg-purple-900/20 shadow-[inset_2px_0_0_0_#8b5cf6]' : 'bg-purple-50 shadow-[inset_2px_0_0_0_#8b5cf6]') 
+                                                                                    : (theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-gray-50')
+                                                                            )}
+                                                                        >
+                                                                            <div className="flex items-center gap-3">
+                                                                                <div className={cn("flex h-7 w-7 items-center justify-center rounded-lg", theme === 'dark' ? 'bg-white/5 text-gray-400' : 'bg-gray-100 text-gray-500')}>
+                                                                                    <page.icon className="h-3.5 w-3.5" />
+                                                                                </div>
+                                                                                <div>
+                                                                                    <div className={cn('text-sm font-medium', theme === 'dark' ? 'text-gray-200' : 'text-gray-800')}>
+                                                                                        {highlightMatch(page.title, searchQuery)}
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                            <ArrowUpRight className="h-4 w-4 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                                        </button>
+                                                                    );
+                                                                })}
+                                                            </div>
+                                                        </section>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Keyboard hints */}
+                                <div
+                                    className={cn(
+                                        'border-t px-4 py-3 flex items-center justify-between text-xs',
+                                        theme === 'dark' ? 'border-white/5 bg-[#14121f] text-gray-500' : 'border-gray-100 bg-gray-50 text-gray-500'
+                                    )}
+                                >
                                     <div className="flex items-center gap-4">
                                         <span className="flex items-center gap-1.5">
-                                            <kbd
-                                                className={cn(
-                                                    'rounded border px-2 py-1 font-mono text-xs',
-                                                    isDarkShell ? 'border-white/10 bg-white/5 text-gray-300' : 'border-gray-200 bg-white text-gray-600'
-                                                )}
-                                            >
-                                                ↑↓
-                                            </kbd>
-                                            <span>{t.common.navigate}</span>
+                                            <kbd className={cn('rounded border px-1.5 py-0.5 font-mono text-[10px]', theme === 'dark' ? 'border-white/10 bg-white/10' : 'border-gray-200 bg-white')}>↑↓</kbd>
+                                            <kbd className={cn('rounded border px-1.5 py-0.5 font-mono text-[10px]', theme === 'dark' ? 'border-white/10 bg-white/10' : 'border-gray-200 bg-white')}>Tab</kbd>
+                                            <span>Navigate</span>
                                         </span>
                                         <span className="flex items-center gap-1.5">
-                                            <kbd
-                                                className={cn(
-                                                    'rounded border px-2 py-1 font-mono text-xs',
-                                                    isDarkShell ? 'border-white/10 bg-white/5 text-gray-300' : 'border-gray-200 bg-white text-gray-600'
-                                                )}
-                                            >
-                                                ↵
-                                            </kbd>
-                                            <span>{t.common.select}</span>
+                                            <kbd className={cn('rounded border px-1.5 py-0.5 font-mono text-[10px]', theme === 'dark' ? 'border-white/10 bg-white/10' : 'border-gray-200 bg-white')}>↵</kbd>
+                                            <span>Select</span>
                                         </span>
                                     </div>
                                     <span className="flex items-center gap-1.5">
-                                        <kbd
-                                            className={cn(
-                                                'rounded border px-2 py-1 font-mono text-xs',
-                                                isDarkShell ? 'border-white/10 bg-white/5 text-gray-300' : 'border-gray-200 bg-white text-gray-600'
-                                            )}
-                                        >
-                                            esc
-                                        </kbd>
-                                        <span>{t.common.close}</span>
+                                        <kbd className={cn('rounded border px-1.5 py-0.5 font-mono text-[10px]', theme === 'dark' ? 'border-white/10 bg-white/10' : 'border-gray-200 bg-white')}>ESC</kbd>
+                                        <span>Close</span>
                                     </span>
                                 </div>
-                            </div>
-                        </motion.div>
+                            </motion.div>
+                        </>
                     )}
                 </AnimatePresence>
             </div>
