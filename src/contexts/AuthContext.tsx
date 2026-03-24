@@ -66,6 +66,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
         return 'ar';
     }, []);
 
+    const withTimeout = useCallback(async <T,>(promise: Promise<T>, label: string, timeoutMs: number = 8000): Promise<T> => {
+        return await Promise.race([
+            promise,
+            new Promise<T>((_, reject) =>
+                window.setTimeout(() => reject(new Error(`${label}_timeout`)), timeoutMs)
+            ),
+        ]);
+    }, []);
+
     const ensureProfileExists = useCallback(async (authUser: User) => {
         const fallbackName =
             authUser.user_metadata?.full_name ||
@@ -471,23 +480,41 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
         const previousMode = canAccessMode(profile, activeMode) ? activeMode : resolveAccountMode(profile, freelancerProfile);
         const nextUserType = promoteUserTypeForMode(profile?.user_type, mode);
+        const previousProfile = profile;
+        const previousFreelancerProfile = freelancerProfile;
 
         try {
             persistAccountMode(mode, user.id);
             setModeOverride(mode);
 
             if (nextUserType !== profile?.user_type || profile?.active_mode !== mode) {
-                await persistWorkspaceState(nextUserType, mode);
+                await withTimeout(persistWorkspaceState(nextUserType, mode), 'workspace_persist');
             }
 
+            let optimisticFreelancerProfile = freelancerProfile;
             if (mode === 'freelancer') {
-                const { error } = await supabase
-                    .from('freelancer_profiles')
-                    .upsert({
-                        id: user.id,
-                        skills: [],
-                        availability: 'available',
-                    });
+                optimisticFreelancerProfile = freelancerProfile ?? {
+                    id: user.id,
+                    skills: [],
+                    availability: 'available',
+                    completion_rate: 0,
+                    repeat_clients: 0,
+                    cin_verified: false,
+                    total_earnings: 0,
+                    created_at: new Date().toISOString(),
+                } as FreelancerProfile;
+                setFreelancerProfile((prev) => prev ?? optimisticFreelancerProfile);
+
+                const { error } = await withTimeout(
+                    (async () => await supabase
+                        .from('freelancer_profiles')
+                        .upsert({
+                            id: user.id,
+                            skills: [],
+                            availability: 'available',
+                        }))(),
+                    'freelancer_profile_upsert'
+                ) as { error: unknown };
 
                 if (error) {
                     logger.error('switchAccountMode freelancer upsert error:', error);
@@ -495,15 +522,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
                 }
             }
 
-            const refreshed = await fetchProfile(user.id, user);
-            const nextProfile = (refreshed?.profile ?? {
+            const nextProfile = {
                 ...profile,
                 id: user.id,
                 user_type: nextUserType,
                 active_mode: mode,
-            }) as Profile;
-            const nextFreelancerProfile = refreshed?.freelancerProfile ?? freelancerProfile;
-            const target = getModeTarget(nextProfile, nextFreelancerProfile, mode);
+            } as Profile;
+            setProfile((prev) => prev ? { ...prev, user_type: nextUserType, active_mode: mode } : nextProfile);
+
+            const target = getModeTarget(nextProfile, optimisticFreelancerProfile, mode);
+
+            void withTimeout(fetchProfile(user.id, user), 'workspace_refresh', 10000).catch((error) => {
+                logger.warn('Background workspace refresh failed:', error);
+            });
 
             return {
                 mode,
@@ -514,6 +545,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
         } catch (error) {
             persistAccountMode(previousMode, user.id);
             setModeOverride(previousMode);
+            setProfile(previousProfile);
+            setFreelancerProfile(previousFreelancerProfile);
             throw error;
         }
     };
