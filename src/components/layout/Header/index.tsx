@@ -149,7 +149,7 @@ export default function Header() {
                     </div>
 
                     {/* CENTER: Nav items */}
-                    <nav className="hidden lg:flex flex-1 items-center justify-center overflow-hidden">
+                    <nav className="hidden lg:flex flex-1 items-center justify-center min-w-0">
                         <Navigation items={activeNavItems} accentClass={accentClass} />
                     </nav>
 

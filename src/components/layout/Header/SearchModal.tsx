@@ -288,7 +288,7 @@ export function SearchModal({ isScrolled, theme, language, t }: SearchModalProps
             <button
                 onClick={() => setSearchOpen(true)}
                 className={cn(
-                    'group relative flex h-10 w-[160px] sm:w-[240px] items-center gap-2 overflow-hidden rounded-full shadow-sm px-3 text-start transition-all duration-300 ease-out focus:outline-none focus-visible:ring-2 shrink-0 border border-transparent',
+                    'group relative flex h-10 w-[160px] lg:w-[180px] xl:w-[240px] items-center gap-2 overflow-hidden rounded-full shadow-sm px-3 text-start transition-all duration-300 ease-out focus:outline-none focus-visible:ring-2 shrink-0 border border-transparent',
                     isDarkShell
                         ? 'bg-white/5 text-gray-300 hover:bg-white/10 hover:border-white/10 focus-visible:border-violet-500/40 focus-visible:ring-2 focus-visible:ring-violet-500/20'
                         : 'bg-gray-100/80 text-gray-500 hover:bg-gray-200/50 hover:border-gray-300/50 focus-visible:border-purple-300 focus-visible:ring-2 focus-visible:ring-purple-200'
