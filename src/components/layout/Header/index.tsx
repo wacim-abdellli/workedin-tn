@@ -150,16 +150,16 @@ export default function Header() {
                         ? 'bg-[#0f0e17] border-b border-white/5'
                         : 'bg-white border-b border-gray-100'
             )}>
-                <div className="max-w-7xl 2xl:max-w-[90%] mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex items-center h-16 lg:h-20 gap-2 lg:gap-4 overflow-hidden">
+                <div className="max-w-[100vw] 2xl:max-w-[90%] mx-auto px-2 sm:px-4 lg:px-6">
+                    <div className="flex items-center h-16 lg:h-20 gap-1 lg:gap-3 overflow-hidden">
                         {/* Left: Logo & Navigation */}
-                        <div className="flex items-center gap-3 lg:gap-6 shrink-0 truncate">
+                        <div className="flex items-center gap-2 lg:gap-4 shrink w-[200px] lg:w-auto overflow-hidden">
                             <Logo language={language} />
                             <Navigation isScrolled={isScrolled} theme={theme} items={navItems} accentClass={accentClass} />
                         </div>
 
                         {/* Center: Search */}
-                        <div className="flex-1 flex justify-center min-w-0 px-2 lg:px-4">
+                        <div className="flex-1 flex justify-center lg:justify-end xl:justify-center min-w-[160px] px-1 lg:px-3">
                             {user ? (
                                 <SearchModal isScrolled={isScrolled} theme={theme} language={language} t={t} />
                             ) : (

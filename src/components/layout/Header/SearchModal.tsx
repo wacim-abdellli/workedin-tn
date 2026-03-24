@@ -283,36 +283,36 @@ export function SearchModal({ isScrolled, theme, language, t }: SearchModalProps
     let globalIndexCounter = 0;
 
     return (
-        <div className="hidden md:flex w-full max-w-md xl:max-w-lg mx-auto px-2 lg:px-4 shrink min-w-0" ref={searchRef}>
+        <div className="hidden md:flex w-full xl:max-w-lg mx-auto lg:px-2 shrink-0 min-w-0" ref={searchRef}>
             <div className="relative w-full flex justify-center">
                 {/* Header Search Trigger */}
                 <button
                     onClick={() => setSearchOpen(true)}
                     className={cn(
-                        'group relative flex h-10 sm:h-11 items-center gap-2 overflow-hidden rounded-xl px-3 text-start transition-all duration-200 ease-out focus:outline-none focus-visible:w-full w-40 lg:w-48 xl:w-64 shrink min-w-0',
+                        'group relative flex h-10 sm:h-11 items-center gap-2 overflow-hidden rounded-xl px-3 text-start transition-all duration-200 ease-out focus:outline-none focus-visible:w-full w-[160px] lg:w-48 xl:w-64 shrink-0',
                         isDarkShell
                             ? 'border border-transparent bg-white/8 text-white placeholder-gray-500 hover:bg-white/12 focus-visible:border-violet-500/40 focus-visible:ring-2 focus-visible:ring-violet-500/10 focus-visible:bg-[#1a1825]'
                             : 'border border-transparent bg-gray-100 text-gray-900 placeholder-gray-400 hover:bg-gray-200 focus-visible:border-purple-300 focus-visible:ring-2 focus-visible:ring-purple-100 focus-visible:bg-white'
                     )}
                 >
-                    <Search className="h-4 w-4 flex-shrink-0 text-gray-400 transition-colors group-hover:text-violet-500" />
+                    <Search className="h-4 w-4 shrink-0 text-gray-400 transition-colors group-hover:text-violet-500" />
                     <span
                         className={cn(
                             'flex-1 truncate text-sm transition-colors',
                             isDarkShell ? 'text-gray-400 group-hover:text-gray-300' : 'text-gray-500 group-hover:text-gray-700'
                         )}
                     >
-                        {isFreelancer ? "Search jobs, skills..." : "Search freelancers, skills..."}
+                        {isFreelancer ? "Search jobs, skills..." : "Search freelancers..."}
                     </span>
                     <div
                         className={cn(
-                            'hidden shrink-0 items-center justify-center rounded-md border px-1.5 py-0.5 text-[10px] font-mono shadow-sm sm:flex transition-colors',
+                            'hidden shrink-0 items-center justify-center rounded-md border px-1.5 py-0.5 text-[10px] font-mono shadow-sm lg:flex transition-colors',
                             isDarkShell
                                 ? 'border-white/10 bg-white/10 text-gray-400'
                                 : 'border-gray-200 bg-white text-gray-400'
                         )}
                     >
-                        ⌘K
+                        Ctrl K
                     </div>
                 </button>
 
