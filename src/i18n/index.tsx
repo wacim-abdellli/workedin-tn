@@ -24,7 +24,7 @@ interface I18nProviderProps {
 
 export function I18nProvider({ children, defaultLanguage = 'ar' }: I18nProviderProps) {
     const [language, setLanguageState] = useState<Language>(() => {
-        const saved = localStorage.getItem('language') as Language;
+        const saved = (localStorage.getItem('i18n-language') || localStorage.getItem('language')) as Language;
         if (saved) return saved;
 
         // Auto-detect browser language on first visit
@@ -36,6 +36,7 @@ export function I18nProvider({ children, defaultLanguage = 'ar' }: I18nProviderP
 
     const setLanguage = useCallback((lang: Language) => {
         setLanguageState(lang);
+        localStorage.setItem('i18n-language', lang);
         localStorage.setItem('language', lang);
         document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
         document.documentElement.lang = lang;

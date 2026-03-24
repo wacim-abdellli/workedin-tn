@@ -143,6 +143,10 @@ textarea::placeholder {
   font-family: 'Cairo', 'Noto Sans Arabic', system-ui, sans-serif;
 }
 
+[dir="rtl"] .flex {
+  flex-direction: row-reverse;
+}
+
 [dir="rtl"] input,
 [dir="rtl"] textarea,
 [dir="rtl"] select {

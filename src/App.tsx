@@ -48,6 +48,9 @@ const FindFreelancers = lazy(() => import('./pages/FindFreelancers'));
 const Messages = lazy(() => import('./pages/Messages'));
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 const FreelancerEarnings = lazy(() => import('./pages/FreelancerEarnings'));
+const MyProposals = lazy(() => import('./pages/MyProposals'));
+const ClientJobs = lazy(() => import('./pages/ClientJobs'));
+const ContractsList = lazy(() => import('./pages/ContractsList'));
 const SearchResults = lazy(() => import('./pages/SearchResults'));
 const Terms = lazy(() => import('./pages/Terms'));
 const Privacy = lazy(() => import('./pages/Privacy'));
@@ -161,6 +164,21 @@ function AppRoutes() {
           <WorkspaceRoute workspace="freelancer">
             <FreelancerEarnings />
           </WorkspaceRoute>
+        </ProtectedRoute>
+      } />
+      <Route path="/my-proposals" element={
+        <ProtectedRoute>
+          <MyProposals />
+        </ProtectedRoute>
+      } />
+      <Route path="/client/jobs" element={
+        <ProtectedRoute>
+          <ClientJobs />
+        </ProtectedRoute>
+      } />
+      <Route path="/contracts" element={
+        <ProtectedRoute>
+          <ContractsList />
         </ProtectedRoute>
       } />
       <Route path="/client/dashboard" element={

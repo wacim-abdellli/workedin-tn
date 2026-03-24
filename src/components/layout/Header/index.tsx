@@ -1,267 +1,349 @@
-import { useEffect, useRef, useState } from 'react';
-import { NavLink, Link, useLocation, useNavigate } from 'react-router-dom';
-import { 
-    Menu, Briefcase, FolderOpen, 
-    FileText, ClipboardList, Wallet, Users, PlusCircle 
+import { useState, useEffect, useRef } from 'react';
+import { NavLink, useNavigate } from 'react-router-dom';
+import {
+  Briefcase,
+  FileText,
+  ClipboardList,
+  Wallet,
+  PlusCircle,
+  FolderOpen,
+  Users,
+  Search,
+  Bell,
+  Sun,
+  Moon,
+  ChevronDown,
+  LogOut,
+  Settings,
+  User,
+  Shield,
 } from 'lucide-react';
-
 import { useAuth } from '@/contexts/AuthContext';
-import { useTheme } from '@/contexts/ThemeContext';
-import { useWorkspace } from '@/contexts/WorkspaceContext';
+import { useWorkspaceStore } from '@/lib/workspaceState';
 import { useTranslation } from '@/i18n';
-import { cn } from '@/lib/utils';
+import SearchModal from './SearchModal';
 
-import { SearchModal } from './SearchModal';
-import { LanguageSwitcher } from './LanguageSwitcher';
-import { ThemeToggle } from './ThemeToggle';
-import { UserMenu } from './UserMenu';
-import { AuthButtons } from './AuthButtons';
-import { MobileMenu } from './MobileMenu';
-import AccountPanel from '../AccountPanel';
+const FREELANCER_NAV = [
+  { label: 'Find Work', Icon: Briefcase, href: '/jobs' },
+  { label: 'Proposals', Icon: FileText, href: '/my-proposals' },
+  { label: 'Contracts', Icon: ClipboardList, href: '/contracts' },
+  { label: 'Earnings', Icon: Wallet, href: '/freelancer/earnings' },
+] as const;
+
+const CLIENT_NAV = [
+  { label: 'Post Project', Icon: PlusCircle, href: '/jobs/new' },
+  { label: 'My Projects', Icon: FolderOpen, href: '/client/jobs' },
+  { label: 'Freelancers', Icon: Users, href: '/find-freelancers' },
+  { label: 'Contracts', Icon: ClipboardList, href: '/contracts' },
+] as const;
+
+const PUBLIC_NAV = [
+  { label: 'Find Work', Icon: Briefcase, href: '/jobs' },
+  { label: 'Find Freelancers', Icon: Users, href: '/find-freelancers' },
+  { label: 'How It Works', Icon: FileText, href: '/how-it-works' },
+] as const;
 
 export default function Header() {
-    const [isScrolled, setIsScrolled] = useState(false);
-    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-    const [accountPanelOpen, setAccountPanelOpen] = useState(false);
-    const headerRef = useRef<HTMLElement | null>(null);
-    const { user, profile, signOut } = useAuth();
-    const { theme } = useTheme();
-    const { t, language, setLanguage } = useTranslation();
-    const navigate = useNavigate();
-    const location = useLocation();
+  const { user, profile, freelancerProfile, signOut } = useAuth();
+  const { activeWorkspace } = useWorkspaceStore();
+  const { language, setLanguage } = useTranslation();
+  const navigate = useNavigate();
 
-    // Scroll detection
-    useEffect(() => {
-        const handleScroll = () => setIsScrolled(window.scrollY > 24);
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
+  const [isDark, setIsDark] = useState(document.documentElement.classList.contains('dark'));
+  const [scrolled, setScrolled] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [langOpen, setLangOpen] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
+  const langRef = useRef<HTMLDivElement>(null);
 
-    useEffect(() => {
-        setAccountPanelOpen(false);
-        setMobileMenuOpen(false);
-    }, [location.pathname]);
+  useEffect(() => {
+    const handler = () => setScrolled(window.scrollY > 10);
+    window.addEventListener('scroll', handler);
+    return () => window.removeEventListener('scroll', handler);
+  }, []);
 
-    useEffect(() => {
-        if (!accountPanelOpen) return;
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (!userMenuRef.current?.contains(e.target as Node)) setUserMenuOpen(false);
+      if (!langRef.current?.contains(e.target as Node)) setLangOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
 
-        const handleClickOutside = (event: MouseEvent) => {
-            const target = event.target as Element | null;
-            if (!target?.closest('[data-account-panel]')) {
-                setAccountPanelOpen(false);
-            }
-        };
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setSearchOpen(true);
+      }
+    };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, []);
 
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, [accountPanelOpen]);
+  const toggleTheme = () => {
+    const next = !isDark;
+    setIsDark(next);
+    document.documentElement.classList.toggle('dark', next);
+    localStorage.setItem('theme', next ? 'dark' : 'light');
+  };
 
-    useEffect(() => {
-        if (!accountPanelOpen && !mobileMenuOpen) return;
+  const isFreelancer = !!user && activeWorkspace === 'freelancer';
+  const navItems = !user ? PUBLIC_NAV : isFreelancer ? FREELANCER_NAV : CLIENT_NAV;
+  const firstName = profile?.full_name?.split(' ')[0] ?? 'Account';
+  const currentLang = language || 'en';
+  const LANGS = [
+    { code: 'ar', label: 'العربية', flag: '🇹🇳' },
+    { code: 'fr', label: 'Français', flag: '🇫🇷' },
+    { code: 'en', label: 'English', flag: '🇬🇧' },
+  ] as const;
+  const activeLang = LANGS.find((l) => l.code === currentLang) ?? LANGS[2];
+  const workspaceAccent = isFreelancer ? '#8b5cf6' : '#f59e0b';
+  const logoSrc = isDark ? '/logos/logo-primary-dark.svg' : '/logos/logo-primary.svg';
 
-        const handleEscape = (event: KeyboardEvent) => {
-            if (event.key !== 'Escape') return;
-            setAccountPanelOpen(false);
-            setMobileMenuOpen(false);
-        };
+  void freelancerProfile;
 
-        document.addEventListener('keydown', handleEscape);
-        return () => document.removeEventListener('keydown', handleEscape);
-    }, [accountPanelOpen, mobileMenuOpen]);
+  return (
+    <>
+      <header
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-200 ${
+          scrolled
+            ? 'bg-white/95 dark:bg-[#0f0e17]/95 backdrop-blur-md shadow-sm border-b border-gray-100 dark:border-white/5'
+            : 'bg-white dark:bg-[#0f0e17] border-b border-gray-100 dark:border-white/5'
+        }`}
+      >
+        {user && (
+          <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: workspaceAccent }} />
+        )}
 
-    useEffect(() => {
-        const handleResize = () => {
-            if (window.innerWidth >= 1280) {
-                setMobileMenuOpen(false);
-            }
-        };
+        <div
+          className="mx-auto px-4 sm:px-6"
+          style={{
+            maxWidth: '1280px',
+            height: '60px',
+            display: 'grid',
+            gridTemplateColumns: '140px 1fr 280px',
+            alignItems: 'center',
+            gap: '16px',
+          }}
+        >
+          <div className="flex items-center">
+            <button onClick={() => navigate('/')} className="flex items-center" type="button">
+              <img src={logoSrc} alt="Khedma TN" style={{ height: '28px', width: 'auto' }} />
+            </button>
+          </div>
 
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
-    }, []);
+          <nav className="flex items-center justify-center gap-0.5 overflow-x-auto">
+            {navItems.map(({ label, Icon, href }) => (
+              <NavLink
+                key={href}
+                to={href}
+                className={({ isActive }) =>
+                  `flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-all duration-150 ${
+                    isActive
+                      ? isFreelancer
+                        ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400'
+                        : 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400'
+                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-white/5'
+                  }`
+                }
+              >
+                <Icon className="w-3.5 h-3.5 flex-shrink-0" />
+                <span>{label}</span>
+              </NavLink>
+            ))}
+          </nav>
 
-    useEffect(() => {
-        if (accountPanelOpen) {
-            setMobileMenuOpen(false);
-        }
-    }, [accountPanelOpen]);
+          <div className="flex items-center justify-end gap-1.5">
+            <button
+              onClick={() => setSearchOpen(true)}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/8 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/10 transition-all duration-150"
+              style={{ width: '120px' }}
+              type="button"
+            >
+              <Search className="w-3.5 h-3.5 flex-shrink-0" />
+              <span className="text-xs flex-1 text-left">Search...</span>
+              <kbd className="text-[10px] font-mono bg-white dark:bg-white/10 border border-gray-200 dark:border-white/10 rounded px-1 py-0.5 text-gray-400 hidden sm:block">
+                ⌘K
+              </kbd>
+            </button>
 
-    useEffect(() => {
-        if (mobileMenuOpen) {
-            setAccountPanelOpen(false);
-        }
-    }, [mobileMenuOpen]);
-
-    useEffect(() => {
-        if (accountPanelOpen && typeof window !== 'undefined' && window.innerWidth < 768) {
-            const previousOverflow = document.body.style.overflow;
-            document.body.style.overflow = 'hidden';
-
-            return () => {
-                document.body.style.overflow = previousOverflow;
-            };
-        }
-
-        return undefined;
-    }, [accountPanelOpen]);
-
-    const { isFreelancer } = useWorkspace();
-
-    const FREELANCER_NAV = [
-        { label: 'Find Work', icon: Briefcase, href: '/jobs' },
-        { label: 'Proposals', icon: FileText, href: '/my-proposals' },
-        { label: 'Contracts', icon: ClipboardList, href: '/contracts' },
-        { label: 'Earnings', icon: Wallet, href: '/freelancer/earnings' },
-    ] as const;
-
-    const CLIENT_NAV = [
-        { label: 'Post Project', icon: PlusCircle, href: '/jobs/new' },
-        { label: 'My Projects', icon: FolderOpen, href: '/client/jobs' },
-        { label: 'Freelancers', icon: Users, href: '/find-freelancers' },
-        { label: 'Contracts', icon: ClipboardList, href: '/contracts' },
-    ] as const;
-
-    const publicNavItems = [
-        { label: 'Find Work', icon: Briefcase, href: '/jobs' },
-        { label: 'Find Freelancers', icon: Users, href: '/find-freelancers' },
-        { label: 'How It Works', icon: FileText, href: '/how-it-works' },
-    ] as const;
-
-    const navItems = user 
-        ? (isFreelancer ? FREELANCER_NAV : CLIENT_NAV) 
-        : publicNavItems;
-
-    return (
-        <>
-            <div className={cn(
-                "fixed top-0 left-0 right-0 h-[2px] z-[60] transition-opacity duration-300", 
-                isFreelancer ? 'bg-purple-500' : 'bg-amber-500',
-                isScrolled ? 'opacity-0' : 'opacity-100'
-            )} />
-            <header ref={headerRef} className={cn(
-                'fixed z-[50] transition-all duration-500 will-change-transform',
-                isScrolled
-                    ? 'top-4 left-1/2 -translate-x-1/2 w-[calc(100%-32px)] max-w-[1200px] rounded-[32px] backdrop-blur-xl bg-white/70 dark:bg-[#0f0e17]/70 border border-white/40 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.06)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)] h-16'
-                    : 'top-0 left-0 right-0 w-full bg-white dark:bg-[#0f0e17] border-b border-gray-100 dark:border-white/5 h-16'
-            )}>
-                <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: '1fr auto 1fr',
-                    alignItems: 'center',
-                    gap: '12px',
-                    height: '100%',
-                    padding: '0 24px',
-                    maxWidth: '1440px', // Slightly wider for more breathing room
-                    margin: '0 auto',
-                }}>
-                    
-                    {/* Zone 1: Logo (Left aligned) */}
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', minWidth: 0 }}>
-                        <Logo language={language} />
-                    </div>
-
-                    {/* Zone 2: Nav (Perfectly Centered) */}
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minWidth: 0 }}>
-                        <nav className="hidden lg:flex items-center gap-1.5">
-                            {navItems.map(({ label, icon: Icon, href }) => (
-                                <NavLink 
-                                    key={href} 
-                                    to={href}
-                                    className={({ isActive }) =>
-                                        cn(
-                                            "flex items-center gap-2 px-3 py-2 rounded-xl text-[13.5px] font-semibold tracking-tight whitespace-nowrap transition-all duration-300",
-                                            isActive
-                                                ? isFreelancer
-                                                    ? 'bg-purple-600/15 text-purple-400 shadow-[inset_0_0_12px_rgba(139,92,246,0.1)]'
-                                                    : 'bg-amber-600/15 text-amber-400 shadow-[inset_0_0_12px_rgba(245,158,11,0.1)]'
-                                                : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5'
-                                        )
-                                    }
-                                >
-                                    <Icon className="w-[17px] h-[17px] flex-shrink-0" />
-                                    <span>{label}</span>
-                                </NavLink>
-                            ))}
-                        </nav>
-                    </div>
-
-                    {/* Zone 3: Actions (Right aligned) */}
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '8px', minWidth: 0 }}>
-                        {user ? (
-                            <SearchModal isScrolled={isScrolled} theme={theme} language={language} t={t} />
-                        ) : null}
-
-                        <div className="hidden sm:flex items-center gap-2 border-l border-gray-200 dark:border-white/10 pl-3 ml-1">
-                            <LanguageSwitcher
-                                isScrolled={isScrolled}
-                                theme={theme}
-                                language={language}
-                                setLanguage={setLanguage}
-                            />
-                            <ThemeToggle isScrolled={isScrolled} />
-                        </div>
-
-                        {user ? (
-                            <div className="flex items-center gap-3 pl-2 border-l border-gray-200 dark:border-white/10">
-                                <UserMenu 
-                                    user={user} 
-                                    profile={profile} 
-                                    isOpen={accountPanelOpen} 
-                                    onToggle={() => setAccountPanelOpen(!accountPanelOpen)} 
-                                />
-                            </div>
-                        ) : (
-                            <AuthButtons isScrolled={isScrolled} theme={theme} t={t} />
-                        )}
-
-                        <button 
-                            className="xl:hidden p-2 text-gray-400 hover:text-white transition-colors"
-                            onClick={() => setMobileMenuOpen(true)}
-                        >
-                            <Menu className="w-6 h-6" />
-                        </button>
-                    </div>
+            <div className="relative" ref={langRef}>
+              <button
+                onClick={() => setLangOpen((p) => !p)}
+                className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors text-xs font-medium"
+                type="button"
+              >
+                <span>{activeLang.flag}</span>
+                <span>{activeLang.code.toUpperCase()}</span>
+              </button>
+              {langOpen && (
+                <div className="absolute right-0 top-full mt-1 w-36 bg-white dark:bg-[#1a1825] border border-gray-200 dark:border-white/10 rounded-xl shadow-xl shadow-black/20 overflow-hidden z-50 py-1">
+                  {LANGS.map((lang) => (
+                    <button
+                      key={lang.code}
+                      onClick={() => {
+                        setLanguage(lang.code);
+                        localStorage.setItem('i18n-language', lang.code);
+                        document.documentElement.lang = lang.code;
+                        document.documentElement.dir = lang.code === 'ar' ? 'rtl' : 'ltr';
+                        setLangOpen(false);
+                      }}
+                      className={`w-full flex items-center gap-2.5 px-3 py-2 text-sm transition-colors ${
+                        currentLang === lang.code
+                          ? 'bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400'
+                          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5'
+                      }`}
+                      type="button"
+                    >
+                      <span className="text-base">{lang.flag}</span>
+                      <span className="flex-1 text-left">{lang.label}</span>
+                      {currentLang === lang.code && <span className="text-purple-500 text-xs">✓</span>}
+                    </button>
+                  ))}
                 </div>
+              )}
+            </div>
 
-                {/* Mobile Menu */}
-                <MobileMenu
-                    isOpen={mobileMenuOpen}
-                    onClose={() => setMobileMenuOpen(false)}
-                    onSearchOpen={() => navigate('/search')}
-                    t={t}
-                />
-            </header>
+            <button
+              onClick={toggleTheme}
+              className="p-1.5 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
+              type="button"
+            >
+              {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </button>
 
             {user && (
-                <AccountPanel 
-                    isOpen={accountPanelOpen}
-                    onClose={() => setAccountPanelOpen(false)}
-                    user={user}
-                    profile={profile}
-                    headerHeight={64}
-                    signOut={signOut}
-                />
+              <button
+                onClick={() => navigate('/notifications')}
+                className="relative p-1.5 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
+                type="button"
+              >
+                <Bell className="w-4 h-4" />
+                <span className="absolute top-1 right-1 w-1.5 h-1.5 bg-red-500 rounded-full" />
+              </button>
             )}
 
-            {/* Spacer */}
-            <div className="h-16" />
-        </>
-    );
-}
+            {!user && (
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => navigate('/login')}
+                  className="px-3 py-1.5 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+                  type="button"
+                >
+                  Sign in
+                </button>
+                <button
+                  onClick={() => navigate('/signup')}
+                  className="px-4 py-1.5 text-sm font-medium bg-purple-600 hover:bg-purple-500 text-white rounded-lg transition-colors"
+                  type="button"
+                >
+                  Get started
+                </button>
+              </div>
+            )}
 
-function Logo({ language }: { language: string }) {
-    const { theme } = useTheme();
-    const logoSrc = language === 'ar'
-        ? (theme === 'dark' ? '/logos/logo-arabic-dark.svg' : '/logos/logo-arabic.svg')
-        : (theme === 'dark' ? '/logos/logo-primary-dark.svg' : '/logos/logo-primary.svg');
+            {user && (
+              <div className="relative" ref={userMenuRef}>
+                <button
+                  onClick={() => setUserMenuOpen((p) => !p)}
+                  className={`flex items-center gap-1.5 pl-1 pr-2 py-1 rounded-full border transition-all duration-150 ${
+                    userMenuOpen
+                      ? 'border-purple-300 dark:border-purple-500/40 bg-purple-50 dark:bg-purple-900/20'
+                      : 'border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 hover:bg-gray-50 dark:hover:bg-white/8'
+                  }`}
+                  type="button"
+                >
+                  {profile?.avatar_url ? (
+                    <img
+                      src={profile.avatar_url}
+                      alt={firstName}
+                      className="w-6 h-6 rounded-full object-cover flex-shrink-0"
+                    />
+                  ) : (
+                    <div
+                      className="w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center text-white text-[10px] font-bold"
+                      style={{ background: 'linear-gradient(135deg, #8b5cf6, #6d28d9)' }}
+                    >
+                      {firstName[0]?.toUpperCase()}
+                    </div>
+                  )}
+                  <span
+                    className="text-sm font-medium text-gray-700 dark:text-gray-200 hidden md:block"
+                    style={{ maxWidth: '72px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                  >
+                    {firstName}
+                  </span>
+                  <span
+                    className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0 hidden md:block ${
+                      isFreelancer
+                        ? 'bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300'
+                        : 'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300'
+                    }`}
+                  >
+                    {isFreelancer ? 'Pro' : 'Client'}
+                  </span>
+                  <ChevronDown
+                    className={`w-3 h-3 flex-shrink-0 text-gray-400 transition-transform duration-200 ${
+                      userMenuOpen ? 'rotate-180' : ''
+                    }`}
+                  />
+                </button>
 
-    return (
-        <Link to="/" className="group relative z-10 flex shrink-0 items-center">
-            <img
-                src={logoSrc}
-                alt={language === 'ar' ? 'خدمة TN' : 'Khedma TN'}
-                className="block h-7 w-auto object-contain object-left align-middle"
-            />
-        </Link>
-    );
+                {userMenuOpen && (
+                  <div className="absolute right-0 top-full mt-2 w-52 bg-white dark:bg-[#1a1825] border border-gray-200 dark:border-white/10 rounded-xl shadow-xl shadow-black/20 overflow-hidden z-50 py-1">
+                    <div className="px-3 py-2.5 border-b border-gray-100 dark:border-white/5">
+                      <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                        {profile?.full_name}
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{user.email}</p>
+                    </div>
+
+                    {[
+                      { label: 'Dashboard', Icon: User, href: '/dashboard' },
+                      { label: 'Settings', Icon: Settings, href: '/settings' },
+                      { label: 'Verify identity', Icon: Shield, href: '/verify-identity' },
+                    ].map(({ label, Icon, href }) => (
+                      <button
+                        key={href}
+                        onClick={() => {
+                          navigate(href);
+                          setUserMenuOpen(false);
+                        }}
+                        className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
+                        type="button"
+                      >
+                        <Icon className="w-3.5 h-3.5 text-gray-400" />
+                        {label}
+                      </button>
+                    ))}
+
+                    <div className="border-t border-gray-100 dark:border-white/5 mt-1 pt-1">
+                      <button
+                        onClick={() => {
+                          void signOut();
+                          setUserMenuOpen(false);
+                        }}
+                        className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                        type="button"
+                      >
+                        <LogOut className="w-3.5 h-3.5" />
+                        Sign out
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      </header>
+
+      <div style={{ height: '60px' }} />
+
+      {searchOpen && <SearchModal onClose={() => setSearchOpen(false)} />}
+    </>
+  );
 }
