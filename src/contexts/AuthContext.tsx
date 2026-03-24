@@ -43,6 +43,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [isLoading, setIsLoading] = useState(true);
   const activeMode = useWorkspaceStore((state) => state.activeWorkspace);
 
+  // Global Failsafe: If isLoading is stuck for more than 4 seconds, force it to false
+  // This prevents infinite loading loops across the app (Login, ProtectedRoute, etc.)
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (isLoading) {
+      timer = setTimeout(() => {
+        setIsLoading(false);
+      }, 4000);
+    }
+    return () => clearTimeout(timer);
+  }, [isLoading]);
+
   const getPreferredLanguage = useCallback((): Language => {
     if (typeof window === 'undefined') return 'ar';
 
