@@ -1,8 +1,9 @@
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { getDashboardPath, getOnboardingPath, isModeOnboarded } from '@/lib/accountMode';
 
 export const DashboardRedirect = () => {
+    const location = useLocation();
     const { profile, freelancerProfile, activeMode, isLoading } = useAuth();
 
     if (isLoading) {
@@ -12,11 +13,11 @@ export const DashboardRedirect = () => {
     }
 
     if (!profile) {
-        return <Navigate to="/login" replace />;
+        return <Navigate to="/login" replace state={location.state} />;
     }
 
     if (!profile.user_type) {
-        return <Navigate to="/signup?step=select-type" replace />;
+        return <Navigate to="/signup?step=select-type" replace state={location.state} />;
     }
 
     return (
@@ -25,6 +26,7 @@ export const DashboardRedirect = () => {
                 ? getDashboardPath(activeMode)
                 : getOnboardingPath(activeMode)}
             replace
+            state={location.state}
         />
     );
 };

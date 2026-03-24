@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Bell, ChevronDown } from 'lucide-react';
+import { Bell, BriefcaseBusiness, Building2, ChevronDown, Loader2 } from 'lucide-react';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 
 import { useAuth } from '@/contexts/AuthContext';
@@ -19,16 +19,19 @@ type HeaderProfile = {
   is_admin?: boolean;
   bio?: string;
   location?: string;
+  cin_verified?: boolean;
+  created_at?: string;
 } | null;
 
 export interface UserMenuProps {
   user: SupabaseUser;
   profile: HeaderProfile;
   isOpen: boolean;
+  switchingMode?: Mode | null;
   onToggle: () => void;
 }
 
-export function UserMenu({ user, profile, isOpen, onToggle }: UserMenuProps) {
+export function UserMenu({ user, profile, isOpen, switchingMode = null, onToggle }: UserMenuProps) {
   const [avatarFailed, setAvatarFailed] = useState(false);
   const { activeMode } = useAuth();
   const { t } = useTranslation();
@@ -38,6 +41,8 @@ export function UserMenu({ user, profile, isOpen, onToggle }: UserMenuProps) {
   const [avatarFrom, avatarTo] = getAvatarGradient(displayName);
   const accountCopy = t.auth.accountPanel;
   const activeWorkspaceLabel = activeMode === 'freelancer' ? accountCopy.freelancerLabel : accountCopy.clientLabel;
+  const RoleIcon = activeMode === 'freelancer' ? BriefcaseBusiness : Building2;
+  const isSwitching = switchingMode !== null;
 
   return (
     <div data-account-panel className="flex items-center gap-2">
@@ -83,12 +88,13 @@ export function UserMenu({ user, profile, isOpen, onToggle }: UserMenuProps) {
         </div>
         <span
           className={cn(
-            'hidden rounded-full px-2 py-0.5 text-xs font-medium md:block',
+            'hidden items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium md:inline-flex',
             activeMode === 'client'
               ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
               : 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
           )}
         >
+          {isSwitching ? <Loader2 className="h-3 w-3 animate-spin" /> : <RoleIcon className="h-3 w-3" />}
           {activeWorkspaceLabel}
         </span>
         <ChevronDown

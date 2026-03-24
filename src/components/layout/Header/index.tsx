@@ -22,6 +22,7 @@ export default function Header() {
     const [isScrolled, setIsScrolled] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [accountPanelOpen, setAccountPanelOpen] = useState(false);
+    const [switchingMode, setSwitchingMode] = useState<'freelancer' | 'client' | null>(null);
     const [headerHeight, setHeaderHeight] = useState(64);
     const headerRef = useRef<HTMLElement | null>(null);
     const { user, profile, signOut } = useAuth();
@@ -109,6 +110,19 @@ export default function Header() {
         }
     }, [mobileMenuOpen]);
 
+    useEffect(() => {
+        if (accountPanelOpen && typeof window !== 'undefined' && window.innerWidth < 768) {
+            const previousOverflow = document.body.style.overflow;
+            document.body.style.overflow = 'hidden';
+
+            return () => {
+                document.body.style.overflow = previousOverflow;
+            };
+        }
+
+        return undefined;
+    }, [accountPanelOpen]);
+
     const navItems = [
         { to: '/jobs', icon: Briefcase, label: t.nav.findWork },
         { to: '/find-freelancers', icon: User, label: t.nav.findFreelancers },
@@ -175,6 +189,7 @@ export default function Header() {
                                         user={user}
                                         profile={profile}
                                         isOpen={accountPanelOpen}
+                                        switchingMode={switchingMode}
                                         onToggle={() => setAccountPanelOpen((open) => !open)}
                                     />
                                 </div>
@@ -227,6 +242,8 @@ export default function Header() {
                     user={user}
                     profile={profile}
                     signOut={signOut}
+                    switchingMode={switchingMode}
+                    onSwitchingModeChange={setSwitchingMode}
                     onClose={() => setAccountPanelOpen(false)}
                 />
             ) : null}

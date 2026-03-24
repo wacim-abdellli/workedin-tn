@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import {
     Briefcase,
     DollarSign,
@@ -21,6 +21,7 @@ import { Header } from '../components/layout';
 import Button from '../components/ui/Button';
 import { Skeleton, SkeletonCard } from '../components/common';
 import SEO, { SEO_CONFIG } from '../components/common/SEO';
+import { useToast } from '../components/ui/Toast';
 
 // Mock data for demo
 const MOCK_STATS = {
@@ -63,15 +64,25 @@ function ClientDashboardPage() {
     const { t, dir } = useTranslation();
     const { profile, signOut } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
+    const { showToast } = useToast();
 
     const [stats] = useState(MOCK_STATS);
     const [jobs] = useState(MOCK_JOBS);
     const [isLoading, setIsLoading] = useState(true);
 
-    useState(() => {
-        const timer = setTimeout(() => setIsLoading(false), 1000);
-        return () => clearTimeout(timer);
-    });
+    useEffect(() => {
+        const timer = window.setTimeout(() => setIsLoading(false), 1000);
+        return () => window.clearTimeout(timer);
+    }, []);
+
+    useEffect(() => {
+        const state = location.state as { switching?: boolean; workspace?: 'freelancer' | 'client' } | null;
+        if (!state?.switching || state.workspace !== 'client') return;
+
+        showToast(t.auth.accountPanel.switchedClient, 'success', 2000, { position: 'bottom-center' });
+        navigate(location.pathname, { replace: true });
+    }, [location.pathname, location.state, navigate, showToast, t.auth.accountPanel.switchedClient]);
 
     const ArrowIcon = dir === 'rtl' ? ChevronLeft : ChevronRight;
 
