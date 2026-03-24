@@ -25,7 +25,6 @@ vi.mock('@/lib/supabase', () => ({
         },
     },
 }));
-
 vi.mock('@/lib/logger', () => ({
     logger: {
         error: vi.fn(),
@@ -34,7 +33,6 @@ vi.mock('@/lib/logger', () => ({
         debug: vi.fn(),
     },
 }));
-
 // Now import the component and dependencies
 import { AuthProvider, useAuth } from '../AuthContext';
 import { supabase } from '@/lib/supabase';

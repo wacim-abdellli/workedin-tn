@@ -146,8 +146,9 @@ export default function Header() {
             )}>
                 <div style={{
                     display: 'grid',
-                    gridTemplateColumns: '140px 1fr 260px',
+                    gridTemplateColumns: 'auto 1fr auto',
                     alignItems: 'center',
+                    gap: '16px',
                     height: '100%',
                     padding: '0 24px',
                     maxWidth: '1280px',
