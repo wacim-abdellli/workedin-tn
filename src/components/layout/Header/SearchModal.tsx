@@ -283,13 +283,13 @@ export function SearchModal({ isScrolled, theme, language, t }: SearchModalProps
     let globalIndexCounter = 0;
 
     return (
-        <div className="hidden md:flex flex-1 max-w-xl mx-auto px-3 lg:px-4" ref={searchRef}>
+        <div className="hidden md:flex w-full max-w-md xl:max-w-lg mx-auto px-2 lg:px-4 shrink min-w-0" ref={searchRef}>
             <div className="relative w-full flex justify-center">
                 {/* Header Search Trigger */}
                 <button
                     onClick={() => setSearchOpen(true)}
                     className={cn(
-                        'group relative flex h-10 sm:h-11 items-center gap-2 sm:gap-3 overflow-hidden rounded-xl px-3 sm:px-4 text-start transition-all duration-200 ease-out focus:outline-none focus-visible:w-64 w-48 xl:w-64',
+                        'group relative flex h-10 sm:h-11 items-center gap-2 overflow-hidden rounded-xl px-3 text-start transition-all duration-200 ease-out focus:outline-none focus-visible:w-full w-40 lg:w-48 xl:w-64 shrink min-w-0',
                         isDarkShell
                             ? 'border border-transparent bg-white/8 text-white placeholder-gray-500 hover:bg-white/12 focus-visible:border-violet-500/40 focus-visible:ring-2 focus-visible:ring-violet-500/10 focus-visible:bg-[#1a1825]'
                             : 'border border-transparent bg-gray-100 text-gray-900 placeholder-gray-400 hover:bg-gray-200 focus-visible:border-purple-300 focus-visible:ring-2 focus-visible:ring-purple-100 focus-visible:bg-white'

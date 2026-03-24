@@ -60,23 +60,35 @@ const PaymentFailed = lazy(() => import('./pages/PaymentFailed'));
 const VerifyIdentity = lazy(() => import('./pages/VerifyIdentity'));
 const VerificationQueue = lazy(() => import('./pages/admin/VerificationQueue'));
 
+import { useState, useEffect } from 'react';
+
 // Protected Route wrapper
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth();
+  const [showLoading, setShowLoading] = useState(isLoading);
 
-  if (isLoading) {
+  // Fallback to prevent infinite loading if AuthContext hangs
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (isLoading) {
+      setShowLoading(true);
+      timer = setTimeout(() => setShowLoading(false), 2000); // 2 second max loading time
+    } else {
+      setShowLoading(false);
+    }
+    return () => clearTimeout(timer);
+  }, [isLoading]);
+
+  if (showLoading) {
     return <Loading fullScreen />;
   }
 
-  if (!isAuthenticated) {
+  if (!isAuthenticated && !isLoading) {
     return <Navigate to="/login" replace />;
   }
 
   return <>{children}</>;
 }
-
-
-
 // Redirect /profile to the correct dashboard
 
 
