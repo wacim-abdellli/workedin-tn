@@ -127,27 +127,34 @@ export default function Header() {
 
     return (
         <>
-            <div className={`fixed top-0 left-0 right-0 h-[2px] z-[60] ${isFreelancer ? 'bg-[#8b5cf6]' : 'bg-[#f59e0b]'}`} />
+            <div className={cn(
+                "fixed top-0 left-0 right-0 h-[2px] z-[60] transition-opacity duration-300", 
+                isFreelancer ? 'bg-purple-500' : 'bg-amber-500',
+                isScrolled ? 'opacity-0' : 'opacity-100'
+            )} />
             <header ref={headerRef} className={cn(
-                'fixed top-0.5 left-0 right-0 z-50 transition-all duration-300 h-[60px]',
-                isScrolled || theme === 'dark'
-                    ? 'bg-white dark:bg-[#0f0e17] border-b border-gray-100 dark:border-white/5 shadow-sm shadow-black/5'
-                    : 'bg-white dark:bg-[#0f0e17] border-b border-gray-100 dark:border-white/5'
+                'fixed z-[50] transition-all duration-500 will-change-transform',
+                isScrolled
+                    ? 'top-4 left-1/2 -translate-x-1/2 w-[calc(100%-32px)] max-w-[1200px] rounded-[32px] backdrop-blur-xl bg-white/70 dark:bg-[#0f0e17]/70 border border-white/40 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.06)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)] h-16'
+                    : 'top-0 left-0 right-0 w-full bg-white dark:bg-[#0f0e17] border-b border-gray-100 dark:border-white/5 h-16'
             )}>
-                <div className="max-w-[1280px] mx-auto h-full px-6 grid grid-cols-[160px_1fr_240px] items-center gap-6">
+                <div className={cn(
+                    "mx-auto h-full flex items-center justify-between gap-6 transition-all duration-500",
+                    isScrolled ? "px-6 w-full" : "px-6 max-w-[1280px] w-full"
+                )}>
                     
-                    {/* LEFT: Logo - 160px fixed */}
-                    <div className="flex flex-shrink-0 items-center">
+                    {/* LEFT: Logo */}
+                    <div className="flex flex-shrink-0 items-center min-w-[140px]">
                         <Logo language={language} />
                     </div>
 
-                    {/* CENTER: Nav items - flex-1 aligned center */}
-                    <nav className="hidden md:flex items-center justify-center gap-0.5 overflow-hidden">
+                    {/* CENTER: Nav items */}
+                    <nav className="hidden lg:flex flex-1 items-center justify-center overflow-hidden">
                         <Navigation items={activeNavItems} accentClass={accentClass} />
                     </nav>
 
-                    {/* RIGHT: Actions - 240px fixed */}
-                    <div className="flex flex-shrink-0 items-center justify-end gap-1.5 lg:gap-2">
+                    {/* RIGHT: Actions */}
+                    <div className="flex flex-shrink-0 items-center justify-end gap-1.5 lg:gap-2.5 min-w-[140px]">
                         {user ? (
                             <SearchModal isScrolled={isScrolled} theme={theme} language={language} t={t} />
                         ) : null}
@@ -207,7 +214,7 @@ export default function Header() {
             ) : null}
 
             {/* Spacer */}
-            <div className="h-[60px]" />
+            <div className="h-16" />
         </>
     );
 }

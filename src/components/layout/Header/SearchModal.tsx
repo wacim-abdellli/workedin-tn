@@ -288,25 +288,25 @@ export function SearchModal({ isScrolled, theme, language, t }: SearchModalProps
             <button
                 onClick={() => setSearchOpen(true)}
                 className={cn(
-                    'group relative flex h-9 sm:h-10 w-[120px] items-center gap-1.5 overflow-hidden rounded-xl px-2 text-start transition-all duration-200 ease-out focus:outline-none focus-visible:ring-2 shrink-0',
+                    'group relative flex h-10 w-[160px] sm:w-[240px] items-center gap-2 overflow-hidden rounded-full shadow-sm px-3 text-start transition-all duration-300 ease-out focus:outline-none focus-visible:ring-2 shrink-0 border border-transparent',
                     isDarkShell
-                        ? 'border border-transparent bg-white/5 text-gray-400 hover:bg-white/10 focus-visible:border-violet-500/40 focus-visible:ring-2 focus-visible:ring-violet-500/10 focus-visible:bg-[#1a1825]'
-                        : 'border border-gray-200 bg-gray-50 text-gray-500 hover:bg-gray-100 focus-visible:border-purple-300 focus-visible:ring-2 focus-visible:ring-purple-100 focus-visible:bg-white'
+                        ? 'bg-white/5 text-gray-300 hover:bg-white/10 hover:border-white/10 focus-visible:border-violet-500/40 focus-visible:ring-2 focus-visible:ring-violet-500/20'
+                        : 'bg-gray-100/80 text-gray-500 hover:bg-gray-200/50 hover:border-gray-300/50 focus-visible:border-purple-300 focus-visible:ring-2 focus-visible:ring-purple-200'
                 )}
             >
-                <Search className="h-3.5 w-3.5 shrink-0 transition-colors group-hover:text-violet-500" />
-                <span className="flex-1 truncate text-xs transition-colors">
+                <Search className="h-4 w-4 shrink-0 transition-colors group-hover:text-violet-500" />
+                <span className="flex-1 truncate text-sm font-medium transition-colors">
                     Search...
                 </span>
                 <div
                     className={cn(
-                        'hidden shrink-0 items-center justify-center rounded border px-1 py-0.5 text-[10px] font-mono shadow-sm lg:flex transition-colors',
+                        'hidden shrink-0 items-center justify-center rounded-md border px-1.5 py-0.5 text-[11px] font-mono shadow-sm lg:flex transition-colors',
                         isDarkShell
-                            ? 'border-white/10 bg-white/10 text-gray-400'
+                            ? 'border-white/10 bg-black/20 text-gray-400'
                             : 'border-gray-200 bg-white text-gray-400'
                     )}
                 >
-                    ⌘K
+                    ⌘ K
                 </div>
             </button>
 
@@ -326,17 +326,17 @@ export function SearchModal({ isScrolled, theme, language, t }: SearchModalProps
                                 initial={{ opacity: 0, scale: 0.98, y: -20 }}
                                 animate={{ opacity: 1, scale: 1, y: 0 }}
                                 exit={{ opacity: 0, scale: 0.98, y: -20 }}
-                                transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                                transition={{ type: "spring", stiffness: 400, damping: 30 }}
                                 className={cn(
-                                    'fixed left-1/2 top-[10vh] z-[101] w-full max-w-2xl -translate-x-1/2 overflow-hidden rounded-2xl shadow-2xl',
+                                    'fixed left-1/2 top-[12vh] z-[101] w-full max-w-[700px] -translate-x-1/2 overflow-hidden rounded-3xl shadow-[0_24px_50px_-12px_rgba(0,0,0,0.5)] backdrop-blur-2xl ring-1',
                                     theme === 'dark'
-                                        ? 'border border-white/8 bg-[#1a1825] shadow-black/60'
-                                        : 'border border-gray-200 bg-white shadow-gray-300/50'
+                                        ? 'bg-[#14121a]/95 ring-white/10'
+                                        : 'bg-white/95 ring-black/5'
                                 )}
                             >
                                 {/* Search Input */}
                                 <div className={cn('flex items-center px-4 border-b', theme === 'dark' ? 'border-white/5' : 'border-gray-100')}>
-                                    <Search className="h-5 w-5 flex-shrink-0 text-gray-400" />
+                                    <Search className="h-6 w-6 flex-shrink-0 text-purple-500 opacity-80" />
                                     <input
                                         ref={inputRef}
                                         type="text"
@@ -347,24 +347,24 @@ export function SearchModal({ isScrolled, theme, language, t }: SearchModalProps
                                         autoFocus
                                         dir={language === 'ar' ? 'rtl' : 'ltr'}
                                         className={cn(
-                                            'flex-1 h-[56px] bg-transparent px-4 text-lg focus:outline-none',
-                                            theme === 'dark' ? 'text-white placeholder:text-gray-500' : 'text-gray-900 placeholder:text-gray-400'
+                                            'flex-1 h-[68px] bg-transparent px-4 text-xl font-medium focus:outline-none tracking-tight',
+                                            theme === 'dark' ? 'text-white placeholder:text-gray-600' : 'text-gray-900 placeholder:text-gray-400'
                                         )}
                                     />
                                     {searchQuery ? (
                                         <div className="flex items-center gap-2">
-                                            <span className={cn("text-[10px] font-mono px-1.5 py-0.5 rounded border", theme === 'dark' ? "border-white/10 text-gray-500" : "border-gray-200 text-gray-400")}>
+                                            <span className={cn("text-[10px] font-mono font-medium px-2 py-1 rounded-md border", theme === 'dark' ? "border-white/10 text-gray-500 bg-white/5" : "border-gray-200 text-gray-400 bg-gray-50")}>
                                                 ESC
                                             </span>
                                             <button
                                                 onClick={() => setSearchQuery('')}
-                                                className={cn('rounded-full p-1 transition-colors', theme === 'dark' ? 'hover:bg-white/10 text-gray-400' : 'hover:bg-gray-100 text-gray-500')}
+                                                className={cn('rounded-full p-1.5 transition-colors', theme === 'dark' ? 'hover:bg-white/10 text-gray-400' : 'hover:bg-gray-100 text-gray-500')}
                                             >
-                                                <X className="h-4 w-4" />
+                                                <X className="h-5 w-5" />
                                             </button>
                                         </div>
                                     ) : (
-                                        <span className={cn("text-[10px] font-mono px-1.5 py-0.5 rounded border", theme === 'dark' ? "border-white/10 text-gray-500" : "border-gray-200 text-gray-400")}>
+                                        <span className={cn("text-[10px] font-mono font-medium px-2 py-1 rounded-md border", theme === 'dark' ? "border-white/10 text-gray-500 bg-white/5" : "border-gray-200 text-gray-400 bg-gray-50")}>
                                             ESC
                                         </span>
                                     )}
@@ -398,10 +398,10 @@ export function SearchModal({ isScrolled, theme, language, t }: SearchModalProps
                                                                         setSearchQuery(search);
                                                                     }}
                                                                     className={cn(
-                                                                        'group relative flex w-full items-center justify-between rounded-xl px-3 py-2 text-left transition-all',
+                                                                        'group relative flex w-full items-center justify-between px-4 py-3 text-left transition-colors',
                                                                         isFocused 
-                                                                          ? (theme === 'dark' ? 'bg-purple-900/20 shadow-[inset_2px_0_0_0_#8b5cf6]' : 'bg-purple-50 shadow-[inset_2px_0_0_0_#8b5cf6]') 
-                                                                          : (theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-gray-50')
+                                                                          ? (theme === 'dark' ? 'bg-purple-500/15 border-l-[3px] border-purple-500 text-purple-100 pl-[13px]' : 'bg-purple-50 border-l-[3px] border-purple-500 pl-[13px]') 
+                                                                          : (theme === 'dark' ? 'hover:bg-white/5 border-l-[3px] border-transparent pl-[13px]' : 'hover:bg-gray-50 border-l-[3px] border-transparent pl-[13px]')
                                                                     )}
                                                                 >
                                                                     <div className="flex items-center gap-3">
@@ -455,12 +455,12 @@ export function SearchModal({ isScrolled, theme, language, t }: SearchModalProps
 
                                             {/* Quick Navigate */}
                                             <section>
-                                                <div className="mt-6 mb-3 px-2">
-                                                    <span className={cn("text-xs font-semibold uppercase tracking-widest", theme === 'dark' ? 'text-gray-600' : 'text-gray-400')}>
+                                                <div className="mt-6 mb-3 px-4">
+                                                    <span className={cn("text-[10px] font-bold uppercase tracking-widest opacity-60", theme === 'dark' ? 'text-gray-400' : 'text-gray-500')}>
                                                         Go to
                                                     </span>
                                                 </div>
-                                                <div className="grid grid-cols-2 gap-2">
+                                                <div className="flex flex-col">
                                                     {activeQuickNav.map((nav) => {
                                                         const isFocused = globalIndexCounter === selectedIndex;
                                                         globalIndexCounter++;
@@ -472,10 +472,10 @@ export function SearchModal({ isScrolled, theme, language, t }: SearchModalProps
                                                                     setSearchOpen(false);
                                                                 }}
                                                                 className={cn(
-                                                                    'group flex items-center justify-between rounded-xl p-2.5 text-left transition-all',
+                                                                    'group flex items-center justify-between px-4 py-3 text-left transition-colors',
                                                                     isFocused 
-                                                                          ? (theme === 'dark' ? 'bg-purple-900/20 shadow-[inset_2px_0_0_0_#8b5cf6]' : 'bg-purple-50 shadow-[inset_2px_0_0_0_#8b5cf6]') 
-                                                                          : (theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-gray-50')
+                                                                          ? (theme === 'dark' ? 'bg-purple-500/15 border-l-[3px] border-purple-500 pl-[13px]' : 'bg-purple-50 border-l-[3px] border-purple-500 pl-[13px]') 
+                                                                          : (theme === 'dark' ? 'hover:bg-white/5 border-l-[3px] border-transparent pl-[13px]' : 'hover:bg-gray-50 border-l-[3px] border-transparent pl-[13px]')
                                                                 )}
                                                             >
                                                                 <div className="flex items-center gap-3">
@@ -674,23 +674,25 @@ export function SearchModal({ isScrolled, theme, language, t }: SearchModalProps
                                 {/* Keyboard hints */}
                                 <div
                                     className={cn(
-                                        'border-t px-4 py-3 flex items-center justify-between text-xs',
-                                        theme === 'dark' ? 'border-white/5 bg-[#14121f] text-gray-500' : 'border-gray-100 bg-gray-50 text-gray-500'
+                                        'px-4 py-3 flex items-center justify-between text-[11px] font-medium tracking-wide border-t',
+                                        theme === 'dark' ? 'border-white/5 bg-[#14121a] text-gray-500' : 'border-gray-100 bg-gray-50/50 text-gray-500'
                                     )}
                                 >
-                                    <div className="flex items-center gap-4">
-                                        <span className="flex items-center gap-1.5">
-                                            <kbd className={cn('rounded border px-1.5 py-0.5 font-mono text-[10px]', theme === 'dark' ? 'border-white/10 bg-white/10' : 'border-gray-200 bg-white')}>↑↓</kbd>
-                                            <kbd className={cn('rounded border px-1.5 py-0.5 font-mono text-[10px]', theme === 'dark' ? 'border-white/10 bg-white/10' : 'border-gray-200 bg-white')}>Tab</kbd>
+                                    <div className="flex items-center gap-6">
+                                        <span className="flex items-center gap-2">
+                                            <div className="flex gap-0.5">
+                                                <kbd className={cn('rounded border px-1.5 py-0.5 font-mono text-[10px] shadow-sm', theme === 'dark' ? 'border-white/10 bg-white/5' : 'border-gray-200 bg-white')}>↑</kbd>
+                                                <kbd className={cn('rounded border px-1.5 py-0.5 font-mono text-[10px] shadow-sm', theme === 'dark' ? 'border-white/10 bg-white/5' : 'border-gray-200 bg-white')}>↓</kbd>
+                                            </div>
                                             <span>Navigate</span>
                                         </span>
-                                        <span className="flex items-center gap-1.5">
-                                            <kbd className={cn('rounded border px-1.5 py-0.5 font-mono text-[10px]', theme === 'dark' ? 'border-white/10 bg-white/10' : 'border-gray-200 bg-white')}>↵</kbd>
+                                        <span className="flex items-center gap-2">
+                                            <kbd className={cn('rounded border px-2 py-0.5 font-mono text-[10px] shadow-sm', theme === 'dark' ? 'border-white/10 bg-white/5' : 'border-gray-200 bg-white')}>↵</kbd>
                                             <span>Select</span>
                                         </span>
                                     </div>
-                                    <span className="flex items-center gap-1.5">
-                                        <kbd className={cn('rounded border px-1.5 py-0.5 font-mono text-[10px]', theme === 'dark' ? 'border-white/10 bg-white/10' : 'border-gray-200 bg-white')}>ESC</kbd>
+                                    <span className="flex items-center gap-2 opacity-70">
+                                        <kbd className="font-mono">ESC</kbd>
                                         <span>Close</span>
                                     </span>
                                 </div>
