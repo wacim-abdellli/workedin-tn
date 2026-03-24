@@ -159,13 +159,13 @@ export default function Header() {
           <div className="flex items-center justify-end gap-1.5">
             <button
               onClick={() => setSearchOpen(true)}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/8 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/10 transition-all duration-150"
-              style={{ width: '120px' }}
+              className="group relative flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-gray-50 to-gray-100 dark:from-white/8 dark:to-white/5 border border-gray-200 dark:border-white/15 text-gray-500 hover:text-gray-700 dark:hover:text-gray-200 hover:border-gray-300 dark:hover:border-white/25 transition-all duration-200 hover:shadow-md dark:hover:shadow-lg dark:hover:shadow-purple-900/20 hover:scale-105 overflow-hidden"
               type="button"
             >
-              <Search className="w-3.5 h-3.5 flex-shrink-0" />
-              <span className="text-xs flex-1 text-left">Search...</span>
-              <kbd className="text-[10px] font-mono bg-white dark:bg-white/10 border border-gray-200 dark:border-white/10 rounded px-1 py-0.5 text-gray-400 hidden sm:block">
+              <div className="absolute inset-0 bg-gradient-to-r from-purple-500/0 via-purple-500/0 to-purple-500/0 group-hover:from-purple-500/5 group-hover:via-purple-500/10 group-hover:to-purple-500/5 transition-all duration-300" />
+              <Search className="w-4 h-4 flex-shrink-0 group-hover:text-purple-500 transition-colors duration-200 relative z-10" />
+              <span className="text-xs flex-1 text-left font-medium relative z-10">Search...</span>
+              <kbd className="text-[10px] font-mono bg-white/40 dark:bg-white/8 border border-gray-300/50 dark:border-white/15 rounded-md px-2 py-0.5 text-gray-500 dark:text-gray-400 hidden sm:block backdrop-blur-sm group-hover:bg-white/60 dark:group-hover:bg-white/12 transition-all duration-200 relative z-10">
                 ⌘K
               </kbd>
             </button>
