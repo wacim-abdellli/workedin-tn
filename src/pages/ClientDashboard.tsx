@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import {
     Briefcase,
     DollarSign,
@@ -64,7 +64,6 @@ function ClientDashboardPage() {
     const { t, dir } = useTranslation();
     const { profile, signOut } = useAuth();
     const navigate = useNavigate();
-    const location = useLocation();
     const { showToast } = useToast();
 
     const [stats] = useState(MOCK_STATS);
@@ -77,12 +76,12 @@ function ClientDashboardPage() {
     }, []);
 
     useEffect(() => {
-        const state = location.state as { switching?: boolean; workspace?: 'freelancer' | 'client' } | null;
-        if (!state?.switching || state.workspace !== 'client') return;
+        const justSwitched = sessionStorage.getItem('workspace_switched');
+        if (justSwitched !== 'client') return;
 
+        sessionStorage.removeItem('workspace_switched');
         showToast(t.auth.accountPanel.switchedClient, 'success', 2000, { position: 'bottom-center' });
-        navigate(location.pathname, { replace: true });
-    }, [location.pathname, location.state, navigate, showToast, t.auth.accountPanel.switchedClient]);
+    }, [showToast, t.auth.accountPanel.switchedClient]);
 
     const ArrowIcon = dir === 'rtl' ? ChevronLeft : ChevronRight;
 

@@ -10,7 +10,7 @@ import { useTranslation } from '../../i18n';
 import { useAuth } from '../../contexts/AuthContext';
 import type { UserType } from '../../types';
 import { useToast } from '../ui/Toast';
-import { getPostAuthPath, getOnboardingPath } from '@/lib/accountMode';
+import { getPostAuthWorkspacePath, getWorkspaceOnboardingPath } from '@/lib/workspaceRoutes';
 
 interface SignupFormProps {
     onComplete?: () => void;
@@ -32,7 +32,7 @@ function SignupForm({ onComplete }: SignupFormProps) {
         if (step === 'userType') return;
         if (!profile?.user_type) return;
 
-        navigate(getPostAuthPath(profile, freelancerProfile));
+        navigate(getPostAuthWorkspacePath(profile, freelancerProfile));
     }, [freelancerProfile, navigate, profile, step]);
 
     const ArrowIcon = dir === 'rtl' ? ArrowLeft : ArrowRight;
@@ -113,7 +113,7 @@ function SignupForm({ onComplete }: SignupFormProps) {
             await refreshProfile();
 
             const nextMode = userType === 'client' ? 'client' : 'freelancer';
-            navigate(getOnboardingPath(nextMode), { replace: true });
+            navigate(getWorkspaceOnboardingPath(nextMode), { replace: true });
             onComplete?.();
         } catch (selectError) {
             logger.error('Error setting user type:', selectError);

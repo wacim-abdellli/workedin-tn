@@ -4,40 +4,41 @@ import { useTranslation } from '@/i18n';
 import { useAuth } from '@/contexts/AuthContext';
 import Button from '@/components/ui/Button';
 import {
-    getDashboardPath,
-    getJobsPath,
-    getOnboardingPath,
-    isModeOnboarded,
-} from '@/lib/accountMode';
+    getWorkspaceDashboardPath,
+    getWorkspaceJobsPath,
+    getWorkspaceOnboardingPath,
+    getWorkspaceTargetRoute,
+    isWorkspaceReady,
+} from '@/lib/workspaceRoutes';
+import { useWorkspaceStore } from '@/lib/workspaceState';
 
 export default function CTASection() {
     const { t, dir } = useTranslation();
-    const { isAuthenticated, profile, freelancerProfile, activeMode } = useAuth();
+    const { isAuthenticated, profile, freelancerProfile } = useAuth();
+    const activeWorkspace = useWorkspaceStore((state) => state.activeWorkspace);
     const ArrowIcon = dir === 'rtl' ? ArrowLeft : ArrowRight;
 
     // Determine where to redirect based on auth status
     const getStartLink = () => {
         if (isAuthenticated) {
-            return isModeOnboarded({ ...profile, user_type: 'freelancer' }, freelancerProfile, 'freelancer')
-                ? getDashboardPath('freelancer')
-                : getOnboardingPath('freelancer');
+            return isWorkspaceReady({ ...profile, user_type: 'freelancer' }, freelancerProfile, 'freelancer')
+                ? getWorkspaceDashboardPath('freelancer')
+                : getWorkspaceOnboardingPath('freelancer');
         }
         return '/signup?type=freelancer';
     };
 
     const primaryLabel = isAuthenticated ? t.nav.dashboard : t.home.sections.cta.btnStart;
     const primaryLink = isAuthenticated
-        ? isModeOnboarded(profile, freelancerProfile, activeMode)
-            ? getDashboardPath(activeMode)
-            : getOnboardingPath(activeMode)
+        ? getWorkspaceTargetRoute(profile, freelancerProfile, activeWorkspace).path
         : getStartLink();
 
     const secondaryLink = isAuthenticated
-        ? getJobsPath(activeMode)
+        ? getWorkspaceJobsPath(activeWorkspace)
         : '/how-it-works';
 
     const secondaryLabel = isAuthenticated
-        ? activeMode === 'client'
+        ? activeWorkspace === 'client'
             ? t.hero.ctaClient
             : t.nav.findWork
         : t.home.sections.cta.btnWatch;

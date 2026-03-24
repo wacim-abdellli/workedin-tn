@@ -2,10 +2,10 @@ import { useState } from 'react';
 import { Bell, BriefcaseBusiness, Building2, ChevronDown, Loader2 } from 'lucide-react';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 
-import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from '@/i18n';
 import { cn } from '@/lib/utils';
 import { getAvatarGradient, getInitials } from '@/lib/avatar';
+import { useWorkspaceStore } from '@/lib/workspaceState';
 
 type Mode = 'freelancer' | 'client';
 
@@ -27,27 +27,26 @@ export interface UserMenuProps {
   user: SupabaseUser;
   profile: HeaderProfile;
   isOpen: boolean;
-  switchingMode?: Mode | null;
   onToggle: () => void;
 }
 
-export function UserMenu({ user, profile, isOpen, switchingMode = null, onToggle }: UserMenuProps) {
+export function UserMenu({ user, profile, isOpen, onToggle }: UserMenuProps) {
   const [avatarFailed, setAvatarFailed] = useState(false);
-  const { activeMode } = useAuth();
+  const activeWorkspace = useWorkspaceStore((state) => state.activeWorkspace);
+  const isSwitching = useWorkspaceStore((state) => state.isSwitching);
   const { t } = useTranslation();
 
   const displayName = profile?.full_name || user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || 'Khedma User';
   const avatarUrl = !avatarFailed ? profile?.avatar_url || user.user_metadata?.avatar_url || null : null;
   const [avatarFrom, avatarTo] = getAvatarGradient(displayName);
   const accountCopy = t.auth.accountPanel;
-  const activeWorkspaceLabel = activeMode === 'freelancer' ? accountCopy.freelancerLabel : accountCopy.clientLabel;
-  const RoleIcon = activeMode === 'freelancer' ? BriefcaseBusiness : Building2;
-  const isSwitching = switchingMode !== null;
+  const activeWorkspaceLabel = activeWorkspace === 'freelancer' ? accountCopy.freelancerLabel : accountCopy.clientLabel;
+  const RoleIcon = activeWorkspace === 'freelancer' ? BriefcaseBusiness : Building2;
 
   return (
     <div data-account-panel className="flex items-center gap-2">
       <button
-        className="relative flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 bg-white shadow-sm transition-all duration-150 hover:bg-gray-50 dark:border-white/10 dark:bg-white/[0.06] dark:shadow-none dark:hover:bg-white/[0.1]"
+        className="relative flex h-10 sm:h-11 w-10 sm:w-11 shrink-0 items-center justify-center rounded-full border border-gray-200 bg-white shadow-sm transition-all duration-150 hover:bg-gray-50 dark:border-white/10 dark:bg-white/[0.06] dark:shadow-none dark:hover:bg-white/[0.1]"
         aria-label="Notifications"
         type="button"
       >
@@ -59,7 +58,7 @@ export function UserMenu({ user, profile, isOpen, switchingMode = null, onToggle
         type="button"
         onClick={onToggle}
         className={cn(
-          'flex min-h-[44px] items-center gap-2 rounded-full border px-2.5 py-1.5 pr-3 transition-all duration-150 shadow-sm',
+          'flex min-h-[40px] items-center gap-2 rounded-full border px-2.5 py-1.5 pr-3 transition-all duration-150 shadow-sm shrink-0',
           isOpen
             ? 'border-purple-200 bg-purple-50 shadow-purple-500/10 dark:border-purple-500/30 dark:bg-purple-950/40 dark:shadow-none'
             : 'border-gray-200 bg-white hover:bg-gray-50 dark:border-white/10 dark:bg-white/[0.06] dark:hover:bg-white/[0.1]'
@@ -89,7 +88,7 @@ export function UserMenu({ user, profile, isOpen, switchingMode = null, onToggle
         <span
           className={cn(
             'hidden items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium md:inline-flex',
-            activeMode === 'client'
+            activeWorkspace === 'client'
               ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
               : 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
           )}

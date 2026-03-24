@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Activity, ArrowUpRight, Bell, Briefcase, Calendar, DollarSign, Eye, FileText, Plus, Send, Sparkles } from 'lucide-react';
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
@@ -44,7 +44,6 @@ const milestones = [
 function FreelancerDashboardPage() {
   const { profile, signOut } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
   const { showToast } = useToast();
   const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
@@ -55,12 +54,12 @@ function FreelancerDashboardPage() {
   }, []);
 
   useEffect(() => {
-    const state = location.state as { switching?: boolean; workspace?: 'freelancer' | 'client' } | null;
-    if (!state?.switching || state.workspace !== 'freelancer') return;
+    const justSwitched = sessionStorage.getItem('workspace_switched');
+    if (justSwitched !== 'freelancer') return;
 
+    sessionStorage.removeItem('workspace_switched');
     showToast(t.auth.accountPanel.switchedFreelancer, 'success', 2000, { position: 'bottom-center' });
-    navigate(location.pathname, { replace: true });
-  }, [location.pathname, location.state, navigate, showToast, t.auth.accountPanel.switchedFreelancer]);
+  }, [showToast, t.auth.accountPanel.switchedFreelancer]);
 
   const greeting = useMemo(() => profile?.full_name?.split(' ')[0] || 'there', [profile?.full_name]);
 

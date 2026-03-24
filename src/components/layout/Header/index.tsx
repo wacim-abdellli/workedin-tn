@@ -22,7 +22,6 @@ export default function Header() {
     const [isScrolled, setIsScrolled] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [accountPanelOpen, setAccountPanelOpen] = useState(false);
-    const [switchingMode, setSwitchingMode] = useState<'freelancer' | 'client' | null>(null);
     const [headerHeight, setHeaderHeight] = useState(64);
     const headerRef = useRef<HTMLElement | null>(null);
     const { user, profile, signOut } = useAuth();
@@ -157,7 +156,7 @@ export default function Header() {
                             <Link
                                 to="/jobs"
                                 className={cn(
-                                    "hidden md:flex flex-1 max-w-md mx-auto items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-200 group",
+                                    "hidden md:flex flex-1 max-w-md mx-auto items-center gap-3 px-4 h-10 sm:h-11 rounded-xl transition-all duration-200 group shrink-0",
                                     "bg-white dark:bg-white/[0.05] border border-gray-200 dark:border-white/10 backdrop-blur-md shadow-sm",
                                     "hover:bg-gray-50 dark:hover:bg-white/10 hover:border-purple-200 dark:hover:border-purple-400/20",
                                     isScrolled || theme === 'dark' ? "text-[#6b6880] dark:text-[#c4b5fd]" : "text-[#3d3a4e]"
@@ -189,7 +188,6 @@ export default function Header() {
                                         user={user}
                                         profile={profile}
                                         isOpen={accountPanelOpen}
-                                        switchingMode={switchingMode}
                                         onToggle={() => setAccountPanelOpen((open) => !open)}
                                     />
                                 </div>
@@ -242,8 +240,6 @@ export default function Header() {
                     user={user}
                     profile={profile}
                     signOut={signOut}
-                    switchingMode={switchingMode}
-                    onSwitchingModeChange={setSwitchingMode}
                     onClose={() => setAccountPanelOpen(false)}
                 />
             ) : null}

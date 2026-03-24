@@ -7,11 +7,13 @@ import { useTranslation } from '@/i18n';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAnimatedCounter } from '@/hooks/useAnimatedCounter';
 import {
-  getDashboardPath,
-  getJobsPath,
-  getOnboardingPath,
-  isModeOnboarded,
-} from '@/lib/accountMode';
+  getWorkspaceDashboardPath,
+  getWorkspaceJobsPath,
+  getWorkspaceOnboardingPath,
+  getWorkspaceTargetRoute,
+  isWorkspaceReady,
+} from '@/lib/workspaceRoutes';
+import { useWorkspaceStore } from '@/lib/workspaceState';
 
 interface HeroSectionProps {
   stats: {
@@ -63,7 +65,8 @@ function HeroStat({
 
 export default function HeroSection({ stats }: HeroSectionProps) {
   const { t, dir } = useTranslation();
-  const { isAuthenticated, profile, freelancerProfile, activeMode } = useAuth();
+  const { isAuthenticated, profile, freelancerProfile } = useAuth();
+  const activeWorkspace = useWorkspaceStore((state) => state.activeWorkspace);
   const ArrowIcon = dir === 'rtl' ? ArrowLeft : ArrowRight;
   const sectionRef = useRef<HTMLElement | null>(null);
   const pointerX = useMotionValue(0);
@@ -82,27 +85,25 @@ export default function HeroSection({ stats }: HeroSectionProps) {
 
   const getFreelancerLink = () => {
     if (isAuthenticated) {
-      return isModeOnboarded({ ...profile, user_type: 'freelancer' }, freelancerProfile, 'freelancer')
-        ? getDashboardPath('freelancer')
-        : getOnboardingPath('freelancer');
+      return isWorkspaceReady({ ...profile, user_type: 'freelancer' }, freelancerProfile, 'freelancer')
+        ? getWorkspaceDashboardPath('freelancer')
+        : getWorkspaceOnboardingPath('freelancer');
     }
     return '/signup?type=freelancer';
   };
 
   const getClientLink = () => {
     if (isAuthenticated) {
-      return isModeOnboarded({ ...profile, user_type: 'client' }, freelancerProfile, 'client')
-        ? getDashboardPath('client')
-        : getOnboardingPath('client');
+      return isWorkspaceReady({ ...profile, user_type: 'client' }, freelancerProfile, 'client')
+        ? getWorkspaceDashboardPath('client')
+        : getWorkspaceOnboardingPath('client');
     }
     return '/signup?type=client';
   };
 
   const primaryCta = isAuthenticated
     ? {
-      to: isModeOnboarded(profile, freelancerProfile, activeMode)
-        ? getDashboardPath(activeMode)
-        : getOnboardingPath(activeMode),
+      to: getWorkspaceTargetRoute(profile, freelancerProfile, activeWorkspace).path,
       label: t.nav.dashboard,
     }
     : {
@@ -112,8 +113,8 @@ export default function HeroSection({ stats }: HeroSectionProps) {
 
   const secondaryCta = isAuthenticated
     ? {
-      to: getJobsPath(activeMode),
-      label: activeMode === 'client' ? t.hero.ctaClient : t.nav.findWork,
+      to: getWorkspaceJobsPath(activeWorkspace),
+      label: activeWorkspace === 'client' ? t.hero.ctaClient : t.nav.findWork,
     }
     : {
       to: getClientLink(),

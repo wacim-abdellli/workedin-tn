@@ -3,7 +3,7 @@ import { Users, Briefcase, ArrowRight, ArrowLeft } from 'lucide-react';
 import { useTranslation } from '@/i18n';
 import { useAuth } from '@/contexts/AuthContext';
 import Button from '@/components/ui/Button';
-import { getDashboardPath, getOnboardingPath, isModeOnboarded } from '@/lib/accountMode';
+import { getWorkspaceDashboardPath, getWorkspaceOnboardingPath, isWorkspaceReady } from '@/lib/workspaceRoutes';
 
 export default function HowItWorksSection() {
     const { t, dir } = useTranslation();
@@ -12,18 +12,18 @@ export default function HowItWorksSection() {
 
     const getFreelancerLink = () => {
         if (isAuthenticated) {
-            return isModeOnboarded({ ...profile, user_type: 'freelancer' }, freelancerProfile, 'freelancer')
-                ? getDashboardPath('freelancer')
-                : getOnboardingPath('freelancer');
+            return isWorkspaceReady({ ...profile, user_type: 'freelancer' }, freelancerProfile, 'freelancer')
+                ? getWorkspaceDashboardPath('freelancer')
+                : getWorkspaceOnboardingPath('freelancer');
         }
         return '/signup?type=freelancer';
     };
 
     const getClientLink = () => {
         if (isAuthenticated) {
-            return isModeOnboarded({ ...profile, user_type: 'client' }, freelancerProfile, 'client')
-                ? getDashboardPath('client')
-                : getOnboardingPath('client');
+            return isWorkspaceReady({ ...profile, user_type: 'client' }, freelancerProfile, 'client')
+                ? getWorkspaceDashboardPath('client')
+                : getWorkspaceOnboardingPath('client');
         }
         return '/signup?type=client';
     };

@@ -7,7 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from '../i18n';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../components/ui/Toast';
-import { uploadFile } from '../lib/supabase';
+import { uploadFile, supabase } from '../lib/supabase';
 import type { Skill } from '../types';
 import { skillToEntry } from '../types';
 import { Header } from '../components/layout';
@@ -168,16 +168,23 @@ function FreelancerOnboarding() {
             );
             logger.log('[Onboarding] Profile saved to Supabase!');
 
-            logger.log('[Onboarding] Saving freelancer profile via REST PATCH...');
-            await patchWithTimeout(
-                `${supabaseUrl}/rest/v1/freelancer_profiles?id=eq.${user.id}`,
-                session.access_token,
-                supabaseKey,
-                {
-                    title: data.title,
-                    updated_at: new Date().toISOString(),
-                }
-            );
+            logger.log('[Onboarding] Saving freelancer profile via upsert...');
+            const { error: freelancerProfileError } = await supabase
+                .from('freelancer_profiles')
+                .upsert(
+                    {
+                        id: user.id,
+                        title: data.title,
+                        updated_at: new Date().toISOString(),
+                    },
+                    {
+                        onConflict: 'id',
+                    }
+                );
+
+            if (freelancerProfileError) {
+                throw freelancerProfileError;
+            }
             logger.log('[Onboarding] Freelancer profile saved!');
 
             showToast('تم حفظ البيانات الأساسية', 'success');
@@ -223,18 +230,24 @@ function FreelancerOnboarding() {
             };
 
             try {
-                await patchWithTimeout(
-                    `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/freelancer_profiles?id=eq.${user.id}`,
-                    session.access_token,
-                    import.meta.env.VITE_SUPABASE_ANON_KEY,
-                    {
-                        skills: skillsData.skills,
-                        hourly_rate: skillsData.hourly_rate,
-                        availability: skillsData.availability,
-                        updated_at: new Date().toISOString(),
-                    },
-                    20000
-                );
+                const { error: freelancerSaveError } = await supabase
+                    .from('freelancer_profiles')
+                    .upsert(
+                        {
+                            id: user.id,
+                            skills: skillsData.skills,
+                            hourly_rate: skillsData.hourly_rate,
+                            availability: skillsData.availability,
+                            updated_at: new Date().toISOString(),
+                        },
+                        {
+                            onConflict: 'id',
+                        }
+                    );
+
+                if (freelancerSaveError) {
+                    throw freelancerSaveError;
+                }
                 logger.log('[Onboarding] Skills saved!');
             } catch (skillsErr: any) {
                 logger.error('[Onboarding] Skills save FAILED:', skillsErr);

@@ -27,7 +27,8 @@ import { supabase } from '../lib/supabase';
 import OptimizedImage from '../components/common/OptimizedImage';
 import SEO, { SEO_CONFIG } from '../components/common/SEO';
 import { getAvatarGradient, getInitials } from '@/lib/avatar';
-import { getModeSetupProgress, getOnboardingPath, isModeOnboarded } from '@/lib/accountMode';
+import { getWorkspaceOnboardingPath, getWorkspaceSetupProgress, isWorkspaceReady } from '@/lib/workspaceRoutes';
+import { switchWorkspace } from '@/lib/switchWorkspace';
 
 type SettingsTab = 'account' | 'profile' | 'notifications' | 'payment' | 'security';
 
@@ -64,7 +65,7 @@ const DEFAULT_NOTIFICATION_SETTINGS: NotificationSetting[] = [
 
 function Settings() {
     const { dir, t } = useTranslation();
-    const { user, profile, freelancerProfile, activeMode, signOut, refreshProfile, switchAccountMode } = useAuth();
+    const { user, profile, freelancerProfile, activeMode, signOut, refreshProfile } = useAuth();
     const { showToast } = useToast();
     const navigate = useNavigate();
     const { tab } = useParams<{ tab: string }>();
@@ -365,19 +366,19 @@ function Settings() {
 
         if (type !== 'both') {
             try {
-                const result = await switchAccountMode(type);
-                showToast(
-                    result.mode === 'freelancer'
-                        ? t.auth.accountPanel.switchedFreelancer
-                        : t.auth.accountPanel.switchedClient,
-                    'success'
-                );
-                navigate(result.targetPath);
+                await switchWorkspace({
+                    userId,
+                    targetWorkspace: type,
+                    currentUserType: profile?.user_type ?? 'client',
+                    profile,
+                    freelancerProfile,
+                    navigate,
+                });
             } catch (error) {
                 logger.error('Workspace selection error:', error);
                 showToast(t.auth.accountPanel.switchError, 'error');
             } finally {
-                setIsSwitchingWorkspace(null);
+                window.setTimeout(() => setIsSwitchingWorkspace(null), 350);
             }
             return;
         }
@@ -408,7 +409,6 @@ function Settings() {
                 return;
             }
 
-            await switchAccountMode(type);
             showToast('ØªÙ… ØªØ­Ø¯ÙŠØ« Ù…Ø³Ø§Ø­Ø© Ø§Ù„Ø¹Ù…Ù„ Ø¨Ù†Ø¬Ø§Ø­.', 'success');
         } catch (error) {
             logger.error('Workspace selection error:', error);
@@ -490,14 +490,14 @@ function Settings() {
                         )}
 
                         {/* Onboarding Status - show button to complete if not done */}
-                        {isModeOnboarded(profile, freelancerProfile, activeMode) ? (
+                        {isWorkspaceReady(profile, freelancerProfile, activeMode) ? (
                             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400">
                                 <Check className="w-3 h-3" />
                                 الملف مكتمل
                             </span>
                         ) : (
                             <button
-                                onClick={() => navigate(getOnboardingPath(activeMode))}
+                                onClick={() => navigate(getWorkspaceOnboardingPath(activeMode))}
                                 className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 hover:bg-orange-200 dark:hover:bg-orange-900/50 transition-colors"
                             >
                                 <User className="w-3 h-3" />
@@ -593,8 +593,8 @@ function Settings() {
                                 : t.auth.accountPanel.switchWorkspaceSingle}
                         </p>
                     </div>
-                    {!isModeOnboarded(profile, freelancerProfile, activeMode) ? (
-                        <Button variant="primary" onClick={() => navigate(getOnboardingPath(activeMode))}>
+                    {!isWorkspaceReady(profile, freelancerProfile, activeMode) ? (
+                        <Button variant="primary" onClick={() => navigate(getWorkspaceOnboardingPath(activeMode))}>
                             {t.auth.accountPanel.completeSetup}
                         </Button>
                     ) : null}
@@ -610,13 +610,13 @@ function Settings() {
                                 {activeMode === 'freelancer' ? t.auth.accountPanel.freelancerLabel : t.auth.accountPanel.clientLabel}
                             </span>
                             <span className="text-sm font-medium text-foreground">
-                                {isModeOnboarded(profile, freelancerProfile, activeMode)
+                                {isWorkspaceReady(profile, freelancerProfile, activeMode)
                                     ? t.auth.accountPanel.ready
                                     : t.auth.accountPanel.needsSetup}
                             </span>
                         </div>
                         <span className="text-sm font-semibold text-muted">
-                            {getModeSetupProgress(profile, freelancerProfile, activeMode)}%
+                            {getWorkspaceSetupProgress(profile, freelancerProfile, activeMode)}%
                         </span>
                     </div>
                     <div className="mt-3 h-2 overflow-hidden rounded-full bg-gray-200 dark:bg-white/10">
@@ -625,7 +625,7 @@ function Settings() {
                                 ? 'bg-gradient-to-r from-violet-500 to-fuchsia-400'
                                 : 'bg-gradient-to-r from-emerald-500 to-teal-400'
                                 }`}
-                            style={{ width: `${getModeSetupProgress(profile, freelancerProfile, activeMode)}%` }}
+                            style={{ width: `${getWorkspaceSetupProgress(profile, freelancerProfile, activeMode)}%` }}
                         />
                     </div>
                     <p className="mt-2 text-xs text-muted">{t.auth.accountPanel.progressLabel}</p>
@@ -757,8 +757,8 @@ function Settings() {
                                 : t.auth.accountPanel.switchWorkspaceSingle}
                         </p>
                     </div>
-                    {!isModeOnboarded(profile, freelancerProfile, activeMode) ? (
-                        <Button variant="primary" onClick={() => navigate(getOnboardingPath(activeMode))}>
+                    {!isWorkspaceReady(profile, freelancerProfile, activeMode) ? (
+                        <Button variant="primary" onClick={() => navigate(getWorkspaceOnboardingPath(activeMode))}>
                             {t.auth.accountPanel.completeSetup}
                         </Button>
                     ) : null}
@@ -774,13 +774,13 @@ function Settings() {
                                 {activeMode === 'freelancer' ? t.auth.accountPanel.freelancerLabel : t.auth.accountPanel.clientLabel}
                             </span>
                             <span className="text-sm font-medium text-foreground">
-                                {isModeOnboarded(profile, freelancerProfile, activeMode)
+                                {isWorkspaceReady(profile, freelancerProfile, activeMode)
                                     ? t.auth.accountPanel.ready
                                     : t.auth.accountPanel.needsSetup}
                             </span>
                         </div>
                         <span className="text-sm font-semibold text-muted">
-                            {getModeSetupProgress(profile, freelancerProfile, activeMode)}%
+                            {getWorkspaceSetupProgress(profile, freelancerProfile, activeMode)}%
                         </span>
                     </div>
                     <div className="mt-3 h-2 overflow-hidden rounded-full bg-gray-200 dark:bg-white/10">
@@ -789,7 +789,7 @@ function Settings() {
                                 ? 'bg-gradient-to-r from-violet-500 to-fuchsia-400'
                                 : 'bg-gradient-to-r from-emerald-500 to-teal-400'
                                 }`}
-                            style={{ width: `${getModeSetupProgress(profile, freelancerProfile, activeMode)}%` }}
+                            style={{ width: `${getWorkspaceSetupProgress(profile, freelancerProfile, activeMode)}%` }}
                         />
                     </div>
                     <p className="mt-2 text-xs text-muted">{t.auth.accountPanel.progressLabel}</p>

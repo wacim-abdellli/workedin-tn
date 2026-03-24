@@ -25,8 +25,16 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from '@/i18n';
 import { cn } from '@/lib/utils';
 import { getAvatarGradient, getInitials } from '@/lib/avatar';
-import { getModeSetupProgress, getModeTarget, getSettingsPath } from '@/lib/accountMode';
+import {
+  getWorkspaceCapabilities,
+  getWorkspaceProfilePath,
+  getWorkspaceSettingsPath,
+  getWorkspaceSetupProgress,
+  getWorkspaceTargetRoute,
+} from '@/lib/workspaceRoutes';
 import { useToast } from '@/components/ui/Toast';
+import { switchWorkspace } from '@/lib/switchWorkspace';
+import { useWorkspaceStore, type Workspace } from '@/lib/workspaceState';
 
 type Mode = 'freelancer' | 'client';
 
@@ -51,8 +59,6 @@ interface AccountPanelProps {
   user: SupabaseUser;
   profile: HeaderProfile;
   signOut: () => Promise<void>;
-  switchingMode?: Mode | null;
-  onSwitchingModeChange?: (mode: Mode | null) => void;
   onClose: () => void;
 }
 
@@ -62,16 +68,17 @@ export default function AccountPanel({
   user,
   profile,
   signOut,
-  switchingMode = null,
-  onSwitchingModeChange,
   onClose,
 }: AccountPanelProps) {
   const navigate = useNavigate();
-  const { activeMode, availableModes, freelancerProfile, switchAccountMode } = useAuth();
+  const { freelancerProfile } = useAuth();
   const { t, language } = useTranslation();
   const { showToast } = useToast();
+  const activeWorkspace = useWorkspaceStore((state) => state.activeWorkspace);
+  const isSwitching = useWorkspaceStore((state) => state.isSwitching);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [avatarFailed, setAvatarFailed] = useState(false);
+  const [pendingWorkspace, setPendingWorkspace] = useState<Workspace | null>(null);
 
   const copy = t.auth.accountPanel;
   const displayName =
@@ -82,19 +89,24 @@ export default function AccountPanel({
     'Khedma User';
   const avatarUrl = !avatarFailed ? profile?.avatar_url || user.user_metadata?.avatar_url || null : null;
   const [avatarFrom, avatarTo] = getAvatarGradient(displayName);
-  const currentTarget = getModeTarget(profile, freelancerProfile, activeMode);
-  const setupProgress = getModeSetupProgress(profile, freelancerProfile, activeMode);
-  const walletPath = activeMode === 'freelancer' ? '/freelancer/earnings' : '/settings?tab=payment';
+  const availableModes = useMemo(
+    () => Array.from(new Set([...getWorkspaceCapabilities(profile?.user_type), activeWorkspace])) as Workspace[],
+    [activeWorkspace, profile?.user_type]
+  );
+  const hasDualCapability = availableModes.length > 1 || profile?.user_type === 'both';
+  const currentTarget = getWorkspaceTargetRoute(profile, freelancerProfile, activeWorkspace);
+  const setupProgress = getWorkspaceSetupProgress(profile, freelancerProfile, activeWorkspace);
+  const walletPath = activeWorkspace === 'freelancer' ? '/freelancer/earnings' : '/settings?tab=payment';
   const verificationPath = '/verify-identity';
-  const settingsPath = getSettingsPath();
-  const profilePath = '/profile';
+  const settingsPath = getWorkspaceSettingsPath();
+  const profilePath = getWorkspaceProfilePath(profile, activeWorkspace);
   const setupActionTo = currentTarget.isOnboarded ? profilePath : currentTarget.path;
   const setupActionLabel = currentTarget.isOnboarded ? copy.manageProfile : copy.completeSetup;
   const isVerified = Boolean(profile?.cin_verified || freelancerProfile?.cin_verified);
   const memberSince = formatMemberSince(profile?.created_at || user.created_at, language);
   const identityLine = [profile?.location, memberSince].filter(Boolean).join(' / ');
   const activeWorkspacePill =
-    activeMode === 'freelancer'
+    activeWorkspace === 'freelancer'
       ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300'
       : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300';
 
@@ -136,26 +148,28 @@ export default function AccountPanel({
     ]
   );
 
-  const handleSwitchMode = async (mode: Mode) => {
-    if (mode === activeMode || switchingMode) return;
+  const handleSwitchMode = async (mode: Workspace) => {
+    if (!user || isSwitching || mode === activeWorkspace) return;
 
-    onSwitchingModeChange?.(mode);
+    setPendingWorkspace(mode);
 
     try {
-      const result = await switchAccountMode(mode);
-      await new Promise((resolve) => window.setTimeout(resolve, 300));
-      onClose();
-      navigate(result.targetPath, {
-        state: {
-          switching: true,
-          workspace: result.mode,
-        },
+      await switchWorkspace({
+        userId: user.id,
+        targetWorkspace: mode,
+        currentUserType: profile?.user_type ?? 'client',
+        profile,
+        freelancerProfile: freelancerProfile ?? null,
+        navigate,
       });
+      onClose();
     } catch (error) {
       logger.error('Mode switch failed:', error);
       showToast(copy.switchError, 'error');
     } finally {
-      onSwitchingModeChange?.(null);
+      window.setTimeout(() => {
+        setPendingWorkspace(null);
+      }, 350);
     }
   };
 
@@ -282,7 +296,7 @@ export default function AccountPanel({
                     <div className="mt-1 text-sm text-gray-700 dark:text-gray-300">
                       {profile?.bio && profile.bio.length > 0
                         ? profile.bio.slice(0, 96)
-                        : activeMode === 'freelancer'
+                        : activeWorkspace === 'freelancer'
                           ? copy.freelancerDesc
                           : copy.clientDesc}
                     </div>
@@ -307,7 +321,7 @@ export default function AccountPanel({
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <div className="flex flex-wrap items-center gap-2">
                         <span className={cn('rounded-full px-2.5 py-1 text-xs font-semibold', activeWorkspacePill)}>
-                          {activeMode === 'freelancer' ? copy.freelancerLabel : copy.clientLabel}
+                          {activeWorkspace === 'freelancer' ? copy.freelancerLabel : copy.clientLabel}
                         </span>
                         <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
                           {currentTarget.isOnboarded ? copy.ready : copy.needsSetup}
@@ -323,14 +337,14 @@ export default function AccountPanel({
                     </div>
 
                     <p className="mt-4 text-sm leading-relaxed text-gray-600 dark:text-gray-400">
-                      {activeMode === 'freelancer' ? copy.freelancerHint : copy.clientHint}
+                      {activeWorkspace === 'freelancer' ? copy.freelancerHint : copy.clientHint}
                     </p>
 
                     <div className="mt-4 h-2 overflow-hidden rounded-full bg-gray-200 dark:bg-white/10">
                       <div
                         className={cn(
                           'h-full rounded-full transition-all duration-300',
-                          activeMode === 'freelancer'
+                          activeWorkspace === 'freelancer'
                             ? 'bg-gradient-to-r from-purple-500 to-purple-400'
                             : 'bg-gradient-to-r from-amber-500 to-emerald-400'
                         )}
@@ -347,9 +361,9 @@ export default function AccountPanel({
                   <div className="mt-4 grid gap-4 2xl:grid-cols-2">
                     {workspaceCards.map((item) => {
                       const Icon = item.icon;
-                      const isActive = activeMode === item.mode;
+                      const isActive = activeWorkspace === item.mode;
                       const isAvailable = availableModes.includes(item.mode);
-                      const isSwitchingThis = switchingMode === item.mode;
+                      const isSwitchingThis = isSwitching && pendingWorkspace === item.mode;
                       const accentClasses =
                         item.accent === 'purple'
                           ? 'border-purple-500 bg-purple-50 dark:bg-purple-950/30'
@@ -365,7 +379,7 @@ export default function AccountPanel({
                           key={item.mode}
                           type="button"
                           onClick={() => void handleSwitchMode(item.mode)}
-                          disabled={Boolean(switchingMode) || isActive}
+                          disabled={isSwitching || isActive}
                           className={cn(
                             'rounded-[24px] border p-4 text-left transition-all duration-200',
                             'border-gray-200 bg-white hover:border-purple-300 dark:border-white/10 dark:bg-white/5 dark:hover:border-purple-500/40',
@@ -401,7 +415,7 @@ export default function AccountPanel({
                   </div>
 
                   <p className="mt-3 text-center text-xs text-gray-500 dark:text-gray-500">
-                    {profile?.user_type === 'both' ? copy.switchWorkspaceBoth : copy.switchWorkspaceSingle}
+                    {hasDualCapability ? copy.switchWorkspaceBoth : copy.switchWorkspaceSingle}
                   </p>
                 </section>
 
@@ -427,7 +441,7 @@ export default function AccountPanel({
                       to={walletPath}
                       onClick={onClose}
                       icon={<Wallet className="h-4 w-4" />}
-                      label={activeMode === 'freelancer' ? 'Wallet & earnings' : t.settings.payment}
+                      label={activeWorkspace === 'freelancer' ? 'Wallet & earnings' : t.settings.payment}
                     />
                     <ActionLink
                       to={verificationPath}
