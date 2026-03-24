@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { NavLink, Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
-    Menu, X, Briefcase, FolderOpen, 
+    Menu, Briefcase, FolderOpen, 
     FileText, ClipboardList, Wallet, Users, PlusCircle 
 } from 'lucide-react';
 
@@ -146,50 +146,52 @@ export default function Header() {
             )}>
                 <div style={{
                     display: 'grid',
-                    gridTemplateColumns: 'auto minmax(0, 1fr) auto',
+                    gridTemplateColumns: '1fr auto 1fr',
                     alignItems: 'center',
-                    gap: '24px',
+                    gap: '12px',
                     height: '100%',
                     padding: '0 24px',
-                    maxWidth: '1280px',
+                    maxWidth: '1440px', // Slightly wider for more breathing room
                     margin: '0 auto',
                 }}>
                     
-                    {/* Zone 1: Logo */}
-                    <div style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+                    {/* Zone 1: Logo (Left aligned) */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', minWidth: 0 }}>
                         <Logo language={language} />
                     </div>
 
-                    {/* Zone 2: Nav — centered and responsive */}
-                    <nav className="hidden lg:flex items-center justify-center gap-1">
-                        {navItems.map(({ label, icon: Icon, href }) => (
-                            <NavLink 
-                                key={href} 
-                                to={href}
-                                className={({ isActive }) =>
-                                    cn(
-                                        "flex items-center gap-2 px-4 py-2 rounded-xl text-[14px] font-semibold tracking-tight whitespace-nowrap transition-all duration-300",
-                                        isActive
-                                            ? isFreelancer
-                                                ? 'bg-purple-600/15 text-purple-400 shadow-[inset_0_0_12px_rgba(139,92,246,0.1)]'
-                                                : 'bg-amber-600/15 text-amber-400 shadow-[inset_0_0_12px_rgba(245,158,11,0.1)]'
-                                            : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5'
-                                    )
-                                }
-                            >
-                                <Icon className="w-[18px] h-[18px] flex-shrink-0" />
-                                <span>{label}</span>
-                            </NavLink>
-                        ))}
-                    </nav>
+                    {/* Zone 2: Nav (Perfectly Centered) */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minWidth: 0 }}>
+                        <nav className="hidden lg:flex items-center gap-1.5">
+                            {navItems.map(({ label, icon: Icon, href }) => (
+                                <NavLink 
+                                    key={href} 
+                                    to={href}
+                                    className={({ isActive }) =>
+                                        cn(
+                                            "flex items-center gap-2 px-3 py-2 rounded-xl text-[13.5px] font-semibold tracking-tight whitespace-nowrap transition-all duration-300",
+                                            isActive
+                                                ? isFreelancer
+                                                    ? 'bg-purple-600/15 text-purple-400 shadow-[inset_0_0_12px_rgba(139,92,246,0.1)]'
+                                                    : 'bg-amber-600/15 text-amber-400 shadow-[inset_0_0_12px_rgba(245,158,11,0.1)]'
+                                                : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5'
+                                        )
+                                    }
+                                >
+                                    <Icon className="w-[17px] h-[17px] flex-shrink-0" />
+                                    <span>{label}</span>
+                                </NavLink>
+                            ))}
+                        </nav>
+                    </div>
 
-                    {/* Zone 3: Right actions */}
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '4px' }}>
+                    {/* Zone 3: Actions (Right aligned) */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '8px', minWidth: 0 }}>
                         {user ? (
                             <SearchModal isScrolled={isScrolled} theme={theme} language={language} t={t} />
                         ) : null}
 
-                        <div className="hidden sm:flex items-center gap-2 border-l border-gray-200 dark:border-white/10 pl-4 ml-2">
+                        <div className="hidden sm:flex items-center gap-2 border-l border-gray-200 dark:border-white/10 pl-3 ml-1">
                             <LanguageSwitcher
                                 isScrolled={isScrolled}
                                 theme={theme}
@@ -200,30 +202,27 @@ export default function Header() {
                         </div>
 
                         {user ? (
-                            <div className="ml-2 pl-2 border-l border-gray-200 dark:border-white/10">
-                                <UserMenu
-                                    user={user}
-                                    profile={profile}
-                                    isOpen={accountPanelOpen}
-                                    onToggle={() => setAccountPanelOpen(!accountPanelOpen)}
+                            <div className="flex items-center gap-3 pl-2 border-l border-gray-200 dark:border-white/10">
+                                <UserMenu 
+                                    user={user} 
+                                    profile={profile} 
+                                    isOpen={accountPanelOpen} 
+                                    onToggle={() => setAccountPanelOpen(!accountPanelOpen)} 
                                 />
                             </div>
                         ) : (
                             <AuthButtons isScrolled={isScrolled} theme={theme} t={t} />
                         )}
-                        
-                        <button
-                            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                            className={cn(
-                                "xl:hidden ml-2 p-2 rounded-lg transition-colors",
-                                theme === 'dark' ? "hover:bg-white/5" : "hover:bg-gray-100"
-                            )}
-                            aria-label="Toggle menu"
+
+                        <button 
+                            className="xl:hidden p-2 text-gray-400 hover:text-white transition-colors"
+                            onClick={() => setMobileMenuOpen(true)}
                         >
-                            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                            <Menu className="w-6 h-6" />
                         </button>
                     </div>
                 </div>
+
                 {/* Mobile Menu */}
                 <MobileMenu
                     isOpen={mobileMenuOpen}
@@ -233,16 +232,16 @@ export default function Header() {
                 />
             </header>
 
-            {user ? (
-                <AccountPanel
+            {user && (
+                <AccountPanel 
                     isOpen={accountPanelOpen}
-                    headerHeight={60}
+                    onClose={() => setAccountPanelOpen(false)}
                     user={user}
                     profile={profile}
+                    headerHeight={64}
                     signOut={signOut}
-                    onClose={() => setAccountPanelOpen(false)}
                 />
-            ) : null}
+            )}
 
             {/* Spacer */}
             <div className="h-16" />
