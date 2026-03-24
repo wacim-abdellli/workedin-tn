@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import type { ReactNode } from 'react';
 import type { User, Session } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
@@ -491,19 +491,30 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
         if (!modeOverride) return;
 
-        if (!canAccessMode(profile, modeOverride)) {
-            setModeOverride(null);
-            return;
-        }
-
+        // Keep the override alive until the persisted profile catches up.
+        // Clearing it too early causes the app to snap back to the old workspace
+        // while the DB update is still in flight.
         if (profile.active_mode === modeOverride || resolveAccountMode(profile, freelancerProfile) === modeOverride) {
             setModeOverride(null);
         }
     }, [freelancerProfile, modeOverride, profile]);
 
-    const resolvedMode = resolveAccountMode(profile, freelancerProfile);
-    const activeMode = modeOverride && canAccessMode(profile, modeOverride) ? modeOverride : resolvedMode;
-    const availableModes = getAvailableModes(profile);
+    const effectiveProfile = useMemo(() => {
+        if (!modeOverride) return profile;
+
+        const nextUserType = promoteUserTypeForMode(profile?.user_type, modeOverride);
+
+        return {
+            ...(profile ?? {}),
+            id: profile?.id ?? user?.id,
+            user_type: nextUserType,
+            active_mode: modeOverride,
+        } as Profile;
+    }, [modeOverride, profile, user?.id]);
+
+    const resolvedMode = resolveAccountMode(effectiveProfile, freelancerProfile);
+    const activeMode = modeOverride ?? resolvedMode;
+    const availableModes = getAvailableModes(effectiveProfile);
 
     const value: AuthContextType = {
         user,
