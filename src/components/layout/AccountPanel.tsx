@@ -223,7 +223,7 @@ export default function AccountPanel({
                 </button>
               </div>
 
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-[0.95fr_1.1fr_0.9fr] lg:gap-5">
+              <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-[minmax(280px,0.92fr)_minmax(340px,1.1fr)_minmax(260px,0.88fr)] lg:gap-5">
                 <section className="rounded-[28px] border border-gray-100 bg-[#fcfbff] p-5 shadow-sm dark:border-white/8 dark:bg-[#171421]">
                   <div className="flex items-start gap-4">
                     {avatarUrl ? (
@@ -344,7 +344,7 @@ export default function AccountPanel({
                   </div>
 
                   <div className="mt-5 text-sm font-semibold text-gray-900 dark:text-white">{copy.switchWorkspace}</div>
-                  <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                  <div className="mt-4 grid gap-4 2xl:grid-cols-2">
                     {workspaceCards.map((item) => {
                       const Icon = item.icon;
                       const isActive = activeMode === item.mode;
@@ -378,11 +378,11 @@ export default function AccountPanel({
                               {isSwitchingThis ? <Loader2 className="h-5 w-5 animate-spin" /> : <Icon className="h-5 w-5" />}
                             </div>
                             <div className="min-w-0 flex-1">
-                              <div className="flex items-center justify-between gap-2">
+                              <div className="flex flex-wrap items-center justify-between gap-2">
                                 <div className="text-base font-semibold text-gray-900 dark:text-white">{item.title}</div>
                                 <span
                                   className={cn(
-                                    'rounded-full px-2.5 py-1 text-[11px] font-semibold',
+                                    'inline-flex shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold',
                                     isActive
                                       ? activeWorkspacePill
                                       : 'bg-gray-100 text-gray-600 dark:bg-white/10 dark:text-gray-300'
@@ -405,7 +405,7 @@ export default function AccountPanel({
                   </p>
                 </section>
 
-                <section className="rounded-[28px] border border-gray-100 bg-[#fcfbff] p-5 shadow-sm dark:border-white/8 dark:bg-[#171421]">
+                <section className="rounded-[28px] border border-gray-100 bg-[#fcfbff] p-5 shadow-sm dark:border-white/8 dark:bg-[#171421] lg:col-span-2 xl:col-span-1">
                   <div className="text-xs font-semibold uppercase tracking-[0.22em] text-gray-500 dark:text-gray-500">
                     {copy.tools}
                   </div>
