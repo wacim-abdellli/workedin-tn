@@ -12,6 +12,7 @@ CREATE EXTENSION IF NOT EXISTS "pg_trgm"; -- For full-text search
 -- ENUMS (Type Definitions)
 -- ============================================
 CREATE TYPE user_type_enum AS ENUM ('freelancer', 'client', 'both');
+CREATE TYPE account_mode_enum AS ENUM ('freelancer', 'client');
 CREATE TYPE language_enum AS ENUM ('ar', 'fr', 'en');
 CREATE TYPE availability_enum AS ENUM ('available', 'busy', 'offline');
 CREATE TYPE job_type_enum AS ENUM ('fixed_price', 'hourly');
@@ -33,6 +34,7 @@ CREATE TYPE notification_type_enum AS ENUM ('new_job', 'new_proposal', 'message'
 CREATE TABLE profiles (
     id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
     user_type user_type_enum DEFAULT 'client',
+    active_mode account_mode_enum,
     email TEXT,
     username TEXT,
     is_admin BOOLEAN DEFAULT false,

@@ -89,6 +89,55 @@ export function AuthProvider({ children }: AuthProviderProps) {
         }
     }, [getPreferredLanguage]);
 
+    const persistWorkspaceState = useCallback(async (nextUserType: UserType, nextMode: AccountMode) => {
+        if (!user) throw new Error('No user logged in');
+
+        const basePayload = {
+            user_type: nextUserType,
+            updated_at: new Date().toISOString(),
+        };
+
+        const { error } = await supabase
+            .from('profiles')
+            .update({
+                ...basePayload,
+                active_mode: nextMode,
+            })
+            .eq('id', user.id);
+
+        if (!error) {
+            setProfile((prev) => (prev ? { ...prev, ...basePayload, active_mode: nextMode } : {
+                ...(basePayload as Partial<Profile>),
+                active_mode: nextMode,
+            } as Profile));
+            return;
+        }
+
+        const message = `${error.message ?? ''} ${error.details ?? ''} ${error.hint ?? ''}`.toLowerCase();
+        const missingActiveModeColumn =
+            message.includes('active_mode') &&
+            (message.includes('column') || message.includes('schema cache'));
+
+        if (!missingActiveModeColumn) {
+            logger.error('persistWorkspaceState error:', error);
+            throw error;
+        }
+
+        logger.warn('profiles.active_mode is unavailable remotely, falling back to local workspace persistence');
+
+        const { error: fallbackError } = await supabase
+            .from('profiles')
+            .update(basePayload)
+            .eq('id', user.id);
+
+        if (fallbackError) {
+            logger.error('persistWorkspaceState fallback error:', fallbackError);
+            throw fallbackError;
+        }
+
+        setProfile((prev) => (prev ? { ...prev, ...basePayload } : basePayload as Profile));
+    }, [user]);
+
     // Fetch user profile from database
     const fetchProfile = useCallback(async (userId: string, authUser?: User) => {
         try {
@@ -385,10 +434,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
         persistAccountMode(nextMode, user.id);
         setModeOverride(nextMode);
-        await updateProfile({
-            user_type: userType,
-            active_mode: nextMode,
-        });
+        await persistWorkspaceState(userType, nextMode);
 
         // Create freelancer profile if user is freelancer or both
         if (userType === 'freelancer' || userType === 'both') {
@@ -431,10 +477,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
             setModeOverride(mode);
 
             if (nextUserType !== profile?.user_type || profile?.active_mode !== mode) {
-                await updateProfile({
-                    user_type: nextUserType,
-                    active_mode: mode,
-                });
+                await persistWorkspaceState(nextUserType, mode);
             }
 
             if (mode === 'freelancer') {

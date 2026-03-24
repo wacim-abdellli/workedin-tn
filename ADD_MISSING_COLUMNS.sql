@@ -6,12 +6,24 @@
 
 begin;
 
+do $$
+begin
+    if not exists (
+        select 1
+        from pg_type
+        where typname = 'account_mode_enum'
+    ) then
+        create type account_mode_enum as enum ('freelancer', 'client');
+    end if;
+end $$;
+
 alter table public.profiles add column if not exists email text;
 alter table public.profiles add column if not exists username text;
 alter table public.profiles add column if not exists is_admin boolean not null default false;
 alter table public.profiles add column if not exists cin_verified boolean not null default false;
 alter table public.profiles add column if not exists cin_submitted boolean not null default false;
 alter table public.profiles add column if not exists onboarding_completed boolean not null default false;
+alter table public.profiles add column if not exists active_mode account_mode_enum;
 
 drop trigger if exists on_auth_user_created on auth.users;
 
@@ -145,6 +157,14 @@ select
 from auth.users as u
 left join public.profiles as p on p.id = u.id
 where p.id is null;
+
+update public.profiles
+set active_mode = case
+    when user_type = 'freelancer' then 'freelancer'::account_mode_enum
+    when user_type = 'both' then coalesce(active_mode, 'client'::account_mode_enum)
+    else 'client'::account_mode_enum
+end
+where active_mode is null;
 
 commit;
 
