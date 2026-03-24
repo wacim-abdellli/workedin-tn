@@ -146,9 +146,9 @@ export default function Header() {
             )}>
                 <div style={{
                     display: 'grid',
-                    gridTemplateColumns: 'auto 1fr auto',
+                    gridTemplateColumns: 'auto minmax(0, 1fr) auto',
                     alignItems: 'center',
-                    gap: '16px',
+                    gap: '24px',
                     height: '100%',
                     padding: '0 24px',
                     maxWidth: '1280px',
@@ -156,27 +156,28 @@ export default function Header() {
                 }}>
                     
                     {/* Zone 1: Logo */}
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
                         <Logo language={language} />
                     </div>
 
-                    {/* Zone 2: Nav — centered */}
-                    <nav style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '2px' }}>
+                    {/* Zone 2: Nav — centered and responsive */}
+                    <nav className="hidden lg:flex items-center justify-center gap-1">
                         {navItems.map(({ label, icon: Icon, href }) => (
                             <NavLink 
                                 key={href} 
                                 to={href}
                                 className={({ isActive }) =>
-                                    `flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
+                                    cn(
+                                        "flex items-center gap-2 px-4 py-2 rounded-xl text-[14px] font-semibold tracking-tight whitespace-nowrap transition-all duration-300",
                                         isActive
-                                        ? isFreelancer
-                                            ? 'bg-purple-900/30 text-purple-400'
-                                            : 'bg-amber-900/30 text-amber-400'
-                                        : 'text-gray-400 hover:text-white hover:bg-white/5'
-                                    }`
+                                            ? isFreelancer
+                                                ? 'bg-purple-600/15 text-purple-400 shadow-[inset_0_0_12px_rgba(139,92,246,0.1)]'
+                                                : 'bg-amber-600/15 text-amber-400 shadow-[inset_0_0_12px_rgba(245,158,11,0.1)]'
+                                            : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5'
+                                    )
                                 }
                             >
-                                <Icon className="w-3.5 h-3.5 flex-shrink-0" />
+                                <Icon className="w-[18px] h-[18px] flex-shrink-0" />
                                 <span>{label}</span>
                             </NavLink>
                         ))}

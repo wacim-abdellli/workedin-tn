@@ -6,6 +6,7 @@ import { Search, Briefcase, FileText, Wallet, User as UserIcon, PlusCircle, Fold
 
 import { useWorkspace } from '@/contexts/WorkspaceContext';
 import { getJobs } from '@/services/jobs';
+import { cn } from '@/lib/utils';
 
 export interface SearchModalProps {
     isScrolled?: boolean;
@@ -190,25 +191,26 @@ export function SearchModal({ theme, language, t }: SearchModalProps) {
             {/* Header Search Trigger */}
             <button
                 onClick={() => setSearchOpen(true)}
-                className="group relative flex h-10 w-[160px] lg:w-[180px] xl:w-[240px] items-center gap-2 overflow-hidden rounded-full shadow-sm px-3 text-start transition-all duration-300 ease-out focus:outline-none focus-visible:ring-2 shrink-0 border border-transparent"
-                style={{
-                    backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(243,244,246,0.8)',
-                    color: isDark ? '#d1d5db' : '#6b7280'
-                }}
+                className={cn(
+                    "group relative flex h-10 w-[140px] lg:w-[180px] xl:w-[220px] items-center gap-2.5 overflow-hidden rounded-xl px-3 text-start transition-all duration-300 ease-out shrink-0 border",
+                    isDark 
+                        ? "bg-white/[0.03] border-white/10 hover:bg-white/[0.08] hover:border-white/20 shadow-[0_4px_20px_-12px_rgba(0,0,0,0.5)]" 
+                        : "bg-gray-100/80 border-gray-200 hover:bg-gray-200/50 hover:border-gray-300 shadow-sm"
+                )}
             >
-                <Search className="h-4 w-4 shrink-0 transition-colors" style={{ color: '#6b6880' }} />
-                <span className="flex-1 truncate text-sm font-medium transition-colors">
-                    Search...
+                <Search className="h-4 w-4 shrink-0 transition-colors text-gray-400 group-hover:text-purple-400" />
+                <span className="flex-1 truncate text-[13px] font-medium text-gray-500 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
+                    {t?.search?.placeholder || 'Search...'}
                 </span>
                 <div
-                    className="hidden shrink-0 items-center justify-center rounded-md border px-1.5 py-0.5 text-[11px] font-mono shadow-sm lg:flex transition-colors"
-                    style={{
-                        backgroundColor: isDark ? 'rgba(0,0,0,0.2)' : '#ffffff',
-                        borderColor: isDark ? 'rgba(255,255,255,0.1)' : '#e5e7eb',
-                        color: '#9ca3af'
-                    }}
+                    className={cn(
+                        "hidden shrink-0 items-center justify-center rounded-lg border px-1.5 py-0.5 text-[10px] font-bold tracking-tighter lg:flex transition-all",
+                        isDark 
+                            ? "bg-black/40 border-white/10 text-gray-500" 
+                            : "bg-white border-gray-200 text-gray-400"
+                    )}
                 >
-                    ⌘ K
+                    <span className="opacity-50 mr-0.5">⌘</span>K
                 </div>
             </button>
 
