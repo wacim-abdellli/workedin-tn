@@ -398,10 +398,10 @@ export function SearchModal({ isScrolled, theme, language, t }: SearchModalProps
                                                                         setSearchQuery(search);
                                                                     }}
                                                                     className={cn(
-                                                                        'group relative flex w-full items-center justify-between px-4 py-3 text-left transition-colors',
+                                                                        'group relative flex w-full items-center justify-between px-5 py-3.5 text-left transition-colors',
                                                                         isFocused 
-                                                                          ? (theme === 'dark' ? 'bg-purple-500/15 border-l-[3px] border-purple-500 text-purple-100 pl-[13px]' : 'bg-purple-50 border-l-[3px] border-purple-500 pl-[13px]') 
-                                                                          : (theme === 'dark' ? 'hover:bg-white/5 border-l-[3px] border-transparent pl-[13px]' : 'hover:bg-gray-50 border-l-[3px] border-transparent pl-[13px]')
+                                                                          ? (theme === 'dark' ? 'bg-white/5 border-l-2 border-violet-500 pl-[18px]' : 'bg-gray-100 border-l-2 border-violet-500 pl-[18px]') 
+                                                                          : (theme === 'dark' ? 'hover:bg-white/[0.03] border-l-2 border-transparent pl-[18px]' : 'hover:bg-gray-50 border-l-2 border-transparent pl-[18px]')
                                                                     )}
                                                                 >
                                                                     <div className="flex items-center gap-3">
