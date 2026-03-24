@@ -1,8 +1,7 @@
 import { useState } from 'react';
-import { Bell, BriefcaseBusiness, Building2, ChevronDown, Loader2 } from 'lucide-react';
+import { Bell, ChevronDown } from 'lucide-react';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 
-import { useTranslation } from '@/i18n';
 import { cn } from '@/lib/utils';
 import { getAvatarGradient, getInitials } from '@/lib/avatar';
 import { useWorkspaceStore } from '@/lib/workspaceState';
@@ -33,72 +32,63 @@ export interface UserMenuProps {
 export function UserMenu({ user, profile, isOpen, onToggle }: UserMenuProps) {
   const [avatarFailed, setAvatarFailed] = useState(false);
   const activeWorkspace = useWorkspaceStore((state) => state.activeWorkspace);
-  const isSwitching = useWorkspaceStore((state) => state.isSwitching);
-  const { t } = useTranslation();
-
   const displayName = profile?.full_name || user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || 'Khedma User';
   const avatarUrl = !avatarFailed ? profile?.avatar_url || user.user_metadata?.avatar_url || null : null;
   const [avatarFrom, avatarTo] = getAvatarGradient(displayName);
-  const accountCopy = t.auth.accountPanel;
-  const activeWorkspaceLabel = activeWorkspace === 'freelancer' ? accountCopy.freelancerLabel : accountCopy.clientLabel;
-  const RoleIcon = activeWorkspace === 'freelancer' ? BriefcaseBusiness : Building2;
 
   return (
     <div data-account-panel className="flex items-center gap-2">
       <button
-        className="relative flex h-10 sm:h-11 w-10 sm:w-11 shrink-0 items-center justify-center rounded-full border border-gray-200 bg-white shadow-sm transition-all duration-150 hover:bg-gray-50 dark:border-white/10 dark:bg-white/[0.06] dark:shadow-none dark:hover:bg-white/[0.1]"
+        className="relative hidden md:flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-transparent text-gray-500 dark:text-gray-400 transition-colors duration-150 hover:bg-gray-50 dark:hover:bg-white/5"
         aria-label="Notifications"
         type="button"
       >
-        <Bell className="h-4 w-4 text-gray-500 dark:text-gray-300" />
-        <span className="absolute right-[11px] top-[11px] h-2 w-2 rounded-full bg-red-500 ring-2 ring-white dark:ring-[#0f0e17]" />
+        <Bell className="h-4 w-4" />
+        <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-red-500 ring-2 ring-white dark:ring-[#0f0e17]" />
       </button>
 
       <button
         type="button"
         onClick={onToggle}
         className={cn(
-          'flex min-h-[40px] items-center gap-2 rounded-full border px-2.5 py-1.5 pr-3 transition-all duration-150 shadow-sm shrink-0',
+          'flex items-center gap-2 pl-1 pr-2 py-1 transition-all duration-150 rounded-full border max-w-[180px]',
           isOpen
-            ? 'border-purple-200 bg-purple-50 shadow-purple-500/10 dark:border-purple-500/30 dark:bg-purple-950/40 dark:shadow-none'
-            : 'border-gray-200 bg-white hover:bg-gray-50 dark:border-white/10 dark:bg-white/[0.06] dark:hover:bg-white/[0.1]'
+            ? 'border-purple-200 bg-purple-50 shadow-sm dark:border-purple-500/30 dark:bg-purple-950/30'
+            : 'border-gray-200 bg-gray-50 hover:bg-gray-100 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/8'
         )}
         aria-expanded={isOpen}
-        aria-haspopup="dialog"
-        aria-controls="header-account-panel"
       >
         {avatarUrl ? (
           <img
             src={avatarUrl}
             alt={displayName}
-            className="h-7 w-7 rounded-full object-cover ring-1 ring-white dark:ring-white/10"
+            className="h-7 w-7 rounded-full object-cover shrink-0"
             onError={() => setAvatarFailed(true)}
           />
         ) : (
           <div
-            className="flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold text-white ring-1 ring-white dark:ring-white/10"
+            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold text-white"
             style={{ background: `linear-gradient(135deg, ${avatarFrom}, ${avatarTo})` }}
           >
             {getInitials(displayName)}
           </div>
         )}
-        <div className="hidden min-w-0 text-left md:block">
-          <div className="truncate text-sm font-medium text-gray-700 dark:text-gray-200">{displayName}</div>
-        </div>
+        <span className="text-sm font-medium text-gray-700 dark:text-gray-200 truncate max-w-[80px] hidden lg:block">
+          {displayName}
+        </span>
         <span
           className={cn(
-            'hidden items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium md:inline-flex',
+            'hidden items-center justify-center rounded-full px-1.5 py-0.5 text-[10px] font-semibold md:flex shrink-0',
             activeWorkspace === 'client'
-              ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
-              : 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
+              ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300'
+              : 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300'
           )}
         >
-          {isSwitching ? <Loader2 className="h-3 w-3 animate-spin" /> : <RoleIcon className="h-3 w-3" />}
-          {activeWorkspaceLabel}
+          {activeWorkspace === 'client' ? 'Client' : 'Pro'}
         </span>
         <ChevronDown
           className={cn(
-            'h-4 w-4 text-gray-400 transition-transform duration-200 dark:text-gray-500',
+            'h-3.5 w-3.5 shrink-0 text-gray-400 transition-transform duration-200',
             isOpen && 'rotate-180'
           )}
         />

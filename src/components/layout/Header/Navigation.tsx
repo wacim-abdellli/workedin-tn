@@ -42,38 +42,26 @@ interface NavLinkProps {
   accentClass: string;
 }
 
-function NavLink({ to, icon: Icon, children, isScrolled, theme, accentClass }: NavLinkProps) {
+function NavLink({ to, icon: Icon, children, accentClass }: NavLinkProps) {
   const location = useLocation();
   const isActive = location.pathname === to;
+  const isFreelancer = accentClass === 'purple';
 
   return (
     <Link
       to={to}
+      title={typeof children === 'string' ? children : undefined}
       className={cn(
-        'nav-link-premium relative flex items-center gap-1.5 lg:gap-2 rounded-xl px-2 lg:px-3 py-2 text-sm whitespace-nowrap group transition-colors duration-150',
+        'group relative flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium whitespace-nowrap transition-colors duration-150',
         isActive
-          ? accentClass === 'purple' 
-            ? 'bg-violet-600/10 font-semibold tracking-[-0.01em] text-purple-600 dark:text-purple-400'
-            : 'bg-amber-600/10 font-semibold tracking-[-0.01em] text-amber-600 dark:text-amber-400'
-          : isScrolled || theme === 'dark'
-            ? 'font-medium text-gray-400 hover:bg-white/5 hover:text-white'
-            : 'font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+          ? isFreelancer
+            ? 'bg-purple-50 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400'
+            : 'bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400'
+          : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white'
       )}
     >
-      {isActive && (
-        <motion.div
-          layoutId="activeNav"
-          className={cn("absolute inset-0 rounded-2xl border", 
-            accentClass === 'purple' 
-              ? "border-violet-500/20 bg-violet-600/10" 
-              : "border-amber-500/20 bg-amber-600/10")}
-          transition={{ type: 'spring', bounce: 0.2, duration: 0.5 }}
-        />
-      )}
-      <span className="relative flex items-center gap-2">
-        <Icon className="h-4 w-4 transition-transform duration-200 group-hover:scale-110" />
-        <span>{children}</span>
-      </span>
+      <Icon className="h-3.5 w-3.5 shrink-0" />
+      <span className="hidden lg:inline">{children}</span>
     </Link>
   );
 }

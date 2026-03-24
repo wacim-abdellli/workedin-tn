@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import { Menu, X, Briefcase, Plus, FolderOpen, FileText, ClipboardList, Wallet, Users } from 'lucide-react';
 
 import { useAuth } from '@/contexts/AuthContext';
@@ -13,7 +12,6 @@ import { Navigation } from './Navigation';
 import { SearchModal } from './SearchModal';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { ThemeToggle } from './ThemeToggle';
-import IconButton from '@/components/ui/IconButton';
 import { UserMenu } from './UserMenu';
 import { AuthButtons } from './AuthButtons';
 import { MobileMenu } from './MobileMenu';
@@ -23,7 +21,6 @@ export default function Header() {
     const [isScrolled, setIsScrolled] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [accountPanelOpen, setAccountPanelOpen] = useState(false);
-    const [headerHeight, setHeaderHeight] = useState(64);
     const headerRef = useRef<HTMLElement | null>(null);
     const { user, profile, signOut } = useAuth();
     const { theme } = useTheme();
@@ -36,23 +33,6 @@ export default function Header() {
         const handleScroll = () => setIsScrolled(window.scrollY > 24);
         window.addEventListener('scroll', handleScroll);
         return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
-
-    useEffect(() => {
-        const node = headerRef.current;
-        if (!node) return;
-
-        const updateHeight = () => setHeaderHeight(node.offsetHeight || 64);
-        updateHeight();
-
-        const resizeObserver = new ResizeObserver(updateHeight);
-        resizeObserver.observe(node);
-        window.addEventListener('resize', updateHeight);
-
-        return () => {
-            resizeObserver.disconnect();
-            window.removeEventListener('resize', updateHeight);
-        };
     }, []);
 
     useEffect(() => {
@@ -126,115 +106,85 @@ export default function Header() {
     const { isFreelancer, accentClass } = useWorkspace();
 
     const navItems = isFreelancer ? [
-        { to: '/jobs', icon: Briefcase, label: t.nav.findWork || 'Find Work' },
-        { to: '/my-proposals', icon: FileText, label: 'My Proposals' },
+        { to: '/jobs', icon: Briefcase, label: 'Find Work' },
+        { to: '/my-proposals', icon: FileText, label: 'Proposals' },
         { to: '/contracts', icon: ClipboardList, label: 'Contracts' },
         { to: '/freelancer/earnings', icon: Wallet, label: 'Earnings' },
     ] : [
-        { to: '/jobs/new', icon: Plus, label: 'Post a Project' },
+        { to: '/jobs/new', icon: Plus, label: 'Post Project' },
         { to: '/client/jobs', icon: FolderOpen, label: 'My Projects' },
-        { to: '/find-freelancers', icon: Users, label: t.nav.findFreelancers || 'Find Freelancers' },
+        { to: '/find-freelancers', icon: Users, label: 'Freelancers' },
         { to: '/contracts', icon: ClipboardList, label: 'Contracts' },
     ];
+
+    const publicNavItems = [
+        { to: '/jobs', icon: Briefcase, label: 'Find Work' },
+        { to: '/find-freelancers', icon: Users, label: 'Find Freelancers' },
+        { to: '/how-it-works', icon: FileText, label: 'How It Works' },
+    ];
+
+    const activeNavItems = user ? navItems : publicNavItems;
 
     return (
         <>
             <div className={cn("fixed top-0 left-0 right-0 h-0.5 z-[60]", accentClass === 'purple' ? 'bg-purple-500' : 'bg-amber-500')} />
             <header ref={headerRef} className={cn(
-                'fixed top-0.5 left-0 right-0 z-50 transition-all duration-300',
-                isScrolled
-                    ? theme === 'dark'
-                        ? 'bg-[#0f0e17]/95 backdrop-blur-sm border-b border-white/5 shadow-lg shadow-black/20'
-                        : 'bg-white/95 backdrop-blur-sm border-b border-gray-100 shadow-sm'
-                    : theme === 'dark'
-                        ? 'bg-[#0f0e17] border-b border-white/5'
-                        : 'bg-white border-b border-gray-100'
+                'fixed top-0.5 left-0 right-0 z-50 transition-all duration-300 h-[60px]',
+                isScrolled || theme === 'dark'
+                    ? 'bg-white dark:bg-[#0f0e17] border-b border-gray-100 dark:border-white/5 shadow-sm shadow-black/5'
+                    : 'bg-white dark:bg-[#0f0e17] border-b border-gray-100 dark:border-white/5'
             )}>
-                <div className="max-w-7xl 2xl:max-w-[90%] mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex items-center justify-between h-16 lg:h-20 relative">
-                        
-                        {/* Left: Logo & Navigation */}
-                        <div className="flex items-center gap-4 lg:gap-8 shrink-0">
-                            <Logo language={language} />
-                            <Navigation isScrolled={isScrolled} theme={theme} items={navItems} accentClass={accentClass} />
-                        </div>
+                <div className="max-w-[1280px] mx-auto h-full px-4 sm:px-6 grid grid-cols-[auto_1fr_auto] items-center gap-2 lg:gap-6">
+                    
+                    {/* LEFT: Logo */}
+                    <div className="flex items-center flex-shrink-0">
+                        <Logo language={language} />
+                    </div>
 
-                        {/* Center: Search (Absolute on large screens or flex-1 in between) */}
-                        <div className="hidden lg:flex flex-1 justify-center px-4 md:px-8 max-w-2xl mx-auto min-w-[200px]">
-                            {user ? (
-                                <SearchModal isScrolled={isScrolled} theme={theme} language={language} t={t} />
-                            ) : (
-                                <Link
-                                    to="/jobs"
-                                    className={cn(
-                                        "hidden md:flex w-full max-w-md items-center gap-3 px-4 h-10 sm:h-11 rounded-xl transition-all duration-200 group",
-                                        "bg-white dark:bg-white/[0.05] border border-gray-200 dark:border-white/10 backdrop-blur-md shadow-sm",
-                                        "hover:bg-gray-50 dark:hover:bg-white/10 hover:border-purple-200 dark:hover:border-purple-400/20",
-                                        isScrolled || theme === 'dark' ? "text-[#6b6880] dark:text-[#c4b5fd]" : "text-[#3d3a4e]"
-                                    )}
-                                >
-                                    <Briefcase className="w-4 h-4 text-violet-500 shrink-0" />
-                                    <span className={cn(
-                                        "flex-1 text-sm font-medium text-left truncate",
-                                        isScrolled || theme === 'dark' ? "text-[#4b4869] dark:text-[#c4b5fd]" : "text-[#3d3a4e]"
-                                    )}>
-                                        {t.nav.findWork}
-                                    </span>
-                                </Link>
-                            )}
-                        </div>
+                    {/* CENTER: Nav items */}
+                    <div className="hidden md:flex items-center justify-center overflow-hidden">
+                        <Navigation isScrolled={isScrolled} theme={theme} items={activeNavItems} accentClass={accentClass} />
+                    </div>
 
-                        {/* Right: Actions */}
-                        <div className="flex items-center gap-2 lg:gap-4 shrink-0">
+                    {/* RIGHT: Actions */}
+                    <div className="flex flex-shrink-0 items-center justify-end gap-1.5 lg:gap-3">
+                        {user ? (
+                            <SearchModal isScrolled={isScrolled} theme={theme} language={language} t={t} />
+                        ) : null}
+
+                        <div className="hidden lg:block">
                             <LanguageSwitcher
                                 isScrolled={isScrolled}
                                 theme={theme}
                                 language={language}
                                 setLanguage={setLanguage}
                             />
-                            <ThemeToggle isScrolled={isScrolled} />
-
-                            {user ? (
-                                <div className="relative" data-account-panel>
-                                    <UserMenu
-                                        user={user}
-                                        profile={profile}
-                                        isOpen={accountPanelOpen}
-                                        onToggle={() => setAccountPanelOpen((open) => !open)}
-                                    />
-                                </div>
-                            ) : (
-                                <AuthButtons isScrolled={isScrolled} theme={theme} t={t} />
-                            )}
-
-                            {/* Mobile Menu Toggle */}
-                            <IconButton
-                                icon={mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-                                label={mobileMenuOpen ? t.common.closeMenu : t.common.openMenu}
-                                onClick={() => setMobileMenuOpen((open) => !open)}
-                                isActive={mobileMenuOpen}
-                                size="sm"
-                                className={cn(
-                                    "xl:hidden",
-                                    isScrolled || theme === 'dark'
-                                        ? "text-gray-300 hover:text-white"
-                                        : "text-gray-700 hover:text-gray-900"
-                                )}
-                                aria-expanded={mobileMenuOpen}
-                                aria-controls="mobile-menu"
-                            />
                         </div>
+                        <ThemeToggle isScrolled={isScrolled} />
+
+                        {user ? (
+                            <div className="relative" data-account-panel>
+                                <UserMenu
+                                    user={user}
+                                    profile={profile}
+                                    isOpen={accountPanelOpen}
+                                    onToggle={() => setAccountPanelOpen((open) => !open)}
+                                />
+                            </div>
+                        ) : (
+                            <AuthButtons isScrolled={isScrolled} theme={theme} t={t} />
+                        )}
+
+                        {/* Mobile Menu Toggle */}
+                        <button
+                            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                            aria-expanded={mobileMenuOpen}
+                            className="p-1.5 rounded-lg md:hidden text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
+                        >
+                            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                        </button>
                     </div>
                 </div>
-
-                {/* Gradient line */}
-                {isScrolled && (
-                    <motion.div
-                        initial={{ scaleX: 0 }}
-                        animate={{ scaleX: 1 }}
-                        className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary-500 to-transparent"
-                    />
-                )}
 
                 {/* Mobile Menu */}
                 <MobileMenu
@@ -248,7 +198,7 @@ export default function Header() {
             {user ? (
                 <AccountPanel
                     isOpen={accountPanelOpen}
-                    headerHeight={headerHeight}
+                    headerHeight={60}
                     user={user}
                     profile={profile}
                     signOut={signOut}
@@ -257,7 +207,7 @@ export default function Header() {
             ) : null}
 
             {/* Spacer */}
-            <div className="h-16 lg:h-20" />
+            <div className="h-[60px]" />
         </>
     );
 }
@@ -270,21 +220,11 @@ function Logo({ language }: { language: string }) {
 
     return (
         <Link to="/" className="group relative z-10 flex shrink-0 items-center">
-            <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="relative flex items-center"
-            >
-                <div className="absolute -inset-3 rounded-3xl bg-gradient-to-r from-violet-600/20 via-fuchsia-500/15 to-amber-400/20 blur-xl opacity-0 transition-opacity group-hover:opacity-100" />
-                <img
-                    src={logoSrc}
-                    alt={language === 'ar' ? 'خدمة TN' : 'Khedma TN'}
-                    width="180"
-                    height="40"
-                    style={{ width: 'auto' }}
-                    className="relative block h-8 w-auto max-w-[168px] object-contain object-left align-middle sm:h-9 sm:max-w-[184px]"
-                />
-            </motion.div>
+            <img
+                src={logoSrc}
+                alt={language === 'ar' ? 'خدمة TN' : 'Khedma TN'}
+                className="block h-7 w-auto object-contain object-left align-middle"
+            />
         </Link>
     );
 }
