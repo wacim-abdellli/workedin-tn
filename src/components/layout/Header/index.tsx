@@ -150,29 +150,30 @@ export default function Header() {
                         ? 'bg-[#0f0e17] border-b border-white/5'
                         : 'bg-white border-b border-gray-100'
             )}>
-                <div className="max-w-[100vw] 2xl:max-w-[90%] mx-auto px-2 sm:px-4 lg:px-6">
-                    <div className="flex items-center h-16 lg:h-20 gap-1 lg:gap-3 overflow-hidden">
+                <div className="max-w-7xl 2xl:max-w-[90%] mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex items-center justify-between h-16 lg:h-20 relative">
+                        
                         {/* Left: Logo & Navigation */}
-                        <div className="flex items-center gap-2 lg:gap-4 shrink w-[200px] lg:w-auto overflow-hidden">
+                        <div className="flex items-center gap-4 lg:gap-8 shrink-0">
                             <Logo language={language} />
                             <Navigation isScrolled={isScrolled} theme={theme} items={navItems} accentClass={accentClass} />
                         </div>
 
-                        {/* Center: Search */}
-                        <div className="flex-1 flex justify-center lg:justify-end xl:justify-center min-w-[160px] px-1 lg:px-3">
+                        {/* Center: Search (Absolute on large screens or flex-1 in between) */}
+                        <div className="hidden lg:flex flex-1 justify-center px-4 md:px-8 max-w-2xl mx-auto min-w-[200px]">
                             {user ? (
                                 <SearchModal isScrolled={isScrolled} theme={theme} language={language} t={t} />
                             ) : (
                                 <Link
                                     to="/jobs"
                                     className={cn(
-                                        "hidden md:flex flex-1 max-w-xs xl:max-w-md mx-auto items-center gap-3 px-4 h-10 sm:h-11 rounded-xl transition-all duration-200 group shrink-0",
+                                        "hidden md:flex w-full max-w-md items-center gap-3 px-4 h-10 sm:h-11 rounded-xl transition-all duration-200 group",
                                         "bg-white dark:bg-white/[0.05] border border-gray-200 dark:border-white/10 backdrop-blur-md shadow-sm",
                                         "hover:bg-gray-50 dark:hover:bg-white/10 hover:border-purple-200 dark:hover:border-purple-400/20",
                                         isScrolled || theme === 'dark' ? "text-[#6b6880] dark:text-[#c4b5fd]" : "text-[#3d3a4e]"
                                     )}
                                 >
-                                    <Briefcase className="w-4 h-4 text-violet-500" />
+                                    <Briefcase className="w-4 h-4 text-violet-500 shrink-0" />
                                     <span className={cn(
                                         "flex-1 text-sm font-medium text-left truncate",
                                         isScrolled || theme === 'dark' ? "text-[#4b4869] dark:text-[#c4b5fd]" : "text-[#3d3a4e]"
@@ -184,7 +185,7 @@ export default function Header() {
                         </div>
 
                         {/* Right: Actions */}
-                        <div className="flex items-center gap-2 lg:gap-3 shrink-0">
+                        <div className="flex items-center gap-2 lg:gap-4 shrink-0">
                             <LanguageSwitcher
                                 isScrolled={isScrolled}
                                 theme={theme}

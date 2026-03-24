@@ -50,7 +50,7 @@ function NavLink({ to, icon: Icon, children, isScrolled, theme, accentClass }: N
     <Link
       to={to}
       className={cn(
-        'nav-link-premium relative flex items-center gap-2 rounded-2xl px-3.5 py-2.5 text-sm whitespace-nowrap group transition-colors duration-150',
+        'nav-link-premium relative flex items-center gap-1.5 lg:gap-2 rounded-xl px-2 lg:px-3 py-2 text-sm whitespace-nowrap group transition-colors duration-150',
         isActive
           ? accentClass === 'purple' 
             ? 'bg-violet-600/10 font-semibold tracking-[-0.01em] text-purple-600 dark:text-purple-400'
@@ -104,7 +104,7 @@ function MegaMenuLink({
       <Link
         to={item.to}
         className={cn(
-          'nav-link-premium relative flex items-center gap-2 rounded-2xl px-3.5 py-2.5 text-sm whitespace-nowrap group transition-colors duration-150',
+          'nav-link-premium relative flex items-center gap-1.5 lg:gap-2 rounded-xl px-2 lg:px-3 py-2 text-sm whitespace-nowrap group transition-colors duration-150',
           isActive
             ? accentClass === 'purple' 
               ? 'bg-violet-600/10 font-semibold tracking-[-0.01em] text-purple-600 dark:text-purple-400'
