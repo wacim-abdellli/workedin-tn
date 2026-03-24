@@ -94,7 +94,7 @@ export function SearchModal({ isScrolled, theme, language, t }: SearchModalProps
                 <button
                     onClick={() => setSearchOpen(true)}
                     className={cn(
-                        'group relative flex min-h-[52px] w-full items-center gap-3 overflow-hidden rounded-2xl px-4 py-3 text-left transition-all duration-200',
+                        'group relative flex h-10 sm:h-11 w-full items-center gap-2 sm:gap-3 overflow-hidden rounded-xl px-3 sm:px-4 text-start transition-all duration-200',
                         isDarkShell
                             ? 'border border-white/10 bg-white/[0.04] text-gray-400 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] hover:border-violet-500/30 hover:bg-white/[0.07]'
                             : 'border border-gray-200 bg-[#fbfbfe] text-gray-600 shadow-sm shadow-gray-200/40 hover:border-purple-200 hover:bg-white'
@@ -111,10 +111,10 @@ export function SearchModal({ isScrolled, theme, language, t }: SearchModalProps
                     </span>
                     <div
                         className={cn(
-                            'hidden items-center gap-1 rounded-lg border px-2.5 py-1 text-[11px] font-medium sm:flex',
+                            'hidden shrink-0 items-center gap-1 rounded-md border px-2 py-0.5 text-[11px] font-medium sm:flex bg-gray-50 dark:bg-white/5',
                             isDarkShell
-                                ? 'border-white/10 bg-white/5 text-gray-400 group-hover:border-violet-500/30'
-                                : 'border-gray-200 bg-white text-gray-500 group-hover:border-purple-200'
+                                ? 'border-white/10 text-gray-400 group-hover:border-violet-500/30'
+                                : 'border-gray-200 text-gray-500 group-hover:border-purple-200'
                         )}
                     >
                         <Command className="h-3 w-3" />
@@ -139,7 +139,7 @@ export function SearchModal({ isScrolled, theme, language, t }: SearchModalProps
                         >
                             <div className={cn('border-b p-4', isDarkShell ? 'border-white/10' : 'border-gray-100')}>
                                 <div className="relative">
-                                    <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+                                    <Search className="absolute start-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
                                     <input
                                         type="text"
                                         value={searchQuery}
@@ -148,7 +148,7 @@ export function SearchModal({ isScrolled, theme, language, t }: SearchModalProps
                                         autoFocus
                                         dir={language === 'ar' ? 'rtl' : 'ltr'}
                                         className={cn(
-                                            'w-full rounded-2xl border py-3.5 pl-12 pr-12 text-sm transition-all focus:outline-none focus:ring-2',
+                                            'w-full rounded-2xl border py-3.5 px-12 text-sm transition-all focus:outline-none focus:ring-2',
                                             isDarkShell
                                                 ? 'border-white/10 bg-white/5 text-white placeholder-gray-500 focus:border-violet-500 focus:ring-violet-500/20'
                                                 : 'border-gray-200 bg-white text-gray-900 placeholder-gray-400 focus:border-purple-500 focus:ring-purple-500/20'
@@ -163,7 +163,7 @@ export function SearchModal({ isScrolled, theme, language, t }: SearchModalProps
                                         <button
                                             onClick={() => setSearchQuery('')}
                                             className={cn(
-                                                'absolute right-4 top-1/2 -translate-y-1/2 rounded-lg p-1.5 transition-colors',
+                                                'absolute end-4 top-1/2 -translate-y-1/2 rounded-lg p-1.5 transition-colors',
                                                 isDarkShell ? 'hover:bg-white/10' : 'hover:bg-gray-100'
                                             )}
                                         >

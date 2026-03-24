@@ -14,16 +14,17 @@ export interface NavigationProps {
     icon: LucideIcon;
     label: string;
   }>;
+  accentClass: string;
 }
 
-export function Navigation({ isScrolled, theme, items }: NavigationProps) {
+export function Navigation({ isScrolled, theme, items, accentClass }: NavigationProps) {
   return (
     <nav className="hidden xl:flex items-center gap-1">
       {items.map((item) => (
         item.to === '/jobs' ? (
-          <MegaMenuLink key={item.to} item={item} isScrolled={isScrolled} theme={theme} />
+          <MegaMenuLink key={item.to} item={item} isScrolled={isScrolled} theme={theme} accentClass={accentClass} />
         ) : (
-          <NavLink key={item.to} to={item.to} icon={item.icon} isScrolled={isScrolled} theme={theme}>
+          <NavLink key={item.to} to={item.to} icon={item.icon} isScrolled={isScrolled} theme={theme} accentClass={accentClass}>
             {item.label}
           </NavLink>
         )
@@ -38,9 +39,10 @@ interface NavLinkProps {
   children: React.ReactNode;
   isScrolled: boolean;
   theme: string;
+  accentClass: string;
 }
 
-function NavLink({ to, icon: Icon, children, isScrolled, theme }: NavLinkProps) {
+function NavLink({ to, icon: Icon, children, isScrolled, theme, accentClass }: NavLinkProps) {
   const location = useLocation();
   const isActive = location.pathname === to;
 
@@ -50,7 +52,9 @@ function NavLink({ to, icon: Icon, children, isScrolled, theme }: NavLinkProps) 
       className={cn(
         'nav-link-premium relative flex items-center gap-2 rounded-2xl px-3.5 py-2.5 text-sm whitespace-nowrap group transition-colors duration-150',
         isActive
-          ? 'bg-violet-600/10 font-semibold tracking-[-0.01em] text-purple-600 dark:text-purple-400'
+          ? accentClass === 'purple' 
+            ? 'bg-violet-600/10 font-semibold tracking-[-0.01em] text-purple-600 dark:text-purple-400'
+            : 'bg-amber-600/10 font-semibold tracking-[-0.01em] text-amber-600 dark:text-amber-400'
           : isScrolled || theme === 'dark'
             ? 'font-medium text-gray-400 hover:bg-white/5 hover:text-white'
             : 'font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900'
@@ -59,7 +63,10 @@ function NavLink({ to, icon: Icon, children, isScrolled, theme }: NavLinkProps) 
       {isActive && (
         <motion.div
           layoutId="activeNav"
-          className="absolute inset-0 rounded-2xl border border-violet-500/20 bg-violet-600/10"
+          className={cn("absolute inset-0 rounded-2xl border", 
+            accentClass === 'purple' 
+              ? "border-violet-500/20 bg-violet-600/10" 
+              : "border-amber-500/20 bg-amber-600/10")}
           transition={{ type: 'spring', bounce: 0.2, duration: 0.5 }}
         />
       )}
@@ -75,10 +82,12 @@ function MegaMenuLink({
   item,
   isScrolled,
   theme,
+  accentClass,
 }: {
   item: NavigationProps['items'][number];
   isScrolled: boolean;
   theme: string;
+  accentClass: string;
 }) {
   const location = useLocation();
   const isActive = location.pathname === item.to;
@@ -97,7 +106,9 @@ function MegaMenuLink({
         className={cn(
           'nav-link-premium relative flex items-center gap-2 rounded-2xl px-3.5 py-2.5 text-sm whitespace-nowrap group transition-colors duration-150',
           isActive
-            ? 'bg-violet-600/10 font-semibold tracking-[-0.01em] text-purple-600 dark:text-purple-400'
+            ? accentClass === 'purple' 
+              ? 'bg-violet-600/10 font-semibold tracking-[-0.01em] text-purple-600 dark:text-purple-400'
+              : 'bg-amber-600/10 font-semibold tracking-[-0.01em] text-amber-600 dark:text-amber-400'
             : isScrolled || theme === 'dark'
               ? 'font-medium text-gray-400 hover:bg-white/5 hover:text-white'
               : 'font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900'

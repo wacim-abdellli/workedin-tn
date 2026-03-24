@@ -56,7 +56,7 @@ function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
         } finally {
             setIsLoading(false);
         }
-    };
+    }; 
     return (
         <div className="w-full max-w-md mx-auto">
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">

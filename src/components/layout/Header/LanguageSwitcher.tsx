@@ -39,15 +39,15 @@ export function LanguageSwitcher({ isScrolled, theme, language, setLanguage }: L
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setMenuOpen(!menuOpen)}
                 className={cn(
-                    "flex items-center gap-1.5 p-1.5 rounded-xl transition-colors",
+                    "flex items-center justify-center gap-1.5 min-w-[56px] h-9 sm:h-10 px-2 rounded-xl transition-colors shrink-0",
                     isScrolled || theme === 'dark'
                         ? "text-gray-400 hover:text-white hover:bg-white/10"
                         : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
                 )}
                 aria-label="Change language"
             >
-                <Globe className="w-4 h-4" />
-                <span className="text-[10px] font-bold uppercase">{language}</span>
+                <Globe className="w-4 h-4 shrink-0" />
+                <span className="text-xs font-bold uppercase tracking-wider">{language}</span>
             </motion.button>
 
             <AnimatePresence>

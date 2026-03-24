@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Menu, X, Briefcase, User, TrendingUp } from 'lucide-react';
+import { Menu, X, Briefcase, Plus, FolderOpen, FileText, ClipboardList, Wallet, Users } from 'lucide-react';
 
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useWorkspace } from '@/contexts/WorkspaceContext';
 import { useTranslation } from '@/i18n';
 import { cn } from '@/lib/utils';
 
@@ -122,16 +123,25 @@ export default function Header() {
         return undefined;
     }, [accountPanelOpen]);
 
-    const navItems = [
-        { to: '/jobs', icon: Briefcase, label: t.nav.findWork },
-        { to: '/find-freelancers', icon: User, label: t.nav.findFreelancers },
-        { to: '/how-it-works', icon: TrendingUp, label: t.nav.howItWorks },
+    const { isFreelancer, accentClass } = useWorkspace();
+
+    const navItems = isFreelancer ? [
+        { to: '/jobs', icon: Briefcase, label: t.nav.findWork || 'Find Work' },
+        { to: '/my-proposals', icon: FileText, label: 'My Proposals' },
+        { to: '/contracts', icon: ClipboardList, label: 'Contracts' },
+        { to: '/freelancer/earnings', icon: Wallet, label: 'Earnings' },
+    ] : [
+        { to: '/jobs/new', icon: Plus, label: 'Post a Project' },
+        { to: '/client/jobs', icon: FolderOpen, label: 'My Projects' },
+        { to: '/find-freelancers', icon: Users, label: t.nav.findFreelancers || 'Find Freelancers' },
+        { to: '/contracts', icon: ClipboardList, label: 'Contracts' },
     ];
 
     return (
         <>
+            <div className={cn("fixed top-0 left-0 right-0 h-0.5 z-[60]", accentClass === 'purple' ? 'bg-purple-500' : 'bg-amber-500')} />
             <header ref={headerRef} className={cn(
-                'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
+                'fixed top-0.5 left-0 right-0 z-50 transition-all duration-300',
                 isScrolled
                     ? theme === 'dark'
                         ? 'bg-[#0f0e17]/95 backdrop-blur-sm border-b border-white/5 shadow-lg shadow-black/20'
@@ -145,7 +155,7 @@ export default function Header() {
                         {/* Left: Logo & Navigation */}
                         <div className="flex min-w-0 items-center gap-3 lg:gap-7">
                             <Logo language={language} />
-                            <Navigation isScrolled={isScrolled} theme={theme} items={navItems} />
+                            <Navigation isScrolled={isScrolled} theme={theme} items={navItems} accentClass={accentClass} />
                         </div>
 
                         {/* Center: Search */}

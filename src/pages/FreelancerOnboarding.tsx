@@ -32,6 +32,15 @@ function FreelancerOnboarding() {
     const [selectedSkills, setSelectedSkills] = useState<Skill[]>([]);
     const [avatarFile, setAvatarFile] = useState<File | null>(null);
     const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+    
+    // Fallback timer to show page even if AuthContext is stuck reconciling
+    const { isLoading: isAuthLoading } = useAuth();
+    const [forceShow, setForceShow] = useState(false);
+
+    useEffect(() => {
+        const timer = setTimeout(() => setForceShow(true), 1500);
+        return () => clearTimeout(timer);
+    }, []);
 
     const step1Form = useForm<Step1FormData>({
         resolver: zodResolver(step1Schema),
@@ -293,6 +302,21 @@ function FreelancerOnboarding() {
             setIsLoading(false);
         }
     };
+
+    // If auth is strictly loading, show our enhanced loading state unless fallback fired
+    if (isAuthLoading && !forceShow) {
+        return (
+            <div className="min-h-screen bg-gray-50 dark:bg-dark-900 flex flex-col items-center justify-center p-4">
+                <img
+                    src="/logos/logo-primary.svg"
+                    alt="Khedma TN"
+                    className="h-12 w-auto mb-6 animate-pulse"
+                />
+                <div className="w-12 h-12 border-4 border-primary-100 border-t-primary-600 rounded-full animate-spin"></div>
+                <p className="mt-4 text-muted font-medium animate-pulse">{t.common?.loading || 'جاري التحميل...'}</p>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-dark-900 overflow-hidden relative transition-colors duration-300">

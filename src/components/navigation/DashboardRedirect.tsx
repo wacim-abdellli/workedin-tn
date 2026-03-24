@@ -2,11 +2,10 @@ import { Navigate, useLocation } from 'react-router-dom';
 
 import { useAuth } from '@/contexts/AuthContext';
 import { useWorkspaceStore } from '@/lib/workspaceState';
-import { getWorkspaceTargetRoute } from '@/lib/workspaceRoutes';
 
 export const DashboardRedirect = () => {
   const location = useLocation();
-  const { profile, freelancerProfile, isLoading } = useAuth();
+  const { profile, isLoading } = useAuth();
   const activeWorkspace = useWorkspaceStore((state) => state.activeWorkspace);
 
   if (isLoading) {
@@ -25,6 +24,7 @@ export const DashboardRedirect = () => {
     return <Navigate to="/signup?step=select-type" replace state={location.state} />;
   }
 
-  const target = getWorkspaceTargetRoute(profile, freelancerProfile, activeWorkspace);
-  return <Navigate to={target.path} replace state={location.state} />;
+  return activeWorkspace === 'freelancer'
+    ? <Navigate to="/freelancer/dashboard" replace state={location.state} />
+    : <Navigate to="/client/dashboard" replace state={location.state} />;
 };

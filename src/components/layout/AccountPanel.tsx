@@ -114,38 +114,34 @@ export default function AccountPanel({
     () => [
       {
         mode: 'freelancer' as const,
-        title: copy.freelancerLabel,
-        description: availableModes.includes('freelancer')
-          ? freelancerProfile?.title || copy.freelancerDesc
-          : copy.completeSetup,
-        meta: freelancerProfile
-          ? `${freelancerProfile.completion_rate ?? 0}% ${copy.progressLabel.toLowerCase()}`
-          : copy.needsSetup,
+        title: 'Freelancer',
+        features: [
+          'Browse and apply to jobs',
+          'Receive payments in TND',
+          'Build public portfolio',
+        ],
+        meta: activeWorkspace === 'freelancer'
+          ? 'Active Workspace'
+          : !freelancerProfile ? 'Set up in 5 min' : 'Switch over',
         icon: BriefcaseBusiness,
         accent: 'purple',
       },
       {
         mode: 'client' as const,
-        title: copy.clientLabel,
-        description: profile?.onboarding_completed ? copy.clientDesc : copy.completeSetup,
-        meta: profile?.onboarding_completed ? copy.ready : copy.needsSetup,
+        title: 'Client',
+        features: [
+          'Post projects for free',
+          'Review verified proposals',
+          'Escrow-protected payments',
+        ],
+        meta: activeWorkspace === 'client'
+          ? 'Active Workspace'
+          : 'Switch instantly',
         icon: Building2,
         accent: 'amber',
       },
     ],
-    [
-      availableModes,
-      copy.clientDesc,
-      copy.clientLabel,
-      copy.completeSetup,
-      copy.freelancerDesc,
-      copy.freelancerLabel,
-      copy.needsSetup,
-      copy.progressLabel,
-      copy.ready,
-      freelancerProfile,
-      profile?.onboarding_completed,
-    ]
+    [activeWorkspace, freelancerProfile]
   );
 
   const handleSwitchMode = async (mode: Workspace) => {
@@ -405,7 +401,14 @@ export default function AccountPanel({
                                   {isSwitchingThis ? copy.switching : actionLabel}
                                 </span>
                               </div>
-                              <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-gray-600 dark:text-gray-400">{item.description}</p>
+                              <ul className="mt-2 space-y-1.5 min-w-0">
+                                {item.features.map(f => (
+                                  <li key={f} className="flex items-start gap-1.5 text-sm leading-tight text-gray-600 dark:text-gray-400">
+                                    <BadgeCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-500" />
+                                    <span>{f}</span>
+                                  </li>
+                                ))}
+                              </ul>
                               <p className="mt-3 text-xs font-medium text-gray-500 dark:text-gray-500">{item.meta}</p>
                             </div>
                           </div>

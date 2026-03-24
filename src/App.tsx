@@ -18,6 +18,9 @@ import { DashboardRedirect } from './components/navigation/DashboardRedirect';
 import { MyJobsRedirect } from './components/navigation/MyJobsRedirect';
 import { SavedRedirect } from './components/navigation/SavedRedirect';
 
+import { WorkspaceProvider } from './contexts/WorkspaceContext';
+import { WorkspaceRoute } from './components/routing/WorkspaceRoute';
+
 // Lazy Load Pages
 import SkipLinks from './components/layout/SkipLinks';
 import { useRouteFocus } from './hooks/useRouteFocus';
@@ -128,24 +131,32 @@ function AppRoutes() {
       <Route path="/freelancer/dashboard" element={
         <ErrorBoundary>
           <ProtectedRoute>
-            <FreelancerDashboard />
+            <WorkspaceRoute workspace="freelancer">
+              <FreelancerDashboard />
+            </WorkspaceRoute>
           </ProtectedRoute>
         </ErrorBoundary>
       } />
       <Route path="/freelancer/portfolio" element={
         <ProtectedRoute>
-          <PortfolioDashboard />
+          <WorkspaceRoute workspace="freelancer">
+            <PortfolioDashboard />
+          </WorkspaceRoute>
         </ProtectedRoute>
       } />
       <Route path="/freelancer/earnings" element={
         <ProtectedRoute>
-          <FreelancerEarnings />
+          <WorkspaceRoute workspace="freelancer">
+            <FreelancerEarnings />
+          </WorkspaceRoute>
         </ProtectedRoute>
       } />
       <Route path="/client/dashboard" element={
         <ErrorBoundary>
           <ProtectedRoute>
-            <ClientDashboard />
+            <WorkspaceRoute workspace="client">
+              <ClientDashboard />
+            </WorkspaceRoute>
           </ProtectedRoute>
         </ErrorBoundary>
       } />
@@ -158,7 +169,9 @@ function AppRoutes() {
       {/* Job routes */}
       <Route path="/jobs/new" element={
         <ProtectedRoute>
-          <JobPost />
+          <WorkspaceRoute workspace="client">
+            <JobPost />
+          </WorkspaceRoute>
         </ProtectedRoute>
       } />
       <Route path="/post-job" element={<Navigate to="/jobs/new" replace />} />
@@ -284,13 +297,15 @@ function App() {
         <BrowserRouter>
           <ThemeProvider>
             <I18nProvider defaultLanguage="ar">
-              <ErrorBoundary>
-                <AuthProvider>
-                  <ToastProvider>
-                    <AppContent />
-                  </ToastProvider>
-                </AuthProvider>
-              </ErrorBoundary>
+              <WorkspaceProvider>
+                <ErrorBoundary>
+                  <AuthProvider>
+                    <ToastProvider>
+                      <AppContent />
+                    </ToastProvider>
+                  </AuthProvider>
+                </ErrorBoundary>
+              </WorkspaceProvider>
             </I18nProvider>
           </ThemeProvider>
         </BrowserRouter>

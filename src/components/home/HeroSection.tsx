@@ -4,16 +4,8 @@ import { motion, useMotionTemplate, useMotionValue, useSpring, useTransform, use
 import { useMemo, useRef } from 'react';
 
 import { useTranslation } from '@/i18n';
-import { useAuth } from '@/contexts/AuthContext';
 import { useAnimatedCounter } from '@/hooks/useAnimatedCounter';
-import {
-  getWorkspaceDashboardPath,
-  getWorkspaceJobsPath,
-  getWorkspaceOnboardingPath,
-  getWorkspaceTargetRoute,
-  isWorkspaceReady,
-} from '@/lib/workspaceRoutes';
-import { useWorkspaceStore } from '@/lib/workspaceState';
+import { useWorkspace } from '@/contexts/WorkspaceContext';
 
 interface HeroSectionProps {
   stats: {
@@ -65,8 +57,7 @@ function HeroStat({
 
 export default function HeroSection({ stats }: HeroSectionProps) {
   const { t, dir } = useTranslation();
-  const { isAuthenticated, profile, freelancerProfile } = useAuth();
-  const activeWorkspace = useWorkspaceStore((state) => state.activeWorkspace);
+  const { isFreelancer } = useWorkspace();
   const ArrowIcon = dir === 'rtl' ? ArrowLeft : ArrowRight;
   const sectionRef = useRef<HTMLElement | null>(null);
   const pointerX = useMotionValue(0);
@@ -83,43 +74,21 @@ export default function HeroSection({ stats }: HeroSectionProps) {
     []
   );
 
-  const getFreelancerLink = () => {
-    if (isAuthenticated) {
-      return isWorkspaceReady({ ...profile, user_type: 'freelancer' }, freelancerProfile, 'freelancer')
-        ? getWorkspaceDashboardPath('freelancer')
-        : getWorkspaceOnboardingPath('freelancer');
-    }
-    return '/signup?type=freelancer';
+  const headlineStart = isFreelancer ? "Where Tunisian Talent" : "Your project, delivered.";
+  const headlineHighlight = isFreelancer ? "Gets Paid Fairly" : "On time. On budget.";
+  const heroSubtitle = isFreelancer 
+    ? "Browse real projects, send proposals, get paid in TND — secured by escrow."
+    : "Post for free. Receive proposals from verified Tunisian professionals.";
+    
+  const primaryCta = {
+    to: isFreelancer ? "/jobs" : "/jobs/new",
+    label: isFreelancer ? "Browse jobs" : "Post a project — it's free",
   };
 
-  const getClientLink = () => {
-    if (isAuthenticated) {
-      return isWorkspaceReady({ ...profile, user_type: 'client' }, freelancerProfile, 'client')
-        ? getWorkspaceDashboardPath('client')
-        : getWorkspaceOnboardingPath('client');
-    }
-    return '/signup?type=client';
+  const secondaryCta = {
+    to: isFreelancer ? "/profile" : "/find-freelancers",
+    label: isFreelancer ? "Complete your profile" : "Find freelancers",
   };
-
-  const primaryCta = isAuthenticated
-    ? {
-      to: getWorkspaceTargetRoute(profile, freelancerProfile, activeWorkspace).path,
-      label: t.nav.dashboard,
-    }
-    : {
-      to: getFreelancerLink(),
-      label: t.hero.ctaFreelancer,
-    };
-
-  const secondaryCta = isAuthenticated
-    ? {
-      to: getWorkspaceJobsPath(activeWorkspace),
-      label: activeWorkspace === 'client' ? t.hero.ctaClient : t.nav.findWork,
-    }
-    : {
-      to: getClientLink(),
-      label: t.hero.ctaClient,
-    };
 
   const handlePointerMove = (event: React.MouseEvent<HTMLElement>) => {
     const rect = sectionRef.current?.getBoundingClientRect();
@@ -166,9 +135,9 @@ export default function HeroSection({ stats }: HeroSectionProps) {
 
             <motion.div custom={1} variants={fadeUp} initial="hidden" animate="visible" className="mt-8">
               <p className="hero-display-line font-bold tracking-tight text-gray-900 dark:text-white">
-                <span className="hero-display-chip">{t.hero.headlineStart}</span>
+                <span className="hero-display-chip">{headlineStart}</span>
               </p>
-              <h1 className="hero-display-line mt-1 bg-gradient-to-r from-purple-500 to-amber-400 bg-clip-text font-bold italic tracking-tight text-transparent">{t.hero.headlineHighlight}</h1>
+              <h1 className="hero-display-line mt-1 bg-gradient-to-r from-purple-500 to-amber-400 bg-clip-text font-bold italic tracking-tight text-transparent">{headlineHighlight}</h1>
             </motion.div>
 
             <motion.p
@@ -178,7 +147,7 @@ export default function HeroSection({ stats }: HeroSectionProps) {
               animate="visible"
               className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-gray-600 dark:text-gray-300 lg:mx-0"
             >
-              {t.hero.subtitle}
+              {heroSubtitle}
             </motion.p>
 
             <motion.div
@@ -264,9 +233,19 @@ export default function HeroSection({ stats }: HeroSectionProps) {
               </div>
 
               <div className="mt-6 grid gap-3 md:grid-cols-3">
-                <HeroStat icon={Users} value={stats.freelancers} label={t.hero.stats.professionals} />
-                <HeroStat icon={Briefcase} value={stats.jobs ?? 142} label={t.hero.stats.projects} />
-                <HeroStat icon={TrendingUp} value={Math.round((stats.earnings ?? 127850) / 100)} label={t.hero.stats.escrow} />
+                {isFreelancer ? (
+                  <>
+                    <HeroStat icon={Briefcase} value={stats.jobs ?? 142} label="Active projects" />
+                    <HeroStat icon={TrendingUp} value={Math.round((stats.earnings ?? 127850) / 100)} label="Avg. project value" />
+                    <HeroStat icon={Star} value={98} label="Success rate" />
+                  </>
+                ) : (
+                  <>
+                    <HeroStat icon={Users} value={stats.freelancers} label="Verified freelancers" />
+                    <HeroStat icon={Briefcase} value={stats.jobs ?? 142} label="Projects completed" />
+                    <HeroStat icon={TrendingUp} value={24} label="Avg. hire time" />
+                  </>
+                )}
               </div>
 
               <div className="mt-6 grid gap-3 sm:grid-cols-2">
