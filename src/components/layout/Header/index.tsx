@@ -127,27 +127,27 @@ export default function Header() {
 
     return (
         <>
-            <div className={cn("fixed top-0 left-0 right-0 h-0.5 z-[60]", accentClass === 'purple' ? 'bg-purple-500' : 'bg-amber-500')} />
+            <div className={`fixed top-0 left-0 right-0 h-[2px] z-[60] ${isFreelancer ? 'bg-[#8b5cf6]' : 'bg-[#f59e0b]'}`} />
             <header ref={headerRef} className={cn(
                 'fixed top-0.5 left-0 right-0 z-50 transition-all duration-300 h-[60px]',
                 isScrolled || theme === 'dark'
                     ? 'bg-white dark:bg-[#0f0e17] border-b border-gray-100 dark:border-white/5 shadow-sm shadow-black/5'
                     : 'bg-white dark:bg-[#0f0e17] border-b border-gray-100 dark:border-white/5'
             )}>
-                <div className="max-w-[1280px] mx-auto h-full px-4 sm:px-6 grid grid-cols-[auto_1fr_auto] items-center gap-2 lg:gap-6">
+                <div className="max-w-[1280px] mx-auto h-full px-6 grid grid-cols-[160px_1fr_240px] items-center gap-6">
                     
-                    {/* LEFT: Logo */}
-                    <div className="flex items-center flex-shrink-0">
+                    {/* LEFT: Logo - 160px fixed */}
+                    <div className="flex flex-shrink-0 items-center">
                         <Logo language={language} />
                     </div>
 
-                    {/* CENTER: Nav items */}
-                    <div className="hidden md:flex items-center justify-center overflow-hidden">
-                        <Navigation isScrolled={isScrolled} theme={theme} items={activeNavItems} accentClass={accentClass} />
-                    </div>
+                    {/* CENTER: Nav items - flex-1 aligned center */}
+                    <nav className="hidden md:flex items-center justify-center gap-0.5 overflow-hidden">
+                        <Navigation items={activeNavItems} accentClass={accentClass} />
+                    </nav>
 
-                    {/* RIGHT: Actions */}
-                    <div className="flex flex-shrink-0 items-center justify-end gap-1.5 lg:gap-3">
+                    {/* RIGHT: Actions - 240px fixed */}
+                    <div className="flex flex-shrink-0 items-center justify-end gap-1.5 lg:gap-2">
                         {user ? (
                             <SearchModal isScrolled={isScrolled} theme={theme} language={language} t={t} />
                         ) : null}

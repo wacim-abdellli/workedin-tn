@@ -283,38 +283,32 @@ export function SearchModal({ isScrolled, theme, language, t }: SearchModalProps
     let globalIndexCounter = 0;
 
     return (
-        <div className="hidden md:flex w-full mx-auto" ref={searchRef}>
-            <div className="relative w-full flex justify-center">
-                {/* Header Search Trigger */}
-                <button
-                    onClick={() => setSearchOpen(true)}
+        <div className="relative" ref={searchRef}>
+            {/* Header Search Trigger */}
+            <button
+                onClick={() => setSearchOpen(true)}
+                className={cn(
+                    'group relative flex h-9 sm:h-10 w-[120px] items-center gap-1.5 overflow-hidden rounded-xl px-2 text-start transition-all duration-200 ease-out focus:outline-none focus-visible:ring-2 shrink-0',
+                    isDarkShell
+                        ? 'border border-transparent bg-white/5 text-gray-400 hover:bg-white/10 focus-visible:border-violet-500/40 focus-visible:ring-2 focus-visible:ring-violet-500/10 focus-visible:bg-[#1a1825]'
+                        : 'border border-gray-200 bg-gray-50 text-gray-500 hover:bg-gray-100 focus-visible:border-purple-300 focus-visible:ring-2 focus-visible:ring-purple-100 focus-visible:bg-white'
+                )}
+            >
+                <Search className="h-3.5 w-3.5 shrink-0 transition-colors group-hover:text-violet-500" />
+                <span className="flex-1 truncate text-xs transition-colors">
+                    Search...
+                </span>
+                <div
                     className={cn(
-                        'group relative flex h-10 sm:h-11 w-full max-w-md items-center gap-2 overflow-hidden rounded-xl px-3 text-start transition-all duration-200 ease-out focus:outline-none focus-visible:ring-2',
+                        'hidden shrink-0 items-center justify-center rounded border px-1 py-0.5 text-[10px] font-mono shadow-sm lg:flex transition-colors',
                         isDarkShell
-                            ? 'border border-transparent bg-white/8 text-white placeholder-gray-500 hover:bg-white/12 focus-visible:border-violet-500/40 focus-visible:ring-2 focus-visible:ring-violet-500/10 focus-visible:bg-[#1a1825]'
-                            : 'border border-transparent bg-gray-100 text-gray-900 placeholder-gray-400 hover:bg-gray-200 focus-visible:border-purple-300 focus-visible:ring-2 focus-visible:ring-purple-100 focus-visible:bg-white'
+                            ? 'border-white/10 bg-white/10 text-gray-400'
+                            : 'border-gray-200 bg-white text-gray-400'
                     )}
                 >
-                    <Search className="h-4 w-4 shrink-0 text-gray-400 transition-colors group-hover:text-violet-500" />
-                    <span
-                        className={cn(
-                            'flex-1 truncate text-sm transition-colors',
-                            isDarkShell ? 'text-gray-400 group-hover:text-gray-300' : 'text-gray-500 group-hover:text-gray-700'
-                        )}
-                    >
-                        {isFreelancer ? "Search jobs, skills..." : "Search freelancers..."}
-                    </span>
-                    <div
-                        className={cn(
-                            'hidden shrink-0 items-center justify-center rounded-md border px-1.5 py-0.5 text-[10px] font-mono shadow-sm lg:flex transition-colors',
-                            isDarkShell
-                                ? 'border-white/10 bg-white/10 text-gray-400'
-                                : 'border-gray-200 bg-white text-gray-400'
-                        )}
-                    >
-                        Ctrl K
-                    </div>
-                </button>
+                    ⌘K
+                </div>
+            </button>
 
                 <AnimatePresence>
                     {searchOpen && (
@@ -704,7 +698,6 @@ export function SearchModal({ isScrolled, theme, language, t }: SearchModalProps
                         </>
                     )}
                 </AnimatePresence>
-            </div>
         </div>
     );
 }
