@@ -12,17 +12,15 @@ export const WorkspaceContext = createContext<{
   accentColor: '#f59e0b',
   accentClass: 'amber',
 });
-
 export function WorkspaceProvider({ children }: { children: ReactNode }) {
   const { activeWorkspace } = useWorkspaceStore();
-  
   const value = {
     isFreelancer: activeWorkspace === 'freelancer',
     isClient: activeWorkspace === 'client',
     accentColor: activeWorkspace === 'freelancer' ? '#8b5cf6' : '#f59e0b',
     accentClass: activeWorkspace === 'freelancer' ? 'purple' : 'amber',
   };
-  
+
   return (
     <WorkspaceContext.Provider value={value}>
       {children}

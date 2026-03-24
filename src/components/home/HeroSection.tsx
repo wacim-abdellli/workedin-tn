@@ -74,20 +74,20 @@ export default function HeroSection({ stats }: HeroSectionProps) {
     []
   );
 
-  const headlineStart = isFreelancer ? "Where Tunisian Talent" : "Your project, delivered.";
-  const headlineHighlight = isFreelancer ? "Gets Paid Fairly" : "On time. On budget.";
+  const headlineStart = isFreelancer ? t.hero.headlineStart : t.forClients.hero.title.replace(', delivered.', '');
+  const headlineHighlight = isFreelancer ? t.hero.headlineHighlight : t.forClients.hero.titleHighlight;
   const heroSubtitle = isFreelancer 
-    ? "Browse real projects, send proposals, get paid in TND — secured by escrow."
-    : "Post for free. Receive proposals from verified Tunisian professionals.";
+    ? t.hero.subtitle
+    : t.forClients.hero.subtitle;
     
   const primaryCta = {
     to: isFreelancer ? "/jobs" : "/jobs/new",
-    label: isFreelancer ? "Browse jobs" : "Post a project — it's free",
+    label: isFreelancer ? t.hero.ctaFreelancer : t.forClients.hero.cta,
   };
 
   const secondaryCta = {
     to: isFreelancer ? "/profile" : "/find-freelancers",
-    label: isFreelancer ? "Complete your profile" : "Find freelancers",
+    label: isFreelancer ? t.nav.profile : t.nav.findFreelancers,
   };
 
   const handlePointerMove = (event: React.MouseEvent<HTMLElement>) => {

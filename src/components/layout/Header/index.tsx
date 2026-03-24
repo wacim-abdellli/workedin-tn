@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, X, Briefcase, Plus, FolderOpen, FileText, ClipboardList, Wallet, Users } from 'lucide-react';
+import { NavLink, Link, useLocation, useNavigate } from 'react-router-dom';
+import { 
+    Menu, X, Briefcase, FolderOpen, 
+    FileText, ClipboardList, Wallet, Users, PlusCircle 
+} from 'lucide-react';
 
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -8,7 +11,6 @@ import { useWorkspace } from '@/contexts/WorkspaceContext';
 import { useTranslation } from '@/i18n';
 import { cn } from '@/lib/utils';
 
-import { Navigation } from './Navigation';
 import { SearchModal } from './SearchModal';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { ThemeToggle } from './ThemeToggle';
@@ -103,27 +105,31 @@ export default function Header() {
         return undefined;
     }, [accountPanelOpen]);
 
-    const { isFreelancer, accentClass } = useWorkspace();
+    const { isFreelancer } = useWorkspace();
 
-    const navItems = isFreelancer ? [
-        { to: '/jobs', icon: Briefcase, label: 'Find Work' },
-        { to: '/my-proposals', icon: FileText, label: 'Proposals' },
-        { to: '/contracts', icon: ClipboardList, label: 'Contracts' },
-        { to: '/freelancer/earnings', icon: Wallet, label: 'Earnings' },
-    ] : [
-        { to: '/jobs/new', icon: Plus, label: 'Post Project' },
-        { to: '/client/jobs', icon: FolderOpen, label: 'My Projects' },
-        { to: '/find-freelancers', icon: Users, label: 'Freelancers' },
-        { to: '/contracts', icon: ClipboardList, label: 'Contracts' },
-    ];
+    const FREELANCER_NAV = [
+        { label: 'Find Work', icon: Briefcase, href: '/jobs' },
+        { label: 'Proposals', icon: FileText, href: '/my-proposals' },
+        { label: 'Contracts', icon: ClipboardList, href: '/contracts' },
+        { label: 'Earnings', icon: Wallet, href: '/freelancer/earnings' },
+    ] as const;
+
+    const CLIENT_NAV = [
+        { label: 'Post Project', icon: PlusCircle, href: '/jobs/new' },
+        { label: 'My Projects', icon: FolderOpen, href: '/client/jobs' },
+        { label: 'Freelancers', icon: Users, href: '/find-freelancers' },
+        { label: 'Contracts', icon: ClipboardList, href: '/contracts' },
+    ] as const;
 
     const publicNavItems = [
-        { to: '/jobs', icon: Briefcase, label: 'Find Work' },
-        { to: '/find-freelancers', icon: Users, label: 'Find Freelancers' },
-        { to: '/how-it-works', icon: FileText, label: 'How It Works' },
-    ];
+        { label: 'Find Work', icon: Briefcase, href: '/jobs' },
+        { label: 'Find Freelancers', icon: Users, href: '/find-freelancers' },
+        { label: 'How It Works', icon: FileText, href: '/how-it-works' },
+    ] as const;
 
-    const activeNavItems = user ? navItems : publicNavItems;
+    const navItems = user 
+        ? (isFreelancer ? FREELANCER_NAV : CLIENT_NAV) 
+        : publicNavItems;
 
     return (
         <>
@@ -138,61 +144,84 @@ export default function Header() {
                     ? 'top-4 left-1/2 -translate-x-1/2 w-[calc(100%-32px)] max-w-[1200px] rounded-[32px] backdrop-blur-xl bg-white/70 dark:bg-[#0f0e17]/70 border border-white/40 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.06)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)] h-16'
                     : 'top-0 left-0 right-0 w-full bg-white dark:bg-[#0f0e17] border-b border-gray-100 dark:border-white/5 h-16'
             )}>
-                <div className={cn(
-                    "mx-auto h-full flex items-center justify-between gap-6 transition-all duration-500",
-                    isScrolled ? "px-6 w-full" : "px-6 max-w-[1280px] w-full"
-                )}>
+                <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: '140px 1fr 260px',
+                    alignItems: 'center',
+                    height: '100%',
+                    padding: '0 24px',
+                    maxWidth: '1280px',
+                    margin: '0 auto',
+                }}>
                     
-                    {/* LEFT: Logo */}
-                    <div className="flex flex-shrink-0 items-center min-w-[140px]">
+                    {/* Zone 1: Logo */}
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
                         <Logo language={language} />
                     </div>
 
-                    {/* CENTER: Nav items */}
-                    <nav className="hidden lg:flex flex-1 items-center justify-center min-w-0">
-                        <Navigation items={activeNavItems} accentClass={accentClass} />
+                    {/* Zone 2: Nav — centered */}
+                    <nav style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '2px' }}>
+                        {navItems.map(({ label, icon: Icon, href }) => (
+                            <NavLink 
+                                key={href} 
+                                to={href}
+                                className={({ isActive }) =>
+                                    `flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
+                                        isActive
+                                        ? isFreelancer
+                                            ? 'bg-purple-900/30 text-purple-400'
+                                            : 'bg-amber-900/30 text-amber-400'
+                                        : 'text-gray-400 hover:text-white hover:bg-white/5'
+                                    }`
+                                }
+                            >
+                                <Icon className="w-3.5 h-3.5 flex-shrink-0" />
+                                <span>{label}</span>
+                            </NavLink>
+                        ))}
                     </nav>
 
-                    {/* RIGHT: Actions */}
-                    <div className="flex flex-shrink-0 items-center justify-end gap-1.5 lg:gap-2.5 min-w-[140px]">
+                    {/* Zone 3: Right actions */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '4px' }}>
                         {user ? (
                             <SearchModal isScrolled={isScrolled} theme={theme} language={language} t={t} />
                         ) : null}
 
-                        <div className="hidden lg:block">
+                        <div className="hidden sm:flex items-center gap-2 border-l border-gray-200 dark:border-white/10 pl-4 ml-2">
                             <LanguageSwitcher
                                 isScrolled={isScrolled}
                                 theme={theme}
                                 language={language}
                                 setLanguage={setLanguage}
                             />
+                            <ThemeToggle isScrolled={isScrolled} />
                         </div>
-                        <ThemeToggle isScrolled={isScrolled} />
 
                         {user ? (
-                            <div className="relative" data-account-panel>
+                            <div className="ml-2 pl-2 border-l border-gray-200 dark:border-white/10">
                                 <UserMenu
                                     user={user}
                                     profile={profile}
                                     isOpen={accountPanelOpen}
-                                    onToggle={() => setAccountPanelOpen((open) => !open)}
+                                    onToggle={() => setAccountPanelOpen(!accountPanelOpen)}
                                 />
                             </div>
                         ) : (
                             <AuthButtons isScrolled={isScrolled} theme={theme} t={t} />
                         )}
-
-                        {/* Mobile Menu Toggle */}
+                        
                         <button
                             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                            aria-expanded={mobileMenuOpen}
-                            className="p-1.5 rounded-lg md:hidden text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
+                            className={cn(
+                                "xl:hidden ml-2 p-2 rounded-lg transition-colors",
+                                theme === 'dark' ? "hover:bg-white/5" : "hover:bg-gray-100"
+                            )}
+                            aria-label="Toggle menu"
                         >
                             {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
                         </button>
                     </div>
                 </div>
-
                 {/* Mobile Menu */}
                 <MobileMenu
                     isOpen={mobileMenuOpen}

@@ -32,7 +32,8 @@ export interface UserMenuProps {
 export function UserMenu({ user, profile, isOpen, onToggle }: UserMenuProps) {
   const [avatarFailed, setAvatarFailed] = useState(false);
   const activeWorkspace = useWorkspaceStore((state) => state.activeWorkspace);
-  const displayName = profile?.full_name || user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || 'Khedma User';
+  const rawName = profile?.full_name || user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || 'Account';
+  const displayName = rawName.split(' ')[0];
   const avatarUrl = !avatarFailed ? profile?.avatar_url || user.user_metadata?.avatar_url || null : null;
   const [avatarFrom, avatarTo] = getAvatarGradient(displayName);
 
@@ -73,7 +74,7 @@ export function UserMenu({ user, profile, isOpen, onToggle }: UserMenuProps) {
             {getInitials(displayName)}
           </div>
         )}
-        <span className="text-sm font-medium text-gray-700 dark:text-gray-200 truncate max-w-[80px] hidden lg:block">
+        <span className="text-sm font-medium text-gray-700 dark:text-gray-200 overflow-hidden text-ellipsis whitespace-nowrap max-w-[72px] hidden lg:block">
           {displayName}
         </span>
         <span
