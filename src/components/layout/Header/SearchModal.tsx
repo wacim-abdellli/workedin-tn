@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, X, TrendingUp, RotateCcw, Briefcase, FileText, Wallet, User as UserIcon, Plus, FolderOpen, Users, ClipboardList, Settings, ArrowUpRight } from 'lucide-react';
@@ -310,6 +311,7 @@ export function SearchModal({ isScrolled, theme, language, t }: SearchModalProps
                 </div>
             </button>
 
+            {typeof document !== 'undefined' && createPortal(
                 <AnimatePresence>
                     {searchOpen && (
                         <>
@@ -318,7 +320,11 @@ export function SearchModal({ isScrolled, theme, language, t }: SearchModalProps
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
                                 exit={{ opacity: 0 }}
-                                className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm"
+                                onClick={() => setSearchOpen(false)}
+                                className={cn(
+                                    "fixed inset-0 z-[100] backdrop-blur-md transition-all",
+                                    theme === 'dark' ? "bg-black/60" : "bg-[#0f0e17]/40"
+                                )}
                             />
                             
                             {/* Modal */}
@@ -440,10 +446,10 @@ export function SearchModal({ isScrolled, theme, language, t }: SearchModalProps
                                                             key={skill}
                                                             onClick={() => handleSearch(skill)}
                                                             className={cn(
-                                                                'flex items-center gap-2 rounded-lg border px-3 py-1.5 text-sm transition-all duration-150',
-                                                                theme === 'dark'
-                                                                    ? 'border-purple-800/20 bg-purple-900/30 text-purple-300 hover:bg-purple-900/50'
-                                                                    : 'border-purple-100 bg-purple-50 text-purple-700 hover:bg-purple-100'
+                                                                'flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-medium transition-all duration-200 ease-out hover:scale-105 active:scale-95',
+                                                                theme === 'dark' 
+                                                                    ? 'border-white/5 bg-white/5 text-gray-300 hover:border-violet-500/30 hover:bg-violet-500/10 hover:text-white' 
+                                                                    : 'border-gray-200 bg-white text-gray-600 hover:border-violet-300 hover:bg-violet-50 hover:text-violet-700 shadow-sm'
                                                             )}
                                                         >
                                                             <div className={cn("w-1.5 h-1.5 rounded-full", getCategoryColor(skill))} />
@@ -472,10 +478,10 @@ export function SearchModal({ isScrolled, theme, language, t }: SearchModalProps
                                                                     setSearchOpen(false);
                                                                 }}
                                                                 className={cn(
-                                                                    'group flex items-center justify-between px-4 py-3 text-left transition-colors',
+                                                                    'group flex items-center justify-between px-5 py-3.5 text-left transition-colors',
                                                                     isFocused 
-                                                                          ? (theme === 'dark' ? 'bg-purple-500/15 border-l-[3px] border-purple-500 pl-[13px]' : 'bg-purple-50 border-l-[3px] border-purple-500 pl-[13px]') 
-                                                                          : (theme === 'dark' ? 'hover:bg-white/5 border-l-[3px] border-transparent pl-[13px]' : 'hover:bg-gray-50 border-l-[3px] border-transparent pl-[13px]')
+                                                                          ? (theme === 'dark' ? 'bg-white/5 border-l-[3px] border-violet-500 pl-[17px]' : 'bg-gray-100 border-l-[3px] border-violet-500 pl-[17px]') 
+                                                                          : (theme === 'dark' ? 'hover:bg-white/[0.03] border-l-[3px] border-transparent pl-[17px]' : 'hover:bg-gray-50 border-l-[3px] border-transparent pl-[17px]')
                                                                 )}
                                                             >
                                                                 <div className="flex items-center gap-3">
@@ -700,6 +706,7 @@ export function SearchModal({ isScrolled, theme, language, t }: SearchModalProps
                         </>
                     )}
                 </AnimatePresence>
+            , document.body)}
         </div>
     );
 }
