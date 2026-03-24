@@ -47,22 +47,22 @@ export function UserMenu({ user, profile, isOpen, switchingMode = null, onToggle
   return (
     <div data-account-panel className="flex items-center gap-2">
       <button
-        className="relative rounded-full border border-gray-200 bg-gray-100 p-2 transition-all duration-150 hover:bg-gray-200 dark:border-white/10 dark:bg-white/8 dark:hover:bg-white/12"
+        className="relative flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 bg-white shadow-sm transition-all duration-150 hover:bg-gray-50 dark:border-white/10 dark:bg-white/[0.06] dark:shadow-none dark:hover:bg-white/[0.1]"
         aria-label="Notifications"
         type="button"
       >
         <Bell className="h-4 w-4 text-gray-500 dark:text-gray-300" />
-        <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-red-500 ring-2 ring-white dark:ring-[#0f0e17]" />
+        <span className="absolute right-[11px] top-[11px] h-2 w-2 rounded-full bg-red-500 ring-2 ring-white dark:ring-[#0f0e17]" />
       </button>
 
       <button
         type="button"
         onClick={onToggle}
         className={cn(
-          'flex items-center gap-2 rounded-full border px-3 py-1.5 transition-all duration-150',
+          'flex min-h-[44px] items-center gap-2 rounded-full border px-2.5 py-1.5 pr-3 transition-all duration-150 shadow-sm',
           isOpen
-            ? 'border-purple-200 bg-purple-50 dark:border-purple-500/30 dark:bg-purple-950/40'
-            : 'border-gray-200 bg-gray-100 hover:bg-gray-200 dark:border-white/10 dark:bg-white/8 dark:hover:bg-white/12'
+            ? 'border-purple-200 bg-purple-50 shadow-purple-500/10 dark:border-purple-500/30 dark:bg-purple-950/40 dark:shadow-none'
+            : 'border-gray-200 bg-white hover:bg-gray-50 dark:border-white/10 dark:bg-white/[0.06] dark:hover:bg-white/[0.1]'
         )}
         aria-expanded={isOpen}
         aria-haspopup="dialog"

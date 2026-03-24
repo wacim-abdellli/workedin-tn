@@ -92,7 +92,7 @@ export default function AccountPanel({
   const setupActionLabel = currentTarget.isOnboarded ? copy.manageProfile : copy.completeSetup;
   const isVerified = Boolean(profile?.cin_verified || freelancerProfile?.cin_verified);
   const memberSince = formatMemberSince(profile?.created_at || user.created_at, language);
-  const identityLine = [profile?.location, memberSince].filter(Boolean).join(' • ');
+  const identityLine = [profile?.location, memberSince].filter(Boolean).join(' / ');
   const activeWorkspacePill =
     activeMode === 'freelancer'
       ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300'
@@ -124,13 +124,13 @@ export default function AccountPanel({
     [
       availableModes,
       copy.clientDesc,
+      copy.clientLabel,
       copy.completeSetup,
       copy.freelancerDesc,
       copy.freelancerLabel,
       copy.needsSetup,
       copy.progressLabel,
       copy.ready,
-      copy.clientLabel,
       freelancerProfile,
       profile?.onboarding_completed,
     ]
@@ -223,8 +223,8 @@ export default function AccountPanel({
                 </button>
               </div>
 
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-[1.1fr_1.2fr_0.95fr] lg:gap-6">
-                <section className="rounded-3xl border border-gray-100 bg-[#fcfbff] p-5 shadow-sm dark:border-white/8 dark:bg-[#171421]">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-[0.95fr_1.1fr_0.9fr] lg:gap-5">
+                <section className="rounded-[28px] border border-gray-100 bg-[#fcfbff] p-5 shadow-sm dark:border-white/8 dark:bg-[#171421]">
                   <div className="flex items-start gap-4">
                     {avatarUrl ? (
                       <img
@@ -243,7 +243,7 @@ export default function AccountPanel({
                     )}
 
                     <div className="min-w-0 flex-1">
-                      <div className="text-xs font-semibold uppercase tracking-[0.22em] text-purple-500 dark:text-purple-300">
+                      <div className="text-xs font-semibold uppercase tracking-[0.22em] text-purple-500/90 dark:text-purple-300">
                         {t.nav.profile}
                       </div>
                       <h2 className="mt-2 truncate text-lg font-semibold text-gray-900 dark:text-white">{displayName}</h2>
@@ -275,22 +275,35 @@ export default function AccountPanel({
                     </div>
                   </div>
 
+                  <div className="mt-5 rounded-2xl border border-gray-200/80 bg-white/70 p-3 dark:border-white/8 dark:bg-white/[0.03]">
+                    <div className="text-xs font-medium text-gray-500 dark:text-gray-500">
+                      {isVerified ? t.common.identityVerified : copy.needsSetup}
+                    </div>
+                    <div className="mt-1 text-sm text-gray-700 dark:text-gray-300">
+                      {profile?.bio && profile.bio.length > 0
+                        ? profile.bio.slice(0, 96)
+                        : activeMode === 'freelancer'
+                          ? copy.freelancerDesc
+                          : copy.clientDesc}
+                    </div>
+                  </div>
+
                   <Link
                     to={profilePath}
                     onClick={onClose}
-                    className="mt-5 inline-flex min-h-[44px] w-full items-center justify-between rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-800 transition-all hover:border-purple-200 hover:bg-purple-50 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:border-purple-500/30 dark:hover:bg-white/10"
+                    className="mt-4 inline-flex min-h-[44px] w-full items-center justify-between rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-800 transition-all hover:border-purple-200 hover:bg-purple-50 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:border-purple-500/30 dark:hover:bg-white/10"
                   >
                     <span>{t.publicProfile.editProfile}</span>
                     <ChevronRight className="h-4 w-4 text-gray-400 dark:text-gray-500" />
                   </Link>
                 </section>
 
-                <section className="rounded-3xl border border-gray-100 bg-[#fcfbff] p-5 shadow-sm dark:border-white/8 dark:bg-[#171421]">
+                <section className="rounded-[28px] border border-gray-100 bg-[#fcfbff] p-5 shadow-sm dark:border-white/8 dark:bg-[#171421]">
                   <div className="text-xs font-semibold uppercase tracking-[0.22em] text-gray-500 dark:text-gray-500">
                     {copy.sectionLabel}
                   </div>
 
-                  <div className="mt-4 rounded-3xl border border-gray-200 bg-white p-4 dark:border-white/10 dark:bg-white/5">
+                  <div className="mt-4 rounded-[24px] border border-gray-200 bg-white p-4 dark:border-white/10 dark:bg-white/5">
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <div className="flex flex-wrap items-center gap-2">
                         <span className={cn('rounded-full px-2.5 py-1 text-xs font-semibold', activeWorkspacePill)}>
@@ -354,7 +367,7 @@ export default function AccountPanel({
                           onClick={() => void handleSwitchMode(item.mode)}
                           disabled={Boolean(switchingMode) || isActive}
                           className={cn(
-                            'rounded-3xl border p-4 text-left transition-all duration-200',
+                            'rounded-[24px] border p-4 text-left transition-all duration-200',
                             'border-gray-200 bg-white hover:border-purple-300 dark:border-white/10 dark:bg-white/5 dark:hover:border-purple-500/40',
                             isActive && accentClasses,
                             isActive && 'cursor-default'
@@ -378,7 +391,7 @@ export default function AccountPanel({
                                   {isSwitchingThis ? copy.switching : actionLabel}
                                 </span>
                               </div>
-                              <p className="mt-2 text-sm leading-relaxed text-gray-600 dark:text-gray-400">{item.description}</p>
+                              <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-gray-600 dark:text-gray-400">{item.description}</p>
                               <p className="mt-3 text-xs font-medium text-gray-500 dark:text-gray-500">{item.meta}</p>
                             </div>
                           </div>
@@ -392,7 +405,7 @@ export default function AccountPanel({
                   </p>
                 </section>
 
-                <section className="rounded-3xl border border-gray-100 bg-[#fcfbff] p-5 shadow-sm dark:border-white/8 dark:bg-[#171421]">
+                <section className="rounded-[28px] border border-gray-100 bg-[#fcfbff] p-5 shadow-sm dark:border-white/8 dark:bg-[#171421]">
                   <div className="text-xs font-semibold uppercase tracking-[0.22em] text-gray-500 dark:text-gray-500">
                     {copy.tools}
                   </div>
@@ -481,7 +494,5 @@ function formatMemberSince(value: string | undefined, language: string): string 
   if (Number.isNaN(parsed.getTime())) return null;
 
   const locale = language === 'fr' ? 'fr-FR' : language === 'en' ? 'en-US' : 'ar-TN';
-  const formatted = new Intl.DateTimeFormat(locale, { month: 'short', year: 'numeric' }).format(parsed);
-
-  return `${formatted}`;
+  return new Intl.DateTimeFormat(locale, { month: 'short', year: 'numeric' }).format(parsed);
 }

@@ -142,9 +142,9 @@ export default function Header() {
                         : 'bg-white border-b border-gray-100'
             )}>
                 <div className="max-w-7xl 2xl:max-w-[90%] mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex items-center justify-between h-16 lg:h-20 gap-2 lg:gap-4">
+                    <div className="flex items-center justify-between h-16 lg:h-20 gap-3 lg:gap-5">
                         {/* Left: Logo & Navigation */}
-                        <div className="flex items-center gap-2 lg:gap-6">
+                        <div className="flex min-w-0 items-center gap-3 lg:gap-7">
                             <Logo language={language} />
                             <Navigation isScrolled={isScrolled} theme={theme} items={navItems} />
                         </div>
@@ -174,7 +174,7 @@ export default function Header() {
                         )}
 
                         {/* Right: Actions */}
-                        <div className="flex items-center gap-2 lg:gap-4 flex-shrink-0">
+                        <div className="flex flex-shrink-0 items-center gap-2 lg:gap-3">
                             <LanguageSwitcher
                                 isScrolled={isScrolled}
                                 theme={theme}
@@ -261,11 +261,11 @@ function Logo({ language }: { language: string }) {
         : (theme === 'dark' ? '/logos/logo-primary-dark.svg' : '/logos/logo-primary.svg');
 
     return (
-        <Link to="/" className="group relative z-10 flex items-center">
+        <Link to="/" className="group relative z-10 flex shrink-0 items-center">
             <motion.div
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="relative"
+                className="relative flex items-center"
             >
                 <div className="absolute -inset-3 rounded-3xl bg-gradient-to-r from-violet-600/20 via-fuchsia-500/15 to-amber-400/20 blur-xl opacity-0 transition-opacity group-hover:opacity-100" />
                 <img
@@ -274,7 +274,7 @@ function Logo({ language }: { language: string }) {
                     width="180"
                     height="40"
                     style={{ width: 'auto' }}
-                    className="relative block h-7 align-middle sm:h-8"
+                    className="relative block h-8 w-auto max-w-[168px] object-contain object-left align-middle sm:h-9 sm:max-w-[184px]"
                 />
             </motion.div>
         </Link>
