@@ -217,7 +217,7 @@ function JobDetail() {
                 freelancer_id: user.id,
                 cover_letter: data.cover_letter,
                 bid_amount: data.bid_amount,
-                delivery_days: data.delivery_days
+                delivery_time_days: data.delivery_days
             }, files);
             if (error) throw error;
         },

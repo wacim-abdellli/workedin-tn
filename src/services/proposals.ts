@@ -8,7 +8,7 @@ export interface CreateProposalInput {
     freelancer_id: string;
     cover_letter: string;
     bid_amount: number;
-    delivery_days: number;
+    delivery_time_days: number; // matches DB column name
 }
 
 function normalizeProposalError(error: unknown) {
@@ -58,20 +58,22 @@ export async function createProposal(data: CreateProposalInput, files: File[] = 
             attachmentUrls.push(uploadedUrl);
         }
 
-        const { data: proposalId, error } = await supabase.rpc('submit_proposal', {
-            p_job_id: data.job_id,
-            p_freelancer_id: data.freelancer_id,
-            p_cover_letter: data.cover_letter,
-            p_bid_amount: data.bid_amount,
-            p_delivery_days: data.delivery_days,
-            p_attachments: attachmentUrls,
-        });
+        const { data: proposal, error } = await supabase
+            .from('proposals')
+            .insert({
+                job_id: data.job_id,
+                freelancer_id: data.freelancer_id,
+                cover_letter: data.cover_letter,
+                bid_amount: data.bid_amount,
+                delivery_time_days: data.delivery_time_days,
+                attachments: attachmentUrls,
+            })
+            .select('id')
+            .single();
 
-        if (error) {
-            throw error;
-        }
+        if (error) throw error;
 
-        return { data: proposalId, error: null };
+        return { data: proposal?.id ?? null, error: null };
     } catch (error) {
         return { data: null, error: normalizeProposalError(error) };
     }
