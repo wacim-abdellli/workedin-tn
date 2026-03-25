@@ -27,6 +27,21 @@ import {
 import Button from '../components/ui/Button';
 import { getStuckTransactions, reconcilePayment, type StuckTransaction } from '../services/payments';
 import { useToast } from '../components/ui/Toast';
+import { supabase } from '../lib/supabase';
+
+interface IdentityVerification {
+    id: string;
+    user_id: string;
+    document_type: string;
+    front_image_url: string | null;
+    back_image_url: string | null;
+    status: 'pending' | 'approved' | 'rejected';
+    submitted_at: string;
+    profile: {
+        full_name: string;
+        email: string;
+    } | null;
+}
 
 // Mock admin stats
 const MOCK_STATS = {
@@ -73,6 +88,12 @@ export default function AdminDashboard() {
     const [loadingPayments, setLoadingPayments] = useState(false);
     const [retryingId, setRetryingId] = useState<string | null>(null);
 
+    // Real identity verifications state
+    const [verifications, setVerifications] = useState<IdentityVerification[]>([]);
+    const [loadingVerifications, setLoadingVerifications] = useState(false);
+    const [actioningId, setActioningId] = useState<string | null>(null);
+    const [expandedDocId, setExpandedDocId] = useState<string | null>(null);
+
     // Fetch stuck payments when payments tab is active
     useEffect(() => {
         if (activeTab === 'payments') {
@@ -81,7 +102,66 @@ export default function AdminDashboard() {
                 .then(setStuckPayments)
                 .finally(() => setLoadingPayments(false));
         }
+        if (activeTab === 'verifications') {
+            fetchVerifications();
+        }
     }, [activeTab]);
+
+    const fetchVerifications = async () => {
+        setLoadingVerifications(true);
+        try {
+            const { data, error } = await supabase
+                .from('identity_verifications')
+                .select(`
+                    id, user_id, document_type, front_image_url, back_image_url, status, submitted_at,
+                    profile:profiles!identity_verifications_user_id_fkey(full_name, email)
+                `)
+                .eq('status', 'pending')
+                .order('submitted_at', { ascending: true });
+
+            if (error) throw error;
+            setVerifications((data || []) as unknown as IdentityVerification[]);
+        } catch (err) {
+            console.error('Failed to fetch verifications:', err);
+            showToast('فشل تحميل طلبات التحقق', 'error');
+        } finally {
+            setLoadingVerifications(false);
+        }
+    };
+
+    const handleVerificationAction = async (id: string, action: 'approved' | 'rejected') => {
+        setActioningId(id);
+        try {
+            const { error } = await supabase
+                .from('identity_verifications')
+                .update({
+                    status: action,
+                    reviewed_at: new Date().toISOString(),
+                })
+                .eq('id', id);
+
+            if (error) throw error;
+
+            // If approved, also set cin_verified on freelancer_profiles
+            if (action === 'approved') {
+                const verification = verifications.find(v => v.id === id);
+                if (verification?.user_id) {
+                    await supabase
+                        .from('freelancer_profiles')
+                        .update({ cin_verified: true })
+                        .eq('id', verification.user_id);
+                }
+            }
+
+            setVerifications(prev => prev.filter(v => v.id !== id));
+            showToast(action === 'approved' ? 'تم قبول التحقق ✓' : 'تم رفض التحقق', action === 'approved' ? 'success' : 'warning');
+        } catch (err) {
+            console.error('Verification action error:', err);
+            showToast('فشل تنفيذ الإجراء', 'error');
+        } finally {
+            setActioningId(null);
+        }
+    };
 
     const handleRetryPayment = async (txId: string) => {
         setRetryingId(txId);
@@ -412,37 +492,123 @@ export default function AdminDashboard() {
                         {activeTab === 'verifications' && (
                             <div className="space-y-6">
                                 <div className="card">
-                                    <h3 className="font-bold text-foreground mb-6">طلبات التحقق من الهوية</h3>
-                                    <div className="space-y-4">
-                                        {MOCK_VERIFICATIONS.map(v => (
-                                            <div key={v.id} className="flex items-center justify-between p-6 bg-gray-50 rounded-xl">
-                                                <div className="flex items-center gap-4">
-                                                    <div className="w-16 h-16 rounded-xl bg-gray-200 flex items-center justify-center">
-                                                        <Shield className="w-8 h-8 text-gray-400" />
-                                                    </div>
-                                                    <div>
-                                                        <p className="font-bold text-foreground text-lg">{v.user_name}</p>
-                                                        <p className="text-muted">نوع التحقق: {v.type}</p>
-                                                        <p className="text-sm text-muted">{v.submitted_at}</p>
-                                                    </div>
-                                                </div>
-                                                <div className="flex gap-3">
-                                                    <Button variant="outline" size="sm">
-                                                        <Eye className="w-4 h-4 ml-1" />
-                                                        عرض المستندات
-                                                    </Button>
-                                                    <Button variant="primary" size="sm">
-                                                        <Check className="w-4 h-4 ml-1" />
-                                                        قبول
-                                                    </Button>
-                                                    <Button variant="ghost" size="sm" className="text-red-600 hover:bg-red-50">
-                                                        <X className="w-4 h-4 ml-1" />
-                                                        رفض
-                                                    </Button>
-                                                </div>
-                                            </div>
-                                        ))}
+                                    <div className="flex items-center justify-between mb-6">
+                                        <h3 className="font-bold text-foreground flex items-center gap-2">
+                                            <Shield className="w-5 h-5 text-yellow-600" />
+                                            طلبات التحقق من الهوية
+                                            {verifications.length > 0 && (
+                                                <span className="px-2 py-0.5 bg-yellow-100 text-yellow-800 rounded-full text-sm">
+                                                    {verifications.length} معلق
+                                                </span>
+                                            )}
+                                        </h3>
+                                        <Button variant="outline" size="sm" onClick={fetchVerifications}>
+                                            <RefreshCw className={`w-4 h-4 ml-1 ${loadingVerifications ? 'animate-spin' : ''}`} />
+                                            تحديث
+                                        </Button>
                                     </div>
+
+                                    {loadingVerifications ? (
+                                        <div className="text-center py-12">
+                                            <Loader2 className="w-8 h-8 animate-spin text-primary-600 mx-auto mb-2" />
+                                            <p className="text-muted">جاري التحميل...</p>
+                                        </div>
+                                    ) : verifications.length === 0 ? (
+                                        <div className="text-center py-12">
+                                            <Check className="w-12 h-12 text-green-500 mx-auto mb-2" />
+                                            <p className="text-foreground font-medium">لا توجد طلبات معلقة</p>
+                                            <p className="text-sm text-muted">جميع طلبات التحقق تمت معالجتها</p>
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-4">
+                                            {verifications.map(v => (
+                                                <div key={v.id} className="border border-gray-200 rounded-xl overflow-hidden">
+                                                    <div className="flex items-center justify-between p-4 bg-gray-50">
+                                                        <div className="flex items-center gap-4">
+                                                            <div className="w-12 h-12 rounded-xl bg-gray-200 flex items-center justify-center shrink-0">
+                                                                <Shield className="w-6 h-6 text-gray-400" />
+                                                            </div>
+                                                            <div>
+                                                                <p className="font-bold text-foreground">{v.profile?.full_name || 'مستخدم'}</p>
+                                                                <p className="text-sm text-muted">{v.profile?.email || ''}</p>
+                                                                <div className="flex items-center gap-2 mt-1">
+                                                                    <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full">
+                                                                        {v.document_type || 'CIN'}
+                                                                    </span>
+                                                                    <span className="text-xs text-muted">
+                                                                        {new Date(v.submitted_at).toLocaleString('ar-TN')}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex gap-2">
+                                                            <Button
+                                                                variant="outline"
+                                                                size="sm"
+                                                                onClick={() => setExpandedDocId(expandedDocId === v.id ? null : v.id)}
+                                                            >
+                                                                <Eye className="w-4 h-4 ml-1" />
+                                                                {expandedDocId === v.id ? 'إخفاء' : 'عرض المستندات'}
+                                                            </Button>
+                                                            <Button
+                                                                variant="primary"
+                                                                size="sm"
+                                                                disabled={actioningId === v.id}
+                                                                onClick={() => handleVerificationAction(v.id, 'approved')}
+                                                            >
+                                                                {actioningId === v.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4 ml-1" />}
+                                                                قبول
+                                                            </Button>
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                className="text-red-600 hover:bg-red-50"
+                                                                disabled={actioningId === v.id}
+                                                                onClick={() => handleVerificationAction(v.id, 'rejected')}
+                                                            >
+                                                                <X className="w-4 h-4 ml-1" />
+                                                                رفض
+                                                            </Button>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Document Images — collapsible */}
+                                                    {expandedDocId === v.id && (
+                                                        <div className="p-4 bg-white border-t border-gray-100 grid grid-cols-2 gap-4">
+                                                            <div>
+                                                                <p className="text-sm font-medium text-gray-600 mb-2">الوجه الأمامي</p>
+                                                                {v.front_image_url ? (
+                                                                    <a href={v.front_image_url} target="_blank" rel="noopener noreferrer">
+                                                                        <img
+                                                                            src={v.front_image_url}
+                                                                            alt="وجه أمامي"
+                                                                            className="w-full rounded-lg object-cover aspect-video border border-gray-200 hover:opacity-90 transition"
+                                                                        />
+                                                                    </a>
+                                                                ) : (
+                                                                    <div className="w-full rounded-lg aspect-video bg-gray-100 flex items-center justify-center text-gray-400 text-sm">لا توجد صورة</div>
+                                                                )}
+                                                            </div>
+                                                            <div>
+                                                                <p className="text-sm font-medium text-gray-600 mb-2">الوجه الخلفي</p>
+                                                                {v.back_image_url ? (
+                                                                    <a href={v.back_image_url} target="_blank" rel="noopener noreferrer">
+                                                                        <img
+                                                                            src={v.back_image_url}
+                                                                            alt="وجه خلفي"
+                                                                            className="w-full rounded-lg object-cover aspect-video border border-gray-200 hover:opacity-90 transition"
+                                                                        />
+                                                                    </a>
+                                                                ) : (
+                                                                    <div className="w-full rounded-lg aspect-video bg-gray-100 flex items-center justify-center text-gray-400 text-sm">لا توجد صورة</div>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         )}

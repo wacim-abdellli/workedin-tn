@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import {
-  Bell,
   Briefcase,
   ChevronDown,
   ClipboardList,
@@ -24,6 +23,7 @@ import {
 import { useAuth } from '@/contexts/AuthContext'
 import { useTranslation } from '@/i18n'
 import { useWorkspaceStore } from '@/lib/workspaceState'
+import { NotificationBell } from '@/components/ui'
 
 import SearchModal from './SearchModal'
 
@@ -284,16 +284,7 @@ export default function Header() {
                 {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
               </button>
 
-              {user ? (
-                <button
-                  onClick={() => navigate('/notifications')}
-                  className="relative rounded-lg p-1.5 text-gray-500 transition-colors hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-white/5"
-                  aria-label="Notifications"
-                >
-                  <Bell className="h-4 w-4" />
-                  <span className="absolute top-1 right-1 h-1.5 w-1.5 rounded-full bg-red-500" />
-                </button>
-              ) : null}
+              {user ? <NotificationBell /> : null}
 
               {!user ? (
                 <div className="flex items-center gap-2">

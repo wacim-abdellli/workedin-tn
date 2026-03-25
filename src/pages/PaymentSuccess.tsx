@@ -6,6 +6,7 @@ import { verifyPayment } from '../lib/flouci';
 import { supabase } from '../lib/supabase';
 import { useTranslation } from '../i18n';
 import { formatCurrency } from '../lib/currencyUtils';
+import { sendPaymentReceivedEmail } from '../lib/email';
 
 type VerificationStatus = 'verifying' | 'success' | 'failed';
 
@@ -168,6 +169,25 @@ const PaymentSuccess = () => {
 
                     logger.log('[PaymentSuccess] Atomic completion result:', completionResult);
                     setAmount(contract.amount || 0);
+
+                    // Fire payment received email — non-blocking
+                    if (contract.freelancer_id) {
+                        supabase
+                            .from('profiles')
+                            .select('email, full_name')
+                            .eq('id', contract.freelancer_id)
+                            .single()
+                            .then(({ data: fp }) => {
+                                if (fp?.email) {
+                                    sendPaymentReceivedEmail(
+                                        fp.email,
+                                        fp.full_name || 'مستقل',
+                                        contract.amount,
+                                        contract_id,
+                                    );
+                                }
+                            });
+                    }
                 } else {
                     // Fallback: Manual updates if no transaction found
                     // This shouldn't happen in normal flow but handle it gracefully

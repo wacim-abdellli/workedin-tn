@@ -130,10 +130,11 @@ export async function getJobById(jobId: string) {
     // Use anon client — job detail is public, must not hang on token refresh
     return supabaseAnon
         .from('jobs')
-        .select(`*, client:profiles!jobs_client_id_fkey(id, full_name, avatar_url, location, created_at)`)
+        .select(`*, client:profiles!jobs_client_id_fkey(id, full_name, email, avatar_url, location, created_at)`)
         .eq('id', jobId)
         .single();
 }
+
 
 export async function getJobsByClient(clientId: string) {
     return supabase

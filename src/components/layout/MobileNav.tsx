@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
   Bell,
@@ -16,24 +16,64 @@ import {
 } from 'lucide-react';
 
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/lib/supabase';
 import { getWorkspaceDashboardPath, getWorkspaceProfilePath } from '@/lib/workspaceRoutes';
 import { useWorkspaceStore } from '@/lib/workspaceState';
 
 const NAV_ITEMS = [
   { id: 'home', path: '/', icon: Home, label: 'Home' },
   { id: 'jobs', path: '/jobs', icon: Briefcase, label: 'Jobs' },
-  { id: 'messages', path: '/messages', icon: MessageSquare, label: 'Messages', badge: 3 },
-  { id: 'notifications', path: '/notifications', icon: Bell, label: 'Notifications', badge: 5 },
+  { id: 'messages', path: '/messages', icon: MessageSquare, label: 'Messages', badgeKey: 'messages' },
+  { id: 'notifications', path: '/notifications', icon: Bell, label: 'Notifications', badgeKey: 'notifications' },
   { id: 'more', path: null, icon: Menu, label: 'More' },
 ];
 
 export default function MobileNav() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { profile, signOut } = useAuth();
+  const { profile, user, signOut } = useAuth();
   const activeWorkspace = useWorkspaceStore((state) => state.activeWorkspace);
   const [showMenu, setShowMenu] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
+  const [unreadMessages, setUnreadMessages] = useState(0);
+
+  useEffect(() => {
+    if (!user?.id) return;
+
+    // Fetch initial counts
+    const fetchCounts = async () => {
+      const [{ count: notifCount }, { count: msgCount }] = await Promise.all([
+        supabase.from('notifications').select('*', { count: 'exact', head: true }).eq('user_id', user.id).eq('read', false),
+        supabase.from('messages').select('*', { count: 'exact', head: true }).eq('receiver_id', user.id).eq('read', false),
+      ]);
+      setUnreadNotifications(notifCount ?? 0);
+      setUnreadMessages(msgCount ?? 0);
+    };
+
+    fetchCounts();
+
+    const channel = supabase
+      .channel(`mobile-nav:${user.id}`)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` }, () => {
+        setUnreadNotifications((prev) => prev + 1);
+      })
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` }, () => {
+        fetchCounts();
+      })
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `receiver_id=eq.${user.id}` }, () => {
+        setUnreadMessages((prev) => prev + 1);
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [user?.id]);
+
+  const getBadge = (badgeKey?: string) => {
+    if (badgeKey === 'notifications') return unreadNotifications;
+    if (badgeKey === 'messages') return unreadMessages;
+    return 0;
+  };
 
   const isActive = (path: string | null) => {
     if (!path) return false;
@@ -82,9 +122,9 @@ export default function MobileNav() {
             >
               <div className="relative">
                 <item.icon className="h-5 w-5" />
-                {item.badge ? (
+                {getBadge(item.badgeKey) > 0 ? (
                   <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] text-white">
-                    {item.badge}
+                    {getBadge(item.badgeKey) > 9 ? '9+' : getBadge(item.badgeKey)}
                   </span>
                 ) : null}
               </div>

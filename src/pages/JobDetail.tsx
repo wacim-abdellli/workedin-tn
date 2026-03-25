@@ -30,6 +30,7 @@ import SEO from '../components/common/SEO';
 
 import ProposalModal from '../components/proposals/ProposalModal';
 import type { ProposalFormData } from '../components/proposals/ProposalModal';
+import { sendNewProposalEmail } from '../lib/email';
 import SimilarJobCard from '../components/jobs/SimilarJobCard';
 import OptimizedImage from '../components/common/OptimizedImage';
 
@@ -59,6 +60,7 @@ interface Job {
     client?: {
         id: string;
         full_name: string;
+        email?: string;
         avatar_url?: string;
         location?: string;
         created_at: string;
@@ -225,6 +227,15 @@ function JobDetail() {
             queryClient.invalidateQueries({ queryKey: ['myProposal', jobId, user?.id] });
             showToast('تم إرسال العرض بنجاح!', 'success');
             setShowProposalModal(false);
+            // Notify client by email (fire-and-forget, never blocks UI)
+            if (job?.client?.email && job.title && jobId) {
+                sendNewProposalEmail(
+                    job.client.email,
+                    job.client.full_name || 'عميل',
+                    job.title,
+                    jobId,
+                );
+            }
         },
         onError: (err) => {
             logger.error('Error submitting proposal:', err);
