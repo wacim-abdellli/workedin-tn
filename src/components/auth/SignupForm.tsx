@@ -18,12 +18,12 @@ interface SignupFormProps {
 
 function SignupForm({ onComplete }: SignupFormProps) {
     const { t, dir } = useTranslation();
-    const { profile, freelancerProfile, refreshProfile, setUserType, signUpWithEmail, signInWithEmail } = useAuth();
+    const { profile, freelancerProfile, refreshProfile, setUserType, signUpWithEmail } = useAuth();
     const { showToast } = useToast();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const urlStep = searchParams.get('step');
-    const [step, setStep] = useState<'email' | 'userType'>(urlStep === 'select-type' ? 'userType' : 'email');
+    const [step] = useState<'email' | 'userType'>(urlStep === 'select-type' ? 'userType' : 'email');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [showPassword, setShowPassword] = useState(false);
@@ -36,7 +36,6 @@ function SignupForm({ onComplete }: SignupFormProps) {
     }, [freelancerProfile, navigate, profile, step]);
 
     const ArrowIcon = dir === 'rtl' ? ArrowLeft : ArrowRight;
-    const preSelectedType = searchParams.get('type') as UserType | null;
 
     const signupSchema = z.object({
         email: z.string().email(t.auth.invalidEmail),
@@ -84,13 +83,9 @@ function SignupForm({ onComplete }: SignupFormProps) {
 
         try {
             await signUpWithEmail(data.email, data.password);
-            await signInWithEmail(data.email, data.password);
-
-            if (preSelectedType) {
-                await handleSelectUserType(preSelectedType);
-            } else {
-                setStep('userType');
-            }
+            
+            // Redirect to email verification page
+            navigate(`/verify-email?email=${encodeURIComponent(data.email)}`);
         } catch (err) {
             const message = (err as Error).message;
             if (message.includes('User already registered')) {

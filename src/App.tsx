@@ -63,6 +63,7 @@ const PaymentSuccess = lazy(() => import('./pages/PaymentSuccess'));
 const PaymentFailed = lazy(() => import('./pages/PaymentFailed'));
 const VerifyIdentity = lazy(() => import('./pages/VerifyIdentity'));
 const VerificationQueue = lazy(() => import('./pages/admin/VerificationQueue'));
+const VerifyEmail = lazy(() => import('./pages/VerifyEmail'));
 
 import { useState, useEffect } from 'react';
 
@@ -111,6 +112,7 @@ function AppRoutes() {
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/auth/callback" element={<AuthCallback />} />
+      <Route path="/verify-email" element={<VerifyEmail />} />
 
       {/* Onboarding routes */}
       <Route path="/onboarding/freelancer" element={

@@ -857,4 +857,14 @@ export const en: Translations = {
             rejected: 'Rejected',
         },
     },
+    verifyEmail: {
+        title: 'Check your email',
+        subtitle: 'We sent a verification link to {{email}}. Click it to activate your account.',
+        resend: 'Resend verification email',
+        resendSuccess: 'Verification email sent successfully',
+        resendCooldown: 'Resend in {{seconds}} seconds',
+        wrongEmail: 'Wrong email? Go back to signup',
+        checkSpam: 'If you don\'t see the email, check your spam folder.',
+        noEmail: 'Email address is required',
+    },
 };

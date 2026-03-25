@@ -64,6 +64,7 @@ const AuthCallback = () => {
             const authCode = currentUrl.searchParams.get('code');
             const authError = currentUrl.searchParams.get('error_description') || currentUrl.searchParams.get('error');
             const authErrorCode = currentUrl.searchParams.get('error_code') || undefined;
+            const tokenHash = currentUrl.hash;
 
             if (authCode || authError || authErrorCode) {
                 currentUrl.searchParams.delete('code');
@@ -81,6 +82,38 @@ const AuthCallback = () => {
                     setStatus('error');
                 }
                 return;
+            }
+
+            // Check if this is an email confirmation or recovery token
+            if (tokenHash && (tokenHash.includes('type=signup') || tokenHash.includes('type=email') || tokenHash.includes('type=recovery'))) {
+                logger.info('AuthCallback: detected email confirmation or recovery token');
+                
+                try {
+                    // Let Supabase handle the token automatically
+                    const { data, error } = await withTimeout(
+                        supabase.auth.getSession(),
+                        EXCHANGE_TIMEOUT_MS,
+                        'AuthCallback.getSession'
+                    );
+
+                    if (error) {
+                        logger.error('AuthCallback: failed to get session after email confirmation', error);
+                    } else if (data.session) {
+                        logger.info('AuthCallback: email confirmed, session established');
+                        
+                        // Check if this is a recovery token
+                        if (tokenHash.includes('type=recovery')) {
+                            window.location.replace('/reset-password');
+                            return;
+                        }
+                        
+                        // For email confirmation, redirect to onboarding
+                        redirectToPostAuth();
+                        return;
+                    }
+                } catch (error) {
+                    logger.error('AuthCallback: email confirmation handling failed', error);
+                }
             }
 
             const existingSession = await waitForSession(Date.now() + PRE_EXCHANGE_WAIT_MS);

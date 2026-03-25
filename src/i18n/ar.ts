@@ -855,6 +855,16 @@ export const ar = {
             rejected: 'مرفوض',
         },
     },
+    verifyEmail: {
+        title: 'تحقق من بريدك الإلكتروني',
+        subtitle: 'أرسلنا رابط التحقق إلى {{email}}. انقر عليه لتفعيل حسابك.',
+        resend: 'إعادة إرسال بريد التحقق',
+        resendSuccess: 'تم إرسال بريد التحقق بنجاح',
+        resendCooldown: 'إعادة الإرسال بعد {{seconds}} ثانية',
+        wrongEmail: 'بريد خاطئ؟ العودة للتسجيل',
+        checkSpam: 'إذا لم تجد البريد، تحقق من مجلد الرسائل غير المرغوب فيها.',
+        noEmail: 'عنوان البريد الإلكتروني مطلوب',
+    },
 };
 
 export type Translations = typeof ar;
