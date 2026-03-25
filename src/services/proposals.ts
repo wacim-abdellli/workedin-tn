@@ -50,6 +50,30 @@ export async function getProposalsByFreelancer(freelancerId: string) {
 
 export async function createProposal(data: CreateProposalInput, files: File[] = []) {
     try {
+        // freelancer_profiles.id = profiles.id (same UUID as auth user).
+        // Guard: ensure the user has a freelancer_profiles row before inserting.
+        const { data: fp, error: fpError } = await supabase
+            .from('freelancer_profiles')
+            .select('id')
+            .eq('id', data.freelancer_id)
+            .maybeSingle();
+
+        if (fpError) throw fpError;
+
+        if (!fp) {
+            // Auto-create a minimal freelancer_profiles row so the FK is satisfied.
+            // Users can complete their profile later from the dashboard.
+            const { error: insertFpError } = await supabase
+                .from('freelancer_profiles')
+                .insert({ id: data.freelancer_id });
+            if (insertFpError) {
+                return {
+                    data: null,
+                    error: new Error('يجب إكمال ملفك الشخصي كمستقل قبل تقديم العروض.'),
+                };
+            }
+        }
+
         const attachmentUrls: string[] = [];
 
         for (const file of files) {
