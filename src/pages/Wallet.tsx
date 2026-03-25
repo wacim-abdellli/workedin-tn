@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { Wallet as WalletIcon, TrendingUp, Clock, ArrowUpRight, Building, Phone, X, AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
+import { Wallet as WalletIcon, TrendingUp, Clock, ArrowUpRight, Building, Phone, X, Info, CheckCircle, Loader2 } from 'lucide-react';
 import { Header } from '@/components/layout';
+import Button from '@/components/ui/Button';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { useQuery } from '@tanstack/react-query';
@@ -167,8 +168,8 @@ export default function Wallet() {
             ) : transactions.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center px-4">
                 <WalletIcon className="w-12 h-12 text-gray-300 dark:text-gray-600 mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white">No transactions yet</h3>
-                <p className="text-gray-500 dark:text-gray-400 mt-1">Your transaction history will appear here</p>
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white">{t.wallet?.noTransactions || 'No transactions yet'}</h3>
+                <p className="text-gray-500 dark:text-gray-400 mt-1">{t.wallet?.noTransactionsDesc || 'Your transaction history will appear here'}</p>
               </div>
             ) : (
               <>
@@ -176,11 +177,11 @@ export default function Wallet() {
                   <table className="w-full">
                     <thead className="bg-gray-50 dark:bg-white/5 border-b border-gray-100 dark:border-white/5">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Type</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Description</th>
-                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Amount</th>
-                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t.wallet?.date || 'Date'}</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t.wallet?.type || 'Type'}</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t.wallet?.description || 'Description'}</th>
+                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t.wallet?.amount || 'Amount'}</th>
+                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{(t.wallet as any)?.status?.pending ? t.wallet?.status?.pending?.replace('قيد الانتظار', 'الحالة') : 'Status'}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100 dark:divide-white/5">
@@ -230,17 +231,17 @@ export default function Wallet() {
                       disabled={page === 1}
                       className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      Previous
+                      {t.wallet?.previous || 'Previous'}
                     </button>
                     <span className="text-sm text-gray-700 dark:text-gray-300">
-                      Page {page} of {totalPages}
+                      {(t.wallet?.pageOf || 'Page {{page}} of {{totalPages}}').replace('{{page}}', page.toString()).replace('{{totalPages}}', totalPages.toString())}
                     </span>
                     <button
                       onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                       disabled={page === totalPages}
                       className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      Next
+                      {t.wallet?.next || 'Next'}
                     </button>
                   </div>
                 )}
@@ -261,19 +262,19 @@ export default function Wallet() {
             ) : !withdrawals || withdrawals.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center px-4">
                 <ArrowUpRight className="w-12 h-12 text-gray-300 dark:text-gray-600 mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white">No withdrawals yet</h3>
-                <p className="text-gray-500 dark:text-gray-400 mt-1">Request a withdrawal to see it here</p>
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white">{t.wallet?.noWithdrawals || 'No withdrawals yet'}</h3>
+                <p className="text-gray-500 dark:text-gray-400 mt-1">{t.wallet?.noWithdrawalsDesc || 'Request a withdrawal to see it here'}</p>
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead className="bg-gray-50 dark:bg-white/5 border-b border-gray-100 dark:border-white/5">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Amount</th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Net Amount</th>
-                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Method</th>
-                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t.wallet?.date || 'Date'}</th>
+                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t.wallet?.amount || 'Amount'}</th>
+                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t.wallet?.netAmount || 'Net Amount'}</th>
+                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t.wallet?.method || 'Method'}</th>
+                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{(t.wallet as any)?.status?.pending ? t.wallet?.status?.pending?.replace('قيد الانتظار', 'الحالة') : 'Status'}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100 dark:divide-white/5">
@@ -356,24 +357,24 @@ function WithdrawalModal({ wallet, onClose, onSuccess }: { wallet: any; onClose:
     e.preventDefault();
 
     if (!validation.valid) {
-      showToast(validation.error || 'Invalid amount', 'error');
+      showToast(validation.error || t.wallet?.invalidAmount || 'Invalid amount', 'error');
       return;
     }
 
     if (method === 'bank_transfer' && (!bankName || !bankAccountName || !bankIban)) {
-      showToast('Please fill all bank details', 'error');
+      showToast(t.wallet?.fillBankDetails || 'Please fill all bank details', 'error');
       return;
     }
 
     if ((method === 'd17' || method === 'flouci') && !phoneNumber) {
-      showToast('Please enter phone number', 'error');
+      showToast(t.wallet?.enterPhone || 'Please enter phone number', 'error');
       return;
     }
 
     setLoading(true);
 
     try {
-      if (!user) throw new Error('Not authenticated');
+      if (!user) throw new Error(t.wallet?.notAuthenticated || 'Not authenticated');
 
       const { error } = await supabase.from('withdrawals').insert({
         user_id: user.id,
@@ -390,14 +391,14 @@ function WithdrawalModal({ wallet, onClose, onSuccess }: { wallet: any; onClose:
       if (error) throw error;
 
       setSubmitted(true);
-      showToast('Withdrawal request submitted successfully', 'success');
+      showToast(t.wallet?.withdrawalSuccess || 'Withdrawal request submitted successfully', 'success');
       
       setTimeout(() => {
         onSuccess();
       }, 2000);
     } catch (error) {
       console.error('Withdrawal error:', error);
-      showToast('Failed to submit withdrawal request', 'error');
+      showToast(t.wallet?.withdrawalError || 'Failed to submit withdrawal request', 'error');
     } finally {
       setLoading(false);
     }
@@ -411,10 +412,10 @@ function WithdrawalModal({ wallet, onClose, onSuccess }: { wallet: any; onClose:
             <CheckCircle className="w-8 h-8 text-green-600" />
           </div>
           <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-            Withdrawal Request Submitted
+            {t.wallet?.withdrawalSubmittedTitle || 'Withdrawal Request Submitted'}
           </h3>
           <p className="text-gray-600 dark:text-gray-400 mb-4">
-            Your request will be reviewed within 2-5 business days
+            {t.wallet?.withdrawalSubmittedDesc || 'Your request will be reviewed within 2-5 business days'}
           </p>
           <p className="text-2xl font-bold text-purple-600">
             {formatCurrency(amountValue)}
@@ -437,7 +438,7 @@ function WithdrawalModal({ wallet, onClose, onSuccess }: { wallet: any; onClose:
         </div>
 
         <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
-          <div className="text-sm text-gray-500 mb-1">Available Balance</div>
+          <div className="text-sm text-gray-500 mb-1">{t.wallet?.availableBalance || 'Available Balance'}</div>
           <div className="text-2xl font-bold text-gray-900 dark:text-white">
             {formatCurrency(wallet.balance)}
           </div>
@@ -452,7 +453,7 @@ function WithdrawalModal({ wallet, onClose, onSuccess }: { wallet: any; onClose:
               type="number"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
-              placeholder={`Min ${MIN_WITHDRAWAL_AMOUNT} TND`}
+              placeholder={(t.wallet?.minAmount || `Min ${MIN_WITHDRAWAL_AMOUNT} TND`).replace('{{min}}', MIN_WITHDRAWAL_AMOUNT.toString())}
               min={MIN_WITHDRAWAL_AMOUNT}
               max={wallet.balance}
               step="0.001"
@@ -495,14 +496,14 @@ function WithdrawalModal({ wallet, onClose, onSuccess }: { wallet: any; onClose:
                 type="text"
                 value={bankName}
                 onChange={(e) => setBankName(e.target.value)}
-                placeholder="Bank Name"
+                placeholder={t.wallet?.bankName || "Bank Name"}
                 className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               />
               <input
                 type="text"
                 value={bankAccountName}
                 onChange={(e) => setBankAccountName(e.target.value)}
-                placeholder="Account Holder Name"
+                placeholder={t.wallet?.accountHolder || "Account Holder Name"}
                 className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               />
               <input
@@ -531,28 +532,30 @@ function WithdrawalModal({ wallet, onClose, onSuccess }: { wallet: any; onClose:
           )}
 
           <div className="p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
-            <div className="flex gap-2">
-              <AlertCircle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
-              <p className="text-sm text-amber-700 dark:text-amber-300">
-                Withdrawal requests are reviewed within 2-5 business days
-              </p>
-            </div>
+            <div className="mb-6 p-4 bg-purple-50 dark:bg-purple-900/20 rounded-xl flex items-start gap-3">
+          <Info className="w-5 h-5 text-purple-600 dark:text-purple-400 shrink-0 mt-0.5" />
+          <div className="text-sm text-purple-800 dark:text-purple-300">
+            {t.wallet?.withdrawalSubmittedDesc || 'Withdrawal requests are reviewed within 2-5 business days'}
+          </div>
+        </div>
           </div>
 
-          <button
-            type="submit"
-            disabled={loading || !validation.valid || !amount}
-            className="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-          >
-            {loading ? (
-              <>
-                <Loader2 className="w-5 h-5 animate-spin" />
-                <span>Submitting...</span>
-              </>
-            ) : (
-              <span>Submit Withdrawal Request</span>
-            )}
-          </button>
+          <Button
+          type="submit"
+          variant="primary"
+          className="w-full justify-center mt-6"
+          disabled={loading || amountValue < MIN_WITHDRAWAL_AMOUNT || amountValue > wallet.balance || !amountValue}
+          onClick={handleSubmit}
+        >
+          {loading ? (
+            <>
+              <Loader2 className="w-5 h-5 mr-3 animate-spin" />
+              {t.wallet?.submitting || 'Submitting...'}
+            </>
+          ) : (
+            t.wallet?.submitWithdrawal || 'Submit Withdrawal Request'
+          )}
+        </Button>
         </form>
       </div>
     </div>

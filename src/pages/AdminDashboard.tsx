@@ -61,6 +61,18 @@ interface AdminUser {
     last_active: string;
 }
 
+interface AdminJob {
+    id: string;
+    title: string;
+    status: string;
+    budget: number;
+    created_at: string;
+    client: {
+        full_name: string;
+        email: string;
+    } | null;
+}
+
 type Tab = 'overview' | 'users' | 'jobs' | 'payments' | 'verifications' | 'disputes' | 'reports' | 'settings';
 
 export default function AdminDashboard() {
@@ -100,6 +112,12 @@ export default function AdminDashboard() {
     const [realUsers, setRealUsers] = useState<AdminUser[]>([]);
     const [loadingUsers, setLoadingUsers] = useState(false);
 
+    // Real jobs
+    const [jobs, setJobs] = useState<AdminJob[]>([]);
+    const [loadingJobs, setLoadingJobs] = useState(false);
+    const [jobSearch, setJobSearch] = useState('');
+    const [jobFilter, setJobFilter] = useState<'all' | 'open' | 'in_progress' | 'completed' | 'cancelled'>('all');
+
     // Fetch data per tab
     useEffect(() => {
         if (activeTab === 'overview') fetchStats();
@@ -112,6 +130,7 @@ export default function AdminDashboard() {
         if (activeTab === 'verifications') fetchVerifications();
         if (activeTab === 'disputes') fetchDisputes();
         if (activeTab === 'users') fetchUsers();
+        if (activeTab === 'jobs') fetchJobs();
     }, [activeTab]);
 
     const fetchStats = async () => {
@@ -160,6 +179,42 @@ export default function AdminDashboard() {
             console.error('Users fetch error:', err);
         } finally {
             setLoadingUsers(false);
+        }
+    };
+
+    const fetchJobs = async () => {
+        setLoadingJobs(true);
+        try {
+            const { data, error } = await supabase
+                .from('jobs')
+                .select(`
+                    id, title, status, budget, created_at,
+                    client:client_id (full_name, email)
+                `)
+                .order('created_at', { ascending: false })
+                .limit(100);
+            
+            if (error) throw error;
+            setJobs(data as unknown as AdminJob[]);
+        } catch (err) {
+            console.error('Jobs fetch error:', err);
+            showToast('حدث خطأ أثناء تحميل الوظائف', 'error');
+        } finally {
+            setLoadingJobs(false);
+        }
+    };
+
+    const handleDeleteJob = async (id: string) => {
+        if (!confirm('هل أنت متأكد من حذف هذه الوظيفة؟')) return;
+        
+        try {
+            const { error } = await supabase.from('jobs').delete().eq('id', id);
+            if (error) throw error;
+            showToast('تم حذف الوظيفة بنجاح', 'success');
+            setJobs(prev => prev.filter(j => j.id !== id));
+        } catch (error) {
+            console.error('Error deleting job:', error);
+            showToast('حدث خطأ أثناء الحذف', 'error');
         }
     };
 
@@ -305,6 +360,12 @@ export default function AdminDashboard() {
     const filteredUsers = realUsers.filter(u => {
         if (userFilter !== 'all' && u.type !== userFilter) return false;
         if (searchQuery && !u.name.includes(searchQuery) && !u.email.includes(searchQuery)) return false;
+        return true;
+    });
+
+    const filteredJobs = jobs.filter(j => {
+        if (jobFilter !== 'all' && j.status !== jobFilter) return false;
+        if (jobSearch && !j.title.includes(jobSearch)) return false;
         return true;
     });
 
@@ -878,7 +939,117 @@ export default function AdminDashboard() {
                             </div>
                         )}
 
-                        {(activeTab === 'jobs' || activeTab === 'reports' || activeTab === 'settings') && (
+                        {activeTab === 'jobs' && (
+                            <div className="space-y-6">
+                                <div className="card">
+                                    <div className="flex flex-wrap items-center gap-4">
+                                        <div className="flex-1 relative">
+                                            <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                            <input
+                                                type="text"
+                                                value={jobSearch}
+                                                onChange={(e) => setJobSearch(e.target.value)}
+                                                placeholder="بحث في الوظائف..."
+                                                className="w-full pr-10 pl-4 py-2.5 border border-gray-200 rounded-xl"
+                                            />
+                                        </div>
+                                        <select
+                                            value={jobFilter}
+                                            onChange={(e) => setJobFilter(e.target.value as any)}
+                                            className="px-4 py-2.5 border border-gray-200 rounded-xl bg-white"
+                                        >
+                                            <option value="all">جميع الحالات</option>
+                                            <option value="open">مفتوحة</option>
+                                            <option value="in_progress">قيد التنفيذ</option>
+                                            <option value="completed">مكتملة</option>
+                                            <option value="cancelled">ملغاة</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                {loadingJobs ? (
+                                    <div className="card text-center py-12">
+                                        <Loader2 className="w-8 h-8 animate-spin text-primary-600 mx-auto mb-2" />
+                                        <p className="text-muted">جاري تحميل الوظائف...</p>
+                                    </div>
+                                ) : (
+                                    <div className="card p-0 overflow-hidden">
+                                        <div className="overflow-x-auto">
+                                            <table className="w-full">
+                                                <thead className="bg-gray-50 border-b border-gray-200">
+                                                    <tr>
+                                                        <th className="px-6 py-4 text-right text-sm font-medium text-gray-500 whitespace-nowrap">الوظيفة</th>
+                                                        <th className="px-6 py-4 text-right text-sm font-medium text-gray-500 whitespace-nowrap">العميل</th>
+                                                        <th className="px-6 py-4 text-right text-sm font-medium text-gray-500 whitespace-nowrap">الميزانية</th>
+                                                        <th className="px-6 py-4 text-right text-sm font-medium text-gray-500 whitespace-nowrap">الحالة</th>
+                                                        <th className="px-6 py-4 text-center text-sm font-medium text-gray-500 whitespace-nowrap">إجراءات</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody className="divide-y divide-gray-100">
+                                                    {filteredJobs.map(job => (
+                                                        <tr key={job.id} className="hover:bg-gray-50">
+                                                            <td className="px-6 py-4">
+                                                                <p className="font-medium text-foreground">{job.title}</p>
+                                                                <p className="text-xs text-muted">{new Date(job.created_at).toLocaleDateString('ar-TN')}</p>
+                                                            </td>
+                                                            <td className="px-6 py-4">
+                                                                <p className="font-medium text-foreground text-sm">{job.client?.full_name}</p>
+                                                                <p className="text-xs text-muted">{job.client?.email}</p>
+                                                            </td>
+                                                            <td className="px-6 py-4 text-sm font-medium">
+                                                                {job.budget} د.ت
+                                                            </td>
+                                                            <td className="px-6 py-4">
+                                                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                                                    job.status === 'open' ? 'bg-green-100 text-green-700' :
+                                                                    job.status === 'in_progress' ? 'bg-blue-100 text-blue-700' :
+                                                                    job.status === 'completed' ? 'bg-purple-100 text-purple-700' :
+                                                                    'bg-gray-100 text-gray-700'
+                                                                }`}>
+                                                                    {job.status === 'open' ? 'مفتوحة' : 
+                                                                     job.status === 'in_progress' ? 'قيد التنفيذ' : 
+                                                                     job.status === 'completed' ? 'مكتملة' : 'ملغاة'}
+                                                                </span>
+                                                            </td>
+                                                            <td className="px-6 py-4">
+                                                                <div className="flex items-center justify-center gap-2">
+                                                                    <Button 
+                                                                        variant="ghost" 
+                                                                        size="sm"
+                                                                        onClick={() => window.open(`/jobs/${job.id}`, '_blank')}
+                                                                    >
+                                                                        <Eye className="w-4 h-4 ml-1" />
+                                                                        مراجعة
+                                                                    </Button>
+                                                                    <Button 
+                                                                        variant="ghost" 
+                                                                        size="sm" 
+                                                                        className="text-red-600 hover:bg-red-50"
+                                                                        onClick={() => handleDeleteJob(job.id)}
+                                                                    >
+                                                                        <Trash2 className="w-4 h-4 ml-1" />
+                                                                        حذف
+                                                                    </Button>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                    {filteredJobs.length === 0 && (
+                                                        <tr>
+                                                            <td colSpan={5} className="px-6 py-8 text-center text-muted">
+                                                                لا يوجد وظائف
+                                                            </td>
+                                                        </tr>
+                                                    )}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {(activeTab === 'reports' || activeTab === 'settings') && (
                             <div className="card text-center py-16">
                                 <BarChart3 className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                                 <h3 className="text-xl font-bold text-foreground mb-2">قريباً</h3>
