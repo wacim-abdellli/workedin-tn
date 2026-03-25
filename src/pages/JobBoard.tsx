@@ -166,6 +166,7 @@ function JobBoard() {
         hasNextPage,
         isFetching,
         isFetchingNextPage,
+        error: jobsError,
     } = useInfiniteQuery({
         queryKey: ['jobs', filters, debouncedSearch],
         queryFn: ({ pageParam }) => jobsService.getJobs({ ...filters, search: debouncedSearch }, pageParam as number, 10),
@@ -333,6 +334,11 @@ function JobBoard() {
                         {isLoading && jobs.length === 0 ? (
                             <div className={viewMode === 'grid' ? 'grid md:grid-cols-2 gap-4' : 'space-y-4'}>
                                 {[...Array(6)].map((_, i) => <SkeletonCard key={i} />)}
+                            </div>
+                        ) : jobsError ? (
+                            <div className="rounded-xl border border-red-200 bg-red-50 dark:bg-red-900/10 dark:border-red-800 p-6 text-center">
+                                <p className="text-red-600 dark:text-red-400 font-medium">Failed to load jobs</p>
+                                <p className="text-red-500 dark:text-red-500 text-sm mt-1">{(jobsError as Error)?.message || 'Unknown error'}</p>
                             </div>
                         ) : jobs.length === 0 ? (
                             <EmptyState

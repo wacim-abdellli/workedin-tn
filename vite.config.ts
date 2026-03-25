@@ -42,9 +42,9 @@ export default defineConfig(({ command, mode }) => ({
     target: 'es2020',
   },
 
-  // Strip console.log and debugger statements in production
+  // Strip debugger statements in production (keep console for error visibility)
   esbuild: mode === 'production' ? {
-    drop: ['console', 'debugger'],
+    drop: ['debugger'],
   } : undefined,
 
   // Performance optimizations
