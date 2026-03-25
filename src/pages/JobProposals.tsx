@@ -284,6 +284,20 @@ export default function JobProposals() {
                     data: { contract_id: contract.id, job_id: jobId }
                 });
 
+            // 6. Send email notification (fire-and-forget)
+            supabase
+                .from('profiles')
+                .select('email, full_name')
+                .eq('id', proposal.freelancer_id)
+                .single()
+                .then(({ data: fp }) => {
+                    if (fp?.email) {
+                        import('../lib/email').then(({ sendProposalAcceptedEmail }) => {
+                            sendProposalAcceptedEmail(fp.email, fp.full_name || 'مستقل', job.title, contract.id);
+                        });
+                    }
+                });
+
             showToast('تم توظيف المستقل بنجاح! 🎉', 'success');
             navigate(`/contracts/${contract.id}`);
 

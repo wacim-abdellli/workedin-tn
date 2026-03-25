@@ -43,38 +43,23 @@ interface IdentityVerification {
     } | null;
 }
 
-// Mock admin stats
-const MOCK_STATS = {
-    totalUsers: 1245,
-    totalFreelancers: 890,
-    totalClients: 355,
-    activeJobs: 67,
-    activeContracts: 34,
-    totalRevenue: 12450,
-    todaySignups: 8,
-    todayContracts: 3,
-};
+interface AdminStats {
+    totalUsers: number;
+    activeJobs: number;
+    activeContracts: number;
+    totalRevenue: number;
+    todaySignups: number;
+    todayContracts: number;
+}
 
-// Mock pending verifications
-const MOCK_VERIFICATIONS = [
-    { id: 'v1', user_name: 'أحمد بن علي', submitted_at: 'منذ 2 ساعة', type: 'CIN' },
-    { id: 'v2', user_name: 'سارة المنصوري', submitted_at: 'منذ 5 ساعات', type: 'CIN' },
-    { id: 'v3', user_name: 'محمد الشريف', submitted_at: 'منذ يوم', type: 'CIN' },
-];
-
-// Mock flagged content
-const MOCK_FLAGGED = [
-    { id: 'f1', type: 'job', title: 'وظيفة مشبوهة', reporter: 'مستخدم', reason: 'محتوى غير مناسب', date: 'منذ ساعة' },
-    { id: 'f2', type: 'review', title: 'تقييم مزيف', reporter: 'مستخدم', reason: 'معلومات خاطئة', date: 'منذ 3 ساعات' },
-];
-
-// Mock users
-const MOCK_USERS = [
-    { id: 'u1', name: 'أحمد بن علي', email: 'ahmed@example.com', type: 'freelancer', status: 'active', joined: '2024-01-15', last_active: 'منذ ساعة' },
-    { id: 'u2', name: 'سارة المنصوري', email: 'sara@example.com', type: 'freelancer', status: 'active', joined: '2024-02-20', last_active: 'منذ يوم' },
-    { id: 'u3', name: 'محمد العميل', email: 'mohamed@example.com', type: 'client', status: 'active', joined: '2024-03-10', last_active: 'الآن' },
-    { id: 'u4', name: 'فاطمة حسن', email: 'fatma@example.com', type: 'freelancer', status: 'suspended', joined: '2024-01-05', last_active: 'منذ أسبوع' },
-];
+interface AdminUser {
+    id: string;
+    name: string;
+    email: string;
+    type: string;
+    status: string;
+    last_active: string;
+}
 
 type Tab = 'overview' | 'users' | 'jobs' | 'payments' | 'verifications' | 'disputes' | 'reports' | 'settings';
 
@@ -108,21 +93,75 @@ export default function AdminDashboard() {
     const [loadingDisputes, setLoadingDisputes] = useState(false);
     const [resolvingId, setResolvingId] = useState<string | null>(null);
 
-    // Fetch stuck payments when payments tab is active
+    // Real stats
+    const [stats, setStats] = useState<AdminStats>({ totalUsers: 0, activeJobs: 0, activeContracts: 0, totalRevenue: 0, todaySignups: 0, todayContracts: 0 });
+
+    // Real users
+    const [realUsers, setRealUsers] = useState<AdminUser[]>([]);
+    const [loadingUsers, setLoadingUsers] = useState(false);
+
+    // Fetch data per tab
     useEffect(() => {
+        if (activeTab === 'overview') fetchStats();
         if (activeTab === 'payments') {
             setLoadingPayments(true);
             getStuckTransactions()
                 .then(setStuckPayments)
                 .finally(() => setLoadingPayments(false));
         }
-        if (activeTab === 'verifications') {
-            fetchVerifications();
-        }
-        if (activeTab === 'disputes') {
-            fetchDisputes();
-        }
+        if (activeTab === 'verifications') fetchVerifications();
+        if (activeTab === 'disputes') fetchDisputes();
+        if (activeTab === 'users') fetchUsers();
     }, [activeTab]);
+
+    const fetchStats = async () => {
+        try {
+            const [usersRes, jobsRes, contractsRes] = await Promise.all([
+                supabase.from('profiles').select('id', { count: 'exact', head: true }),
+                supabase.from('jobs').select('id', { count: 'exact', head: true }).in('status', ['open', 'in_progress']),
+                supabase.from('contracts').select('id', { count: 'exact', head: true }).eq('status', 'active'),
+            ]);
+            const today = new Date().toISOString().split('T')[0];
+            const [signupsRes, todayContractsRes] = await Promise.all([
+                supabase.from('profiles').select('id', { count: 'exact', head: true }).gte('created_at', today),
+                supabase.from('contracts').select('id', { count: 'exact', head: true }).gte('created_at', today),
+            ]);
+            setStats({
+                totalUsers: usersRes.count || 0,
+                activeJobs: jobsRes.count || 0,
+                activeContracts: contractsRes.count || 0,
+                totalRevenue: 0,
+                todaySignups: signupsRes.count || 0,
+                todayContracts: todayContractsRes.count || 0,
+            });
+        } catch (err) {
+            console.error('Stats fetch error:', err);
+        }
+    };
+
+    const fetchUsers = async () => {
+        setLoadingUsers(true);
+        try {
+            const { data, error } = await supabase
+                .from('profiles')
+                .select('id, full_name, email, user_type, created_at')
+                .order('created_at', { ascending: false })
+                .limit(100);
+            if (error) throw error;
+            setRealUsers((data || []).map(u => ({
+                id: u.id,
+                name: u.full_name || 'مستخدم',
+                email: u.email || '',
+                type: u.user_type || 'client',
+                status: 'active',
+                last_active: new Date(u.created_at).toLocaleDateString('ar-TN'),
+            })));
+        } catch (err) {
+            console.error('Users fetch error:', err);
+        } finally {
+            setLoadingUsers(false);
+        }
+    };
 
     const fetchVerifications = async () => {
         setLoadingVerifications(true);
@@ -263,7 +302,7 @@ export default function AdminDashboard() {
         { id: 'settings', label: 'الإعدادات', icon: Settings },
     ];
 
-    const filteredUsers = MOCK_USERS.filter(u => {
+    const filteredUsers = realUsers.filter(u => {
         if (userFilter !== 'all' && u.type !== userFilter) return false;
         if (searchQuery && !u.name.includes(searchQuery) && !u.email.includes(searchQuery)) return false;
         return true;
@@ -317,10 +356,10 @@ export default function AdminDashboard() {
                             <div className="space-y-8">
                                 {/* Stats Grid */}
                                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                                    <StatCard icon={Users} label="إجمالي المستخدمين" value={MOCK_STATS.totalUsers} trend={12} color="bg-blue-500" />
-                                    <StatCard icon={Briefcase} label="وظائف نشطة" value={MOCK_STATS.activeJobs} trend={5} color="bg-green-500" />
-                                    <StatCard icon={FileText} label="عقود نشطة" value={MOCK_STATS.activeContracts} trend={8} color="bg-purple-500" />
-                                    <StatCard icon={DollarSign} label="الإيرادات (د.ت)" value={MOCK_STATS.totalRevenue} trend={15} color="bg-yellow-500" />
+                                    <StatCard icon={Users} label="إجمالي المستخدمين" value={stats.totalUsers} color="bg-blue-500" />
+                                    <StatCard icon={Briefcase} label="وظائف نشطة" value={stats.activeJobs} color="bg-green-500" />
+                                    <StatCard icon={FileText} label="عقود نشطة" value={stats.activeContracts} color="bg-purple-500" />
+                                    <StatCard icon={DollarSign} label="الإيرادات (د.ت)" value={stats.totalRevenue} color="bg-yellow-500" />
                                 </div>
 
                                 {/* Today's Activity */}
@@ -336,14 +375,14 @@ export default function AdminDashboard() {
                                                     <UserPlus className="w-5 h-5 text-green-600" />
                                                     <span className="text-green-800 font-medium">تسجيلات جديدة</span>
                                                 </div>
-                                                <p className="text-2xl font-bold text-green-700">{MOCK_STATS.todaySignups}</p>
+                                                <p className="text-2xl font-bold text-green-700">{stats.todaySignups}</p>
                                             </div>
                                             <div className="p-4 bg-blue-50 rounded-xl">
                                                 <div className="flex items-center gap-2 mb-2">
                                                     <FileText className="w-5 h-5 text-blue-600" />
                                                     <span className="text-blue-800 font-medium">عقود جديدة</span>
                                                 </div>
-                                                <p className="text-2xl font-bold text-blue-700">{MOCK_STATS.todayContracts}</p>
+                                                <p className="text-2xl font-bold text-blue-700">{stats.todayContracts}</p>
                                             </div>
                                         </div>
                                     </div>
@@ -352,49 +391,35 @@ export default function AdminDashboard() {
                                     <div className="card">
                                         <h3 className="font-bold text-foreground mb-4 flex items-center gap-2">
                                             <Shield className="w-5 h-5 text-yellow-600" />
-                                            طلبات التحقق المعلقة ({MOCK_VERIFICATIONS.length})
+                                            طلبات التحقق المعلقة ({verifications.length})
                                         </h3>
-                                        <div className="space-y-3">
-                                            {MOCK_VERIFICATIONS.slice(0, 3).map(v => (
-                                                <div key={v.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
-                                                    <div>
-                                                        <p className="font-medium text-foreground">{v.user_name}</p>
-                                                        <p className="text-sm text-muted">{v.submitted_at}</p>
+                                        {verifications.length === 0 ? (
+                                            <p className="text-sm text-muted text-center py-4">لا توجد طلبات معلقة</p>
+                                        ) : (
+                                            <div className="space-y-3">
+                                                {verifications.slice(0, 3).map(v => (
+                                                    <div key={v.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                                                        <div>
+                                                            <p className="font-medium text-foreground">{v.profile?.full_name || 'مستخدم'}</p>
+                                                            <p className="text-sm text-muted">{new Date(v.submitted_at).toLocaleString('ar-TN')}</p>
+                                                        </div>
+                                                        <Button variant="outline" size="sm" onClick={() => setActiveTab('verifications')}>
+                                                            مراجعة
+                                                        </Button>
                                                     </div>
-                                                    <div className="flex gap-2">
-                                                        <button className="p-2 bg-green-100 text-green-600 rounded-lg hover:bg-green-200">
-                                                            <Check className="w-4 h-4" />
-                                                        </button>
-                                                        <button className="p-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200">
-                                                            <X className="w-4 h-4" />
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
+                                                ))}
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
 
-                                {/* Flagged Content */}
+                                {/* Flagged Content — placeholder */}
                                 <div className="card">
                                     <h3 className="font-bold text-foreground mb-4 flex items-center gap-2">
                                         <Flag className="w-5 h-5 text-red-600" />
                                         محتوى مبلغ عنه
                                     </h3>
-                                    <div className="space-y-3">
-                                        {MOCK_FLAGGED.map(f => (
-                                            <div key={f.id} className="flex items-center justify-between p-4 bg-red-50 border border-red-100 rounded-xl">
-                                                <div>
-                                                    <div className="flex items-center gap-2 mb-1">
-                                                        <span className="px-2 py-0.5 bg-red-200 text-red-800 text-xs rounded-full">{f.type}</span>
-                                                        <span className="font-medium text-foreground">{f.title}</span>
-                                                    </div>
-                                                    <p className="text-sm text-muted">السبب: {f.reason} • {f.date}</p>
-                                                </div>
-                                                <Button variant="outline" size="sm">مراجعة</Button>
-                                            </div>
-                                        ))}
-                                    </div>
+                                    <p className="text-sm text-muted text-center py-6">لا توجد بلاغات حالياً</p>
                                 </div>
                             </div>
                         )}
@@ -425,6 +450,13 @@ export default function AdminDashboard() {
                                         </select>
                                     </div>
                                 </div>
+
+                                {loadingUsers ? (
+                                    <div className="card text-center py-12">
+                                        <Loader2 className="w-8 h-8 animate-spin text-primary-600 mx-auto mb-2" />
+                                        <p className="text-muted">جاري تحميل المستخدمين...</p>
+                                    </div>
+                                ) : (<>
 
                                 {/* Users Table */}
                                 {/* Desktop Table View */}
@@ -545,6 +577,8 @@ export default function AdminDashboard() {
                                         </div>
                                     ))}
                                 </div>
+                                </>
+                                )}
                             </div>
                         )}
 

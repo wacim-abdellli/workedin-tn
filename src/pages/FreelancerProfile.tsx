@@ -10,6 +10,7 @@ import type { Skill } from '../types';
 import type { FreelancerData } from '../types/freelancer';
 import ContactModal from '../components/freelancer/ContactModal';
 import { OptimizedImage } from '../components/common';
+import SEO from '../components/common/SEO';
 
 // Subcomponents
 import ProfileHeader from '../components/freelancer/profile/ProfileHeader';
@@ -241,6 +242,11 @@ export default function FreelancerProfile() {
 
     return (
         <div className="min-h-screen bg-gray-50 pb-20 md:pb-0">
+            <SEO
+                title={`${freelancer.full_name} — ${freelancer.title} | خدمة`}
+                description={freelancer.bio?.slice(0, 160) || `${freelancer.title} — مستقل على منصة خدمة`}
+                image={freelancer.avatar_url || undefined}
+            />
             <Header />
 
             <ProfileHeader
