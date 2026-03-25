@@ -6,7 +6,7 @@
 
 UPDATE public.profiles
 SET is_admin = true
-WHERE email = 'YOUR_EMAIL_HERE@example.com';
+WHERE email = 'wacimabdelli01@gmail.com';
 
 -- Verify it worked
 SELECT id, email, is_admin FROM public.profiles WHERE is_admin = true;

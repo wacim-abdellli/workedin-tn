@@ -91,3 +91,30 @@ export async function sendNewProposalEmail(
         `,
     );
 }
+
+export async function sendDisputeOpenedEmail(
+    recipientEmail: string,
+    recipientName: string,
+    contractId: string,
+    openedByRole: 'client' | 'freelancer',
+    reason: string,
+): Promise<void> {
+    const opener = openedByRole === 'client' ? 'العميل' : 'المستقل';
+    await sendEmail(
+        recipientEmail,
+        `تم فتح نزاع على عقدك — خدمة`,
+        `
+        <div dir="rtl" style="font-family:sans-serif;max-width:600px;margin:auto;padding:24px">
+            <h2 style="color:#d97706">تنبيه: تم فتح نزاع ⚠️</h2>
+            <p>مرحباً ${recipientName}،</p>
+            <p>قام <strong>${opener}</strong> بفتح نزاع على العقد. سيقوم فريق خدمة بمراجعة الحالة خلال 48 ساعة.</p>
+            <p><strong>سبب النزاع:</strong> ${reason}</p>
+            <a href="https://khedma-tn.vercel.app/contracts/${contractId}"
+               style="display:inline-block;background:#d97706;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;margin-top:16px">
+                عرض العقد
+            </a>
+            <p style="color:#888;margin-top:24px;font-size:12px">فريق خدمة — disputes@khedma.tn</p>
+        </div>
+        `,
+    );
+}

@@ -22,6 +22,7 @@ import { supabase } from '../lib/supabase';
 import { getContractById } from '../services/contracts';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import SEO from '../components/common/SEO';
+import { sendDisputeOpenedEmail } from '../lib/email';
 
 // Components
 import ChatSection from '../components/contracts/ChatSection';
@@ -226,6 +227,35 @@ export default function ContractWorkspace() {
             await openDispute(disputeReason);
             showToast('تم فتح نزاع. سيتم المراجعة خلال 48 ساعة.', 'warning');
             setIsDisputeModalOpen(false);
+
+            // Notify both parties by email — fire-and-forget
+            if (contractData) {
+                const { data: profiles } = await supabase
+                    .from('profiles')
+                    .select('id, email, full_name')
+                    .in('id', [contractData.client.id, contractData.freelancer.id]);
+
+                if (profiles) {
+                    const client = profiles.find(p => p.id === contractData.client.id);
+                    const freelancer = profiles.find(p => p.id === contractData.freelancer.id);
+                    const contractId = contractData.id;
+
+                    if (client?.email) {
+                        sendDisputeOpenedEmail(
+                            client.email, client.full_name,
+                            contractId, userRole === 'client' ? 'client' : 'freelancer',
+                            disputeReason,
+                        );
+                    }
+                    if (freelancer?.email) {
+                        sendDisputeOpenedEmail(
+                            freelancer.email, freelancer.full_name,
+                            contractId, userRole === 'client' ? 'client' : 'freelancer',
+                            disputeReason,
+                        );
+                    }
+                }
+            }
             setDisputeReason('');
         } catch {
             showToast('حدث خطأ في فتح النزاع', 'error');

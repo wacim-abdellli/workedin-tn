@@ -94,6 +94,20 @@ export default function AdminDashboard() {
     const [actioningId, setActioningId] = useState<string | null>(null);
     const [expandedDocId, setExpandedDocId] = useState<string | null>(null);
 
+    // Real disputes state
+    interface DisputeRecord {
+        id: string;
+        contract_id: string;
+        opened_at: string;
+        reason: string;
+        status: string;
+        contract: { id: string; amount: number; job: { title: string } } | null;
+        opener: { full_name: string; email: string } | null;
+    }
+    const [disputes, setDisputes] = useState<DisputeRecord[]>([]);
+    const [loadingDisputes, setLoadingDisputes] = useState(false);
+    const [resolvingId, setResolvingId] = useState<string | null>(null);
+
     // Fetch stuck payments when payments tab is active
     useEffect(() => {
         if (activeTab === 'payments') {
@@ -104,6 +118,9 @@ export default function AdminDashboard() {
         }
         if (activeTab === 'verifications') {
             fetchVerifications();
+        }
+        if (activeTab === 'disputes') {
+            fetchDisputes();
         }
     }, [activeTab]);
 
@@ -126,6 +143,48 @@ export default function AdminDashboard() {
             showToast('فشل تحميل طلبات التحقق', 'error');
         } finally {
             setLoadingVerifications(false);
+        }
+    };
+
+    const fetchDisputes = async () => {
+        setLoadingDisputes(true);
+        try {
+            const { data, error } = await supabase
+                .from('disputes')
+                .select(`
+                    id, contract_id, opened_at, reason, status,
+                    contract:contracts!disputes_contract_id_fkey(id, amount, job:jobs(title)),
+                    opener:profiles!disputes_opened_by_fkey(full_name, email)
+                `)
+                .eq('status', 'open')
+                .order('opened_at', { ascending: true });
+
+            if (error) throw error;
+            setDisputes((data || []) as unknown as DisputeRecord[]);
+        } catch (err) {
+            console.error('Failed to fetch disputes:', err);
+            showToast('فشل تحميل النزاعات', 'error');
+        } finally {
+            setLoadingDisputes(false);
+        }
+    };
+
+    const handleResolveDispute = async (disputeId: string, resolution: string, note?: string) => {
+        setResolvingId(disputeId);
+        try {
+            const { error } = await supabase.rpc('resolve_dispute', {
+                p_dispute_id: disputeId,
+                p_resolution: resolution,
+                p_admin_note: note || null,
+            });
+            if (error) throw error;
+            setDisputes(prev => prev.filter(d => d.id !== disputeId));
+            showToast('تم حل النزاع بنجاح ✓', 'success');
+        } catch (err) {
+            console.error('Resolve dispute error:', err);
+            showToast('فشل حل النزاع', 'error');
+        } finally {
+            setResolvingId(null);
         }
     };
 
@@ -688,7 +747,104 @@ export default function AdminDashboard() {
                             </div>
                         )}
 
-                        {(activeTab === 'jobs' || activeTab === 'disputes' || activeTab === 'reports' || activeTab === 'settings') && (
+                        {activeTab === 'disputes' && (
+                            <div className="space-y-6">
+                                <div className="card">
+                                    <div className="flex items-center justify-between mb-6">
+                                        <h3 className="font-bold text-foreground flex items-center gap-2">
+                                            <AlertTriangle className="w-5 h-5 text-red-500" />
+                                            نزاعات مفتوحة
+                                            {disputes.length > 0 && (
+                                                <span className="px-2 py-0.5 bg-red-100 text-red-800 rounded-full text-sm">
+                                                    {disputes.length}
+                                                </span>
+                                            )}
+                                        </h3>
+                                        <Button variant="outline" size="sm" onClick={fetchDisputes}>
+                                            <RefreshCw className={`w-4 h-4 ml-1 ${loadingDisputes ? 'animate-spin' : ''}`} />
+                                            تحديث
+                                        </Button>
+                                    </div>
+
+                                    {loadingDisputes ? (
+                                        <div className="text-center py-12">
+                                            <Loader2 className="w-8 h-8 animate-spin text-primary-600 mx-auto mb-2" />
+                                            <p className="text-muted">جاري التحميل...</p>
+                                        </div>
+                                    ) : disputes.length === 0 ? (
+                                        <div className="text-center py-12">
+                                            <Check className="w-12 h-12 text-green-500 mx-auto mb-2" />
+                                            <p className="text-foreground font-medium">لا توجد نزاعات مفتوحة</p>
+                                            <p className="text-sm text-muted">كل النزاعات تمت معالجتها</p>
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-4">
+                                            {disputes.map(d => (
+                                                <div key={d.id} className="border border-red-200 rounded-xl overflow-hidden">
+                                                    <div className="p-4 bg-red-50">
+                                                        <div className="flex items-start justify-between gap-4 flex-wrap">
+                                                            <div className="flex-1 min-w-0">
+                                                                <p className="font-bold text-foreground">
+                                                                    {(d.contract?.job as any)?.title || 'عقد'}
+                                                                </p>
+                                                                <p className="text-sm text-muted">فتحه: {d.opener?.full_name} — {d.opener?.email}</p>
+                                                                <p className="text-xs text-muted mt-1">{new Date(d.opened_at).toLocaleString('ar-TN')}</p>
+                                                                <div className="mt-3 p-3 bg-white rounded-lg border border-red-100">
+                                                                    <p className="text-sm text-gray-700"><strong>سبب النزاع:</strong> {d.reason}</p>
+                                                                </div>
+                                                                {d.contract?.amount && (
+                                                                    <p className="text-sm font-medium text-gray-600 mt-2">مبلغ العقد: {d.contract.amount} د.ت</p>
+                                                                )}
+                                                            </div>
+                                                            <div className="flex flex-col gap-2 shrink-0">
+                                                                <Button
+                                                                    size="sm"
+                                                                    variant="outline"
+                                                                    onClick={() => window.open(`/contracts/${d.contract_id}`, '_blank')}
+                                                                >
+                                                                    <Eye className="w-4 h-4 ml-1" />
+                                                                    عرض العقد
+                                                                </Button>
+                                                                <Button
+                                                                    size="sm"
+                                                                    variant="primary"
+                                                                    disabled={resolvingId === d.id}
+                                                                    onClick={() => handleResolveDispute(d.id, 'resolved_freelancer', 'نزاع لصالح المستقل')}
+                                                                >
+                                                                    {resolvingId === d.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4 ml-1" />}
+                                                                    لصالح المستقل
+                                                                </Button>
+                                                                <Button
+                                                                    size="sm"
+                                                                    variant="ghost"
+                                                                    className="text-blue-600 hover:bg-blue-50"
+                                                                    disabled={resolvingId === d.id}
+                                                                    onClick={() => handleResolveDispute(d.id, 'resolved_client', 'نزاع لصالح العميل')}
+                                                                >
+                                                                    <X className="w-4 h-4 ml-1" />
+                                                                    لصالح العميل
+                                                                </Button>
+                                                                <Button
+                                                                    size="sm"
+                                                                    variant="ghost"
+                                                                    className="text-gray-500 hover:bg-gray-100"
+                                                                    disabled={resolvingId === d.id}
+                                                                    onClick={() => handleResolveDispute(d.id, 'cancelled', 'إلغاء النزاع')}
+                                                                >
+                                                                    إلغاء النزاع
+                                                                </Button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+
+                        {(activeTab === 'jobs' || activeTab === 'reports' || activeTab === 'settings') && (
                             <div className="card text-center py-16">
                                 <BarChart3 className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                                 <h3 className="text-xl font-bold text-foreground mb-2">قريباً</h3>

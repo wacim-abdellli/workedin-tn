@@ -224,6 +224,14 @@ export function useContractState({
                     dispute_reason: reason,
                 });
 
+                // Create a formal dispute record for admin tracking
+                await supabase.from('disputes').insert({
+                    contract_id: contractId,
+                    opened_by: userId,
+                    reason,
+                    status: 'open',
+                });
+
                 const { error: messageError } = await sendContractMessage({
                     contract_id: contractId,
                     sender_id: userId,
