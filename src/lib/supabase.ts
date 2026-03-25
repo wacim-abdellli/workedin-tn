@@ -10,9 +10,9 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'your-anon-key
 // Create Supabase client
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-        detectSessionInUrl: true,
+        persistSession: false,
+        autoRefreshToken: false,
+        detectSessionInUrl: false,
         flowType: 'pkce',
     },
     realtime: {
@@ -31,17 +31,6 @@ supabase.auth.onAuthStateChange((event) => {
         console.log('[auth] signed out');
     }
 });
-
-// If the stored session is invalid/expired, clear stale sb- keys so anon queries aren't blocked
-;(async () => {
-    const { data: { session }, error } = await supabase.auth.getSession();
-    if (error || !session) {
-        if (typeof window !== 'undefined') {
-            const keys = Object.keys(localStorage).filter(k => k.startsWith('sb-'));
-            keys.forEach(k => localStorage.removeItem(k));
-        }
-    }
-})();
 
 /**
  * Wraps a promise with a timeout
