@@ -31,6 +31,7 @@ import SEO from '../components/common/SEO';
 import ProposalModal from '../components/proposals/ProposalModal';
 import type { ProposalFormData } from '../components/proposals/ProposalModal';
 import { sendNewProposalEmail } from '../lib/email';
+import { spendConnects, refundConnects, getConnectsBalance, CONNECTS_COST } from '../services/connects';
 import SimilarJobCard from '../components/jobs/SimilarJobCard';
 import OptimizedImage from '../components/common/OptimizedImage';
 
@@ -189,6 +190,13 @@ function JobDetail() {
         enabled: !!job?.client_id,
     });
 
+    // Connects balance (only for freelancers)
+    const { data: connectsBalance = { balance: 0, used: 0 } } = useQuery({
+        queryKey: ['connectsBalance', user?.id],
+        queryFn: () => getConnectsBalance(user!.id),
+        enabled: !!user?.id && !!freelancerProfile,
+    });
+
     // Toggle Save Mutation
     const toggleSaveMutation = useMutation({
         mutationFn: async () => {
@@ -214,7 +222,13 @@ function JobDetail() {
     const submitProposalMutation = useMutation({
         mutationFn: async ({ data, files }: { data: ProposalFormData, files: File[] }) => {
             if (!user || !jobId) throw new Error('Missing auth or job');
-            const { error } = await proposalsService.createProposal({
+
+            // Check connects balance before submitting
+            if (connectsBalance.balance < CONNECTS_COST) {
+                throw new Error(`تحتاج إلى ${CONNECTS_COST} كونيكتس لإرسال عرض. رصيدك الحالي: ${connectsBalance.balance}`);
+            }
+
+            const { error, data: proposalId } = await proposalsService.createProposal({
                 job_id: jobId,
                 freelancer_id: user.id,
                 cover_letter: data.cover_letter,
@@ -222,12 +236,21 @@ function JobDetail() {
                 delivery_time_days: data.delivery_days
             }, files);
             if (error) throw error;
+
+            // Deduct connects atomically (fire-and-forget on failure is acceptable)
+            if (proposalId) {
+                const connectsResult = await spendConnects(user.id, proposalId);
+                if (!connectsResult.success) {
+                    logger.warn('[Connects] Spend failed after proposal created:', connectsResult.error);
+                }
+            }
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['myProposal', jobId, user?.id] });
+            queryClient.invalidateQueries({ queryKey: ['connectsBalance', user?.id] });
             showToast('تم إرسال العرض بنجاح!', 'success');
             setShowProposalModal(false);
-            // Notify client by email (fire-and-forget, never blocks UI)
+            // Notify client by email (fire-and-forget)
             if (job?.client?.email && job.title && jobId) {
                 sendNewProposalEmail(
                     job.client.email,
@@ -255,8 +278,13 @@ function JobDetail() {
             if (error) throw error;
         },
         onSuccess: () => {
+            // Refund connects
+            if (user?.id && myProposal?.id) {
+                refundConnects(user.id, myProposal.id);
+            }
             queryClient.invalidateQueries({ queryKey: ['myProposal', jobId, user?.id] });
-            showToast('تم سحب العرض', 'success');
+            queryClient.invalidateQueries({ queryKey: ['connectsBalance', user?.id] });
+            showToast('تم سحب العرض واسترداد الكونيكتس', 'success');
         },
         onError: () => showToast('حدث خطأ في سحب العرض', 'error')
     });
@@ -519,15 +547,31 @@ function JobDetail() {
                                     </Button>
                                 </div>
                             ) : (
-                                <Button
-                                    variant="primary"
-                                    size="lg"
-                                    className="w-full"
-                                    onClick={() => setShowProposalModal(true)}
-                                    rightIcon={<Send className="w-5 h-5" />}
-                                >
-                                    أرسل عرض
-                                </Button>
+                                <div>
+                                    <Button
+                                        variant="primary"
+                                        size="lg"
+                                        className="w-full"
+                                        onClick={() => setShowProposalModal(true)}
+                                        rightIcon={<Send className="w-5 h-5" />}
+                                        disabled={!!freelancerProfile && connectsBalance.balance < CONNECTS_COST}
+                                    >
+                                        أرسل عرض
+                                    </Button>
+                                    {/* Connects balance indicator */}
+                                    {freelancerProfile && (
+                                        <div className={`mt-2 flex items-center justify-between text-xs rounded-lg px-3 py-2 ${
+                                            connectsBalance.balance >= CONNECTS_COST
+                                                ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400'
+                                                : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400'
+                                        }`}>
+                                            <span>رصيد الكونيكتس</span>
+                                            <span className="font-bold">
+                                                {connectsBalance.balance} / يحتاج {CONNECTS_COST}
+                                            </span>
+                                        </div>
+                                    )}
+                                </div>
                             )}
                         </div>
 
