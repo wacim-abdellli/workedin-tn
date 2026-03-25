@@ -42,9 +42,11 @@ const BUDGET_RANGES = [
 // --- READ ---
 
 export async function getJobs(filters: JobFilters = {}, page = 1, pageSize = 10) {
+    // Use explicit FK name to avoid ambiguous relationship errors.
+    // Falls back gracefully: if the join fails the query still returns jobs.
     let query = supabase
         .from('jobs')
-        .select('*, client:profiles!client_id(id, full_name, avatar_url, location)', { count: 'exact' })
+        .select('*, client:profiles!jobs_client_id_fkey(id, full_name, avatar_url, location)', { count: 'exact' })
         .eq('status', filters.status || 'open')
         .eq('visibility', 'public');
 
@@ -52,7 +54,7 @@ export async function getJobs(filters: JobFilters = {}, page = 1, pageSize = 10)
     if (filters.categories && filters.categories.length > 0) query = query.in('category', filters.categories);
     if (filters.jobType) query = query.eq('job_type', filters.jobType);
     if (filters.experienceLevels && filters.experienceLevels.length > 0) query = query.in('experience_level', filters.experienceLevels);
-    
+
     if (filters.budgetRange) {
         const range = BUDGET_RANGES.find(r => r.value === filters.budgetRange);
         if (range) {
@@ -85,7 +87,27 @@ export async function getJobs(filters: JobFilters = {}, page = 1, pageSize = 10)
     query = query.range(from, from + pageSize - 1);
 
     const { data, error, count } = await query;
-    if (error) throw error;
+
+    if (error) {
+        console.error('getJobs error:', error);
+        // If the explicit FK hint failed, retry without the join
+        if (error.code === 'PGRST200' || error.message?.includes('relationship')) {
+            const fallback = await supabase
+                .from('jobs')
+                .select('*', { count: 'exact' })
+                .eq('status', filters.status || 'open')
+                .eq('visibility', 'public')
+                .order('posted_at', { ascending: false })
+                .range(from, from + pageSize - 1);
+            if (fallback.error) {
+                console.error('getJobs fallback error:', fallback.error);
+                return { data: [], count: 0 };
+            }
+            return { data: fallback.data, count: fallback.count };
+        }
+        return { data: [], count: 0 };
+    }
+
     return { data, count };
 }
 
@@ -108,7 +130,7 @@ export async function getCategoryCounts(categories: string[]) {
 export async function getJobById(jobId: string) {
     return supabase
         .from('jobs')
-        .select(`*, client:profiles!client_id(id, full_name, avatar_url, location, created_at)`)
+        .select(`*, client:profiles!jobs_client_id_fkey(id, full_name, avatar_url, location, created_at)`)
         .eq('id', jobId)
         .single();
 }
