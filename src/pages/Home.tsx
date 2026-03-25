@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Header, Footer } from '../components/layout';
-import { supabase } from '../lib/supabase';
+import { supabaseAnon } from '../lib/supabase';
 import SEO, { SEO_CONFIG } from '../components/common/SEO';
 
 // Subcomponents
@@ -14,10 +14,10 @@ import CTASection from '../components/home/CTASection';
 
 function Home() {
     const [stats, setStats] = useState({
-        earnings: 127850,
-        jobs: 142,
-        freelancers: 2500,
-        contracts: 142,
+        earnings: 0,
+        jobs: 0,
+        freelancers: 0,
+        contracts: 0,
     });
 
     useEffect(() => {
@@ -28,19 +28,19 @@ function Home() {
                 { count: contractCount },
                 { data: contracts },
             ] = await Promise.all([
-                supabase.from('jobs').select('*', { count: 'exact', head: true }),
-                supabase.from('profiles').select('*', { count: 'exact', head: true }).in('user_type', ['freelancer', 'both']),
-                supabase.from('contracts').select('*', { count: 'exact', head: true }),
-                supabase.from('contracts').select('amount').eq('status', 'completed'),
+                supabaseAnon.from('jobs').select('*', { count: 'exact', head: true }).eq('status', 'open').eq('visibility', 'public'),
+                supabaseAnon.from('profiles').select('*', { count: 'exact', head: true }).in('user_type', ['freelancer', 'both']),
+                supabaseAnon.from('contracts').select('*', { count: 'exact', head: true }),
+                supabaseAnon.from('contracts').select('amount').eq('status', 'completed'),
             ]);
 
-            const totalEarnings = contracts?.reduce((sum, contract) => sum + (contract.amount || 0), 0) || 0;
+            const totalEarnings = contracts?.reduce((sum, c) => sum + (c.amount || 0), 0) || 0;
 
             setStats({
-                jobs: jobsCount ?? 142,
-                freelancers: freelancerCount ?? 2500,
-                contracts: contractCount ?? 142,
-                earnings: totalEarnings > 0 ? totalEarnings : 127850,
+                jobs: jobsCount ?? 0,
+                freelancers: freelancerCount ?? 0,
+                contracts: contractCount ?? 0,
+                earnings: totalEarnings,
             });
         };
 
