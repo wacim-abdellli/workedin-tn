@@ -42,11 +42,11 @@ const BUDGET_RANGES = [
 // --- READ ---
 
 export async function getJobs(filters: JobFilters = {}, page = 1, pageSize = 10) {
-    // Use explicit FK name to avoid ambiguous relationship errors.
-    // Falls back gracefully: if the join fails the query still returns jobs.
+    console.log('[getJobs] called with filters:', filters, 'page:', page);
+
     let query = supabase
         .from('jobs')
-        .select('*, client:profiles!jobs_client_id_fkey(id, full_name, avatar_url, location)', { count: 'exact' })
+        .select('*', { count: 'exact' })
         .eq('status', filters.status || 'open')
         .eq('visibility', 'public');
 
@@ -88,27 +88,16 @@ export async function getJobs(filters: JobFilters = {}, page = 1, pageSize = 10)
 
     const { data, error, count } = await query;
 
+    console.log('[getJobs] data:', data);
+    console.log('[getJobs] count:', count);
+    console.log('[getJobs] error:', error);
+
     if (error) {
-        console.error('getJobs error:', error);
-        // If the explicit FK hint failed, retry without the join
-        if (error.code === 'PGRST200' || error.message?.includes('relationship')) {
-            const fallback = await supabase
-                .from('jobs')
-                .select('*', { count: 'exact' })
-                .eq('status', filters.status || 'open')
-                .eq('visibility', 'public')
-                .order('posted_at', { ascending: false })
-                .range(from, from + pageSize - 1);
-            if (fallback.error) {
-                console.error('getJobs fallback error:', fallback.error);
-                return { data: [], count: 0 };
-            }
-            return { data: fallback.data, count: fallback.count };
-        }
+        console.error('[getJobs] FATAL:', error);
         return { data: [], count: 0 };
     }
 
-    return { data, count };
+    return { data: data ?? [], count: count ?? 0 };
 }
 
 export async function getCategoryCounts(categories: string[]) {

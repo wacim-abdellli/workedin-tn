@@ -174,7 +174,11 @@ function JobBoard() {
             lastPage.data?.length === 10 ? pages.length + 1 : undefined,
     });
 
-    const jobs = useMemo(() => jobsData?.pages.flatMap((p: any) => p.data || []) || [], [jobsData]);
+    const jobs = useMemo(() => {
+        const result = jobsData?.pages.flatMap((p: any) => p.data || []) || [];
+        console.log('[JobBoard] jobs state set to:', result);
+        return result;
+    }, [jobsData]);
     const totalCount = jobsData?.pages[0]?.count || 0;
     const isLoading = isFetching && !isFetchingNextPage;
 

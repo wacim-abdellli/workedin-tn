@@ -151,7 +151,7 @@ export interface Job {
 
     // Legacy fields being maintained for compatibility or UI convenience
     budget?: number; // Can represent fixed price or max budget
-    currency: string;
+    currency?: string;
     deadline?: string;
     payment_method?: PaymentMethod;
 }
