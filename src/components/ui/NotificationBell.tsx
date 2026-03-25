@@ -10,9 +10,9 @@ interface Notification {
   id: string;
   user_id: string;
   title: string;
-  message: string;
-  type: 'message' | 'match' | 'payment' | 'delivery' | 'dispute' | 'system';
-  read: boolean;
+  content: string;  // DB column name
+  type: 'new_job' | 'new_proposal' | 'message' | 'payment' | 'review' | 'contract_update' | 'milestone' | 'system';
+  is_read: boolean; // DB column name
   link?: string;
   created_at: string;
 }
@@ -42,7 +42,7 @@ export function NotificationBell({ className = '' }: { className?: string }) {
         if (error) throw error;
 
         setNotifications(data || []);
-        setUnreadCount(data?.filter((notification) => !notification.read).length || 0);
+        setUnreadCount(data?.filter((n) => !n.is_read).length || 0);
       } catch (error) {
         logger.error('Error fetching notifications:', error);
         setNotifications([]);
@@ -85,8 +85,8 @@ export function NotificationBell({ className = '' }: { className?: string }) {
 
   const markAsRead = async (notificationId: string) => {
     try {
-      await supabase.from('notifications').update({ read: true }).eq('id', notificationId);
-      setNotifications((prev) => prev.map((notification) => notification.id === notificationId ? { ...notification, read: true } : notification));
+      await supabase.from('notifications').update({ is_read: true }).eq('id', notificationId);
+      setNotifications((prev) => prev.map((n) => n.id === notificationId ? { ...n, is_read: true } : n));
       setUnreadCount((prev) => Math.max(0, prev - 1));
     } catch (error) {
       logger.error('Error marking notification as read:', error);
@@ -95,8 +95,8 @@ export function NotificationBell({ className = '' }: { className?: string }) {
 
   const markAllAsRead = async () => {
     try {
-      await supabase.from('notifications').update({ read: true }).eq('user_id', user?.id).eq('read', false);
-      setNotifications((prev) => prev.map((notification) => ({ ...notification, read: true })));
+      await supabase.from('notifications').update({ is_read: true }).eq('user_id', user?.id).eq('is_read', false);
+      setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
       setUnreadCount(0);
     } catch (error) {
       logger.error('Error marking all notifications as read:', error);
@@ -119,17 +119,13 @@ export function NotificationBell({ className = '' }: { className?: string }) {
 
   const iconForType = (type: Notification['type']) => {
     switch (type) {
-      case 'message':
-        return <MessageSquare className="h-4 w-4" />;
-      case 'match':
-        return <Sparkles className="h-4 w-4" />;
-      case 'payment':
-      case 'delivery':
-        return <Wallet className="h-4 w-4" />;
-      case 'dispute':
-        return <ShieldAlert className="h-4 w-4" />;
-      default:
-        return <Bell className="h-4 w-4" />;
+      case 'message': return <MessageSquare className="h-4 w-4" />;
+      case 'new_proposal':
+      case 'new_job': return <Sparkles className="h-4 w-4" />;
+      case 'payment': return <Wallet className="h-4 w-4" />;
+      case 'contract_update':
+      case 'milestone': return <ShieldAlert className="h-4 w-4" />;
+      default: return <Bell className="h-4 w-4" />;
     }
   };
 
@@ -181,9 +177,9 @@ export function NotificationBell({ className = '' }: { className?: string }) {
               notifications.map((notification) => (
                 <div
                   key={notification.id}
-                  className={`cursor-pointer border-b border-gray-50 px-4 py-4 transition-colors last:border-b-0 hover:bg-primary-50/60 dark:border-white/5 dark:hover:bg-white/5 ${!notification.read ? 'bg-primary-50/70 dark:bg-primary-900/10' : ''}`}
+                  className={`cursor-pointer border-b border-gray-50 px-4 py-4 transition-colors last:border-b-0 hover:bg-primary-50/60 dark:border-white/5 dark:hover:bg-white/5 ${!notification.is_read ? 'bg-primary-50/70 dark:bg-primary-900/10' : ''}`}
                   onClick={() => {
-                    if (!notification.read) markAsRead(notification.id);
+                    if (!notification.is_read) markAsRead(notification.id);
                     if (notification.link) window.history.pushState({}, '', notification.link);
                   }}
                 >
@@ -194,9 +190,9 @@ export function NotificationBell({ className = '' }: { className?: string }) {
                     <div className="flex-1">
                       <div className="flex items-start justify-between gap-3">
                         <p className="text-sm font-semibold text-dark-900 dark:text-white">{notification.title}</p>
-                        {!notification.read ? <span className="mt-1.5 h-2 w-2 rounded-full bg-primary-500" /> : null}
+                        {!notification.is_read ? <span className="mt-1.5 h-2 w-2 rounded-full bg-primary-500" /> : null}
                       </div>
-                      <p className="mt-1 text-xs leading-relaxed text-dark-500 dark:text-dark-400">{notification.message}</p>
+                      <p className="mt-1 text-xs leading-relaxed text-dark-500 dark:text-dark-400">{notification.content}</p>
                       <p className="mt-2 text-[11px] font-medium text-dark-400">{formatTimeAgo(notification.created_at)}</p>
                     </div>
                   </div>
