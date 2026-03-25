@@ -10,9 +10,9 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'your-anon-key
 // Create Supabase client
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     auth: {
-        persistSession: false,
-        autoRefreshToken: false,
-        detectSessionInUrl: false,
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
         flowType: 'pkce',
     },
     realtime: {
@@ -29,6 +29,13 @@ supabase.auth.onAuthStateChange((event) => {
     }
     if (event === 'SIGNED_OUT') {
         console.log('[auth] signed out');
+    }
+});
+
+// If the stored session is invalid/expired, sign out cleanly so anon queries aren't blocked
+supabase.auth.getSession().then(({ error }) => {
+    if (error) {
+        supabase.auth.signOut();
     }
 });
 
