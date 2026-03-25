@@ -49,6 +49,7 @@ const Messages = lazy(() => import('./pages/Messages'));
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 const FreelancerEarnings = lazy(() => import('./pages/FreelancerEarnings'));
 const MyProposals = lazy(() => import('./pages/MyProposals'));
+const Wallet = lazy(() => import('./pages/Wallet'));
 const ClientJobs = lazy(() => import('./pages/ClientJobs'));
 const ContractsList = lazy(() => import('./pages/ContractsList'));
 const SearchResults = lazy(() => import('./pages/SearchResults'));
@@ -164,6 +165,11 @@ function AppRoutes() {
           <WorkspaceRoute workspace="freelancer">
             <FreelancerEarnings />
           </WorkspaceRoute>
+        </ProtectedRoute>
+      } />
+      <Route path="/wallet" element={
+        <ProtectedRoute>
+          <Wallet />
         </ProtectedRoute>
       } />
       <Route path="/my-proposals" element={

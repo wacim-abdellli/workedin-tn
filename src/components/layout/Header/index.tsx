@@ -31,7 +31,7 @@ const FREELANCER_NAV = [
   { label: 'Find Work', Icon: Briefcase, href: '/jobs' },
   { label: 'Proposals', Icon: FileText, href: '/my-proposals' },
   { label: 'Contracts', Icon: ClipboardList, href: '/contracts' },
-  { label: 'Earnings', Icon: Wallet, href: '/freelancer/earnings' },
+  { label: 'Wallet', Icon: Wallet, href: '/wallet' },
 ]
 
 const CLIENT_NAV = [

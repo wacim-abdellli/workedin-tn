@@ -828,5 +828,33 @@ export const fr: Translations = {
             description: 'Nous n’avons pas trouvé de freelances correspondant à vos critères. Essayez d’autres mots-clés ou effacez les filtres.',
             action: 'Effacer tous les filtres'
         }
-    }
+    },
+
+    wallet: {
+        title: 'Mon Portefeuille',
+        balance: 'Solde Disponible',
+        pendingBalance: 'En Attente dans l\'Escrow',
+        totalEarned: 'Total Gagné',
+        totalWithdrawn: 'Total Retiré',
+        requestWithdrawal: 'Demander un Retrait',
+        transactionHistory: 'Historique des Transactions',
+        withdrawalHistory: 'Historique des Retraits',
+        amount: 'Montant',
+        method: 'Méthode de Retrait',
+        bankTransfer: 'Virement Bancaire',
+        d17: 'D17',
+        flouci: 'Flouci',
+        bankName: 'Nom de la Banque',
+        iban: 'IBAN',
+        phone: 'Numéro de Téléphone',
+        submit: 'Soumettre',
+        cancel: 'Annuler',
+        status: {
+            pending: 'En Attente',
+            approved: 'Approuvé',
+            processing: 'En Traitement',
+            completed: 'Terminé',
+            rejected: 'Rejeté',
+        },
+    },
 };

@@ -1,4 +1,4 @@
-import { logger } from '@/lib/logger';
+﻿import { logger } from '@/lib/logger';
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import {
@@ -405,15 +405,15 @@ function Settings() {
                 }
 
                 await refreshProfile();
-                showToast('ØªÙ… ØªÙØ¹ÙŠÙ„ Ù…Ø³Ø§Ø­ØªÙŠ Ø§Ù„Ø¹Ù…Ù„ ÙÙŠ Ù†ÙØ³ Ø§Ù„Ø­Ø³Ø§Ø¨.', 'success');
+                showToast('تم تفعيل مساحتي العمل في نفس الحساب.', 'success');
                 return;
             }
 
-            showToast('ØªÙ… ØªØ­Ø¯ÙŠØ« Ù…Ø³Ø§Ø­Ø© Ø§Ù„Ø¹Ù…Ù„ Ø¨Ù†Ø¬Ø§Ø­.', 'success');
+            showToast('تم تحديث مساحة العمل بنجاح.', 'success');
         } catch (error) {
             logger.error('Workspace selection error:', error);
             const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-            showToast('Ø®Ø·Ø£ ØºÙŠØ± Ù…ØªÙˆÙ‚Ø¹: ' + errorMessage, 'error');
+            showToast('خطأ غير متوقع: ' + errorMessage, 'error');
         }
     };
 

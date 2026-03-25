@@ -7,6 +7,28 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
+async function logPaymentEvent(supabaseClient: any, payload: {
+    user_id: string;
+    event_type: string;
+    amount: number;
+    flouci_session_id?: string;
+    contract_id?: string;
+    wallet_id?: string;
+    status: string;
+    metadata?: Record<string, unknown>;
+}) {
+    try {
+        await supabaseClient.from('payment_audit_log').insert({
+            ...payload,
+            currency: 'TND',
+            metadata: payload.metadata ?? {},
+        });
+    } catch (err) {
+        // Never let audit logging crash the payment flow
+        console.error('[audit_log] failed to write:', err);
+    }
+}
+
 const ALLOWED_ORIGIN = Deno.env.get('ALLOWED_ORIGIN') || 'https://khedma.tn'
 
 const corsHeaders = {
@@ -81,6 +103,16 @@ serve(async (req) => {
         console.log('[Flouci Edge] API response:', JSON.stringify(data))
 
         if (data.result?.success) {
+            // Log successful payment initiation
+            await logPaymentEvent(supabase, {
+                user_id: user.id,
+                event_type: 'payment_initiated',
+                amount: amount,
+                flouci_session_id: data.result.payment_id,
+                status: 'pending',
+                metadata: { developer_tracking_id, session_timeout_secs },
+            });
+
             return new Response(
                 JSON.stringify({
                     payment_id: data.result.payment_id,
@@ -91,6 +123,16 @@ serve(async (req) => {
         } else {
             const errorMsg = data.result?.message || 'Payment initiation failed'
             console.error('[Flouci Edge] Payment failed:', errorMsg)
+
+            // Log failed payment initiation
+            await logPaymentEvent(supabase, {
+                user_id: user.id,
+                event_type: 'payment_initiated',
+                amount: amount,
+                status: 'failed',
+                metadata: { error: errorMsg, developer_tracking_id },
+            });
+
             return new Response(
                 JSON.stringify({ error: errorMsg }),
                 { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

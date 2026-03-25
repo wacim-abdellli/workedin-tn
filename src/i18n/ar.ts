@@ -826,7 +826,35 @@ export const ar = {
             description: 'لم نعثر على مستقلين يطابقون معاييرك. جرّب كلمات أخرى أو امسح الفلاتر.',
             action: 'مسح جميع الفلاتر'
         }
-    }
+    },
+
+    wallet: {
+        title: 'محفظتي',
+        balance: 'الرصيد المتاح',
+        pendingBalance: 'قيد الانتظار في الضمان',
+        totalEarned: 'إجمالي الأرباح',
+        totalWithdrawn: 'إجمالي المسحوبات',
+        requestWithdrawal: 'طلب سحب',
+        transactionHistory: 'سجل المعاملات',
+        withdrawalHistory: 'سجل السحوبات',
+        amount: 'المبلغ',
+        method: 'طريقة السحب',
+        bankTransfer: 'تحويل بنكي',
+        d17: 'D17',
+        flouci: 'Flouci',
+        bankName: 'اسم البنك',
+        iban: 'رقم IBAN',
+        phone: 'رقم الهاتف',
+        submit: 'إرسال',
+        cancel: 'إلغاء',
+        status: {
+            pending: 'قيد الانتظار',
+            approved: 'تمت الموافقة',
+            processing: 'قيد المعالجة',
+            completed: 'مكتمل',
+            rejected: 'مرفوض',
+        },
+    },
 };
 
 export type Translations = typeof ar;

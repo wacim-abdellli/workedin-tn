@@ -10,6 +10,28 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
+async function logPaymentEvent(supabaseClient: any, payload: {
+    user_id: string;
+    event_type: string;
+    amount: number;
+    flouci_session_id?: string;
+    contract_id?: string;
+    wallet_id?: string;
+    status: string;
+    metadata?: Record<string, unknown>;
+}) {
+    try {
+        await supabaseClient.from('payment_audit_log').insert({
+            ...payload,
+            currency: 'TND',
+            metadata: payload.metadata ?? {},
+        });
+    } catch (err) {
+        // Never let audit logging crash the payment flow
+        console.error('[audit_log] failed to write:', err);
+    }
+}
+
 const ALLOWED_ORIGIN = Deno.env.get('ALLOWED_ORIGIN') || 'https://khedma.tn'
 
 const corsHeaders = {
@@ -131,6 +153,18 @@ serve(async (req: Request) => {
 
             if (completionError) {
                 console.error('[Flouci Edge] Payment completion error:', completionError)
+
+                // Log failed payment
+                await logPaymentEvent(supabaseAdmin, {
+                    user_id: user.id,
+                    event_type: 'payment_failed',
+                    amount: amount || verificationResult.amount / 1000,
+                    flouci_session_id: payment_id,
+                    contract_id: contract_id,
+                    status: 'failed',
+                    metadata: { error: completionError.message, transaction_id },
+                });
+
                 return new Response(
                     JSON.stringify({
                         verification: verificationResult,
@@ -139,6 +173,17 @@ serve(async (req: Request) => {
                     { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
                 )
             }
+
+            // Log successful payment
+            await logPaymentEvent(supabaseAdmin, {
+                user_id: user.id,
+                event_type: 'payment_success',
+                amount: amount || verificationResult.amount / 1000,
+                flouci_session_id: payment_id,
+                contract_id: contract_id,
+                status: 'success',
+                metadata: { transaction_id, freelancer_id, completion_result: completionResult },
+            });
 
             return new Response(
                 JSON.stringify({

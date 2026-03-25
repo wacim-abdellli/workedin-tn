@@ -828,5 +828,33 @@ export const en: Translations = {
             description: 'We could not find any freelancers matching your criteria. Try different keywords or clear filters.',
             action: 'Clear all filters'
         }
-    }
+    },
+
+    wallet: {
+        title: 'My Wallet',
+        balance: 'Available Balance',
+        pendingBalance: 'Pending in Escrow',
+        totalEarned: 'Total Earned',
+        totalWithdrawn: 'Total Withdrawn',
+        requestWithdrawal: 'Request Withdrawal',
+        transactionHistory: 'Transaction History',
+        withdrawalHistory: 'Withdrawal History',
+        amount: 'Amount',
+        method: 'Withdrawal Method',
+        bankTransfer: 'Bank Transfer',
+        d17: 'D17',
+        flouci: 'Flouci',
+        bankName: 'Bank Name',
+        iban: 'IBAN',
+        phone: 'Phone Number',
+        submit: 'Submit',
+        cancel: 'Cancel',
+        status: {
+            pending: 'Pending',
+            approved: 'Approved',
+            processing: 'Processing',
+            completed: 'Completed',
+            rejected: 'Rejected',
+        },
+    },
 };
