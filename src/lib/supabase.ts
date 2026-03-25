@@ -22,6 +22,24 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     },
 });
 
+// Handle auth state changes — log token refresh and sign-out events
+supabase.auth.onAuthStateChange((event) => {
+    if (event === 'TOKEN_REFRESHED') {
+        console.log('[auth] token refreshed ok');
+    }
+    if (event === 'SIGNED_OUT') {
+        console.log('[auth] signed out');
+    }
+});
+
+// If the stored session is invalid/expired, sign out cleanly so anon queries aren't blocked
+supabase.auth.getSession().then(({ error }) => {
+    if (error) {
+        console.warn('[auth] session error, signing out:', error.message);
+        supabase.auth.signOut();
+    }
+});
+
 /**
  * Wraps a promise with a timeout
  * @param promise The promise to wrap
