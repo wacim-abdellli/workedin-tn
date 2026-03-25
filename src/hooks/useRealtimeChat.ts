@@ -1,7 +1,7 @@
 import { logger } from '@/lib/logger';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../lib/supabase';
-import { sendMessage as sendMessageRecord } from '../services/messages';
+import { sendContractMessage as sendMessageRecord } from '../services/messages';
 import type { Message, MessageAttachment } from '../types';
 
 interface ChatMessage extends Omit<Message, 'sender'> {

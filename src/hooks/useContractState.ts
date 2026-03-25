@@ -1,7 +1,7 @@
 import { logger } from '@/lib/logger';
 import { useState, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
-import { sendMessage as sendContractMessage } from '../services/messages';
+import { sendContractMessage } from '../services/messages';
 import type { ContractStatus } from '../types';
 
 interface ContractData {
