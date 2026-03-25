@@ -13,6 +13,7 @@ export const supabaseAnon = createClient(supabaseUrl, supabaseAnonKey, {
         persistSession: false,
         autoRefreshToken: false,
         detectSessionInUrl: false,
+        storageKey: 'sb-anon',
     },
 });
 
