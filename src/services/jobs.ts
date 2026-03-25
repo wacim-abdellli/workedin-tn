@@ -44,6 +44,12 @@ const BUDGET_RANGES = [
 export async function getJobs(filters: JobFilters = {}, page = 1, pageSize = 10) {
     console.log('[getJobs] called with filters:', filters, 'page:', page);
 
+    // Diagnostic: raw count with no filters to detect RLS blocks or empty table
+    const { count: rawCount, error: rawError } = await supabase
+        .from('jobs')
+        .select('*', { count: 'exact', head: true });
+    console.log('[getJobs] RAW total rows (no filter):', rawCount, 'rawError:', rawError);
+
     let query = supabase
         .from('jobs')
         .select('*', { count: 'exact' })
@@ -88,9 +94,7 @@ export async function getJobs(filters: JobFilters = {}, page = 1, pageSize = 10)
 
     const { data, error, count } = await query;
 
-    console.log('[getJobs] data:', data);
-    console.log('[getJobs] count:', count);
-    console.log('[getJobs] error:', error);
+    console.log('[getJobs] final data:', data, 'count:', count, 'error:', error);
 
     if (error) {
         console.error('[getJobs] FATAL:', error);
