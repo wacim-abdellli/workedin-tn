@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, Briefcase, Shield, Star, TrendingUp, Users } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Briefcase, ClipboardList, Shield, Star, TrendingUp, Users } from 'lucide-react';
 import { motion, useMotionTemplate, useMotionValue, useSpring, useTransform, useInView } from 'framer-motion';
 import { useMemo, useRef } from 'react';
 
@@ -12,6 +12,7 @@ interface HeroSectionProps {
     earnings?: number;
     jobs?: number;
     freelancers: number;
+    contracts?: number;
   };
 }
 
@@ -73,6 +74,20 @@ export default function HeroSection({ stats }: HeroSectionProps) {
     () => ['AS', 'MH', 'SK', 'ON', 'ZT'],
     []
   );
+  const averageProjectValue = stats.contracts && stats.contracts > 0
+    ? Math.round((stats.earnings ?? 0) / stats.contracts)
+    : Math.round((stats.earnings ?? 0) / Math.max(1, stats.jobs ?? 1));
+  const heroMetrics = isFreelancer
+    ? [
+        { icon: Briefcase, value: stats.jobs ?? 0, label: t.hero.activity.metrics.activeProjects },
+        { icon: TrendingUp, value: Math.max(1, averageProjectValue), label: t.hero.activity.metrics.avgProjectValue },
+        { icon: ClipboardList, value: stats.contracts ?? 0, label: t.hero.activity.metrics.projectsCompleted },
+      ]
+    : [
+        { icon: Users, value: stats.freelancers, label: t.hero.activity.metrics.verifiedFreelancers },
+        { icon: Briefcase, value: stats.jobs ?? 0, label: t.hero.activity.metrics.activeProjects },
+        { icon: ClipboardList, value: stats.contracts ?? 0, label: t.hero.activity.metrics.projectsCompleted },
+      ];
 
   const headlineStart = isFreelancer ? t.hero.headlineStart : t.forClients.hero.title.replace(', delivered.', '');
   const headlineHighlight = isFreelancer ? t.hero.headlineHighlight : t.forClients.hero.titleHighlight;
@@ -120,7 +135,7 @@ export default function HeroSection({ stats }: HeroSectionProps) {
 
       <div className="container-custom relative z-10 py-20 lg:py-28">
         <div className="mx-auto grid max-w-7xl items-center gap-14 lg:grid-cols-[minmax(0,1.15fr)_minmax(340px,0.85fr)]">
-          <div className="text-center lg:text-left">
+          <div className="text-center lg:text-left rtl:text-right">
             <motion.div
               custom={0}
               variants={fadeUp}
@@ -135,7 +150,7 @@ export default function HeroSection({ stats }: HeroSectionProps) {
 
             <motion.div custom={1} variants={fadeUp} initial="hidden" animate="visible" className="mt-8">
               <p className="hero-display-line font-bold tracking-tight text-gray-900 dark:text-white">
-                <span className="hero-display-chip">{headlineStart}</span>
+                <span>{headlineStart}</span>
               </p>
               <h1 className="hero-display-line mt-1 bg-gradient-to-r from-purple-500 to-amber-400 bg-clip-text font-bold italic tracking-tight text-transparent">{headlineHighlight}</h1>
             </motion.div>
@@ -233,19 +248,9 @@ export default function HeroSection({ stats }: HeroSectionProps) {
               </div>
 
               <div className="mt-6 grid gap-3 md:grid-cols-3">
-                {isFreelancer ? (
-                  <>
-                    <HeroStat icon={Briefcase} value={stats.jobs ?? 142} label="Active projects" />
-                    <HeroStat icon={TrendingUp} value={Math.round((stats.earnings ?? 127850) / 100)} label="Avg. project value" />
-                    <HeroStat icon={Star} value={98} label="Success rate" />
-                  </>
-                ) : (
-                  <>
-                    <HeroStat icon={Users} value={stats.freelancers} label="Verified freelancers" />
-                    <HeroStat icon={Briefcase} value={stats.jobs ?? 142} label="Projects completed" />
-                    <HeroStat icon={TrendingUp} value={24} label="Avg. hire time" />
-                  </>
-                )}
+                {heroMetrics.map(({ icon, value, label }) => (
+                  <HeroStat key={label} icon={icon} value={value} label={label} />
+                ))}
               </div>
 
               <div className="mt-6 grid gap-3 sm:grid-cols-2">

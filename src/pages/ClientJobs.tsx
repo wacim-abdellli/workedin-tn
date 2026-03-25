@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { FolderOpen } from 'lucide-react'
+import { Header } from '@/components/layout'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
 import { useQuery } from '@tanstack/react-query'
@@ -58,6 +59,7 @@ export default function ClientJobs() {
 
   return (
     <div className="bg-gray-50 dark:bg-[#0f0e17] min-h-screen">
+      <Header />
       <div className="max-w-5xl mx-auto px-4 py-8">
         
         {/* Header section */}

@@ -16,34 +16,32 @@ function Home() {
     const [stats, setStats] = useState({
         earnings: 127850,
         jobs: 142,
-        freelancers: 2500
+        freelancers: 2500,
+        contracts: 142,
     });
 
     useEffect(() => {
         const fetchStats = async () => {
-            const { count: jobsCount } = await supabase
-                .from('jobs')
-                .select('*', { count: 'exact', head: true });
+            const [
+                { count: jobsCount },
+                { count: freelancerCount },
+                { count: contractCount },
+                { data: contracts },
+            ] = await Promise.all([
+                supabase.from('jobs').select('*', { count: 'exact', head: true }),
+                supabase.from('profiles').select('*', { count: 'exact', head: true }).in('user_type', ['freelancer', 'both']),
+                supabase.from('contracts').select('*', { count: 'exact', head: true }),
+                supabase.from('contracts').select('amount').eq('status', 'completed'),
+            ]);
 
-            const { count: freelancerCount } = await supabase
-                .from('profiles')
-                .select('*', { count: 'exact', head: true })
-                .in('user_type', ['freelancer', 'both']);
+            const totalEarnings = contracts?.reduce((sum, contract) => sum + (contract.amount || 0), 0) || 0;
 
-            const { data: contracts } = await supabase
-                .from('contracts')
-                .select('amount')
-                .eq('status', 'completed');
-
-            const totalEarnings = contracts?.reduce((sum, c) => sum + (c.amount || 0), 0) || 0;
-
-            if (jobsCount && jobsCount > 0) {
-                setStats({
-                    jobs: jobsCount,
-                    freelancers: freelancerCount || 2500,
-                    earnings: totalEarnings > 1000 ? totalEarnings : 127850
-                });
-            }
+            setStats({
+                jobs: jobsCount ?? 142,
+                freelancers: freelancerCount ?? 2500,
+                contracts: contractCount ?? 142,
+                earnings: totalEarnings > 0 ? totalEarnings : 127850,
+            });
         };
 
         fetchStats();

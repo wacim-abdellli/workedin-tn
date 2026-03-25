@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { Wallet } from 'lucide-react'
+import { Header } from '@/components/layout'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
 import { useQuery } from '@tanstack/react-query'
@@ -72,6 +73,7 @@ export default function FreelancerEarnings() {
 
   return (
     <div className="bg-gray-50 dark:bg-[#0f0e17] min-h-screen">
+      <Header />
       <div className="max-w-5xl mx-auto px-4 py-8">
         
         {/* Balance hero card */}

@@ -1,43 +1,59 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
 import { FileText } from 'lucide-react'
+
+import { Header } from '@/components/layout'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
-import { useQuery } from '@tanstack/react-query'
+
+type ProposalTab = 'all' | 'pending' | 'accepted' | 'rejected'
+
+type ProposalRow = {
+  id: string
+  bid_amount: number
+  created_at: string
+  delivery_days: number
+  status: 'pending' | 'accepted' | 'rejected' | string
+  jobs?: {
+    title?: string | null
+    category?: string | null
+  } | null
+}
 
 export default function MyProposals() {
   const { user } = useAuth()
   const navigate = useNavigate()
-  const [activeTab, setActiveTab] = useState<'all' | 'pending' | 'accepted' | 'rejected'>('all')
+  const [activeTab, setActiveTab] = useState<ProposalTab>('all')
 
   const { data: proposals, isLoading } = useQuery({
     queryKey: ['my-proposals', user?.id, activeTab],
     queryFn: async () => {
-      let q = supabase
+      let query = supabase
         .from('proposals')
-        .select(`
-          *,
-          jobs (
-            title,
-            category
-          )
-        `)
+        .select(
+          `
+            *,
+            jobs (
+              title,
+              category
+            )
+          `
+        )
         .eq('freelancer_id', user?.id)
         .order('created_at', { ascending: false })
-      
+
       if (activeTab !== 'all') {
-        q = q.eq('status', activeTab)
+        query = query.eq('status', activeTab)
       }
-      
-      const { data, error } = await q
+
+      const { data, error } = await query
       if (error) throw error
-      return data
+      return (data || []) as ProposalRow[]
     },
-    enabled: !!user?.id
+    enabled: !!user?.id,
   })
 
-  // Calculate stats logically instead of fetching everything again if possible, or just mock stats from total data if we fetched all.
-  // We'll just fetch all for stats
   const { data: allProposals } = useQuery({
     queryKey: ['my-proposals-stats', user?.id],
     queryFn: async () => {
@@ -45,130 +61,130 @@ export default function MyProposals() {
         .from('proposals')
         .select('status')
         .eq('freelancer_id', user?.id)
+
       if (error) throw error
-      return data
+      return data || []
     },
-    enabled: !!user?.id
+    enabled: !!user?.id,
   })
 
   const stats = {
     sent: allProposals?.length || 0,
-    accepted: allProposals?.filter(p => p.status === 'accepted').length || 0,
-    pending: allProposals?.filter(p => p.status === 'pending').length || 0,
+    accepted: allProposals?.filter((proposal) => proposal.status === 'accepted').length || 0,
+    pending: allProposals?.filter((proposal) => proposal.status === 'pending').length || 0,
   }
 
   const formatDaysAgo = (dateStr: string) => {
-    const days = Math.floor((new Date().getTime() - new Date(dateStr).getTime()) / (1000 * 3600 * 24))
+    const days = Math.floor((Date.now() - new Date(dateStr).getTime()) / (1000 * 3600 * 24))
     if (days === 0) return 'Today'
     if (days === 1) return '1 day ago'
     return `${days} days ago`
   }
 
   return (
-    <div className="bg-gray-50 dark:bg-[#0f0e17] min-h-screen">
-      <div className="max-w-5xl mx-auto px-4 py-8">
-        
-        {/* Header section */}
+    <div className="min-h-screen bg-gray-50 dark:bg-[#0f0e17]">
+      <Header />
+
+      <div className="mx-auto max-w-5xl px-4 py-8">
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">My Proposals</h1>
           <p className="text-gray-500 dark:text-gray-400">Track every proposal you've sent</p>
         </div>
 
-        {/* Stats row */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-          <div className="bg-white dark:bg-[#1a1825] rounded-2xl p-4 border border-gray-100 dark:border-white/5">
-            <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">Sent</p>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{stats.sent}</p>
+        <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div className="rounded-2xl border border-gray-100 bg-white p-4 dark:border-white/5 dark:bg-[#1a1825]">
+            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Sent</p>
+            <p className="mt-1 text-2xl font-bold text-gray-900 dark:text-white">{stats.sent}</p>
           </div>
-          <div className="bg-white dark:bg-[#1a1825] rounded-2xl p-4 border border-gray-100 dark:border-white/5">
-            <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">Accepted</p>
-            <p className="text-2xl font-bold text-green-600 dark:text-green-400 mt-1">{stats.accepted}</p>
+          <div className="rounded-2xl border border-gray-100 bg-white p-4 dark:border-white/5 dark:bg-[#1a1825]">
+            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Accepted</p>
+            <p className="mt-1 text-2xl font-bold text-green-600 dark:text-green-400">{stats.accepted}</p>
           </div>
-          <div className="bg-white dark:bg-[#1a1825] rounded-2xl p-4 border border-gray-100 dark:border-white/5">
-            <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">Pending</p>
-            <p className="text-2xl font-bold text-amber-600 dark:text-amber-400 mt-1">{stats.pending}</p>
+          <div className="rounded-2xl border border-gray-100 bg-white p-4 dark:border-white/5 dark:bg-[#1a1825]">
+            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Pending</p>
+            <p className="mt-1 text-2xl font-bold text-amber-600 dark:text-amber-400">{stats.pending}</p>
           </div>
         </div>
 
-        {/* Filter tabs */}
-        <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
-          {(['all', 'pending', 'accepted', 'rejected'] as const).map(tab => (
+        <div className="mb-6 flex gap-2 overflow-x-auto pb-2">
+          {(['all', 'pending', 'accepted', 'rejected'] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`text-sm font-medium px-4 py-2 rounded-lg whitespace-nowrap transition-colors
-                ${activeTab === tab 
-                  ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400' 
+              className={`whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                activeTab === tab
+                  ? 'bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400'
                   : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
-                }`}
+              }`}
             >
               {tab.charAt(0).toUpperCase() + tab.slice(1)}
             </button>
           ))}
         </div>
 
-        {/* Content */}
         {isLoading ? (
-          <div className="flex justify-center py-十二">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+          <div className="flex justify-center py-12">
+            <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-purple-600" />
           </div>
         ) : !proposals || proposals.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
-            <FileText className="w-10 h-10 text-gray-300 dark:text-gray-600 mb-4" />
+            <FileText className="mb-4 h-10 w-10 text-gray-300 dark:text-gray-600" />
             <h3 className="text-lg font-medium text-gray-900 dark:text-white">No proposals yet</h3>
-            <p className="text-gray-500 dark:text-gray-400 mt-1 max-w-sm">
+            <p className="mt-1 max-w-sm text-gray-500 dark:text-gray-400">
               Browse open projects and send your first proposal.
             </p>
             <button
               onClick={() => navigate('/jobs')}
-              className="mt-4 bg-purple-600 hover:bg-purple-500 text-white px-5 py-2 rounded-xl transition-colors font-medium"
+              className="mt-4 rounded-xl bg-purple-600 px-5 py-2 font-medium text-white transition-colors hover:bg-purple-500"
             >
               Browse jobs
             </button>
           </div>
         ) : (
           <div className="space-y-3">
-            {proposals.map((proposal: any) => (
-              <div 
+            {proposals.map((proposal) => (
+              <div
                 key={proposal.id}
-                className="bg-white dark:bg-[#1a1825] rounded-2xl p-5 border border-gray-100 dark:border-white/5 hover:border-purple-200 dark:hover:border-purple-500/30 transition-all group"
+                className="group rounded-2xl border border-gray-100 bg-white p-5 transition-all hover:border-purple-200 dark:border-white/5 dark:bg-[#1a1825] dark:hover:border-purple-500/30"
               >
-                <div className="flex justify-between items-start gap-4 mb-2">
-                  <h3 className="font-semibold text-gray-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
+                <div className="mb-2 flex items-start justify-between gap-4">
+                  <h3 className="font-semibold text-gray-900 transition-colors group-hover:text-purple-600 dark:text-white dark:group-hover:text-purple-400">
                     {proposal.jobs?.title || 'Unknown Project'}
                   </h3>
-                  <span className={`text-xs font-medium px-2.5 py-1 rounded-full whitespace-nowrap
-                    ${proposal.status === 'pending' ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400' : ''}
-                    ${proposal.status === 'accepted' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : ''}
-                    ${proposal.status === 'rejected' ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400' : ''}
-                  `}>
+                  <span
+                    className={`whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-medium ${
+                      proposal.status === 'pending'
+                        ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+                        : proposal.status === 'accepted'
+                          ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                          : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                    }`}
+                  >
                     {proposal.status.charAt(0).toUpperCase() + proposal.status.slice(1)}
                   </span>
                 </div>
-                
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mb-3">
-                  <p className="text-purple-600 dark:text-purple-400 font-medium text-sm">
+
+                <div className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-2">
+                  <p className="text-sm font-medium text-purple-600 dark:text-purple-400">
                     Your bid: {proposal.bid_amount} TND
                   </p>
-                  <p className="text-gray-500 dark:text-gray-400 text-sm">
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
                     {proposal.delivery_days} days delivery
                   </p>
                 </div>
-                
-                <p className="text-sm text-gray-400">
-                  Submitted {formatDaysAgo(proposal.created_at)}
-                </p>
 
-                {proposal.status === 'accepted' && (
-                  <div className="mt-4 pt-4 border-t border-gray-100 dark:border-white/5">
-                    <button 
+                <p className="text-sm text-gray-400">Submitted {formatDaysAgo(proposal.created_at)}</p>
+
+                {proposal.status === 'accepted' ? (
+                  <div className="mt-4 border-t border-gray-100 pt-4 dark:border-white/5">
+                    <button
                       onClick={() => navigate('/contracts')}
-                      className="text-sm font-medium text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300"
+                      className="text-sm font-medium text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300"
                     >
-                      View contract →
+                      {'View contract ->'}
                     </button>
                   </div>
-                )}
+                ) : null}
               </div>
             ))}
           </div>
