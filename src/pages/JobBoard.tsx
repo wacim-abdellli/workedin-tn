@@ -177,6 +177,7 @@ function JobBoard() {
         gcTime: 0,
         refetchOnMount: true,
         refetchOnWindowFocus: true,
+        retry: false,
     });
 
     const jobs = useMemo(() => jobsData?.pages.flatMap((p: any) => p.data || []) || [], [jobsData]);

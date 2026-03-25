@@ -42,56 +42,72 @@ const BUDGET_RANGES = [
 // --- READ ---
 
 export async function getJobs(filters: JobFilters = {}, page = 1, pageSize = 10) {
-    let query = supabase
-        .from('jobs')
-        .select('*', { count: 'exact' })
-        .eq('status', filters.status || 'open')
-        .eq('visibility', 'public');
-
-    if (filters.search) query = query.or(`title.ilike.%${filters.search}%,description.ilike.%${filters.search}%`);
-    if (filters.categories && filters.categories.length > 0) query = query.in('category', filters.categories);
-    if (filters.jobType) query = query.eq('job_type', filters.jobType);
-    if (filters.experienceLevels && filters.experienceLevels.length > 0) query = query.in('experience_level', filters.experienceLevels);
-
-    if (filters.budgetRange) {
-        const range = BUDGET_RANGES.find(r => r.value === filters.budgetRange);
-        if (range) {
-            query = query.gte('budget_min', range.min).lte('budget_min', range.max);
-        }
-    }
-
-    if (filters.postedWithin && filters.postedWithin !== 'any') {
-        const now = new Date();
-        let since: Date;
-        switch (filters.postedWithin) {
-            case '24h': since = new Date(now.getTime() - 24 * 60 * 60 * 1000); break;
-            case '3d': since = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000); break;
-            case '1w': since = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000); break;
-            case '1m': since = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000); break;
-            default: since = new Date(0);
-        }
-        query = query.gte('posted_at', since.toISOString());
-    }
-
-    switch (filters.sortBy) {
-        case 'budget_high': query = query.order('budget_max', { ascending: false, nullsFirst: false }); break;
-        case 'budget_low': query = query.order('budget_min', { ascending: true }); break;
-        case 'proposals_high': query = query.order('proposals_count', { ascending: false }); break;
-        case 'proposals_low': query = query.order('proposals_count', { ascending: true }); break;
-        default: query = query.order('posted_at', { ascending: false });
-    }
-
     const from = (page - 1) * pageSize;
-    query = query.range(from, from + pageSize - 1);
 
-    const { data, error, count } = await query;
+    // Wrap in a timeout — if Supabase hangs (e.g. stale token refresh), fail fast
+    const fetchPromise = async () => {
+        let query = supabase
+            .from('jobs')
+            .select('*', { count: 'exact' })
+            .eq('status', filters.status || 'open')
+            .eq('visibility', 'public');
 
-    if (error) {
-        console.error('[getJobs] error:', error);
+        if (filters.search) query = query.or(`title.ilike.%${filters.search}%,description.ilike.%${filters.search}%`);
+        if (filters.categories && filters.categories.length > 0) query = query.in('category', filters.categories);
+        if (filters.jobType) query = query.eq('job_type', filters.jobType);
+        if (filters.experienceLevels && filters.experienceLevels.length > 0) query = query.in('experience_level', filters.experienceLevels);
+
+        if (filters.budgetRange) {
+            const range = BUDGET_RANGES.find(r => r.value === filters.budgetRange);
+            if (range) {
+                query = query.gte('budget_min', range.min).lte('budget_min', range.max);
+            }
+        }
+
+        if (filters.postedWithin && filters.postedWithin !== 'any') {
+            const now = new Date();
+            let since: Date;
+            switch (filters.postedWithin) {
+                case '24h': since = new Date(now.getTime() - 24 * 60 * 60 * 1000); break;
+                case '3d': since = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000); break;
+                case '1w': since = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000); break;
+                case '1m': since = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000); break;
+                default: since = new Date(0);
+            }
+            query = query.gte('posted_at', since.toISOString());
+        }
+
+        switch (filters.sortBy) {
+            case 'budget_high': query = query.order('budget_max', { ascending: false, nullsFirst: false }); break;
+            case 'budget_low': query = query.order('budget_min', { ascending: true }); break;
+            case 'proposals_high': query = query.order('proposals_count', { ascending: false }); break;
+            case 'proposals_low': query = query.order('proposals_count', { ascending: true }); break;
+            default: query = query.order('posted_at', { ascending: false });
+        }
+
+        query = query.range(from, from + pageSize - 1);
+
+        const { data, error, count } = await query;
+
+        if (error) {
+            console.error('[getJobs] error:', error);
+            return { data: [], count: 0 };
+        }
+
+        return { data: data ?? [], count: count ?? 0 };
+    };
+
+    // 8 second timeout — if token refresh hangs, fail fast and show empty
+    const timeout = new Promise<{ data: never[]; count: number }>((_, reject) =>
+        setTimeout(() => reject(new Error('getJobs timed out after 8s')), 8000)
+    );
+
+    try {
+        return await Promise.race([fetchPromise(), timeout]);
+    } catch (err) {
+        console.error('[getJobs] fatal:', err);
         return { data: [], count: 0 };
     }
-
-    return { data: data ?? [], count: count ?? 0 };
 }
 
 export async function getCategoryCounts(categories: string[]) {
