@@ -27,25 +27,7 @@ import { NotificationBell } from '@/components/ui'
 
 import SearchModal from './SearchModal'
 
-const FREELANCER_NAV = [
-  { label: 'Find Work', Icon: Briefcase, href: '/jobs' },
-  { label: 'Proposals', Icon: FileText, href: '/my-proposals' },
-  { label: 'Contracts', Icon: ClipboardList, href: '/contracts' },
-  { label: 'Wallet', Icon: Wallet, href: '/wallet' },
-]
-
-const CLIENT_NAV = [
-  { label: 'Post Project', Icon: PlusCircle, href: '/jobs/new' },
-  { label: 'My Projects', Icon: FolderOpen, href: '/client/jobs' },
-  { label: 'Freelancers', Icon: Users, href: '/find-freelancers' },
-  { label: 'Contracts', Icon: ClipboardList, href: '/contracts' },
-]
-
-const PUBLIC_NAV = [
-  { label: 'Find Work', Icon: Briefcase, href: '/jobs' },
-  { label: 'Find Freelancers', Icon: Users, href: '/find-freelancers' },
-  { label: 'How It Works', Icon: FileText, href: '/how-it-works' },
-]
+// Nav arrays are created inside the component to pick up live translations
 
 const AUTH_ROUTES = ['/login', '/signup', '/forgot-password', '/reset-password', '/auth/callback']
 
@@ -74,7 +56,27 @@ function AuthHeader({ logoSrc, onHome }: { logoSrc: string; onHome: () => void }
 export default function Header() {
   const { user, profile, signOut } = useAuth()
   const { activeWorkspace } = useWorkspaceStore()
-  const { language, setLanguage } = useTranslation()
+  const { t, language, setLanguage } = useTranslation()
+
+  const FREELANCER_NAV = [
+    { label: t.nav?.findWork || 'Find Work', Icon: Briefcase, href: '/jobs' },
+    { label: t.dashboard?.quickActions ? t.common?.submit || 'Proposals' : 'Proposals', Icon: FileText, href: '/my-proposals' },
+    { label: t.contract?.details || 'Contracts', Icon: ClipboardList, href: '/contracts' },
+    { label: t.wallet?.title || 'Wallet', Icon: Wallet, href: '/wallet' },
+  ]
+
+  const CLIENT_NAV = [
+    { label: t.dashboard?.postNewJob || 'Post Project', Icon: PlusCircle, href: '/jobs/new' },
+    { label: t.dashboard?.yourJobs || 'My Projects', Icon: FolderOpen, href: '/client/jobs' },
+    { label: t.nav?.findFreelancers || 'Freelancers', Icon: Users, href: '/find-freelancers' },
+    { label: t.contract?.details || 'Contracts', Icon: ClipboardList, href: '/contracts' },
+  ]
+
+  const PUBLIC_NAV = [
+    { label: t.nav?.findWork || 'Find Work', Icon: Briefcase, href: '/jobs' },
+    { label: t.nav?.findFreelancers || 'Find Freelancers', Icon: Users, href: '/find-freelancers' },
+    { label: t.howItWorks?.title || 'How It Works', Icon: FileText, href: '/how-it-works' },
+  ]
   const navigate = useNavigate()
   const { pathname } = useLocation()
 
