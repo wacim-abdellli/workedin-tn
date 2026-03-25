@@ -7,6 +7,22 @@ import type { MessageAttachment } from '../types';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://your-project.supabase.co';
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'your-anon-key';
 
+// Purge stale session synchronously before client reads localStorage
+if (typeof window !== 'undefined') {
+    try {
+        const storageKey = `sb-wvgkezmboewtlpnyjnyd-auth-token`;
+        const raw = localStorage.getItem(storageKey);
+        if (raw) {
+            const parsed = JSON.parse(raw);
+            const expiresAt = parsed?.expires_at;
+            if (expiresAt && Date.now() / 1000 > expiresAt) {
+                localStorage.removeItem(storageKey);
+                console.log('[auth] purged expired session token');
+            }
+        }
+    } catch {}
+}
+
 // Create Supabase client
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     auth: {
@@ -29,13 +45,6 @@ supabase.auth.onAuthStateChange((event) => {
     }
     if (event === 'SIGNED_OUT') {
         console.log('[auth] signed out');
-    }
-});
-
-// If the stored session is invalid/expired, sign out cleanly so anon queries aren't blocked
-supabase.auth.getSession().then(({ error }) => {
-    if (error) {
-        supabase.auth.signOut();
     }
 });
 
