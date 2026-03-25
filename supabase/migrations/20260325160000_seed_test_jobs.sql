@@ -1,47 +1,27 @@
 -- =====================================================
 -- Seed: 6 test jobs for development/demo
 -- =====================================================
--- profiles.id has FK → auth.users(id), so we must insert
--- into auth.users first before inserting the profile.
--- All inserts are ON CONFLICT DO NOTHING — safe to re-run.
+-- Uses a fixed UUID for the test client.
+-- The profiles row for this UUID must exist first — we insert a minimal
+-- placeholder profile if it doesn't, so the FK constraint is satisfied.
+-- Only runs if the jobs table is currently empty.
 -- =====================================================
 
 DO $$
 DECLARE
     test_client_id UUID := '00000000-0000-0000-0000-000000000001'::UUID;
 BEGIN
-    -- 1. Insert a dummy auth user so the FK is satisfied
-    INSERT INTO auth.users (
-        id,
-        email,
-        encrypted_password,
-        email_confirmed_at,
-        created_at,
-        updated_at,
-        raw_app_meta_data,
-        raw_user_meta_data,
-        is_super_admin,
-        role
-    ) VALUES (
+    -- Ensure a placeholder profile exists for the test client
+    INSERT INTO profiles (id, full_name, email, user_type)
+    VALUES (
         test_client_id,
+        'Test Client (Demo)',
         'demo-client@khedma.tn',
-        '',                          -- no real password needed for demo
-        NOW(),
-        NOW(),
-        NOW(),
-        '{"provider":"email","providers":["email"]}'::jsonb,
-        '{"full_name":"Demo Client"}'::jsonb,
-        false,
-        'authenticated'
+        'client'
     )
     ON CONFLICT (id) DO NOTHING;
 
-    -- 2. Insert the profile (trigger may already have created it; DO NOTHING is safe)
-    INSERT INTO profiles (id, full_name, email, user_type)
-    VALUES (test_client_id, 'Demo Client', 'demo-client@khedma.tn', 'client')
-    ON CONFLICT (id) DO NOTHING;
-
-    -- 3. Seed jobs only if table is empty
+    -- Only seed if jobs table is empty
     IF (SELECT COUNT(*) FROM jobs) = 0 THEN
 
         INSERT INTO jobs (
@@ -53,9 +33,9 @@ BEGIN
             budget_min,
             budget_max,
             experience_level,
+            required_skills,
             visibility,
-            status,
-            required_skills
+            status
         ) VALUES
         (
             test_client_id,
@@ -66,9 +46,9 @@ BEGIN
             800,
             1500,
             'intermediate',
+            '["React", "TypeScript", "Node.js"]'::jsonb,
             'public',
-            'open',
-            '["React", "TypeScript", "Node.js"]'::jsonb
+            'open'
         ),
         (
             test_client_id,
@@ -79,9 +59,9 @@ BEGIN
             150,
             300,
             'beginner',
+            '["Logo Design", "Illustrator", "Branding"]'::jsonb,
             'public',
-            'open',
-            '["Logo Design", "Illustrator", "Branding"]'::jsonb
+            'open'
         ),
         (
             test_client_id,
@@ -92,9 +72,9 @@ BEGIN
             NULL,
             NULL,
             'intermediate',
+            '["Content Writing", "Arabic", "French"]'::jsonb,
             'public',
-            'open',
-            '["Content Writing", "Arabic", "French"]'::jsonb
+            'open'
         ),
         (
             test_client_id,
@@ -104,10 +84,10 @@ BEGIN
             'fixed_price',
             400,
             800,
-            'intermediate',
+            'expert',
+            '["Figma", "UI/UX", "Mobile Design"]'::jsonb,
             'public',
-            'open',
-            '["Figma", "UI/UX", "Mobile Design"]'::jsonb
+            'open'
         ),
         (
             test_client_id,
@@ -117,10 +97,10 @@ BEGIN
             'fixed_price',
             200,
             500,
-            'beginner',
+            'intermediate',
+            '["Python", "Pandas", "Data Analysis"]'::jsonb,
             'public',
-            'open',
-            '["Python", "Pandas", "Data Analysis"]'::jsonb
+            'open'
         ),
         (
             test_client_id,
@@ -131,9 +111,9 @@ BEGIN
             300,
             600,
             'intermediate',
+            '["Social Media", "Facebook Ads", "Marketing"]'::jsonb,
             'public',
-            'open',
-            '["Social Media", "Facebook Ads", "Marketing"]'::jsonb
+            'open'
         );
 
         RAISE NOTICE 'Seeded 6 test jobs successfully.';

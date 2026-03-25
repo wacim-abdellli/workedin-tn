@@ -2,9 +2,8 @@
 -- FIX: Infinite Recursion in Jobs Table RLS Policies
 -- =====================================================
 -- Error: 42P17 - "infinite recursion detected in policy for relation "jobs""
--- The original proposals policies used a subquery referencing jobs,
--- which triggered jobs RLS again → infinite loop.
--- Fix: simple non-recursive policies + SECURITY DEFINER helper for proposals.
+-- The original proposals policies used a subquery on jobs which triggered
+-- jobs RLS again, creating a circular dependency.
 -- =====================================================
 
 -- Step 1: Drop ALL existing policies on jobs table
@@ -20,7 +19,7 @@ END $$;
 
 -- Step 2: Recreate clean, non-recursive jobs policies
 
--- Anyone can read open public jobs (no auth required)
+-- Anyone (including anonymous) can read open public jobs
 CREATE POLICY "jobs_select_public" ON jobs
     FOR SELECT
     USING (status = 'open' AND visibility = 'public');
@@ -45,8 +44,7 @@ CREATE POLICY "jobs_delete" ON jobs
     FOR DELETE
     USING (auth.uid() = client_id);
 
--- Step 3: Drop ALL existing policies on proposals table
--- (These caused indirect recursion by subquerying jobs with RLS active)
+-- Step 3: Fix proposals policies that caused indirect recursion via jobs subquery
 DO $$
 DECLARE
     pol RECORD;
@@ -57,7 +55,7 @@ BEGIN
     END LOOP;
 END $$;
 
--- Step 4: SECURITY DEFINER helper — checks job ownership bypassing RLS
+-- Helper function: check job ownership without triggering jobs RLS
 CREATE OR REPLACE FUNCTION is_job_owner(p_job_id UUID)
 RETURNS BOOLEAN
 LANGUAGE sql
@@ -69,19 +67,22 @@ AS $$
     );
 $$;
 
--- Step 5: Recreate proposals policies using the helper (no direct jobs subquery)
+-- Proposals: viewable by the submitting freelancer or the job owner
 CREATE POLICY "proposals_select" ON proposals
     FOR SELECT
     USING (freelancer_id = auth.uid() OR is_job_owner(job_id));
 
+-- Proposals: freelancers can submit
 CREATE POLICY "proposals_insert" ON proposals
     FOR INSERT
     WITH CHECK (auth.uid() = freelancer_id);
 
+-- Proposals: parties can update (withdraw, accept, reject)
 CREATE POLICY "proposals_update" ON proposals
     FOR UPDATE
     USING (freelancer_id = auth.uid() OR is_job_owner(job_id));
 
+-- Proposals: freelancers can delete their own pending proposals
 CREATE POLICY "proposals_delete" ON proposals
     FOR DELETE
     USING (auth.uid() = freelancer_id AND status = 'pending');
