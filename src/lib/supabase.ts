@@ -10,16 +10,19 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'your-anon-key
 // Purge stale session synchronously before client reads localStorage
 if (typeof window !== 'undefined') {
     try {
-        const storageKey = `sb-wvgkezmboewtlpnyjnyd-auth-token`;
-        const raw = localStorage.getItem(storageKey);
-        if (raw) {
-            const parsed = JSON.parse(raw);
-            const expiresAt = parsed?.expires_at;
-            if (expiresAt && Date.now() / 1000 > expiresAt) {
-                localStorage.removeItem(storageKey);
-                console.log('[auth] purged expired session token');
-            }
-        }
+        const sbKeys = Object.keys(localStorage).filter(k => k.startsWith('sb-'));
+        sbKeys.forEach(k => {
+            try {
+                const raw = localStorage.getItem(k);
+                if (raw) {
+                    const parsed = JSON.parse(raw);
+                    const expiresAt = parsed?.expires_at;
+                    if (expiresAt && Date.now() / 1000 > expiresAt) {
+                        localStorage.removeItem(k);
+                    }
+                }
+            } catch {}
+        });
     } catch {}
 }
 
