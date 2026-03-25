@@ -7,6 +7,15 @@ import type { MessageAttachment } from '../types';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://your-project.supabase.co';
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'your-anon-key';
 
+// Anon-only client for public queries (jobs, freelancers) — never hangs on token refresh
+export const supabaseAnon = createClient(supabaseUrl, supabaseAnonKey, {
+    auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+        detectSessionInUrl: false,
+    },
+});
+
 // Purge stale session synchronously before client reads localStorage
 if (typeof window !== 'undefined') {
     try {

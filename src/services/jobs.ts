@@ -1,7 +1,7 @@
 /**
  * Jobs Service — All job-related Supabase queries
  */
-import { supabase } from '@/lib/supabase';
+import { supabase, supabaseAnon } from '@/lib/supabase';
 import type { Skill } from '@/types';
 
 export interface JobFilters {
@@ -46,7 +46,7 @@ export async function getJobs(filters: JobFilters = {}, page = 1, pageSize = 10)
 
     // Wrap in a timeout — if Supabase hangs (e.g. stale token refresh), fail fast
     const fetchPromise = async () => {
-        let query = supabase
+        let query = supabaseAnon
             .from('jobs')
             .select('*', { count: 'exact' })
             .eq('status', filters.status || 'open')
@@ -114,7 +114,7 @@ export async function getCategoryCounts(categories: string[]) {
     const counts: Record<string, number> = {};
     await Promise.all(
         categories.map(async (cat) => {
-            const { count } = await supabase
+            const { count } = await supabaseAnon
                 .from('jobs')
                 .select('*', { count: 'exact', head: true })
                 .eq('status', 'open')
