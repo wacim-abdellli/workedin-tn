@@ -32,13 +32,16 @@ supabase.auth.onAuthStateChange((event) => {
     }
 });
 
-// If the stored session is invalid/expired, sign out cleanly so anon queries aren't blocked
-supabase.auth.getSession().then(({ error }) => {
-    if (error) {
-        console.warn('[auth] session error, signing out:', error.message);
-        supabase.auth.signOut();
+// If the stored session is invalid/expired, clear stale sb- keys so anon queries aren't blocked
+;(async () => {
+    const { data: { session }, error } = await supabase.auth.getSession();
+    if (error || !session) {
+        if (typeof window !== 'undefined') {
+            const keys = Object.keys(localStorage).filter(k => k.startsWith('sb-'));
+            keys.forEach(k => localStorage.removeItem(k));
+        }
     }
-});
+})();
 
 /**
  * Wraps a promise with a timeout
