@@ -1,7 +1,7 @@
 /**
  * Profiles Service — User and freelancer profile queries
  */
-import { supabase, uploadFile } from '@/lib/supabase';
+import { supabase, supabaseAnon, uploadFile } from '@/lib/supabase';
 
 // --- READ ---
 
@@ -28,13 +28,35 @@ export async function getFreelancers(filters: {
     minRate?: number;
     maxRate?: number;
 } = {}, page = 1, pageSize = 20) {
-    let query = supabase
+    // Use anon client — public discovery page, must not hang on token refresh
+    let query = supabaseAnon
         .from('profiles')
-        .select(`*, freelancer_profiles(*)`, { count: 'exact' })
-        .in('user_type', ['freelancer', 'both']);
+        .select(`
+            id,
+            full_name,
+            avatar_url,
+            location,
+            user_type,
+            freelancer_profiles (
+                id,
+                title,
+                hourly_rate,
+                availability,
+                skills,
+                jobs_completed,
+                success_rate,
+                cin_verified
+            )
+        `, { count: 'exact' })
+        .in('user_type', ['freelancer', 'both'])
+        .not('freelancer_profiles', 'is', null);
 
     if (filters.search) {
-        query = query.or(`full_name.ilike.%${filters.search}%,username.ilike.%${filters.search}%`);
+        query = query.or(`full_name.ilike.%${filters.search}%`);
+    }
+
+    if (filters.availability) {
+        query = query.eq('freelancer_profiles.availability', filters.availability);
     }
 
     const from = (page - 1) * pageSize;

@@ -127,7 +127,8 @@ export async function getCategoryCounts(categories: string[]) {
 }
 
 export async function getJobById(jobId: string) {
-    return supabase
+    // Use anon client — job detail is public, must not hang on token refresh
+    return supabaseAnon
         .from('jobs')
         .select(`*, client:profiles!jobs_client_id_fkey(id, full_name, avatar_url, location, created_at)`)
         .eq('id', jobId)

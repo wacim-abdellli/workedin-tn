@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Award, Briefcase, Filter, Grid, List, Search, SlidersHorizontal, Sparkles, X } from 'lucide-react';
 
 import SEO, { SEO_CONFIG } from '../components/common/SEO';
@@ -8,6 +9,7 @@ import FreelancerCard from '../components/freelancers/FreelancerCard';
 import { Header } from '../components/layout';
 import Button from '../components/ui/Button';
 import { useTranslation } from '../i18n';
+import * as profilesService from '../services/profiles';
 
 type FreelancerCategory =
     | 'Design'
@@ -35,111 +37,6 @@ type FreelancerRecord = {
     is_available: boolean;
 };
 
-const MOCK_FREELANCERS: FreelancerRecord[] = [
-    {
-        id: 'f1',
-        category: 'Design',
-        name: 'Ahmed Ben Ali',
-        title: 'Brand and Visual Designer',
-        avatar: null,
-        rating: 4.9,
-        reviews: 24,
-        hourly_rate: 25,
-        location: 'Tunis',
-        skills: ['Branding', 'Logo Design', 'Figma'],
-        success_rate: 98,
-        jobs_completed: 32,
-        response_time: '< 1 hour',
-        is_verified: true,
-        is_available: true,
-    },
-    {
-        id: 'f2',
-        category: 'Writing',
-        name: 'Sarra Mansouri',
-        title: 'Translator and Content Strategist',
-        avatar: null,
-        rating: 5,
-        reviews: 18,
-        hourly_rate: 20,
-        location: 'Sfax',
-        skills: ['Translation', 'Content Writing', 'Proofreading'],
-        success_rate: 100,
-        jobs_completed: 45,
-        response_time: '< 2 hours',
-        is_verified: true,
-        is_available: true,
-    },
-    {
-        id: 'f3',
-        category: 'Development',
-        name: 'Mohamed Cherif',
-        title: 'Full Stack React Engineer',
-        avatar: null,
-        rating: 4.7,
-        reviews: 12,
-        hourly_rate: 35,
-        location: 'Sousse',
-        skills: ['React', 'Node.js', 'TypeScript'],
-        success_rate: 95,
-        jobs_completed: 28,
-        response_time: '< 3 hours',
-        is_verified: true,
-        is_available: false,
-    },
-    {
-        id: 'f4',
-        category: 'Marketing',
-        name: 'Fatma Zahra',
-        title: 'Creative Content and Growth Marketer',
-        avatar: null,
-        rating: 4.8,
-        reviews: 31,
-        hourly_rate: 15,
-        location: 'Nabeul',
-        skills: ['Content', 'SEO', 'Social Media'],
-        success_rate: 97,
-        jobs_completed: 56,
-        response_time: '< 1 hour',
-        is_verified: false,
-        is_available: true,
-    },
-    {
-        id: 'f5',
-        category: 'Video',
-        name: 'Yassine Trabelsi',
-        title: 'Video Editor and Motion Designer',
-        avatar: null,
-        rating: 4.8,
-        reviews: 22,
-        hourly_rate: 30,
-        location: 'Monastir',
-        skills: ['Premiere Pro', 'After Effects', 'Motion'],
-        success_rate: 96,
-        jobs_completed: 34,
-        response_time: '< 2 hours',
-        is_verified: true,
-        is_available: true,
-    },
-    {
-        id: 'f6',
-        category: 'Consulting',
-        name: 'Nour Haddad',
-        title: 'Business Consultant for SMEs',
-        avatar: null,
-        rating: 4.6,
-        reviews: 14,
-        hourly_rate: 40,
-        location: 'Sousse',
-        skills: ['Strategy', 'Operations', 'Pitch Decks'],
-        success_rate: 93,
-        jobs_completed: 18,
-        response_time: '< 4 hours',
-        is_verified: true,
-        is_available: false,
-    },
-];
-
 const CATEGORY_OPTIONS: FreelancerCategory[] = ['Design', 'Development', 'Writing', 'Marketing', 'Video', 'Consulting'];
 const SKILL_OPTIONS = ['React', 'Node.js', 'Logo Design', 'Translation', 'Content Writing', 'Figma', 'Motion', 'SEO'];
 
@@ -152,7 +49,6 @@ export default function FindFreelancers() {
     const [sortBy, setSortBy] = useState('recommended');
     const [showFilters, setShowFilters] = useState(false);
     const [savedFreelancers, setSavedFreelancers] = useState<string[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
     const [selectedCategories, setSelectedCategories] = useState<FreelancerCategory[]>([]);
     const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
     const [minRating, setMinRating] = useState(0);
@@ -160,10 +56,38 @@ export default function FindFreelancers() {
     const [availableOnly, setAvailableOnly] = useState(false);
     const [verifiedOnly, setVerifiedOnly] = useState(false);
 
-    useEffect(() => {
-        const timer = window.setTimeout(() => setIsLoading(false), 900);
-        return () => window.clearTimeout(timer);
-    }, []);
+    // Fetch real freelancers from DB
+    const { data: freelancersData, isLoading } = useQuery({
+        queryKey: ['freelancers', searchQuery],
+        queryFn: async () => {
+            const { data, error } = await profilesService.getFreelancers({ search: searchQuery || undefined });
+            if (error) { console.error('getFreelancers error:', error); return []; }
+            return (data || []).map((p: any) => {
+                const fp = p.freelancer_profiles;
+                const skills: string[] = Array.isArray(fp?.skills)
+                    ? fp.skills.map((s: any) => (typeof s === 'string' ? s : s?.name || '')).filter(Boolean)
+                    : [];
+                return {
+                    id: p.id,
+                    category: 'Development' as FreelancerCategory,
+                    name: p.full_name || 'Freelancer',
+                    title: fp?.title || '',
+                    avatar: p.avatar_url || null,
+                    rating: 5.0,
+                    reviews: 0,
+                    hourly_rate: fp?.hourly_rate || 0,
+                    location: p.location || '',
+                    skills,
+                    success_rate: fp?.success_rate || 100,
+                    jobs_completed: fp?.jobs_completed || 0,
+                    response_time: '< 1 hour',
+                    is_verified: fp?.cin_verified || false,
+                    is_available: fp?.availability === 'available',
+                } as FreelancerRecord;
+            });
+        },
+        staleTime: 60_000,
+    });
 
     const toggleSaved = (id: string) => {
         setSavedFreelancers((prev) => (prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]));
@@ -180,42 +104,24 @@ export default function FindFreelancers() {
     };
 
     const filteredFreelancers = useMemo(() => {
-        return [...MOCK_FREELANCERS]
+        return [...(freelancersData || [])]
             .filter((freelancer) => {
-                const query = searchQuery.trim().toLowerCase();
-                if (
-                    query &&
-                    ![
-                        freelancer.name,
-                        freelancer.title,
-                        freelancer.location,
-                        freelancer.category,
-                        ...freelancer.skills,
-                    ].some((value) => value.toLowerCase().includes(query))
-                ) {
-                    return false;
-                }
-
                 if (selectedCategories.length > 0 && !selectedCategories.includes(freelancer.category)) return false;
                 if (selectedSkills.length > 0 && !selectedSkills.some((skill) => freelancer.skills.includes(skill))) return false;
                 if (minRating > 0 && freelancer.rating < minRating) return false;
                 if (freelancer.hourly_rate < rateRange[0] || freelancer.hourly_rate > rateRange[1]) return false;
                 if (availableOnly && !freelancer.is_available) return false;
                 if (verifiedOnly && !freelancer.is_verified) return false;
-
                 return true;
             })
             .sort((left, right) => {
                 switch (sortBy) {
-                    case 'rating':
-                        return right.rating - left.rating;
-                    case 'rate_low':
-                        return left.hourly_rate - right.hourly_rate;
-                    default:
-                        return right.success_rate - left.success_rate;
+                    case 'rating': return right.rating - left.rating;
+                    case 'rate_low': return left.hourly_rate - right.hourly_rate;
+                    default: return right.success_rate - left.success_rate;
                 }
             });
-    }, [availableOnly, minRating, rateRange, searchQuery, selectedCategories, selectedSkills, sortBy, verifiedOnly]);
+    }, [freelancersData, availableOnly, minRating, rateRange, selectedCategories, selectedSkills, sortBy, verifiedOnly]);
 
     const activeFilterCount =
         selectedCategories.length +
@@ -407,11 +313,11 @@ export default function FindFreelancers() {
                             <div className="mt-6 grid gap-3 sm:grid-cols-3">
                                 <div className="glass-card rounded-[24px] px-4 py-4">
                                     <div className="text-xs uppercase tracking-[0.18em] text-[#7a7590] dark:text-[#918ba8]">{copy.heroStats.talentPool}</div>
-                                    <div className="mt-2 text-2xl font-bold">{MOCK_FREELANCERS.length.toLocaleString()}+</div>
+                                    <div className="mt-2 text-2xl font-bold">{(freelancersData?.length || 0).toLocaleString()}+</div>
                                 </div>
                                 <div className="glass-card rounded-[24px] px-4 py-4">
                                     <div className="text-xs uppercase tracking-[0.18em] text-[#7a7590] dark:text-[#918ba8]">{copy.heroStats.verified}</div>
-                                    <div className="mt-2 text-2xl font-bold">{MOCK_FREELANCERS.filter((freelancer) => freelancer.is_verified).length}</div>
+                                    <div className="mt-2 text-2xl font-bold">{(freelancersData || []).filter((f: FreelancerRecord) => f.is_verified).length}</div>
                                 </div>
                                 <div className="glass-card rounded-[24px] px-4 py-4">
                                     <div className="text-xs uppercase tracking-[0.18em] text-[#7a7590] dark:text-[#918ba8]">{copy.heroStats.fastReplies}</div>
