@@ -163,11 +163,28 @@ CREATE TABLE IF NOT EXISTS milestones (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 8. MESSAGES
+-- 8. CONVERSATIONS
+CREATE TABLE IF NOT EXISTS conversations (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    participant_1 UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    participant_2 UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    contract_id UUID REFERENCES contracts(id) ON DELETE SET NULL,
+    last_message_text TEXT,
+    last_message_at TIMESTAMPTZ,
+    unread_count_1 INT DEFAULT 0,
+    unread_count_2 INT DEFAULT 0,
+    CONSTRAINT conversations_participants_order CHECK (participant_1 < participant_2),
+    UNIQUE(participant_1, participant_2)
+);
+
+-- 9. MESSAGES
 CREATE TABLE IF NOT EXISTS messages (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     contract_id UUID REFERENCES contracts(id) ON DELETE CASCADE,
     proposal_id UUID REFERENCES proposals(id) ON DELETE CASCADE,
+    conversation_id UUID REFERENCES conversations(id) ON DELETE CASCADE,
     sender_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
     receiver_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
     content TEXT NOT NULL,
@@ -176,7 +193,7 @@ CREATE TABLE IF NOT EXISTS messages (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 9. REVIEWS
+-- 10. REVIEWS
 CREATE TABLE IF NOT EXISTS reviews (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     contract_id UUID NOT NULL REFERENCES contracts(id) ON DELETE CASCADE,
@@ -190,7 +207,7 @@ CREATE TABLE IF NOT EXISTS reviews (
     UNIQUE(contract_id, reviewer_id)
 );
 
--- 10. FAVORITES
+-- 11. FAVORITES
 CREATE TABLE IF NOT EXISTS favorites (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
@@ -199,7 +216,7 @@ CREATE TABLE IF NOT EXISTS favorites (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 11. NOTIFICATIONS
+-- 12. NOTIFICATIONS
 CREATE TABLE IF NOT EXISTS notifications (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
