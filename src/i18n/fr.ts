@@ -22,6 +22,102 @@ export const fr: Translations = {
         saved: 'Enregistré',
     },
 
+    jobs: {
+        title: 'Missions disponibles',
+        searchPlaceholder: 'Rechercher des missions...',
+        filters: {
+            title: 'Filtres',
+            clearAll: 'Tout effacer',
+            categories: {
+                title: 'Catégorie',
+                design: 'Design',
+                development: 'Développement',
+                writing: 'Rédaction',
+                marketing: 'Marketing',
+                translation: 'Traduction',
+                video: 'Vidéo & Animation',
+                business: 'Affaires',
+                data: 'Saisie de données',
+                other: 'Autre'
+            },
+            jobType: {
+                title: 'Type de contrat',
+                fixed_price: 'Prix fixe',
+                hourly: 'Horaire'
+            },
+            budget: {
+                title: 'Budget (TND)',
+                all: 'Tout',
+                min: 'Min',
+                max: 'Max',
+                ranges: {
+                    r0_50: '0 - 50 TND',
+                    r50_100: '50 - 100 TND',
+                    r100_250: '100 - 250 TND',
+                    r250_500: '250 - 500 TND',
+                    r500_plus: '500+ TND'
+                }
+            },
+            experience: {
+                title: 'Niveau d\'expérience',
+                entry: 'Débutant',
+                intermediate: 'Intermédiaire',
+                expert: 'Expert'
+            },
+            postedDate: {
+                title: 'Date de publication',
+                any: 'Tout le temps',
+                h24: 'Dernières 24h',
+                d3: '3 derniers jours',
+                w1: 'Dernière semaine',
+                m1: 'Dernier mois'
+            },
+            viewResults: 'Voir les résultats'
+        },
+        sort: {
+            newest: 'Plus récents',
+            budgetHigh: 'Budget: Élevé à Faible',
+            budgetLow: 'Budget: Faible à Élevé',
+            proposalsHigh: 'Plus de propositions',
+            proposalsLow: 'Moins de propositions'
+        },
+        stats: {
+            availableJobs: 'missions disponibles'
+        },
+        empty: {
+            title: 'Aucune mission trouvée',
+            subtitle: 'Essayez de changer vos critères de recherche',
+            action: 'Effacer les filtres'
+        },
+        loadMore: 'Charger plus',
+        save: 'Sauvegarder',
+        saved: 'Mission sauvegardée',
+        unsave: 'Retirer des favoris',
+        apply: 'Postuler',
+        postedAgo: 'Publié {{time}}',
+        budget: 'Budget',
+        hourlyRate: 'Taux horaire',
+        proposals: 'propositions',
+        verifiedPayment: 'Paiement vérifié',
+        unverifiedPayment: 'Paiement non vérifié',
+        newClient: 'Nouveau client',
+        savedJobs: {
+            title: 'Missions sauvegardées',
+            viewAll: 'Voir tout'
+        },
+        time: {
+            now: "À l'instant",
+            minute: 'min',
+            hour: 'h',
+            day: 'j',
+            ago_prefix: 'Il y a',
+            ago: ''
+        },
+        location: {
+            remote: 'Télétravail'
+        }
+    },
+
     hero: {
         title: 'Là où le talent tunisien est payé justement',
         headlineStart: 'Là où le talent tunisien',
@@ -135,7 +231,7 @@ export const fr: Translations = {
                 description: "Décrivez le travail, fixez votre budget, choisissez un tarif fixe ou horaire."
             },
             {
-                title: "Analysez des propositions vérifiées",
+                title: "Analyze des propositions vérifiées",
                 description: "Chaque freelance est vérifié. Filtrez par note, compétence et prix."
             },
             {
@@ -148,7 +244,7 @@ export const fr: Translations = {
             }
         ],
         trust: {
-            money: { title: 'Remboursement total si non satisfait', desc: 'Si le travail ne respecte pas les termes convenus, vous récupérez vos TND.' },
+            money: { title: 'Remboursement total si non satisfait', desc: "Si le travail ne respecte pas les termes convenus, vous récupérez vos TND." },
             verified: { title: 'Chaque professionnel est vérifié', desc: "Nous vérifions l'identité nationale avant toute mise en ligne sur Khedma." },
             support: { title: 'Support en arabe, français et anglais', desc: 'De vraies personnes, fuseau local, trois langues.' },
         },
@@ -163,7 +259,6 @@ export const fr: Translations = {
         }
     },
 
-    // For Clients Page
     forClients: {
         hero: {
             badge: "Recrutez des talents tunisiens vérifiés",
@@ -224,7 +319,7 @@ export const fr: Translations = {
             {
                 name: 'Fatima Ben Said',
                 role: 'Traductrice',
-                quote: 'La meilleure plateforme freelance en Tunisie. Pas d\'enchères, les clients me trouvent automatiquement.',
+                quote: 'La meilleure plateforme de talents en Tunisie. Pas d\'enchères, les clients me trouvent automatiquement.',
                 earned: '3,800',
                 image: 'https://i.pravatar.cc/150?img=32'
             },
@@ -286,174 +381,31 @@ export const fr: Translations = {
         accountPanel: {
             sectionLabel: 'Espace de travail',
             switchWorkspace: 'Changer d\'espace',
-            switchWorkspaceBoth: 'Basculer entre l\'espace freelance et client',
-            switchWorkspaceSingle: 'Gérez votre espace de travail',
+            switchWorkspaceBoth: 'Utilisez le même compte pour recruter et travailler en freelance sans connexion séparée.',
+            switchWorkspaceSingle: 'Activez le second espace uniquement quand vous en avez réellement besoin.',
             completeSetup: 'Terminer la configuration',
             freelancerLabel: 'Freelance',
             clientLabel: 'Client',
-            ready: 'Prêt à l\'emploi',
+            ready: 'Prêt',
             needsSetup: 'Nécessite configuration',
             progressLabel: 'Profil complété',
-            freelancerDesc: 'Travailler en tant que freelance',
-            clientDesc: 'Travailler en tant que client',
+            freelancerDesc: 'Trouvez du travail, envoyez des propositions et soyez payé en TND.',
+            clientDesc: 'Publiez des projets, comparez les propositions et libérez les paiements escrow.',
             current: 'Actuel',
-            switchAction: 'Basculer vers l\'espace',
-            enable: 'Activer cet espace',
+            switchAction: 'Basculer',
+            enable: 'Activer',
             switching: 'Basculement...',
-            switchedFreelancer: 'Basculé vers freelance',
-            switchedClient: 'Basculé vers client',
-            switchError: 'Erreur de basculement',
+            switchedFreelancer: 'L\'espace freelance est désormais actif.',
+            switchedClient: 'L\'espace client est désormais actif.',
+            switchError: 'Impossible de changer d\'espace pour le moment.',
             manageProfile: 'Gérer le profil',
-            freelancerHint: 'Gérez votre portfolio et vos services.',
-            clientHint: 'Gérez vos projets et recrutements.',
-            tools: 'Outils et Paramètres',
-            profileAction: 'Voir le profil',
-            settingsAction: 'Paramètres du compte',
-            logoutAction: 'Se déconnecter',
-            logoutDesc: 'Vous serez déconnecté de cet appareil.',
-        },
-    },
-    jobs: {
-        title: 'Offres disponibles',
-        searchPlaceholder: 'Rechercher des offres...',
-        filters: {
-            title: 'Filtres',
-            clearAll: 'Tout effacer',
-            categories: {
-                title: 'Catégorie',
-                design: 'Design',
-                development: 'Développement',
-                writing: 'Rédaction',
-                marketing: 'Marketing',
-                translation: 'Traduction',
-                video: 'Vidéo & Animation',
-                business: 'Affaires',
-                data: 'Saisie de données',
-                other: 'Autre'
-            },
-            jobType: {
-                title: 'Type de contrat',
-                fixed_price: 'Prix fixe',
-                hourly: 'Horaire'
-            },
-            budget: {
-                title: 'Budget (TND)',
-                all: 'Tout',
-                min: 'Min',
-                max: 'Max',
-                ranges: {
-                    r0_50: '0 - 50 TND',
-                    r50_100: '50 - 100 TND',
-                    r100_250: '100 - 250 TND',
-                    r250_500: '250 - 500 TND',
-                    r500_plus: '500+ TND'
-                }
-            },
-            experience: {
-                title: 'Niveau d\'expérience',
-                entry: 'Débutant',
-                intermediate: 'Intermédiaire',
-                expert: 'Expert'
-            },
-            postedDate: {
-                title: 'Date de publication',
-                any: 'Tout le temps',
-                h24: 'Dernières 24h',
-                d3: '3 derniers jours',
-                w1: 'Dernière semaine',
-                m1: 'Dernier mois'
-            },
-            viewResults: 'Voir les résultats'
-        },
-        sort: {
-            newest: 'Plus récents',
-            budgetHigh: 'Budget: Élevé à Faible',
-            budgetLow: 'Budget: Faible à Élevé',
-            proposalsHigh: 'Plus de propositions',
-            proposalsLow: 'Moins de propositions'
-        },
-        stats: {
-            availableJobs: 'offres disponibles'
-        },
-        empty: {
-            title: 'Aucune offre trouvée',
-            subtitle: 'Essayez de changer vos critères de recherche',
-            action: 'Effacer les filtres'
-        },
-        loadMore: 'Charger plus',
-        save: 'Sauvegarder',
-        saved: 'Offre sauvegardée',
-        unsave: 'Retirer des favoris',
-        apply: 'Postuler',
-        postedAgo: 'Publié {{time}}',
-        budget: 'Budget',
-        hourlyRate: 'Taux horaire',
-        proposals: 'propositions',
-        verifiedPayment: 'Paiement vérifié',
-        unverifiedPayment: 'Paiement non vérifié',
-        newClient: 'Nouveau client',
-        savedJobs: {
-            title: 'Offres sauvegardées',
-            viewAll: 'Voir tout'
-        },
-        time: {
-            now: "À l'instant",
-            minute: 'min',
-            hour: 'h',
-            day: 'j',
-            ago_prefix: 'Il y a',
-            ago: ''
-        },
-        location: {
-            remote: 'Télétravail'
-        }
-    },
-
-    profile: {
-        fullName: 'Nom complet',
-        fullNamePlaceholder: 'Entrez votre nom complet',
-        location: 'Gouvernorat',
-        selectLocation: 'Sélectionnez votre gouvernorat',
-        skills: 'Compétences',
-        selectSkills: 'Choisissez vos compétences (max 3)',
-        workSamples: 'Exemples de travaux',
-        uploadSample: 'Télécharger un exemple',
-        dragDrop: 'Glissez et déposez les fichiers ici',
-        or: 'ou',
-        browse: 'Parcourir les fichiers',
-        voiceIntro: 'Présentation vocale',
-        recordVoice: 'Enregistrement vocal (30 secondes)',
-        recording: 'Enregistrement en cours...',
-        stopRecording: 'Arrêter l\'enregistrement',
-        playRecording: 'Lire l\'enregistrement',
-        deleteRecording: 'Supprimer l\'enregistrement',
-        companyName: 'Nom de l\'entreprise',
-        companyNamePlaceholder: 'Nom de l\'entreprise (optionnel)',
-        optional: 'Optionnel',
-        bio: 'À propos de vous',
-        bioPlaceholder: 'Écrivez une courte biographie...',
-        education: {
-            title: 'Éducation (Optionnel)',
-            add: 'Ajouter une formation',
-            institution: 'Institution / Université',
-            degree: 'Diplôme',
-            field: 'Domaine d\'étude',
-            startYear: 'Année de début',
-            endYear: 'Année de fin',
-            delete: 'Supprimer',
-            noEducation: 'Ajouter une formation augmente la crédibilité de votre profil',
-        },
-        languages: {
-            title: 'Langues',
-            add: 'Ajouter une langue',
-            proficiency: 'Niveau',
-            select: 'Choisir la langue',
-            levels: {
-                native: 'Langue maternelle',
-                fluent: 'Courant',
-                conversational: 'Conversationnel',
-                basic: 'Basique',
-            },
+            freelancerHint: 'Complétez les détails essentiels ici, puis affinez le reste plus tard dans les Paramètres.',
+            clientHint: 'Terminez les bases du client ici d\'abord, puis gérez la facturation et les détails de l\'entreprise dans les Paramètres.',
+            tools: 'Outils du compte',
+            profileAction: 'Profil',
+            settingsAction: 'Paramètres',
+            logoutAction: 'Déconnexion',
+            logoutDesc: 'Terminez cette session en toute sécurité sur cet appareil.',
         },
     },
 
@@ -609,7 +561,7 @@ export const fr: Translations = {
             whoCanMessage: 'Qui peut vous contacter',
             anyone: 'Tout le monde',
             activeContracts: 'Contrats actifs uniquement',
-            showEarnings: 'Afficher les gains',
+            showEarnings: 'Afficher les gains à tous',
         },
     },
 
@@ -635,7 +587,8 @@ export const fr: Translations = {
             minute: 'min',
             hour: 'h',
             day: 'j',
-            ago: 'il y a',
+            ago_prefix: 'Il y a',
+            ago: ''
         },
         today: 'Aujourd\'hui',
         toggleDarkMode: 'Mode sombre',
@@ -690,7 +643,6 @@ export const fr: Translations = {
         hoursExample: 'Ex : 10-20',
     },
 
-    // Payment Modal
     payment: {
         completeTitle: 'Paiement',
         payVia: 'Payer via',
@@ -718,7 +670,6 @@ export const fr: Translations = {
         payNow: 'Payer maintenant',
     },
 
-    // Notifications
     notifications: {
         title: 'Notifications',
         readAll: 'Tout marquer comme lu',
@@ -727,7 +678,6 @@ export const fr: Translations = {
         viewAll: 'Voir toutes les notifications',
     },
 
-    // Global Search
     search: {
         placeholder: 'Rechercher...',
         trending: 'Tendances',
@@ -751,7 +701,6 @@ export const fr: Translations = {
         }
     },
 
-    // Onboarding
     onboarding: {
         client: {
             welcome: 'Bienvenue',
@@ -781,7 +730,7 @@ export const fr: Translations = {
         contact: 'Contact',
         quickLinks: 'Liens rapides',
         legal: 'Légal',
-        description: 'Pensé pour les professionnels tunisiens, avec identités vérifiées, paiements protégés par escrow et projets payés en TND.',
+        description: 'Pensé pour les professionnels tunisiens, avec identité vérifiée, paiements protégés par escrow et projets payés en TND.',
         city: 'Tunis, Tunisie',
         newsletterTitle: 'Nouveautés produit',
         newsletterPlaceholder: 'Votre adresse e-mail',
@@ -799,12 +748,12 @@ export const fr: Translations = {
         hourlyRate: 'Taux horaire (TND)',
         clearFilters: 'Effacer tous les filtres',
         verifiedOnly: 'Identité vérifiée uniquement',
-        verifiedOnlyDesc: 'Les mieux notés (4.5+)',
+        verifiedOnlyDesc: 'Mieux notés (4.5+)',
         hero: {
             badge: 'Professionnels tunisiens vérifiés',
             title: 'Trouvez la bonne personne,',
-            titleHighlight: "pas n'importe qui.",
-            subtitle: '2 500+ développeurs, designers, traducteurs et consultants tunisiens — vérifiés, notés et disponibles.',
+            titleHighlight: 'pas n’importe qui.',
+            subtitle: 'Plus de 2 500 développeurs, designers, traducteurs et consultants tunisiens — vérifiés, évalués, prêts.',
             subtitleDesktop: '',
         },
         heroStats: {
@@ -815,22 +764,22 @@ export const fr: Translations = {
         filterToggle: 'Filtrer les résultats',
         filterTitle: 'Filtrer la recherche',
         clearAll: 'Tout effacer',
-        resultsCount: 'Afficher {{count}} résultats',
-        activeFilters: 'actifs',
+        resultsCount: 'Affichage de {{count}} résultats',
+        activeFilters: 'Actif',
         sort: {
             label: 'Trier par :',
             recommended: 'Recommandé',
             rating: 'Mieux notés',
-            priceLow: 'Prix croissant',
+            priceLow: 'Prix le plus bas',
         },
         resultStats: {
             availableNow: 'Disponibles maintenant',
             averageRate: 'Tarif moyen',
-            topRating: 'Meilleure note',
+            topRating: 'Mieux notés',
         },
         noResults: {
             title: 'Aucun résultat correspondant',
-            description: "Nous n'avons trouvé aucun freelance correspondant à vos critères. Essayez de modifier les termes de recherche ou d'assouplir les filtres.",
+            description: 'Nous n’avons pas trouvé de freelances correspondant à vos critères. Essayez d’autres mots-clés ou effacez les filtres.',
             action: 'Effacer tous les filtres'
         }
     }

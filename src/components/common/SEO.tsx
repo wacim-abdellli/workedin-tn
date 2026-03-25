@@ -106,9 +106,9 @@ export const SEO_CONFIG: Record<string, SEOConfigEntry> = {
             fr: 'Khedma TN',
         },
         description: {
-            ar: 'منصة تونسية تربط بين المشاريع والمحترفين. بدون مزايدات، بدون وسطاء، ومدفوعات بالدينار التونسي محمية بالضمان.',
-            en: 'Tunisia’s freelance platform for verified professionals, escrow-protected payments, and projects paid in TND.',
-            fr: 'La plateforme freelance tunisienne pour des professionnels vérifiés, des paiements protégés par escrow et des projets payés en TND.',
+            ar: 'تبحث عن محترفين تونسيين موثقين لمشاريعك؟ انشر مشروعك مجاناً على خدمة TN وابدأ العمل اليوم.',
+            en: 'Connect with verified Tunisian professionals for your projects. Secure payments in TND and escrow protection.',
+            fr: 'Connectez-vous avec des professionnels tunisiens vérifiés pour vos projets. Paiements sécurisés en TND et protection escrow.',
         },
         keywords: {
             ar: 'عمل حر, تونس, مستقلون, مشاريع, وظائف, دينار تونسي, ضمان',
@@ -163,7 +163,7 @@ export const SEO_CONFIG: Record<string, SEOConfigEntry> = {
         },
         keywords: {
             ar: 'كيف يعمل, منصة عمل حر, ضمان, تحقق هوية',
-            en: 'how it works, escrow, verified freelancers, freelance platform',
+            en: 'how it works, escrow, verified freelancers, talent marketplace',
             fr: 'fonctionnement, escrow, freelances vérifiés, plateforme freelance',
         },
     },
