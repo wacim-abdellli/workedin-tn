@@ -5,7 +5,7 @@ import { User } from 'lucide-react';
 import { useTranslation } from '../i18n';
 import { Header, Footer } from '../components/layout';
 import Button from '../components/ui/Button';
-import { supabase } from '../lib/supabase';
+import { supabaseAnon } from '../lib/supabase';
 import type { Skill } from '../types';
 import type { FreelancerData } from '../types/freelancer';
 import ContactModal from '../components/freelancer/ContactModal';
@@ -59,8 +59,7 @@ export default function FreelancerProfile() {
             let profileId = usernameOrId;
 
             if (!isUUID) {
-                // It's a username, fetch profile ID first
-                const { data: userProfile, error: userError } = await supabase
+                const { data: userProfile, error: userError } = await supabaseAnon
                     .from('profiles')
                     .select('id')
                     .eq('username', usernameOrId)
@@ -70,8 +69,8 @@ export default function FreelancerProfile() {
                 profileId = userProfile.id;
             }
 
-            // Fetch freelancer_profile data joined
-            const { data: profile, error: profileError } = await supabase
+            // Fetch freelancer_profile with joined profile data
+            const { data: profile, error: profileError } = await supabaseAnon
                 .from('freelancer_profiles')
                 .select(`
                     *,
@@ -91,31 +90,27 @@ export default function FreelancerProfile() {
 
             if (profileError) throw profileError;
 
-            // Use the correct ID for subsequent queries
             const targetFreelancerId = profile.id;
 
-            // Fetch skills
-            const { data: profileSkills } = await supabase
-                .from('profile_skills')
-                .select(`
-                    skill:skills (
-                        id,
-                        name_ar,
-                        name_fr,
-                        name_en
-                    )
-                `)
-                .eq('profile_id', targetFreelancerId);
+            // Skills are stored as JSONB in freelancer_profiles.skills
+            // Format: [{name: string, level: string}] or [string]
+            const rawSkills: unknown[] = Array.isArray(profile.skills) ? profile.skills : [];
+            const skills: Skill[] = rawSkills.map((s: any, i: number) => ({
+                id: typeof s === 'string' ? s : (s?.name || String(i)),
+                name_en: typeof s === 'string' ? s : (s?.name || ''),
+                name_ar: typeof s === 'string' ? s : (s?.name || ''),
+                name_fr: typeof s === 'string' ? s : (s?.name || ''),
+            }));
 
             // Fetch portfolio items
-            const { data: portfolioItems } = await supabase
+            const { data: portfolioItems } = await supabaseAnon
                 .from('portfolio_items')
                 .select('*')
                 .eq('freelancer_id', targetFreelancerId)
                 .order('order_index', { ascending: true });
 
             // Fetch reviews
-            const { data: reviews } = await supabase
+            const { data: reviews } = await supabaseAnon
                 .from('reviews')
                 .select(`
                     id,
@@ -161,7 +156,7 @@ export default function FreelancerProfile() {
                 voice_intro_url: profile.voice_intro_url,
                 hourly_rate: profile.hourly_rate || 0,
                 availability: profile.availability || 'available',
-                skills: profileSkills?.map(ps => ps.skill as unknown as Skill).filter(Boolean) || [],
+                skills: skills,
                 languages: Array.isArray(profile.languages) ? profile.languages : [],
                 education: Array.isArray(profile.education) ? profile.education : [],
                 certifications: Array.isArray(profile.certifications) ? profile.certifications : [],
