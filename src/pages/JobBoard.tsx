@@ -170,15 +170,15 @@ function JobBoard() {
         queryKey: ['jobs', filters, debouncedSearch],
         queryFn: ({ pageParam }) => jobsService.getJobs({ ...filters, search: debouncedSearch }, pageParam as number, 10),
         initialPageParam: 1,
-        getNextPageParam: (lastPage: any, pages: any[]) => 
+        getNextPageParam: (lastPage: any, pages: any[]) =>
             lastPage.data?.length === 10 ? pages.length + 1 : undefined,
+        staleTime: 0,
+        gcTime: 0,
+        refetchOnMount: true,
+        refetchOnWindowFocus: true,
     });
 
-    const jobs = useMemo(() => {
-        const result = jobsData?.pages.flatMap((p: any) => p.data || []) || [];
-        console.log('[JobBoard] jobs state set to:', result);
-        return result;
-    }, [jobsData]);
+    const jobs = useMemo(() => jobsData?.pages.flatMap((p: any) => p.data || []) || [], [jobsData]);
     const totalCount = jobsData?.pages[0]?.count || 0;
     const isLoading = isFetching && !isFetchingNextPage;
 
