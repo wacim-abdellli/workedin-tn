@@ -48,7 +48,7 @@ function AuthHeader({ logoSrc, onHome }: { logoSrc: string; onHome: () => void }
           <img src={logoSrc} alt="Khedma TN" style={{ height: '28px', width: 'auto' }} />
         </button>
       </header>
-      <div style={{ height: '60px' }} />
+      <div style={{ height: '64px' }} />
     </>
   )
 }
@@ -152,6 +152,7 @@ export default function Header() {
   const displayName = profile?.full_name ?? user?.user_metadata?.full_name ?? user?.email?.split('@')[0] ?? 'Me'
   const workspaceAccent = isFreelancer ? '#8b5cf6' : '#f59e0b'
   const logoSrc = isDark ? '/logos/logo-primary-dark.svg' : '/logos/logo-primary.svg'
+  const navActiveClass = isFreelancer ? 'header-nav-link-active-freelancer' : 'header-nav-link-active-client'
 
   if (isAuthPage) {
     return <AuthHeader logoSrc={logoSrc} onHome={() => navigate('/')} />
@@ -172,7 +173,7 @@ export default function Header() {
         ) : null}
 
         <div className="mx-auto max-w-[1280px] px-4 sm:px-6">
-          <div className="flex h-[60px] items-center justify-between md:hidden">
+          <div className="flex h-16 items-center justify-between md:hidden">
             <button onClick={() => navigate('/')} className="flex items-center">
               <img src={logoSrc} alt="Khedma TN" style={{ height: '28px', width: 'auto' }} />
             </button>
@@ -180,52 +181,36 @@ export default function Header() {
             <div className="flex items-center gap-1.5">
               <button
                 onClick={() => setSearchOpen(true)}
-                className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-white/5"
+                className="header-icon-btn"
                 aria-label="Open search"
               >
                 <Search className="h-4 w-4" />
               </button>
               <button
                 onClick={() => setMobileMenuOpen(true)}
-                className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-white/5"
+                className="header-icon-btn"
                 aria-label="Open navigation menu"
               >
-                <Menu className="h-5 w-5" />
+                <Menu className="h-4 w-4" />
               </button>
             </div>
           </div>
 
-          <div
-            className="hidden md:grid"
-            style={{
-              height: '60px',
-              gridTemplateColumns: '140px 1fr 280px',
-              alignItems: 'center',
-              gap: '16px',
-            }}
-          >
+          <div className="hidden h-16 items-center gap-4 md:grid md:grid-cols-[140px_1fr_320px]">
             <div className="flex items-center">
               <button onClick={() => navigate('/')} className="flex items-center">
                 <img src={logoSrc} alt="Khedma TN" style={{ height: '28px', width: 'auto' }} />
               </button>
             </div>
 
-            <nav id="main-nav" className="flex items-center justify-center gap-0.5">
+            <nav id="main-nav" className="flex items-center justify-center gap-1">
               {navItems.map(({ label, Icon, href }) => (
                 <NavLink
                   key={href}
                   to={href}
-                  className={({ isActive }) =>
-                    `flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium whitespace-nowrap transition-all duration-150 ${
-                      isActive
-                        ? isFreelancer
-                          ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
-                          : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
-                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white'
-                    }`
-                  }
+                  className={({ isActive }) => (isActive ? navActiveClass : 'header-nav-link')}
                 >
-                  <Icon className="h-3.5 w-3.5 flex-shrink-0" />
+                  <Icon className="h-4 w-4 flex-shrink-0" />
                   <span>{label}</span>
                 </NavLink>
               ))}
@@ -234,12 +219,11 @@ export default function Header() {
             <div className="flex items-center justify-end gap-1.5">
               <button
                 onClick={() => setSearchOpen(true)}
-                className="flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-100 px-3 py-1.5 text-gray-400 transition-all duration-150 hover:bg-gray-200 hover:text-gray-600 dark:border-white/8 dark:bg-white/5 dark:hover:bg-white/10 dark:hover:text-gray-300"
-                style={{ width: '110px' }}
+                className="flex h-9 w-[136px] items-center gap-2 rounded-xl border border-gray-200 bg-gray-100 px-3 text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-600 dark:border-white/8 dark:bg-white/5 dark:hover:bg-white/10 dark:hover:text-gray-300"
               >
-                <Search className="h-3.5 w-3.5 flex-shrink-0" />
-                <span className="flex-1 text-left text-[11px]">Search...</span>
-                <kbd className="hidden rounded border border-gray-200 bg-white px-1 py-0.5 text-[10px] font-mono text-gray-400 dark:border-white/10 dark:bg-white/10 sm:block">
+                <Search className="h-4 w-4 flex-shrink-0" />
+                <span className="flex-1 text-left text-xs">Search</span>
+                <kbd className="header-kbd hidden sm:inline-flex">
                   Ctrl+K
                 </kbd>
               </button>
@@ -247,7 +231,7 @@ export default function Header() {
               <div className="relative" ref={langRef}>
                 <button
                   onClick={() => setLangOpen((open) => !open)}
-                  className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-xs font-medium text-gray-500 transition-colors hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-white/5"
+                  className="flex h-9 items-center gap-1.5 rounded-xl px-2.5 text-xs font-medium text-gray-500 transition-colors hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-white/5"
                 >
                   <span className="text-xs font-medium">{activeLang.country}</span>
                   <span className="text-xs font-medium text-gray-400">{activeLang.display}</span>
@@ -280,7 +264,7 @@ export default function Header() {
 
               <button
                 onClick={toggleTheme}
-                className="rounded-lg p-1.5 text-gray-500 transition-colors hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-white/5"
+                className="header-icon-btn"
                 aria-label={isDark ? t.common?.toggleLightMode || 'Toggle light mode' : t.common?.toggleDarkMode || 'Toggle dark mode'}
               >
                 {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
@@ -412,10 +396,10 @@ export default function Header() {
               </button>
               <button
                 onClick={() => setMobileMenuOpen(false)}
-                className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-white/5"
+                className="header-icon-btn"
                 aria-label={t.common?.closeMenu || 'Close navigation menu'}
               >
-                <X className="h-5 w-5" />
+                <X className="h-4 w-4" />
               </button>
             </div>
 

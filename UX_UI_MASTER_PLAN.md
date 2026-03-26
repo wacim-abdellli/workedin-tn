@@ -115,8 +115,8 @@ Acceptance criteria:
 Status: Not started
 
 Tasks:
-1. Align top nav spacing, icon scale, and active state behavior.
-2. Harmonize search interactions and keyboard hint visuals.
+1. Align top nav spacing, icon scale, and active state behavior. (Initial pass completed)
+2. Harmonize search interactions and keyboard hint visuals. (Initial pass completed)
 3. Standardize workspace switch, notification, and profile trigger sizes.
 
 Acceptance criteria:
@@ -224,6 +224,5 @@ Per phase:
 
 ## Next Task (Start Now)
 
-Phase 4, task 1 and task 2:
-- align top nav spacing, icon scale, and active state behavior
-- harmonize search interactions and keyboard hint visuals
+Phase 4, task 3:
+- standardize workspace switch, notification, and profile trigger sizes across desktop and mobile

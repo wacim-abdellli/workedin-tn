@@ -133,9 +133,9 @@ export function NotificationBell({ className = '' }: { className?: string }) {
     <div ref={dropdownRef} className={`relative ${className}`}>
       <button
         onClick={() => setIsOpen((value) => !value)}
-        className="relative rounded-full border border-primary-100/70 bg-white/80 p-2.5 text-dark-500 transition-all hover:-translate-y-0.5 hover:bg-white hover:text-dark-900 dark:border-white/8 dark:bg-white/5 dark:text-dark-300 dark:hover:text-white"
+        className="header-icon-btn relative border border-primary-100/70 bg-white/80 dark:border-white/8 dark:bg-white/5"
       >
-        <Bell className="h-5 w-5" />
+        <Bell className="h-4 w-4" />
         {unreadCount > 0 ? (
           <span className="absolute -right-1 -top-1 flex min-h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white shadow-lg shadow-red-500/30 animate-pulse">
             {unreadCount > 9 ? '9+' : unreadCount}

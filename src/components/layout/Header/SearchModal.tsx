@@ -170,7 +170,7 @@ export default function SearchModal({ onClose }: SearchModalProps) {
               <X className="h-4 w-4" />
             </button>
           ) : null}
-          <kbd className="rounded-md border border-gray-200 bg-gray-100 px-1.5 py-0.5 text-[11px] font-mono text-gray-400 dark:border-white/10 dark:bg-white/8">
+          <kbd className="header-kbd text-[11px] dark:bg-white/8">
             ESC
           </kbd>
         </div>
@@ -239,7 +239,7 @@ export default function SearchModal({ onClose }: SearchModalProps) {
                   {item.meta ? <p className="text-xs text-gray-400 dark:text-gray-500">{item.meta}</p> : null}
                 </div>
                 {item.shortcut ? (
-                  <kbd className="flex-shrink-0 rounded border border-gray-200 bg-gray-100 px-1.5 py-0.5 text-[10px] font-mono text-gray-400 dark:border-white/10 dark:bg-white/8">
+                  <kbd className="header-kbd flex-shrink-0 dark:bg-white/8">
                     {item.shortcut}
                   </kbd>
                 ) : null}
@@ -257,7 +257,7 @@ export default function SearchModal({ onClose }: SearchModalProps) {
             { key: 'ESC', label: tx('common.close', undefined, 'Close') },
           ].map(({ key, label }) => (
             <div key={key} className="flex items-center gap-1.5">
-              <kbd className="rounded border border-white/10 bg-white/5 px-1.5 py-0.5 text-[10px] font-mono text-gray-400">
+              <kbd className="header-kbd dark:bg-white/5">
                 {key}
               </kbd>
               <span className="text-[11px] text-gray-500">{label}</span>
