@@ -578,7 +578,7 @@ function Settings() {
                         </div>
                         <div className="h-2.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
                             <div
-                                className={`h-full rounded-full transition-all duration-500 ${percentage === 100 ? 'bg-green-500' : 'bg-gradient-to-r from-orange-400 to-orange-500'
+                                className={`h-full rounded-full transition-[width] duration-300 ${percentage === 100 ? 'bg-green-500' : 'bg-gradient-to-r from-orange-400 to-orange-500'
                                     }`}
                                 style={{ width: `${percentage}%` }}
                             />
@@ -662,7 +662,7 @@ function Settings() {
                     </div>
                     <div className="mt-3 h-2 overflow-hidden rounded-full bg-gray-200 dark:bg-white/10">
                         <div
-                            className={`h-full rounded-full transition-all duration-300 ${activeMode === 'freelancer'
+                            className={`h-full rounded-full transition-[width] duration-300 ${activeMode === 'freelancer'
                                 ? 'bg-gradient-to-r from-violet-500 to-fuchsia-400'
                                 : 'bg-gradient-to-r from-emerald-500 to-teal-400'
                                 }`}
@@ -707,10 +707,10 @@ function Settings() {
                                     void handleWorkspaceSelection(type);
                                 }}
                                 disabled={isActive || isSwitchingWorkspace !== null}
-                                className={`rounded-2xl border p-4 text-left transition-all ${isActive
+                                className={`rounded-2xl border p-4 text-left transition-colors ${isActive
                                     ? tone
                                     : 'border-gray-200 bg-white hover:border-primary-300 dark:border-white/10 dark:bg-white/[0.03] dark:hover:border-primary-500/30'
-                                    } ${isActive ? 'cursor-default' : 'hover:-translate-y-0.5'}`}
+                                    } ${isActive ? 'cursor-default' : ''}`}
                             >
                                 <div className="flex items-start justify-between gap-3">
                                     <div>
@@ -749,7 +749,7 @@ function Settings() {
                                 e.stopPropagation();
                                 void handleWorkspaceSelection(type as 'freelancer' | 'client' | 'both');
                             }}
-                            className={`p-3 rounded-xl border-2 transition-all text-center ${((type === 'both' && profile?.user_type === 'both') || (type !== 'both' && activeMode === type))
+                            className={`p-3 rounded-xl border-2 transition-colors text-center ${((type === 'both' && profile?.user_type === 'both') || (type !== 'both' && activeMode === type))
                                 ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
                                 : 'border-gray-200 dark:border-gray-700 hover:border-primary-300'
                                 }`}
@@ -826,7 +826,7 @@ function Settings() {
                     </div>
                     <div className="mt-3 h-2 overflow-hidden rounded-full bg-gray-200 dark:bg-white/10">
                         <div
-                            className={`h-full rounded-full transition-all duration-300 ${activeMode === 'freelancer'
+                            className={`h-full rounded-full transition-[width] duration-300 ${activeMode === 'freelancer'
                                 ? 'bg-gradient-to-r from-violet-500 to-fuchsia-400'
                                 : 'bg-gradient-to-r from-emerald-500 to-teal-400'
                                 }`}
@@ -871,10 +871,10 @@ function Settings() {
                                     void handleWorkspaceSelection(type);
                                 }}
                                 disabled={isActive || isSwitchingWorkspace !== null}
-                                className={`rounded-2xl border p-4 text-left transition-all ${isActive
+                                className={`rounded-2xl border p-4 text-left transition-colors ${isActive
                                     ? tone
                                     : 'border-gray-200 bg-white hover:border-primary-300 dark:border-white/10 dark:bg-white/[0.03] dark:hover:border-primary-500/30'
-                                    } ${isActive ? 'cursor-default' : 'hover:-translate-y-0.5'}`}
+                                    } ${isActive ? 'cursor-default' : ''}`}
                             >
                                 <div className="flex items-start justify-between gap-3">
                                     <div>
@@ -920,7 +920,7 @@ function Settings() {
                     >
                         <span
                             className={`
-                                absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-all
+                                absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200
                                 ${notification.enabled ? 'end-1' : 'start-1'}
                             `}
                         />

@@ -150,7 +150,7 @@ export default function FindFreelancers() {
                     value={searchQuery}
                     onChange={(event) => setSearchQuery(event.target.value)}
                     placeholder={copy.searchPlaceholder}
-                    className="block w-full rounded-2xl border border-white/70 bg-white/85 p-4 pr-11 text-sm text-[#191627] shadow-sm backdrop-blur transition-all focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-200 dark:border-white/8 dark:bg-white/5 dark:text-white dark:focus:ring-primary-500/20"
+                    className="block w-full rounded-2xl border border-white/70 bg-white/85 p-4 pr-11 text-sm text-[#191627] shadow-sm backdrop-blur transition-colors focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-200 dark:border-white/8 dark:bg-white/5 dark:text-white dark:focus:ring-primary-500/20"
                 />
             </div>
 
@@ -211,7 +211,7 @@ export default function FindFreelancers() {
                                 onClick={() =>
                                     setSelectedSkills((prev) => (prev.includes(skill) ? prev.filter((item) => item !== skill) : [...prev, skill]))
                                 }
-                                className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-all ${
+                                className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
                                     active
                                         ? 'bg-primary-600 text-white shadow-lg shadow-primary-500/25'
                                         : 'border border-white/70 bg-white/80 text-[#5f5974] hover:border-primary-200 hover:text-primary-700 dark:border-white/8 dark:bg-white/5 dark:text-[#b9b4c8] dark:hover:border-primary-500/20 dark:hover:text-primary-200'
@@ -250,7 +250,7 @@ export default function FindFreelancers() {
                             key={rating}
                             type="button"
                             onClick={() => setMinRating(rating)}
-                            className={`rounded-2xl px-3 py-2 text-sm font-semibold transition-all ${
+                            className={`rounded-2xl px-3 py-2 text-sm font-semibold transition-colors ${
                                 minRating === rating
                                     ? 'bg-primary-600 text-white shadow-lg shadow-primary-500/20'
                                     : 'border border-white/70 bg-white/80 text-[#5f5974] dark:border-white/8 dark:bg-white/5 dark:text-[#b9b4c8]'
@@ -330,7 +330,7 @@ export default function FindFreelancers() {
                             <button
                                 type="button"
                                 onClick={() => setViewMode('grid')}
-                                className={`rounded-xl p-2.5 transition-all ${viewMode === 'grid' ? 'bg-primary-50 text-primary-600 dark:bg-primary-500/15 dark:text-primary-300' : 'text-[#87819a] hover:text-[#1d1a28] dark:hover:text-white'}`}
+                                className={`rounded-xl p-2.5 transition-colors ${viewMode === 'grid' ? 'bg-primary-50 text-primary-600 dark:bg-primary-500/15 dark:text-primary-300' : 'text-[#87819a] hover:text-[#1d1a28] dark:hover:text-white'}`}
                             >
                                 <Grid className="h-5 w-5" />
                             </button>
@@ -338,7 +338,7 @@ export default function FindFreelancers() {
                             <button
                                 type="button"
                                 onClick={() => setViewMode('list')}
-                                className={`rounded-xl p-2.5 transition-all ${viewMode === 'list' ? 'bg-primary-50 text-primary-600 dark:bg-primary-500/15 dark:text-primary-300' : 'text-[#87819a] hover:text-[#1d1a28] dark:hover:text-white'}`}
+                                className={`rounded-xl p-2.5 transition-colors ${viewMode === 'list' ? 'bg-primary-50 text-primary-600 dark:bg-primary-500/15 dark:text-primary-300' : 'text-[#87819a] hover:text-[#1d1a28] dark:hover:text-white'}`}
                             >
                                 <List className="h-5 w-5" />
                             </button>

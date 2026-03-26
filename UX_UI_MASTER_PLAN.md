@@ -167,7 +167,7 @@ Acceptance criteria:
 - Core route transitions feel native to one product.
 
 ## Phase 8 Motion and Interaction Polish
-Status: In progress
+Status: Completed
 
 Tasks:
 1. Define motion timing scale and easing map.
@@ -177,6 +177,7 @@ Tasks:
 Progress update:
 - added global motion timing/easing scale and reduced-motion fallback in shared CSS
 - reduced excessive hover lift and shadow intensity in core button/card primitives and client dashboard surfaces
+- reduced transition noise in settings, verify-identity, and find-freelancers by replacing broad `transition-all` with targeted motion properties
 
 Acceptance criteria:
 - Motion is purposeful and coherent.

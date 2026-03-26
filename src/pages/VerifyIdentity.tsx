@@ -77,7 +77,7 @@ const UploadCard = ({
                 ) : (
                     <div
                         onClick={() => document.getElementById(inputId)?.click()}
-                        className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl h-64 flex flex-col items-center justify-center cursor-pointer hover:border-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/10 transition-all group"
+                        className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl h-64 flex flex-col items-center justify-center cursor-pointer hover:border-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/10 transition-colors group"
                     >
                         <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center text-gray-400 group-hover:text-primary-500 mb-4 transition-colors">
                             <Upload className="w-8 h-8" />
@@ -114,7 +114,7 @@ const UploadCard = ({
                 <button
                     onClick={onNext}
                     disabled={!canProceed}
-                    className="flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white px-8 py-3 rounded-xl font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-primary-600/20"
+                    className="flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white px-8 py-3 rounded-xl font-medium transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-primary-600/20"
                 >
                     {t.common.next}
                     <ChevronLeft className="w-5 h-5" />
@@ -516,7 +516,7 @@ export default function VerifyIdentity() {
                     {/* Progress Steps */}
                     <div className="flex items-center justify-between mb-12 relative">
                         <div className="absolute top-1/2 left-0 right-0 h-1 bg-gray-200 dark:bg-gray-700 -z-10 rounded-full"></div>
-                        <div className="absolute top-1/2 left-0 h-1 bg-primary-600 -z-10 rounded-full transition-all duration-500"
+                        <div className="absolute top-1/2 left-0 h-1 bg-primary-600 -z-10 rounded-full transition-[width] duration-300"
                             style={{ width: `${(currentStepIndex / (steps.length - 1)) * 100}%` }}></div>
 
                         {stepLabels.map((label, idx) => {
@@ -525,8 +525,8 @@ export default function VerifyIdentity() {
 
                             return (
                                 <div key={idx} className="flex flex-col items-center bg-gray-50 dark:bg-gray-800 px-2">
-                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all duration-300 ${isCompleted || isCurrent
-                                        ? 'bg-primary-600 border-primary-600 text-white scale-110'
+                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-colors duration-200 ${isCompleted || isCurrent
+                                        ? 'bg-primary-600 border-primary-600 text-white'
                                         : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-400'
                                         }`}>
                                         {isCompleted ? <CheckCircle2 className="w-6 h-6" /> : <span>{idx + 1}</span>}
@@ -539,7 +539,7 @@ export default function VerifyIdentity() {
                     </div>
 
                     {/* Form Content */}
-                    <div className="transition-all duration-500">
+                    <div className="transition-colors duration-200">
                         {step === 'front' && (
                             <UploadCard
                                 inputId="front-upload"
@@ -642,7 +642,7 @@ export default function VerifyIdentity() {
                                     <button
                                         onClick={handleSubmitVerification}
                                         disabled={loading || !consent || cinNumber.length !== 8}
-                                        className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-xl font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-green-600/20 min-w-[160px] justify-center"
+                                        className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-xl font-medium transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-green-600/20 min-w-[160px] justify-center"
                                     >
                                         {loading ? (
                                             <>
