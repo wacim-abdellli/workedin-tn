@@ -167,12 +167,16 @@ Acceptance criteria:
 - Core route transitions feel native to one product.
 
 ## Phase 8 Motion and Interaction Polish
-Status: Not started
+Status: In progress
 
 Tasks:
 1. Define motion timing scale and easing map.
 2. Reduce visual noise from excessive hover effects.
 3. Keep meaningful page-load and state-change animations only.
+
+Progress update:
+- added global motion timing/easing scale and reduced-motion fallback in shared CSS
+- reduced excessive hover lift and shadow intensity in core button/card primitives and client dashboard surfaces
 
 Acceptance criteria:
 - Motion is purposeful and coherent.

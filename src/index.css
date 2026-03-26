@@ -66,6 +66,13 @@
   --elevation-1: var(--shadow-md);
   --elevation-2: var(--shadow-lg);
   --elevation-modal: 0 25px 60px rgba(0, 0, 0, 0.45);
+
+  /* Motion scale */
+  --motion-fast: 140ms;
+  --motion-base: 220ms;
+  --motion-slow: 320ms;
+  --motion-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --motion-ease-emphasis: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .dark {
@@ -130,7 +137,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   min-height: 100vh;
-  transition: background-color 0.2s ease, color 0.15s ease;
+  transition: background-color var(--motion-base) var(--motion-ease-standard), color var(--motion-fast) var(--motion-ease-standard);
   font-size: var(--text-base);
   cursor: auto;
   font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
@@ -219,7 +226,7 @@ h6 {
   .btn {
     @apply inline-flex items-center justify-center gap-2.5;
     @apply px-6 py-3.5 font-semibold rounded-xl;
-    @apply transition-all duration-300 ease-out;
+    transition: transform var(--motion-fast) var(--motion-ease-standard), box-shadow var(--motion-base) var(--motion-ease-standard), background-color var(--motion-fast) var(--motion-ease-standard), border-color var(--motion-fast) var(--motion-ease-standard), color var(--motion-fast) var(--motion-ease-standard);
     @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2;
     @apply disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none;
     @apply active:scale-[0.98];
@@ -255,7 +262,7 @@ h6 {
   }
 
   .btn-primary:hover:not(:disabled) {
-    transform: translateY(-2px);
+    transform: translateY(-1px);
     box-shadow: 0 8px 25px -5px rgba(124, 58, 237, 0.5);
   }
 
@@ -267,7 +274,7 @@ h6 {
   }
 
   .btn-accent:hover:not(:disabled) {
-    transform: translateY(-2px);
+    transform: translateY(-1px);
     box-shadow: 0 8px 25px -5px rgba(248, 101, 69, 0.5);
   }
 
@@ -286,7 +293,7 @@ h6 {
   }
 
   .btn-danger:hover:not(:disabled) {
-    transform: translateY(-2px);
+    transform: translateY(-1px);
     box-shadow: 0 8px 25px -5px rgba(239, 68, 68, 0.5);
   }
 
@@ -319,7 +326,7 @@ h6 {
     border: 1px solid var(--color-border);
     @apply rounded-2xl p-6 relative overflow-hidden;
     box-shadow: var(--shadow-md);
-    @apply transition-all duration-300;
+    transition: box-shadow var(--motion-base) var(--motion-ease-standard), border-color var(--motion-base) var(--motion-ease-standard), transform var(--motion-fast) var(--motion-ease-standard), background-color var(--motion-fast) var(--motion-ease-standard);
     isolation: isolate;
   }
 
@@ -344,7 +351,7 @@ h6 {
         rgba(139, 92, 246, 0.08),
         transparent 60%);
     opacity: 0;
-    transition: opacity 0.3s ease;
+    transition: opacity var(--motion-base) var(--motion-ease-standard);
     pointer-events: none;
     z-index: 0;
   }
@@ -372,8 +379,8 @@ h6 {
   }
 
   .card-hover:hover {
-    transform: translateY(-6px) scale(1.01);
-    box-shadow: 0 20px 40px rgba(139, 92, 246, 0.15);
+    transform: translateY(-3px);
+    box-shadow: 0 14px 28px rgba(139, 92, 246, 0.14);
     border-color: rgba(139, 92, 246, 0.3);
   }
 
@@ -457,7 +464,7 @@ h6 {
   /* ===== INPUTS ===== */
   .input {
     @apply w-full px-4 py-3.5 rounded-xl;
-    @apply transition-all duration-200;
+    transition: border-color var(--motion-fast) var(--motion-ease-standard), box-shadow var(--motion-fast) var(--motion-ease-standard), background-color var(--motion-fast) var(--motion-ease-standard), color var(--motion-fast) var(--motion-ease-standard);
     background: var(--color-bg-secondary);
     border: 2px solid var(--color-border);
     color: var(--color-fg);
@@ -471,7 +478,6 @@ h6 {
     @apply outline-none;
     border-color: #8b5cf6;
     box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.15);
-    transform: translateY(-1px);
   }
 
   .input-error {
@@ -484,7 +490,8 @@ h6 {
   }
 
   .form-control {
-    @apply w-full rounded-xl px-3 py-2.5 text-sm transition-all duration-200;
+    @apply w-full rounded-xl px-3 py-2.5 text-sm;
+    transition: border-color var(--motion-fast) var(--motion-ease-standard), box-shadow var(--motion-fast) var(--motion-ease-standard), background-color var(--motion-fast) var(--motion-ease-standard), color var(--motion-fast) var(--motion-ease-standard);
     background: var(--color-bg-secondary);
     border: 1px solid var(--color-border);
     color: var(--color-fg);
@@ -591,7 +598,7 @@ h6 {
   .header-nav-link {
     @apply flex items-center gap-2 rounded-xl px-3 py-2;
     @apply text-sm font-medium whitespace-nowrap;
-    @apply transition-all duration-150;
+    @apply transition-colors;
     @apply text-gray-600 hover:bg-gray-50 hover:text-gray-900;
     @apply dark:text-gray-400 dark:hover:bg-white/10 dark:hover:text-white;
   }
@@ -610,7 +617,7 @@ h6 {
 
   .header-profile-trigger {
     @apply flex h-9 items-center gap-2 rounded-full border pl-1 pr-2;
-    @apply transition-all duration-150;
+    @apply transition-colors;
     @apply border-gray-200 bg-white hover:bg-gray-50;
     @apply dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10;
   }
@@ -734,7 +741,7 @@ h6 {
   }
 
   .list-card {
-    @apply card p-5 transition-all;
+    @apply card p-5;
     @apply hover:border-primary-200 dark:hover:border-primary-500/30;
   }
 
@@ -1048,6 +1055,17 @@ h6 {
 
   .touch-feedback {
     @apply active:scale-[0.97] transition-transform duration-100;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 1ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 1ms !important;
+      scroll-behavior: auto !important;
+    }
   }
 
   /* Shimmer effect */
