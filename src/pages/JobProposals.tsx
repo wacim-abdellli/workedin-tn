@@ -520,6 +520,14 @@ export default function JobProposals() {
                                         key={proposal.id}
                                         onClick={() => setSelectedProposal(proposal)}
                                         className="cursor-pointer transition-transform hover:scale-[1.01]"
+                                        role="button"
+                                        tabIndex={0}
+                                        onKeyDown={(event) => {
+                                            if (event.key === 'Enter' || event.key === ' ') {
+                                                event.preventDefault();
+                                                setSelectedProposal(proposal);
+                                            }
+                                        }}
                                     >
                                         <ProposalCard
                                             proposal={proposal}

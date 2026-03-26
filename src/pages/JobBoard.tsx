@@ -80,10 +80,12 @@ function SavedJobsSidebar({ savedJobs, onViewJob }: { savedJobs: Job[]; onViewJo
                 </h3>
                 <div className="space-y-3">
                     {savedJobs.slice(0, 5).map(job => (
-                        <div
+                        <button
                             key={job.id}
+                            type="button"
                             onClick={() => onViewJob(job.id)}
-                            className="p-3 bg-gray-50 dark:bg-dark-700 rounded-xl cursor-pointer hover:bg-gray-100 dark:hover:bg-dark-600 transition-colors"
+                            aria-label={`View saved job: ${job.title}`}
+                            className="w-full p-3 bg-gray-50 dark:bg-dark-700 rounded-xl text-left hover:bg-gray-100 dark:hover:bg-dark-600 transition-colors"
                         >
                             <h4 className="font-medium text-sm line-clamp-1 text-dark-900 dark:text-white">{job.title}</h4>
                             <p className="text-xs text-muted mt-1">
@@ -97,7 +99,7 @@ function SavedJobsSidebar({ savedJobs, onViewJob }: { savedJobs: Job[]; onViewJo
                                     : `${job.hourly_rate} / ${t.jobs.filters.jobType.hourly}`
                                 }
                             </p>
-                        </div>
+                        </button>
                     ))}
                 </div>
                 {savedJobs.length > 5 && (
@@ -316,14 +318,20 @@ function JobBoard() {
                                 </select>
                                 <div className="flex overflow-hidden rounded-lg border border-gray-200 dark:border-white/10">
                                     <button
+                                        type="button"
                                         onClick={() => setViewMode('list')}
-                                        className={`p - 2 ${viewMode === 'list' ? 'bg-primary-50 text-primary-600' : 'text-gray-400'} `}
+                                        aria-label="List view"
+                                        aria-pressed={viewMode === 'list'}
+                                        className={`p-2 ${viewMode === 'list' ? 'bg-primary-50 text-primary-600' : 'text-gray-400'} `}
                                     >
                                         <List className="w-5 h-5" />
                                     </button>
                                     <button
+                                        type="button"
                                         onClick={() => setViewMode('grid')}
-                                        className={`p - 2 ${viewMode === 'grid' ? 'bg-primary-50 text-primary-600' : 'text-gray-400'} `}
+                                        aria-label="Grid view"
+                                        aria-pressed={viewMode === 'grid'}
+                                        className={`p-2 ${viewMode === 'grid' ? 'bg-primary-50 text-primary-600' : 'text-gray-400'} `}
                                     >
                                         <Grid3X3 className="w-5 h-5" />
                                     </button>
