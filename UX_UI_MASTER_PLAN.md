@@ -76,7 +76,7 @@ Status: In progress
 
 Tasks:
 1. Normalize shell tokens for page backgrounds and section paddings. (Completed for Client Dashboard, Client Jobs, Search Results)
-2. Lock surface tokens for primary card, elevated card, and glass card use-cases.
+2. Lock surface tokens for primary card, elevated card, and glass card use-cases. (Completed for Client Dashboard, Client Jobs, Search Results)
 3. Define approved border radius tiers and shadow tiers.
 4. Document token usage rules in this file.
 
@@ -209,5 +209,6 @@ Per phase:
 
 ## Next Task (Start Now)
 
-Phase 2, task 2:
-- enforce approved card surface tiers on client dashboard, client jobs, and search results
+Phase 2, task 3 and task 4:
+- define approved border radius and shadow tiers
+- publish token usage rules and start applying them to the next core routes

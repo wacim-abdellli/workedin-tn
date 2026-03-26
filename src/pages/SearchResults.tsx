@@ -122,7 +122,7 @@ export default function SearchResults() {
 
                 {/* Filters Panel */}
                 {showFilters && (
-                    <div className="card mb-6 bg-white dark:bg-dark-900 border border-gray-200 dark:border-dark-700 shadow-sm animate-in slide-in-from-top-2 duration-200">
+                    <div className="card mb-6 animate-in slide-in-from-top-2 duration-200">
                         <div className="flex items-center justify-between mb-4">
                             <h3 className="font-bold text-dark-900 dark:text-white">فلترة متقدمة</h3>
                             <button onClick={() => setShowFilters(false)} className="p-1 hover:bg-gray-100 dark:hover:bg-dark-800 rounded-full transition-colors">
@@ -180,7 +180,7 @@ export default function SearchResults() {
                         <div
                             key={job.id}
                             onClick={() => navigate(`/jobs/${job.id}`)}
-                            className="card cursor-pointer hover:shadow-md transition-all duration-200 bg-white dark:bg-dark-900 border border-gray-200 dark:border-dark-700 dark:shadow-none dark:hover:bg-dark-800 group"
+                            className="card cursor-pointer group"
                         >
                             <div className="flex items-start gap-4">
                                 <div className="w-12 h-12 rounded-xl bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
@@ -221,7 +221,7 @@ export default function SearchResults() {
                         <div
                             key={freelancer.id}
                             onClick={() => navigate(`/freelancer/${freelancer.id}`)}
-                            className="card cursor-pointer hover:shadow-md transition-all duration-200 bg-white dark:bg-dark-900 border border-gray-200 dark:border-dark-700 dark:shadow-none dark:hover:bg-dark-800 group"
+                            className="card cursor-pointer group"
                         >
                             <div className="flex items-start gap-4">
                                 <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary-400 to-secondary-500 flex items-center justify-center text-white font-bold text-xl shrink-0 shadow-lg shadow-primary-500/20">
@@ -259,7 +259,7 @@ export default function SearchResults() {
 
                     {/* Skills Tab */}
                     {activeTab === 'skills' && (
-                        <div className="card bg-white dark:bg-dark-900 border border-gray-200 dark:border-dark-700">
+                        <div className="card">
                             <h3 className="font-bold mb-4 text-dark-900 dark:text-white">مهارات ذات صلة</h3>
                             <div className="grid md:grid-cols-3 gap-4">
                                 {['تصميم شعارات', 'تصميم UI/UX', 'برمجة React', 'ترجمة عربي-إنجليزي', 'تسويق رقمي'].map(skill => (

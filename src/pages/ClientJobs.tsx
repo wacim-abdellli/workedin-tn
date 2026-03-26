@@ -95,15 +95,15 @@ export default function ClientJobs() {
 
         {/* Stats row */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-          <div className="bg-white dark:bg-[#1a1825] rounded-2xl p-4 border border-gray-100 dark:border-white/5">
+          <div className="card p-4">
             <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">{tx('pages.clientJobs.active', undefined, 'Active')}</p>
             <p className="text-2xl font-bold text-amber-600 dark:text-amber-400 mt-1">{stats.active}</p>
           </div>
-          <div className="bg-white dark:bg-[#1a1825] rounded-2xl p-4 border border-gray-100 dark:border-white/5">
+          <div className="card p-4">
             <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">{tx('pages.clientJobs.proposalsReceived', undefined, 'Total proposals received')}</p>
             <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{stats.proposals}</p>
           </div>
-          <div className="bg-white dark:bg-[#1a1825] rounded-2xl p-4 border border-gray-100 dark:border-white/5">
+          <div className="card p-4">
             <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">{tx('pages.clientJobs.completed', undefined, 'Completed')}</p>
             <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{stats.completed}</p>
           </div>
@@ -132,7 +132,7 @@ export default function ClientJobs() {
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-500"></div>
           </div>
         ) : !jobs || jobs.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 text-center">
+          <div className="card flex flex-col items-center justify-center py-16 text-center">
             <FolderOpen className="w-10 h-10 text-gray-300 dark:text-gray-600 mb-4" />
             <h3 className="text-lg font-medium text-gray-900 dark:text-white">{tx('pages.clientJobs.emptyTitle', undefined, 'No projects yet')}</h3>
             <p className="text-gray-500 dark:text-gray-400 mt-1 max-w-sm">
@@ -150,7 +150,7 @@ export default function ClientJobs() {
             {jobs.map((job: any) => (
               <div 
                 key={job.id}
-                className="bg-white dark:bg-[#1a1825] rounded-2xl p-5 border border-gray-100 dark:border-white/5"
+                className="card p-5"
               >
                 <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-3">
                   <div>
