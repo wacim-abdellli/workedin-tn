@@ -1313,6 +1313,119 @@ export const fr: Translations = {
         },
     },
 
+    legalPages: {
+        privacy: {
+            title: 'Politique de confidentialité',
+            lastUpdated: 'Dernière mise à jour : janvier 2026',
+            sections: {
+                dataCollection: {
+                    title: '1. Données collectées',
+                    intro: 'Nous collectons les informations suivantes lorsque vous utilisez la plateforme :',
+                    items: {
+                        account: 'Informations du compte : nom, e-mail, numéro de téléphone',
+                        profile: 'Informations du profil : compétences, expérience, images',
+                        usage: 'Données d’utilisation : pages visitées, temps passé',
+                        payment: 'Informations de paiement : détails du compte bancaire (chiffrés)',
+                    },
+                },
+                usage: {
+                    title: '2. Utilisation de vos données',
+                    items: {
+                        improve: 'Fournir et améliorer nos services',
+                        transactions: 'Traiter les transactions financières',
+                        notifications: 'Envoyer des notifications importantes',
+                        security: 'Prévenir la fraude et protéger la sécurité',
+                        experience: 'Améliorer l’expérience utilisateur',
+                    },
+                },
+                sharing: {
+                    title: '3. Partage des données',
+                    intro: 'Nous ne vendons pas vos données personnelles. Nous pouvons les partager avec :',
+                    items: {
+                        paymentProviders: 'Fournisseurs de paiement (pour traiter les transactions)',
+                        legalAuthorities: 'Autorités légales (sur demande officielle)',
+                        publicProfile: 'Autres utilisateurs (informations publiques du profil)',
+                    },
+                },
+                protection: {
+                    title: '4. Protection des données',
+                    intro: 'Nous utilisons des mesures de sécurité avancées pour protéger vos données :',
+                    items: {
+                        ssl: 'Chiffrement SSL/TLS pour toutes les communications',
+                        database: 'Chiffrement des données sensibles en base de données',
+                        audits: 'Audits de sécurité réguliers',
+                    },
+                },
+                rights: {
+                    title: '5. Vos droits',
+                    items: {
+                        access: 'Accéder à vos données personnelles',
+                        correction: 'Corriger les données inexactes',
+                        deletion: 'Supprimer votre compte et vos données',
+                        export: 'Exporter vos données',
+                    },
+                },
+                cookies: {
+                    title: '6. Cookies',
+                    text: 'Nous utilisons des cookies pour améliorer votre expérience. Vous pouvez gérer ces paramètres dans votre navigateur.',
+                },
+                contact: {
+                    title: '7. Contact',
+                    intro: 'Pour toute question liée à la confidentialité :',
+                    emailLabel: 'E-mail :',
+                },
+            },
+        },
+        terms: {
+            title: 'Conditions d\'utilisation',
+            lastUpdated: 'Dernière mise à jour : janvier 2026',
+            sections: {
+                intro: {
+                    title: '1. Introduction',
+                    text: 'Bienvenue sur Khedma.tn, la plateforme freelance leader en Tunisie. En utilisant cette plateforme, vous acceptez de respecter ces conditions.',
+                },
+                registration: {
+                    title: '2. Inscription et comptes',
+                    items: {
+                        age: 'Vous devez avoir au moins 18 ans pour vous inscrire',
+                        accuracy: 'Les informations fournies doivent être exactes et à jour',
+                        security: 'Vous êtes responsable de la sécurité de votre compte',
+                        report: 'Vous devez nous informer immédiatement de toute utilisation non autorisée',
+                    },
+                },
+                platformUse: {
+                    title: '3. Utilisation de la plateforme',
+                    intro: 'Les usages suivants sont interdits sur la plateforme :',
+                    items: {
+                        illegal: 'Toute activité illégale',
+                        impersonation: 'Usurpation d’identité',
+                        abusive: 'Publication de contenu abusif ou nuisible',
+                        paymentBypass: 'Contournement des mécanismes de paiement',
+                        dataHarvesting: 'Collecte non autorisée des données utilisateurs',
+                    },
+                },
+                contractsPayments: {
+                    title: '4. Contrats et paiements',
+                    intro: 'Khedma.tn agit comme intermédiaire entre freelances et clients. Nous ne sommes pas partie aux contrats conclus entre eux.',
+                    items: {
+                        fee: 'Frais de plateforme : 10% de la valeur de chaque contrat',
+                        secureMethods: 'Les paiements sont traités via des moyens sécurisés et approuvés',
+                        holdPeriod: 'Période de retenue des paiements : 7 jours',
+                    },
+                },
+                disputes: {
+                    title: '5. Résolution des litiges',
+                    text: 'En cas de litige, nous proposons un mécanisme d\'arbitrage. Les décisions de l\'équipe support sont finales et contraignantes.',
+                },
+                contact: {
+                    title: '6. Contact',
+                    intro: 'Pour nous contacter au sujet de ces conditions :',
+                    emailLabel: 'E-mail :',
+                },
+            },
+        },
+    },
+
     footer: {
         about: 'À propos',
         faq: 'FAQ',

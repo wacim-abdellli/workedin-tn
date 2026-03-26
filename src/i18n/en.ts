@@ -1313,6 +1313,119 @@ export const en: Translations = {
         },
     },
 
+    legalPages: {
+        privacy: {
+            title: 'Privacy Policy',
+            lastUpdated: 'Last updated: January 2026',
+            sections: {
+                dataCollection: {
+                    title: '1. Data We Collect',
+                    intro: 'We collect the following information when you use the platform:',
+                    items: {
+                        account: 'Account information: name, email, phone number',
+                        profile: 'Profile information: skills, experience, images',
+                        usage: 'Usage data: visited pages, time spent',
+                        payment: 'Payment information: bank account details (encrypted)',
+                    },
+                },
+                usage: {
+                    title: '2. How We Use Your Data',
+                    items: {
+                        improve: 'Provide and improve our services',
+                        transactions: 'Process financial transactions',
+                        notifications: 'Send important notifications',
+                        security: 'Prevent fraud and protect security',
+                        experience: 'Improve user experience',
+                    },
+                },
+                sharing: {
+                    title: '3. Data Sharing',
+                    intro: 'We do not sell your personal data. We may share it with:',
+                    items: {
+                        paymentProviders: 'Payment service providers (to process transactions)',
+                        legalAuthorities: 'Legal authorities (upon official request)',
+                        publicProfile: 'Other users (public profile information)',
+                    },
+                },
+                protection: {
+                    title: '4. Data Protection',
+                    intro: 'We use advanced security measures to protect your data:',
+                    items: {
+                        ssl: 'SSL/TLS encryption for all communications',
+                        database: 'Encryption of sensitive database data',
+                        audits: 'Regular security reviews',
+                    },
+                },
+                rights: {
+                    title: '5. Your Rights',
+                    items: {
+                        access: 'Access your personal data',
+                        correction: 'Correct inaccurate data',
+                        deletion: 'Delete your account and data',
+                        export: 'Export your data',
+                    },
+                },
+                cookies: {
+                    title: '6. Cookies',
+                    text: 'We use cookies to improve your experience. You can manage these settings in your browser.',
+                },
+                contact: {
+                    title: '7. Contact',
+                    intro: 'For privacy-related inquiries:',
+                    emailLabel: 'Email:',
+                },
+            },
+        },
+        terms: {
+            title: 'Terms of Service',
+            lastUpdated: 'Last updated: January 2026',
+            sections: {
+                intro: {
+                    title: '1. Introduction',
+                    text: 'Welcome to Khedma.tn, Tunisia\'s leading freelance platform. By using this platform, you agree to comply with these terms and conditions.',
+                },
+                registration: {
+                    title: '2. Registration and Accounts',
+                    items: {
+                        age: 'You must be at least 18 years old to register',
+                        accuracy: 'Provided information must be accurate and up to date',
+                        security: 'You are responsible for keeping your account secure',
+                        report: 'You must notify us immediately of any unauthorized use',
+                    },
+                },
+                platformUse: {
+                    title: '3. Platform Use',
+                    intro: 'Using the platform for the following is prohibited:',
+                    items: {
+                        illegal: 'Any illegal activity',
+                        impersonation: 'Impersonating others',
+                        abusive: 'Posting abusive or harmful content',
+                        paymentBypass: 'Bypassing payment mechanisms',
+                        dataHarvesting: 'Collecting user data without authorization',
+                    },
+                },
+                contractsPayments: {
+                    title: '4. Contracts and Payments',
+                    intro: 'Khedma.tn acts as an intermediary between freelancers and clients. We are not a party to the contracts between them.',
+                    items: {
+                        fee: 'Platform fee: 10% of each contract value',
+                        secureMethods: 'Payments are processed via secure approved methods',
+                        holdPeriod: 'Payment hold period: 7 days',
+                    },
+                },
+                disputes: {
+                    title: '5. Dispute Resolution',
+                    text: 'In case of dispute, we provide an arbitration mechanism. Support team decisions are final and binding.',
+                },
+                contact: {
+                    title: '6. Contact',
+                    intro: 'To contact us about these terms:',
+                    emailLabel: 'Email:',
+                },
+            },
+        },
+    },
+
     footer: {
         about: 'About',
         faq: 'FAQ',
