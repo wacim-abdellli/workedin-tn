@@ -81,7 +81,7 @@ export default function SearchResults() {
                                     }
                                 }}
                                 placeholder="ابحث..."
-                                className="w-full pr-12 pl-4 py-3 border border-gray-200 dark:border-dark-700 rounded-xl text-lg bg-white dark:bg-dark-900 text-dark-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+                                className="input pr-12 pl-4 text-lg"
                             />
                         </div>
                         <Button
@@ -131,8 +131,8 @@ export default function SearchResults() {
                         </div>
                         <div className="grid md:grid-cols-4 gap-4">
                             <div>
-                                <label className="block text-sm font-medium mb-2 text-dark-700 dark:text-dark-300">التصنيف</label>
-                                <select className="w-full px-3 py-2 border border-gray-200 dark:border-dark-700 rounded-xl bg-white dark:bg-dark-800 text-dark-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 transition-all">
+                                <label className="label">التصنيف</label>
+                                <select className="form-control">
                                     <option>الكل</option>
                                     <option>تصميم جرافيكي</option>
                                     <option>برمجة وتطوير</option>
@@ -140,8 +140,8 @@ export default function SearchResults() {
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium mb-2 text-dark-700 dark:text-dark-300">الموقع</label>
-                                <select className="w-full px-3 py-2 border border-gray-200 dark:border-dark-700 rounded-xl bg-white dark:bg-dark-800 text-dark-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 transition-all">
+                                <label className="label">الموقع</label>
+                                <select className="form-control">
                                     <option>الكل</option>
                                     <option>عن بعد</option>
                                     <option>تونس العاصمة</option>
@@ -149,8 +149,8 @@ export default function SearchResults() {
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium mb-2 text-dark-700 dark:text-dark-300">الميزانية</label>
-                                <select className="w-full px-3 py-2 border border-gray-200 dark:border-dark-700 rounded-xl bg-white dark:bg-dark-800 text-dark-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 transition-all">
+                                <label className="label">الميزانية</label>
+                                <select className="form-control">
                                     <option>الكل</option>
                                     <option>أقل من 100 د.ت</option>
                                     <option>100-500 د.ت</option>
@@ -158,8 +158,8 @@ export default function SearchResults() {
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium mb-2 text-dark-700 dark:text-dark-300">التقييم</label>
-                                <select className="w-full px-3 py-2 border border-gray-200 dark:border-dark-700 rounded-xl bg-white dark:bg-dark-800 text-dark-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 transition-all">
+                                <label className="label">التقييم</label>
+                                <select className="form-control">
                                     <option>الكل</option>
                                     <option>4+ نجوم</option>
                                     <option>4.5+ نجوم</option>
@@ -292,7 +292,7 @@ export default function SearchResults() {
                             value={savedSearchName}
                             onChange={(e) => setSavedSearchName(e.target.value)}
                             placeholder="اسم البحث المحفوظ"
-                            className="w-full px-4 py-3 border border-gray-200 dark:border-dark-700 rounded-xl mb-4 bg-white dark:bg-dark-800 text-dark-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+                            className="input mb-4"
                         />
                         <div className="space-y-2 mb-4">
                             <label className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-dark-800 rounded-xl cursor-pointer hover:bg-gray-100 dark:hover:bg-dark-700 transition-colors">

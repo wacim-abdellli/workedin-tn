@@ -103,8 +103,8 @@ Acceptance criteria:
 Status: Not started
 
 Tasks:
-1. Finalize Button variant hierarchy and state map.
-2. Standardize Input, Select, Textarea, FileUpload to one style contract.
+1. Finalize Button variant hierarchy and state map. (Initial pass completed)
+2. Standardize Input, Select, Textarea, FileUpload to one style contract. (Initial pass completed for Search Results controls)
 3. Standardize Modal, Tabs, Badge, EmptyState primitives.
 4. Refactor SearchModal to consume shared primitives.
 
@@ -224,6 +224,6 @@ Per phase:
 
 ## Next Task (Start Now)
 
-Phase 3, task 1 and task 2:
-- finalize Button variant hierarchy and state map
-- standardize Input, Select, Textarea and Modal primitives across core routes
+Phase 3, task 3 and task 4:
+- standardize Modal, Tabs, Badge, EmptyState primitives
+- refactor SearchModal to consume shared form and interaction primitives fully

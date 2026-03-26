@@ -278,6 +278,18 @@ h6 {
     box-shadow: 0 4px 15px -3px rgba(147, 51, 234, 0.4);
   }
 
+  .btn-danger {
+    @apply btn;
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    @apply text-white;
+    box-shadow: 0 4px 15px -3px rgba(239, 68, 68, 0.4);
+  }
+
+  .btn-danger:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px -5px rgba(239, 68, 68, 0.5);
+  }
+
   .btn-outline {
     @apply btn border-2 border-primary-600 text-primary-600;
     @apply hover:bg-primary-600 hover:text-white;
@@ -291,6 +303,10 @@ h6 {
 
   .btn-sm {
     @apply px-4 py-2.5 text-sm rounded-lg;
+  }
+
+  .btn-md {
+    @apply px-6 py-3 text-base rounded-xl;
   }
 
   .btn-lg {
@@ -465,6 +481,23 @@ h6 {
 
   .input-error:focus {
     box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
+  }
+
+  .form-control {
+    @apply w-full rounded-xl px-3 py-2.5 text-sm transition-all duration-200;
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    color: var(--color-fg);
+  }
+
+  .form-control::placeholder {
+    color: var(--color-fg-muted);
+  }
+
+  .form-control:focus {
+    @apply outline-none;
+    border-color: #8b5cf6;
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.14);
   }
 
   .label {
