@@ -799,6 +799,10 @@ h6 {
     @apply container-custom py-8;
   }
 
+  .page-shell-content-narrow {
+    @apply mx-auto w-full max-w-5xl px-4 py-8;
+  }
+
   /* ===== GRADIENTS ===== */
   .gradient-primary {
     background: linear-gradient(135deg, #1554f7 0%, #0e41e3 50%, #9333ea 100%);

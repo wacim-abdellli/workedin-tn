@@ -69,9 +69,9 @@ export default function Wallet() {
 
   if (walletLoading) {
     return (
-      <div className="bg-gray-50 dark:bg-[#0f0e17] min-h-screen">
+      <div className="page-shell">
         <Header />
-        <div className="container-custom py-8">
+        <div className="page-shell-content">
           <div className="animate-pulse space-y-6">
             <div className="h-48 bg-gray-200 dark:bg-gray-700 rounded-2xl" />
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
@@ -86,7 +86,7 @@ export default function Wallet() {
   }
 
   return (
-    <div className="bg-gray-50 dark:bg-[#0f0e17] min-h-screen">
+    <div className="page-shell">
       <SEO
         title={tx('wallet.seo.title', undefined, 'Wallet')}
         description={tx('wallet.seo.description', undefined, 'Track your balance, transactions, and withdrawal requests.')}
@@ -94,7 +94,7 @@ export default function Wallet() {
         noIndex
       />
       <Header />
-      <div className="container-custom py-8">
+      <div className="page-shell-content">
         
         {/* SECTION A: Header with Balance */}
         <div className="mb-6 bg-gradient-to-r from-purple-600 to-violet-600 rounded-2xl p-6 text-white shadow-lg">

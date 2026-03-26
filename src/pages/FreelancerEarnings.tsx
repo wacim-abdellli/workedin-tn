@@ -75,9 +75,9 @@ export default function FreelancerEarnings() {
   }
 
   return (
-    <div className="bg-gray-50 dark:bg-[#0f0e17] min-h-screen">
+    <div className="page-shell">
       <Header />
-      <div className="max-w-5xl mx-auto px-4 py-8">
+      <div className="page-shell-content-narrow">
         
         {/* Balance hero card */}
         <div className="mb-6 bg-gradient-to-r from-purple-600 to-violet-600 rounded-2xl p-6 text-white shadow-lg flex flex-col md:flex-row md:items-center justify-between gap-6">

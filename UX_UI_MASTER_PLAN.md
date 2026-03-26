@@ -145,7 +145,7 @@ Acceptance criteria:
 - Dashboard, wallet, proposals, contracts follow same data pattern family.
 
 ## Phase 7 Page Shell Consistency Pass
-Status: Not started
+Status: In progress
 
 Tasks:
 1. Apply unified shell to key routes first:
@@ -157,6 +157,10 @@ Tasks:
    - wallet
    - contracts
 2. Replace custom one-off shell wrappers with approved shell recipe.
+
+Progress update:
+- unified shell wrappers applied for wallet, contracts, my proposals, and freelancer earnings
+- added `page-shell-content-narrow` utility for consistent narrow core-route pages
 
 Acceptance criteria:
 - Core route transitions feel native to one product.

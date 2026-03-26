@@ -91,10 +91,10 @@ export default function MyProposals() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-[#0f0e17]">
+    <div className="page-shell">
       <Header />
 
-      <div className="mx-auto max-w-5xl px-4 py-8">
+      <div className="page-shell-content-narrow">
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{tx('pages.myProposals.title', undefined, 'My Proposals')}</h1>
           <p className="text-gray-500 dark:text-gray-400">{tx('pages.myProposals.subtitle', undefined, "Track every proposal you've sent")}</p>
