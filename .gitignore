@@ -17,6 +17,9 @@ coverage
 lint.json
 lint_output.txt
 parse_lint.js
+playwright-report/
+test-results/
+artifacts/visual-regression/
 
 # Editor directories and files
 .vscode/*
