@@ -60,22 +60,22 @@ export default function Header() {
 
   const FREELANCER_NAV = [
     { label: t.nav?.findWork || 'Find Work', Icon: Briefcase, href: '/jobs' },
-    { label: t.dashboard?.quickActions ? t.common?.submit || 'Proposals' : 'Proposals', Icon: FileText, href: '/my-proposals' },
-    { label: t.contract?.details || 'Contracts', Icon: ClipboardList, href: '/contracts' },
-    { label: t.wallet?.title || 'Wallet', Icon: Wallet, href: '/wallet' },
+    { label: t.nav?.proposals || 'Proposals', Icon: FileText, href: '/my-proposals' },
+    { label: t.nav?.contracts || 'Contracts', Icon: ClipboardList, href: '/contracts' },
+    { label: t.nav?.wallet || 'Wallet', Icon: Wallet, href: '/wallet' },
   ]
 
   const CLIENT_NAV = [
-    { label: t.dashboard?.postNewJob || 'Post Project', Icon: PlusCircle, href: '/jobs/new' },
-    { label: t.dashboard?.yourJobs || 'My Projects', Icon: FolderOpen, href: '/client/jobs' },
-    { label: t.nav?.findFreelancers || 'Freelancers', Icon: Users, href: '/find-freelancers' },
-    { label: t.contract?.details || 'Contracts', Icon: ClipboardList, href: '/contracts' },
+    { label: t.nav?.postProject || 'Post Project', Icon: PlusCircle, href: '/jobs/new' },
+    { label: t.nav?.myProjects || 'My Projects', Icon: FolderOpen, href: '/client/jobs' },
+    { label: t.nav?.findFreelancers || 'Find Freelancers', Icon: Users, href: '/find-freelancers' },
+    { label: t.nav?.contracts || 'Contracts', Icon: ClipboardList, href: '/contracts' },
   ]
 
   const PUBLIC_NAV = [
     { label: t.nav?.findWork || 'Find Work', Icon: Briefcase, href: '/jobs' },
     { label: t.nav?.findFreelancers || 'Find Freelancers', Icon: Users, href: '/find-freelancers' },
-    { label: t.howItWorks?.title || 'How It Works', Icon: FileText, href: '/how-it-works' },
+    { label: t.nav?.howItWorks || 'How It Works', Icon: FileText, href: '/how-it-works' },
   ]
   const navigate = useNavigate()
   const { pathname } = useLocation()

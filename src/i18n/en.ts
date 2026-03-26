@@ -20,6 +20,17 @@ export const en: Translations = {
         findFreelancersTitle: 'Find Freelancers',
         myJobs: 'My Jobs',
         saved: 'Saved',
+        contracts: 'Contracts',
+        proposals: 'Proposals',
+        postProject: 'Post Project',
+        myProjects: 'My Projects',
+        wallet: 'Wallet',
+    },
+    notFound: {
+        title: 'Page Not Found',
+        description: "The page you're looking for doesn't exist or has been moved.",
+        goBack: 'Go Back',
+        goHome: 'Go Home',
     },
     jobs: {
         title: 'Available Jobs',

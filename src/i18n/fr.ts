@@ -18,8 +18,19 @@ export const fr: Translations = {
         findWork: 'Trouver du travail',
         findFreelancers: 'Trouver des freelances',
         findFreelancersTitle: 'Trouver des freelances',
-        myJobs: 'Mes missions',
-        saved: 'Enregistré',
+        myJobs: 'Mes Offres',
+        saved: 'Sauvegardés',
+        contracts: 'Contrats',
+        proposals: 'Propositions',
+        postProject: 'Publier un projet',
+        myProjects: 'Mes Projets',
+        wallet: 'Portefeuille',
+    },
+    notFound: {
+        title: 'Page Introuvable',
+        description: "La page que vous cherchez n'existe pas ou a été déplacée.",
+        goBack: 'Retour',
+        goHome: 'Accueil',
     },
 
     jobs: {

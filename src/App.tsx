@@ -64,6 +64,7 @@ const PaymentFailed = lazy(() => import('./pages/PaymentFailed'));
 const VerifyIdentity = lazy(() => import('./pages/VerifyIdentity'));
 const VerificationQueue = lazy(() => import('./pages/admin/VerificationQueue'));
 const VerifyEmail = lazy(() => import('./pages/VerifyEmail'));
+const NotFound = lazy(() => import('./pages/NotFound'));
 
 import { useState, useEffect } from 'react';
 
@@ -306,7 +307,7 @@ function AppRoutes() {
       <Route path="/search" element={<SearchResults />} />
 
       {/* 404 */}
-      <Route path="*" element={<Navigate to="/" replace />} />
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 }

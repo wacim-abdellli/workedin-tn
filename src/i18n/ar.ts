@@ -17,7 +17,18 @@ export const ar = {
         findFreelancers: 'ابحث عن موظفين',
         findFreelancersTitle: 'ابحث عن موظفين',
         myJobs: 'وظائفي',
-        saved: 'المحفوظة',
+        saved: 'المحفوظات',
+        contracts: 'العقود',
+        proposals: 'العروض',
+        postProject: 'نشر مشروع',
+        myProjects: 'مشاريعي',
+        wallet: 'المحفظة',
+    },
+    notFound: {
+        title: 'الصفحة غير موجودة',
+        description: 'الصفحة التي تبحث عنها غير موجودة أو تم نقلها.',
+        goBack: 'العودة',
+        goHome: 'الصفحة الرئيسية',
     },
 
     jobs: {
