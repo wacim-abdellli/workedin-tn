@@ -1,0 +1,214 @@
+# Khedma TN UX and UI Master Plan
+
+Generated: 2026-03-26
+Goal: Unify product styling and interaction quality across the app while keeping product identity and feature behavior stable.
+
+## Scope and Standards
+
+- Consistency target: 70% to 90% shared visual language across pages.
+- Design system first, then pages.
+- Every phase must end with implementation, QA, and GitHub push for Vercel verification.
+- Mobile and desktop parity is mandatory.
+- RTL and LTR parity is mandatory.
+
+## Phase 1 Audit Findings (Completed)
+
+### Critical findings (P1)
+
+1. Page shell inconsistency
+- Multiple page wrappers use different widths and paddings (container-custom, max-w-5xl, max-w-6xl).
+- Background tokens vary by raw hex and mixed utility classes.
+- Impact: visual rhythm breaks between core routes.
+- Examples:
+  - src/pages/ClientJobs.tsx
+  - src/pages/Wallet.tsx
+  - src/pages/JobPost.tsx
+
+2. Card style dialects
+- Pages mix card, premium-panel, glass-card, and handcrafted rounded/border/shadow stacks.
+- Impact: users see different component personalities for equivalent content blocks.
+- Examples:
+  - src/pages/FreelancerDashboard.tsx
+  - src/pages/SearchResults.tsx
+  - src/pages/ClientJobs.tsx
+
+3. Header/search modal style drift
+- Search modal uses inline style-heavy visual rules that bypass shared tokens.
+- Impact: interaction and visual language diverge from standardized surfaces and focus states.
+- Example:
+  - src/components/layout/Header/SearchModal.tsx
+
+4. Legacy stylesheet risk
+- App.css contains Vite starter root/logo styles that can conflict with app shell assumptions.
+- Impact: unpredictable layout constraints and maintenance overhead.
+- Example:
+  - src/App.css
+
+5. Theme config hygiene
+- Tailwind theme had duplicate extension blocks before cleanup pass, increasing drift risk.
+- Impact: token governance complexity and accidental overrides.
+- Example:
+  - tailwind.config.js
+
+### Medium findings (P2)
+
+1. Form pattern inconsistency
+- Input/select/error styles vary across Settings, SearchResults, ResetPassword, VerifyIdentity.
+- Examples:
+  - src/pages/SearchResults.tsx
+  - src/pages/ResetPassword.tsx
+  - src/pages/VerifyIdentity.tsx
+
+2. Empty-state inconsistency
+- Empty states differ in spacing, icon sizing, text hierarchy, CTA prominence.
+- Examples:
+  - src/pages/ClientDashboard.tsx
+  - src/pages/Wallet.tsx
+  - src/pages/ClientJobs.tsx
+
+3. Motion inconsistency
+- Transition durations and hover elevations differ by page and component family.
+
+## Work Breakdown Structure
+
+## Phase 2 Design System Token Cleanup
+Status: In progress
+
+Tasks:
+1. Normalize shell tokens for page backgrounds and section paddings.
+2. Lock surface tokens for primary card, elevated card, and glass card use-cases.
+3. Define approved border radius tiers and shadow tiers.
+4. Document token usage rules in this file.
+
+Acceptance criteria:
+- No new raw page background hex values added in pages.
+- Core routes use shared shell classes.
+
+## Phase 3 Core Component Standardization
+Status: Not started
+
+Tasks:
+1. Finalize Button variant hierarchy and state map.
+2. Standardize Input, Select, Textarea, FileUpload to one style contract.
+3. Standardize Modal, Tabs, Badge, EmptyState primitives.
+4. Refactor SearchModal to consume shared primitives.
+
+Acceptance criteria:
+- Shared primitives cover at least 80% of UI surfaces on core routes.
+
+## Phase 4 Navigation and Header Harmonization
+Status: Not started
+
+Tasks:
+1. Align top nav spacing, icon scale, and active state behavior.
+2. Harmonize search interactions and keyboard hint visuals.
+3. Standardize workspace switch, notification, and profile trigger sizes.
+
+Acceptance criteria:
+- Header behavior and visual rhythm are identical across client and freelancer shells.
+
+## Phase 5 Form UX Unification
+Status: Not started
+
+Tasks:
+1. Create form field spacing and helper/error hierarchy rules.
+2. Apply rules to JobPost, Settings, VerifyIdentity, auth forms.
+3. Standardize submit loading, disabled, and success feedback.
+
+Acceptance criteria:
+- Form state visuals are consistent across all high-traffic forms.
+
+## Phase 6 Data Display Pattern Unification
+Status: Not started
+
+Tasks:
+1. Standardize stat cards.
+2. Standardize table headers, row density, and status chips.
+3. Standardize list cards and item action areas.
+
+Acceptance criteria:
+- Dashboard, wallet, proposals, contracts follow same data pattern family.
+
+## Phase 7 Page Shell Consistency Pass
+Status: Not started
+
+Tasks:
+1. Apply unified shell to key routes first:
+   - client dashboard
+   - freelancer dashboard
+   - jobs/new
+   - jobs
+   - settings
+   - wallet
+   - contracts
+2. Replace custom one-off shell wrappers with approved shell recipe.
+
+Acceptance criteria:
+- Core route transitions feel native to one product.
+
+## Phase 8 Motion and Interaction Polish
+Status: Not started
+
+Tasks:
+1. Define motion timing scale and easing map.
+2. Reduce visual noise from excessive hover effects.
+3. Keep meaningful page-load and state-change animations only.
+
+Acceptance criteria:
+- Motion is purposeful and coherent.
+
+## Phase 9 Accessibility and Responsive QA
+Status: Not started
+
+Tasks:
+1. Keyboard traversal and focus checks.
+2. Contrast checks and touch target checks.
+3. Mobile overflow and spacing checks for all core flows.
+
+Acceptance criteria:
+- No critical accessibility regressions in major flows.
+
+## Phase 10 Performance and Bundle Hygiene
+Status: Not started
+
+Tasks:
+1. Audit heavy visual effects and remove expensive non-essential layers.
+2. Verify no major style regression on low-end devices.
+
+Acceptance criteria:
+- UX improvements do not degrade runtime experience.
+
+## Phase 11 Visual Regression and Acceptance
+Status: Not started
+
+Tasks:
+1. Capture before and after screenshots for core routes.
+2. Validate RTL and LTR visual parity.
+
+Acceptance criteria:
+- Stakeholder sign-off on consistency target.
+
+## Phase 12 Release Governance
+Status: Not started
+
+Tasks:
+1. Add lightweight UI checklist for future PRs.
+2. Require shared primitives for new pages.
+
+Acceptance criteria:
+- Reduced style drift in future work.
+
+## Execution Mode
+
+Per phase:
+1. Implement task slice.
+2. Run diagnostics and targeted QA.
+3. Commit and push to main.
+4. Verify on Vercel.
+5. Move to next slice.
+
+## Next Task (Start Now)
+
+Phase 2, task 1 and task 2:
+- normalize shell tokens for high-traffic pages
+- enforce approved card surface tiers on client dashboard, client jobs, and search results
