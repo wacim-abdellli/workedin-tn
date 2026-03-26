@@ -24,7 +24,9 @@ describe('misc hooks coverage', () => {
     });
 
     afterEach(() => {
-        vi.runOnlyPendingTimers();
+        act(() => {
+            vi.runOnlyPendingTimers();
+        });
         vi.useRealTimers();
         document.body.innerHTML = '';
     });
@@ -64,7 +66,7 @@ describe('misc hooks coverage', () => {
         vi.mocked(localStorage.removeItem).mockImplementation((key: string) => {
             storage.delete(key);
         });
-        const { result } = renderHook(() =>
+        const { result, unmount } = renderHook(() =>
             useAutosave({
                 data: { title: 'Hello' },
                 storageKey: 'draft',
@@ -91,6 +93,8 @@ describe('misc hooks coverage', () => {
 
         expect(localStorage.removeItem).toHaveBeenCalledWith('draft');
         expect(result.current.status).toBe('idle');
+
+        unmount();
     });
 
     it('handles autosave storage failures', () => {
@@ -98,7 +102,7 @@ describe('misc hooks coverage', () => {
             throw new Error('quota');
         });
 
-        const { result } = renderHook(() =>
+        const { result, unmount } = renderHook(() =>
             useAutosave({
                 data: { title: 'Hello' },
                 storageKey: 'draft',
@@ -112,6 +116,8 @@ describe('misc hooks coverage', () => {
 
         expect(logger.error).toHaveBeenCalled();
         expect(result.current.status).toBe('error');
+
+        unmount();
     });
 
     it('moves focus to main content and then h1 on route changes', () => {

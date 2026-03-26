@@ -17,7 +17,9 @@
     "test:coverage": "vitest run --coverage",
     "test:run": "vitest run",
     "test:e2e": "playwright test",
-    "test:e2e:visual": "playwright test e2e/visual-regression.spec.ts"
+    "test:e2e:visual": "playwright test e2e/visual-regression.spec.ts",
+    "test:e2e:a11y:strict": "playwright test e2e/auth-protection-a11y.spec.ts",
+    "audit:strict": "npm run lint && npm run i18n:audit:strict && npm run test:run && npm run build:budget && npm run test:e2e:a11y:strict"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
