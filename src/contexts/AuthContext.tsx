@@ -4,7 +4,7 @@ import type { Session, User } from '@supabase/supabase-js';
 
 import { clearAllAuthData } from '@/lib/authUtils';
 import { logger } from '@/lib/logger';
-import { supabase } from '@/lib/supabase';
+import { supabase, withTimeout } from '@/lib/supabase';
 import { useWorkspaceStore, type Workspace } from '@/lib/workspaceState';
 import { getInitialWorkspace, getWorkspaceCapabilities } from '@/lib/workspaceRoutes';
 import type { AccountMode, FreelancerProfile, Language, Profile, UserType } from '@/types';
@@ -96,18 +96,22 @@ export function AuthProvider({ children }: AuthProviderProps) {
         authUser.email?.split('@')[0] ||
         'Khedma User';
 
-      const { error } = await supabase.from('profiles').upsert(
-        {
-          id: authUser.id,
-          email: authUser.email ?? null,
-          full_name: fallbackName,
-          preferred_language: getPreferredLanguage(),
-          onboarding_completed: false,
-          active_mode: 'client',
-        },
-        {
-          onConflict: 'id',
-        }
+      const { error } = await withTimeout(
+        supabase.from('profiles').upsert(
+          {
+            id: authUser.id,
+            email: authUser.email ?? null,
+            full_name: fallbackName,
+            preferred_language: getPreferredLanguage(),
+            onboarding_completed: false,
+            active_mode: 'client',
+          },
+          {
+            onConflict: 'id',
+          }
+        ),
+        15000,
+        'ensureProfileExists (upsert profiles)'
       );
 
       if (error) {
@@ -367,14 +371,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     const nextMode: Workspace = userType === 'client' ? 'client' : 'freelancer';
 
-    const { error } = await supabase
-      .from('profiles')
-      .update({
-        user_type: userType,
-        active_mode: nextMode,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', user.id);
+    const { error } = await withTimeout(
+      supabase
+        .from('profiles')
+        .update({
+          user_type: userType,
+          active_mode: nextMode,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', user.id),
+      15000,
+      'setUserType (update profiles)'
+    );
 
     if (error) {
       logger.error('setUserType error:', error);
@@ -382,15 +390,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
 
     if (userType === 'freelancer' || userType === 'both') {
-      const { error: freelancerError } = await supabase.from('freelancer_profiles').upsert(
-        {
-          id: user.id,
-          skills: [],
-          availability: 'available',
-        },
-        {
-          onConflict: 'id',
-        }
+      const { error: freelancerError } = await withTimeout(
+        supabase.from('freelancer_profiles').upsert(
+          {
+            id: user.id,
+            skills: [],
+            availability: 'available',
+          },
+          {
+            onConflict: 'id',
+          }
+        ),
+        15000,
+        'setUserType (upsert freelancer_profiles)'
       );
 
       if (freelancerError) {

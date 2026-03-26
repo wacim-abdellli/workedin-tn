@@ -104,17 +104,23 @@ function SignupForm({ onComplete }: SignupFormProps) {
         setIsLoading(true);
         setError(null);
         try {
+            console.log('[SignupForm] Attempting setUserType with:', userType);
             await setUserType(userType);
+            console.log('[SignupForm] setUserType succeeded, refreshing profile...');
             await refreshProfile();
+            console.log('[SignupForm] Profile refreshed, navigating...');
 
             const nextMode = userType === 'client' ? 'client' : 'freelancer';
             navigate(getWorkspaceOnboardingPath(nextMode), { replace: true });
             onComplete?.();
         } catch (selectError) {
+            console.error('[SignupForm] Error setting user type:', selectError);
             logger.error('Error setting user type:', selectError);
-            const message = selectError instanceof Error ? selectError.message : t.common.error;
+            const message = selectError instanceof Error ? selectError.message : String(selectError) || t.common.error;
             setError(message);
             showToast(message, 'error');
+            // Adding alert as fallback so user literally sees it
+            window.alert('Error setting user role: ' + message);
         } finally {
             setIsLoading(false);
         }
