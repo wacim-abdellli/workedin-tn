@@ -66,6 +66,7 @@ export default function JobPost() {
     const navigate = useNavigate();
     const [currentStep, setCurrentStep] = useState(1);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [submitIntent, setSubmitIntent] = useState<'draft' | 'publish' | null>(null);
 
     // Autosave state
     const [showRestoreDraftModal, setShowRestoreDraftModal] = useState(false);
@@ -161,14 +162,17 @@ export default function JobPost() {
     };
 
     const onSubmit: SubmitHandler<JobFormData> = async (data) => {
+        setSubmitIntent('publish');
         await submitJob(data, 'open');
     };
 
     const handleSaveDraft = async () => {
+        setSubmitIntent('draft');
         const data = methods.getValues();
         // Minimal validation for draft
         if (!data.title) {
             methods.setError('title', { message: tx('jobs.new.errors.titleRequiredForDraft', undefined, 'Please enter a job title to save draft') });
+            setSubmitIntent(null);
             return;
         }
         await submitJob(data, 'draft');
@@ -269,6 +273,7 @@ export default function JobPost() {
             showToast(error?.message || tx('jobs.new.errors.saveFailed', undefined, 'Something went wrong while saving the job'), 'error');
         } finally {
             setIsSubmitting(false);
+            setSubmitIntent(null);
         }
     };
 
@@ -331,6 +336,7 @@ export default function JobPost() {
                                         type="button"
                                         variant="outline"
                                         onClick={handleBack}
+                                        disabled={isSubmitting}
                                         leftIcon={<ArrowRight className="w-4 h-4" />} // RTL arrow
                                     >
                                         {tx('jobs.new.actions.previous', undefined, 'Previous')}
@@ -343,10 +349,11 @@ export default function JobPost() {
                                     <Button
                                         type="button"
                                         variant="ghost"
+                                        isLoading={isSubmitting && submitIntent === 'draft'}
                                         disabled={isSubmitting}
                                         onClick={handleSaveDraft}
+                                        leftIcon={isSubmitting && submitIntent === 'draft' ? undefined : <Save className="w-4 h-4" />}
                                     >
-                                        <Save className="w-4 h-4 ml-2" />
                                         {tx('jobs.new.actions.saveDraft', undefined, 'Save draft')}
                                     </Button>
 
@@ -355,6 +362,7 @@ export default function JobPost() {
                                             type="button"
                                             variant="primary"
                                             onClick={handleNext}
+                                            disabled={isSubmitting}
                                             rightIcon={<ArrowLeft className="w-4 h-4" />} // RTL arrow
                                         >
                                             {tx('jobs.new.actions.next', undefined, 'Next')}
@@ -363,7 +371,7 @@ export default function JobPost() {
                                         <Button
                                             type="submit"
                                             variant="primary"
-                                            isLoading={isSubmitting}
+                                            isLoading={isSubmitting && submitIntent === 'publish'}
                                             className="px-8"
                                             rightIcon={<ArrowLeft className="w-4 h-4" />}
                                         >

@@ -91,6 +91,7 @@ function Settings() {
         }
     }, [searchParams, tab, tabs]);
     const [isSaving, setIsSaving] = useState(false);
+    const [isSavingPayment, setIsSavingPayment] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [isAddPaymentModalOpen, setIsAddPaymentModalOpen] = useState(false);
@@ -320,6 +321,8 @@ function Settings() {
     const handleAddPayment = async () => {
         if (!user?.id || !newPaymentForm.details) return;
 
+        setIsSavingPayment(true);
+
         try {
             const { data, error } = await supabase
                 .from('payment_methods')
@@ -348,6 +351,8 @@ function Settings() {
         } catch (error) {
             logger.error('Error adding payment method:', error);
             showToast(tx('settings.toasts.paymentAddError', undefined, 'Failed to add payment method'), 'error');
+        } finally {
+            setIsSavingPayment(false);
         }
     };
 
@@ -1124,6 +1129,7 @@ function Settings() {
                             value={newPaymentForm.type}
                             onChange={(e) => setNewPaymentForm({ ...newPaymentForm, type: e.target.value })}
                             className="form-control"
+                            disabled={isSavingPayment}
                         >
                             <option value="d17">D17</option>
                             <option value="flouci">Flouci</option>
@@ -1134,15 +1140,16 @@ function Settings() {
                         label={tx('settings.paymentDetails', undefined, 'Payment details')}
                         value={newPaymentForm.details}
                         onChange={(e) => setNewPaymentForm({ ...newPaymentForm, details: e.target.value })}
+                        disabled={isSavingPayment}
                         placeholder={newPaymentForm.type === 'bank_transfer'
                             ? tx('settings.bankAccountNumber', undefined, 'Bank account number')
                             : tx('settings.phoneNumber', undefined, 'Phone number')}
                     />
                     <div className="flex gap-3 justify-end">
-                        <Button variant="outline" onClick={() => setIsAddPaymentModalOpen(false)}>
+                        <Button variant="outline" onClick={() => setIsAddPaymentModalOpen(false)} disabled={isSavingPayment}>
                             {t.common.cancel}
                         </Button>
-                        <Button variant="primary" onClick={handleAddPayment} disabled={!newPaymentForm.details}>
+                        <Button variant="primary" onClick={handleAddPayment} disabled={!newPaymentForm.details || isSavingPayment} isLoading={isSavingPayment}>
                             {tx('settings.add', undefined, 'Add')}
                         </Button>
                     </div>

@@ -128,7 +128,7 @@ Status: Not started
 Tasks:
 1. Create form field spacing and helper/error hierarchy rules. (Initial pass completed)
 2. Apply rules to JobPost, Settings, VerifyIdentity, auth forms. (Initial pass completed for Settings, VerifyIdentity, Reset/Forgot password, Login/Signup)
-3. Standardize submit loading, disabled, and success feedback.
+3. Standardize submit loading, disabled, and success feedback. (Initial pass completed for JobPost wizard and Settings payment/profile actions)
 
 Acceptance criteria:
 - Form state visuals are consistent across all high-traffic forms.
@@ -224,5 +224,6 @@ Per phase:
 
 ## Next Task (Start Now)
 
-Phase 5, task 3:
-- standardize submit loading, disabled, and success feedback patterns across major forms
+Phase 6, task 1 and task 2:
+- standardize stat cards and key metrics surfaces
+- standardize table headers, row density, and status chips
