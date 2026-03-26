@@ -285,7 +285,7 @@ export default function SearchResults() {
             {showSaveModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-dark-900/60 backdrop-blur-sm" onClick={() => setShowSaveModal(false)} />
-                    <div className="relative bg-white dark:bg-dark-900 rounded-2xl shadow-xl w-full max-w-md p-6 border border-gray-100 dark:border-dark-700 animate-scale-in">
+                    <div className="relative w-full max-w-md border border-gray-100 bg-white p-6 animate-scale-in radius-card elevation-2 dark:border-white/8 dark:bg-[#1a1825]">
                         <h3 className="text-xl font-bold mb-4 text-dark-900 dark:text-white">حفظ البحث</h3>
                         <input
                             type="text"

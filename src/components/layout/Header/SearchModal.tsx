@@ -149,18 +149,15 @@ export default function SearchModal({ onClose }: SearchModalProps) {
       onClick={onClose}
     >
       <div
-        className="relative z-[51] w-full overflow-hidden rounded-2xl bg-white dark:bg-[#1a1825]"
+        className="relative z-[51] w-full overflow-hidden radius-card bg-white dark:bg-[#1a1825] border border-white/10 elevation-modal"
         style={{
           maxWidth: '560px',
           margin: '0 16px',
-          border: '1px solid rgba(255,255,255,0.08)',
-          boxShadow: '0 25px 60px rgba(0,0,0,0.5)',
         }}
         onClick={(event) => event.stopPropagation()}
       >
         <div
-          className="flex items-center gap-3 px-4"
-          style={{ height: '52px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}
+          className="flex h-[52px] items-center gap-3 border-b border-gray-200 px-4 dark:border-white/10"
         >
           <Search className="h-4 w-4 flex-shrink-0 text-gray-400" />
           <input
@@ -260,12 +257,7 @@ export default function SearchModal({ onClose }: SearchModalProps) {
         </div>
 
         <div
-          className="flex items-center gap-4 px-4"
-          style={{
-            height: '36px',
-            borderTop: '1px solid rgba(255,255,255,0.05)',
-            background: 'rgba(0,0,0,0.1)',
-          }}
+          className="flex h-9 items-center gap-4 border-t border-gray-200 bg-gray-50 px-4 dark:border-white/10 dark:bg-white/5"
         >
           {[
             { key: 'Up/Down', label: tx('globalSearch.toNavigate', undefined, 'Navigate') },

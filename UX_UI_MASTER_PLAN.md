@@ -77,8 +77,23 @@ Status: In progress
 Tasks:
 1. Normalize shell tokens for page backgrounds and section paddings. (Completed for Client Dashboard, Client Jobs, Search Results)
 2. Lock surface tokens for primary card, elevated card, and glass card use-cases. (Completed for Client Dashboard, Client Jobs, Search Results)
-3. Define approved border radius tiers and shadow tiers.
-4. Document token usage rules in this file.
+3. Define approved border radius tiers and shadow tiers. (Completed)
+4. Document token usage rules in this file. (Completed)
+
+Approved tiers:
+- Radius tier A (card): radius-card (1rem)
+- Radius tier B (panel): radius-panel (1.75rem)
+- Radius tier C (shell): radius-shell (2rem)
+- Elevation tier 1: elevation-1 (standard surface)
+- Elevation tier 2: elevation-2 (important/promoted surface)
+- Elevation modal: elevation-modal (overlays/modals)
+
+Usage rules:
+- Use card for default surface blocks and lists.
+- Use premium-panel plus radius-panel for highlighted analytical or dashboard blocks.
+- Use glass-card plus radius-shell for hero shells only.
+- Avoid arbitrary rounded values like rounded-[28px], rounded-[30px], rounded-[32px] in pages.
+- Avoid hardcoded shadow stacks in pages; use elevation tiers unless a justified exception is documented.
 
 Acceptance criteria:
 - No new raw page background hex values added in pages.
@@ -209,6 +224,6 @@ Per phase:
 
 ## Next Task (Start Now)
 
-Phase 2, task 3 and task 4:
-- define approved border radius and shadow tiers
-- publish token usage rules and start applying them to the next core routes
+Phase 3, task 1 and task 2:
+- finalize Button variant hierarchy and state map
+- standardize Input, Select, Textarea and Modal primitives across core routes

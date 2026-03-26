@@ -117,11 +117,11 @@ function FreelancerDashboardPage() {
             <Header />
 
             <main className="container-custom py-8">
-                <section className="glass-card overflow-hidden rounded-[32px] p-6 sm:p-8">
+                <section className="glass-card overflow-hidden radius-shell p-6 sm:p-8">
                     <div className="grid gap-6 xl:grid-cols-[260px_minmax(0,1fr)_320px]">
                         {/* Left sidebar */}
                         <aside className="space-y-5">
-                            <div className="premium-panel rounded-[28px] p-5">
+                            <div className="premium-panel radius-panel p-5">
                                 <p className="text-sm font-medium text-[#6b6880] dark:text-[#8b8aa0]">{tx('pages.freelancerDashboard.welcomeBack', undefined, 'Welcome back')}</p>
                                 <h1 className="mt-2 text-3xl font-bold text-[#1a1825] dark:text-white">{greeting}</h1>
                                 <p className="mt-3 text-sm leading-relaxed text-[#6b6880] dark:text-[#8b8aa0]">
@@ -131,7 +131,7 @@ function FreelancerDashboardPage() {
 
                             <ProfileCompletionCard />
 
-                            <div className="premium-panel rounded-[28px] p-5">
+                            <div className="premium-panel radius-panel p-5">
                                 <div className="text-sm font-semibold text-[#1a1825] dark:text-white">{tx('pages.freelancerDashboard.quickActions', undefined, 'Quick actions')}</div>
                                 <div className="mt-4 space-y-3">
                                     <Button className="w-full justify-start" leftIcon={<Plus className="h-4 w-4" />} onClick={() => navigate('/jobs')}>
@@ -155,7 +155,7 @@ function FreelancerDashboardPage() {
                             {/* Stats cards */}
                             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                                 {statCards.map((item) => (
-                                    <div key={item.label} className="premium-panel rounded-[28px] p-5">
+                                    <div key={item.label} className="premium-panel radius-panel p-5">
                                         {isLoading ? (
                                             <div className="space-y-4">
                                                 <Skeleton className="h-11 w-11 rounded-2xl" />
@@ -176,7 +176,7 @@ function FreelancerDashboardPage() {
                             </div>
 
                             {/* Earnings chart */}
-                            <div className="premium-panel rounded-[30px] p-6">
+                            <div className="premium-panel radius-panel p-6">
                                 <div className="flex items-start justify-between gap-4">
                                     <div>
                                         <h2 className="text-xl font-bold text-[#1a1825] dark:text-white">{tx('pages.freelancerDashboard.earningsTrajectory', undefined, 'Earnings trajectory')}</h2>
@@ -216,7 +216,7 @@ function FreelancerDashboardPage() {
                             </div>
 
                             {/* Recent activity from notifications */}
-                            <div className="premium-panel rounded-[30px] p-6">
+                            <div className="premium-panel radius-panel p-6">
                                 <div className="flex items-center gap-3">
                                     <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary-50 text-primary-600 dark:bg-white/5 dark:text-primary-300">
                                         <Activity className="h-5 w-5" />
@@ -260,7 +260,7 @@ function FreelancerDashboardPage() {
                         {/* Right sidebar */}
                         <aside className="space-y-5">
                             {/* Upcoming milestones */}
-                            <div className="premium-panel rounded-[28px] p-5">
+                            <div className="premium-panel radius-panel p-5">
                                 <div className="text-sm font-semibold text-[#1a1825] dark:text-white">{tx('pages.freelancerDashboard.upcomingMilestones', undefined, 'Upcoming milestones')}</div>
                                 <div className="mt-4 space-y-3">
                                     {isLoading ? (
@@ -284,7 +284,7 @@ function FreelancerDashboardPage() {
                             </div>
 
                             {/* Unread notifications panel */}
-                            <div className="premium-panel rounded-[28px] p-5">
+                            <div className="premium-panel radius-panel p-5">
                                 <div className="flex items-center justify-between">
                                     <div className="text-sm font-semibold text-[#1a1825] dark:text-white">{t.notifications?.title || 'Notifications'}</div>
                                     {(stats?.notifications.length ?? 0) > 0 && (

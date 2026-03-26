@@ -58,6 +58,14 @@
   /* Purple Glows */
   --shadow-glow: 0 0 20px rgba(139, 92, 246, 0.2);
   --shadow-glow-accent: 0 0 20px rgba(245, 158, 11, 0.2);
+
+  /* Radius and elevation tiers */
+  --radius-card: 1rem;
+  --radius-panel: 1.75rem;
+  --radius-shell: 2rem;
+  --elevation-1: var(--shadow-md);
+  --elevation-2: var(--shadow-lg);
+  --elevation-modal: 0 25px 60px rgba(0, 0, 0, 0.45);
 }
 
 .dark {
@@ -100,6 +108,8 @@
 
   --shadow-glow: 0 0 30px rgba(139, 92, 246, 0.25);
   --shadow-glow-accent: 0 0 30px rgba(245, 158, 11, 0.2);
+
+  --elevation-modal: 0 28px 72px rgba(0, 0, 0, 0.65);
 }
 
 /* ========================================
@@ -295,6 +305,18 @@ h6 {
     box-shadow: var(--shadow-md);
     @apply transition-all duration-300;
     isolation: isolate;
+  }
+
+  .elevation-1 {
+    box-shadow: var(--elevation-1);
+  }
+
+  .elevation-2 {
+    box-shadow: var(--elevation-2);
+  }
+
+  .elevation-modal {
+    box-shadow: var(--elevation-modal);
   }
 
   .card::after {
@@ -673,6 +695,18 @@ h6 {
    UTILITIES
    ======================================== */
 @layer utilities {
+  .radius-card {
+    border-radius: var(--radius-card);
+  }
+
+  .radius-panel {
+    border-radius: var(--radius-panel);
+  }
+
+  .radius-shell {
+    border-radius: var(--radius-shell);
+  }
+
   .text-balance {
     text-wrap: balance;
   }
