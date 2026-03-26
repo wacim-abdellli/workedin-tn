@@ -954,6 +954,14 @@ export const ar = {
         hourlyExample: 'مثال: 20',
         hoursExample: 'مثال: 10-20',
         scrollToTop: 'العودة إلى الأعلى',
+        fileUpload: {
+            dropzoneHint: 'اسحب الملفات هنا أو انقر للتصفح',
+            chooseFiles: 'اختر ملفات',
+            fileTooLarge: '{{name}} أكبر من {{size}}MB',
+            unsupportedType: '{{name}} نوع غير مدعوم',
+            maxFilesExceeded: 'الحد الأقصى {{count}} ملفات',
+            removeFileAria: 'حذف {{name}}',
+        },
     },
 
     payment: {

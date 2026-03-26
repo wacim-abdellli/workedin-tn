@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Upload, FileText, X } from 'lucide-react';
 import { cn } from '../../lib/utils';
+import { useTranslation } from '../../i18n';
 
 interface FileUploadProps {
     value: File[];
@@ -21,6 +22,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
     label,
     description
 }) => {
+    const { tx } = useTranslation();
     const [isDragging, setIsDragging] = useState(false);
     const [errors, setErrors] = useState<string[]>([]);
 
@@ -40,7 +42,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
         newFiles.forEach(file => {
             // Check file size
             if (file.size > maxSize * 1024 * 1024) {
-                newErrors.push(`${file.name} أكبر من ${maxSize}MB`);
+                newErrors.push(tx('common.fileUpload.fileTooLarge', { name: file.name, size: maxSize }, `${file.name} is larger than ${maxSize}MB`));
                 return;
             }
 
@@ -55,7 +57,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
             const isAuthorized = authorizedExtensions.some(ext => fileExt === ext);
 
             if (accept && !isAuthorized) {
-                newErrors.push(`${file.name} نوع غير مدعوم`);
+                newErrors.push(tx('common.fileUpload.unsupportedType', { name: file.name }, `${file.name} has an unsupported file type`));
                 return;
             }
 
@@ -66,7 +68,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
 
         // Check max files
         if (currentFilesCount + validFiles.length > maxFiles) {
-            newErrors.push(`الحد الأقصى ${maxFiles} ملفات`);
+            newErrors.push(tx('common.fileUpload.maxFilesExceeded', { count: maxFiles }, `Maximum ${maxFiles} files allowed`));
             setErrors(newErrors);
             return;
         }
@@ -108,7 +110,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
                     <Upload className="w-12 h-12 mb-4 text-gray-400" />
                 </div>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                    اسحب الملفات هنا أو انقر للتصفح
+                    {tx('common.fileUpload.dropzoneHint', undefined, 'Drag files here or click to browse')}
                 </p>
                 {description && (
                     <p className="text-xs text-gray-500">{description}</p>
@@ -125,7 +127,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
                     htmlFor="file-upload"
                     className="inline-block mt-4 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                 >
-                    اختر ملفات
+                    {tx('common.fileUpload.chooseFiles', undefined, 'Choose files')}
                 </label>
             </div>
 
@@ -152,7 +154,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
                                 type="button"
                                 onClick={() => removeFile(index)}
                                 className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded text-gray-500"
-                                aria-label={`حذف ${file.name}`}
+                                aria-label={tx('common.fileUpload.removeFileAria', { name: file.name }, `Remove ${file.name}`)}
                             >
                                 <X className="w-4 h-4" />
                             </button>

@@ -956,6 +956,14 @@ export const fr: Translations = {
         hourlyExample: 'Ex : 20',
         hoursExample: 'Ex : 10-20',
         scrollToTop: 'Revenir en haut',
+        fileUpload: {
+            dropzoneHint: 'Glissez les fichiers ici ou cliquez pour parcourir',
+            chooseFiles: 'Choisir des fichiers',
+            fileTooLarge: '{{name}} depasse {{size}}MB',
+            unsupportedType: '{{name}} a un type de fichier non pris en charge',
+            maxFilesExceeded: 'Maximum {{count}} fichiers autorises',
+            removeFileAria: 'Supprimer {{name}}',
+        },
     },
 
     payment: {
