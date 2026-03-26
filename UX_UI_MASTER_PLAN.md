@@ -183,7 +183,7 @@ Acceptance criteria:
 - Motion is purposeful and coherent.
 
 ## Phase 9 Accessibility and Responsive QA
-Status: In progress
+Status: Completed
 
 Tasks:
 1. Keyboard traversal and focus checks.
@@ -196,6 +196,7 @@ Progress update:
 - added ARIA pressed/labels on find-freelancers view mode toggles
 - added keyboard semantics and ARIA labels for clickable cards/controls in job board, search results, and job proposals flows
 - added keyboard semantics for messages conversation rows and client onboarding avatar upload trigger
+- added ARIA/toggle semantics for settings controls, wallet withdrawal dialogs, and contract workspace mobile tabs
 
 Acceptance criteria:
 - No critical accessibility regressions in major flows.

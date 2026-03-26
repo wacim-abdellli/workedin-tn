@@ -913,6 +913,10 @@ function Settings() {
                     </div>
                     <button
                         onClick={() => handleToggleNotification(notification.key)}
+                        aria-label={notification.enabled
+                            ? tx('settings.disableNotification', { label: notificationCopy(notification.key).label }, `Disable ${notificationCopy(notification.key).label}`)
+                            : tx('settings.enableNotification', { label: notificationCopy(notification.key).label }, `Enable ${notificationCopy(notification.key).label}`)}
+                        aria-pressed={notification.enabled}
                         className={`
                             relative w-12 h-6 rounded-full transition-colors
                             ${notification.enabled ? 'bg-primary-600' : 'bg-gray-300 dark:bg-dark-600'}
@@ -981,6 +985,7 @@ function Settings() {
                                 )}
                                 <button
                                     onClick={() => handleDeletePayment(method.id)}
+                                    aria-label={tx('settings.deletePaymentMethod', { label: method.label }, `Delete ${method.label}`)}
                                     className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                                 >
                                     <Trash2 className="w-4 h-4" />

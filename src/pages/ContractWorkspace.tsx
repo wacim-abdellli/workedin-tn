@@ -346,21 +346,30 @@ export default function ContractWorkspace() {
             {/* Mobile Tabs */}
             <div className="md:hidden flex border-b border-gray-100 shrink-0 bg-white z-10">
                 <button
+                    type="button"
                     onClick={() => setActiveMobileTab('chat')}
+                    aria-pressed={activeMobileTab === 'chat'}
+                    aria-label="Show chat"
                     className={`flex-1 py-3 text-sm font-medium border-b-2 transition-colors flex items-center justify-center gap-2 ${activeMobileTab === 'chat' ? 'border-primary-600 text-primary-600' : 'border-transparent text-gray-500'}`}
                 >
                     <MessageSquare className="w-4 h-4" />
                     المراسلة
                 </button>
                 <button
+                    type="button"
                     onClick={() => setActiveMobileTab('details')}
+                    aria-pressed={activeMobileTab === 'details'}
+                    aria-label="Show details"
                     className={`flex-1 py-3 text-sm font-medium border-b-2 transition-colors flex items-center justify-center gap-2 ${activeMobileTab === 'details' ? 'border-primary-600 text-primary-600' : 'border-transparent text-gray-500'}`}
                 >
                     <Info className="w-4 h-4" />
                     التفاصيل
                 </button>
                 <button
+                    type="button"
                     onClick={() => setActiveMobileTab('files')}
+                    aria-pressed={activeMobileTab === 'files'}
+                    aria-label="Show files"
                     className={`flex-1 py-3 text-sm font-medium border-b-2 transition-colors flex items-center justify-center gap-2 ${activeMobileTab === 'files' ? 'border-primary-600 text-primary-600' : 'border-transparent text-gray-500'}`}
                 >
                     <FileText className="w-4 h-4" />

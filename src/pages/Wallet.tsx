@@ -414,7 +414,7 @@ function WithdrawalModal({ wallet, onClose, onSuccess }: { wallet: any; onClose:
 
   if (submitted) {
     return (
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" role="dialog" aria-modal="true" aria-label={t.wallet?.withdrawalSubmittedTitle || 'Withdrawal Request Submitted'}>
         <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 max-w-md w-full text-center">
           <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
             <CheckCircle className="w-8 h-8 text-green-600" />
@@ -434,13 +434,13 @@ function WithdrawalModal({ wallet, onClose, onSuccess }: { wallet: any; onClose:
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto" role="dialog" aria-modal="true" aria-label={t.wallet?.requestWithdrawal || 'Request Withdrawal'}>
       <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 max-w-md w-full my-8">
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-lg font-bold text-gray-900 dark:text-white">
             {t.wallet?.requestWithdrawal || 'Request Withdrawal'}
           </h3>
-          <button onClick={onClose} className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+          <button type="button" aria-label={t.common?.close || 'Close'} onClick={onClose} className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
             <X className="w-5 h-5 text-gray-500" />
           </button>
         </div>
