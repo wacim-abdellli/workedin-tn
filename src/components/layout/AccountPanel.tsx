@@ -428,6 +428,14 @@ export default function AccountPanel({
                   </div>
 
                   <div className="mt-4 space-y-3">
+                    {profile?.is_admin && (
+                      <ActionLink
+                        to="/admin"
+                        onClick={onClose}
+                        icon={<ShieldCheck className="h-4 w-4 text-primary-600" />}
+                        label="Admin Dashboard"
+                      />
+                    )}
                     <ActionLink
                       to={settingsPath}
                       onClick={onClose}
