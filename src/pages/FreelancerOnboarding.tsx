@@ -7,7 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from '../i18n';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../components/ui/Toast';
-import { uploadFile, supabase } from '../lib/supabase';
+import { uploadFile } from '../lib/supabase';
 import type { Skill } from '../types';
 import { skillToEntry } from '../types';
 import { Header } from '../components/layout';
@@ -177,23 +177,17 @@ function FreelancerOnboarding() {
             );
             logger.log('[Onboarding] Profile saved to Supabase!');
 
-            logger.log('[Onboarding] Saving freelancer profile via upsert...');
-            const { error: freelancerProfileError } = await supabase
-                .from('freelancer_profiles')
-                .upsert(
-                    {
-                        id: user.id,
-                        title: data.title,
-                        updated_at: new Date().toISOString(),
-                    },
-                    {
-                        onConflict: 'id',
-                    }
-                );
-
-            if (freelancerProfileError) {
-                throw freelancerProfileError;
-            }
+            logger.log('[Onboarding] Saving freelancer profile via authenticated REST upsert...');
+            await upsertWithTimeout(
+                `${supabaseUrl}/rest/v1/freelancer_profiles?on_conflict=id`,
+                session.access_token,
+                supabaseKey,
+                {
+                    id: user.id,
+                    title: data.title,
+                    updated_at: new Date().toISOString(),
+                }
+            );
             logger.log('[Onboarding] Freelancer profile saved!');
 
             showToast(t.onboarding.freelancer.basicInfoSaved || 'Basic info saved', 'success');
@@ -239,24 +233,18 @@ function FreelancerOnboarding() {
             };
 
             try {
-                const { error: freelancerSaveError } = await supabase
-                    .from('freelancer_profiles')
-                    .upsert(
-                        {
-                            id: user.id,
-                            skills: skillsData.skills,
-                            hourly_rate: skillsData.hourly_rate,
-                            availability: skillsData.availability,
-                            updated_at: new Date().toISOString(),
-                        },
-                        {
-                            onConflict: 'id',
-                        }
-                    );
-
-                if (freelancerSaveError) {
-                    throw freelancerSaveError;
-                }
+                await upsertWithTimeout(
+                    `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/freelancer_profiles?on_conflict=id`,
+                    session.access_token,
+                    import.meta.env.VITE_SUPABASE_ANON_KEY,
+                    {
+                        id: user.id,
+                        skills: skillsData.skills,
+                        hourly_rate: skillsData.hourly_rate,
+                        availability: skillsData.availability,
+                        updated_at: new Date().toISOString(),
+                    }
+                );
                 logger.log('[Onboarding] Skills saved!');
             } catch (skillsErr: any) {
                 logger.error('[Onboarding] Skills save FAILED:', skillsErr);
@@ -411,6 +399,43 @@ async function patchWithTimeout(
                 apikey: anonKey,
                 Authorization: `Bearer ${accessToken}`,
                 Prefer: 'return=minimal',
+            },
+            body: JSON.stringify(body),
+            signal: controller.signal,
+        });
+
+        if (!response.ok) {
+            const text = await response.text();
+            throw new Error(`${response.status}: ${text}`);
+        }
+    } catch (error) {
+        if (error instanceof DOMException && error.name === 'AbortError') {
+            throw new Error('TIMEOUT');
+        }
+        throw error;
+    } finally {
+        clearTimeout(timeoutId);
+    }
+}
+
+async function upsertWithTimeout(
+    url: string,
+    accessToken: string,
+    anonKey: string,
+    body: Record<string, unknown>,
+    timeoutMs: number = 15000
+) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                apikey: anonKey,
+                Authorization: `Bearer ${accessToken}`,
+                Prefer: 'resolution=merge-duplicates,return=minimal',
             },
             body: JSON.stringify(body),
             signal: controller.signal,
