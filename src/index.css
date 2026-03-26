@@ -500,6 +500,22 @@ h6 {
     box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.14);
   }
 
+  .input-base {
+    @apply form-control;
+  }
+
+  .form-stack {
+    @apply space-y-5;
+  }
+
+  .form-error {
+    @apply mt-1.5 text-sm font-medium text-red-500;
+  }
+
+  .form-help {
+    @apply mt-1.5 text-sm text-gray-500 dark:text-gray-400;
+  }
+
   /* ===== MODALS ===== */
   .modal-backdrop {
     @apply fixed inset-0 z-50 flex justify-center;

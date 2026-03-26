@@ -196,13 +196,10 @@ const ResetPassword = () => {
                             </div>
 
                             {/* Form */}
-                            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                            <form onSubmit={handleSubmit(onSubmit)} className="form-stack">
                                 {/* New Password Field */}
                                 <div>
-                                    <label
-                                        htmlFor="password"
-                                        className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-                                    >
+                                    <label htmlFor="password" className="label">
                                         كلمة المرور الجديدة
                                     </label>
                                     <div className="relative">
@@ -213,10 +210,7 @@ const ResetPassword = () => {
                                             id="password"
                                             type={showPassword ? 'text' : 'password'}
                                             {...register('password')}
-                                            className={`w-full ps-10 pe-12 py-3 bg-gray-50 dark:bg-gray-700 border rounded-xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all ${errors.password
-                                                ? 'border-red-500 focus:ring-red-500'
-                                                : 'border-gray-200 dark:border-gray-600'
-                                                }`}
+                                            className={`input ps-10 pe-12 ${errors.password ? 'input-error' : ''}`}
                                             placeholder="أدخل كلمة المرور الجديدة"
                                             disabled={isLoading}
                                         />
@@ -232,11 +226,7 @@ const ResetPassword = () => {
                                             )}
                                         </button>
                                     </div>
-                                    {errors.password && (
-                                        <p className="mt-2 text-sm text-red-500">
-                                            {errors.password.message}
-                                        </p>
-                                    )}
+                                    {errors.password && <p className="form-error">{errors.password.message}</p>}
 
                                     {/* Password Strength Indicator */}
                                     {password && (
@@ -262,10 +252,7 @@ const ResetPassword = () => {
 
                                 {/* Confirm Password Field */}
                                 <div>
-                                    <label
-                                        htmlFor="confirmPassword"
-                                        className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-                                    >
+                                    <label htmlFor="confirmPassword" className="label">
                                         تأكيد كلمة المرور
                                     </label>
                                     <div className="relative">
@@ -276,10 +263,7 @@ const ResetPassword = () => {
                                             id="confirmPassword"
                                             type={showConfirmPassword ? 'text' : 'password'}
                                             {...register('confirmPassword')}
-                                            className={`w-full ps-10 pe-12 py-3 bg-gray-50 dark:bg-gray-700 border rounded-xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all ${errors.confirmPassword
-                                                ? 'border-red-500 focus:ring-red-500'
-                                                : 'border-gray-200 dark:border-gray-600'
-                                                }`}
+                                            className={`input ps-10 pe-12 ${errors.confirmPassword ? 'input-error' : ''}`}
                                             placeholder="أعد إدخال كلمة المرور"
                                             disabled={isLoading}
                                         />
@@ -295,11 +279,7 @@ const ResetPassword = () => {
                                             )}
                                         </button>
                                     </div>
-                                    {errors.confirmPassword && (
-                                        <p className="mt-2 text-sm text-red-500">
-                                            {errors.confirmPassword.message}
-                                        </p>
-                                    )}
+                                    {errors.confirmPassword && <p className="form-error">{errors.confirmPassword.message}</p>}
                                 </div>
 
                                 {/* Password Requirements */}

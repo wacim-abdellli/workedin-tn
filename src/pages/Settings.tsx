@@ -757,7 +757,7 @@ function Settings() {
             </div>
 
             <div>
-                <label className="block text-sm font-medium text-foreground mb-2">{tx('settings.bioLabel', undefined, 'Bio')}</label>
+                <label className="label">{tx('settings.bioLabel', undefined, 'Bio')}</label>
                 <textarea
                     value={profileForm.bio}
                     onChange={(e) => setProfileForm({ ...profileForm, bio: e.target.value })}
@@ -1119,11 +1119,11 @@ function Settings() {
             >
                 <div className="space-y-4">
                     <div>
-                        <label className="block text-sm font-medium text-foreground mb-2">{tx('settings.paymentMethodType', undefined, 'Payment method type')}</label>
+                        <label className="label">{tx('settings.paymentMethodType', undefined, 'Payment method type')}</label>
                         <select
                             value={newPaymentForm.type}
                             onChange={(e) => setNewPaymentForm({ ...newPaymentForm, type: e.target.value })}
-                            className="input-base w-full"
+                            className="form-control"
                         >
                             <option value="d17">D17</option>
                             <option value="flouci">Flouci</option>

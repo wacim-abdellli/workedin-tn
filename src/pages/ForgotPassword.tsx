@@ -94,13 +94,10 @@ const ForgotPassword = () => {
                             </div>
 
                             {/* Form */}
-                            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                            <form onSubmit={handleSubmit(onSubmit)} className="form-stack">
                                 {/* Email Field */}
                                 <div>
-                                    <label
-                                        htmlFor="email"
-                                        className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-                                    >
+                                    <label htmlFor="email" className="label">
                                         {t.auth.email}
                                     </label>
                                     <div className="relative">
@@ -111,19 +108,12 @@ const ForgotPassword = () => {
                                             id="email"
                                             type="email"
                                             {...register('email')}
-                                            className={`w-full ps-10 pe-4 py-3 bg-gray-50 dark:bg-gray-700 border rounded-xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all ${errors.email
-                                                ? 'border-red-500 focus:ring-red-500'
-                                                : 'border-gray-200 dark:border-gray-600'
-                                                }`}
+                                            className={`input ps-10 pe-4 ${errors.email ? 'input-error' : ''}`}
                                             placeholder={t.auth.emailPlaceholder}
                                             disabled={isLoading}
                                         />
                                     </div>
-                                    {errors.email && (
-                                        <p className="mt-2 text-sm text-red-500">
-                                            {errors.email.message}
-                                        </p>
-                                    )}
+                                    {errors.email && <p className="form-error">{errors.email.message}</p>}
                                 </div>
 
                                 {/* Rate Limit Warning */}

@@ -121,7 +121,7 @@ function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
                 </div>
 
                 {/* Form Fields */}
-                <div className="space-y-5">
+                <div className="form-stack">
                     <div className="relative">
                         <label className="label flex items-center gap-2">
                             <Mail className="w-4 h-4 text-primary-500" />
@@ -134,9 +134,7 @@ function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
                             className="input"
                             dir="ltr"
                         />
-                        {errors.email && (
-                            <p className="text-accent-500 text-sm mt-1">{errors.email.message}</p>
-                        )}
+                        {errors.email && <p className="form-error">{errors.email.message}</p>}
                     </div>
 
                     <div className="relative">
@@ -160,9 +158,7 @@ function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
                                 {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                             </button>
                         </div>
-                        {errors.password && (
-                            <p className="text-accent-500 text-sm mt-1">{errors.password.message}</p>
-                        )}
+                        {errors.password && <p className="form-error">{errors.password.message}</p>}
                         <div className="mt-2 text-end">
                             <Link
                                 to="/forgot-password"

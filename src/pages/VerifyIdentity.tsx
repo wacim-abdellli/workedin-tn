@@ -587,13 +587,13 @@ export default function VerifyIdentity() {
 
                                 <div className="space-y-6">
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{tx('verifyIdentity.review.cinLabel', undefined, 'رقم بطاقة الهوية (8 أرقام)')}</label>
+                                        <label className="label">{tx('verifyIdentity.review.cinLabel', undefined, 'رقم بطاقة الهوية (8 أرقام)')}</label>
                                         <input
                                             type="text"
                                             value={cinNumber}
                                             onChange={(e) => setCinNumber(e.target.value.replace(/\D/g, '').slice(0, 8))}
                                             placeholder={tx('verifyIdentity.review.cinPlaceholder', undefined, '12345678')}
-                                            className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white text-center text-2xl tracking-widest focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all"
+                                            className="input w-full text-center text-2xl tracking-widest"
                                         />
                                     </div>
 

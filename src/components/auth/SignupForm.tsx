@@ -190,7 +190,7 @@ function SignupForm({ onComplete }: SignupFormProps) {
                         </div>
                     </div>
 
-                    <div className="space-y-4">
+                    <div className="form-stack">
                         <div className="relative">
                             <label className="label flex items-center gap-2">
                                 <Mail className="h-4 w-4 text-primary-500" />
@@ -203,7 +203,7 @@ function SignupForm({ onComplete }: SignupFormProps) {
                                 className="input"
                                 dir="ltr"
                             />
-                            {errors.email && <p className="mt-1 text-sm text-accent-500">{errors.email.message}</p>}
+                            {errors.email && <p className="form-error">{errors.email.message}</p>}
                         </div>
 
                         <div className="relative">
@@ -227,7 +227,7 @@ function SignupForm({ onComplete }: SignupFormProps) {
                                     {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                                 </button>
                             </div>
-                            {errors.password && <p className="mt-1 text-sm text-accent-500">{errors.password.message}</p>}
+                            {errors.password && <p className="form-error">{errors.password.message}</p>}
                         </div>
 
                         <div className="relative">
@@ -242,7 +242,7 @@ function SignupForm({ onComplete }: SignupFormProps) {
                                 className="input"
                                 dir="ltr"
                             />
-                            {errors.confirmPassword && <p className="mt-1 text-sm text-accent-500">{errors.confirmPassword.message}</p>}
+                            {errors.confirmPassword && <p className="form-error">{errors.confirmPassword.message}</p>}
                         </div>
                     </div>
 

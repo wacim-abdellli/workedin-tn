@@ -126,8 +126,8 @@ Acceptance criteria:
 Status: Not started
 
 Tasks:
-1. Create form field spacing and helper/error hierarchy rules.
-2. Apply rules to JobPost, Settings, VerifyIdentity, auth forms.
+1. Create form field spacing and helper/error hierarchy rules. (Initial pass completed)
+2. Apply rules to JobPost, Settings, VerifyIdentity, auth forms. (Initial pass completed for Settings, VerifyIdentity, Reset/Forgot password, Login/Signup)
 3. Standardize submit loading, disabled, and success feedback.
 
 Acceptance criteria:
@@ -224,6 +224,5 @@ Per phase:
 
 ## Next Task (Start Now)
 
-Phase 5, task 1 and task 2:
-- create form field spacing and helper/error hierarchy rules
-- apply rules to JobPost, Settings, VerifyIdentity and auth forms
+Phase 5, task 3:
+- standardize submit loading, disabled, and success feedback patterns across major forms
