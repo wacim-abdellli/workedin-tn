@@ -1,4 +1,4 @@
-﻿import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger';
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import {
@@ -448,7 +448,7 @@ function Settings() {
             showToast(tx('settings.toasts.workspaceUpdated', undefined, 'Workspace updated successfully.'), 'success');
         } catch (error) {
             logger.error('Workspace selection error:', error);
-            const errorMessage = error instanceof Error ? error.message : t.common.unexpectedError;
+            const errorMessage = error instanceof Error ? error.message : tx('common.error', undefined, 'An unexpected error occurred');
             showToast(t.common.error + ': ' + errorMessage, 'error');
         }
     };
