@@ -182,14 +182,14 @@ export default function Header() {
               <button
                 onClick={() => setSearchOpen(true)}
                 className="header-icon-btn"
-                aria-label="Open search"
+                aria-label="فتح البحث"
               >
                 <Search className="h-4 w-4" />
               </button>
               <button
                 onClick={() => setMobileMenuOpen(true)}
                 className="header-icon-btn"
-                aria-label="Open navigation menu"
+                aria-label="فتح قائمة التنقل"
               >
                 <Menu className="h-4 w-4" />
               </button>

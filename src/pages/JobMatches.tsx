@@ -354,7 +354,7 @@ function JobMatches() {
                                                     <OptimizedImage
                                                         key={sample.id}
                                                         src={sample.thumbnail_url || ''}
-                                                        alt="Work sample"
+                                                        alt="نموذج عمل"
                                                         className="w-20 h-16 rounded-lg flex-shrink-0"
                                                         imgClassName="object-cover"
                                                     />

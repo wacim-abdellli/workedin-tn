@@ -349,7 +349,7 @@ export default function ContractWorkspace() {
                     type="button"
                     onClick={() => setActiveMobileTab('chat')}
                     aria-pressed={activeMobileTab === 'chat'}
-                    aria-label="Show chat"
+                    aria-label="إظهار المحادثة"
                     className={`flex-1 py-3 text-sm font-medium border-b-2 transition-colors flex items-center justify-center gap-2 ${activeMobileTab === 'chat' ? 'border-primary-600 text-primary-600' : 'border-transparent text-gray-500'}`}
                 >
                     <MessageSquare className="w-4 h-4" />
@@ -359,7 +359,7 @@ export default function ContractWorkspace() {
                     type="button"
                     onClick={() => setActiveMobileTab('details')}
                     aria-pressed={activeMobileTab === 'details'}
-                    aria-label="Show details"
+                    aria-label="إظهار التفاصيل"
                     className={`flex-1 py-3 text-sm font-medium border-b-2 transition-colors flex items-center justify-center gap-2 ${activeMobileTab === 'details' ? 'border-primary-600 text-primary-600' : 'border-transparent text-gray-500'}`}
                 >
                     <Info className="w-4 h-4" />
@@ -369,7 +369,7 @@ export default function ContractWorkspace() {
                     type="button"
                     onClick={() => setActiveMobileTab('files')}
                     aria-pressed={activeMobileTab === 'files'}
-                    aria-label="Show files"
+                    aria-label="إظهار الملفات"
                     className={`flex-1 py-3 text-sm font-medium border-b-2 transition-colors flex items-center justify-center gap-2 ${activeMobileTab === 'files' ? 'border-primary-600 text-primary-600' : 'border-transparent text-gray-500'}`}
                 >
                     <FileText className="w-4 h-4" />

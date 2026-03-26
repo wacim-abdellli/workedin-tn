@@ -16,6 +16,16 @@ const DIRECT_STRING_RE = /\b(?:showToast|confirm|alert)\(\s*(["'`])([^\1]*?[A-Za
 const ALLOW_PATTERNS = [
   /^(D17|Flouci|IBAN|SEO|React JS|Python)$/i,
   /^(Khedma(?:\.tn)?\s*TN?|Ctrl\+K)$/i,
+  /Flouci/i,
+  /^\+216\s*XX\s*XXX\s*XXX$/i,
+  /\bIBAN\b/i,
+  /\bPDF\b/i,
+  /\b10MB\b/i,
+  /\(Spam\)/i,
+  /SSL\/TLS/i,
+  /privacy@khedma\.tn|legal@khedma\.tn/i,
+  /Khedma\.tn/i,
+  /TN59/i,
   /^https?:\/\//i,
   /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
   /^\+?\d[\d\s()-]{5,}$/,
@@ -31,6 +41,7 @@ const CODELIKE_FRAGMENT_RE = /(=>|\?\.|&&\s*\(|\)\.length\}?|\{[^}]*\}|\$\{[^}]*
 const isAllowedText = (text) => {
   const cleaned = text.trim();
   if (!cleaned) return true;
+  if (!/[A-Za-z]/.test(cleaned)) return true;
   return ALLOW_PATTERNS.some((pattern) => pattern.test(cleaned));
 };
 

@@ -15,7 +15,7 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
  * 
  * @component
  * @example
- * <Button variant="primary" onClick={() => {}}>Click me</Button>
+ * <Button variant="primary" onClick={() => {}}>إرسال</Button>
  */
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     (

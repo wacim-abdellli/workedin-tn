@@ -330,7 +330,7 @@ export default function FindFreelancers() {
                             <button
                                 type="button"
                                 onClick={() => setViewMode('grid')}
-                                aria-label="Grid view"
+                                aria-label="عرض شبكي"
                                 aria-pressed={viewMode === 'grid'}
                                 className={`rounded-xl p-2.5 transition-colors ${viewMode === 'grid' ? 'bg-primary-50 text-primary-600 dark:bg-primary-500/15 dark:text-primary-300' : 'text-[#87819a] hover:text-[#1d1a28] dark:hover:text-white'}`}
                             >
@@ -340,7 +340,7 @@ export default function FindFreelancers() {
                             <button
                                 type="button"
                                 onClick={() => setViewMode('list')}
-                                aria-label="List view"
+                                aria-label="عرض قائمة"
                                 aria-pressed={viewMode === 'list'}
                                 className={`rounded-xl p-2.5 transition-colors ${viewMode === 'list' ? 'bg-primary-50 text-primary-600 dark:bg-primary-500/15 dark:text-primary-300' : 'text-[#87819a] hover:text-[#1d1a28] dark:hover:text-white'}`}
                             >

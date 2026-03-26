@@ -122,13 +122,13 @@ export default function PortfolioModal({
 
                 <Input
                     label="المهارات المستخدمة"
-                    placeholder="مثال: Photoshop, React, UI Design (افصل بينها بفاصلة)"
+                    placeholder="مثال: تصميم واجهات، تطوير واجهات، تحرير صور (افصل بينها بفاصلة)"
                     error={errors.skills_used?.message}
                     {...register('skills_used')}
                 />
 
                 <Input
-                    label="رابط صورة العرض (URL)"
+                    label="رابط صورة العرض"
                     placeholder="https://..."
                     error={errors.media_url?.message}
                     {...register('media_url')}

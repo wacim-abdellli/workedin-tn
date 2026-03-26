@@ -518,7 +518,7 @@ function WithdrawalModal({ wallet, onClose, onSuccess }: { wallet: any; onClose:
                 type="text"
                 value={bankIban}
                 onChange={(e) => setBankIban(e.target.value)}
-                placeholder="IBAN (TN59...)"
+                placeholder="رقم الآيبان (يبدأ بـ TN59...)"
                 aria-label={t.wallet?.iban || 'IBAN'}
                 className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 dir="ltr"
@@ -533,7 +533,7 @@ function WithdrawalModal({ wallet, onClose, onSuccess }: { wallet: any; onClose:
                 type="tel"
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value)}
-                placeholder="+216 XX XXX XXX"
+                placeholder="+216 00 000 000"
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 dir="ltr"
               />

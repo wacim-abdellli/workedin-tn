@@ -67,7 +67,7 @@ function ClientOnboarding() {
         const file = e.target.files?.[0];
         if (file) {
             if (file.size > 5 * 1024 * 1024) {
-                showToast('Image size must be less than 5MB', 'error');
+                showToast('حجم الصورة يجب أن يكون أقل من 5 ميغابايت', 'error');
                 return;
             }
             setAvatarFile(file);
@@ -146,7 +146,7 @@ function ClientOnboarding() {
                                         onClick={() => fileInputRef.current?.click()}
                                         role="button"
                                         tabIndex={0}
-                                        aria-label="Upload profile picture"
+                                        aria-label="رفع صورة الملف الشخصي"
                                         onKeyDown={(event) => {
                                             if (event.key === 'Enter' || event.key === ' ') {
                                                 event.preventDefault();

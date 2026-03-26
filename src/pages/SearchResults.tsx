@@ -92,7 +92,7 @@ export default function SearchResults() {
                             <Filter className="w-5 h-5 ml-2" />
                             فلترة
                         </Button>
-                        <Button aria-label="Save search" variant="ghost" onClick={() => setShowSaveModal(true)} className="bg-white dark:bg-dark-900 border border-gray-200 dark:border-dark-700 text-dark-700 dark:text-dark-200 hover:bg-gray-50 dark:hover:bg-dark-800">
+                        <Button aria-label="حفظ البحث" variant="ghost" onClick={() => setShowSaveModal(true)} className="bg-white dark:bg-dark-900 border border-gray-200 dark:border-dark-700 text-dark-700 dark:text-dark-200 hover:bg-gray-50 dark:hover:bg-dark-800">
                             <Bookmark className="w-5 h-5" />
                         </Button>
                     </div>
@@ -122,7 +122,7 @@ export default function SearchResults() {
                     <div className="card mb-6 animate-in slide-in-from-top-2 duration-200">
                         <div className="flex items-center justify-between mb-4">
                             <h3 className="font-bold text-dark-900 dark:text-white">فلترة متقدمة</h3>
-                            <button type="button" aria-label="Close filters" onClick={() => setShowFilters(false)} className="p-1 hover:bg-gray-100 dark:hover:bg-dark-800 rounded-full transition-colors">
+                            <button type="button" aria-label="إغلاق الفلاتر" onClick={() => setShowFilters(false)} className="p-1 hover:bg-gray-100 dark:hover:bg-dark-800 rounded-full transition-colors">
                                 <X className="w-5 h-5 text-gray-400 dark:text-gray-500" />
                             </button>
                         </div>
@@ -297,7 +297,7 @@ export default function SearchResults() {
             {/* Save Search Modal */}
             {showSaveModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                    <button type="button" aria-label="Close save search modal" className="absolute inset-0 bg-dark-900/60 backdrop-blur-sm" onClick={() => setShowSaveModal(false)} />
+                    <button type="button" aria-label="إغلاق نافذة حفظ البحث" className="absolute inset-0 bg-dark-900/60 backdrop-blur-sm" onClick={() => setShowSaveModal(false)} />
                     <div className="relative w-full max-w-md border border-gray-100 bg-white p-6 animate-scale-in radius-card elevation-2 dark:border-white/8 dark:bg-[#1a1825]">
                         <h3 className="text-xl font-bold mb-4 text-dark-900 dark:text-white">حفظ البحث</h3>
                         <input

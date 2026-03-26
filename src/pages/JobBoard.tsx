@@ -320,7 +320,7 @@ function JobBoard() {
                                     <button
                                         type="button"
                                         onClick={() => setViewMode('list')}
-                                        aria-label="List view"
+                                        aria-label="عرض قائمة"
                                         aria-pressed={viewMode === 'list'}
                                         className={`p-2 ${viewMode === 'list' ? 'bg-primary-50 text-primary-600' : 'text-gray-400'} `}
                                     >
@@ -329,7 +329,7 @@ function JobBoard() {
                                     <button
                                         type="button"
                                         onClick={() => setViewMode('grid')}
-                                        aria-label="Grid view"
+                                        aria-label="عرض شبكي"
                                         aria-pressed={viewMode === 'grid'}
                                         className={`p-2 ${viewMode === 'grid' ? 'bg-primary-50 text-primary-600' : 'text-gray-400'} `}
                                     >

@@ -228,7 +228,7 @@ export default function ProposalModal({
                         accept=".pdf,.doc,.docx,.jpg,.png"
                     />
                     <p className="text-xs text-gray-500">
-                        يمكنك رفع ملفات PDF, Images حتى 10MB
+                        يمكنك رفع ملفات بصيغة PDF أو صور حتى 10MB
                     </p>
                 </div>
 

@@ -377,7 +377,7 @@ export default function VerificationQueue() {
                                         <img
                                             src={documentUrls.front}
                                             className="w-full rounded-lg border-2 border-gray-200 dark:border-gray-600"
-                                            alt="CIN Front"
+                                            alt="الوجه الأمامي لبطاقة التعريف"
                                         />
                                     ) : (
                                         <div className="w-full h-40 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center">
@@ -391,7 +391,7 @@ export default function VerificationQueue() {
                                         <img
                                             src={documentUrls.back}
                                             className="w-full rounded-lg border-2 border-gray-200 dark:border-gray-600"
-                                            alt="CIN Back"
+                                            alt="الوجه الخلفي لبطاقة التعريف"
                                         />
                                     ) : (
                                         <div className="w-full h-40 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center">

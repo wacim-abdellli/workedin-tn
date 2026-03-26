@@ -433,7 +433,7 @@ export default function AccountPanel({
                         to="/admin"
                         onClick={onClose}
                         icon={<ShieldCheck className="h-4 w-4 text-primary-600" />}
-                        label="Admin Dashboard"
+                        label="لوحة الإدارة"
                       />
                     )}
                     <ActionLink

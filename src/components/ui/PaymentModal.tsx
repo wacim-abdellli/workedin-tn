@@ -92,7 +92,7 @@ export default function PaymentModal({ isOpen, onClose, amount, recipientName, o
             </div>
 
             <Input
-                placeholder="2x xxx xxx"
+                placeholder="+216 00 000 000"
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value)}
                 leftIcon={<Smartphone className="w-5 h-5" />}
@@ -139,7 +139,7 @@ export default function PaymentModal({ isOpen, onClose, amount, recipientName, o
                 </div>
                 <div>
                     <h3 className="font-bold text-blue-800 dark:text-blue-400 text-lg">{t.payment.creditCard}</h3>
-                    <p className="text-sm text-blue-600 dark:text-blue-500/80">Visa / Mastercard / CIB</p>
+                    <p className="text-sm text-blue-600 dark:text-blue-500/80">فيزا / ماستركارد / سي آي بي</p>
                 </div>
             </div>
 
