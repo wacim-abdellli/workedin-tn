@@ -71,7 +71,7 @@ export default function Wallet() {
     return (
       <div className="bg-gray-50 dark:bg-[#0f0e17] min-h-screen">
         <Header />
-        <div className="max-w-6xl mx-auto px-4 py-8">
+        <div className="container-custom py-8">
           <div className="animate-pulse space-y-6">
             <div className="h-48 bg-gray-200 dark:bg-gray-700 rounded-2xl" />
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
@@ -94,7 +94,7 @@ export default function Wallet() {
         noIndex
       />
       <Header />
-      <div className="max-w-6xl mx-auto px-4 py-8">
+      <div className="container-custom py-8">
         
         {/* SECTION A: Header with Balance */}
         <div className="mb-6 bg-gradient-to-r from-purple-600 to-violet-600 rounded-2xl p-6 text-white shadow-lg">
@@ -131,7 +131,7 @@ export default function Wallet() {
 
         {/* SECTION B: Stats Row */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <div className="bg-white dark:bg-[#1a1825] rounded-2xl p-5 border border-gray-100 dark:border-white/5">
+          <div className="card p-5">
             <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm mb-2">
               <TrendingUp className="w-4 h-4" />
               <span>{t.wallet?.totalEarned || 'Total Earned'}</span>
@@ -139,7 +139,7 @@ export default function Wallet() {
             <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatCurrency(wallet?.total_earned || 0, true, language)}</p>
           </div>
           
-          <div className="bg-white dark:bg-[#1a1825] rounded-2xl p-5 border border-gray-100 dark:border-white/5">
+          <div className="card p-5">
             <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm mb-2">
               <ArrowUpRight className="w-4 h-4" />
               <span>{t.wallet?.totalWithdrawn || 'Total Withdrawn'}</span>
@@ -147,7 +147,7 @@ export default function Wallet() {
             <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatCurrency(wallet?.total_withdrawn || 0, true, language)}</p>
           </div>
           
-          <div className="bg-white dark:bg-[#1a1825] rounded-2xl p-5 border border-gray-100 dark:border-white/5">
+          <div className="card p-5">
             <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm mb-2">
               <WalletIcon className="w-4 h-4" />
               <span>{t.wallet?.balance || 'Available Balance'}</span>
@@ -155,7 +155,7 @@ export default function Wallet() {
             <p className="text-2xl font-bold text-green-600 dark:text-green-400">{formatCurrency(wallet?.balance || 0, true, language)}</p>
           </div>
           
-          <div className="bg-white dark:bg-[#1a1825] rounded-2xl p-5 border border-gray-100 dark:border-white/5">
+          <div className="card p-5">
             <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm mb-2">
               <Clock className="w-4 h-4" />
               <span>{t.wallet?.pendingBalance || 'Pending in Escrow'}</span>
@@ -168,7 +168,7 @@ export default function Wallet() {
         <div className="mb-8">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t.wallet?.transactionHistory || 'Transaction History'}</h2>
           
-          <div className="bg-white dark:bg-[#1a1825] rounded-2xl border border-gray-100 dark:border-white/5 overflow-hidden">
+          <div className="card overflow-hidden">
             {transactionsLoading ? (
               <div className="flex justify-center py-12">
                 <Loader2 className="w-6 h-6 animate-spin text-purple-600" />
@@ -262,7 +262,7 @@ export default function Wallet() {
         <div>
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t.wallet?.withdrawalHistory || 'Withdrawal History'}</h2>
           
-          <div className="bg-white dark:bg-[#1a1825] rounded-2xl border border-gray-100 dark:border-white/5 overflow-hidden">
+          <div className="card overflow-hidden">
             {withdrawalsLoading ? (
               <div className="flex justify-center py-12">
                 <Loader2 className="w-6 h-6 animate-spin text-purple-600" />
