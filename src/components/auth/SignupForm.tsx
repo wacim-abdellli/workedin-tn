@@ -1,10 +1,10 @@
-import { logger } from '@/lib/logger';
+
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { User, Briefcase, Users, Mail, Eye, EyeOff, ArrowRight, ArrowLeft, Sparkles, Lock, CheckCircle2 } from 'lucide-react';
+import { User, Briefcase, Mail, Eye, EyeOff, ArrowRight, ArrowLeft, Sparkles, Lock, CheckCircle2 } from 'lucide-react';
 
 import { useTranslation } from '../../i18n';
 import { useAuth } from '../../contexts/AuthContext';
