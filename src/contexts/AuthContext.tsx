@@ -367,50 +367,42 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const setUserType = async (userType: UserType) => {
     if (!user) throw new Error('No user logged in');
 
-    // NOTE: We intentionally skip ensureProfileExists here.
-    // The handle_new_user Postgres trigger (SECURITY DEFINER) already
-    // guarantees a profile row exists. Calling ensureProfileExists
-    // from the client hangs indefinitely due to RLS policy issues.
-
     const nextMode: Workspace = userType === 'client' ? 'client' : 'freelancer';
 
-    const { error } = await withTimeout(
-      supabase
-        .from('profiles')
-        .update({
-          user_type: userType,
-          active_mode: nextMode,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', user.id),
+    // Use RPC function (SECURITY DEFINER) to bypass RLS entirely.
+    // This is the only reliable way since direct UPDATE/UPSERT hangs under current RLS.
+    const { error: rpcError } = await withTimeout(
+      supabase.rpc('set_user_type_rpc', {
+        p_user_type: userType,
+        p_active_mode: nextMode,
+      }),
       15000,
-      'setUserType (update profiles)'
+      'setUserType (rpc)'
     );
 
-    if (error) {
-      logger.error('setUserType error:', error);
-      throw error;
-    }
-
-    if (userType === 'freelancer' || userType === 'both') {
-      const { error: freelancerError } = await withTimeout(
-        supabase.from('freelancer_profiles').upsert(
-          {
-            id: user.id,
-            skills: [],
-            availability: 'available',
-          },
-          {
-            onConflict: 'id',
-          }
-        ),
-        15000,
-        'setUserType (upsert freelancer_profiles)'
-      );
-
-      if (freelancerError) {
-        logger.error('setUserType freelancer upsert error:', freelancerError);
-        throw freelancerError;
+    if (rpcError) {
+      // If the RPC function doesn't exist yet, fall back to direct update
+      if (rpcError.message?.includes('function') && rpcError.message?.includes('does not exist')) {
+        logger.warn('set_user_type_rpc not found, falling back to direct update');
+        const { error } = await withTimeout(
+          supabase
+            .from('profiles')
+            .update({
+              user_type: userType,
+              active_mode: nextMode,
+              updated_at: new Date().toISOString(),
+            })
+            .eq('id', user.id),
+          15000,
+          'setUserType (direct update fallback)'
+        );
+        if (error) {
+          logger.error('setUserType direct update error:', error);
+          throw error;
+        }
+      } else {
+        logger.error('setUserType rpc error:', rpcError);
+        throw rpcError;
       }
     }
 
