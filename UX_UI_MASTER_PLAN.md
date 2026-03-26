@@ -218,14 +218,14 @@ Acceptance criteria:
 - UX improvements do not degrade runtime experience.
 
 ## Phase 11 Visual Regression and Acceptance
-Status: In progress
+Status: Completed
 
 Progress update:
 - added automated visual regression capture at `e2e/visual-regression.spec.ts` with a dedicated npm script (`test:e2e:visual`)
 - generated baseline screenshots across desktop/mobile for `ar` and `en` on core public routes (`/`, `/jobs`, `/find-freelancers`, `/search`, `/for-clients`, `/how-it-works`)
 - wrote capture diagnostics to `artifacts/visual-regression/<date>/metrics.json`
 - confirmed no horizontal overflow in all 24 route+viewport+locale captures
-- found RTL parity gap: all `ar` captures currently report `actualDir: "ltr"`; requires app-level follow-up before sign-off
+- fixed RTL direction synchronization in i18n document/body handling; `ar` captures now report `actualDir: "rtl"` in metrics
 
 Tasks:
 1. Capture before and after screenshots for core routes.
@@ -235,7 +235,11 @@ Acceptance criteria:
 - Stakeholder sign-off on consistency target.
 
 ## Phase 12 Release Governance
-Status: Not started
+Status: Completed
+
+Progress update:
+- added a repository PR template with a mandatory UX consistency checklist
+- documented shared primitive adoption requirements for contributors
 
 Tasks:
 1. Add lightweight UI checklist for future PRs.

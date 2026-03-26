@@ -14,5 +14,7 @@ This directory contains all the React components for the application, organized 
 ## Usage Guidelines
 
 - Prefer using components from `ui/` for basic elements to ensure design consistency.
+- New pages and major UI changes must use shared page/list/form/status primitives from `src/index.css` and reusable components from `ui/` before introducing custom one-off styles.
+- If a new pattern is needed, add it as a reusable primitive first, then consume it in feature pages.
 - Feature-specific components should be kept within their respective folders.
 - Avoid importing directly from deep paths; use `index.ts` files where available (though currently largely direct imports).

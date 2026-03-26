@@ -1,9 +1,11 @@
 import { Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
+import { Helmet } from 'react-helmet-async';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from './lib/queryClient';
 import { I18nProvider } from './i18n';
+import { useTranslation } from './i18n';
 import { ToastProvider } from './components/ui/Toast';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ThemeProvider } from './contexts/ThemeContext';
@@ -329,6 +331,12 @@ function AppContent() {
   );
 }
 
+function DocumentLanguageHelmet() {
+  const { language, dir } = useTranslation();
+
+  return <Helmet htmlAttributes={{ lang: language, dir }} />;
+}
+
 function App() {
   return (
     <HelmetProvider>
@@ -336,6 +344,7 @@ function App() {
         <BrowserRouter>
           <ThemeProvider>
             <I18nProvider defaultLanguage="ar">
+              <DocumentLanguageHelmet />
               <WorkspaceProvider>
                 <ErrorBoundary>
                   <AuthProvider>

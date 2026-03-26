@@ -22,6 +22,10 @@ type SnapshotMetric = {
   locale: string
   expectedDir: string
   actualDir: string
+  htmlDir: string
+  actualLang: string
+  storedI18nLanguage: string | null
+  storedLanguage: string | null
   viewport: string
   route: string
   path: string
@@ -102,7 +106,11 @@ test.describe('Phase 11 visual baseline capture', () => {
 
           await page.waitForTimeout(150)
 
-          const actualDir = await page.evaluate(() => document.documentElement.dir || 'ltr')
+          const htmlDir = await page.evaluate(() => document.documentElement.getAttribute('dir') || '')
+          const actualDir = await page.evaluate(() => getComputedStyle(document.body).direction || 'ltr')
+          const actualLang = await page.evaluate(() => document.documentElement.getAttribute('lang') || '')
+          const storedI18nLanguage = await page.evaluate(() => localStorage.getItem('i18n-language'))
+          const storedLanguage = await page.evaluate(() => localStorage.getItem('language'))
           const hasHorizontalOverflow = await page.evaluate(() => {
             const doc = document.documentElement
             const body = document.body
@@ -119,9 +127,13 @@ test.describe('Phase 11 visual baseline capture', () => {
             locale: locale.code,
             expectedDir: locale.dir,
             actualDir,
+            htmlDir,
+            actualLang,
+            storedI18nLanguage,
+            storedLanguage,
             viewport: viewport.name,
             route: route.path,
-            path: path.relative(process.cwd(), filePath).replaceAll('\\\\', '/'),
+            path: path.relative(process.cwd(), filePath).replaceAll('\\', '/'),
             hasHorizontalOverflow,
           })
         }

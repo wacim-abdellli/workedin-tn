@@ -8,11 +8,20 @@ import type { Language } from '../types';
 
 type TranslationParams = Record<string, string | number>;
 
+const applyDocumentLanguage = (lang: Language) => {
+    const dir = lang === 'ar' ? 'rtl' : 'ltr';
+    document.documentElement.lang = lang;
+    document.documentElement.dir = dir;
+
+    if (document.body) {
+        document.body.setAttribute('dir', dir);
+    }
+};
+
 // Immediately set HTML attributes to prevent flash of wrong direction
 const savedLang = (localStorage.getItem('i18n-language') || localStorage.getItem('language') || navigator.language.split('-')[0] || 'ar') as Language;
 const validLang = ['ar', 'fr', 'en'].includes(savedLang) ? savedLang : 'ar';
-document.documentElement.lang = validLang;
-document.documentElement.dir = validLang === 'ar' ? 'rtl' : 'ltr';
+applyDocumentLanguage(validLang);
 
 const translations: Record<Language, Translations> = { ar, fr, en };
 const warnedMissingKeys = new Set<string>();
@@ -66,14 +75,12 @@ export function I18nProvider({ children, defaultLanguage = 'ar' }: I18nProviderP
         setLanguageState(lang);
         localStorage.setItem('i18n-language', lang);
         localStorage.setItem('language', lang);
-        document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
-        document.documentElement.lang = lang;
+        applyDocumentLanguage(lang);
     }, []);
 
     // Set initial direction
     React.useEffect(() => {
-        document.documentElement.dir = language === 'ar' ? 'rtl' : 'ltr';
-        document.documentElement.lang = language;
+        applyDocumentLanguage(language);
     }, [language]);
 
     const tx = useCallback((key: string, params?: TranslationParams, fallback?: string) => {
