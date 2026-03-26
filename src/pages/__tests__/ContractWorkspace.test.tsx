@@ -273,6 +273,33 @@ describe('ContractWorkspace', () => {
         expect(emptyView.container).toBeEmptyDOMElement();
     });
 
+    it('exposes mobile tab semantics and labeled modal fields for accessibility', async () => {
+        renderWorkspace();
+
+        expect(screen.getByRole('button', { name: 'الرجوع للخلف' })).toBeInTheDocument();
+
+        const tablist = screen.getByRole('tablist', { name: 'تبويبات مساحة العمل' });
+        expect(tablist).toBeInTheDocument();
+
+        const chatTab = screen.getByRole('tab', { name: 'إظهار المحادثة' });
+        const detailsTab = screen.getByRole('tab', { name: 'إظهار التفاصيل' });
+        const filesTab = screen.getByRole('tab', { name: 'إظهار الملفات' });
+
+        expect(chatTab).toHaveAttribute('aria-selected', 'true');
+        expect(chatTab).toHaveAttribute('aria-controls', 'workspace-panel-chat');
+        expect(detailsTab).toHaveAttribute('aria-controls', 'workspace-panel-details');
+        expect(filesTab).toHaveAttribute('aria-controls', 'workspace-panel-files');
+
+        fireEvent.click(detailsTab);
+        expect(detailsTab).toHaveAttribute('aria-selected', 'true');
+
+        fireEvent.click(screen.getByRole('button', { name: 'Open deliver' }));
+        expect(screen.getByLabelText('ملاحظات التسليم')).toBeInTheDocument();
+
+        fireEvent.click(screen.getByRole('button', { name: 'Open dispute' }));
+        expect(screen.getByLabelText('سبب النزاع')).toBeInTheDocument();
+    });
+
     it('renders the workspace and wires the major contract actions', async () => {
         renderWorkspace();
 
