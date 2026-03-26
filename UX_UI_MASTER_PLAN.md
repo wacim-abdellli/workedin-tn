@@ -117,7 +117,7 @@ Status: Not started
 Tasks:
 1. Align top nav spacing, icon scale, and active state behavior. (Initial pass completed)
 2. Harmonize search interactions and keyboard hint visuals. (Initial pass completed)
-3. Standardize workspace switch, notification, and profile trigger sizes.
+3. Standardize workspace switch, notification, and profile trigger sizes. (Initial pass completed for header profile and notification triggers)
 
 Acceptance criteria:
 - Header behavior and visual rhythm are identical across client and freelancer shells.
@@ -224,5 +224,6 @@ Per phase:
 
 ## Next Task (Start Now)
 
-Phase 4, task 3:
-- standardize workspace switch, notification, and profile trigger sizes across desktop and mobile
+Phase 5, task 1 and task 2:
+- create form field spacing and helper/error hierarchy rules
+- apply rules to JobPost, Settings, VerifyIdentity and auth forms

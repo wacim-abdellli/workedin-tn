@@ -293,34 +293,29 @@ export default function Header() {
                 <div className="relative" ref={userMenuRef}>
                   <button
                     onClick={() => setUserMenuOpen((open) => !open)}
-                    className={`flex items-center gap-1.5 rounded-full border py-1 pl-1 pr-2 transition-all duration-150 ${
-                      userMenuOpen
-                        ? 'border-purple-300 bg-purple-50 dark:border-purple-500/40 dark:bg-purple-900/20'
-                        : 'border-gray-200 bg-white hover:bg-gray-50 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/8'
-                    }`}
+                    className={`header-profile-trigger ${userMenuOpen ? 'header-profile-trigger-open' : ''}`}
                   >
                     {profile?.avatar_url ? (
                       <img
                         src={profile.avatar_url}
                         alt={firstName}
-                        className="h-6 w-6 rounded-full object-cover"
+                        className="header-profile-avatar"
                       />
                     ) : (
                       <div
-                        className="flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-bold text-white"
+                        className="header-profile-avatar flex items-center justify-center text-[10px] font-bold text-white"
                         style={{ background: 'linear-gradient(135deg, #8b5cf6, #6d28d9)' }}
                       >
                         {firstName[0]?.toUpperCase()}
                       </div>
                     )}
                     <span
-                      className="hidden text-sm font-medium text-gray-700 dark:text-gray-200 md:block"
-                      style={{ maxWidth: '72px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                      className="hidden max-w-[72px] truncate text-sm font-medium text-gray-700 dark:text-gray-200 md:block"
                     >
                       {firstName}
                     </span>
                     <span
-                      className={`hidden flex-shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-bold md:block ${
+                      className={`header-profile-chip flex-shrink-0 ${
                         isFreelancer
                           ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300'
                           : 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300'
@@ -336,7 +331,7 @@ export default function Header() {
                   </button>
 
                   {userMenuOpen ? (
-                    <div className="absolute right-0 top-full z-50 mt-2 w-52 overflow-hidden rounded-xl border border-gray-200 bg-white py-1 shadow-xl shadow-black/20 dark:border-white/10 dark:bg-[#1a1825]">
+                    <div className="header-dropdown-surface absolute right-0 top-full z-50 mt-2 w-56">
                       <div className="border-b border-gray-100 px-3 py-2.5 dark:border-white/5">
                         <p className="truncate text-sm font-medium text-gray-900 dark:text-white">{displayName}</p>
                         <p className="truncate text-xs text-gray-500 dark:text-gray-400">{user.email}</p>
@@ -353,7 +348,7 @@ export default function Header() {
                             navigate(href)
                             setUserMenuOpen(false)
                           }}
-                          className="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-white/5"
+                          className="header-dropdown-item"
                         >
                           <Icon className="h-3.5 w-3.5 text-gray-400" />
                           {label}
@@ -390,7 +385,7 @@ export default function Header() {
           />
 
           <div className="absolute inset-y-0 right-0 w-[88vw] max-w-sm border-l border-gray-200 bg-white shadow-2xl dark:border-white/10 dark:bg-[#14121f]">
-            <div className="flex h-[60px] items-center justify-between border-b border-gray-100 px-4 dark:border-white/10">
+            <div className="flex h-16 items-center justify-between border-b border-gray-100 px-4 dark:border-white/10">
               <button onClick={() => navigate('/')} className="flex items-center">
                 <img src={logoSrc} alt="Khedma TN" style={{ height: '28px', width: 'auto' }} />
               </button>
@@ -409,7 +404,7 @@ export default function Header() {
                   setSearchOpen(true)
                   setMobileMenuOpen(false)
                 }}
-                className="flex w-full items-center gap-3 rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-left text-gray-600 dark:border-white/10 dark:bg-white/5 dark:text-gray-300"
+                className="flex h-11 w-full items-center gap-3 rounded-2xl border border-gray-200 bg-gray-50 px-4 text-left text-gray-600 dark:border-white/10 dark:bg-white/5 dark:text-gray-300"
               >
                 <Search className="h-4 w-4" />
                 <span className="text-sm">{t.common?.search || 'Search'}</span>

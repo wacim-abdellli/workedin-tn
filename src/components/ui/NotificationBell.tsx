@@ -144,7 +144,7 @@ export function NotificationBell({ className = '' }: { className?: string }) {
       </button>
 
       {isOpen ? (
-        <div className="glass-card absolute right-0 top-full z-50 mt-3 w-80 overflow-hidden rounded-[28px] shadow-2xl sm:w-96">
+        <div className="header-dropdown-surface absolute right-0 top-full z-50 mt-3 w-80 sm:w-96">
           <div className="flex items-center justify-between border-b border-gray-100/80 px-4 py-4 dark:border-white/8">
             <h3 className="font-bold text-dark-900 dark:text-white">{t.notifications.title}</h3>
             {unreadCount > 0 ? (
@@ -177,7 +177,7 @@ export function NotificationBell({ className = '' }: { className?: string }) {
               notifications.map((notification) => (
                 <div
                   key={notification.id}
-                  className={`cursor-pointer border-b border-gray-50 px-4 py-4 transition-colors last:border-b-0 hover:bg-primary-50/60 dark:border-white/5 dark:hover:bg-white/5 ${!notification.is_read ? 'bg-primary-50/70 dark:bg-primary-900/10' : ''}`}
+                  className={`header-dropdown-item cursor-pointer border-b border-gray-50 px-4 py-4 last:border-b-0 hover:bg-primary-50/60 dark:border-white/5 dark:hover:bg-white/5 ${!notification.is_read ? 'bg-primary-50/70 dark:bg-primary-900/10' : ''}`}
                   onClick={() => {
                     if (!notification.is_read) markAsRead(notification.id);
                     if (notification.link) window.history.pushState({}, '', notification.link);

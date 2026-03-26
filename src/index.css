@@ -592,6 +592,38 @@ h6 {
     @apply dark:bg-amber-900/30 dark:text-amber-300;
   }
 
+  .header-profile-trigger {
+    @apply flex h-9 items-center gap-2 rounded-full border pl-1 pr-2;
+    @apply transition-all duration-150;
+    @apply border-gray-200 bg-white hover:bg-gray-50;
+    @apply dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10;
+  }
+
+  .header-profile-trigger-open {
+    @apply border-purple-300 bg-purple-50;
+    @apply dark:border-purple-500/40 dark:bg-purple-900/20;
+  }
+
+  .header-profile-avatar {
+    @apply h-7 w-7 rounded-full object-cover;
+  }
+
+  .header-profile-chip {
+    @apply hidden rounded-full px-2 py-0.5 text-[10px] font-bold md:block;
+  }
+
+  .header-dropdown-surface {
+    @apply overflow-hidden rounded-xl border border-gray-200 bg-white py-1;
+    @apply shadow-xl shadow-black/20;
+    @apply dark:border-white/10 dark:bg-[#1a1825];
+  }
+
+  .header-dropdown-item {
+    @apply flex w-full items-center gap-2.5 px-3 py-2 text-sm;
+    @apply text-gray-700 transition-colors hover:bg-gray-50;
+    @apply dark:text-gray-300 dark:hover:bg-white/5;
+  }
+
   .label {
     @apply block text-sm font-semibold mb-2;
     color: var(--color-fg);
