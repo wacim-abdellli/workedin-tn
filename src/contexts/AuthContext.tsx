@@ -123,7 +123,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   );
 
   const fetchProfile = useCallback(
-    async (userId: string, authUser?: User) => {
+    async (userId: string, _authUser?: User) => {
       try {
         const loadProfile = async () => {
           const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).single();
@@ -132,8 +132,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
         let { data: profileData, error: profileError } = await loadProfile();
 
-        if (profileError?.code === 'PGRST116' && authUser) {
-          await ensureProfileExists(authUser);
+        // If profile not found, the handle_new_user trigger may still be running.
+        // Wait briefly and retry instead of calling ensureProfileExists (which hangs under RLS).
+        if (profileError?.code === 'PGRST116') {
+          await new Promise(r => setTimeout(r, 1500));
           const retried = await loadProfile();
           profileData = retried.data;
           profileError = retried.error;
@@ -365,9 +367,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const setUserType = async (userType: UserType) => {
     if (!user) throw new Error('No user logged in');
 
-    if (!profile) {
-      await ensureProfileExists(user);
-    }
+    // NOTE: We intentionally skip ensureProfileExists here.
+    // The handle_new_user Postgres trigger (SECURITY DEFINER) already
+    // guarantees a profile row exists. Calling ensureProfileExists
+    // from the client hangs indefinitely due to RLS policy issues.
 
     const nextMode: Workspace = userType === 'client' ? 'client' : 'freelancer';
 
