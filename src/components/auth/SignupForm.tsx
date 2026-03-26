@@ -79,12 +79,6 @@ function SignupForm({ onComplete }: SignupFormProps) {
             title: t.auth.client,
             description: t.auth.userTypeClientDesc,
         },
-        {
-            type: 'both',
-            icon: <Users className="h-7 w-7" />,
-            title: t.auth.both,
-            description: t.auth.userTypeBothDesc,
-        },
     ];
 
     const onSubmit = async (data: SignupFormData) => {
