@@ -17,7 +17,7 @@ import { supabase } from '../lib/supabase';
 import { formatCurrency } from '../lib/currencyUtils';
 
 function ClientDashboardPage() {
-    const { t, tx, dir } = useTranslation();
+    const { t, tx, dir, language } = useTranslation();
     const { profile, signOut } = useAuth();
     const navigate = useNavigate();
     const { showToast } = useToast();
@@ -159,7 +159,7 @@ function ClientDashboardPage() {
                                         <DollarSign className="w-5 h-5 text-green-600" />
                                     </div>
                                 </div>
-                                <p className="text-2xl font-bold text-foreground">{formatCurrency(stats?.totalSpent ?? 0)}</p>
+                                <p className="text-2xl font-bold text-foreground">{formatCurrency(stats?.totalSpent ?? 0, true, language)}</p>
                                 <p className="text-sm text-muted">{tx('dashboard.client.totalSpent', undefined, 'Total spent')}</p>
                             </div>
                             <div className="card">
