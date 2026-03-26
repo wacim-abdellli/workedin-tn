@@ -275,6 +275,14 @@ export default function Messages() {
                         <div
                             key={conversation.id}
                             onClick={() => handleSelectConversation(conversation)}
+                            role="button"
+                            tabIndex={0}
+                            onKeyDown={(event) => {
+                                if (event.key === 'Enter' || event.key === ' ') {
+                                    event.preventDefault();
+                                    handleSelectConversation(conversation);
+                                }
+                            }}
                             className={`p-4 border-b border-gray-100 dark:border-dark-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-dark-800 transition-colors ${
                                 selectedConversation?.id === conversation.id
                                     ? 'bg-primary-50 dark:bg-primary-900/20'

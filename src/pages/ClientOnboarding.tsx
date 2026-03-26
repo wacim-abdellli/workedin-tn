@@ -144,6 +144,15 @@ function ClientOnboarding() {
                                     <div
                                         className="w-28 h-28 rounded-full bg-gray-100 dark:bg-dark-800 flex items-center justify-center overflow-hidden cursor-pointer border-4 border-white dark:border-dark-700 shadow-xl group-hover:shadow-2xl transition-all"
                                         onClick={() => fileInputRef.current?.click()}
+                                        role="button"
+                                        tabIndex={0}
+                                        aria-label="Upload profile picture"
+                                        onKeyDown={(event) => {
+                                            if (event.key === 'Enter' || event.key === ' ') {
+                                                event.preventDefault();
+                                                fileInputRef.current?.click();
+                                            }
+                                        }}
                                     >
                                         {avatarPreview ? (
                                             <img src={avatarPreview} alt="Avatar" className="w-full h-full object-cover" />

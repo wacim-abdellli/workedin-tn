@@ -195,6 +195,7 @@ Progress update:
 - replaced non-semantic clickable containers in verify-identity upload and consent areas
 - added ARIA pressed/labels on find-freelancers view mode toggles
 - added keyboard semantics and ARIA labels for clickable cards/controls in job board, search results, and job proposals flows
+- added keyboard semantics for messages conversation rows and client onboarding avatar upload trigger
 
 Acceptance criteria:
 - No critical accessibility regressions in major flows.
