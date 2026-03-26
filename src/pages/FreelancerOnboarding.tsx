@@ -178,16 +178,37 @@ function FreelancerOnboarding() {
             logger.log('[Onboarding] Profile saved to Supabase!');
 
             logger.log('[Onboarding] Saving freelancer profile via authenticated REST upsert...');
-            await upsertWithTimeout(
-                `${supabaseUrl}/rest/v1/freelancer_profiles?on_conflict=id`,
-                session.access_token,
-                supabaseKey,
-                {
-                    id: user.id,
-                    title: data.title,
-                    updated_at: new Date().toISOString(),
-                }
-            );
+            try {
+                await upsertWithTimeout(
+                    `${supabaseUrl}/rest/v1/freelancer_profiles?on_conflict=id`,
+                    session.access_token,
+                    supabaseKey,
+                    {
+                        id: user.id,
+                        title: data.title,
+                        updated_at: new Date().toISOString(),
+                    }
+                );
+            } catch (freelancerUpsertErr) {
+                if (!isRlsInsertViolation(freelancerUpsertErr)) throw freelancerUpsertErr;
+
+                logger.warn('[Onboarding] Upsert blocked by RLS; retrying via RPC bootstrap + PATCH update...');
+                await ensureFreelancerProfileExists(
+                    import.meta.env.VITE_SUPABASE_URL,
+                    session.access_token,
+                    import.meta.env.VITE_SUPABASE_ANON_KEY,
+                    profile?.user_type === 'both' ? 'both' : 'freelancer'
+                );
+                await patchWithTimeout(
+                    `${supabaseUrl}/rest/v1/freelancer_profiles?id=eq.${user.id}`,
+                    session.access_token,
+                    supabaseKey,
+                    {
+                        title: data.title,
+                        updated_at: new Date().toISOString(),
+                    }
+                );
+            }
             logger.log('[Onboarding] Freelancer profile saved!');
 
             showToast(t.onboarding.freelancer.basicInfoSaved || 'Basic info saved', 'success');
@@ -233,18 +254,41 @@ function FreelancerOnboarding() {
             };
 
             try {
-                await upsertWithTimeout(
-                    `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/freelancer_profiles?on_conflict=id`,
-                    session.access_token,
-                    import.meta.env.VITE_SUPABASE_ANON_KEY,
-                    {
-                        id: user.id,
-                        skills: skillsData.skills,
-                        hourly_rate: skillsData.hourly_rate,
-                        availability: skillsData.availability,
-                        updated_at: new Date().toISOString(),
-                    }
-                );
+                try {
+                    await upsertWithTimeout(
+                        `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/freelancer_profiles?on_conflict=id`,
+                        session.access_token,
+                        import.meta.env.VITE_SUPABASE_ANON_KEY,
+                        {
+                            id: user.id,
+                            skills: skillsData.skills,
+                            hourly_rate: skillsData.hourly_rate,
+                            availability: skillsData.availability,
+                            updated_at: new Date().toISOString(),
+                        }
+                    );
+                } catch (freelancerUpsertErr) {
+                    if (!isRlsInsertViolation(freelancerUpsertErr)) throw freelancerUpsertErr;
+
+                    logger.warn('[Onboarding] Step 2 upsert blocked by RLS; retrying via RPC bootstrap + PATCH update...');
+                    await ensureFreelancerProfileExists(
+                        import.meta.env.VITE_SUPABASE_URL,
+                        session.access_token,
+                        import.meta.env.VITE_SUPABASE_ANON_KEY,
+                        profile?.user_type === 'both' ? 'both' : 'freelancer'
+                    );
+                    await patchWithTimeout(
+                        `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/freelancer_profiles?id=eq.${user.id}`,
+                        session.access_token,
+                        import.meta.env.VITE_SUPABASE_ANON_KEY,
+                        {
+                            skills: skillsData.skills,
+                            hourly_rate: skillsData.hourly_rate,
+                            availability: skillsData.availability,
+                            updated_at: new Date().toISOString(),
+                        }
+                    );
+                }
                 logger.log('[Onboarding] Skills saved!');
             } catch (skillsErr: any) {
                 logger.error('[Onboarding] Skills save FAILED:', skillsErr);
@@ -452,6 +496,36 @@ async function upsertWithTimeout(
         throw error;
     } finally {
         clearTimeout(timeoutId);
+    }
+}
+
+function isRlsInsertViolation(error: unknown): boolean {
+    if (!(error instanceof Error)) return false;
+    return error.message.includes('42501') || error.message.includes('row-level security policy');
+}
+
+async function ensureFreelancerProfileExists(
+    supabaseUrl: string,
+    accessToken: string,
+    anonKey: string,
+    userType: 'freelancer' | 'both'
+) {
+    const response = await fetch(`${supabaseUrl}/rest/v1/rpc/set_user_type_rpc`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            apikey: anonKey,
+            Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
+            p_user_type: userType,
+            p_active_mode: 'freelancer',
+        }),
+    });
+
+    if (!response.ok) {
+        const text = await response.text();
+        throw new Error(`RPC bootstrap failed: ${response.status}: ${text}`);
     }
 }
 
