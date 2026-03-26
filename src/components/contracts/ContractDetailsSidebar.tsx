@@ -34,6 +34,8 @@ export default function ContractDetailsSidebar({
 }: ContractDetailsSidebarProps) {
     const { t, tx } = useTranslation();
     const [expandedSection, setExpandedSection] = useState<string | null>('actions');
+    const milestonesPanelId = 'contract-milestones-panel';
+    const filesPanelId = 'contract-files-panel';
 
     if (!contract) return null;
 
@@ -149,8 +151,11 @@ export default function ContractDetailsSidebar({
             {/* 3. Milestones (Mock for now, waiting for real implementation) */}
             <div className="border-b border-gray-200 bg-white">
                 <button
+                    type="button"
                     onClick={() => toggleSection('milestones')}
                     className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors"
+                    aria-expanded={expandedSection === 'milestones'}
+                    aria-controls={milestonesPanelId}
                 >
                     <div className="flex items-center gap-2 font-medium text-sm">
                         <CheckCircle className="w-4 h-4 text-gray-400" />
@@ -160,7 +165,7 @@ export default function ContractDetailsSidebar({
                 </button>
 
                 {expandedSection === 'milestones' && (
-                    <div className="p-4 bg-gray-50 space-y-3">
+                    <div id={milestonesPanelId} className="p-4 bg-gray-50 space-y-3">
                         {/* Example Milestone - In future this comes from DB */}
                         <div className="bg-white border border-gray-200 rounded-lg p-3">
                             <div className="flex justify-between items-start mb-2">
@@ -179,8 +184,11 @@ export default function ContractDetailsSidebar({
             {/* 4. Files */}
             <div className="border-b border-gray-200 bg-white">
                 <button
+                    type="button"
                     onClick={() => toggleSection('files')}
                     className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors"
+                    aria-expanded={expandedSection === 'files'}
+                    aria-controls={filesPanelId}
                 >
                     <div className="flex items-center gap-2 font-medium text-sm">
                         <FileText className="w-4 h-4 text-gray-400" />
@@ -190,7 +198,7 @@ export default function ContractDetailsSidebar({
                 </button>
 
                 {expandedSection === 'files' && (
-                    <div className="p-4 bg-gray-50 text-center text-sm text-gray-500">
+                    <div id={filesPanelId} className="p-4 bg-gray-50 text-center text-sm text-gray-500">
                         {tx('contract.noSharedFiles', undefined, 'No shared files yet')}
                     </div>
                 )}

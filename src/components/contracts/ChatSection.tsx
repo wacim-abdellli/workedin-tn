@@ -79,7 +79,7 @@ export default function ChatSection({
     return (
         <div className="flex flex-col h-full bg-white">
             {/* Messages List */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-6 bg-gray-50/50">
+            <div className="flex-1 overflow-y-auto p-4 space-y-6 bg-gray-50/50" role="log" aria-live="polite" aria-relevant="additions text">
                 {isLoadingHistory && (
                     <div className="flex justify-center py-4">
                         <Loader2 className="w-6 h-6 animate-spin text-primary-600" />
@@ -159,6 +159,7 @@ export default function ChatSection({
                                                                 rel="noopener noreferrer"
                                                                 className={`p-1.5 rounded-full transition-colors ${isOwn ? 'hover:bg-white/20' : 'hover:bg-gray-100'
                                                                     }`}
+                                                                aria-label={`تحميل المرفق: ${file.name}`}
                                                             >
                                                                 <Download className="w-4 h-4" />
                                                             </a>
@@ -204,7 +205,7 @@ export default function ChatSection({
             {/* Input Area */}
             <div className="p-4 bg-white border-t border-gray-100 shrink-0">
                 {isUploading && (
-                    <div className="mb-3">
+                    <div className="mb-3" role="status" aria-live="polite">
                         <div className="flex items-center justify-between text-xs text-primary-600 mb-1">
                             <span>جاري رفع الملف...</span>
                             <span>{Math.round(uploadProgress)}%</span>
@@ -229,6 +230,7 @@ export default function ChatSection({
                         onClick={() => fileInputRef.current?.click()}
                         className="p-3 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-colors"
                         disabled={isUploading}
+                        aria-label={t.contract?.attachFile || 'إرفاق ملف'}
                     >
                         <Paperclip className="w-5 h-5" />
                     </button>
@@ -250,6 +252,7 @@ export default function ChatSection({
                             className="w-full max-h-32 bg-transparent border-none focus:ring-0 p-0 text-sm resize-none scrollbar-hide my-auto"
                             rows={1}
                             style={{ minHeight: '24px' }}
+                            aria-label={t.contract?.typeMessage || "اكتب رسالتك هنا..."}
                         />
                     </div>
 
@@ -259,6 +262,7 @@ export default function ChatSection({
                         className="h-[48px] w-[48px] p-0 rounded-xl flex items-center justify-center shrink-0 shadow-lg shadow-primary-200"
                         disabled={!newMessage.trim() || isSending}
                         isLoading={isSending}
+                        aria-label={t.contract?.sendMessage || 'إرسال الرسالة'}
                     >
                         <Send className="w-5 h-5 ml-1" /> {/* Adjust margin for RTL icon visual center */}
                     </Button>

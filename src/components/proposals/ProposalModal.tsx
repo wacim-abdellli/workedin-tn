@@ -196,6 +196,7 @@ export default function ProposalModal({
                                     type="button"
                                     onClick={() => removeAttachment(index)}
                                     className="absolute -top-2 -end-2 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                                    aria-label={`حذف المرفق: ${file.name}`}
                                 >
                                     <Trash2 className="w-3 h-3" />
                                 </button>
@@ -213,6 +214,7 @@ export default function ProposalModal({
                                 type="button"
                                 onClick={() => fileInputRef.current?.click()}
                                 className="flex flex-col items-center justify-center p-4 border-2 border-dashed border-gray-300 dark:border-dark-600 rounded-lg hover:border-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/10 transition-colors gap-2 text-gray-400 hover:text-primary-600"
+                                aria-label="رفع ملف"
                             >
                                 <Upload className="w-6 h-6" />
                                 <span className="text-xs">رفع ملف</span>

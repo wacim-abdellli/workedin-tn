@@ -295,7 +295,7 @@ export default function JobPost() {
             <div className="page-shell-content">
                 <div className="flex items-center justify-between mb-6">
                     {/* Autosave Indicator */}
-                    <div className="flex h-6 items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                    <div className="flex h-6 items-center gap-2 text-sm text-gray-500 dark:text-gray-400" role="status" aria-live="polite">
                         {status === 'saving' && (
                             <>
                                 <Loader2 className="w-3.5 h-3.5 animate-spin" />

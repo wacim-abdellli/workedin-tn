@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useId, useRef } from 'react';
 import { X } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from '@/i18n';
@@ -21,25 +21,68 @@ function Modal({
     showCloseButton = true,
 }: ModalProps) {
     const overlayRef = useRef<HTMLDivElement>(null);
+    const dialogRef = useRef<HTMLDivElement>(null);
+    const lastFocusedElementRef = useRef<HTMLElement | null>(null);
     const { t } = useTranslation();
+    const titleId = useId();
 
     useEffect(() => {
-        const handleEscape = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') onClose();
+        if (!isOpen) return;
+
+        lastFocusedElementRef.current = document.activeElement instanceof HTMLElement
+            ? document.activeElement
+            : null;
+
+        const getFocusableElements = () => {
+            if (!dialogRef.current) return [] as HTMLElement[];
+            return Array.from(dialogRef.current.querySelectorAll<HTMLElement>(
+                'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
+            ));
         };
 
-        if (isOpen) {
-            document.addEventListener('keydown', handleEscape);
-            document.body.style.overflow = 'hidden';
-        }
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                onClose();
+                return;
+            }
+
+            if (e.key !== 'Tab') return;
+
+            const focusableElements = getFocusableElements();
+            if (focusableElements.length === 0) {
+                e.preventDefault();
+                dialogRef.current?.focus();
+                return;
+            }
+
+            const firstElement = focusableElements[0];
+            const lastElement = focusableElements[focusableElements.length - 1];
+            const activeElement = document.activeElement;
+
+            if (e.shiftKey && activeElement === firstElement) {
+                e.preventDefault();
+                lastElement.focus();
+            } else if (!e.shiftKey && activeElement === lastElement) {
+                e.preventDefault();
+                firstElement.focus();
+            }
+        };
+
+        document.addEventListener('keydown', handleKeyDown);
+        document.body.style.overflow = 'hidden';
+
+        requestAnimationFrame(() => {
+            const [firstFocusable] = getFocusableElements();
+            (firstFocusable || dialogRef.current)?.focus();
+        });
 
         return () => {
-            document.removeEventListener('keydown', handleEscape);
+            document.removeEventListener('keydown', handleKeyDown);
             document.body.style.overflow = 'unset';
-            // Restore overflow cleanup just in case
             if (!document.querySelector('[role="dialog"]')) {
                 document.body.style.overflow = 'unset';
             }
+            lastFocusedElementRef.current?.focus();
         };
     }, [isOpen, onClose]);
 
@@ -65,6 +108,7 @@ function Modal({
             className="modal-backdrop items-end sm:items-center p-0 sm:p-4"
         >
             <div
+                ref={dialogRef}
                 className={`
           modal-surface ${sizes[size]}
           flex flex-col
@@ -73,12 +117,13 @@ function Modal({
         `}
                 role="dialog"
                 aria-modal="true"
-                aria-labelledby={title ? 'modal-title' : undefined}
+                aria-labelledby={title ? titleId : undefined}
+                tabIndex={-1}
             >
                 {(title || showCloseButton) && (
                     <div className="modal-header sticky top-0 z-20">
                         {title && (
-                            <h2 id="modal-title" className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-dark-900 to-dark-700 dark:from-white dark:to-gray-300">
+                            <h2 id={titleId} className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-dark-900 to-dark-700 dark:from-white dark:to-gray-300">
                                 {title}
                             </h2>
                         )}

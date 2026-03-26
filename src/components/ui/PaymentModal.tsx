@@ -199,20 +199,29 @@ export default function PaymentModal({ isOpen, onClose, amount, recipientName, o
         return (
             <div className="space-y-6">
                 {/* Tabs */}
-                <div className="flex bg-gray-100 dark:bg-dark-800 p-1.5 rounded-xl border border-gray-200 dark:border-dark-700">
+                <div className="flex bg-gray-100 dark:bg-dark-800 p-1.5 rounded-xl border border-gray-200 dark:border-dark-700" role="tablist" aria-label="اختر طريقة الدفع">
                     <button
+                        type="button"
+                        role="tab"
+                        aria-selected={method === 'd17'}
                         className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all duration-200 ${method === 'd17' ? 'bg-white dark:bg-dark-700 shadow text-primary-600 dark:text-primary-400' : 'text-muted hover:text-dark-900 dark:hover:text-white hover:bg-gray-200/50 dark:hover:bg-dark-700/50'}`}
                         onClick={() => setMethod('d17')}
                     >
                         D17
                     </button>
                     <button
+                        type="button"
+                        role="tab"
+                        aria-selected={method === 'flouci'}
                         className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all duration-200 ${method === 'flouci' ? 'bg-white dark:bg-dark-700 shadow text-primary-600 dark:text-primary-400' : 'text-muted hover:text-dark-900 dark:hover:text-white hover:bg-gray-200/50 dark:hover:bg-dark-700/50'}`}
                         onClick={() => setMethod('flouci')}
                     >
                         Flouci
                     </button>
                     <button
+                        type="button"
+                        role="tab"
+                        aria-selected={method === 'card'}
                         className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all duration-200 ${method === 'card' ? 'bg-white dark:bg-dark-700 shadow text-primary-600 dark:text-primary-400' : 'text-muted hover:text-dark-900 dark:hover:text-white hover:bg-gray-200/50 dark:hover:bg-dark-700/50'}`}
                         onClick={() => setMethod('card')}
                     >
