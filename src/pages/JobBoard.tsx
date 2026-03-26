@@ -382,7 +382,7 @@ function JobBoard() {
                             />
                         ) : (
                             <>
-                                <div className={viewMode === 'grid' ? 'grid md:grid-cols-2 gap-4' : 'space-y-4'}>
+                                <div className={`${viewMode === 'grid' ? 'grid md:grid-cols-2 gap-4' : 'space-y-4'} cv-auto`}>
                                     {jobs.map(job => (
                                         <JobCard
                                             key={job.id}

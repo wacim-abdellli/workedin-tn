@@ -202,7 +202,7 @@ Acceptance criteria:
 - No critical accessibility regressions in major flows.
 
 ## Phase 10 Performance and Bundle Hygiene
-Status: In progress
+Status: Completed
 
 Tasks:
 1. Audit heavy visual effects and remove expensive non-essential layers.
@@ -212,6 +212,7 @@ Progress update:
 - added low-end/mobile performance guardrails to disable expensive blur and animated gradient layers
 - reduced decorative noise and heavy shadow intensity under constrained rendering scenarios
 - disabled non-essential card sheen/glow pseudo-layers for coarse pointer devices to reduce repaint/compositing overhead
+- added progressive rendering containment (`content-visibility`) on heavy result-list pages to lower initial paint/layout cost
 
 Acceptance criteria:
 - UX improvements do not degrade runtime experience.

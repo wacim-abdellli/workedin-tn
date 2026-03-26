@@ -171,7 +171,7 @@ export default function SearchResults() {
                 )}
 
                 {/* Results */}
-                <div className="space-y-4">
+                <div className="space-y-4 cv-auto">
                     {/* Jobs */}
                     {(activeTab === 'all' || activeTab === 'jobs') && MOCK_JOBS.map(job => (
                         <div

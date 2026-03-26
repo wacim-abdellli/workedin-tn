@@ -1156,6 +1156,11 @@ h6 {
   box-shadow: 0 0 24px rgba(139, 92, 246, 0.5);
 }
 
+.cv-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 720px;
+}
+
 /* Performance guardrails for low-end/mobile rendering */
 @media (max-width: 768px), (prefers-reduced-motion: reduce) {
   .glass,

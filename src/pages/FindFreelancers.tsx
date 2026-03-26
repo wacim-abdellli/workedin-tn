@@ -435,7 +435,7 @@ export default function FindFreelancers() {
                                 <SkeletonList count={6} />
                             )
                         ) : filteredFreelancers.length > 0 ? (
-                            <div className={viewMode === 'grid' ? 'grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3' : 'space-y-4'}>
+                            <div className={`${viewMode === 'grid' ? 'grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3' : 'space-y-4'} cv-auto`}>
                                 {filteredFreelancers.map((freelancer, index) => (
                                     <div key={freelancer.id} className="animate-slide-up" style={{ animationDelay: `${index * 50}ms` }}>
                                         <FreelancerCard
