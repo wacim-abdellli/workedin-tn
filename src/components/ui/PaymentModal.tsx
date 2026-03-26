@@ -21,6 +21,7 @@ export default function PaymentModal({ isOpen, onClose, amount, recipientName, o
     const [step, setStep] = useState<'select' | 'processing' | 'success'>('select');
     const [phoneNumber, setPhoneNumber] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const activePanelId = `payment-panel-${method}`;
 
     // Reset state on open
     useEffect(() => {
@@ -171,7 +172,7 @@ export default function PaymentModal({ isOpen, onClose, amount, recipientName, o
     const renderContent = () => {
         if (step === 'processing') {
             return (
-                <div className="py-16 text-center animate-fade-in">
+                <div className="py-16 text-center animate-fade-in" role="status" aria-live="assertive">
                     <div className="w-20 h-20 bg-primary-50 dark:bg-primary-900/20 rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
                         <Loader2 className="w-10 h-10 text-primary-600 dark:text-primary-400 animate-spin" />
                     </div>
@@ -183,7 +184,7 @@ export default function PaymentModal({ isOpen, onClose, amount, recipientName, o
 
         if (step === 'success') {
             return (
-                <div className="py-16 text-center animate-scale-in">
+                <div className="py-16 text-center animate-scale-in" role="status" aria-live="polite">
                     <div className="w-20 h-20 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
                         <CheckCircle className="w-10 h-10 text-green-600 dark:text-green-500 animate-bounce" />
                     </div>
@@ -203,7 +204,10 @@ export default function PaymentModal({ isOpen, onClose, amount, recipientName, o
                     <button
                         type="button"
                         role="tab"
+                        id="payment-tab-d17"
                         aria-selected={method === 'd17'}
+                        aria-controls="payment-panel-d17"
+                        tabIndex={method === 'd17' ? 0 : -1}
                         className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all duration-200 ${method === 'd17' ? 'bg-white dark:bg-dark-700 shadow text-primary-600 dark:text-primary-400' : 'text-muted hover:text-dark-900 dark:hover:text-white hover:bg-gray-200/50 dark:hover:bg-dark-700/50'}`}
                         onClick={() => setMethod('d17')}
                     >
@@ -212,7 +216,10 @@ export default function PaymentModal({ isOpen, onClose, amount, recipientName, o
                     <button
                         type="button"
                         role="tab"
+                        id="payment-tab-flouci"
                         aria-selected={method === 'flouci'}
+                        aria-controls="payment-panel-flouci"
+                        tabIndex={method === 'flouci' ? 0 : -1}
                         className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all duration-200 ${method === 'flouci' ? 'bg-white dark:bg-dark-700 shadow text-primary-600 dark:text-primary-400' : 'text-muted hover:text-dark-900 dark:hover:text-white hover:bg-gray-200/50 dark:hover:bg-dark-700/50'}`}
                         onClick={() => setMethod('flouci')}
                     >
@@ -221,7 +228,10 @@ export default function PaymentModal({ isOpen, onClose, amount, recipientName, o
                     <button
                         type="button"
                         role="tab"
+                        id="payment-tab-card"
                         aria-selected={method === 'card'}
+                        aria-controls="payment-panel-card"
+                        tabIndex={method === 'card' ? 0 : -1}
                         className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all duration-200 ${method === 'card' ? 'bg-white dark:bg-dark-700 shadow text-primary-600 dark:text-primary-400' : 'text-muted hover:text-dark-900 dark:hover:text-white hover:bg-gray-200/50 dark:hover:bg-dark-700/50'}`}
                         onClick={() => setMethod('card')}
                     >
@@ -230,7 +240,12 @@ export default function PaymentModal({ isOpen, onClose, amount, recipientName, o
                 </div>
 
                 {/* Method Content */}
-                <div className="min-h-[300px]">
+                <div
+                    className="min-h-[300px]"
+                    id={activePanelId}
+                    role="tabpanel"
+                    aria-labelledby={`payment-tab-${method}`}
+                >
                     {method === 'd17' && renderD17()}
                     {method === 'flouci' && renderFlouci()}
                     {method === 'card' && renderCard()}

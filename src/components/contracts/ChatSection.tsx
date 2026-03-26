@@ -189,7 +189,8 @@ export default function ChatSection({
 
                 {/* Typing Indicator */}
                 {otherUserTyping && (
-                    <div className="flex justify-start gap-3">
+                    <div className="flex justify-start gap-3" role="status" aria-live="polite">
+                        <span className="sr-only">الطرف الآخر يكتب الآن</span>
                         <div className="w-8 h-8 rounded-full bg-gray-200 animate-pulse" />
                         <div className="bg-white border border-gray-100 rounded-2xl rounded-bl-sm px-4 py-3 shadow-sm flex items-center gap-1">
                             <div className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '0ms' }} />

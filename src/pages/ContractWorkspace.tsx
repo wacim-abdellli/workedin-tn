@@ -320,7 +320,12 @@ export default function ContractWorkspace() {
             {/* Contract Header Bar */}
             <div className="h-16 border-b border-gray-200 flex items-center justify-between px-4 sticky top-0 bg-white z-10 shrink-0">
                 <div className="flex items-center gap-3">
-                    <button onClick={() => navigate(-1)} className="p-2 hover:bg-gray-100 rounded-full md:hidden">
+                    <button
+                        type="button"
+                        onClick={() => navigate(-1)}
+                        className="p-2 hover:bg-gray-100 rounded-full md:hidden"
+                        aria-label="الرجوع للخلف"
+                    >
                         <ArrowLeft className="w-5 h-5 text-gray-500" />
                     </button>
                     <div>
@@ -344,11 +349,14 @@ export default function ContractWorkspace() {
             </div>
 
             {/* Mobile Tabs */}
-            <div className="md:hidden flex border-b border-gray-100 shrink-0 bg-white z-10">
+            <div className="md:hidden flex border-b border-gray-100 shrink-0 bg-white z-10" role="tablist" aria-label="تبويبات مساحة العمل">
                 <button
                     type="button"
                     onClick={() => setActiveMobileTab('chat')}
-                    aria-pressed={activeMobileTab === 'chat'}
+                    role="tab"
+                    id="workspace-tab-chat"
+                    aria-selected={activeMobileTab === 'chat'}
+                    aria-controls="workspace-panel-chat"
                     aria-label="إظهار المحادثة"
                     className={`flex-1 py-3 text-sm font-medium border-b-2 transition-colors flex items-center justify-center gap-2 ${activeMobileTab === 'chat' ? 'border-primary-600 text-primary-600' : 'border-transparent text-gray-500'}`}
                 >
@@ -358,7 +366,10 @@ export default function ContractWorkspace() {
                 <button
                     type="button"
                     onClick={() => setActiveMobileTab('details')}
-                    aria-pressed={activeMobileTab === 'details'}
+                    role="tab"
+                    id="workspace-tab-details"
+                    aria-selected={activeMobileTab === 'details'}
+                    aria-controls="workspace-panel-details"
                     aria-label="إظهار التفاصيل"
                     className={`flex-1 py-3 text-sm font-medium border-b-2 transition-colors flex items-center justify-center gap-2 ${activeMobileTab === 'details' ? 'border-primary-600 text-primary-600' : 'border-transparent text-gray-500'}`}
                 >
@@ -368,7 +379,10 @@ export default function ContractWorkspace() {
                 <button
                     type="button"
                     onClick={() => setActiveMobileTab('files')}
-                    aria-pressed={activeMobileTab === 'files'}
+                    role="tab"
+                    id="workspace-tab-files"
+                    aria-selected={activeMobileTab === 'files'}
+                    aria-controls="workspace-panel-files"
                     aria-label="إظهار الملفات"
                     className={`flex-1 py-3 text-sm font-medium border-b-2 transition-colors flex items-center justify-center gap-2 ${activeMobileTab === 'files' ? 'border-primary-600 text-primary-600' : 'border-transparent text-gray-500'}`}
                 >
@@ -384,7 +398,11 @@ export default function ContractWorkspace() {
                 <div className={`
                     absolute inset-0 z-0 bg-white md:static md:w-[60%] flex flex-col transition-transform duration-300
                     ${activeMobileTab === 'chat' ? 'translate-x-0' : 'translate-x-full md:translate-x-0'}
-                `}>
+                `}
+                    id="workspace-panel-chat"
+                    role="tabpanel"
+                    aria-labelledby="workspace-tab-chat"
+                >
                     <ChatSection
                         messages={messages}
                         currentUser={user}
@@ -403,7 +421,11 @@ export default function ContractWorkspace() {
                 <div className={`
                     absolute inset-0 z-0 bg-gray-50 md:static md:w-[40%] md:border-s md:border-gray-200 transition-transform duration-300
                     ${activeMobileTab === 'details' ? 'translate-x-0' : 'translate-x-full md:translate-x-0'}
-                `}>
+                `}
+                    id="workspace-panel-details"
+                    role="tabpanel"
+                    aria-labelledby="workspace-tab-details"
+                >
                     <ContractDetailsSidebar
                         contract={contractData}
                         userRole={userRole}
@@ -422,7 +444,11 @@ export default function ContractWorkspace() {
                 <div className={`
                     absolute inset-0 z-0 bg-white md:hidden transition-transform duration-300
                     ${activeMobileTab === 'files' ? 'translate-x-0' : 'translate-x-full'}
-                `}>
+                `}
+                    id="workspace-panel-files"
+                    role="tabpanel"
+                    aria-labelledby="workspace-tab-files"
+                >
                     <div className="p-8 text-center text-gray-500">
                         <FileText className="w-12 h-12 mx-auto mb-3 opacity-20" />
                         <p>قائمة الملفات (راجع تبويب المراسلة للمرفقات)</p>
@@ -445,6 +471,7 @@ export default function ContractWorkspace() {
                         placeholder="ملاحظات التسليم (اختياري)..."
                         rows={4}
                         className="input resize-none w-full"
+                        aria-label="ملاحظات التسليم"
                     />
                     <div className="flex gap-3 justify-end">
                         <Button variant="outline" onClick={() => setIsDeliverModalOpen(false)}>
@@ -491,6 +518,7 @@ export default function ContractWorkspace() {
                         rows={4}
                         className="input resize-none w-full"
                         required
+                        aria-label="سبب النزاع"
                     />
                     <div className="flex gap-3 justify-end">
                         <Button variant="outline" onClick={() => setIsDisputeModalOpen(false)}>
