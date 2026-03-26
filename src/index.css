@@ -1155,3 +1155,36 @@ h6 {
 .page-progress {
   box-shadow: 0 0 24px rgba(139, 92, 246, 0.5);
 }
+
+/* Performance guardrails for low-end/mobile rendering */
+@media (max-width: 768px), (prefers-reduced-motion: reduce) {
+  .glass,
+  .glass-card,
+  .card-glass,
+  .modal-backdrop,
+  .modal-header {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  .hero-gradient,
+  .dark .hero-gradient {
+    animation: none !important;
+    background-size: 100% 100% !important;
+  }
+
+  .noise::after {
+    display: none;
+  }
+
+  .premium-panel,
+  .hero-surface-panel,
+  .dark .premium-panel,
+  .dark .hero-surface-panel {
+    box-shadow: var(--shadow-md) !important;
+  }
+
+  .page-progress {
+    box-shadow: 0 0 12px rgba(139, 92, 246, 0.35);
+  }
+}

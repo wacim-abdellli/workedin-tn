@@ -202,11 +202,15 @@ Acceptance criteria:
 - No critical accessibility regressions in major flows.
 
 ## Phase 10 Performance and Bundle Hygiene
-Status: Not started
+Status: In progress
 
 Tasks:
 1. Audit heavy visual effects and remove expensive non-essential layers.
 2. Verify no major style regression on low-end devices.
+
+Progress update:
+- added low-end/mobile performance guardrails to disable expensive blur and animated gradient layers
+- reduced decorative noise and heavy shadow intensity under constrained rendering scenarios
 
 Acceptance criteria:
 - UX improvements do not degrade runtime experience.
