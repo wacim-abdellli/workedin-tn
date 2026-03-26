@@ -366,44 +366,39 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const setUserType = async (userType: UserType) => {
     if (!user) throw new Error('No user logged in');
+    if (!session?.access_token) throw new Error('No session token');
 
     const nextMode: Workspace = userType === 'client' ? 'client' : 'freelancer';
 
-    // Use RPC function (SECURITY DEFINER) to bypass RLS entirely.
-    // This is the only reliable way since direct UPDATE/UPSERT hangs under current RLS.
-    const { error: rpcError } = await withTimeout(
-      supabase.rpc('set_user_type_rpc', {
-        p_user_type: userType,
-        p_active_mode: nextMode,
-      }),
-      15000,
-      'setUserType (rpc)'
-    );
+    // CRITICAL FIX: Use raw fetch instead of supabase.rpc() or supabase.from().update()
+    // The supabase-js browser client has a known internal lock where it hangs indefinitely
+    // waiting to refresh tokens before making ANY query, even when a valid token already exists.
+    // By using window.fetch directly with the session token, we completely bypass this lock.
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
+    const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
 
-    if (rpcError) {
-      // If the RPC function doesn't exist yet, fall back to direct update
-      if (rpcError.message?.includes('function') && rpcError.message?.includes('does not exist')) {
-        logger.warn('set_user_type_rpc not found, falling back to direct update');
-        const { error } = await withTimeout(
-          supabase
-            .from('profiles')
-            .update({
-              user_type: userType,
-              active_mode: nextMode,
-              updated_at: new Date().toISOString(),
-            })
-            .eq('id', user.id),
-          15000,
-          'setUserType (direct update fallback)'
-        );
-        if (error) {
-          logger.error('setUserType direct update error:', error);
-          throw error;
-        }
-      } else {
-        logger.error('setUserType rpc error:', rpcError);
-        throw rpcError;
-      }
+    const rpcResponse = await Promise.race([
+      fetch(`${supabaseUrl}/rest/v1/rpc/set_user_type_rpc`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': supabaseAnonKey,
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          p_user_type: userType,
+          p_active_mode: nextMode,
+        }),
+      }),
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('setUserType raw fetch timed out after 15000ms')), 15000)
+      ),
+    ]);
+
+    if (!rpcResponse.ok) {
+      const errText = await rpcResponse.text();
+      logger.error('setUserType raw fetch error:', errText);
+      throw new Error(errText || `HTTP ${rpcResponse.status}`);
     }
 
     useWorkspaceStore.getState().setWorkspace(nextMode);
