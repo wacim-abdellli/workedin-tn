@@ -43,6 +43,21 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [isLoading, setIsLoading] = useState(true);
   const activeMode = useWorkspaceStore((state) => state.activeWorkspace);
 
+  const SUPA_URL = import.meta.env.VITE_SUPABASE_URL as string;
+  const SUPA_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+
+  // Raw REST helper — bypasses the supabase-js internal token-refresh mutex
+  const rawGet = useCallback(<T,>(path: string, token?: string | null): Promise<T | null> => {
+    const headers: Record<string, string> = { 'apikey': SUPA_KEY, 'Accept': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    return fetch(`${SUPA_URL}/rest/v1/${path}`, { headers })
+      .then(res => {
+        if (!res.ok) return null;
+        return res.json().then((data: T[] | T) => Array.isArray(data) ? (data[0] ?? null) : data as T);
+      })
+      .catch(() => null);
+  }, [SUPA_KEY, SUPA_URL]);
+
   // Global Failsafe: If isLoading is stuck for more than 4 seconds, force it to false
   // This prevents infinite loading loops across the app (Login, ProtectedRoute, etc.)
   useEffect(() => {
@@ -122,66 +137,49 @@ export function AuthProvider({ children }: AuthProviderProps) {
     [getPreferredLanguage]
   );
 
-  const fetchProfile = useCallback(
-    async (userId: string, _authUser?: User) => {
+ const fetchProfile = useCallback(
+    async (userId: string, token?: string | null) => {
       try {
-        const loadProfile = async () => {
-          const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).single();
-          return { data, error };
-        };
+        // Use raw REST calls to bypass the supabase-js internal token-refresh mutex
+        const profileData = await rawGet<Profile>(
+          `profiles?id=eq.${userId}&select=*`,
+          token
+        );
 
-        let { data: profileData, error: profileError } = await loadProfile();
-
-        // If profile not found, the handle_new_user trigger may still be running.
-        // Wait briefly and retry instead of calling ensureProfileExists (which hangs under RLS).
-        if (profileError?.code === 'PGRST116') {
+        // If not found, retry once after 1.5s (handle_new_user trigger may still be running)
+        let nextProfile = profileData;
+        if (!nextProfile) {
           await new Promise(r => setTimeout(r, 1500));
-          const retried = await loadProfile();
-          profileData = retried.data;
-          profileError = retried.error;
+          nextProfile = await rawGet<Profile>(`profiles?id=eq.${userId}&select=*`, token);
         }
 
-        if (profileError && profileError.code !== 'PGRST116') {
-          logger.error('Error fetching profile:', profileError);
-          return { profile: null, freelancerProfile: null };
-        }
-
-        if (!profileData) {
+        if (!nextProfile) {
           setProfile(null);
           setFreelancerProfile(null);
           syncWorkspaceFromProfile(null, null);
           return { profile: null, freelancerProfile: null };
         }
 
-        const nextProfile = profileData as Profile;
         setProfile(nextProfile);
 
         let nextFreelancerProfile: FreelancerProfile | null = null;
         if (nextProfile.user_type === 'freelancer' || nextProfile.user_type === 'both') {
-          const { data: freelancerData, error: freelancerError } = await supabase
-            .from('freelancer_profiles')
-            .select('*')
-            .eq('id', userId)
-            .single();
-
-          if (!freelancerError && freelancerData) {
-            nextFreelancerProfile = freelancerData as FreelancerProfile;
-          }
+          nextFreelancerProfile = await rawGet<FreelancerProfile>(
+            `freelancer_profiles?id=eq.${userId}&select=*`,
+            token
+          );
         }
 
         setFreelancerProfile(nextFreelancerProfile);
         syncWorkspaceFromProfile(nextProfile, nextFreelancerProfile);
 
-        return {
-          profile: nextProfile,
-          freelancerProfile: nextFreelancerProfile,
-        };
+        return { profile: nextProfile, freelancerProfile: nextFreelancerProfile };
       } catch (error) {
         logger.error('Error fetching profile:', error);
         return { profile: null, freelancerProfile: null };
       }
     },
-    [ensureProfileExists, syncWorkspaceFromProfile]
+    [rawGet, syncWorkspaceFromProfile]
   );
 
   useEffect(() => {
@@ -206,7 +204,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         if (mounted && currentSession) {
           setSession(currentSession);
           setUser(currentSession.user);
-          await fetchProfile(currentSession.user.id, currentSession.user);
+          await fetchProfile(currentSession.user.id, currentSession.access_token);
         }
       } catch (error) {
         logger.error('Error initializing auth:', error);
@@ -227,7 +225,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       if (newSession?.user) {
         setIsLoading(true);
-        await fetchProfile(newSession.user.id, newSession.user);
+        await fetchProfile(newSession.user.id, newSession.access_token);
         if (mounted) setIsLoading(false);
       } else {
         setProfile(null);
@@ -254,7 +252,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     if (data.session) {
       setSession(data.session);
       setUser(data.session.user);
-      await fetchProfile(data.session.user.id, data.session.user);
+      await fetchProfile(data.session.user.id, data.session.access_token);
     }
   };
 
@@ -274,7 +272,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     if (data.session) {
       setSession(data.session);
       setUser(data.session.user);
-      await fetchProfile(data.session.user.id, data.session.user);
+      await fetchProfile(data.session.user.id, data.session.access_token);
     }
   };
 
@@ -402,12 +400,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
 
     useWorkspaceStore.getState().setWorkspace(nextMode);
-    await fetchProfile(user.id, user);
+    await fetchProfile(user.id, session.access_token);
   };
 
   const refreshProfile = async () => {
-    if (user) {
-      await fetchProfile(user.id, user);
+    if (user && session?.access_token) {
+      await fetchProfile(user.id, session.access_token);
     }
   };
 
