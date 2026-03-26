@@ -23,10 +23,20 @@ function SignupForm({ onComplete }: SignupFormProps) {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const urlStep = searchParams.get('step');
-    const [step] = useState<'email' | 'userType'>(urlStep === 'select-type' ? 'userType' : 'email');
+    const [step, setStep] = useState<'email' | 'userType'>(urlStep === 'select-type' ? 'userType' : 'email');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [showPassword, setShowPassword] = useState(false);
+
+    useEffect(() => {
+        if (urlStep === 'select-type') {
+            setStep('userType');
+        } else {
+            setStep('email');
+        }
+    }, [urlStep]);
+
+
 
     useEffect(() => {
         if (step === 'userType') return;
