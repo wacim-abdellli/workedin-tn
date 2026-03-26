@@ -16,23 +16,48 @@ export default defineConfig(({ command, mode }) => ({
     },
   },
   build: {
-    // Increase chunk size warning limit
-    chunkSizeWarningLimit: 1000,
+    // Keep warnings meaningful so bundle growth is noticed early.
+    chunkSizeWarningLimit: 700,
 
     // No source maps in production (saves ~3MB deploy size)
     sourcemap: false,
 
     rollupOptions: {
       output: {
-        manualChunks: {
-          // Core React
-          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-          // Supabase
-          'supabase-vendor': ['@supabase/supabase-js'],
-          // UI libraries
-          'ui-vendor': ['lucide-react'],
-          // Form handling
-          'form-vendor': ['react-hook-form', 'zod', '@hookform/resolvers'],
+        manualChunks(id) {
+          if (!id.includes('node_modules')) return;
+
+          if (id.includes('react') || id.includes('scheduler') || id.includes('react-router')) {
+            return 'react-vendor';
+          }
+
+          if (id.includes('@tanstack/react-query')) {
+            return 'query-vendor';
+          }
+
+          if (id.includes('@supabase/supabase-js')) {
+            return 'supabase-vendor';
+          }
+
+          if (id.includes('react-hook-form') || id.includes('@hookform/resolvers') || id.includes('zod')) {
+            return 'form-vendor';
+          }
+
+          if (id.includes('i18next') || id.includes('react-i18next')) {
+            return 'i18n-vendor';
+          }
+
+          if (id.includes('lucide-react') || id.includes('framer-motion')) {
+            return 'ui-vendor';
+          }
+
+          if (id.includes('@sentry') || id.includes('posthog-js')) {
+            return 'observability-vendor';
+          }
+
+          if (id.includes('recharts')) {
+            return 'charts-vendor';
+          }
         },
       },
     },
