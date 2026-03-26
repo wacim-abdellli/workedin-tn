@@ -104,10 +104,19 @@ function ClientDashboardPage() {
                         <p className="text-muted">{t.dashboard.clientSubtitle}</p>
                     </div>
                     <div className="flex items-center gap-3">
-                        <button className="p-2 rounded-xl bg-white dark:bg-dark-800 shadow-sm hover:shadow-sm transition-shadow duration-200">
+                        <button
+                            type="button"
+                            aria-label={tx('dashboard.notifications', undefined, 'Notifications')}
+                            className="p-2 rounded-xl bg-white dark:bg-dark-800 shadow-sm hover:shadow-sm transition-shadow duration-200"
+                        >
                             <Bell className="w-5 h-5 text-muted" />
                         </button>
-                        <button onClick={() => navigate('/settings')} className="p-2 rounded-xl bg-white dark:bg-dark-800 shadow-sm hover:shadow-sm transition-shadow duration-200">
+                        <button
+                            type="button"
+                            aria-label={tx('dashboard.openSettings', undefined, 'Open settings')}
+                            onClick={() => navigate('/settings')}
+                            className="p-2 rounded-xl bg-white dark:bg-dark-800 shadow-sm hover:shadow-sm transition-shadow duration-200"
+                        >
                             <Settings className="w-5 h-5 text-muted" />
                         </button>
                     </div>
@@ -117,6 +126,14 @@ function ClientDashboardPage() {
                 <div
                     className="card bg-gradient-to-r from-secondary-600 to-secondary-800 text-white mb-8 cursor-pointer hover:shadow-lg transition-shadow duration-200"
                     onClick={() => navigate('/jobs/new')}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(event) => {
+                        if (event.key === 'Enter' || event.key === ' ') {
+                            event.preventDefault();
+                            navigate('/jobs/new');
+                        }
+                    }}
                 >
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
@@ -191,6 +208,14 @@ function ClientDashboardPage() {
                                     key={job.id}
                                     className="card hover:shadow-md transition-shadow duration-200 cursor-pointer group"
                                     onClick={() => navigate(`/jobs/${job.id}`)}
+                                    role="button"
+                                    tabIndex={0}
+                                    onKeyDown={(event) => {
+                                        if (event.key === 'Enter' || event.key === ' ') {
+                                            event.preventDefault();
+                                            navigate(`/jobs/${job.id}`);
+                                        }
+                                    }}
                                 >
                                     <div className="flex items-start justify-between mb-4">
                                         <div className="flex-1">

@@ -75,16 +75,18 @@ const UploadCard = ({
                         </div>
                     </div>
                 ) : (
-                    <div
+                    <button
+                        type="button"
                         onClick={() => document.getElementById(inputId)?.click()}
-                        className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl h-64 flex flex-col items-center justify-center cursor-pointer hover:border-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/10 transition-colors group"
+                        aria-label={tx('verifyIdentity.uploadHint', undefined, 'اضغط لرفع الصورة')}
+                        className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl h-64 w-full flex flex-col items-center justify-center cursor-pointer hover:border-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/10 transition-colors group"
                     >
                         <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center text-gray-400 group-hover:text-primary-500 mb-4 transition-colors">
                             <Upload className="w-8 h-8" />
                         </div>
                         <p className="text-gray-600 dark:text-gray-300 font-medium">{tx('verifyIdentity.uploadHint', undefined, 'اضغط لرفع الصورة')}</p>
                         <p className="text-sm text-gray-400 mt-1">{tx('verifyIdentity.fileFormatHint', undefined, 'JPG, PNG (Max 5MB)')}</p>
-                    </div>
+                    </button>
                 )}
                 <input
                     id={inputId}
@@ -617,8 +619,9 @@ export default function VerifyIdentity() {
                                         </p>
                                     </div>
 
-                                    <div className="flex items-center gap-3 p-4 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer" onClick={() => setConsent(!consent)}>
+                                    <label htmlFor="identity-consent" className="flex items-center gap-3 p-4 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer">
                                         <input
+                                            id="identity-consent"
                                             type="checkbox"
                                             checked={consent}
                                             onChange={(e) => setConsent(e.target.checked)}
@@ -627,7 +630,7 @@ export default function VerifyIdentity() {
                                         <span className="text-sm text-gray-600 dark:text-gray-300 select-none">
                                             {tx('verifyIdentity.review.consentPrefix', undefined, 'أوافق على استخدام معلوماتي الشخصية للتحقق من هويتي وفقاً لـ ')}<span className="text-primary-600 hover:underline">{tx('verifyIdentity.review.privacyPolicy', undefined, 'سياسة الخصوصية')}</span>
                                         </span>
-                                    </div>
+                                    </label>
                                 </div>
 
                                 <div className="flex items-center justify-between mt-8">

@@ -183,12 +183,17 @@ Acceptance criteria:
 - Motion is purposeful and coherent.
 
 ## Phase 9 Accessibility and Responsive QA
-Status: Not started
+Status: In progress
 
 Tasks:
 1. Keyboard traversal and focus checks.
 2. Contrast checks and touch target checks.
 3. Mobile overflow and spacing checks for all core flows.
+
+Progress update:
+- added keyboard semantics for clickable card surfaces in client dashboard
+- replaced non-semantic clickable containers in verify-identity upload and consent areas
+- added ARIA pressed/labels on find-freelancers view mode toggles
 
 Acceptance criteria:
 - No critical accessibility regressions in major flows.
