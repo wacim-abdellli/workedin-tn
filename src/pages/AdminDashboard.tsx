@@ -29,6 +29,56 @@ import { getStuckTransactions, reconcilePayment, type StuckTransaction } from '.
 import { useToast } from '../components/ui/Toast';
 import { supabase } from '../lib/supabase';
 
+const SUPA_URL = import.meta.env.VITE_SUPABASE_URL as string;
+const SUPA_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+
+async function getToken() {
+    const { data } = await supabase.auth.getSession();
+    return data.session?.access_token;
+}
+
+async function rawFetch(endpoint: string, options: RequestInit = {}) {
+    const token = await getToken();
+    const headers: Record<string, string> = {
+        'apikey': SUPA_KEY,
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+        ...((options.headers as Record<string, string>) || {})
+    };
+    const res = await fetch(`${SUPA_URL}${endpoint}`, { ...options, headers });
+    if (!res.ok) {
+        let errMessage = res.statusText;
+        try {
+            const errObj = await res.clone().json();
+            errMessage = errObj.message || errObj.error || errMessage;
+        } catch {
+            const errText = await res.text();
+            if (errText) errMessage = errText;
+        }
+        throw new Error(errMessage);
+    }
+    // Return null if 204 No Content
+    if (res.status === 204) return null;
+    return res.json();
+}
+
+async function rawCount(endpoint: string) {
+    const token = await getToken();
+    const res = await fetch(`${SUPA_URL}${endpoint}`, {
+        method: 'HEAD',
+        headers: {
+            'apikey': SUPA_KEY,
+            'Authorization': `Bearer ${token}`,
+            'Prefer': 'count=exact'
+        }
+    });
+    const range = res.headers.get('content-range');
+    if (range) {
+        const match = range.match(/\/(\d+)/);
+        if (match) return parseInt(match[1], 10);
+    }
+    return 0;
+}
+
 interface IdentityVerification {
     id: string;
     user_id: string;
@@ -135,23 +185,21 @@ export default function AdminDashboard() {
 
     const fetchStats = async () => {
         try {
-            const [usersRes, jobsRes, contractsRes] = await Promise.all([
-                supabase.from('profiles').select('id', { count: 'exact', head: true }),
-                supabase.from('jobs').select('id', { count: 'exact', head: true }).in('status', ['open', 'in_progress']),
-                supabase.from('contracts').select('id', { count: 'exact', head: true }).eq('status', 'active'),
-            ]);
             const today = new Date().toISOString().split('T')[0];
-            const [signupsRes, todayContractsRes] = await Promise.all([
-                supabase.from('profiles').select('id', { count: 'exact', head: true }).gte('created_at', today),
-                supabase.from('contracts').select('id', { count: 'exact', head: true }).gte('created_at', today),
+            const [usersCount, jobsCount, contractsCount, signupsCount, todayContractsCount] = await Promise.all([
+                rawCount('/rest/v1/profiles?select=id'),
+                rawCount('/rest/v1/jobs?select=id&status=in.(open,in_progress)'),
+                rawCount('/rest/v1/contracts?select=id&status=eq.active'),
+                rawCount(`/rest/v1/profiles?select=id&created_at=gte.${today}`),
+                rawCount(`/rest/v1/contracts?select=id&created_at=gte.${today}`),
             ]);
             setStats({
-                totalUsers: usersRes.count || 0,
-                activeJobs: jobsRes.count || 0,
-                activeContracts: contractsRes.count || 0,
+                totalUsers: usersCount,
+                activeJobs: jobsCount,
+                activeContracts: contractsCount,
                 totalRevenue: 0,
-                todaySignups: signupsRes.count || 0,
-                todayContracts: todayContractsRes.count || 0,
+                todaySignups: signupsCount,
+                todayContracts: todayContractsCount,
             });
         } catch (err) {
             console.error('Stats fetch error:', err);
@@ -161,13 +209,8 @@ export default function AdminDashboard() {
     const fetchUsers = async () => {
         setLoadingUsers(true);
         try {
-            const { data, error } = await supabase
-                .from('profiles')
-                .select('id, full_name, email, user_type, created_at')
-                .order('created_at', { ascending: false })
-                .limit(100);
-            if (error) throw error;
-            setRealUsers((data || []).map(u => ({
+            const data = await rawFetch('/rest/v1/profiles?select=id,full_name,email,user_type,created_at&order=created_at.desc&limit=100');
+            setRealUsers((data || []).map((u: any) => ({
                 id: u.id,
                 name: u.full_name || 'مستخدم',
                 email: u.email || '',
@@ -185,17 +228,8 @@ export default function AdminDashboard() {
     const fetchJobs = async () => {
         setLoadingJobs(true);
         try {
-            const { data, error } = await supabase
-                .from('jobs')
-                .select(`
-                    id, title, status, budget, created_at,
-                    client:client_id (full_name, email)
-                `)
-                .order('created_at', { ascending: false })
-                .limit(100);
-            
-            if (error) throw error;
-            setJobs(data as unknown as AdminJob[]);
+            const data = await rawFetch('/rest/v1/jobs?select=id,title,status,budget,created_at,client:profiles!client_id(full_name,email)&order=created_at.desc&limit=100');
+            setJobs((data || []) as AdminJob[]);
         } catch (err) {
             console.error('Jobs fetch error:', err);
             showToast('حدث خطأ أثناء تحميل الوظائف', 'error');
@@ -208,8 +242,7 @@ export default function AdminDashboard() {
         if (!confirm('هل أنت متأكد من حذف هذه الوظيفة؟')) return;
         
         try {
-            const { error } = await supabase.from('jobs').delete().eq('id', id);
-            if (error) throw error;
+            await rawFetch(`/rest/v1/jobs?id=eq.${id}`, { method: 'DELETE' });
             showToast('تم حذف الوظيفة بنجاح', 'success');
             setJobs(prev => prev.filter(j => j.id !== id));
         } catch (error) {
@@ -221,17 +254,8 @@ export default function AdminDashboard() {
     const fetchVerifications = async () => {
         setLoadingVerifications(true);
         try {
-            const { data, error } = await supabase
-                .from('identity_verifications')
-                .select(`
-                    id, user_id, document_type, front_image_url, back_image_url, status, submitted_at,
-                    profile:profiles!identity_verifications_user_id_fkey(full_name, email)
-                `)
-                .eq('status', 'pending')
-                .order('submitted_at', { ascending: true });
-
-            if (error) throw error;
-            setVerifications((data || []) as unknown as IdentityVerification[]);
+            const data = await rawFetch('/rest/v1/identity_verifications?select=id,user_id,document_type,front_image_url,back_image_url,status,submitted_at,profile:profiles!identity_verifications_user_id_fkey(full_name,email)&status=eq.pending&order=submitted_at.asc');
+            setVerifications((data || []) as IdentityVerification[]);
         } catch (err) {
             console.error('Failed to fetch verifications:', err);
             showToast('فشل تحميل طلبات التحقق', 'error');
@@ -243,18 +267,8 @@ export default function AdminDashboard() {
     const fetchDisputes = async () => {
         setLoadingDisputes(true);
         try {
-            const { data, error } = await supabase
-                .from('disputes')
-                .select(`
-                    id, contract_id, opened_at, reason, status,
-                    contract:contracts!disputes_contract_id_fkey(id, amount, job:jobs(title)),
-                    opener:profiles!disputes_opened_by_fkey(full_name, email)
-                `)
-                .eq('status', 'open')
-                .order('opened_at', { ascending: true });
-
-            if (error) throw error;
-            setDisputes((data || []) as unknown as DisputeRecord[]);
+            const data = await rawFetch('/rest/v1/disputes?select=id,contract_id,opened_at,reason,status,contract:contracts!disputes_contract_id_fkey(id,amount,job:jobs(title)),opener:profiles!disputes_opened_by_fkey(full_name,email)&status=eq.open&order=opened_at.asc');
+            setDisputes((data || []) as DisputeRecord[]);
         } catch (err) {
             console.error('Failed to fetch disputes:', err);
             showToast('فشل تحميل النزاعات', 'error');
@@ -266,12 +280,15 @@ export default function AdminDashboard() {
     const handleResolveDispute = async (disputeId: string, resolution: string, note?: string) => {
         setResolvingId(disputeId);
         try {
-            const { error } = await supabase.rpc('resolve_dispute', {
-                p_dispute_id: disputeId,
-                p_resolution: resolution,
-                p_admin_note: note || null,
+            await rawFetch('/rest/v1/rpc/resolve_dispute', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    p_dispute_id: disputeId,
+                    p_resolution: resolution,
+                    p_admin_note: note || null,
+                })
             });
-            if (error) throw error;
             setDisputes(prev => prev.filter(d => d.id !== disputeId));
             showToast('تم حل النزاع بنجاح ✓', 'success');
         } catch (err) {
@@ -285,24 +302,24 @@ export default function AdminDashboard() {
     const handleVerificationAction = async (id: string, action: 'approved' | 'rejected') => {
         setActioningId(id);
         try {
-            const { error } = await supabase
-                .from('identity_verifications')
-                .update({
+            await rawFetch(`/rest/v1/identity_verifications?id=eq.${id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
                     status: action,
                     reviewed_at: new Date().toISOString(),
                 })
-                .eq('id', id);
-
-            if (error) throw error;
+            });
 
             // If approved, also set cin_verified on freelancer_profiles
             if (action === 'approved') {
                 const verification = verifications.find(v => v.id === id);
                 if (verification?.user_id) {
-                    await supabase
-                        .from('freelancer_profiles')
-                        .update({ cin_verified: true })
-                        .eq('id', verification.user_id);
+                    await rawFetch(`/rest/v1/freelancer_profiles?id=eq.${verification.user_id}`, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ cin_verified: true })
+                    });
                 }
             }
 
