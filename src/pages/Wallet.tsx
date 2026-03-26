@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Wallet as WalletIcon, TrendingUp, Clock, ArrowUpRight, Building, Phone, X, Info, CheckCircle, Loader2 } from 'lucide-react';
 import { Header } from '@/components/layout';
+import SEO from '@/components/common/SEO';
 import Button from '@/components/ui/Button';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
@@ -14,7 +15,7 @@ import type { WithdrawalMethod } from '@/types/payment';
 
 export default function Wallet() {
   const { user } = useAuth();
-  const { t } = useTranslation();
+  const { t, tx } = useTranslation();
   
   const [isWithdrawalModalOpen, setIsWithdrawalModalOpen] = useState(false);
   const [page, setPage] = useState(1);
@@ -85,6 +86,12 @@ export default function Wallet() {
 
   return (
     <div className="bg-gray-50 dark:bg-[#0f0e17] min-h-screen">
+      <SEO
+        title={tx('wallet.seo.title', undefined, 'Wallet')}
+        description={tx('wallet.seo.description', undefined, 'Track your balance, transactions, and withdrawal requests.')}
+        url="/wallet"
+        noIndex
+      />
       <Header />
       <div className="max-w-6xl mx-auto px-4 py-8">
         
@@ -181,7 +188,7 @@ export default function Wallet() {
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t.wallet?.type || 'Type'}</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t.wallet?.description || 'Description'}</th>
                         <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t.wallet?.amount || 'Amount'}</th>
-                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{(t.wallet as any)?.status?.pending ? t.wallet?.status?.pending?.replace('قيد الانتظار', 'الحالة') : 'Status'}</th>
+                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{(t.wallet as any)?.statusLabel || 'Status'}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100 dark:divide-white/5">
@@ -200,7 +207,7 @@ export default function Wallet() {
                               </span>
                             </td>
                             <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">
-                              {tx.description || 'Transaction'}
+                              {tx.description || t.wallet?.transactionLabel || 'Transaction'}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-right">
                               <span className={`text-sm font-semibold ${
@@ -274,7 +281,7 @@ export default function Wallet() {
                       <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t.wallet?.amount || 'Amount'}</th>
                       <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t.wallet?.netAmount || 'Net Amount'}</th>
                       <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t.wallet?.method || 'Method'}</th>
-                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{(t.wallet as any)?.status?.pending ? t.wallet?.status?.pending?.replace('قيد الانتظار', 'الحالة') : 'Status'}</th>
+                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{(t.wallet as any)?.statusLabel || 'Status'}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100 dark:divide-white/5">
@@ -305,7 +312,7 @@ export default function Wallet() {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-center">
                             <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${statusColors[withdrawal.status as keyof typeof statusColors] || statusColors.pending}`}>
-                              {withdrawal.status}
+                              {(t.wallet as any)?.status?.[withdrawal.status] || withdrawal.status}
                             </span>
                           </td>
                         </tr>
@@ -511,6 +518,7 @@ function WithdrawalModal({ wallet, onClose, onSuccess }: { wallet: any; onClose:
                 value={bankIban}
                 onChange={(e) => setBankIban(e.target.value)}
                 placeholder="IBAN (TN59...)"
+                aria-label={t.wallet?.iban || 'IBAN'}
                 className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 dir="ltr"
               />

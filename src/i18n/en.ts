@@ -128,6 +128,10 @@ export const en: Translations = {
             remote: 'Remote'
         },
         new: {
+            seo: {
+                title: 'Post a Project',
+                description: 'Create a new project, define budget and timeline, and publish it to receive freelancer proposals.',
+            },
             steps: {
                 basics: 'Job details',
                 budget: 'Budget and timeline',
@@ -571,6 +575,18 @@ export const en: Translations = {
         postNewJobDesc: 'Tell us about your job and we will find you the top 3 freelancers',
         yourJobs: 'Your Jobs',
         viewAll: 'View All',
+        client: {
+            defaultName: 'Client',
+            activeJobs: 'Active jobs',
+            totalSpent: 'Total spent',
+            completedContracts: 'Completed contracts',
+            noJobsYet: 'No jobs posted yet',
+            proposalsSubmitted: '{{count}} proposals submitted',
+            freelancerFallback: 'Freelancer',
+            status: {
+                cancelled: 'Cancelled',
+            },
+        },
     },
 
     job: {
@@ -1352,6 +1368,10 @@ export const en: Translations = {
     },
 
     wallet: {
+        seo: {
+            title: 'Wallet',
+            description: 'Track your balance, transactions, and withdrawal requests.',
+        },
         title: 'My Wallet',
         balance: 'Available Balance',
         pendingBalance: 'Pending in Escrow',
@@ -1376,6 +1396,8 @@ export const en: Translations = {
         type: 'Type',
         description: 'Description',
         netAmount: 'Net Amount',
+        statusLabel: 'Status',
+        transactionLabel: 'Transaction',
         previous: 'Previous',
         next: 'Next',
         pageOf: 'Page {{page}} of {{totalPages}}',

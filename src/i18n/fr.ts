@@ -129,6 +129,10 @@ export const fr: Translations = {
             remote: 'Télétravail'
         },
         new: {
+            seo: {
+                title: 'Publier un projet',
+                description: 'Créez un nouveau projet, définissez le budget et la durée, puis publiez-le pour recevoir des propositions de freelances.',
+            },
             steps: {
                 basics: 'Détails de la mission',
                 budget: 'Budget et durée',
@@ -571,6 +575,18 @@ export const fr: Translations = {
         postNewJobDesc: 'Décrivez votre mission et nous trouverons les 3 meilleurs freelances',
         yourJobs: 'Vos missions',
         viewAll: 'Voir tout',
+        client: {
+            defaultName: 'Client',
+            activeJobs: 'Missions actives',
+            totalSpent: 'Dépenses totales',
+            completedContracts: 'Contrats terminés',
+            noJobsYet: 'Vous n\'avez publié aucune mission pour le moment',
+            proposalsSubmitted: '{{count}} propositions reçues',
+            freelancerFallback: 'Freelance',
+            status: {
+                cancelled: 'Annulé',
+            },
+        },
     },
 
     job: {
@@ -1352,6 +1368,10 @@ export const fr: Translations = {
     },
 
     wallet: {
+        seo: {
+            title: 'Portefeuille',
+            description: 'Suivez votre solde, vos transactions et vos demandes de retrait.',
+        },
         title: 'Mon Portefeuille',
         balance: 'Solde Disponible',
         pendingBalance: 'En Attente dans l\'Escrow',
@@ -1376,6 +1396,8 @@ export const fr: Translations = {
         type: 'Type',
         description: 'Description',
         netAmount: 'Montant Net',
+        statusLabel: 'Statut',
+        transactionLabel: 'Transaction',
         previous: 'Précédent',
         next: 'Suivant',
         pageOf: 'Page {{page}} sur {{totalPages}}',

@@ -17,7 +17,7 @@ import { supabase } from '../lib/supabase';
 import { formatCurrency } from '../lib/currencyUtils';
 
 function ClientDashboardPage() {
-    const { t, dir } = useTranslation();
+    const { t, tx, dir } = useTranslation();
     const { profile, signOut } = useAuth();
     const navigate = useNavigate();
     const { showToast } = useToast();
@@ -77,13 +77,13 @@ function ClientDashboardPage() {
     const getStatusBadge = (status: string) => {
         switch (status) {
             case 'open':
-                return <span className="bg-blue-100 text-blue-700 text-xs font-medium px-2 py-1 rounded-full flex items-center gap-1"><AlertCircle className="w-3 h-3" />مفتوح</span>;
+                return <span className="bg-blue-100 text-blue-700 text-xs font-medium px-2 py-1 rounded-full flex items-center gap-1"><AlertCircle className="w-3 h-3" />{tx('pages.clientJobs.status.open', undefined, 'Open')}</span>;
             case 'in_progress':
-                return <span className="bg-primary-100 text-primary-700 text-xs font-medium px-2 py-1 rounded-full flex items-center gap-1"><Clock className="w-3 h-3" />قيد التنفيذ</span>;
+                return <span className="bg-primary-100 text-primary-700 text-xs font-medium px-2 py-1 rounded-full flex items-center gap-1"><Clock className="w-3 h-3" />{tx('pages.clientJobs.status.inProgress', undefined, 'In progress')}</span>;
             case 'completed':
-                return <span className="bg-green-100 text-green-700 text-xs font-medium px-2 py-1 rounded-full flex items-center gap-1"><CheckCircle className="w-3 h-3" />مكتمل</span>;
+                return <span className="bg-green-100 text-green-700 text-xs font-medium px-2 py-1 rounded-full flex items-center gap-1"><CheckCircle className="w-3 h-3" />{tx('pages.clientJobs.status.completed', undefined, 'Completed')}</span>;
             case 'cancelled':
-                return <span className="bg-red-100 text-red-700 text-xs font-medium px-2 py-1 rounded-full flex items-center gap-1"><XCircle className="w-3 h-3" />ملغي</span>;
+                return <span className="bg-red-100 text-red-700 text-xs font-medium px-2 py-1 rounded-full flex items-center gap-1"><XCircle className="w-3 h-3" />{tx('dashboard.client.status.cancelled', undefined, 'Cancelled')}</span>;
             default:
                 return null;
         }
@@ -99,7 +99,7 @@ function ClientDashboardPage() {
                 <div className="flex items-center justify-between mb-8">
                     <div>
                         <h1 className="text-2xl font-bold text-foreground">
-                            {t.dashboard.welcome}، {profile?.full_name || 'عميل'}!
+                            {t.dashboard.welcome}، {profile?.full_name || tx('dashboard.client.defaultName', undefined, 'Client')}!
                         </h1>
                         <p className="text-muted">{t.dashboard.clientSubtitle}</p>
                     </div>
@@ -151,7 +151,7 @@ function ClientDashboardPage() {
                                     </div>
                                 </div>
                                 <p className="text-2xl font-bold text-foreground">{stats?.activeJobs ?? 0}</p>
-                                <p className="text-sm text-muted">مهام نشطة</p>
+                                <p className="text-sm text-muted">{tx('dashboard.client.activeJobs', undefined, 'Active jobs')}</p>
                             </div>
                             <div className="card">
                                 <div className="flex items-center gap-3 mb-3">
@@ -160,7 +160,7 @@ function ClientDashboardPage() {
                                     </div>
                                 </div>
                                 <p className="text-2xl font-bold text-foreground">{formatCurrency(stats?.totalSpent ?? 0)}</p>
-                                <p className="text-sm text-muted">إجمالي الإنفاق</p>
+                                <p className="text-sm text-muted">{tx('dashboard.client.totalSpent', undefined, 'Total spent')}</p>
                             </div>
                             <div className="card">
                                 <div className="flex items-center gap-3 mb-3">
@@ -169,7 +169,7 @@ function ClientDashboardPage() {
                                     </div>
                                 </div>
                                 <p className="text-2xl font-bold text-foreground">{stats?.contractsCompleted ?? 0}</p>
-                                <p className="text-sm text-muted">عقود مكتملة</p>
+                                <p className="text-sm text-muted">{tx('dashboard.client.completedContracts', undefined, 'Completed contracts')}</p>
                             </div>
                         </>
                     )}
@@ -179,7 +179,7 @@ function ClientDashboardPage() {
                 <div className="space-y-6">
                     <div className="flex items-center justify-between">
                         <h2 className="text-xl font-bold text-foreground">{t.dashboard.yourJobs}</h2>
-                        <Button variant="ghost" size="sm" onClick={() => navigate('/client/jobs')}>عرض الكل</Button>
+                        <Button variant="ghost" size="sm" onClick={() => navigate('/client/jobs')}>{t.dashboard.viewAll}</Button>
                     </div>
 
                     <div className="space-y-4">
@@ -188,8 +188,8 @@ function ClientDashboardPage() {
                         ) : jobs.length === 0 ? (
                             <div className="card text-center py-12">
                                 <Briefcase className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                                <p className="text-muted mb-4">لم تنشر أي مهام بعد</p>
-                                <Button variant="primary" onClick={() => navigate('/jobs/new')}>نشر مهمة جديدة</Button>
+                                <p className="text-muted mb-4">{tx('dashboard.client.noJobsYet', undefined, 'No jobs posted yet')}</p>
+                                <Button variant="primary" onClick={() => navigate('/jobs/new')}>{t.dashboard.postNewJob}</Button>
                             </div>
                         ) : (
                             jobs.map((job: any) => (
@@ -216,7 +216,7 @@ function ClientDashboardPage() {
                                     {job.status === 'open' && job.proposals_count > 0 && (
                                         <div className="flex items-center gap-2 p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-xl">
                                             <Users className="w-5 h-5 text-yellow-600" />
-                                            <span className="text-yellow-800 font-medium text-sm">{job.proposals_count} عرض مقدم</span>
+                                            <span className="text-yellow-800 font-medium text-sm">{tx('dashboard.client.proposalsSubmitted', { count: job.proposals_count }, `${job.proposals_count} proposals submitted`)}</span>
                                         </div>
                                     )}
 
@@ -224,7 +224,7 @@ function ClientDashboardPage() {
                                         <div className="flex items-center gap-2 p-3 bg-primary-50 dark:bg-primary-900/20 rounded-xl">
                                             <User className="w-5 h-5 text-primary-600" />
                                             <span className="text-primary-800 text-sm font-medium">
-                                                {job.contracts[0].freelancer?.full_name || 'Freelancer'}
+                                                {job.contracts[0].freelancer?.full_name || tx('dashboard.client.freelancerFallback', undefined, 'Freelancer')}
                                             </span>
                                         </div>
                                     )}

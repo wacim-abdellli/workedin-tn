@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, ArrowLeft, Save, Loader2, Check } from 'lucide-react';
 import { Header } from '../components/layout';
+import SEO from '../components/common/SEO';
 import Button from '../components/ui/Button';
 import Modal from '../components/ui/Modal';
 import { useToast } from '../components/ui/Toast';
@@ -281,6 +282,10 @@ export default function JobPost() {
 
     return (
         <div className="min-h-screen bg-gray-50 pb-20 dark:bg-[#0f0e17]">
+            <SEO
+                title={tx('jobs.new.seo.title', undefined, 'Post a Project')}
+                description={tx('jobs.new.seo.description', undefined, 'Create a new project, define budget and timeline, and publish it to receive freelancer proposals.')}
+            />
             <Header />
 
             <div className="container-custom py-8">

@@ -127,6 +127,10 @@ export const ar = {
             remote: 'عن بعد'
         },
         new: {
+            seo: {
+                title: 'نشر مشروع جديد',
+                description: 'أنشئ مشروعاً جديداً وحدد الميزانية والمدة ثم انشره لاستقبال عروض المستقلين.',
+            },
             steps: {
                 basics: 'تفاصيل المهمة',
                 budget: 'الميزانية والمدة',
@@ -569,6 +573,18 @@ export const ar = {
         postNewJobDesc: 'أخبرنا عن مهمتك وسنجد لك أفضل 3 موظفين',
         yourJobs: 'مهامك',
         viewAll: 'عرض الكل',
+        client: {
+            defaultName: 'عميل',
+            activeJobs: 'مهام نشطة',
+            totalSpent: 'إجمالي الإنفاق',
+            completedContracts: 'عقود مكتملة',
+            noJobsYet: 'لم تنشر أي مهام بعد',
+            proposalsSubmitted: '{{count}} عرض مقدم',
+            freelancerFallback: 'مستقل',
+            status: {
+                cancelled: 'ملغي',
+            },
+        },
     },
 
     job: {
@@ -1350,6 +1366,10 @@ export const ar = {
     },
 
     wallet: {
+        seo: {
+            title: 'المحفظة',
+            description: 'تابع رصيدك، معاملاتك، وطلبات السحب في مكان واحد.',
+        },
         title: 'محفظتي',
         balance: 'الرصيد المتاح',
         pendingBalance: 'قيد الانتظار في الضمان',
@@ -1374,6 +1394,8 @@ export const ar = {
         type: 'النوع',
         description: 'الوصف',
         netAmount: 'المبلغ الصافي',
+        statusLabel: 'الحالة',
+        transactionLabel: 'معاملة',
         previous: 'السابق',
         next: 'التالي',
         pageOf: 'صفحة {{page}} من {{totalPages}}',
