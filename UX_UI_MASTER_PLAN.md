@@ -75,7 +75,7 @@ Goal: Unify product styling and interaction quality across the app while keeping
 Status: In progress
 
 Tasks:
-1. Normalize shell tokens for page backgrounds and section paddings.
+1. Normalize shell tokens for page backgrounds and section paddings. (Completed for Client Dashboard, Client Jobs, Search Results)
 2. Lock surface tokens for primary card, elevated card, and glass card use-cases.
 3. Define approved border radius tiers and shadow tiers.
 4. Document token usage rules in this file.
@@ -209,6 +209,5 @@ Per phase:
 
 ## Next Task (Start Now)
 
-Phase 2, task 1 and task 2:
-- normalize shell tokens for high-traffic pages
+Phase 2, task 2:
 - enforce approved card surface tiers on client dashboard, client jobs, and search results

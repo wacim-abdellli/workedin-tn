@@ -62,11 +62,11 @@ export default function SearchResults() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-dark-950 transition-colors duration-300">
+        <div className="page-shell">
             <SEO {...SEO_CONFIG.search} url="/search" />
             <Header />
 
-            <div className="container-custom py-8">
+            <div className="page-shell-content">
                 {/* Search Header */}
                 <div className="mb-8">
                     <div className="flex items-center gap-4 mb-4">

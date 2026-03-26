@@ -75,9 +75,9 @@ export default function ClientJobs() {
   }
 
   return (
-    <div className="bg-gray-50 dark:bg-[#0f0e17] min-h-screen">
+    <div className="page-shell">
       <Header />
-      <div className="max-w-5xl mx-auto px-4 py-8">
+      <div className="page-shell-content">
         
         {/* Header section */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">

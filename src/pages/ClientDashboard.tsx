@@ -90,11 +90,11 @@ function ClientDashboardPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-dark-900 transition-colors duration-300">
+        <div className="page-shell">
             <SEO {...SEO_CONFIG.dashboard} url="/client/dashboard" noIndex />
             <Header />
 
-            <div className="container-custom py-8">
+            <div className="page-shell-content">
                 {/* Welcome Header */}
                 <div className="flex items-center justify-between mb-8">
                     <div>

@@ -480,6 +480,14 @@ h6 {
     @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
   }
 
+  .page-shell {
+    @apply min-h-screen bg-gray-50 dark:bg-[#0f0e17] transition-colors duration-300;
+  }
+
+  .page-shell-content {
+    @apply container-custom py-8;
+  }
+
   /* ===== GRADIENTS ===== */
   .gradient-primary {
     background: linear-gradient(135deg, #1554f7 0%, #0e41e3 50%, #9333ea 100%);
