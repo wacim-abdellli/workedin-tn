@@ -55,7 +55,7 @@ BEGIN
   -- Update profile
   UPDATE public.profiles
   SET
-    user_type = p_user_type,
+    user_type = p_user_type::user_type_enum,
     active_mode = p_active_mode::account_mode_enum,
     updated_at = now()
   WHERE id = auth.uid();
