@@ -102,7 +102,6 @@ export default function JobPost() {
                 setShowRestoreDraftModal(true);
             }
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     // Warn before unload

@@ -179,7 +179,7 @@ export default function JobProposals() {
                 // Show "hire first" message
                 showToast('يجب توظيف المستقل أولاً لبدء المحادثة', 'info');
             }
-        } catch (error) {
+        } catch {
             // No contract found - show info message
             showToast('يجب توظيف المستقل أولاً لبدء المحادثة', 'info');
         }

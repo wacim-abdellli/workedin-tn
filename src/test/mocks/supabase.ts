@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { vi } from 'vitest';
 
 // ============================================================================
@@ -61,7 +60,7 @@ export const resetMocks = (): void => {
 // ============================================================================
 
 function createMockQueryBuilder<T = any>(tableName: string) {
-    let filters: Array<{ column: string; value: any; operator: string }> = [];
+    const filters: Array<{ column: string; value: any; operator: string }> = [];
     let insertData: any;
     let updateData: any;
     let isDelete = false;
@@ -191,7 +190,7 @@ function createMockQueryBuilder<T = any>(tableName: string) {
                 return onfulfilled ? onfulfilled(result) : result;
             }
 
-            let tableData = mockData[tableName] || [];
+            const tableData = mockData[tableName] || [];
 
             // Handle insert
             if (insertData) {

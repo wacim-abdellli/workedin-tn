@@ -15,10 +15,18 @@ const DIRECT_STRING_RE = /\b(?:showToast|confirm|alert)\(\s*(["'`])([^\1]*?[A-Za
 
 const ALLOW_PATTERNS = [
   /^(D17|Flouci|IBAN|SEO|React JS|Python)$/i,
+  /^(Khedma(?:\.tn)?\s*TN?|Ctrl\+K)$/i,
+  /^https?:\/\//i,
+  /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+  /^\+?\d[\d\s()-]{5,}$/,
+  /^e\.g\./i,
+  /^Max:\s*\d+/i,
   /^\s*[A-Z]{2,5}(\/[A-Z]{2,5})?\s*$/,
   /^\s*\d+[\d\s.,:%+-]*\s*$/,
   /^\s*[\W_]+\s*$/,
 ];
+
+const CODELIKE_FRAGMENT_RE = /(=>|\?\.|&&\s*\(|\)\.length\}?|\{[^}]*\}|\$\{[^}]*\})/;
 
 const isAllowedText = (text) => {
   const cleaned = text.trim();
@@ -67,6 +75,7 @@ for (const filePath of walkFiles(SRC_DIR)) {
     while ((match = regex.exec(content)) !== null) {
       const rawText = (category === 'direct-string' ? match[2] : match[1])?.trim();
       if (!rawText || isAllowedText(rawText)) continue;
+      if (CODELIKE_FRAGMENT_RE.test(rawText)) continue;
 
       // Skip probable translation keys and templated i18n placeholders.
       if (/^[a-z0-9_.-]+$/i.test(rawText) || rawText.includes('{{')) continue;

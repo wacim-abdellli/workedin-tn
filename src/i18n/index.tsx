@@ -95,7 +95,6 @@ export function I18nProvider({ children, defaultLanguage = 'ar' }: I18nProviderP
             const marker = `${language}:${key}`;
             if (!warnedMissingKeys.has(marker)) {
                 warnedMissingKeys.add(marker);
-                // eslint-disable-next-line no-console
                 console.warn(`[i18n] Missing key "${key}" for language "${language}"`);
             }
         }

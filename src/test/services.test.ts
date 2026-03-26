@@ -4,26 +4,7 @@
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-const {
-    mockSelect,
-    mockInsert,
-    mockUpdate,
-    mockDelete,
-    mockEq,
-    mockNeq,
-    mockOr,
-    mockOrder,
-    mockLimit,
-    mockRange,
-    mockSingle,
-    mockMaybeSingle,
-    mockIlike,
-    mockGte,
-    mockLte,
-    mockUpsert,
-    mockRpc,
-    mockFrom,
-} = vi.hoisted(() => {
+const { mockRpc, mockFrom } = vi.hoisted(() => {
     const mockSelect = vi.fn().mockReturnThis();
     const mockInsert = vi.fn().mockReturnThis();
     const mockUpdate = vi.fn().mockReturnThis();
@@ -61,26 +42,7 @@ const {
         upsert: mockUpsert,
     }));
 
-    return {
-        mockSelect,
-        mockInsert,
-        mockUpdate,
-        mockDelete,
-        mockEq,
-        mockNeq,
-        mockOr,
-        mockOrder,
-        mockLimit,
-        mockRange,
-        mockSingle,
-        mockMaybeSingle,
-        mockIlike,
-        mockGte,
-        mockLte,
-        mockUpsert,
-        mockRpc,
-        mockFrom,
-    };
+    return { mockRpc, mockFrom };
 });
 
 vi.mock('@/lib/supabase', () => ({

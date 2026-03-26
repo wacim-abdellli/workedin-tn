@@ -151,7 +151,7 @@ function JobMatches() {
     };
 
     // Play voice intro
-    const playVoice = (freelancerId: string, _voiceUrl: string) => {
+    const playVoice = (freelancerId: string) => {
         if (playingVoice === freelancerId) {
             audioRef.current?.pause();
             setPlayingVoice(null);
@@ -319,7 +319,7 @@ function JobMatches() {
                                     {/* Voice Intro */}
                                     {freelancer.voice_intro_url && (
                                         <button
-                                            onClick={() => playVoice(freelancer.id, freelancer.voice_intro_url!)}
+                                            onClick={() => playVoice(freelancer.id)}
                                             className={`
                         mt-4 w-full flex items-center justify-center gap-2 py-3 rounded-xl transition-all
                         ${playingVoice === freelancer.id

@@ -4,11 +4,10 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 /**
  * Custom debounce implementation to avoid lodash dependency
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function useDebounce<T extends (...args: any[]) => void>(callback: T, delay: number) {
+function useDebounce<TArgs extends unknown[]>(callback: (...args: TArgs) => void, delay: number) {
     const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-    return useCallback((...args: Parameters<T>) => {
+    return useCallback((...args: TArgs) => {
         if (timeoutRef.current) {
             clearTimeout(timeoutRef.current);
         }

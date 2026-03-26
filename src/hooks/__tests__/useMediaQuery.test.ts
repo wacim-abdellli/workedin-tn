@@ -137,7 +137,7 @@ describe('useMediaQuery', () => {
             reducedMotion: '(prefers-reduced-motion: reduce)',
         };
 
-        Object.entries(breakpoints).forEach(([_name, query]) => {
+        Object.entries(breakpoints).forEach(([, query]) => {
             const { result } = renderHook(() => useMediaQuery(query));
             expect(typeof result.current).toBe('boolean');
         });
