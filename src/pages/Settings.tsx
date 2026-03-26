@@ -1038,11 +1038,11 @@ function Settings() {
     );
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-[#0f0e17] transition-colors duration-300">
+        <div className="page-shell transition-colors duration-300">
             <SEO {...SEO_CONFIG.settings} url="/settings" noIndex />
             <Header />
 
-            <div className="container-custom py-8">
+            <div className="page-shell-content">
                 <h1 className="text-2xl font-bold mb-8">{tx('settings.pageTitle', undefined, 'Settings')}</h1>
 
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">

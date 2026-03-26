@@ -112,11 +112,11 @@ function FreelancerDashboardPage() {
     };
 
     return (
-        <div className="min-h-screen bg-[#f6f3ff] dark:bg-[#0b0a12]">
+        <div className="page-shell bg-[#f6f3ff] dark:bg-[#0b0a12]">
             <SEO {...SEO_CONFIG.dashboard} url="/freelancer/dashboard" noIndex />
             <Header />
 
-            <main className="container-custom py-8">
+            <main className="page-shell-content">
                 <section className="glass-card overflow-hidden radius-shell p-6 sm:p-8">
                     <div className="grid gap-6 xl:grid-cols-[260px_minmax(0,1fr)_320px]">
                         {/* Left sidebar */}

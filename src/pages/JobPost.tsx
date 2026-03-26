@@ -286,14 +286,14 @@ export default function JobPost() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 pb-20 dark:bg-[#0f0e17]">
+        <div className="page-shell pb-20">
             <SEO
                 title={tx('jobs.new.seo.title', undefined, 'Post a Project')}
                 description={tx('jobs.new.seo.description', undefined, 'Create a new project, define budget and timeline, and publish it to receive freelancer proposals.')}
             />
             <Header />
 
-            <div className="container-custom py-8">
+            <div className="page-shell-content">
                 <div className="flex items-center justify-between mb-6">
                     {/* Autosave Indicator */}
                     <div className="flex h-6 items-center gap-2 text-sm text-gray-500 dark:text-gray-400">

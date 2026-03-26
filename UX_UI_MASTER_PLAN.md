@@ -161,6 +161,7 @@ Tasks:
 Progress update:
 - unified shell wrappers applied for wallet, contracts, my proposals, and freelancer earnings
 - added `page-shell-content-narrow` utility for consistent narrow core-route pages
+- unified shell wrappers now applied on remaining key routes: freelancer dashboard, jobs/new, jobs, and settings
 
 Acceptance criteria:
 - Core route transitions feel native to one product.

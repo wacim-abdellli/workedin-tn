@@ -246,11 +246,11 @@ function JobBoard() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-[#0f0e17] transition-colors duration-300">
+        <div className="page-shell transition-colors duration-300">
             <SEO {...SEO_CONFIG.jobs} url="/jobs" />
             <Header />
 
-            <div className="container-custom py-8">
+            <div className="page-shell-content">
                 {/* Search Bar - Top */}
                 <div className="mb-6">
                     <div className="relative max-w-2xl mx-auto">
