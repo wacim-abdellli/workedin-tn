@@ -1,5 +1,6 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const queryMocks = vi.hoisted(() => ({
@@ -189,6 +190,18 @@ vi.mock('@/components/contracts/ContractDetailsSidebar', () => ({
 
 import ContractWorkspace from '@/pages/ContractWorkspace';
 
+function renderWorkspace() {
+    return render(
+        <HelmetProvider>
+            <MemoryRouter initialEntries={['/contracts/contract-1']}>
+                <Routes>
+                    <Route path="/contracts/:contractId" element={<ContractWorkspace />} />
+                </Routes>
+            </MemoryRouter>
+        </HelmetProvider>
+    );
+}
+
 describe('ContractWorkspace', () => {
     beforeEach(() => {
         vi.clearAllMocks();
@@ -243,13 +256,7 @@ describe('ContractWorkspace', () => {
             return { data: false, isLoading: false };
         });
 
-        const loadingView = render(
-            <MemoryRouter initialEntries={['/contracts/contract-1']}>
-                <Routes>
-                    <Route path="/contracts/:contractId" element={<ContractWorkspace />} />
-                </Routes>
-            </MemoryRouter>
-        );
+        const loadingView = renderWorkspace();
 
         expect(loadingView.container.querySelector('.animate-spin')).toBeInTheDocument();
 
@@ -261,25 +268,13 @@ describe('ContractWorkspace', () => {
             return { data: false, isLoading: false };
         });
 
-        const emptyView = render(
-            <MemoryRouter initialEntries={['/contracts/contract-1']}>
-                <Routes>
-                    <Route path="/contracts/:contractId" element={<ContractWorkspace />} />
-                </Routes>
-            </MemoryRouter>
-        );
+        const emptyView = renderWorkspace();
 
         expect(emptyView.container).toBeEmptyDOMElement();
     });
 
     it('renders the workspace and wires the major contract actions', async () => {
-        render(
-            <MemoryRouter initialEntries={['/contracts/contract-1']}>
-                <Routes>
-                    <Route path="/contracts/:contractId" element={<ContractWorkspace />} />
-                </Routes>
-            </MemoryRouter>
-        );
+        renderWorkspace();
 
         expect(screen.getByText('Build contract workspace')).toBeInTheDocument();
         expect(hookMocks.refreshContractState).toHaveBeenCalled();
@@ -344,13 +339,7 @@ describe('ContractWorkspace', () => {
             isPending: false,
         }));
 
-        render(
-            <MemoryRouter initialEntries={['/contracts/contract-1']}>
-                <Routes>
-                    <Route path="/contracts/:contractId" element={<ContractWorkspace />} />
-                </Routes>
-            </MemoryRouter>
-        );
+        renderWorkspace();
 
         fireEvent.click(screen.getByRole('button', { name: 'Send chat' }));
         fireEvent.click(screen.getByRole('button', { name: 'Upload file' }));
@@ -379,13 +368,7 @@ describe('ContractWorkspace', () => {
     });
 
     it('handles typing and review cancellation paths', async () => {
-        render(
-            <MemoryRouter initialEntries={['/contracts/contract-1']}>
-                <Routes>
-                    <Route path="/contracts/:contractId" element={<ContractWorkspace />} />
-                </Routes>
-            </MemoryRouter>
-        );
+        renderWorkspace();
 
         fireEvent.click(screen.getByRole('button', { name: 'Typing' }));
         expect(hookMocks.setTyping).toHaveBeenCalledWith(true);

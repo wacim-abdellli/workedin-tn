@@ -1,6 +1,8 @@
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { I18nProvider } from '@/i18n';
 
 const queryMocks = vi.hoisted(() => ({
     useQuery: vi.fn(),
@@ -136,9 +138,13 @@ describe('JobDetail', () => {
 
     it('renders the job detail page with job content and similar jobs', () => {
         render(
-            <MemoryRouter>
-                <JobDetail />
-            </MemoryRouter>
+            <HelmetProvider>
+                <I18nProvider>
+                    <MemoryRouter>
+                        <JobDetail />
+                    </MemoryRouter>
+                </I18nProvider>
+            </HelmetProvider>
         );
 
         expect(screen.getByRole('heading', { name: 'Build a polished marketplace' })).toBeInTheDocument();

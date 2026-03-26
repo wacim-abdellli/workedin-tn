@@ -141,6 +141,11 @@ describe('useAuth Hook', () => {
             expect(supabase.auth.signUp).toHaveBeenCalledWith({
                 email: 'new@example.com',
                 password: 'password123',
+                options: {
+                    data: {
+                        preferred_language: 'ar',
+                    },
+                },
             });
         });
     });

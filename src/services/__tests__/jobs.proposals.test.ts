@@ -14,7 +14,7 @@ const queryState = vi.hoisted(() => {
         insertCalls: [] as unknown[],
         rpcCalls: [] as Array<{ fn: string; params: unknown }>,
         singleCalls: 0,
-        builderResult: { data: [{ id: 'job-1' }], error: null as unknown, count: 1 },
+        builderResult: { data: { id: 'proposal-1' }, error: null as unknown, count: 1 },
         rpcResult: { data: 'proposal-1', error: null as unknown },
         uploadUrl: 'https://files.example/proposal.pdf',
     };
@@ -32,7 +32,7 @@ const queryState = vi.hoisted(() => {
         state.insertCalls = [];
         state.rpcCalls = [];
         state.singleCalls = 0;
-        state.builderResult = { data: [{ id: 'job-1' }], error: null, count: 1 };
+        state.builderResult = { data: { id: 'proposal-1' }, error: null, count: 1 };
         state.rpcResult = { data: 'proposal-1', error: null };
         state.uploadUrl = 'https://files.example/proposal.pdf';
     };
@@ -82,6 +82,7 @@ vi.mock('@/lib/supabase', () => {
             queryState.state.singleCalls += 1;
             return queryState.state.builderResult;
         }),
+        maybeSingle: vi.fn(async () => ({ data: { id: 'free-1' }, error: null })),
         then: (resolve: (value: unknown) => unknown) => Promise.resolve(resolve(queryState.state.builderResult)),
     };
 
@@ -94,6 +95,12 @@ vi.mock('@/lib/supabase', () => {
             rpc: vi.fn(async (fn: string, params: unknown) => {
                 queryState.state.rpcCalls.push({ fn, params });
                 return queryState.state.rpcResult;
+            }),
+        },
+        supabaseAnon: {
+            from: vi.fn((table: string) => {
+                queryState.state.fromCalls.push(table);
+                return builder;
             }),
         },
         uploadFile: vi.fn(async () => queryState.state.uploadUrl),
@@ -161,7 +168,7 @@ describe('jobs service targeted coverage', () => {
             error: null,
             count: 1,
         });
-        expect(queryState.state.selectCalls[0]?.columns).toContain('client:profiles!client_id');
+        expect(queryState.state.selectCalls[0]?.columns).toContain('client:profiles!jobs_client_id_fkey');
         expect(queryState.state.eqCalls).toContainEqual({ column: 'id', value: 'job-99' });
         expect(queryState.state.singleCalls).toBe(1);
     });
@@ -194,7 +201,7 @@ describe('proposals service targeted coverage', () => {
         queryState.reset();
     });
 
-    it('creates a proposal and uploads attachments before calling the rpc', async () => {
+    it('creates a proposal and uploads attachments before inserting the proposal row', async () => {
         const file = new File(['hello'], 'brief.pdf', { type: 'application/pdf' });
 
         const result = await createProposal({
@@ -202,27 +209,26 @@ describe('proposals service targeted coverage', () => {
             freelancer_id: 'free-1',
             cover_letter: 'I can deliver this cleanly and quickly.',
             bid_amount: 150,
-            delivery_days: 4,
+            delivery_time_days: 4,
         }, [file]);
 
         expect(result).toEqual({ data: 'proposal-1', error: null });
-        expect(queryState.state.rpcCalls).toContainEqual({
-            fn: 'submit_proposal',
-            params: {
-                p_job_id: 'job-1',
-                p_freelancer_id: 'free-1',
-                p_cover_letter: 'I can deliver this cleanly and quickly.',
-                p_bid_amount: 150,
-                p_delivery_days: 4,
-                p_attachments: ['https://files.example/proposal.pdf'],
-            },
-        });
+        expect(queryState.state.fromCalls).toEqual(expect.arrayContaining(['freelancer_profiles', 'proposals']));
+        expect(queryState.state.insertCalls).toContainEqual(expect.objectContaining({
+            job_id: 'job-1',
+            freelancer_id: 'free-1',
+            cover_letter: 'I can deliver this cleanly and quickly.',
+            bid_amount: 150,
+            delivery_time_days: 4,
+            attachments: ['https://files.example/proposal.pdf'],
+        }));
     });
 
     it('normalizes rate limit rpc failures into a user-facing error', async () => {
-        queryState.state.rpcResult = {
+        queryState.state.builderResult = {
             data: null,
             error: new Error('rate_limit_exceeded'),
+            count: 0,
         };
 
         const result = await createProposal({
@@ -230,7 +236,7 @@ describe('proposals service targeted coverage', () => {
             freelancer_id: 'free-1',
             cover_letter: 'I can deliver this cleanly and quickly.',
             bid_amount: 150,
-            delivery_days: 4,
+            delivery_time_days: 4,
         });
 
         expect(result.data).toBeNull();

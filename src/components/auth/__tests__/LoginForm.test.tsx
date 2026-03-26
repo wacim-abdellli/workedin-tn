@@ -86,7 +86,7 @@ describe('LoginForm', () => {
             expect(getPasswordInput()).toBeInTheDocument();
 
             // Check for submit button
-            expect(screen.getByRole('button', { name: /login|تسجيل الدخول/i })).toBeInTheDocument();
+            expect(screen.getByRole('button', { name: /sign in|تسجيل الدخول/i })).toBeInTheDocument();
         });
 
         it('should render switch to signup link when callback provided', async () => {
@@ -94,7 +94,7 @@ describe('LoginForm', () => {
             render(<LoginForm onSwitchToSignup={onSwitchToSignup} />, { wrapper: TestWrapper });
 
             await waitFor(() => {
-                expect(screen.getByRole('button', { name: /signup|إنشاء حساب/i })).toBeInTheDocument();
+                expect(screen.getByRole('button', { name: /create account|signup|إنشاء حساب/i })).toBeInTheDocument();
             });
         });
     });
@@ -138,7 +138,7 @@ describe('LoginForm', () => {
             await user.type(getPasswordInput(), 'password123');
 
             // Submit
-            const submitButton = screen.getByRole('button', { name: /login|تسجيل الدخول/i });
+            const submitButton = screen.getByRole('button', { name: /sign in|تسجيل الدخول/i });
             await user.click(submitButton);
 
             // Should call Supabase signInWithPassword
@@ -159,11 +159,11 @@ describe('LoginForm', () => {
             render(<LoginForm onSwitchToSignup={onSwitchToSignup} />, { wrapper: TestWrapper });
 
             await waitFor(() => {
-                expect(screen.getByRole('button', { name: /signup|إنشاء حساب/i })).toBeInTheDocument();
+                expect(screen.getByRole('button', { name: /create account|signup|إنشاء حساب/i })).toBeInTheDocument();
             });
 
             // Click signup button
-            await user.click(screen.getByRole('button', { name: /signup|إنشاء حساب/i }));
+            await user.click(screen.getByRole('button', { name: /create account|signup|إنشاء حساب/i }));
 
             expect(onSwitchToSignup).toHaveBeenCalledTimes(1);
         });

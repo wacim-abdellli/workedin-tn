@@ -31,9 +31,13 @@ if (typeof window !== 'undefined') {
                         localStorage.removeItem(k);
                     }
                 }
-            } catch {}
+            } catch {
+                // Ignore malformed localStorage records while cleaning stale sessions.
+            }
         });
-    } catch {}
+    } catch {
+        // Ignore localStorage access failures in restricted environments.
+    }
 }
 
 // Create Supabase client

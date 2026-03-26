@@ -1,48 +1,60 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const state = vi.hoisted(() => ({
+    fromCalls: [] as string[],
     selectCalls: [] as Array<{ table: string; columns: string }>,
     eqCalls: [] as Array<{ table: string; column: string; value: unknown }>,
     orCalls: [] as Array<{ table: string; value: string }>,
     orderCalls: [] as Array<{ table: string; column: string; options?: unknown }>,
     updateCalls: [] as Array<{ table: string; value: unknown }>,
-    rpcCalls: [] as Array<{ fn: string; params: unknown }>,
+    insertCalls: [] as Array<{ table: string; value: unknown }>,
     channelCalls: [] as string[],
     onCalls: [] as Array<{ channel: string; event: string; config: unknown }>,
-    rpcResult: { data: 'message-1', error: null as unknown },
+    tableResults: {} as Record<string, unknown>,
 }));
 
 vi.mock('@/lib/supabase', () => {
-    const builder = {
-        select: vi.fn((columns: string) => {
-            state.selectCalls.push({ table: 'messages', columns });
-            return builder;
-        }),
-        eq: vi.fn((column: string, value: unknown) => {
-            state.eqCalls.push({ table: 'messages', column, value });
-            return builder;
-        }),
-        or: vi.fn((value: string) => {
-            state.orCalls.push({ table: 'messages', value });
-            return builder;
-        }),
-        order: vi.fn((column: string, options?: unknown) => {
-            state.orderCalls.push({ table: 'messages', column, options });
-            return builder;
-        }),
-        update: vi.fn((value: unknown) => {
-            state.updateCalls.push({ table: 'messages', value });
-            return builder;
-        }),
-        then: (resolve: (value: unknown) => unknown) => Promise.resolve(resolve({ data: [], error: null })),
+    const getTableResult = (table: string) =>
+        state.tableResults[table] ?? { data: [], error: null };
+
+    const createBuilder = (table: string) => {
+        const builder = {
+            select: vi.fn((columns: string) => {
+                state.selectCalls.push({ table, columns });
+                return builder;
+            }),
+            eq: vi.fn((column: string, value: unknown) => {
+                state.eqCalls.push({ table, column, value });
+                return builder;
+            }),
+            or: vi.fn((value: string) => {
+                state.orCalls.push({ table, value });
+                return builder;
+            }),
+            order: vi.fn((column: string, options?: unknown) => {
+                state.orderCalls.push({ table, column, options });
+                return builder;
+            }),
+            insert: vi.fn((value: unknown) => {
+                state.insertCalls.push({ table, value });
+                return builder;
+            }),
+            update: vi.fn((value: unknown) => {
+                state.updateCalls.push({ table, value });
+                return builder;
+            }),
+            single: vi.fn(async () => getTableResult(table)),
+            then: (resolve: (value: unknown) => unknown) => Promise.resolve(resolve(getTableResult(table))),
+        };
+
+        return builder;
     };
 
     return {
         supabase: {
-            from: vi.fn(() => builder),
-            rpc: vi.fn(async (fn: string, params: unknown) => {
-                state.rpcCalls.push({ fn, params });
-                return state.rpcResult;
+            from: vi.fn((table: string) => {
+                state.fromCalls.push(table);
+                return createBuilder(table);
             }),
             channel: vi.fn((name: string) => {
                 state.channelCalls.push(name);
@@ -71,63 +83,71 @@ import {
 describe('messages service coverage', () => {
     beforeEach(() => {
         vi.clearAllMocks();
+        state.fromCalls = [];
         state.selectCalls = [];
         state.eqCalls = [];
         state.orCalls = [];
         state.orderCalls = [];
         state.updateCalls = [];
-        state.rpcCalls = [];
+        state.insertCalls = [];
         state.channelCalls = [];
         state.onCalls = [];
-        state.rpcResult = { data: 'message-1', error: null };
+        state.tableResults = {
+            conversations: { data: [], error: null },
+            messages: { data: [], error: null },
+        };
     });
 
-    it('loads conversations and contract messages', async () => {
+    it('loads conversations and conversation messages', async () => {
         await getConversations('user-1');
-        await getMessages('contract-1');
+        await getMessages('conversation-1');
 
         expect(state.selectCalls).toEqual(expect.arrayContaining([
-            expect.objectContaining({ columns: expect.stringContaining('sender:profiles!sender_id') }),
-            expect.objectContaining({ columns: expect.stringContaining('sender:profiles!sender_id') }),
+            expect.objectContaining({ table: 'conversations', columns: expect.stringContaining('participant1:profiles') }),
+            expect.objectContaining({ table: 'messages', columns: expect.stringContaining('sender:profiles!sender_id') }),
         ]));
         expect(state.orCalls).toContainEqual({
-            table: 'messages',
-            value: 'sender_id.eq.user-1,receiver_id.eq.user-1',
+            table: 'conversations',
+            value: 'participant_1.eq.user-1,participant_2.eq.user-1',
         });
         expect(state.eqCalls).toContainEqual({
             table: 'messages',
-            column: 'contract_id',
-            value: 'contract-1',
+            column: 'conversation_id',
+            value: 'conversation-1',
         });
         expect(state.orderCalls).toEqual(expect.arrayContaining([
-            { table: 'messages', column: 'created_at', options: { ascending: false } },
+            { table: 'conversations', column: 'last_message_at', options: { ascending: false, nullsFirst: false } },
             { table: 'messages', column: 'created_at', options: { ascending: true } },
         ]));
     });
 
     it('sends messages successfully and supports read updates and subscriptions', async () => {
+        state.tableResults.messages = {
+            data: { id: 'message-1' },
+            error: null,
+        };
+
         const result = await sendMessage({
-            contract_id: 'contract-1',
-            sender_id: 'sender-1',
-            receiver_id: 'receiver-1',
+            conversationId: 'conversation-1',
+            senderId: 'sender-1',
+            receiverId: 'receiver-1',
             content: 'Hello',
+            contractId: 'contract-1',
             attachments: [{ name: 'brief.pdf', url: 'https://files/brief.pdf', type: 'application/pdf', size: '20KB' }],
-            message_type: 'file',
         });
         await markMessageRead('message-1');
         const subscription = subscribeToMessages('contract-1', vi.fn());
 
-        expect(result).toEqual({ data: 'message-1', error: null });
-        expect(state.rpcCalls).toContainEqual({
-            fn: 'send_message',
-            params: {
-                p_contract_id: 'contract-1',
-                p_sender_id: 'sender-1',
-                p_receiver_id: 'receiver-1',
-                p_content: 'Hello',
-                p_attachments: [{ name: 'brief.pdf', url: 'https://files/brief.pdf', type: 'application/pdf', size: '20KB' }],
-                p_message_type: 'file',
-            },
+        expect(result).toEqual({ data: { id: 'message-1' }, error: null });
+        expect(state.insertCalls).toContainEqual({
+            table: 'messages',
+            value: expect.objectContaining({
+                conversation_id: 'conversation-1',
+                sender_id: 'sender-1',
+                receiver_id: 'receiver-1',
+                contract_id: 'contract-1',
+                content: 'Hello',
+            }),
         });
         expect(state.updateCalls).toContainEqual({
             table: 'messages',
@@ -147,20 +167,20 @@ describe('messages service coverage', () => {
         expect(subscription).toEqual({ id: 'messages:contract-1' });
     });
 
-    it('normalizes rate-limit and generic send_message failures', async () => {
-        state.rpcResult = { data: null, error: new Error('rate_limit_exceeded') };
+    it('normalizes rate-limit and generic send failures', async () => {
+        state.tableResults.messages = { data: null, error: new Error('rate_limit_exceeded') };
         const rateLimited = await sendMessage({
-            contract_id: 'contract-1',
-            sender_id: 'sender-1',
-            receiver_id: 'receiver-1',
+            conversationId: 'conversation-1',
+            senderId: 'sender-1',
+            receiverId: 'receiver-1',
             content: 'Slow down',
         });
 
-        state.rpcResult = { data: null, error: 'plain failure' };
+        state.tableResults.messages = { data: null, error: 'plain failure' };
         const generic = await sendMessage({
-            contract_id: 'contract-1',
-            sender_id: 'sender-1',
-            receiver_id: 'receiver-1',
+            conversationId: 'conversation-1',
+            senderId: 'sender-1',
+            receiverId: 'receiver-1',
             content: 'Fallback error',
         });
 

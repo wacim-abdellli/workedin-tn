@@ -85,6 +85,7 @@ const {
 
 vi.mock('@/lib/supabase', () => ({
     supabase: { from: mockFrom, rpc: mockRpc },
+    supabaseAnon: { from: mockFrom },
     uploadFile: vi.fn().mockResolvedValue('https://example.com/file.jpg'),
 }));
 

@@ -196,6 +196,7 @@ function JobDetail() {
         queryFn: () => getConnectsBalance(user!.id),
         enabled: !!user?.id && !!freelancerProfile,
     });
+    const connectsAvailable = connectsBalance?.balance ?? 0;
 
     // Toggle Save Mutation
     const toggleSaveMutation = useMutation({
@@ -224,8 +225,8 @@ function JobDetail() {
             if (!user || !jobId) throw new Error('Missing auth or job');
 
             // Check connects balance before submitting
-            if (connectsBalance.balance < CONNECTS_COST) {
-                throw new Error(`تحتاج إلى ${CONNECTS_COST} كونيكتس لإرسال عرض. رصيدك الحالي: ${connectsBalance.balance}`);
+            if (connectsAvailable < CONNECTS_COST) {
+                throw new Error(`تحتاج إلى ${CONNECTS_COST} كونيكتس لإرسال عرض. رصيدك الحالي: ${connectsAvailable}`);
             }
 
             const { error, data: proposalId } = await proposalsService.createProposal({
@@ -554,20 +555,20 @@ function JobDetail() {
                                         className="w-full"
                                         onClick={() => setShowProposalModal(true)}
                                         rightIcon={<Send className="w-5 h-5" />}
-                                        disabled={!!freelancerProfile && connectsBalance.balance < CONNECTS_COST}
+                                        disabled={!!freelancerProfile && connectsAvailable < CONNECTS_COST}
                                     >
                                         أرسل عرض
                                     </Button>
                                     {/* Connects balance indicator */}
                                     {freelancerProfile && (
                                         <div className={`mt-2 flex items-center justify-between text-xs rounded-lg px-3 py-2 ${
-                                            connectsBalance.balance >= CONNECTS_COST
+                                            connectsAvailable >= CONNECTS_COST
                                                 ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400'
                                                 : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400'
                                         }`}>
                                             <span>رصيد الكونيكتس</span>
                                             <span className="font-bold">
-                                                {connectsBalance.balance} / يحتاج {CONNECTS_COST}
+                                                {connectsAvailable} / يحتاج {CONNECTS_COST}
                                             </span>
                                         </div>
                                     )}

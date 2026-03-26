@@ -1,6 +1,6 @@
 # i18n audit report
-mode: report-only
-findings: 68
+mode: strict
+findings: 79
 
 src/components/freelancer/PortfolioModal.tsx:109 [attribute] https://example.com
 src/components/freelancer/PortfolioModal.tsx:125 [attribute] مثال: Photoshop, React, UI Design (افصل بينها بفاصلة)
@@ -11,12 +11,12 @@ src/components/layout/AccountPanel.tsx:436 [attribute] Admin Dashboard
 src/components/layout/Footer.tsx:38 [attribute] Khedma TN
 src/components/layout/Footer.tsx:61 [jsx-text] contact@khedma.tn
 src/components/layout/Header/index.tsx:48 [attribute] Khedma TN
-src/components/layout/Header/index.tsx:177 [attribute] Khedma TN
-src/components/layout/Header/index.tsx:184 [attribute] Open search
-src/components/layout/Header/index.tsx:191 [attribute] Open navigation menu
-src/components/layout/Header/index.tsx:209 [attribute] Khedma TN
-src/components/layout/Header/index.tsx:411 [attribute] Khedma TN
-src/components/layout/Header/index.tsx:242 [jsx-text] Ctrl+K
+src/components/layout/Header/index.tsx:178 [attribute] Khedma TN
+src/components/layout/Header/index.tsx:185 [attribute] Open search
+src/components/layout/Header/index.tsx:192 [attribute] Open navigation menu
+src/components/layout/Header/index.tsx:202 [attribute] Khedma TN
+src/components/layout/Header/index.tsx:390 [attribute] Khedma TN
+src/components/layout/Header/index.tsx:226 [jsx-text] Ctrl+K
 src/components/onboarding/OnboardingStep2.tsx:116 [attribute] e.g. 50
 src/components/onboarding/OnboardingStep4.tsx:165 [jsx-text] Max: 5 files
 src/components/payments/FundEscrow.tsx:150 [jsx-text] رسوم المنصة (10%)
@@ -44,22 +44,33 @@ src/pages/AdminDashboard.tsx:366 [direct-string] هل تريد حذف المست
 src/pages/AuthCallback.tsx:187 [attribute] Khedma TN
 src/pages/ClientOnboarding.tsx:70 [direct-string] Image size must be less than 5MB
 src/pages/ClientOnboarding.tsx:122 [attribute] Khedma TN
+src/pages/ClientOnboarding.tsx:149 [attribute] Upload profile picture
 src/pages/ContractWorkspace.tsx:186 [direct-string] تم رفع: ${file.name}
 src/pages/ContractWorkspace.tsx:228 [direct-string] تم فتح نزاع. سيتم المراجعة خلال 48 ساعة.
-src/pages/ContractWorkspace.tsx:474 [jsx-text] فتح نزاع سيعلق العمل حتى يتم حل المشكلة. سيقوم فريقنا بمراجعة الحالة خلال 48 ساعة.
+src/pages/ContractWorkspace.tsx:352 [attribute] Show chat
+src/pages/ContractWorkspace.tsx:362 [attribute] Show details
+src/pages/ContractWorkspace.tsx:372 [attribute] Show files
+src/pages/ContractWorkspace.tsx:483 [jsx-text] فتح نزاع سيعلق العمل حتى يتم حل المشكلة. سيقوم فريقنا بمراجعة الحالة خلال 48 ساعة.
+src/pages/FindFreelancers.tsx:333 [attribute] Grid view
+src/pages/FindFreelancers.tsx:343 [attribute] List view
 src/pages/FindFreelancers.tsx:320 [jsx-text] f.is_verified).length}
-src/pages/FindFreelancers.tsx:409 [jsx-text] freelancer.is_available).length}
-src/pages/ForgotPassword.tsx:132 [jsx-text] تم تجاوز الحد الأقصى للطلبات. يرجى الانتظار 10 دقائق قبل المحاولة مرة أخرى.
-src/pages/ForgotPassword.tsx:170 [jsx-text] إذا لم تجد الرسالة، تحقق من مجلد البريد المزعج (Spam)
+src/pages/FindFreelancers.tsx:413 [jsx-text] freelancer.is_available).length}
+src/pages/ForgotPassword.tsx:122 [jsx-text] تم تجاوز الحد الأقصى للطلبات. يرجى الانتظار 10 دقائق قبل المحاولة مرة أخرى.
+src/pages/ForgotPassword.tsx:160 [jsx-text] إذا لم تجد الرسالة، تحقق من مجلد البريد المزعج (Spam)
 src/pages/FreelancerOnboarding.tsx:312 [attribute] Khedma TN
 src/pages/FreelancerOnboarding.tsx:331 [attribute] Khedma TN
+src/pages/JobBoard.tsx:323 [attribute] List view
+src/pages/JobBoard.tsx:332 [attribute] Grid view
 src/pages/JobMatches.tsx:357 [attribute] Work sample
 src/pages/Login.tsx:48 [attribute] Khedma TN
 src/pages/Privacy.tsx:15 [jsx-text] آخر تحديث: يناير 2026
 src/pages/Privacy.tsx:61 [jsx-text] تشفير SSL/TLS لجميع الاتصالات
 src/pages/Privacy.tsx:88 [jsx-text] البريد الإلكتروني: privacy@khedma.tn
-src/pages/SearchResults.tsx:155 [jsx-text] أقل من 100 د.ت
-src/pages/Settings.tsx:1080 [jsx-text] t.id === activeTab)?.label}
+src/pages/SearchResults.tsx:95 [attribute] Save search
+src/pages/SearchResults.tsx:125 [attribute] Close filters
+src/pages/SearchResults.tsx:300 [attribute] Close save search modal
+src/pages/SearchResults.tsx:152 [jsx-text] أقل من 100 د.ت
+src/pages/Settings.tsx:1090 [jsx-text] t.id === activeTab)?.label}
 src/pages/Signup.tsx:25 [attribute] Khedma TN
 src/pages/Terms.tsx:15 [jsx-text] آخر تحديث: يناير 2026
 src/pages/Terms.tsx:21 [jsx-text] مرحبًا بك في خدمة.تن (Khedma.tn)، منصة العمل الحر الرائدة في تونس. باستخدامك لهذه المنصة، فإنك توافق على الالتزام بهذه ا
@@ -68,5 +79,5 @@ src/pages/Terms.tsx:56 [jsx-text] رسوم المنصة: 10% من قيمة كل 
 src/pages/Terms.tsx:58 [jsx-text] فترة الاحتفاظ بالمدفوعات: 7 أيام
 src/pages/Terms.tsx:73 [jsx-text] البريد الإلكتروني: legal@khedma.tn
 src/pages/VerifyEmail.tsx:57 [attribute] Khedma TN
-src/pages/Wallet.tsx:513 [attribute] IBAN (TN59...)
-src/pages/Wallet.tsx:527 [attribute] +216 XX XXX XXX
+src/pages/Wallet.tsx:521 [attribute] IBAN (TN59...)
+src/pages/Wallet.tsx:536 [attribute] +216 XX XXX XXX

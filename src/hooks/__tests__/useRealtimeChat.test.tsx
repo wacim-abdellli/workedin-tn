@@ -25,7 +25,7 @@ vi.mock('@/lib/logger', () => ({
 }));
 
 vi.mock('@/services/messages', () => ({
-    sendMessage: chatState.sendMessageRecord,
+    sendContractMessage: chatState.sendMessageRecord,
 }));
 
 vi.mock('@/lib/supabase', () => {

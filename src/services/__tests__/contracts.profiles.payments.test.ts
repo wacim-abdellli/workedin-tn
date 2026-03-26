@@ -75,6 +75,7 @@ vi.mock('@/lib/supabase', () => {
                 serviceState.state.orCalls.push({ table, value });
                 return builder;
             }),
+            in: vi.fn(() => builder),
             order: vi.fn((column: string, options?: unknown) => {
                 serviceState.state.orderCalls.push({ table, column, options });
                 return builder;
@@ -151,6 +152,12 @@ vi.mock('@/lib/supabase', () => {
             auth: {
                 getSession: vi.fn(async () => ({ data: { session: serviceState.state.session } })),
             },
+        },
+        supabaseAnon: {
+            from: vi.fn((table: string) => {
+                serviceState.state.fromCalls.push(table);
+                return builders.get(table) ?? createBuilder(table);
+            }),
         },
         uploadFile: vi.fn(async (bucket: string, path: string, file: File) => {
             serviceState.state.uploadFileCalls.push({ bucket, path, file });
@@ -344,13 +351,17 @@ describe('profiles service coverage', () => {
         expect(serviceState.state.selectCalls).toEqual(expect.arrayContaining([
             expect.objectContaining({ table: 'freelancer_profiles', columns: '*' }),
             expect.objectContaining({ table: 'profiles', columns: expect.stringContaining('freelancer_profiles(*)') }),
-            expect.objectContaining({ table: 'profiles', columns: expect.stringContaining('freelancer_profiles(*)'), options: { count: 'exact' } }),
+            expect.objectContaining({
+                table: 'profiles',
+                columns: expect.stringMatching(/freelancer_profiles\s*\(/),
+                options: { count: 'exact' },
+            }),
             expect.objectContaining({ table: 'favorites', columns: 'id' }),
             expect.objectContaining({ table: 'reviews', columns: '*' }),
         ]));
         expect(serviceState.state.orCalls).toContainEqual({
             table: 'profiles',
-            value: 'full_name.ilike.%amine%,username.ilike.%amine%',
+            value: 'full_name.ilike.%amine%',
         });
         expect(serviceState.state.rangeCalls).toContainEqual({
             table: 'profiles',

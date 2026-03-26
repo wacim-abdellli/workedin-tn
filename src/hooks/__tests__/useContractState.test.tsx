@@ -14,7 +14,7 @@ vi.mock('@/lib/logger', () => ({
 }));
 
 vi.mock('@/services/messages', () => ({
-    sendMessage: hookState.sendMessage,
+    sendContractMessage: hookState.sendMessage,
 }));
 
 vi.mock('@/lib/supabase', () => {
@@ -23,6 +23,7 @@ vi.mock('@/lib/supabase', () => {
             select: vi.fn(() => builder),
             eq: vi.fn(() => builder),
             single: vi.fn(async () => hookState.tableResults[table] ?? { data: null, error: null }),
+            insert: vi.fn(() => builder),
             update: vi.fn((value: unknown) => {
                 hookState.updateCalls.push({ table, value });
                 return builder;
