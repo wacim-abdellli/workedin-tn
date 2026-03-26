@@ -3,18 +3,20 @@ import { FileText, Grid, Lightbulb } from 'lucide-react';
 import Input from '../ui/Input';
 import { FileUpload } from '../common/FileUpload';
 import { PREDEFINED_SKILLS } from '../../types';
+import { useTranslation } from '../../i18n';
 
 export default function StepJobBasics() {
     const { register, control, formState: { errors }, watch, setValue } = useFormContext();
+    const { tx } = useTranslation();
     const description = watch('description') || '';
     const selectedSkills = watch('required_skills') || [];
 
     // Categories mock data - in real app, fetch from DB
     const categories = [
-        { id: 'design', name: 'تصميم وإبداع' },
-        { id: 'development', name: 'برمجة وتطوير' },
-        { id: 'marketing', name: 'تسويق ومبيعات' },
-        { id: 'writing', name: 'كتابة وترجمة' },
+        { id: 'design', name: tx('jobs.new.stepBasics.categoryDesign', undefined, 'تصميم وإبداع') },
+        { id: 'development', name: tx('jobs.new.stepBasics.categoryDevelopment', undefined, 'برمجة وتطوير') },
+        { id: 'marketing', name: tx('jobs.new.stepBasics.categoryMarketing', undefined, 'تسويق ومبيعات') },
+        { id: 'writing', name: tx('jobs.new.stepBasics.categoryWriting', undefined, 'كتابة وترجمة') },
     ];
 
     const toggleSkill = (skill: any) => {
@@ -33,17 +35,17 @@ export default function StepJobBasics() {
             <div className="space-y-4">
                 <h3 className="flex items-center gap-2 text-xl font-bold text-gray-900 dark:text-white">
                     <FileText className="w-6 h-6 text-primary-600" />
-                    تفاصيل المهمة
+                    {tx('jobs.new.stepBasics.title', undefined, 'تفاصيل المهمة')}
                 </h3>
                 <p className="text-gray-500 dark:text-gray-400">
-                    ابدأ بعنوان واضح ووصف دقيق لمشروعك لجذب أفضل المستقلين.
+                    {tx('jobs.new.stepBasics.subtitle', undefined, 'ابدأ بعنوان واضح ووصف دقيق لمشروعك لجذب أفضل المستقلين.')}
                 </p>
             </div>
 
             <div className="space-y-6">
                 <Input
-                    label="عنوان المشروع"
-                    placeholder="مثال: تصميم شعار لشركة مواد غذائية"
+                    label={tx('jobs.new.stepBasics.projectTitle', undefined, 'عنوان المشروع')}
+                    placeholder={tx('jobs.new.stepBasics.projectTitlePlaceholder', undefined, 'مثال: تصميم شعار لشركة مواد غذائية')}
                     error={errors.title?.message as string}
                     {...register('title')}
                     leftIcon={<FileText className="w-5 h-5 text-gray-400" />}
@@ -51,13 +53,13 @@ export default function StepJobBasics() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">التصنيف الرئيسي</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{tx('jobs.new.stepBasics.mainCategory', undefined, 'التصنيف الرئيسي')}</label>
                         <div className="relative">
                             <select
                                 {...register('category')}
                                 className="w-full appearance-none rounded-xl border border-gray-200 bg-white pl-4 pr-10 py-3 text-gray-900 transition-all duration-200 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20 dark:border-white/10 dark:bg-[#1a1825] dark:text-white"
                             >
-                                <option value="">اختر التصنيف</option>
+                                <option value="">{tx('jobs.new.stepBasics.selectCategory', undefined, 'اختر التصنيف')}</option>
                                 {categories.map(cat => (
                                     <option key={cat.id} value={cat.id}>{cat.name}</option>
                                 ))}
@@ -71,15 +73,15 @@ export default function StepJobBasics() {
                 </div>
 
                 <div className="space-y-2">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">وصف المشروع</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{tx('jobs.new.stepBasics.projectDescription', undefined, 'وصف المشروع')}</label>
                     <textarea
                         {...register('description')}
                         rows={8}
                         className="w-full resize-none rounded-xl border border-gray-200 bg-white px-4 py-3 text-gray-900 placeholder:text-gray-400 transition-all duration-200 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20 dark:border-white/10 dark:bg-[#1a1825] dark:text-white dark:placeholder:text-gray-600"
-                        placeholder="اشرح تفاصيل المشروع، المخرجات المتوقعة، وأي متطلبات خاصة..."
+                        placeholder={tx('jobs.new.stepBasics.projectDescriptionPlaceholder', undefined, 'اشرح تفاصيل المشروع، المخرجات المتوقعة، وأي متطلبات خاصة...')}
                     />
                     <div className="flex justify-between px-1 text-xs text-gray-500 dark:text-gray-400">
-                        <span>{description.length} / 2000 حرف</span>
+                        <span>{tx('jobs.new.stepBasics.characterCount', { current: description.length, max: 2000 }, `${description.length} / 2000 حرف`)}</span>
                         {errors.description && (
                             <span className="text-red-500">{errors.description.message as string}</span>
                         )}
@@ -89,15 +91,15 @@ export default function StepJobBasics() {
                     <div className="mt-2 flex items-start gap-3 rounded-xl bg-blue-50 p-4 text-sm text-blue-700 dark:bg-blue-500/10 dark:text-blue-200">
                         <Lightbulb className="w-5 h-5 flex-shrink-0" />
                         <ul className="space-y-1 list-disc list-inside">
-                            <li>كن دقيقاً في وصف المطلوب</li>
-                            <li>حدد المخرجات النهائية بوضوح</li>
-                            <li>أضف روابط لمشاريع مشابهة إن وجدت</li>
+                            <li>{tx('jobs.new.stepBasics.tip1', undefined, 'كن دقيقاً في وصف المطلوب')}</li>
+                            <li>{tx('jobs.new.stepBasics.tip2', undefined, 'حدد المخرجات النهائية بوضوح')}</li>
+                            <li>{tx('jobs.new.stepBasics.tip3', undefined, 'أضف روابط لمشاريع مشابهة إن وجدت')}</li>
                         </ul>
                     </div>
                 </div>
 
                 <div className="space-y-3">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">المهارات المطلوبة (بحد أقصى 5)</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{tx('jobs.new.stepBasics.requiredSkills', undefined, 'المهارات المطلوبة (بحد أقصى 5)')}</label>
                     <div className="flex flex-wrap gap-2">
                         {PREDEFINED_SKILLS.map(skill => {
                             const isSelected = selectedSkills.find((s: any) => s.id === skill.id);
@@ -133,8 +135,8 @@ export default function StepJobBasics() {
                         <FileUpload
                             value={field.value || []}
                             onChange={field.onChange}
-                            label="المرفقات (اختياري)"
-                            description="PDF, DOC, DOCX, TXT - حد أقصى 10MB لكل ملف"
+                            label={tx('jobs.new.stepBasics.attachments', undefined, 'المرفقات (اختياري)')}
+                            description={tx('jobs.new.stepBasics.attachmentsDescription', undefined, 'PDF, DOC, DOCX, TXT - حد أقصى 10MB لكل ملف')}
                             accept=".pdf,.doc,.docx,.txt"
                             maxSize={10}
                             maxFiles={5}

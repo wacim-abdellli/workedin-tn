@@ -4,12 +4,14 @@ import { Header } from '@/components/layout'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
 import { useQuery } from '@tanstack/react-query'
+import { useTranslation } from '@/i18n'
 import {
   AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer
 } from 'recharts'
 
 export default function FreelancerEarnings() {
   const { user } = useAuth()
+  const { language, tx } = useTranslation()
   const navigate = useNavigate()
 
   // This is a simplified fetch assuming there is a wallets and transactions table.
@@ -66,7 +68,8 @@ export default function FreelancerEarnings() {
   }
 
   const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString('en-US', {
+    const locale = language === 'fr' ? 'fr-FR' : language === 'en' ? 'en-US' : 'ar-TN'
+    return new Date(dateStr).toLocaleDateString(locale, {
       year: 'numeric', month: 'short', day: 'numeric'
     })
   }
@@ -79,36 +82,36 @@ export default function FreelancerEarnings() {
         {/* Balance hero card */}
         <div className="mb-6 bg-gradient-to-r from-purple-600 to-violet-600 rounded-2xl p-6 text-white shadow-lg flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div>
-            <p className="text-sm text-purple-200 font-medium tracking-wide uppercase">Available balance</p>
+            <p className="text-sm text-purple-200 font-medium tracking-wide uppercase">{tx('pages.freelancerEarnings.availableBalance', undefined, 'Available balance')}</p>
             <h1 className="text-4xl font-bold mt-1">{(balance?.balance || 0).toLocaleString()} TND</h1>
             <p className="text-sm text-purple-200 mt-2">
-              {(balance?.pending || 0).toLocaleString()} TND pending clearance
+              {tx('pages.freelancerEarnings.pendingClearance', { amount: (balance?.pending || 0).toLocaleString() }, `${(balance?.pending || 0).toLocaleString()} TND pending clearance`)}
             </p>
           </div>
           <button className="bg-white text-purple-600 font-semibold px-6 py-2.5 rounded-xl hover:bg-purple-50 transition-colors shrink-0">
-            Withdraw
+            {tx('pages.freelancerEarnings.withdraw', undefined, 'Withdraw')}
           </button>
         </div>
 
         {/* Stats row */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
           <div className="bg-white dark:bg-[#1a1825] rounded-2xl p-4 border border-gray-100 dark:border-white/5">
-            <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">Total earned</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">{tx('pages.freelancerEarnings.totalEarned', undefined, 'Total earned')}</p>
             <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{stats.totalEarned.toLocaleString()} TND</p>
           </div>
           <div className="bg-white dark:bg-[#1a1825] rounded-2xl p-4 border border-gray-100 dark:border-white/5">
-            <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">This month</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">{tx('pages.freelancerEarnings.thisMonth', undefined, 'This month')}</p>
             <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{stats.thisMonth.toLocaleString()} TND</p>
           </div>
           <div className="bg-white dark:bg-[#1a1825] rounded-2xl p-4 border border-gray-100 dark:border-white/5">
-            <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">Completed contracts</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">{tx('pages.freelancerEarnings.completedContracts', undefined, 'Completed contracts')}</p>
             <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{stats.completedContracts}</p>
           </div>
         </div>
 
         {/* Earnings chart section */}
         <div className="mb-8">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Earnings overview</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{tx('pages.freelancerEarnings.earningsOverview', undefined, 'Earnings overview')}</h2>
           <div className="bg-white dark:bg-[#1a1825] rounded-2xl p-5 border border-gray-100 dark:border-white/5 h-[240px]">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
@@ -132,7 +135,7 @@ export default function FreelancerEarnings() {
 
         {/* Transaction list */}
         <div>
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Payment history</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{tx('pages.freelancerEarnings.paymentHistory', undefined, 'Payment history')}</h2>
           
           <div className="bg-white dark:bg-[#1a1825] rounded-2xl border border-gray-100 dark:border-white/5 overflow-hidden">
             {isTxLoading ? (
@@ -142,35 +145,35 @@ export default function FreelancerEarnings() {
             ) : !transactions || transactions.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center px-4">
                 <Wallet className="w-10 h-10 text-gray-300 dark:text-gray-600 mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white">No earnings yet</h3>
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white">{tx('pages.freelancerEarnings.noEarningsTitle', undefined, 'No earnings yet')}</h3>
                 <p className="text-gray-500 dark:text-gray-400 mt-1 max-w-sm">
-                  Complete your first project to see earnings here.
+                  {tx('pages.freelancerEarnings.noEarningsDescription', undefined, 'Complete your first project to see earnings here.')}
                 </p>
                 <button
                   onClick={() => navigate('/jobs')}
                   className="mt-4 bg-purple-600 hover:bg-purple-500 text-white px-5 py-2 rounded-xl transition-colors font-medium text-sm"
                 >
-                  Browse jobs
+                  {tx('pages.freelancerEarnings.browseJobs', undefined, 'Browse jobs')}
                 </button>
               </div>
             ) : (
               <div className="divide-y divide-gray-100 dark:divide-white/5">
-                {transactions.map((tx: any) => (
-                  <div key={tx.id} className="flex items-center justify-between px-5 py-3 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+                {transactions.map((transaction: any) => (
+                  <div key={transaction.id} className="flex items-center justify-between px-5 py-3 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
                     <div className="flex-1 min-w-0 pr-4">
                       <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                        {tx.description || 'Contract payment'}
+                        {transaction.description || tx('pages.freelancerEarnings.contractPayment', undefined, 'Contract payment')}
                       </p>
                       <p className="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">
-                        Client #{tx.related_id || 'N/A'}
+                        {tx('pages.freelancerEarnings.clientId', { id: transaction.related_id || tx('pages.freelancerEarnings.notAvailable', undefined, 'N/A') }, `Client #${transaction.related_id || 'N/A'}`)}
                       </p>
                     </div>
                     <div className="text-right flex-shrink-0">
                       <p className="text-sm text-gray-400 mb-0.5">
-                        {formatDate(tx.created_at)}
+                        {formatDate(transaction.created_at)}
                       </p>
-                      <p className={`text-sm font-semibold ${tx.amount > 0 ? 'text-green-600 dark:text-green-400' : 'text-gray-900 dark:text-white'}`}>
-                        {tx.amount > 0 ? '+' : ''}{tx.amount} TND
+                      <p className={`text-sm font-semibold ${transaction.amount > 0 ? 'text-green-600 dark:text-green-400' : 'text-gray-900 dark:text-white'}`}>
+                        {transaction.amount > 0 ? '+' : ''}{transaction.amount} TND
                       </p>
                     </div>
                   </div>

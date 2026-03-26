@@ -2,6 +2,7 @@ import { Component, type ErrorInfo, type ReactNode } from 'react';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 
 import { logger } from '@/lib/logger';
+import { useTranslation } from '@/i18n';
 
 import Button from './Button';
 
@@ -14,7 +15,7 @@ interface State {
     error: Error | null;
 }
 
-class ErrorBoundary extends Component<Props, State> {
+class ErrorBoundaryInner extends Component<Props & { tx: (key: string, params?: Record<string, string | number>, fallback?: string) => string }, State> {
     public state: State = {
         hasError: false,
         error: null,
@@ -45,10 +46,10 @@ class ErrorBoundary extends Component<Props, State> {
                             <AlertTriangle className="h-8 w-8 text-red-600 dark:text-red-300" />
                         </div>
                         <h1 className="mb-3 text-3xl font-bold tracking-[-0.02em] text-[#171420] dark:text-white">
-                            Something went wrong
+                            {this.props.tx('pages.errorBoundary.title', undefined, 'Something went wrong')}
                         </h1>
                         <p className="mx-auto mb-6 max-w-md text-base leading-7 text-[#625c78] dark:text-[#a7a2ba]">
-                            An unexpected error interrupted this page. Refresh and try again, or head back to the homepage.
+                            {this.props.tx('pages.errorBoundary.description', undefined, 'An unexpected error interrupted this page. Refresh and try again, or head back to the homepage.')}
                         </p>
                         <div className="flex flex-col justify-center gap-3 sm:flex-row">
                             <Button
@@ -56,10 +57,10 @@ class ErrorBoundary extends Component<Props, State> {
                                 onClick={() => window.location.reload()}
                                 leftIcon={<RefreshCw className="h-4 w-4" />}
                             >
-                                Refresh page
+                                {this.props.tx('pages.errorBoundary.refresh', undefined, 'Refresh page')}
                             </Button>
                             <Button variant="primary" onClick={() => { window.location.href = '/'; }}>
-                                Back to home
+                                {this.props.tx('pages.errorBoundary.backHome', undefined, 'Back to home')}
                             </Button>
                         </div>
                     </div>
@@ -69,6 +70,11 @@ class ErrorBoundary extends Component<Props, State> {
 
         return this.props.children;
     }
+}
+
+function ErrorBoundary(props: Props) {
+    const { tx } = useTranslation();
+    return <ErrorBoundaryInner {...props} tx={tx} />;
 }
 
 export default ErrorBoundary;

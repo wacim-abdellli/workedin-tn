@@ -47,7 +47,7 @@ const UploadCard = ({
     canProceed,
     inputId
 }: UploadCardProps) => {
-    const { t } = useTranslation();
+    const { t, tx } = useTranslation();
 
     return (
         <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-xl border border-gray-100 dark:border-gray-700">
@@ -64,13 +64,13 @@ const UploadCard = ({
             <div className="mb-8">
                 {preview ? (
                     <div className="relative rounded-xl overflow-hidden border-2 border-primary-500 group">
-                        <img src={preview} alt="Preview" className="w-full h-64 object-cover" />
+                        <img src={preview} alt={tx('verifyIdentity.preview', undefined, 'Preview')} className="w-full h-64 object-cover" />
                         <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                             <button
                                 onClick={() => document.getElementById(inputId)?.click()}
                                 className="bg-white text-gray-900 px-4 py-2 rounded-lg font-medium hover:bg-gray-100 transition-colors"
                             >
-                                تغيير
+                                {tx('verifyIdentity.changeImage', undefined, 'تغيير')}
                             </button>
                         </div>
                     </div>
@@ -82,8 +82,8 @@ const UploadCard = ({
                         <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center text-gray-400 group-hover:text-primary-500 mb-4 transition-colors">
                             <Upload className="w-8 h-8" />
                         </div>
-                        <p className="text-gray-600 dark:text-gray-300 font-medium">اضغط لرفع الصورة</p>
-                        <p className="text-sm text-gray-400 mt-1">JPG, PNG (Max 5MB)</p>
+                        <p className="text-gray-600 dark:text-gray-300 font-medium">{tx('verifyIdentity.uploadHint', undefined, 'اضغط لرفع الصورة')}</p>
+                        <p className="text-sm text-gray-400 mt-1">{tx('verifyIdentity.fileFormatHint', undefined, 'JPG, PNG (Max 5MB)')}</p>
                     </div>
                 )}
                 <input
@@ -126,7 +126,7 @@ const UploadCard = ({
 
 export default function VerifyIdentity() {
     const { user, profile, session } = useAuth();
-    // t is used in nested UploadCard component, not here
+    const { tx } = useTranslation();
     const navigate = useNavigate();
     const { showToast } = useToast();
 
@@ -148,13 +148,13 @@ export default function VerifyIdentity() {
     const handleFileSelect = useCallback((type: 'front' | 'back' | 'selfie', file: File) => {
         // Validate file size (max 5MB)
         if (file.size > 5 * 1024 * 1024) {
-            showToast('حجم الملف كبير جداً (الحد الأقصى 5MB)', 'error');
+            showToast(tx('verifyIdentity.errors.fileTooLarge', undefined, 'حجم الملف كبير جداً (الحد الأقصى 5MB)'), 'error');
             return;
         }
 
         // Validate file type
         if (!file.type.startsWith('image/')) {
-            showToast('يجب تحميل صورة صالحة', 'error');
+            showToast(tx('verifyIdentity.errors.invalidImage', undefined, 'يجب تحميل صورة صالحة'), 'error');
             return;
         }
 
@@ -173,13 +173,13 @@ export default function VerifyIdentity() {
         try {
             // Validate CIN number (8 digits)
             if (!/^\d{8}$/.test(cinNumber)) {
-                showToast('رقم البطاقة يجب أن يحتوي على 8 أرقام', 'error');
+                showToast(tx('verifyIdentity.errors.invalidCin', undefined, 'رقم البطاقة يجب أن يحتوي على 8 أرقام'), 'error');
                 setLoading(false);
                 return;
             }
 
             if (!uploads.front || !uploads.back || !uploads.selfie) {
-                showToast('يرجى تحميل جميع الصور المطلوبة', 'error');
+                showToast(tx('verifyIdentity.errors.missingImages', undefined, 'يرجى تحميل جميع الصور المطلوبة'), 'error');
                 setLoading(false);
                 return;
             }
@@ -190,7 +190,7 @@ export default function VerifyIdentity() {
             const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 
             if (!session?.access_token) {
-                throw new Error('No auth session - please login again');
+                throw new Error(tx('verifyIdentity.errors.noSession', undefined, 'No auth session - please login again'));
             }
             logger.log('Session available, starting uploads...');
 
@@ -358,7 +358,7 @@ export default function VerifyIdentity() {
             } catch (fetchError) {
                 clearTimeout(timeoutId);
                 if (fetchError instanceof Error && fetchError.name === 'AbortError') {
-                    throw new Error('Database insert timed out after 30 seconds. Supabase may be under maintenance.');
+                    throw new Error(tx('verifyIdentity.errors.insertTimeout', undefined, 'Database insert timed out after 30 seconds. Supabase may be under maintenance.'));
                 }
                 throw fetchError;
             }
@@ -389,11 +389,11 @@ export default function VerifyIdentity() {
             }
 
             setStep('submitted');
-            showToast('تم تقديم طلب التحقق بنجاح', 'success');
+            showToast(tx('verifyIdentity.success.submitted', undefined, 'تم تقديم طلب التحقق بنجاح'), 'success');
         } catch (error) {
             logger.error('Verification submission error:', error);
-            const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
-            showToast(`خطأ: ${errorMessage}`, 'error');
+            const errorMessage = error instanceof Error ? error.message : tx('verifyIdentity.errors.unexpected', undefined, 'An unexpected error occurred');
+            showToast(tx('verifyIdentity.errors.withMessage', { message: errorMessage }, `خطأ: ${errorMessage}`), 'error');
         } finally {
             setLoading(false);
         }
@@ -407,21 +407,21 @@ export default function VerifyIdentity() {
     if (profile?.cin_verified) {
         return (
             <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 py-12">
-                <SEO title="التحقق من الهوية" description="قم بتوثيق هويتك لزيادة ثقة العملاء وفتح جميع ميزات المنصة" />
+                <SEO title={tx('verifyIdentity.seo.title', undefined, 'التحقق من الهوية')} description={tx('verifyIdentity.seo.description', undefined, 'قم بتوثيق هويتك لزيادة ثقة العملاء وفتح جميع ميزات المنصة')} />
                 <div className="container mx-auto px-4">
                     <div className="max-w-2xl mx-auto text-center bg-white dark:bg-gray-800 rounded-3xl p-12 shadow-xl border border-green-100 dark:border-green-900">
                         <div className="w-24 h-24 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
                             <CheckCircle2 className="w-12 h-12 text-green-600 dark:text-green-400" />
                         </div>
-                        <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">تم التحقق من هويتك بنجاح</h2>
+                        <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">{tx('verifyIdentity.verified.title', undefined, 'تم التحقق من هويتك بنجاح')}</h2>
                         <p className="text-gray-600 dark:text-gray-300 text-lg mb-8">
-                            حسابك موثق الآن وحصلت على شارة التحقق الزرقاء. يمكنك الآن الاستمتاع بجميع ميزات المنصة.
+                            {tx('verifyIdentity.verified.description', undefined, 'حسابك موثق الآن وحصلت على شارة التحقق الزرقاء. يمكنك الآن الاستمتاع بجميع ميزات المنصة.')}
                         </p>
                         <button
                             onClick={() => navigate('/settings?tab=profile')}
                             className="bg-primary-600 hover:bg-primary-700 text-white px-8 py-3 rounded-xl font-medium transition-colors shadow-lg shadow-primary-600/20"
                         >
-                            العودة إلى الإعدادات
+                            {tx('verifyIdentity.backToSettings', undefined, 'العودة إلى الإعدادات')}
                         </button>
                     </div>
                 </div>
@@ -433,7 +433,7 @@ export default function VerifyIdentity() {
     if (profile?.cin_submitted && !profile?.cin_verified) {
         return (
             <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 py-12">
-                <SEO title="طلب التحقق قيد المراجعة" description="طلب التحقق من الهوية قيد المراجعة من قبل فريقنا" />
+                <SEO title={tx('verifyIdentity.pending.seoTitle', undefined, 'طلب التحقق قيد المراجعة')} description={tx('verifyIdentity.pending.seoDescription', undefined, 'طلب التحقق من الهوية قيد المراجعة من قبل فريقنا')} />
                 <div className="container mx-auto px-4">
                     <div className="max-w-2xl mx-auto text-center bg-white dark:bg-gray-800 rounded-3xl p-12 shadow-xl border-2 border-orange-200 dark:border-orange-900">
                         <div className="w-24 h-24 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -441,26 +441,26 @@ export default function VerifyIdentity() {
                         </div>
                         <div className="inline-flex items-center gap-2 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 px-4 py-2 rounded-full text-sm font-medium mb-4">
                             <Loader2 className="w-4 h-4 animate-spin" />
-                            قيد المراجعة
+                            {tx('verifyIdentity.pending.badge', undefined, 'قيد المراجعة')}
                         </div>
-                        <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">طلبك قيد المراجعة</h2>
+                        <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">{tx('verifyIdentity.pending.title', undefined, 'طلبك قيد المراجعة')}</h2>
                         <p className="text-gray-600 dark:text-gray-300 text-lg mb-6">
-                            تم استلام طلب التحقق من هويتك بنجاح. فريقنا يعمل على مراجعة مستنداتك.
+                            {tx('verifyIdentity.pending.description', undefined, 'تم استلام طلب التحقق من هويتك بنجاح. فريقنا يعمل على مراجعة مستنداتك.')}
                         </p>
                         <div className="bg-gray-50 dark:bg-gray-700/50 rounded-2xl p-6 mb-8">
                             <div className="flex items-center justify-center gap-3 text-gray-700 dark:text-gray-300">
                                 <AlertCircle className="w-5 h-5 text-orange-500" />
-                                <span>مدة المراجعة: <strong>24 ساعة كحد أقصى</strong></span>
+                                <span>{tx('verifyIdentity.pending.reviewTime', undefined, 'مدة المراجعة: 24 ساعة كحد أقصى')}</span>
                             </div>
                             <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-                                سيتم إشعارك عبر البريد الإلكتروني فور اكتمال المراجعة
+                                {tx('verifyIdentity.pending.emailNotice', undefined, 'سيتم إشعارك عبر البريد الإلكتروني فور اكتمال المراجعة')}
                             </p>
                         </div>
                         <button
                             onClick={() => navigate('/settings?tab=profile')}
                             className="bg-primary-600 hover:bg-primary-700 text-white px-8 py-3 rounded-xl font-medium transition-colors shadow-lg shadow-primary-600/20"
                         >
-                            العودة إلى الإعدادات
+                            {tx('verifyIdentity.backToSettings', undefined, 'العودة إلى الإعدادات')}
                         </button>
                     </div>
                 </div>
@@ -472,21 +472,21 @@ export default function VerifyIdentity() {
     if (step === 'submitted') {
         return (
             <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 py-12">
-                <SEO title="تم تقديم الطلب" description="تم استلام طلب التحقق من الهوية" />
+                <SEO title={tx('verifyIdentity.submitted.seoTitle', undefined, 'تم تقديم الطلب')} description={tx('verifyIdentity.submitted.seoDescription', undefined, 'تم استلام طلب التحقق من الهوية')} />
                 <div className="container mx-auto px-4">
                     <div className="max-w-2xl mx-auto text-center bg-white dark:bg-gray-800 rounded-3xl p-12 shadow-xl border border-primary-100 dark:border-primary-900">
                         <div className="w-24 h-24 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
                             <Shield className="w-12 h-12 text-primary-600 dark:text-primary-400" />
                         </div>
-                        <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">تم استلام طلبك بنجاح</h2>
+                        <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">{tx('verifyIdentity.submitted.title', undefined, 'تم استلام طلبك بنجاح')}</h2>
                         <p className="text-gray-600 dark:text-gray-300 text-lg mb-8">
-                            سيقوم فريقنا بمراجعة مستنداتك والرد عليك في أقرب وقت ممكن (عادة خلال 24 ساعة). سنقوم بإشعارك عبر البريد الإلكتروني عند اكتمال المراجعة.
+                            {tx('verifyIdentity.submitted.description', undefined, 'سيقوم فريقنا بمراجعة مستنداتك والرد عليك في أقرب وقت ممكن (عادة خلال 24 ساعة). سنقوم بإشعارك عبر البريد الإلكتروني عند اكتمال المراجعة.')}
                         </p>
                         <button
                             onClick={() => navigate('/settings?tab=profile')}
                             className="bg-primary-600 hover:bg-primary-700 text-white px-8 py-3 rounded-xl font-medium transition-colors shadow-lg shadow-primary-600/20"
                         >
-                            العودة إلى الإعدادات
+                            {tx('verifyIdentity.backToSettings', undefined, 'العودة إلى الإعدادات')}
                         </button>
                     </div>
                 </div>
@@ -496,15 +496,15 @@ export default function VerifyIdentity() {
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 py-12">
-            <SEO title="التحقق من الهوية" description="قم بتوثيق هويتك لزيادة ثقة العملاء وفتح جميع ميزات المنصة" />
+            <SEO title={tx('verifyIdentity.seo.title', undefined, 'التحقق من الهوية')} description={tx('verifyIdentity.seo.description', undefined, 'قم بتوثيق هويتك لزيادة ثقة العملاء وفتح جميع ميزات المنصة')} />
 
             <div className="container mx-auto px-4">
                 <div className="max-w-3xl mx-auto">
                     {/* Header */}
                     <div className="text-center mb-12">
-                        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">توثيق الهوية</h1>
+                        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">{tx('verifyIdentity.header.title', undefined, 'توثيق الهوية')}</h1>
                         <p className="text-gray-600 dark:text-gray-400 text-lg">
-                            خطوة واحدة تفصلك عن زيادة ثقة عملائك وحماية حسابك
+                            {tx('verifyIdentity.header.subtitle', undefined, 'خطوة واحدة تفصلك عن زيادة ثقة عملائك وحماية حسابك')}
                         </p>
                     </div>
 
@@ -538,8 +538,8 @@ export default function VerifyIdentity() {
                         {step === 'front' && (
                             <UploadCard
                                 inputId="front-upload"
-                                title="صورة وجه بطاقة التعريف"
-                                description="يرجى تحميل صورة واضحة للوجه الأمامي لبطاقة التعريف الوطنية"
+                                title={tx('verifyIdentity.steps.front.title', undefined, 'صورة وجه بطاقة التعريف')}
+                                description={tx('verifyIdentity.steps.front.description', undefined, 'يرجى تحميل صورة واضحة للوجه الأمامي لبطاقة التعريف الوطنية')}
                                 icon={<CheckCircle2 className="w-8 h-8" />}
                                 preview={previews.front}
                                 onFileSelect={(file) => handleFileSelect('front', file)}
@@ -551,8 +551,8 @@ export default function VerifyIdentity() {
                         {step === 'back' && (
                             <UploadCard
                                 inputId="back-upload"
-                                title="صورة ظهر بطاقة التعريف"
-                                description="يرجى تحميل صورة واضحة للوجه الخلفي لبطاقة التعريف الوطنية"
+                                title={tx('verifyIdentity.steps.back.title', undefined, 'صورة ظهر بطاقة التعريف')}
+                                description={tx('verifyIdentity.steps.back.description', undefined, 'يرجى تحميل صورة واضحة للوجه الخلفي لبطاقة التعريف الوطنية')}
                                 icon={<CheckCircle2 className="w-8 h-8" />}
                                 preview={previews.back}
                                 onFileSelect={(file) => handleFileSelect('back', file)}
@@ -565,8 +565,8 @@ export default function VerifyIdentity() {
                         {step === 'selfie' && (
                             <UploadCard
                                 inputId="selfie-upload"
-                                title="صورة شخصية (سيلفي)"
-                                description="يرجى التقاط صورة سيلفي واضحة للتحقق من هويتك"
+                                title={tx('verifyIdentity.steps.selfie.title', undefined, 'صورة شخصية (سيلفي)')}
+                                description={tx('verifyIdentity.steps.selfie.description', undefined, 'يرجى التقاط صورة سيلفي واضحة للتحقق من هويتك')}
                                 icon={<Camera className="w-8 h-8" />}
                                 preview={previews.selfie}
                                 onFileSelect={(file) => handleFileSelect('selfie', file)}
@@ -578,25 +578,25 @@ export default function VerifyIdentity() {
 
                         {step === 'review' && (
                             <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-xl border border-gray-100 dark:border-gray-700">
-                                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 text-center">مراجعة البيانات</h2>
+                                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 text-center">{tx('verifyIdentity.review.title', undefined, 'مراجعة البيانات')}</h2>
 
                                 <div className="space-y-6">
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">رقم بطاقة الهوية (8 أرقام)</label>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{tx('verifyIdentity.review.cinLabel', undefined, 'رقم بطاقة الهوية (8 أرقام)')}</label>
                                         <input
                                             type="text"
                                             value={cinNumber}
                                             onChange={(e) => setCinNumber(e.target.value.replace(/\D/g, '').slice(0, 8))}
-                                            placeholder="12345678"
+                                            placeholder={tx('verifyIdentity.review.cinPlaceholder', undefined, '12345678')}
                                             className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white text-center text-2xl tracking-widest focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all"
                                         />
                                     </div>
 
                                     <div className="grid grid-cols-3 gap-4">
                                         {[
-                                            { title: 'وجه البطاقة', src: previews.front },
-                                            { title: 'ظهر البطاقة', src: previews.back },
-                                            { title: 'الصورة الشخصية', src: previews.selfie },
+                                            { title: tx('verifyIdentity.review.frontImage', undefined, 'وجه البطاقة'), src: previews.front },
+                                            { title: tx('verifyIdentity.review.backImage', undefined, 'ظهر البطاقة'), src: previews.back },
+                                            { title: tx('verifyIdentity.review.selfieImage', undefined, 'الصورة الشخصية'), src: previews.selfie },
                                         ].map((item, idx) => (
                                             <div key={idx} className="space-y-2">
                                                 <p className="text-xs text-center font-medium text-gray-500">{item.title}</p>
@@ -608,7 +608,7 @@ export default function VerifyIdentity() {
                                     <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl flex gap-3">
                                         <AlertCircle className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
                                         <p className="text-sm text-blue-700 dark:text-blue-300">
-                                            يتم تخزين بياناتك بشكل آمن ومشفر. لن يتم مشاركة معلومات هويتك مع أي طرف ثالث ويتم استخدامها فقط لغرض التحقق من الحساب.
+                                            {tx('verifyIdentity.review.privacyNotice', undefined, 'يتم تخزين بياناتك بشكل آمن ومشفر. لن يتم مشاركة معلومات هويتك مع أي طرف ثالث ويتم استخدامها فقط لغرض التحقق من الحساب.')}
                                         </p>
                                     </div>
 
@@ -620,7 +620,7 @@ export default function VerifyIdentity() {
                                             className="w-5 h-5 rounded text-primary-600 focus:ring-primary-500 border-gray-300 dark:border-gray-600"
                                         />
                                         <span className="text-sm text-gray-600 dark:text-gray-300 select-none">
-                                            أوافق على استخدام معلوماتي الشخصية للتحقق من هويتي وفقاً لـ <span className="text-primary-600 hover:underline">سياسة الخصوصية</span>
+                                            {tx('verifyIdentity.review.consentPrefix', undefined, 'أوافق على استخدام معلوماتي الشخصية للتحقق من هويتي وفقاً لـ ')}<span className="text-primary-600 hover:underline">{tx('verifyIdentity.review.privacyPolicy', undefined, 'سياسة الخصوصية')}</span>
                                         </span>
                                     </div>
                                 </div>
@@ -631,7 +631,7 @@ export default function VerifyIdentity() {
                                         className="flex items-center text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors"
                                     >
                                         <ChevronRight className="w-5 h-5 ml-1" />
-                                        Back
+                                        {tx('common.back', undefined, 'Back')}
                                     </button>
 
                                     <button
@@ -642,11 +642,11 @@ export default function VerifyIdentity() {
                                         {loading ? (
                                             <>
                                                 <Loader2 className="w-5 h-5 animate-spin" />
-                                                <span>جاري الإرسال...</span>
+                                                <span>{tx('verifyIdentity.review.submitting', undefined, 'جاري الإرسال...')}</span>
                                             </>
                                         ) : (
                                             <>
-                                                <span>تأكيد وإرسال</span>
+                                                <span>{tx('verifyIdentity.review.submit', undefined, 'تأكيد وإرسال')}</span>
                                                 <CheckCircle2 className="w-5 h-5" />
                                             </>
                                         )}

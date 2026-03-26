@@ -32,7 +32,7 @@ export default function ContractDetailsSidebar({
     onReview,
     hasLeftReview
 }: ContractDetailsSidebarProps) {
-    const { t } = useTranslation();
+    const { t, tx } = useTranslation();
     const [expandedSection, setExpandedSection] = useState<string | null>('actions');
 
     if (!contract) return null;
@@ -66,7 +66,7 @@ export default function ContractDetailsSidebar({
                                 'bg-gray-100 text-gray-700 border-gray-200'
                         }`}>
                         {currentStatus === 'active' && t.contract.inProgress}
-                        {currentStatus === 'completed' && 'مكتمل'}
+                        {currentStatus === 'completed' && tx('contract.completed', undefined, 'Completed')}
                         {currentStatus === 'disputed' && t.contract.disputeOpened}
                     </span>
                 </div>
@@ -78,7 +78,7 @@ export default function ContractDetailsSidebar({
                     {currentStatus === 'active' && (
                         <div className="flex items-center gap-1">
                             <Clock className="w-4 h-4 text-gray-400" />
-                            <span>{daysRemaining} {t.contract.days} متبقية</span>
+                            <span>{tx('contract.daysRemaining', { days: daysRemaining }, `${daysRemaining} ${t.contract.days} remaining`)}</span>
                         </div>
                     )}
                 </div>
@@ -86,7 +86,7 @@ export default function ContractDetailsSidebar({
 
             {/* 2. Actions Section */}
             <div className="p-4 border-b border-gray-200 bg-white">
-                <h3 className="text-sm font-semibold text-gray-900 mb-3">الإجراءات المطلوبة</h3>
+                <h3 className="text-sm font-semibold text-gray-900 mb-3">{tx('contract.requiredActions', undefined, 'Required actions')}</h3>
                 <div className="space-y-3">
                     {/* Freelancer: Deliver */}
                     {userRole === 'freelancer' && currentStatus === 'active' && (
@@ -130,7 +130,7 @@ export default function ContractDetailsSidebar({
                             className="w-full justify-center"
                             onClick={onReview}
                         >
-                            أضف تقييمك
+                            {tx('contract.addReview', undefined, 'Add your review')}
                         </Button>
                     )}
 
@@ -154,7 +154,7 @@ export default function ContractDetailsSidebar({
                 >
                     <div className="flex items-center gap-2 font-medium text-sm">
                         <CheckCircle className="w-4 h-4 text-gray-400" />
-                        محطات العمل (Milestones)
+                        {tx('contract.milestones', undefined, 'Milestones')}
                     </div>
                     {expandedSection === 'milestones' ? <ChevronUp className="w-4 h-4 text-gray-400" /> : <ChevronDown className="w-4 h-4 text-gray-400" />}
                 </button>
@@ -164,8 +164,8 @@ export default function ContractDetailsSidebar({
                         {/* Example Milestone - In future this comes from DB */}
                         <div className="bg-white border border-gray-200 rounded-lg p-3">
                             <div className="flex justify-between items-start mb-2">
-                                <h4 className="font-medium text-sm">التسليم النهائي</h4>
-                                <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">معلق</span>
+                                <h4 className="font-medium text-sm">{tx('contract.finalDelivery', undefined, 'Final delivery')}</h4>
+                                <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">{tx('contract.pending', undefined, 'Pending')}</span>
                             </div>
                             <div className="text-xs text-gray-500 flex justify-between">
                                 <span>{contract.amount} د.ت</span>
@@ -184,14 +184,14 @@ export default function ContractDetailsSidebar({
                 >
                     <div className="flex items-center gap-2 font-medium text-sm">
                         <FileText className="w-4 h-4 text-gray-400" />
-                        الملفات المشتركة
+                        {tx('contract.sharedFiles', undefined, 'Shared files')}
                     </div>
                     {expandedSection === 'files' ? <ChevronUp className="w-4 h-4 text-gray-400" /> : <ChevronDown className="w-4 h-4 text-gray-400" />}
                 </button>
 
                 {expandedSection === 'files' && (
                     <div className="p-4 bg-gray-50 text-center text-sm text-gray-500">
-                        لا توجد ملفات مشتركة بعد
+                        {tx('contract.noSharedFiles', undefined, 'No shared files yet')}
                     </div>
                 )}
             </div>
@@ -199,7 +199,9 @@ export default function ContractDetailsSidebar({
             {/* 5. Other Party Info */}
             <div className="mt-auto p-4 border-t border-gray-200 bg-gray-50">
                 <h4 className="text-xs font-semibold text-gray-500 uppercase mb-3">
-                    {userRole === 'client' ? 'يعمل على المشروع' : 'صاحب العمل'}
+                    {userRole === 'client'
+                        ? tx('contract.workingOnProject', undefined, 'Working on this project')
+                        : tx('contract.employer', undefined, 'Employer')}
                 </h4>
                 <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-white border border-gray-200 flex items-center justify-center overflow-hidden">
@@ -213,7 +215,7 @@ export default function ContractDetailsSidebar({
                         <p className="font-medium text-sm text-gray-900">{otherParty?.full_name}</p>
                         <p className="text-xs text-green-600 flex items-center gap-1">
                             <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
-                            متصل الآن
+                            {tx('contract.onlineNow', undefined, 'Online now')}
                         </p>
                     </div>
                 </div>

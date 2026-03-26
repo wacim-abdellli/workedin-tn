@@ -1,10 +1,12 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import { ar } from './ar';
 import type { Translations } from './ar';
 import { fr } from './fr';
 import { en } from './en';
 import type { Language } from '../types';
+
+type TranslationParams = Record<string, string | number>;
 
 // Immediately set HTML attributes to prevent flash of wrong direction
 const savedLang = (localStorage.getItem('i18n-language') || localStorage.getItem('language') || navigator.language.split('-')[0] || 'ar') as Language;
@@ -13,11 +15,31 @@ document.documentElement.lang = validLang;
 document.documentElement.dir = validLang === 'ar' ? 'rtl' : 'ltr';
 
 const translations: Record<Language, Translations> = { ar, fr, en };
+const warnedMissingKeys = new Set<string>();
+
+const getNestedValue = (obj: unknown, path: string): unknown => {
+    if (!path) return undefined;
+    return path.split('.').reduce<unknown>((current, segment) => {
+        if (current && typeof current === 'object' && segment in (current as Record<string, unknown>)) {
+            return (current as Record<string, unknown>)[segment];
+        }
+        return undefined;
+    }, obj);
+};
+
+const interpolate = (text: string, params?: TranslationParams): string => {
+    if (!params) return text;
+    return text.replace(/\{\{\s*(\w+)\s*\}\}/g, (_, key: string) => {
+        const value = params[key];
+        return value === undefined ? '' : String(value);
+    });
+};
 
 interface I18nContextType {
     language: Language;
     setLanguage: (lang: Language) => void;
     t: Translations;
+    tx: (key: string, params?: TranslationParams, fallback?: string) => string;
     dir: 'rtl' | 'ltr';
 }
 
@@ -54,12 +76,33 @@ export function I18nProvider({ children, defaultLanguage = 'ar' }: I18nProviderP
         document.documentElement.lang = language;
     }, [language]);
 
-    const value: I18nContextType = {
+    const tx = useCallback((key: string, params?: TranslationParams, fallback?: string) => {
+        const primary = getNestedValue(translations[language], key);
+        const fallbackEn = getNestedValue(translations.en, key);
+        const fallbackAr = getNestedValue(translations.ar, key);
+        const fallbackFr = getNestedValue(translations.fr, key);
+
+        const resolved = [primary, fallbackEn, fallbackAr, fallbackFr, fallback, key].find((item) => typeof item === 'string') as string;
+
+        if (import.meta.env.DEV && typeof primary !== 'string') {
+            const marker = `${language}:${key}`;
+            if (!warnedMissingKeys.has(marker)) {
+                warnedMissingKeys.add(marker);
+                // eslint-disable-next-line no-console
+                console.warn(`[i18n] Missing key "${key}" for language "${language}"`);
+            }
+        }
+
+        return interpolate(resolved, params);
+    }, [language]);
+
+    const value: I18nContextType = useMemo(() => ({
         language,
         setLanguage,
         t: translations[language],
+        tx,
         dir: language === 'ar' ? 'rtl' : 'ltr',
-    };
+    }), [language, setLanguage, tx]);
 
     return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
 }

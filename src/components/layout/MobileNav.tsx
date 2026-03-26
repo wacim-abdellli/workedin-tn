@@ -19,19 +19,21 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { getWorkspaceDashboardPath, getWorkspaceProfilePath } from '@/lib/workspaceRoutes';
 import { useWorkspaceStore } from '@/lib/workspaceState';
-
-const NAV_ITEMS = [
-  { id: 'home', path: '/', icon: Home, label: 'Home' },
-  { id: 'jobs', path: '/jobs', icon: Briefcase, label: 'Jobs' },
-  { id: 'messages', path: '/messages', icon: MessageSquare, label: 'Messages', badgeKey: 'messages' },
-  { id: 'notifications', path: '/notifications', icon: Bell, label: 'Notifications', badgeKey: 'notifications' },
-  { id: 'more', path: null, icon: Menu, label: 'More' },
-];
+import { useTranslation } from '@/i18n';
 
 export default function MobileNav() {
   const location = useLocation();
   const navigate = useNavigate();
   const { profile, user, signOut } = useAuth();
+  const { t, tx } = useTranslation();
+    const navItems = [
+      { id: 'home', path: '/', icon: Home, label: t.nav?.home || 'Home' },
+      { id: 'jobs', path: '/jobs', icon: Briefcase, label: t.nav?.jobs || 'Jobs' },
+      { id: 'messages', path: '/messages', icon: MessageSquare, label: t.nav?.messages || 'Messages', badgeKey: 'messages' },
+      { id: 'notifications', path: '/notifications', icon: Bell, label: t.notifications?.title || 'Notifications', badgeKey: 'notifications' },
+      { id: 'more', path: null, icon: Menu, label: tx('pages.mobileNav.more', undefined, 'More') },
+    ];
+
   const activeWorkspace = useWorkspaceStore((state) => state.activeWorkspace);
   const [showMenu, setShowMenu] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
@@ -81,7 +83,7 @@ export default function MobileNav() {
     return location.pathname.startsWith(path);
   };
 
-  const handleNavClick = (item: (typeof NAV_ITEMS)[number]) => {
+  const handleNavClick = (item: (typeof navItems)[number]) => {
     if (item.id === 'more') {
       setShowMenu(true);
       return;
@@ -93,10 +95,10 @@ export default function MobileNav() {
   };
 
   const menuItems = [
-    { icon: User, label: 'Profile', path: getWorkspaceProfilePath(profile, activeWorkspace) },
-    { icon: DollarSign, label: 'Dashboard', path: getWorkspaceDashboardPath(activeWorkspace) },
-    { icon: Settings, label: 'Settings', path: '/settings' },
-    { icon: HelpCircle, label: 'Help', path: '/faq' },
+    { icon: User, label: t.nav?.profile || 'Profile', path: getWorkspaceProfilePath(profile, activeWorkspace) },
+    { icon: DollarSign, label: t.nav?.dashboard || 'Dashboard', path: getWorkspaceDashboardPath(activeWorkspace) },
+    { icon: Settings, label: t.nav?.settings || 'Settings', path: '/settings' },
+    { icon: HelpCircle, label: tx('pages.mobileNav.help', undefined, 'Help'), path: '/faq' },
   ];
 
   const workspaceLabel =
@@ -112,7 +114,7 @@ export default function MobileNav() {
     <>
       <nav className="fixed bottom-0 left-0 right-0 z-40 h-16 border-t border-gray-200 bg-white md:hidden dark:border-white/10 dark:bg-[#0f0e17]">
         <div className="flex h-full items-center justify-around">
-          {NAV_ITEMS.map((item) => (
+          {navItems.map((item) => (
             <button
               key={item.id}
               onClick={() => handleNavClick(item)}
@@ -210,7 +212,7 @@ export default function MobileNav() {
                 className="flex w-full items-center gap-4 rounded-xl p-4 text-left text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-500/10"
               >
                 <LogOut className="h-5 w-5" />
-                <span className="font-medium">Sign out</span>
+                <span className="font-medium">{t.nav?.logout || 'Sign out'}</span>
               </button>
             </div>
           </div>

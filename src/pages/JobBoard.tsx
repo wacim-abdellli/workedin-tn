@@ -338,13 +338,13 @@ function JobBoard() {
                             </div>
                         ) : jobsError ? (
                             <div className="rounded-xl border border-red-200 bg-red-50 dark:bg-red-900/10 dark:border-red-800 p-6 text-center">
-                                <p className="text-red-600 dark:text-red-400 font-medium">Failed to load jobs</p>
-                                <p className="text-red-500 dark:text-red-500 text-sm mt-1">{(jobsError as Error)?.message || 'Unknown error'}</p>
+                                <p className="text-red-600 dark:text-red-400 font-medium">{t.jobs?.loadError || 'Failed to load jobs'}</p>
+                                <p className="text-red-500 dark:text-red-500 text-sm mt-1">{(jobsError as Error)?.message || t.common?.error || 'Unknown error'}</p>
                             </div>
                         ) : jobs.length === 0 ? (
                             <EmptyState
                                 icon={Search}
-                                title="No jobs match your search"
+                                title={t.jobs?.empty?.title || 'No jobs match your search'}
                                 description="Try different keywords or clear your filters to see more relevant freelance opportunities."
                                 illustration={(
                                     <svg width="220" height="160" viewBox="0 0 220 160" fill="none" aria-hidden="true">
@@ -363,7 +363,7 @@ function JobBoard() {
                                     </svg>
                                 )}
                                 action={{
-                                    label: "Clear filters",
+                                    label: t.jobs?.empty?.action || 'Clear filters',
                                     onClick: clearAllFilters,
                                     variant: 'primary'
                                 }}

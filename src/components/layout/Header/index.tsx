@@ -281,7 +281,7 @@ export default function Header() {
               <button
                 onClick={toggleTheme}
                 className="rounded-lg p-1.5 text-gray-500 transition-colors hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-white/5"
-                aria-label="Toggle theme"
+                aria-label={isDark ? t.common?.toggleLightMode || 'Toggle light mode' : t.common?.toggleDarkMode || 'Toggle dark mode'}
               >
                 {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
               </button>
@@ -294,13 +294,13 @@ export default function Header() {
                     onClick={() => navigate('/login')}
                     className="px-3 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
                   >
-                    Sign in
+                    {t.nav?.login || 'Sign in'}
                   </button>
                   <button
                     onClick={() => navigate('/signup')}
                     className="rounded-lg bg-purple-600 px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-purple-500"
                   >
-                    Get started
+                    {t.nav?.signup || 'Get started'}
                   </button>
                 </div>
               ) : null}
@@ -359,9 +359,9 @@ export default function Header() {
                       </div>
 
                       {[
-                        { label: 'Dashboard', Icon: User, href: '/dashboard' },
-                        { label: 'Settings', Icon: Settings, href: '/settings' },
-                        { label: 'Verify identity', Icon: Shield, href: '/verify-identity' },
+                        { label: t.nav?.dashboard || 'Dashboard', Icon: User, href: '/dashboard' },
+                        { label: t.nav?.settings || 'Settings', Icon: Settings, href: '/settings' },
+                        { label: t.settings?.cinVerification || 'Verify identity', Icon: Shield, href: '/verify-identity' },
                       ].map(({ label, Icon, href }) => (
                         <button
                           key={href}
@@ -385,7 +385,7 @@ export default function Header() {
                           className="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-red-600 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
                         >
                           <LogOut className="h-3.5 w-3.5" />
-                          Sign out
+                          {t.nav?.logout || 'Sign out'}
                         </button>
                       </div>
                     </div>
@@ -400,7 +400,7 @@ export default function Header() {
       {mobileMenuOpen ? (
         <div className="fixed inset-0 z-[60] md:hidden">
           <button
-            aria-label="Close navigation menu"
+            aria-label={t.common?.closeMenu || 'Close navigation menu'}
             className="absolute inset-0 bg-[#0f0e17]/60 backdrop-blur-sm"
             onClick={() => setMobileMenuOpen(false)}
           />
@@ -413,7 +413,7 @@ export default function Header() {
               <button
                 onClick={() => setMobileMenuOpen(false)}
                 className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-white/5"
-                aria-label="Close navigation menu"
+                aria-label={t.common?.closeMenu || 'Close navigation menu'}
               >
                 <X className="h-5 w-5" />
               </button>
@@ -428,7 +428,7 @@ export default function Header() {
                 className="flex w-full items-center gap-3 rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-left text-gray-600 dark:border-white/10 dark:bg-white/5 dark:text-gray-300"
               >
                 <Search className="h-4 w-4" />
-                <span className="text-sm">Search the platform</span>
+                <span className="text-sm">{t.common?.search || 'Search'}</span>
               </button>
 
               {user ? (
@@ -483,7 +483,7 @@ export default function Header() {
                       className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-white/5"
                     >
                       <User className="h-4 w-4 flex-shrink-0" />
-                      Dashboard
+                        {t.nav?.dashboard || 'Dashboard'}
                     </button>
                     <button
                       onClick={() => {
@@ -493,14 +493,14 @@ export default function Header() {
                       className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-white/5"
                     >
                       <Settings className="h-4 w-4 flex-shrink-0" />
-                      Settings
+                        {t.nav?.settings || 'Settings'}
                     </button>
                   </>
                 ) : null}
               </nav>
 
               <div className="rounded-2xl border border-gray-200 p-4 dark:border-white/10">
-                <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-gray-400">Language</p>
+                  <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-gray-400">{t.settings?.language || 'Language'}</p>
                 <div className="grid grid-cols-3 gap-2">
                   {LANGS.map((lang) => (
                     <button
@@ -525,7 +525,7 @@ export default function Header() {
                   className="flex items-center justify-center gap-2 rounded-2xl border border-gray-200 px-4 py-3 text-sm font-medium text-gray-700 dark:border-white/10 dark:text-gray-200"
                 >
                   {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-                  {isDark ? 'Light' : 'Dark'}
+                  {isDark ? (t.common?.toggleLightMode || 'Light') : (t.common?.toggleDarkMode || 'Dark')}
                 </button>
 
                 {!user ? (
@@ -536,7 +536,7 @@ export default function Header() {
                     }}
                     className="rounded-2xl bg-purple-600 px-4 py-3 text-sm font-semibold text-white"
                   >
-                    Sign in
+                    {t.nav?.login || 'Sign in'}
                   </button>
                 ) : null}
               </div>
@@ -551,7 +551,7 @@ export default function Header() {
                   className="flex w-full items-center justify-center gap-2 rounded-2xl border border-red-200 px-4 py-3 text-sm font-semibold text-red-600 dark:border-red-500/20 dark:text-red-400"
                 >
                   <LogOut className="h-4 w-4" />
-                  Sign out
+                  {t.nav?.logout || 'Sign out'}
                 </button>
               ) : (
                 <button
@@ -561,7 +561,7 @@ export default function Header() {
                   }}
                   className="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm font-semibold text-gray-700 dark:border-white/10 dark:text-gray-200"
                 >
-                  Get started
+                  {t.nav?.signup || 'Get started'}
                 </button>
               )}
             </div>

@@ -22,7 +22,7 @@ function FreelancerDashboardPage() {
     const { profile, signOut } = useAuth();
     const navigate = useNavigate();
     const { showToast } = useToast();
-    const { t } = useTranslation();
+    const { t, tx } = useTranslation();
 
     useEffect(() => {
         const justSwitched = sessionStorage.getItem('workspace_switched');
@@ -31,7 +31,7 @@ function FreelancerDashboardPage() {
         showToast(t.auth.accountPanel.switchedFreelancer, 'success', 2000, { position: 'bottom-center' });
     }, [showToast, t.auth.accountPanel.switchedFreelancer]);
 
-    const greeting = useMemo(() => profile?.full_name?.split(' ')[0] || 'there', [profile?.full_name]);
+    const greeting = useMemo(() => profile?.full_name?.split(' ')[0] || tx('pages.freelancerDashboard.greetingFallback', undefined, 'there'), [profile?.full_name, tx]);
 
     // Fetch real stats
     const { data: stats, isLoading } = useQuery({
@@ -98,10 +98,10 @@ function FreelancerDashboardPage() {
     });
 
     const statCards = [
-        { label: 'Active Contracts', value: stats?.activeContracts ?? 0, icon: Briefcase, tone: 'from-primary-500/20 to-primary-500/5 text-primary-600 dark:text-primary-300' },
-        { label: 'Pending Proposals', value: stats?.pendingProposals ?? 0, icon: Send, tone: 'from-amber-400/20 to-amber-400/5 text-amber-600 dark:text-amber-300' },
-        { label: 'Total Earnings', value: formatCurrency(stats?.totalEarnings ?? 0), icon: DollarSign, tone: 'from-emerald-500/20 to-emerald-500/5 text-emerald-600 dark:text-emerald-300' },
-        { label: 'Profile Views', value: (stats?.profileViews ?? 0).toLocaleString(), icon: Eye, tone: 'from-sky-500/20 to-sky-500/5 text-sky-600 dark:text-sky-300' },
+        { label: tx('pages.freelancerDashboard.stat.activeContracts', undefined, 'Active Contracts'), value: stats?.activeContracts ?? 0, icon: Briefcase, tone: 'from-primary-500/20 to-primary-500/5 text-primary-600 dark:text-primary-300' },
+        { label: tx('pages.freelancerDashboard.stat.pendingProposals', undefined, 'Pending Proposals'), value: stats?.pendingProposals ?? 0, icon: Send, tone: 'from-amber-400/20 to-amber-400/5 text-amber-600 dark:text-amber-300' },
+        { label: tx('pages.freelancerDashboard.stat.totalEarnings', undefined, 'Total Earnings'), value: formatCurrency(stats?.totalEarnings ?? 0), icon: DollarSign, tone: 'from-emerald-500/20 to-emerald-500/5 text-emerald-600 dark:text-emerald-300' },
+        { label: tx('pages.freelancerDashboard.stat.profileViews', undefined, 'Profile Views'), value: (stats?.profileViews ?? 0).toLocaleString(), icon: Eye, tone: 'from-sky-500/20 to-sky-500/5 text-sky-600 dark:text-sky-300' },
     ];
 
     const notificationIcons: Record<string, typeof Bell> = {
@@ -122,29 +122,29 @@ function FreelancerDashboardPage() {
                         {/* Left sidebar */}
                         <aside className="space-y-5">
                             <div className="premium-panel rounded-[28px] p-5">
-                                <p className="text-sm font-medium text-[#6b6880] dark:text-[#8b8aa0]">Welcome back</p>
+                                <p className="text-sm font-medium text-[#6b6880] dark:text-[#8b8aa0]">{tx('pages.freelancerDashboard.welcomeBack', undefined, 'Welcome back')}</p>
                                 <h1 className="mt-2 text-3xl font-bold text-[#1a1825] dark:text-white">{greeting}</h1>
                                 <p className="mt-3 text-sm leading-relaxed text-[#6b6880] dark:text-[#8b8aa0]">
-                                    Your freelancer business is looking sharper. Keep the momentum high and the profile polished.
+                                    {tx('pages.freelancerDashboard.welcomeDescription', undefined, 'Your freelancer business is looking sharper. Keep the momentum high and the profile polished.')}
                                 </p>
                             </div>
 
                             <ProfileCompletionCard />
 
                             <div className="premium-panel rounded-[28px] p-5">
-                                <div className="text-sm font-semibold text-[#1a1825] dark:text-white">Quick actions</div>
+                                <div className="text-sm font-semibold text-[#1a1825] dark:text-white">{tx('pages.freelancerDashboard.quickActions', undefined, 'Quick actions')}</div>
                                 <div className="mt-4 space-y-3">
                                     <Button className="w-full justify-start" leftIcon={<Plus className="h-4 w-4" />} onClick={() => navigate('/jobs')}>
-                                        Browse jobs
+                                        {tx('pages.freelancerDashboard.browseJobs', undefined, 'Browse jobs')}
                                     </Button>
                                     <Button variant="outline" className="w-full justify-start" leftIcon={<FileText className="h-4 w-4" />} onClick={() => navigate('/settings')}>
-                                        Profile settings
+                                        {tx('pages.freelancerDashboard.profileSettings', undefined, 'Profile settings')}
                                     </Button>
                                     <button
                                         onClick={() => signOut()}
                                         className="w-full rounded-2xl border border-red-200 px-4 py-3 text-left text-sm font-semibold text-red-600 transition-colors hover:bg-red-50 dark:border-red-500/20 dark:hover:bg-red-500/10"
                                     >
-                                        Sign out
+                                        {t.nav?.logout || 'Sign out'}
                                     </button>
                                 </div>
                             </div>
@@ -179,18 +179,18 @@ function FreelancerDashboardPage() {
                             <div className="premium-panel rounded-[30px] p-6">
                                 <div className="flex items-start justify-between gap-4">
                                     <div>
-                                        <h2 className="text-xl font-bold text-[#1a1825] dark:text-white">Earnings trajectory</h2>
-                                        <p className="mt-2 text-sm text-[#6b6880] dark:text-[#8b8aa0]">Last 6 months of released escrow payments.</p>
+                                        <h2 className="text-xl font-bold text-[#1a1825] dark:text-white">{tx('pages.freelancerDashboard.earningsTrajectory', undefined, 'Earnings trajectory')}</h2>
+                                        <p className="mt-2 text-sm text-[#6b6880] dark:text-[#8b8aa0]">{tx('pages.freelancerDashboard.earningsDescription', undefined, 'Last 6 months of released escrow payments.')}</p>
                                     </div>
                                     <div className="rounded-2xl border border-primary-100 bg-primary-50 px-3 py-2 text-xs font-semibold text-primary-700 dark:border-white/8 dark:bg-white/5 dark:text-primary-200">
-                                        6 month trend
+                                        {tx('pages.freelancerDashboard.sixMonthTrend', undefined, '6 month trend')}
                                     </div>
                                 </div>
 
                                 <div className="mt-6 h-[320px]">
                                     {chartData.length === 0 ? (
                                         <div className="flex h-full items-center justify-center text-sm text-[#8b8aa0]">
-                                            No earnings data yet
+                                            {tx('pages.freelancerDashboard.noEarningsData', undefined, 'No earnings data yet')}
                                         </div>
                                     ) : (
                                         <ResponsiveContainer width="100%" height="100%">
@@ -206,7 +206,7 @@ function FreelancerDashboardPage() {
                                                 <YAxis tickLine={false} axisLine={false} tick={{ fill: '#8b8aa0', fontSize: 12 }} tickFormatter={(v) => `${v} TND`} width={72} />
                                                 <Tooltip
                                                     contentStyle={{ borderRadius: 18, border: '1px solid rgba(139,92,246,0.14)', background: 'rgba(17,14,28,0.92)', color: '#fff' }}
-                                                    formatter={(v) => [`${Number(v ?? 0).toLocaleString()} TND`, 'Earnings']}
+                                                        formatter={(v) => [`${Number(v ?? 0).toLocaleString()} TND`, tx('pages.freelancerDashboard.earnings', undefined, 'Earnings')]}
                                                 />
                                                 <Area type="monotone" dataKey="earnings" stroke="#8b5cf6" strokeWidth={3} fill="url(#earningsFill)" />
                                             </AreaChart>
@@ -222,8 +222,8 @@ function FreelancerDashboardPage() {
                                         <Activity className="h-5 w-5" />
                                     </div>
                                     <div>
-                                        <h2 className="text-xl font-bold text-[#1a1825] dark:text-white">Recent activity</h2>
-                                        <p className="text-sm text-[#6b6880] dark:text-[#8b8aa0]">Your latest notifications and updates.</p>
+                                        <h2 className="text-xl font-bold text-[#1a1825] dark:text-white">{tx('pages.freelancerDashboard.recentActivity', undefined, 'Recent activity')}</h2>
+                                        <p className="text-sm text-[#6b6880] dark:text-[#8b8aa0]">{tx('pages.freelancerDashboard.recentActivityDescription', undefined, 'Your latest notifications and updates.')}</p>
                                     </div>
                                 </div>
 
@@ -231,7 +231,7 @@ function FreelancerDashboardPage() {
                                     {isLoading ? (
                                         [1, 2, 3].map((i) => <Skeleton key={i} className="h-16 rounded-2xl" />)
                                     ) : stats?.notifications.length === 0 ? (
-                                        <p className="text-sm text-[#8b8aa0]">No recent activity</p>
+                                        <p className="text-sm text-[#8b8aa0]">{tx('pages.freelancerDashboard.noRecentActivity', undefined, 'No recent activity')}</p>
                                     ) : (
                                         stats?.notifications.map((notif, index) => {
                                             const Icon = notificationIcons[notif.type] || Bell;
@@ -261,18 +261,18 @@ function FreelancerDashboardPage() {
                         <aside className="space-y-5">
                             {/* Upcoming milestones */}
                             <div className="premium-panel rounded-[28px] p-5">
-                                <div className="text-sm font-semibold text-[#1a1825] dark:text-white">Upcoming milestones</div>
+                                <div className="text-sm font-semibold text-[#1a1825] dark:text-white">{tx('pages.freelancerDashboard.upcomingMilestones', undefined, 'Upcoming milestones')}</div>
                                 <div className="mt-4 space-y-3">
                                     {isLoading ? (
                                         [1, 2, 3].map((i) => <Skeleton key={i} className="h-20 rounded-2xl" />)
                                     ) : stats?.milestones.length === 0 ? (
-                                        <p className="text-sm text-[#8b8aa0]">No upcoming milestones</p>
+                                        <p className="text-sm text-[#8b8aa0]">{tx('pages.freelancerDashboard.noUpcomingMilestones', undefined, 'No upcoming milestones')}</p>
                                     ) : (
                                         stats?.milestones.map((m) => (
                                             <div key={m.id} className="rounded-2xl border border-primary-100/80 bg-white/80 p-4 dark:border-white/8 dark:bg-white/5">
                                                 <div className="font-semibold text-[#1a1825] dark:text-white">{m.description}</div>
                                                 <div className="mt-1 text-sm text-[#6b6880] dark:text-[#8b8aa0]">
-                                                    {m.due_date ? new Date(m.due_date).toLocaleDateString() : 'No due date'}
+                                                    {m.due_date ? new Date(m.due_date).toLocaleDateString() : tx('pages.freelancerDashboard.noDueDate', undefined, 'No due date')}
                                                 </div>
                                                 <div className="mt-3 text-sm font-semibold text-primary-600 dark:text-primary-300">
                                                     {formatCurrency(m.amount)}
@@ -286,7 +286,7 @@ function FreelancerDashboardPage() {
                             {/* Unread notifications panel */}
                             <div className="premium-panel rounded-[28px] p-5">
                                 <div className="flex items-center justify-between">
-                                    <div className="text-sm font-semibold text-[#1a1825] dark:text-white">Notifications</div>
+                                    <div className="text-sm font-semibold text-[#1a1825] dark:text-white">{t.notifications?.title || 'Notifications'}</div>
                                     {(stats?.notifications.length ?? 0) > 0 && (
                                         <span className="rounded-full bg-primary-500 px-2 py-0.5 text-xs font-bold text-white">
                                             {stats?.notifications.length}
@@ -297,7 +297,7 @@ function FreelancerDashboardPage() {
                                     {isLoading ? (
                                         [1, 2, 3].map((i) => <Skeleton key={i} className="h-14 rounded-2xl" />)
                                     ) : stats?.notifications.length === 0 ? (
-                                        <p className="text-sm text-[#8b8aa0]">All caught up!</p>
+                                        <p className="text-sm text-[#8b8aa0]">{tx('pages.freelancerDashboard.allCaughtUp', undefined, 'All caught up!')}</p>
                                     ) : (
                                         stats?.notifications.map((notif) => (
                                             <div key={notif.id} className="flex gap-3 rounded-2xl bg-white/75 p-4 dark:bg-white/5">

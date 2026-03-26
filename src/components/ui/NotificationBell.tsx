@@ -169,8 +169,8 @@ export function NotificationBell({ className = '' }: { className?: string }) {
                 <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary-50 text-primary-500 dark:bg-white/5 dark:text-primary-300">
                   <Bell className="h-7 w-7" />
                 </div>
-                <p className="font-semibold text-dark-900 dark:text-white">No notifications</p>
-                <p className="mt-1 text-sm font-medium text-primary-600 dark:text-primary-300">You're all caught up</p>
+                <p className="font-semibold text-dark-900 dark:text-white">{t.notifications.empty}</p>
+                <p className="mt-1 text-sm font-medium text-primary-600 dark:text-primary-300">{t.notifications.caughtUp}</p>
                 <p className="mt-2 text-sm text-dark-500 dark:text-dark-400">{t.notifications.emptyDesc}</p>
               </div>
             ) : (

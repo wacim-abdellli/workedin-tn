@@ -5,6 +5,7 @@ import { ClipboardList } from 'lucide-react'
 
 import { Header } from '@/components/layout'
 import { useAuth } from '@/contexts/AuthContext'
+import { useTranslation } from '@/i18n'
 import { supabase } from '@/lib/supabase'
 import { useWorkspaceStore } from '@/lib/workspaceState'
 
@@ -22,6 +23,7 @@ type ContractRow = {
 
 export default function ContractsList() {
   const { user } = useAuth()
+  const { language, tx } = useTranslation()
   const { activeWorkspace } = useWorkspaceStore()
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState<ContractTab>('all')
@@ -58,11 +60,25 @@ export default function ContractsList() {
   })
 
   const formatDate = (dateStr: string) =>
-    new Date(dateStr).toLocaleDateString('en-US', {
+    new Date(dateStr).toLocaleDateString(language === 'ar' ? 'ar-TN' : language === 'fr' ? 'fr-FR' : 'en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
     })
+
+  const tabLabel = (tab: ContractTab) => {
+    if (tab === 'all') return tx('contracts.tabs.all', undefined, 'All')
+    if (tab === 'active') return tx('contracts.tabs.active', undefined, 'Active')
+    if (tab === 'completed') return tx('contracts.tabs.completed', undefined, 'Completed')
+    return tx('contracts.tabs.disputed', undefined, 'Disputed')
+  }
+
+  const statusLabel = (status: string) => {
+    if (status === 'active') return tx('contracts.status.active', undefined, 'Active')
+    if (status === 'completed') return tx('contracts.status.completed', undefined, 'Completed')
+    if (status === 'disputed') return tx('contracts.status.disputed', undefined, 'Disputed')
+    return status
+  }
 
   const activeCount = contracts?.filter((contract) => contract.status === 'active').length || 0
 
@@ -73,7 +89,7 @@ export default function ContractsList() {
       <div className="mx-auto max-w-5xl px-4 py-8">
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Contracts</h1>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{tx('contracts.title', undefined, 'Contracts')}</h1>
             {activeCount > 0 ? (
               <span
                 className={`rounded-full px-2 py-1 text-xs font-bold ${
@@ -82,7 +98,7 @@ export default function ContractsList() {
                     : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
                 }`}
               >
-                {activeCount} Active
+                {tx('contracts.activeCount', { count: activeCount }, `${activeCount} Active`)}
               </span>
             ) : null}
           </div>
@@ -101,7 +117,7 @@ export default function ContractsList() {
                   : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
               }`}
             >
-              {tab.charAt(0).toUpperCase() + tab.slice(1)}
+              {tabLabel(tab)}
             </button>
           ))}
         </div>
@@ -117,11 +133,11 @@ export default function ContractsList() {
         ) : !contracts || contracts.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
             <ClipboardList className="mb-4 h-10 w-10 text-gray-300 dark:text-gray-600" />
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white">No contracts yet</h3>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white">{tx('contracts.empty.title', undefined, 'No contracts yet')}</h3>
             <p className="mt-1 max-w-sm text-gray-500 dark:text-gray-400">
               {isFreelancer
-                ? 'Send proposals to get your first contract.'
-                : 'Hire a freelancer to create your first contract.'}
+                ? tx('contracts.empty.freelancerDescription', undefined, 'Send proposals to get your first contract.')
+                : tx('contracts.empty.clientDescription', undefined, 'Hire a freelancer to create your first contract.')}
             </p>
             <button
               onClick={() => navigate(isFreelancer ? '/jobs' : '/jobs/new')}
@@ -129,14 +145,18 @@ export default function ContractsList() {
                 isFreelancer ? 'bg-purple-600 hover:bg-purple-500' : 'bg-amber-500 hover:bg-amber-400'
               }`}
             >
-              {isFreelancer ? 'Browse jobs' : 'Post a project'}
+              {isFreelancer
+                ? tx('contracts.empty.freelancerCta', undefined, 'Browse jobs')
+                : tx('contracts.empty.clientCta', undefined, 'Post a project')}
             </button>
           </div>
         ) : (
           <div className="space-y-3">
             {contracts.map((contract) => {
               const partner = isFreelancer ? contract.client : contract.freelancer
-              const roleLabel = isFreelancer ? 'Client' : 'Freelancer'
+              const roleLabel = isFreelancer
+                ? tx('contracts.role.client', undefined, 'Client')
+                : tx('contracts.role.freelancer', undefined, 'Freelancer')
               const progressIndicatorColor = isFreelancer ? 'bg-purple-500' : 'bg-amber-500'
               const progressPercentage = 30
 
@@ -148,7 +168,7 @@ export default function ContractsList() {
                   <div className="mb-3 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                     <div>
                       <h3 className="mb-1 text-lg font-semibold text-gray-900 dark:text-white">
-                        {contract.jobs?.title || 'Unknown Project'}
+                        {contract.jobs?.title || tx('contracts.unknownProject', undefined, 'Unknown Project')}
                       </h3>
                       <div className="flex items-center gap-2">
                         <span
@@ -160,7 +180,7 @@ export default function ContractsList() {
                                 : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
                           }`}
                         >
-                          {contract.status.charAt(0).toUpperCase() + contract.status.slice(1)}
+                          {statusLabel(contract.status)}
                         </span>
                       </div>
                     </div>
@@ -168,7 +188,7 @@ export default function ContractsList() {
                     <div className="text-left sm:text-right">
                       <p className="text-lg font-bold text-gray-900 dark:text-white">{contract.amount} TND</p>
                       <p className="text-sm text-gray-500 dark:text-gray-400">
-                        Started {formatDate(contract.created_at)}
+                        {tx('contracts.startedOn', { date: formatDate(contract.created_at) }, `Started ${formatDate(contract.created_at)}`)}
                       </p>
                     </div>
                   </div>
@@ -184,14 +204,14 @@ export default function ContractsList() {
                         </div>
                       )}
                       <span className="text-sm font-medium text-gray-900 dark:text-white">
-                        {partner?.full_name || 'Unknown User'}
+                        {partner?.full_name || tx('contracts.unknownUser', undefined, 'Unknown User')}
                       </span>
                     </div>
                   </div>
 
                   <div className="mb-4">
                     <div className="mb-1 flex items-center justify-between">
-                      <span className="text-xs text-gray-500 dark:text-gray-400">1 of 3 milestones complete</span>
+                      <span className="text-xs text-gray-500 dark:text-gray-400">{tx('contracts.milestonesProgress', undefined, '1 of 3 milestones complete')}</span>
                     </div>
                     <div className="h-1.5 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-white/5">
                       <div className={`h-full ${progressIndicatorColor}`} style={{ width: `${progressPercentage}%` }} />
@@ -207,7 +227,7 @@ export default function ContractsList() {
                           : 'text-amber-600 hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300'
                       }`}
                     >
-                      {'Open workspace ->'}
+                      {tx('contracts.openWorkspace', undefined, 'Open workspace ->')}
                     </button>
                   </div>
                 </div>

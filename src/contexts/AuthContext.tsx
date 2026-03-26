@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, useRef } from 'react';
 import type { ReactNode } from 'react';
 import type { Session, User } from '@supabase/supabase-js';
 
@@ -42,6 +42,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [freelancerProfile, setFreelancerProfile] = useState<FreelancerProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const activeMode = useWorkspaceStore((state) => state.activeWorkspace);
+  
+  // Track the currently loaded user ID to avoid stale closures in onAuthStateChange
+  const loadedUserIdRef = useRef<string | null>(null);
 
   const SUPA_URL = import.meta.env.VITE_SUPABASE_URL as string;
   const SUPA_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
@@ -217,17 +220,30 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     void initAuth();
 
-    const { data } = supabase.auth.onAuthStateChange(async (_event, newSession) => {
+    const { data } = supabase.auth.onAuthStateChange(async (event, newSession) => {
       if (!mounted) return;
 
       setSession(newSession);
       setUser(newSession?.user ?? null);
 
+      // Ignore token refresh churn to prevent unnecessary loading flashes
+      // when the user switches tabs and comes back.
+      if (event === 'TOKEN_REFRESHED') {
+        return;
+      }
+
       if (newSession?.user) {
-        setIsLoading(true);
+        // Only show full-screen loading if we don't already have the profile data.
+        // The loadedUserIdRef bypasses the stale closure of the state variables here.
+        const isFirstLoadTracker = loadedUserIdRef.current !== newSession.user.id;
+        if (isFirstLoadTracker) {
+          setIsLoading(true);
+        }
         await fetchProfile(newSession.user.id, newSession.access_token);
-        if (mounted) setIsLoading(false);
+        loadedUserIdRef.current = newSession.user.id;
+        if (mounted && isFirstLoadTracker) setIsLoading(false);
       } else {
+        loadedUserIdRef.current = null;
         setProfile(null);
         setFreelancerProfile(null);
         syncWorkspaceFromProfile(null, null);

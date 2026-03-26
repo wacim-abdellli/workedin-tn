@@ -7,12 +7,14 @@ import SEO, { SEO_CONFIG } from '../components/common/SEO';
 import { useTheme } from '../contexts/ThemeContext';
 import { Loader2 } from 'lucide-react';
 import { getPostAuthWorkspacePath } from '@/lib/workspaceRoutes';
+import { useTranslation } from '../i18n';
 
 function Login() {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const { isAuthenticated, isLoading, profile, freelancerProfile } = useAuth();
     const { theme } = useTheme();
+    const { tx } = useTranslation();
     const isOAuthResume = searchParams.get('oauth') === 'resume';
 
     // Redirect authenticated users to appropriate dashboard
@@ -50,9 +52,9 @@ function Login() {
                     {isOAuthResume && isLoading ? (
                         <div className="mx-auto max-w-md rounded-2xl bg-white p-8 text-center shadow-xl shadow-gray-200/50 dark:border dark:border-white/8 dark:bg-[#1a1825] dark:shadow-black/50">
                             <Loader2 className="mx-auto mb-4 h-12 w-12 animate-spin text-primary-600" />
-                            <h1 className="mb-2 text-2xl font-bold text-[#171420] dark:text-white">Finishing your sign in</h1>
+                            <h1 className="mb-2 text-2xl font-bold text-[#171420] dark:text-white">{tx('pages.login.finishingSignIn', undefined, 'Finishing your sign in')}</h1>
                             <p className="text-sm text-gray-500 dark:text-gray-400">
-                                We are confirming your secure session and sending you to the right workspace.
+                                {tx('pages.login.finishingSignInDescription', undefined, 'We are confirming your secure session and sending you to the right workspace.')}
                             </p>
                         </div>
                     ) : (

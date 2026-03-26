@@ -17,6 +17,7 @@ import {
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
 import { useWorkspaceStore } from '@/lib/workspaceState'
+import { useTranslation } from '@/i18n'
 
 interface SearchModalProps {
   onClose: () => void
@@ -30,32 +31,10 @@ type SearchItem = {
   Icon: typeof Briefcase
 }
 
-const FREELANCER_SHORTCUTS: SearchItem[] = [
-  { label: 'Browse all jobs', Icon: Briefcase, href: '/jobs', shortcut: 'Ctrl+J' },
-  { label: 'My proposals', Icon: FileText, href: '/my-proposals', shortcut: 'Ctrl+P' },
-  { label: 'My earnings', Icon: Wallet, href: '/freelancer/earnings', shortcut: 'Ctrl+E' },
-  { label: 'Settings', Icon: Settings, href: '/settings', shortcut: 'Ctrl+,' },
-]
-
-const CLIENT_SHORTCUTS: SearchItem[] = [
-  { label: 'Post a project', Icon: PlusCircle, href: '/jobs/new', shortcut: 'Ctrl+N' },
-  { label: 'My projects', Icon: FolderOpen, href: '/client/jobs', shortcut: 'Ctrl+P' },
-  { label: 'Find freelancers', Icon: Users, href: '/find-freelancers', shortcut: 'Ctrl+F' },
-  { label: 'Contracts', Icon: ClipboardList, href: '/contracts', shortcut: 'Ctrl+C' },
-]
-
-const PUBLIC_SHORTCUTS: SearchItem[] = [
-  { label: 'Browse jobs', Icon: Briefcase, href: '/jobs', shortcut: 'Ctrl+J' },
-  { label: 'Find freelancers', Icon: Users, href: '/find-freelancers', shortcut: 'Ctrl+F' },
-  { label: 'How it works', Icon: FileText, href: '/how-it-works', shortcut: 'Ctrl+H' },
-  { label: 'Create account', Icon: PlusCircle, href: '/signup', shortcut: 'Ctrl+N' },
-]
-
-const TRENDING = ['Logo Design', 'React JS', 'Translation', 'Video Editing', 'Python', 'UI/UX']
-
 export default function SearchModal({ onClose }: SearchModalProps) {
   const { user } = useAuth()
   const { activeWorkspace } = useWorkspaceStore()
+  const { tx } = useTranslation()
   const navigate = useNavigate()
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -64,11 +43,32 @@ export default function SearchModal({ onClose }: SearchModalProps) {
   const [loading, setLoading] = useState(false)
   const [selected, setSelected] = useState(0)
 
+  const freelancerShortcuts: SearchItem[] = [
+    { label: tx('pages.searchModal.shortcuts.browseAllJobs', undefined, 'Browse all jobs'), Icon: Briefcase, href: '/jobs', shortcut: 'Ctrl+J' },
+    { label: tx('pages.searchModal.shortcuts.myProposals', undefined, 'My proposals'), Icon: FileText, href: '/my-proposals', shortcut: 'Ctrl+P' },
+    { label: tx('pages.searchModal.shortcuts.myEarnings', undefined, 'My earnings'), Icon: Wallet, href: '/freelancer/earnings', shortcut: 'Ctrl+E' },
+    { label: tx('pages.searchModal.shortcuts.settings', undefined, 'Settings'), Icon: Settings, href: '/settings', shortcut: 'Ctrl+,' },
+  ]
+
+  const clientShortcuts: SearchItem[] = [
+    { label: tx('pages.searchModal.shortcuts.postProject', undefined, 'Post a project'), Icon: PlusCircle, href: '/jobs/new', shortcut: 'Ctrl+N' },
+    { label: tx('pages.searchModal.shortcuts.myProjects', undefined, 'My projects'), Icon: FolderOpen, href: '/client/jobs', shortcut: 'Ctrl+P' },
+    { label: tx('pages.searchModal.shortcuts.findFreelancers', undefined, 'Find freelancers'), Icon: Users, href: '/find-freelancers', shortcut: 'Ctrl+F' },
+    { label: tx('pages.searchModal.shortcuts.contracts', undefined, 'Contracts'), Icon: ClipboardList, href: '/contracts', shortcut: 'Ctrl+C' },
+  ]
+
+  const publicShortcuts: SearchItem[] = [
+    { label: tx('pages.searchModal.shortcuts.browseJobs', undefined, 'Browse jobs'), Icon: Briefcase, href: '/jobs', shortcut: 'Ctrl+J' },
+    { label: tx('pages.searchModal.shortcuts.findFreelancers', undefined, 'Find freelancers'), Icon: Users, href: '/find-freelancers', shortcut: 'Ctrl+F' },
+    { label: tx('pages.searchModal.shortcuts.howItWorks', undefined, 'How it works'), Icon: FileText, href: '/how-it-works', shortcut: 'Ctrl+H' },
+    { label: tx('pages.searchModal.shortcuts.createAccount', undefined, 'Create account'), Icon: PlusCircle, href: '/signup', shortcut: 'Ctrl+N' },
+  ]
+
   const shortcuts = !user
-    ? PUBLIC_SHORTCUTS
+    ? publicShortcuts
     : activeWorkspace === 'freelancer'
-      ? FREELANCER_SHORTCUTS
-      : CLIENT_SHORTCUTS
+      ? freelancerShortcuts
+      : clientShortcuts
   const isSearching = query.length >= 2
   const items = isSearching ? results : shortcuts
 
@@ -111,7 +111,7 @@ export default function SearchModal({ onClose }: SearchModalProps) {
         (data || []).map((job) => ({
           label: job.title,
           href: `/jobs/${job.id}`,
-          meta: `${job.budget_min}-${job.budget_max} TND`,
+          meta: `${job.budget_min}-${job.budget_max} ${tx('common.tnd', undefined, 'TND')}`,
           Icon: Briefcase,
         }))
       )
@@ -123,10 +123,19 @@ export default function SearchModal({ onClose }: SearchModalProps) {
   }, [isSearching, query])
 
   const placeholder = !user
-    ? 'Search jobs, freelancers, skills...'
+    ? tx('globalSearch.placeholder', undefined, 'Search jobs, freelancers, skills...')
     : activeWorkspace === 'freelancer'
-      ? 'Search jobs, skills...'
-      : 'Search freelancers, skills...'
+      ? tx('pages.searchModal.placeholderFreelancer', undefined, 'Search jobs, skills...')
+      : tx('pages.searchModal.placeholderClient', undefined, 'Search freelancers, skills...')
+
+  const trending = [
+    tx('search.suggestions.logoDesign', undefined, 'Logo Design'),
+    tx('search.suggestions.reactJs', undefined, 'React JS'),
+    tx('search.suggestions.translation', undefined, 'Translation'),
+    tx('search.suggestions.videoEditing', undefined, 'Video Editing'),
+    tx('search.suggestions.python', undefined, 'Python'),
+    'UI/UX',
+  ]
 
   const go = (href: string) => {
     navigate(href)
@@ -180,11 +189,11 @@ export default function SearchModal({ onClose }: SearchModalProps) {
               <div className="flex items-center gap-1.5 px-2 py-1.5">
                 <TrendingUp className="h-3 w-3 text-purple-500" />
                 <span className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">
-                  Trending now
+                  {tx('pages.searchModal.trendingNow', undefined, 'Trending now')}
                 </span>
               </div>
               <div className="flex flex-wrap gap-1.5 px-2 pb-2">
-                {TRENDING.map((tag) => (
+                {trending.map((tag) => (
                   <button
                     key={tag}
                     onClick={() => setQuery(tag)}
@@ -199,15 +208,19 @@ export default function SearchModal({ onClose }: SearchModalProps) {
 
           <div className="px-2 py-1.5">
             <span className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">
-              {isSearching ? (loading ? 'Searching...' : `${results.length} results`) : 'Go to'}
+              {isSearching
+                ? (loading
+                  ? tx('globalSearch.searching', undefined, 'Searching...')
+                  : tx('pages.searchModal.resultsCount', { count: results.length }, `${results.length} results`))
+                : tx('pages.searchModal.goTo', undefined, 'Go to')}
             </span>
           </div>
 
           {isSearching && !loading && results.length === 0 ? (
             <div className="flex flex-col items-center gap-2 py-8">
               <Search className="h-8 w-8 text-gray-300 dark:text-gray-600" />
-              <p className="text-sm text-gray-500 dark:text-gray-400">No results for "{query}"</p>
-              <p className="text-xs text-gray-400 dark:text-gray-500">Try a different search term</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{tx('globalSearch.noResultsFor', { query }, `No results for "${query}"`)}</p>
+              <p className="text-xs text-gray-400 dark:text-gray-500">{tx('pages.searchModal.tryDifferent', undefined, 'Try a different search term')}</p>
             </div>
           ) : null}
 
@@ -255,9 +268,9 @@ export default function SearchModal({ onClose }: SearchModalProps) {
           }}
         >
           {[
-            { key: 'Up/Down', label: 'Navigate' },
-            { key: 'Enter', label: 'Select' },
-            { key: 'ESC', label: 'Close' },
+            { key: 'Up/Down', label: tx('globalSearch.toNavigate', undefined, 'Navigate') },
+            { key: 'Enter', label: tx('globalSearch.toSelect', undefined, 'Select') },
+            { key: 'ESC', label: tx('common.close', undefined, 'Close') },
           ].map(({ key, label }) => (
             <div key={key} className="flex items-center gap-1.5">
               <kbd className="rounded border border-white/10 bg-white/5 px-1.5 py-0.5 text-[10px] font-mono text-gray-400">

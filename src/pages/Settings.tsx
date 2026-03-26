@@ -64,7 +64,7 @@ const DEFAULT_NOTIFICATION_SETTINGS: NotificationSetting[] = [
 ];
 
 function Settings() {
-    const { dir, t } = useTranslation();
+    const { dir, t, tx } = useTranslation();
     const { user, profile, freelancerProfile, activeMode, signOut, refreshProfile } = useAuth();
     const { showToast } = useToast();
     const navigate = useNavigate();
@@ -119,7 +119,38 @@ function Settings() {
 
     const ArrowIcon = dir === 'rtl' ? ChevronLeft : ChevronRight;
 
-    // Load data on mount
+    const notificationCopy = (key: string) => {
+        if (key === 'new_job') {
+            return {
+                label: tx('settings.notificationSettings.newMatches', undefined, 'New job matches'),
+                description: tx('settings.notificationSettings.newMatchesDesc', undefined, 'Get notified when jobs match your skills'),
+            };
+        }
+        if (key === 'messages') {
+            return {
+                label: tx('settings.notificationSettings.newMessages', undefined, 'Messages'),
+                description: tx('settings.notificationSettings.newMessagesDesc', undefined, 'Get notified when you receive new messages'),
+            };
+        }
+        if (key === 'payments') {
+            return {
+                label: tx('settings.notificationSettings.payments', undefined, 'Payments'),
+                description: tx('settings.notificationSettings.paymentsDesc', undefined, 'Get notified when you send or receive payments'),
+            };
+        }
+        if (key === 'reviews') {
+            return {
+                label: tx('settings.notificationSettings.reviews', undefined, 'Reviews'),
+                description: tx('settings.notificationSettings.reviewsDesc', undefined, 'Get notified when you receive a new review'),
+            };
+        }
+        return {
+            label: tx('settings.notificationSettings.marketing', undefined, 'Offers and updates'),
+            description: tx('settings.notificationSettings.marketingDesc', undefined, 'Tips and updates from Khedma'),
+        };
+    };
+
+    // Keep form fields synced with profile updates.
     useEffect(() => {
         if (profile) {
             setProfileForm({
@@ -130,8 +161,13 @@ function Settings() {
                 location: profile.location || '',
             });
         }
-        loadSettings();
     }, [profile]);
+
+    // Load settings once per authenticated user, not on every profile object refresh.
+    useEffect(() => {
+        if (!user?.id) return;
+        void loadSettings();
+    }, [user?.id]);
 
     const loadSettings = async () => {
         if (!user?.id) return;
@@ -163,7 +199,7 @@ function Settings() {
                 setPaymentMethods(paymentData.map(p => ({
                     id: p.id,
                     type: p.type,
-                    label: p.type === 'd17' ? 'D17' : p.type === 'flouci' ? 'Flouci' : 'تحويل بنكي',
+                        label: p.type === 'd17' ? 'D17' : p.type === 'flouci' ? 'Flouci' : tx('settings.bankTransfer', undefined, 'Bank transfer'),
                     details: p.details,
                     is_default: p.is_default,
                 })));
@@ -194,10 +230,10 @@ function Settings() {
 
             // Refresh the profile in auth context
             await refreshProfile?.();
-            showToast('تم حفظ التغييرات بنجاح', 'success');
+            showToast(tx('settings.toasts.profileSaved', undefined, 'Profile updated successfully'), 'success');
         } catch (error) {
             logger.error('Error saving profile:', error);
-            showToast('حدث خطأ في حفظ التغييرات', 'error');
+            showToast(tx('settings.toasts.profileSaveError', undefined, 'Failed to save profile changes'), 'error');
         } finally {
             setIsSaving(false);
         }
@@ -257,10 +293,10 @@ function Settings() {
             setPaymentMethods((prev) =>
                 prev.map((p) => ({ ...p, is_default: p.id === id }))
             );
-            showToast('تم تحديث طريقة الدفع الافتراضية', 'success');
+            showToast(tx('settings.toasts.defaultPaymentUpdated', undefined, 'Default payment method updated'), 'success');
         } catch (error) {
             logger.error('Error setting default payment:', error);
-            showToast('حدث خطأ', 'error');
+            showToast(tx('settings.toasts.genericError', undefined, 'Something went wrong'), 'error');
         }
     };
 
@@ -274,10 +310,10 @@ function Settings() {
             if (error) throw error;
 
             setPaymentMethods((prev) => prev.filter((p) => p.id !== id));
-            showToast('تم حذف طريقة الدفع', 'success');
+            showToast(tx('settings.toasts.paymentDeleted', undefined, 'Payment method deleted'), 'success');
         } catch (error) {
             logger.error('Error deleting payment method:', error);
-            showToast('حدث خطأ في الحذف', 'error');
+            showToast(tx('settings.toasts.paymentDeleteError', undefined, 'Failed to delete payment method'), 'error');
         }
     };
 
@@ -301,22 +337,22 @@ function Settings() {
             setPaymentMethods(prev => [...prev, {
                 id: data.id,
                 type: data.type,
-                label: data.type === 'd17' ? 'D17' : data.type === 'flouci' ? 'Flouci' : 'تحويل بنكي',
+                label: data.type === 'd17' ? 'D17' : data.type === 'flouci' ? 'Flouci' : tx('settings.bankTransfer', undefined, 'Bank transfer'),
                 details: data.details,
                 is_default: data.is_default,
             }]);
 
             setNewPaymentForm({ type: 'd17', details: '' });
             setIsAddPaymentModalOpen(false);
-            showToast('تم إضافة طريقة الدفع', 'success');
+            showToast(tx('settings.toasts.paymentAdded', undefined, 'Payment method added'), 'success');
         } catch (error) {
             logger.error('Error adding payment method:', error);
-            showToast('حدث خطأ في الإضافة', 'error');
+            showToast(tx('settings.toasts.paymentAddError', undefined, 'Failed to add payment method'), 'error');
         }
     };
 
     const handleDeleteAccount = async () => {
-        showToast('تم إرسال طلب حذف الحساب. سيتم معالجته خلال 48 ساعة.', 'info');
+        showToast(tx('settings.toasts.deleteRequestSent'), 'info');
         setIsDeleteModalOpen(false);
     };
 
@@ -349,10 +385,10 @@ function Settings() {
                 .eq('id', user.id);
 
             await refreshProfile?.();
-            showToast('تم تحديث الصورة الشخصية', 'success');
+            showToast(tx('settings.toasts.avatarUpdated', undefined, 'Profile image updated'), 'success');
         } catch (error) {
             logger.error('Error uploading avatar:', error);
-            showToast('حدث خطأ في رفع الصورة', 'error');
+            showToast(tx('settings.toasts.avatarUpdateError', undefined, 'Failed to upload profile image'), 'error');
         }
     };
 
@@ -405,15 +441,15 @@ function Settings() {
                 }
 
                 await refreshProfile();
-                showToast('تم تفعيل مساحتي العمل في نفس الحساب.', 'success');
+                showToast(tx('settings.toasts.workspaceBothEnabled', undefined, 'Both workspaces are now enabled on your account.'), 'success');
                 return;
             }
 
-            showToast('تم تحديث مساحة العمل بنجاح.', 'success');
+            showToast(tx('settings.toasts.workspaceUpdated', undefined, 'Workspace updated successfully.'), 'success');
         } catch (error) {
             logger.error('Workspace selection error:', error);
-            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-            showToast('خطأ غير متوقع: ' + errorMessage, 'error');
+            const errorMessage = error instanceof Error ? error.message : t.common.unexpectedError;
+            showToast(t.common.error + ': ' + errorMessage, 'error');
         }
     };
 
@@ -559,24 +595,24 @@ function Settings() {
             {/* Form */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Input
-                    label="الاسم الكامل"
+                    label={tx('settings.fullName', undefined, 'Full name')}
                     value={profileForm.full_name}
                     onChange={(e) => setProfileForm({ ...profileForm, full_name: e.target.value })}
                 />
                 <Input
-                    label="رقم الهاتف"
+                    label={tx('settings.phoneNumberLabel', undefined, 'Phone number')}
                     value={profileForm.phone}
                     disabled
                 />
                 <Input
-                    label="البريد الإلكتروني (اختياري)"
+                    label={tx('settings.emailOptionalLabel', undefined, 'Email (optional)')}
                     type="email"
                     value={profileForm.email}
                     onChange={(e) => setProfileForm({ ...profileForm, email: e.target.value })}
-                    placeholder="email@example.com"
+                    placeholder={tx('settings.emailPlaceholder', undefined, 'email@example.com')}
                 />
                 <Input
-                    label="الموقع"
+                    label={tx('settings.location', undefined, 'Location')}
                     value={profileForm.location}
                     onChange={(e) => setProfileForm({ ...profileForm, location: e.target.value })}
                 />
@@ -693,12 +729,12 @@ function Settings() {
 
             {/* User Type Selection */}
             <div className="hidden mt-6">
-                <label className="block text-sm font-medium text-foreground mb-3">نوع الحساب</label>
+                <label className="block text-sm font-medium text-foreground mb-3">{tx('settings.accountType', undefined, 'Account type')}</label>
                 <div className="grid grid-cols-3 gap-3">
                     {[
-                        { type: 'freelancer', label: 'مستقل', desc: 'أقدم خدماتي' },
-                        { type: 'client', label: 'صاحب مشروع', desc: 'أبحث عن مستقلين' },
-                        { type: 'both', label: 'كلاهما', desc: 'الاثنين معاً' },
+                        { type: 'freelancer', label: tx('settings.accountTypeFreelancer', undefined, 'Freelancer'), desc: tx('settings.accountTypeFreelancerDesc', undefined, 'Offer my services') },
+                        { type: 'client', label: tx('settings.accountTypeClient', undefined, 'Client'), desc: tx('settings.accountTypeClientDesc', undefined, 'Hire freelancers') },
+                        { type: 'both', label: tx('settings.accountTypeBoth', undefined, 'Both'), desc: tx('settings.accountTypeBothDesc', undefined, 'Use both modes') },
                     ].map(({ type, label, desc }) => (
                         <button
                             key={type}
@@ -721,13 +757,13 @@ function Settings() {
             </div>
 
             <div>
-                <label className="block text-sm font-medium text-foreground mb-2">نبذة عني</label>
+                <label className="block text-sm font-medium text-foreground mb-2">{tx('settings.bioLabel', undefined, 'Bio')}</label>
                 <textarea
                     value={profileForm.bio}
                     onChange={(e) => setProfileForm({ ...profileForm, bio: e.target.value })}
                     rows={4}
                     className="input-base w-full resize-none"
-                    placeholder="اكتب نبذة مختصرة عن نفسك..."
+                    placeholder={tx('settings.bioPlaceholder', undefined, 'Write a short bio about yourself...')}
                 />
             </div>
 
@@ -738,7 +774,7 @@ function Settings() {
                     isLoading={isSaving}
                     leftIcon={<Save className="w-4 h-4" />}
                 >
-                    حفظ التغييرات
+                    {tx('settings.saveChanges', undefined, 'Save changes')}
                 </Button>
             </div>
         </div>
@@ -859,7 +895,7 @@ function Settings() {
 
     const renderNotificationsTab = () => (
         <div className="space-y-4">
-            <p className="text-muted mb-6">اختر الإشعارات التي تريد استلامها</p>
+            <p className="text-muted mb-6">{tx('settings.notificationsSubtitle', undefined, 'Choose which notifications you want to receive')}</p>
 
             {notifications.map((notification) => (
                 <div
@@ -867,8 +903,8 @@ function Settings() {
                     className="flex items-center justify-between p-4 bg-gray-50 dark:bg-dark-800 rounded-xl"
                 >
                     <div>
-                        <p className="font-medium text-foreground">{notification.label}</p>
-                        <p className="text-sm text-muted">{notification.description}</p>
+                        <p className="font-medium text-foreground">{notificationCopy(notification.key).label}</p>
+                        <p className="text-sm text-muted">{notificationCopy(notification.key).description}</p>
                     </div>
                     <button
                         onClick={() => handleToggleNotification(notification.key)}
@@ -892,14 +928,14 @@ function Settings() {
     const renderPaymentTab = () => (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
-                <p className="text-muted">طرق الدفع والاستلام</p>
+                <p className="text-muted">{tx('settings.paymentSubtitle', undefined, 'Payment and payout methods')}</p>
                 <Button
                     variant="outline"
                     size="sm"
                     leftIcon={<Plus className="w-4 h-4" />}
                     onClick={() => setIsAddPaymentModalOpen(true)}
                 >
-                    إضافة طريقة
+                    {tx('settings.addMethod', undefined, 'Add method')}
                 </Button>
             </div>
 
@@ -927,7 +963,7 @@ function Settings() {
                                 {method.is_default ? (
                                     <span className="px-3 py-1 bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400 rounded-full text-xs font-medium flex items-center gap-1">
                                         <Check className="w-3 h-3" />
-                                        افتراضي
+                                        {tx('settings.default', undefined, 'Default')}
                                     </span>
                                 ) : (
                                     <Button
@@ -935,7 +971,7 @@ function Settings() {
                                         size="sm"
                                         onClick={() => handleSetDefaultPayment(method.id)}
                                     >
-                                        تعيين كافتراضي
+                                        {tx('settings.setDefault', undefined, 'Set as default')}
                                     </Button>
                                 )}
                                 <button
@@ -953,7 +989,7 @@ function Settings() {
             {paymentMethods.length === 0 && !isLoading && (
                 <div className="text-center py-12 bg-gray-50 dark:bg-dark-800 rounded-xl">
                     <CreditCard className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                    <p className="text-muted">لم تضف أي طريقة دفع بعد</p>
+                    <p className="text-muted">{tx('settings.noPaymentMethods', undefined, 'No payment method added yet')}</p>
                 </div>
             )}
         </div>
@@ -963,34 +999,34 @@ function Settings() {
         <div className="space-y-6">
             {/* Password Change */}
             <div className="p-6 bg-gray-50 dark:bg-dark-800 rounded-xl">
-                <h3 className="font-bold mb-2 text-foreground">تغيير كلمة المرور</h3>
-                <p className="text-muted text-sm mb-4">لا توجد كلمة مرور - أنت تستخدم تسجيل الدخول عبر الهاتف</p>
+                <h3 className="font-bold mb-2 text-foreground">{tx('settings.changePasswordTitle', undefined, 'Change password')}</h3>
+                <p className="text-muted text-sm mb-4">{tx('settings.noPasswordMessage', undefined, 'No password set - you are using phone sign in')}</p>
                 <Button variant="outline" disabled>
-                    إضافة كلمة مرور
+                    {tx('settings.addPassword', undefined, 'Add password')}
                 </Button>
             </div>
 
             {/* Session Info */}
             <div className="p-6 bg-gray-50 dark:bg-dark-800 rounded-xl">
-                <h3 className="font-bold mb-2 text-foreground">الجلسات النشطة</h3>
-                <p className="text-muted text-sm mb-4">هذا الجهاز هو الجهاز النشط الوحيد</p>
+                <h3 className="font-bold mb-2 text-foreground">{tx('settings.activeSessionsTitle', undefined, 'Active sessions')}</h3>
+                <p className="text-muted text-sm mb-4">{tx('settings.activeSessionsMessage', undefined, 'This device is your only active session')}</p>
                 <Button variant="outline" onClick={handleLogout}>
-                    تسجيل الخروج من كل الأجهزة
+                    {tx('settings.signOutAllDevices', undefined, 'Sign out from all devices')}
                 </Button>
             </div>
 
             {/* Delete Account */}
             <div className="p-6 bg-red-50 dark:bg-red-900/10 rounded-xl border border-red-200 dark:border-red-900/30">
-                <h3 className="font-bold text-red-700 dark:text-red-400 mb-2">حذف الحساب</h3>
+                <h3 className="font-bold text-red-700 dark:text-red-400 mb-2">{tx('settings.deleteAccountTitle', undefined, 'Delete account')}</h3>
                 <p className="text-red-600 dark:text-red-300 text-sm mb-4">
-                    سيتم حذف حسابك وجميع بياناتك بشكل نهائي. هذا الإجراء لا يمكن التراجع عنه.
+                    {tx('settings.deleteAccountDescription', undefined, 'Your account and all data will be permanently deleted. This action cannot be undone.')}
                 </p>
                 <Button
                     variant="danger"
                     onClick={() => setIsDeleteModalOpen(true)}
                     leftIcon={<Trash2 className="w-4 h-4" />}
                 >
-                    حذف حسابي
+                    {tx('settings.deleteMyAccount', undefined, 'Delete my account')}
                 </Button>
             </div>
         </div>
@@ -1002,7 +1038,7 @@ function Settings() {
             <Header />
 
             <div className="container-custom py-8">
-                <h1 className="text-2xl font-bold mb-8">الإعدادات</h1>
+                <h1 className="text-2xl font-bold mb-8">{tx('settings.pageTitle', undefined, 'Settings')}</h1>
 
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
                     {/* Sidebar */}
@@ -1033,7 +1069,7 @@ function Settings() {
                             className="mt-4 flex w-full items-center gap-3 rounded-2xl border border-red-200 bg-white px-4 py-3 text-red-600 transition-colors hover:bg-red-50/80 dark:border-red-500/20 dark:bg-[#1a1825] dark:text-red-400 dark:hover:bg-red-500/10"
                         >
                             <ChevronRight className="w-5 h-5" />
-                            <span className="font-medium">تسجيل الخروج</span>
+                            <span className="font-medium">{tx('settings.logout', undefined, 'Sign out')}</span>
                         </button>
                     </div>
 
@@ -1058,18 +1094,18 @@ function Settings() {
             <Modal
                 isOpen={isDeleteModalOpen}
                 onClose={() => setIsDeleteModalOpen(false)}
-                title="تأكيد حذف الحساب"
+                title={tx('settings.deleteAccountConfirmTitle', undefined, 'Confirm account deletion')}
             >
                 <div className="space-y-4">
                     <p className="text-muted">
-                        هل أنت متأكد من رغبتك في حذف حسابك؟ سيتم حذف جميع بياناتك بشكل نهائي.
+                        {tx('settings.deleteAccountConfirmMessage', undefined, 'Are you sure you want to delete your account? All your data will be permanently removed.')}
                     </p>
                     <div className="flex gap-3 justify-end">
                         <Button variant="outline" onClick={() => setIsDeleteModalOpen(false)}>
-                            إلغاء
+                            {t.common.cancel}
                         </Button>
                         <Button variant="danger" onClick={handleDeleteAccount}>
-                            نعم، احذف حسابي
+                            {tx('settings.deleteAccountConfirmAction', undefined, 'Yes, delete my account')}
                         </Button>
                     </div>
                 </div>
@@ -1079,11 +1115,11 @@ function Settings() {
             <Modal
                 isOpen={isAddPaymentModalOpen}
                 onClose={() => setIsAddPaymentModalOpen(false)}
-                title="إضافة طريقة دفع"
+                title={tx('settings.addPaymentMethodModalTitle', undefined, 'Add payment method')}
             >
                 <div className="space-y-4">
                     <div>
-                        <label className="block text-sm font-medium text-foreground mb-2">نوع طريقة الدفع</label>
+                        <label className="block text-sm font-medium text-foreground mb-2">{tx('settings.paymentMethodType', undefined, 'Payment method type')}</label>
                         <select
                             value={newPaymentForm.type}
                             onChange={(e) => setNewPaymentForm({ ...newPaymentForm, type: e.target.value })}
@@ -1091,21 +1127,23 @@ function Settings() {
                         >
                             <option value="d17">D17</option>
                             <option value="flouci">Flouci</option>
-                            <option value="bank_transfer">تحويل بنكي</option>
+                            <option value="bank_transfer">{tx('settings.bankTransfer', undefined, 'Bank transfer')}</option>
                         </select>
                     </div>
                     <Input
-                        label="تفاصيل الدفع"
+                        label={tx('settings.paymentDetails', undefined, 'Payment details')}
                         value={newPaymentForm.details}
                         onChange={(e) => setNewPaymentForm({ ...newPaymentForm, details: e.target.value })}
-                        placeholder={newPaymentForm.type === 'bank_transfer' ? 'رقم الحساب البنكي' : 'رقم الهاتف'}
+                        placeholder={newPaymentForm.type === 'bank_transfer'
+                            ? tx('settings.bankAccountNumber', undefined, 'Bank account number')
+                            : tx('settings.phoneNumber', undefined, 'Phone number')}
                     />
                     <div className="flex gap-3 justify-end">
                         <Button variant="outline" onClick={() => setIsAddPaymentModalOpen(false)}>
-                            إلغاء
+                            {t.common.cancel}
                         </Button>
                         <Button variant="primary" onClick={handleAddPayment} disabled={!newPaymentForm.details}>
-                            إضافة
+                            {tx('settings.add', undefined, 'Add')}
                         </Button>
                     </div>
                 </div>

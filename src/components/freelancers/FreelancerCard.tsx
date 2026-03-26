@@ -7,6 +7,7 @@ import IconButton from '../ui/IconButton';
 import RatingStars from '../ui/RatingStars';
 import { cn } from '../../lib/utils';
 import { getAvatarGradient, getInitials } from '@/lib/avatar';
+import { useTranslation } from '@/i18n';
 
 export interface Freelancer {
   id: string;
@@ -39,14 +40,15 @@ function FreelancerCard({
   onToggleSave,
 }: FreelancerCardProps) {
   const navigate = useNavigate();
+  const { tx } = useTranslation();
   const [from, to] = getAvatarGradient(freelancer.name);
   const badges = [
-    freelancer.is_verified ? { icon: BadgeCheck, label: 'Verified', title: 'Identity and payment details reviewed.' } : null,
-    freelancer.rating >= 4.8 ? { icon: Sparkles, label: 'Top Rated', title: 'Consistently excellent client feedback.' } : null,
+    freelancer.is_verified ? { icon: BadgeCheck, label: tx('pages.freelancerCard.badges.verified', undefined, 'Verified'), title: tx('pages.freelancerCard.badges.verifiedTitle', undefined, 'Identity and payment details reviewed.') } : null,
+    freelancer.rating >= 4.8 ? { icon: Sparkles, label: tx('pages.freelancerCard.badges.topRated', undefined, 'Top Rated'), title: tx('pages.freelancerCard.badges.topRatedTitle', undefined, 'Consistently excellent client feedback.') } : null,
     freelancer.response_time.toLowerCase().includes('1') || freelancer.response_time.toLowerCase().includes('2')
-      ? { icon: Zap, label: 'Fast Responder', title: 'Usually replies quickly to new clients.' }
+      ? { icon: Zap, label: tx('pages.freelancerCard.badges.fastResponder', undefined, 'Fast Responder'), title: tx('pages.freelancerCard.badges.fastResponderTitle', undefined, 'Usually replies quickly to new clients.') }
       : null,
-    freelancer.jobs_completed <= 3 ? { icon: Shield, label: 'New Talent', title: 'Fresh profile with early momentum.' } : null,
+    freelancer.jobs_completed <= 3 ? { icon: Shield, label: tx('pages.freelancerCard.badges.newTalent', undefined, 'New Talent'), title: tx('pages.freelancerCard.badges.newTalentTitle', undefined, 'Fresh profile with early momentum.') } : null,
   ].filter(Boolean) as Array<{ icon: typeof Shield; label: string; title: string }>;
 
   return (
@@ -86,7 +88,7 @@ function FreelancerCard({
             )}
 
             {freelancer.is_available ? (
-              <div className="absolute -bottom-1 -right-1 h-5 w-5 rounded-full border-4 border-white bg-green-500 dark:border-dark-900" title="Available now" />
+              <div className="absolute -bottom-1 -right-1 h-5 w-5 rounded-full border-4 border-white bg-green-500 dark:border-dark-900" title={tx('findFreelancers.availableNow', undefined, 'Available now')} />
             ) : null}
           </div>
         </div>
@@ -94,10 +96,10 @@ function FreelancerCard({
         {viewMode === 'list' ? (
           <div className="mt-4 text-center">
             <div className="text-xl font-bold text-primary-600 dark:text-primary-400">
-              {freelancer.hourly_rate} <span className="text-sm font-normal text-muted">TND/hr</span>
+              {freelancer.hourly_rate} <span className="text-sm font-normal text-muted">{tx('pages.freelancerCard.tndPerHour', undefined, 'TND/hr')}</span>
             </div>
             <div className="mt-1 inline-block rounded-full bg-green-50 px-2 py-1 text-xs font-medium text-green-600 dark:bg-green-900/20 dark:text-green-400">
-              {freelancer.success_rate}% success rate
+              {tx('pages.freelancerCard.successRate', { rate: freelancer.success_rate }, `${freelancer.success_rate}% success rate`)}
             </div>
           </div>
         ) : null}
@@ -109,7 +111,7 @@ function FreelancerCard({
             <h3 className="flex items-center justify-center gap-2 text-lg font-bold text-dark-900 transition-colors group-hover:text-primary-600 dark:text-white dark:group-hover:text-primary-400 lg:justify-start">
               {freelancer.name}
               {freelancer.is_verified ? (
-                <span title="Verified profile">
+                <span title={tx('pages.freelancerCard.verifiedProfile', undefined, 'Verified profile')}>
                   <BadgeCheck className="h-4 w-4 text-blue-500" />
                 </span>
               ) : null}
@@ -135,7 +137,7 @@ function FreelancerCard({
             <div className="absolute left-4 top-4 z-10">
               <IconButton
                 icon={<Heart className={cn('h-5 w-5 transition-all', isSaved && 'fill-current')} />}
-                label={isSaved ? 'Unsave freelancer' : 'Save freelancer'}
+                label={isSaved ? tx('common.unsaveFreelancer', undefined, 'Unsave freelancer') : tx('common.saveFreelancer', undefined, 'Save freelancer')}
                 onClick={(event) => {
                   event.stopPropagation();
                   onToggleSave(freelancer.id);
@@ -152,7 +154,7 @@ function FreelancerCard({
           <RatingStars
             rating={freelancer.rating}
             reviews={freelancer.reviews}
-            snippet="Professional, responsive, and much more polished than typical marketplace profiles."
+            snippet={tx('pages.freelancerCard.snippet', undefined, 'Professional, responsive, and much more polished than typical marketplace profiles.')}
           />
           <div className="flex items-center gap-1.5 text-muted">
             <MapPin className="h-3.5 w-3.5" />
@@ -164,11 +166,11 @@ function FreelancerCard({
           <div className="mb-4 grid grid-cols-2 gap-2">
             <div className="rounded-2xl bg-gray-50 p-3 text-center dark:bg-dark-800">
               <div className="text-lg font-bold text-primary-600 dark:text-primary-400">{freelancer.hourly_rate} TND</div>
-              <div className="text-[10px] text-muted">Hourly rate</div>
+              <div className="text-[10px] text-muted">{tx('pages.freelancerCard.hourlyRate', undefined, 'Hourly rate')}</div>
             </div>
             <div className="rounded-2xl bg-gray-50 p-3 text-center dark:bg-dark-800">
               <div className="text-lg font-bold text-green-600 dark:text-green-400">{freelancer.success_rate}%</div>
-              <div className="text-[10px] text-muted">Success score</div>
+              <div className="text-[10px] text-muted">{tx('pages.freelancerCard.successScore', undefined, 'Success score')}</div>
             </div>
           </div>
         ) : null}
@@ -190,18 +192,18 @@ function FreelancerCard({
             <div className="flex items-center gap-6 text-sm text-muted">
               <span className="flex items-center gap-1">
                 <Briefcase className="h-4 w-4" />
-                {freelancer.jobs_completed} completed
+                {tx('pages.freelancerCard.completedJobs', { count: freelancer.jobs_completed }, `${freelancer.jobs_completed} completed`)}
               </span>
               <span className="flex items-center gap-1">
                 <Clock className="h-4 w-4" />
-                Replies in {freelancer.response_time}
+                {tx('pages.freelancerCard.repliesIn', { time: freelancer.response_time }, `Replies in ${freelancer.response_time}`)}
               </span>
             </div>
             <div className="flex gap-2">
               {onToggleSave ? (
                 <IconButton
                   icon={<Heart className={cn('h-5 w-5 transition-all', isSaved && 'fill-current')} />}
-                  label={isSaved ? 'Unsave freelancer' : 'Save freelancer'}
+                  label={isSaved ? tx('common.unsaveFreelancer', undefined, 'Unsave freelancer') : tx('common.saveFreelancer', undefined, 'Save freelancer')}
                   onClick={(event) => {
                     event.stopPropagation();
                     onToggleSave(freelancer.id);
@@ -219,7 +221,7 @@ function FreelancerCard({
                   navigate(`/freelancer/${freelancer.id}`);
                 }}
               >
-                View profile
+                {tx('pages.freelancerCard.viewProfile', undefined, 'View profile')}
               </Button>
             </div>
           </div>

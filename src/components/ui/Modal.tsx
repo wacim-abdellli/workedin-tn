@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
 import { createPortal } from 'react-dom';
+import { useTranslation } from '@/i18n';
 
 interface ModalProps {
     isOpen: boolean;
@@ -20,6 +21,7 @@ function Modal({
     showCloseButton = true,
 }: ModalProps) {
     const overlayRef = useRef<HTMLDivElement>(null);
+    const { t } = useTranslation();
 
     useEffect(() => {
         const handleEscape = (e: KeyboardEvent) => {
@@ -92,7 +94,7 @@ function Modal({
                             <button
                                 onClick={onClose}
                                 className="group p-2 -m-2 text-gray-400 hover:text-red-500 transition-colors rounded-full hover:bg-red-50 dark:hover:bg-red-900/20"
-                                aria-label="Close modal"
+                                aria-label={t.common?.close || 'Close modal'}
                             >
                                 <X className="w-5 h-5 transition-transform group-hover:rotate-90" />
                             </button>

@@ -7,6 +7,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
+    "i18n:audit": "node scripts/i18n-audit.mjs",
+    "i18n:audit:strict": "node scripts/i18n-audit.mjs --strict",
     "preview": "vite preview",
     "test": "vitest",
     "test:ui": "vitest --ui",

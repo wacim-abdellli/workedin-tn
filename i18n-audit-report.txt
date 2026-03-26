@@ -1,0 +1,75 @@
+# i18n audit report
+mode: report-only
+findings: 71
+
+src/components/freelancer/PortfolioModal.tsx:109 [attribute] https://example.com
+src/components/freelancer/PortfolioModal.tsx:125 [attribute] مثال: Photoshop, React, UI Design (افصل بينها بفاصلة)
+src/components/freelancer/PortfolioModal.tsx:131 [attribute] رابط صورة العرض (URL)
+src/components/freelancer/PortfolioModal.tsx:132 [attribute] https://...
+src/components/freelancer/ProfileCompletionCard.tsx:109 [jsx-text] maxStepsToShow && (
+src/components/layout/AccountPanel.tsx:436 [attribute] Admin Dashboard
+src/components/layout/Footer.tsx:38 [attribute] Khedma TN
+src/components/layout/Footer.tsx:61 [jsx-text] contact@khedma.tn
+src/components/layout/Header/index.tsx:48 [attribute] Khedma TN
+src/components/layout/Header/index.tsx:177 [attribute] Khedma TN
+src/components/layout/Header/index.tsx:184 [attribute] Open search
+src/components/layout/Header/index.tsx:191 [attribute] Open navigation menu
+src/components/layout/Header/index.tsx:209 [attribute] Khedma TN
+src/components/layout/Header/index.tsx:411 [attribute] Khedma TN
+src/components/layout/Header/index.tsx:242 [jsx-text] Ctrl+K
+src/components/onboarding/OnboardingStep2.tsx:116 [attribute] e.g. 50
+src/components/onboarding/OnboardingStep4.tsx:165 [jsx-text] Max: 5 files
+src/components/payments/FundEscrow.tsx:150 [jsx-text] رسوم المنصة (10%)
+src/components/payments/FundEscrow.tsx:188 [jsx-text] الدفع عبر Flouci - بطاقات بنكية ومحافظ إلكترونية
+src/components/payments/WithdrawalForm.tsx:264 [attribute] +216 XX XXX XXX
+src/components/payments/WithdrawalForm.tsx:122 [jsx-text] سيتم مراجعة طلبك وتحويل المبلغ خلال 2-5 أيام عمل
+src/components/payments/WithdrawalForm.tsx:237 [jsx-text] رقم IBAN
+src/components/payments/WithdrawalForm.tsx:276 [jsx-text] سيتم مراجعة طلب السحب من قبل الإدارة وتحويل المبلغ خلال 2-5 أيام عمل.
+src/components/proposals/JobSummaryCard.tsx:77 [jsx-text] قمنا بتحليل متطلباتك ووجدنا 3 مستقلين يطابقون مشروعك بنسبة 95%.
+src/components/proposals/ProposalDetailModal.tsx:234 [jsx-text] مثال عمل 1 (صورة)
+src/components/proposals/ProposalDetailModal.tsx:237 [jsx-text] مثال عمل 2 (صورة)
+src/components/proposals/ProposalFiltersSidebar.tsx:82 [jsx-text] تقييم 4 نجوم وأكثر
+src/components/proposals/ProposalModal.tsx:180 [jsx-text] يجب كتابة 100 حرف على الأقل
+src/components/proposals/ProposalModal.tsx:230 [jsx-text] يمكنك رفع ملفات PDF, Images حتى 10MB
+src/components/ui/Button.tsx:18 [jsx-text] Click me
+src/components/ui/ErrorBoundary.tsx:40 [attribute] Khedma TN
+src/components/ui/Loading.tsx:18 [attribute] Khedma TN
+src/components/ui/PaymentModal.tsx:95 [attribute] 2x xxx xxx
+src/components/ui/PaymentModal.tsx:142 [jsx-text] Visa / Mastercard / CIB
+src/pages/admin/VerificationQueue.tsx:380 [attribute] CIN Front
+src/pages/admin/VerificationQueue.tsx:394 [attribute] CIN Back
+src/pages/admin/VerificationQueue.tsx:436 [jsx-text] رقم البطاقة مكون من 8 أرقام
+src/pages/AdminDashboard.tsx:356 [direct-string] تم تحويل وضع المستخدم إلى ${nextMode === 'freelancer' ? 'مستقل' : 'عميل'}
+src/pages/AdminDashboard.tsx:366 [direct-string] هل تريد حذف المستخدم ${user.name}؟ هذا الإجراء لا يمكن التراجع عنه.
+src/pages/AuthCallback.tsx:187 [attribute] Khedma TN
+src/pages/ClientOnboarding.tsx:70 [direct-string] Image size must be less than 5MB
+src/pages/ClientOnboarding.tsx:122 [attribute] Khedma TN
+src/pages/ContractWorkspace.tsx:186 [direct-string] تم رفع: ${file.name}
+src/pages/ContractWorkspace.tsx:228 [direct-string] تم فتح نزاع. سيتم المراجعة خلال 48 ساعة.
+src/pages/ContractWorkspace.tsx:474 [jsx-text] فتح نزاع سيعلق العمل حتى يتم حل المشكلة. سيقوم فريقنا بمراجعة الحالة خلال 48 ساعة.
+src/pages/FindFreelancers.tsx:320 [jsx-text] f.is_verified).length}
+src/pages/FindFreelancers.tsx:409 [jsx-text] freelancer.is_available).length}
+src/pages/ForgotPassword.tsx:132 [jsx-text] تم تجاوز الحد الأقصى للطلبات. يرجى الانتظار 10 دقائق قبل المحاولة مرة أخرى.
+src/pages/ForgotPassword.tsx:170 [jsx-text] إذا لم تجد الرسالة، تحقق من مجلد البريد المزعج (Spam)
+src/pages/FreelancerOnboarding.tsx:108 [direct-string] Max 5 skills
+src/pages/FreelancerOnboarding.tsx:125 [direct-string] No auth session - please login again
+src/pages/FreelancerOnboarding.tsx:227 [direct-string] No auth session - please login again
+src/pages/FreelancerOnboarding.tsx:312 [attribute] Khedma TN
+src/pages/FreelancerOnboarding.tsx:331 [attribute] Khedma TN
+src/pages/JobMatches.tsx:357 [attribute] Work sample
+src/pages/Login.tsx:48 [attribute] Khedma TN
+src/pages/Privacy.tsx:15 [jsx-text] آخر تحديث: يناير 2026
+src/pages/Privacy.tsx:61 [jsx-text] تشفير SSL/TLS لجميع الاتصالات
+src/pages/Privacy.tsx:88 [jsx-text] البريد الإلكتروني: privacy@khedma.tn
+src/pages/SearchResults.tsx:155 [jsx-text] أقل من 100 د.ت
+src/pages/Settings.tsx:1080 [jsx-text] t.id === activeTab)?.label}
+src/pages/Signup.tsx:25 [attribute] Khedma TN
+src/pages/Terms.tsx:15 [jsx-text] آخر تحديث: يناير 2026
+src/pages/Terms.tsx:21 [jsx-text] مرحبًا بك في خدمة.تن (Khedma.tn)، منصة العمل الحر الرائدة في تونس. باستخدامك لهذه المنصة، فإنك توافق على الالتزام بهذه ا
+src/pages/Terms.tsx:29 [jsx-text] يجب أن يكون عمرك 18 عامًا على الأقل للتسجيل
+src/pages/Terms.tsx:56 [jsx-text] رسوم المنصة: 10% من قيمة كل عقد
+src/pages/Terms.tsx:58 [jsx-text] فترة الاحتفاظ بالمدفوعات: 7 أيام
+src/pages/Terms.tsx:73 [jsx-text] البريد الإلكتروني: legal@khedma.tn
+src/pages/VerifyEmail.tsx:57 [attribute] Khedma TN
+src/pages/Wallet.tsx:513 [attribute] IBAN (TN59...)
+src/pages/Wallet.tsx:527 [attribute] +216 XX XXX XXX

@@ -33,7 +33,13 @@ const MOCK_FREELANCERS: SearchResult[] = [
     { id: 'f2', type: 'freelancer', title: 'Sarah Mansouri', subtitle: 'Full Stack Developer', rating: 5.0 },
 ];
 
-const TRENDING_SEARCHES = ['Logo Design', 'React JS', 'Translation', 'Video Editing', 'Python'];
+const TRENDING_SEARCH_KEYS = [
+    'search.suggestions.logoDesign',
+    'search.suggestions.reactJs',
+    'search.suggestions.translation',
+    'search.suggestions.videoEditing',
+    'search.suggestions.python',
+];
 
 interface GlobalSearchProps {
     isOpen: boolean;
@@ -41,7 +47,7 @@ interface GlobalSearchProps {
 }
 
 export default function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
-    const { t } = useTranslation();
+    const { tx } = useTranslation();
     const navigate = useNavigate();
     const inputRef = useRef<HTMLInputElement>(null);
     const modalRef = useRef<HTMLDivElement>(null);
@@ -50,7 +56,11 @@ export default function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
     const [query, setQuery] = useState('');
     const [isSearching, setIsSearching] = useState(false);
     const [results, setResults] = useState<{ jobs: SearchResult[], freelancers: SearchResult[] }>({ jobs: [], freelancers: [] });
-    const [recentSearches, setRecentSearches] = useState<string[]>(['Mobile App', 'Logo', 'SEO']);
+    const [recentSearches, setRecentSearches] = useState<string[]>(() => [
+        tx('search.suggestions.mobileApp', undefined, 'Mobile App'),
+        tx('search.suggestions.logo', undefined, 'Logo'),
+        tx('search.suggestions.seo', undefined, 'SEO'),
+    ]);
 
     // Focus input on open
     useEffect(() => {
@@ -131,7 +141,7 @@ export default function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
                         type="text"
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
-                        placeholder="Search jobs, freelancers, skills..."
+                        placeholder={tx('globalSearch.placeholder', undefined, 'Search jobs, freelancers, skills...')}
                         className="flex-1 bg-transparent text-lg font-medium text-dark-900 dark:text-white placeholder-dark-400 outline-none border-none p-0"
                     />
                     {query && (
@@ -153,7 +163,7 @@ export default function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
                             {/* Recent Searches */}
                             {recentSearches.length > 0 && (
                                 <div className="mb-4">
-                                    <div className="px-3 py-2 text-xs font-semibold text-dark-400 uppercase tracking-wider">{t.search?.recent || "Recent"}</div>
+                                    <div className="px-3 py-2 text-xs font-semibold text-dark-400 uppercase tracking-wider">{tx('globalSearch.recent', undefined, 'Recent searches')}</div>
                                     <div className="space-y-1">
                                         {recentSearches.map(term => (
                                             <button
@@ -171,17 +181,20 @@ export default function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
 
                             {/* Suggestions */}
                             <div>
-                                <div className="px-3 py-2 text-xs font-semibold text-dark-400 uppercase tracking-wider">{t.search?.trending || "Suggestions"}</div>
+                                <div className="px-3 py-2 text-xs font-semibold text-dark-400 uppercase tracking-wider">{tx('globalSearch.suggestions', undefined, 'Suggestions')}</div>
                                 <div className="flex flex-wrap gap-2 px-3 pb-2">
-                                    {TRENDING_SEARCHES.map(term => (
+                                    {TRENDING_SEARCH_KEYS.map((termKey) => {
+                                        const term = tx(termKey, undefined, termKey)
+                                        return (
                                         <button
-                                            key={term}
+                                            key={termKey}
                                             onClick={() => handleSelectSearch(term)}
                                             className="px-3 py-1.5 rounded-lg bg-dark-50 dark:bg-dark-800 text-sm text-dark-700 dark:text-dark-300 hover:bg-primary-50 hover:text-primary-600 dark:hover:bg-primary-900/20 dark:hover:text-primary-400 border border-transparent hover:border-primary-200 dark:hover:border-primary-800 transition-all"
                                         >
                                             {term}
                                         </button>
-                                    ))}
+                                        )
+                                    })}
                                 </div>
                             </div>
                         </>
@@ -191,7 +204,7 @@ export default function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
                     {isSearching && (
                         <div className="py-12 flex flex-col items-center justify-center text-dark-400">
                             <div className="w-6 h-6 border-2 border-primary-500 border-t-transparent rounded-full animate-spin mb-3"></div>
-                            <span className="text-sm">Searching...</span>
+                            <span className="text-sm">{tx('globalSearch.searching', undefined, 'Searching...')}</span>
                         </div>
                     )}
 
@@ -202,7 +215,7 @@ export default function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
                             {results.jobs.length > 0 && (
                                 <div>
                                     <div className="px-3 py-2 text-xs font-semibold text-dark-400 uppercase tracking-wider flex items-center gap-2">
-                                        <Briefcase className="w-3 h-3" /> Jobs
+                                        <Briefcase className="w-3 h-3" /> {tx('globalSearch.jobs', undefined, 'Jobs')}
                                     </div>
                                     {results.jobs.map(job => (
                                         <button
@@ -233,7 +246,7 @@ export default function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
                             {results.freelancers.length > 0 && (
                                 <div>
                                     <div className="px-3 py-2 text-xs font-semibold text-dark-400 uppercase tracking-wider flex items-center gap-2">
-                                        <User className="w-3 h-3" /> Freelancers
+                                        <User className="w-3 h-3" /> {tx('globalSearch.freelancers', undefined, 'Freelancers')}
                                     </div>
                                     {results.freelancers.map(freelancer => (
                                         <button
@@ -263,8 +276,8 @@ export default function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
                             {/* Nothing Found */}
                             {results.jobs.length === 0 && results.freelancers.length === 0 && (
                                 <div className="py-12 text-center text-dark-500">
-                                    <p>No results found for "{query}"</p>
-                                    <button onClick={() => setQuery('')} className="text-sm text-primary-600 hover:underline mt-2">Clear search</button>
+                                    <p>{tx('globalSearch.noResultsFor', { query }, `No results found for "${query}"`)}</p>
+                                    <button onClick={() => setQuery('')} className="text-sm text-primary-600 hover:underline mt-2">{tx('globalSearch.clearSearch', undefined, 'Clear search')}</button>
                                 </div>
                             )}
                         </div>
@@ -276,11 +289,11 @@ export default function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
                     <div className="flex gap-4">
                         <span className="flex items-center gap-1">
                             <kbd className="px-1 bg-white dark:bg-dark-700 rounded border border-dark-200 dark:border-dark-600">↵</kbd>
-                            <span>to select</span>
+                            <span>{tx('globalSearch.toSelect', undefined, 'to select')}</span>
                         </span>
                         <span className="flex items-center gap-1">
                             <kbd className="px-1 bg-white dark:bg-dark-700 rounded border border-dark-200 dark:border-dark-600">↑↓</kbd>
-                            <span>to navigate</span>
+                            <span>{tx('globalSearch.toNavigate', undefined, 'to navigate')}</span>
                         </span>
                     </div>
                 </div>

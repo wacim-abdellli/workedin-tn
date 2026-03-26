@@ -5,9 +5,11 @@ import { Header } from '@/components/layout'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
 import { useQuery } from '@tanstack/react-query'
+import { useTranslation } from '@/i18n'
 
 export default function ClientJobs() {
   const { user } = useAuth()
+  const { tx } = useTranslation()
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState<'all' | 'active' | 'in review' | 'completed'>('all')
 
@@ -52,9 +54,24 @@ export default function ClientJobs() {
 
   const formatDaysAgo = (dateStr: string) => {
     const days = Math.floor((new Date().getTime() - new Date(dateStr).getTime()) / (1000 * 3600 * 24))
-    if (days === 0) return 'Today'
-    if (days === 1) return '1 day ago'
-    return `${days} days ago`
+    if (days === 0) return tx('pages.clientJobs.today', undefined, 'Today')
+    if (days === 1) return tx('pages.clientJobs.oneDayAgo', undefined, '1 day ago')
+    return tx('pages.clientJobs.daysAgo', { days }, `${days} days ago`)
+  }
+
+  const tabLabel = (tab: 'all' | 'active' | 'in review' | 'completed') => {
+    if (tab === 'all') return tx('pages.clientJobs.all', undefined, 'All')
+    if (tab === 'active') return tx('pages.clientJobs.active', undefined, 'Active')
+    if (tab === 'in review') return tx('pages.clientJobs.inReview', undefined, 'In review')
+    return tx('pages.clientJobs.completed', undefined, 'Completed')
+  }
+
+  const statusLabel = (status: string) => {
+    if (status === 'open') return tx('pages.clientJobs.status.open', undefined, 'Open')
+    if (status === 'in_progress') return tx('pages.clientJobs.status.inProgress', undefined, 'In Progress')
+    if (status === 'in_review') return tx('pages.clientJobs.status.inReview', undefined, 'In Review')
+    if (status === 'completed') return tx('pages.clientJobs.status.completed', undefined, 'Completed')
+    return status.replace('_', ' ')
   }
 
   return (
@@ -65,29 +82,29 @@ export default function ClientJobs() {
         {/* Header section */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">My Projects</h1>
-            <p className="text-gray-500 dark:text-gray-400 mt-1">Manage your posted projects and proposals</p>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{tx('pages.clientJobs.title', undefined, 'My Projects')}</h1>
+            <p className="text-gray-500 dark:text-gray-400 mt-1">{tx('pages.clientJobs.subtitle', undefined, 'Manage your posted projects and proposals')}</p>
           </div>
           <button
             onClick={() => navigate('/jobs/new')}
             className="bg-amber-500 hover:bg-amber-400 text-white font-medium flex items-center justify-center gap-2 px-4 py-2 rounded-xl transition-colors"
           >
-            Post a project
+            {tx('pages.clientJobs.postProject', undefined, 'Post a project')}
           </button>
         </div>
 
         {/* Stats row */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
           <div className="bg-white dark:bg-[#1a1825] rounded-2xl p-4 border border-gray-100 dark:border-white/5">
-            <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">Active</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">{tx('pages.clientJobs.active', undefined, 'Active')}</p>
             <p className="text-2xl font-bold text-amber-600 dark:text-amber-400 mt-1">{stats.active}</p>
           </div>
           <div className="bg-white dark:bg-[#1a1825] rounded-2xl p-4 border border-gray-100 dark:border-white/5">
-            <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">Total proposals received</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">{tx('pages.clientJobs.proposalsReceived', undefined, 'Total proposals received')}</p>
             <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{stats.proposals}</p>
           </div>
           <div className="bg-white dark:bg-[#1a1825] rounded-2xl p-4 border border-gray-100 dark:border-white/5">
-            <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">Completed</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">{tx('pages.clientJobs.completed', undefined, 'Completed')}</p>
             <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{stats.completed}</p>
           </div>
         </div>
@@ -104,7 +121,7 @@ export default function ClientJobs() {
                   : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
                 }`}
             >
-              {tab.charAt(0).toUpperCase() + tab.slice(1)}
+              {tabLabel(tab)}
             </button>
           ))}
         </div>
@@ -117,15 +134,15 @@ export default function ClientJobs() {
         ) : !jobs || jobs.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
             <FolderOpen className="w-10 h-10 text-gray-300 dark:text-gray-600 mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white">No projects yet</h3>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white">{tx('pages.clientJobs.emptyTitle', undefined, 'No projects yet')}</h3>
             <p className="text-gray-500 dark:text-gray-400 mt-1 max-w-sm">
-              Post your first project and receive proposals from verified professionals.
+              {tx('pages.clientJobs.emptyDescription', undefined, 'Post your first project and receive proposals from verified professionals.')}
             </p>
             <button
               onClick={() => navigate('/jobs/new')}
               className="mt-4 bg-amber-500 hover:bg-amber-400 text-white font-medium px-5 py-2 rounded-xl transition-colors"
             >
-              Post a project - it's free
+              {tx('pages.clientJobs.postFree', undefined, "Post a project - it's free")}
             </button>
           </div>
         ) : (
@@ -150,7 +167,7 @@ export default function ClientJobs() {
                         ${job.status === 'completed' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : ''}
                         ${!['open', 'in_progress', 'completed'].includes(job.status) ? 'bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-300' : ''}
                       `}>
-                        {job.status.replace('_', ' ').charAt(0).toUpperCase() + job.status.replace('_', ' ').slice(1)}
+                        {statusLabel(job.status)}
                       </span>
                     </div>
                   </div>
@@ -160,14 +177,14 @@ export default function ClientJobs() {
                         onClick={() => navigate(`/jobs/${job.id}/proposals`)}
                         className="text-sm bg-purple-50 dark:bg-purple-900/20 hover:bg-purple-100 dark:hover:bg-purple-900/40 text-purple-600 dark:text-purple-400 font-medium px-3 py-1.5 rounded-lg transition-colors"
                       >
-                        View proposals
+                        {tx('pages.clientJobs.viewProposals', undefined, 'View proposals')}
                       </button>
                     )}
                     <button 
                       onClick={() => navigate(`/jobs/${job.id}`)}
                       className="text-sm border border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5 text-gray-700 dark:text-gray-300 font-medium px-3 py-1.5 rounded-lg transition-colors"
                     >
-                      Edit
+                      {tx('pages.clientJobs.edit', undefined, 'Edit')}
                     </button>
                   </div>
                 </div>
@@ -177,15 +194,15 @@ export default function ClientJobs() {
                     {job.budget_min}-{job.budget_max} TND
                   </p>
                   <p className="text-sm bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-300 px-2 py-0.5 rounded">
-                    {job.job_type === 'fixed' ? 'Fixed Price' : 'Hourly Rate'}
+                    {job.job_type === 'fixed' ? tx('pages.clientJobs.fixedPrice', undefined, 'Fixed Price') : tx('pages.clientJobs.hourlyRate', undefined, 'Hourly Rate')}
                   </p>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
-                    {job.proposals?.[0]?.count || 0} proposals
+                    {tx('pages.clientJobs.proposalsCount', { count: job.proposals?.[0]?.count || 0 }, `${job.proposals?.[0]?.count || 0} proposals`)}
                   </p>
                 </div>
                 
                 <p className="text-sm text-gray-400">
-                  Posted {formatDaysAgo(job.created_at)}
+                  {tx('pages.clientJobs.postedAgo', { time: formatDaysAgo(job.created_at) }, `Posted ${formatDaysAgo(job.created_at)}`)}
                 </p>
               </div>
             ))}

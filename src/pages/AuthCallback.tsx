@@ -17,7 +17,7 @@ const POST_AUTH_ROUTE = '/login?oauth=resume';
 const sleep = (ms: number) => new Promise((resolve) => window.setTimeout(resolve, ms));
 
 const AuthCallback = () => {
-    const { dir } = useTranslation();
+    const { dir, tx } = useTranslation();
     const [status, setStatus] = useState<CallbackState>('loading');
     const [errorDetails, setErrorDetails] = useState<{ code?: string; message?: string } | null>(null);
 
@@ -193,9 +193,9 @@ const AuthCallback = () => {
                 {status === 'loading' ? (
                     <>
                         <Loader2 className="mx-auto mb-4 h-12 w-12 animate-spin text-primary-600" />
-                        <h1 className="mb-3 text-2xl font-bold text-[#171420] dark:text-white">Signing you in</h1>
+                        <h1 className="mb-3 text-2xl font-bold text-[#171420] dark:text-white">{tx('pages.authCallback.signingIn', undefined, 'Signing you in')}</h1>
                         <p className="text-[#625c78] dark:text-[#a7a2ba]">
-                            We are finishing your secure login. This should only take a moment.
+                            {tx('pages.authCallback.signingInDescription', undefined, 'We are finishing your secure login. This should only take a moment.')}
                         </p>
                     </>
                 ) : (
@@ -203,14 +203,14 @@ const AuthCallback = () => {
                         <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-amber-100 text-amber-600 dark:bg-amber-500/10 dark:text-amber-300">
                             <RefreshCw className="h-7 w-7" />
                         </div>
-                        <h1 className="mb-3 text-2xl font-bold text-[#171420] dark:text-white">Login did not complete</h1>
+                        <h1 className="mb-3 text-2xl font-bold text-[#171420] dark:text-white">{tx('pages.authCallback.loginIncomplete', undefined, 'Login did not complete')}</h1>
                         <p className="mb-6 text-[#625c78] dark:text-[#a7a2ba]">
-                            We could not confirm your session yet. Try again, or return to login and retry the provider sign-in.
+                            {tx('pages.authCallback.loginIncompleteDescription', undefined, 'We could not confirm your session yet. Try again, or return to login and retry the provider sign-in.')}
                         </p>
                         {errorDetails ? (
                             <div className="mb-6 rounded-2xl border border-amber-200/70 bg-amber-50 px-4 py-3 text-left text-sm text-amber-900 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-100">
                                 {errorDetails.code ? (
-                                    <p className="font-semibold">Error code: {errorDetails.code}</p>
+                                    <p className="font-semibold">{tx('pages.authCallback.errorCode', { code: errorDetails.code }, `Error code: ${errorDetails.code}`)}</p>
                                 ) : null}
                                 {errorDetails.message ? (
                                     <p className={errorDetails.code ? 'mt-1' : ''}>{errorDetails.message}</p>
@@ -219,10 +219,10 @@ const AuthCallback = () => {
                         ) : null}
                         <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
                             <Button variant="outline" onClick={() => window.location.reload()}>
-                                Try again
+                                {tx('pages.authCallback.tryAgain', undefined, 'Try again')}
                             </Button>
                             <Button variant="primary" onClick={() => { window.location.replace('/login'); }}>
-                                Back to login
+                                {tx('pages.authCallback.backToLogin', undefined, 'Back to login')}
                             </Button>
                         </div>
                     </>
