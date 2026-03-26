@@ -3,20 +3,34 @@
  * Handles TND (Tunisian Dinar) formatting
  */
 
+import type { Language } from '../types';
+
+const numberLocaleByLanguage: Record<Language, string> = {
+    ar: 'ar-TN',
+    en: 'en-US',
+    fr: 'fr-FR',
+};
+
+const currencySymbolByLanguage: Record<Language, string> = {
+    ar: 'د.ت',
+    en: 'TND',
+    fr: 'TND',
+};
+
 /**
  * Format amount in TND with proper Arabic formatting
  * @param amount - Amount in TND
  * @param showSymbol - Whether to show the currency symbol (default: true)
  * @returns Formatted string like "125.500 د.ت"
  */
-export function formatCurrency(amount: number, showSymbol = true): string {
+export function formatCurrency(amount: number, showSymbol = true, language: Language = 'ar'): string {
     // TND uses 3 decimal places (millimes)
-    const formatted = new Intl.NumberFormat('ar-TN', {
+    const formatted = new Intl.NumberFormat(numberLocaleByLanguage[language], {
         minimumFractionDigits: 3,
         maximumFractionDigits: 3,
     }).format(amount);
 
-    return showSymbol ? `${formatted} د.ت` : formatted;
+    return showSymbol ? `${formatted} ${currencySymbolByLanguage[language]}` : formatted;
 }
 
 /**
@@ -24,15 +38,15 @@ export function formatCurrency(amount: number, showSymbol = true): string {
  * @param amount - Amount in TND
  * @returns Formatted string like "125 د.ت" or "125.500 د.ت"
  */
-export function formatCurrencyCompact(amount: number): string {
+export function formatCurrencyCompact(amount: number, language: Language = 'ar'): string {
     const isWholeNumber = amount % 1 === 0;
 
-    const formatted = new Intl.NumberFormat('ar-TN', {
+    const formatted = new Intl.NumberFormat(numberLocaleByLanguage[language], {
         minimumFractionDigits: isWholeNumber ? 0 : 3,
         maximumFractionDigits: 3,
     }).format(amount);
 
-    return `${formatted} د.ت`;
+    return `${formatted} ${currencySymbolByLanguage[language]}`;
 }
 
 /**
@@ -123,57 +137,121 @@ export function validateWithdrawalAmount(
 /**
  * Format transaction type for display
  */
-export function formatTransactionType(type: string): string {
-    const typeLabels: Record<string, string> = {
-        deposit: 'إيداع',
-        escrow: 'ضمان',
-        release: 'تحويل',
-        refund: 'استرداد',
-        withdrawal: 'سحب',
-        fee: 'رسوم',
+export function formatTransactionType(type: string, language: Language = 'ar'): string {
+    const typeLabels: Record<Language, Record<string, string>> = {
+        ar: {
+            deposit: 'إيداع',
+            escrow: 'ضمان',
+            release: 'تحويل',
+            refund: 'استرداد',
+            withdrawal: 'سحب',
+            fee: 'رسوم',
+        },
+        en: {
+            deposit: 'Deposit',
+            escrow: 'Escrow',
+            release: 'Release',
+            refund: 'Refund',
+            withdrawal: 'Withdrawal',
+            fee: 'Fee',
+        },
+        fr: {
+            deposit: 'Depot',
+            escrow: 'Escrow',
+            release: 'Transfert',
+            refund: 'Remboursement',
+            withdrawal: 'Retrait',
+            fee: 'Frais',
+        },
     };
-    return typeLabels[type] || type;
+    return typeLabels[language][type] || type;
 }
 
 /**
  * Format transaction status for display
  */
-export function formatTransactionStatus(status: string): string {
-    const statusLabels: Record<string, string> = {
-        pending: 'قيد الانتظار',
-        processing: 'جاري المعالجة',
-        completed: 'مكتمل',
-        failed: 'فشل',
-        refunded: 'تم الاسترداد',
-        cancelled: 'ملغي',
+export function formatTransactionStatus(status: string, language: Language = 'ar'): string {
+    const statusLabels: Record<Language, Record<string, string>> = {
+        ar: {
+            pending: 'قيد الانتظار',
+            processing: 'جاري المعالجة',
+            completed: 'مكتمل',
+            failed: 'فشل',
+            refunded: 'تم الاسترداد',
+            cancelled: 'ملغي',
+        },
+        en: {
+            pending: 'Pending',
+            processing: 'Processing',
+            completed: 'Completed',
+            failed: 'Failed',
+            refunded: 'Refunded',
+            cancelled: 'Cancelled',
+        },
+        fr: {
+            pending: 'En attente',
+            processing: 'En traitement',
+            completed: 'Termine',
+            failed: 'Echec',
+            refunded: 'Rembourse',
+            cancelled: 'Annule',
+        },
     };
-    return statusLabels[status] || status;
+    return statusLabels[language][status] || status;
 }
 
 /**
  * Format withdrawal status for display
  */
-export function formatWithdrawalStatus(status: string): string {
-    const statusLabels: Record<string, string> = {
-        pending: 'قيد المراجعة',
-        approved: 'تمت الموافقة',
-        processing: 'جاري التحويل',
-        completed: 'مكتمل',
-        rejected: 'مرفوض',
+export function formatWithdrawalStatus(status: string, language: Language = 'ar'): string {
+    const statusLabels: Record<Language, Record<string, string>> = {
+        ar: {
+            pending: 'قيد المراجعة',
+            approved: 'تمت الموافقة',
+            processing: 'جاري التحويل',
+            completed: 'مكتمل',
+            rejected: 'مرفوض',
+        },
+        en: {
+            pending: 'Under review',
+            approved: 'Approved',
+            processing: 'Processing',
+            completed: 'Completed',
+            rejected: 'Rejected',
+        },
+        fr: {
+            pending: 'En revision',
+            approved: 'Approuve',
+            processing: 'En traitement',
+            completed: 'Termine',
+            rejected: 'Rejete',
+        },
     };
-    return statusLabels[status] || status;
+    return statusLabels[language][status] || status;
 }
 
 /**
  * Format withdrawal method for display
  */
-export function formatWithdrawalMethod(method: string): string {
-    const methodLabels: Record<string, string> = {
-        bank_transfer: 'تحويل بنكي',
-        d17: 'D17',
-        flouci: 'Flouci',
+export function formatWithdrawalMethod(method: string, language: Language = 'ar'): string {
+    const methodLabels: Record<Language, Record<string, string>> = {
+        ar: {
+            bank_transfer: 'تحويل بنكي',
+            d17: 'D17',
+            flouci: 'Flouci',
+        },
+        en: {
+            bank_transfer: 'Bank transfer',
+            d17: 'D17',
+            flouci: 'Flouci',
+        },
+        fr: {
+            bank_transfer: 'Virement bancaire',
+            d17: 'D17',
+            flouci: 'Flouci',
+        },
     };
-    return methodLabels[method] || method;
+    return methodLabels[language][method] || method;
 }
 
 /**

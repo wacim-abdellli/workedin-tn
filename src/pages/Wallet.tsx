@@ -15,7 +15,7 @@ import type { WithdrawalMethod } from '@/types/payment';
 
 export default function Wallet() {
   const { user } = useAuth();
-  const { t, tx } = useTranslation();
+  const { t, tx, language } = useTranslation();
   
   const [isWithdrawalModalOpen, setIsWithdrawalModalOpen] = useState(false);
   const [page, setPage] = useState(1);
@@ -61,7 +61,8 @@ export default function Wallet() {
   const totalPages = Math.ceil((transactionsData?.count || 0) / pageSize);
 
   const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString('en-US', {
+    const locale = language === 'ar' ? 'ar-TN' : language === 'fr' ? 'fr-FR' : 'en-US';
+    return new Date(dateStr).toLocaleDateString(locale, {
       year: 'numeric', month: 'short', day: 'numeric'
     });
   };
@@ -108,12 +109,12 @@ export default function Wallet() {
               
               <div className="mb-2">
                 <p className="text-sm text-purple-200 font-medium">{t.wallet?.balance || 'Available Balance'}</p>
-                <h2 className="text-4xl font-bold mt-1">{formatCurrency(wallet?.balance || 0)}</h2>
+                <h2 className="text-4xl font-bold mt-1">{formatCurrency(wallet?.balance || 0, true, language)}</h2>
               </div>
               
               <div className="flex items-center gap-2 text-sm text-purple-200">
                 <Clock className="w-4 h-4" />
-                <span>{t.wallet?.pendingBalance || 'Pending in Escrow'}: {formatCurrency(wallet?.pending_balance || 0)}</span>
+                <span>{t.wallet?.pendingBalance || 'Pending in Escrow'}: {formatCurrency(wallet?.pending_balance || 0, true, language)}</span>
               </div>
             </div>
             
@@ -135,7 +136,7 @@ export default function Wallet() {
               <TrendingUp className="w-4 h-4" />
               <span>{t.wallet?.totalEarned || 'Total Earned'}</span>
             </div>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatCurrency(wallet?.total_earned || 0)}</p>
+            <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatCurrency(wallet?.total_earned || 0, true, language)}</p>
           </div>
           
           <div className="bg-white dark:bg-[#1a1825] rounded-2xl p-5 border border-gray-100 dark:border-white/5">
@@ -143,7 +144,7 @@ export default function Wallet() {
               <ArrowUpRight className="w-4 h-4" />
               <span>{t.wallet?.totalWithdrawn || 'Total Withdrawn'}</span>
             </div>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatCurrency(wallet?.total_withdrawn || 0)}</p>
+            <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatCurrency(wallet?.total_withdrawn || 0, true, language)}</p>
           </div>
           
           <div className="bg-white dark:bg-[#1a1825] rounded-2xl p-5 border border-gray-100 dark:border-white/5">
@@ -151,7 +152,7 @@ export default function Wallet() {
               <WalletIcon className="w-4 h-4" />
               <span>{t.wallet?.balance || 'Available Balance'}</span>
             </div>
-            <p className="text-2xl font-bold text-green-600 dark:text-green-400">{formatCurrency(wallet?.balance || 0)}</p>
+            <p className="text-2xl font-bold text-green-600 dark:text-green-400">{formatCurrency(wallet?.balance || 0, true, language)}</p>
           </div>
           
           <div className="bg-white dark:bg-[#1a1825] rounded-2xl p-5 border border-gray-100 dark:border-white/5">
@@ -159,7 +160,7 @@ export default function Wallet() {
               <Clock className="w-4 h-4" />
               <span>{t.wallet?.pendingBalance || 'Pending in Escrow'}</span>
             </div>
-            <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">{formatCurrency(wallet?.pending_balance || 0)}</p>
+            <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">{formatCurrency(wallet?.pending_balance || 0, true, language)}</p>
           </div>
         </div>
 
@@ -203,7 +204,7 @@ export default function Wallet() {
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
                               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200">
-                                {formatTransactionType(tx.type)}
+                                {formatTransactionType(tx.type, language)}
                               </span>
                             </td>
                             <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">
@@ -215,12 +216,12 @@ export default function Wallet() {
                                 isDebit ? 'text-red-600 dark:text-red-400' : 
                                 'text-gray-900 dark:text-white'
                               }`}>
-                                {isCredit ? '+' : isDebit ? '-' : ''}{formatCurrency(tx.amount)}
+                                {isCredit ? '+' : isDebit ? '-' : ''}{formatCurrency(tx.amount, true, language)}
                               </span>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-center">
                               <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(tx.status)}`}>
-                                {formatTransactionStatus(tx.status)}
+                                {formatTransactionStatus(tx.status, language)}
                               </span>
                             </td>
                           </tr>
@@ -300,14 +301,14 @@ export default function Wallet() {
                             {formatDate(withdrawal.created_at)}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900 dark:text-white">
-                            {formatCurrency(withdrawal.amount)}
+                            {formatCurrency(withdrawal.amount, true, language)}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-semibold text-green-600 dark:text-green-400">
-                            {formatCurrency(withdrawal.net_amount || (withdrawal.amount - (withdrawal.fee || 0)))}
+                            {formatCurrency(withdrawal.net_amount || (withdrawal.amount - (withdrawal.fee || 0)), true, language)}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-center">
                             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200">
-                              {formatWithdrawalMethod(withdrawal.method)}
+                              {formatWithdrawalMethod(withdrawal.method, language)}
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-center">
@@ -345,7 +346,7 @@ export default function Wallet() {
 // Withdrawal Modal Component
 function WithdrawalModal({ wallet, onClose, onSuccess }: { wallet: any; onClose: () => void; onSuccess: () => void }) {
   const { user } = useAuth();
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const { showToast } = useToast();
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -425,7 +426,7 @@ function WithdrawalModal({ wallet, onClose, onSuccess }: { wallet: any; onClose:
             {t.wallet?.withdrawalSubmittedDesc || 'Your request will be reviewed within 2-5 business days'}
           </p>
           <p className="text-2xl font-bold text-purple-600">
-            {formatCurrency(amountValue)}
+            {formatCurrency(amountValue, true, language)}
           </p>
         </div>
       </div>
@@ -447,7 +448,7 @@ function WithdrawalModal({ wallet, onClose, onSuccess }: { wallet: any; onClose:
         <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
           <div className="text-sm text-gray-500 mb-1">{t.wallet?.availableBalance || 'Available Balance'}</div>
           <div className="text-2xl font-bold text-gray-900 dark:text-white">
-            {formatCurrency(wallet.balance)}
+            {formatCurrency(wallet.balance, true, language)}
           </div>
         </div>
 
@@ -491,7 +492,7 @@ function WithdrawalModal({ wallet, onClose, onSuccess }: { wallet: any; onClose:
                   {m === 'bank_transfer' && <Building className="w-5 h-5 mx-auto mb-1" />}
                   {m === 'd17' && <span className="font-bold text-lg">D17</span>}
                   {m === 'flouci' && <span className="font-bold text-lg">F</span>}
-                  <div className="text-xs">{formatWithdrawalMethod(m)}</div>
+                  <div className="text-xs">{formatWithdrawalMethod(m, language)}</div>
                 </button>
               ))}
             </div>
