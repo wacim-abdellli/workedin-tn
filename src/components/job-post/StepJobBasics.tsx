@@ -7,7 +7,7 @@ import { useTranslation } from '../../i18n';
 
 export default function StepJobBasics() {
     const { register, control, formState: { errors }, watch, setValue } = useFormContext();
-    const { tx } = useTranslation();
+    const { language, tx } = useTranslation();
     const description = watch('description') || '';
     const selectedSkills = watch('required_skills') || [];
 
@@ -116,7 +116,7 @@ export default function StepJobBasics() {
                                         }
                                     `}
                                 >
-                                    {skill.name_ar}
+                                    {language === 'ar' ? skill.name_ar : language === 'fr' ? skill.name_fr : skill.name_en}
                                 </button>
                             );
                         })}

@@ -1,4 +1,5 @@
 import { Check } from 'lucide-react';
+import { useTranslation } from '../../i18n';
 
 interface WizardStep {
     id: number;
@@ -13,6 +14,7 @@ interface JobWizardLayoutProps {
 }
 
 export default function JobWizardLayout({ currentStep, steps, children }: JobWizardLayoutProps) {
+    const { tx } = useTranslation();
 
     return (
         <div className="max-w-4xl mx-auto">
@@ -70,7 +72,7 @@ export default function JobWizardLayout({ currentStep, steps, children }: JobWiz
                         {steps[currentStep - 1].title}
                     </h2>
                     <p className="text-sm text-gray-500 dark:text-gray-400">
-                        الخطوة {currentStep} من {steps.length}
+                        {tx('jobs.new.stepCounter', { current: currentStep, total: steps.length }, `Step ${currentStep} of ${steps.length}`)}
                     </p>
                 </div>
             </div>

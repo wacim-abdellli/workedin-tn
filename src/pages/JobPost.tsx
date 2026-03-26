@@ -10,6 +10,7 @@ import Button from '../components/ui/Button';
 import Modal from '../components/ui/Modal';
 import { useToast } from '../components/ui/Toast';
 import { useAuth } from '../contexts/AuthContext';
+import { useTranslation } from '../i18n';
 import { supabase } from '../lib/supabase';
 import { useAutosave } from '../hooks/useAutosave';
 
@@ -60,6 +61,7 @@ type JobFormData = z.infer<typeof jobSchema>;
 export default function JobPost() {
     const { user } = useAuth();
     const { showToast } = useToast();
+    const { tx } = useTranslation();
     const navigate = useNavigate();
     const [currentStep, setCurrentStep] = useState(1);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -119,7 +121,7 @@ export default function JobPost() {
     const handleRestoreDraft = () => {
         if (draftToRestore) {
             methods.reset(draftToRestore.data);
-            showToast('تم استعادة المسودة بنجاح', 'success');
+            showToast(tx('jobs.new.toasts.draftRestored', undefined, 'Draft restored successfully'), 'success');
         }
         setShowRestoreDraftModal(false);
     };
@@ -130,10 +132,10 @@ export default function JobPost() {
     };
 
     const steps = [
-        { id: 1, title: 'تفاصيل المهمة' },
-        { id: 2, title: 'الميزانية والمدة' },
-        { id: 3, title: 'الظهور' },
-        { id: 4, title: 'المراجعة والنشر' },
+        { id: 1, title: tx('jobs.new.steps.basics', undefined, 'تفاصيل المهمة') },
+        { id: 2, title: tx('jobs.new.steps.budget', undefined, 'الميزانية والمدة') },
+        { id: 3, title: tx('jobs.new.steps.visibility', undefined, 'الظهور') },
+        { id: 4, title: tx('jobs.new.steps.review', undefined, 'المراجعة والنشر') },
     ];
 
     const handleNext = async () => {
@@ -165,7 +167,7 @@ export default function JobPost() {
         const data = methods.getValues();
         // Minimal validation for draft
         if (!data.title) {
-            methods.setError('title', { message: 'يرجى إدخال عنوان الوظيفة لحفظ المسودة' });
+            methods.setError('title', { message: tx('jobs.new.errors.titleRequiredForDraft', undefined, 'Please enter a job title to save draft') });
             return;
         }
         await submitJob(data, 'draft');
@@ -173,7 +175,7 @@ export default function JobPost() {
 
     const submitJob = async (data: JobFormData, status: 'open' | 'draft') => {
         if (!user) {
-            showToast('يجب تسجيل الدخول لنشر وظيفة', 'error');
+            showToast(tx('jobs.new.errors.loginRequired', undefined, 'You must be logged in to post a job'), 'error');
             return;
         }
 
@@ -255,15 +257,15 @@ export default function JobPost() {
             clearStorage();
 
             if (status === 'draft') {
-                showToast('تم حفظ المسودة بنجاح', 'success');
+                showToast(tx('jobs.new.toasts.draftSaved', undefined, 'Draft saved successfully'), 'success');
             } else {
-                showToast('تم نشر الوظيفة بنجاح!', 'success');
+                showToast(tx('jobs.new.toasts.jobPosted', undefined, 'Job posted successfully!'), 'success');
                 navigate(insertedJob?.id ? `/jobs/posted/${insertedJob.id}` : '/jobs');
             }
 
         } catch (error: any) {
             logger.error('Error posting job:', error);
-            showToast(error?.message || 'حدث خطأ أثناء حفظ الوظيفة', 'error');
+            showToast(error?.message || tx('jobs.new.errors.saveFailed', undefined, 'Something went wrong while saving the job'), 'error');
         } finally {
             setIsSubmitting(false);
         }
@@ -272,9 +274,9 @@ export default function JobPost() {
     // Helper for relative time (since date-fns is missing)
     const timeAgo = (date: Date) => {
         const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
-        if (seconds < 60) return 'الآن';
-        if (seconds < 3600) return `منذ ${Math.floor(seconds / 60)} دقيقة`;
-        return `منذ ${Math.floor(seconds / 3600)} ساعة`;
+        if (seconds < 60) return tx('jobs.new.time.now', undefined, 'Just now');
+        if (seconds < 3600) return tx('jobs.new.time.minutesAgo', { count: Math.floor(seconds / 60) }, `${Math.floor(seconds / 60)} min ago`);
+        return tx('jobs.new.time.hoursAgo', { count: Math.floor(seconds / 3600) }, `${Math.floor(seconds / 3600)} h ago`);
     };
 
     return (
@@ -288,18 +290,18 @@ export default function JobPost() {
                         {status === 'saving' && (
                             <>
                                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                                <span className="text-xs">جاري الحفظ...</span>
+                                <span className="text-xs">{tx('jobs.new.autosave.saving', undefined, 'Saving...')}</span>
                             </>
                         )}
                         {status === 'saved' && (
                             <>
                                 <Check className="w-3.5 h-3.5 text-green-500" />
-                                <span className="text-xs">تم الحفظ</span>
+                                <span className="text-xs">{tx('jobs.new.autosave.saved', undefined, 'Saved')}</span>
                             </>
                         )}
                         {status === 'idle' && lastSaved && (
                             <span className="flex items-center gap-1 text-xs text-gray-400 dark:text-gray-600">
-                                آخر حفظ: {timeAgo(lastSaved)}
+                                {tx('jobs.new.autosave.lastSaved', { time: timeAgo(lastSaved) }, `Last saved: ${timeAgo(lastSaved)}`)}
                             </span>
                         )}
                     </div>
@@ -326,7 +328,7 @@ export default function JobPost() {
                                         onClick={handleBack}
                                         leftIcon={<ArrowRight className="w-4 h-4" />} // RTL arrow
                                     >
-                                        السابق
+                                        {tx('jobs.new.actions.previous', undefined, 'Previous')}
                                     </Button>
                                 ) : (
                                     <div /> // Spacer
@@ -340,7 +342,7 @@ export default function JobPost() {
                                         onClick={handleSaveDraft}
                                     >
                                         <Save className="w-4 h-4 ml-2" />
-                                        حفظ كمسودة
+                                        {tx('jobs.new.actions.saveDraft', undefined, 'Save draft')}
                                     </Button>
 
                                     {currentStep < steps.length ? (
@@ -350,7 +352,7 @@ export default function JobPost() {
                                             onClick={handleNext}
                                             rightIcon={<ArrowLeft className="w-4 h-4" />} // RTL arrow
                                         >
-                                            التالي
+                                            {tx('jobs.new.actions.next', undefined, 'Next')}
                                         </Button>
                                     ) : (
                                         <Button
@@ -360,7 +362,7 @@ export default function JobPost() {
                                             className="px-8"
                                             rightIcon={<ArrowLeft className="w-4 h-4" />}
                                         >
-                                            نشر الوظيفة
+                                            {tx('jobs.new.actions.publishJob', undefined, 'Publish job')}
                                         </Button>
                                     )}
                                 </div>
@@ -375,22 +377,21 @@ export default function JobPost() {
             <Modal
                 isOpen={showRestoreDraftModal}
                 onClose={() => setShowRestoreDraftModal(false)}
-                title="استعادة المسودة"
+                title={tx('jobs.new.restoreDraft.title', undefined, 'Restore draft')}
             >
                 <div className="space-y-4">
                     <p className="text-gray-600 dark:text-gray-300">
-                        لدينا مسودة محفوظة من {draftToRestore && timeAgo(draftToRestore.timestamp)}.
-                        هل تريد استعادة البيانات والمتابعة من حيث توقفت؟
+                        {tx('jobs.new.restoreDraft.description', { time: draftToRestore ? timeAgo(draftToRestore.timestamp) : '' }, `We found a saved draft from ${draftToRestore ? timeAgo(draftToRestore.timestamp) : ''}. Do you want to restore and continue?`)}
                     </p>
                     <div className="bg-gray-50 dark:bg-dark-800 p-3 rounded-lg text-sm text-gray-500">
-                        <strong>العنوان:</strong> {draftToRestore?.data.title || '(بدون عنوان)'}
+                        <strong>{tx('jobs.new.restoreDraft.jobTitle', undefined, 'Title')}:</strong> {draftToRestore?.data.title || tx('jobs.new.restoreDraft.untitled', undefined, '(Untitled)')}
                     </div>
                     <div className="flex justify-end gap-3 mt-6">
                         <Button variant="outline" onClick={handleDiscardDraft}>
-                            بدء من جديد
+                            {tx('jobs.new.restoreDraft.startFresh', undefined, 'Start fresh')}
                         </Button>
                         <Button variant="primary" onClick={handleRestoreDraft}>
-                            استعادة المسودة
+                            {tx('jobs.new.restoreDraft.restore', undefined, 'Restore draft')}
                         </Button>
                     </div>
                 </div>

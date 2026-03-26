@@ -1,29 +1,31 @@
 import { useFormContext } from 'react-hook-form';
 import { FileText, DollarSign, Calendar, Clock, MapPin, Briefcase, File, Globe, Lock } from 'lucide-react';
+import { useTranslation } from '../../i18n';
 
 export default function StepReview() {
     const { watch } = useFormContext();
+    const { language, tx } = useTranslation();
     const values = watch();
 
     // Helper text mappings
     const durationMap: any = {
-        'less_than_1_month': 'أقل من شهر',
-        '1_3_months': '1 - 3 أشهر',
-        '3_6_months': '3 - 6 أشهر',
-        'more_than_6_months': 'أكثر من 6 أشهر'
+        'less_than_1_month': tx('jobs.new.stepReview.durationLessThan1Month', undefined, 'أقل من شهر'),
+        '1_3_months': tx('jobs.new.stepReview.duration1To3Months', undefined, '1 - 3 أشهر'),
+        '3_6_months': tx('jobs.new.stepReview.duration3To6Months', undefined, '3 - 6 أشهر'),
+        'more_than_6_months': tx('jobs.new.stepReview.durationMoreThan6Months', undefined, 'أكثر من 6 أشهر')
     };
 
     const experienceMap: any = {
-        'beginner': 'مبتدئ',
-        'intermediate': 'متوسط الخبرة',
-        'expert': 'خبير'
+        'beginner': tx('jobs.new.stepReview.beginner', undefined, 'مبتدئ'),
+        'intermediate': tx('jobs.new.stepReview.intermediate', undefined, 'متوسط الخبرة'),
+        'expert': tx('jobs.new.stepReview.expert', undefined, 'خبير')
     };
 
     return (
         <div className="space-y-8">
             <div className="flex gap-3 rounded-xl border border-yellow-200 bg-yellow-50 p-4 text-sm text-yellow-800 dark:border-yellow-500/20 dark:bg-yellow-500/10 dark:text-yellow-200">
                 <FileText className="w-5 h-5 flex-shrink-0" />
-                <p>يرجى مراجعة تفاصيل الوظيفة بدقة قبل النشر. بعد النشر، ستتمكن من تعديل بعض التفاصيل فقط.</p>
+                <p>{tx('jobs.new.stepReview.warning', undefined, 'يرجى مراجعة تفاصيل الوظيفة بدقة قبل النشر. بعد النشر، ستتمكن من تعديل بعض التفاصيل فقط.')}</p>
             </div>
 
             <div className="space-y-6">
@@ -37,14 +39,14 @@ export default function StepReview() {
                         </span>
                         <span className="flex items-center gap-1 rounded-full bg-gray-100 px-3 py-1 dark:bg-white/10">
                             <Clock className="w-4 h-4" />
-                            {values.posted_at ? new Date(values.posted_at).toLocaleDateString('ar-TN') : 'الآن'}
+                            {values.posted_at ? new Date(values.posted_at).toLocaleDateString(language === 'ar' ? 'ar-TN' : language === 'fr' ? 'fr-FR' : 'en-US') : tx('jobs.new.stepReview.now', undefined, 'الآن')}
                         </span>
                     </div>
                 </div>
 
                 {/* Description */}
                 <div>
-                    <h3 className="mb-3 font-bold text-gray-900 dark:text-white">وصف المشروع</h3>
+                    <h3 className="mb-3 font-bold text-gray-900 dark:text-white">{tx('jobs.new.stepReview.projectDescription', undefined, 'وصف المشروع')}</h3>
                     <p className="whitespace-pre-line leading-relaxed text-gray-600 dark:text-gray-300">
                         {values.description}
                     </p>
@@ -56,11 +58,11 @@ export default function StepReview() {
                         <div className="flex gap-4">
                             <DollarSign className="mt-1 h-5 w-5 text-gray-400 dark:text-gray-500" />
                             <div>
-                                <h4 className="font-bold text-gray-900 dark:text-white">الميزانية</h4>
+                                <h4 className="font-bold text-gray-900 dark:text-white">{tx('jobs.new.stepReview.budget', undefined, 'الميزانية')}</h4>
                                 <p className="text-gray-600 dark:text-gray-400">
                                     {values.job_type === 'fixed_price'
                                         ? `${values.budget_min} - ${values.budget_max} د.ت`
-                                        : `${values.hourly_rate} د.ت / ساعة`
+                                        : tx('jobs.new.stepReview.hourlyBudget', { rate: values.hourly_rate }, `${values.hourly_rate} د.ت / ساعة`)
                                     }
                                 </p>
                             </div>
@@ -69,7 +71,7 @@ export default function StepReview() {
                         <div className="flex gap-4">
                             <Briefcase className="mt-1 h-5 w-5 text-gray-400 dark:text-gray-500" />
                             <div>
-                                <h4 className="font-bold text-gray-900 dark:text-white">المستوى المطلوب</h4>
+                                <h4 className="font-bold text-gray-900 dark:text-white">{tx('jobs.new.stepReview.experienceLevel', undefined, 'المستوى المطلوب')}</h4>
                                 <p className="text-gray-600 dark:text-gray-400">{experienceMap[values.experience_level]}</p>
                             </div>
                         </div>
@@ -79,7 +81,7 @@ export default function StepReview() {
                         <div className="flex gap-4">
                             <Calendar className="mt-1 h-5 w-5 text-gray-400 dark:text-gray-500" />
                             <div>
-                                <h4 className="font-bold text-gray-900 dark:text-white">مدة المشروع</h4>
+                                <h4 className="font-bold text-gray-900 dark:text-white">{tx('jobs.new.stepReview.projectDuration', undefined, 'مدة المشروع')}</h4>
                                 <p className="text-gray-600 dark:text-gray-400">{durationMap[values.duration]}</p>
                             </div>
                         </div>
@@ -87,8 +89,8 @@ export default function StepReview() {
                         <div className="flex gap-4">
                             <MapPin className="mt-1 h-5 w-5 text-gray-400 dark:text-gray-500" />
                             <div>
-                                <h4 className="font-bold text-gray-900 dark:text-white">الموقع</h4>
-                                <p className="text-gray-600 dark:text-gray-400">{values.visibility === 'invite_only' ? 'خاص (دعوة فقط)' : 'عام (الجميع)'}</p>
+                                <h4 className="font-bold text-gray-900 dark:text-white">{tx('jobs.new.stepReview.visibility', undefined, 'الموقع')}</h4>
+                                <p className="text-gray-600 dark:text-gray-400">{values.visibility === 'invite_only' ? tx('jobs.new.stepReview.inviteOnlyVisibility', undefined, 'خاص (دعوة فقط)') : tx('jobs.new.stepReview.publicVisibility', undefined, 'عام (الجميع)')}</p>
                             </div>
                         </div>
                     </div>
@@ -100,9 +102,11 @@ export default function StepReview() {
                         {values.visibility === 'public' ? <Globe className="w-5 h-5" /> : <Lock className="w-5 h-5" />}
                     </div>
                     <div>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">مستوى الخصوصية</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">{tx('jobs.new.stepReview.privacyLevel', undefined, 'مستوى الخصوصية')}</p>
                         <p className="font-medium text-gray-900 dark:text-white">
-                            {values.visibility === 'public' ? 'عام للجميع' : 'دعوة فقط'}
+                            {values.visibility === 'public'
+                                ? tx('jobs.new.stepVisibility.publicTitle', undefined, 'عام للجميع')
+                                : tx('jobs.new.stepVisibility.inviteOnlyTitle', undefined, 'دعوة فقط')}
                         </p>
                     </div>
                 </div>
@@ -114,7 +118,7 @@ export default function StepReview() {
                             <File className="w-5 h-5" />
                         </div>
                         <div className="w-full">
-                            <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">الملفات المرفقة</p>
+                            <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">{tx('jobs.new.stepReview.attachments', undefined, 'الملفات المرفقة')}</p>
                             <div className="space-y-2">
                                 {values.attachments_files.map((file: File, index: number) => (
                                     <div key={index} className="flex items-center gap-2 rounded-lg border border-gray-100 bg-gray-50 p-2 text-sm dark:border-white/10 dark:bg-white/[0.03]">
@@ -129,11 +133,11 @@ export default function StepReview() {
 
                 {/* Skills */}
                 <div>
-                    <h3 className="mb-3 font-bold text-gray-900 dark:text-white">المهارات المطلوبة</h3>
+                    <h3 className="mb-3 font-bold text-gray-900 dark:text-white">{tx('jobs.new.stepReview.requiredSkills', undefined, 'المهارات المطلوبة')}</h3>
                     <div className="flex flex-wrap gap-2">
                         {values.required_skills?.map((skill: any) => (
                             <span key={skill.id} className="rounded-full bg-primary-50 px-3 py-1 text-sm font-medium text-primary-700 dark:bg-primary-900/20 dark:text-primary-300">
-                                {skill.name_ar}
+                                {language === 'ar' ? skill.name_ar : language === 'fr' ? skill.name_fr : skill.name_en}
                             </span>
                         ))}
                     </div>

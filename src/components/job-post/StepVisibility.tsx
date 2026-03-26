@@ -1,8 +1,10 @@
 import { useFormContext } from 'react-hook-form';
 import { Eye, Lock, Globe, Users } from 'lucide-react';
+import { useTranslation } from '../../i18n';
 
 export default function StepVisibility() {
     const { register, watch } = useFormContext();
+    const { tx } = useTranslation();
     const visibility = watch('visibility');
 
     return (
@@ -10,10 +12,10 @@ export default function StepVisibility() {
             <div className="space-y-4">
                 <h3 className="flex items-center gap-2 text-xl font-bold text-gray-900 dark:text-white">
                     <Eye className="w-6 h-6 text-primary-600" />
-                    من يمكنه رؤية وظيفتك؟
+                    {tx('jobs.new.stepVisibility.title', undefined, 'من يمكنه رؤية وظيفتك؟')}
                 </h3>
                 <p className="text-gray-500 dark:text-gray-400">
-                    حدد مستوى الخصوصية المناسب لمشروعك.
+                    {tx('jobs.new.stepVisibility.subtitle', undefined, 'حدد مستوى الخصوصية المناسب لمشروعك.')}
                 </p>
             </div>
 
@@ -24,10 +26,10 @@ export default function StepVisibility() {
                         <div className={`rounded-lg p-2 ${visibility === 'public' ? 'bg-primary-100 text-primary-600 dark:bg-primary-900/30 dark:text-primary-300' : 'bg-gray-100 text-gray-500 dark:bg-white/10 dark:text-gray-400'}`}>
                             <Globe className="w-6 h-6" />
                         </div>
-                        <span className="text-lg font-bold text-gray-900 dark:text-white">عام للجميع</span>
+                        <span className="text-lg font-bold text-gray-900 dark:text-white">{tx('jobs.new.stepVisibility.publicTitle', undefined, 'عام للجميع')}</span>
                     </div>
                     <p className="pr-14 text-sm leading-relaxed text-gray-500 dark:text-gray-400">
-                        يمكن لجميع المستقلين رؤية الوظيفة وتقديم عروضهم. الخيار الأفضل للحصول على أكبر عدد من العروض.
+                        {tx('jobs.new.stepVisibility.publicDescription', undefined, 'يمكن لجميع المستقلين رؤية الوظيفة وتقديم عروضهم. الخيار الأفضل للحصول على أكبر عدد من العروض.')}
                     </p>
                 </label>
 
@@ -37,10 +39,10 @@ export default function StepVisibility() {
                         <div className={`rounded-lg p-2 ${visibility === 'invite_only' ? 'bg-primary-100 text-primary-600 dark:bg-primary-900/30 dark:text-primary-300' : 'bg-gray-100 text-gray-500 dark:bg-white/10 dark:text-gray-400'}`}>
                             <Lock className="w-6 h-6" />
                         </div>
-                        <span className="text-lg font-bold text-gray-900 dark:text-white">دعوة فقط</span>
+                        <span className="text-lg font-bold text-gray-900 dark:text-white">{tx('jobs.new.stepVisibility.inviteOnlyTitle', undefined, 'دعوة فقط')}</span>
                     </div>
                     <p className="pr-14 text-sm leading-relaxed text-gray-500 dark:text-gray-400">
-                        لن تظهر الوظيفة في البحث. فقط المستقلون الذين تقوم بدعوتهم يمكنهم تقديم العروض.
+                        {tx('jobs.new.stepVisibility.inviteOnlyDescription', undefined, 'لن تظهر الوظيفة في البحث. فقط المستقلون الذين تقوم بدعوتهم يمكنهم تقديم العروض.')}
                     </p>
                 </label>
             </div>
@@ -48,9 +50,9 @@ export default function StepVisibility() {
             <div className="flex gap-3 rounded-xl border border-blue-100 bg-blue-50 p-4 dark:border-blue-500/20 dark:bg-blue-500/10">
                 <Users className="mt-0.5 h-5 w-5 flex-shrink-0 text-blue-600 dark:text-blue-300" />
                 <div className="text-sm text-blue-800 dark:text-blue-100">
-                    <p className="font-bold mb-1">نصيحة:</p>
+                    <p className="font-bold mb-1">{tx('jobs.new.stepVisibility.tipTitle', undefined, 'نصيحة:')}</p>
                     <p>
-                        إذا كنت تبحث عن مهارات نادرة أو لديك مشروع حساس، فإن خيار "دعوة فقط" يمنحك تحكماً أكبر. أما للمشاريع العامة، فإن "عام للجميع" يضمن لك تنافسية أفضل في الأسعار.
+                        {tx('jobs.new.stepVisibility.tipDescription', undefined, 'إذا كنت تبحث عن مهارات نادرة أو لديك مشروع حساس، فإن خيار "دعوة فقط" يمنحك تحكماً أكبر. أما للمشاريع العامة، فإن "عام للجميع" يضمن لك تنافسية أفضل في الأسعار.')}
                     </p>
                 </div>
             </div>

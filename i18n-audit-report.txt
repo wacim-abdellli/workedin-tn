@@ -1,6 +1,6 @@
 # i18n audit report
 mode: report-only
-findings: 71
+findings: 68
 
 src/components/freelancer/PortfolioModal.tsx:109 [attribute] https://example.com
 src/components/freelancer/PortfolioModal.tsx:125 [attribute] مثال: Photoshop, React, UI Design (افصل بينها بفاصلة)
@@ -51,9 +51,6 @@ src/pages/FindFreelancers.tsx:320 [jsx-text] f.is_verified).length}
 src/pages/FindFreelancers.tsx:409 [jsx-text] freelancer.is_available).length}
 src/pages/ForgotPassword.tsx:132 [jsx-text] تم تجاوز الحد الأقصى للطلبات. يرجى الانتظار 10 دقائق قبل المحاولة مرة أخرى.
 src/pages/ForgotPassword.tsx:170 [jsx-text] إذا لم تجد الرسالة، تحقق من مجلد البريد المزعج (Spam)
-src/pages/FreelancerOnboarding.tsx:108 [direct-string] Max 5 skills
-src/pages/FreelancerOnboarding.tsx:125 [direct-string] No auth session - please login again
-src/pages/FreelancerOnboarding.tsx:227 [direct-string] No auth session - please login again
 src/pages/FreelancerOnboarding.tsx:312 [attribute] Khedma TN
 src/pages/FreelancerOnboarding.tsx:331 [attribute] Khedma TN
 src/pages/JobMatches.tsx:357 [attribute] Work sample

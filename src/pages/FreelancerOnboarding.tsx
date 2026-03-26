@@ -105,7 +105,7 @@ function FreelancerOnboarding() {
         } else if (selectedSkills.length < 5) {
             setSelectedSkills([...selectedSkills, skill]);
         } else {
-            showToast('Max 5 skills', 'warning');
+            showToast(t.onboarding.freelancer.maxSkills || 'Max 5 skills', 'warning');
         }
     };
 
@@ -122,7 +122,7 @@ function FreelancerOnboarding() {
         }
 
         if (!session?.access_token) {
-            showToast('No auth session - please login again', 'error');
+            showToast(t.onboarding.freelancer.noAuthSession || 'No auth session - please login again', 'error');
             return;
         }
 
@@ -196,13 +196,13 @@ function FreelancerOnboarding() {
             }
             logger.log('[Onboarding] Freelancer profile saved!');
 
-            showToast('تم حفظ البيانات الأساسية', 'success');
+            showToast(t.onboarding.freelancer.basicInfoSaved || 'Basic info saved', 'success');
             setStep(2);
         } catch (error) {
             logger.error('Step 1 error:', error);
             const message =
                 error instanceof Error && error.message === 'TIMEOUT'
-                    ? 'فشل الاتصال بالخادم - يرجى التحقق من اتصالك بالإنترنت والمحاولة مرة أخرى'
+                    ? (t.onboarding.freelancer.serverConnectionFailed || 'Failed to connect to server. Check your internet connection and try again.')
                     : error instanceof Error
                         ? error.message
                         : t.common.error;
@@ -214,7 +214,7 @@ function FreelancerOnboarding() {
 
     const onStep2Submit = async (data: Step2FormData) => {
         if (selectedSkills.length === 0) {
-            showToast('يرجى اختيار مهارة واحدة على الأقل', 'warning');
+            showToast(t.onboarding.freelancer.selectAtLeastOneSkill || 'Please select at least one skill', 'warning');
             return;
         }
 
@@ -224,7 +224,7 @@ function FreelancerOnboarding() {
         }
 
         if (!session?.access_token) {
-            showToast('No auth session - please login again', 'error');
+            showToast(t.onboarding.freelancer.noAuthSession || 'No auth session - please login again', 'error');
             return;
         }
 
@@ -261,9 +261,9 @@ function FreelancerOnboarding() {
             } catch (skillsErr: any) {
                 logger.error('[Onboarding] Skills save FAILED:', skillsErr);
                 if (skillsErr.message === 'TIMEOUT') {
-                    throw new Error('فشل الاتصال - يرجى التحقق من اتصالك بالإنترنت والمحاولة مرة أخرى');
+                    throw new Error(t.onboarding.freelancer.connectionFailed || 'Connection failed. Check your internet connection and try again.');
                 }
-                throw new Error(`فشل حفظ المهارات: ${skillsErr.message}`);
+                throw new Error(t.onboarding.freelancer.skillsSaveFailed || `Failed to save skills: ${skillsErr.message}`);
             }
 
             logger.log('[Onboarding] Marking onboarding as complete...');
@@ -282,9 +282,9 @@ function FreelancerOnboarding() {
             } catch (completeErr: any) {
                 logger.error('[Onboarding] Failed to mark complete:', completeErr);
                 if (completeErr.message === 'TIMEOUT') {
-                    throw new Error('فشل إكمال التسجيل - يرجى المحاولة مرة أخرى');
+                    throw new Error(t.onboarding.freelancer.completionFailed || 'Failed to complete onboarding. Please try again.');
                 }
-                throw new Error(`فشل إكمال التسجيل: ${completeErr.message}`);
+                throw new Error(t.onboarding.freelancer.completionFailed || `Failed to complete onboarding: ${completeErr.message}`);
             }
 
             void Promise.race([
@@ -292,7 +292,7 @@ function FreelancerOnboarding() {
                 new Promise((_, reject) => setTimeout(() => reject(new Error('REFRESH_TIMEOUT')), 3000)),
             ]).catch((e) => logger.warn('Profile refresh failed:', e));
 
-            showToast('مرحباً بك في خدمة!', 'success');
+            showToast(t.onboarding.freelancer.welcomeToast || 'Welcome to Khedma!', 'success');
             navigate('/freelancer/dashboard');
         } catch (error) {
             logger.error('Step 2 error:', error);
@@ -337,7 +337,7 @@ function FreelancerOnboarding() {
 
                     <div className="mb-10">
                         <div className="flex items-center justify-between mb-3 text-sm font-medium text-dark-500">
-                            <span>الخطوة {step} من {totalSteps}</span>
+                            <span>{t.onboarding.freelancer.stepCounter?.replace('{{step}}', String(step)).replace('{{total}}', String(totalSteps)) || `Step ${step} of ${totalSteps}`}</span>
                             <span className="text-primary-600 dark:text-primary-400">
                                 {Math.round((step / totalSteps) * 100)}%
                             </span>
@@ -350,10 +350,10 @@ function FreelancerOnboarding() {
                         </div>
                         <div className="flex justify-between mt-3 text-xs text-muted">
                             <span className={`transition-colors duration-300 ${step >= 1 ? 'text-primary-600 dark:text-primary-400 font-bold' : ''}`}>
-                                المعلومات الأساسية
+                                {t.onboarding.freelancer.stepBasicInfo || 'Basic information'}
                             </span>
                             <span className={`transition-colors duration-300 ${step >= 2 ? 'text-primary-600 dark:text-primary-400 font-bold' : ''}`}>
-                                المهارات والخبرة
+                                {t.onboarding.freelancer.stepSkillsExperience || 'Skills and experience'}
                             </span>
                         </div>
                     </div>
@@ -384,7 +384,7 @@ function FreelancerOnboarding() {
 
                     {step === 2 && (
                         <div className="mt-6 text-center text-sm text-muted">
-                            <p>يمكنك إضافة الشهادات والمعرض ووسائل التعريف لاحقاً من الإعدادات</p>
+                            <p>{t.onboarding.freelancer.completeLaterHint || 'You can add certificates, portfolio, and additional profile details later from Settings.'}</p>
                         </div>
                     )}
                 </div>

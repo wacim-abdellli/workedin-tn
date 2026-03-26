@@ -400,7 +400,12 @@ export default function VerifyIdentity() {
     };
 
     const steps = ['front', 'back', 'selfie', 'review'];
-    const stepLabels = ['وجه البطاقة', 'ظهر البطاقة', 'صورة شخصية', 'المراجعة'];
+    const stepLabels = [
+        tx('verifyIdentity.progress.front', undefined, 'وجه البطاقة'),
+        tx('verifyIdentity.progress.back', undefined, 'ظهر البطاقة'),
+        tx('verifyIdentity.progress.selfie', undefined, 'صورة شخصية'),
+        tx('verifyIdentity.progress.review', undefined, 'المراجعة'),
+    ];
     const currentStepIndex = steps.indexOf(step);
 
     // If already verified, show success message

@@ -484,7 +484,7 @@ function Settings() {
                     </label>
                 </div>
                 <div className="flex-1">
-                    <h3 className="font-bold text-lg">{profileForm.full_name || 'المستخدم'}</h3>
+                    <h3 className="font-bold text-lg">{profileForm.full_name || tx('settings.userFallback', undefined, 'User')}</h3>
                     <p className="text-muted">{profileForm.phone}</p>
                     {/* User Type and Status Badges */}
                     <div className="flex flex-wrap gap-2 mt-2">
@@ -498,22 +498,22 @@ function Settings() {
                                     : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'
                             }`}>
                             <User className="w-3 h-3" />
-                            {profile?.user_type === 'freelancer' ? 'مستقل'
-                                : profile?.user_type === 'client' ? 'صاحب مشروع'
-                                    : profile?.user_type === 'both' ? 'كلاهما'
-                                        : 'غير محدد'}
+                            {profile?.user_type === 'freelancer' ? tx('settings.accountTypeFreelancer', undefined, 'Freelancer')
+                                : profile?.user_type === 'client' ? tx('settings.accountTypeClient', undefined, 'Client')
+                                    : profile?.user_type === 'both' ? tx('settings.accountTypeBoth', undefined, 'Both')
+                                        : tx('settings.accountTypeUnknown', undefined, 'Not set')}
                         </span>
 
                         {/* Verification Status Badge */}
                         {profile?.cin_verified ? (
                             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">
                                 <Check className="w-3 h-3" />
-                                هوية موثقة
+                                {tx('settings.identityVerified', undefined, 'Identity verified')}
                             </span>
                         ) : profile?.cin_submitted ? (
                             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400">
                                 <Loader2 className="w-3 h-3 animate-spin" />
-                                قيد المراجعة
+                                {tx('settings.identityPending', undefined, 'Under review')}
                             </span>
                         ) : (
                             <button
@@ -521,7 +521,7 @@ function Settings() {
                                 className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
                             >
                                 <Shield className="w-3 h-3" />
-                                وثّق هويتك
+                                {tx('settings.verifyIdentity', undefined, 'Verify your identity')}
                             </button>
                         )}
 
@@ -529,7 +529,7 @@ function Settings() {
                         {isWorkspaceReady(profile, freelancerProfile, activeMode) ? (
                             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400">
                                 <Check className="w-3 h-3" />
-                                الملف مكتمل
+                                {tx('settings.profileComplete', undefined, 'Profile complete')}
                             </span>
                         ) : (
                             <button
@@ -537,7 +537,7 @@ function Settings() {
                                 className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 hover:bg-orange-200 dark:hover:bg-orange-900/50 transition-colors"
                             >
                                 <User className="w-3 h-3" />
-                                أكمل ملفك الشخصي
+                                {tx('settings.completeProfile', undefined, 'Complete your profile')}
                             </button>
                         )}
                     </div>
@@ -548,13 +548,13 @@ function Settings() {
             {(() => {
                 // Calculate profile completion
                 const fields = [
-                    { key: 'full_name', label: 'الاسم', value: profile?.full_name },
-                    { key: 'avatar_url', label: 'الصورة الشخصية', value: profile?.avatar_url },
-                    { key: 'location', label: 'الموقع', value: profile?.location },
-                    { key: 'bio', label: 'نبذة عني', value: profile?.bio },
-                    { key: 'user_type', label: 'نوع الحساب', value: profile?.user_type },
-                    { key: 'cin_submitted', label: 'توثيق الهوية', value: profile?.cin_submitted },
-                    { key: 'onboarding_completed', label: 'إكمال الملف', value: profile?.onboarding_completed },
+                    { key: 'full_name', label: tx('settings.completion.fullName', undefined, 'Name'), value: profile?.full_name },
+                    { key: 'avatar_url', label: tx('settings.completion.avatar', undefined, 'Profile photo'), value: profile?.avatar_url },
+                    { key: 'location', label: tx('settings.completion.location', undefined, 'Location'), value: profile?.location },
+                    { key: 'bio', label: tx('settings.completion.bio', undefined, 'Bio'), value: profile?.bio },
+                    { key: 'user_type', label: tx('settings.completion.accountType', undefined, 'Account type'), value: profile?.user_type },
+                    { key: 'cin_submitted', label: tx('settings.completion.identityVerification', undefined, 'Identity verification'), value: profile?.cin_submitted },
+                    { key: 'onboarding_completed', label: tx('settings.completion.onboarding', undefined, 'Onboarding'), value: profile?.onboarding_completed },
                 ];
                 const completed = fields.filter(f => f.value).length;
                 const total = fields.length;
@@ -567,7 +567,7 @@ function Settings() {
                         : 'bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800'
                         }`}>
                         <div className="flex items-center justify-between mb-3">
-                            <span className="font-medium text-sm">اكتمال الملف الشخصي</span>
+                            <span className="font-medium text-sm">{tx('settings.profileCompletionTitle', undefined, 'Profile completion')}</span>
                             <span className={`text-lg font-bold ${percentage === 100 ? 'text-green-600' : 'text-orange-600'
                                 }`}>{percentage}%</span>
                         </div>
@@ -580,12 +580,12 @@ function Settings() {
                         </div>
                         {missing.length > 0 && (
                             <div className="mt-3 flex flex-wrap gap-2">
-                                <span className="text-xs text-muted">المطلوب:</span>
+                                <span className="text-xs text-muted">{tx('settings.requiredLabel', undefined, 'Required:')}</span>
                                 {missing.slice(0, 3).map(m => (
                                     <span key={m.key} className="text-xs px-2 py-0.5 bg-white dark:bg-gray-800 rounded border">{m.label}</span>
                                 ))}
                                 {missing.length > 3 && (
-                                    <span className="text-xs text-muted">+{missing.length - 3} آخرين</span>
+                                    <span className="text-xs text-muted">{tx('settings.moreRequired', { count: missing.length - 3 }, `+${missing.length - 3} more`)}</span>
                                 )}
                             </div>
                         )}
