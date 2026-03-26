@@ -211,6 +211,7 @@ Tasks:
 Progress update:
 - added low-end/mobile performance guardrails to disable expensive blur and animated gradient layers
 - reduced decorative noise and heavy shadow intensity under constrained rendering scenarios
+- disabled non-essential card sheen/glow pseudo-layers for coarse pointer devices to reduce repaint/compositing overhead
 
 Acceptance criteria:
 - UX improvements do not degrade runtime experience.

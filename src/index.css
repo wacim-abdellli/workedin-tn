@@ -1188,3 +1188,16 @@ h6 {
     box-shadow: 0 0 12px rgba(139, 92, 246, 0.35);
   }
 }
+
+@media (hover: none), (pointer: coarse) {
+  .card::after,
+  .card::before,
+  .card-hover-shine::after {
+    display: none;
+  }
+
+  .card-hover:hover {
+    transform: none;
+    box-shadow: var(--shadow-md);
+  }
+}
