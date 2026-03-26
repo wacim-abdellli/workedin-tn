@@ -703,6 +703,14 @@ h6 {
     @apply status-pill bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400;
   }
 
+  .status-pill-pending {
+    @apply status-pill bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400;
+  }
+
+  .status-pill-neutral {
+    @apply status-pill bg-gray-100 text-gray-700 dark:bg-white/10 dark:text-gray-300;
+  }
+
   .data-table {
     @apply w-full;
   }
@@ -723,6 +731,42 @@ h6 {
 
   .data-table-td {
     @apply px-6 py-3.5 text-sm;
+  }
+
+  .list-card {
+    @apply card p-5 transition-all;
+    @apply hover:border-primary-200 dark:hover:border-primary-500/30;
+  }
+
+  .list-card-compact {
+    @apply card p-4;
+  }
+
+  .list-card-title {
+    @apply text-lg font-semibold text-gray-900 dark:text-white;
+  }
+
+  .list-card-meta {
+    @apply text-sm text-gray-500 dark:text-gray-400;
+  }
+
+  .list-actions {
+    @apply flex items-center gap-2 sm:flex-col sm:items-end shrink-0;
+  }
+
+  .list-action-btn {
+    @apply inline-flex items-center justify-center rounded-lg px-3 py-1.5;
+    @apply text-sm font-medium transition-colors;
+  }
+
+  .list-action-btn-primary {
+    @apply list-action-btn bg-primary-50 text-primary-700 hover:bg-primary-100;
+    @apply dark:bg-primary-900/20 dark:text-primary-300 dark:hover:bg-primary-900/40;
+  }
+
+  .list-action-btn-secondary {
+    @apply list-action-btn border border-gray-200 text-gray-700 hover:bg-gray-50;
+    @apply dark:border-white/10 dark:text-gray-300 dark:hover:bg-white/5;
   }
 
   /* ===== EMPTY STATE ===== */

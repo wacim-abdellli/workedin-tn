@@ -139,7 +139,7 @@ Status: Not started
 Tasks:
 1. Standardize stat cards. (Initial pass completed)
 2. Standardize table headers, row density, and status chips. (Initial pass completed for Wallet, Client Dashboard, Contracts List, Job Proposals tabs)
-3. Standardize list cards and item action areas.
+3. Standardize list cards and item action areas. (Initial pass completed)
 
 Acceptance criteria:
 - Dashboard, wallet, proposals, contracts follow same data pattern family.
@@ -224,5 +224,5 @@ Per phase:
 
 ## Next Task (Start Now)
 
-Phase 6, task 3:
-- standardize list cards and item action areas across dashboard, wallet, proposals and contracts
+Phase 6 completed (initial pass):
+- standardized stat cards, status chips, table structure, list cards, and item action areas across client dashboard, wallet, contracts list, job proposals, my proposals, and client jobs

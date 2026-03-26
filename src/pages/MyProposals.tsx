@@ -101,28 +101,28 @@ export default function MyProposals() {
         </div>
 
         <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <div className="rounded-2xl border border-gray-100 bg-white p-4 dark:border-white/5 dark:bg-[#1a1825]">
+          <div className="stat-card">
             <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{tx('pages.myProposals.sent', undefined, 'Sent')}</p>
             <p className="mt-1 text-2xl font-bold text-gray-900 dark:text-white">{stats.sent}</p>
           </div>
-          <div className="rounded-2xl border border-gray-100 bg-white p-4 dark:border-white/5 dark:bg-[#1a1825]">
+          <div className="stat-card">
             <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{tx('pages.myProposals.accepted', undefined, 'Accepted')}</p>
             <p className="mt-1 text-2xl font-bold text-green-600 dark:text-green-400">{stats.accepted}</p>
           </div>
-          <div className="rounded-2xl border border-gray-100 bg-white p-4 dark:border-white/5 dark:bg-[#1a1825]">
+          <div className="stat-card">
             <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{tx('pages.myProposals.pending', undefined, 'Pending')}</p>
             <p className="mt-1 text-2xl font-bold text-amber-600 dark:text-amber-400">{stats.pending}</p>
           </div>
         </div>
 
-        <div className="mb-6 flex gap-2 overflow-x-auto pb-2">
+        <div className="tabs-row mb-6 overflow-x-auto pb-2">
           {(['all', 'pending', 'accepted', 'rejected'] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+              className={`tab-pill whitespace-nowrap ${
                 activeTab === tab
-                  ? 'bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400'
+                  ? 'tab-pill-active bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300'
                   : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
               }`}
             >
@@ -144,7 +144,7 @@ export default function MyProposals() {
             </p>
             <button
               onClick={() => navigate('/jobs')}
-              className="mt-4 rounded-xl bg-purple-600 px-5 py-2 font-medium text-white transition-colors hover:bg-purple-500"
+              className="btn-secondary btn-sm mt-4"
             >
               {tx('pages.myProposals.browseJobs', undefined, 'Browse jobs')}
             </button>
@@ -154,19 +154,19 @@ export default function MyProposals() {
             {proposals.map((proposal) => (
               <div
                 key={proposal.id}
-                className="group rounded-2xl border border-gray-100 bg-white p-5 transition-all hover:border-purple-200 dark:border-white/5 dark:bg-[#1a1825] dark:hover:border-purple-500/30"
+                className="list-card group"
               >
                 <div className="mb-2 flex items-start justify-between gap-4">
                   <h3 className="font-semibold text-gray-900 transition-colors group-hover:text-purple-600 dark:text-white dark:group-hover:text-purple-400">
                     {proposal.jobs?.title || tx('pages.myProposals.unknownProject', undefined, 'Unknown Project')}
                   </h3>
                   <span
-                    className={`whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-medium ${
+                    className={`whitespace-nowrap ${
                       proposal.status === 'pending'
-                        ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+                        ? 'status-pill-pending'
                         : proposal.status === 'accepted'
-                          ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                          : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                          ? 'status-pill-completed'
+                          : 'status-pill-cancelled'
                     }`}
                   >
                     {proposal.status.charAt(0).toUpperCase() + proposal.status.slice(1)}

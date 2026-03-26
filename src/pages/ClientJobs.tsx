@@ -95,29 +95,29 @@ export default function ClientJobs() {
 
         {/* Stats row */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-          <div className="card p-4">
+          <div className="stat-card">
             <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">{tx('pages.clientJobs.active', undefined, 'Active')}</p>
             <p className="text-2xl font-bold text-amber-600 dark:text-amber-400 mt-1">{stats.active}</p>
           </div>
-          <div className="card p-4">
+          <div className="stat-card">
             <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">{tx('pages.clientJobs.proposalsReceived', undefined, 'Total proposals received')}</p>
             <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{stats.proposals}</p>
           </div>
-          <div className="card p-4">
+          <div className="stat-card">
             <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">{tx('pages.clientJobs.completed', undefined, 'Completed')}</p>
             <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{stats.completed}</p>
           </div>
         </div>
 
         {/* Filter tabs */}
-        <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
+        <div className="tabs-row mb-6 overflow-x-auto pb-2">
           {(['all', 'active', 'in review', 'completed'] as const).map(tab => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`text-sm font-medium px-4 py-2 rounded-lg whitespace-nowrap transition-colors
+              className={`tab-pill whitespace-nowrap
                 ${activeTab === tab 
-                  ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400' 
+                  ? 'tab-pill-active bg-accent-100 text-accent-700 dark:bg-accent-900/30 dark:text-accent-300' 
                   : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
                 }`}
             >
@@ -150,39 +150,39 @@ export default function ClientJobs() {
             {jobs.map((job: any) => (
               <div 
                 key={job.id}
-                className="card p-5"
+                className="list-card"
               >
                 <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-3">
                   <div>
-                    <h3 className="font-semibold text-gray-900 dark:text-white mb-2 text-lg">
+                    <h3 className="list-card-title mb-2">
                       {job.title}
                     </h3>
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 text-xs font-medium px-2 py-1 rounded-full">
                         {job.category}
                       </span>
-                      <span className={`text-xs font-medium px-2.5 py-1 rounded-full whitespace-nowrap
-                        ${job.status === 'open' ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400' : ''}
-                        ${job.status === 'in_progress' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400' : ''}
-                        ${job.status === 'completed' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : ''}
-                        ${!['open', 'in_progress', 'completed'].includes(job.status) ? 'bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-300' : ''}
+                      <span className={`whitespace-nowrap
+                        ${job.status === 'open' ? 'status-pill-pending' : ''}
+                        ${job.status === 'in_progress' ? 'status-pill-progress' : ''}
+                        ${job.status === 'completed' ? 'status-pill-completed' : ''}
+                        ${!['open', 'in_progress', 'completed'].includes(job.status) ? 'status-pill-neutral' : ''}
                       `}>
                         {statusLabel(job.status)}
                       </span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 sm:flex-col sm:items-end flex-shrink-0">
+                  <div className="list-actions">
                     {job.proposals && job.proposals[0]?.count > 0 && (
                       <button 
                         onClick={() => navigate(`/jobs/${job.id}/proposals`)}
-                        className="text-sm bg-purple-50 dark:bg-purple-900/20 hover:bg-purple-100 dark:hover:bg-purple-900/40 text-purple-600 dark:text-purple-400 font-medium px-3 py-1.5 rounded-lg transition-colors"
+                        className="list-action-btn-primary"
                       >
                         {tx('pages.clientJobs.viewProposals', undefined, 'View proposals')}
                       </button>
                     )}
                     <button 
                       onClick={() => navigate(`/jobs/${job.id}`)}
-                      className="text-sm border border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5 text-gray-700 dark:text-gray-300 font-medium px-3 py-1.5 rounded-lg transition-colors"
+                      className="list-action-btn-secondary"
                     >
                       {tx('pages.clientJobs.edit', undefined, 'Edit')}
                     </button>
@@ -193,7 +193,7 @@ export default function ClientJobs() {
                   <p className="text-gray-900 dark:text-white font-semibold flex items-center gap-1">
                     {job.budget_min}-{job.budget_max} TND
                   </p>
-                  <p className="text-sm bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-300 px-2 py-0.5 rounded">
+                  <p className="status-pill-neutral px-2 py-0.5">
                     {job.job_type === 'fixed' ? tx('pages.clientJobs.fixedPrice', undefined, 'Fixed Price') : tx('pages.clientJobs.hourlyRate', undefined, 'Hourly Rate')}
                   </p>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
