@@ -137,8 +137,8 @@ Acceptance criteria:
 Status: Not started
 
 Tasks:
-1. Standardize stat cards.
-2. Standardize table headers, row density, and status chips.
+1. Standardize stat cards. (Initial pass completed)
+2. Standardize table headers, row density, and status chips. (Initial pass completed for Wallet, Client Dashboard, Contracts List, Job Proposals tabs)
 3. Standardize list cards and item action areas.
 
 Acceptance criteria:
@@ -224,6 +224,5 @@ Per phase:
 
 ## Next Task (Start Now)
 
-Phase 6, task 1 and task 2:
-- standardize stat cards and key metrics surfaces
-- standardize table headers, row density, and status chips
+Phase 6, task 3:
+- standardize list cards and item action areas across dashboard, wallet, proposals and contracts

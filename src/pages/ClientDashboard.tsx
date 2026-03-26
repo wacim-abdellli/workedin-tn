@@ -77,13 +77,13 @@ function ClientDashboardPage() {
     const getStatusBadge = (status: string) => {
         switch (status) {
             case 'open':
-                return <span className="bg-blue-100 text-blue-700 text-xs font-medium px-2 py-1 rounded-full flex items-center gap-1"><AlertCircle className="w-3 h-3" />{tx('pages.clientJobs.status.open', undefined, 'Open')}</span>;
+                return <span className="status-pill-open"><AlertCircle className="w-3 h-3" />{tx('pages.clientJobs.status.open', undefined, 'Open')}</span>;
             case 'in_progress':
-                return <span className="bg-primary-100 text-primary-700 text-xs font-medium px-2 py-1 rounded-full flex items-center gap-1"><Clock className="w-3 h-3" />{tx('pages.clientJobs.status.inProgress', undefined, 'In progress')}</span>;
+                return <span className="status-pill-progress"><Clock className="w-3 h-3" />{tx('pages.clientJobs.status.inProgress', undefined, 'In progress')}</span>;
             case 'completed':
-                return <span className="bg-green-100 text-green-700 text-xs font-medium px-2 py-1 rounded-full flex items-center gap-1"><CheckCircle className="w-3 h-3" />{tx('pages.clientJobs.status.completed', undefined, 'Completed')}</span>;
+                return <span className="status-pill-completed"><CheckCircle className="w-3 h-3" />{tx('pages.clientJobs.status.completed', undefined, 'Completed')}</span>;
             case 'cancelled':
-                return <span className="bg-red-100 text-red-700 text-xs font-medium px-2 py-1 rounded-full flex items-center gap-1"><XCircle className="w-3 h-3" />{tx('dashboard.client.status.cancelled', undefined, 'Cancelled')}</span>;
+                return <span className="status-pill-cancelled"><XCircle className="w-3 h-3" />{tx('dashboard.client.status.cancelled', undefined, 'Cancelled')}</span>;
             default:
                 return null;
         }
@@ -144,32 +144,26 @@ function ClientDashboardPage() {
                         ))
                     ) : (
                         <>
-                            <div className="card">
-                                <div className="flex items-center gap-3 mb-3">
-                                    <div className="w-10 h-10 rounded-xl bg-primary-100 flex items-center justify-center">
+                            <div className="stat-card">
+                                <div className="stat-card-icon bg-primary-100">
                                         <Briefcase className="w-5 h-5 text-primary-600" />
-                                    </div>
                                 </div>
-                                <p className="text-2xl font-bold text-foreground">{stats?.activeJobs ?? 0}</p>
-                                <p className="text-sm text-muted">{tx('dashboard.client.activeJobs', undefined, 'Active jobs')}</p>
+                                <p className="stat-card-value">{stats?.activeJobs ?? 0}</p>
+                                <p className="stat-card-label">{tx('dashboard.client.activeJobs', undefined, 'Active jobs')}</p>
                             </div>
-                            <div className="card">
-                                <div className="flex items-center gap-3 mb-3">
-                                    <div className="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center">
+                            <div className="stat-card">
+                                <div className="stat-card-icon bg-green-100">
                                         <DollarSign className="w-5 h-5 text-green-600" />
-                                    </div>
                                 </div>
-                                <p className="text-2xl font-bold text-foreground">{formatCurrency(stats?.totalSpent ?? 0, true, language)}</p>
-                                <p className="text-sm text-muted">{tx('dashboard.client.totalSpent', undefined, 'Total spent')}</p>
+                                <p className="stat-card-value">{formatCurrency(stats?.totalSpent ?? 0, true, language)}</p>
+                                <p className="stat-card-label">{tx('dashboard.client.totalSpent', undefined, 'Total spent')}</p>
                             </div>
-                            <div className="card">
-                                <div className="flex items-center gap-3 mb-3">
-                                    <div className="w-10 h-10 rounded-xl bg-secondary-100 flex items-center justify-center">
+                            <div className="stat-card">
+                                <div className="stat-card-icon bg-secondary-100">
                                         <CheckCircle className="w-5 h-5 text-secondary-600" />
-                                    </div>
                                 </div>
-                                <p className="text-2xl font-bold text-foreground">{stats?.contractsCompleted ?? 0}</p>
-                                <p className="text-sm text-muted">{tx('dashboard.client.completedContracts', undefined, 'Completed contracts')}</p>
+                                <p className="stat-card-value">{stats?.contractsCompleted ?? 0}</p>
+                                <p className="stat-card-label">{tx('dashboard.client.completedContracts', undefined, 'Completed contracts')}</p>
                             </div>
                         </>
                     )}

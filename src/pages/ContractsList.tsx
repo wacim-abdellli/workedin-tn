@@ -103,18 +103,18 @@ export default function ContractsList() {
           </div>
         </div>
 
-        <div className="mb-6 flex gap-2 overflow-x-auto pb-2">
+        <div className="tabs-row">
           {(['all', 'active', 'completed', 'disputed'] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+              className={
                 activeTab === tab
                   ? isFreelancer
-                    ? 'bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400'
-                    : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
-                  : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
-              }`}
+                    ? 'header-nav-link-active-freelancer'
+                    : 'header-nav-link-active-client'
+                  : 'tab-pill'
+              }
             >
               {tabLabel(tab)}
             </button>
@@ -171,12 +171,12 @@ export default function ContractsList() {
                       </h3>
                       <div className="flex items-center gap-2">
                         <span
-                          className={`whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-medium ${
+                          className={`whitespace-nowrap ${
                             contract.status === 'active'
-                              ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                              ? 'status-pill-open'
                               : contract.status === 'completed'
-                                ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                                : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                                ? 'status-pill-completed'
+                                : 'status-pill-cancelled'
                           }`}
                         >
                           {statusLabel(contract.status)}

@@ -491,17 +491,12 @@ export default function JobProposals() {
                         </div>
 
                         {/* Tabs */}
-                        <div className="bg-white dark:bg-dark-800 rounded-xl border border-gray-100 dark:border-dark-700 p-1 flex overflow-x-auto">
+                        <div className="tabs-row mb-0 rounded-xl border border-gray-100 bg-white p-1 dark:border-dark-700 dark:bg-dark-800">
                             {['all', 'new', 'shortlisted', 'archived'].map((tab) => (
                                 <button
                                     key={tab}
                                     onClick={() => setActiveTab(tab)}
-                                    className={`
-                                        flex-1 py-2 px-4 rounded-lg text-sm font-medium whitespace-nowrap transition-colors
-                                        ${activeTab === tab
-                                            ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400 shadow-sm'
-                                            : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-700'}
-                                    `}
+                                    className={activeTab === tab ? 'tab-pill-active flex-1 shadow-none' : 'tab-pill flex-1'}
                                 >
                                     {tab === 'all' && 'كل العروض'}
                                     {tab === 'new' && 'جديدة'}

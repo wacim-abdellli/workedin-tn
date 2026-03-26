@@ -131,36 +131,36 @@ export default function Wallet() {
 
         {/* SECTION B: Stats Row */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <div className="card p-5">
+          <div className="stat-card">
             <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm mb-2">
               <TrendingUp className="w-4 h-4" />
               <span>{t.wallet?.totalEarned || 'Total Earned'}</span>
             </div>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatCurrency(wallet?.total_earned || 0, true, language)}</p>
+            <p className="stat-card-value">{formatCurrency(wallet?.total_earned || 0, true, language)}</p>
           </div>
           
-          <div className="card p-5">
+          <div className="stat-card">
             <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm mb-2">
               <ArrowUpRight className="w-4 h-4" />
               <span>{t.wallet?.totalWithdrawn || 'Total Withdrawn'}</span>
             </div>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatCurrency(wallet?.total_withdrawn || 0, true, language)}</p>
+            <p className="stat-card-value">{formatCurrency(wallet?.total_withdrawn || 0, true, language)}</p>
           </div>
           
-          <div className="card p-5">
+          <div className="stat-card">
             <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm mb-2">
               <WalletIcon className="w-4 h-4" />
               <span>{t.wallet?.balance || 'Available Balance'}</span>
             </div>
-            <p className="text-2xl font-bold text-green-600 dark:text-green-400">{formatCurrency(wallet?.balance || 0, true, language)}</p>
+            <p className="stat-card-value text-green-600 dark:text-green-400">{formatCurrency(wallet?.balance || 0, true, language)}</p>
           </div>
           
-          <div className="card p-5">
+          <div className="stat-card">
             <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm mb-2">
               <Clock className="w-4 h-4" />
               <span>{t.wallet?.pendingBalance || 'Pending in Escrow'}</span>
             </div>
-            <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">{formatCurrency(wallet?.pending_balance || 0, true, language)}</p>
+            <p className="stat-card-value text-amber-600 dark:text-amber-400">{formatCurrency(wallet?.pending_balance || 0, true, language)}</p>
           </div>
         </div>
 
@@ -182,35 +182,35 @@ export default function Wallet() {
             ) : (
               <>
                 <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead className="bg-gray-50 dark:bg-white/5 border-b border-gray-100 dark:border-white/5">
+                  <table className="data-table">
+                    <thead className="data-table-head">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t.wallet?.date || 'Date'}</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t.wallet?.type || 'Type'}</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t.wallet?.description || 'Description'}</th>
-                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t.wallet?.amount || 'Amount'}</th>
-                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{(t.wallet as any)?.statusLabel || 'Status'}</th>
+                        <th className="data-table-th text-left">{t.wallet?.date || 'Date'}</th>
+                        <th className="data-table-th text-left">{t.wallet?.type || 'Type'}</th>
+                        <th className="data-table-th text-left">{t.wallet?.description || 'Description'}</th>
+                        <th className="data-table-th text-right">{t.wallet?.amount || 'Amount'}</th>
+                        <th className="data-table-th text-center">{(t.wallet as any)?.statusLabel || 'Status'}</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-100 dark:divide-white/5">
+                    <tbody>
                       {transactions.map((tx: any) => {
                         const isCredit = tx.type === 'deposit' || tx.type === 'release' || tx.type === 'escrow_release';
                         const isDebit = tx.type === 'withdrawal' || tx.type === 'fee' || tx.type === 'escrow';
                         
                         return (
-                          <tr key={tx.id} className="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                          <tr key={tx.id} className="data-table-row">
+                            <td className="data-table-td whitespace-nowrap text-gray-500 dark:text-gray-400">
                               {formatDate(tx.created_at)}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200">
+                            <td className="data-table-td whitespace-nowrap">
+                              <span className="status-pill bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200">
                                 {formatTransactionType(tx.type, language)}
                               </span>
                             </td>
-                            <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">
+                            <td className="data-table-td text-gray-900 dark:text-white">
                               {tx.description || t.wallet?.transactionLabel || 'Transaction'}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-right">
+                            <td className="data-table-td whitespace-nowrap text-right">
                               <span className={`text-sm font-semibold ${
                                 isCredit ? 'text-green-600 dark:text-green-400' : 
                                 isDebit ? 'text-red-600 dark:text-red-400' : 
@@ -219,8 +219,8 @@ export default function Wallet() {
                                 {isCredit ? '+' : isDebit ? '-' : ''}{formatCurrency(tx.amount, true, language)}
                               </span>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-center">
-                              <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(tx.status)}`}>
+                            <td className="data-table-td whitespace-nowrap text-center">
+                              <span className={`status-pill ${getStatusColor(tx.status)}`}>
                                 {formatTransactionStatus(tx.status, language)}
                               </span>
                             </td>
@@ -275,17 +275,17 @@ export default function Wallet() {
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-gray-50 dark:bg-white/5 border-b border-gray-100 dark:border-white/5">
+                <table className="data-table">
+                  <thead className="data-table-head">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t.wallet?.date || 'Date'}</th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t.wallet?.amount || 'Amount'}</th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t.wallet?.netAmount || 'Net Amount'}</th>
-                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t.wallet?.method || 'Method'}</th>
-                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{(t.wallet as any)?.statusLabel || 'Status'}</th>
+                      <th className="data-table-th text-left">{t.wallet?.date || 'Date'}</th>
+                      <th className="data-table-th text-right">{t.wallet?.amount || 'Amount'}</th>
+                      <th className="data-table-th text-right">{t.wallet?.netAmount || 'Net Amount'}</th>
+                      <th className="data-table-th text-center">{t.wallet?.method || 'Method'}</th>
+                      <th className="data-table-th text-center">{(t.wallet as any)?.statusLabel || 'Status'}</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-100 dark:divide-white/5">
+                  <tbody>
                     {withdrawals.map((withdrawal: any) => {
                       const statusColors = {
                         pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
@@ -296,23 +296,23 @@ export default function Wallet() {
                       };
                       
                       return (
-                        <tr key={withdrawal.id} className="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                        <tr key={withdrawal.id} className="data-table-row">
+                          <td className="data-table-td whitespace-nowrap text-gray-500 dark:text-gray-400">
                             {formatDate(withdrawal.created_at)}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900 dark:text-white">
+                          <td className="data-table-td whitespace-nowrap text-right font-medium text-gray-900 dark:text-white">
                             {formatCurrency(withdrawal.amount, true, language)}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-semibold text-green-600 dark:text-green-400">
+                          <td className="data-table-td whitespace-nowrap text-right font-semibold text-green-600 dark:text-green-400">
                             {formatCurrency(withdrawal.net_amount || (withdrawal.amount - (withdrawal.fee || 0)), true, language)}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-center">
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200">
+                          <td className="data-table-td whitespace-nowrap text-center">
+                            <span className="status-pill bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200">
                               {formatWithdrawalMethod(withdrawal.method, language)}
                             </span>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-center">
-                            <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${statusColors[withdrawal.status as keyof typeof statusColors] || statusColors.pending}`}>
+                          <td className="data-table-td whitespace-nowrap text-center">
+                            <span className={`status-pill ${statusColors[withdrawal.status as keyof typeof statusColors] || statusColors.pending}`}>
                               {(t.wallet as any)?.status?.[withdrawal.status] || withdrawal.status}
                             </span>
                           </td>
