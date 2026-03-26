@@ -105,15 +105,12 @@ export default function SearchResults() {
                 </div>
 
                 {/* Tabs */}
-                <div className="flex gap-2 mb-6 overflow-x-auto pb-2 scrollbar-none">
+                <div className="tabs-row">
                     {tabs.map(tab => (
                         <button
                             key={tab.id}
                             onClick={() => handleTabChange(tab.id)}
-                            className={`px-4 py-2 rounded-xl whitespace-nowrap transition-colors border ${activeTab === tab.id
-                                ? 'bg-primary-600 border-primary-600 text-white shadow-lg shadow-primary-500/25'
-                                : 'bg-white dark:bg-dark-900 border-gray-200 dark:border-dark-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-800'
-                                }`}
+                            className={activeTab === tab.id ? 'tab-pill-active' : 'tab-pill'}
                         >
                             {tab.label} ({tab.count})
                         </button>

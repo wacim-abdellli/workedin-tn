@@ -62,21 +62,13 @@ function Modal({
         <div
             ref={overlayRef}
             onClick={handleOverlayClick}
-            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4"
+            className="modal-backdrop items-end sm:items-center p-0 sm:p-4"
         >
-            {/* Backdrop with Blur */}
-            <div className="absolute inset-0 bg-dark-900/40 dark:bg-black/60 backdrop-blur-sm animate-fade-in transition-all duration-300" />
-
-            {/* Modal Content */}
             <div
                 className={`
-          relative z-10
-          w-full ${sizes[size]} 
-          bg-white dark:bg-dark-900 
-          rounded-t-3xl sm:rounded-3xl shadow-2xl shadow-black/20
-          border border-white/20 dark:border-white/10
-          animate-modal-pop overflow-hidden
-          flex flex-col 
+          modal-surface ${sizes[size]}
+          flex flex-col
+          elevation-modal
           max-h-[85vh] sm:max-h-[calc(100vh-8rem)]
         `}
                 role="dialog"
@@ -84,7 +76,7 @@ function Modal({
                 aria-labelledby={title ? 'modal-title' : undefined}
             >
                 {(title || showCloseButton) && (
-                    <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100 dark:border-dark-700/50 bg-white/80 dark:bg-dark-900/80 backdrop-blur sticky top-0 z-20">
+                    <div className="modal-header sticky top-0 z-20">
                         {title && (
                             <h2 id="modal-title" className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-dark-900 to-dark-700 dark:from-white dark:to-gray-300">
                                 {title}
@@ -93,7 +85,7 @@ function Modal({
                         {showCloseButton && (
                             <button
                                 onClick={onClose}
-                                className="group p-2 -m-2 text-gray-400 hover:text-red-500 transition-colors rounded-full hover:bg-red-50 dark:hover:bg-red-900/20"
+                                className="modal-close-btn group"
                                 aria-label={t.common?.close || 'Close modal'}
                             >
                                 <X className="w-5 h-5 transition-transform group-hover:rotate-90" />
@@ -101,7 +93,7 @@ function Modal({
                         )}
                     </div>
                 )}
-                <div className="p-6 overflow-y-auto custom-scrollbar">
+                <div className="modal-body">
                     {children}
                 </div>
             </div>

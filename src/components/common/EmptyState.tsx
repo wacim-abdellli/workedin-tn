@@ -35,7 +35,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-            className={`glass-card flex flex-col items-center justify-center overflow-hidden py-20 px-6 text-center ${className}`}
+            className={`empty-state ${className}`}
         >
             {illustration ? (
                 <div className="mb-8">{illustration}</div>
@@ -47,7 +47,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
                 >
                     {/* Glow ring behind icon */}
                     <div className="absolute inset-0 bg-primary-500/10 dark:bg-primary-500/5 rounded-full blur-xl scale-150" />
-                    <div className="relative w-24 h-24 rounded-full bg-gradient-to-br from-primary-100 to-primary-50 dark:from-primary-900/30 dark:to-primary-950/20 border border-primary-200/50 dark:border-primary-500/20 flex items-center justify-center">
+                    <div className="empty-state-icon-shell">
                         <Icon className="w-10 h-10 text-primary-500 dark:text-primary-400" />
                     </div>
                 </motion.div>

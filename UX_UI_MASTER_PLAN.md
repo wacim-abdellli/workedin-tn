@@ -105,8 +105,8 @@ Status: Not started
 Tasks:
 1. Finalize Button variant hierarchy and state map. (Initial pass completed)
 2. Standardize Input, Select, Textarea, FileUpload to one style contract. (Initial pass completed for Search Results controls)
-3. Standardize Modal, Tabs, Badge, EmptyState primitives.
-4. Refactor SearchModal to consume shared primitives.
+3. Standardize Modal, Tabs, Badge, EmptyState primitives. (Initial pass completed)
+4. Refactor SearchModal to consume shared primitives. (Initial pass completed)
 
 Acceptance criteria:
 - Shared primitives cover at least 80% of UI surfaces on core routes.
@@ -224,6 +224,6 @@ Per phase:
 
 ## Next Task (Start Now)
 
-Phase 3, task 3 and task 4:
-- standardize Modal, Tabs, Badge, EmptyState primitives
-- refactor SearchModal to consume shared form and interaction primitives fully
+Phase 4, task 1 and task 2:
+- align top nav spacing, icon scale, and active state behavior
+- harmonize search interactions and keyboard hint visuals

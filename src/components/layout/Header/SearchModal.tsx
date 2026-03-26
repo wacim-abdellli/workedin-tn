@@ -144,16 +144,11 @@ export default function SearchModal({ onClose }: SearchModalProps) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center"
-      style={{ paddingTop: '80px', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}
+      className="modal-backdrop items-start pt-20 px-4"
       onClick={onClose}
     >
       <div
-        className="relative z-[51] w-full overflow-hidden radius-card bg-white dark:bg-[#1a1825] border border-white/10 elevation-modal"
-        style={{
-          maxWidth: '560px',
-          margin: '0 16px',
-        }}
+        className="modal-surface radius-card elevation-modal z-[51] max-w-[560px]"
         onClick={(event) => event.stopPropagation()}
       >
         <div
@@ -180,7 +175,7 @@ export default function SearchModal({ onClose }: SearchModalProps) {
           </kbd>
         </div>
 
-        <div style={{ maxHeight: '400px', overflowY: 'auto', padding: '8px' }}>
+        <div className="max-h-[400px] overflow-y-auto p-2">
           {!isSearching ? (
             <div className="mb-2">
               <div className="flex items-center gap-1.5 px-2 py-1.5">
@@ -230,17 +225,14 @@ export default function SearchModal({ onClose }: SearchModalProps) {
                 key={`${item.href}-${index}`}
                 onClick={() => go(item.href)}
                 onMouseEnter={() => setSelected(index)}
-                className="flex w-full items-center gap-3 rounded-lg px-2 py-2.5 text-left transition-colors duration-100"
-                style={{
-                  background: isSelected ? 'rgba(139,92,246,0.12)' : 'transparent',
-                  borderLeft: isSelected ? '2px solid #8b5cf6' : '2px solid transparent',
-                }}
+                className={`flex w-full items-center gap-3 rounded-lg border-l-2 px-2 py-2.5 text-left transition-colors duration-100 ${
+                  isSelected
+                    ? 'bg-primary-500/10 border-l-primary-500'
+                    : 'bg-transparent border-l-transparent'
+                }`}
               >
-                <div
-                  className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg"
-                  style={{ background: 'rgba(139,92,246,0.12)' }}
-                >
-                  <Icon className="h-3.5 w-3.5" style={{ color: '#a78bfa' }} />
+                <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg bg-primary-500/10">
+                  <Icon className="h-3.5 w-3.5 text-primary-400" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium text-gray-800 dark:text-gray-100">{item.label}</p>
