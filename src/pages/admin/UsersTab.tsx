@@ -44,9 +44,7 @@ interface ConfirmActionState {
 
 export async function fetchAdminUsers(): Promise<AdminUser[]> {
     try {
-        // Use admin client to bypass RLS
-        const client = supabaseAdmin || supabase;
-        const { data, error } = await client
+        const { data, error } = await supabase
             .from('profiles')
             .select('id,full_name,email,user_type,active_mode,cin_verified,is_admin,created_at')
             .order('created_at', { ascending: false })
