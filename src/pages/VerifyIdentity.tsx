@@ -19,7 +19,7 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from '@/i18n';
 import { logger } from '@/lib/logger';
-// supabase SDK not needed - using direct REST API calls
+import { supabase } from '@/lib/supabase';
 import { useToast } from '@/components/ui/Toast';
 import SEO from '@/components/common/SEO';
 
@@ -383,8 +383,22 @@ export default function VerifyIdentity() {
 
             // Use session from context (already available)
             const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+            const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-            if (!session?.access_token) {
+            const { data: liveSessionData } = await supabase.auth.getSession();
+            let accessToken = liveSessionData.session?.access_token ?? session?.access_token;
+            const sessionUser = liveSessionData.session?.user;
+            const authUserId = sessionUser?.id ?? user.id;
+            const authUserMetadata = sessionUser?.user_metadata ?? user.user_metadata;
+
+            if (sessionUser?.id && sessionUser.id !== user.id) {
+                logger.warn('Auth context user ID differs from live session user ID; using live session user ID for verification flow.', {
+                    contextUserId: user.id,
+                    sessionUserId: sessionUser.id,
+                });
+            }
+
+            if (!accessToken) {
                 throw new Error(tx('verifyIdentity.errors.noSession', undefined, 'No auth session - please login again'));
             }
             logger.log('Session available, starting uploads...');
@@ -408,7 +422,7 @@ export default function VerifyIdentity() {
                 const fetchPromise = fetch(storageUrl, {
                     method: 'POST',
                     headers: {
-                        'Authorization': `Bearer ${session.access_token}`,
+                        'Authorization': `Bearer ${accessToken}`,
                         'x-upsert': 'true',
                     },
                     body: file,
@@ -433,24 +447,21 @@ export default function VerifyIdentity() {
             // Upload sequentially - use folder structure to match RLS policy
             // Policy checks: auth.uid()::text = (storage.foldername(name))[1]
             logger.log('Uploading front...');
-            const frontPath = await uploadFile(uploads.front, `${user.id}/cin_front_${timestamp}.jpg`);
+            const frontPath = await uploadFile(uploads.front, `${authUserId}/cin_front_${timestamp}.jpg`);
             logger.log('Uploading back...');
-            const backPath = await uploadFile(uploads.back, `${user.id}/cin_back_${timestamp}.jpg`);
+            const backPath = await uploadFile(uploads.back, `${authUserId}/cin_back_${timestamp}.jpg`);
             logger.log('Uploading selfie...');
-            const selfiePath = await uploadFile(uploads.selfie, `${user.id}/selfie_${timestamp}.jpg`);
+            const selfiePath = await uploadFile(uploads.selfie, `${authUserId}/selfie_${timestamp}.jpg`);
 
             logger.log('All files uploaded, inserting to database...');
-
-            // Use direct REST API instead of SDK (SDK hangs during Supabase maintenance)
-            const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
             // First, ensure profile exists (foreign key constraint requires it)
             logger.log('Checking if profile exists...');
             const profileCheckResponse = await fetch(
-                `${supabaseUrl}/rest/v1/profiles?id=eq.${user.id}&select=id`,
+                `${supabaseUrl}/rest/v1/profiles?id=eq.${authUserId}&select=id`,
                 {
                     headers: {
-                        'Authorization': `Bearer ${session.access_token}`,
+                        'Authorization': `Bearer ${accessToken}`,
                         'apikey': supabaseKey,
                     }
                 }
@@ -468,13 +479,13 @@ export default function VerifyIdentity() {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${session.access_token}`,
+                            'Authorization': `Bearer ${accessToken}`,
                             'apikey': supabaseKey,
                             'Prefer': 'return=representation'
                         },
                         body: JSON.stringify({
-                            id: user.id,
-                            full_name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'User',
+                            id: authUserId,
+                            full_name: authUserMetadata?.full_name || user.email?.split('@')[0] || 'User',
                             user_type: profile?.user_type || 'client',
                         })
                     }
@@ -491,7 +502,7 @@ export default function VerifyIdentity() {
             }
 
             const verificationData = {
-                user_id: user.id,
+                user_id: authUserId,
                 cin_number: cinNumber,
                 cin_front_url: frontPath,
                 cin_back_url: backPath,
@@ -506,11 +517,11 @@ export default function VerifyIdentity() {
             logger.log('Deleting any existing verification record...');
             try {
                 await fetch(
-                    `${supabaseUrl}/rest/v1/identity_verifications?user_id=eq.${user.id}`,
+                    `${supabaseUrl}/rest/v1/identity_verifications?user_id=eq.${authUserId}`,
                     {
                         method: 'DELETE',
                         headers: {
-                            'Authorization': `Bearer ${session.access_token}`,
+                            'Authorization': `Bearer ${accessToken}`,
                             'apikey': supabaseKey,
                         }
                     }
@@ -520,38 +531,75 @@ export default function VerifyIdentity() {
                 logger.log('Delete failed, proceeding anyway:', deleteError);
             }
 
-            // Use fetch with timeout for database insert
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
+            const insertVerification = async (token: string) => {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 30000);
+
+                try {
+                    return await fetch(
+                        `${supabaseUrl}/rest/v1/identity_verifications`,
+                        {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${token}`,
+                                'apikey': supabaseKey,
+                                // Use pure INSERT. Upsert mode triggers UPDATE policy checks and can fail with RLS 403.
+                                'Prefer': 'return=representation'
+                            },
+                            body: JSON.stringify(verificationData),
+                            signal: controller.signal
+                        }
+                    );
+                } finally {
+                    clearTimeout(timeoutId);
+                }
+            };
 
             try {
-                const insertResponse = await fetch(
-                    `${supabaseUrl}/rest/v1/identity_verifications`,
-                    {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${session.access_token}`,
-                            'apikey': supabaseKey,
-                            'Prefer': 'resolution=merge-duplicates,return=representation'
-                        },
-                        body: JSON.stringify(verificationData),
-                        signal: controller.signal
-                    }
-                );
+                let insertResponse = await insertVerification(accessToken);
 
-                clearTimeout(timeoutId);
+                if (insertResponse.status === 403) {
+                    logger.warn('Insert returned 403; attempting session refresh and single retry...');
+                    const { data: refreshedData } = await supabase.auth.refreshSession();
+                    const refreshedToken = refreshedData.session?.access_token;
+
+                    if (refreshedToken) {
+                        accessToken = refreshedToken;
+                        insertResponse = await insertVerification(accessToken);
+                    }
+                }
 
                 if (!insertResponse.ok) {
                     const errorText = await insertResponse.text();
                     logger.error('Insert failed:', insertResponse.status, errorText);
+
+                    if (insertResponse.status === 409) {
+                        throw new Error(
+                            tx(
+                                'verifyIdentity.errors.alreadySubmitted',
+                                undefined,
+                                'You already have a verification request. Please wait for review or contact support.'
+                            )
+                        );
+                    }
+
+                    if (insertResponse.status === 403) {
+                        throw new Error(
+                            tx(
+                                'verifyIdentity.errors.permissions',
+                                undefined,
+                                'Permission denied while submitting verification. Please sign out and sign in again, then retry.'
+                            )
+                        );
+                    }
+
                     throw new Error(`Database error: ${insertResponse.status} - ${errorText}`);
                 }
 
                 const insertResult = await insertResponse.json();
                 logger.log('Insert success:', insertResult);
             } catch (fetchError) {
-                clearTimeout(timeoutId);
                 if (fetchError instanceof Error && fetchError.name === 'AbortError') {
                     throw new Error(tx('verifyIdentity.errors.insertTimeout', undefined, 'Database insert timed out after 30 seconds. Supabase may be under maintenance.'));
                 }
@@ -563,12 +611,12 @@ export default function VerifyIdentity() {
             // Update profile using REST API too
             try {
                 const updateResponse = await fetch(
-                    `${supabaseUrl}/rest/v1/profiles?id=eq.${user.id}`,
+                    `${supabaseUrl}/rest/v1/profiles?id=eq.${authUserId}`,
                     {
                         method: 'PATCH',
                         headers: {
                             'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${session.access_token}`,
+                            'Authorization': `Bearer ${accessToken}`,
                             'apikey': supabaseKey,
                         },
                         body: JSON.stringify({ cin_submitted: true })
