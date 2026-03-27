@@ -87,25 +87,31 @@ export default function AdminDashboard() {
             
             // Check if user is admin first
             const { data: { user } } = await client.auth.getUser();
+            console.log('🔍 Current user:', user?.id, user?.email);
+            
             if (!user) {
-                console.error('No user logged in');
+                console.error('❌ No user logged in');
                 showToast('Please log in to access admin dashboard', 'error');
                 navigate('/login');
                 return;
             }
             
-            const { data: profile } = await client
+            const { data: profile, error: profileError } = await client
                 .from('profiles')
-                .select('is_admin')
+                .select('is_admin, email, full_name')
                 .eq('id', user.id)
                 .single();
             
+            console.log('🔍 Profile data:', profile);
+            console.log('🔍 Profile error:', profileError);
+            
             if (!profile?.is_admin) {
-                console.error('User is not admin');
-                showToast('Access denied: Admin privileges required', 'error');
-                navigate('/');
+                console.error('❌ User is not admin. is_admin =', profile?.is_admin);
+                showToast('Access denied: Admin privileges required. Please contact support.', 'error');
                 return;
             }
+            
+            console.log('✅ User is admin! Fetching stats...');
             
             const [usersCount, jobsCount, contractsCount, signupsCount, todayContractsCount] = await Promise.all([
                 countWithRetry(() => client.from('profiles').select('id', { count: 'exact', head: true })),
@@ -114,10 +120,13 @@ export default function AdminDashboard() {
                 countWithRetry(() => client.from('profiles').select('id', { count: 'exact', head: true }).gte('created_at', today)),
                 countWithRetry(() => client.from('contracts').select('id', { count: 'exact', head: true }).gte('created_at', today)),
             ]);
+            
+            console.log('📊 Stats:', { usersCount, jobsCount, contractsCount, signupsCount, todayContractsCount });
+            
             setStats({ totalUsers: usersCount, activeJobs: jobsCount, activeContracts: contractsCount, totalRevenue: 0, todaySignups: signupsCount, todayContracts: todayContractsCount });
         } catch (err) { 
-            console.error('Stats fetch error:', err); 
-            showToast('Failed to load stats. Make sure you are logged in as admin.', 'error');
+            console.error('❌ Stats fetch error:', err); 
+            showToast('Failed to load stats. Check console for details.', 'error');
         }
     };
 
