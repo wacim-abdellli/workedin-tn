@@ -11,6 +11,7 @@ import type { FreelancerData } from '../types/freelancer';
 import ContactModal from '../components/freelancer/ContactModal';
 import { OptimizedImage } from '../components/common';
 import SEO from '../components/common/SEO';
+import ReportButton from '../components/settings/ReportButton';
 
 // Subcomponents
 import ProfileHeader from '../components/freelancer/profile/ProfileHeader';
@@ -23,7 +24,7 @@ import ProfileSkeleton from '../components/freelancer/profile/ProfileSkeleton';
 
 export default function FreelancerProfile() {
     const { usernameOrId } = useParams<{ usernameOrId: string }>();
-    const { language } = useTranslation();
+    const { language, t } = useTranslation();
     const navigate = useNavigate();
 
     const [freelancer, setFreelancer] = useState<FreelancerData | null>(null);
@@ -243,8 +244,8 @@ export default function FreelancerProfile() {
     return (
         <div className="min-h-screen bg-gray-50 pb-20 md:pb-0">
             <SEO
-                title={`${freelancer.full_name} — ${freelancer.title} | خدمة`}
-                description={freelancer.bio?.slice(0, 160) || `${freelancer.title} — مستقل على منصة خدمة`}
+                title={`${freelancer.full_name} — ${freelancer.title} | ${t.seo.freelancerProfile.titleSuffix}`}
+                description={freelancer.bio?.slice(0, 160) || `${freelancer.title} — ${t.seo.freelancerProfile.descriptionFallback}`}
                 image={freelancer.avatar_url || undefined}
             />
             <Header />
@@ -273,6 +274,9 @@ export default function FreelancerProfile() {
                     {/* Sidebar */}
                     <div className="lg:col-span-1">
                         <ProfileSidebar freelancer={freelancer} />
+                        <div className="mt-4 flex justify-end">
+                            <ReportButton reportedType="user" reportedId={freelancer.id} />
+                        </div>
                     </div>
                 </div>
             </div>

@@ -1557,4 +1557,46 @@ export const en: Translations = {
         checkSpam: 'If you don\'t see the email, check your spam folder.',
         noEmail: 'Email address is required',
     },
+    seo: {
+        home: {
+            title: 'Khedma TN',
+            description: 'Connect with verified Tunisian professionals for your projects. Secure payments in TND and escrow protection.',
+        },
+        howItWorks: {
+            title: 'How Khedma Works',
+            description: 'See how Khedma takes you from project idea to approved payment in four protected steps.',
+        },
+        forClients: {
+            title: 'Hire Verified Tunisian Talent',
+            description: 'Post your project for free, receive proposals from verified professionals, and pay only when work is approved.',
+        },
+        faq: {
+            title: 'Frequently Asked Questions',
+            description: 'Find answers about payments, escrow, identity verification, and how Khedma works.',
+        },
+        jobBoard: {
+            title: 'Freelance Jobs',
+            description: 'Browse freelance jobs in Tunisia and find projects that match your skills, rate, and availability.',
+        },
+        jobDetail: {
+            titleSuffix: 'Project Details',
+            descriptionFallback: 'View project details, budget, and requirements before applying.',
+        },
+        findFreelancers: {
+            title: 'Find Verified Tunisian Professionals',
+            description: 'Find 2,500+ verified Tunisian developers, designers, translators, and consultants ready to start.',
+        },
+        freelancerProfile: {
+            titleSuffix: 'Freelancer on Khedma',
+            descriptionFallback: 'Freelancer on the Khedma platform',
+        },
+        login: {
+            title: 'Sign in to Khedma',
+            description: 'Sign in to your Khedma account to manage projects, messages, and payments.',
+        },
+        signup: {
+            title: 'Create your Khedma account',
+            description: 'Create your account and join 2,500+ professionals building their career on Khedma.',
+        },
+    },
 };

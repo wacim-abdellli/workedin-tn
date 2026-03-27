@@ -27,6 +27,8 @@ import { Header, Footer } from '../components/layout';
 import Button from '../components/ui/Button';
 import { useToast } from '../components/ui/Toast';
 import SEO from '../components/common/SEO';
+import { Skeleton } from '../components/common/SkeletonCard';
+import { useTranslation } from '../i18n';
 
 import ProposalModal from '../components/proposals/ProposalModal';
 import type { ProposalFormData } from '../components/proposals/ProposalModal';
@@ -128,6 +130,7 @@ function JobDetail() {
     const { user, freelancerProfile } = useAuth();
     const { showToast } = useToast();
     const queryClient = useQueryClient();
+    const { t } = useTranslation();
 
     const [showProposalModal, setShowProposalModal] = useState(false);
 
@@ -307,14 +310,31 @@ function JobDetail() {
 
     if (isLoading) {
         return (
-            <div className="min-h-screen bg-gray-50">
+            <div className="min-h-screen bg-gray-50 dark:bg-dark-900">
                 <Header />
                 <div className="container-custom py-8">
-                    <div className="animate-pulse">
-                        <div className="h-8 bg-gray-200 rounded w-3/4 mb-4" />
-                        <div className="h-6 bg-gray-200 rounded w-1/4 mb-8" />
-                        <div className="h-40 bg-gray-200 rounded mb-4" />
-                        <div className="h-20 bg-gray-200 rounded" />
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        <div className="lg:col-span-2 space-y-6">
+                            <Skeleton className="h-9 w-3/4" />
+                            <div className="flex gap-3">
+                                <Skeleton className="h-6 w-24 rounded-full" />
+                                <Skeleton className="h-6 w-20 rounded-full" />
+                                <Skeleton className="h-6 w-28 rounded-full" />
+                            </div>
+                            <Skeleton className="h-48 w-full rounded-2xl" />
+                            <div className="space-y-2">
+                                <Skeleton className="h-4 w-full" />
+                                <Skeleton className="h-4 w-full" />
+                                <Skeleton className="h-4 w-2/3" />
+                            </div>
+                            <div className="flex gap-2 flex-wrap">
+                                {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-7 w-20 rounded-full" />)}
+                            </div>
+                        </div>
+                        <div className="space-y-4">
+                            <Skeleton className="h-48 w-full rounded-2xl" />
+                            <Skeleton className="h-32 w-full rounded-2xl" />
+                        </div>
                     </div>
                 </div>
             </div>
@@ -339,8 +359,8 @@ function JobDetail() {
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-dark-900 transition-colors duration-300">
             <SEO
-                title={job ? `${job.title} | تفاصيل المشروع` : 'تفاصيل المشروع'}
-                description={job?.description || 'اطلع على تفاصيل المشروع والميزانية والمتطلبات قبل التقديم.'}
+                title={job ? `${job.title} | ${t.seo.jobDetail.titleSuffix}` : t.seo.jobDetail.titleSuffix}
+                description={job?.description?.slice(0, 160) || t.seo.jobDetail.descriptionFallback}
             />
             <Header />
 

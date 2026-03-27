@@ -263,12 +263,13 @@ export default function Messages() {
                     </div>
                 ) : filteredConversations.length === 0 ? (
                     <div className="p-8 text-center">
-                        <Send className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                        <p className="text-muted text-sm">
-                            {searchQuery
-                                ? 'لا توجد محادثات مطابقة'
-                                : 'لا توجد محادثات بعد. ابدأ بإرسال عرض أو التواصل مع موظف.'}
-                        </p>
+                        <EmptyState
+                            icon={Send}
+                            title={searchQuery ? 'No matching conversations' : 'No conversations yet'}
+                            description={searchQuery
+                                ? 'Try a different name or clear your search.'
+                                : 'Start by sending a proposal or contacting a freelancer.'}
+                        />
                     </div>
                 ) : (
                     filteredConversations.map((conversation) => (

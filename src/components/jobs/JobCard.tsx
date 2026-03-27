@@ -7,6 +7,7 @@ import OptimizedImage from '../common/OptimizedImage';
 import { cn } from '../../lib/utils';
 import { getAvatarGradient, getInitials } from '@/lib/avatar';
 import RatingStars from '@/components/ui/RatingStars';
+import ReportButton from '@/components/settings/ReportButton';
 
 export interface JobForCard {
   id: string;
@@ -176,6 +177,7 @@ const JobCard = memo(({ job, isSaved, onToggleSave, onClick }: JobCardProps) => 
                 reviews={job.client?.rating ? 18 : undefined}
                 snippet="Clear brief, quick replies, and a serious product-focused client."
               />
+              <ReportButton reportedType="job" reportedId={job.id} />
             </div>
           </div>
         </div>

@@ -9,6 +9,7 @@ import type { PortfolioItem } from '../types';
 import { useToast } from '../components/ui/Toast';
 import PortfolioModal from '../components/freelancer/PortfolioModal';
 import OptimizedImage from '../components/common/OptimizedImage';
+import { Skeleton } from '../components/common/SkeletonCard';
 
 export default function PortfolioDashboard() {
     const { user } = useAuth();
@@ -155,8 +156,21 @@ export default function PortfolioDashboard() {
                 </div>
 
                 {isLoading ? (
-                    <div className="flex justify-center py-12">
-                        <div className="animate-spin w-8 h-8 border-4 border-primary-600 border-t-transparent rounded-full" />
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {[...Array(6)].map((_, i) => (
+                            <div key={i} className="bg-white dark:bg-[#1a1825] rounded-xl overflow-hidden border border-gray-100 dark:border-white/5 shadow-sm">
+                                <Skeleton className="aspect-video w-full" />
+                                <div className="p-4 space-y-2">
+                                    <Skeleton className="h-5 w-3/4" />
+                                    <Skeleton className="h-4 w-full" />
+                                    <Skeleton className="h-4 w-1/2" />
+                                    <div className="flex gap-2 pt-1">
+                                        <Skeleton className="h-6 w-16 rounded-full" />
+                                        <Skeleton className="h-6 w-16 rounded-full" />
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 ) : items.length > 0 ? (
                     <div className={viewMode === 'grid' ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" : "space-y-4"}>

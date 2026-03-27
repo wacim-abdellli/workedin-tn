@@ -8,6 +8,8 @@ import { useTranslation } from '@/i18n'
 import {
   AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer
 } from 'recharts'
+import EmptyState from '@/components/common/EmptyState'
+import SkeletonList from '@/components/common/SkeletonList'
 
 export default function FreelancerEarnings() {
   const { user } = useAuth()
@@ -139,23 +141,20 @@ export default function FreelancerEarnings() {
           
           <div className="bg-white dark:bg-[#1a1825] rounded-2xl border border-gray-100 dark:border-white/5 overflow-hidden">
             {isTxLoading ? (
-              <div className="flex justify-center py-8">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-600"></div>
+              <div className="p-4">
+                <SkeletonList count={5} />
               </div>
             ) : !transactions || transactions.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-12 text-center px-4">
-                <Wallet className="w-10 h-10 text-gray-300 dark:text-gray-600 mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white">{tx('pages.freelancerEarnings.noEarningsTitle', undefined, 'No earnings yet')}</h3>
-                <p className="text-gray-500 dark:text-gray-400 mt-1 max-w-sm">
-                  {tx('pages.freelancerEarnings.noEarningsDescription', undefined, 'Complete your first project to see earnings here.')}
-                </p>
-                <button
-                  onClick={() => navigate('/jobs')}
-                  className="mt-4 bg-purple-600 hover:bg-purple-500 text-white px-5 py-2 rounded-xl transition-colors font-medium text-sm"
-                >
-                  {tx('pages.freelancerEarnings.browseJobs', undefined, 'Browse jobs')}
-                </button>
-              </div>
+              <EmptyState
+                icon={Wallet}
+                title={tx('pages.freelancerEarnings.noEarningsTitle', undefined, 'No earnings yet')}
+                description={tx('pages.freelancerEarnings.noEarningsDescription', undefined, 'Complete your first project to see your earnings here.')}
+                action={{
+                  label: tx('pages.freelancerEarnings.browseJobs', undefined, 'Browse jobs'),
+                  onClick: () => navigate('/jobs'),
+                  variant: 'primary',
+                }}
+              />
             ) : (
               <div className="divide-y divide-gray-100 dark:divide-white/5">
                 {transactions.map((transaction: any) => (

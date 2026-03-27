@@ -23,6 +23,7 @@ import { getContractById } from '../services/contracts';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import SEO from '../components/common/SEO';
 import { sendDisputeOpenedEmail } from '../lib/email';
+import { Skeleton } from '../components/common/SkeletonCard';
 
 // Components
 import ChatSection from '../components/contracts/ChatSection';
@@ -297,10 +298,33 @@ export default function ContractWorkspace() {
 
     if (isInitialLoading) {
         return (
-            <div className="min-h-screen bg-gray-50">
+            <div className="flex flex-col h-screen bg-white dark:bg-dark-900">
                 <Header />
-                <div className="flex items-center justify-center h-[calc(100vh-64px)]">
-                    <div className="animate-spin w-12 h-12 border-4 border-primary-600 border-t-transparent rounded-full" />
+                {/* Contract header bar skeleton */}
+                <div className="border-b border-gray-200 dark:border-dark-700 px-4 py-3 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <Skeleton className="h-5 w-48" />
+                        <Skeleton className="h-6 w-20 rounded-full" />
+                    </div>
+                    <Skeleton className="h-8 w-28 rounded-xl" />
+                </div>
+                {/* Main workspace skeleton */}
+                <div className="flex flex-1 overflow-hidden">
+                    {/* Messages panel */}
+                    <div className="flex-1 flex flex-col p-4 gap-3">
+                        {[...Array(5)].map((_, i) => (
+                            <div key={i} className={`flex gap-3 ${i % 2 === 0 ? '' : 'flex-row-reverse'}`}>
+                                <Skeleton className="h-8 w-8 rounded-full flex-shrink-0" />
+                                <Skeleton className={`h-12 rounded-2xl ${i % 2 === 0 ? 'w-2/3' : 'w-1/2'}`} />
+                            </div>
+                        ))}
+                    </div>
+                    {/* Sidebar skeleton */}
+                    <div className="hidden lg:block w-72 border-l border-gray-200 dark:border-dark-700 p-4 space-y-4">
+                        <Skeleton className="h-24 w-full rounded-xl" />
+                        <Skeleton className="h-16 w-full rounded-xl" />
+                        <Skeleton className="h-10 w-full rounded-xl" />
+                    </div>
                 </div>
             </div>
         );

@@ -11,9 +11,12 @@ export type TransactionType =
     | 'deposit'      // Client adds funds
     | 'escrow'       // Funds held for contract
     | 'release'      // Payment released to freelancer
+    | 'earning'      // Legacy earning entry
+    | 'escrow_release' // Legacy escrow release entry
     | 'refund'       // Refund to client
     | 'withdrawal'   // Freelancer withdraws to bank
-    | 'fee';         // Platform fee deduction
+    | 'fee'          // Platform fee deduction
+    | 'payment';     // Generic payment entry
 
 export type TransactionStatus =
     | 'pending'      // Awaiting payment
@@ -38,7 +41,11 @@ export type WithdrawalMethod =
 export type PaymentMethodType =
     | 'card'
     | 'flouci'
-    | 'bank';
+    | 'bank'
+    | 'bank_transfer'
+    | 'd17';
+
+export type PaymentDetails = string | Record<string, string>;
 
 // ============================================
 // INTERFACES
@@ -66,23 +73,24 @@ export interface Wallet {
 export interface Transaction {
     id: string;
     user_id: string;
-    contract_id?: string;
-    wallet_id?: string;
+    contract_id?: string | null;
+    wallet_id?: string | null;
     type: TransactionType;
     amount: number;
-    fee_amount: number;
-    net_amount?: number;        // Amount after fees
+    fee_amount?: number | null;
+    net_amount?: number | null; // Amount after fees
     currency: string;
     status: TransactionStatus;
-    payment_method?: string;
-    payment_gateway_id?: string;
-    payment_gateway_response?: Record<string, unknown>;
-    description?: string;
-    metadata?: Record<string, unknown>;
-    error_message?: string;
+    payment_method?: string | null;
+    payment_gateway_id?: string | null;
+    payment_gateway_response?: Record<string, unknown> | null;
+    description?: string | null;
+    metadata?: Record<string, unknown> | null;
+    error_message?: string | null;
+    reference_id?: string | null;
     created_at: string;
     updated_at: string;
-    completed_at?: string;
+    completed_at?: string | null;
 }
 
 /**
@@ -91,26 +99,30 @@ export interface Transaction {
 export interface Withdrawal {
     id: string;
     user_id: string;
-    wallet_id?: string;
+    wallet_id?: string | null;
     amount: number;
-    currency: string;
+    currency?: string | null;
     method: WithdrawalMethod;
     status: WithdrawalStatus;
+    fee?: number | null;
+    net_amount?: number | null;
     // Bank transfer details
-    bank_name?: string;
-    bank_account_name?: string;
-    bank_iban?: string;
+    bank_name?: string | null;
+    bank_account_name?: string | null;
+    bank_iban?: string | null;
+    iban?: string | null;
     // D17/Flouci details
-    phone_number?: string;
+    phone_number?: string | null;
+    d17_phone?: string | null;
     // Admin processing
-    admin_id?: string;
-    admin_notes?: string;
-    rejection_reason?: string;
+    admin_id?: string | null;
+    admin_notes?: string | null;
+    rejection_reason?: string | null;
     // Timestamps
     created_at: string;
     updated_at: string;
-    processed_at?: string;
-    completed_at?: string;
+    processed_at?: string | null;
+    completed_at?: string | null;
 }
 
 /**
@@ -122,20 +134,80 @@ export interface PaymentMethod {
     type: PaymentMethodType;
     is_default: boolean;
     label?: string;
+    details?: PaymentDetails | null;
     // Card details
-    card_last_four?: string;
-    card_brand?: string;
-    card_expiry?: string;
+    card_last_four?: string | null;
+    card_brand?: string | null;
+    card_expiry?: string | null;
     // Bank details
-    bank_name?: string;
-    bank_iban?: string;
-    bank_account_name?: string;
+    bank_name?: string | null;
+    bank_iban?: string | null;
+    bank_account_name?: string | null;
     // Mobile details
-    phone_number?: string;
-    gateway_payment_method_id?: string;
-    metadata?: Record<string, unknown>;
+    phone_number?: string | null;
+    gateway_payment_method_id?: string | null;
+    metadata?: Record<string, unknown> | null;
     created_at: string;
     updated_at: string;
+}
+
+export interface EarningsTransactionSummary {
+    amount: number;
+    type: TransactionType;
+    created_at: string;
+}
+
+export interface TransactionsPage {
+    data: Transaction[];
+    count: number;
+}
+
+export interface WalletEarningsStats {
+    wallet: Wallet | null;
+    totalEarnings: number;
+    transactionCount: number;
+}
+
+export interface WithdrawalRequestInput {
+    user_id: string;
+    amount: number;
+    method: WithdrawalMethod | 'bank';
+    details: Record<string, string>;
+}
+
+export interface CreateWithdrawalRequest {
+    user_id: string;
+    wallet_id: string;
+    amount: number;
+    method: WithdrawalMethod;
+    status: WithdrawalStatus;
+    bank_name?: string | null;
+    bank_account_name?: string | null;
+    iban?: string | null;
+    d17_phone?: string | null;
+}
+
+export interface AddPaymentMethodInput {
+    type: PaymentMethodType;
+    details: PaymentDetails;
+    is_default?: boolean;
+}
+
+export interface StuckTransaction {
+    id: string;
+    user_id: string;
+    amount: number;
+    type: TransactionType;
+    status: TransactionStatus;
+    reference_id: string | null;
+    created_at: string;
+    user_name: string | null;
+    email: string | null;
+}
+
+export interface ReconcilePaymentResult {
+    success: boolean;
+    message: string;
 }
 
 // ============================================
@@ -197,6 +269,16 @@ export interface FlouciVerificationResponse {
     amount: number;
     developer_tracking_id?: string;
     created_at: string;
+}
+
+export interface FlouciPaymentCompletion {
+    success: boolean;
+    data?: unknown;
+    error?: string;
+}
+
+export interface FlouciPaymentHookResponse extends FlouciVerificationResponse {
+    completion?: FlouciPaymentCompletion;
 }
 
 // ============================================

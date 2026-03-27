@@ -7,6 +7,8 @@ import { Header } from '@/components/layout'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
 import { useTranslation } from '@/i18n'
+import EmptyState from '@/components/common/EmptyState'
+import SkeletonList from '@/components/common/SkeletonList'
 
 type ProposalTab = 'all' | 'pending' | 'accepted' | 'rejected'
 
@@ -132,23 +134,18 @@ export default function MyProposals() {
         </div>
 
         {isLoading ? (
-          <div className="flex justify-center py-12">
-            <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-purple-600" />
-          </div>
+          <SkeletonList count={4} />
         ) : !proposals || proposals.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 text-center">
-            <FileText className="mb-4 h-10 w-10 text-gray-300 dark:text-gray-600" />
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white">{tx('pages.myProposals.emptyTitle', undefined, 'No proposals yet')}</h3>
-            <p className="mt-1 max-w-sm text-gray-500 dark:text-gray-400">
-              {tx('pages.myProposals.emptyDescription', undefined, 'Browse open projects and send your first proposal.')}
-            </p>
-            <button
-              onClick={() => navigate('/jobs')}
-              className="btn-secondary btn-sm mt-4"
-            >
-              {tx('pages.myProposals.browseJobs', undefined, 'Browse jobs')}
-            </button>
-          </div>
+          <EmptyState
+            icon={FileText}
+            title={tx('pages.myProposals.emptyTitle', undefined, "You haven't applied to any jobs yet")}
+            description={tx('pages.myProposals.emptyDescription', undefined, 'Browse open projects and send your first proposal to start working.')}
+            action={{
+              label: tx('pages.myProposals.browseJobs', undefined, 'Browse jobs'),
+              onClick: () => navigate('/jobs'),
+              variant: 'primary',
+            }}
+          />
         ) : (
           <div className="space-y-3">
             {proposals.map((proposal) => (

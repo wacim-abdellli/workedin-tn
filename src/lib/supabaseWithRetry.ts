@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase';
+import { supabase, withTimeout } from '@/lib/supabase';
 
 type SupabaseErrorLike = Error & {
   status?: number;
@@ -45,12 +45,16 @@ function getResultStatus(result: SupabaseResultLike<unknown>): number | undefine
 export async function supabaseWithRetry<TResult extends SupabaseResultLike<unknown>>(
   queryFn: () => PromiseLike<TResult> | TResult
 ): Promise<TResult> {
-  let result = await Promise.resolve(queryFn());
+  let result = await withTimeout(Promise.resolve(queryFn()), 8000, 'Supabase query');
 
   if (getResultStatus(result) === 401) {
-    const { error: refreshError } = await supabase.auth.refreshSession();
+    const { error: refreshError } = await withTimeout(
+      supabase.auth.refreshSession(),
+      5000,
+      'Token refresh'
+    );
     if (refreshError) throw refreshError;
-    result = await Promise.resolve(queryFn());
+    result = await withTimeout(Promise.resolve(queryFn()), 8000, 'Supabase query retry');
   }
 
   if (result.error) {

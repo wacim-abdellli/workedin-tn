@@ -1,47 +1,69 @@
 /**
- * Notifications Service — Notification Supabase queries
+ * Notifications Service — Supabase queries for the notifications table.
+ * Real-time subscription is handled by useRealtimeNotifications hook.
  */
 import { supabase } from '@/lib/supabase';
+import type { AppNotification } from '@/hooks/useRealtimeNotifications';
+
+export type { AppNotification };
 
 // --- READ ---
 
-export async function getNotifications(userId: string) {
-    return supabase
+export async function getNotifications(userId: string): Promise<AppNotification[]> {
+    const { data, error } = await supabase
         .from('notifications')
         .select('*')
         .eq('user_id', userId)
         .order('created_at', { ascending: false })
         .limit(50);
+
+    if (error) throw new Error(error.message);
+    return (data ?? []) as AppNotification[];
 }
 
-export async function getUnreadCount(userId: string) {
-    return supabase
+export async function getUnreadCount(userId: string): Promise<number> {
+    const { count, error } = await supabase
         .from('notifications')
         .select('*', { count: 'exact', head: true })
         .eq('user_id', userId)
         .eq('is_read', false);
+
+    if (error) throw new Error(error.message);
+    return count ?? 0;
 }
 
 // --- WRITE ---
 
-export async function createNotification(data: {
+export async function insertNotification(data: {
     user_id: string;
-    type: string;
-    content: string;
+    type: AppNotification['type'];
+    title: string;
+    body: string;
+    related_id?: string;
     link?: string;
 }) {
-    return supabase.from('notifications').insert({ ...data, is_read: false });
+    const { error } = await supabase.from('notifications').insert({ ...data, is_read: false });
+    if (error) throw new Error(error.message);
 }
 
 export async function markNotificationRead(notificationId: string) {
-    return supabase.from('notifications').update({ is_read: true }).eq('id', notificationId);
+    const { error } = await supabase
+        .from('notifications')
+        .update({ is_read: true })
+        .eq('id', notificationId);
+    if (error) throw new Error(error.message);
 }
 
 export async function markAllRead(userId: string) {
-    return supabase.from('notifications').update({ is_read: true }).eq('user_id', userId).eq('is_read', false);
+    const { error } = await supabase
+        .from('notifications')
+        .update({ is_read: true })
+        .eq('user_id', userId)
+        .eq('is_read', false);
+    if (error) throw new Error(error.message);
 }
 
-// --- REALTIME ---
+// --- REALTIME (legacy — prefer useRealtimeNotifications hook) ---
 
 export function subscribeToNotifications(userId: string, callback: (payload: unknown) => void) {
     return supabase

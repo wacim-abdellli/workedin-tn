@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Test</title>
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+        
+        const supabase = createClient(
+            'YOUR_SUPABASE_URL',
+            'YOUR_SUPABASE_ANON_KEY'
+        );
+        
+        async function test() {
+            const output = document.getElementById('output');
+            
+            // Get session
+            const { data: { session } } = await supabase.auth.getSession();
+            output.innerHTML += `<h3>Session Info:</h3><pre>${JSON.stringify(session?.user, null, 2)}</pre>`;
+            
+            // Try to fetch profiles
+            const { data: profiles, error: profilesError } = await supabase
+                .from('profiles')
+                .select('id,email,is_admin')
+                .limit(5);
+            
+            output.innerHTML += `<h3>Profiles Query:</h3>`;
+            if (profilesError) {
+                output.innerHTML += `<pre style="color:red">ERROR: ${JSON.stringify(profilesError, null, 2)}</pre>`;
+            } else {
+                output.innerHTML += `<pre style="color:green">SUCCESS: ${profiles?.length} profiles</pre>`;
+            }
+        }
+        
+        window.onload = test;
+    </script>
+</head>
+<body>
+    <h1>Admin Access Test</h1>
+    <div id="output"></div>
+</body>
+</html>

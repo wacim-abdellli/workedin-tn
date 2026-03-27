@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from '@/i18n'
+import EmptyState from '@/components/common/EmptyState'
 
 export default function ClientJobs() {
   const { user } = useAuth()
@@ -132,19 +133,16 @@ export default function ClientJobs() {
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-500"></div>
           </div>
         ) : !jobs || jobs.length === 0 ? (
-          <div className="card flex flex-col items-center justify-center py-16 text-center">
-            <FolderOpen className="w-10 h-10 text-gray-300 dark:text-gray-600 mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white">{tx('pages.clientJobs.emptyTitle', undefined, 'No projects yet')}</h3>
-            <p className="text-gray-500 dark:text-gray-400 mt-1 max-w-sm">
-              {tx('pages.clientJobs.emptyDescription', undefined, 'Post your first project and receive proposals from verified professionals.')}
-            </p>
-            <button
-              onClick={() => navigate('/jobs/new')}
-              className="mt-4 bg-amber-500 hover:bg-amber-400 text-white font-medium px-5 py-2 rounded-xl transition-colors"
-            >
-              {tx('pages.clientJobs.postFree', undefined, "Post a project - it's free")}
-            </button>
-          </div>
+          <EmptyState
+            icon={FolderOpen}
+            title={tx('pages.clientJobs.emptyTitle', undefined, 'No projects yet')}
+            description={tx('pages.clientJobs.emptyDescription', undefined, 'Post your first project and receive proposals from verified professionals.')}
+            action={{
+              label: tx('pages.clientJobs.postFree', undefined, "Post a project — it's free"),
+              onClick: () => navigate('/jobs/new'),
+              variant: 'primary',
+            }}
+          />
         ) : (
           <div className="space-y-3">
             {jobs.map((job: any) => (

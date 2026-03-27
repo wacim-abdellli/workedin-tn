@@ -7,6 +7,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { useTranslation } from '@/i18n'
 import { supabase } from '@/lib/supabase'
 import { useWorkspaceStore } from '@/lib/workspaceState'
+import EmptyState from '@/components/common/EmptyState'
 
 type ContractTab = 'all' | 'active' | 'completed' | 'disputed'
 
@@ -130,25 +131,20 @@ export default function ContractsList() {
             />
           </div>
         ) : !contracts || contracts.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 text-center">
-            <ClipboardList className="mb-4 h-10 w-10 text-gray-300 dark:text-gray-600" />
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white">{tx('contracts.empty.title', undefined, 'No contracts yet')}</h3>
-            <p className="mt-1 max-w-sm text-gray-500 dark:text-gray-400">
-              {isFreelancer
-                ? tx('contracts.empty.freelancerDescription', undefined, 'Send proposals to get your first contract.')
-                : tx('contracts.empty.clientDescription', undefined, 'Hire a freelancer to create your first contract.')}
-            </p>
-            <button
-              onClick={() => navigate(isFreelancer ? '/jobs' : '/jobs/new')}
-              className={`mt-4 rounded-xl px-5 py-2 font-medium text-white transition-colors ${
-                isFreelancer ? 'bg-purple-600 hover:bg-purple-500' : 'bg-amber-500 hover:bg-amber-400'
-              }`}
-            >
-              {isFreelancer
+          <EmptyState
+            icon={ClipboardList}
+            title={tx('contracts.empty.title', undefined, 'No contracts yet')}
+            description={isFreelancer
+              ? tx('contracts.empty.freelancerDescription', undefined, 'Send proposals to get your first contract.')
+              : tx('contracts.empty.clientDescription', undefined, 'Hire a freelancer to create your first contract.')}
+            action={{
+              label: isFreelancer
                 ? tx('contracts.empty.freelancerCta', undefined, 'Browse jobs')
-                : tx('contracts.empty.clientCta', undefined, 'Post a project')}
-            </button>
-          </div>
+                : tx('contracts.empty.clientCta', undefined, 'Post a project'),
+              onClick: () => navigate(isFreelancer ? '/jobs' : '/jobs/new'),
+              variant: 'primary',
+            }}
+          />
         ) : (
           <div className="space-y-3">
             {contracts.map((contract) => {

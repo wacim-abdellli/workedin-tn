@@ -1557,4 +1557,46 @@ export const fr: Translations = {
         checkSpam: 'Si vous ne voyez pas l\'email, vérifiez votre dossier spam.',
         noEmail: 'L\'adresse email est requise',
     },
+    seo: {
+        home: {
+            title: 'Khedma TN',
+            description: 'Connectez-vous avec des professionnels tunisiens vérifiés pour vos projets. Paiements sécurisés en TND et protection escrow.',
+        },
+        howItWorks: {
+            title: 'Comment fonctionne Khedma',
+            description: 'Découvrez comment Khedma vous fait passer de l\'idée au paiement validé en quatre étapes protégées.',
+        },
+        forClients: {
+            title: 'Recrutez des talents tunisiens vérifiés',
+            description: 'Publiez gratuitement, recevez des propositions de professionnels vérifiés et payez uniquement à la validation.',
+        },
+        faq: {
+            title: 'Questions fréquentes',
+            description: 'Retrouvez des réponses sur les paiements, l\'escrow, la vérification d\'identité et le fonctionnement de Khedma.',
+        },
+        jobBoard: {
+            title: 'Missions freelance',
+            description: 'Parcourez les missions freelance en Tunisie et trouvez des projets adaptés à vos compétences, votre tarif et votre disponibilité.',
+        },
+        jobDetail: {
+            titleSuffix: 'Détails du projet',
+            descriptionFallback: 'Consultez les détails du projet, le budget et les exigences avant de postuler.',
+        },
+        findFreelancers: {
+            title: 'Trouvez des professionnels tunisiens vérifiés',
+            description: 'Trouvez 2 500+ développeurs, designers, traducteurs et consultants tunisiens vérifiés, notés et disponibles.',
+        },
+        freelancerProfile: {
+            titleSuffix: 'Freelance sur Khedma',
+            descriptionFallback: 'Freelance sur la plateforme Khedma',
+        },
+        login: {
+            title: 'Connectez-vous à Khedma',
+            description: 'Connectez-vous à votre compte Khedma pour gérer vos projets, messages et paiements.',
+        },
+        signup: {
+            title: 'Créez votre compte Khedma',
+            description: 'Créez votre compte et rejoignez 2 500+ professionnels qui développent leur carrière sur Khedma.',
+        },
+    },
 };

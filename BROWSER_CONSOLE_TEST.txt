@@ -1,0 +1,39 @@
+COPY AND PASTE THESE COMMANDS INTO YOUR BROWSER CONSOLE (F12 → Console tab)
+Run them ONE AT A TIME and tell me the output of each:
+
+=== COMMAND 1: Check if you're logged in ===
+const { data: { session } } = await window.supabase.auth.getSession();
+console.log('Logged in as:', session?.user?.email);
+console.log('User ID:', session?.user?.id);
+
+=== COMMAND 2: Try to fetch your profile ===
+const { data: { user } } = await window.supabase.auth.getUser();
+const { data: myProfile, error: myError } = await window.supabase
+    .from('profiles')
+    .select('id, email, full_name, is_admin')
+    .eq('id', user.id)
+    .single();
+console.log('My profile:', myProfile);
+console.log('Error:', myError);
+
+=== COMMAND 3: Try to fetch ALL profiles (admin query) ===
+const { data: allProfiles, error: allError } = await window.supabase
+    .from('profiles')
+    .select('id, email, is_admin')
+    .limit(5);
+console.log('All profiles:', allProfiles);
+console.log('Error:', allError);
+
+=== COMMAND 4: Check what the error says ===
+If you got an error in COMMAND 3, run this:
+console.log('Error code:', allError?.code);
+console.log('Error message:', allError?.message);
+console.log('Error details:', allError?.details);
+console.log('Error hint:', allError?.hint);
+
+=== WHAT TO SEND ME ===
+Copy the ENTIRE output from all 4 commands and send it to me.
+Look for:
+- "My profile: { is_admin: true }" or "is_admin: false"
+- "All profiles: null" with an error
+- Error messages mentioning "policy" or "permission"

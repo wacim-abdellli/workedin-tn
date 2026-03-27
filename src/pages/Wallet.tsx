@@ -12,7 +12,15 @@ import { useToast } from '@/components/ui/Toast';
 import { getWallet, getTransactions, getWithdrawals } from '@/services/payments';
 import { formatCurrency, formatTransactionType, formatTransactionStatus, formatWithdrawalMethod, getStatusColor, validateWithdrawalAmount } from '@/lib/currencyUtils';
 import { MIN_WITHDRAWAL_AMOUNT } from '@/types/payment';
-import type { WithdrawalMethod } from '@/types/payment';
+import type {
+  CreateWithdrawalRequest,
+  Transaction,
+  TransactionsPage,
+  Wallet as WalletType,
+  Withdrawal,
+  WithdrawalMethod,
+  WithdrawalStatus,
+} from '@/types/payment';
 
 export default function Wallet() {
   const { user } = useAuth();
@@ -25,7 +33,7 @@ export default function Wallet() {
   // Fetch wallet data
   const { data: wallet, isLoading: walletLoading, refetch: refetchWallet } = useQuery({
     queryKey: ['wallet', user?.id],
-    queryFn: async () => {
+    queryFn: async (): Promise<WalletType | null> => {
       if (!user?.id) return null;
       const { data, error } = await getWallet(user.id);
       if (error) throw error;
@@ -37,7 +45,7 @@ export default function Wallet() {
   // Fetch transactions
   const { data: transactionsData, isLoading: transactionsLoading } = useQuery({
     queryKey: ['transactions', user?.id, page],
-    queryFn: async () => {
+    queryFn: async (): Promise<TransactionsPage> => {
       if (!user?.id) return { data: [], count: 0 };
       const { data, error, count } = await getTransactions(user.id, page, pageSize);
       if (error) throw error;
@@ -49,7 +57,7 @@ export default function Wallet() {
   // Fetch withdrawals
   const { data: withdrawals, isLoading: withdrawalsLoading, refetch: refetchWithdrawals } = useQuery({
     queryKey: ['withdrawals', user?.id],
-    queryFn: async () => {
+    queryFn: async (): Promise<Withdrawal[]> => {
       if (!user?.id) return [];
       const { data, error } = await getWithdrawals(user.id);
       if (error) throw error;
@@ -193,11 +201,11 @@ export default function Wallet() {
                         <th className="data-table-th text-left">{t.wallet?.type || 'Type'}</th>
                         <th className="data-table-th text-left">{t.wallet?.description || 'Description'}</th>
                         <th className="data-table-th text-right">{t.wallet?.amount || 'Amount'}</th>
-                        <th className="data-table-th text-center">{(t.wallet as any)?.statusLabel || 'Status'}</th>
+                        <th className="data-table-th text-center">{t.wallet?.statusLabel || 'Status'}</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {transactions.map((tx: any) => {
+                      {transactions.map((tx: Transaction) => {
                         const isCredit = tx.type === 'deposit' || tx.type === 'release' || tx.type === 'escrow_release';
                         const isDebit = tx.type === 'withdrawal' || tx.type === 'fee' || tx.type === 'escrow';
                         
@@ -286,12 +294,12 @@ export default function Wallet() {
                       <th className="data-table-th text-right">{t.wallet?.amount || 'Amount'}</th>
                       <th className="data-table-th text-right">{t.wallet?.netAmount || 'Net Amount'}</th>
                       <th className="data-table-th text-center">{t.wallet?.method || 'Method'}</th>
-                      <th className="data-table-th text-center">{(t.wallet as any)?.statusLabel || 'Status'}</th>
+                      <th className="data-table-th text-center">{t.wallet?.statusLabel || 'Status'}</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {withdrawals.map((withdrawal: any) => {
-                      const statusColors = {
+                    {withdrawals.map((withdrawal: Withdrawal) => {
+                      const statusColors: Record<WithdrawalStatus, string> = {
                         pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
                         approved: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
                         processing: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
@@ -317,7 +325,7 @@ export default function Wallet() {
                           </td>
                           <td className="data-table-td whitespace-nowrap text-center">
                             <span className={`status-pill ${statusColors[withdrawal.status as keyof typeof statusColors] || statusColors.pending}`}>
-                              {(t.wallet as any)?.status?.[withdrawal.status] || withdrawal.status}
+                              {t.wallet?.status?.[withdrawal.status] || withdrawal.status}
                             </span>
                           </td>
                         </tr>
@@ -351,12 +359,13 @@ export default function Wallet() {
 }
 
 // Withdrawal Modal Component
-function WithdrawalModal({ wallet, onClose, onSuccess }: { wallet: any; onClose: () => void; onSuccess: () => void }) {
+function WithdrawalModal({ wallet, onClose, onSuccess }: { wallet: WalletType; onClose: () => void; onSuccess: () => void }) {
   const { user } = useAuth();
   const { t, language } = useTranslation();
   const { showToast } = useToast();
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [touched, setTouched] = useState(false);
 
   const [amount, setAmount] = useState('');
   const [method, setMethod] = useState<WithdrawalMethod>('bank_transfer');
@@ -368,30 +377,45 @@ function WithdrawalModal({ wallet, onClose, onSuccess }: { wallet: any; onClose:
   const amountValue = parseFloat(amount) || 0;
   const validation = validateWithdrawalAmount(amountValue, wallet.balance, MIN_WITHDRAWAL_AMOUNT);
 
+  // Inline field-level errors (shown after first submit attempt)
+  const bankNameError = touched && method === 'bank_transfer' && !bankName.trim()
+    ? (t.wallet?.bankNameRequired || 'Bank name is required')
+    : null;
+  const bankAccountNameError = touched && method === 'bank_transfer' && !bankAccountName.trim()
+    ? (t.wallet?.accountHolderRequired || 'Account holder name is required')
+    : null;
+  const bankIbanError = touched && method === 'bank_transfer' && !bankIban.trim()
+    ? (t.wallet?.ibanRequired || 'IBAN is required')
+    : touched && method === 'bank_transfer' && bankIban.trim() && !/^TN\d{2}/i.test(bankIban.trim())
+    ? (t.wallet?.ibanInvalid || 'IBAN must start with TN')
+    : null;
+  const phoneError = touched && (method === 'd17' || method === 'flouci') && !phoneNumber.trim()
+    ? (t.wallet?.phoneRequired || 'Phone number is required')
+    : touched && (method === 'd17' || method === 'flouci') && phoneNumber.trim() && !/^\+?[0-9]{8,15}$/.test(phoneNumber.replace(/\s/g, ''))
+    ? (t.wallet?.phoneInvalid || 'Enter a valid phone number')
+    : null;
+
+  const hasFieldErrors = !!(bankNameError || bankAccountNameError || bankIbanError || phoneError);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setTouched(true);
 
     if (!validation.valid) {
       showToast(validation.error || t.wallet?.invalidAmount || 'Invalid amount', 'error');
       return;
     }
 
-    if (method === 'bank_transfer' && (!bankName || !bankAccountName || !bankIban)) {
-      showToast(t.wallet?.fillBankDetails || 'Please fill all bank details', 'error');
-      return;
-    }
-
-    if ((method === 'd17' || method === 'flouci') && !phoneNumber) {
-      showToast(t.wallet?.enterPhone || 'Please enter phone number', 'error');
-      return;
-    }
+    if (method === 'bank_transfer' && (!bankName.trim() || !bankAccountName.trim() || !bankIban.trim())) return;
+    if ((method === 'd17' || method === 'flouci') && !phoneNumber.trim()) return;
+    if (hasFieldErrors) return;
 
     setLoading(true);
 
     try {
       if (!user) throw new Error(t.wallet?.notAuthenticated || 'Not authenticated');
 
-      const { error } = await supabase.from('withdrawals').insert({
+      const withdrawalRequest: CreateWithdrawalRequest = {
         user_id: user.id,
         wallet_id: wallet.id,
         amount: amountValue,
@@ -401,16 +425,14 @@ function WithdrawalModal({ wallet, onClose, onSuccess }: { wallet: any; onClose:
         bank_account_name: method === 'bank_transfer' ? bankAccountName : null,
         iban: method === 'bank_transfer' ? bankIban : null,
         d17_phone: method !== 'bank_transfer' ? phoneNumber : null,
-      });
+      };
 
+      const { error } = await supabase.from('withdrawals').insert(withdrawalRequest);
       if (error) throw error;
 
       setSubmitted(true);
       showToast(t.wallet?.withdrawalSuccess || 'Withdrawal request submitted successfully', 'success');
-      
-      setTimeout(() => {
-        onSuccess();
-      }, 2000);
+      setTimeout(() => { onSuccess(); }, 2000);
     } catch (error) {
       console.error('Withdrawal error:', error);
       showToast(t.wallet?.withdrawalError || 'Failed to submit withdrawal request', 'error');
@@ -459,10 +481,11 @@ function WithdrawalModal({ wallet, onClose, onSuccess }: { wallet: any; onClose:
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+          {/* Amount */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              {t.wallet?.amount || 'Amount'}
+              {t.wallet?.amount || 'Amount'} <span className="text-red-500">*</span>
             </label>
             <input
               type="number"
@@ -472,24 +495,27 @@ function WithdrawalModal({ wallet, onClose, onSuccess }: { wallet: any; onClose:
               min={MIN_WITHDRAWAL_AMOUNT}
               max={wallet.balance}
               step="0.001"
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              className={`w-full px-4 py-2 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
+                amount && !validation.valid ? 'border-red-400 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'
+              }`}
               dir="ltr"
             />
             {amount && !validation.valid && (
-              <p className="text-red-500 text-sm mt-1">{validation.error}</p>
+              <p className="text-red-500 text-sm mt-1" role="alert">{validation.error}</p>
             )}
           </div>
 
+          {/* Method selector */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              {t.wallet?.method || 'Withdrawal Method'}
+              {t.wallet?.method || 'Withdrawal Method'} <span className="text-red-500">*</span>
             </label>
             <div className="grid grid-cols-3 gap-2">
               {(['bank_transfer', 'd17', 'flouci'] as WithdrawalMethod[]).map((m) => (
                 <button
                   key={m}
                   type="button"
-                  onClick={() => setMethod(m)}
+                  onClick={() => { setMethod(m); setTouched(false); }}
                   className={`p-3 rounded-xl border-2 text-center transition-colors ${
                     method === m
                       ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300'
@@ -505,75 +531,87 @@ function WithdrawalModal({ wallet, onClose, onSuccess }: { wallet: any; onClose:
             </div>
           </div>
 
+          {/* Bank transfer fields */}
           {method === 'bank_transfer' && (
-            <div className="space-y-4">
-              <input
-                type="text"
-                value={bankName}
-                onChange={(e) => setBankName(e.target.value)}
-                placeholder={t.wallet?.bankName || "Bank Name"}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-              />
-              <input
-                type="text"
-                value={bankAccountName}
-                onChange={(e) => setBankAccountName(e.target.value)}
-                placeholder={t.wallet?.accountHolder || "Account Holder Name"}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-              />
-              <input
-                type="text"
-                value={bankIban}
-                onChange={(e) => setBankIban(e.target.value)}
-                placeholder="رقم الآيبان (يبدأ بـ TN59...)"
-                aria-label={t.wallet?.iban || 'IBAN'}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                dir="ltr"
-              />
+            <div className="space-y-3">
+              <div>
+                <input
+                  type="text"
+                  value={bankName}
+                  onChange={(e) => setBankName(e.target.value)}
+                  placeholder={t.wallet?.bankName || 'Bank Name'}
+                  className={`w-full px-4 py-2 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${bankNameError ? 'border-red-400 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'}`}
+                />
+                {bankNameError && <p className="text-red-500 text-sm mt-1" role="alert">{bankNameError}</p>}
+              </div>
+              <div>
+                <input
+                  type="text"
+                  value={bankAccountName}
+                  onChange={(e) => setBankAccountName(e.target.value)}
+                  placeholder={t.wallet?.accountHolder || 'Account Holder Name'}
+                  className={`w-full px-4 py-2 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${bankAccountNameError ? 'border-red-400 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'}`}
+                />
+                {bankAccountNameError && <p className="text-red-500 text-sm mt-1" role="alert">{bankAccountNameError}</p>}
+              </div>
+              <div>
+                <input
+                  type="text"
+                  value={bankIban}
+                  onChange={(e) => setBankIban(e.target.value)}
+                  placeholder="TN59 ..."
+                  aria-label={t.wallet?.iban || 'IBAN'}
+                  className={`w-full px-4 py-2 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${bankIbanError ? 'border-red-400 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'}`}
+                  dir="ltr"
+                />
+                {bankIbanError && <p className="text-red-500 text-sm mt-1" role="alert">{bankIbanError}</p>}
+              </div>
             </div>
           )}
 
+          {/* D17 / Flouci phone field */}
           {(method === 'd17' || method === 'flouci') && (
-            <div className="relative">
-              <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input
-                type="tel"
-                value={phoneNumber}
-                onChange={(e) => setPhoneNumber(e.target.value)}
-                placeholder="+216 00 000 000"
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                dir="ltr"
-              />
+            <div>
+              <div className="relative">
+                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  type="tel"
+                  value={phoneNumber}
+                  onChange={(e) => setPhoneNumber(e.target.value)}
+                  placeholder="+216 00 000 000"
+                  className={`w-full pl-10 pr-4 py-2 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${phoneError ? 'border-red-400 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'}`}
+                  dir="ltr"
+                />
+              </div>
+              {phoneError && <p className="text-red-500 text-sm mt-1" role="alert">{phoneError}</p>}
             </div>
           )}
 
-          <div className="p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
-            <div className="mb-6 p-4 bg-purple-50 dark:bg-purple-900/20 rounded-xl flex items-start gap-3">
-          <Info className="w-5 h-5 text-purple-600 dark:text-purple-400 shrink-0 mt-0.5" />
-          <div className="text-sm text-purple-800 dark:text-purple-300">
-            {t.wallet?.withdrawalSubmittedDesc || 'Withdrawal requests are reviewed within 2-5 business days'}
-          </div>
-        </div>
+          <div className="p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg flex items-start gap-2">
+            <Info className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+            <p className="text-sm text-amber-800 dark:text-amber-300">
+              {t.wallet?.withdrawalSubmittedDesc || 'Withdrawal requests are reviewed within 2-5 business days'}
+            </p>
           </div>
 
           <Button
-          type="submit"
-          variant="primary"
-          className="w-full justify-center mt-6"
-          disabled={loading || amountValue < MIN_WITHDRAWAL_AMOUNT || amountValue > wallet.balance || !amountValue}
-          onClick={handleSubmit}
-        >
-          {loading ? (
-            <>
-              <Loader2 className="w-5 h-5 mr-3 animate-spin" />
-              {t.wallet?.submitting || 'Submitting...'}
-            </>
-          ) : (
-            t.wallet?.submitWithdrawal || 'Submit Withdrawal Request'
-          )}
-        </Button>
+            type="submit"
+            variant="primary"
+            className="w-full justify-center mt-2"
+            disabled={loading || amountValue < MIN_WITHDRAWAL_AMOUNT || amountValue > wallet.balance || !amountValue}
+          >
+            {loading ? (
+              <>
+                <Loader2 className="w-5 h-5 mr-3 animate-spin" />
+                {t.wallet?.submitting || 'Submitting...'}
+              </>
+            ) : (
+              t.wallet?.requestWithdrawal || 'Request Withdrawal'
+            )}
+          </Button>
         </form>
       </div>
     </div>
   );
 }
+

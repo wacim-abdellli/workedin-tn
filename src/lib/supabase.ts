@@ -6,6 +6,17 @@ import type { MessageAttachment } from '../types';
 // You'll need to create a .env file with these values from your Supabase project
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://your-project.supabase.co';
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'your-anon-key';
+const supabaseServiceKey = import.meta.env.VITE_SUPABASE_SERVICE_ROLE_KEY;
+
+// Admin client with service role (bypasses RLS)
+export const supabaseAdmin = supabaseServiceKey 
+  ? createClient(supabaseUrl, supabaseServiceKey, {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+      },
+    })
+  : null;
 
 // Anon-only client for public queries (jobs, freelancers) — never hangs on token refresh
 export const supabaseAnon = createClient(supabaseUrl, supabaseAnonKey, {
@@ -40,20 +51,26 @@ if (typeof window !== 'undefined') {
     }
 }
 
-// Create Supabase client
+// Create Supabase client with minimal config to avoid hangs
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     auth: {
         persistSession: true,
-        autoRefreshToken: true,
-        detectSessionInUrl: true,
+        autoRefreshToken: false, // Disable auto-refresh to prevent hangs
+        detectSessionInUrl: false, // Disable URL detection
         flowType: 'pkce',
+        storage: typeof window !== 'undefined' ? window.localStorage : undefined,
     },
-    realtime: {
-        params: {
-            eventsPerSecond: 10,
+    global: {
+        headers: {
+            'x-client-info': 'khedma-tn',
         },
     },
 });
+
+// Expose supabase client to window for debugging
+if (typeof window !== 'undefined') {
+    (window as any).supabase = supabase;
+}
 
 // Handle auth state changes — log token refresh and sign-out events
 supabase.auth.onAuthStateChange((event) => {

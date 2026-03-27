@@ -1,0 +1,352 @@
+import { useState } from 'react';
+import { Check, Eye, Loader2, RefreshCw, Shield, X } from 'lucide-react';
+import Button from '@/components/ui/Button';
+import ErrorBoundary from '@/components/common/ErrorBoundary';
+import SkeletonList from '@/components/common/SkeletonList';
+import { useToast } from '@/components/ui/Toast';
+import { supabase, supabaseAdmin } from '@/lib/supabase';
+import { supabaseWithRetry } from '@/lib/supabaseWithRetry';
+import { useTranslation } from '@/i18n';
+
+const SUPA_URL = import.meta.env.VITE_SUPABASE_URL as string;
+const IDENTITY_DOCS_BUCKET = 'identity-documents';
+const FALLBACK_IDENTITY_BUCKETS = ['identity-documents', 'identity_documents', 'verification-documents', 'verification_documents'];
+const ENV_IDENTITY_BUCKETS = (import.meta.env.VITE_IDENTITY_DOCS_BUCKETS as string | undefined)
+    ?.split(',').map(v => v.trim()).filter(Boolean) ?? [];
+const IDENTITY_BUCKET_CANDIDATES = Array.from(new Set([IDENTITY_DOCS_BUCKET, ...ENV_IDENTITY_BUCKETS, ...FALLBACK_IDENTITY_BUCKETS]));
+
+type ParsedStorageRef =
+    | { kind: 'external'; url: string }
+    | { kind: 'storage'; bucket: string | null; path: string }
+    | null;
+
+function parseStorageReference(input?: string | null): ParsedStorageRef {
+    if (!input) return null;
+    const trimmed = String(input).trim();
+    if (!trimmed) return null;
+
+    const parseStoragePath = (rawPath: string): { bucket: string; path: string } | null => {
+        const cleanPath = rawPath.replace(/^\/+/, '').split('?')[0];
+        const storagePrefixes = ['storage/v1/object/public/', 'storage/v1/object/sign/', 'storage/v1/object/'];
+        for (const prefix of storagePrefixes) {
+            if (cleanPath.startsWith(prefix)) {
+                const rest = cleanPath.slice(prefix.length);
+                const slashIndex = rest.indexOf('/');
+                if (slashIndex <= 0) return null;
+                return { bucket: rest.slice(0, slashIndex), path: rest.slice(slashIndex + 1) };
+            }
+        }
+        return null;
+    };
+
+    if (/^https?:\/\//i.test(trimmed)) {
+        try {
+            const parsed = new URL(trimmed);
+            const supabaseHost = new URL(SUPA_URL).host;
+            if (parsed.host !== supabaseHost) return { kind: 'external', url: trimmed };
+            const parsedStorage = parseStoragePath(parsed.pathname);
+            if (parsedStorage) return { kind: 'storage', bucket: parsedStorage.bucket, path: parsedStorage.path };
+            return { kind: 'external', url: trimmed };
+        } catch {
+            return { kind: 'external', url: trimmed };
+        }
+    }
+
+    const parsedStorage = parseStoragePath(trimmed);
+    if (parsedStorage) return { kind: 'storage', bucket: parsedStorage.bucket, path: parsedStorage.path };
+
+    const clean = trimmed.replace(/^\/+/, '');
+    const bucketMatch = IDENTITY_BUCKET_CANDIDATES.find(bucket => clean.startsWith(`${bucket}/`));
+    if (bucketMatch) return { kind: 'storage', bucket: bucketMatch, path: clean.slice(bucketMatch.length + 1) };
+
+    return { kind: 'storage', bucket: null, path: clean };
+}
+
+async function resolveIdentityDocumentUrl(url?: string | null): Promise<string | null> {
+    const parsed = parseStorageReference(url);
+    if (!parsed) return null;
+    if (parsed.kind === 'external') return parsed.url;
+
+    const candidates = parsed.bucket
+        ? [parsed.bucket, ...IDENTITY_BUCKET_CANDIDATES.filter(b => b !== parsed.bucket)]
+        : IDENTITY_BUCKET_CANDIDATES;
+
+    for (const bucket of candidates) {
+        try {
+            const { data, error } = await supabase.storage.from(bucket).createSignedUrl(parsed.path, 60 * 60);
+            if (!error && data?.signedUrl) return data.signedUrl;
+        } catch { /* try next */ }
+    }
+
+    const fallbackBucket = parsed.bucket || IDENTITY_DOCS_BUCKET;
+    return `${SUPA_URL}/storage/v1/object/public/${fallbackBucket}/${parsed.path}`;
+}
+
+export interface IdentityVerification {
+    id: string;
+    user_id: string;
+    document_type: string;
+    front_image_url: string | null;
+    back_image_url: string | null;
+    selfie_url: string | null;
+    status: 'pending' | 'approved' | 'rejected';
+    submitted_at: string;
+    profile: { full_name: string; email: string } | null;
+}
+
+export async function fetchVerifications(): Promise<IdentityVerification[]> {
+    const client = supabaseAdmin || supabase;
+    try {
+        const { data } = await supabaseWithRetry(() =>
+            client
+                .from('identity_verifications')
+                .select('id,user_id,cin_front_url,cin_back_url,selfie_url,status,submitted_at,profile:profiles!identity_verifications_user_id_fkey(full_name,email)')
+                .eq('status', 'pending')
+                .order('submitted_at', { ascending: true })
+        );
+        return await Promise.all((data || []).map(async (item: any) => ({
+            id: item.id,
+            user_id: item.user_id,
+            document_type: 'CIN',
+            front_image_url: await resolveIdentityDocumentUrl(item.cin_front_url),
+            back_image_url: await resolveIdentityDocumentUrl(item.cin_back_url),
+            selfie_url: await resolveIdentityDocumentUrl(item.selfie_url),
+            status: item.status,
+            submitted_at: item.submitted_at,
+            profile: item.profile ?? null,
+        })));
+    } catch {
+        // Fallback for alternate schema naming
+        const { data: legacy } = await supabaseWithRetry(() =>
+            client
+                .from('identity_verifications')
+                .select('id,user_id,document_type,front_image_url,back_image_url,status,submitted_at,profile:profiles!identity_verifications_user_id_fkey(full_name,email)')
+                .eq('status', 'pending')
+                .order('submitted_at', { ascending: true })
+        );
+        return await Promise.all((legacy || []).map(async (item: any) => ({
+            id: item.id,
+            user_id: item.user_id,
+            document_type: item.document_type || 'CIN',
+            front_image_url: await resolveIdentityDocumentUrl(item.front_image_url),
+            back_image_url: await resolveIdentityDocumentUrl(item.back_image_url),
+            selfie_url: null,
+            status: item.status,
+            submitted_at: item.submitted_at,
+            profile: item.profile ?? null,
+        })));
+    }
+}
+
+export default function VerificationsTab() {
+    const { showToast } = useToast();
+    const { language } = useTranslation();
+    const locale = language === 'ar' ? 'ar-TN' : language === 'fr' ? 'fr-FR' : 'en-US';
+    const tr = (ar: string, en: string, fr?: string) => {
+        if (language === 'ar') return ar;
+        if (language === 'fr') return fr || en;
+        return en;
+    };
+
+    const [verifications, setVerifications] = useState<IdentityVerification[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [loaded, setLoaded] = useState(false);
+    const [actioningId, setActioningId] = useState<string | null>(null);
+    const [expandedDocId, setExpandedDocId] = useState<string | null>(null);
+
+    const panelClass = 'card border-white/45 dark:border-white/10 bg-white/80 dark:bg-slate-950/55 backdrop-blur-xl shadow-[0_16px_45px_-24px_rgba(21,84,247,0.38)]';
+
+    const load = async () => {
+        setLoading(true);
+        try {
+            const data = await fetchVerifications();
+            setVerifications(data);
+            setLoaded(true);
+        } catch (err) {
+            console.error('Failed to fetch verifications:', err);
+            showToast(tr('فشل تحميل طلبات التحقق', 'Failed to load verification requests', 'Echec du chargement des demandes de verification'), 'error');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Auto-load on first render
+    if (!loaded && !loading) {
+        void load();
+    }
+
+    const handleAction = async (id: string, action: 'approved' | 'rejected') => {
+        setActioningId(id);
+        try {
+            const client = supabaseAdmin || supabase;
+            const { data: updatedRows } = await supabaseWithRetry(() =>
+                client
+                    .from('identity_verifications')
+                    .update({ status: action, reviewed_at: new Date().toISOString() })
+                    .eq('id', id)
+                    .select('id,user_id')
+            );
+
+            if (!Array.isArray(updatedRows) || updatedRows.length === 0) {
+                throw new Error(tr('لم يتم تحديث طلب التحقق.', 'Verification request was not updated.', 'La demande de verification n a pas ete mise a jour.'));
+            }
+
+            const verification = verifications.find(v => v.id === id);
+            const userId = verification?.user_id || updatedRows[0]?.user_id;
+
+            if (userId) {
+                // Resolve any duplicate pending rows for same user
+                await supabaseWithRetry(() =>
+                    client
+                        .from('identity_verifications')
+                        .update({ status: action, reviewed_at: new Date().toISOString() })
+                        .eq('user_id', userId)
+                        .eq('status', 'pending')
+                        .select('id')
+                ).catch(() => null);
+
+                if (action === 'approved') {
+                    await Promise.all([
+                        supabaseWithRetry(() =>
+                            client.from('profiles').update({ cin_verified: true, cin_submitted: false }).eq('id', userId)
+                        ),
+                        supabaseWithRetry(() =>
+                            client.from('freelancer_profiles').update({ cin_verified: true }).eq('id', userId)
+                        ).catch(() => null),
+                    ]);
+                } else {
+                    await supabaseWithRetry(() =>
+                        client.from('profiles').update({ cin_verified: false, cin_submitted: false }).eq('id', userId)
+                    );
+                }
+            }
+
+            setVerifications(prev => prev.filter(v => v.id !== id));
+            showToast(
+                action === 'approved'
+                    ? tr('تم قبول التحقق ✓', 'Verification approved ✓', 'Verification approuvee ✓')
+                    : tr('تم رفض التحقق', 'Verification rejected', 'Verification refusee'),
+                action === 'approved' ? 'success' : 'warning'
+            );
+        } catch (err) {
+            console.error('Verification action error:', err);
+            showToast(tr('فشل تنفيذ الإجراء', 'Action failed', 'Echec de l action'), 'error');
+        } finally {
+            setActioningId(null);
+        }
+    };
+
+    return (
+        <ErrorBoundary
+            titleAr="فشل تحميل قسم طلبات التحقق — حاول التحديث"
+            titleFr="Echec du chargement des verifications — essayez de rafraichir"
+            titleEn="Failed to load Verifications tab — try refreshing"
+        >
+            <div className="space-y-6">
+                <div className={panelClass}>
+                    <div className="flex items-center justify-between mb-6">
+                        <h3 className="font-bold text-foreground flex items-center gap-2">
+                            <Shield className="w-5 h-5 text-yellow-600" />
+                            {tr('طلبات التحقق من الهوية', 'Identity verification requests', 'Demandes de verification d identite')}
+                            {verifications.length > 0 && (
+                                <span className="px-2 py-0.5 bg-yellow-100 text-yellow-800 rounded-full text-sm">
+                                    {verifications.length} {tr('معلق', 'pending', 'en attente')}
+                                </span>
+                            )}
+                        </h3>
+                        <Button variant="outline" size="sm" onClick={load}>
+                            <RefreshCw className={`w-4 h-4 ml-1 ${loading ? 'animate-spin' : ''}`} />
+                            {tr('تحديث', 'Refresh', 'Actualiser')}
+                        </Button>
+                    </div>
+
+                    {loading ? (
+                        <SkeletonList count={3} />
+                    ) : verifications.length === 0 ? (
+                        <div className="text-center py-12">
+                            <Check className="w-12 h-12 text-green-500 mx-auto mb-2" />
+                            <p className="text-foreground font-medium">{tr('لا توجد طلبات معلقة', 'No pending requests', 'Aucune demande en attente')}</p>
+                            <p className="text-sm text-muted">{tr('جميع طلبات التحقق تمت معالجتها', 'All verification requests are processed', 'Toutes les demandes de verification sont traitees')}</p>
+                        </div>
+                    ) : (
+                        <div className="space-y-4">
+                            {verifications.map(v => (
+                                <div key={v.id} className="border border-gray-200 dark:border-white/10 rounded-xl overflow-hidden">
+                                    <div className="flex items-center justify-between p-4 bg-white/60 dark:bg-slate-900/60">
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-12 h-12 rounded-xl bg-gray-200 dark:bg-white/10 flex items-center justify-center shrink-0">
+                                                <Shield className="w-6 h-6 text-gray-400 dark:text-gray-300" />
+                                            </div>
+                                            <div>
+                                                <p className="font-bold text-foreground">{v.profile?.full_name || tr('مستخدم', 'User', 'Utilisateur')}</p>
+                                                <p className="text-sm text-muted">{v.profile?.email || ''}</p>
+                                                <div className="flex items-center gap-2 mt-1">
+                                                    <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full">{v.document_type || 'CIN'}</span>
+                                                    <span className="text-xs text-muted">{new Date(v.submitted_at).toLocaleString(locale)}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="flex gap-2">
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => setExpandedDocId(expandedDocId === v.id ? null : v.id)}
+                                            >
+                                                <Eye className="w-4 h-4 ml-1" />
+                                                {expandedDocId === v.id ? tr('إخفاء', 'Hide', 'Masquer') : tr('عرض المستندات', 'View documents', 'Afficher les documents')}
+                                            </Button>
+                                            <Button
+                                                variant="primary"
+                                                size="sm"
+                                                disabled={actioningId === v.id}
+                                                onClick={() => handleAction(v.id, 'approved')}
+                                            >
+                                                {actioningId === v.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4 ml-1" />}
+                                                {tr('قبول', 'Approve', 'Approuver')}
+                                            </Button>
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                className="text-red-600 hover:bg-red-50"
+                                                disabled={actioningId === v.id}
+                                                onClick={() => handleAction(v.id, 'rejected')}
+                                            >
+                                                <X className="w-4 h-4 ml-1" />
+                                                {tr('رفض', 'Reject', 'Refuser')}
+                                            </Button>
+                                        </div>
+                                    </div>
+
+                                    {expandedDocId === v.id && (
+                                        <div className="p-4 bg-white/70 dark:bg-slate-900/50 border-t border-gray-100 dark:border-white/10 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div>
+                                                <p className="text-sm font-medium text-muted mb-2">{tr('الوجه الأمامي', 'Front side', 'Recto')}</p>
+                                                {v.front_image_url ? (
+                                                    <a href={v.front_image_url} target="_blank" rel="noopener noreferrer">
+                                                        <img src={v.front_image_url} alt="front" className="w-full rounded-lg object-cover aspect-video border border-gray-200 dark:border-white/10 hover:opacity-90 transition" />
+                                                    </a>
+                                                ) : (
+                                                    <div className="w-full rounded-lg aspect-video bg-gray-100 dark:bg-white/10 flex items-center justify-center text-muted text-sm">{tr('لا توجد صورة', 'No image', 'Aucune image')}</div>
+                                                )}
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-medium text-muted mb-2">{tr('الوجه الخلفي', 'Back side', 'Verso')}</p>
+                                                {v.back_image_url ? (
+                                                    <a href={v.back_image_url} target="_blank" rel="noopener noreferrer">
+                                                        <img src={v.back_image_url} alt="back" className="w-full rounded-lg object-cover aspect-video border border-gray-200 dark:border-white/10 hover:opacity-90 transition" />
+                                                    </a>
+                                                ) : (
+                                                    <div className="w-full rounded-lg aspect-video bg-gray-100 dark:bg-white/10 flex items-center justify-center text-muted text-sm">{tr('لا توجد صورة', 'No image', 'Aucune image')}</div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            </div>
+        </ErrorBoundary>
+    );
+}

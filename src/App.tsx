@@ -23,6 +23,7 @@ import { SavedRedirect } from './components/navigation/SavedRedirect';
 
 import { WorkspaceProvider } from './contexts/WorkspaceContext';
 import { WorkspaceRoute } from './components/routing/WorkspaceRoute';
+import { NotificationsProvider } from './contexts/NotificationsContext';
 
 // Lazy Load Pages
 import SkipLinks from './components/layout/SkipLinks';
@@ -50,6 +51,8 @@ const PortfolioDashboard = lazy(() => import('./pages/PortfolioDashboard'));
 const FindFreelancers = lazy(() => import('./pages/FindFreelancers'));
 const Messages = lazy(() => import('./pages/Messages'));
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
+const TestAdminAccess = lazy(() => import('./pages/admin/TestAdminAccess'));
+const DirectQueryTest = lazy(() => import('./pages/admin/DirectQueryTest'));
 const FreelancerEarnings = lazy(() => import('./pages/FreelancerEarnings'));
 const MyProposals = lazy(() => import('./pages/MyProposals'));
 const Wallet = lazy(() => import('./pages/Wallet'));
@@ -68,6 +71,7 @@ const VerifyIdentity = lazy(() => import('./pages/VerifyIdentity'));
 const VerificationQueue = lazy(() => import('./pages/admin/VerificationQueue'));
 const VerifyEmail = lazy(() => import('./pages/VerifyEmail'));
 const NotFound = lazy(() => import('./pages/NotFound'));
+const Notifications = lazy(() => import('./pages/Notifications'));
 
 import { useState, useEffect } from 'react';
 
@@ -295,6 +299,20 @@ function AppRoutes() {
           </AdminRoute>
         </ErrorBoundary>
       } />
+      <Route path="/admin/test" element={
+        <ErrorBoundary>
+          <AdminRoute>
+            <TestAdminAccess />
+          </AdminRoute>
+        </ErrorBoundary>
+      } />
+      <Route path="/admin/direct-test" element={
+        <ErrorBoundary>
+          <AdminRoute>
+            <DirectQueryTest />
+          </AdminRoute>
+        </ErrorBoundary>
+      } />
       <Route path="/admin/verifications" element={
         <ErrorBoundary>
           <AdminRoute>
@@ -312,6 +330,13 @@ function AppRoutes() {
 
       {/* Search */}
       <Route path="/search" element={<SearchResults />} />
+
+      {/* Notifications */}
+      <Route path="/notifications" element={
+        <ProtectedRoute>
+          <Notifications />
+        </ProtectedRoute>
+      } />
 
       {/* 404 */}
       <Route path="*" element={<NotFound />} />
@@ -354,7 +379,9 @@ function App() {
                 <ErrorBoundary>
                   <AuthProvider>
                     <ToastProvider>
-                      <AppContent />
+                      <NotificationsProvider>
+                        <AppContent />
+                      </NotificationsProvider>
                     </ToastProvider>
                   </AuthProvider>
                 </ErrorBoundary>
