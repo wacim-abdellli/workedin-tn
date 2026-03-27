@@ -1,4 +1,4 @@
-import { supabase, supabaseAdmin } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase';
 import { supabaseWithRetry } from '@/lib/supabaseWithRetry';
 
 export type ReportStatus = 'pending' | 'reviewed' | 'dismissed';
@@ -18,7 +18,7 @@ export interface Report {
 }
 
 export async function getReports(status?: ReportStatus): Promise<Report[]> {
-    const client = supabaseAdmin || supabase;
+    const client = supabase;
     let query = client
         .from('reports')
         .select('id,reporter_id,reported_type,reported_id,reason,status,created_at,reviewed_by,reviewed_at,reporter:profiles!reporter_id(full_name,email)')
@@ -38,7 +38,7 @@ export async function updateReportStatus(
     status: ReportStatus,
     reviewedBy: string
 ): Promise<void> {
-    const client = supabaseAdmin || supabase;
+    const client = supabase;
     const { error } = await supabaseWithRetry(() =>
         client
             .from('reports')

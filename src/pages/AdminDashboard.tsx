@@ -12,7 +12,7 @@ import Modal from '../components/ui/Modal';
 import { getStuckTransactions, reconcilePayment } from '../services/payments';
 import type { StuckTransaction } from '../types/payment';
 import { useToast } from '../components/ui/Toast';
-import { supabase, supabaseAdmin } from '../lib/supabase';
+import { supabase } from '../lib/supabase';
 import { supabaseWithRetry } from '../lib/supabaseWithRetry';
 import { useTranslation } from '../i18n';
 import UsersTab, { ADMIN_USERS_QUERY_KEY, fetchAdminUsers } from './admin/UsersTab';
@@ -81,8 +81,32 @@ export default function AdminDashboard() {
 
     const fetchStats = async () => {
         try {
-            const client = supabaseAdmin || supabase;
+            // Use regular supabase client - RLS policies will check is_admin
+            const client = supabase;
             const today = new Date().toISOString().split('T')[0];
+            
+            // Check if user is admin first
+            const { data: { user } } = await client.auth.getUser();
+            if (!user) {
+                console.error('No user logged in');
+                showToast('Please log in to access admin dashboard', 'error');
+                navigate('/login');
+                return;
+            }
+            
+            const { data: profile } = await client
+                .from('profiles')
+                .select('is_admin')
+                .eq('id', user.id)
+                .single();
+            
+            if (!profile?.is_admin) {
+                console.error('User is not admin');
+                showToast('Access denied: Admin privileges required', 'error');
+                navigate('/');
+                return;
+            }
+            
             const [usersCount, jobsCount, contractsCount, signupsCount, todayContractsCount] = await Promise.all([
                 countWithRetry(() => client.from('profiles').select('id', { count: 'exact', head: true })),
                 countWithRetry(() => client.from('jobs').select('id', { count: 'exact', head: true }).in('status', ['open', 'in_progress'])),
@@ -91,7 +115,10 @@ export default function AdminDashboard() {
                 countWithRetry(() => client.from('contracts').select('id', { count: 'exact', head: true }).gte('created_at', today)),
             ]);
             setStats({ totalUsers: usersCount, activeJobs: jobsCount, activeContracts: contractsCount, totalRevenue: 0, todaySignups: signupsCount, todayContracts: todayContractsCount });
-        } catch (err) { console.error('Stats fetch error:', err); }
+        } catch (err) { 
+            console.error('Stats fetch error:', err); 
+            showToast('Failed to load stats. Make sure you are logged in as admin.', 'error');
+        }
     };
 
     const loadVerifications = async () => {
@@ -101,7 +128,8 @@ export default function AdminDashboard() {
     const fetchDisputes = async () => {
         setLoadingDisputes(true);
         try {
-            const client = supabaseAdmin || supabase;
+            // Use regular supabase client - RLS policies will check is_admin
+            const client = supabase;
             const { data } = await supabaseWithRetry(() =>
                 client.from('disputes')
                     .select('id,contract_id,opened_at,reason,status,contract:contracts!disputes_contract_id_fkey(id,amount,job:jobs(title)),opener:profiles!disputes_opened_by_fkey(full_name,email)')
@@ -146,7 +174,7 @@ export default function AdminDashboard() {
     const handleResolveDispute = async (disputeId: string, resolution: string, note?: string) => {
         setResolvingId(disputeId);
         try {
-            const client = supabaseAdmin || supabase;
+            const client = supabase;
             await supabaseWithRetry(() => client.rpc('resolve_dispute', { p_dispute_id: disputeId, p_resolution: resolution, p_admin_note: note || null }));
             setDisputes(prev => prev.filter(d => d.id !== disputeId));
             showToast(tr('تم حل النزاع بنجاح ✓', 'Dispute resolved successfully ✓', 'Litige resolu avec succes ✓'), 'success');

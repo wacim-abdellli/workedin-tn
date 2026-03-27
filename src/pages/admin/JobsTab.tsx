@@ -6,7 +6,7 @@ import Modal from '@/components/ui/Modal';
 import ErrorBoundary from '@/components/common/ErrorBoundary';
 import EmptyState from '@/components/common/EmptyState';
 import { useToast } from '@/components/ui/Toast';
-import { supabase, supabaseAdmin } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase';
 import { supabaseWithRetry } from '@/lib/supabaseWithRetry';
 import { useTranslation } from '@/i18n';
 
@@ -37,7 +37,7 @@ interface ConfirmActionState {
 export async function fetchAdminJobs(): Promise<AdminJob[]> {
     try {
         // Use admin client to bypass RLS
-        const client = supabaseAdmin || supabase;
+        const client = supabase;
         const { data, error } = await client
             .from('jobs')
             .select('id,title,status,budget_min,budget_max,hourly_rate,created_at,client:profiles!client_id(full_name,email)')
@@ -105,7 +105,7 @@ export default function JobsTab() {
 
     const deleteJobMutation = useMutation({
         mutationFn: async (jobId: string) => {
-            const client = supabaseAdmin || supabase;
+            const client = supabase;
             await supabaseWithRetry(() =>
                 client
                     .from('jobs')

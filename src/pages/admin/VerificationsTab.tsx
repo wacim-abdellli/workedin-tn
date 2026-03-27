@@ -4,7 +4,7 @@ import Button from '@/components/ui/Button';
 import ErrorBoundary from '@/components/common/ErrorBoundary';
 import SkeletonList from '@/components/common/SkeletonList';
 import { useToast } from '@/components/ui/Toast';
-import { supabase, supabaseAdmin } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase';
 import { supabaseWithRetry } from '@/lib/supabaseWithRetry';
 import { useTranslation } from '@/i18n';
 
@@ -95,7 +95,8 @@ export interface IdentityVerification {
 }
 
 export async function fetchVerifications(): Promise<IdentityVerification[]> {
-    const client = supabaseAdmin || supabase;
+    // Use regular supabase client - RLS policies will check is_admin
+    const client = supabase;
     try {
         const { data } = await supabaseWithRetry(() =>
             client
@@ -178,7 +179,7 @@ export default function VerificationsTab() {
     const handleAction = async (id: string, action: 'approved' | 'rejected') => {
         setActioningId(id);
         try {
-            const client = supabaseAdmin || supabase;
+            const client = supabase;
             const { data: updatedRows } = await supabaseWithRetry(() =>
                 client
                     .from('identity_verifications')
