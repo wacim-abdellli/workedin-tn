@@ -6,17 +6,10 @@ import type { MessageAttachment } from '../types';
 // You'll need to create a .env file with these values from your Supabase project
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://your-project.supabase.co';
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'your-anon-key';
-const supabaseServiceKey = import.meta.env.VITE_SUPABASE_SERVICE_ROLE_KEY;
 
-// Admin client with service role (bypasses RLS)
-export const supabaseAdmin = supabaseServiceKey 
-  ? createClient(supabaseUrl, supabaseServiceKey, {
-      auth: {
-        persistSession: false,
-        autoRefreshToken: false,
-      },
-    })
-  : null;
+// ⚠️ SECURITY: Service role key should NEVER be in frontend code
+// Admin operations must be done via Supabase Edge Functions or server-side code
+// The supabaseAdmin client has been removed for security reasons
 
 // Anon-only client for public queries (jobs, freelancers) — never hangs on token refresh
 export const supabaseAnon = createClient(supabaseUrl, supabaseAnonKey, {
