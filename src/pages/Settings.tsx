@@ -118,6 +118,101 @@ function Settings() {
         details: '',
     });
 
+    const workspaceReady = isWorkspaceReady(profile, freelancerProfile, activeMode);
+    const needsIdentityVerification = !profile?.cin_verified && !profile?.cin_submitted;
+    const needsCoreProfileFields = !profile?.bio || !profile?.avatar_url || !profile?.location || !profile?.full_name;
+
+    const nextSetupPath = !workspaceReady
+        ? getWorkspaceOnboardingPath(activeMode)
+        : needsIdentityVerification
+            ? '/verify-identity'
+            : needsCoreProfileFields
+                ? '/settings?tab=profile'
+                : null;
+
+    const nextSetupLabel = !workspaceReady
+        ? t.auth.accountPanel.completeSetup
+        : needsIdentityVerification
+            ? tx('settings.verifyIdentity', undefined, 'Verify your identity')
+            : tx('settings.completeProfile', undefined, 'Complete your profile');
+
+    const showSecondarySetupChip = nextSetupPath !== null && nextSetupPath !== '/verify-identity';
+
+    const identityStatus: 'verified' | 'pending' | 'missing' = profile?.cin_verified
+        ? 'verified'
+        : profile?.cin_submitted
+            ? 'pending'
+            : 'missing';
+
+    const coreProfileFilledCount = [profile?.full_name, profile?.avatar_url, profile?.location, profile?.bio]
+        .filter(Boolean).length;
+    const isCoreProfileComplete = coreProfileFilledCount === 4;
+
+    const setupStatusItems = [
+        {
+            key: 'workspace',
+            label: tx('settings.setupStatus.workspaceSetup', undefined, 'Workspace setup'),
+            done: workspaceReady,
+            doneText: tx('settings.setupStatus.done', undefined, 'Done'),
+            pendingText: tx('settings.setupStatus.pending', undefined, 'Pending'),
+        },
+        {
+            key: 'identity',
+            label: tx('settings.setupStatus.identityVerification', undefined, 'Identity verification'),
+            done: identityStatus === 'verified',
+            doneText: tx('settings.setupStatus.verified', undefined, 'Verified'),
+            pendingText: identityStatus === 'pending'
+                ? tx('settings.setupStatus.underReview', undefined, 'Under review')
+                : tx('settings.setupStatus.required', undefined, 'Required'),
+        },
+        {
+            key: 'profile',
+            label: tx('settings.setupStatus.profileBasics', undefined, 'Profile basics'),
+            done: isCoreProfileComplete,
+            doneText: tx('settings.setupStatus.complete', undefined, 'Complete'),
+            pendingText: tx('settings.setupStatus.progress', { done: coreProfileFilledCount, total: 4 }, `${coreProfileFilledCount}/4`),
+        },
+    ];
+
+    const nextSetupHint = nextSetupPath
+        ? !workspaceReady
+            ? tx('settings.setupStatus.nextHintOnboarding', undefined, 'Next step: finish onboarding for this workspace.')
+            : needsIdentityVerification
+                ? tx('settings.setupStatus.nextHintIdentity', undefined, 'Next step: submit your identity documents for verification.')
+                : tx('settings.setupStatus.nextHintProfile', undefined, 'Next step: complete the missing profile fields.')
+        : tx('settings.setupStatus.allDone', undefined, 'All required setup steps are complete.');
+
+    const renderSetupStatusSummary = () => (
+        <div className="mt-4 rounded-2xl border border-gray-200/80 bg-white/70 p-4 dark:border-white/10 dark:bg-white/[0.03]">
+            <div className="grid gap-2 sm:grid-cols-3">
+                {setupStatusItems.map((item) => (
+                    <div
+                        key={item.key}
+                        className={`rounded-xl border px-3 py-2 ${item.done
+                            ? 'border-green-200 bg-green-50/80 dark:border-green-500/30 dark:bg-green-500/10'
+                            : 'border-orange-200 bg-orange-50/80 dark:border-orange-500/30 dark:bg-orange-500/10'
+                            }`}
+                    >
+                        <p className="text-xs font-medium text-muted">{item.label}</p>
+                        <div className="mt-1 inline-flex items-center gap-1.5 text-xs font-semibold">
+                            {item.done ? (
+                                <Check className="h-3.5 w-3.5 text-green-600 dark:text-green-300" />
+                            ) : identityStatus === 'pending' && item.key === 'identity' ? (
+                                <Loader2 className="h-3.5 w-3.5 animate-spin text-orange-600 dark:text-orange-300" />
+                            ) : (
+                                <Shield className="h-3.5 w-3.5 text-orange-600 dark:text-orange-300" />
+                            )}
+                            <span className={item.done ? 'text-green-700 dark:text-green-200' : 'text-orange-700 dark:text-orange-200'}>
+                                {item.done ? item.doneText : item.pendingText}
+                            </span>
+                        </div>
+                    </div>
+                ))}
+            </div>
+            <p className="mt-3 text-xs text-muted">{nextSetupHint}</p>
+        </div>
+    );
+
     const ArrowIcon = dir === 'rtl' ? ChevronLeft : ChevronRight;
 
     const notificationCopy = (key: string) => {
@@ -531,20 +626,20 @@ function Settings() {
                         )}
 
                         {/* Onboarding Status - show button to complete if not done */}
-                        {isWorkspaceReady(profile, freelancerProfile, activeMode) ? (
+                        {nextSetupPath === null ? (
                             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400">
                                 <Check className="w-3 h-3" />
                                 {tx('settings.profileComplete', undefined, 'Profile complete')}
                             </span>
-                        ) : (
+                        ) : showSecondarySetupChip ? (
                             <button
-                                onClick={() => navigate(getWorkspaceOnboardingPath(activeMode))}
+                                onClick={() => navigate(nextSetupPath)}
                                 className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 hover:bg-orange-200 dark:hover:bg-orange-900/50 transition-colors"
                             >
                                 <User className="w-3 h-3" />
-                                {tx('settings.completeProfile', undefined, 'Complete your profile')}
+                                {nextSetupLabel}
                             </button>
-                        )}
+                        ) : null}
                     </div>
                 </div>
             </div>
@@ -634,9 +729,9 @@ function Settings() {
                                 : t.auth.accountPanel.switchWorkspaceSingle}
                         </p>
                     </div>
-                    {!isWorkspaceReady(profile, freelancerProfile, activeMode) ? (
-                        <Button variant="primary" onClick={() => navigate(getWorkspaceOnboardingPath(activeMode))}>
-                            {t.auth.accountPanel.completeSetup}
+                    {nextSetupPath ? (
+                        <Button variant="primary" onClick={() => navigate(nextSetupPath)}>
+                            {nextSetupLabel}
                         </Button>
                     ) : null}
                 </div>
@@ -651,7 +746,7 @@ function Settings() {
                                 {activeMode === 'freelancer' ? t.auth.accountPanel.freelancerLabel : t.auth.accountPanel.clientLabel}
                             </span>
                             <span className="text-sm font-medium text-foreground">
-                                {isWorkspaceReady(profile, freelancerProfile, activeMode)
+                                {workspaceReady
                                     ? t.auth.accountPanel.ready
                                     : t.auth.accountPanel.needsSetup}
                             </span>
@@ -671,6 +766,8 @@ function Settings() {
                     </div>
                     <p className="mt-2 text-xs text-muted">{t.auth.accountPanel.progressLabel}</p>
                 </div>
+
+                {renderSetupStatusSummary()}
 
                 <div className="mt-4 grid gap-3 md:grid-cols-2">
                     {[
@@ -798,9 +895,9 @@ function Settings() {
                                 : t.auth.accountPanel.switchWorkspaceSingle}
                         </p>
                     </div>
-                    {!isWorkspaceReady(profile, freelancerProfile, activeMode) ? (
-                        <Button variant="primary" onClick={() => navigate(getWorkspaceOnboardingPath(activeMode))}>
-                            {t.auth.accountPanel.completeSetup}
+                    {nextSetupPath ? (
+                        <Button variant="primary" onClick={() => navigate(nextSetupPath)}>
+                            {nextSetupLabel}
                         </Button>
                     ) : null}
                 </div>
@@ -815,7 +912,7 @@ function Settings() {
                                 {activeMode === 'freelancer' ? t.auth.accountPanel.freelancerLabel : t.auth.accountPanel.clientLabel}
                             </span>
                             <span className="text-sm font-medium text-foreground">
-                                {isWorkspaceReady(profile, freelancerProfile, activeMode)
+                                {workspaceReady
                                     ? t.auth.accountPanel.ready
                                     : t.auth.accountPanel.needsSetup}
                             </span>
@@ -835,6 +932,8 @@ function Settings() {
                     </div>
                     <p className="mt-2 text-xs text-muted">{t.auth.accountPanel.progressLabel}</p>
                 </div>
+
+                {renderSetupStatusSummary()}
 
                 <div className="mt-4 grid gap-3 md:grid-cols-2">
                     {[

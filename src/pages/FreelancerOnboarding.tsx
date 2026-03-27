@@ -23,7 +23,7 @@ import {
 
 function FreelancerOnboarding() {
     const { t, language } = useTranslation();
-    const { user, session, profile, freelancerProfile, refreshProfile } = useAuth();
+    const { user, session, profile, freelancerProfile, refreshProfile, isLoading: isAuthLoading } = useAuth();
     const { showToast } = useToast();
     const navigate = useNavigate();
 
@@ -34,13 +34,20 @@ function FreelancerOnboarding() {
     const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
     
     // Fallback timer to show page even if AuthContext is stuck reconciling
-    const { isLoading: isAuthLoading } = useAuth();
     const [forceShow, setForceShow] = useState(false);
 
     useEffect(() => {
         const timer = setTimeout(() => setForceShow(true), 1500);
         return () => clearTimeout(timer);
     }, []);
+
+    useEffect(() => {
+        return () => {
+            if (avatarPreview) {
+                URL.revokeObjectURL(avatarPreview);
+            }
+        };
+    }, [avatarPreview]);
 
     const step1Form = useForm<Step1FormData>({
         resolver: zodResolver(step1Schema),
@@ -305,7 +312,12 @@ function FreelancerOnboarding() {
                     session.access_token,
                     import.meta.env.VITE_SUPABASE_ANON_KEY,
                     {
-                        onboarding_completed: true,
+                        ...(typeof profile?.freelancer_onboarding_completed === 'boolean'
+                            ? { freelancer_onboarding_completed: true }
+                            : {}),
+                        onboarding_completed: profile?.user_type === 'both'
+                            ? Boolean(profile?.client_onboarding_completed)
+                            : true,
                         updated_at: new Date().toISOString(),
                     },
                     20000

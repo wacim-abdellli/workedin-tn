@@ -19,7 +19,7 @@ import SEO, { SEO_CONFIG } from '../components/common/SEO';
 
 function ClientOnboarding() {
     const { t } = useTranslation();
-    const { user, profile, updateProfile } = useAuth();
+    const { user, profile, updateProfile, isLoading: isAuthLoading } = useAuth();
     const { showToast } = useToast();
     const navigate = useNavigate();
     const [isLoading, setIsLoading] = useState(false);
@@ -62,12 +62,20 @@ function ClientOnboarding() {
         });
     }, [profile, reset]);
 
+    useEffect(() => {
+        return () => {
+            if (avatarPreview) {
+                URL.revokeObjectURL(avatarPreview);
+            }
+        };
+    }, [avatarPreview]);
+
     // Handle avatar upload
     const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
             if (file.size > 5 * 1024 * 1024) {
-                showToast('حجم الصورة يجب أن يكون أقل من 5 ميغابايت', 'error');
+                showToast(t.common.fileTooLarge || 'Image size should be less than 5MB', 'error');
                 return;
             }
             setAvatarFile(file);
@@ -90,10 +98,13 @@ function ClientOnboarding() {
                 location: data.location,
                 bio: data.company_name ? `Company: ${data.company_name}` : undefined,
                 avatar_url: avatarUrl,
-                onboarding_completed: true, // Mark onboarding as complete
+                ...(typeof profile?.client_onboarding_completed === 'boolean' ? { client_onboarding_completed: true } : {}),
+                onboarding_completed: profile?.user_type === 'both'
+                    ? Boolean(profile?.freelancer_onboarding_completed)
+                    : true,
             });
 
-            showToast(t.payment.success || 'Success!', 'success');
+            showToast(t.onboarding.freelancer.welcomeToast || 'Welcome to Khedma!', 'success');
             navigate('/client/dashboard');
         } catch (error: any) {
             logger.error('Client onboarding error:', error);
@@ -102,6 +113,20 @@ function ClientOnboarding() {
             setIsLoading(false);
         }
     };
+
+    if (isAuthLoading) {
+        return (
+            <div className="min-h-screen bg-gray-50 dark:bg-dark-900 flex flex-col items-center justify-center p-4">
+                <img
+                    src="/logos/logo-primary.svg"
+                    alt="Khedma TN"
+                    className="h-12 w-auto mb-6 animate-pulse"
+                />
+                <div className="w-12 h-12 border-4 border-secondary-100 border-t-secondary-600 rounded-full animate-spin"></div>
+                <p className="mt-4 text-muted font-medium animate-pulse">{t.common.loading || 'Loading...'}</p>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-dark-900 overflow-hidden relative transition-colors duration-300">
@@ -115,18 +140,28 @@ function ClientOnboarding() {
             <Header />
 
             <div className="container-custom py-12 relative z-10">
-                <div className="max-w-lg mx-auto">
+                <div className="max-w-3xl mx-auto">
                     <div className="text-center mb-10">
                         <img
                             src="/logos/logo-primary.svg"
                             alt="Khedma TN"
                             style={{ height: '32px', width: 'auto', margin: '0 auto 1rem' }}
                         />
-                        <h1 className="heading-md mb-2">{t.onboarding.client.welcome} {t.howItWorks.brandName}</h1>
+                        <h1 className="heading-md mb-2">{t.onboarding.client.welcome}</h1>
                         <p className="text-muted">{t.onboarding.client.welcomeDesc}</p>
                     </div>
 
-                    <div className="card-glass shadow-xl dark:shadow-black/20 animate-fade-in p-8">
+                    <div className="mb-10">
+                        <div className="flex items-center justify-between mb-3 text-sm font-medium text-dark-500">
+                            <span>{t.onboarding.freelancer.stepCounter?.replace('{{step}}', '1').replace('{{total}}', '1') || 'Step 1 of 1'}</span>
+                            <span className="text-secondary-600 dark:text-secondary-400">100%</span>
+                        </div>
+                        <div className="h-2.5 bg-gray-100 dark:bg-dark-800 rounded-full overflow-hidden shadow-inner">
+                            <div className="h-full w-full bg-gradient-to-r from-secondary-500 to-secondary-600 rounded-full shadow-lg shadow-secondary-500/30" />
+                        </div>
+                    </div>
+
+                    <div className="card-glass shadow-xl dark:shadow-black/20 animate-fade-in p-8 max-w-xl mx-auto">
                         <div className="flex items-center gap-4 mb-8">
                             <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-secondary-500 to-secondary-600 flex items-center justify-center shadow-lg shadow-secondary-500/30">
                                 <Briefcase className="w-7 h-7 text-white" />
@@ -146,7 +181,7 @@ function ClientOnboarding() {
                                         onClick={() => fileInputRef.current?.click()}
                                         role="button"
                                         tabIndex={0}
-                                        aria-label="رفع صورة الملف الشخصي"
+                                        aria-label={t.onboarding.freelancer.uploadAvatar || 'Upload profile photo'}
                                         onKeyDown={(event) => {
                                             if (event.key === 'Enter' || event.key === ' ') {
                                                 event.preventDefault();

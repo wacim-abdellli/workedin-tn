@@ -1,11 +1,77 @@
 import type { AccountMode, FreelancerProfile, Profile, UserType } from '@/types';
 
 export type Workspace = AccountMode;
+const ACCOUNT_TYPE_SELECTION_KEY = 'khedma-account-type-selected-v1';
 
 type ProfileLike =
-  | Partial<Pick<Profile, 'id' | 'user_type' | 'active_mode' | 'full_name' | 'location' | 'onboarding_completed' | 'username'>>
+  | Partial<
+      Pick<
+        Profile,
+        | 'id'
+        | 'user_type'
+        | 'active_mode'
+        | 'full_name'
+        | 'location'
+        | 'onboarding_completed'
+        | 'client_onboarding_completed'
+        | 'freelancer_onboarding_completed'
+        | 'username'
+      >
+    >
   | null
   | undefined;
+
+function hasWorkspaceOnboardingFlags(profile: ProfileLike): boolean {
+  return (
+    typeof profile?.client_onboarding_completed === 'boolean' ||
+    typeof profile?.freelancer_onboarding_completed === 'boolean'
+  );
+}
+
+function getSelectionStorageKey(profileId?: string): string {
+  return profileId ? `${ACCOUNT_TYPE_SELECTION_KEY}:${profileId}` : ACCOUNT_TYPE_SELECTION_KEY;
+}
+
+function hasSelectionMarker(profileId?: string): boolean {
+  if (typeof window === 'undefined') {
+    return false;
+  }
+
+  return window.localStorage.getItem(getSelectionStorageKey(profileId)) === '1';
+}
+
+export function persistUserTypeSelectionMarker(profileId?: string): void {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  window.localStorage.setItem(getSelectionStorageKey(profileId), '1');
+}
+
+export function shouldRequireUserTypeSelection(profile: ProfileLike): boolean {
+  if (!profile) {
+    return false;
+  }
+
+  if (!profile.user_type) {
+    return true;
+  }
+
+  if (hasSelectionMarker(profile.id)) {
+    return false;
+  }
+
+  const hasAnyOnboarding = Boolean(
+    profile.onboarding_completed ||
+      profile.client_onboarding_completed ||
+      profile.freelancer_onboarding_completed
+  );
+
+  const hasFlags = hasWorkspaceOnboardingFlags(profile);
+
+  // Legacy DBs may default new users to client; require explicit choice once.
+  return profile.user_type === 'client' && !hasAnyOnboarding && !hasFlags;
+}
 
 export function getWorkspaceCapabilities(userType: UserType | null | undefined): Workspace[] {
   switch (userType) {
@@ -78,6 +144,18 @@ export function getWorkspaceSettingsPath(): string {
 }
 
 export function isClientWorkspaceReady(profile: ProfileLike): boolean {
+  if (profile?.client_onboarding_completed === true) {
+    return true;
+  }
+
+  if (profile?.onboarding_completed === true) {
+    return true;
+  }
+
+  if (hasWorkspaceOnboardingFlags(profile) && profile?.client_onboarding_completed === false) {
+    return false;
+  }
+
   return Boolean(profile?.onboarding_completed || (profile?.full_name && profile?.location));
 }
 
@@ -85,6 +163,18 @@ export function isFreelancerWorkspaceReady(
   profile: ProfileLike,
   freelancerProfile?: FreelancerProfile | null
 ): boolean {
+  if (profile?.freelancer_onboarding_completed === true) {
+    return true;
+  }
+
+  if (profile?.onboarding_completed === true) {
+    return true;
+  }
+
+  if (hasWorkspaceOnboardingFlags(profile) && profile?.freelancer_onboarding_completed === false) {
+    return false;
+  }
+
   if (!freelancerProfile) {
     return false;
   }
@@ -123,7 +213,7 @@ export function getWorkspaceSetupProgress(
       : [
           Boolean(profile?.full_name),
           Boolean(profile?.location),
-          Boolean(profile?.onboarding_completed),
+          Boolean(profile?.client_onboarding_completed ?? profile?.onboarding_completed),
         ];
 
   const completed = checks.filter(Boolean).length;
@@ -149,7 +239,7 @@ export function getPostAuthWorkspacePath(
   profile: ProfileLike,
   freelancerProfile?: FreelancerProfile | null
 ): string {
-  if (!profile?.user_type) {
+  if (shouldRequireUserTypeSelection(profile)) {
     return '/signup?step=select-type';
   }
 

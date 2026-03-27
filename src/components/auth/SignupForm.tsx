@@ -36,6 +36,12 @@ function SignupForm({ onComplete }: SignupFormProps) {
         }
     }, [urlStep]);
 
+    useEffect(() => {
+        if (profile && !profile.user_type) {
+            setStep('userType');
+        }
+    }, [profile]);
+
 
 
     useEffect(() => {

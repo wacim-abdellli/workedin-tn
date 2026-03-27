@@ -1,6 +1,7 @@
 import { Navigate, useLocation } from 'react-router-dom';
 
 import { useAuth } from '@/contexts/AuthContext';
+import { shouldRequireUserTypeSelection } from '@/lib/workspaceRoutes';
 import { useWorkspaceStore } from '@/lib/workspaceState';
 
 export const DashboardRedirect = () => {
@@ -20,7 +21,7 @@ export const DashboardRedirect = () => {
     return <Navigate to="/login" replace state={location.state} />;
   }
 
-  if (!profile.user_type) {
+  if (shouldRequireUserTypeSelection(profile)) {
     return <Navigate to="/signup?step=select-type" replace state={location.state} />;
   }
 

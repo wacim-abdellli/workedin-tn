@@ -7,7 +7,11 @@ import { logger } from '@/lib/logger';
 import { sanitizeFreelancerProfileData } from '@/lib/schemaValidation';
 import { supabase, withTimeout } from '@/lib/supabase';
 import { useWorkspaceStore, type Workspace } from '@/lib/workspaceState';
-import { getInitialWorkspace, getWorkspaceCapabilities } from '@/lib/workspaceRoutes';
+import {
+  getInitialWorkspace,
+  getWorkspaceCapabilities,
+  persistUserTypeSelectionMarker,
+} from '@/lib/workspaceRoutes';
 import type { AccountMode, FreelancerProfile, Language, Profile, UserType } from '@/types';
 
 interface AuthContextType {
@@ -165,6 +169,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
         }
 
         setProfile(nextProfile);
+
+        if (
+          nextProfile.user_type === 'both' ||
+          nextProfile.user_type === 'freelancer' ||
+          Boolean(
+            nextProfile.onboarding_completed ||
+              nextProfile.client_onboarding_completed ||
+              nextProfile.freelancer_onboarding_completed
+          )
+        ) {
+          persistUserTypeSelectionMarker(nextProfile.id);
+        }
 
         let nextFreelancerProfile: FreelancerProfile | null = null;
         if (nextProfile.user_type === 'freelancer' || nextProfile.user_type === 'both') {
@@ -419,6 +435,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
 
     useWorkspaceStore.getState().setWorkspace(nextMode);
+    persistUserTypeSelectionMarker(user.id);
     await fetchProfile(user.id, session.access_token);
   };
 

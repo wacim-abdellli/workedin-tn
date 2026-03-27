@@ -16,6 +16,7 @@ import RouteProgress from './components/ui/RouteProgress';
 
 import { ProfileRedirect } from './components/routing/ProfileRedirect';
 import { AdminRoute } from './components/routing/AdminRoute';
+import { OnboardingRoute } from './components/routing/OnboardingRoute';
 import { DashboardRedirect } from './components/navigation/DashboardRedirect';
 import { MyJobsRedirect } from './components/navigation/MyJobsRedirect';
 import { SavedRedirect } from './components/navigation/SavedRedirect';
@@ -121,14 +122,18 @@ function AppRoutes() {
       <Route path="/onboarding/freelancer" element={
         <ErrorBoundary>
           <ProtectedRoute>
-            <FreelancerOnboarding />
+            <OnboardingRoute workspace="freelancer">
+              <FreelancerOnboarding />
+            </OnboardingRoute>
           </ProtectedRoute>
         </ErrorBoundary>
       } />
       <Route path="/onboarding/client" element={
         <ErrorBoundary>
           <ProtectedRoute>
-            <ClientOnboarding />
+            <OnboardingRoute workspace="client">
+              <ClientOnboarding />
+            </OnboardingRoute>
           </ProtectedRoute>
         </ErrorBoundary>
       } />

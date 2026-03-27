@@ -8,6 +8,7 @@ import { logger } from './logger';
 const PROFILE_ALLOWED_FIELDS = [
     'id',
     'user_type',
+    'active_mode',
     'full_name',
     'phone',
     'avatar_url',
@@ -15,6 +16,8 @@ const PROFILE_ALLOWED_FIELDS = [
     'location',
     'preferred_language',
     'onboarding_completed',
+    'client_onboarding_completed',
+    'freelancer_onboarding_completed',
     'created_at',
     'updated_at'
 ] as const;
