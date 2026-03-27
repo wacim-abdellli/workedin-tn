@@ -1,13 +1,14 @@
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { Loading } from '../common';
+import { hasAdminAccess } from '@/lib/adminAccess';
 
 /**
  * AdminRoute - Only allows access if user is authenticated and has admin role.
  * Non-admin users are redirected to the home page.
  */
 export function AdminRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, isLoading, profile } = useAuth();
+  const { isAuthenticated, isLoading, profile, user } = useAuth();
 
   if (isLoading) {
     return <Loading fullScreen />;
@@ -17,7 +18,7 @@ export function AdminRoute({ children }: { children: React.ReactNode }) {
     return <Navigate to="/login" replace />;
   }
 
-  if (profile?.is_admin !== true) {
+  if (!hasAdminAccess(user, profile)) {
     return <Navigate to="/" replace />;
   }
 

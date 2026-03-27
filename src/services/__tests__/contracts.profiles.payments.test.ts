@@ -15,6 +15,7 @@ const serviceState = vi.hoisted(() => {
         notCalls: [] as Array<{ table: string; column: string; operator: string; value: unknown }>,
         ltCalls: [] as Array<{ table: string; column: string; value: unknown }>,
         rpcCalls: [] as Array<{ fn: string; params: unknown }>,
+        functionCalls: [] as Array<{ name: string; body?: unknown }>,
         singleCalls: [] as string[],
         maybeSingleCalls: [] as string[],
         channelCalls: [] as string[],
@@ -22,6 +23,7 @@ const serviceState = vi.hoisted(() => {
         removeChannelCalls: [] as string[],
         tableResults: {} as Record<string, unknown>,
         session: { access_token: 'session-token' } as { access_token: string } | null,
+        functionResult: { data: { message: 'Reconciled' }, error: null as { message: string } | null },
         uploadFileResult: { url: 'https://files.example/avatar.png' } as unknown,
         uploadFileCalls: [] as Array<{ bucket: string; path: string; file: File }>,
     };
@@ -40,6 +42,7 @@ const serviceState = vi.hoisted(() => {
         state.notCalls = [];
         state.ltCalls = [];
         state.rpcCalls = [];
+        state.functionCalls = [];
         state.singleCalls = [];
         state.maybeSingleCalls = [];
         state.channelCalls = [];
@@ -47,6 +50,7 @@ const serviceState = vi.hoisted(() => {
         state.removeChannelCalls = [];
         state.tableResults = {};
         state.session = { access_token: 'session-token' };
+        state.functionResult = { data: { message: 'Reconciled' }, error: null };
         state.uploadFileResult = { url: 'https://files.example/avatar.png' };
         state.uploadFileCalls = [];
     };
@@ -151,6 +155,12 @@ vi.mock('@/lib/supabase', () => {
             }),
             auth: {
                 getSession: vi.fn(async () => ({ data: { session: serviceState.state.session } })),
+            },
+            functions: {
+                invoke: vi.fn(async (name: string, options?: { body?: unknown }) => {
+                    serviceState.state.functionCalls.push({ name, body: options?.body });
+                    return serviceState.state.functionResult;
+                }),
             },
         },
         supabaseAnon: {
@@ -569,11 +579,6 @@ describe('payments service coverage', () => {
             ],
             error: null,
         };
-        const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue({
-            ok: true,
-            json: async () => ({ message: 'Reconciled' }),
-        } as Response);
-
         const stuck = await getStuckTransactions();
         const result = await reconcilePayment('txn-1');
 
@@ -583,13 +588,10 @@ describe('payments service coverage', () => {
             column: 'created_at',
             value: expect.any(String),
         });
-        expect(fetchMock).toHaveBeenCalledWith(
-            expect.stringContaining('/functions/v1/reconcile-payment'),
-            expect.objectContaining({
-                method: 'POST',
-                body: JSON.stringify({ transaction_id: 'txn-1' }),
-            })
-        );
+        expect(serviceState.state.functionCalls).toContainEqual({
+            name: 'reconcile-payment',
+            body: { transaction_id: 'txn-1' },
+        });
         expect(result).toEqual({ success: true, message: 'Reconciled' });
     });
 
@@ -606,16 +608,15 @@ describe('payments service coverage', () => {
             data: null,
             error: { message: 'broken' },
         };
-        const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue({
-            ok: false,
-            json: async () => ({ error: 'Function failed' }),
-        } as Response);
+        serviceState.state.functionResult = {
+            data: null,
+            error: { message: 'Function failed' },
+        };
 
         const stuck = await getStuckTransactions();
         const result = await reconcilePayment('txn-3');
 
         expect(stuck).toEqual([]);
-        expect(fetchMock).toHaveBeenCalled();
         expect(result).toEqual({ success: false, message: 'Function failed' });
     });
 });

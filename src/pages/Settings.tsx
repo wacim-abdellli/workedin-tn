@@ -653,7 +653,11 @@ function Settings() {
                     { key: 'location', label: tx('settings.completion.location', undefined, 'Location'), value: profile?.location },
                     { key: 'bio', label: tx('settings.completion.bio', undefined, 'Bio'), value: profile?.bio },
                     { key: 'user_type', label: tx('settings.completion.accountType', undefined, 'Account type'), value: profile?.user_type },
-                    { key: 'cin_submitted', label: tx('settings.completion.identityVerification', undefined, 'Identity verification'), value: profile?.cin_submitted },
+                    {
+                        key: 'identity_verification',
+                        label: tx('settings.completion.identityVerification', undefined, 'Identity verification'),
+                        value: Boolean(profile?.cin_verified || profile?.cin_submitted),
+                    },
                     { key: 'onboarding_completed', label: tx('settings.completion.onboarding', undefined, 'Onboarding'), value: profile?.onboarding_completed },
                 ];
                 const completed = fields.filter(f => f.value).length;

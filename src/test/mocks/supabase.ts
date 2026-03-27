@@ -269,6 +269,10 @@ export const mockSupabaseClient = {
             data: { session: mockSession },
             error: null,
         })),
+        refreshSession: vi.fn(async () => ({
+            data: { session: mockSession },
+            error: null,
+        })),
         getUser: vi.fn(async () => ({
             data: { user: mockUser },
             error: null,
@@ -336,6 +340,13 @@ export const mockSupabaseClient = {
                 data: [],
                 error: null,
             })),
+        })),
+    },
+
+    functions: {
+        invoke: vi.fn(async () => ({
+            data: {},
+            error: null,
         })),
     },
 

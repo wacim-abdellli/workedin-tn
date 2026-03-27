@@ -2,23 +2,21 @@ import type { NavigateFunction } from 'react-router-dom';
 
 import { logger } from '@/lib/logger';
 import { supabase } from '@/lib/supabase';
+import { supabaseWithRetry } from '@/lib/supabaseWithRetry';
 import type { FreelancerProfile, Profile, UserType } from '@/types';
-import { promoteUserTypeForWorkspace, getWorkspaceTargetRoute } from '@/lib/workspaceRoutes';
+import { getWorkspaceTargetRoute, promoteUserTypeForWorkspace } from '@/lib/workspaceRoutes';
 import { useWorkspaceStore, type Workspace } from '@/lib/workspaceState';
-
-const SUPA_URL = import.meta.env.VITE_SUPABASE_URL as string;
-const SUPA_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
-
-async function getToken(): Promise<string | null> {
-  const { data } = await supabase.auth.getSession();
-  return data.session?.access_token ?? null;
-}
 
 interface SwitchWorkspaceArgs {
   userId: string;
   targetWorkspace: Workspace;
   currentUserType: UserType | null | undefined;
-  profile: Partial<Pick<Profile, 'id' | 'user_type' | 'active_mode' | 'full_name' | 'location' | 'onboarding_completed' | 'username'>> | null;
+  profile: Partial<
+    Pick<
+      Profile,
+      'id' | 'user_type' | 'active_mode' | 'full_name' | 'location' | 'onboarding_completed' | 'username'
+    >
+  > | null;
   freelancerProfile: FreelancerProfile | null;
   navigate: NavigateFunction;
 }
@@ -72,21 +70,15 @@ export async function switchWorkspace({
 }
 
 async function ensureFreelancerShell(userId: string) {
-  const token = await getToken();
-  const res = await fetch(`${SUPA_URL}/rest/v1/freelancer_profiles`, {
-    method: 'POST',
-    headers: {
-      'apikey': SUPA_KEY,
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
-      'Prefer': 'resolution=ignore-duplicates',
-    },
-    body: JSON.stringify({ id: userId, skills: [], availability: 'available' }),
-  });
-  if (!res.ok) {
-    const err = await res.text();
-    throw new Error(err);
-  }
+  await supabaseWithRetry(() =>
+    supabase.from('freelancer_profiles').upsert(
+      { id: userId, skills: [], availability: 'available' },
+      {
+        onConflict: 'id',
+        ignoreDuplicates: true,
+      }
+    )
+  );
 }
 
 async function syncWorkspaceToBackend(
@@ -95,29 +87,19 @@ async function syncWorkspaceToBackend(
   currentUserType: UserType | null | undefined
 ) {
   const nextUserType = promoteUserTypeForWorkspace(currentUserType, workspace);
-  const token = await getToken();
 
   if (workspace === 'freelancer') {
     await ensureFreelancerShell(userId);
   }
 
-  const res = await fetch(`${SUPA_URL}/rest/v1/profiles?id=eq.${userId}`, {
-    method: 'PATCH',
-    headers: {
-      'apikey': SUPA_KEY,
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      active_mode: workspace,
-      user_type: nextUserType,
-      updated_at: new Date().toISOString(),
-    }),
-  });
-
-  if (!res.ok) {
-    const err = await res.text();
-    throw new Error(err);
-  }
+  await supabaseWithRetry(() =>
+    supabase
+      .from('profiles')
+      .update({
+        active_mode: workspace,
+        user_type: nextUserType,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', userId)
+  );
 }
-

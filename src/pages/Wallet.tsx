@@ -3,6 +3,7 @@ import { Wallet as WalletIcon, TrendingUp, Clock, ArrowUpRight, Building, Phone,
 import { Header } from '@/components/layout';
 import SEO from '@/components/common/SEO';
 import Button from '@/components/ui/Button';
+import ErrorBoundary from '@/components/common/ErrorBoundary';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { useQuery } from '@tanstack/react-query';
@@ -69,6 +70,7 @@ export default function Wallet() {
 
   if (walletLoading) {
     return (
+      <ErrorBoundary>
       <div className="page-shell">
         <Header />
         <div className="page-shell-content">
@@ -82,10 +84,12 @@ export default function Wallet() {
           </div>
         </div>
       </div>
+      </ErrorBoundary>
     );
   }
 
   return (
+    <ErrorBoundary>
     <div className="page-shell">
       <SEO
         title={tx('wallet.seo.title', undefined, 'Wallet')}
@@ -329,17 +333,20 @@ export default function Wallet() {
 
       {/* SECTION C: Withdrawal Modal */}
       {isWithdrawalModalOpen && wallet && (
-        <WithdrawalModal
-          wallet={wallet}
-          onClose={() => setIsWithdrawalModalOpen(false)}
-          onSuccess={() => {
-            refetchWallet();
-            refetchWithdrawals();
-            setIsWithdrawalModalOpen(false);
-          }}
-        />
+        <ErrorBoundary>
+          <WithdrawalModal
+            wallet={wallet}
+            onClose={() => setIsWithdrawalModalOpen(false)}
+            onSuccess={() => {
+              refetchWallet();
+              refetchWithdrawals();
+              setIsWithdrawalModalOpen(false);
+            }}
+          />
+        </ErrorBoundary>
       )}
     </div>
+    </ErrorBoundary>
   );
 }
 

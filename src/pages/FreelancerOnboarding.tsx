@@ -7,7 +7,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from '../i18n';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../components/ui/Toast';
-import { uploadFile } from '../lib/supabase';
+import { supabase, uploadFile, withTimeout } from '../lib/supabase';
+import { supabaseWithRetry } from '../lib/supabaseWithRetry';
 import type { Skill } from '../types';
 import { skillToEntry } from '../types';
 import { Header } from '../components/layout';
@@ -128,7 +129,14 @@ function FreelancerOnboarding() {
             return;
         }
 
-        if (!session?.access_token) {
+        const { data: liveSessionData, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError) {
+            logger.error('[Onboarding] Failed to refresh auth session before step 1:', sessionError);
+            showToast(t.onboarding.freelancer.noAuthSession || 'No auth session - please login again', 'error');
+            return;
+        }
+
+        if (!(liveSessionData.session ?? session)) {
             showToast(t.onboarding.freelancer.noAuthSession || 'No auth session - please login again', 'error');
             return;
         }
@@ -166,14 +174,9 @@ function FreelancerOnboarding() {
                 }
             }
 
-            const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-            const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-            logger.log('[Onboarding] STEP 1: Updating profile via REST PATCH...');
-            await patchWithTimeout(
-                `${supabaseUrl}/rest/v1/profiles?id=eq.${user.id}`,
-                session.access_token,
-                supabaseKey,
+            logger.log('[Onboarding] STEP 1: Updating profile via Supabase client...');
+            await updateProfileWithTimeout(
+                user.id,
                 {
                     full_name: profileUpdate.full_name,
                     location: profileUpdate.location,
@@ -184,12 +187,9 @@ function FreelancerOnboarding() {
             );
             logger.log('[Onboarding] Profile saved to Supabase!');
 
-            logger.log('[Onboarding] Saving freelancer profile via authenticated REST upsert...');
+            logger.log('[Onboarding] Saving freelancer profile via Supabase client upsert...');
             try {
-                await upsertWithTimeout(
-                    `${supabaseUrl}/rest/v1/freelancer_profiles?on_conflict=id`,
-                    session.access_token,
-                    supabaseKey,
+                await upsertFreelancerProfileWithTimeout(
                     {
                         id: user.id,
                         title: data.title,
@@ -201,15 +201,10 @@ function FreelancerOnboarding() {
 
                 logger.warn('[Onboarding] Upsert blocked by RLS; retrying via RPC bootstrap + PATCH update...');
                 await ensureFreelancerProfileExists(
-                    import.meta.env.VITE_SUPABASE_URL,
-                    session.access_token,
-                    import.meta.env.VITE_SUPABASE_ANON_KEY,
                     profile?.user_type === 'both' ? 'both' : 'freelancer'
                 );
-                await patchWithTimeout(
-                    `${supabaseUrl}/rest/v1/freelancer_profiles?id=eq.${user.id}`,
-                    session.access_token,
-                    supabaseKey,
+                await updateFreelancerProfileWithTimeout(
+                    user.id,
                     {
                         title: data.title,
                         updated_at: new Date().toISOString(),
@@ -245,7 +240,14 @@ function FreelancerOnboarding() {
             return;
         }
 
-        if (!session?.access_token) {
+        const { data: liveSessionData, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError) {
+            logger.error('[Onboarding] Failed to refresh auth session before step 2:', sessionError);
+            showToast(t.onboarding.freelancer.noAuthSession || 'No auth session - please login again', 'error');
+            return;
+        }
+
+        if (!(liveSessionData.session ?? session)) {
             showToast(t.onboarding.freelancer.noAuthSession || 'No auth session - please login again', 'error');
             return;
         }
@@ -262,10 +264,7 @@ function FreelancerOnboarding() {
 
             try {
                 try {
-                    await upsertWithTimeout(
-                        `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/freelancer_profiles?on_conflict=id`,
-                        session.access_token,
-                        import.meta.env.VITE_SUPABASE_ANON_KEY,
+                    await upsertFreelancerProfileWithTimeout(
                         {
                             id: user.id,
                             skills: skillsData.skills,
@@ -279,15 +278,10 @@ function FreelancerOnboarding() {
 
                     logger.warn('[Onboarding] Step 2 upsert blocked by RLS; retrying via RPC bootstrap + PATCH update...');
                     await ensureFreelancerProfileExists(
-                        import.meta.env.VITE_SUPABASE_URL,
-                        session.access_token,
-                        import.meta.env.VITE_SUPABASE_ANON_KEY,
                         profile?.user_type === 'both' ? 'both' : 'freelancer'
                     );
-                    await patchWithTimeout(
-                        `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/freelancer_profiles?id=eq.${user.id}`,
-                        session.access_token,
-                        import.meta.env.VITE_SUPABASE_ANON_KEY,
+                    await updateFreelancerProfileWithTimeout(
+                        user.id,
                         {
                             skills: skillsData.skills,
                             hourly_rate: skillsData.hourly_rate,
@@ -307,10 +301,8 @@ function FreelancerOnboarding() {
 
             logger.log('[Onboarding] Marking onboarding as complete...');
             try {
-                await patchWithTimeout(
-                    `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/profiles?id=eq.${user.id}`,
-                    session.access_token,
-                    import.meta.env.VITE_SUPABASE_ANON_KEY,
+                await updateProfileWithTimeout(
+                    user.id,
                     {
                         ...(typeof profile?.freelancer_onboarding_completed === 'boolean'
                             ? { freelancer_onboarding_completed: true }
@@ -437,108 +429,88 @@ function FreelancerOnboarding() {
     );
 }
 
-async function patchWithTimeout(
-    url: string,
-    accessToken: string,
-    anonKey: string,
-    body: Record<string, unknown>,
+async function runTimedSupabaseOperation<T>(
+    operation: Promise<T>,
+    operationName: string,
     timeoutMs: number = 15000
 ) {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
-
     try {
-        const response = await fetch(url, {
-            method: 'PATCH',
-            headers: {
-                'Content-Type': 'application/json',
-                apikey: anonKey,
-                Authorization: `Bearer ${accessToken}`,
-                Prefer: 'return=minimal',
-            },
-            body: JSON.stringify(body),
-            signal: controller.signal,
-        });
-
-        if (!response.ok) {
-            const text = await response.text();
-            throw new Error(`${response.status}: ${text}`);
-        }
+        return await withTimeout(operation, timeoutMs, operationName);
     } catch (error) {
-        if (error instanceof DOMException && error.name === 'AbortError') {
+        if (error instanceof Error && error.message.includes('timed out after')) {
             throw new Error('TIMEOUT');
         }
         throw error;
-    } finally {
-        clearTimeout(timeoutId);
     }
 }
 
-async function upsertWithTimeout(
-    url: string,
-    accessToken: string,
-    anonKey: string,
+async function updateProfileWithTimeout(
+    userId: string,
     body: Record<string, unknown>,
     timeoutMs: number = 15000
 ) {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+    await runTimedSupabaseOperation(
+        supabaseWithRetry(() =>
+            supabase
+                .from('profiles')
+                .update(body)
+                .eq('id', userId)
+        ),
+        'freelancer onboarding profile update',
+        timeoutMs
+    );
+}
 
-    try {
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                apikey: anonKey,
-                Authorization: `Bearer ${accessToken}`,
-                Prefer: 'resolution=merge-duplicates,return=minimal',
-            },
-            body: JSON.stringify(body),
-            signal: controller.signal,
-        });
+async function updateFreelancerProfileWithTimeout(
+    userId: string,
+    body: Record<string, unknown>,
+    timeoutMs: number = 15000
+) {
+    await runTimedSupabaseOperation(
+        supabaseWithRetry(() =>
+            supabase
+                .from('freelancer_profiles')
+                .update(body)
+                .eq('id', userId)
+        ),
+        'freelancer onboarding freelancer profile update',
+        timeoutMs
+    );
+}
 
-        if (!response.ok) {
-            const text = await response.text();
-            throw new Error(`${response.status}: ${text}`);
-        }
-    } catch (error) {
-        if (error instanceof DOMException && error.name === 'AbortError') {
-            throw new Error('TIMEOUT');
-        }
-        throw error;
-    } finally {
-        clearTimeout(timeoutId);
-    }
+async function upsertFreelancerProfileWithTimeout(
+    body: Record<string, unknown>,
+    timeoutMs: number = 15000
+) {
+    await runTimedSupabaseOperation(
+        supabaseWithRetry(() =>
+            supabase.from('freelancer_profiles').upsert(body, {
+                onConflict: 'id',
+            })
+        ),
+        'freelancer onboarding freelancer profile upsert',
+        timeoutMs
+    );
 }
 
 function isRlsInsertViolation(error: unknown): boolean {
     if (!(error instanceof Error)) return false;
-    return error.message.includes('42501') || error.message.includes('row-level security policy');
+    const code = 'code' in error && typeof error.code === 'string' ? error.code : '';
+    return code === '42501' || error.message.includes('42501') || error.message.includes('row-level security policy');
 }
 
 async function ensureFreelancerProfileExists(
-    supabaseUrl: string,
-    accessToken: string,
-    anonKey: string,
     userType: 'freelancer' | 'both'
 ) {
-    const response = await fetch(`${supabaseUrl}/rest/v1/rpc/set_user_type_rpc`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            apikey: anonKey,
-            Authorization: `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify({
-            p_user_type: userType,
-            p_active_mode: 'freelancer',
-        }),
-    });
-
-    if (!response.ok) {
-        const text = await response.text();
-        throw new Error(`RPC bootstrap failed: ${response.status}: ${text}`);
-    }
+    await runTimedSupabaseOperation(
+        supabaseWithRetry(() =>
+            supabase.rpc('set_user_type_rpc', {
+                p_user_type: userType,
+                p_active_mode: 'freelancer',
+            })
+        ),
+        'freelancer onboarding bootstrap freelancer profile'
+    );
 }
 
 export default FreelancerOnboarding;

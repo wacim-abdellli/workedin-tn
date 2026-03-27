@@ -8,11 +8,16 @@ vi.mock('@/lib/supabase', () => ({
         from: vi.fn(() => ({
             select: vi.fn().mockReturnThis(),
             eq: vi.fn().mockReturnThis(),
+            maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
             single: vi.fn().mockResolvedValue({ data: null, error: { code: 'PGRST116' } }),
+            update: vi.fn().mockReturnThis(),
+            upsert: vi.fn().mockResolvedValue({ data: null, error: null }),
         })),
+        rpc: vi.fn().mockResolvedValue({ data: null, error: null }),
         auth: {
             getSession: vi.fn().mockResolvedValue({ data: { session: null }, error: null }),
             getUser: vi.fn().mockResolvedValue({ data: { user: null }, error: null }),
+            refreshSession: vi.fn().mockResolvedValue({ data: { session: null }, error: null }),
             signInWithOtp: vi.fn().mockResolvedValue({ data: {}, error: null }),
             verifyOtp: vi.fn().mockResolvedValue({ data: {}, error: null }),
             signOut: vi.fn().mockResolvedValue({ error: null }),

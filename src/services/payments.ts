@@ -113,23 +113,15 @@ export async function reconcilePayment(transactionId: string): Promise<{ success
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return { success: false, message: 'Not authenticated' };
 
-    const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/reconcile-payment`,
-        {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${session.access_token}`,
-                'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
-            },
-            body: JSON.stringify({ transaction_id: transactionId }),
-        }
-    );
+    const { data, error } = await supabase.functions.invoke('reconcile-payment', {
+        body: { transaction_id: transactionId },
+    });
 
-    const result = await response.json();
-    if (!response.ok) {
-        return { success: false, message: result.error || 'Reconciliation failed' };
+    if (error) {
+        const message = error.message || 'Reconciliation failed';
+        return { success: false, message };
     }
-    return { success: true, message: result.message };
-}
 
+    const result = (data ?? {}) as { message?: string };
+    return { success: true, message: result.message || 'Reconciliation succeeded' };
+}

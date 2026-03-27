@@ -19,7 +19,8 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from '@/i18n';
 import { logger } from '@/lib/logger';
-import { supabase } from '@/lib/supabase';
+import { supabase, withTimeout } from '@/lib/supabase';
+import { supabaseWithRetry } from '@/lib/supabaseWithRetry';
 import { useToast } from '@/components/ui/Toast';
 import SEO from '@/components/common/SEO';
 
@@ -226,7 +227,7 @@ const UploadCard = ({
 };
 
 export default function VerifyIdentity() {
-    const { user, profile, session } = useAuth();
+    const { user, profile, session, refreshProfile } = useAuth();
     const { tx } = useTranslation();
     const navigate = useNavigate();
     const { showToast } = useToast();
@@ -256,10 +257,96 @@ export default function VerifyIdentity() {
     const [isProcessingFile, setIsProcessingFile] = useState(false);
     const [loading, setLoading] = useState(false);
     const [consent, setConsent] = useState(false);
+    const [resolvedIdentityStatus, setResolvedIdentityStatus] = useState<'verified' | 'pending' | 'missing' | null>(null);
 
     useEffect(() => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }, [step]);
+
+    useEffect(() => {
+        let isCancelled = false;
+
+        const deriveFromProfile = (): 'verified' | 'pending' | 'missing' => {
+            if (profile?.cin_verified) return 'verified';
+            if (profile?.cin_submitted) return 'pending';
+            return 'missing';
+        };
+
+        const resolveIdentityStatus = async () => {
+            if (!user?.id) {
+                if (!isCancelled) setResolvedIdentityStatus('missing');
+                return;
+            }
+
+            // Immediate fallback so UI stays responsive.
+            if (!isCancelled) {
+                setResolvedIdentityStatus(deriveFromProfile());
+            }
+
+            try {
+                const { data: latestVerification } = await supabaseWithRetry(() =>
+                    supabase
+                        .from('identity_verifications')
+                        .select('id,status,submitted_at,reviewed_at')
+                        .eq('user_id', user.id)
+                        .order('submitted_at', { ascending: false })
+                        .limit(1)
+                        .maybeSingle()
+                );
+
+                if (isCancelled) return;
+
+                if (!latestVerification) {
+                    setResolvedIdentityStatus(deriveFromProfile());
+                    return;
+                }
+
+                if (latestVerification.status === 'approved') {
+                    setResolvedIdentityStatus('verified');
+
+                    // Self-heal stale profile flags for legacy records.
+                    if (!profile?.cin_verified || profile?.cin_submitted) {
+                        await supabaseWithRetry(() =>
+                            supabase
+                                .from('profiles')
+                                .update({ cin_verified: true, cin_submitted: false })
+                                .eq('id', user.id)
+                        );
+                        await refreshProfile?.();
+                    }
+                    return;
+                }
+
+                if (latestVerification.status === 'pending') {
+                    setResolvedIdentityStatus('pending');
+                    return;
+                }
+
+                // Rejected/other statuses should not keep users blocked in pending.
+                setResolvedIdentityStatus('missing');
+                if (profile?.cin_submitted && !profile?.cin_verified) {
+                    await supabaseWithRetry(() =>
+                        supabase
+                            .from('profiles')
+                            .update({ cin_submitted: false })
+                            .eq('id', user.id)
+                    );
+                    await refreshProfile?.();
+                }
+            } catch (error) {
+                logger.warn('Failed to resolve identity status from verification rows; using profile fallback.', error);
+                if (!isCancelled) {
+                    setResolvedIdentityStatus(deriveFromProfile());
+                }
+            }
+        };
+
+        void resolveIdentityStatus();
+
+        return () => {
+            isCancelled = true;
+        };
+    }, [user?.id, profile?.cin_verified, profile?.cin_submitted, refreshProfile]);
 
     const handleFileSelect = useCallback(async (type: 'front' | 'back' | 'selfie', file: File) => {
         setIsProcessingFile(true);
@@ -381,13 +468,13 @@ export default function VerifyIdentity() {
 
             logger.log('Starting verification submission...');
 
-            // Use session from context (already available)
-            const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-            const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+            const { data: liveSessionData, error: sessionError } = await supabase.auth.getSession();
+            if (sessionError) {
+                throw sessionError;
+            }
 
-            const { data: liveSessionData } = await supabase.auth.getSession();
-            let accessToken = liveSessionData.session?.access_token ?? session?.access_token;
-            const sessionUser = liveSessionData.session?.user;
+            const liveSession = liveSessionData.session ?? session;
+            const sessionUser = liveSession?.user;
             const authUserId = sessionUser?.id ?? user.id;
             const authUserMetadata = sessionUser?.user_metadata ?? user.user_metadata;
 
@@ -398,48 +485,38 @@ export default function VerifyIdentity() {
                 });
             }
 
-            if (!accessToken) {
+            if (!liveSession) {
                 throw new Error(tx('verifyIdentity.errors.noSession', undefined, 'No auth session - please login again'));
             }
             logger.log('Session available, starting uploads...');
 
-            // Timeout helper - defined with explicit comma to avoid JSX confusion
-            const withTimeout = <T,>(promise: Promise<T>, ms: number, message: string): Promise<T> => {
-                return Promise.race([
-                    promise,
-                    new Promise<T>((_, reject) =>
-                        setTimeout(() => reject(new Error(message)), ms)
-                    )
-                ]);
-            };
+            const runWithTimeout = <T,>(operation: Promise<T>, ms: number, operationName: string) =>
+                withTimeout(operation, ms, operationName);
 
-            // Upload file with timeout using Promise.race
-            const uploadFile = async (file: File, path: string): Promise<string> => {
+            // Upload file with timeout using the Supabase storage client
+            const uploadIdentityFile = async (file: File, path: string): Promise<string> => {
                 logger.log(`📤 Uploading ${path} (${(file.size / 1024).toFixed(1)}KB)...`);
 
-                const storageUrl = `${supabaseUrl}/storage/v1/object/identity-documents/${path}`;
+                const { data, error } = await runWithTimeout(
+                    supabase.storage.from('identity-documents').upload(path, file, {
+                        upsert: true,
+                        contentType: file.type || 'image/jpeg',
+                    }),
+                    20000,
+                    `Upload ${path}`
+                );
 
-                const fetchPromise = fetch(storageUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${accessToken}`,
-                        'x-upsert': 'true',
-                    },
-                    body: file,
-                });
-
-                // 20 second timeout per file
-                const response = await withTimeout(fetchPromise, 20000, `Upload timeout for ${path}`);
-
-                if (!response.ok) {
-                    const errorText = await response.text();
+                if (error) {
+                    logger.error('[VerifyIdentity] Upload failed:', error);
+                    const response = { status: 'storage' };
+                    const errorText = error.message;
                     logger.error(`❌ Upload failed (${response.status}):`, errorText);
-                    throw new Error(`Upload failed: ${response.status} - ${errorText}`);
+                    throw error;
                 }
 
-                const data = await response.json();
+                const uploadedPath = data?.path || path;
                 logger.log(`✅ Upload success: ${path}`);
-                return data.Key || path;
+                return uploadedPath;
             };
 
             const timestamp = Date.now();
@@ -447,55 +524,35 @@ export default function VerifyIdentity() {
             // Upload sequentially - use folder structure to match RLS policy
             // Policy checks: auth.uid()::text = (storage.foldername(name))[1]
             logger.log('Uploading front...');
-            const frontPath = await uploadFile(uploads.front, `${authUserId}/cin_front_${timestamp}.jpg`);
+            const frontPath = await uploadIdentityFile(uploads.front, `${authUserId}/cin_front_${timestamp}.jpg`);
             logger.log('Uploading back...');
-            const backPath = await uploadFile(uploads.back, `${authUserId}/cin_back_${timestamp}.jpg`);
+            const backPath = await uploadIdentityFile(uploads.back, `${authUserId}/cin_back_${timestamp}.jpg`);
             logger.log('Uploading selfie...');
-            const selfiePath = await uploadFile(uploads.selfie, `${authUserId}/selfie_${timestamp}.jpg`);
+            const selfiePath = await uploadIdentityFile(uploads.selfie, `${authUserId}/selfie_${timestamp}.jpg`);
 
             logger.log('All files uploaded, inserting to database...');
 
             // First, ensure profile exists (foreign key constraint requires it)
             logger.log('Checking if profile exists...');
-            const profileCheckResponse = await fetch(
-                `${supabaseUrl}/rest/v1/profiles?id=eq.${authUserId}&select=id`,
-                {
-                    headers: {
-                        'Authorization': `Bearer ${accessToken}`,
-                        'apikey': supabaseKey,
-                    }
-                }
+            const { data: profileData } = await supabaseWithRetry(() =>
+                supabase
+                    .from('profiles')
+                    .select('id')
+                    .eq('id', authUserId)
+                    .maybeSingle()
             );
-
-            const profileData = await profileCheckResponse.json();
             logger.log('Profile check result:', profileData);
 
-            if (!profileData || profileData.length === 0) {
+            if (!profileData) {
                 // Profile doesn't exist, create it with required fields only
                 logger.log('Profile not found, creating...');
-                const createProfileResponse = await fetch(
-                    `${supabaseUrl}/rest/v1/profiles`,
-                    {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${accessToken}`,
-                            'apikey': supabaseKey,
-                            'Prefer': 'return=representation'
-                        },
-                        body: JSON.stringify({
-                            id: authUserId,
-                            full_name: authUserMetadata?.full_name || user.email?.split('@')[0] || 'User',
-                            user_type: profile?.user_type || 'client',
-                        })
-                    }
+                await supabaseWithRetry(() =>
+                    supabase.from('profiles').insert({
+                        id: authUserId,
+                        full_name: authUserMetadata?.full_name || user.email?.split('@')[0] || 'User',
+                        user_type: profile?.user_type || 'client',
+                    })
                 );
-
-                if (!createProfileResponse.ok) {
-                    const errorText = await createProfileResponse.text();
-                    logger.error('Profile creation failed:', errorText);
-                    throw new Error(`Failed to create profile: ${errorText}`);
-                }
                 logger.log('Profile created successfully');
             } else {
                 logger.log('Profile exists, proceeding...');
@@ -511,121 +568,80 @@ export default function VerifyIdentity() {
                 submitted_at: new Date().toISOString(),
             };
 
-            logger.log('Sending REST API request to insert verification...');
+            logger.log('Sending verification insert via Supabase client...');
 
             // First, delete any existing verification (RLS UPDATE policy is restrictive)
             logger.log('Deleting any existing verification record...');
             try {
-                await fetch(
-                    `${supabaseUrl}/rest/v1/identity_verifications?user_id=eq.${authUserId}`,
-                    {
-                        method: 'DELETE',
-                        headers: {
-                            'Authorization': `Bearer ${accessToken}`,
-                            'apikey': supabaseKey,
-                        }
-                    }
+                await supabaseWithRetry(() =>
+                    supabase
+                        .from('identity_verifications')
+                        .delete()
+                        .eq('user_id', authUserId)
                 );
                 logger.log('Delete completed (may have had no effect if no record existed)');
             } catch (deleteError) {
                 logger.log('Delete failed, proceeding anyway:', deleteError);
             }
 
-            const insertVerification = async (token: string) => {
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 30000);
-
-                try {
-                    return await fetch(
-                        `${supabaseUrl}/rest/v1/identity_verifications`,
-                        {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${token}`,
-                                'apikey': supabaseKey,
-                                // Use pure INSERT. Upsert mode triggers UPDATE policy checks and can fail with RLS 403.
-                                'Prefer': 'return=representation'
-                            },
-                            body: JSON.stringify(verificationData),
-                            signal: controller.signal
-                        }
-                    );
-                } finally {
-                    clearTimeout(timeoutId);
-                }
-            };
-
             try {
-                let insertResponse = await insertVerification(accessToken);
-
-                if (insertResponse.status === 403) {
-                    logger.warn('Insert returned 403; attempting session refresh and single retry...');
-                    const { data: refreshedData } = await supabase.auth.refreshSession();
-                    const refreshedToken = refreshedData.session?.access_token;
-
-                    if (refreshedToken) {
-                        accessToken = refreshedToken;
-                        insertResponse = await insertVerification(accessToken);
-                    }
-                }
-
-                if (!insertResponse.ok) {
-                    const errorText = await insertResponse.text();
-                    logger.error('Insert failed:', insertResponse.status, errorText);
-
-                    if (insertResponse.status === 409) {
-                        throw new Error(
-                            tx(
-                                'verifyIdentity.errors.alreadySubmitted',
-                                undefined,
-                                'You already have a verification request. Please wait for review or contact support.'
-                            )
-                        );
-                    }
-
-                    if (insertResponse.status === 403) {
-                        throw new Error(
-                            tx(
-                                'verifyIdentity.errors.permissions',
-                                undefined,
-                                'Permission denied while submitting verification. Please sign out and sign in again, then retry.'
-                            )
-                        );
-                    }
-
-                    throw new Error(`Database error: ${insertResponse.status} - ${errorText}`);
-                }
-
-                const insertResult = await insertResponse.json();
+                const { data: insertResult } = await runWithTimeout(
+                    supabaseWithRetry(() =>
+                        supabase
+                            .from('identity_verifications')
+                            .insert(verificationData)
+                            .select()
+                            .single()
+                    ),
+                    30000,
+                    'Verify identity insert'
+                );
                 logger.log('Insert success:', insertResult);
             } catch (fetchError) {
-                if (fetchError instanceof Error && fetchError.name === 'AbortError') {
+                const status = typeof fetchError === 'object' && fetchError && 'status' in fetchError
+                    ? fetchError.status
+                    : undefined;
+                const code = typeof fetchError === 'object' && fetchError && 'code' in fetchError
+                    ? fetchError.code
+                    : undefined;
+
+                if (fetchError instanceof Error && fetchError.message.includes('timed out after')) {
                     throw new Error(tx('verifyIdentity.errors.insertTimeout', undefined, 'Database insert timed out after 30 seconds. Supabase may be under maintenance.'));
                 }
+
+                if (status === 409 || code === '23505') {
+                    throw new Error(
+                        tx(
+                            'verifyIdentity.errors.alreadySubmitted',
+                            undefined,
+                            'You already have a verification request. Please wait for review or contact support.'
+                        )
+                    );
+                }
+
+                if (status === 403 || code === '42501') {
+                    throw new Error(
+                        tx(
+                            'verifyIdentity.errors.permissions',
+                            undefined,
+                            'Permission denied while submitting verification. Please sign out and sign in again, then retry.'
+                        )
+                    );
+                }
+
                 throw fetchError;
             }
 
             logger.log('Database insert success, updating profile...');
 
-            // Update profile using REST API too
+            // Update profile using Supabase client too
             try {
-                const updateResponse = await fetch(
-                    `${supabaseUrl}/rest/v1/profiles?id=eq.${authUserId}`,
-                    {
-                        method: 'PATCH',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${accessToken}`,
-                            'apikey': supabaseKey,
-                        },
-                        body: JSON.stringify({ cin_submitted: true })
-                    }
+                await supabaseWithRetry(() =>
+                    supabase
+                        .from('profiles')
+                        .update({ cin_submitted: true })
+                        .eq('id', authUserId)
                 );
-
-                if (!updateResponse.ok) {
-                    logger.error('Profile update failed:', await updateResponse.text());
-                }
             } catch (updateError) {
                 logger.error('Profile update error:', updateError);
                 // Don't throw - verification was submitted successfully
@@ -665,8 +681,11 @@ export default function VerifyIdentity() {
 
     const completedChecklist = verificationChecklist.filter(item => item.ok).length;
 
+    const effectiveIdentityStatus = resolvedIdentityStatus
+        ?? (profile?.cin_verified ? 'verified' : profile?.cin_submitted ? 'pending' : 'missing');
+
     // If already verified, show success message
-    if (profile?.cin_verified) {
+    if (effectiveIdentityStatus === 'verified') {
         return (
             <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 py-12">
                 <SEO title={tx('verifyIdentity.seo.title', undefined, 'التحقق من الهوية')} description={tx('verifyIdentity.seo.description', undefined, 'قم بتوثيق هويتك لزيادة ثقة العملاء وفتح جميع ميزات المنصة')} />
@@ -692,7 +711,7 @@ export default function VerifyIdentity() {
     }
 
     // If verification is pending (submitted but not yet verified), show pending state
-    if (profile?.cin_submitted && !profile?.cin_verified) {
+    if (effectiveIdentityStatus === 'pending') {
         return (
             <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 py-10">
                 <SEO title={tx('verifyIdentity.pending.seoTitle', undefined, 'طلب التحقق قيد المراجعة')} description={tx('verifyIdentity.pending.seoDescription', undefined, 'طلب التحقق من الهوية قيد المراجعة من قبل فريقنا')} />

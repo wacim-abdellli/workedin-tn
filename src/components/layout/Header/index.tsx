@@ -13,6 +13,7 @@ import {
   Search,
   Settings,
   Shield,
+  Repeat2,
   Sun,
   User,
   Users,
@@ -22,8 +23,11 @@ import {
 
 import { useAuth } from '@/contexts/AuthContext'
 import { useTranslation } from '@/i18n'
+import { hasAdminAccess } from '@/lib/adminAccess'
+import { switchWorkspace } from '@/lib/switchWorkspace'
 import { useWorkspaceStore } from '@/lib/workspaceState'
 import { NotificationBell } from '@/components/ui'
+import { useToast } from '@/components/ui/Toast'
 
 import SearchModal from './SearchModal'
 
@@ -54,9 +58,10 @@ function AuthHeader({ logoSrc, onHome }: { logoSrc: string; onHome: () => void }
 }
 
 export default function Header() {
-  const { user, profile, signOut } = useAuth()
-  const { activeWorkspace } = useWorkspaceStore()
+  const { user, profile, freelancerProfile, signOut } = useAuth()
+  const { activeWorkspace, isSwitching } = useWorkspaceStore()
   const { t, language, setLanguage } = useTranslation()
+  const { showToast } = useToast()
 
   const FREELANCER_NAV = [
     { label: t.nav?.findWork || 'Find Work', Icon: Briefcase, href: '/jobs' },
@@ -151,8 +156,40 @@ export default function Header() {
   const firstName = profile?.full_name?.split(' ')[0] ?? user?.email?.split('@')[0] ?? 'Me'
   const displayName = profile?.full_name ?? user?.user_metadata?.full_name ?? user?.email?.split('@')[0] ?? 'Me'
   const workspaceAccent = isFreelancer ? '#8b5cf6' : '#f59e0b'
+  const targetWorkspace = isFreelancer ? 'client' : 'freelancer'
+  const canQuickSwitch = Boolean(user)
+  const switchTargetLabel = targetWorkspace === 'freelancer'
+    ? (t.auth?.accountPanel?.freelancerLabel || 'Freelancer')
+    : (t.auth?.accountPanel?.clientLabel || 'Client')
+  const switchActionLabel = t.auth?.accountPanel?.switchAction || 'Switch'
+  const switchButtonLabel = `${switchActionLabel}: ${switchTargetLabel}`
   const logoSrc = isDark ? '/logos/logo-primary-dark.svg' : '/logos/logo-primary.svg'
   const navActiveClass = isFreelancer ? 'header-nav-link-active-freelancer' : 'header-nav-link-active-client'
+  const canAccessAdmin = hasAdminAccess(user, profile)
+
+  const handleQuickWorkspaceSwitch = async () => {
+    if (!user || isSwitching) return
+
+    try {
+      await switchWorkspace({
+        userId: user.id,
+        targetWorkspace,
+        currentUserType: profile?.user_type ?? 'client',
+        profile,
+        freelancerProfile: freelancerProfile ?? null,
+        navigate,
+      })
+
+      showToast(
+        targetWorkspace === 'freelancer'
+          ? (t.auth?.accountPanel?.switchedFreelancer || 'Freelancer workspace is now active.')
+          : (t.auth?.accountPanel?.switchedClient || 'Client workspace is now active.'),
+        'success'
+      )
+    } catch {
+      showToast(t.auth?.accountPanel?.switchError || 'We could not switch your workspace right now.', 'error')
+    }
+  }
 
   if (isAuthPage) {
     return <AuthHeader logoSrc={logoSrc} onHome={() => navigate('/')} />
@@ -217,6 +254,24 @@ export default function Header() {
             </nav>
 
             <div className="flex min-w-0 items-center justify-end gap-1.5">
+              {canQuickSwitch ? (
+                <button
+                  onClick={handleQuickWorkspaceSwitch}
+                  disabled={isSwitching}
+                  className={`flex h-9 items-center gap-2 rounded-xl border px-3 text-xs font-medium transition-colors ${
+                    isFreelancer
+                      ? 'border-violet-200 bg-violet-50 text-violet-700 hover:bg-violet-100 dark:border-violet-500/30 dark:bg-violet-500/15 dark:text-violet-200 dark:hover:bg-violet-500/25'
+                      : 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:border-emerald-500/30 dark:bg-emerald-500/15 dark:text-emerald-200 dark:hover:bg-emerald-500/25'
+                  } ${isSwitching ? 'cursor-not-allowed opacity-70' : ''}`}
+                  aria-label={switchButtonLabel}
+                  title={switchButtonLabel}
+                >
+                  <Repeat2 className={`h-3.5 w-3.5 ${isSwitching ? 'animate-spin' : ''}`} />
+                  <span className="hidden lg:inline">{switchButtonLabel}</span>
+                  <span className="lg:hidden">{switchTargetLabel}</span>
+                </button>
+              ) : null}
+
               <button
                 onClick={() => setSearchOpen(true)}
                 className="flex h-9 min-w-0 w-[128px] items-center gap-2 rounded-xl border border-gray-200 bg-gray-100 px-3 text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-600 dark:border-white/8 dark:bg-white/5 dark:hover:bg-white/10 dark:hover:text-gray-300 lg:w-[148px] xl:w-[164px]"
@@ -341,7 +396,7 @@ export default function Header() {
                         { label: t.nav?.dashboard || 'Dashboard', Icon: User, href: '/dashboard' },
                         { label: t.nav?.settings || 'Settings', Icon: Settings, href: '/settings' },
                         { label: t.settings?.cinVerification || 'Verify identity', Icon: Shield, href: '/verify-identity' },
-                        ...(profile?.is_admin
+                        ...(canAccessAdmin
                           ? [{ label: t.nav?.adminDashboard || 'Admin Dashboard', Icon: Shield, href: '/admin' }]
                           : []),
                       ].map(({ label, Icon, href }) => (
@@ -435,6 +490,24 @@ export default function Header() {
               ) : null}
 
               <nav className="space-y-2">
+                {canQuickSwitch ? (
+                  <button
+                    onClick={() => {
+                      void handleQuickWorkspaceSwitch()
+                      setMobileMenuOpen(false)
+                    }}
+                    disabled={isSwitching}
+                    className={`flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-colors ${
+                      isFreelancer
+                        ? 'text-violet-700 hover:bg-violet-50 dark:text-violet-200 dark:hover:bg-violet-500/10'
+                        : 'text-emerald-700 hover:bg-emerald-50 dark:text-emerald-200 dark:hover:bg-emerald-500/10'
+                    } ${isSwitching ? 'cursor-not-allowed opacity-70' : ''}`}
+                  >
+                    <Repeat2 className={`h-4 w-4 flex-shrink-0 ${isSwitching ? 'animate-spin' : ''}`} />
+                    {switchButtonLabel}
+                  </button>
+                ) : null}
+
                 {navItems.map(({ label, Icon, href }) => (
                   <NavLink
                     key={href}
@@ -477,7 +550,7 @@ export default function Header() {
                       <Settings className="h-4 w-4 flex-shrink-0" />
                         {t.nav?.settings || 'Settings'}
                     </button>
-                    {profile?.is_admin ? (
+                    {canAccessAdmin ? (
                       <button
                         onClick={() => {
                           navigate('/admin')
