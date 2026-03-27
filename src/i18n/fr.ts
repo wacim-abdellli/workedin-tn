@@ -25,6 +25,7 @@ export const fr: Translations = {
         postProject: 'Publier un projet',
         myProjects: 'Mes Projets',
         wallet: 'Portefeuille',
+        adminDashboard: 'Tableau de bord admin',
     },
     notFound: {
         title: 'Page Introuvable',
@@ -1238,6 +1239,7 @@ export const fr: Translations = {
         uploadHint: 'Cliquez pour téléverser une image',
         fileFormatHint: 'JPG, PNG (Max 5MB)',
         backToSettings: 'Retour aux paramètres',
+        goToDashboard: 'Aller au tableau de bord',
         seo: {
             title: 'Vérification d\'identité',
             description: 'Vérifiez votre identité pour renforcer la confiance des clients et débloquer toutes les fonctionnalités',

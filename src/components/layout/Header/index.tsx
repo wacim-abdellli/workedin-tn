@@ -196,14 +196,14 @@ export default function Header() {
             </div>
           </div>
 
-          <div className="hidden h-16 items-center gap-4 md:grid md:grid-cols-[140px_1fr_320px]">
+          <div className="hidden h-16 items-center gap-3 md:grid md:grid-cols-[max-content_minmax(0,1fr)_minmax(0,360px)]">
             <div className="flex items-center">
               <button onClick={() => navigate('/')} className="flex items-center">
                 <img src={logoSrc} alt="Khedma TN" style={{ height: '28px', width: 'auto' }} />
               </button>
             </div>
 
-            <nav id="main-nav" className="flex items-center justify-center gap-1">
+            <nav id="main-nav" className="flex min-w-0 items-center justify-center gap-1 overflow-hidden">
               {navItems.map(({ label, Icon, href }) => (
                 <NavLink
                   key={href}
@@ -211,19 +211,19 @@ export default function Header() {
                   className={({ isActive }) => (isActive ? navActiveClass : 'header-nav-link')}
                 >
                   <Icon className="h-4 w-4 flex-shrink-0" />
-                  <span>{label}</span>
+                  <span className="truncate">{label}</span>
                 </NavLink>
               ))}
             </nav>
 
-            <div className="flex items-center justify-end gap-1.5">
+            <div className="flex min-w-0 items-center justify-end gap-1.5">
               <button
                 onClick={() => setSearchOpen(true)}
-                className="flex h-9 w-[136px] items-center gap-2 rounded-xl border border-gray-200 bg-gray-100 px-3 text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-600 dark:border-white/8 dark:bg-white/5 dark:hover:bg-white/10 dark:hover:text-gray-300"
+                className="flex h-9 min-w-0 w-[128px] items-center gap-2 rounded-xl border border-gray-200 bg-gray-100 px-3 text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-600 dark:border-white/8 dark:bg-white/5 dark:hover:bg-white/10 dark:hover:text-gray-300 lg:w-[148px] xl:w-[164px]"
               >
                 <Search className="h-4 w-4 flex-shrink-0" />
-                <span className="flex-1 text-left text-xs">Search</span>
-                <kbd className="header-kbd hidden sm:inline-flex">
+                <span className="flex-1 truncate text-left text-xs">Search</span>
+                <kbd className="header-kbd hidden xl:inline-flex">
                   Ctrl+K
                 </kbd>
               </button>
@@ -341,6 +341,9 @@ export default function Header() {
                         { label: t.nav?.dashboard || 'Dashboard', Icon: User, href: '/dashboard' },
                         { label: t.nav?.settings || 'Settings', Icon: Settings, href: '/settings' },
                         { label: t.settings?.cinVerification || 'Verify identity', Icon: Shield, href: '/verify-identity' },
+                        ...(profile?.is_admin
+                          ? [{ label: t.nav?.adminDashboard || 'Admin Dashboard', Icon: Shield, href: '/admin' }]
+                          : []),
                       ].map(({ label, Icon, href }) => (
                         <button
                           key={href}
@@ -448,7 +451,7 @@ export default function Header() {
                     }
                   >
                     <Icon className="h-4 w-4 flex-shrink-0" />
-                    <span>{label}</span>
+                    <span className="min-w-0 truncate">{label}</span>
                   </NavLink>
                 ))}
 
@@ -474,6 +477,18 @@ export default function Header() {
                       <Settings className="h-4 w-4 flex-shrink-0" />
                         {t.nav?.settings || 'Settings'}
                     </button>
+                    {profile?.is_admin ? (
+                      <button
+                        onClick={() => {
+                          navigate('/admin')
+                          setMobileMenuOpen(false)
+                        }}
+                        className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-white/5"
+                      >
+                        <Shield className="h-4 w-4 flex-shrink-0" />
+                        {t.nav?.adminDashboard || 'Admin Dashboard'}
+                      </button>
+                    ) : null}
                   </>
                 ) : null}
               </nav>

@@ -25,6 +25,7 @@ export const en: Translations = {
         postProject: 'Post Project',
         myProjects: 'My Projects',
         wallet: 'Wallet',
+        adminDashboard: 'Admin Dashboard',
     },
     notFound: {
         title: 'Page Not Found',
@@ -1238,6 +1239,7 @@ export const en: Translations = {
         uploadHint: 'Click to upload image',
         fileFormatHint: 'JPG, PNG (Max 5MB)',
         backToSettings: 'Back to settings',
+        goToDashboard: 'Go to dashboard',
         seo: {
             title: 'Identity Verification',
             description: 'Verify your identity to increase client trust and unlock all platform features',

@@ -23,6 +23,7 @@ export const ar = {
         postProject: 'نشر مشروع',
         myProjects: 'مشاريعي',
         wallet: 'المحفظة',
+        adminDashboard: 'لوحة الإدارة',
     },
     notFound: {
         title: 'الصفحة غير موجودة',
@@ -1236,6 +1237,7 @@ export const ar = {
         uploadHint: 'اضغط لرفع الصورة',
         fileFormatHint: 'JPG, PNG (Max 5MB)',
         backToSettings: 'العودة إلى الإعدادات',
+        goToDashboard: 'الذهاب إلى لوحة التحكم',
         seo: {
             title: 'التحقق من الهوية',
             description: 'قم بتوثيق هويتك لزيادة ثقة العملاء وفتح جميع ميزات المنصة',
