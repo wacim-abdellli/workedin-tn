@@ -12,7 +12,7 @@ import Modal from '../components/ui/Modal';
 import { getStuckTransactions, reconcilePayment } from '../services/payments';
 import type { StuckTransaction } from '../types/payment';
 import { useToast } from '../components/ui/Toast';
-import { supabase, supabaseAdmin } from '../lib/supabase';
+import { supabase } from '../lib/supabase';
 import { supabaseWithRetry } from '../lib/supabaseWithRetry';
 import { useTranslation } from '../i18n';
 import UsersTab, { ADMIN_USERS_QUERY_KEY, fetchAdminUsers } from './admin/UsersTab';
@@ -81,14 +81,13 @@ export default function AdminDashboard() {
 
     const fetchStats = async () => {
         try {
-            const client = supabaseAdmin || supabase;
             const today = new Date().toISOString().split('T')[0];
             const [usersCount, jobsCount, contractsCount, signupsCount, todayContractsCount] = await Promise.all([
-                countWithRetry(() => client.from('profiles').select('id', { count: 'exact', head: true })),
-                countWithRetry(() => client.from('jobs').select('id', { count: 'exact', head: true }).in('status', ['open', 'in_progress'])),
-                countWithRetry(() => client.from('contracts').select('id', { count: 'exact', head: true }).eq('status', 'active')),
-                countWithRetry(() => client.from('profiles').select('id', { count: 'exact', head: true }).gte('created_at', today)),
-                countWithRetry(() => client.from('contracts').select('id', { count: 'exact', head: true }).gte('created_at', today)),
+                countWithRetry(() => supabase.from('profiles').select('id', { count: 'exact', head: true })),
+                countWithRetry(() => supabase.from('jobs').select('id', { count: 'exact', head: true }).in('status', ['open', 'in_progress'])),
+                countWithRetry(() => supabase.from('contracts').select('id', { count: 'exact', head: true }).eq('status', 'active')),
+                countWithRetry(() => supabase.from('profiles').select('id', { count: 'exact', head: true }).gte('created_at', today)),
+                countWithRetry(() => supabase.from('contracts').select('id', { count: 'exact', head: true }).gte('created_at', today)),
             ]);
             setStats({ totalUsers: usersCount, activeJobs: jobsCount, activeContracts: contractsCount, totalRevenue: 0, todaySignups: signupsCount, todayContracts: todayContractsCount });
         } catch (err) { console.error('Stats fetch error:', err); }
@@ -101,9 +100,8 @@ export default function AdminDashboard() {
     const fetchDisputes = async () => {
         setLoadingDisputes(true);
         try {
-            const client = supabaseAdmin || supabase;
             const { data } = await supabaseWithRetry(() =>
-                client.from('disputes')
+                supabase.from('disputes')
                     .select('id,contract_id,opened_at,reason,status,contract:contracts!disputes_contract_id_fkey(id,amount,job:jobs(title)),opener:profiles!disputes_opened_by_fkey(full_name,email)')
                     .eq('status', 'open').order('opened_at', { ascending: true })
             );
@@ -146,8 +144,7 @@ export default function AdminDashboard() {
     const handleResolveDispute = async (disputeId: string, resolution: string, note?: string) => {
         setResolvingId(disputeId);
         try {
-            const client = supabaseAdmin || supabase;
-            await supabaseWithRetry(() => client.rpc('resolve_dispute', { p_dispute_id: disputeId, p_resolution: resolution, p_admin_note: note || null }));
+            await supabaseWithRetry(() => supabase.rpc('resolve_dispute', { p_dispute_id: disputeId, p_resolution: resolution, p_admin_note: note || null }));
             setDisputes(prev => prev.filter(d => d.id !== disputeId));
             showToast(tr('تم حل النزاع بنجاح ✓', 'Dispute resolved successfully ✓', 'Litige resolu avec succes ✓'), 'success');
         } catch (err) {

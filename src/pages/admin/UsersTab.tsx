@@ -5,7 +5,7 @@ import Button from '@/components/ui/Button';
 import Modal from '@/components/ui/Modal';
 import ErrorBoundary from '@/components/common/ErrorBoundary';
 import { useToast } from '@/components/ui/Toast';
-import { supabase, supabaseAdmin } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase';
 import { supabaseWithRetry } from '@/lib/supabaseWithRetry';
 import { useTranslation } from '@/i18n';
 
@@ -128,10 +128,9 @@ export default function UsersTab() {
 
     const toggleUserModeMutation = useMutation({
         mutationFn: async (user: AdminUser) => {
-            const client = supabaseAdmin || supabase;
             const nextMode: 'client' | 'freelancer' = user.active_mode === 'freelancer' ? 'client' : 'freelancer';
             await supabaseWithRetry(() =>
-                client
+                supabase
                     .from('profiles')
                     .update({
                         active_mode: nextMode,
@@ -164,9 +163,8 @@ export default function UsersTab() {
 
     const deleteUserMutation = useMutation({
         mutationFn: async (user: AdminUser) => {
-            const client = supabaseAdmin || supabase;
             await supabaseWithRetry(() =>
-                client
+                supabase
                     .from('profiles')
                     .delete()
                     .eq('id', user.id)
@@ -190,7 +188,6 @@ export default function UsersTab() {
 
     const revokeVerificationMutation = useMutation({
         mutationFn: async (user: AdminUser) => {
-            const client = supabaseAdmin || supabase;
             await Promise.all([
                 supabaseWithRetry(() =>
                     client
