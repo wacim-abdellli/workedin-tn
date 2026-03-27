@@ -17,3 +17,12 @@ export function getInitials(name: string) {
   if (parts.length === 0) return 'K';
   return parts.slice(0, 2).map((part) => part[0]?.toUpperCase() ?? '').join('');
 }
+
+/**
+ * Account avatar source-of-truth: always use profiles.avatar_url.
+ * Keeps identity consistent across client and freelancer workspaces.
+ */
+export function resolveAccountAvatarUrl(profileAvatarUrl?: string | null, avatarFailed: boolean = false) {
+  if (avatarFailed) return null;
+  return profileAvatarUrl || null;
+}

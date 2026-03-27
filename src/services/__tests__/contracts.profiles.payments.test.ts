@@ -309,7 +309,10 @@ describe('profiles service coverage', () => {
     });
 
     it('upserts freelancer profiles and toggles favorites', async () => {
-        await updateFreelancerProfile('user-1', { title: 'Frontend engineer' });
+        await updateFreelancerProfile('user-1', {
+            title: 'Frontend engineer',
+            avatar_url: 'https://avatar.example/should-not-persist.png',
+        });
         await toggleFavorite('user-1', 'job-1', false);
         await toggleFavorite('user-1', 'job-1', true);
         await getSavedJobs('user-1');
@@ -323,6 +326,11 @@ describe('profiles service coverage', () => {
             }),
             options: { onConflict: 'id' },
         });
+
+        const freelancerUpsertCall = serviceState.state.upsertCalls.find((call) => call.table === 'freelancer_profiles');
+        expect(freelancerUpsertCall).toBeDefined();
+        expect(freelancerUpsertCall?.value).not.toHaveProperty('avatar_url');
+
         expect(serviceState.state.insertCalls).toContainEqual({
             table: 'favorites',
             value: { user_id: 'user-1', job_id: 'job-1' },

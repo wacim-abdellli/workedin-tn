@@ -4,6 +4,7 @@ import type { Session, User } from '@supabase/supabase-js';
 
 import { clearAllAuthData } from '@/lib/authUtils';
 import { logger } from '@/lib/logger';
+import { sanitizeFreelancerProfileData } from '@/lib/schemaValidation';
 import { supabase, withTimeout } from '@/lib/supabase';
 import { useWorkspaceStore, type Workspace } from '@/lib/workspaceState';
 import { getInitialWorkspace, getWorkspaceCapabilities } from '@/lib/workspaceRoutes';
@@ -359,10 +360,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const updateFreelancerProfile = async (data: Partial<FreelancerProfile>) => {
     if (!user) throw new Error('No user logged in');
 
+    const safeData = sanitizeFreelancerProfileData(data as Record<string, unknown>) as Partial<FreelancerProfile>;
+
     const { error } = await supabase.from('freelancer_profiles').upsert(
       {
         id: user.id,
-        ...data,
+        ...safeData,
         updated_at: new Date().toISOString(),
       },
       {
@@ -375,7 +378,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       throw error;
     }
 
-    setFreelancerProfile((prev) => (prev ? { ...prev, ...data } : (data as FreelancerProfile)));
+    setFreelancerProfile((prev) => (prev ? { ...prev, ...safeData } : (safeData as FreelancerProfile)));
   };
 
   const setUserType = async (userType: UserType) => {

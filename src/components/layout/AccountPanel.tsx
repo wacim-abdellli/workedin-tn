@@ -24,7 +24,7 @@ import { hardLogout, clearAllAuthData } from '@/lib/authUtils';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from '@/i18n';
 import { cn } from '@/lib/utils';
-import { getAvatarGradient, getInitials } from '@/lib/avatar';
+import { getAvatarGradient, getInitials, resolveAccountAvatarUrl } from '@/lib/avatar';
 import {
   getWorkspaceCapabilities,
   getWorkspaceProfilePath,
@@ -87,7 +87,7 @@ export default function AccountPanel({
     user.user_metadata?.name ||
     user.email?.split('@')[0] ||
     'Khedma User';
-  const avatarUrl = !avatarFailed ? profile?.avatar_url || user.user_metadata?.avatar_url || null : null;
+  const avatarUrl = resolveAccountAvatarUrl(profile?.avatar_url, avatarFailed);
   const [avatarFrom, avatarTo] = getAvatarGradient(displayName);
   const availableModes = useMemo(
     () => Array.from(new Set([...getWorkspaceCapabilities(profile?.user_type), activeWorkspace])) as Workspace[],

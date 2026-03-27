@@ -2,6 +2,7 @@
  * Profiles Service — User and freelancer profile queries
  */
 import { supabase, supabaseAnon, uploadFile } from '@/lib/supabase';
+import { sanitizeFreelancerProfileData } from '@/lib/schemaValidation';
 
 // --- READ ---
 
@@ -75,9 +76,10 @@ export async function updateProfile(userId: string, data: Record<string, unknown
 }
 
 export async function updateFreelancerProfile(userId: string, data: Record<string, unknown>) {
+    const safeData = sanitizeFreelancerProfileData(data);
     return supabase
         .from('freelancer_profiles')
-        .upsert({ id: userId, ...data, updated_at: new Date().toISOString() }, { onConflict: 'id' });
+        .upsert({ id: userId, ...safeData, updated_at: new Date().toISOString() }, { onConflict: 'id' });
 }
 
 export async function uploadAvatar(userId: string, file: File) {
