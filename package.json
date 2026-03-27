@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "build:budget": "tsc -b && vite build && node scripts/check-bundle-budgets.mjs",
+    "avatar:audit": "node scripts/check-avatar-consistency.mjs",
     "perf:budget": "node scripts/check-bundle-budgets.mjs",
     "lint": "eslint .",
     "i18n:audit": "node scripts/i18n-audit.mjs",
@@ -19,7 +20,7 @@
     "test:e2e": "playwright test",
     "test:e2e:visual": "playwright test e2e/visual-regression.spec.ts",
     "test:e2e:a11y:strict": "playwright test e2e/auth-protection-a11y.spec.ts",
-    "audit:strict": "npm run lint && npm run i18n:audit:strict && npm run test:run && npm run build:budget && npm run test:e2e:a11y:strict"
+    "audit:strict": "npm run lint && npm run avatar:audit && npm run i18n:audit:strict && npm run test:run && npm run build:budget && npm run test:e2e:a11y:strict"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

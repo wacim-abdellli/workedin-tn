@@ -27,6 +27,9 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Avatar Consistency Audit
+        run: npm run avatar:audit
+
       - name: i18n Strict Audit
         run: npm run i18n:audit:strict
 
