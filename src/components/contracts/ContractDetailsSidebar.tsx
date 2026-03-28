@@ -6,10 +6,25 @@ import {
 } from 'lucide-react';
 import Button from '../ui/Button';
 import { useTranslation } from '../../i18n';
-import type { Contract } from '../../types';
+
+interface ContractSidebarData {
+    amount: number;
+    job?: {
+        title?: string;
+        deadline?: string;
+    };
+    freelancer?: {
+        full_name?: string;
+        avatar_url?: string | null;
+    };
+    client?: {
+        full_name?: string;
+        avatar_url?: string | null;
+    };
+}
 
 interface ContractDetailsSidebarProps {
-    contract: Contract | null;
+    contract: ContractSidebarData | null;
     userRole: 'client' | 'freelancer';
     currentStatus: string;
     isActionLoading?: boolean;

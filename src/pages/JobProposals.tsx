@@ -6,7 +6,7 @@ import Button from '../components/ui/Button';
 import ProposalCard from '../components/proposals/ProposalCard';
 import ProposalFiltersSidebar from '../components/proposals/ProposalFiltersSidebar';
 import JobSummaryCard from '../components/proposals/JobSummaryCard';
-import type { Proposal, ProposalStatus } from '../types/proposal';
+import type { Proposal, ProposalStatus, ProposalFilters } from '../types/proposal';
 import ProposalDetailModal from '../components/proposals/ProposalDetailModal';
 import EmptyState from '../components/common/EmptyState';
 import { supabase, withTimeout } from '../lib/supabase';
@@ -14,14 +14,6 @@ import { useToast } from '../components/ui/Toast';
 import { useAuth } from '../contexts/AuthContext';
 import { logger } from '../lib/logger';
 import { useTranslation } from '../i18n';
-
-interface ProposalFilters {
-    status?: ProposalStatus;
-    minBid?: number;
-    maxBid?: number;
-    minRating?: number;
-    sortBy?: 'newest' | 'lowest_bid' | 'highest_rating';
-}
 
 interface JobData {
     id: string;
@@ -340,7 +332,7 @@ export default function JobProposals() {
             case 'lowest_bid':
                 filtered.sort((a, b) => a.bid_amount - b.bid_amount);
                 break;
-            case 'highest_rating':
+            case 'rating':
                 filtered.sort((a, b) => (b.freelancer?.rating || 0) - (a.freelancer?.rating || 0));
                 break;
             case 'newest':

@@ -7,6 +7,11 @@ interface ProposalJobSummary {
     job_type: 'fixed_price' | 'hourly' | string;
     duration: string;
     created_at?: string;
+    stats?: {
+        proposals: number;
+        interviewing: number;
+        shortlisted: number;
+    };
 }
 
 interface JobSummaryProps {

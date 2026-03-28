@@ -1,9 +1,10 @@
 import { Filter, Search, SortAsc } from 'lucide-react';
+import type { ProposalFilters } from '../../types/proposal';
 
 interface ProposalFiltersProps {
     totalProposals: number;
-    filters: Record<string, unknown>;
-    onFilterChange: (filters: Record<string, unknown>) => void;
+    filters: ProposalFilters;
+    onFilterChange: (filters: ProposalFilters) => void;
 }
 
 export default function ProposalFiltersSidebar({ totalProposals }: ProposalFiltersProps) {

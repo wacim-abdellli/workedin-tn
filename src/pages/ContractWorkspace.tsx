@@ -32,6 +32,9 @@ import ContractDetailsSidebar from '../components/contracts/ContractDetailsSideb
 // Types
 interface ContractData {
     id: string;
+    job_id: string;
+    freelancer_id: string;
+    client_id: string;
     job: {
         id: string;
         title: string;
@@ -83,6 +86,9 @@ export default function ContractWorkspace() {
             if (error || !data) throw error || new Error('Not found');
             return {
                 id: data.id,
+                job_id: data.job_id,
+                freelancer_id: data.freelancer_id,
+                client_id: data.client_id,
                 job: data.job as ContractData['job'],
                 freelancer: data.freelancer as ContractData['freelancer'],
                 client: data.client as ContractData['client'],
