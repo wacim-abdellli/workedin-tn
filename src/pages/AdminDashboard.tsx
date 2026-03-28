@@ -12,8 +12,7 @@ import Modal from '../components/ui/Modal';
 import { getStuckTransactions, reconcilePayment } from '../services/payments';
 import type { StuckTransaction } from '../types/payment';
 import { useToast } from '../components/ui/Toast';
-import { supabase } from '../lib/supabase';
-import { supabaseWithRetry } from '../lib/supabaseWithRetry';
+import { supabaseAnon } from '../lib/supabase';
 import { useTranslation } from '../i18n';
 import UsersTab, { ADMIN_USERS_QUERY_KEY, fetchAdminUsers } from './admin/UsersTab';
 import JobsTab, { ADMIN_JOBS_QUERY_KEY, fetchAdminJobs } from './admin/JobsTab';
@@ -24,7 +23,12 @@ import ReportsTab from './admin/ReportsTab';
 const ACTIVE_TAB_KEY = 'admin_active_tab';
 
 async function countWithRetry(queryFn: () => PromiseLike<{ count: number | null; error: unknown }>) {
-    const { count } = await supabaseWithRetry(queryFn);
+    const { count } = await Promise.race([
+        queryFn(),
+        new Promise<{ count: number | null; error: unknown }>((_, reject) => 
+            setTimeout(() => reject(new Error('Query timeout')), 8000)
+        )
+    ]);
     return count ?? 0;
 }
 
@@ -83,11 +87,11 @@ export default function AdminDashboard() {
         try {
             const today = new Date().toISOString().split('T')[0];
             const [usersCount, jobsCount, contractsCount, signupsCount, todayContractsCount] = await Promise.all([
-                countWithRetry(() => supabase.from('profiles').select('id', { count: 'exact', head: true })),
-                countWithRetry(() => supabase.from('jobs').select('id', { count: 'exact', head: true }).in('status', ['open', 'in_progress'])),
-                countWithRetry(() => supabase.from('contracts').select('id', { count: 'exact', head: true }).eq('status', 'active')),
-                countWithRetry(() => supabase.from('profiles').select('id', { count: 'exact', head: true }).gte('created_at', today)),
-                countWithRetry(() => supabase.from('contracts').select('id', { count: 'exact', head: true }).gte('created_at', today)),
+                countWithRetry(() => supabaseAnon.from('profiles').select('id', { count: 'exact', head: true })),
+                countWithRetry(() => supabaseAnon.from('jobs').select('id', { count: 'exact', head: true }).in('status', ['open', 'in_progress'])),
+                countWithRetry(() => supabaseAnon.from('contracts').select('id', { count: 'exact', head: true }).eq('status', 'active')),
+                countWithRetry(() => supabaseAnon.from('profiles').select('id', { count: 'exact', head: true }).gte('created_at', today)),
+                countWithRetry(() => supabaseAnon.from('contracts').select('id', { count: 'exact', head: true }).gte('created_at', today)),
             ]);
             setStats({ totalUsers: usersCount, activeJobs: jobsCount, activeContracts: contractsCount, totalRevenue: 0, todaySignups: signupsCount, todayContracts: todayContractsCount });
         } catch (err) { console.error('Stats fetch error:', err); }
@@ -100,12 +104,12 @@ export default function AdminDashboard() {
     const fetchDisputes = async () => {
         setLoadingDisputes(true);
         try {
-            const client = supabase;
-            const { data } = await supabaseWithRetry(() =>
-                client.from('disputes')
-                    .select('id,contract_id,opened_at,reason,status,contract:contracts!disputes_contract_id_fkey(id,amount,job:jobs(title)),opener:profiles!disputes_opened_by_fkey(full_name,email)')
-                    .eq('status', 'open').order('opened_at', { ascending: true })
-            );
+            const { data, error } = await supabaseAnon
+                .from('disputes')
+                .select('id,contract_id,opened_at,reason,status,contract:contracts!disputes_contract_id_fkey(id,amount,job:jobs(title)),opener:profiles!disputes_opened_by_fkey(full_name,email)')
+                .eq('status', 'open')
+                .order('opened_at', { ascending: true });
+            if (error) throw error;
             setDisputes((data || []) as unknown as DisputeRecord[]);
         } catch (err) {
             console.error('Failed to fetch disputes:', err);
@@ -145,8 +149,8 @@ export default function AdminDashboard() {
     const handleResolveDispute = async (disputeId: string, resolution: string, note?: string) => {
         setResolvingId(disputeId);
         try {
-            const client = supabase;
-            await supabaseWithRetry(() => client.rpc('resolve_dispute', { p_dispute_id: disputeId, p_resolution: resolution, p_admin_note: note || null }));
+            const { error } = await supabaseAnon.rpc('resolve_dispute', { p_dispute_id: disputeId, p_resolution: resolution, p_admin_note: note || null });
+            if (error) throw error;
             setDisputes(prev => prev.filter(d => d.id !== disputeId));
             showToast(tr('تم حل النزاع بنجاح ✓', 'Dispute resolved successfully ✓', 'Litige resolu avec succes ✓'), 'success');
         } catch (err) {

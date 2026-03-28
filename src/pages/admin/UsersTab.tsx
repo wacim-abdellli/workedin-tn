@@ -5,8 +5,7 @@ import Button from '@/components/ui/Button';
 import Modal from '@/components/ui/Modal';
 import ErrorBoundary from '@/components/common/ErrorBoundary';
 import { useToast } from '@/components/ui/Toast';
-import { supabase } from '@/lib/supabase';
-import { supabaseWithRetry } from '@/lib/supabaseWithRetry';
+import { supabaseAnon } from '@/lib/supabase';
 import { useTranslation } from '@/i18n';
 
 export const ADMIN_USERS_QUERY_KEY = ['admin-users'] as const;
@@ -44,9 +43,7 @@ interface ConfirmActionState {
 
 export async function fetchAdminUsers(): Promise<AdminUser[]> {
     try {
-        // Use admin client to bypass RLS
-        const client = supabase;
-        const { data, error } = await client
+        const { data, error } = await supabaseAnon
             .from('profiles')
             .select('id,full_name,email,user_type,active_mode,cin_verified,is_admin,created_at')
             .order('created_at', { ascending: false })
@@ -128,17 +125,15 @@ export default function UsersTab() {
 
     const toggleUserModeMutation = useMutation({
         mutationFn: async (user: AdminUser) => {
-            const client = supabase;
             const nextMode: 'client' | 'freelancer' = user.active_mode === 'freelancer' ? 'client' : 'freelancer';
-            await supabaseWithRetry(() =>
-                client
-                    .from('profiles')
-                    .update({
-                        active_mode: nextMode,
-                        updated_at: new Date().toISOString(),
-                    })
-                    .eq('id', user.id)
-            );
+            const { error } = await supabaseAnon
+                .from('profiles')
+                .update({
+                    active_mode: nextMode,
+                    updated_at: new Date().toISOString(),
+                })
+                .eq('id', user.id);
+            if (error) throw error;
 
             return { userId: user.id, nextMode };
         },
@@ -164,13 +159,11 @@ export default function UsersTab() {
 
     const deleteUserMutation = useMutation({
         mutationFn: async (user: AdminUser) => {
-            const client = supabase;
-            await supabaseWithRetry(() =>
-                client
-                    .from('profiles')
-                    .delete()
-                    .eq('id', user.id)
-            );
+            const { error } = await supabaseAnon
+                .from('profiles')
+                .delete()
+                .eq('id', user.id);
+            if (error) throw error;
 
             return user.id;
         },
@@ -190,31 +183,26 @@ export default function UsersTab() {
 
     const revokeVerificationMutation = useMutation({
         mutationFn: async (user: AdminUser) => {
-            const client = supabase;
-            await Promise.all([
-                supabaseWithRetry(() =>
-                    client
-                        .from('profiles')
-                        .update({
-                            cin_verified: false,
-                            cin_submitted: false,
-                            updated_at: new Date().toISOString(),
-                        })
-                        .eq('id', user.id)
-                ),
-                supabaseWithRetry(() =>
-                    client
-                        .from('freelancer_profiles')
-                        .update({ cin_verified: false })
-                        .eq('id', user.id)
-                ).catch(() => null),
-                supabaseWithRetry(() =>
-                    client
-                        .from('identity_verifications')
-                        .delete()
-                        .eq('user_id', user.id)
-                ).catch(() => null),
+            const results = await Promise.all([
+                supabaseAnon
+                    .from('profiles')
+                    .update({
+                        cin_verified: false,
+                        cin_submitted: false,
+                        updated_at: new Date().toISOString(),
+                    })
+                    .eq('id', user.id),
+                supabaseAnon
+                    .from('freelancer_profiles')
+                    .update({ cin_verified: false })
+                    .eq('id', user.id),
+                supabaseAnon
+                    .from('identity_verifications')
+                    .delete()
+                    .eq('user_id', user.id),
             ]);
+            const firstError = results.find(r => r.error);
+            if (firstError?.error) throw firstError.error;
 
             return user.id;
         },
