@@ -45,7 +45,7 @@ interface ConfirmActionState {
 export async function fetchAdminUsers(): Promise<AdminUser[]> {
     try {
         // Use admin client to bypass RLS
-        const client = supabaseAdmin || supabase;
+        const client = supabase;
         const { data, error } = await client
             .from('profiles')
             .select('id,full_name,email,user_type,active_mode,cin_verified,is_admin,created_at')
@@ -128,7 +128,7 @@ export default function UsersTab() {
 
     const toggleUserModeMutation = useMutation({
         mutationFn: async (user: AdminUser) => {
-            const client = supabaseAdmin || supabase;
+            const client = supabase;
             const nextMode: 'client' | 'freelancer' = user.active_mode === 'freelancer' ? 'client' : 'freelancer';
             await supabaseWithRetry(() =>
                 client
@@ -164,7 +164,7 @@ export default function UsersTab() {
 
     const deleteUserMutation = useMutation({
         mutationFn: async (user: AdminUser) => {
-            const client = supabaseAdmin || supabase;
+            const client = supabase;
             await supabaseWithRetry(() =>
                 client
                     .from('profiles')
@@ -190,7 +190,7 @@ export default function UsersTab() {
 
     const revokeVerificationMutation = useMutation({
         mutationFn: async (user: AdminUser) => {
-            const client = supabaseAdmin || supabase;
+            const client = supabase;
             await Promise.all([
                 supabaseWithRetry(() =>
                     client

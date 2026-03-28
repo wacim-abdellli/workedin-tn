@@ -95,7 +95,7 @@ export interface IdentityVerification {
 }
 
 export async function fetchVerifications(): Promise<IdentityVerification[]> {
-    const client = supabaseAdmin || supabase;
+    const client = supabase;
     try {
         const { data } = await supabaseWithRetry(() =>
             client
@@ -178,7 +178,7 @@ export default function VerificationsTab() {
     const handleAction = async (id: string, action: 'approved' | 'rejected') => {
         setActioningId(id);
         try {
-            const client = supabaseAdmin || supabase;
+            const client = supabase;
             const { data: updatedRows } = await supabaseWithRetry(() =>
                 client
                     .from('identity_verifications')
