@@ -2,8 +2,8 @@ import { Filter, Search, SortAsc } from 'lucide-react';
 
 interface ProposalFiltersProps {
     totalProposals: number;
-    filters: any;
-    onFilterChange: (filters: any) => void;
+    filters: Record<string, unknown>;
+    onFilterChange: (filters: Record<string, unknown>) => void;
 }
 
 export default function ProposalFiltersSidebar({ totalProposals }: ProposalFiltersProps) {
@@ -26,9 +26,9 @@ export default function ProposalFiltersSidebar({ totalProposals }: ProposalFilte
                         <input
                             type="text"
                             placeholder="بحث في العروض..."
-                            className="w-full pl-4 pr-10 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-100 focus:border-primary-500"
+                            className="w-full ps-4 pe-10 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-100 focus:border-primary-500"
                         />
-                        <Search className="w-4 h-4 text-gray-400 absolute right-3 top-3" />
+                        <Search className="w-4 h-4 text-gray-400 absolute end-3 top-3" />
                     </div>
 
                     {/* Sort */}

@@ -81,12 +81,13 @@ export default function VerificationQueue() {
                 return;
             }
             setVerifications(data || []);
-        } catch (err: any) {
+        } catch (err) {
+            const msg = err instanceof Error ? err.message : String(err);
             logger.error('Error fetching verifications:', err);
-            if (err.name === 'AbortError') {
+            if (err instanceof Error && err.name === 'AbortError') {
                 setError(tr('انتهت مهلة الاتصال. تحقق من اتصالك بالإنترنت أو من إعدادات Supabase.', 'Connection timed out. Check your internet connection or Supabase settings.', 'Delai de connexion depasse. Verifiez votre connexion internet ou les parametres Supabase.'));
             } else {
-                setError(err.message || tr('فشل في تحميل طلبات التحقق', 'Failed to load verification requests', 'Echec du chargement des demandes de verification'));
+                setError(msg || tr('فشل في تحميل طلبات التحقق', 'Failed to load verification requests', 'Echec du chargement des demandes de verification'));
             }
             showToast(tr('فشل في تحميل طلبات التحقق', 'Failed to load verification requests', 'Echec du chargement des demandes de verification'), 'error');
         } finally {

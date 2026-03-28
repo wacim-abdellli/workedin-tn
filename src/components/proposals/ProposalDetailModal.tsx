@@ -5,9 +5,35 @@ import {
     Download, ArrowLeft, Archive
 } from 'lucide-react';
 import Button from '../ui/Button';
+import type { ProposalAttachment } from '../../types/proposal';
+
+interface ProposalDetailFreelancer {
+    full_name: string;
+    title: string;
+    avatar_url: string | null;
+    country: string;
+    rating: number;
+    reviews_count: number;
+    jobs_completed: number;
+    success_rate: number;
+    is_online: boolean;
+    availability?: string;
+    bio: string;
+}
+
+interface ProposalDetailData {
+    id: string;
+    created_at: string;
+    status: string;
+    cover_letter: string;
+    attachments: ProposalAttachment[];
+    bid_amount: number;
+    duration: number;
+    freelancer: ProposalDetailFreelancer;
+}
 
 interface ProposalDetailModalProps {
-    proposal: any;
+    proposal: ProposalDetailData | null;
     isOpen: boolean;
     onClose: () => void;
     onMessage: () => void;
@@ -183,7 +209,7 @@ export default function ProposalDetailModal({
                                     <div className="pt-6 border-t border-gray-100">
                                         <h3 className="font-bold mb-4">المرفقات</h3>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            {proposal.attachments.map((file: any, idx: number) => (
+                                            {proposal.attachments.map((file, idx: number) => (
                                                 <div key={idx} className="flex items-center gap-3 p-3 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer group">
                                                     <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
                                                         <FileText className="w-5 h-5" />

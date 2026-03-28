@@ -1,7 +1,20 @@
 import { useEffect, useState } from 'react';
 
+interface DirectQueryResult {
+    status: 'starting' | 'querying' | 'success' | 'error';
+    startTime?: number;
+    statusCode?: number;
+    data?: unknown;
+    count?: number;
+    duration?: number;
+    error?: {
+        name?: string;
+        message: string;
+    };
+}
+
 export default function DirectQueryTest() {
-    const [result, setResult] = useState<any>({ status: 'starting' });
+    const [result, setResult] = useState<DirectQueryResult>({ status: 'starting' });
 
     useEffect(() => {
         let mounted = true;
@@ -14,7 +27,8 @@ export default function DirectQueryTest() {
                 // Direct query with AbortController to prevent hanging
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), 5000);
-                
+                const startTime = Date.now();
+
                 const response = await fetch(
                     `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/profiles?select=id,email,full_name,is_admin&order=created_at.desc&limit=10`,
                     {
@@ -37,20 +51,21 @@ export default function DirectQueryTest() {
                         statusCode: response.status,
                         data: data,
                         count: Array.isArray(data) ? data.length : 0,
-                        duration: endTime - result.startTime,
+                        duration: endTime - startTime,
                     });
                 }
                 
                 console.log('Query result:', { status: response.status, data });
                 
-            } catch (error: any) {
+            } catch (error) {
+                const msg = error instanceof Error ? error.message : String(error);
                 console.error('Query error:', error);
                 if (mounted) {
                     setResult({
                         status: 'error',
                         error: {
-                            name: error.name,
-                            message: error.message,
+                            name: error instanceof Error ? error.name : undefined,
+                            message: msg,
                         }
                     });
                 }
@@ -78,7 +93,7 @@ export default function DirectQueryTest() {
                 {JSON.stringify(result, null, 2)}
             </pre>
             
-            {result.status === 'success' && result.count > 0 && (
+            {result.status === 'success' && (result.count ?? 0) > 0 && (
                 <div style={{ marginTop: '20px', background: '#065f46', padding: '20px', borderRadius: '8px' }}>
                     <h3 style={{ color: '#4ade80' }}>✅ SUCCESS!</h3>
                     <p>The REST API works directly. The issue is with the Supabase JS client.</p>

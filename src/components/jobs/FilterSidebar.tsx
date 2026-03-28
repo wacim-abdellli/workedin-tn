@@ -9,10 +9,22 @@ import {
 } from 'lucide-react';
 import Button from '../ui/Button';
 
+type FilterValue = string | string[] | null;
+
+interface JobBoardFilters {
+    search: string;
+    categories: string[];
+    jobType: string | null;
+    budgetRange: string | null;
+    experienceLevels: string[];
+    postedWithin: string;
+    sortBy: string;
+}
+
 // Move interfaces here if they are not global
 interface FilterSidebarProps {
-    filters: any;
-    onFilterChange: (key: string, value: any) => void;
+    filters: JobBoardFilters;
+    onFilterChange: (key: keyof JobBoardFilters, value: FilterValue) => void;
     categoryCounts: Record<string, number>;
     onClearAll: () => void;
     isOpen?: boolean;

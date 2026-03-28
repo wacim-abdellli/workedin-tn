@@ -3,7 +3,10 @@
  */
 import { supabase } from '@/lib/supabase';
 import type { MessageAttachment } from '@/types';
-import type { RealtimeChannel } from '@supabase/supabase-js';
+import type {
+    RealtimeChannel,
+    RealtimePostgresChangesPayload,
+} from '@supabase/supabase-js';
 
 function normalizeMessageError(error: unknown) {
     const message = error instanceof Error ? error.message : String(error);
@@ -53,6 +56,38 @@ export interface Message {
     };
 }
 
+interface ConversationParticipantRow {
+    id: string;
+    full_name: string | null;
+    avatar_url: string | null;
+    username: string | null;
+}
+
+interface ConversationRow {
+    id: string;
+    participant_1: string;
+    participant_2: string;
+    contract_id: string | null;
+    last_message_text: string | null;
+    last_message_at: string | null;
+    unread_count_1: number | null;
+    unread_count_2: number | null;
+    created_at: string;
+    updated_at: string;
+    participant1: ConversationParticipantRow | ConversationParticipantRow[] | null;
+    participant2: ConversationParticipantRow | ConversationParticipantRow[] | null;
+}
+
+function pickParticipant(
+    participant: ConversationParticipantRow | ConversationParticipantRow[] | null
+): ConversationParticipantRow | null {
+    if (Array.isArray(participant)) {
+        return participant[0] ?? null;
+    }
+
+    return participant;
+}
+
 // --- READ ---
 
 export async function getConversations(userId: string) {
@@ -70,14 +105,30 @@ export async function getConversations(userId: string) {
         if (error) throw error;
 
         // Transform data to include otherUser and unread_count
-        const conversations: Conversation[] = (data || []).map((conv: any) => {
+        const rows = (data ?? []) as ConversationRow[];
+
+        const conversations: Conversation[] = rows.map((conv) => {
             const isParticipant1 = conv.participant_1 === userId;
-            const otherUser = isParticipant1 ? conv.participant2 : conv.participant1;
+            const otherUser = pickParticipant(isParticipant1 ? conv.participant2 : conv.participant1);
             const unread_count = isParticipant1 ? conv.unread_count_1 : conv.unread_count_2;
 
             return {
-                ...conv,
-                otherUser: otherUser || { id: '', full_name: 'Unknown User', avatar_url: null, username: null },
+                id: conv.id,
+                participant_1: conv.participant_1,
+                participant_2: conv.participant_2,
+                contract_id: conv.contract_id,
+                last_message_text: conv.last_message_text,
+                last_message_at: conv.last_message_at,
+                unread_count_1: conv.unread_count_1 ?? 0,
+                unread_count_2: conv.unread_count_2 ?? 0,
+                created_at: conv.created_at,
+                updated_at: conv.updated_at,
+                otherUser: {
+                    id: otherUser?.id || '',
+                    full_name: otherUser?.full_name || 'Unknown User',
+                    avatar_url: otherUser?.avatar_url || null,
+                    username: otherUser?.username || null,
+                },
                 unread_count: unread_count || 0,
             };
         });
@@ -161,7 +212,7 @@ export async function markConversationRead(conversationId: string, userId: strin
 
 export function subscribeToConversation(
     conversationId: string,
-    callback: (payload: any) => void
+    callback: (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => void
 ): RealtimeChannel {
     return supabase
         .channel(`messages:${conversationId}`)
@@ -180,7 +231,7 @@ export function subscribeToConversation(
 
 export function subscribeToConversations(
     userId: string,
-    callback: (payload: any) => void
+    callback: (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => void
 ): RealtimeChannel {
     const channel = supabase.channel(`conversations:${userId}`);
 

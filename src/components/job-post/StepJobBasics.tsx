@@ -4,9 +4,20 @@ import Input from '../ui/Input';
 import { FileUpload } from '../common/FileUpload';
 import { PREDEFINED_SKILLS } from '../../types';
 import { useTranslation } from '../../i18n';
+import type { Skill } from '../../types';
+
+type JobSkill = Skill;
+
+interface StepJobBasicsFormValues {
+    title?: string;
+    category?: string;
+    description?: string;
+    required_skills?: JobSkill[];
+    attachments_files?: File[];
+}
 
 export default function StepJobBasics() {
-    const { register, control, formState: { errors }, watch, setValue } = useFormContext();
+    const { register, control, formState: { errors }, watch, setValue } = useFormContext<StepJobBasicsFormValues>();
     const { language, tx } = useTranslation();
     const description = watch('description') || '';
     const selectedSkills = watch('required_skills') || [];
@@ -19,12 +30,12 @@ export default function StepJobBasics() {
         { id: 'writing', name: tx('jobs.new.stepBasics.categoryWriting', undefined, 'كتابة وترجمة') },
     ];
 
-    const toggleSkill = (skill: any) => {
+    const toggleSkill = (skill: JobSkill) => {
         const current = selectedSkills;
-        const exists = current.find((s: any) => s.id === skill.id);
+        const exists = current.find((s) => s.id === skill.id);
 
         if (exists) {
-            setValue('required_skills', current.filter((s: any) => s.id !== skill.id));
+            setValue('required_skills', current.filter((s) => s.id !== skill.id));
         } else if (current.length < 5) {
             setValue('required_skills', [...current, skill]);
         }
@@ -102,7 +113,7 @@ export default function StepJobBasics() {
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{tx('jobs.new.stepBasics.requiredSkills', undefined, 'المهارات المطلوبة (بحد أقصى 5)')}</label>
                     <div className="flex flex-wrap gap-2">
                         {PREDEFINED_SKILLS.map(skill => {
-                            const isSelected = selectedSkills.find((s: any) => s.id === skill.id);
+                            const isSelected = selectedSkills.find((s) => s.id === skill.id);
                             return (
                                 <button
                                     key={skill.id}

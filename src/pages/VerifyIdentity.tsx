@@ -217,8 +217,10 @@ export default function VerifyIdentity() {
                     30000, 'Verify identity insert'
                 );
             } catch (fetchError) {
-                const status = typeof fetchError === 'object' && fetchError && 'status' in fetchError ? (fetchError as any).status : undefined;
-                const code = typeof fetchError === 'object' && fetchError && 'code' in fetchError ? (fetchError as any).code : undefined;
+                const fetchErrorMeta = typeof fetchError === 'object' && fetchError !== null
+                    ? (fetchError as { status?: number; code?: string })
+                    : {};
+                const { status, code } = fetchErrorMeta;
                 if (fetchError instanceof Error && fetchError.message.includes('timed out after'))
                     throw new Error(tx('verifyIdentity.errors.insertTimeout', undefined, 'Database insert timed out after 30 seconds.'));
                 if (status === 409 || code === '23505')

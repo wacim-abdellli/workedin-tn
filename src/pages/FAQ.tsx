@@ -137,7 +137,7 @@ export default function FAQ() {
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             placeholder="ابحث في الأسئلة..."
-                            className="w-full pr-12 pl-4 py-4 border border-gray-200 rounded-2xl text-lg"
+                            className="w-full pe-12 ps-4 py-4 border border-gray-200 rounded-2xl text-lg"
                         />
                     </div>
                 </div>
@@ -172,7 +172,7 @@ export default function FAQ() {
                                                 )}
                                             </button>
                                             {isOpen && (
-                                                <p className="text-muted mt-2 pr-0 animate-slide-down">
+                                                <p className="text-muted mt-2 pe-0 animate-slide-down">
                                                     {item.a}
                                                 </p>
                                             )}

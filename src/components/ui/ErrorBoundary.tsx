@@ -1,5 +1,6 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
+import * as Sentry from '@sentry/react';
 
 import { logger } from '@/lib/logger';
 import { useTranslation } from '@/i18n';
@@ -8,6 +9,7 @@ import Button from './Button';
 
 interface Props {
     children: ReactNode;
+    fallback?: ReactNode;
 }
 
 interface State {
@@ -26,11 +28,23 @@ class ErrorBoundaryInner extends Component<Props & { tx: (key: string, params?: 
     }
 
     public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-        logger.error('Uncaught error:', error, errorInfo);
+        Sentry.captureException(error, {
+            contexts: {
+                react: {
+                    componentStack: errorInfo.componentStack,
+                },
+            },
+        });
+
+        logger.error('ErrorBoundary caught error:', error, errorInfo);
     }
 
     public render() {
         if (this.state.hasError) {
+            if (this.props.fallback) {
+                return this.props.fallback;
+            }
+
             return (
                 <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#f7f5ff] p-4 dark:bg-[#09070f]">
                     <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(139,92,246,0.16),transparent_28%),radial-gradient(circle_at_bottom_right,rgba(245,158,11,0.12),transparent_24%)]" />

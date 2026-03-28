@@ -267,9 +267,10 @@ export default function JobPost() {
                 navigate(insertedJob?.id ? `/jobs/posted/${insertedJob.id}` : '/jobs');
             }
 
-        } catch (error: any) {
+        } catch (error) {
+            const msg = error instanceof Error ? error.message : String(error);
             logger.error('Error posting job:', error);
-            showToast(error?.message || tx('jobs.new.errors.saveFailed', undefined, 'Something went wrong while saving the job'), 'error');
+            showToast(msg || tx('jobs.new.errors.saveFailed', undefined, 'Something went wrong while saving the job'), 'error');
         } finally {
             setIsSubmitting(false);
             setSubmitIntent(null);

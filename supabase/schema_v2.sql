@@ -763,7 +763,7 @@ CREATE TABLE IF NOT EXISTS withdrawals (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
     wallet_id UUID NOT NULL REFERENCES wallets(id) ON DELETE CASCADE,
-    amount DECIMAL(12, 2) NOT NULL CHECK (amount > 0),
+    amount DECIMAL(12, 2) NOT NULL,
     fee DECIMAL(12, 2) DEFAULT 0,
     net_amount DECIMAL(12, 2) GENERATED ALWAYS AS (amount - fee) STORED,
     method VARCHAR(50) NOT NULL, -- 'bank_transfer', 'd17', etc.
@@ -776,7 +776,9 @@ CREATE TABLE IF NOT EXISTS withdrawals (
     processed_by UUID REFERENCES profiles(id),
     processed_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    CONSTRAINT withdrawals_amount_positive CHECK (amount > 0),
+    CONSTRAINT withdrawals_amount_minimum CHECK (amount >= 20)
 );
 
 -- PAYMENT_METHODS TABLE: Saved payment methods

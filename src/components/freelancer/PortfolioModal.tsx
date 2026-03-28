@@ -5,6 +5,7 @@ import { z } from 'zod';
 import Modal from '../ui/Modal';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
+import type { PortfolioItem } from '../../types';
 // import { useToast } from '../ui/Toast'; // Optional: Use parent's toast
 
 const portfolioSchema = z.object({
@@ -18,11 +19,16 @@ const portfolioSchema = z.object({
 
 type PortfolioFormData = z.infer<typeof portfolioSchema>;
 
+export interface PortfolioSubmitData extends Omit<PortfolioFormData, 'skills_used' | 'media_url'> {
+    skills_used: string[];
+    media_urls: string[];
+}
+
 interface PortfolioModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSubmit: (data: any) => Promise<void>;
-    initialData?: any;
+    onSubmit: (data: PortfolioSubmitData) => Promise<void>;
+    initialData?: PortfolioItem | null;
     isSubmitting?: boolean;
 }
 

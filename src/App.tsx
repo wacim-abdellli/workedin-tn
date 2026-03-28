@@ -243,7 +243,12 @@ function AppRoutes() {
 
       {/* Messages */}
       <Route path="/messages" element={
-        <ErrorBoundary>
+        <ErrorBoundary fallback={
+          <div style={{ padding: '2rem', textAlign: 'center' }}>
+            <p>حدث خطأ غير متوقع / Une erreur inattendue s'est produite</p>
+            <button onClick={() => window.location.reload()}>إعادة تحميل / Recharger</button>
+          </div>
+        }>
           <ProtectedRoute>
             <Messages />
           </ProtectedRoute>
@@ -287,7 +292,12 @@ function AppRoutes() {
         </ErrorBoundary>
       } />
       <Route path="/settings" element={
-        <ErrorBoundary>
+        <ErrorBoundary fallback={
+          <div style={{ padding: '2rem', textAlign: 'center' }}>
+            <p>حدث خطأ غير متوقع / Une erreur inattendue s'est produite</p>
+            <button onClick={() => window.location.reload()}>إعادة تحميل / Recharger</button>
+          </div>
+        }>
           <ProtectedRoute>
             <Settings />
           </ProtectedRoute>
@@ -333,7 +343,12 @@ function AppRoutes() {
 
       {/* Identity Verification */}
       <Route path="/verify-identity" element={
-        <ErrorBoundary>
+        <ErrorBoundary fallback={
+          <div style={{ padding: '2rem', textAlign: 'center' }}>
+            <p>حدث خطأ غير متوقع / Une erreur inattendue s'est produite</p>
+            <button onClick={() => window.location.reload()}>إعادة تحميل / Recharger</button>
+          </div>
+        }>
           <ProtectedRoute>
             <VerifyIdentity />
           </ProtectedRoute>

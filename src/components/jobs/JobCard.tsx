@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import React from 'react';
 import { Briefcase, Clock, Heart, MapPin, ShieldCheck } from 'lucide-react';
 
 import { useTranslation } from '../../i18n';
@@ -39,7 +39,7 @@ interface JobCardProps {
   onClick: (jobId: string) => void;
 }
 
-const JobCard = memo(function JobCard({ job, isSaved, onToggleSave, onClick }: JobCardProps) {
+function JobCard({ job, isSaved, onToggleSave, onClick }: JobCardProps) {
   const { t, language } = useTranslation();
   const [from, to] = getAvatarGradient(job.client?.full_name || 'Khedma');
 
@@ -184,6 +184,6 @@ const JobCard = memo(function JobCard({ job, isSaved, onToggleSave, onClick }: J
       </div>
     </div>
   );
-});
+}
 
-export default JobCard;
+export default React.memo(JobCard);

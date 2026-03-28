@@ -106,9 +106,10 @@ function ClientOnboarding() {
 
             showToast(t.onboarding.freelancer.welcomeToast || 'Welcome to Khedma!', 'success');
             navigate('/client/dashboard');
-        } catch (error: any) {
+        } catch (error) {
+            const msg = error instanceof Error ? error.message : String(error);
             logger.error('Client onboarding error:', error);
-            showToast(error.message || t.common.error, 'error');
+            showToast(msg || t.common.error, 'error');
         } finally {
             setIsLoading(false);
         }

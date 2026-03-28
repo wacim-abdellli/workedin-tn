@@ -8,13 +8,29 @@ import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from '@/i18n'
 import EmptyState from '@/components/common/EmptyState'
 
+interface JobProposalCountRow {
+  count: number;
+}
+
+interface ClientJobRow {
+  id: string;
+  title: string;
+  category: string;
+  status: string;
+  budget_min: number;
+  budget_max: number;
+  job_type: string;
+  created_at: string;
+  proposals?: JobProposalCountRow[];
+}
+
 export default function ClientJobs() {
   const { user } = useAuth()
   const { tx } = useTranslation()
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState<'all' | 'active' | 'in review' | 'completed'>('all')
 
-  const { data: jobs, isLoading } = useQuery({
+  const { data: jobs, isLoading } = useQuery<ClientJobRow[]>({
     queryKey: ['client-jobs', user?.id, activeTab],
     queryFn: async () => {
       let q = supabase
@@ -29,12 +45,12 @@ export default function ClientJobs() {
       
       const { data, error } = await q
       if (error) throw error
-      return data
+      return (data ?? []) as unknown as ClientJobRow[]
     },
     enabled: !!user?.id
   })
 
-  const { data: allJobs } = useQuery({
+  const { data: allJobs } = useQuery<ClientJobRow[]>({
     queryKey: ['client-jobs-stats', user?.id],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -42,7 +58,7 @@ export default function ClientJobs() {
         .select('status, proposals(count)')
         .eq('client_id', user?.id)
       if (error) throw error
-      return data
+      return (data ?? []) as unknown as ClientJobRow[]
     },
     enabled: !!user?.id
   })
@@ -145,7 +161,7 @@ export default function ClientJobs() {
           />
         ) : (
           <div className="space-y-3">
-            {jobs.map((job: any) => (
+            {jobs.map((job) => (
               <div 
                 key={job.id}
                 className="list-card"

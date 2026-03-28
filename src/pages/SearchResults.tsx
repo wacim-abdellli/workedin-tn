@@ -81,7 +81,7 @@ export default function SearchResults() {
                                     }
                                 }}
                                 placeholder="ابحث..."
-                                className="input pr-12 pl-4 text-lg"
+                                className="input pe-12 ps-4 text-lg"
                             />
                         </div>
                         <Button

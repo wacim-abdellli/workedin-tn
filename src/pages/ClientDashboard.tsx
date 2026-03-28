@@ -16,6 +16,27 @@ import { useToast } from '../components/ui/Toast';
 import { supabase } from '../lib/supabase';
 import { formatCurrency } from '../lib/currencyUtils';
 
+interface DashboardContract {
+    id: string;
+    status: string;
+    freelancer: {
+        full_name: string | null;
+    } | Array<{
+        full_name: string | null;
+    }> | null;
+}
+
+interface DashboardJob {
+    id: string;
+    title: string;
+    budget_min: number | null;
+    budget_max: number | null;
+    status: string;
+    created_at: string;
+    proposals_count: number;
+    contracts: DashboardContract[] | null;
+}
+
 function ClientDashboardPage() {
     const { t, tx, dir, language } = useTranslation();
     const { profile, signOut } = useAuth();
@@ -54,7 +75,7 @@ function ClientDashboardPage() {
     });
 
     // Fetch real jobs
-    const { data: jobs = [] } = useQuery({
+    const { data: jobs = [] } = useQuery<DashboardJob[]>({
         queryKey: ['clientJobs', profile?.id],
         enabled: !!profile?.id,
         queryFn: async () => {
@@ -69,7 +90,7 @@ function ClientDashboardPage() {
                 .order('created_at', { ascending: false })
                 .limit(5);
             if (error) { console.error('clientJobs error:', error); return []; }
-            return data || [];
+            return (data ?? []) as unknown as DashboardJob[];
         },
         staleTime: 60_000,
     });
@@ -203,7 +224,7 @@ function ClientDashboardPage() {
                                 <Button variant="primary" onClick={() => navigate('/jobs/new')}>{t.dashboard.postNewJob}</Button>
                             </div>
                         ) : (
-                            jobs.map((job: any) => (
+                            jobs.map((job) => (
                                 <div
                                     key={job.id}
                                     className="card hover:shadow-md transition-shadow duration-200 cursor-pointer group"
@@ -243,7 +264,14 @@ function ClientDashboardPage() {
                                         <div className="flex items-center gap-2 p-3 bg-primary-50 dark:bg-primary-900/20 rounded-xl">
                                             <User className="w-5 h-5 text-primary-600" />
                                             <span className="text-primary-800 text-sm font-medium">
-                                                {job.contracts[0].freelancer?.full_name || tx('dashboard.client.freelancerFallback', undefined, 'Freelancer')}
+                                                {(() => {
+                                                    const freelancer = job.contracts[0].freelancer;
+                                                    const name = Array.isArray(freelancer)
+                                                        ? freelancer[0]?.full_name
+                                                        : freelancer?.full_name;
+
+                                                    return name || tx('dashboard.client.freelancerFallback', undefined, 'Freelancer');
+                                                })()}
                                             </span>
                                         </div>
                                     )}

@@ -5,9 +5,10 @@ import {
     FileText, Download, DollarSign
 } from 'lucide-react';
 import Button from '../ui/Button';
+import type { Proposal } from '../../types/proposal';
 
 interface ProposalCardProps {
-    proposal: any;
+    proposal: Proposal;
     onMessage: (id: string) => void;
     onShortlist: (id: string) => void;
     onHire: (id: string) => void;
@@ -64,7 +65,7 @@ function ProposalCard({ proposal, onMessage, onShortlist, onHire }: ProposalCard
                     </div>
 
                     {/* CENTER: Proposal Content */}
-                    <div className="flex-1 min-w-0 border-t lg:border-t-0 lg:border-r border-gray-100 pt-4 lg:pt-0 lg:pr-6">
+                    <div className="flex-1 min-w-0 border-t lg:border-t-0 lg:border-s border-gray-100 pt-4 lg:pt-0 lg:pe-6">
                         <div className="flex items-center gap-3 mb-3">
                             <div className="flex items-center gap-1 bg-gray-50 px-2 py-1 rounded-lg">
                                 <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
@@ -97,7 +98,7 @@ function ProposalCard({ proposal, onMessage, onShortlist, onHire }: ProposalCard
 
                         {proposal.attachments && proposal.attachments.length > 0 && (
                             <div className="mt-4 flex flex-wrap gap-2">
-                                {proposal.attachments.map((file: any, index: number) => (
+                                {proposal.attachments.map((file, index: number) => (
                                     <div key={index} className="flex items-center gap-2 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg max-w-xs group cursor-pointer hover:bg-gray-100 transition-colors">
                                         <div className="p-1.5 bg-white rounded-md shadow-sm">
                                             <FileText className="w-4 h-4 text-primary-600" />
@@ -119,7 +120,7 @@ function ProposalCard({ proposal, onMessage, onShortlist, onHire }: ProposalCard
                     </div>
 
                     {/* RIGHT: Bid & Actions */}
-                    <div className="lg:w-64 border-t lg:border-t-0 lg:border-r border-gray-100 pt-4 lg:pt-0 lg:pr-6 flex flex-col justify-between">
+                    <div className="lg:w-64 border-t lg:border-t-0 lg:border-s border-gray-100 pt-4 lg:pt-0 lg:pe-6 flex flex-col justify-between">
                         <div>
                             <div className="flex items-baseline justify-between mb-1">
                                 <span className="text-2xl font-bold text-gray-900">{bid_amount}</span>

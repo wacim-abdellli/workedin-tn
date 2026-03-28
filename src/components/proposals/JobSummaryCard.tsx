@@ -1,8 +1,16 @@
 import { Calendar, DollarSign, Clock, ExternalLink, Share2 } from 'lucide-react';
 import Button from '../ui/Button';
 
+interface ProposalJobSummary {
+    budget_min: number;
+    budget_max: number;
+    job_type: 'fixed_price' | 'hourly' | string;
+    duration: string;
+    created_at?: string;
+}
+
 interface JobSummaryProps {
-    job: any;
+    job: ProposalJobSummary | null;
 }
 
 export default function JobSummaryCard({ job }: JobSummaryProps) {

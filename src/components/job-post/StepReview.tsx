@@ -1,21 +1,38 @@
 import { useFormContext } from 'react-hook-form';
 import { FileText, DollarSign, Calendar, Clock, MapPin, Briefcase, File, Globe, Lock } from 'lucide-react';
 import { useTranslation } from '../../i18n';
+import type { Skill } from '../../types';
+
+interface StepReviewValues {
+    title?: string;
+    category?: string;
+    posted_at?: string;
+    description?: string;
+    job_type?: 'fixed_price' | 'hourly';
+    budget_min?: number;
+    budget_max?: number;
+    hourly_rate?: number;
+    experience_level?: string;
+    duration?: string;
+    visibility?: 'public' | 'invite_only';
+    attachments_files?: File[];
+    required_skills?: Skill[];
+}
 
 export default function StepReview() {
-    const { watch } = useFormContext();
+    const { watch } = useFormContext<StepReviewValues>();
     const { language, tx } = useTranslation();
     const values = watch();
 
     // Helper text mappings
-    const durationMap: any = {
+    const durationMap: Record<string, string> = {
         'less_than_1_month': tx('jobs.new.stepReview.durationLessThan1Month', undefined, 'أقل من شهر'),
         '1_3_months': tx('jobs.new.stepReview.duration1To3Months', undefined, '1 - 3 أشهر'),
         '3_6_months': tx('jobs.new.stepReview.duration3To6Months', undefined, '3 - 6 أشهر'),
         'more_than_6_months': tx('jobs.new.stepReview.durationMoreThan6Months', undefined, 'أكثر من 6 أشهر')
     };
 
-    const experienceMap: any = {
+    const experienceMap: Record<string, string> = {
         'beginner': tx('jobs.new.stepReview.beginner', undefined, 'مبتدئ'),
         'intermediate': tx('jobs.new.stepReview.intermediate', undefined, 'متوسط الخبرة'),
         'expert': tx('jobs.new.stepReview.expert', undefined, 'خبير')
@@ -62,7 +79,7 @@ export default function StepReview() {
                                 <p className="text-gray-600 dark:text-gray-400">
                                     {values.job_type === 'fixed_price'
                                         ? `${values.budget_min} - ${values.budget_max} د.ت`
-                                        : tx('jobs.new.stepReview.hourlyBudget', { rate: values.hourly_rate }, `${values.hourly_rate} د.ت / ساعة`)
+                                        : tx('jobs.new.stepReview.hourlyBudget', { rate: values.hourly_rate ?? 0 }, `${values.hourly_rate ?? 0} د.ت / ساعة`)
                                     }
                                 </p>
                             </div>
@@ -72,7 +89,7 @@ export default function StepReview() {
                             <Briefcase className="mt-1 h-5 w-5 text-gray-400 dark:text-gray-500" />
                             <div>
                                 <h4 className="font-bold text-gray-900 dark:text-white">{tx('jobs.new.stepReview.experienceLevel', undefined, 'المستوى المطلوب')}</h4>
-                                <p className="text-gray-600 dark:text-gray-400">{experienceMap[values.experience_level]}</p>
+                                <p className="text-gray-600 dark:text-gray-400">{values.experience_level ? experienceMap[values.experience_level] : '—'}</p>
                             </div>
                         </div>
                     </div>
@@ -82,7 +99,7 @@ export default function StepReview() {
                             <Calendar className="mt-1 h-5 w-5 text-gray-400 dark:text-gray-500" />
                             <div>
                                 <h4 className="font-bold text-gray-900 dark:text-white">{tx('jobs.new.stepReview.projectDuration', undefined, 'مدة المشروع')}</h4>
-                                <p className="text-gray-600 dark:text-gray-400">{durationMap[values.duration]}</p>
+                                <p className="text-gray-600 dark:text-gray-400">{values.duration ? durationMap[values.duration] : '—'}</p>
                             </div>
                         </div>
 
@@ -134,8 +151,8 @@ export default function StepReview() {
                 {/* Skills */}
                 <div>
                     <h3 className="mb-3 font-bold text-gray-900 dark:text-white">{tx('jobs.new.stepReview.requiredSkills', undefined, 'المهارات المطلوبة')}</h3>
-                    <div className="flex flex-wrap gap-2">
-                        {values.required_skills?.map((skill: any) => (
+                        <div className="flex flex-wrap gap-2">
+                        {values.required_skills?.map((skill) => (
                             <span key={skill.id} className="rounded-full bg-primary-50 px-3 py-1 text-sm font-medium text-primary-700 dark:bg-primary-900/20 dark:text-primary-300">
                                 {language === 'ar' ? skill.name_ar : language === 'fr' ? skill.name_fr : skill.name_en}
                             </span>

@@ -6,9 +6,10 @@ import {
 } from 'lucide-react';
 import Button from '../ui/Button';
 import { useTranslation } from '../../i18n';
+import type { Contract } from '../../types';
 
 interface ContractDetailsSidebarProps {
-    contract: any;
+    contract: Contract | null;
     userRole: 'client' | 'freelancer';
     currentStatus: string;
     isActionLoading?: boolean;
@@ -174,7 +175,7 @@ export default function ContractDetailsSidebar({
                             </div>
                             <div className="text-xs text-gray-500 flex justify-between">
                                 <span>{contract.amount} د.ت</span>
-                                <span>{new Date(contract.job.deadline).toLocaleDateString()}</span>
+                                <span>{contract.job?.deadline ? new Date(contract.job.deadline).toLocaleDateString() : '—'}</span>
                             </div>
                         </div>
                     </div>

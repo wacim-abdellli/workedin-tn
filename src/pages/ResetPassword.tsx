@@ -120,9 +120,10 @@ const ResetPassword = () => {
             setTimeout(() => {
                 navigate('/login');
             }, 3000);
-        } catch (error: any) {
+        } catch (error) {
+            const msg = error instanceof Error ? error.message : String(error);
             logger.error('Password update error:', error);
-            showToast(error.message || t.auth.resetPassword.error, 'error');
+            showToast(msg || t.auth.resetPassword.error, 'error');
         } finally {
             setIsLoading(false);
         }

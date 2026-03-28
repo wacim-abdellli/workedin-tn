@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BadgeCheck, Briefcase, Clock, Heart, MapPin, Shield, Sparkles, Zap } from 'lucide-react';
 
@@ -33,7 +33,7 @@ interface FreelancerCardProps {
   onToggleSave?: (id: string) => void;
 }
 
-const FreelancerCard = memo(function FreelancerCard({
+function FreelancerCard({
   freelancer,
   viewMode = 'grid',
   isSaved = false,
@@ -66,7 +66,7 @@ const FreelancerCard = memo(function FreelancerCard({
     >
       <div className={cn(
         viewMode === 'list'
-          ? 'shrink-0 border-b border-gray-100 pb-4 md:w-48 md:border-b-0 md:border-l md:border-gray-100 md:pb-0 md:pl-6 dark:border-dark-700'
+          ? 'shrink-0 border-b border-gray-100 pb-4 md:w-48 md:border-b-0 md:border-s md:border-gray-100 md:pb-0 md:ps-6 dark:border-dark-700'
           : 'mb-6 text-center'
       )}>
         <div className="relative inline-block">
@@ -229,6 +229,6 @@ const FreelancerCard = memo(function FreelancerCard({
       </div>
     </div>
   );
-});
+}
 
-export default FreelancerCard;
+export default React.memo(FreelancerCard);

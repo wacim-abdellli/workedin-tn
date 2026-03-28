@@ -14,6 +14,12 @@ import type {
     FlouciVerificationResponse,
 } from '../types/payment';
 
+interface FlouciCompletionResult {
+    success: boolean;
+    data?: Record<string, unknown>;
+    error?: string;
+}
+
 // Development mode flag
 const IS_DEV_MODE = import.meta.env.DEV;
 
@@ -98,7 +104,7 @@ export async function verifyPayment(
         freelancer_id?: string;
         amount?: number;
     }
-): Promise<FlouciVerificationResponse & { completion?: { success: boolean; data?: any; error?: string } }> {
+): Promise<FlouciVerificationResponse & { completion?: FlouciCompletionResult }> {
     logger.log('[Flouci] Verifying payment:', paymentId);
 
     // In development mode, simulate successful verification

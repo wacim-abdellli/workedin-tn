@@ -160,7 +160,7 @@ export default function FindFreelancers() {
     const FilterSidebar = () => (
         <div className="space-y-8">
             <div className="relative group">
-                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                <div className="pointer-events-none absolute inset-y-0 end-0 flex items-center pe-3">
                     <Search className="h-5 w-5 text-[#8a839f] transition-colors group-focus-within:text-primary-500" />
                 </div>
                 <input
@@ -168,7 +168,7 @@ export default function FindFreelancers() {
                     value={searchQuery}
                     onChange={(event) => setSearchQuery(event.target.value)}
                     placeholder={copy.searchPlaceholder}
-                    className="block w-full rounded-2xl border border-white/70 bg-white/85 p-4 pr-11 text-sm text-[#191627] shadow-sm backdrop-blur transition-colors focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-200 dark:border-white/8 dark:bg-white/5 dark:text-white dark:focus:ring-primary-500/20"
+                    className="block w-full rounded-2xl border border-white/70 bg-white/85 p-4 pe-11 text-sm text-[#191627] shadow-sm backdrop-blur transition-colors focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-200 dark:border-white/8 dark:bg-white/5 dark:text-white dark:focus:ring-primary-500/20"
                 />
             </div>
 
@@ -414,7 +414,7 @@ export default function FindFreelancers() {
                                 <select
                                     value={sortBy}
                                     onChange={(event) => setSortBy(event.target.value)}
-                                    className="cursor-pointer border-none bg-transparent pr-8 text-sm font-semibold focus:outline-none"
+                                    className="cursor-pointer border-none bg-transparent pe-8 text-sm font-semibold focus:outline-none"
                                 >
                                     <option value="recommended">{copy.sort.recommended}</option>
                                     <option value="rating">{copy.sort.rating}</option>

@@ -83,7 +83,7 @@ export default function UsersTab() {
     const tableHeadClass = 'bg-white/90 dark:bg-slate-900/88 border-b border-gray-200 dark:border-white/10 sticky top-0 z-10 backdrop-blur';
     const tableRowClass = 'group hover:bg-primary-50/60 dark:hover:bg-primary-500/10 transition-colors';
     const iconActionClass = 'p-2 rounded-xl bg-gray-100/85 dark:bg-white/5 text-gray-500 transition-colors';
-    const inputClass = 'w-full h-12 pr-11 pl-4 border rounded-xl bg-white/92 dark:bg-slate-900/70 border-gray-200 dark:border-white/12 text-foreground placeholder:text-muted shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500/35 focus:border-primary-400/40';
+    const inputClass = 'w-full h-12 pe-11 ps-4 border rounded-xl bg-white/92 dark:bg-slate-900/70 border-gray-200 dark:border-white/12 text-foreground placeholder:text-muted shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500/35 focus:border-primary-400/40';
     const selectClass = 'h-12 px-4 border rounded-xl bg-white/92 dark:bg-slate-900/70 border-gray-200 dark:border-white/12 text-foreground shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500/35 focus:border-primary-400/40';
 
     const closeConfirm = () => setConfirmAction((prev) => ({ ...prev, isOpen: false }));
@@ -255,7 +255,7 @@ export default function UsersTab() {
                 <div className={panelClass}>
                     <div className="flex flex-wrap items-center gap-4">
                         <div className="flex-1 relative">
-                            <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                            <Search className="absolute end-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                             <input
                                 type="text"
                                 value={searchQuery}

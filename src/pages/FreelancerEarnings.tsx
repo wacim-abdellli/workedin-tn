@@ -11,6 +11,20 @@ import {
 import EmptyState from '@/components/common/EmptyState'
 import SkeletonList from '@/components/common/SkeletonList'
 
+interface WalletBalanceRow {
+  balance: number;
+  pending: number;
+  total_earned: number;
+}
+
+interface EarningsTransactionRow {
+  id: string;
+  description: string | null;
+  related_id: string | null;
+  created_at: string;
+  amount: number;
+}
+
 export default function FreelancerEarnings() {
   const { user } = useAuth()
   const { language, tx } = useTranslation()
@@ -18,7 +32,7 @@ export default function FreelancerEarnings() {
 
   // This is a simplified fetch assuming there is a wallets and transactions table.
   // We'll mock missing parts if they fail or don't exist yet based on typically standard db schemas.
-  const { data: balance } = useQuery({
+  const { data: balance } = useQuery<WalletBalanceRow>({
     queryKey: ['freelancer-balance', user?.id],
     queryFn: async () => {
       // Typically there would be a wallet fetch
@@ -31,13 +45,13 @@ export default function FreelancerEarnings() {
       
       // If no wallet table exists yet, return a graceful fallback 0
       if (error && error.code !== 'PGRST116') throw error
-      return data || { balance: 0, pending: 0, total_earned: 0 }
+      return (data as WalletBalanceRow | null) || { balance: 0, pending: 0, total_earned: 0 }
     },
     enabled: !!user?.id,
     retry: 1
   })
 
-  const { data: transactions, isLoading: isTxLoading } = useQuery({
+  const { data: transactions, isLoading: isTxLoading } = useQuery<EarningsTransactionRow[]>({
     queryKey: ['freelancer-transactions', user?.id],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -47,7 +61,7 @@ export default function FreelancerEarnings() {
         .order('created_at', { ascending: false })
       
       if (error && error.code !== 'PGRST116') throw error
-      return data || []
+      return (data as EarningsTransactionRow[] | null) || []
     },
     enabled: !!user?.id,
     retry: 1
@@ -157,9 +171,9 @@ export default function FreelancerEarnings() {
               />
             ) : (
               <div className="divide-y divide-gray-100 dark:divide-white/5">
-                {transactions.map((transaction: any) => (
+                {transactions.map((transaction) => (
                   <div key={transaction.id} className="flex items-center justify-between px-5 py-3 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
-                    <div className="flex-1 min-w-0 pr-4">
+                    <div className="flex-1 min-w-0 pe-4">
                       <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
                         {transaction.description || tx('pages.freelancerEarnings.contractPayment', undefined, 'Contract payment')}
                       </p>

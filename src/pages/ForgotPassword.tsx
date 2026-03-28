@@ -54,9 +54,10 @@ const ForgotPassword = () => {
 
             setIsSuccess(true);
             showToast(t.auth.forgotPasswordForm.sent, 'success');
-        } catch (error: any) {
+        } catch (error) {
+            const msg = error instanceof Error ? error.message : String(error);
             logger.error('Password reset error:', error);
-            showToast(error.message || t.auth.forgotPasswordForm.error, 'error');
+            showToast(msg || t.auth.forgotPasswordForm.error, 'error');
         } finally {
             setIsLoading(false);
         }

@@ -8,6 +8,7 @@ import { supabase } from '../lib/supabase';
 import type { PortfolioItem } from '../types';
 import { useToast } from '../components/ui/Toast';
 import PortfolioModal from '../components/freelancer/PortfolioModal';
+import type { PortfolioSubmitData } from '../components/freelancer/PortfolioModal';
 import OptimizedImage from '../components/common/OptimizedImage';
 import { Skeleton } from '../components/common/SkeletonCard';
 import { useTranslation } from '../i18n';
@@ -49,7 +50,7 @@ export default function PortfolioDashboard() {
         }
     };
 
-    const handleSave = async (data: any) => {
+    const handleSave = async (data: PortfolioSubmitData) => {
         if (!user) return;
         setIsSubmitting(true);
 

@@ -1,8 +1,38 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 
+interface QueryErrorInfo {
+    message: string;
+    code?: string;
+    details?: string;
+    timeout?: boolean;
+}
+
+interface AdminTestResults {
+    loading: boolean;
+    session?: {
+        email?: string;
+        id?: string;
+        hasSession: boolean;
+        error?: string;
+    };
+    myProfile?: {
+        data: unknown;
+        error: QueryErrorInfo | null;
+    };
+    allProfiles?: {
+        data?: Array<Record<string, unknown>> | null;
+        count?: number;
+        error?: QueryErrorInfo | null;
+    };
+    catchError?: {
+        name?: string;
+        message: string;
+    };
+}
+
 export default function TestAdminAccess() {
-    const [results, setResults] = useState<any>({ loading: true });
+    const [results, setResults] = useState<AdminTestResults>({ loading: true });
     const [logs, setLogs] = useState<string[]>([]);
 
     const addLog = (msg: string) => {
@@ -12,7 +42,7 @@ export default function TestAdminAccess() {
 
     useEffect(() => {
         async function runTests() {
-            const tests: any = { loading: false };
+            const tests: AdminTestResults = { loading: false };
 
             try {
                 addLog('Starting tests...');
@@ -64,7 +94,7 @@ export default function TestAdminAccess() {
                 addLog('Test 3: Fetching all profiles (admin query)...');
                 const allProfilesStart = Date.now();
                 
-                const timeoutPromise = new Promise((_, reject) => {
+                const timeoutPromise = new Promise<never>((_, reject) => {
                     setTimeout(() => reject(new Error('Query timeout after 10 seconds')), 10000);
                 });
                 
@@ -78,7 +108,7 @@ export default function TestAdminAccess() {
                     const { data: allProfiles, error: allError } = await Promise.race([
                         queryPromise,
                         timeoutPromise
-                    ]) as any;
+                    ]);
                     
                     addLog(`All profiles query completed in ${Date.now() - allProfilesStart}ms`);
                     
@@ -93,18 +123,20 @@ export default function TestAdminAccess() {
                         count: allProfiles?.length || 0,
                         error: allError ? { message: allError.message, code: allError.code, details: allError.details } : null 
                     };
-                } catch (timeoutError: any) {
-                    addLog(`❌ Query timed out: ${timeoutError.message}`);
+                } catch (timeoutError) {
+                    const msg = timeoutError instanceof Error ? timeoutError.message : String(timeoutError);
+                    addLog(`❌ Query timed out: ${msg}`);
                     tests.allProfiles = {
                         error: { message: 'Query timed out after 10 seconds', timeout: true }
                     };
                 }
 
-            } catch (error: any) {
-                addLog(`❌ Catch error: ${error?.name} - ${error?.message}`);
+            } catch (error) {
+                const msg = error instanceof Error ? error.message : String(error);
+                addLog(`❌ Catch error: ${error instanceof Error ? error.name : 'Error'} - ${msg}`);
                 tests.catchError = {
-                    name: error?.name,
-                    message: error?.message,
+                    name: error instanceof Error ? error.name : undefined,
+                    message: msg,
                 };
             }
 

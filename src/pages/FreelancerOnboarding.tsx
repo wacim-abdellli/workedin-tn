@@ -291,12 +291,13 @@ function FreelancerOnboarding() {
                     );
                 }
                 logger.log('[Onboarding] Skills saved!');
-            } catch (skillsErr: any) {
+            } catch (skillsErr) {
+                const msg = skillsErr instanceof Error ? skillsErr.message : String(skillsErr);
                 logger.error('[Onboarding] Skills save FAILED:', skillsErr);
-                if (skillsErr.message === 'TIMEOUT') {
+                if (msg === 'TIMEOUT') {
                     throw new Error(t.onboarding.freelancer.connectionFailed || 'Connection failed. Check your internet connection and try again.');
                 }
-                throw new Error(t.onboarding.freelancer.skillsSaveFailed || `Failed to save skills: ${skillsErr.message}`);
+                throw new Error(t.onboarding.freelancer.skillsSaveFailed || `Failed to save skills: ${msg}`);
             }
 
             logger.log('[Onboarding] Marking onboarding as complete...');
@@ -315,12 +316,13 @@ function FreelancerOnboarding() {
                     20000
                 );
                 logger.log('[Onboarding] Onboarding marked complete!');
-            } catch (completeErr: any) {
+            } catch (completeErr) {
+                const msg = completeErr instanceof Error ? completeErr.message : String(completeErr);
                 logger.error('[Onboarding] Failed to mark complete:', completeErr);
-                if (completeErr.message === 'TIMEOUT') {
+                if (msg === 'TIMEOUT') {
                     throw new Error(t.onboarding.freelancer.completionFailed || 'Failed to complete onboarding. Please try again.');
                 }
-                throw new Error(t.onboarding.freelancer.completionFailed || `Failed to complete onboarding: ${completeErr.message}`);
+                throw new Error(t.onboarding.freelancer.completionFailed || `Failed to complete onboarding: ${msg}`);
             }
 
             void Promise.race([
