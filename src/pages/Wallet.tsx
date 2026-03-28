@@ -193,7 +193,8 @@ export default function Wallet() {
               </div>
             ) : (
               <>
-                <div className="overflow-x-auto">
+                {/* Desktop table */}
+                <div className="hidden md:block overflow-x-auto">
                   <table className="data-table">
                     <thead className="data-table-head">
                       <tr>
@@ -242,24 +243,61 @@ export default function Wallet() {
                     </tbody>
                   </table>
                 </div>
+
+                {/* Mobile card layout */}
+                <div className="md:hidden space-y-3 p-4">
+                  {transactions.map((tx: Transaction) => {
+                    const isCredit = tx.type === 'deposit' || tx.type === 'release' || tx.type === 'escrow_release';
+                    const isDebit = tx.type === 'withdrawal' || tx.type === 'fee' || tx.type === 'escrow';
+                    
+                    return (
+                      <div key={tx.id} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 space-y-3">
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <span className="status-pill bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200 text-xs">
+                              {formatTransactionType(tx.type, language)}
+                            </span>
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{formatDate(tx.created_at)}</p>
+                          </div>
+                          <span className={`text-lg font-bold ${
+                            isCredit ? 'text-green-600 dark:text-green-400' : 
+                            isDebit ? 'text-red-600 dark:text-red-400' : 
+                            'text-gray-900 dark:text-white'
+                          }`}>
+                            {isCredit ? '+' : isDebit ? '-' : ''}{formatCurrency(tx.amount, true, language)}
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-900 dark:text-white">
+                          {tx.description || t.wallet?.transactionLabel || 'Transaction'}
+                        </p>
+                        <div className="flex items-center justify-between pt-2 border-t border-gray-100 dark:border-gray-700">
+                          <span className="text-xs text-gray-500 dark:text-gray-400">{t.wallet?.statusLabel || 'Status'}</span>
+                          <span className={`status-pill text-xs ${getStatusColor(tx.status)}`}>
+                            {formatTransactionStatus(tx.status, language)}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
                 
                 {/* Pagination */}
                 {totalPages > 1 && (
-                  <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100 dark:border-white/5">
+                  <div className="flex items-center justify-between px-4 md:px-6 py-4 border-t border-gray-100 dark:border-white/5">
                     <button
                       onClick={() => setPage(p => Math.max(1, p - 1))}
                       disabled={page === 1}
-                      className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="min-h-[44px] px-3 md:px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {t.wallet?.previous || 'Previous'}
                     </button>
-                    <span className="text-sm text-gray-700 dark:text-gray-300">
+                    <span className="text-xs md:text-sm text-gray-700 dark:text-gray-300">
                       {(t.wallet?.pageOf || 'Page {{page}} of {{totalPages}}').replace('{{page}}', page.toString()).replace('{{totalPages}}', totalPages.toString())}
                     </span>
                     <button
                       onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                       disabled={page === totalPages}
-                      className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="min-h-[44px] px-3 md:px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {t.wallet?.next || 'Next'}
                     </button>
@@ -286,54 +324,100 @@ export default function Wallet() {
                 <p className="text-gray-500 dark:text-gray-400 mt-1">{t.wallet?.noWithdrawalsDesc || 'Request a withdrawal to see it here'}</p>
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="data-table">
-                  <thead className="data-table-head">
-                    <tr>
-                      <th className="data-table-th text-left">{t.wallet?.date || 'Date'}</th>
-                      <th className="data-table-th text-right">{t.wallet?.amount || 'Amount'}</th>
-                      <th className="data-table-th text-right">{t.wallet?.netAmount || 'Net Amount'}</th>
-                      <th className="data-table-th text-center">{t.wallet?.method || 'Method'}</th>
-                      <th className="data-table-th text-center">{t.wallet?.statusLabel || 'Status'}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {withdrawals.map((withdrawal: Withdrawal) => {
-                      const statusColors: Record<WithdrawalStatus, string> = {
-                        pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
-                        approved: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
-                        processing: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
-                        completed: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
-                        rejected: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
-                      };
-                      
-                      return (
-                        <tr key={withdrawal.id} className="data-table-row">
-                          <td className="data-table-td whitespace-nowrap text-gray-500 dark:text-gray-400">
-                            {formatDate(withdrawal.created_at)}
-                          </td>
-                          <td className="data-table-td whitespace-nowrap text-right font-medium text-gray-900 dark:text-white">
-                            {formatCurrency(withdrawal.amount, true, language)}
-                          </td>
-                          <td className="data-table-td whitespace-nowrap text-right font-semibold text-green-600 dark:text-green-400">
-                            {formatCurrency(withdrawal.net_amount || (withdrawal.amount - (withdrawal.fee || 0)), true, language)}
-                          </td>
-                          <td className="data-table-td whitespace-nowrap text-center">
-                            <span className="status-pill bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200">
+              <>
+                {/* Desktop table */}
+                <div className="hidden md:block overflow-x-auto">
+                  <table className="data-table">
+                    <thead className="data-table-head">
+                      <tr>
+                        <th className="data-table-th text-left">{t.wallet?.date || 'Date'}</th>
+                        <th className="data-table-th text-right">{t.wallet?.amount || 'Amount'}</th>
+                        <th className="data-table-th text-right">{t.wallet?.netAmount || 'Net Amount'}</th>
+                        <th className="data-table-th text-center">{t.wallet?.method || 'Method'}</th>
+                        <th className="data-table-th text-center">{t.wallet?.statusLabel || 'Status'}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {withdrawals.map((withdrawal: Withdrawal) => {
+                        const statusColors: Record<WithdrawalStatus, string> = {
+                          pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
+                          approved: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
+                          processing: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
+                          completed: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
+                          rejected: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
+                        };
+                        
+                        return (
+                          <tr key={withdrawal.id} className="data-table-row">
+                            <td className="data-table-td whitespace-nowrap text-gray-500 dark:text-gray-400">
+                              {formatDate(withdrawal.created_at)}
+                            </td>
+                            <td className="data-table-td whitespace-nowrap text-right font-medium text-gray-900 dark:text-white">
+                              {formatCurrency(withdrawal.amount, true, language)}
+                            </td>
+                            <td className="data-table-td whitespace-nowrap text-right font-semibold text-green-600 dark:text-green-400">
+                              {formatCurrency(withdrawal.net_amount || (withdrawal.amount - (withdrawal.fee || 0)), true, language)}
+                            </td>
+                            <td className="data-table-td whitespace-nowrap text-center">
+                              <span className="status-pill bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200">
+                                {formatWithdrawalMethod(withdrawal.method, language)}
+                              </span>
+                            </td>
+                            <td className="data-table-td whitespace-nowrap text-center">
+                              <span className={`status-pill ${statusColors[withdrawal.status as keyof typeof statusColors] || statusColors.pending}`}>
+                                {t.wallet?.status?.[withdrawal.status] || withdrawal.status}
+                              </span>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Mobile card layout */}
+                <div className="md:hidden space-y-3 p-4">
+                  {withdrawals.map((withdrawal: Withdrawal) => {
+                    const statusColors: Record<WithdrawalStatus, string> = {
+                      pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
+                      approved: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
+                      processing: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
+                      completed: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
+                      rejected: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
+                    };
+                    
+                    return (
+                      <div key={withdrawal.id} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 space-y-3">
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <p className="text-sm font-medium text-gray-900 dark:text-white">{formatDate(withdrawal.created_at)}</p>
+                            <span className="status-pill bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200 text-xs mt-1 inline-block">
                               {formatWithdrawalMethod(withdrawal.method, language)}
                             </span>
-                          </td>
-                          <td className="data-table-td whitespace-nowrap text-center">
-                            <span className={`status-pill ${statusColors[withdrawal.status as keyof typeof statusColors] || statusColors.pending}`}>
-                              {t.wallet?.status?.[withdrawal.status] || withdrawal.status}
-                            </span>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
+                          </div>
+                          <span className={`status-pill text-xs ${statusColors[withdrawal.status as keyof typeof statusColors] || statusColors.pending}`}>
+                            {t.wallet?.status?.[withdrawal.status] || withdrawal.status}
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3 pt-2 border-t border-gray-100 dark:border-gray-700">
+                          <div>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">{t.wallet?.amount || 'Amount'}</p>
+                            <p className="text-base font-semibold text-gray-900 dark:text-white mt-0.5">
+                              {formatCurrency(withdrawal.amount, true, language)}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">{t.wallet?.netAmount || 'Net Amount'}</p>
+                            <p className="text-base font-bold text-green-600 dark:text-green-400 mt-0.5">
+                              {formatCurrency(withdrawal.net_amount || (withdrawal.amount - (withdrawal.fee || 0)), true, language)}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
             )}
           </div>
         </div>
@@ -379,20 +463,20 @@ function WithdrawalModal({ wallet, onClose, onSuccess }: { wallet: WalletType; o
 
   // Inline field-level errors (shown after first submit attempt)
   const bankNameError = touched && method === 'bank_transfer' && !bankName.trim()
-    ? (t.wallet?.bankNameRequired || 'Bank name is required')
+    ? 'Bank name is required'
     : null;
   const bankAccountNameError = touched && method === 'bank_transfer' && !bankAccountName.trim()
-    ? (t.wallet?.accountHolderRequired || 'Account holder name is required')
+    ? 'Account holder name is required'
     : null;
   const bankIbanError = touched && method === 'bank_transfer' && !bankIban.trim()
-    ? (t.wallet?.ibanRequired || 'IBAN is required')
+    ? 'IBAN is required'
     : touched && method === 'bank_transfer' && bankIban.trim() && !/^TN\d{2}/i.test(bankIban.trim())
-    ? (t.wallet?.ibanInvalid || 'IBAN must start with TN')
+    ? 'IBAN must start with TN'
     : null;
   const phoneError = touched && (method === 'd17' || method === 'flouci') && !phoneNumber.trim()
-    ? (t.wallet?.phoneRequired || 'Phone number is required')
+    ? 'Phone number is required'
     : touched && (method === 'd17' || method === 'flouci') && phoneNumber.trim() && !/^\+?[0-9]{8,15}$/.test(phoneNumber.replace(/\s/g, ''))
-    ? (t.wallet?.phoneInvalid || 'Enter a valid phone number')
+    ? 'Enter a valid phone number'
     : null;
 
   const hasFieldErrors = !!(bankNameError || bankAccountNameError || bankIbanError || phoneError);
@@ -464,19 +548,19 @@ function WithdrawalModal({ wallet, onClose, onSuccess }: { wallet: WalletType; o
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto" role="dialog" aria-modal="true" aria-label={t.wallet?.requestWithdrawal || 'Request Withdrawal'}>
-      <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 max-w-md w-full my-8">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 max-w-md w-full my-8">
+        <div className="flex items-center justify-between mb-4 sm:mb-6">
+          <h3 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white">
             {t.wallet?.requestWithdrawal || 'Request Withdrawal'}
           </h3>
-          <button type="button" aria-label={t.common?.close || 'Close'} onClick={onClose} className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+          <button type="button" aria-label={t.common?.close || 'Close'} onClick={onClose} className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 min-h-[44px] min-w-[44px] flex items-center justify-center">
             <X className="w-5 h-5 text-gray-500" />
           </button>
         </div>
 
-        <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
+        <div className="mb-4 sm:mb-6 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
           <div className="text-sm text-gray-500 mb-1">{t.wallet?.availableBalance || 'Available Balance'}</div>
-          <div className="text-2xl font-bold text-gray-900 dark:text-white">
+          <div className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
             {formatCurrency(wallet.balance, true, language)}
           </div>
         </div>
@@ -495,7 +579,7 @@ function WithdrawalModal({ wallet, onClose, onSuccess }: { wallet: WalletType; o
               min={MIN_WITHDRAWAL_AMOUNT}
               max={wallet.balance}
               step="0.001"
-              className={`w-full px-4 py-2 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
+              className={`w-full px-4 py-3 min-h-[48px] border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
                 amount && !validation.valid ? 'border-red-400 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'
               }`}
               dir="ltr"
@@ -516,7 +600,7 @@ function WithdrawalModal({ wallet, onClose, onSuccess }: { wallet: WalletType; o
                   key={m}
                   type="button"
                   onClick={() => { setMethod(m); setTouched(false); }}
-                  className={`p-3 rounded-xl border-2 text-center transition-colors ${
+                  className={`p-3 min-h-[72px] rounded-xl border-2 text-center transition-colors ${
                     method === m
                       ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300'
                       : 'border-gray-200 dark:border-gray-600 hover:border-gray-300'
@@ -540,7 +624,7 @@ function WithdrawalModal({ wallet, onClose, onSuccess }: { wallet: WalletType; o
                   value={bankName}
                   onChange={(e) => setBankName(e.target.value)}
                   placeholder={t.wallet?.bankName || 'Bank Name'}
-                  className={`w-full px-4 py-2 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${bankNameError ? 'border-red-400 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'}`}
+                  className={`w-full px-4 py-3 min-h-[48px] border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${bankNameError ? 'border-red-400 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'}`}
                 />
                 {bankNameError && <p className="text-red-500 text-sm mt-1" role="alert">{bankNameError}</p>}
               </div>
@@ -550,7 +634,7 @@ function WithdrawalModal({ wallet, onClose, onSuccess }: { wallet: WalletType; o
                   value={bankAccountName}
                   onChange={(e) => setBankAccountName(e.target.value)}
                   placeholder={t.wallet?.accountHolder || 'Account Holder Name'}
-                  className={`w-full px-4 py-2 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${bankAccountNameError ? 'border-red-400 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'}`}
+                  className={`w-full px-4 py-3 min-h-[48px] border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${bankAccountNameError ? 'border-red-400 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'}`}
                 />
                 {bankAccountNameError && <p className="text-red-500 text-sm mt-1" role="alert">{bankAccountNameError}</p>}
               </div>
@@ -561,7 +645,7 @@ function WithdrawalModal({ wallet, onClose, onSuccess }: { wallet: WalletType; o
                   onChange={(e) => setBankIban(e.target.value)}
                   placeholder="TN59 ..."
                   aria-label={t.wallet?.iban || 'IBAN'}
-                  className={`w-full px-4 py-2 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${bankIbanError ? 'border-red-400 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'}`}
+                  className={`w-full px-4 py-3 min-h-[48px] border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${bankIbanError ? 'border-red-400 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'}`}
                   dir="ltr"
                 />
                 {bankIbanError && <p className="text-red-500 text-sm mt-1" role="alert">{bankIbanError}</p>}
@@ -579,7 +663,7 @@ function WithdrawalModal({ wallet, onClose, onSuccess }: { wallet: WalletType; o
                   value={phoneNumber}
                   onChange={(e) => setPhoneNumber(e.target.value)}
                   placeholder="+216 00 000 000"
-                  className={`w-full pl-10 pr-4 py-2 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${phoneError ? 'border-red-400 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'}`}
+                  className={`w-full pl-10 pr-4 py-3 min-h-[48px] border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${phoneError ? 'border-red-400 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'}`}
                   dir="ltr"
                 />
               </div>
@@ -597,7 +681,7 @@ function WithdrawalModal({ wallet, onClose, onSuccess }: { wallet: WalletType; o
           <Button
             type="submit"
             variant="primary"
-            className="w-full justify-center mt-2"
+            className="w-full justify-center mt-2 min-h-[48px]"
             disabled={loading || amountValue < MIN_WITHDRAWAL_AMOUNT || amountValue > wallet.balance || !amountValue}
           >
             {loading ? (

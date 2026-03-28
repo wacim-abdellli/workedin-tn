@@ -105,7 +105,11 @@ export default function VerifyIdentity() {
                 img.onload = () => {
                     const valid = img.width >= 640 && img.height >= 420;
                     URL.revokeObjectURL(url);
-                    valid ? resolve() : reject(new Error(tx('verifyIdentity.errors.lowResolution', undefined, 'Image resolution is too low. Use a clearer photo.')));
+                    if (valid) {
+                        resolve();
+                    } else {
+                        reject(new Error(tx('verifyIdentity.errors.lowResolution', undefined, 'Image resolution is too low. Use a clearer photo.')));
+                    }
                 };
                 img.onerror = () => { URL.revokeObjectURL(url); reject(new Error(tx('verifyIdentity.errors.invalidImage', undefined, 'Please upload a valid image file'))); };
                 img.src = url;

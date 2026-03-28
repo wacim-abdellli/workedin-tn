@@ -3,6 +3,7 @@ import { Flag } from 'lucide-react';
 import { useMutation } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/components/ui/Toast';
+import { useTranslation } from '@/i18n';
 import Modal from '@/components/ui/Modal';
 import Button from '@/components/ui/Button';
 import { submitReport } from '@/services/reports';
@@ -27,6 +28,7 @@ interface ReportButtonProps {
 export default function ReportButton({ reportedType, reportedId, className }: ReportButtonProps) {
     const { user } = useAuth();
     const { showToast } = useToast();
+    const { t } = useTranslation();
     const [isOpen, setIsOpen] = useState(false);
     const [reason, setReason] = useState('');
     const [customReason, setCustomReason] = useState('');
@@ -66,7 +68,7 @@ export default function ReportButton({ reportedType, reportedId, className }: Re
                 className={className ?? 'inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-red-500 transition-colors'}
             >
                 <Flag className="w-3.5 h-3.5" />
-                <span>Report</span>
+                <span>{t.common.report}</span>
             </button>
 
             <Modal isOpen={isOpen} onClose={() => setIsOpen(false)} title="Report content" size="sm">

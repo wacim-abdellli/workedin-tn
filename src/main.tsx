@@ -13,8 +13,20 @@ if (import.meta.env.PROD) {
     initAnalytics()
   })
 
-  void import('./lib/sentry').then(({ initSentry }) => {
-    initSentry()
+  void import('./lib/sentry').then(({ initSentry, Sentry }) => {
+    // Initialize Sentry
+    initSentry();
+    
+    // Capture unhandled promise rejections
+    window.addEventListener('unhandledrejection', (event) => {
+      Sentry.captureException(event.reason, {
+        contexts: {
+          unhandledRejection: {
+            promise: String(event.promise),
+          },
+        },
+      });
+    });
   })
 }
 

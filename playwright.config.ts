@@ -13,9 +13,16 @@ export default defineConfig({
     screenshot: 'only-on-failure',
   },
   projects: [
+    // Setup project for authentication
+    {
+      name: 'setup',
+      testMatch: /.*\.setup\.ts/,
+    },
+    // Test projects that depend on setup
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
+      dependencies: ['setup'],
     },
   ],
   webServer: process.env.CI ? undefined : {

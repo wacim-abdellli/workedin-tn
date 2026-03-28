@@ -119,7 +119,7 @@ const JobCard = memo(({ job, isSaved, onToggleSave, onClick }: JobCardProps) => 
             </div>
 
             <div className="flex flex-col items-end gap-3">
-              <div className="rounded-2xl bg-gray-50 px-4 py-3 text-right dark:bg-dark-800">
+              <div className="rounded-2xl bg-gray-50 px-4 py-3 text-end dark:bg-dark-800">
                 <div className="text-xs font-medium uppercase tracking-[0.16em] text-muted">
                   {job.job_type === 'fixed_price' ? t.jobs.budget : t.jobs.hourlyRate}
                 </div>

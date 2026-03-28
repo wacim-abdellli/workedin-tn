@@ -109,7 +109,7 @@ export default function PaymentModal({ isOpen, onClose, amount, recipientName, o
                     <Building className="w-6 h-6 text-green-600 dark:text-green-400" />
                 </div>
                 <div>
-                    <h3 className="font-bold text-green-800 dark:text-green-400 text-lg">Flouci</h3>
+                    <h3 className="font-bold text-green-800 dark:text-green-400 text-lg">{t.payment.flouciTitle}</h3>
                     <p className="text-sm text-green-600 dark:text-green-500/80">{t.payment.flouciDesc}</p>
                 </div>
             </div>

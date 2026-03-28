@@ -217,7 +217,7 @@ export default function Messages() {
     };
 
     const ConversationList = () => (
-        <div className="h-full flex flex-col border-l border-gray-200 dark:border-dark-700">
+        <div className="h-full flex flex-col border-e border-gray-200 dark:border-dark-700">
             {/* Header */}
             <div className="p-4 border-b border-gray-200 dark:border-dark-700">
                 <div className="flex items-center justify-between mb-4">
@@ -227,13 +227,13 @@ export default function Messages() {
                     </Button>
                 </div>
                 <div className="relative">
-                    <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <Search className="absolute end-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                     <input
                         type="text"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         placeholder="بحث في المحادثات..."
-                        className="w-full pr-10 pl-4 py-2 border border-gray-200 dark:border-dark-700 rounded-xl text-sm bg-white dark:bg-dark-800 text-foreground"
+                        className="w-full pe-10 ps-4 py-2 border border-gray-200 dark:border-dark-700 rounded-xl text-sm bg-white dark:bg-dark-800 text-foreground"
                     />
                 </div>
             </div>
@@ -355,7 +355,7 @@ export default function Messages() {
                                 onClick={() => setShowMobileThread(false)}
                                 className="lg:hidden p-2 hover:bg-gray-100 dark:hover:bg-dark-700 rounded-lg"
                             >
-                                <ChevronLeft className="w-5 h-5" />
+                                <ChevronLeft className="w-5 h-5 rtl:rotate-180" />
                             </button>
                             {selectedConversation.otherUser.avatar_url ? (
                                 <img
@@ -411,8 +411,8 @@ export default function Messages() {
                                     <div
                                         className={`max-w-[70%] ${
                                             message.sender_id === user?.id
-                                                ? 'bg-primary-600 text-white rounded-2xl rounded-tr-md'
-                                                : 'bg-white dark:bg-dark-800 text-foreground rounded-2xl rounded-tl-md shadow-sm'
+                                                ? 'bg-primary-600 text-white rounded-2xl rounded-se-md'
+                                                : 'bg-white dark:bg-dark-800 text-foreground rounded-2xl rounded-ss-md shadow-sm'
                                         } px-4 py-3`}
                                     >
                                         <p className="text-sm whitespace-pre-wrap break-words">{message.content}</p>
@@ -476,8 +476,9 @@ export default function Messages() {
                                 onClick={handleSendMessage}
                                 disabled={!newMessage.trim() || isSending}
                                 isLoading={isSending}
+                                className="shrink-0"
                             >
-                                <Send className="w-5 h-5" />
+                                <Send className="w-5 h-5 rtl:rotate-180" />
                             </Button>
                         </div>
                     </div>
@@ -500,7 +501,7 @@ export default function Messages() {
     );
 
     const ContactDetails = () => (
-        <div className="h-full border-r border-gray-200 dark:border-dark-700 p-6 overflow-y-auto">
+        <div className="h-full border-s border-gray-200 dark:border-dark-700 p-6 overflow-y-auto">
             {selectedConversation ? (
                 <div className="space-y-6">
                     {/* Profile */}
@@ -564,7 +565,7 @@ export default function Messages() {
             <Header />
 
             <div className="h-[calc(100vh-64px)] flex">
-                {/* Conversation List - Desktop */}
+            {/* Conversation List - Desktop */}
                 <div className={`w-80 shrink-0 hidden lg:block`}>
                     <ConversationList />
                 </div>

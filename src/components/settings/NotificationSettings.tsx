@@ -29,17 +29,21 @@ export default function NotificationSettings() {
 
     useEffect(() => {
         if (!user?.id) return;
-        supabase
-            .from('notification_settings')
-            .select('*')
-            .eq('user_id', user.id)
-            .single()
-            .then(({ data }) => {
-                if (data) {
-                    setNotifications(DEFAULTS.map(n => ({ ...n, enabled: data[n.key] ?? n.enabled })));
-                }
-            })
-            .finally(() => setLoading(false));
+        
+        const fetchSettings = async () => {
+            const { data } = await supabase
+                .from('notification_settings')
+                .select('*')
+                .eq('user_id', user.id)
+                .single();
+            
+            if (data) {
+                setNotifications(DEFAULTS.map(n => ({ ...n, enabled: data[n.key] ?? n.enabled })));
+            }
+            setLoading(false);
+        };
+        
+        fetchSettings();
     }, [user?.id]);
 
     const copy = (key: string) => {

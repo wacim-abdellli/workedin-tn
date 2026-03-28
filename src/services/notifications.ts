@@ -46,6 +46,8 @@ export async function insertNotification(data: {
     if (error) throw new Error(error.message);
 }
 
+export const createNotification = insertNotification;
+
 export async function markNotificationRead(notificationId: string) {
     const { error } = await supabase
         .from('notifications')

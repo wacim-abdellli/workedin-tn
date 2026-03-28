@@ -1,45 +1,40 @@
 /**
  * Payments Service — Flouci payment and wallet queries
  */
-import type { PostgrestResponse, PostgrestSingleResponse } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 import type {
     AddPaymentMethodInput,
     EarningsTransactionSummary,
-    PaymentMethod,
     ReconcilePaymentResult,
     StuckTransaction,
-    Transaction,
-    Wallet,
     WalletEarningsStats,
-    Withdrawal,
     WithdrawalRequestInput,
 } from '@/types/payment';
 
 // --- WALLETS ---
 
-export async function getWallet(userId: string): Promise<PostgrestSingleResponse<Wallet>> {
-    return supabase.from('wallets').select('*').eq('user_id', userId).single() as Promise<PostgrestSingleResponse<Wallet>>;
+export async function getWallet(userId: string) {
+    return supabase.from('wallets').select('*').eq('user_id', userId).single();
 }
 
-export async function getTransactions(userId: string, page = 1, pageSize = 20): Promise<PostgrestResponse<Transaction>> {
+export async function getTransactions(userId: string, page = 1, pageSize = 20) {
     const from = (page - 1) * pageSize;
     return supabase
         .from('transactions')
         .select('*', { count: 'exact' })
         .eq('user_id', userId)
         .order('created_at', { ascending: false })
-        .range(from, from + pageSize - 1) as Promise<PostgrestResponse<Transaction>>;
+        .range(from, from + pageSize - 1);
 }
 
 // --- WITHDRAWALS ---
 
-export async function getWithdrawals(userId: string): Promise<PostgrestResponse<Withdrawal>> {
+export async function getWithdrawals(userId: string) {
     return supabase
         .from('withdrawals')
         .select('*')
         .eq('user_id', userId)
-        .order('created_at', { ascending: false }) as Promise<PostgrestResponse<Withdrawal>>;
+        .order('created_at', { ascending: false });
 }
 
 export async function requestWithdrawal(data: WithdrawalRequestInput) {
@@ -48,8 +43,8 @@ export async function requestWithdrawal(data: WithdrawalRequestInput) {
 
 // --- PAYMENT METHODS ---
 
-export async function getPaymentMethods(userId: string): Promise<PostgrestResponse<PaymentMethod>> {
-    return supabase.from('payment_methods').select('*').eq('user_id', userId) as Promise<PostgrestResponse<PaymentMethod>>;
+export async function getPaymentMethods(userId: string) {
+    return supabase.from('payment_methods').select('*').eq('user_id', userId);
 }
 
 export async function addPaymentMethod(userId: string, data: AddPaymentMethodInput) {
@@ -75,7 +70,7 @@ export async function getEarningsStats(userId: string): Promise<WalletEarningsSt
         supabase
             .from('transactions')
             .select('amount, type, created_at')
-            .eq('user_id', userId) as Promise<PostgrestResponse<EarningsTransactionSummary>>,
+            .eq('user_id', userId),
     ]);
 
     const transactions: EarningsTransactionSummary[] = transactionsResult.data || [];

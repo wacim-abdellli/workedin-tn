@@ -1,0 +1,13 @@
+# Playwright auth state files
+.auth/
+
+# Test results
+test-results/
+playwright-report/
+
+# Traces
+trace.zip
+*.trace
+
+# Screenshots
+screenshots/

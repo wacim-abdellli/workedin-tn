@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Star, User, ThumbsUp, MessageSquare } from 'lucide-react';
 import Button from './Button';
 import Modal from './Modal';
+import { useTranslation } from '../../i18n';
 
 interface Review {
     id: string;
@@ -27,6 +28,7 @@ interface ReviewCardProps {
 }
 
 export function ReviewCard({ review, onMarkHelpful, onRespond, canRespond }: ReviewCardProps) {
+    const { t } = useTranslation();
     const [showResponseModal, setShowResponseModal] = useState(false);
     const [responseText, setResponseText] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -70,7 +72,7 @@ export function ReviewCard({ review, onMarkHelpful, onRespond, canRespond }: Rev
                     <div>
                         <p className="font-medium text-foreground">{review.reviewer.name}</p>
                         <p className="text-sm text-muted">
-                            {review.reviewer.type === 'client' ? 'عميل' : 'موظف حر'}
+                            {review.reviewer.type === 'client' ? t.reviews.client : t.reviews.freelancer}
                         </p>
                     </div>
                 </div>
@@ -91,7 +93,7 @@ export function ReviewCard({ review, onMarkHelpful, onRespond, canRespond }: Rev
 
             {/* Job Title */}
             <p className="text-sm text-muted mb-2">
-                <span className="font-medium">المهمة:</span> {review.job_title}
+                <span className="font-medium">{t.reviews.jobLabel}:</span> {review.job_title}
             </p>
 
             {/* Comment */}

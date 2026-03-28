@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase';
 
 export default function DirectQueryTest() {
     const [result, setResult] = useState<any>({ status: 'starting' });

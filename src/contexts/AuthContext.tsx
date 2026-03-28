@@ -15,6 +15,14 @@ import {
 } from '@/lib/workspaceRoutes';
 import type { AccountMode, FreelancerProfile, Language, Profile, UserType } from '@/types';
 
+// Lazy import Sentry to avoid circular dependencies
+let Sentry: typeof import('@/lib/sentry').Sentry | null = null;
+if (import.meta.env.PROD) {
+  import('@/lib/sentry').then((module) => {
+    Sentry = module.Sentry;
+  });
+}
+
 interface AuthContextType {
   user: User | null;
   session: Session | null;
@@ -159,14 +167,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
         setProfile(nextProfile);
 
+        // Set Sentry user context in production
+        if (import.meta.env.PROD && Sentry && nextProfile) {
+          Sentry.setUser({
+            id: nextProfile.id,
+            email: nextProfile.email || undefined,
+            username: nextProfile.full_name || undefined,
+          });
+        }
+
         if (
-          nextProfile.user_type === 'both' ||
-          nextProfile.user_type === 'freelancer' ||
-          Boolean(
-            nextProfile.onboarding_completed ||
-              nextProfile.client_onboarding_completed ||
-              nextProfile.freelancer_onboarding_completed
-          )
+          nextProfile.onboarding_completed ||
+          nextProfile.client_onboarding_completed ||
+          nextProfile.freelancer_onboarding_completed
         ) {
           persistUserTypeSelectionMarker(nextProfile.id);
         }
@@ -324,6 +337,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setProfile(null);
     setFreelancerProfile(null);
     syncWorkspaceFromProfile(null, null);
+
+    // Clear Sentry user context in production
+    if (import.meta.env.PROD && Sentry) {
+      Sentry.setUser(null);
+    }
 
     clearAllAuthData();
 

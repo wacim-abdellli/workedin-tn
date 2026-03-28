@@ -272,16 +272,16 @@ export default function Header() {
                 </button>
               ) : null}
 
-              <button
-                onClick={() => setSearchOpen(true)}
-                className="flex h-9 min-w-0 w-[128px] items-center gap-2 rounded-xl border border-gray-200 bg-gray-100 px-3 text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-600 dark:border-white/8 dark:bg-white/5 dark:hover:bg-white/10 dark:hover:text-gray-300 lg:w-[148px] xl:w-[164px]"
-              >
-                <Search className="h-4 w-4 flex-shrink-0" />
-                <span className="flex-1 truncate text-left text-xs">Search</span>
-                <kbd className="header-kbd hidden xl:inline-flex">
-                  Ctrl+K
-                </kbd>
-              </button>
+                <button
+                  onClick={() => setSearchOpen(true)}
+                  className="flex h-9 min-w-0 w-[128px] items-center gap-2 rounded-xl border border-gray-200 bg-gray-100 px-3 text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-600 dark:border-white/8 dark:bg-white/5 dark:hover:bg-white/10 dark:hover:text-gray-300 lg:w-[148px] xl:w-[164px]"
+                >
+                  <Search className="h-4 w-4 flex-shrink-0" />
+                  <span className="flex-1 truncate text-start text-xs">{t.common.search}</span>
+                  <kbd className="header-kbd hidden xl:inline-flex">
+                    Ctrl+K
+                  </kbd>
+                </button>
 
               <div className="relative" ref={langRef}>
                 <button
@@ -306,10 +306,10 @@ export default function Header() {
                             : 'text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-white/5'
                         }`}
                       >
-                        <span className="w-8 text-left text-xs font-semibold text-gray-500 dark:text-gray-400">
+                        <span className="w-8 text-start text-xs font-semibold text-gray-500 dark:text-gray-400">
                           {lang.country}
                         </span>
-                        <span className="flex-1 text-left">{lang.label}</span>
+                        <span className="flex-1 text-start">{lang.label}</span>
                         <span className="text-xs font-medium text-gray-400">{lang.display}</span>
                       </button>
                     ))}
@@ -442,7 +442,7 @@ export default function Header() {
             onClick={() => setMobileMenuOpen(false)}
           />
 
-          <div className="absolute inset-y-0 right-0 w-[88vw] max-w-sm border-l border-gray-200 bg-white shadow-2xl dark:border-white/10 dark:bg-[#14121f]">
+          <div className="absolute inset-y-0 right-0 w-[88vw] max-w-sm border-s border-gray-200 bg-white shadow-2xl dark:border-white/10 dark:bg-[#14121f]">
             <div className="flex h-16 items-center justify-between border-b border-gray-100 px-4 dark:border-white/10">
               <button onClick={() => navigate('/')} className="flex items-center">
                 <img src={logoSrc} alt="Khedma TN" style={{ height: '28px', width: 'auto' }} />
@@ -462,7 +462,7 @@ export default function Header() {
                   setSearchOpen(true)
                   setMobileMenuOpen(false)
                 }}
-                className="flex h-11 w-full items-center gap-3 rounded-2xl border border-gray-200 bg-gray-50 px-4 text-left text-gray-600 dark:border-white/10 dark:bg-white/5 dark:text-gray-300"
+                className="flex h-11 w-full items-center gap-3 rounded-2xl border border-gray-200 bg-gray-50 px-4 text-start text-gray-600 dark:border-white/10 dark:bg-white/5 dark:text-gray-300"
               >
                 <Search className="h-4 w-4" />
                 <span className="text-sm">{t.common?.search || 'Search'}</span>

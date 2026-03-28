@@ -382,7 +382,7 @@ export default function ContractWorkspace() {
                     aria-selected={activeMobileTab === 'chat'}
                     aria-controls="workspace-panel-chat"
                     aria-label="إظهار المحادثة"
-                    className={`flex-1 py-3 text-sm font-medium border-b-2 transition-colors flex items-center justify-center gap-2 ${activeMobileTab === 'chat' ? 'border-primary-600 text-primary-600' : 'border-transparent text-gray-500'}`}
+                    className={`flex-1 py-3 min-h-[48px] text-sm font-medium border-b-2 transition-colors flex items-center justify-center gap-2 ${activeMobileTab === 'chat' ? 'border-primary-600 text-primary-600' : 'border-transparent text-gray-500'}`}
                 >
                     <MessageSquare className="w-4 h-4" />
                     المراسلة
@@ -395,7 +395,7 @@ export default function ContractWorkspace() {
                     aria-selected={activeMobileTab === 'details'}
                     aria-controls="workspace-panel-details"
                     aria-label="إظهار التفاصيل"
-                    className={`flex-1 py-3 text-sm font-medium border-b-2 transition-colors flex items-center justify-center gap-2 ${activeMobileTab === 'details' ? 'border-primary-600 text-primary-600' : 'border-transparent text-gray-500'}`}
+                    className={`flex-1 py-3 min-h-[48px] text-sm font-medium border-b-2 transition-colors flex items-center justify-center gap-2 ${activeMobileTab === 'details' ? 'border-primary-600 text-primary-600' : 'border-transparent text-gray-500'}`}
                 >
                     <Info className="w-4 h-4" />
                     التفاصيل
@@ -408,7 +408,7 @@ export default function ContractWorkspace() {
                     aria-selected={activeMobileTab === 'files'}
                     aria-controls="workspace-panel-files"
                     aria-label="إظهار الملفات"
-                    className={`flex-1 py-3 text-sm font-medium border-b-2 transition-colors flex items-center justify-center gap-2 ${activeMobileTab === 'files' ? 'border-primary-600 text-primary-600' : 'border-transparent text-gray-500'}`}
+                    className={`flex-1 py-3 min-h-[48px] text-sm font-medium border-b-2 transition-colors flex items-center justify-center gap-2 ${activeMobileTab === 'files' ? 'border-primary-600 text-primary-600' : 'border-transparent text-gray-500'}`}
                 >
                     <FileText className="w-4 h-4" />
                     الملفات

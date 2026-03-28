@@ -215,7 +215,7 @@ function SignupForm({ onComplete }: SignupFormProps) {
                         <div className="relative">
                             <label className="label flex items-center gap-2">
                                 <Lock className="h-4 w-4 text-primary-500" />
-                                {t.auth.password}
+                                {t.auth.password.label}
                             </label>
                             <div className="relative">
                                 <input

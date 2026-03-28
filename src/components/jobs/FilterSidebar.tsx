@@ -120,13 +120,13 @@ export default function FilterSidebar({
 
             {/* Sidebar Container */}
             <aside className={`
-                fixed lg:sticky top-0 lg:top-24 left-0 h-full lg:h-[calc(100vh-8rem)]
+                fixed lg:sticky top-0 lg:top-24 h-full lg:h-[calc(100vh-8rem)]
                 w-80 lg:w-72 bg-white dark:bg-dark-800 lg:bg-transparent lg:dark:bg-transparent
                 z-50 lg:z-0 shadow-2xl lg:shadow-none
                 transform transition-transform duration-300 ease-in-out
                 ${isOpen ? 'translate-x-0' : isRTL ? 'translate-x-full lg:translate-x-0' : '-translate-x-full lg:translate-x-0'}
                 lg:translate-x-0 overflow-y-auto custom-scrollbar p-6 lg:p-0
-                ${isRTL ? 'right-0' : 'left-0'} lg:right-auto lg:left-auto
+                ${isRTL ? 'right-0 left-auto' : 'left-0 right-auto'} lg:right-auto lg:left-auto
                 ${className}
             `}>
                 <div className="flex items-center justify-between mb-6 lg:hidden">
@@ -173,10 +173,10 @@ export default function FilterSidebar({
                                         <Check className="w-3 h-3 text-white opacity-0 peer-checked:opacity-100" />
                                     </div>
                                 </div>
-                                <span className="text-sm text-gray-600 dark:text-gray-300 group-hover:text-primary-600 transition-colors">
+                                <span className="flex-1 text-sm text-gray-600 dark:text-gray-300 group-hover:text-primary-600 transition-colors">
                                     {cat.label}
                                 </span>
-                                <span className="ms-auto text-xs text-gray-400 bg-gray-50 dark:bg-dark-700 px-2 py-0.5 rounded-full">
+                                <span className="text-xs text-gray-400 bg-gray-50 dark:bg-dark-700 px-2 py-0.5 rounded-full">
                                     {categoryCounts[cat.value] || 0}
                                 </span>
                             </label>

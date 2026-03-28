@@ -480,7 +480,11 @@ export const ar = {
         phonePlaceholder: 'أدخل رقم هاتفك',
         email: 'البريد الإلكتروني',
         emailPlaceholder: 'أدخل بريدك الإلكتروني',
-        password: 'كلمة المرور',
+        password: {
+            label: 'كلمة المرور',
+            show: 'إظهار كلمة المرور',
+            hide: 'إخفاء كلمة المرور',
+        },
         passwordPlaceholder: 'أدخل كلمة المرور',
         confirmPassword: 'تأكيد كلمة المرور',
         confirmPasswordPlaceholder: 'أعد إدخال كلمة المرور',
@@ -891,6 +895,7 @@ export const ar = {
         search: 'بحث',
         filter: 'تصفية',
         sort: 'ترتيب',
+        report: 'إبلاغ',
         navigate: 'تنقل',
         select: 'اختيار',
         dinar: 'دينار',
@@ -975,6 +980,7 @@ export const ar = {
         to: 'لـ',
         orEnterPhone: 'أو أدخل رقم هاتفك',
         d17PhoneLabel: 'رقم الهاتف المرتبط بـ D17',
+        flouciTitle: 'Flouci',
         flouciDesc: 'محفظتك الرقمية الآمنة',
         flouciRedirect: 'سيتم تحويلك إلى تطبيق Flouci لإتمام عملية الدفع بشكل آمن',
         openFlouci: 'فتح تطبيق Flouci',
@@ -1555,6 +1561,67 @@ export const ar = {
         checkSpam: 'إذا لم تجد البريد، تحقق من مجلد الرسائل غير المرغوب فيها.',
         noEmail: 'عنوان البريد الإلكتروني مطلوب',
     },
+    // Toast messages for various features
+    toasts: {
+        portfolio: {
+            loadError: 'حدث خطأ أثناء تحميل المعرض',
+            updateSuccess: 'تم تحديث العمل بنجاح',
+            addSuccess: 'تم إضافة العمل بنجاح',
+            saveError: 'حدث خطأ أثناء حفظ العمل',
+            deleteSuccess: 'تم حذف العمل بنجاح',
+            deleteError: 'حدث خطأ أثناء الحذف',
+        },
+        proposals: {
+            loadJobError: 'فشل تحميل بيانات المشروع',
+            loadError: 'فشل تحميل العروض',
+            hireFirstMessage: 'يجب توظيف المستقل أولاً لبدء المحادثة',
+            shortlistRemoved: 'تمت الإزالة من القائمة المختصرة',
+            shortlistAdded: 'تمت الإضافة إلى القائمة المختصرة',
+            shortlistError: 'حدث خطأ أثناء تحديث القائمة المختصرة',
+            hireSuccess: 'تم توظيف المستقل بنجاح! 🎉',
+            hireError: 'فشل توظيف المستقل. حاول مرة أخرى',
+            archiveSuccess: 'تم أرشفة العرض',
+            archiveError: 'فشل أرشفة العرض',
+            submitSuccess: 'تم إرسال العرض بنجاح!',
+            withdrawSuccess: 'تم سحب العرض واسترداد الكونيكتس',
+            withdrawError: 'حدث خطأ في سحب العرض',
+        },
+        contract: {
+            deliverSuccess: 'تم تسليم العمل بنجاح!',
+            deliverError: 'حدث خطأ في تسليم العمل',
+            acceptSuccess: 'تم قبول العمل وإتمام الدفع!',
+            acceptError: 'حدث خطأ في قبول العمل',
+            requestChanges: 'طلب تعديلات',
+            requestChangesSuccess: 'تم إرسال طلب التعديلات',
+            disputeSuccess: 'تم فتح نزاع. سيتم المراجعة خلال 48 ساعة.',
+            disputeError: 'حدث خطأ في فتح النزاع',
+            reviewSuccess: 'تم إرسال تقييمك بنجاح',
+        },
+        job: {
+            saved: 'تم حفظ الوظيفة',
+            unsaved: 'تم إزالة الوظيفة من المحفوظات',
+            loginRequired: 'سجل الدخول لحفظ الوظيفة',
+            linkCopied: 'تم نسخ الرابط',
+        },
+        matches: {
+            searchError: 'حدث خطأ في البحث عن تطابقات',
+            contractSuccess: 'تم بدء العقد بنجاح!',
+            contractError: 'حدث خطأ في إنشاء العقد',
+        },
+        resetPassword: {
+            linkExpired: 'رابط إعادة التعيين منتهي الصلاحية',
+            success: 'تم تغيير كلمة المرور بنجاح',
+        },
+        forgotPassword: {
+            rateLimitError: 'تم تجاوز عدد المحاولات. حاول مرة أخرى لاحقاً.',
+            linkSent: 'تم إرسال رابط إعادة التعيين',
+        },
+        common: {
+            error: 'حدث خطأ',
+            success: 'تمت العملية بنجاح',
+            genericError: 'Error',
+        },
+    },
     seo: {
         home: {
             title: 'خدمة TN',
@@ -1596,6 +1663,12 @@ export const ar = {
             title: 'أنشئ حسابك على خدمة',
             description: 'انضم إلى أكثر من 2500 محترف يبنون مسيرتهم ويُديرون مشاريعهم على خدمة.',
         },
+    },
+
+    reviews: {
+        client: 'عميل',
+        freelancer: 'موظف حر',
+        jobLabel: 'المهمة',
     },
 };
 

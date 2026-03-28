@@ -7,10 +7,6 @@ import type { MessageAttachment } from '../types';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://your-project.supabase.co';
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'your-anon-key';
 
-// ⚠️ SECURITY: Service role key should NEVER be in frontend code
-// Admin operations must be done via Supabase Edge Functions or server-side code
-// The supabaseAdmin client has been removed for security reasons
-
 // Anon-only client for public queries (jobs, freelancers) — never hangs on token refresh
 export const supabaseAnon = createClient(supabaseUrl, supabaseAnonKey, {
     auth: {

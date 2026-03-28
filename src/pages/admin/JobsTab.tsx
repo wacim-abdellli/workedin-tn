@@ -213,62 +213,111 @@ export default function JobsTab() {
                         }}
                     />
                 ) : (
-                    <div className={`${tableShellClass} block`}>
-                        <div className="overflow-x-auto">
-                            <table className="w-full">
-                                <thead className={tableHeadClass}>
-                                    <tr>
-                                        <th className="px-6 py-4 text-right text-sm font-medium text-muted whitespace-nowrap">{tr('الوظيفة', 'Job', 'Offre')}</th>
-                                        <th className="px-6 py-4 text-right text-sm font-medium text-muted whitespace-nowrap">{tr('العميل', 'Client', 'Client')}</th>
-                                        <th className="px-6 py-4 text-right text-sm font-medium text-muted whitespace-nowrap">{tr('الميزانية', 'Budget', 'Budget')}</th>
-                                        <th className="px-6 py-4 text-right text-sm font-medium text-muted whitespace-nowrap">{tr('الحالة', 'Status', 'Statut')}</th>
-                                        <th className="px-6 py-4 text-center text-sm font-medium text-muted whitespace-nowrap">{tr('إجراءات', 'Actions', 'Actions')}</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-100 dark:divide-white/5">
-                                    {filteredJobs.map((job) => (
-                                        <tr key={job.id} className={tableRowClass}>
-                                            <td className="px-6 py-4">
-                                                <p className="font-medium text-foreground">{job.title}</p>
-                                                <p className="text-xs text-muted">{new Date(job.created_at).toLocaleDateString(locale)}</p>
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <p className="font-medium text-foreground text-sm">{job.client?.full_name}</p>
-                                                <p className="text-xs text-muted">{job.client?.email}</p>
-                                            </td>
-                                            <td className="px-6 py-4 text-sm font-medium text-foreground">
-                                                {formatJobBudget(job)}
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                                    job.status === 'open' ? 'bg-green-100 text-green-700' :
-                                                    job.status === 'in_progress' ? 'bg-blue-100 text-blue-700' :
-                                                    job.status === 'completed' ? 'bg-purple-100 text-purple-700' :
-                                                    'bg-gray-100 text-gray-700'
-                                                }`}>
-                                                    {job.status === 'open' ? tr('مفتوحة', 'Open', 'Ouverte') :
-                                                     job.status === 'in_progress' ? tr('قيد التنفيذ', 'In progress', 'En cours') :
-                                                     job.status === 'completed' ? tr('مكتملة', 'Completed', 'Terminee') : tr('ملغاة', 'Cancelled', 'Annulee')}
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <div className="flex items-center justify-center gap-2">
-                                                    <Button variant="ghost" size="sm" onClick={() => window.open(`/jobs/${job.id}`, '_blank')}>
-                                                        <Eye className="w-4 h-4 ml-1" />
-                                                        {tr('مراجعة', 'Review', 'Verifier')}
-                                                    </Button>
-                                                    <Button variant="ghost" size="sm" className="text-red-600 hover:bg-red-50" onClick={() => handleDeleteJob(job.id)} disabled={deleteJobMutation.isPending}>
-                                                        <Trash2 className="w-4 h-4 ml-1" />
-                                                        {tr('حذف', 'Delete', 'Supprimer')}
-                                                    </Button>
-                                                </div>
-                                            </td>
+                    <>
+                        {/* Desktop table */}
+                        <div className={`${tableShellClass} hidden md:block`}>
+                            <div className="overflow-x-auto">
+                                <table className="w-full">
+                                    <thead className={tableHeadClass}>
+                                        <tr>
+                                            <th className="px-6 py-4 text-right text-sm font-medium text-muted whitespace-nowrap">{tr('الوظيفة', 'Job', 'Offre')}</th>
+                                            <th className="px-6 py-4 text-right text-sm font-medium text-muted whitespace-nowrap">{tr('العميل', 'Client', 'Client')}</th>
+                                            <th className="px-6 py-4 text-right text-sm font-medium text-muted whitespace-nowrap">{tr('الميزانية', 'Budget', 'Budget')}</th>
+                                            <th className="px-6 py-4 text-right text-sm font-medium text-muted whitespace-nowrap">{tr('الحالة', 'Status', 'Statut')}</th>
+                                            <th className="px-6 py-4 text-center text-sm font-medium text-muted whitespace-nowrap">{tr('إجراءات', 'Actions', 'Actions')}</th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-100 dark:divide-white/5">
+                                        {filteredJobs.map((job) => (
+                                            <tr key={job.id} className={tableRowClass}>
+                                                <td className="px-6 py-4">
+                                                    <p className="font-medium text-foreground">{job.title}</p>
+                                                    <p className="text-xs text-muted">{new Date(job.created_at).toLocaleDateString(locale)}</p>
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <p className="font-medium text-foreground text-sm">{job.client?.full_name}</p>
+                                                    <p className="text-xs text-muted">{job.client?.email}</p>
+                                                </td>
+                                                <td className="px-6 py-4 text-sm font-medium text-foreground">
+                                                    {formatJobBudget(job)}
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                                        job.status === 'open' ? 'bg-green-100 text-green-700' :
+                                                        job.status === 'in_progress' ? 'bg-blue-100 text-blue-700' :
+                                                        job.status === 'completed' ? 'bg-purple-100 text-purple-700' :
+                                                        'bg-gray-100 text-gray-700'
+                                                    }`}>
+                                                        {job.status === 'open' ? tr('مفتوحة', 'Open', 'Ouverte') :
+                                                         job.status === 'in_progress' ? tr('قيد التنفيذ', 'In progress', 'En cours') :
+                                                         job.status === 'completed' ? tr('مكتملة', 'Completed', 'Terminee') : tr('ملغاة', 'Cancelled', 'Annulee')}
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <div className="flex items-center justify-center gap-2">
+                                                        <Button variant="ghost" size="sm" onClick={() => window.open(`/jobs/${job.id}`, '_blank')}>
+                                                            <Eye className="w-4 h-4 ml-1" />
+                                                            {tr('مراجعة', 'Review', 'Verifier')}
+                                                        </Button>
+                                                        <Button variant="ghost" size="sm" className="text-red-600 hover:bg-red-50" onClick={() => handleDeleteJob(job.id)} disabled={deleteJobMutation.isPending}>
+                                                            <Trash2 className="w-4 h-4 ml-1" />
+                                                            {tr('حذف', 'Delete', 'Supprimer')}
+                                                        </Button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
-                    </div>
+
+                        {/* Mobile card layout */}
+                        <div className="md:hidden space-y-4">
+                            {filteredJobs.map((job) => (
+                                <div key={job.id} className={panelClass}>
+                                    <div className="flex items-start justify-between mb-3">
+                                        <div className="flex-1">
+                                            <h3 className="font-semibold text-foreground mb-1">{job.title}</h3>
+                                            <p className="text-xs text-muted">{new Date(job.created_at).toLocaleDateString(locale)}</p>
+                                        </div>
+                                        <span className={`px-2 py-1 rounded-full text-xs font-medium shrink-0 ml-2 ${
+                                            job.status === 'open' ? 'bg-green-100 text-green-700' :
+                                            job.status === 'in_progress' ? 'bg-blue-100 text-blue-700' :
+                                            job.status === 'completed' ? 'bg-purple-100 text-purple-700' :
+                                            'bg-gray-100 text-gray-700'
+                                        }`}>
+                                            {job.status === 'open' ? tr('مفتوحة', 'Open', 'Ouverte') :
+                                             job.status === 'in_progress' ? tr('قيد التنفيذ', 'In progress', 'En cours') :
+                                             job.status === 'completed' ? tr('مكتملة', 'Completed', 'Terminee') : tr('ملغاة', 'Cancelled', 'Annulee')}
+                                        </span>
+                                    </div>
+                                    
+                                    <div className="space-y-2 mb-4 pb-4 border-b border-gray-100 dark:border-white/10">
+                                        <div className="flex justify-between text-sm">
+                                            <span className="text-muted">{tr('العميل', 'Client', 'Client')}</span>
+                                            <span className="font-medium text-foreground">{job.client?.full_name}</span>
+                                        </div>
+                                        <div className="flex justify-between text-sm">
+                                            <span className="text-muted">{tr('الميزانية', 'Budget', 'Budget')}</span>
+                                            <span className="font-semibold text-foreground">{formatJobBudget(job)}</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="flex gap-2">
+                                        <Button variant="outline" size="sm" className="flex-1 min-h-[44px]" onClick={() => window.open(`/jobs/${job.id}`, '_blank')}>
+                                            <Eye className="w-4 h-4 ml-1" />
+                                            {tr('مراجعة', 'Review', 'Verifier')}
+                                        </Button>
+                                        <Button variant="ghost" size="sm" className="flex-1 min-h-[44px] text-red-600 hover:bg-red-50" onClick={() => handleDeleteJob(job.id)} disabled={deleteJobMutation.isPending}>
+                                            <Trash2 className="w-4 h-4 ml-1" />
+                                            {tr('حذف', 'Delete', 'Supprimer')}
+                                        </Button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </>
                 )}
             </div>
 

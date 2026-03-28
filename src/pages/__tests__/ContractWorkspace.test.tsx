@@ -258,7 +258,8 @@ describe('ContractWorkspace', () => {
 
         const loadingView = renderWorkspace();
 
-        expect(loadingView.container.querySelector('.animate-spin')).toBeInTheDocument();
+        // The loading state shows skeleton UI with shimmer effect, not a spinner
+        expect(loadingView.container.querySelector('.shimmer')).toBeInTheDocument();
 
         queryMocks.useQuery.mockImplementation(({ queryKey }: { queryKey: unknown[] }) => {
             if (queryKey[0] === 'contract') {
@@ -270,6 +271,7 @@ describe('ContractWorkspace', () => {
 
         const emptyView = renderWorkspace();
 
+        // When contract is null, the component returns null (no render)
         expect(emptyView.container).toBeEmptyDOMElement();
     });
 

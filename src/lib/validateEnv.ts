@@ -10,8 +10,6 @@ interface OptionalEnv {
     VITE_FLOUCI_APP_TOKEN?: string;
     VITE_GOOGLE_ANALYTICS_ID?: string;
     VITE_SENTRY_DSN?: string;
-    VITE_POSTHOG_KEY?: string;
-    VITE_POSTHOG_HOST?: string;
 }
 
 export type AppEnv = RequiredEnv & OptionalEnv;
@@ -53,8 +51,6 @@ export function getOptionalEnv(): OptionalEnv {
         VITE_FLOUCI_APP_TOKEN: import.meta.env.VITE_FLOUCI_APP_TOKEN,
         VITE_GOOGLE_ANALYTICS_ID: import.meta.env.VITE_GOOGLE_ANALYTICS_ID,
         VITE_SENTRY_DSN: import.meta.env.VITE_SENTRY_DSN,
-        VITE_POSTHOG_KEY: import.meta.env.VITE_POSTHOG_KEY,
-        VITE_POSTHOG_HOST: import.meta.env.VITE_POSTHOG_HOST,
     };
 }
 

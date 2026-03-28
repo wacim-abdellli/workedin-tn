@@ -55,7 +55,7 @@ export default defineConfig(({ command, mode }) => ({
             return 'observability-vendor';
           }
 
-          if (id.includes('recharts')) {
+          if (id.includes('recharts') || id.includes('d3-')) {
             return 'charts-vendor';
           }
         },
