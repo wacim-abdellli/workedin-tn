@@ -160,7 +160,7 @@ const WithdrawalForm = ({ wallet, onSuccess, onCancel }: WithdrawalFormProps) =>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     المبلغ المطلوب
                 </label>
-                <div className="relative">
+                <div className="relative" dir="ltr">
                     <input
                         type="number"
                         value={amount}
@@ -169,10 +169,10 @@ const WithdrawalForm = ({ wallet, onSuccess, onCancel }: WithdrawalFormProps) =>
                         min={MIN_WITHDRAWAL_AMOUNT}
                         max={wallet.balance}
                         step="0.001"
-                        className="input w-full pl-16"
+                        className="input w-full ps-16"
                         dir="ltr"
                     />
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
+                    <span className="absolute start-3 top-1/2 -translate-y-1/2 text-gray-500">
                         د.ت
                     </span>
                 </div>
@@ -255,14 +255,14 @@ const WithdrawalForm = ({ wallet, onSuccess, onCancel }: WithdrawalFormProps) =>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         رقم الهاتف
                     </label>
-                    <div className="relative">
-                        <Phone className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <div className="relative" dir="ltr">
+                        <Phone className="absolute start-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                         <input
                             type="tel"
                             value={phoneNumber}
                             onChange={(e) => setPhoneNumber(e.target.value)}
                             placeholder="+216 XX XXX XXX"
-                            className="input w-full pr-10"
+                            className="input w-full ps-10"
                             dir="ltr"
                         />
                     </div>

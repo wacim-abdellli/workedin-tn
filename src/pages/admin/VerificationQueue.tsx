@@ -335,7 +335,7 @@ export default function VerificationQueue() {
                                                 {formatDate(verification.submitted_at)}
                                             </p>
                                         </div>
-                                        <ChevronLeft className="w-5 h-5 text-gray-400" />
+                                        <ChevronLeft className="w-5 h-5 text-gray-400 rtl:rotate-180" />
                                     </div>
                                 </div>
                             ))

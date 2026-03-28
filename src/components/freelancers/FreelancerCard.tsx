@@ -33,7 +33,7 @@ interface FreelancerCardProps {
   onToggleSave?: (id: string) => void;
 }
 
-function FreelancerCard({
+const FreelancerCard = memo(function FreelancerCard({
   freelancer,
   viewMode = 'grid',
   isSaved = false,
@@ -229,6 +229,6 @@ function FreelancerCard({
       </div>
     </div>
   );
-}
+});
 
-export default memo(FreelancerCard);
+export default FreelancerCard;

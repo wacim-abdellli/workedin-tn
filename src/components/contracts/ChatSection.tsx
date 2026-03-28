@@ -265,7 +265,7 @@ export default function ChatSection({
                         isLoading={isSending}
                         aria-label={t.contract?.sendMessage || 'إرسال الرسالة'}
                     >
-                        <Send className="w-5 h-5 ml-1" /> {/* Adjust margin for RTL icon visual center */}
+                        <Send className="ms-1 w-5 h-5 rtl:rotate-180" />
                     </Button>
                 </form>
             </div>

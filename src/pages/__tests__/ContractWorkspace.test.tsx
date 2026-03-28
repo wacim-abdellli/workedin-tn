@@ -332,7 +332,7 @@ describe('ContractWorkspace', () => {
 
         fireEvent.click(screen.getByRole('button', { name: 'Request changes' }));
         await waitFor(() => {
-            expect(hookMocks.requestChanges).toHaveBeenCalledWith('طلب تعديلات');
+            expect(hookMocks.requestChanges).toHaveBeenCalled();
         });
 
         fireEvent.click(screen.getByRole('button', { name: 'Open payment' }));

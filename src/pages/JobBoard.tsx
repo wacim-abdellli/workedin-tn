@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
     Search,
@@ -173,7 +173,7 @@ function JobBoard() {
         queryKey: ['jobs', filters, debouncedSearch],
         queryFn: ({ pageParam }) => jobsService.getJobs({ ...filters, search: debouncedSearch }, pageParam as number, 10),
         initialPageParam: 1,
-        getNextPageParam: (lastPage: any, pages: any[]) =>
+        getNextPageParam: (lastPage: { data: Job[], count: number }, pages: { data: Job[], count: number }[]) =>
             lastPage.data?.length === 10 ? pages.length + 1 : undefined,
         staleTime: 0,
         gcTime: 0,
@@ -182,7 +182,11 @@ function JobBoard() {
         retry: false,
     });
 
-    const jobs = useMemo(() => jobsData?.pages.flatMap((p: any) => p.data || []) || [], [jobsData]);
+    const jobs = useMemo(() => jobsData?.pages.flatMap((p) => p.data || []) || [], [jobsData]);
+    const jobCards = useMemo<JobForCard[]>(
+        () => jobs.map((job) => ({ ...job, skills: job.required_skills || [] })),
+        [jobs]
+    );
     const totalCount = jobsData?.pages[0]?.count || 0;
     const isLoading = isFetching && !isFetchingNextPage;
 
@@ -208,9 +212,9 @@ function JobBoard() {
 
     // Toggle save job
     const toggleSaveJobMutation = useMutation({
-        mutationFn: async ({ job, isSaved }: { job: Job, isSaved: boolean }) => {
-            await profilesService.toggleFavorite(user!.id, job.id, isSaved);
-            return { job, isSaved };
+        mutationFn: async ({ jobId, isSaved }: { jobId: string, isSaved: boolean }) => {
+            await profilesService.toggleFavorite(user!.id, jobId, isSaved);
+            return { jobId, isSaved };
         },
         onSuccess: ({ isSaved }) => {
             queryClient.invalidateQueries({ queryKey: ['savedJobs', user?.id] });
@@ -221,16 +225,20 @@ function JobBoard() {
         }
     });
 
-    const toggleSaveJob = (job: Job) => {
+    const toggleSaveJob = useCallback((job: JobForCard) => {
         if (!user) {
             showToast(t.auth.login, 'warning');
             return;
         }
-        toggleSaveJobMutation.mutate({ job, isSaved: savedJobIds.has(job.id) });
-    };
+        toggleSaveJobMutation.mutate({ jobId: job.id, isSaved: savedJobIds.has(job.id) });
+    }, [savedJobIds, showToast, t.auth.login, toggleSaveJobMutation, user]);
+
+    const handleJobClick = useCallback((jobId: string) => {
+        navigate(`/jobs/${jobId}`);
+    }, [navigate]);
 
     // Update filter
-    const updateFilter = (key: string, value: any) => {
+    const updateFilter = (key: string, value: unknown) => {
         setFilters(prev => ({ ...prev, [key]: value }));
     };
 
@@ -249,7 +257,7 @@ function JobBoard() {
 
     return (
         <div className="page-shell transition-colors duration-300">
-            <SEO {...SEO_CONFIG.jobs} url="/jobs" />
+            <SEO {...SEO_CONFIG.jobs} url="/jobs" canonical="https://khedma.tn/jobs" />
             <Header />
 
             <div className="page-shell-content">
@@ -383,13 +391,13 @@ function JobBoard() {
                         ) : (
                             <>
                                 <div className={`${viewMode === 'grid' ? 'grid md:grid-cols-2 gap-4' : 'space-y-4'} cv-auto`}>
-                                    {jobs.map(job => (
+                                    {jobCards.map(job => (
                                         <JobCard
                                             key={job.id}
-                                            job={{ ...job, skills: job.required_skills || [] } as JobForCard}
+                                            job={job}
                                             isSaved={savedJobIds.has(job.id)}
-                                            onToggleSave={() => toggleSaveJob(job)}
-                                            onClick={() => navigate(`/jobs/${job.id}`)}
+                                            onToggleSave={toggleSaveJob}
+                                            onClick={handleJobClick}
                                         />
                                     ))}
                                 </div>

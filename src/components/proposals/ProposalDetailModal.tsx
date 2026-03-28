@@ -55,7 +55,7 @@ export default function ProposalDetailModal({
                 {/* Close Button (Mobile & Desktop) */}
                 <button
                     onClick={onClose}
-                    className="absolute top-4 right-4 z-50 p-2 bg-white/90 rounded-full hover:bg-gray-100 md:hidden"
+                    className="absolute top-4 end-4 z-50 p-2 bg-white/90 rounded-full hover:bg-gray-100 md:hidden"
                 >
                     <X className="w-6 h-6" />
                 </button>
@@ -65,7 +65,7 @@ export default function ProposalDetailModal({
 
                     {/* Header (Mobile only) */}
                     <div className="md:hidden p-4 border-b flex items-center gap-3">
-                        <button onClick={onClose}><ArrowLeft className="w-6 h-6" /></button>
+                        <button onClick={onClose}><ArrowLeft className="w-6 h-6 rtl:rotate-180" /></button>
                         <h2 className="font-bold text-lg truncate">{freelancer.full_name}</h2>
                     </div>
 
@@ -77,7 +77,7 @@ export default function ProposalDetailModal({
                                 className="w-24 h-24 rounded-full border-4 border-white shadow-sm object-cover"
                             />
                             {freelancer.is_online && (
-                                <span className="absolute bottom-1 right-1 w-5 h-5 bg-green-500 border-4 border-white rounded-full"></span>
+                                <span className="absolute bottom-1 end-1 w-5 h-5 bg-green-500 border-4 border-white rounded-full"></span>
                             )}
                         </div>
                         <h3 className="font-bold text-xl text-gray-900 mb-1">{freelancer.full_name}</h3>
@@ -307,7 +307,7 @@ export default function ProposalDetailModal({
                                 className="w-full justify-center"
                                 onClick={onMessage}
                             >
-                                <MessageSquare className="w-4 h-4 ml-2" />
+                                <MessageSquare className="w-4 h-4 ms-2" />
                                 مراسلة
                             </Button>
                             <Button
@@ -315,7 +315,7 @@ export default function ProposalDetailModal({
                                 className="w-full justify-center"
                                 onClick={onShortlist}
                             >
-                                <Star className={`w-4 h-4 ml-2 ${proposal.status === 'shortlisted' ? 'fill-current' : ''}`} />
+                                <Star className={`w-4 h-4 ms-2 ${proposal.status === 'shortlisted' ? 'fill-current' : ''}`} />
                                 {proposal.status === 'shortlisted' ? 'في القائمة' : 'تفضيل'}
                             </Button>
                         </div>

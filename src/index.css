@@ -616,7 +616,7 @@ h6 {
   }
 
   .header-profile-trigger {
-    @apply flex h-9 min-w-0 max-w-[228px] items-center gap-2 rounded-full border pl-1 pr-2;
+    @apply flex h-9 min-w-0 max-w-[228px] items-center gap-2 rounded-full border ps-1 pe-2;
     @apply transition-colors;
     @apply border-gray-200 bg-white hover:bg-gray-50;
     @apply dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10;

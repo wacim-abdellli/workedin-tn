@@ -7,7 +7,14 @@ import { Header, Footer } from '../components/layout';
 import Button from '../components/ui/Button';
 import { supabaseAnon } from '../lib/supabase';
 import type { Skill } from '../types';
-import type { FreelancerData } from '../types/freelancer';
+import type {
+    FreelancerData,
+    FreelancerProfilePublicRow,
+    FreelancerReviewRow,
+    FreelancerSkillValue,
+    FreelancerUsernameLookupRow,
+    PortfolioItemRow,
+} from '../types/freelancer';
 import ContactModal from '../components/freelancer/ContactModal';
 import { OptimizedImage } from '../components/common';
 import SEO from '../components/common/SEO';
@@ -21,6 +28,26 @@ import PortfolioSection from '../components/freelancer/profile/PortfolioSection'
 import ReviewsSection from '../components/freelancer/profile/ReviewsSection';
 import ProfileSidebar from '../components/freelancer/profile/ProfileSidebar';
 import ProfileSkeleton from '../components/freelancer/profile/ProfileSkeleton';
+
+function getFreelancerSkillName(skillValue: FreelancerSkillValue): string {
+    if (typeof skillValue === 'string') {
+        return skillValue;
+    }
+
+    return typeof skillValue?.name === 'string' ? skillValue.name : '';
+}
+
+function getSingleReviewer(reviewer: FreelancerReviewRow['reviewer']) {
+    return Array.isArray(reviewer) ? (reviewer[0] ?? null) : reviewer;
+}
+
+function getReviewJobTitle(contract: FreelancerReviewRow['contract']): string | null {
+    const contractRow = Array.isArray(contract) ? contract[0] : contract;
+    const job = contractRow?.job;
+    const jobRow = Array.isArray(job) ? job[0] : job;
+
+    return jobRow?.title || null;
+}
 
 export default function FreelancerProfile() {
     const { usernameOrId } = useParams<{ usernameOrId: string }>();
@@ -67,8 +94,10 @@ export default function FreelancerProfile() {
                     .eq('username', usernameOrId)
                     .single();
 
-                if (userError || !userProfile) throw new Error('User not found');
-                profileId = userProfile.id;
+                const userProfileRow = userProfile as FreelancerUsernameLookupRow | null;
+
+                if (userError || !userProfileRow) throw new Error('User not found');
+                profileId = userProfileRow.id;
             }
 
             // Fetch freelancer_profile with joined profile data
@@ -90,19 +119,25 @@ export default function FreelancerProfile() {
                 .eq('id', profileId)
                 .single();
 
-            if (profileError) throw profileError;
+            const profileRow = profile as FreelancerProfilePublicRow | null;
 
-            const targetFreelancerId = profile.id;
+            if (profileError || !profileRow?.profile) throw profileError || new Error('Freelancer not found');
+
+            const targetFreelancerId = profileRow.id;
 
             // Skills are stored as JSONB in freelancer_profiles.skills
             // Format: [{name: string, level: string}] or [string]
-            const rawSkills: unknown[] = Array.isArray(profile.skills) ? profile.skills : [];
-            const skills: Skill[] = rawSkills.map((s: any, i: number) => ({
-                id: typeof s === 'string' ? s : (s?.name || String(i)),
-                name_en: typeof s === 'string' ? s : (s?.name || ''),
-                name_ar: typeof s === 'string' ? s : (s?.name || ''),
-                name_fr: typeof s === 'string' ? s : (s?.name || ''),
-            }));
+            const rawSkills: FreelancerSkillValue[] = Array.isArray(profileRow.skills) ? profileRow.skills : [];
+            const skills: Skill[] = rawSkills.map((skillValue, index) => {
+                const skillName = getFreelancerSkillName(skillValue);
+
+                return {
+                    id: skillName || String(index),
+                    name_en: skillName,
+                    name_ar: skillName,
+                    name_fr: skillName,
+                };
+            });
 
             // Fetch portfolio items
             const { data: portfolioItems } = await supabaseAnon
@@ -110,6 +145,8 @@ export default function FreelancerProfile() {
                 .select('*')
                 .eq('freelancer_id', targetFreelancerId)
                 .order('order_index', { ascending: true });
+
+            const portfolioRows = (portfolioItems ?? []) as PortfolioItemRow[];
 
             // Fetch reviews
             const { data: reviews } = await supabaseAnon
@@ -133,61 +170,67 @@ export default function FreelancerProfile() {
                 .eq('reviewee_id', targetFreelancerId)
                 .order('created_at', { ascending: false });
 
+            const reviewRows = (reviews ?? []) as FreelancerReviewRow[];
+
             // Format stats
             const stats = {
-                jobs_completed: profile.jobs_completed || 0,
-                rating: profile.success_rate ? (profile.success_rate / 20) : 0, // Convert % to 5-star
-                reviews_count: reviews?.length || 0,
-                response_time_hours: profile.response_time_hours || 24,
+                jobs_completed: profileRow.jobs_completed || 0,
+                rating: profileRow.success_rate ? (profileRow.success_rate / 20) : 0, // Convert % to 5-star
+                reviews_count: reviewRows.length,
+                response_time_hours: profileRow.response_time_hours || 24,
                 completion_rate: 100,
-                repeat_clients: profile.repeat_clients || 0,
-                total_earnings: profile.total_earnings || 0,
-                success_rate: profile.success_rate || 0,
-                profile_views: profile.profile_views || 0
+                repeat_clients: profileRow.repeat_clients || 0,
+                total_earnings: profileRow.total_earnings || 0,
+                success_rate: profileRow.success_rate || 0,
+                profile_views: profileRow.profile_views || 0
             };
 
             const formattedData: FreelancerData = {
-                id: profile.id,
-                full_name: profile.profile.full_name,
-                username: profile.profile.username,
-                title: profile.title,
-                avatar_url: profile.profile.avatar_url,
-                bio: profile.profile.bio || '',
-                location: profile.profile.location || 'تونس',
-                joined_at: profile.profile.created_at,
-                voice_intro_url: profile.voice_intro_url,
-                hourly_rate: profile.hourly_rate || 0,
-                availability: profile.availability || 'available',
-                skills: skills,
-                languages: Array.isArray(profile.languages) ? profile.languages : [],
-                education: Array.isArray(profile.education) ? profile.education : [],
-                certifications: Array.isArray(profile.certifications) ? profile.certifications : [],
+                id: profileRow.id,
+                full_name: profileRow.profile.full_name,
+                username: profileRow.profile.username || undefined,
+                title: profileRow.title,
+                avatar_url: profileRow.profile.avatar_url,
+                bio: profileRow.profile.bio || '',
+                location: profileRow.profile.location || 'تونس',
+                joined_at: profileRow.profile.created_at,
+                voice_intro_url: profileRow.voice_intro_url,
+                hourly_rate: profileRow.hourly_rate || 0,
+                availability: profileRow.availability || 'available',
+                skills,
+                languages: Array.isArray(profileRow.languages) ? profileRow.languages : [],
+                education: Array.isArray(profileRow.education) ? profileRow.education : [],
+                certifications: Array.isArray(profileRow.certifications) ? profileRow.certifications : [],
                 stats,
                 verifications: {
-                    cin: profile.cin_verified || false,
-                    phone: !!profile.profile.phone,
+                    cin: profileRow.cin_verified || false,
+                    phone: !!profileRow.profile.phone,
                     email: true,
                     payment: false
                 },
-                work_samples: portfolioItems?.map(item => ({
+                work_samples: portfolioRows.map(item => ({
                     id: item.id,
-                    title: item.title,
+                    title: item.title || '',
                     thumbnail_url: item.thumbnail_url || item.media_urls?.[0] || '',
-                    description: item.description,
-                    project_url: item.project_url,
-                    skills_used: item.skills_used,
-                    media_urls: item.media_urls
-                })) || [],
-                reviews: reviews?.map(r => ({
-                    id: r.id,
-                    client_name: (r.reviewer as any)?.full_name || 'عميل',
-                    client_avatar: (r.reviewer as any)?.avatar_url,
-                    rating: r.rating,
-                    comment: r.comment || '',
-                    created_at: r.created_at,
-                    job_title: (r.contract as any)?.job?.title || 'مهمة',
-                    skills_rating: r.skills_rating
-                })) || [],
+                    description: item.description || undefined,
+                    project_url: item.project_url || undefined,
+                    skills_used: item.skills_used || undefined,
+                    media_urls: item.media_urls || undefined,
+                })),
+                reviews: reviewRows.map((review) => {
+                    const reviewer = getSingleReviewer(review.reviewer);
+
+                    return {
+                        id: review.id,
+                        client_name: reviewer?.full_name || 'عميل',
+                        client_avatar: reviewer?.avatar_url || undefined,
+                        rating: review.rating,
+                        comment: review.comment || '',
+                        created_at: review.created_at,
+                        job_title: getReviewJobTitle(review.contract) || 'مهمة',
+                        skills_rating: review.skills_rating || undefined,
+                    };
+                }),
             };
 
             setFreelancer(formattedData);

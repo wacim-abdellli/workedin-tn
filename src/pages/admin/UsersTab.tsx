@@ -7,31 +7,9 @@ import ErrorBoundary from '@/components/common/ErrorBoundary';
 import { useToast } from '@/components/ui/Toast';
 import { supabaseAnon } from '@/lib/supabase';
 import { useTranslation } from '@/i18n';
+import type { AdminUser, AdminUserRow } from '@/types/admin';
 
 export const ADMIN_USERS_QUERY_KEY = ['admin-users'] as const;
-
-interface AdminUserRow {
-    id: string;
-    full_name: string | null;
-    email: string | null;
-    user_type: string | null;
-    active_mode: 'client' | 'freelancer' | null;
-    cin_verified: boolean | null;
-    is_admin: boolean | null;
-    created_at: string;
-}
-
-interface AdminUser {
-    id: string;
-    name: string;
-    email: string;
-    type: string;
-    status: string;
-    last_active: string;
-    active_mode: 'client' | 'freelancer' | null;
-    cin_verified: boolean;
-    is_admin: boolean;
-}
 
 interface ConfirmActionState {
     isOpen: boolean;
@@ -67,9 +45,9 @@ export async function fetchAdminUsers(): Promise<AdminUser[]> {
             cin_verified: Boolean(user.cin_verified),
             is_admin: Boolean(user.is_admin),
         }));
-    } catch (error: any) {
+    } catch (error) {
         // Ignore abort errors in development (React StrictMode)
-        if (error?.name === 'AbortError') {
+        if (error instanceof Error && error.name === 'AbortError') {
             console.log('Query aborted (likely React StrictMode)');
             return [];
         }

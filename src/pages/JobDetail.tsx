@@ -107,20 +107,20 @@ function formatDate(date: string): string {
 }
 
 const EXPERIENCE_LABELS: Record<string, string> = {
-    beginner: 'مبتدئ',
-    intermediate: 'متوسط',
-    expert: 'خبير',
+    beginner: 'beginner',
+    intermediate: 'intermediate',
+    expert: 'expert',
 };
 
 const CATEGORY_LABELS: Record<string, string> = {
-    design: 'تصميم',
-    development: 'برمجة',
-    writing: 'كتابة',
-    translation: 'ترجمة',
-    video: 'فيديو',
-    marketing: 'تسويق',
-    data: 'بيانات',
-    other: 'أخرى',
+    design: 'design',
+    development: 'development',
+    writing: 'writing',
+    translation: 'translation',
+    video: 'video',
+    marketing: 'marketing',
+    data: 'data',
+    other: 'other',
 };
 
 // Main Component
@@ -209,14 +209,14 @@ function JobDetail() {
         },
         onSuccess: (newSavedStatus) => {
             queryClient.setQueryData(['savedStatus', jobId, user?.id], newSavedStatus);
-            showToast(newSavedStatus ? 'تم حفظ الوظيفة' : 'تم إزالة الوظيفة من المحفوظات', 'success');
+            showToast(newSavedStatus ? t.jobDetail.jobSaved : t.jobDetail.jobRemoved, 'success');
         },
-        onError: () => showToast('حدث خطأ', 'error')
+        onError: () => showToast(t.jobDetail.error, 'error')
     });
 
     const toggleSave = () => {
         if (!user || !jobId) {
-            showToast('سجل الدخول لحفظ الوظيفة', 'warning');
+            showToast(t.jobDetail.loginToSave, 'warning');
             return;
         }
         toggleSaveMutation.mutate();
@@ -252,13 +252,13 @@ function JobDetail() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['myProposal', jobId, user?.id] });
             queryClient.invalidateQueries({ queryKey: ['connectsBalance', user?.id] });
-            showToast('تم إرسال العرض بنجاح!', 'success');
+            showToast(t.jobDetail.proposalSent, 'success');
             setShowProposalModal(false);
             // Notify client by email (fire-and-forget)
             if (job?.client?.email && job.title && jobId) {
                 sendNewProposalEmail(
                     job.client.email,
-                    job.client.full_name || 'عميل',
+                    job.client.full_name || t.jobDetail.defaultClient,
                     job.title,
                     jobId,
                 );
@@ -266,7 +266,7 @@ function JobDetail() {
         },
         onError: (err) => {
             logger.error('Error submitting proposal:', err);
-            showToast(err instanceof Error ? err.message : 'حدث خطأ في إرسال العرض', 'error');
+            showToast(err instanceof Error ? err.message : t.jobDetail.proposalError, 'error');
         }
     });
 
@@ -288,9 +288,9 @@ function JobDetail() {
             }
             queryClient.invalidateQueries({ queryKey: ['myProposal', jobId, user?.id] });
             queryClient.invalidateQueries({ queryKey: ['connectsBalance', user?.id] });
-            showToast('تم سحب العرض واسترداد الكونيكتس', 'success');
+            showToast(t.jobDetail.proposalWithdrawn, 'success');
         },
-        onError: () => showToast('حدث خطأ في سحب العرض', 'error')
+        onError: () => showToast(t.jobDetail.withdrawError, 'error')
     });
 
     const withdrawProposal = () => withdrawProposalMutation.mutate();
@@ -304,7 +304,7 @@ function JobDetail() {
             });
         } else {
             navigator.clipboard.writeText(window.location.href);
-            showToast('تم نسخ الرابط', 'success');
+            showToast(t.jobDetail.linkCopied, 'success');
         }
     };
 
@@ -367,11 +367,11 @@ function JobDetail() {
             <div className="container-custom py-8">
                 {/* Breadcrumbs */}
                 <nav className="flex items-center gap-2 text-sm text-muted mb-6">
-                    <Link to="/" className="hover:text-primary-600">الرئيسية</Link>
-                    <ChevronRight className="w-4 h-4" />
-                    <Link to="/jobs" className="hover:text-primary-600">الوظائف</Link>
-                    <ChevronRight className="w-4 h-4" />
-                    <span className="text-foreground">{CATEGORY_LABELS[job.category] || job.category}</span>
+                    <Link to="/" className="hover:text-primary-600">{t.nav.home}</Link>
+                    <ChevronRight className="w-4 h-4 rtl:rotate-180" />
+                    <Link to="/jobs" className="hover:text-primary-600">{t.nav.jobs}</Link>
+                    <ChevronRight className="w-4 h-4 rtl:rotate-180" />
+                    <span className="text-foreground">{t.jobDetail.category[CATEGORY_LABELS[job.category] as keyof typeof t.jobDetail.category] || job.category}</span>
                 </nav>
 
                 <div className="flex flex-col lg:flex-row gap-6">
@@ -420,10 +420,10 @@ function JobDetail() {
                                     ? 'bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400'
                                     : 'bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400'
                                     }`}>
-                                    {job.job_type === 'fixed_price' ? 'سعر ثابت' : 'بالساعة'}
+                                    {job.job_type === 'fixed_price' ? t.jobDetail.fixedPrice : t.jobDetail.hourly}
                                 </span>
                                 <span className="px-4 py-2 rounded-full text-sm font-medium bg-gray-100 dark:bg-dark-800 text-gray-700 dark:text-gray-300">
-                                    {EXPERIENCE_LABELS[job.experience_level] || job.experience_level}
+                                    {t.jobDetail.experience[EXPERIENCE_LABELS[job.experience_level] as keyof typeof t.jobDetail.experience] || job.experience_level}
                                 </span>
                                 {job.duration && (
                                     <span className="px-4 py-2 rounded-full text-sm font-medium bg-purple-100 text-purple-700">
@@ -434,7 +434,7 @@ function JobDetail() {
 
                             {/* Budget */}
                             <div className="bg-primary-50 dark:bg-primary-900/20 rounded-xl p-4 mb-6">
-                                <p className="text-sm text-primary-600 dark:text-primary-400 mb-1">الميزانية</p>
+                                <p className="text-sm text-primary-600 dark:text-primary-400 mb-1">{t.jobDetail.budget}</p>
                                 <p className="text-3xl font-bold text-primary-700 dark:text-primary-300">
                                     {job.job_type === 'fixed_price' ? (
                                         job.budget_min === job.budget_max || !job.budget_max
@@ -442,10 +442,10 @@ function JobDetail() {
                                             : `${job.budget_min} - ${job.budget_max} د.ت`
                                     ) : (
                                         <>
-                                            {job.hourly_rate} د.ت<span className="text-lg font-normal">/ساعة</span>
+                                            {job.hourly_rate} د.ت<span className="text-lg font-normal">{t.jobDetail.perHour}</span>
                                             {job.estimated_hours && (
                                                 <span className="text-sm font-normal text-primary-600 block mt-1">
-                                                    ({job.estimated_hours} ساعة تقريباً)
+                                                    {t.jobDetail.approxHours.replace('{{count}}', String(job.estimated_hours))}
                                                 </span>
                                             )}
                                         </>
@@ -456,7 +456,7 @@ function JobDetail() {
 
                         {/* Description */}
                         <div className="card">
-                            <h2 className="text-lg font-bold mb-4">وصف المشروع</h2>
+                            <h2 className="text-lg font-bold mb-4">{t.jobDetail.description}</h2>
                             <div className="prose prose-sm max-w-none text-foreground whitespace-pre-wrap">
                                 {job.description}
                             </div>
@@ -464,7 +464,7 @@ function JobDetail() {
 
                         {/* Skills */}
                         <div className="card">
-                            <h2 className="text-lg font-bold mb-4">المهارات المطلوبة</h2>
+                            <h2 className="text-lg font-bold mb-4">{t.jobDetail.requiredSkills}</h2>
                             <div className="flex flex-wrap gap-2">
                                 {job.required_skills?.map((skill, index) => {
                                     const isMatch = freelancerProfile?.skills?.some(
@@ -489,10 +489,10 @@ function JobDetail() {
                         {/* Attachments */}
                         {job.attachments && job.attachments.length > 0 && (
                             <div className="card">
-                                <h2 className="text-lg font-bold mb-4">الملفات المرفقة</h2>
+                                <h2 className="text-lg font-bold mb-4">{t.jobDetail.attachments}</h2>
                                 <div className="space-y-2">
                                     {job.attachments.map((url, index) => {
-                                        const filename = url.split('/').pop() || `ملف ${index + 1}`;
+                                        const filename = url.split('/').pop() || t.jobDetail.file.replace('{{index}}', String(index + 1));
                                         return (
                                             <a
                                                 key={index}
@@ -613,7 +613,7 @@ function JobDetail() {
                                     </div>
                                 )}
                                 <div>
-                                    <p className="font-semibold">{job.client?.full_name || 'عميل'}</p>
+                                    <p className="font-semibold">{job.client?.full_name || t.jobDetail.defaultClient}</p>
                                     {job.client?.location && (
                                         <p className="text-sm text-muted flex items-center gap-1">
                                             <MapPin className="w-3 h-3" />

@@ -46,17 +46,17 @@ const ForgotPassword = () => {
                 // Handle rate limiting
                 if (error.message.includes('rate') || error.status === 429) {
                     setRateLimitError(true);
-                    showToast('تم تجاوز عدد المحاولات. حاول مرة أخرى لاحقاً.', 'error');
+                    showToast(t.auth.forgotPasswordForm.rateLimited, 'error');
                     return;
                 }
                 throw error;
             }
 
             setIsSuccess(true);
-            showToast('تم إرسال رابط إعادة التعيين', 'success');
+            showToast(t.auth.forgotPasswordForm.sent, 'success');
         } catch (error: any) {
             logger.error('Password reset error:', error);
-            showToast(error.message || 'حدث خطأ أثناء إرسال الرابط', 'error');
+            showToast(error.message || t.auth.forgotPasswordForm.error, 'error');
         } finally {
             setIsLoading(false);
         }
@@ -73,7 +73,7 @@ const ForgotPassword = () => {
                     to="/login"
                     className="inline-flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 mb-6 transition-colors"
                 >
-                    <ArrowLeft className="w-4 h-4" />
+                    <ArrowLeft className="w-4 h-4 rtl:rotate-180" />
                     <span>العودة لتسجيل الدخول</span>
                 </Link>
 
@@ -134,10 +134,10 @@ const ForgotPassword = () => {
                                     {isLoading ? (
                                         <>
                                             <Loader2 className="w-5 h-5 animate-spin ml-2" />
-                                            جاري الإرسال...
+                                            {t.auth.loggingOut}
                                         </>
                                     ) : (
-                                        'إرسال رابط إعادة التعيين'
+                                        t.auth.forgotPasswordForm.sendTitle
                                     )}
                                 </Button>
                             </form>

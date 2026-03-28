@@ -99,7 +99,7 @@ const ProfileCompletionCard = ({ className = '', maxStepsToShow = 4 }: ProfileCo
                                     )}
                                 </div>
                                 <div className="w-8 h-8 rounded-full bg-white dark:bg-gray-600 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0 shadow-sm text-primary-600">
-                                    <ArrowLeft className="w-4 h-4" />
+                                    <ArrowLeft className="w-4 h-4 rtl:rotate-180" />
                                 </div>
                             </Link>
                         </li>
@@ -118,7 +118,7 @@ const ProfileCompletionCard = ({ className = '', maxStepsToShow = 4 }: ProfileCo
                     className="mt-6 w-full py-3.5 px-6 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 active:translate-y-0"
                 >
                     <span>أكمل ملفك الآن</span>
-                    <ArrowLeft className="w-5 h-5" />
+                    <ArrowLeft className="w-5 h-5 rtl:rotate-180" />
                 </Link>
             </div>
         </div>

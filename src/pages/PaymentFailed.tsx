@@ -90,7 +90,7 @@ const PaymentFailed = () => {
                                 className="btn-secondary btn-lg justify-center w-full"
                             >
                                 <span>العودة للعقد</span>
-                                <ArrowRight className="w-5 h-5" />
+                                <ArrowRight className="w-5 h-5 rtl:rotate-180" />
                             </Link>
                         )}
 

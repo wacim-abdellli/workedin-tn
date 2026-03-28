@@ -243,9 +243,11 @@ function AppRoutes() {
 
       {/* Messages */}
       <Route path="/messages" element={
-        <ProtectedRoute>
-          <Messages />
-        </ProtectedRoute>
+        <ErrorBoundary>
+          <ProtectedRoute>
+            <Messages />
+          </ProtectedRoute>
+        </ErrorBoundary>
       } />
 
       {/* Contract routes */}
@@ -259,14 +261,18 @@ function AppRoutes() {
 
       {/* Payment routes */}
       <Route path="/payment/success" element={
-        <ProtectedRoute>
-          <PaymentSuccess />
-        </ProtectedRoute>
+        <ErrorBoundary>
+          <ProtectedRoute>
+            <PaymentSuccess />
+          </ProtectedRoute>
+        </ErrorBoundary>
       } />
       <Route path="/payment/failed" element={
-        <ProtectedRoute>
-          <PaymentFailed />
-        </ProtectedRoute>
+        <ErrorBoundary>
+          <ProtectedRoute>
+            <PaymentFailed />
+          </ProtectedRoute>
+        </ErrorBoundary>
       } />
 
       {/* Profile & Settings */}
@@ -281,14 +287,18 @@ function AppRoutes() {
         </ErrorBoundary>
       } />
       <Route path="/settings" element={
-        <ProtectedRoute>
-          <Settings />
-        </ProtectedRoute>
+        <ErrorBoundary>
+          <ProtectedRoute>
+            <Settings />
+          </ProtectedRoute>
+        </ErrorBoundary>
       } />
       <Route path="/settings/:tab" element={
-        <ProtectedRoute>
-          <Settings />
-        </ProtectedRoute>
+        <ErrorBoundary>
+          <ProtectedRoute>
+            <Settings />
+          </ProtectedRoute>
+        </ErrorBoundary>
       } />
 
       {/* Admin */}
@@ -323,9 +333,11 @@ function AppRoutes() {
 
       {/* Identity Verification */}
       <Route path="/verify-identity" element={
-        <ProtectedRoute>
-          <VerifyIdentity />
-        </ProtectedRoute>
+        <ErrorBoundary>
+          <ProtectedRoute>
+            <VerifyIdentity />
+          </ProtectedRoute>
+        </ErrorBoundary>
       } />
 
       {/* Search */}
@@ -333,9 +345,11 @@ function AppRoutes() {
 
       {/* Notifications */}
       <Route path="/notifications" element={
-        <ProtectedRoute>
-          <Notifications />
-        </ProtectedRoute>
+        <ErrorBoundary>
+          <ProtectedRoute>
+            <Notifications />
+          </ProtectedRoute>
+        </ErrorBoundary>
       } />
 
       {/* 404 */}

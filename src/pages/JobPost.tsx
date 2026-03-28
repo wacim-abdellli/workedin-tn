@@ -336,7 +336,7 @@ export default function JobPost() {
                                         variant="outline"
                                         onClick={handleBack}
                                         disabled={isSubmitting}
-                                        leftIcon={<ArrowRight className="w-4 h-4" />} // RTL arrow
+                                        leftIcon={<ArrowLeft className="w-4 h-4 rtl:rotate-180" />}
                                     >
                                         {tx('jobs.new.actions.previous', undefined, 'Previous')}
                                     </Button>
@@ -362,7 +362,7 @@ export default function JobPost() {
                                             variant="primary"
                                             onClick={handleNext}
                                             disabled={isSubmitting}
-                                            rightIcon={<ArrowLeft className="w-4 h-4" />} // RTL arrow
+                                            rightIcon={<ArrowRight className="w-4 h-4 rtl:rotate-180" />}
                                         >
                                             {tx('jobs.new.actions.next', undefined, 'Next')}
                                         </Button>
@@ -372,7 +372,7 @@ export default function JobPost() {
                                             variant="primary"
                                             isLoading={isSubmitting && submitIntent === 'publish'}
                                             className="px-8"
-                                            rightIcon={<ArrowLeft className="w-4 h-4" />}
+                                            rightIcon={<ArrowRight className="w-4 h-4 rtl:rotate-180" />}
                                         >
                                             {tx('jobs.new.actions.publishJob', undefined, 'Publish job')}
                                         </Button>

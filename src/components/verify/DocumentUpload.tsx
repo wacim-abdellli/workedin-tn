@@ -124,7 +124,7 @@ export default function DocumentUpload({
             <div className="flex items-center justify-between">
                 {onBack ? (
                     <button onClick={onBack} className="flex items-center text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">
-                        <ChevronRight className="w-5 h-5 ml-1" />
+                        <ChevronRight className="ms-1 w-5 h-5 rtl:rotate-180" />
                         {t.common.back}
                     </button>
                 ) : <div />}
@@ -137,7 +137,7 @@ export default function DocumentUpload({
                     {isUploading ? (
                         <><Loader2 className="h-5 w-5 animate-spin" />{tx('verifyIdentity.processing', undefined, 'Processing...')}</>
                     ) : t.common.next}
-                    <ChevronLeft className="w-5 h-5" />
+                    <ChevronLeft className="w-5 h-5 rtl:rotate-180" />
                 </button>
             </div>
         </div>

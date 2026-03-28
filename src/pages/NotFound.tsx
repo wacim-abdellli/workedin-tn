@@ -35,7 +35,7 @@ export default function NotFound() {
             onClick={() => navigate(-1)}
             className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-6 py-3 font-medium text-gray-700 transition hover:bg-gray-50 dark:border-white/10 dark:bg-white/5 dark:text-gray-300 dark:hover:bg-white/10"
           >
-            <ArrowLeft className="h-5 w-5" />
+            <ArrowLeft className="h-5 w-5 rtl:rotate-180" />
             {t.notFound?.goBack || 'Go Back'}
           </button>
           <button

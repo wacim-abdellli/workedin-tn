@@ -17,6 +17,22 @@ export interface Report {
     reporter: { full_name: string; email: string } | null;
 }
 
+const REPORT_RATE_LIMIT_MESSAGE = 'You can submit maximum 5 reports per hour';
+
+function normalizeReportError(error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+
+    if (message.includes('Rate limit exceeded: max 5 reports per hour')) {
+        return new Error(REPORT_RATE_LIMIT_MESSAGE);
+    }
+
+    if (message.includes('no_self_reporting') || message.includes('You cannot report your own content.')) {
+        return new Error('You cannot report your own content.');
+    }
+
+    return error instanceof Error ? error : new Error(message);
+}
+
 export async function getReports(status?: ReportStatus): Promise<Report[]> {
     const client = supabase;
     let query = client
@@ -54,10 +70,22 @@ export async function submitReport(
     reportedId: string,
     reason: string
 ): Promise<void> {
-    const { error } = await supabaseWithRetry(() =>
-        supabase
-            .from('reports')
-            .insert({ reporter_id: reporterId, reported_type: reportedType, reported_id: reportedId, reason })
-    );
-    if (error) throw new Error(`Failed to submit report: ${error.message}`);
+    // Cannot report yourself
+    if (reportedType === 'user' && reporterId === reportedId) {
+        throw new Error('You cannot report your own content.');
+    }
+
+    try {
+        const { error } = await supabaseWithRetry(() =>
+            supabase
+                .from('reports')
+                .insert({ reporter_id: reporterId, reported_type: reportedType, reported_id: reportedId, reason })
+        );
+
+        if (error) {
+            throw error;
+        }
+    } catch (error) {
+        throw normalizeReportError(error);
+    }
 }

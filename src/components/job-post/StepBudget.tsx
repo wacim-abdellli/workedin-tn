@@ -41,7 +41,7 @@ export default function StepBudget() {
                         </div>
                         <span className="text-lg font-bold text-gray-900 dark:text-white">{tx('jobs.new.stepBudget.fixedPrice', undefined, 'سعر ثابت')}</span>
                     </div>
-                    <p className="pr-14 text-sm text-gray-500 dark:text-gray-400">
+                    <p className="pe-14 text-sm text-gray-500 dark:text-gray-400">
                         {tx('jobs.new.stepBudget.fixedPriceDescription', undefined, 'ادفع مبلغاً ثابتاً للمشروع بالكامل عند اكتماله.')}
                     </p>
                 </label>
@@ -65,7 +65,7 @@ export default function StepBudget() {
                         </div>
                         <span className="text-lg font-bold text-gray-900 dark:text-white">{tx('jobs.new.stepBudget.hourly', undefined, 'بالساعة')}</span>
                     </div>
-                    <p className="pr-14 text-sm text-gray-500 dark:text-gray-400">
+                    <p className="pe-14 text-sm text-gray-500 dark:text-gray-400">
                         {tx('jobs.new.stepBudget.hourlyDescription', undefined, 'ادفع للمستقل بناءً على عدد ساعات العمل.')}
                     </p>
                 </label>

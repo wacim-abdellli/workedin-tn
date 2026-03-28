@@ -121,7 +121,7 @@ export default function VerificationReview({
             {/* Actions */}
             <div className="flex items-center justify-between mt-8">
                 <button onClick={onBack} className="flex items-center text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">
-                    <ChevronRight className="w-5 h-5 ml-1" />
+                    <ChevronRight className="ms-1 w-5 h-5 rtl:rotate-180" />
                     {tx('common.back', undefined, 'Back')}
                 </button>
 

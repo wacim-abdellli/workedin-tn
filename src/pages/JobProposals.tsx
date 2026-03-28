@@ -13,6 +13,7 @@ import { supabase, withTimeout } from '../lib/supabase';
 import { useToast } from '../components/ui/Toast';
 import { useAuth } from '../contexts/AuthContext';
 import { logger } from '../lib/logger';
+import { useTranslation } from '../i18n';
 
 interface ProposalFilters {
     status?: ProposalStatus;
@@ -39,6 +40,7 @@ export default function JobProposals() {
     const navigate = useNavigate();
     const { showToast } = useToast();
     const { user } = useAuth();
+    const { t } = useTranslation();
 
     const [activeTab, setActiveTab] = useState('all');
     const [selectedProposal, setSelectedProposal] = useState<Proposal | null>(null);
@@ -69,7 +71,7 @@ export default function JobProposals() {
                 setJob(data);
             } catch (error) {
                 logger.error('Failed to fetch job', error);
-                showToast('فشل تحميل بيانات المشروع', 'error');
+                showToast(t.jobProposals.loadJobError, 'error');
             }
         };
 
@@ -125,10 +127,10 @@ export default function JobProposals() {
                     attachments: (p.attachments as Array<{ name: string; size: string }>) || [],
                     freelancer: {
                         id: (p.freelancer as Record<string, unknown>)?.id as string || '',
-                        full_name: (p.freelancer as Record<string, unknown>)?.full_name as string || 'مستخدم',
+                        full_name: (p.freelancer as Record<string, unknown>)?.full_name as string || t.jobProposals.defaultUser,
                         title: (p.freelancer_profile as Record<string, unknown>)?.title as string || '',
                         avatar_url: (p.freelancer as Record<string, unknown>)?.avatar_url as string || '',
-                        country: (p.freelancer as Record<string, unknown>)?.location as string || 'تونس',
+                        country: (p.freelancer as Record<string, unknown>)?.location as string || t.jobProposals.defaultCountry,
                         rating: (p.freelancer_profile as Record<string, unknown>)?.average_rating as number || 0,
                         reviews_count: (p.freelancer_profile as Record<string, unknown>)?.total_reviews as number || 0,
                         jobs_completed: (p.freelancer_profile as Record<string, unknown>)?.completed_jobs as number || 0,
@@ -150,7 +152,7 @@ export default function JobProposals() {
 
             } catch (error) {
                 logger.error('Failed to fetch proposals', error);
-                showToast('فشل تحميل العروض', 'error');
+                showToast(t.jobProposals.loadProposalsError, 'error');
             } finally {
                 setLoading(false);
             }
@@ -177,11 +179,11 @@ export default function JobProposals() {
                 navigate(`/contracts/${contract.id}`);
             } else {
                 // Show "hire first" message
-                showToast('يجب توظيف المستقل أولاً لبدء المحادثة', 'info');
+                showToast(t.jobProposals.hireFirst, 'info');
             }
         } catch {
             // No contract found - show info message
-            showToast('يجب توظيف المستقل أولاً لبدء المحادثة', 'info');
+            showToast(t.jobProposals.hireFirst, 'info');
         }
     }, [proposals, navigate, showToast]);
 
@@ -205,10 +207,10 @@ export default function JobProposals() {
             // Update local state
             if (isShortlisted) {
                 setShortlistedIds(prev => prev.filter(id => id !== proposalId));
-                showToast('تمت الإزالة من القائمة المختصرة', 'success');
+                showToast(t.jobProposals.removedFromShortlist, 'success');
             } else {
                 setShortlistedIds(prev => [...prev, proposalId]);
-                showToast('تمت الإضافة إلى القائمة المختصرة', 'success');
+                showToast(t.jobProposals.addedToShortlist, 'success');
             }
 
             // Update proposals state
@@ -218,7 +220,7 @@ export default function JobProposals() {
 
         } catch (error) {
             logger.error('Shortlist error', error);
-            showToast('حدث خطأ أثناء تحديث القائمة المختصرة', 'error');
+            showToast(t.jobProposals.shortlistError, 'error');
         }
     }, [shortlistedIds, showToast]);
 
@@ -279,7 +281,7 @@ export default function JobProposals() {
                 .insert({
                     user_id: proposal.freelancer_id,
                     type: 'proposal_accepted',
-                    title: 'تم قبول عرضك!',
+                    title: t.jobProposals.proposalAccepted,
                     message: `تم قبول عرضك على المشروع: ${job.title}`,
                     data: { contract_id: contract.id, job_id: jobId }
                 });
@@ -293,17 +295,17 @@ export default function JobProposals() {
                 .then(({ data: fp }) => {
                     if (fp?.email) {
                         import('../lib/email').then(({ sendProposalAcceptedEmail }) => {
-                            sendProposalAcceptedEmail(fp.email, fp.full_name || 'مستقل', job.title, contract.id);
+                            sendProposalAcceptedEmail(fp.email, fp.full_name || t.jobProposals.defaultFreelancer, job.title, contract.id);
                         });
                     }
                 });
 
-            showToast('تم توظيف المستقل بنجاح! 🎉', 'success');
+            showToast(t.jobProposals.hireSuccess, 'success');
             navigate(`/contracts/${contract.id}`);
 
         } catch (error) {
             logger.error('Hire error', error);
-            showToast('فشل توظيف المستقل. حاول مرة أخرى', 'error');
+            showToast(t.jobProposals.hireError, 'error');
         } finally {
             setActionLoading(false);
         }
@@ -390,11 +392,11 @@ export default function JobProposals() {
             ));
 
             setSelectedProposal(null);
-            showToast('تم أرشفة العرض', 'success');
+            showToast(t.jobProposals.proposalArchived, 'success');
 
         } catch (error) {
             logger.error('Archive error', error);
-            showToast('فشل أرشفة العرض', 'error');
+            showToast(t.jobProposals.archiveError, 'error');
         }
     }, [showToast]);
 
@@ -428,29 +430,29 @@ export default function JobProposals() {
                         <div>
                             <div className="flex items-center gap-3 mb-2">
                                 <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                                    {job?.title || 'تحميل...'}
+                                    {job?.title || t.jobProposals.loading}
                                 </h1>
                                 <span className="px-2.5 py-0.5 rounded-full bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400 text-xs font-medium border border-green-200 dark:border-green-800">
-                                    {job?.status === 'open' ? 'مفتوح' : job?.status}
+                                    {job?.status === 'open' ? t.jobProposals.open : job?.status}
                                 </span>
                             </div>
 
                             <div className="flex items-center gap-6 text-sm text-gray-500 dark:text-gray-400">
                                 <span className="flex items-center gap-1">
-                                    <strong className="text-gray-900 dark:text-white">{stats.proposals}</strong> عروض
+                                    <strong className="text-gray-900 dark:text-white">{stats.proposals}</strong> {t.jobProposals.proposals}
                                 </span>
                                 <span className="flex items-center gap-1">
-                                    <strong className="text-gray-900 dark:text-white">{stats.interviewing}</strong> مقابلات
+                                    <strong className="text-gray-900 dark:text-white">{stats.interviewing}</strong> {t.jobProposals.interviews}
                                 </span>
                                 <span className="flex items-center gap-1">
-                                    <strong className="text-gray-900 dark:text-white">{stats.shortlisted}</strong> قائمة قصيرة
+                                    <strong className="text-gray-900 dark:text-white">{stats.shortlisted}</strong> {t.jobProposals.shortlist}
                                 </span>
                             </div>
                         </div>
 
                         <div className="flex items-center gap-2">
                             <Button variant="outline" size="sm" leftIcon={<Share2 className="w-4 h-4" />}>
-                                مشاركة
+                                {t.jobProposals.share}
                             </Button>
                             <Button
                                 variant="outline"
@@ -458,7 +460,7 @@ export default function JobProposals() {
                                 leftIcon={<Edit className="w-4 h-4" />}
                                 onClick={() => navigate(`/jobs/${jobId}/edit`)}
                             >
-                                تعديل
+                                {t.jobProposals.edit}
                             </Button>
                             <Button variant="ghost" size="sm">
                                 <MoreVertical className="w-4 h-4" />
@@ -486,7 +488,7 @@ export default function JobProposals() {
                         {/* Mobile Filter Toggle */}
                         <div className="lg:hidden">
                             <Button variant="outline" className="w-full" leftIcon={<Filter className="w-4 h-4" />}>
-                                تصفية وعرض
+                                {t.jobProposals.filterAndShow}
                             </Button>
                         </div>
 
@@ -498,10 +500,10 @@ export default function JobProposals() {
                                     onClick={() => setActiveTab(tab)}
                                     className={activeTab === tab ? 'tab-pill-active flex-1 shadow-none' : 'tab-pill flex-1'}
                                 >
-                                    {tab === 'all' && 'كل العروض'}
-                                    {tab === 'new' && 'جديدة'}
-                                    {tab === 'shortlisted' && 'قائمة قصيرة'}
-                                    {tab === 'archived' && 'مؤرشفة'}
+                                    {tab === 'all' && t.jobProposals.allProposals}
+                                    {tab === 'new' && t.jobProposals.new}
+                                    {tab === 'shortlisted' && t.jobProposals.shortlist}
+                                    {tab === 'archived' && t.jobProposals.archived}
                                 </button>
                             ))}
                         </div>
@@ -540,10 +542,10 @@ export default function JobProposals() {
                             ) : (
                                 <EmptyState
                                     icon={Filter}
-                                    title="لا توجد عروض بعد"
-                                    description="لم تتلقى أي عروض لهذا المشروع حتى الآن. جرب مشاركة المشروع لزيادة المشاهدات."
+                                    title={t.jobProposals.noProposals}
+                                    description={t.jobProposals.noProposalsDesc}
                                     action={{
-                                        label: "مشاركة المشروع",
+                                        label: t.jobProposals.shareProject,
                                         onClick: () => { },
                                         variant: "outline"
                                     }}

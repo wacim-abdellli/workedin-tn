@@ -200,7 +200,7 @@ function Settings() {
                                     </Button>
                                 )}
                                 <button onClick={() => handleDeletePayment(method.id)} aria-label={tx('settings.deletePaymentMethod', { label: method.label }, `Delete ${method.label}`)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors">
-                                    <ChevronRight className="w-4 h-4" />
+                                    <ChevronRight className="w-4 h-4 rtl:rotate-180" />
                                 </button>
                             </div>
                         </div>
@@ -242,7 +242,7 @@ function Settings() {
                             onClick={handleLogout}
                             className="mt-4 flex w-full items-center gap-3 rounded-2xl border border-red-200 bg-white px-4 py-3 text-red-600 transition-colors hover:bg-red-50/80 dark:border-red-500/20 dark:bg-[#1a1825] dark:text-red-400 dark:hover:bg-red-500/10"
                         >
-                            <ChevronRight className="w-5 h-5" />
+                            <ChevronRight className="w-5 h-5 rtl:rotate-180" />
                             <span className="font-medium">{tx('settings.logout', undefined, 'Sign out')}</span>
                         </button>
                     </div>

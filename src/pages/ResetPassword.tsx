@@ -41,7 +41,7 @@ const getPasswordStrength = (password: string): { score: number; label: string; 
 };
 
 const ResetPassword = () => {
-    const { dir } = useTranslation();
+    const { dir, t } = useTranslation();
     const navigate = useNavigate();
     const { showToast } = useToast();
 
@@ -104,7 +104,7 @@ const ResetPassword = () => {
             if (error) {
                 if (error.message.includes('expired') || error.message.includes('invalid')) {
                     setIsValidToken(false);
-                    showToast('رابط إعادة التعيين منتهي الصلاحية', 'error');
+                    showToast(t.auth.resetPassword.linkExpired, 'error');
                     return;
                 }
                 throw error;
@@ -114,7 +114,7 @@ const ResetPassword = () => {
             await supabase.auth.signOut({ scope: 'others' });
 
             setIsSuccess(true);
-            showToast('تم تغيير كلمة المرور بنجاح', 'success');
+            showToast(t.auth.resetPassword.success, 'success');
 
             // Redirect to login after 3 seconds
             setTimeout(() => {
@@ -122,7 +122,7 @@ const ResetPassword = () => {
             }, 3000);
         } catch (error: any) {
             logger.error('Password update error:', error);
-            showToast(error.message || 'حدث خطأ أثناء تغيير كلمة المرور', 'error');
+            showToast(error.message || t.auth.resetPassword.error, 'error');
         } finally {
             setIsLoading(false);
         }
@@ -312,10 +312,10 @@ const ResetPassword = () => {
                                     {isLoading ? (
                                         <>
                                             <Loader2 className="w-5 h-5 animate-spin ml-2" />
-                                            جاري التحديث...
+                                            {t.auth.loggingOut}
                                         </>
                                     ) : (
-                                        'تعيين كلمة المرور الجديدة'
+                                        t.auth.resetPassword.setNewTitle
                                     )}
                                 </Button>
                             </form>

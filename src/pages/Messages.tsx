@@ -404,16 +404,18 @@ export default function Messages() {
                             messages.map((message) => (
                                 <div
                                     key={message.id}
-                                    className={`flex ${
-                                        message.sender_id === user?.id ? 'justify-end' : 'justify-start'
+                                    className={`flex rtl:flex-row-reverse ${
+                                        message.sender_id === user?.id
+                                            ? 'justify-end rtl:justify-start'
+                                            : 'justify-start rtl:justify-end'
                                     }`}
                                 >
                                     <div
                                         className={`max-w-[70%] ${
                                             message.sender_id === user?.id
-                                                ? 'bg-primary-600 text-white rounded-2xl rounded-se-md'
-                                                : 'bg-white dark:bg-dark-800 text-foreground rounded-2xl rounded-ss-md shadow-sm'
-                                        } px-4 py-3`}
+                                                ? 'self-end rtl:self-start bg-primary-600 text-white rounded-2xl rounded-se-md'
+                                                : 'self-start rtl:self-end bg-white dark:bg-dark-800 text-foreground rounded-2xl rounded-ss-md shadow-sm'
+                                         } px-4 py-3`}
                                     >
                                         <p className="text-sm whitespace-pre-wrap break-words">{message.content}</p>
                                         {message.attachments && message.attachments.length > 0 && (
@@ -484,7 +486,7 @@ export default function Messages() {
                     </div>
                 </>
             ) : (
-                <div className="h-full flex items-center justify-center bg-gray-50 dark:bg-dark-900 border-l border-gray-200 dark:border-dark-700">
+                <div className="h-full flex items-center justify-center bg-gray-50 dark:bg-dark-900 border-s border-gray-200 dark:border-dark-700">
                     <EmptyState
                         icon={Send}
                         title="اختر محادثة"
@@ -530,11 +532,11 @@ export default function Messages() {
                             size="sm"
                             onClick={() => navigate(`/freelancer/${selectedConversation.otherUser.id}`)}
                         >
-                            <User className="w-4 h-4 ml-1" />
+                            <User className="w-4 h-4 ms-1" />
                             البروفايل
                         </Button>
                         <Button variant="outline" size="sm" disabled>
-                            <Briefcase className="w-4 h-4 ml-1" />
+                            <Briefcase className="w-4 h-4 ms-1" />
                             العقود
                         </Button>
                     </div>

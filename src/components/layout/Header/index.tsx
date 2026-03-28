@@ -41,11 +41,11 @@ const LANGS = [
   { code: 'en', label: 'English', display: 'EN', country: 'GB' },
 ] as const
 
-function AuthHeader({ logoSrc, onHome }: { logoSrc: string; onHome: () => void }) {
+function AuthHeader({ logoSrc, onHome, dir }: { logoSrc: string; onHome: () => void; dir: 'rtl' | 'ltr' }) {
   return (
     <>
       <header
-        dir="ltr"
+        dir={dir}
         className="fixed top-0 left-0 right-0 z-50 flex h-[60px] items-center justify-center bg-transparent"
       >
         <button onClick={onHome} className="flex items-center justify-center">
@@ -60,7 +60,7 @@ function AuthHeader({ logoSrc, onHome }: { logoSrc: string; onHome: () => void }
 export default function Header() {
   const { user, profile, freelancerProfile, signOut } = useAuth()
   const { activeWorkspace, isSwitching } = useWorkspaceStore()
-  const { t, language, setLanguage } = useTranslation()
+  const { t, language, setLanguage, dir } = useTranslation()
   const { showToast } = useToast()
 
   const FREELANCER_NAV = [
@@ -192,13 +192,13 @@ export default function Header() {
   }
 
   if (isAuthPage) {
-    return <AuthHeader logoSrc={logoSrc} onHome={() => navigate('/')} />
+    return <AuthHeader logoSrc={logoSrc} onHome={() => navigate('/')} dir={dir} />
   }
 
   return (
     <>
       <header
-        dir="ltr"
+        dir={dir}
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-200 ${
           scrolled
             ? 'border-b border-gray-100 bg-white/95 shadow-sm backdrop-blur-md dark:border-white/5 dark:bg-[#0f0e17]/95'
@@ -233,14 +233,14 @@ export default function Header() {
             </div>
           </div>
 
-          <div className="hidden h-16 items-center gap-3 md:grid md:grid-cols-[max-content_minmax(0,1fr)_minmax(0,360px)]">
-            <div className="flex items-center">
+          <div className="hidden h-16 items-center gap-3 md:flex">
+            <div className="flex shrink-0 items-center">
               <button onClick={() => navigate('/')} className="flex items-center">
                 <img src={logoSrc} alt="Khedma TN" style={{ height: '28px', width: 'auto' }} />
               </button>
             </div>
 
-            <nav id="main-nav" className="flex min-w-0 items-center justify-center gap-1 overflow-hidden">
+            <nav id="main-nav" className="flex min-w-0 flex-1 items-center justify-center gap-1 overflow-hidden">
               {navItems.map(({ label, Icon, href }) => (
                 <NavLink
                   key={href}
@@ -292,7 +292,7 @@ export default function Header() {
                   <span className="text-xs font-medium text-gray-400">{activeLang.display}</span>
                 </button>
                 {langOpen ? (
-                  <div className="absolute right-0 top-full z-50 mt-1 w-40 overflow-hidden rounded-xl border border-gray-200 bg-white py-1 shadow-xl shadow-black/20 dark:border-white/10 dark:bg-[#1a1825]">
+                  <div className="absolute end-0 top-full z-50 mt-1 w-40 overflow-hidden rounded-xl border border-gray-200 bg-white py-1 shadow-xl shadow-black/20 dark:border-white/10 dark:bg-[#1a1825]">
                     {LANGS.map((lang) => (
                       <button
                         key={lang.code}
@@ -386,7 +386,7 @@ export default function Header() {
                   </button>
 
                   {userMenuOpen ? (
-                    <div className="header-dropdown-surface absolute right-0 top-full z-50 mt-2 w-56">
+                    <div className="header-dropdown-surface absolute end-0 top-full z-50 mt-2 w-56">
                       <div className="border-b border-gray-100 px-3 py-2.5 dark:border-white/5">
                         <p className="truncate text-sm font-medium text-gray-900 dark:text-white">{displayName}</p>
                         <p className="truncate text-xs text-gray-500 dark:text-gray-400">{user.email}</p>
@@ -442,7 +442,9 @@ export default function Header() {
             onClick={() => setMobileMenuOpen(false)}
           />
 
-          <div className="absolute inset-y-0 right-0 w-[88vw] max-w-sm border-s border-gray-200 bg-white shadow-2xl dark:border-white/10 dark:bg-[#14121f]">
+          <div className={`absolute inset-y-0 w-[88vw] max-w-sm bg-white shadow-2xl dark:border-white/10 dark:bg-[#14121f] ${
+            dir === 'rtl' ? 'left-0 border-r border-gray-200' : 'right-0 border-l border-gray-200'
+          }`}>
             <div className="flex h-16 items-center justify-between border-b border-gray-100 px-4 dark:border-white/10">
               <button onClick={() => navigate('/')} className="flex items-center">
                 <img src={logoSrc} alt="Khedma TN" style={{ height: '28px', width: 'auto' }} />

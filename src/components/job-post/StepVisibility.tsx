@@ -28,7 +28,7 @@ export default function StepVisibility() {
                         </div>
                         <span className="text-lg font-bold text-gray-900 dark:text-white">{tx('jobs.new.stepVisibility.publicTitle', undefined, 'عام للجميع')}</span>
                     </div>
-                    <p className="pr-14 text-sm leading-relaxed text-gray-500 dark:text-gray-400">
+                    <p className="pe-14 text-sm leading-relaxed text-gray-500 dark:text-gray-400">
                         {tx('jobs.new.stepVisibility.publicDescription', undefined, 'يمكن لجميع المستقلين رؤية الوظيفة وتقديم عروضهم. الخيار الأفضل للحصول على أكبر عدد من العروض.')}
                     </p>
                 </label>
@@ -41,7 +41,7 @@ export default function StepVisibility() {
                         </div>
                         <span className="text-lg font-bold text-gray-900 dark:text-white">{tx('jobs.new.stepVisibility.inviteOnlyTitle', undefined, 'دعوة فقط')}</span>
                     </div>
-                    <p className="pr-14 text-sm leading-relaxed text-gray-500 dark:text-gray-400">
+                    <p className="pe-14 text-sm leading-relaxed text-gray-500 dark:text-gray-400">
                         {tx('jobs.new.stepVisibility.inviteOnlyDescription', undefined, 'لن تظهر الوظيفة في البحث. فقط المستقلون الذين تقوم بدعوتهم يمكنهم تقديم العروض.')}
                     </p>
                 </label>

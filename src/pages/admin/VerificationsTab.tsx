@@ -7,6 +7,13 @@ import { useToast } from '@/components/ui/Toast';
 import { supabase } from '@/lib/supabase';
 import { supabaseWithRetry } from '@/lib/supabaseWithRetry';
 import { useTranslation } from '@/i18n';
+import type {
+    IdentityVerification,
+    IdentityVerificationLegacyRow,
+    IdentityVerificationPrimaryRow,
+} from '@/types/admin';
+
+export type { IdentityVerification } from '@/types/admin';
 
 const SUPA_URL = import.meta.env.VITE_SUPABASE_URL as string;
 const IDENTITY_DOCS_BUCKET = 'identity-documents';
@@ -82,16 +89,32 @@ async function resolveIdentityDocumentUrl(url?: string | null): Promise<string |
     return `${SUPA_URL}/storage/v1/object/public/${fallbackBucket}/${parsed.path}`;
 }
 
-export interface IdentityVerification {
-    id: string;
-    user_id: string;
-    document_type: string;
-    front_image_url: string | null;
-    back_image_url: string | null;
-    selfie_url: string | null;
-    status: 'pending' | 'approved' | 'rejected';
-    submitted_at: string;
-    profile: { full_name: string; email: string } | null;
+async function mapPrimaryVerificationRow(item: IdentityVerificationPrimaryRow): Promise<IdentityVerification> {
+    return {
+        id: item.id,
+        user_id: item.user_id,
+        document_type: 'CIN',
+        front_image_url: await resolveIdentityDocumentUrl(item.cin_front_url),
+        back_image_url: await resolveIdentityDocumentUrl(item.cin_back_url),
+        selfie_url: await resolveIdentityDocumentUrl(item.selfie_url),
+        status: item.status,
+        submitted_at: item.submitted_at,
+        profile: Array.isArray(item.profile) ? (item.profile[0] ?? null) : (item.profile ?? null),
+    };
+}
+
+async function mapLegacyVerificationRow(item: IdentityVerificationLegacyRow): Promise<IdentityVerification> {
+    return {
+        id: item.id,
+        user_id: item.user_id,
+        document_type: item.document_type || 'CIN',
+        front_image_url: await resolveIdentityDocumentUrl(item.front_image_url),
+        back_image_url: await resolveIdentityDocumentUrl(item.back_image_url),
+        selfie_url: null,
+        status: item.status,
+        submitted_at: item.submitted_at,
+        profile: Array.isArray(item.profile) ? (item.profile[0] ?? null) : (item.profile ?? null),
+    };
 }
 
 export async function fetchVerifications(): Promise<IdentityVerification[]> {
@@ -104,17 +127,8 @@ export async function fetchVerifications(): Promise<IdentityVerification[]> {
                 .eq('status', 'pending')
                 .order('submitted_at', { ascending: true })
         );
-        return await Promise.all((data || []).map(async (item: any) => ({
-            id: item.id,
-            user_id: item.user_id,
-            document_type: 'CIN',
-            front_image_url: await resolveIdentityDocumentUrl(item.cin_front_url),
-            back_image_url: await resolveIdentityDocumentUrl(item.cin_back_url),
-            selfie_url: await resolveIdentityDocumentUrl(item.selfie_url),
-            status: item.status,
-            submitted_at: item.submitted_at,
-            profile: item.profile ?? null,
-        })));
+        const rows = (data ?? []) as IdentityVerificationPrimaryRow[];
+        return await Promise.all(rows.map(mapPrimaryVerificationRow));
     } catch {
         // Fallback for alternate schema naming
         const { data: legacy } = await supabaseWithRetry(() =>
@@ -124,17 +138,8 @@ export async function fetchVerifications(): Promise<IdentityVerification[]> {
                 .eq('status', 'pending')
                 .order('submitted_at', { ascending: true })
         );
-        return await Promise.all((legacy || []).map(async (item: any) => ({
-            id: item.id,
-            user_id: item.user_id,
-            document_type: item.document_type || 'CIN',
-            front_image_url: await resolveIdentityDocumentUrl(item.front_image_url),
-            back_image_url: await resolveIdentityDocumentUrl(item.back_image_url),
-            selfie_url: null,
-            status: item.status,
-            submitted_at: item.submitted_at,
-            profile: item.profile ?? null,
-        })));
+        const legacyRows = (legacy ?? []) as IdentityVerificationLegacyRow[];
+        return await Promise.all(legacyRows.map(mapLegacyVerificationRow));
     }
 }
 

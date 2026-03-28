@@ -35,11 +35,11 @@ export interface JobForCard {
 interface JobCardProps {
   job: JobForCard;
   isSaved: boolean;
-  onToggleSave: () => void;
-  onClick: () => void;
+  onToggleSave: (job: JobForCard) => void;
+  onClick: (jobId: string) => void;
 }
 
-const JobCard = memo(({ job, isSaved, onToggleSave, onClick }: JobCardProps) => {
+const JobCard = memo(function JobCard({ job, isSaved, onToggleSave, onClick }: JobCardProps) {
   const { t, language } = useTranslation();
   const [from, to] = getAvatarGradient(job.client?.full_name || 'Khedma');
 
@@ -67,7 +67,7 @@ const JobCard = memo(({ job, isSaved, onToggleSave, onClick }: JobCardProps) => 
 
   return (
     <div
-      onClick={onClick}
+      onClick={() => onClick(job.id)}
       onMouseMove={(event) => {
         const rect = event.currentTarget.getBoundingClientRect();
         event.currentTarget.style.setProperty('--mouse-x', `${event.clientX - rect.left}px`);
@@ -134,7 +134,7 @@ const JobCard = memo(({ job, isSaved, onToggleSave, onClick }: JobCardProps) => 
                 label={isSaved ? t.jobs.unsave : t.jobs.save}
                 onClick={(event) => {
                   event.stopPropagation();
-                  onToggleSave();
+                  onToggleSave(job);
                 }}
                 isActive={isSaved}
                 variant="danger"
@@ -184,6 +184,6 @@ const JobCard = memo(({ job, isSaved, onToggleSave, onClick }: JobCardProps) => 
       </div>
     </div>
   );
-}, (prev, next) => prev.job.id === next.job.id && prev.isSaved === next.isSaved);
+});
 
 export default JobCard;

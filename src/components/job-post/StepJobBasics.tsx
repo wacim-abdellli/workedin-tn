@@ -57,14 +57,14 @@ export default function StepJobBasics() {
                         <div className="relative">
                             <select
                                 {...register('category')}
-                                className="w-full appearance-none rounded-xl border border-gray-200 bg-white pl-4 pr-10 py-3 text-gray-900 transition-all duration-200 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20 dark:border-white/10 dark:bg-[#1a1825] dark:text-white"
+                                className="w-full appearance-none rounded-xl border border-gray-200 bg-white ps-4 pe-10 py-3 text-gray-900 transition-all duration-200 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20 dark:border-white/10 dark:bg-[#1a1825] dark:text-white"
                             >
                                 <option value="">{tx('jobs.new.stepBasics.selectCategory', undefined, 'اختر التصنيف')}</option>
                                 {categories.map(cat => (
                                     <option key={cat.id} value={cat.id}>{cat.name}</option>
                                 ))}
                             </select>
-                            <Grid className="w-5 h-5 text-gray-400 absolute left-3 top-3.5 pointer-events-none" />
+                            <Grid className="absolute start-3 top-3.5 w-5 h-5 text-gray-400 pointer-events-none" />
                         </div>
                         {errors.category && (
                             <p className="text-red-500 text-xs">{errors.category.message as string}</p>

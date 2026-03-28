@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Award, Briefcase, Filter, Grid, List, Search, SlidersHorizontal, Sparkles, X } from 'lucide-react';
 
@@ -37,6 +37,22 @@ type FreelancerRecord = {
     is_available: boolean;
 };
 
+interface ProfileWithFreelancer {
+    id: string;
+    full_name?: string;
+    avatar_url?: string;
+    location?: string;
+    freelancer_profiles?: {
+        title?: string;
+        hourly_rate?: number;
+        skills?: { name?: string }[] | string[];
+        success_rate?: number;
+        jobs_completed?: number;
+        cin_verified?: boolean;
+        availability?: string;
+    }[];
+}
+
 const CATEGORY_OPTIONS: FreelancerCategory[] = ['Design', 'Development', 'Writing', 'Marketing', 'Video', 'Consulting'];
 const SKILL_OPTIONS = ['React', 'Node.js', 'Logo Design', 'Translation', 'Content Writing', 'Figma', 'Motion', 'SEO'];
 
@@ -62,10 +78,10 @@ export default function FindFreelancers() {
         queryFn: async () => {
             const { data, error } = await profilesService.getFreelancers({ search: searchQuery || undefined });
             if (error) { console.error('getFreelancers error:', error); return []; }
-            return (data || []).map((p: any) => {
-                const fp = p.freelancer_profiles;
+            return (data || []).map((p: ProfileWithFreelancer) => {
+                const fp = p.freelancer_profiles?.[0];
                 const skills: string[] = Array.isArray(fp?.skills)
-                    ? fp.skills.map((s: any) => (typeof s === 'string' ? s : s?.name || '')).filter(Boolean)
+                    ? fp.skills.map((s) => (typeof s === 'string' ? s : s?.name || '')).filter(Boolean)
                     : [];
                 return {
                     id: p.id,
@@ -89,9 +105,11 @@ export default function FindFreelancers() {
         staleTime: 60_000,
     });
 
-    const toggleSaved = (id: string) => {
+    const toggleSaved = useCallback((id: string) => {
         setSavedFreelancers((prev) => (prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]));
-    };
+    }, []);
+
+    const savedFreelancerIds = useMemo(() => new Set(savedFreelancers), [savedFreelancers]);
 
     const clearFilters = () => {
         setSelectedCategories([]);
@@ -288,7 +306,7 @@ export default function FindFreelancers() {
 
     return (
         <div className="min-h-screen bg-[#f8f7ff] text-[#191627] transition-colors duration-300 dark:bg-[#09070f] dark:text-white">
-            <SEO {...SEO_CONFIG.findFreelancers} url="/find-freelancers" />
+            <SEO {...SEO_CONFIG.findFreelancers} url="/find-freelancers" canonical="https://khedma.tn/find-freelancers" />
             <Header />
 
             <section className="relative overflow-hidden border-b border-white/40 bg-white/80 pt-10 pb-16 backdrop-blur-xl dark:border-white/5 dark:bg-[#0f0d16]">
@@ -441,7 +459,7 @@ export default function FindFreelancers() {
                                         <FreelancerCard
                                             freelancer={freelancer}
                                             viewMode={viewMode}
-                                            isSaved={savedFreelancers.includes(freelancer.id)}
+                                            isSaved={savedFreelancerIds.has(freelancer.id)}
                                             onToggleSave={toggleSaved}
                                         />
                                     </div>

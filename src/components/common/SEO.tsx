@@ -10,6 +10,7 @@ interface SEOProps {
     description: LocalizedText;
     image?: string;
     url?: string;
+    canonical?: string;
     type?: 'website' | 'article' | 'profile';
     twitterCard?: 'summary' | 'summary_large_image';
     keywords?: LocalizedText;
@@ -32,7 +33,7 @@ const OG_LOCALE: Record<Language, string> = {
 };
 
 const DEFAULT_IMAGE = '/logos/logo-og.svg';
-const SITE_URL = 'https://khedma-tn.vercel.app';
+const SITE_URL = import.meta.env.VITE_APP_URL || 'https://khedma.tn';
 
 const resolveLocalizedText = (value: LocalizedText | undefined, language: Language): string => {
     if (!value) return '';
@@ -46,6 +47,7 @@ export default function SEO({
     description,
     image = DEFAULT_IMAGE,
     url,
+    canonical,
     type = 'website',
     twitterCard = 'summary_large_image',
     keywords,
@@ -66,7 +68,13 @@ export default function SEO({
             : siteName;
 
     const fullImageUrl = image.startsWith('http') ? image : `${SITE_URL}${image}`;
-    const canonicalUrl = url ? (url.startsWith('http') ? url : `${SITE_URL}${url}`) : undefined;
+    const resolvedUrl = url ? (url.startsWith('http') ? url : `${SITE_URL}${url}`) : undefined;
+    const canonicalUrl = canonical
+        ? (canonical.startsWith('http') ? canonical : `${SITE_URL}${canonical}`)
+        : typeof window !== 'undefined'
+            ? `${window.location.origin}${window.location.pathname}`
+            : resolvedUrl || SITE_URL;
+    const ogUrl = canonicalUrl || resolvedUrl;
 
     return (
         <Helmet htmlAttributes={{ lang: language, dir: language === 'ar' ? 'rtl' : 'ltr' }}>
@@ -76,7 +84,7 @@ export default function SEO({
             {resolvedKeywords && <meta name="keywords" content={resolvedKeywords} />}
             {noIndex && <meta name="robots" content="noindex, nofollow" />}
 
-            {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
+            <link rel="canonical" href={canonicalUrl} />
 
             <meta property="og:type" content={type} />
             <meta property="og:site_name" content={siteName} />
@@ -86,7 +94,7 @@ export default function SEO({
             <meta property="og:image:width" content="1200" />
             <meta property="og:image:height" content="630" />
             <meta property="og:locale" content={resolvedLocale} />
-            {canonicalUrl && <meta property="og:url" content={canonicalUrl} />}
+            <meta property="og:url" content={ogUrl} />
 
             <meta name="twitter:card" content={twitterCard} />
             <meta name="twitter:title" content={fullTitle} />

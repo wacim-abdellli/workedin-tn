@@ -304,7 +304,7 @@ export default function AccountPanel({
                     className="mt-4 inline-flex min-h-[44px] w-full items-center justify-between rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-800 transition-all hover:border-purple-200 hover:bg-purple-50 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:border-purple-500/30 dark:hover:bg-white/10"
                   >
                     <span>{t.publicProfile.editProfile}</span>
-                    <ChevronRight className="h-4 w-4 text-gray-400 dark:text-gray-500" />
+                    <ChevronRight className="h-4 w-4 text-gray-400 dark:text-gray-500 rtl:rotate-180" />
                   </Link>
                 </section>
 
@@ -377,7 +377,7 @@ export default function AccountPanel({
                           onClick={() => void handleSwitchMode(item.mode)}
                           disabled={isSwitching || isActive}
                           className={cn(
-                            'rounded-[24px] border p-4 text-left transition-all duration-200',
+                            'rounded-[24px] border p-4 text-start transition-all duration-200',
                             'border-gray-200 bg-white hover:border-purple-300 dark:border-white/10 dark:bg-white/5 dark:hover:border-purple-500/40',
                             isActive && accentClasses,
                             isActive && 'cursor-default'
@@ -507,7 +507,7 @@ function ActionLink({
         </span>
         <span>{label}</span>
       </span>
-      <ChevronRight className="h-4 w-4 text-gray-400 dark:text-gray-500" />
+      <ChevronRight className="h-4 w-4 text-gray-400 dark:text-gray-500 rtl:rotate-180" />
     </Link>
   );
 }

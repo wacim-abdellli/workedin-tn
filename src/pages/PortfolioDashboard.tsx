@@ -10,10 +10,12 @@ import { useToast } from '../components/ui/Toast';
 import PortfolioModal from '../components/freelancer/PortfolioModal';
 import OptimizedImage from '../components/common/OptimizedImage';
 import { Skeleton } from '../components/common/SkeletonCard';
+import { useTranslation } from '../i18n';
 
 export default function PortfolioDashboard() {
     const { user } = useAuth();
     const { showToast } = useToast();
+    const { t } = useTranslation();
     const [items, setItems] = useState<PortfolioItem[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -41,7 +43,7 @@ export default function PortfolioDashboard() {
             setItems(data || []);
         } catch (error) {
             logger.error('Error loading portfolio:', error);
-            showToast('حدث خطأ أثناء تحميل المعرض', 'error');
+            showToast(t.portfolio.loadError, 'error');
         } finally {
             setIsLoading(false);
         }
@@ -63,7 +65,7 @@ export default function PortfolioDashboard() {
                     .eq('id', editingItem.id);
 
                 if (error) throw error;
-                showToast('تم تحديث العمل بنجاح', 'success');
+                showToast(t.portfolio.workUpdated, 'success');
             } else {
                 // Create
                 const { error } = await supabase
@@ -75,7 +77,7 @@ export default function PortfolioDashboard() {
                     });
 
                 if (error) throw error;
-                showToast('تم إضافة العمل بنجاح', 'success');
+                showToast(t.portfolio.workAdded, 'success');
             }
 
             setIsModalOpen(false);
@@ -83,14 +85,14 @@ export default function PortfolioDashboard() {
             loadPortfolio();
         } catch (error) {
             logger.error('Error saving item:', error);
-            showToast('حدث خطأ أثناء حفظ العمل', 'error');
+            showToast(t.portfolio.workSaved, 'error');
         } finally {
             setIsSubmitting(false);
         }
     };
 
     const handleDelete = async (id: string) => {
-        if (!confirm('هل أنت متأكد من حذف هذا العمل؟')) return;
+        if (!confirm(t.portfolio.deleteConfirm)) return;
 
         try {
             const { error } = await supabase
@@ -101,10 +103,10 @@ export default function PortfolioDashboard() {
             if (error) throw error;
 
             setItems(prev => prev.filter(item => item.id !== id));
-            showToast('تم حذف العمل بنجاح', 'success');
+            showToast(t.portfolio.workDeleted, 'success');
         } catch (error) {
             logger.error('Error deleting item:', error);
-            showToast('حدث خطأ أثناء الحذف', 'error');
+            showToast(t.portfolio.deleteError, 'error');
         }
     };
 
@@ -125,8 +127,8 @@ export default function PortfolioDashboard() {
             <div className="container-custom py-8">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                     <div>
-                        <h1 className="text-2xl font-bold text-gray-900">إدارة معرض الأعمال</h1>
-                        <p className="text-gray-500 mt-1">قم بإضافة وتعديل أعمالك السابقة لزيادة فرصك في التوظيف</p>
+                        <h1 className="text-2xl font-bold text-gray-900">{t.portfolio.title}</h1>
+                        <p className="text-gray-500 mt-1">{t.portfolio.subtitle}</p>
                     </div>
 
                     <div className="flex items-center gap-3">
@@ -150,7 +152,7 @@ export default function PortfolioDashboard() {
                             leftIcon={<Plus className="w-5 h-5" />}
                             onClick={openAddModal}
                         >
-                            إضافة عمل جديد
+                            {t.portfolio.addNew}
                         </Button>
                     </div>
                 </div>
@@ -236,14 +238,14 @@ export default function PortfolioDashboard() {
                         <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
                             <ImageIcon className="w-8 h-8 text-gray-300" />
                         </div>
-                        <h3 className="text-lg font-bold text-gray-900 mb-2">لا توجد أعمال لعرضها</h3>
-                        <p className="text-gray-500 mb-6 max-w-sm mx-auto">قم بإضافة نماذج من أعمالك السابقة لكي يتمكن العملاء من رؤية مهاراتك وجودة عملك</p>
+                        <h3 className="text-lg font-bold text-gray-900 mb-2">{t.portfolio.empty.title}</h3>
+                        <p className="text-gray-500 mb-6 max-w-sm mx-auto">{t.portfolio.empty.description}</p>
                         <Button
                             variant="primary"
                             leftIcon={<Plus className="w-5 h-5" />}
                             onClick={openAddModal}
                         >
-                            إضافة أول عمل
+                            {t.portfolio.addFirst}
                         </Button>
                     </div>
                 )}

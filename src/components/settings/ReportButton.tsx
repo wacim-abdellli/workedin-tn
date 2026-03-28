@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Flag } from 'lucide-react';
 import { useMutation } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
@@ -38,6 +38,31 @@ export default function ReportButton({ reportedType, reportedId, className }: Re
         ? 'Please describe the issue'
         : null;
 
+    const sessionKey = useMemo(() => {
+        if (!user?.id) {
+            return null;
+        }
+
+        return `report-submitted:${user.id}:${reportedType}:${reportedId}`;
+    }, [reportedId, reportedType, user?.id]);
+
+    const [isReportedThisSession, setIsReportedThisSession] = useState(() => {
+        if (typeof window === 'undefined' || !user?.id) {
+            return false;
+        }
+
+        return window.sessionStorage.getItem(`report-submitted:${user.id}:${reportedType}:${reportedId}`) === '1';
+    });
+
+    useEffect(() => {
+        if (typeof window === 'undefined' || !sessionKey) {
+            setIsReportedThisSession(false);
+            return;
+        }
+
+        setIsReportedThisSession(window.sessionStorage.getItem(sessionKey) === '1');
+    }, [sessionKey]);
+
     const mutation = useMutation({
         mutationFn: () => {
             if (!user?.id) throw new Error('Not authenticated');
@@ -46,14 +71,19 @@ export default function ReportButton({ reportedType, reportedId, className }: Re
             return submitReport(user.id, reportedType, reportedId, finalReason);
         },
         onSuccess: () => {
-            showToast('Report submitted. Our team will review it shortly.', 'success');
+            if (typeof window !== 'undefined' && sessionKey) {
+                window.sessionStorage.setItem(sessionKey, '1');
+            }
+
+            setIsReportedThisSession(true);
+            showToast(t.common.reportSubmitted || 'Report submitted. Our team will review it shortly.', 'success');
             setIsOpen(false);
             setReason('');
             setCustomReason('');
             setTouched(false);
         },
         onError: (err: Error) => {
-            showToast(err.message || 'Failed to submit report', 'error');
+            showToast(err.message || t.common.reportError || 'Failed to submit report', 'error');
         },
     });
 
@@ -63,15 +93,22 @@ export default function ReportButton({ reportedType, reportedId, className }: Re
         <>
             <button
                 type="button"
-                onClick={e => { e.stopPropagation(); e.preventDefault(); setIsOpen(true); }}
-                title="Report this content"
-                className={className ?? 'inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-red-500 transition-colors'}
+                onClick={e => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    if (!isReportedThisSession) {
+                        setIsOpen(true);
+                    }
+                }}
+                title={isReportedThisSession ? 'Already reported in this session' : (t.common.reportTitle || "Report this content")}
+                disabled={isReportedThisSession}
+                className={className ?? 'inline-flex items-center gap-1.5 text-xs text-gray-400 transition-colors hover:text-red-500 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:text-gray-400'}
             >
                 <Flag className="w-3.5 h-3.5" />
-                <span>{t.common.report}</span>
+                <span>{isReportedThisSession ? 'Reported' : t.common.report}</span>
             </button>
 
-            <Modal isOpen={isOpen} onClose={() => setIsOpen(false)} title="Report content" size="sm">
+            <Modal isOpen={isOpen} onClose={() => setIsOpen(false)} title={t.common.reportContent || "Report content"} size="sm">
                 <div className="space-y-4 pt-1">
                     <p className="text-sm text-muted">Why are you reporting this {reportedType}?</p>
 

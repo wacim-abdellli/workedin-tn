@@ -171,7 +171,7 @@ export default function ContractWorkspace() {
             await sendMessage(content, receiverId);
             setTyping(false);
         } catch (error) {
-            showToast(error instanceof Error ? error.message : 'حدث خطأ في إرسال الرسالة', 'error');
+            showToast(error instanceof Error ? error.message : t.contract.sendMessageError, 'error');
         }
     };
 
@@ -186,7 +186,7 @@ export default function ContractWorkspace() {
             ]);
             showToast(`تم رفع: ${file.name}`, 'success');
         } catch (error) {
-            showToast(error instanceof Error ? error.message : 'حدث خطأ في رفع الملف', 'error');
+            showToast(error instanceof Error ? error.message : t.contract.fileUploadError, 'error');
         }
     };
 
@@ -194,31 +194,31 @@ export default function ContractWorkspace() {
     const handleDeliverWork = async () => {
         try {
             await deliverWork(deliveryNote);
-            showToast('تم تسليم العمل بنجاح!', 'success');
+            showToast(t.contract.workDelivered, 'success');
             setIsDeliverModalOpen(false);
             setDeliveryNote('');
         } catch {
-            showToast('حدث خطأ في تسليم العمل', 'error');
+            showToast(t.contract.deliverError, 'error');
         }
     };
 
     const handleAcceptAndPay = async () => {
         try {
             await acceptWork();
-            showToast('تم قبول العمل وإتمام الدفع!', 'success');
+            showToast(t.contract.workAccepted, 'success');
             setIsPaymentModalOpen(false);
             navigate('/client/dashboard');
         } catch {
-            showToast('حدث خطأ في قبول العمل', 'error');
+            showToast(t.contract.acceptError, 'error');
         }
     };
 
     const handleRequestChanges = async () => {
         try {
-            await requestChanges('طلب تعديلات');
-            showToast('تم إرسال طلب التعديلات', 'info');
+            await requestChanges(t.contract.requestRevision);
+            showToast(t.contract.revisionSent, 'info');
         } catch {
-            showToast('حدث خطأ', 'error');
+            showToast(t.contract.error, 'error');
         }
     };
 
@@ -226,7 +226,7 @@ export default function ContractWorkspace() {
         if (!disputeReason.trim()) return;
         try {
             await openDispute(disputeReason);
-            showToast('تم فتح نزاع. سيتم المراجعة خلال 48 ساعة.', 'warning');
+            showToast(t.contract.disputeOpened, 'warning');
             setIsDisputeModalOpen(false);
 
             // Notify both parties by email — fire-and-forget
@@ -259,7 +259,7 @@ export default function ContractWorkspace() {
             }
             setDisputeReason('');
         } catch {
-            showToast('حدث خطأ في فتح النزاع', 'error');
+            showToast(t.contract.disputeError, 'error');
         }
     };
 
@@ -283,10 +283,10 @@ export default function ContractWorkspace() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['review', contractId, user?.id] });
             setIsReviewModalOpen(false);
-            showToast('تم إرسال تقييمك بنجاح', 'success');
+            showToast(t.contract.reviewSent, 'success');
         },
         onError: () => {
-            showToast('حدث خطأ', 'error');
+            showToast(t.contract.error, 'error');
         }
     });
 
@@ -320,7 +320,7 @@ export default function ContractWorkspace() {
                         ))}
                     </div>
                     {/* Sidebar skeleton */}
-                    <div className="hidden lg:block w-72 border-l border-gray-200 dark:border-dark-700 p-4 space-y-4">
+                    <div className="hidden lg:block w-72 border-s border-gray-200 dark:border-dark-700 p-4 space-y-4">
                         <Skeleton className="h-24 w-full rounded-xl" />
                         <Skeleton className="h-16 w-full rounded-xl" />
                         <Skeleton className="h-10 w-full rounded-xl" />
@@ -335,7 +335,7 @@ export default function ContractWorkspace() {
     return (
         <div className="flex flex-col h-screen bg-white">
             <SEO
-                title={contractData ? `${contractData.job.title} | مساحة العمل` : 'مساحة العمل'}
+                title={contractData ? `${contractData.job.title} | ${t.contract.workspaceTitle}` : t.contract.workspaceTitle}
                 description="تابع المحادثة والملفات وحالة الدفع الخاصة بالعقد من مساحة العمل."
                 noIndex
             />
@@ -350,7 +350,7 @@ export default function ContractWorkspace() {
                         className="p-2 hover:bg-gray-100 rounded-full md:hidden"
                         aria-label="الرجوع للخلف"
                     >
-                        <ArrowLeft className="w-5 h-5 text-gray-500" />
+                        <ArrowLeft className="w-5 h-5 text-gray-500 rtl:rotate-180" />
                     </button>
                     <div>
                         <h1 className="font-bold text-lg leading-tight truncate max-w-[200px] md:max-w-md flex items-center gap-2">
@@ -373,46 +373,48 @@ export default function ContractWorkspace() {
             </div>
 
             {/* Mobile Tabs */}
-            <div className="md:hidden flex border-b border-gray-100 shrink-0 bg-white z-10" role="tablist" aria-label="تبويبات مساحة العمل">
-                <button
-                    type="button"
-                    onClick={() => setActiveMobileTab('chat')}
-                    role="tab"
-                    id="workspace-tab-chat"
-                    aria-selected={activeMobileTab === 'chat'}
-                    aria-controls="workspace-panel-chat"
-                    aria-label="إظهار المحادثة"
-                    className={`flex-1 py-3 min-h-[48px] text-sm font-medium border-b-2 transition-colors flex items-center justify-center gap-2 ${activeMobileTab === 'chat' ? 'border-primary-600 text-primary-600' : 'border-transparent text-gray-500'}`}
-                >
-                    <MessageSquare className="w-4 h-4" />
-                    المراسلة
-                </button>
-                <button
-                    type="button"
-                    onClick={() => setActiveMobileTab('details')}
-                    role="tab"
-                    id="workspace-tab-details"
-                    aria-selected={activeMobileTab === 'details'}
-                    aria-controls="workspace-panel-details"
-                    aria-label="إظهار التفاصيل"
-                    className={`flex-1 py-3 min-h-[48px] text-sm font-medium border-b-2 transition-colors flex items-center justify-center gap-2 ${activeMobileTab === 'details' ? 'border-primary-600 text-primary-600' : 'border-transparent text-gray-500'}`}
-                >
-                    <Info className="w-4 h-4" />
-                    التفاصيل
-                </button>
-                <button
-                    type="button"
-                    onClick={() => setActiveMobileTab('files')}
-                    role="tab"
-                    id="workspace-tab-files"
-                    aria-selected={activeMobileTab === 'files'}
-                    aria-controls="workspace-panel-files"
-                    aria-label="إظهار الملفات"
-                    className={`flex-1 py-3 min-h-[48px] text-sm font-medium border-b-2 transition-colors flex items-center justify-center gap-2 ${activeMobileTab === 'files' ? 'border-primary-600 text-primary-600' : 'border-transparent text-gray-500'}`}
-                >
-                    <FileText className="w-4 h-4" />
-                    الملفات
-                </button>
+            <div className="md:hidden shrink-0 border-b border-gray-100 bg-white z-10 overflow-x-auto" role="tablist" aria-label="تبويبات مساحة العمل">
+                <div className="flex min-w-max">
+                    <button
+                        type="button"
+                        onClick={() => setActiveMobileTab('chat')}
+                        role="tab"
+                        id="workspace-tab-chat"
+                        aria-selected={activeMobileTab === 'chat'}
+                        aria-controls="workspace-panel-chat"
+                        aria-label="إظهار المحادثة"
+                        className={`flex min-h-[48px] min-w-[118px] shrink-0 items-center justify-center gap-2 whitespace-nowrap border-b-2 px-4 py-3 text-sm font-medium transition-colors ${activeMobileTab === 'chat' ? 'border-primary-600 text-primary-600' : 'border-transparent text-gray-500'}`}
+                    >
+                        <MessageSquare className="w-4 h-4" />
+                        المراسلة
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setActiveMobileTab('details')}
+                        role="tab"
+                        id="workspace-tab-details"
+                        aria-selected={activeMobileTab === 'details'}
+                        aria-controls="workspace-panel-details"
+                        aria-label="إظهار التفاصيل"
+                        className={`flex min-h-[48px] min-w-[118px] shrink-0 items-center justify-center gap-2 whitespace-nowrap border-b-2 px-4 py-3 text-sm font-medium transition-colors ${activeMobileTab === 'details' ? 'border-primary-600 text-primary-600' : 'border-transparent text-gray-500'}`}
+                    >
+                        <Info className="w-4 h-4" />
+                        التفاصيل
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setActiveMobileTab('files')}
+                        role="tab"
+                        id="workspace-tab-files"
+                        aria-selected={activeMobileTab === 'files'}
+                        aria-controls="workspace-panel-files"
+                        aria-label="إظهار الملفات"
+                        className={`flex min-h-[48px] min-w-[118px] shrink-0 items-center justify-center gap-2 whitespace-nowrap border-b-2 px-4 py-3 text-sm font-medium transition-colors ${activeMobileTab === 'files' ? 'border-primary-600 text-primary-600' : 'border-transparent text-gray-500'}`}
+                    >
+                        <FileText className="w-4 h-4" />
+                        الملفات
+                    </button>
+                </div>
             </div>
 
             {/* Main Content Area (Split View) */}

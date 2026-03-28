@@ -30,6 +30,28 @@ interface MatchResult {
     freelancer: FreelancerProfile & Profile;
 }
 
+interface JobSkill {
+    skill_id: string;
+}
+
+interface ProfileSkill {
+    skill?: {
+        id: string;
+        name_ar: string;
+        name_fr: string;
+        name_en: string;
+    };
+}
+
+interface FreelancerWithSkills {
+    id: string;
+    completion_rate?: number;
+    response_time_hours?: number;
+    phone?: string;
+    skills?: ProfileSkill[];
+    work_samples?: unknown[];
+}
+
 function JobMatches() {
     const { jobId } = useParams<{ jobId: string }>();
     const { t, language } = useTranslation();
@@ -62,7 +84,7 @@ function JobMatches() {
                 if (jobError) throw jobError;
 
                 // Transform job skills to array of IDs
-                const requiredSkillIds = jobData.required_skills?.map((s: any) => s.skill_id) || [];
+                const requiredSkillIds = jobData.required_skills?.map((s: JobSkill) => s.skill_id) || [];
                 setJob(jobData);
 
                 // 2. Get All Freelancers with their Skills
@@ -80,9 +102,9 @@ function JobMatches() {
                 if (flError) throw flError;
 
                 // 3. Calculate Scores
-                const results: MatchResult[] = freelancers.map((fl: any) => {
+                const results = freelancers.map((fl: FreelancerWithSkills) => {
                     // Flatten skills structure
-                    const flSkills = fl.skills?.map((s: any) => ({
+                    const flSkills = fl.skills?.map((s: ProfileSkill) => ({
                         id: s.skill?.id,
                         name_ar: s.skill?.name_ar,
                         name_fr: s.skill?.name_fr,
@@ -90,7 +112,7 @@ function JobMatches() {
                     })) || [];
 
                     // Calculate overlap
-                    const matchCount = flSkills.filter((s: any) => requiredSkillIds.includes(s.id)).length;
+                    const matchCount = flSkills.filter((s) => requiredSkillIds.includes(s.id)).length;
                     const totalRequired = requiredSkillIds.length || 1; // avoid division by zero
 
                     // Score formula: 
@@ -99,7 +121,7 @@ function JobMatches() {
                     // Bonus: Has verified phone ? 10 : 0 (weight 10%)
 
                     const skillScore = (matchCount / totalRequired) * 70;
-                    const perfScore = (fl.completion_rate || 0 / 100) * 20; // completion_rate is not in profile yet? fallback
+                    const perfScore = (fl.completion_rate || 0 / 100) * 20;
                     const verifiedScore = fl.phone ? 10 : 0;
 
                     return {
@@ -108,13 +130,12 @@ function JobMatches() {
                         freelancer: {
                             ...fl,
                             skills: flSkills,
-                            // Ensure numeric defaults for stats
                             completion_rate: fl.response_time_hours || 95,
                             response_time_hours: fl.response_time_hours || 24,
                             repeat_clients: 0,
                             total_earnings: 0
                         }
-                    };
+                    } as MatchResult;
                 });
 
                 // Sort by score
@@ -125,7 +146,7 @@ function JobMatches() {
                 setMatches(sortedMatches);
             } catch (err) {
                 logger.error('Error fetching matches:', err);
-                showToast('حدث خطأ في البحث عن تطابقات', 'error');
+                showToast(t.jobMatches.searchError, 'error');
             } finally {
                 setIsLoading(false);
             }
@@ -192,12 +213,12 @@ function JobMatches() {
 
             if (error) throw error;
 
-            showToast('تم بدء العقد بنجاح!', 'success');
+            showToast(t.jobMatches.contractCreated, 'success');
             setIsInviteModalOpen(false);
             navigate(`/contracts/${contract.id}`);
         } catch (error) {
             logger.error('Error creating contract:', error);
-            showToast('حدث خطأ في إنشاء العقد', 'error');
+            showToast(t.jobMatches.contractError, 'error');
         } finally {
             setIsLoading(false);
         }
@@ -225,7 +246,7 @@ function JobMatches() {
                         onClick={() => navigate(-1)}
                         className="flex items-center gap-2 text-muted hover:text-foreground mb-6 transition-colors"
                     >
-                        <ArrowLeft className="w-5 h-5" />
+                        <ArrowLeft className="w-5 h-5 rtl:rotate-180" />
                         رجوع
                     </button>
 

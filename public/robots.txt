@@ -1,16 +1,22 @@
 User-agent: *
-Allow: /
-
-# Block private/admin routes from indexing
 Disallow: /admin
 Disallow: /admin/
-Disallow: /freelancer/dashboard
-Disallow: /client/dashboard
-Disallow: /settings
-Disallow: /messages
+Disallow: /dashboard
 Disallow: /wallet
-Disallow: /contracts/
-Disallow: /auth/
+Disallow: /messages
+Disallow: /settings
 Disallow: /verify-identity
+Disallow: /contracts
+Disallow: /my-proposals
+Disallow: /payment/
+
+Allow: /
+Allow: /jobs
+Allow: /jobs/
+Allow: /find-freelancers
+Allow: /freelancer/
+Allow: /how-it-works
+Allow: /for-clients
+Allow: /faq
 
 Sitemap: https://khedma.tn/sitemap.xml

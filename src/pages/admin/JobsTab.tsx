@@ -9,22 +9,9 @@ import { useToast } from '@/components/ui/Toast';
 import { supabase } from '@/lib/supabase';
 import { supabaseWithRetry } from '@/lib/supabaseWithRetry';
 import { useTranslation } from '@/i18n';
+import type { AdminJob, AdminJobRow } from '@/types/admin';
 
 export const ADMIN_JOBS_QUERY_KEY = ['admin-jobs'] as const;
-
-interface AdminJob {
-    id: string;
-    title: string;
-    status: string;
-    budget_min: number | null;
-    budget_max: number | null;
-    hourly_rate: number | null;
-    created_at: string;
-    client: {
-        full_name: string;
-        email: string;
-    } | null;
-}
 
 interface ConfirmActionState {
     isOpen: boolean;
@@ -32,6 +19,28 @@ interface ConfirmActionState {
     message: string;
     actionType: 'danger' | 'warning' | 'primary';
     onConfirm: () => void;
+}
+
+function normalizeAdminJobClient(client: AdminJobRow['client']): AdminJob['client'] {
+    if (Array.isArray(client)) {
+        const [firstClient] = client;
+
+        return firstClient
+            ? {
+                full_name: firstClient.full_name || '',
+                email: firstClient.email || '',
+            }
+            : null;
+    }
+
+    if (!client) {
+        return null;
+    }
+
+    return {
+        full_name: client.full_name || '',
+        email: client.email || '',
+    };
 }
 
 export async function fetchAdminJobs(): Promise<AdminJob[]> {
@@ -49,10 +58,15 @@ export async function fetchAdminJobs(): Promise<AdminJob[]> {
             throw new Error(`Failed to fetch jobs: ${error.message}`);
         }
 
-        return (data || []) as unknown as AdminJob[];
-    } catch (error: any) {
+        const rows = (data ?? []) as AdminJobRow[];
+
+        return rows.map((job) => ({
+            ...job,
+            client: normalizeAdminJobClient(job.client),
+        }));
+    } catch (error) {
         // Ignore abort errors in development (React StrictMode)
-        if (error?.name === 'AbortError') {
+        if (error instanceof Error && error.name === 'AbortError') {
             console.log('Query aborted (likely React StrictMode)');
             return [];
         }

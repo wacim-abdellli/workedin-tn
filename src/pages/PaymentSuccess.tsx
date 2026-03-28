@@ -274,7 +274,7 @@ const PaymentSuccess = () => {
                                 className="btn-primary btn-lg justify-center w-full"
                             >
                                 <span>الذهاب للعقد</span>
-                                <ArrowRight className="w-5 h-5" />
+                                <ArrowRight className="w-5 h-5 rtl:rotate-180" />
                             </Link>
                         )}
                     </div>
