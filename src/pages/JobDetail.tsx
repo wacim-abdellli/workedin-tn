@@ -333,7 +333,7 @@ function JobDetail() {
 
     if (isLoading) {
         return (
-            <div className="min-h-screen bg-gray-50 dark:bg-dark-900">
+            <div className="min-h-screen bg-background">
                 <Header />
                 <div className="container-custom py-8">
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -369,7 +369,7 @@ function JobDetail() {
             <div className="min-h-screen bg-gray-50">
                 <Header />
                 <div className="container-custom py-16 text-center">
-                    <Briefcase className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                    <Briefcase className="w-16 h-16 text-muted mx-auto mb-4" />
                     <h2 className="text-xl font-bold mb-2">الوظيفة غير موجودة</h2>
                     <Button variant="primary" onClick={() => navigate('/jobs')}>
                         تصفح الوظائف
@@ -380,7 +380,7 @@ function JobDetail() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-dark-900 transition-colors duration-300">
+        <div className="min-h-screen bg-background transition-colors duration-300">
             <SEO
                 title={job ? `${job.title} | ${t.seo.jobDetail.titleSuffix}` : t.seo.jobDetail.titleSuffix}
                 description={job?.description?.slice(0, 160) || t.seo.jobDetail.descriptionFallback}
@@ -403,17 +403,17 @@ function JobDetail() {
                         {/* Header Card */}
                         <div className={cn(
                             'rounded-lg p-6 border',
-                            'bg-white dark:bg-[#1a1825]',
-                            'border-gray-100 dark:border-white/6',
+                            'bg-card',
+                            'border-border',
                             'shadow-sm dark:shadow-none'
                         )}>
                             <div className="flex items-start justify-between mb-5">
                                 <div className="flex-1">
                                     <h1 className={cn(
-                                        'mb-3 text-2xl font-bold text-gray-900 dark:text-white',
+                                        'mb-3 text-2xl font-bold text-foreground',
                                         'break-words [overflow-wrap:anywhere]'
                                     )}>{job.title}</h1>
-                                    <div className="flex flex-wrap items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
+                                    <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
                                         <span className="flex items-center gap-1.5">
                                             <Clock className="w-3.5 h-3.5" />
                                             نُشرت {timeAgo(job.posted_at)}
@@ -435,7 +435,7 @@ function JobDetail() {
                                             'p-2.5 rounded-lg transition-all',
                                             isSaved
                                                 ? 'bg-red-50 dark:bg-red-500/15 text-red-500'
-                                                : 'bg-gray-100 dark:bg-white/8 text-gray-500 hover:text-red-500'
+                                                : 'bg-secondary text-muted-foreground hover:text-red-500'
                                         )}
                                         title={isSaved ? 'Remove from saves' : 'Save this job'}
                                     >
@@ -445,7 +445,7 @@ function JobDetail() {
                                         onClick={shareJob}
                                         className={cn(
                                             'p-2.5 rounded-lg transition-colors',
-                                            'bg-gray-100 dark:bg-white/8 text-gray-500 hover:text-[color:var(--workspace-primary)]'
+                                            'bg-secondary text-muted-foreground hover:text-[color:var(--workspace-primary)]'
                                         )}
                                         title="Share this job"
                                     >
@@ -455,7 +455,7 @@ function JobDetail() {
                             </div>
 
                             {/* Info Chips */}
-                            <div className="flex flex-wrap gap-2 mb-6 pb-6 border-b border-gray-100 dark:border-white/6">
+                            <div className="flex flex-wrap gap-2 mb-6 pb-6 border-b border-border">
                                 <span className={cn(
                                     'inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold',
                                     job.job_type === 'fixed_price'
@@ -466,7 +466,7 @@ function JobDetail() {
                                 </span>
                                 <span className={cn(
                                     'inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold',
-                                    'bg-gray-100 dark:bg-white/8 text-gray-700 dark:text-gray-300'
+                                    'bg-secondary text-foreground'
                                 )}>
                                     {t.jobDetail.experience[EXPERIENCE_LABELS[job.experience_level] as keyof typeof t.jobDetail.experience] || job.experience_level}
                                 </span>
@@ -486,10 +486,10 @@ function JobDetail() {
                                 'bg-[color:var(--workspace-primary-light)]/40 dark:bg-[color:var(--workspace-primary)]/8',
                                 'border-l-[color:var(--workspace-primary)]'
                             )}>
-                                <p className="text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-300 mb-2">
+                                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">
                                     {t.jobDetail.budget}
                                 </p>
-                                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                                <p className="text-2xl font-bold text-foreground">
                                     {job.job_type === 'fixed_price' ? (
                                         job.budget_min === job.budget_max || !job.budget_max
                                             ? `${job.budget_min} د.ت`
@@ -498,7 +498,7 @@ function JobDetail() {
                                         <>
                                             {job.hourly_rate} د.ت<span className="text-sm font-normal">{t.jobDetail.perHour}</span>
                                             {job.estimated_hours && (
-                                                <span className="text-xs font-normal text-gray-600 dark:text-gray-300 block mt-1">
+                                                <span className="text-xs font-normal text-muted-foreground block mt-1">
                                                     {t.jobDetail.approxHours.replace('{{count}}', String(job.estimated_hours))}
                                                 </span>
                                             )}
@@ -511,12 +511,12 @@ function JobDetail() {
                         {/* Description */}
                          <div className={cn(
                              'rounded-lg p-6 border',
-                             'bg-white dark:bg-[#1a1825]',
-                             'border-gray-100 dark:border-white/6',
+                             'bg-card',
+                             'border-border',
                              'shadow-sm dark:shadow-none'
                          )}>
-                             <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">{t.jobDetail.description}</h2>
-                             <div className="prose prose-sm max-w-none text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-words [overflow-wrap:anywhere]">
+                             <h2 className="text-lg font-semibold mb-4 text-foreground">{t.jobDetail.description}</h2>
+                             <div className="prose prose-sm max-w-none text-foreground whitespace-pre-wrap break-words [overflow-wrap:anywhere]">
                                  {job.description}
                              </div>
                          </div>
@@ -524,11 +524,11 @@ function JobDetail() {
                         {/* Skills */}
                          <div className={cn(
                              'rounded-lg p-6 border',
-                             'bg-white dark:bg-[#1a1825]',
-                             'border-gray-100 dark:border-white/6',
+                             'bg-card',
+                             'border-border',
                              'shadow-sm dark:shadow-none'
                          )}>
-                             <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">{t.jobDetail.requiredSkills}</h2>
+                             <h2 className="text-lg font-semibold mb-4 text-foreground">{t.jobDetail.requiredSkills}</h2>
                              <div className="flex flex-wrap gap-2">
                                  {job.required_skills?.map((skill, index) => {
                                      const skillLabel = getSkillLabel(skill);
@@ -542,7 +542,7 @@ function JobDetail() {
                                                  'break-words [overflow-wrap:anywhere] px-3 py-1.5 rounded-lg text-sm font-medium border',
                                                  isMatch
                                                      ? 'bg-green-50 dark:bg-green-500/10 text-green-700 dark:text-green-300 border-green-200 dark:border-green-500/30'
-                                                     : 'bg-gray-50 dark:bg-white/5 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-white/10'
+                                                     : 'bg-gray-50 dark:bg-white/5 text-foreground border-gray-200 dark:border-white/10'
                                              )}
                                          >
                                              {isMatch && <CheckCircle className="w-3 h-3 inline me-1" />}
@@ -557,11 +557,11 @@ function JobDetail() {
                          {job.attachments && job.attachments.length > 0 && (
                              <div className={cn(
                                  'rounded-lg p-6 border',
-                                 'bg-white dark:bg-[#1a1825]',
-                                 'border-gray-100 dark:border-white/6',
+                                 'bg-card',
+                                 'border-border',
                                  'shadow-sm dark:shadow-none'
                              )}>
-                                 <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">{t.jobDetail.attachments}</h2>
+                                 <h2 className="text-lg font-semibold mb-4 text-foreground">{t.jobDetail.attachments}</h2>
                                  <div className="space-y-2">
                                      {job.attachments.map((url, index) => {
                                          const filename = url.split('/').pop() || t.jobDetail.file.replace('{{index}}', String(index + 1));
@@ -579,9 +579,9 @@ function JobDetail() {
                                              >
                                                  <div className="flex items-center gap-3">
                                                      <FileText className="w-5 h-5 text-[color:var(--workspace-primary)]" />
-                                                     <span className="text-sm text-gray-700 dark:text-gray-300">{filename}</span>
+                                                     <span className="text-sm text-foreground">{filename}</span>
                                                  </div>
-                                                 <Download className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+                                                 <Download className="w-4 h-4 text-gray-400 dark:text-muted-foreground" />
                                              </a>
                                          );
                                      })}
@@ -593,11 +593,11 @@ function JobDetail() {
                          {similarJobs.length > 0 && (
                              <div className={cn(
                                  'rounded-lg p-6 border',
-                                 'bg-white dark:bg-[#1a1825]',
-                                 'border-gray-100 dark:border-white/6',
+                                 'bg-card',
+                                 'border-border',
                                  'shadow-sm dark:shadow-none'
                              )}>
-                                 <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">وظائف مشابهة</h2>
+                                 <h2 className="text-lg font-semibold mb-4 text-foreground">وظائف مشابهة</h2>
                                  <div className="grid gap-3 md:grid-cols-2">
                                      {similarJobs.map(j => (
                                          <SimilarJobCard
@@ -616,8 +616,8 @@ function JobDetail() {
                         {/* Action Card */}
                          <div className={cn(
                              'rounded-lg p-6 border',
-                             'bg-white dark:bg-[#1a1825]',
-                             'border-gray-100 dark:border-white/6',
+                             'bg-card',
+                             'border-border',
                              'shadow-sm dark:shadow-none',
                              'space-y-4'
                          )}>
@@ -626,7 +626,7 @@ function JobDetail() {
                                      <div className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-500/15 flex items-center justify-center mx-auto mb-3">
                                          <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400" />
                                      </div>
-                                     <h3 className="font-semibold text-base text-gray-900 dark:text-white mb-1">تم تقديم عرضك</h3>
+                                     <h3 className="font-semibold text-base text-foreground mb-1">تم تقديم عرضك</h3>
                                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
                                          عرضك: {myProposal.bid_amount} د.ت
                                      </p>
@@ -738,12 +738,12 @@ function JobDetail() {
                         {/* Client Info */}
                          <div className={cn(
                              'rounded-lg p-6 border',
-                             'bg-white dark:bg-[#1a1825]',
-                             'border-gray-100 dark:border-white/6',
+                             'bg-card',
+                             'border-border',
                              'shadow-sm dark:shadow-none'
                          )}>
-                             <h3 className="font-semibold text-base text-gray-900 dark:text-white mb-4">عن العميل</h3>
-                             <div className="flex items-center gap-3 mb-5 pb-5 border-b border-gray-100 dark:border-white/6">
+                             <h3 className="font-semibold text-base text-foreground mb-4">عن العميل</h3>
+                             <div className="flex items-center gap-3 mb-5 pb-5 border-b border-border">
                                  {job.client?.avatar_url ? (
                                      <OptimizedImage
                                          src={job.client.avatar_url}
@@ -753,11 +753,11 @@ function JobDetail() {
                                      />
                                  ) : (
                                      <div className="w-12 h-12 rounded-lg bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
-                                         <User className="w-6 h-6 text-gray-500 dark:text-gray-400" />
+                                         <User className="w-6 h-6 text-muted-foreground" />
                                      </div>
                                  )}
                                  <div>
-                                     <p className="font-semibold text-gray-900 dark:text-white">{job.client?.full_name || t.jobDetail.defaultClient}</p>
+                                     <p className="font-semibold text-foreground">{job.client?.full_name || t.jobDetail.defaultClient}</p>
                                      {job.client?.location && (
                                          <p className="text-xs text-gray-600 dark:text-gray-400 flex items-center gap-1 mt-1">
                                              <MapPin className="w-3 h-3" />
@@ -770,22 +770,22 @@ function JobDetail() {
                              <div className="space-y-3 text-sm mb-5">
                                  <div className="flex justify-between">
                                      <span className="text-gray-600 dark:text-gray-400 text-xs font-medium">عضو منذ</span>
-                                     <span className="font-medium text-gray-900 dark:text-white">{job.client?.created_at ? formatDate(job.client.created_at) : '-'}</span>
+                                     <span className="font-medium text-foreground">{job.client?.created_at ? formatDate(job.client.created_at) : '-'}</span>
                                  </div>
                                  <div className="flex justify-between">
                                      <span className="text-gray-600 dark:text-gray-400 text-xs font-medium">الوظائف المنشورة</span>
-                                     <span className="font-medium text-gray-900 dark:text-white">{clientStats.totalJobs}</span>
+                                     <span className="font-medium text-foreground">{clientStats.totalJobs}</span>
                                  </div>
                                  <div className="flex justify-between">
                                      <span className="text-gray-600 dark:text-gray-400 text-xs font-medium">إجمالي الإنفاق</span>
-                                     <span className="font-medium text-gray-900 dark:text-white">{clientStats.totalSpent.toLocaleString()} د.ت</span>
+                                     <span className="font-medium text-foreground">{clientStats.totalSpent.toLocaleString()} د.ت</span>
                                  </div>
                                  {clientStats.rating > 0 && (
-                                     <div className="flex justify-between items-center pt-2 border-t border-gray-100 dark:border-white/6">
+                                     <div className="flex justify-between items-center pt-2 border-t border-border">
                                          <span className="text-gray-600 dark:text-gray-400 text-xs font-medium">التقييم</span>
                                          <span className="flex items-center gap-1.5 font-medium">
                                              <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
-                                             <span className="text-gray-900 dark:text-white">{clientStats.rating.toFixed(1)}</span>
+                                             <span className="text-foreground">{clientStats.rating.toFixed(1)}</span>
                                          </span>
                                      </div>
                                  )}
@@ -806,24 +806,24 @@ function JobDetail() {
                         {/* Job Stats */}
                          <div className={cn(
                              'rounded-lg p-6 border',
-                             'bg-white dark:bg-[#1a1825]',
-                             'border-gray-100 dark:border-white/6',
+                             'bg-card',
+                             'border-border',
                              'shadow-sm dark:shadow-none'
                          )}>
-                             <h3 className="font-semibold text-base text-gray-900 dark:text-white mb-4">إحصائيات الوظيفة</h3>
+                             <h3 className="font-semibold text-base text-foreground mb-4">إحصائيات الوظيفة</h3>
                              <div className="space-y-3 text-sm">
-                                 <div className="flex justify-between pb-3 border-b border-gray-100 dark:border-white/6">
+                                 <div className="flex justify-between pb-3 border-b border-border">
                                      <span className="text-gray-600 dark:text-gray-400 font-medium">العروض</span>
-                                     <span className="font-semibold text-gray-900 dark:text-white">{job.proposals_count}</span>
+                                     <span className="font-semibold text-foreground">{job.proposals_count}</span>
                                  </div>
-                                 <div className="flex justify-between pb-3 border-b border-gray-100 dark:border-white/6">
+                                 <div className="flex justify-between pb-3 border-b border-border">
                                      <span className="text-gray-600 dark:text-gray-400 font-medium">المشاهدات</span>
-                                     <span className="font-semibold text-gray-900 dark:text-white">{job.views_count}</span>
+                                     <span className="font-semibold text-foreground">{job.views_count}</span>
                                  </div>
                                  {job.deadline && (
                                      <div className="flex justify-between">
                                          <span className="text-gray-600 dark:text-gray-400 font-medium">الموعد النهائي</span>
-                                         <span className="font-semibold text-gray-900 dark:text-white">
+                                         <span className="font-semibold text-foreground">
                                              {new Date(job.deadline).toLocaleDateString('ar-TN')}
                                          </span>
                                      </div>
@@ -856,3 +856,4 @@ function JobDetail() {
 }
 
 export default JobDetail;
+
