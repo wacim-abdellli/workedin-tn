@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { AlertTriangle, RefreshCw, Check, X, Eye, Loader2 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabaseAnon } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase';
 import Button from '../../components/ui/Button';
 import { useTranslation } from '@/i18n';
 
@@ -25,7 +25,7 @@ export default function DisputesTab() {
     const { data: disputes = [], isLoading, refetch } = useQuery({
         queryKey: ['admin-disputes'],
         queryFn: async (): Promise<DisputeRecord[]> => {
-            const { data, error } = await supabaseAnon
+            const { data, error } = await supabase
                 .from('disputes')
                 .select('id,contract_id,opened_at,reason,status,contract:contracts!disputes_contract_id_fkey(id,amount,job:jobs(title)),opener:profiles!disputes_opened_by_fkey(full_name,email)')
                 .eq('status', 'open')
@@ -37,7 +37,7 @@ export default function DisputesTab() {
 
     const resolveMutation = useMutation({
         mutationFn: async ({ disputeId, resolution, note }: { disputeId: string; resolution: string; note?: string }) => {
-            const { error } = await supabaseAnon.rpc('resolve_dispute', { p_dispute_id: disputeId, p_resolution: resolution, p_admin_note: note || null });
+            const { error } = await supabase.rpc('resolve_dispute', { p_dispute_id: disputeId, p_resolution: resolution, p_admin_note: note || null });
             if (error) throw error;
         },
         onSuccess: () => {

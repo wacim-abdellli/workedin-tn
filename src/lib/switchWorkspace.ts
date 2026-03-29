@@ -1,6 +1,5 @@
 import type { NavigateFunction } from 'react-router-dom';
 
-import { logger } from '@/lib/logger';
 import { supabase } from '@/lib/supabase';
 import { supabaseWithRetry } from '@/lib/supabaseWithRetry';
 import type { FreelancerProfile, Profile, UserType } from '@/types';
@@ -19,6 +18,34 @@ interface SwitchWorkspaceArgs {
   > | null;
   freelancerProfile: FreelancerProfile | null;
   navigate: NavigateFunction;
+}
+
+let workspaceSyncInFlight = false;
+let pendingWorkspaceSync:
+  | {
+      userId: string;
+      workspace: Workspace;
+      currentUserType: UserType | null | undefined;
+    }
+  | null = null;
+let visibilityListenerAttached = false;
+
+function isDocumentVisible() {
+  return typeof document === 'undefined' || document.visibilityState === 'visible';
+}
+
+function attachWorkspaceVisibilityListener() {
+  if (visibilityListenerAttached || typeof document === 'undefined') return;
+
+  document.addEventListener('visibilitychange', () => {
+    if (!isDocumentVisible() || workspaceSyncInFlight || !pendingWorkspaceSync) return;
+
+    const nextSync = pendingWorkspaceSync;
+    pendingWorkspaceSync = null;
+    void runWorkspaceSync(nextSync.userId, nextSync.workspace, nextSync.currentUserType);
+  });
+
+  visibilityListenerAttached = true;
 }
 
 export async function switchWorkspace({
@@ -59,9 +86,8 @@ export async function switchWorkspace({
     useWorkspaceStore.getState().setSwitching(false);
   }, 300);
 
-  void syncWorkspaceToBackend(userId, targetWorkspace, currentUserType).catch((error) => {
-    logger.warn('Background workspace sync failed:', error);
-  });
+  attachWorkspaceVisibilityListener();
+  void runWorkspaceSync(userId, targetWorkspace, currentUserType);
 
   return {
     targetRoute: target.path,
@@ -78,7 +104,51 @@ async function ensureFreelancerShell(userId: string) {
         ignoreDuplicates: true,
       }
     )
+  , { throwOnError: false }
   );
+}
+
+async function runWorkspaceSync(
+  userId: string,
+  workspace: Workspace,
+  currentUserType: UserType | null | undefined
+) {
+  if (typeof document !== 'undefined' && document.visibilityState !== 'visible') return;
+
+  if (workspaceSyncInFlight) {
+    pendingWorkspaceSync = { userId, workspace, currentUserType };
+    return;
+  }
+
+  if (!isDocumentVisible()) {
+    pendingWorkspaceSync = { userId, workspace, currentUserType };
+    return;
+  }
+
+  workspaceSyncInFlight = true;
+
+  try {
+    try {
+      const {
+        data: { session },
+        error: sessionError,
+      } = await supabase.auth.getSession();
+
+      if (sessionError || !session) return;
+
+      await syncWorkspaceToBackend(userId, workspace, currentUserType);
+    } catch {
+      // silent - background workspace sync is non-critical
+    }
+  } finally {
+    workspaceSyncInFlight = false;
+
+    if (pendingWorkspaceSync && isDocumentVisible()) {
+      const nextSync = pendingWorkspaceSync;
+      pendingWorkspaceSync = null;
+      void runWorkspaceSync(nextSync.userId, nextSync.workspace, nextSync.currentUserType);
+    }
+  }
 }
 
 async function syncWorkspaceToBackend(
@@ -101,5 +171,5 @@ async function syncWorkspaceToBackend(
         updated_at: new Date().toISOString(),
       })
       .eq('id', userId)
-  );
+  , { throwOnError: false });
 }

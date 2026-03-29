@@ -43,22 +43,32 @@ function getResultStatus(result: SupabaseResultLike<unknown>): number | undefine
 }
 
 export async function supabaseWithRetry<TResult extends SupabaseResultLike<unknown>>(
-  queryFn: () => PromiseLike<TResult> | TResult
+  queryFn: () => PromiseLike<TResult> | TResult,
+  options: { throwOnError?: boolean; timeoutMs?: number; refreshTimeoutMs?: number } = {}
 ): Promise<TResult> {
-  let result = await withTimeout(Promise.resolve(queryFn()), 8000, 'Supabase query');
+  const timeoutMs = options.timeoutMs ?? 8000;
+  const refreshTimeoutMs = options.refreshTimeoutMs ?? 5000;
+
+  let result = await withTimeout(Promise.resolve(queryFn()), timeoutMs, 'Supabase query');
 
   if (getResultStatus(result) === 401) {
     const { error: refreshError } = await withTimeout(
       supabase.auth.refreshSession(),
-      5000,
+      refreshTimeoutMs,
       'Token refresh'
     );
+
     if (refreshError) throw refreshError;
-    result = await withTimeout(Promise.resolve(queryFn()), 8000, 'Supabase query retry');
+
+    result = await withTimeout(Promise.resolve(queryFn()), timeoutMs, 'Supabase query retry');
   }
 
   if (result.error) {
-    throw normalizeSupabaseError(result.error);
+    if (options.throwOnError !== false) {
+      throw normalizeSupabaseError(result.error);
+    }
+
+    return result;
   }
 
   return result;

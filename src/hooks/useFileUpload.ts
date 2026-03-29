@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef } from 'react';
-import { supabase } from '../lib/supabase';
+import { getStorageConfigErrorMessage, isMissingStorageBucketError, supabase, withTimeout } from '../lib/supabase';
 
 interface UploadedFile {
     id: string;
@@ -86,14 +86,24 @@ export function useFileUpload({
                 const filename = `${path}/${timestamp}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
 
                 // Upload to Supabase Storage
-                const { data, error: uploadError } = await supabase.storage
-                    .from(bucket)
-                    .upload(filename, file, {
-                        cacheControl: '3600',
-                        upsert: false,
-                    });
+                const { data, error: uploadError } = await withTimeout(
+                    supabase.storage
+                        .from(bucket)
+                        .upload(filename, file, {
+                            cacheControl: '3600',
+                            upsert: false,
+                        }),
+                    15000,
+                    `Upload ${bucket}/${filename}`
+                );
 
-                if (uploadError) throw uploadError;
+                if (uploadError) {
+                    if (isMissingStorageBucketError(uploadError)) {
+                        throw new Error(getStorageConfigErrorMessage(bucket));
+                    }
+
+                    throw uploadError;
+                }
 
                 // Simulate progress for now (Supabase doesn't support progress tracking natively)
                 setProgress(100);

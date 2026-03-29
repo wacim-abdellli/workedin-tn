@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 
 import { useAuth } from '@/contexts/AuthContext';
@@ -6,10 +7,20 @@ import { useWorkspaceStore } from '@/lib/workspaceState';
 
 export const DashboardRedirect = () => {
   const location = useLocation();
-  const { profile, isLoading } = useAuth();
+  const { user, profile, isLoading, refreshProfile } = useAuth();
   const activeWorkspace = useWorkspaceStore((state) => state.activeWorkspace);
+  const [hasRetriedProfile, setHasRetriedProfile] = useState(false);
 
-  if (isLoading) {
+  useEffect(() => {
+    if (isLoading || !user || profile || hasRetriedProfile) {
+      return;
+    }
+
+    setHasRetriedProfile(true);
+    void refreshProfile();
+  }, [hasRetriedProfile, isLoading, profile, refreshProfile, user]);
+
+  if (isLoading || (user && !profile && !hasRetriedProfile)) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary-600 border-t-transparent" />
@@ -17,8 +28,12 @@ export const DashboardRedirect = () => {
     );
   }
 
-  if (!profile) {
+  if (!user) {
     return <Navigate to="/login" replace state={location.state} />;
+  }
+
+  if (!profile) {
+    return <Navigate to="/settings?tab=profile" replace state={location.state} />;
   }
 
   if (shouldRequireUserTypeSelection(profile)) {

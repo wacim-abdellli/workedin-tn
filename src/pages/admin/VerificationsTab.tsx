@@ -93,6 +93,7 @@ async function mapPrimaryVerificationRow(item: IdentityVerificationPrimaryRow): 
     return {
         id: item.id,
         user_id: item.user_id,
+        cin_number: item.cin_number ?? null,
         document_type: 'CIN',
         front_image_url: await resolveIdentityDocumentUrl(item.cin_front_url),
         back_image_url: await resolveIdentityDocumentUrl(item.cin_back_url),
@@ -107,6 +108,7 @@ async function mapLegacyVerificationRow(item: IdentityVerificationLegacyRow): Pr
     return {
         id: item.id,
         user_id: item.user_id,
+        cin_number: item.cin_number ?? null,
         document_type: item.document_type || 'CIN',
         front_image_url: await resolveIdentityDocumentUrl(item.front_image_url),
         back_image_url: await resolveIdentityDocumentUrl(item.back_image_url),
@@ -123,7 +125,7 @@ export async function fetchVerifications(): Promise<IdentityVerification[]> {
         const { data } = await supabaseWithRetry(() =>
             client
                 .from('identity_verifications')
-                .select('id,user_id,cin_front_url,cin_back_url,selfie_url,status,submitted_at,profile:profiles!identity_verifications_user_id_fkey(full_name,email)')
+                .select('id,user_id,cin_number,cin_front_url,cin_back_url,selfie_url,status,submitted_at,profile:profiles!identity_verifications_user_id_fkey(full_name,email,phone,location,avatar_url)')
                 .eq('status', 'pending')
                 .order('submitted_at', { ascending: true })
         );
@@ -134,7 +136,7 @@ export async function fetchVerifications(): Promise<IdentityVerification[]> {
         const { data: legacy } = await supabaseWithRetry(() =>
             client
                 .from('identity_verifications')
-                .select('id,user_id,document_type,front_image_url,back_image_url,status,submitted_at,profile:profiles!identity_verifications_user_id_fkey(full_name,email)')
+                .select('id,user_id,cin_number,document_type,front_image_url,back_image_url,status,submitted_at,profile:profiles!identity_verifications_user_id_fkey(full_name,email,phone,location,avatar_url)')
                 .eq('status', 'pending')
                 .order('submitted_at', { ascending: true })
         );
@@ -278,13 +280,22 @@ export default function VerificationsTab() {
                             {verifications.map(v => (
                                 <div key={v.id} className="border border-gray-200 dark:border-white/10 rounded-xl overflow-hidden">
                                     <div className="flex items-center justify-between p-4 bg-white/60 dark:bg-slate-900/60">
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-12 h-12 rounded-xl bg-gray-200 dark:bg-white/10 flex items-center justify-center shrink-0">
-                                                <Shield className="w-6 h-6 text-gray-400 dark:text-gray-300" />
+                                            <div className="flex items-center gap-4">
+                                            <div className="w-12 h-12 rounded-xl bg-gray-200 dark:bg-white/10 flex items-center justify-center shrink-0 overflow-hidden">
+                                                {v.profile?.avatar_url ? (
+                                                    <img src={v.profile.avatar_url} alt={v.profile.full_name || 'user'} className="w-full h-full object-cover" />
+                                                ) : (
+                                                    <Shield className="w-6 h-6 text-gray-400 dark:text-gray-300" />
+                                                )}
                                             </div>
                                             <div>
                                                 <p className="font-bold text-foreground">{v.profile?.full_name || tr('مستخدم', 'User', 'Utilisateur')}</p>
                                                 <p className="text-sm text-muted">{v.profile?.email || ''}</p>
+                                                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 text-xs text-muted">
+                                                    {v.profile?.phone ? <span>{v.profile.phone}</span> : null}
+                                                    {v.profile?.location ? <span>{v.profile.location}</span> : null}
+                                                    {v.cin_number ? <span>{tr('رقم البطاقة', 'ID number', 'Numero CIN')}: {v.cin_number}</span> : null}
+                                                </div>
                                                 <div className="flex items-center gap-2 mt-1">
                                                     <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full">{v.document_type || 'CIN'}</span>
                                                     <span className="text-xs text-muted">{new Date(v.submitted_at).toLocaleString(locale)}</span>
@@ -323,7 +334,7 @@ export default function VerificationsTab() {
                                     </div>
 
                                     {expandedDocId === v.id && (
-                                        <div className="p-4 bg-white/70 dark:bg-slate-900/50 border-t border-gray-100 dark:border-white/10 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="p-4 bg-white/70 dark:bg-slate-900/50 border-t border-gray-100 dark:border-white/10 grid grid-cols-1 md:grid-cols-3 gap-4">
                                             <div>
                                                 <p className="text-sm font-medium text-muted mb-2">{tr('الوجه الأمامي', 'Front side', 'Recto')}</p>
                                                 {v.front_image_url ? (
@@ -339,6 +350,16 @@ export default function VerificationsTab() {
                                                 {v.back_image_url ? (
                                                     <a href={v.back_image_url} target="_blank" rel="noopener noreferrer">
                                                         <img src={v.back_image_url} alt="back" className="w-full rounded-lg object-cover aspect-video border border-gray-200 dark:border-white/10 hover:opacity-90 transition" />
+                                                    </a>
+                                                ) : (
+                                                    <div className="w-full rounded-lg aspect-video bg-gray-100 dark:bg-white/10 flex items-center justify-center text-muted text-sm">{tr('لا توجد صورة', 'No image', 'Aucune image')}</div>
+                                                )}
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-medium text-muted mb-2">{tr('صورة السيلفي', 'Selfie', 'Selfie')}</p>
+                                                {v.selfie_url ? (
+                                                    <a href={v.selfie_url} target="_blank" rel="noopener noreferrer">
+                                                        <img src={v.selfie_url} alt="selfie" className="w-full rounded-lg object-cover aspect-video border border-gray-200 dark:border-white/10 hover:opacity-90 transition" />
                                                     </a>
                                                 ) : (
                                                     <div className="w-full rounded-lg aspect-video bg-gray-100 dark:bg-white/10 flex items-center justify-center text-muted text-sm">{tr('لا توجد صورة', 'No image', 'Aucune image')}</div>

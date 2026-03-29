@@ -7,7 +7,7 @@ import type { MessageAttachment } from '../types';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://your-project.supabase.co';
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'your-anon-key';
 
-// Anon-only client for public queries (jobs, freelancers) — never hangs on token refresh
+// Anon-only client for public queries (jobs, freelancers) — isolated from user session churn.
 export const supabaseAnon = createClient(supabaseUrl, supabaseAnonKey, {
     auth: {
         persistSession: false,
@@ -44,8 +44,8 @@ if (typeof window !== 'undefined') {
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     auth: {
         persistSession: true,
-        autoRefreshToken: false, // Disable auto-refresh to prevent hangs
-        detectSessionInUrl: false, // Disable URL detection
+        autoRefreshToken: false,
+        detectSessionInUrl: false,
         flowType: 'pkce',
         storage: typeof window !== 'undefined' ? window.localStorage : undefined,
     },
@@ -60,16 +60,6 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
 if (typeof window !== 'undefined') {
     (window as any).supabase = supabase;
 }
-
-// Handle auth state changes — log token refresh and sign-out events
-supabase.auth.onAuthStateChange((event) => {
-    if (event === 'TOKEN_REFRESHED') {
-        console.log('[auth] token refreshed ok');
-    }
-    if (event === 'SIGNED_OUT') {
-        console.log('[auth] signed out');
-    }
-});
 
 /**
  * Wraps a promise with a timeout
@@ -98,6 +88,25 @@ export async function withTimeout<T>(
         clearTimeout(timeoutId!);
         throw error;
     }
+}
+
+export function isMissingStorageBucketError(error: unknown): boolean {
+    if (!error || typeof error !== 'object') return false;
+
+    const errorRecord = error as Record<string, unknown>;
+    const message = typeof errorRecord.message === 'string' ? errorRecord.message.toLowerCase() : '';
+    const statusCode =
+        typeof errorRecord.statusCode === 'number'
+            ? errorRecord.statusCode
+            : typeof errorRecord.status === 'number'
+                ? errorRecord.status
+                : undefined;
+
+    return statusCode === 404 || message.includes('bucket not found');
+}
+
+export function getStorageConfigErrorMessage(bucket: string): string {
+    return `Storage bucket "${bucket}" is not configured yet.`;
 }
 
 
@@ -141,9 +150,13 @@ export const uploadFile = async (
     path: string,
     file: File
 ): Promise<string> => {
-    const { error } = await supabase.storage
-        .from(bucket)
-        .upload(path, file, { upsert: true });
+    const { error } = await withTimeout(
+        supabase.storage
+            .from(bucket)
+            .upload(path, file, { upsert: true }),
+        15000,
+        `Upload ${bucket}/${path}`
+    );
 
     if (error) throw error;
 

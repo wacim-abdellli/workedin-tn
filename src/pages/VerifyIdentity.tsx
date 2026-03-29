@@ -4,7 +4,7 @@ import { Camera, CheckCircle2, Shield, Loader2, Sparkles, Lock, ScanLine, AlertC
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from '@/i18n';
 import { logger } from '@/lib/logger';
-import { supabase, withTimeout } from '@/lib/supabase';
+import { getStorageConfigErrorMessage, isMissingStorageBucketError, supabase, withTimeout } from '@/lib/supabase';
 import { supabaseWithRetry } from '@/lib/supabaseWithRetry';
 import { useToast } from '@/components/ui/Toast';
 import SEO from '@/components/common/SEO';
@@ -77,7 +77,7 @@ export default function VerifyIdentity() {
         };
         void resolve();
         return () => { isCancelled = true; };
-    }, [user?.id, profile?.cin_verified, profile?.cin_submitted, refreshProfile]);
+    }, [user?.id, profile?.cin_verified, profile?.cin_submitted]);
 
     const handleFileSelect = useCallback(async (type: 'front' | 'back' | 'selfie', file: File) => {
         setIsProcessingFile(true);
@@ -147,8 +147,13 @@ export default function VerifyIdentity() {
     };
 
     const handleSubmit = async () => {
-        if (!user) return;
+        if (!user) {
+            showToast(tx('verifyIdentity.errors.noSession', undefined, 'No auth session - please login again'), 'error');
+            navigate('/login');
+            return;
+        }
         setLoading(true);
+
         try {
             if (!/^\d{8}$/.test(cinNumber)) {
                 showToast(tx('verifyIdentity.errors.invalidCin', undefined, 'رقم البطاقة يجب أن يحتوي على 8 أرقام'), 'error');
@@ -161,9 +166,13 @@ export default function VerifyIdentity() {
                 return;
             }
 
-            const { data: liveSessionData, error: sessionError } = await supabase.auth.getSession();
-            if (sessionError) throw sessionError;
-            const liveSession = liveSessionData.session ?? session;
+            const { data: { session: liveSessionDataSession } } = await supabase.auth.getSession();
+            if (!liveSessionDataSession && !user) {
+                showToast('Please log in again', 'error');
+                navigate('/login');
+                return;
+            }
+            const liveSession = liveSessionDataSession ?? session;
             if (!liveSession) throw new Error(tx('verifyIdentity.errors.noSession', undefined, 'No auth session - please login again'));
 
             const sessionUser = liveSession.user;
@@ -173,12 +182,22 @@ export default function VerifyIdentity() {
             const runWithTimeout = <T,>(op: Promise<T>, ms: number, name: string) => withTimeout(op, ms, name);
 
             const uploadFile = async (file: File, path: string): Promise<string> => {
-                const { data, error } = await runWithTimeout(
-                    supabase.storage.from('identity-documents').upload(path, file, { upsert: true, contentType: file.type || 'image/jpeg' }),
-                    20000, `Upload ${path}`
-                );
-                if (error) throw error;
-                return data?.path || path;
+                try {
+                    const { data, error } = await runWithTimeout(
+                        supabase.storage.from('identity-documents').upload(path, file, { upsert: true, contentType: file.type || 'image/jpeg' }),
+                        20000,
+                        `Upload ${path}`
+                    );
+
+                    if (error) throw error;
+                    return data?.path || path;
+                } catch (error) {
+                    if (isMissingStorageBucketError(error)) {
+                        throw new Error(getStorageConfigErrorMessage('identity-documents'));
+                    }
+
+                    throw error;
+                }
             };
 
             const ts = Date.now();
@@ -190,6 +209,7 @@ export default function VerifyIdentity() {
             const { data: profileData } = await supabaseWithRetry(() =>
                 supabase.from('profiles').select('id').eq('id', authUserId).maybeSingle()
             );
+
             if (!profileData) {
                 await supabaseWithRetry(() =>
                     supabase.from('profiles').insert({

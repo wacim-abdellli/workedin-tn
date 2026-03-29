@@ -12,7 +12,8 @@ import Modal from '../components/ui/Modal';
 import { useToast } from '../components/ui/Toast';
 import { useAuth } from '../contexts/AuthContext';
 import { useTranslation } from '../i18n';
-import { supabase } from '../lib/supabase';
+import { getStorageConfigErrorMessage, isMissingStorageBucketError, supabase } from '../lib/supabase';
+import { supabaseWithRetry } from '../lib/supabaseWithRetry';
 import { useAutosave } from '../hooks/useAutosave';
 
 // Components
@@ -190,6 +191,7 @@ export default function JobPost() {
             // Upload attachments if any
             const uploadedUrls: string[] = [];
             if (data.attachments_files && data.attachments_files.length > 0) {
+                let attachmentsSkipped = false;
                 // ... (Keep existing upload logic)
                 // Note: File lists cannot be easily autosaved/restored from localStorage
                 // We might need to handle this gracefully or ignore files in autosave
@@ -202,12 +204,23 @@ export default function JobPost() {
                         .from('attachments')
                         .upload(filePath, file);
 
-                    if (!uploadError) {
-                        const { data: { publicUrl } } = supabase.storage
-                            .from('attachments')
-                            .getPublicUrl(filePath);
-                        uploadedUrls.push(publicUrl);
+                    if (uploadError) {
+                        if (isMissingStorageBucketError(uploadError)) {
+                            attachmentsSkipped = true;
+                            break;
+                        }
+
+                        throw uploadError;
                     }
+
+                    const { data: { publicUrl } } = supabase.storage
+                        .from('attachments')
+                        .getPublicUrl(filePath);
+                    uploadedUrls.push(publicUrl);
+                }
+
+                if (attachmentsSkipped) {
+                    showToast(getStorageConfigErrorMessage('attachments'), 'warning');
                 }
             }
 
@@ -241,12 +254,10 @@ export default function JobPost() {
 
             logger.debug('Job data prepared for DB insert');
 
-            // Use official Supabase client with timeout
-            const insertPromise = supabase.from('jobs').insert(jobData).select('id').single();
-            const timeoutPromise = new Promise<never>((_, reject) =>
-                setTimeout(() => reject(new Error('Database operation timed out. Please try again.')), 20000)
+            // Use official Supabase client - supabaseWithRetry already has timeout handling
+            const { data: insertedJob, error } = await supabaseWithRetry(() =>
+                supabase.from('jobs').insert(jobData).select('id').single()
             );
-            const { data: insertedJob, error } = await Promise.race([insertPromise, timeoutPromise]);
 
             logger.debug('Supabase insert response received', { error: error?.message });
 

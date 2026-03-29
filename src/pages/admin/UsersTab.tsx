@@ -5,7 +5,7 @@ import Button from '@/components/ui/Button';
 import Modal from '@/components/ui/Modal';
 import ErrorBoundary from '@/components/common/ErrorBoundary';
 import { useToast } from '@/components/ui/Toast';
-import { supabaseAnon } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase';
 import { useTranslation } from '@/i18n';
 import type { AdminUser, AdminUserRow } from '@/types/admin';
 
@@ -21,7 +21,7 @@ interface ConfirmActionState {
 
 export async function fetchAdminUsers(): Promise<AdminUser[]> {
     try {
-        const { data, error } = await supabaseAnon
+        const { data, error } = await supabase
             .from('profiles')
             .select('id,full_name,email,user_type,active_mode,cin_verified,is_admin,created_at')
             .order('created_at', { ascending: false })
@@ -104,7 +104,7 @@ export default function UsersTab() {
     const toggleUserModeMutation = useMutation({
         mutationFn: async (user: AdminUser) => {
             const nextMode: 'client' | 'freelancer' = user.active_mode === 'freelancer' ? 'client' : 'freelancer';
-            const { error } = await supabaseAnon
+            const { error } = await supabase
                 .from('profiles')
                 .update({
                     active_mode: nextMode,
@@ -137,7 +137,7 @@ export default function UsersTab() {
 
     const deleteUserMutation = useMutation({
         mutationFn: async (user: AdminUser) => {
-            const { error } = await supabaseAnon
+            const { error } = await supabase
                 .from('profiles')
                 .delete()
                 .eq('id', user.id);
@@ -162,7 +162,7 @@ export default function UsersTab() {
     const revokeVerificationMutation = useMutation({
         mutationFn: async (user: AdminUser) => {
             const results = await Promise.all([
-                supabaseAnon
+                supabase
                     .from('profiles')
                     .update({
                         cin_verified: false,
@@ -170,11 +170,11 @@ export default function UsersTab() {
                         updated_at: new Date().toISOString(),
                     })
                     .eq('id', user.id),
-                supabaseAnon
+                supabase
                     .from('freelancer_profiles')
                     .update({ cin_verified: false })
                     .eq('id', user.id),
-                supabaseAnon
+                supabase
                     .from('identity_verifications')
                     .delete()
                     .eq('user_id', user.id),

@@ -8,7 +8,7 @@ import { User, Building, CheckCircle, Camera, Briefcase } from 'lucide-react';
 import { useTranslation } from '../i18n';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../components/ui/Toast';
-import { uploadFile } from '../lib/supabase';
+import { getStorageConfigErrorMessage, isMissingStorageBucketError, uploadFile } from '../lib/supabase';
 import { GOVERNORATES } from '../types';
 import type { Governorate } from '../types';
 import Button from '../components/ui/Button';
@@ -19,7 +19,7 @@ import SEO, { SEO_CONFIG } from '../components/common/SEO';
 
 function ClientOnboarding() {
     const { t } = useTranslation();
-    const { user, profile, updateProfile, isLoading: isAuthLoading } = useAuth();
+    const { user, profile, refreshProfile, updateProfile, isLoading: isAuthLoading } = useAuth();
     const { showToast } = useToast();
     const navigate = useNavigate();
     const [isLoading, setIsLoading] = useState(false);
@@ -84,13 +84,34 @@ function ClientOnboarding() {
     };
 
     const onSubmit = async (data: ClientFormData) => {
+        if (!user) {
+            showToast(t.auth?.login || 'Please log in again', 'error');
+            navigate('/login');
+            return;
+        }
+
         setIsLoading(true);
+        let shouldNavigate = false;
+
         try {
             // Upload avatar if exists
             let avatarUrl = undefined;
-            if (avatarFile && user) {
-                const path = `${user.id}/avatar-${Date.now()}.${avatarFile.name.split('.').pop()}`;
-                avatarUrl = await uploadFile('avatars', path, avatarFile);
+            if (avatarFile) {
+                try {
+                    avatarUrl = await uploadFile(
+                        'avatars',
+                        `${user.id}/avatar-${Date.now()}.${avatarFile.name.split('.').pop()}`,
+                        avatarFile
+                    );
+                } catch (avatarError) {
+                    logger.warn('Client avatar upload failed, continuing without avatar:', avatarError);
+                    showToast(
+                        isMissingStorageBucketError(avatarError)
+                            ? getStorageConfigErrorMessage('avatars')
+                            : 'Avatar upload failed, but profile saved successfully',
+                        'warning'
+                    );
+                }
             }
 
             await updateProfile({
@@ -104,14 +125,28 @@ function ClientOnboarding() {
                     : true,
             });
 
-            showToast(t.onboarding.freelancer.welcomeToast || 'Welcome to Khedma!', 'success');
-            navigate('/client/dashboard');
+            void Promise.race([
+                refreshProfile(),
+                new Promise((_, reject) => setTimeout(() => reject(new Error('REFRESH_TIMEOUT')), 3000)),
+            ]).catch((error) => logger.warn('Client profile refresh failed:', error));
+
+            shouldNavigate = true;
         } catch (error) {
             const msg = error instanceof Error ? error.message : String(error);
             logger.error('Client onboarding error:', error);
-            showToast(msg || t.common.error, 'error');
+
+            if (msg.includes('timed out after')) {
+                showToast('The request took too long. Please try again.', 'error');
+            } else {
+                showToast(msg || t.common.error, 'error');
+            }
         } finally {
             setIsLoading(false);
+        }
+
+        if (shouldNavigate) {
+            showToast(t.onboarding.freelancer.welcomeToast || 'Welcome to Khedma!', 'success');
+            navigate('/client/dashboard');
         }
     };
 

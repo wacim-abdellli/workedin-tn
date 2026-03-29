@@ -58,11 +58,15 @@ export type IdentityVerificationStatus = 'pending' | 'approved' | 'rejected';
 export interface IdentityVerificationProfile {
     full_name: string | null;
     email: string | null;
+    phone?: string | null;
+    location?: string | null;
+    avatar_url?: string | null;
 }
 
 export interface IdentityVerification {
     id: string;
     user_id: string;
+    cin_number?: string | null;
     document_type: string;
     front_image_url: string | null;
     back_image_url: string | null;
@@ -75,6 +79,7 @@ export interface IdentityVerification {
 export interface IdentityVerificationPrimaryRow {
     id: string;
     user_id: string;
+    cin_number?: string | null;
     cin_front_url: string | null;
     cin_back_url: string | null;
     selfie_url: string | null;
@@ -86,6 +91,7 @@ export interface IdentityVerificationPrimaryRow {
 export interface IdentityVerificationLegacyRow {
     id: string;
     user_id: string;
+    cin_number?: string | null;
     document_type: string | null;
     front_image_url: string | null;
     back_image_url: string | null;

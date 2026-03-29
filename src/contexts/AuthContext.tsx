@@ -59,18 +59,21 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   // Track the currently loaded user ID to avoid stale closures in onAuthStateChange
   const loadedUserIdRef = useRef<string | null>(null);
+  const userRef = useRef<User | null>(null);
+  const profileRef = useRef<Profile | null>(null);
+  const freelancerProfileRef = useRef<FreelancerProfile | null>(null);
 
-  // Global Failsafe: If isLoading is stuck for more than 4 seconds, force it to false
-  // This prevents infinite loading loops across the app (Login, ProtectedRoute, etc.)
   useEffect(() => {
-    let timer: NodeJS.Timeout;
-    if (isLoading) {
-      timer = setTimeout(() => {
-        setIsLoading(false);
-      }, 4000);
-    }
-    return () => clearTimeout(timer);
-  }, [isLoading]);
+    userRef.current = user;
+  }, [user]);
+
+  useEffect(() => {
+    profileRef.current = profile;
+  }, [profile]);
+
+  useEffect(() => {
+    freelancerProfileRef.current = freelancerProfile;
+  }, [freelancerProfile]);
 
   const getPreferredLanguage = useCallback((): Language => {
     if (typeof window === 'undefined') return 'ar';
@@ -113,8 +116,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
         authUser.email?.split('@')[0] ||
         'Khedma User';
 
-      await withTimeout(
-        supabaseWithRetry(() =>
+      await supabaseWithRetry(
+        () =>
           supabase.from('profiles').upsert(
             {
               id: authUser.id,
@@ -127,10 +130,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
             {
               onConflict: 'id',
             }
-          )
-        ),
-        15000,
-        'ensureProfileExists (upsert profiles)'
+          ),
+        { timeoutMs: 10000 }
       );
     },
     [getPreferredLanguage]
@@ -138,26 +139,31 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const fetchProfile = useCallback(
     async (userId: string) => {
+      const previousProfile = profileRef.current?.id === userId ? profileRef.current : null;
+      const previousFreelancerProfile = previousProfile ? freelancerProfileRef.current : null;
+      const currentUser = userRef.current;
+
       try {
-        const { error: sessionError } = await supabase.auth.getSession();
-        if (sessionError) {
-          logger.warn('fetchProfile getSession error:', sessionError);
-        }
-
-        const loadProfile = async () => {
-          const { data } = await supabaseWithRetry(() =>
-            supabase.from('profiles').select('*').eq('id', userId).maybeSingle()
+        const loadProfile = () =>
+          supabaseWithRetry(
+            () => supabase.from('profiles').select('*').eq('id', userId).maybeSingle(),
+            { timeoutMs: 10000 }
           );
-          return data;
-        };
 
-        // If not found, retry once after 1.5s (handle_new_user trigger may still be running)
-        let nextProfile = await loadProfile();
-        if (!nextProfile) {
+        let profileResult = await loadProfile();
+
+        if (!profileResult.data && currentUser?.id === userId) {
+          await ensureProfileExists(currentUser);
+          profileResult = await supabaseWithRetry(() =>
+            supabase.from('profiles').select('*').eq('id', userId).maybeSingle(),
+            { timeoutMs: 10000 }
+          );
+        } else if (!profileResult.data) {
           await new Promise((resolve) => setTimeout(resolve, 1500));
-          nextProfile = await loadProfile();
+          profileResult = await loadProfile();
         }
 
+        const nextProfile = profileResult.data;
         if (!nextProfile) {
           setProfile(null);
           setFreelancerProfile(null);
@@ -186,8 +192,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
         let nextFreelancerProfile: FreelancerProfile | null = null;
         if (nextProfile.user_type === 'freelancer' || nextProfile.user_type === 'both') {
-          const { data } = await supabaseWithRetry(() =>
-            supabase.from('freelancer_profiles').select('*').eq('id', userId).maybeSingle()
+          const { data } = await supabaseWithRetry(
+            () => supabase.from('freelancer_profiles').select('*').eq('id', userId).maybeSingle(),
+            { timeoutMs: 10000 }
           );
           nextFreelancerProfile = data;
         }
@@ -198,10 +205,21 @@ export function AuthProvider({ children }: AuthProviderProps) {
         return { profile: nextProfile, freelancerProfile: nextFreelancerProfile };
       } catch (error) {
         logger.error('Error fetching profile:', error);
+
+        if (previousProfile) {
+          setProfile(previousProfile);
+          setFreelancerProfile(previousFreelancerProfile);
+          syncWorkspaceFromProfile(previousProfile, previousFreelancerProfile);
+          return { profile: previousProfile, freelancerProfile: previousFreelancerProfile };
+        }
+
+        setProfile(null);
+        setFreelancerProfile(null);
+        syncWorkspaceFromProfile(null, null);
         return { profile: null, freelancerProfile: null };
       }
     },
-    [syncWorkspaceFromProfile]
+    [ensureProfileExists, syncWorkspaceFromProfile]
   );
 
   useEffect(() => {
@@ -217,7 +235,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         const {
           data: { session: currentSession },
           error,
-        } = await supabase.auth.getSession();
+        } = await withTimeout(supabase.auth.getSession(), 8000, 'Initialize session');
 
         if (error) {
           logger.error('Error in getSession:', error);
@@ -226,6 +244,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         if (mounted && currentSession) {
           setSession(currentSession);
           setUser(currentSession.user);
+          loadedUserIdRef.current = currentSession.user.id;
           await fetchProfile(currentSession.user.id);
         }
       } catch (error) {
@@ -364,17 +383,29 @@ export function AuthProvider({ children }: AuthProviderProps) {
       await ensureProfileExists(user);
     }
 
-    await supabaseWithRetry(() =>
-      supabase
-        .from('profiles')
-        .update({
-          ...data,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', user.id)
+    await supabaseWithRetry(
+      () =>
+        supabase
+          .from('profiles')
+          .update({
+            ...data,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', user.id),
+      { timeoutMs: 10000 }
     );
 
-    setProfile((prev) => (prev ? { ...prev, ...data } : (data as Profile)));
+    const nextProfile = profile ? { ...profile, ...data } : ({ id: user.id, ...data } as Profile);
+    setProfile(nextProfile);
+    syncWorkspaceFromProfile(nextProfile, freelancerProfile);
+
+    if (
+      nextProfile.onboarding_completed ||
+      nextProfile.client_onboarding_completed ||
+      nextProfile.freelancer_onboarding_completed
+    ) {
+      persistUserTypeSelectionMarker(user.id);
+    }
   };
 
   const updateFreelancerProfile = async (data: Partial<FreelancerProfile>) => {
@@ -382,20 +413,27 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     const safeData = sanitizeFreelancerProfileData(data as Record<string, unknown>) as Partial<FreelancerProfile>;
 
-    await supabaseWithRetry(() =>
-      supabase.from('freelancer_profiles').upsert(
-        {
-          id: user.id,
-          ...safeData,
-          updated_at: new Date().toISOString(),
-        },
-        {
-          onConflict: 'id',
-        }
-      )
+    await supabaseWithRetry(
+      () =>
+        supabase.from('freelancer_profiles').upsert(
+          {
+            id: user.id,
+            ...safeData,
+            updated_at: new Date().toISOString(),
+          },
+          {
+            onConflict: 'id',
+          }
+        ),
+      { timeoutMs: 10000 }
     );
 
-    setFreelancerProfile((prev) => (prev ? { ...prev, ...safeData } : (safeData as FreelancerProfile)));
+    const nextFreelancerProfile = freelancerProfile
+      ? { ...freelancerProfile, ...safeData }
+      : (safeData as FreelancerProfile);
+
+    setFreelancerProfile(nextFreelancerProfile);
+    syncWorkspaceFromProfile(profile, nextFreelancerProfile);
   };
 
   const setUserType = async (userType: UserType) => {
@@ -404,7 +442,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const {
       data: { session: liveSession },
       error: sessionError,
-    } = await supabase.auth.getSession();
+    } = await withTimeout(supabase.auth.getSession(), 5000, 'Set user type session');
 
     if (sessionError) {
       logger.error('setUserType getSession error:', sessionError);
@@ -415,15 +453,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     const nextMode: Workspace = userType === 'client' ? 'client' : 'freelancer';
 
-    await withTimeout(
-      supabaseWithRetry(() =>
+    await supabaseWithRetry(
+      () =>
         supabase.rpc('set_user_type_rpc', {
           p_user_type: userType,
           p_active_mode: nextMode,
-        })
-      ),
-      15000,
-      'setUserType rpc'
+        }),
+      { timeoutMs: 15000 }
     );
 
     useWorkspaceStore.getState().setWorkspace(nextMode);
@@ -431,11 +467,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
     await fetchProfile(user.id);
   };
 
-  const refreshProfile = async () => {
-    if (user) {
-      await fetchProfile(user.id);
+  const refreshProfile = useCallback(async () => {
+    const currentUserId = userRef.current?.id;
+    if (currentUserId) {
+      await fetchProfile(currentUserId);
     }
-  };
+  }, [fetchProfile]);
 
   const availableModes = useMemo(() => {
     return Array.from(new Set([...getWorkspaceCapabilities(profile?.user_type), activeMode])) as AccountMode[];

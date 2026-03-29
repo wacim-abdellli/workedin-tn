@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { supabaseAnon } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase';
 import { getStuckTransactions } from '@/services/payments';
 import { ADMIN_USERS_QUERY_KEY, fetchAdminUsers } from '@/pages/admin/UsersTab';
 import { ADMIN_JOBS_QUERY_KEY, fetchAdminJobs } from '@/pages/admin/JobsTab';
@@ -31,7 +31,7 @@ async function countWithRetry(queryFn: () => PromiseLike<{ count: number | null;
     const { count } = await Promise.race([
         queryFn(),
         new Promise<{ count: number | null; error: unknown }>((_, reject) =>
-            setTimeout(() => reject(new Error('Query timeout')), 8000)
+            setTimeout(() => reject(new Error('Query timeout')), 15000)
         )
     ]);
     return count ?? 0;
@@ -51,11 +51,11 @@ export function useAdminStats() {
         try {
             const today = new Date().toISOString().split('T')[0];
             const [usersCount, jobsCount, contractsCount, signupsCount, todayContractsCount] = await Promise.all([
-                countWithRetry(() => supabaseAnon.from('profiles').select('id', { count: 'exact', head: true })),
-                countWithRetry(() => supabaseAnon.from('jobs').select('id', { count: 'exact', head: true }).in('status', ['open', 'in_progress'])),
-                countWithRetry(() => supabaseAnon.from('contracts').select('id', { count: 'exact', head: true }).eq('status', 'active')),
-                countWithRetry(() => supabaseAnon.from('profiles').select('id', { count: 'exact', head: true }).gte('created_at', today)),
-                countWithRetry(() => supabaseAnon.from('contracts').select('id', { count: 'exact', head: true }).gte('created_at', today)),
+                countWithRetry(() => supabase.from('profiles').select('id', { count: 'exact', head: true })),
+                countWithRetry(() => supabase.from('jobs').select('id', { count: 'exact', head: true }).in('status', ['open', 'in_progress'])),
+                countWithRetry(() => supabase.from('contracts').select('id', { count: 'exact', head: true }).eq('status', 'active')),
+                countWithRetry(() => supabase.from('profiles').select('id', { count: 'exact', head: true }).gte('created_at', today)),
+                countWithRetry(() => supabase.from('contracts').select('id', { count: 'exact', head: true }).gte('created_at', today)),
             ]);
             setStats({
                 totalUsers: usersCount,
@@ -94,7 +94,7 @@ export function useAdminDisputes() {
     const fetchDisputes = useCallback(async () => {
         setLoading(true);
         try {
-            const { data, error } = await supabaseAnon
+            const { data, error } = await supabase
                 .from('disputes')
                 .select('id,contract_id,opened_at,reason,status,contract:contracts!disputes_contract_id_fkey(id,amount,job:jobs(title)),opener:profiles!disputes_opened_by_fkey(full_name,email)')
                 .eq('status', 'open')

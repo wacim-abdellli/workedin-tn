@@ -56,7 +56,7 @@ export default function JobProposals() {
                         .select('*')
                         .eq('id', jobId)
                         .single(),
-                    8000
+                    15000
                 );
 
                 if (error) throw error;
@@ -100,7 +100,7 @@ export default function JobProposals() {
                         `)
                         .eq('job_id', jobId)
                         .order('created_at', { ascending: false }),
-                    8000
+                    15000
                 );
 
                 if (error) throw error;
@@ -191,7 +191,7 @@ export default function JobProposals() {
                     .from('proposals')
                     .update({ status: newStatus })
                     .eq('id', proposalId),
-                8000
+                15000
             );
 
             if (error) throw error;
@@ -230,7 +230,7 @@ export default function JobProposals() {
                     .from('proposals')
                     .update({ status: 'accepted' })
                     .eq('id', proposalId),
-                8000
+                15000
             );
 
             if (proposalError) throw proposalError;
@@ -256,7 +256,7 @@ export default function JobProposals() {
                     })
                     .select()
                     .single(),
-                8000
+                15000
             );
 
             if (contractError) throw contractError;
@@ -373,7 +373,7 @@ export default function JobProposals() {
                     .from('proposals')
                     .update({ status: 'archived' })
                     .eq('id', proposalId),
-                8000
+                15000
             );
 
             if (error) throw error;

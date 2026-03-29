@@ -7,7 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from '../i18n';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../components/ui/Toast';
-import { supabase, uploadFile, withTimeout } from '../lib/supabase';
+import { getStorageConfigErrorMessage, isMissingStorageBucketError, supabase, uploadFile, withTimeout } from '../lib/supabase';
 import { supabaseWithRetry } from '../lib/supabaseWithRetry';
 import type { Skill } from '../types';
 import { skillToEntry } from '../types';
@@ -24,7 +24,7 @@ import {
 
 function FreelancerOnboarding() {
     const { t, language } = useTranslation();
-    const { user, session, profile, freelancerProfile, refreshProfile, isLoading: isAuthLoading } = useAuth();
+    const { user, profile, freelancerProfile, refreshProfile, isLoading: isAuthLoading } = useAuth();
     const { showToast } = useToast();
     const navigate = useNavigate();
 
@@ -33,14 +33,6 @@ function FreelancerOnboarding() {
     const [selectedSkills, setSelectedSkills] = useState<Skill[]>([]);
     const [avatarFile, setAvatarFile] = useState<File | null>(null);
     const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
-    
-    // Fallback timer to show page even if AuthContext is stuck reconciling
-    const [forceShow, setForceShow] = useState(false);
-
-    useEffect(() => {
-        const timer = setTimeout(() => setForceShow(true), 1500);
-        return () => clearTimeout(timer);
-    }, []);
 
     useEffect(() => {
         return () => {
@@ -129,19 +121,8 @@ function FreelancerOnboarding() {
             return;
         }
 
-        const { data: liveSessionData, error: sessionError } = await supabase.auth.getSession();
-        if (sessionError) {
-            logger.error('[Onboarding] Failed to refresh auth session before step 1:', sessionError);
-            showToast(t.onboarding.freelancer.noAuthSession || 'No auth session - please login again', 'error');
-            return;
-        }
-
-        if (!(liveSessionData.session ?? session)) {
-            showToast(t.onboarding.freelancer.noAuthSession || 'No auth session - please login again', 'error');
-            return;
-        }
-
         setIsLoading(true);
+        let shouldAdvance = false;
 
         try {
             const profileUpdate: {
@@ -171,6 +152,12 @@ function FreelancerOnboarding() {
                     logger.log('[Onboarding] Avatar uploaded:', avatarUrl);
                 } catch (avatarErr) {
                     logger.warn('[Onboarding] Avatar upload failed, continuing:', avatarErr);
+                    showToast(
+                        isMissingStorageBucketError(avatarErr)
+                            ? getStorageConfigErrorMessage('avatars')
+                            : t.common.uploadFailed || 'Avatar upload failed',
+                        'warning'
+                    );
                 }
             }
 
@@ -213,8 +200,7 @@ function FreelancerOnboarding() {
             }
             logger.log('[Onboarding] Freelancer profile saved!');
 
-            showToast(t.onboarding.freelancer.basicInfoSaved || 'Basic info saved', 'success');
-            setStep(2);
+            shouldAdvance = true;
         } catch (error) {
             logger.error('Step 1 error:', error);
             const message =
@@ -226,6 +212,11 @@ function FreelancerOnboarding() {
             showToast(message, 'error');
         } finally {
             setIsLoading(false);
+        }
+
+        if (shouldAdvance) {
+            showToast(t.onboarding.freelancer.basicInfoSaved || 'Basic info saved', 'success');
+            setStep(2);
         }
     };
 
@@ -240,19 +231,8 @@ function FreelancerOnboarding() {
             return;
         }
 
-        const { data: liveSessionData, error: sessionError } = await supabase.auth.getSession();
-        if (sessionError) {
-            logger.error('[Onboarding] Failed to refresh auth session before step 2:', sessionError);
-            showToast(t.onboarding.freelancer.noAuthSession || 'No auth session - please login again', 'error');
-            return;
-        }
-
-        if (!(liveSessionData.session ?? session)) {
-            showToast(t.onboarding.freelancer.noAuthSession || 'No auth session - please login again', 'error');
-            return;
-        }
-
         setIsLoading(true);
+        let shouldNavigate = false;
         try {
             logger.log('[Onboarding] Step 2: Saving skills and completing onboarding...');
 
@@ -301,37 +281,26 @@ function FreelancerOnboarding() {
             }
 
             logger.log('[Onboarding] Marking onboarding as complete...');
-            try {
-                await updateProfileWithTimeout(
-                    user.id,
-                    {
-                        ...(typeof profile?.freelancer_onboarding_completed === 'boolean'
-                            ? { freelancer_onboarding_completed: true }
-                            : {}),
-                        onboarding_completed: profile?.user_type === 'both'
-                            ? Boolean(profile?.client_onboarding_completed)
-                            : true,
-                        updated_at: new Date().toISOString(),
-                    },
-                    20000
-                );
-                logger.log('[Onboarding] Onboarding marked complete!');
-            } catch (completeErr) {
-                const msg = completeErr instanceof Error ? completeErr.message : String(completeErr);
-                logger.error('[Onboarding] Failed to mark complete:', completeErr);
-                if (msg === 'TIMEOUT') {
-                    throw new Error(t.onboarding.freelancer.completionFailed || 'Failed to complete onboarding. Please try again.');
+            await updateProfileWithTimeout(
+                user.id,
+                {
+                    ...(typeof profile?.freelancer_onboarding_completed === 'boolean'
+                        ? { freelancer_onboarding_completed: true }
+                        : {}),
+                    onboarding_completed: profile?.user_type === 'both'
+                        ? Boolean(profile?.client_onboarding_completed)
+                        : true,
+                    updated_at: new Date().toISOString(),
                 }
-                throw new Error(t.onboarding.freelancer.completionFailed || `Failed to complete onboarding: ${msg}`);
-            }
+            );
+            logger.log('[Onboarding] Onboarding marked complete!');
 
             void Promise.race([
                 refreshProfile(),
                 new Promise((_, reject) => setTimeout(() => reject(new Error('REFRESH_TIMEOUT')), 3000)),
             ]).catch((e) => logger.warn('Profile refresh failed:', e));
 
-            showToast(t.onboarding.freelancer.welcomeToast || 'Welcome to Khedma!', 'success');
-            navigate('/freelancer/dashboard');
+            shouldNavigate = true;
         } catch (error) {
             logger.error('Step 2 error:', error);
             const errorMessage = error instanceof Error ? error.message : t.common.error;
@@ -339,10 +308,14 @@ function FreelancerOnboarding() {
         } finally {
             setIsLoading(false);
         }
+
+        if (shouldNavigate) {
+            showToast(t.onboarding.freelancer.welcomeToast || 'Welcome to Khedma!', 'success');
+            navigate('/freelancer/dashboard');
+        }
     };
 
-    // If auth is strictly loading, show our enhanced loading state unless fallback fired
-    if (isAuthLoading && !forceShow) {
+    if (isAuthLoading) {
         return (
             <div className="min-h-screen bg-gray-50 dark:bg-dark-900 flex flex-col items-center justify-center p-4">
                 <img
