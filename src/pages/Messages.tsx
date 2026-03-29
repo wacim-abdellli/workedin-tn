@@ -217,9 +217,9 @@ export default function Messages() {
     };
 
     const ConversationList = () => (
-        <div className="h-full flex flex-col border-e border-gray-200 dark:border-dark-700">
+        <div className="h-full flex flex-col border-e border-border">
             {/* Header */}
-            <div className="p-4 border-b border-gray-200 dark:border-dark-700">
+            <div className="p-4 border-b border-border">
                 <div className="flex items-center justify-between mb-4">
                     <h2 className="text-lg font-bold text-foreground">الرسائل</h2>
                     <Button variant="primary" size="sm" disabled>
@@ -227,19 +227,19 @@ export default function Messages() {
                     </Button>
                 </div>
                 <div className="relative">
-                    <Search className="absolute end-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <Search className="absolute end-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                     <input
                         type="text"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         placeholder="بحث في المحادثات..."
-                        className="w-full pe-10 ps-4 py-2 border border-gray-200 dark:border-dark-700 rounded-xl text-sm bg-white dark:bg-dark-800 text-foreground"
+                        className="w-full pe-10 ps-4 py-2 border border-border rounded-xl text-sm bg-card text-foreground"
                     />
                 </div>
             </div>
 
             {/* Tabs */}
-            <div className="flex border-b border-gray-200 dark:border-dark-700">
+            <div className="flex border-b border-border">
                 {(['all', 'unread', 'starred'] as const).map((f) => (
                     <button
                         key={f}
@@ -284,7 +284,7 @@ export default function Messages() {
                                     handleSelectConversation(conversation);
                                 }
                             }}
-                            className={`p-4 border-b border-gray-100 dark:border-dark-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-dark-800 transition-colors ${
+                            className={`p-4 border-b border-border cursor-pointer hover:bg-secondary transition-colors ${
                                 selectedConversation?.id === conversation.id
                                     ? 'bg-primary-50 dark:bg-primary-900/20'
                                     : ''
@@ -310,7 +310,7 @@ export default function Messages() {
                                             className={`font-medium truncate ${
                                                 conversation.unread_count > 0
                                                     ? 'text-foreground font-bold'
-                                                    : 'text-gray-700 dark:text-gray-300'
+                                                    : 'text-foreground'
                                             }`}
                                         >
                                             {conversation.otherUser.full_name}
@@ -349,7 +349,7 @@ export default function Messages() {
             {selectedConversation ? (
                 <>
                     {/* Thread Header */}
-                    <div className="p-4 border-b border-gray-200 dark:border-dark-700 bg-white dark:bg-dark-900 flex items-center justify-between">
+                    <div className="p-4 border-b border-border bg-card flex items-center justify-between">
                         <div className="flex items-center gap-3">
                             <button
                                 onClick={() => setShowMobileThread(false)}
@@ -391,7 +391,7 @@ export default function Messages() {
                     </div>
 
                     {/* Messages */}
-                    <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 dark:bg-dark-950">
+                    <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-background">
                         {isLoadingMessages ? (
                             <div className="flex items-center justify-center h-full">
                                 <Loader2 className="w-8 h-8 animate-spin text-primary-600" />
@@ -414,7 +414,7 @@ export default function Messages() {
                                         className={`max-w-[70%] ${
                                             message.sender_id === user?.id
                                                 ? 'self-end rtl:self-start bg-primary-600 text-white rounded-2xl rounded-se-md'
-                                                : 'self-start rtl:self-end bg-white dark:bg-dark-800 text-foreground rounded-2xl rounded-ss-md shadow-sm'
+                                                : 'self-start rtl:self-end bg-card text-foreground rounded-2xl rounded-ss-md shadow-sm'
                                          } px-4 py-3`}
                                     >
                                         <p className="text-sm whitespace-pre-wrap break-words">{message.content}</p>
@@ -426,7 +426,7 @@ export default function Messages() {
                                                         className={`flex items-center gap-2 p-2 rounded-lg ${
                                                             message.sender_id === user?.id
                                                                 ? 'bg-primary-700'
-                                                                : 'bg-gray-100 dark:bg-dark-700'
+                                                                : 'bg-secondary'
                                                         }`}
                                                     >
                                                         <FileText className="w-4 h-4" />
@@ -459,7 +459,7 @@ export default function Messages() {
                     </div>
 
                     {/* Input */}
-                    <div className="p-4 border-t border-gray-200 dark:border-dark-700 bg-white dark:bg-dark-900">
+                    <div className="p-4 border-t border-border bg-card">
                         <div className="flex items-center gap-3">
                             <button className="p-2 hover:bg-gray-100 dark:hover:bg-dark-700 rounded-lg text-muted" disabled>
                                 <Paperclip className="w-5 h-5" />
@@ -471,7 +471,7 @@ export default function Messages() {
                                 onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
                                 placeholder="اكتب رسالتك..."
                                 disabled={isSending}
-                                className="flex-1 px-4 py-2.5 border border-gray-200 dark:border-dark-700 rounded-xl bg-white dark:bg-dark-800 text-foreground focus:ring-2 focus:ring-primary-100 focus:border-primary-500 disabled:opacity-50"
+                                className="flex-1 px-4 py-2.5 border border-border rounded-xl bg-card text-foreground focus:ring-2 focus:ring-primary-100 focus:border-primary-500 disabled:opacity-50"
                             />
                             <Button
                                 variant="primary"
@@ -486,7 +486,7 @@ export default function Messages() {
                     </div>
                 </>
             ) : (
-                <div className="h-full flex items-center justify-center bg-gray-50 dark:bg-dark-900 border-s border-gray-200 dark:border-dark-700">
+                <div className="h-full flex items-center justify-center bg-background border-s border-border">
                     <EmptyState
                         icon={Send}
                         title="اختر محادثة"
@@ -503,7 +503,7 @@ export default function Messages() {
     );
 
     const ContactDetails = () => (
-        <div className="h-full border-s border-gray-200 dark:border-dark-700 p-6 overflow-y-auto">
+        <div className="h-full border-s border-border p-6 overflow-y-auto">
             {selectedConversation ? (
                 <div className="space-y-6">
                     {/* Profile */}
@@ -542,8 +542,8 @@ export default function Messages() {
                     </div>
 
                     {/* Actions */}
-                    <div className="pt-4 border-t border-gray-200 dark:border-dark-700 space-y-2">
-                        <button className="w-full flex items-center gap-3 p-3 text-muted hover:bg-gray-50 dark:hover:bg-dark-800 rounded-xl transition-colors" disabled>
+                    <div className="pt-4 border-t border-border space-y-2">
+                        <button className="w-full flex items-center gap-3 p-3 text-muted hover:bg-secondary rounded-xl transition-colors" disabled>
                             <Archive className="w-5 h-5" />
                             <span>أرشفة المحادثة</span>
                         </button>
@@ -562,7 +562,7 @@ export default function Messages() {
     );
 
     return (
-        <div className="min-h-screen bg-white dark:bg-dark-900">
+        <div className="min-h-screen bg-card">
             <SEO {...SEO_CONFIG.messages} url="/messages" noIndex />
             <Header />
 
@@ -590,3 +590,5 @@ export default function Messages() {
         </div>
     );
 }
+
+
