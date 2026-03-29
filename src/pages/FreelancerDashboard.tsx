@@ -53,6 +53,7 @@ type DashboardStats = {
     walletBalance: number;
     pendingBalance: number;
     profileViews: number;
+    connectsBalance: number;
     freelancerTitle: string | null;
     notifications: DashboardNotification[];
     milestones: DashboardMilestone[];
@@ -152,7 +153,7 @@ function FreelancerDashboardPage() {
                     .eq('freelancer_id', userId)
                     .eq('status', 'pending'),
                 supabase.from('wallets').select('balance,pending_balance,total_earned').eq('user_id', userId).maybeSingle(),
-                supabase.from('freelancer_profiles').select('profile_views,title').eq('id', userId).maybeSingle(),
+                supabase.from('freelancer_profiles').select('profile_views,title,connects_balance').eq('id', userId).maybeSingle(),
                 supabase.from('notifications').select('id,title,content,type,created_at')
                     .eq('user_id', userId)
                     .eq('is_read', false)
@@ -178,6 +179,7 @@ function FreelancerDashboardPage() {
                 walletBalance: Number(walletRes.data?.balance ?? 0),
                 pendingBalance: Number(walletRes.data?.pending_balance ?? 0),
                 profileViews: Number(viewsRes.data?.profile_views ?? 0),
+                connectsBalance: Number(viewsRes.data?.connects_balance ?? 0),
                 freelancerTitle: viewsRes.data?.title ?? null,
                 notifications: (notificationsRes.data ?? []) as DashboardNotification[],
                 milestones: (milestonesRes.data ?? []) as DashboardMilestone[],
@@ -348,8 +350,11 @@ function FreelancerDashboardPage() {
                             </div>
 
                             <div className="flex flex-wrap gap-3">
-                                <div className="inline-flex items-center gap-2 rounded-full border border-primary-100 bg-white/80 px-4 py-2 text-sm text-[#353149] shadow-sm dark:border-white/10 dark:bg-white/5 dark:text-[#e3def7]">
-                                    <Send className="h-4 w-4 text-amber-500" />
+                                <div className="inline-flex items-center gap-2 rounded-full border border-primary-100 bg-white/80 px-4 py-2 text-sm text-[#353149] shadow-sm dark:border-white/10 dark:bg-white/5 dark:text-[#e3def7]">                                        <Activity className="h-4 w-4 text-purple-500" />
+                                        <span className="font-bold">{stats?.connectsBalance ?? 0}</span>
+                                        <span className="text-[#7a768e] dark:text-[#8b8aa0]">{tx('pages.freelancerDashboard.pipeline.connects', undefined, 'connects available')}</span>
+                                    </div>
+                                    <div className="inline-flex items-center gap-2 rounded-full border border-primary-100 bg-white/80 px-4 py-2 text-sm text-[#353149] shadow-sm dark:border-white/10 dark:bg-white/5 dark:text-[#e3def7]">                                    <Send className="h-4 w-4 text-amber-500" />
                                     <span>{stats?.pendingProposals ?? 0}</span>
                                     <span className="text-[#7a768e] dark:text-[#8b8aa0]">{tx('pages.freelancerDashboard.pipeline.pendingProposals', undefined, 'pending proposals')}</span>
                                 </div>
