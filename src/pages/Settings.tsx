@@ -47,8 +47,8 @@ function SettingsPanel({ className = '', children }: { className?: string; child
     return (
         <section className={cn(
             'rounded-lg p-6 border',
-            'bg-white dark:bg-[#1a1825]',
-            'border-gray-100 dark:border-white/6',
+            'bg-card',
+            'border-border',
             'shadow-sm dark:shadow-none',
             className
         )}>
@@ -425,7 +425,7 @@ function Settings() {
                             {tx('settings.heroDescription', undefined, 'Keep account details, security, payouts, and notification behavior in one consistent control surface. Update what matters without losing your place in the product.')}
                         </p>
                         <div className="mt-4 flex flex-wrap gap-2">
-                            <span className="inline-flex items-center gap-2 rounded-full border border-primary-100 bg-primary-50/70 px-3 py-1 text-sm text-[#353149] dark:border-white/10 dark:bg-white/[0.04] dark:text-[#e3def7]">
+                            <span className="summary-chip">
                                 {accountTypeLabel}
                             </span>
                             <span className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-sm ${identityTone}`}>
@@ -442,27 +442,29 @@ function Settings() {
 
                 <div className="grid gap-6 xl:grid-cols-[248px_minmax(0,1fr)]">
                     <aside className="xl:sticky xl:top-28 xl:self-start">
-                        <SettingsPanel className="p-3">
-                            <nav className="space-y-2">
+                        <SettingsPanel className="rounded-[1.8rem] border border-black/[0.06] bg-white/92 p-4 shadow-[0_20px_45px_-30px_rgba(26,24,37,0.18)] dark:border-white/10 dark:bg-[#1a1825]">
+                            <nav className="space-y-2.5">
                                 {tabs.map((item) => (
                                     <button
                                         key={item.id}
                                         type="button"
                                         onClick={() => setActiveTab(item.id)}
-                                        className={`flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left transition-all duration-200 ${activeTab === item.id
-                                            ? 'border border-primary-200 bg-primary-50 text-primary-700 shadow-sm dark:border-primary-500/20 dark:bg-primary-500/[0.08] dark:text-primary-200'
-                                            : 'text-[#57536a] hover:bg-primary-50 hover:text-[#171420] dark:text-[#b8b3ca] dark:hover:bg-white/5 dark:hover:text-white'}`}
+                                        className={`group flex w-full items-center gap-3 rounded-[1.35rem] px-4 py-3.5 text-left transition-all duration-200 ${activeTab === item.id
+                                            ? 'border border-[color:var(--workspace-primary)]/20 bg-[color:var(--workspace-primary)]/[0.08] text-[var(--text-primary)] shadow-[0_18px_34px_-28px_color-mix(in_srgb,var(--workspace-primary)_55%,transparent)] dark:border-[color:var(--workspace-primary)]/20 dark:bg-[color:var(--workspace-primary)]/[0.10]'
+                                            : 'border border-transparent text-[var(--text-secondary)] hover:border-black/[0.05] hover:bg-black/[0.02] hover:text-[var(--text-primary)] dark:hover:border-white/[0.06] dark:hover:bg-white/[0.04] dark:hover:text-white'}`}
                                     >
-                                        <span className={`flex h-10 w-10 items-center justify-center rounded-2xl ${activeTab === item.id ? 'bg-primary-600 text-white dark:bg-primary-500' : 'bg-primary-50 text-primary-600 dark:bg-white/8 dark:text-primary-300'}`}>
+                                        <span className={`flex h-11 w-11 items-center justify-center rounded-2xl border transition-colors ${activeTab === item.id
+                                            ? 'border-[color:var(--workspace-primary)]/20 bg-[color:var(--workspace-primary)] text-[color:var(--workspace-primary-text)]'
+                                            : 'border-black/[0.06] bg-black/[0.02] text-[color:var(--workspace-primary)] group-hover:border-[color:var(--workspace-primary)]/16 dark:border-white/[0.08] dark:bg-white/[0.04]'}`}>
                                             <item.icon className="h-4 w-4" />
                                         </span>
                                         <div className="min-w-0 flex-1">
-                                            <p className="text-sm font-semibold">{item.label}</p>
-                                            <p className={`mt-1 truncate text-xs ${activeTab === item.id ? 'text-primary-700/70 dark:text-primary-200/70' : 'text-[#8b8aa0]'}`}>
+                                            <p className="text-sm font-semibold leading-none">{item.label}</p>
+                                            <p className={`mt-1.5 truncate text-xs ${activeTab === item.id ? 'text-[var(--text-secondary)] dark:text-[var(--text-muted)]' : 'text-[var(--text-muted)]'}`}>
                                                 {item.description}
                                             </p>
                                         </div>
-                                        <ArrowIcon className={`h-4 w-4 ${activeTab === item.id ? 'text-primary-600 dark:text-primary-200' : 'text-[#8b8aa0]'}`} />
+                                        <ArrowIcon className={`h-4 w-4 transition-colors ${activeTab === item.id ? 'text-[color:var(--workspace-primary)]' : 'text-[var(--text-muted)] group-hover:text-[color:var(--workspace-primary)]'}`} />
                                     </button>
                                 ))}
                             </nav>
@@ -531,3 +533,4 @@ function Settings() {
 }
 
 export default Settings;
+
