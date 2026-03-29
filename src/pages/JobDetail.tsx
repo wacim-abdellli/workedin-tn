@@ -29,6 +29,7 @@ import { useToast } from '../components/ui/Toast';
 import SEO from '../components/common/SEO';
 import { Skeleton } from '../components/common/SkeletonCard';
 import { useTranslation } from '../i18n';
+import { cn } from '../lib/utils';
 import type { Skill } from '../types';
 
 import ProposalModal from '../components/proposals/ProposalModal';
@@ -400,73 +401,104 @@ function JobDetail() {
                     {/* Main Content */}
                     <div className="flex-1 space-y-6">
                         {/* Header Card */}
-                        <div className="card">
-                            <div className="flex items-start justify-between mb-4">
+                        <div className={cn(
+                            'rounded-lg p-6 border',
+                            'bg-white dark:bg-[#1a1825]',
+                            'border-gray-100 dark:border-white/6',
+                            'shadow-sm dark:shadow-none'
+                        )}>
+                            <div className="flex items-start justify-between mb-5">
                                 <div className="flex-1">
-                                    <h1 className="mb-2 text-2xl font-bold text-foreground break-words [overflow-wrap:anywhere]">{job.title}</h1>
-                                    <div className="flex flex-wrap items-center gap-4 text-sm text-muted">
-                                        <span className="flex items-center gap-1">
-                                            <Clock className="w-4 h-4" />
+                                    <h1 className={cn(
+                                        'mb-3 text-2xl font-bold text-gray-900 dark:text-white',
+                                        'break-words [overflow-wrap:anywhere]'
+                                    )}>{job.title}</h1>
+                                    <div className="flex flex-wrap items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
+                                        <span className="flex items-center gap-1.5">
+                                            <Clock className="w-3.5 h-3.5" />
                                             نُشرت {timeAgo(job.posted_at)}
                                         </span>
-                                        <span className="flex items-center gap-1">
-                                            <Users className="w-4 h-4" />
+                                        <span className="flex items-center gap-1.5">
+                                            <Users className="w-3.5 h-3.5" />
                                             {job.proposals_count} عرض
                                         </span>
-                                        <span className="flex items-center gap-1">
-                                            <Eye className="w-4 h-4" />
+                                        <span className="flex items-center gap-1.5">
+                                            <Eye className="w-3.5 h-3.5" />
                                             {job.views_count} مشاهدة
                                         </span>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-2 flex-shrink-0">
                                     <button
                                         onClick={toggleSave}
-                                        className={`p-2 rounded-full transition-colors ${isSaved ? 'bg-red-50 dark:bg-red-900/20 text-red-500' : 'bg-gray-100 dark:bg-dark-800 text-gray-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400'
-                                            }`}
+                                        className={cn(
+                                            'p-2.5 rounded-lg transition-all',
+                                            isSaved
+                                                ? 'bg-red-50 dark:bg-red-500/15 text-red-500'
+                                                : 'bg-gray-100 dark:bg-white/8 text-gray-500 hover:text-red-500'
+                                        )}
+                                        title={isSaved ? 'Remove from saves' : 'Save this job'}
                                     >
-                                        <Heart className={`w-5 h-5 ${isSaved ? 'fill-current' : ''}`} />
+                                        <Heart className={cn('w-5 h-5', isSaved && 'fill-current')} />
                                     </button>
                                     <button
                                         onClick={shareJob}
-                                        className="p-2 rounded-full bg-gray-100 dark:bg-dark-800 text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                                        className={cn(
+                                            'p-2.5 rounded-lg transition-colors',
+                                            'bg-gray-100 dark:bg-white/8 text-gray-500 hover:text-[color:var(--workspace-primary)]'
+                                        )}
+                                        title="Share this job"
                                     >
                                         <Share2 className="w-5 h-5" />
                                     </button>
                                 </div>
                             </div>
 
-                            {/* Badges */}
-                            <div className="flex flex-wrap gap-2 mb-6">
-                                <span className={`px-4 py-2 rounded-full text-sm font-medium ${job.job_type === 'fixed_price'
-                                    ? 'bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400'
-                                    : 'bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400'
-                                    }`}>
+                            {/* Info Chips */}
+                            <div className="flex flex-wrap gap-2 mb-6 pb-6 border-b border-gray-100 dark:border-white/6">
+                                <span className={cn(
+                                    'inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold',
+                                    job.job_type === 'fixed_price'
+                                        ? 'bg-blue-50 dark:bg-blue-500/15 text-blue-700 dark:text-blue-300'
+                                        : 'bg-green-50 dark:bg-green-500/15 text-green-700 dark:text-green-300'
+                                )}>
                                     {job.job_type === 'fixed_price' ? t.jobDetail.fixedPrice : t.jobDetail.hourly}
                                 </span>
-                                <span className="px-4 py-2 rounded-full text-sm font-medium bg-gray-100 dark:bg-dark-800 text-gray-700 dark:text-gray-300">
+                                <span className={cn(
+                                    'inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold',
+                                    'bg-gray-100 dark:bg-white/8 text-gray-700 dark:text-gray-300'
+                                )}>
                                     {t.jobDetail.experience[EXPERIENCE_LABELS[job.experience_level] as keyof typeof t.jobDetail.experience] || job.experience_level}
                                 </span>
                                 {job.duration && (
-                                    <span className="px-4 py-2 rounded-full text-sm font-medium bg-purple-100 text-purple-700">
+                                    <span className={cn(
+                                        'inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold',
+                                        'bg-purple-50 dark:bg-purple-500/15 text-purple-700 dark:text-purple-300'
+                                    )}>
                                         {job.duration}
                                     </span>
                                 )}
                             </div>
 
-                            {/* Budget */}
-                            <div className="bg-primary-50 dark:bg-primary-900/20 rounded-xl p-4 mb-6">
-                                <p className="text-sm text-primary-600 dark:text-primary-400 mb-1">{t.jobDetail.budget}</p>
-                                <p className="text-3xl font-bold text-primary-700 dark:text-primary-300">
+                            {/* Budget Highlight */}
+                            <div className={cn(
+                                'rounded-lg p-5 border-l-4',
+                                'bg-[color:var(--workspace-primary-light)]/40 dark:bg-[color:var(--workspace-primary)]/8',
+                                'border-l-[color:var(--workspace-primary)]'
+                            )}>
+                                <p className="text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-300 mb-2">
+                                    {t.jobDetail.budget}
+                                </p>
+                                <p className="text-2xl font-bold text-gray-900 dark:text-white">
                                     {job.job_type === 'fixed_price' ? (
                                         job.budget_min === job.budget_max || !job.budget_max
                                             ? `${job.budget_min} د.ت`
                                             : `${job.budget_min} - ${job.budget_max} د.ت`
                                     ) : (
                                         <>
-                                            {job.hourly_rate} د.ت<span className="text-lg font-normal">{t.jobDetail.perHour}</span>
+                                            {job.hourly_rate} د.ت<span className="text-sm font-normal">{t.jobDetail.perHour}</span>
                                             {job.estimated_hours && (
-                                                <span className="text-sm font-normal text-primary-600 block mt-1">
+                                                <span className="text-xs font-normal text-gray-600 dark:text-gray-300 block mt-1">
                                                     {t.jobDetail.approxHours.replace('{{count}}', String(job.estimated_hours))}
                                                 </span>
                                             )}
@@ -477,261 +509,333 @@ function JobDetail() {
                         </div>
 
                         {/* Description */}
-                        <div className="card">
-                            <h2 className="text-lg font-bold mb-4">{t.jobDetail.description}</h2>
-                            <div className="prose prose-sm max-w-none text-foreground whitespace-pre-wrap break-words [overflow-wrap:anywhere]">
-                                {job.description}
-                            </div>
-                        </div>
+                         <div className={cn(
+                             'rounded-lg p-6 border',
+                             'bg-white dark:bg-[#1a1825]',
+                             'border-gray-100 dark:border-white/6',
+                             'shadow-sm dark:shadow-none'
+                         )}>
+                             <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">{t.jobDetail.description}</h2>
+                             <div className="prose prose-sm max-w-none text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-words [overflow-wrap:anywhere]">
+                                 {job.description}
+                             </div>
+                         </div>
 
                         {/* Skills */}
-                        <div className="card">
-                            <h2 className="text-lg font-bold mb-4">{t.jobDetail.requiredSkills}</h2>
-                            <div className="flex flex-wrap gap-2">
-                                {job.required_skills?.map((skill, index) => {
-                                    const skillLabel = getSkillLabel(skill);
-                                    const isMatch = freelancerProfile?.skills?.some(
-                                        s => ('name_ar' in s) ? (s.name_ar === skillLabel || s.name_en === skillLabel || s.name_fr === skillLabel) : s.name === skillLabel
-                                    );
-                                    return (
-                                        <span
-                                            key={index}
-                                            className={`break-words [overflow-wrap:anywhere] px-3 py-1.5 rounded-lg text-sm ${isMatch
-                                                ? 'bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800'
-                                                : 'bg-gray-100 dark:bg-dark-800 text-gray-700 dark:text-gray-300'
-                                                }`}
-                                        >
-                                            {isMatch && <CheckCircle className="w-3 h-3 inline me-1" />}
-                                            {skillLabel}
-                                        </span>
-                                    );
-                                })}
-                            </div>
-                        </div>
+                         <div className={cn(
+                             'rounded-lg p-6 border',
+                             'bg-white dark:bg-[#1a1825]',
+                             'border-gray-100 dark:border-white/6',
+                             'shadow-sm dark:shadow-none'
+                         )}>
+                             <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">{t.jobDetail.requiredSkills}</h2>
+                             <div className="flex flex-wrap gap-2">
+                                 {job.required_skills?.map((skill, index) => {
+                                     const skillLabel = getSkillLabel(skill);
+                                     const isMatch = freelancerProfile?.skills?.some(
+                                         s => ('name_ar' in s) ? (s.name_ar === skillLabel || s.name_en === skillLabel || s.name_fr === skillLabel) : s.name === skillLabel
+                                     );
+                                     return (
+                                         <span
+                                             key={index}
+                                             className={cn(
+                                                 'break-words [overflow-wrap:anywhere] px-3 py-1.5 rounded-lg text-sm font-medium border',
+                                                 isMatch
+                                                     ? 'bg-green-50 dark:bg-green-500/10 text-green-700 dark:text-green-300 border-green-200 dark:border-green-500/30'
+                                                     : 'bg-gray-50 dark:bg-white/5 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-white/10'
+                                             )}
+                                         >
+                                             {isMatch && <CheckCircle className="w-3 h-3 inline me-1" />}
+                                             {skillLabel}
+                                         </span>
+                                     );
+                                 })}
+                             </div>
+                         </div>
 
                         {/* Attachments */}
-                        {job.attachments && job.attachments.length > 0 && (
-                            <div className="card">
-                                <h2 className="text-lg font-bold mb-4">{t.jobDetail.attachments}</h2>
-                                <div className="space-y-2">
-                                    {job.attachments.map((url, index) => {
-                                        const filename = url.split('/').pop() || t.jobDetail.file.replace('{{index}}', String(index + 1));
-                                        return (
-                                            <a
-                                                key={index}
-                                                href={url}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="flex items-center justify-between p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
-                                            >
-                                                <div className="flex items-center gap-3">
-                                                    <FileText className="w-5 h-5 text-primary-600" />
-                                                    <span className="text-sm">{filename}</span>
-                                                </div>
-                                                <Download className="w-4 h-4 text-muted" />
-                                            </a>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-                        )}
+                         {job.attachments && job.attachments.length > 0 && (
+                             <div className={cn(
+                                 'rounded-lg p-6 border',
+                                 'bg-white dark:bg-[#1a1825]',
+                                 'border-gray-100 dark:border-white/6',
+                                 'shadow-sm dark:shadow-none'
+                             )}>
+                                 <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">{t.jobDetail.attachments}</h2>
+                                 <div className="space-y-2">
+                                     {job.attachments.map((url, index) => {
+                                         const filename = url.split('/').pop() || t.jobDetail.file.replace('{{index}}', String(index + 1));
+                                         return (
+                                             <a
+                                                 key={index}
+                                                 href={url}
+                                                 target="_blank"
+                                                 rel="noopener noreferrer"
+                                                 className={cn(
+                                                     'flex items-center justify-between p-3 rounded-lg border',
+                                                     'bg-gray-50 dark:bg-white/5 border-gray-200 dark:border-white/10',
+                                                     'hover:bg-gray-100 dark:hover:bg-white/8 transition-colors'
+                                                 )}
+                                             >
+                                                 <div className="flex items-center gap-3">
+                                                     <FileText className="w-5 h-5 text-[color:var(--workspace-primary)]" />
+                                                     <span className="text-sm text-gray-700 dark:text-gray-300">{filename}</span>
+                                                 </div>
+                                                 <Download className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+                                             </a>
+                                         );
+                                     })}
+                                 </div>
+                             </div>
+                         )}
 
                         {/* Similar Jobs */}
-                        {similarJobs.length > 0 && (
-                            <div className="card">
-                                <h2 className="text-lg font-bold mb-4">وظائف مشابهة</h2>
-                                <div className="grid gap-3 md:grid-cols-2">
-                                    {similarJobs.map(j => (
-                                        <SimilarJobCard
-                                            key={j.id}
-                                            job={j}
-                                            onClick={() => navigate(`/jobs/${j.id}`)}
-                                        />
-                                    ))}
-                                </div>
-                            </div>
-                        )}
+                         {similarJobs.length > 0 && (
+                             <div className={cn(
+                                 'rounded-lg p-6 border',
+                                 'bg-white dark:bg-[#1a1825]',
+                                 'border-gray-100 dark:border-white/6',
+                                 'shadow-sm dark:shadow-none'
+                             )}>
+                                 <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">وظائف مشابهة</h2>
+                                 <div className="grid gap-3 md:grid-cols-2">
+                                     {similarJobs.map(j => (
+                                         <SimilarJobCard
+                                             key={j.id}
+                                             job={j}
+                                             onClick={() => navigate(`/jobs/${j.id}`)}
+                                         />
+                                     ))}
+                                 </div>
+                             </div>
+                         )}
                     </div>
 
                     {/* Sidebar */}
                     <div className="lg:w-80 space-y-4 lg:sticky lg:top-24 lg:self-start">
                         {/* Action Card */}
-                        <div className="card space-y-4">
-                            {myProposal ? (
-                                <div className="text-center">
-                                    <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-3">
-                                        <CheckCircle className="w-6 h-6 text-green-600" />
-                                    </div>
-                                    <h3 className="font-bold text-lg mb-1">تم تقديم عرضك</h3>
-                                    <p className="text-sm text-muted mb-4">
-                                        عرضك: {myProposal.bid_amount} د.ت
-                                    </p>
-                                    <div className="space-y-2">
-                                        <Button variant="outline" className="w-full">
-                                            عرض عرضي
-                                        </Button>
-                                        <Button
-                                            variant="ghost"
-                                            className="w-full text-red-500 hover:bg-red-50"
-                                            onClick={withdrawProposal}
-                                        >
-                                            سحب العرض
-                                        </Button>
-                                    </div>
-                                </div>
-                            ) : user?.id === job.client_id ? (
-                                <div className="text-center">
-                                    <p className="text-muted">هذه وظيفتك</p>
-                                    <Button
-                                        variant="primary"
-                                        className="w-full mt-3"
-                                        onClick={() => navigate(`/client/jobs/${job.id}`)}
-                                    >
-                                        إدارة الوظيفة
-                                    </Button>
-                                </div>
-                            ) : (
-                                <div className="space-y-4">
-                                    <Button
-                                        variant="primary"
-                                        size="lg"
-                                        className="w-full"
-                                        onClick={() => setShowProposalModal(true)}
-                                        rightIcon={<Send className="w-5 h-5" />}
-                                        disabled={!!freelancerProfile && connectsAvailable < CONNECTS_COST}
-                                    >
-                                        أرسل عرض
-                                    </Button>
+                         <div className={cn(
+                             'rounded-lg p-6 border',
+                             'bg-white dark:bg-[#1a1825]',
+                             'border-gray-100 dark:border-white/6',
+                             'shadow-sm dark:shadow-none',
+                             'space-y-4'
+                         )}>
+                             {myProposal ? (
+                                 <div className="text-center">
+                                     <div className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-500/15 flex items-center justify-center mx-auto mb-3">
+                                         <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400" />
+                                     </div>
+                                     <h3 className="font-semibold text-base text-gray-900 dark:text-white mb-1">تم تقديم عرضك</h3>
+                                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                                         عرضك: {myProposal.bid_amount} د.ت
+                                     </p>
+                                     <div className="space-y-2">
+                                         <Button variant="outline" className="w-full">
+                                             عرض عرضي
+                                         </Button>
+                                         <Button
+                                             variant="ghost"
+                                             className="w-full text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10"
+                                             onClick={withdrawProposal}
+                                         >
+                                             سحب العرض
+                                         </Button>
+                                     </div>
+                                 </div>
+                             ) : user?.id === job.client_id ? (
+                                 <div className="text-center">
+                                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">هذه وظيفتك</p>
+                                     <Button
+                                         variant="primary"
+                                         className="w-full"
+                                         onClick={() => navigate(`/client/jobs/${job.id}`)}
+                                     >
+                                         إدارة الوظيفة
+                                     </Button>
+                                 </div>
+                             ) : (
+                                 <div className="space-y-4">
+                                     <Button
+                                         variant="primary"
+                                         size="lg"
+                                         className="w-full"
+                                         onClick={() => setShowProposalModal(true)}
+                                         rightIcon={<Send className="w-5 h-5" />}
+                                         disabled={!!freelancerProfile && connectsAvailable < CONNECTS_COST}
+                                     >
+                                         أرسل عرض
+                                     </Button>
 
-                                    {freelancerProfile && (
-                                        <div className={`rounded-2xl border p-4 ${
-                                            connectsAvailable >= CONNECTS_COST
-                                                ? 'border-primary-200 bg-primary-50/70 text-primary-800 dark:border-primary-500/20 dark:bg-primary-500/10 dark:text-primary-200'
-                                                : 'border-red-200 bg-red-50/80 text-red-800 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-200'
-                                        }`}>
-                                            <div className="flex items-center justify-between gap-4">
-                                                <div>
-                                                    <p className="text-sm font-semibold">متطلبات التقديم</p>
-                                                    <p className="mt-1 text-xs opacity-80">يحتاج هذا العرض إلى كونيكتس قبل الإرسال.</p>
-                                                </div>
-                                                <span className="rounded-full px-3 py-1 text-xs font-bold bg-white/70 dark:bg-white/10">
-                                                    {connectsAvailable >= CONNECTS_COST ? 'جاهز للتقديم' : 'الرصيد غير كافٍ'}
-                                                </span>
-                                            </div>
+                                     {freelancerProfile && (
+                                         <div className={cn(
+                                             'rounded-lg border p-4',
+                                             connectsAvailable >= CONNECTS_COST
+                                                 ? 'border-blue-200 dark:border-blue-500/30 bg-blue-50 dark:bg-blue-500/10'
+                                                 : 'border-red-200 dark:border-red-500/30 bg-red-50 dark:bg-red-500/10'
+                                         )}>
+                                             <div className={cn(
+                                                 'flex items-center justify-between gap-4',
+                                                 connectsAvailable >= CONNECTS_COST
+                                                     ? 'text-blue-900 dark:text-blue-200'
+                                                     : 'text-red-900 dark:text-red-200'
+                                             )}>
+                                                 <div>
+                                                     <p className="text-sm font-semibold">متطلبات التقديم</p>
+                                                     <p className="mt-1 text-xs opacity-80">يحتاج هذا العرض إلى كونيكتس قبل الإرسال.</p>
+                                                 </div>
+                                                 <span className={cn(
+                                                     'rounded-full px-3 py-1 text-xs font-bold whitespace-nowrap',
+                                                     connectsAvailable >= CONNECTS_COST
+                                                         ? 'bg-white/70 dark:bg-white/10 text-blue-700 dark:text-blue-300'
+                                                         : 'bg-white/70 dark:bg-white/10 text-red-700 dark:text-red-300'
+                                                 )}>
+                                                     {connectsAvailable >= CONNECTS_COST ? 'جاهز للتقديم' : 'الرصيد غير كافٍ'}
+                                                 </span>
+                                             </div>
 
-                                            <div className="mt-4 grid grid-cols-3 gap-3 text-center">
-                                                <div className="rounded-xl bg-white/70 px-3 py-3 dark:bg-white/5">
-                                                    <p className="text-[11px] font-medium uppercase tracking-[0.14em] opacity-70">الرصيد</p>
-                                                    <p className="mt-2 text-lg font-bold">{connectsAvailable}</p>
-                                                </div>
-                                                <div className="rounded-xl bg-white/70 px-3 py-3 dark:bg-white/5">
-                                                    <p className="text-[11px] font-medium uppercase tracking-[0.14em] opacity-70">المطلوب</p>
-                                                    <p className="mt-2 text-lg font-bold">{CONNECTS_COST}</p>
-                                                </div>
-                                                <div className="rounded-xl bg-white/70 px-3 py-3 dark:bg-white/5">
-                                                    <p className="text-[11px] font-medium uppercase tracking-[0.14em] opacity-70">المتبقي</p>
-                                                    <p className="mt-2 text-lg font-bold">{connectsRemainingAfterSubmit}</p>
-                                                </div>
-                                            </div>
+                                             <div className="mt-4 grid grid-cols-3 gap-3 text-center">
+                                                 <div className={cn(
+                                                     'rounded-lg p-3 border',
+                                                     connectsAvailable >= CONNECTS_COST
+                                                         ? 'border-blue-200 dark:border-blue-500/30 bg-white/70 dark:bg-white/5'
+                                                         : 'border-red-200 dark:border-red-500/30 bg-white/70 dark:bg-white/5'
+                                                 )}>
+                                                     <p className="text-[11px] font-medium uppercase tracking-wider opacity-70">الرصيد</p>
+                                                     <p className="mt-2 text-lg font-bold">{connectsAvailable}</p>
+                                                 </div>
+                                                 <div className={cn(
+                                                     'rounded-lg p-3 border',
+                                                     connectsAvailable >= CONNECTS_COST
+                                                         ? 'border-blue-200 dark:border-blue-500/30 bg-white/70 dark:bg-white/5'
+                                                         : 'border-red-200 dark:border-red-500/30 bg-white/70 dark:bg-white/5'
+                                                 )}>
+                                                     <p className="text-[11px] font-medium uppercase tracking-wider opacity-70">المطلوب</p>
+                                                     <p className="mt-2 text-lg font-bold">{CONNECTS_COST}</p>
+                                                 </div>
+                                                 <div className={cn(
+                                                     'rounded-lg p-3 border',
+                                                     connectsAvailable >= CONNECTS_COST
+                                                         ? 'border-blue-200 dark:border-blue-500/30 bg-white/70 dark:bg-white/5'
+                                                         : 'border-red-200 dark:border-red-500/30 bg-white/70 dark:bg-white/5'
+                                                 )}>
+                                                     <p className="text-[11px] font-medium uppercase tracking-wider opacity-70">المتبقي</p>
+                                                     <p className="mt-2 text-lg font-bold">{connectsRemainingAfterSubmit}</p>
+                                                 </div>
+                                             </div>
 
-                                            <p className="mt-3 text-xs leading-6 opacity-80">
-                                                {connectsAvailable >= CONNECTS_COST
-                                                    ? 'سيتم خصم 2 كونيكتس مباشرة بعد إرسال العرض.'
-                                                    : `تحتاج إلى ${CONNECTS_COST - connectsAvailable} كونيكتس إضافية قبل إرسال هذا العرض.`}
-                                            </p>
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-                        </div>
+                                             <p className="mt-3 text-xs leading-6 opacity-80">
+                                                 {connectsAvailable >= CONNECTS_COST
+                                                     ? 'سيتم خصم 2 كونيكتس مباشرة بعد إرسال العرض.'
+                                                     : `تحتاج إلى ${CONNECTS_COST - connectsAvailable} كونيكتس إضافية قبل إرسال هذا العرض.`}
+                                             </p>
+                                         </div>
+                                     )}
+                                 </div>
+                             )}
+                         </div>
 
                         {/* Client Info */}
-                        <div className="card">
-                            <h3 className="font-bold mb-4">عن العميل</h3>
-                            <div className="flex items-center gap-3 mb-4">
-                                {job.client?.avatar_url ? (
-                                    <OptimizedImage
-                                        src={job.client.avatar_url}
-                                        alt={job.client.full_name}
-                                        className="w-12 h-12 rounded-full"
-                                        imgClassName="object-cover"
-                                    />
-                                ) : (
-                                    <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center">
-                                        <User className="w-6 h-6 text-gray-500" />
-                                    </div>
-                                )}
-                                <div>
-                                    <p className="font-semibold">{job.client?.full_name || t.jobDetail.defaultClient}</p>
-                                    {job.client?.location && (
-                                        <p className="text-sm text-muted flex items-center gap-1">
-                                            <MapPin className="w-3 h-3" />
-                                            {job.client.location}
-                                        </p>
-                                    )}
-                                </div>
-                            </div>
+                         <div className={cn(
+                             'rounded-lg p-6 border',
+                             'bg-white dark:bg-[#1a1825]',
+                             'border-gray-100 dark:border-white/6',
+                             'shadow-sm dark:shadow-none'
+                         )}>
+                             <h3 className="font-semibold text-base text-gray-900 dark:text-white mb-4">عن العميل</h3>
+                             <div className="flex items-center gap-3 mb-5 pb-5 border-b border-gray-100 dark:border-white/6">
+                                 {job.client?.avatar_url ? (
+                                     <OptimizedImage
+                                         src={job.client.avatar_url}
+                                         alt={job.client.full_name}
+                                         className="w-12 h-12 rounded-lg"
+                                         imgClassName="object-cover"
+                                     />
+                                 ) : (
+                                     <div className="w-12 h-12 rounded-lg bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+                                         <User className="w-6 h-6 text-gray-500 dark:text-gray-400" />
+                                     </div>
+                                 )}
+                                 <div>
+                                     <p className="font-semibold text-gray-900 dark:text-white">{job.client?.full_name || t.jobDetail.defaultClient}</p>
+                                     {job.client?.location && (
+                                         <p className="text-xs text-gray-600 dark:text-gray-400 flex items-center gap-1 mt-1">
+                                             <MapPin className="w-3 h-3" />
+                                             {job.client.location}
+                                         </p>
+                                     )}
+                                 </div>
+                             </div>
 
-                            <div className="space-y-3 text-sm">
-                                <div className="flex justify-between">
-                                    <span className="text-muted">عضو منذ</span>
-                                    <span>{job.client?.created_at ? formatDate(job.client.created_at) : '-'}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span className="text-muted">الوظائف المنشورة</span>
-                                    <span>{clientStats.totalJobs}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span className="text-muted">إجمالي الإنفاق</span>
-                                    <span>{clientStats.totalSpent.toLocaleString()} د.ت</span>
-                                </div>
-                                {clientStats.rating > 0 && (
-                                    <div className="flex justify-between items-center">
-                                        <span className="text-muted">التقييم</span>
-                                        <span className="flex items-center gap-1">
-                                            <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-                                            {clientStats.rating.toFixed(1)}
-                                        </span>
-                                    </div>
-                                )}
-                            </div>
+                             <div className="space-y-3 text-sm mb-5">
+                                 <div className="flex justify-between">
+                                     <span className="text-gray-600 dark:text-gray-400 text-xs font-medium">عضو منذ</span>
+                                     <span className="font-medium text-gray-900 dark:text-white">{job.client?.created_at ? formatDate(job.client.created_at) : '-'}</span>
+                                 </div>
+                                 <div className="flex justify-between">
+                                     <span className="text-gray-600 dark:text-gray-400 text-xs font-medium">الوظائف المنشورة</span>
+                                     <span className="font-medium text-gray-900 dark:text-white">{clientStats.totalJobs}</span>
+                                 </div>
+                                 <div className="flex justify-between">
+                                     <span className="text-gray-600 dark:text-gray-400 text-xs font-medium">إجمالي الإنفاق</span>
+                                     <span className="font-medium text-gray-900 dark:text-white">{clientStats.totalSpent.toLocaleString()} د.ت</span>
+                                 </div>
+                                 {clientStats.rating > 0 && (
+                                     <div className="flex justify-between items-center pt-2 border-t border-gray-100 dark:border-white/6">
+                                         <span className="text-gray-600 dark:text-gray-400 text-xs font-medium">التقييم</span>
+                                         <span className="flex items-center gap-1.5 font-medium">
+                                             <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
+                                             <span className="text-gray-900 dark:text-white">{clientStats.rating.toFixed(1)}</span>
+                                         </span>
+                                     </div>
+                                 )}
+                             </div>
 
-                            <Link
-                                to={`/profile/${job.client_id}`}
-                                className="block w-full text-center text-primary-600 text-sm mt-4 hover:underline"
-                            >
-                                عرض الملف الشخصي
-                            </Link>
-                        </div>
+                             <Link
+                                 to={`/profile/${job.client_id}`}
+                                 className={cn(
+                                     'block w-full text-center px-4 py-2.5 rounded-lg border transition-colors',
+                                     'text-[color:var(--workspace-primary)] border-[color:var(--workspace-primary)]/20',
+                                     'hover:bg-[color:var(--workspace-primary)]/5 text-sm font-medium'
+                                 )}
+                             >
+                                 عرض الملف الشخصي
+                             </Link>
+                         </div>
 
                         {/* Job Stats */}
-                        <div className="card">
-                            <h3 className="font-bold mb-4">إحصائيات الوظيفة</h3>
-                            <div className="space-y-3 text-sm">
-                                <div className="flex justify-between">
-                                    <span className="text-muted">العروض</span>
-                                    <span className="font-medium">{job.proposals_count}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span className="text-muted">المشاهدات</span>
-                                    <span className="font-medium">{job.views_count}</span>
-                                </div>
-                                {job.deadline && (
-                                    <div className="flex justify-between">
-                                        <span className="text-muted">الموعد النهائي</span>
-                                        <span className="font-medium">
-                                            {new Date(job.deadline).toLocaleDateString('ar-TN')}
-                                        </span>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
+                         <div className={cn(
+                             'rounded-lg p-6 border',
+                             'bg-white dark:bg-[#1a1825]',
+                             'border-gray-100 dark:border-white/6',
+                             'shadow-sm dark:shadow-none'
+                         )}>
+                             <h3 className="font-semibold text-base text-gray-900 dark:text-white mb-4">إحصائيات الوظيفة</h3>
+                             <div className="space-y-3 text-sm">
+                                 <div className="flex justify-between pb-3 border-b border-gray-100 dark:border-white/6">
+                                     <span className="text-gray-600 dark:text-gray-400 font-medium">العروض</span>
+                                     <span className="font-semibold text-gray-900 dark:text-white">{job.proposals_count}</span>
+                                 </div>
+                                 <div className="flex justify-between pb-3 border-b border-gray-100 dark:border-white/6">
+                                     <span className="text-gray-600 dark:text-gray-400 font-medium">المشاهدات</span>
+                                     <span className="font-semibold text-gray-900 dark:text-white">{job.views_count}</span>
+                                 </div>
+                                 {job.deadline && (
+                                     <div className="flex justify-between">
+                                         <span className="text-gray-600 dark:text-gray-400 font-medium">الموعد النهائي</span>
+                                         <span className="font-semibold text-gray-900 dark:text-white">
+                                             {new Date(job.deadline).toLocaleDateString('ar-TN')}
+                                         </span>
+                                     </div>
+                                 )}
+                             </div>
+                         </div>
 
                         {/* Report */}
-                        <button className="w-full text-center text-sm text-muted hover:text-red-500 flex items-center justify-center gap-1">
-                            <Flag className="w-4 h-4" />
-                            الإبلاغ عن هذه الوظيفة
-                        </button>
+                         <button className="w-full text-center text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 flex items-center justify-center gap-1.5 py-2 transition-colors">
+                             <Flag className="w-4 h-4" />
+                             الإبلاغ عن هذه الوظيفة
+                         </button>
                     </div>
                 </div>
             </div>

@@ -26,6 +26,7 @@ import { Header } from '../components/layout';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import Modal from '../components/ui/Modal';
+import { cn } from '../lib/utils';
 import { supabase } from '../lib/supabase';
 import SEO, { SEO_CONFIG } from '../components/common/SEO';
 import ProfileSettings from '../components/settings/ProfileSettings';
@@ -43,7 +44,17 @@ interface PaymentMethod {
 }
 
 function SettingsPanel({ className = '', children }: { className?: string; children: ReactNode }) {
-    return <section className={`premium-panel radius-panel p-6 ${className}`}>{children}</section>;
+    return (
+        <section className={cn(
+            'rounded-lg p-6 border',
+            'bg-white dark:bg-[#1a1825]',
+            'border-gray-100 dark:border-white/6',
+            'shadow-sm dark:shadow-none',
+            className
+        )}>
+            {children}
+        </section>
+    );
 }
 
 function Settings() {

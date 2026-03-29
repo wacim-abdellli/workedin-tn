@@ -24,6 +24,7 @@ import { Header } from '../components/layout';
 import Button from '../components/ui/Button';
 import { Skeleton } from '../components/common/SkeletonCard';
 import SEO, { SEO_CONFIG } from '../components/common/SEO';
+import { cn } from '../lib/utils';
 import { supabase } from '../lib/supabase';
 import { formatCurrency } from '../lib/currencyUtils';
 
@@ -65,7 +66,17 @@ type DashboardStats = {
 };
 
 function DashboardPanel({ className = '', children }: { className?: string; children: ReactNode }) {
-    return <section className={`premium-panel radius-panel p-6 ${className}`}>{children}</section>;
+    return (
+        <section className={cn(
+            'rounded-lg p-6 border',
+            'bg-white dark:bg-[#1a1825]',
+            'border-gray-100 dark:border-white/6',
+            'shadow-sm dark:shadow-none',
+            className
+        )}>
+            {children}
+        </section>
+    );
 }
 
 function MetricCard({
@@ -84,21 +95,26 @@ function MetricCard({
     isLoading?: boolean;
 }) {
     return (
-        <div className="premium-panel radius-panel p-5">
+        <div className={cn(
+            'rounded-lg p-5 border',
+            'bg-white dark:bg-[#1a1825]',
+            'border-gray-100 dark:border-white/6',
+            'shadow-sm dark:shadow-none'
+        )}>
             {isLoading ? (
                 <div className="space-y-4">
-                    <Skeleton className="h-11 w-11 rounded-2xl" />
+                    <Skeleton className="h-11 w-11 rounded-lg" />
                     <Skeleton className="h-8 w-28" />
                     <Skeleton className="h-4 w-24" />
                 </div>
             ) : (
                 <>
-                    <div className={`flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${tone}`}>
+                    <div className={`flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br ${tone}`}>
                         <Icon className="h-5 w-5" />
                     </div>
-                    <div className="mt-5 text-3xl font-bold tracking-tight text-[#171420] dark:text-white">{value}</div>
-                    <div className="mt-1 text-sm font-semibold text-[#4e4a63] dark:text-[#d2cee1]">{label}</div>
-                    <div className="mt-2 text-xs leading-5 text-[#7a768e] dark:text-[#8f8ca3]">{detail}</div>
+                    <div className="mt-5 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">{value}</div>
+                    <div className="mt-1 text-sm font-semibold text-gray-700 dark:text-gray-300">{label}</div>
+                    <div className="mt-2 text-xs leading-5 text-gray-600 dark:text-gray-400">{detail}</div>
                 </>
             )}
         </div>

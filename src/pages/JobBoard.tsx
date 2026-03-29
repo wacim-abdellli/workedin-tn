@@ -21,6 +21,7 @@ import SEO, { SEO_CONFIG } from '../components/common/SEO';
 import { SkeletonCard } from '../components/common';
 import EmptyState from '../components/common/EmptyState';
 import type { Skill } from '../types';
+import { cn } from '../lib/utils';
 
 // Types
 interface Job {
@@ -74,37 +75,45 @@ function SavedJobsSidebar({ savedJobs, onViewJob }: { savedJobs: Job[]; onViewJo
 
     return (
         <div className="hidden xl:block w-80 flex-shrink-0">
-            <div className="sticky top-4 rounded-2xl border border-gray-100 bg-white p-4 dark:border-white/8 dark:bg-[#1a1825]">
-                <h3 className="font-bold mb-4 flex items-center gap-2">
-                    <Heart className="w-5 h-5 text-red-500" />
+            <div className={cn(
+                'sticky top-4 rounded-lg p-5',
+                'bg-white dark:bg-[#1a1825]',
+                'border border-gray-100 dark:border-white/6',
+                'shadow-sm dark:shadow-none'
+            )}>
+                <h3 className="font-semibold mb-4 flex items-center gap-2 text-sm text-gray-900 dark:text-white">
+                    <Heart className="w-4 h-4 text-red-500 fill-current" />
                     {t.jobs.savedJobs.title}
                 </h3>
-                <div className="space-y-3">
+                <div className="space-y-2">
                     {savedJobs.slice(0, 5).map(job => (
                         <button
                             key={job.id}
                             type="button"
                             onClick={() => onViewJob(job.id)}
                             aria-label={`View saved job: ${job.title}`}
-                            className="w-full p-3 bg-gray-50 dark:bg-dark-700 rounded-xl text-left hover:bg-gray-100 dark:hover:bg-dark-600 transition-colors"
+                            className={cn(
+                                'w-full p-3 rounded-lg text-left transition-all',
+                                'bg-gray-50 dark:bg-white/5',
+                                'hover:bg-gray-100 dark:hover:bg-white/8',
+                                'border border-transparent hover:border-gray-200 dark:hover:border-white/10'
+                            )}
                         >
-                            <h4 className="font-medium text-sm line-clamp-1 text-dark-900 dark:text-white">{job.title}</h4>
-                            <p className="text-xs text-muted mt-1">
+                            <h4 className="font-medium text-xs line-clamp-1 text-gray-900 dark:text-white">{job.title}</h4>
+                            <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-1.5">
                                 {job.job_type === 'fixed_price'
-                                    ? `${job.budget_min} ${t.jobs.filters.budget.title}` // Using budget title as currency suffix? Or just TND? The title includes (DT)
-                                    // Actually budget.title is "Budget (TND)".
-                                    // Let's assume hardcoded currency TND for now or better, use currency formatter.
-                                    // But previous code was `${job.budget_min} د.ت`
-                                    // I'll stick to a simple suffix "TND" or similar, or just leave it.
-                                    // t.jobs.filters.budget.ranges values have "TND".
-                                    : `${job.hourly_rate} / ${t.jobs.filters.jobType.hourly}`
+                                    ? `${job.budget_min} - ${job.budget_max} TND`
+                                    : `${job.hourly_rate} TND/h`
                                 }
                             </p>
                         </button>
                     ))}
                 </div>
                 {savedJobs.length > 5 && (
-                    <button className="w-full text-center text-primary-600 text-sm mt-3 hover:underline">
+                    <button className={cn(
+                        'w-full text-center text-[color:var(--workspace-primary)] text-xs font-medium mt-4 p-2 rounded transition-colors',
+                        'hover:bg-[color:var(--workspace-primary)]/5 dark:hover:bg-[color:var(--workspace-primary)]/10'
+                    )}>
                         {t.jobs.savedJobs.viewAll} ({savedJobs.length})
                     </button>
                 )}
@@ -277,7 +286,7 @@ function JobBoard() {
 
             <div className="page-shell-content">
                 {/* Search Bar - Top */}
-                <div className="mb-6">
+                <div className="mb-8">
                     <div className="relative max-w-2xl mx-auto">
                         <Search className="absolute start-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                         <input
@@ -285,13 +294,20 @@ function JobBoard() {
                             value={filters.search}
                             onChange={(e) => updateFilter('search', e.target.value)}
                             placeholder={t.jobs.searchPlaceholder}
-                            className="w-full rounded-xl border border-gray-200 bg-white py-3 ps-12 pe-4 text-gray-900 transition-colors focus:border-transparent focus:ring-2 focus:ring-primary-500 dark:border-white/10 dark:bg-[#1a1825] dark:text-white"
+                            className={cn(
+                                'w-full rounded-lg border bg-white text-gray-900 py-3 ps-12 pe-4',
+                                'border-gray-200 dark:border-white/10',
+                                'dark:bg-[#1a1825] dark:text-white',
+                                'transition-all',
+                                'focus:border-transparent focus:ring-2 focus:ring-[color:var(--workspace-primary)]/20 focus:ring-offset-2',
+                                'dark:focus:ring-offset-[#0f0e17]'
+                            )}
                         />
                     </div>
                 </div>
 
                 {/* Mobile Filter/Sort Bar */}
-                <div className="lg:hidden flex items-center gap-3 mb-4">
+                <div className="lg:hidden flex items-center gap-3 mb-6">
                     <Button
                         variant="outline"
                         onClick={() => setShowMobileFilters(true)}
@@ -303,7 +319,11 @@ function JobBoard() {
                     <select
                         value={filters.sortBy}
                         onChange={(e) => updateFilter('sortBy', e.target.value)}
-                        className="flex-1 rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 dark:border-white/10 dark:bg-[#1a1825] dark:text-white"
+                        className={cn(
+                            'flex-1 rounded-lg border bg-white px-3 py-2 text-sm text-gray-900',
+                            'border-gray-200 dark:border-white/10',
+                            'dark:bg-[#1a1825] dark:text-white'
+                        )}
                     >
                         {sortOptions.map(opt => (
                             <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -325,27 +345,40 @@ function JobBoard() {
                     {/* Main Content */}
                     <div className="flex-1 min-w-0">
                         {/* Results Bar */}
-                        <div className="flex items-center justify-between mb-4">
-                            <p className="text-muted">
-                                <span className="font-bold text-foreground">{totalCount}</span> {t.jobs.stats.availableJobs}
+                        <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-100 dark:border-white/6">
+                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                                <span className="font-semibold text-gray-900 dark:text-white">{totalCount}</span> {t.jobs.stats.availableJobs}
                             </p>
                             <div className="hidden lg:flex items-center gap-3">
                                 <select
                                     value={filters.sortBy}
                                     onChange={(e) => updateFilter('sortBy', e.target.value)}
-                                    className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 dark:border-white/10 dark:bg-[#1a1825] dark:text-white"
+                                    className={cn(
+                                        'rounded-lg border bg-white px-3 py-2 text-sm text-gray-900',
+                                        'border-gray-200 dark:border-white/10',
+                                        'dark:bg-[#1a1825] dark:text-white'
+                                    )}
                                 >
                                     {sortOptions.map(opt => (
                                         <option key={opt.value} value={opt.value}>{opt.label}</option>
                                     ))}
                                 </select>
-                                <div className="flex overflow-hidden rounded-lg border border-gray-200 dark:border-white/10">
+                                <div className={cn(
+                                    'flex overflow-hidden rounded-lg border',
+                                    'border-gray-200 dark:border-white/10',
+                                    'bg-gray-50 dark:bg-white/5'
+                                )}>
                                     <button
                                         type="button"
                                         onClick={() => setViewMode('list')}
                                         aria-label="عرض قائمة"
                                         aria-pressed={viewMode === 'list'}
-                                        className={`p-2 ${viewMode === 'list' ? 'bg-primary-50 text-primary-600' : 'text-gray-400'} `}
+                                        className={cn(
+                                            'p-2 transition-colors',
+                                            viewMode === 'list'
+                                                ? 'bg-[color:var(--workspace-primary)]/10 text-[color:var(--workspace-primary)]'
+                                                : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
+                                        )}
                                     >
                                         <List className="w-5 h-5" />
                                     </button>
@@ -354,7 +387,12 @@ function JobBoard() {
                                         onClick={() => setViewMode('grid')}
                                         aria-label="عرض شبكي"
                                         aria-pressed={viewMode === 'grid'}
-                                        className={`p-2 ${viewMode === 'grid' ? 'bg-primary-50 text-primary-600' : 'text-gray-400'} `}
+                                        className={cn(
+                                            'p-2 transition-colors',
+                                            viewMode === 'grid'
+                                                ? 'bg-[color:var(--workspace-primary)]/10 text-[color:var(--workspace-primary)]'
+                                                : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
+                                        )}
                                     >
                                         <Grid3X3 className="w-5 h-5" />
                                     </button>

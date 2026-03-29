@@ -99,21 +99,21 @@ export default function FilterSidebar({
         section: string;
         children: React.ReactNode
     }) => (
-        <div className="border-b border-gray-100 dark:border-dark-700 py-4 last:border-0">
+        <div className="border-b border-gray-100 dark:border-white/6 py-4 last:border-0">
             <button
                 onClick={() => toggleSection(section)}
-                className="flex items-center justify-between w-full text-start mb-2 group"
+                className="flex items-center justify-between w-full text-start group"
             >
-                <h3 className="font-semibold text-dark-900 dark:text-white group-hover:text-primary-600 transition-colors">
+                <h3 className="text-xs font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300 group-hover:text-[color:var(--workspace-primary)] transition-colors">
                     {title}
                 </h3>
                 {expandedSections[section] ? (
-                    <ChevronUp className="w-4 h-4 text-gray-400 group-hover:text-primary-500" />
+                    <ChevronUp className="w-4 h-4 text-gray-400 group-hover:text-[color:var(--workspace-primary)]" />
                 ) : (
-                    <ChevronDown className="w-4 h-4 text-gray-400 group-hover:text-primary-500" />
+                    <ChevronDown className="w-4 h-4 text-gray-400 group-hover:text-[color:var(--workspace-primary)]" />
                 )}
             </button>
-            <div className={`space-y-2 overflow-hidden transition-all duration-300 ${expandedSections[section] ? 'max-h-[1000px] opacity-100 mt-2' : 'max-h-0 opacity-0'
+            <div className={`space-y-2 overflow-hidden transition-all duration-300 ${expandedSections[section] ? 'max-h-[1000px] opacity-100 mt-3' : 'max-h-0 opacity-0'
                 }`}>
                 {children}
             </div>
@@ -154,12 +154,20 @@ export default function FilterSidebar({
                     </button>
                 </div>
 
-                <div className="bg-white dark:bg-dark-800 rounded-2xl border border-gray-100 dark:border-dark-700 p-5 shadow-sm sticky top-0">
-                    <div className="flex items-center justify-between mb-4">
-                        <h2 className="font-bold text-lg">{t.jobs.filters.title}</h2>
+                <div className={`
+                    bg-white dark:bg-[#1a1825] 
+                    rounded-lg border border-gray-100 dark:border-white/6
+                    p-5 shadow-sm dark:shadow-none
+                    sticky top-0
+                `}>
+                    <div className="flex items-center justify-between mb-5 pb-4 border-b border-gray-100 dark:border-white/6">
+                        <h2 className="font-semibold text-sm text-gray-900 dark:text-white flex items-center gap-2">
+                            <Filter className="w-4 h-4 text-[color:var(--workspace-primary)]" />
+                            {t.jobs.filters.title}
+                        </h2>
                         <button
                             onClick={onClearAll}
-                            className="text-sm text-primary-600 dark:text-primary-400 hover:underline"
+                            className="text-xs font-medium text-[color:var(--workspace-primary)] hover:opacity-75 transition-opacity"
                         >
                             {t.jobs.filters.clearAll}
                         </button>
