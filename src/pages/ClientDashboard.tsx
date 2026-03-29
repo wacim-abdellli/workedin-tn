@@ -591,8 +591,8 @@ function ClientDashboardPage() {
 
                             <div className="mt-5 space-y-3">
                                 <button type="button" onClick={() => navigate('/jobs/new')} className="w-full rounded-[1.4rem] border border-primary-100/70 bg-white/75 p-4 text-left transition-colors hover:border-primary-200 hover:bg-primary-50/60 dark:border-white/10 dark:bg-white/[0.04] dark:hover:bg-white/[0.06]">
-                                    <p className="text-sm font-semibold text-[#171420] dark:text-white">{t.dashboard.postNewJob}</p>
-                                    <p className="mt-2 text-sm leading-6 text-[#6b6880] dark:text-[#8b8aa0]">{t.dashboard.postNewJobDesc}</p>
+                                    <p className="text-sm font-semibold text-[#171420] dark:text-white">{tx('dashboard.postNewJob', undefined, t.dashboard.postNewJob)}</p>
+                                    <p className="mt-2 text-sm leading-6 text-[#6b6880] dark:text-[#8b8aa0]">{tx('dashboard.postNewJobDesc', undefined, t.dashboard.postNewJobDesc)}</p>
                                 </button>
                                 <button type="button" onClick={() => navigate('/client/jobs')} className="w-full rounded-[1.4rem] border border-primary-100/70 bg-white/75 p-4 text-left transition-colors hover:border-primary-200 hover:bg-primary-50/60 dark:border-white/10 dark:bg-white/[0.04] dark:hover:bg-white/[0.06]">
                                     <p className="text-sm font-semibold text-[#171420] dark:text-white">{tx('dashboard.client.reviewPipeline', undefined, 'Review project pipeline')}</p>

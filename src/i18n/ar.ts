@@ -604,11 +604,51 @@ export const ar = {
         client: {
             defaultName: 'عميل',
             activeJobs: 'مهام نشطة',
+            activeJobsDetail: 'المشاريع المفتوحة أو قيد التنفيذ والتي تتطلب حالياً اتخاذ قرارات أو تقييم عروض أو متابعة التسليم.',
             totalSpent: 'إجمالي الإنفاق',
+            totalSpentDetail: 'المدفوعات المكتملة التي تم تحويلها عبر محفظتك كعميل وحسابات الضمان.',
             completedContracts: 'عقود مكتملة',
+            completedContractsDetail: 'المشاريع التي أشرفت عليها حتى مرحلة التسليم وتم إغلاقها بنجاح.',
+            proposalsWaiting: 'مشاريع في انتظار المراجعة',
+            proposalsWaitingDetail: 'المشاريع المفتوحة التي تلقت عروضاً بالفعل ويجب مراجعتها قبل أن تفقد أهميتها.',
+            commandCenter: 'مركز قيادة العميل',
+            welcomeBack: 'مرحباً بعودتك',
+            heroGreeting: 'مرحباً، {{name}}',
+            heroDescription: 'حافظ على سير عمل التوظيف لديك: انشر تفاصيل مهام أوضح، راجع العروض بشكل أسرع، وانقل المشاريع النشطة نحو التسليم بسهولة.',
+            focusLabel: 'تركيز اليوم',
+            focusFirstJobTitle: 'انشر أول تفاصيل لمشروعك',
+            focusFirstJobDescription: 'توضيح تفاصيل المهمة يفتح لك باب العروض والمقاولات. ابدأ من هنا قبل أي شيء آخر.',
+            focusReviewTitle: 'مراجعة العروض المستلمة',
+            focusReviewDescription: 'مهمتك "{{title}}" تحتوي بالفعل على عروض في انتظار مراجعتك.',
+            reviewProposals: 'مراجعة العروض',
+            focusDeliveryTitle: 'ابق قريباً من التسليمات النشطة',
+            focusDeliveryDescription: 'تتبع المراحل والرسائل والموافقات لتستمر المشاريع النشطة دون أي عوائق.',
+            openProjects: 'المشاريع المفتوحة',
+            focusScaleTitle: 'افتح مشروعاً جديداً بقوة',
+            focusScaleDescription: 'لوحة التحكم لديك هادئة في الوقت الحالي. حدد تفاصيل مشروعك القادم بشكل أفضل.',
+            pipeline: {
+                totalProposals: 'إجمالي العروض',
+                openJobs: 'مهام مفتوحة',
+                unreadUpdates: 'تحديثات غير مقروءة'
+            },
+            manageWorkspace: 'إدارة مساحة العمل',
+            projectsBadge: 'مسار التوظيف',
+            projectsDescription: 'أحدث تفاصيل المشاريع وتنبيهات العروض وحالات التسليم النشطة في مكان واحد.',
             noJobsYet: 'لم تنشر أي مهام بعد',
             proposalsSubmitted: '{{count}} عرض مقدم',
             freelancerFallback: 'مستقل',
+            updatesBadge: 'نبض البريد الوارد',
+            allCaughtUp: 'أنت على اطلاع بكل شيء',
+            allCaughtUpDescription: 'عندما تصل تحديثات العروض أو تغييرات العقود أو التذكيرات، ستظهر هنا بتسلسل واضح.',
+            defaultNotificationTitle: 'تحديث المشروع',
+            defaultNotificationBody: 'حدث في المشروع يحتاج لاهتمامك.',
+            openNotifications: 'افتح الإشعارات',
+            playbookBadge: 'دليل العميل',
+            nextMoves: 'أفضل الخطوات التالية',
+            reviewPipeline: 'مراجعة مسار المشروع',
+            reviewPipelineDescription: 'قارن الملخصات المفتوحة ونشاط العروض والتسليم النشط في مكان واحد.',
+            refineProfile: 'تحسين ملف العميل',
+            refineProfileDescription: 'ملف الشركة الواضح يساعد المستقلين على الثقة بالملخص والرد بشكل أسرع.',
             status: {
                 cancelled: 'ملغي',
             },
@@ -941,6 +981,12 @@ export const ar = {
         reportError: 'فشل في إرسال البلاغ',
         reportTitle: 'الإبلاغ عن هذا المحتوى',
         reportContent: 'محتوى البلاغ',
+        reportDescribePlaceholder: 'يرجى وصف المشكلة...',
+        reportSubmitButton: 'إرسال البلاغ',
+        reload: 'إعادة تحميل',
+        errors: {
+            unexpected: 'حدث خطأ غير متوقع',
+        },
         navigate: 'تنقل',
         select: 'اختيار',
         dinar: 'دينار',
@@ -1249,11 +1295,13 @@ export const ar = {
     },
 
     onboarding: {
+        currentStep: 'الخطوة الحالية',
         client: {
             welcome: 'أهلاً بك',
             welcomeDesc: 'أكمل ملفك كعميل وابدأ نشر مشاريعك بثقة.',
             profileTitle: 'ملف العميل',
             profileDesc: 'البيانات الأساسية التي يراها المستقلون أولاً.',
+            timeoutError: 'استغرق الطلب وقتاً طويلاً جداً. يرجى المحاولة مرة أخرى.',
         },
         freelancer: {
             welcome: 'أهلاً بك',
@@ -1294,6 +1342,7 @@ export const ar = {
         tipLabel: 'نصيحة:',
         backToSettings: 'العودة إلى الإعدادات',
         goToDashboard: 'الذهاب إلى لوحة التحكم',
+        loginAgainError: 'يرجى تسجيل الدخول مرة أخرى',
         seo: {
             title: 'التحقق من الهوية',
             description: 'قم بتوثيق هويتك لزيادة ثقة العملاء وفتح جميع ميزات المنصة',
@@ -1741,6 +1790,10 @@ export const ar = {
             title: 'أنشئ حسابك على خدمة',
             description: 'انضم إلى أكثر من 2500 محترف يبنون مسيرتهم ويُديرون مشاريعهم على خدمة.',
         },
+        notifications: {
+            title: 'الإخطارات | خدمة',
+            description: 'إخطاراتك',
+        },
     },
 
     portfolio: {
@@ -1843,6 +1896,22 @@ export const ar = {
         client: 'عميل',
         freelancer: 'موظف حر',
         jobLabel: 'المهمة',
+    },
+
+    admin: {
+        debug: {
+            restApiTest: 'اختبار REST API المباشر',
+            bypassingClient: 'التجاوز عن عميل Supabase JS تماماً - استخدام الجلب الخام',
+            successMsg: 'يعمل REST API بشكل مباشر. المشكلة في عميل Supabase JS.',
+            clientProblem: 'هذا يعني أن سياسات RLS بخير، لكن عميل JS به مشكلة.',
+            rlsBlocking: 'RLS يحجب الاستعلام. حسابك غير معترف به كمسؤول.',
+            requestTimedOut: 'استغرق الطلب أكثر من 5 ثوان. مشكلة في الشبكة أو قاعدة البيانات.',
+            accessTest: 'اختبار وصول المسؤول',
+            directQueries: 'استعلامات Supabase المباشرة (بدون React Query)',
+            executionLog: 'سجل التنفيذ:',
+            queryWorks: 'استعلام قاعدة البيانات يعمل. المشكلة في React Query أو دورة حياة المكون.',
+            queryHanging: 'الاستعلام معلق. قد يشير إلى مشكلة سياسة RLS تسبب حلقات لا نهائية أو مشكلة شبكة.',
+        },
     },
 };
 
