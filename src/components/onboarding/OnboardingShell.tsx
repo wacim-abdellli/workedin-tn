@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { Sparkles } from 'lucide-react';
+import { useTranslation } from '@/i18n';
 
 interface OnboardingStepItem {
     id: number;
@@ -28,6 +29,7 @@ export default function OnboardingShell({
     main,
     aside,
 }: OnboardingShellProps) {
+    const { tx } = useTranslation();
     const completion = Math.round((currentStep / totalSteps) * 100);
 
     return (
@@ -52,7 +54,7 @@ export default function OnboardingShell({
 
                         <div className="rounded-[1.75rem] border border-primary-100/70 bg-white/72 p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
                             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary-600 dark:text-primary-300">
-                                Current step
+                                {tx('onboarding.currentStep', undefined, 'Current step')}
                             </p>
                             <h2 className="mt-3 text-xl font-semibold text-[#171420] dark:text-white">
                                 {steps[currentStep - 1]?.title}

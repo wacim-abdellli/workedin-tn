@@ -253,36 +253,37 @@ export default function Header() {
               ))}
             </nav>
 
-            <div className="flex min-w-0 items-center justify-end gap-1.5">
+            <div className="flex min-w-0 items-center justify-end gap-3">
               {canQuickSwitch ? (
                 <button
                   onClick={handleQuickWorkspaceSwitch}
                   disabled={isSwitching}
-                  className={`flex h-9 items-center gap-2 rounded-xl border px-3 text-xs font-medium transition-colors ${isSwitching ? 'cursor-not-allowed opacity-70' : ''}`}
+                  className={`quick-switch-btn flex h-10 items-center gap-2.5 rounded-lg border-2 px-3.5 text-sm font-semibold transition-all duration-200 hover:shadow-md active:scale-95 ${isSwitching ? 'cursor-not-allowed opacity-60' : 'hover:-translate-y-0.5'}`}
                   style={{
-                    borderColor: 'var(--workspace-primary-mid)',
-                    background: 'var(--workspace-primary-light)',
-                    color: 'var(--workspace-primary)',
+                    borderColor: 'var(--workspace-primary)',
+                    background: `linear-gradient(135deg, var(--workspace-primary), var(--workspace-primary-hover))`,
+                    color: 'white',
+                    boxShadow: isSwitching ? 'none' : '0 4px 16px rgba(0, 0, 0, 0.12)',
                   }}
                   aria-label={switchButtonLabel}
                   title={switchButtonLabel}
                 >
-                  <Repeat2 className={`h-3.5 w-3.5 ${isSwitching ? 'animate-spin' : ''}`} />
-                  <span className="hidden lg:inline">{switchButtonLabel}</span>
-                  <span className="lg:hidden">{switchTargetLabel}</span>
+                  <Repeat2 className={`h-4 w-4 flex-shrink-0 ${isSwitching ? 'animate-spin' : 'transition-transform'}`} />
+                  <span className="hidden sm:inline">{switchButtonLabel}</span>
+                  <span className="sm:hidden">{switchTargetLabel}</span>
                 </button>
               ) : null}
 
-                <button
-                  onClick={() => setSearchOpen(true)}
-                  className="flex h-9 min-w-0 w-[128px] items-center gap-2 rounded-xl border border-gray-200 bg-gray-100 px-3 text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-600 dark:border-white/8 dark:bg-white/5 dark:hover:bg-white/10 dark:hover:text-gray-300 lg:w-[148px] xl:w-[164px]"
-                >
-                  <Search className="h-4 w-4 flex-shrink-0" />
-                  <span className="flex-1 truncate text-start text-xs">{t.common.search}</span>
-                  <kbd className="header-kbd hidden xl:inline-flex">
-                    Ctrl+K
-                  </kbd>
-                </button>
+              <button
+                onClick={() => setSearchOpen(true)}
+                className="flex h-10 min-w-0 w-[120px] items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 text-gray-400 transition-colors hover:bg-gray-50 hover:text-gray-600 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10 dark:hover:text-gray-300 lg:w-[140px] xl:w-[160px]"
+              >
+                <Search className="h-4 w-4 flex-shrink-0" />
+                <span className="flex-1 truncate text-start text-xs">{t.common.search}</span>
+                <kbd className="header-kbd hidden xl:inline-flex">
+                  Ctrl+K
+                </kbd>
+              </button>
 
               <div className="relative" ref={langRef}>
                 <button

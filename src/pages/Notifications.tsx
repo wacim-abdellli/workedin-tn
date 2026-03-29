@@ -27,7 +27,7 @@ const TYPE_COLOR: Record<AppNotification['type'], string> = {
 };
 
 export default function Notifications() {
-    const { t } = useTranslation();
+    const { t, tx } = useTranslation();
     const navigate = useNavigate();
     const { notifications, unreadCount, isLoading, markAsRead, markAllRead } = useNotifications();
 
@@ -51,7 +51,7 @@ export default function Notifications() {
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-[#0f0e17]">
-            <SEO title="Notifications | Khedma TN" description="Your notifications" noIndex />
+            <SEO title={tx('seo.notifications.title', undefined, 'Notifications | Khedma TN')} description={tx('seo.notifications.description', undefined, 'Your notifications')} noIndex />
             <Header />
 
             <div className="container-custom py-8 max-w-2xl">

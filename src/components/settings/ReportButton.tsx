@@ -28,14 +28,14 @@ interface ReportButtonProps {
 export default function ReportButton({ reportedType, reportedId, className }: ReportButtonProps) {
     const { user } = useAuth();
     const { showToast } = useToast();
-    const { t } = useTranslation();
+    const { t, tx } = useTranslation();
     const [isOpen, setIsOpen] = useState(false);
     const [reason, setReason] = useState('');
     const [customReason, setCustomReason] = useState('');
     const [touched, setTouched] = useState(false);
 
     const customReasonError = touched && reason === 'other' && !customReason.trim()
-        ? 'Please describe the issue'
+        ? tx('common.reportDescribePlaceholder', undefined, 'Please describe the issue')
         : null;
 
     const sessionKey = useMemo(() => {
@@ -133,7 +133,7 @@ export default function ReportButton({ reportedType, reportedId, className }: Re
                             <textarea
                                 value={customReason}
                                 onChange={e => setCustomReason(e.target.value)}
-                                placeholder="Please describe the issue..."
+                                placeholder={tx('common.reportDescribePlaceholder', undefined, 'Please describe the issue...')}
                                 rows={3}
                                 className={`input-base w-full resize-none text-sm ${customReasonError ? 'border-red-400 dark:border-red-500' : ''}`}
                             />
@@ -153,7 +153,7 @@ export default function ReportButton({ reportedType, reportedId, className }: Re
                             isLoading={mutation.isPending}
                             disabled={!reason || (reason === 'other' && !customReason.trim())}
                         >
-                            Submit report
+                            {tx('common.reportSubmitButton', undefined, 'Submit report')}
                         </Button>
                     </div>
                 </div>

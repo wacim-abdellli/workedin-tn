@@ -384,7 +384,6 @@ export default function UsersTab() {
                                 </table>
                             </div>
                         </div>
-
                         <div className="md:hidden space-y-4">
                             {filteredUsers.map((user) => (
                                 <div key={user.id} className={`${panelClass} p-4`}>
@@ -405,7 +404,6 @@ export default function UsersTab() {
                                             {user.cin_verified ? tr('موثق', 'Verified', 'Verifie') : tr('غير موثق', 'Unverified', 'Non verifie')}
                                         </span>
                                     </div>
-
                                     <div className="flex items-center justify-between py-2 border-b border-gray-50">
                                         <span className="text-sm text-muted">{tr('النوع', 'Type', 'Type')}</span>
                                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${user.type === 'freelancer'

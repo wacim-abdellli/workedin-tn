@@ -16,7 +16,7 @@ function iconForType(type: AppNotification['type']) {
 }
 
 export function NotificationBell({ className = '' }: { className?: string }) {
-    const { t, language } = useTranslation();
+    const { t, tx, language } = useTranslation();
     const navigate = useNavigate();
     const { notifications, unreadCount, isLoading, markAsRead, markAllRead } = useNotifications();
     const [isOpen, setIsOpen] = useState(false);
@@ -114,7 +114,7 @@ export function NotificationBell({ className = '' }: { className?: string }) {
                                 onClick={() => { navigate('/notifications'); setIsOpen(false); }}
                                 className="w-full text-center text-xs font-medium text-primary-600 hover:text-primary-700 dark:text-primary-300"
                             >
-                                View all notifications
+                                {t.notifications?.viewAll || tx('notifications.viewAll', undefined, 'View all notifications')}
                             </button>
                         </div>
                     )}

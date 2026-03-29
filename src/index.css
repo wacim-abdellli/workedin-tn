@@ -688,6 +688,46 @@ h6 {
     @apply dark:text-gray-300 dark:hover:bg-white/5;
   }
 
+  /* Quick Switch Button - Professional SaaS Pattern */
+  .quick-switch-btn {
+    @apply relative overflow-hidden;
+    transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12) !important;
+  }
+
+  .quick-switch-btn:not(:disabled):hover {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16) !important;
+  }
+
+  .quick-switch-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
+    transition: left 0.5s cubic-bezier(0.2, 0, 0, 1);
+    pointer-events: none;
+  }
+
+  .quick-switch-btn:not(:disabled):hover::before {
+    left: 100%;
+  }
+
+  .dark .quick-switch-btn {
+    box-shadow: 0 4px 16px rgba(139, 92, 246, 0.35) !important;
+  }
+
+  .dark .quick-switch-btn:not(:disabled):hover {
+    box-shadow: 0 8px 28px rgba(139, 92, 246, 0.5) !important;
+  }
+
+  /* Smooth transition for disabled state */
+  .quick-switch-btn:disabled {
+    transform: none;
+  }
+
   .label {
     @apply block text-sm font-semibold mb-2;
     color: var(--color-fg);

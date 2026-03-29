@@ -168,7 +168,7 @@ export default function VerifyIdentity() {
 
             const { data: { session: liveSessionDataSession } } = await supabase.auth.getSession();
             if (!liveSessionDataSession && !user) {
-                showToast('Please log in again', 'error');
+                showToast(tx('verifyIdentity.loginAgainError', undefined, 'Please log in again'), 'error');
                 navigate('/login');
                 return;
             }

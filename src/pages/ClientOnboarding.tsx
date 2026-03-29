@@ -138,7 +138,7 @@ function ClientOnboarding() {
             logger.error('Client onboarding error:', error);
 
             if (msg.includes('timed out after')) {
-                showToast('The request took too long. Please try again.', 'error');
+                showToast(tx('onboarding.client.timeoutError', undefined, 'The request took too long. Please try again.'), 'error');
             } else {
                 showToast(msg || t.common.error, 'error');
             }
