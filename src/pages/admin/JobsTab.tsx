@@ -95,12 +95,12 @@ export default function JobsTab() {
         onConfirm: () => {},
     });
 
-    const panelClass = 'card border-white/45 dark:border-white/10 bg-white/80 dark:bg-slate-950/55 backdrop-blur-xl shadow-[0_16px_45px_-24px_rgba(21,84,247,0.38)]';
-    const tableShellClass = 'hidden md:block card p-0 overflow-hidden border-white/40 dark:border-white/10 bg-white/75 dark:bg-slate-950/45';
-    const tableHeadClass = 'bg-white/90 dark:bg-slate-900/88 border-b border-gray-200 dark:border-white/10 sticky top-0 z-10 backdrop-blur';
-    const tableRowClass = 'group hover:bg-primary-50/60 dark:hover:bg-primary-500/10 transition-colors';
-    const inputClass = 'w-full h-12 pe-11 ps-4 border rounded-xl bg-white/92 dark:bg-slate-900/70 border-gray-200 dark:border-white/12 text-foreground placeholder:text-muted shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500/35 focus:border-primary-400/40';
-    const selectClass = 'h-12 px-4 border rounded-xl bg-white/92 dark:bg-slate-900/70 border-gray-200 dark:border-white/12 text-foreground shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500/35 focus:border-primary-400/40';
+    const panelClass = 'card border border-border bg-card shadow-sm';
+    const tableShellClass = 'hidden md:block card p-0 overflow-hidden border-border bg-card';
+    const tableHeadClass = 'bg-surface border-b border-border sticky top-0 z-10 backdrop-blur';
+    const tableRowClass = 'group hover:bg-surface transition-colors border-b border-border/50 last:border-0';
+    const inputClass = 'w-full h-12 pe-11 ps-4 border rounded-xl bg-input border-input focus:border-input-focus text-foreground placeholder:text-muted shadow-sm focus:outline-none focus:ring-2 focus:ring-brand/30';
+    const selectClass = 'h-12 px-4 border rounded-xl bg-input border-input focus:border-input-focus text-foreground shadow-sm focus:outline-none focus:ring-2 focus:ring-brand/30';
 
     const closeConfirm = () => setConfirmAction((prev) => ({ ...prev, isOpen: false }));
 
@@ -182,7 +182,7 @@ export default function JobsTab() {
                 <div className={panelClass}>
                     <div className="flex flex-wrap items-center gap-4">
                         <div className="flex-1 relative">
-                            <Search className="absolute end-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                            <Search className="absolute end-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted" />
                             <input
                                 type="text"
                                 value={jobSearch}
@@ -241,7 +241,7 @@ export default function JobsTab() {
                                             <th className="px-6 py-4 text-center text-sm font-medium text-muted whitespace-nowrap">{tr('إجراءات', 'Actions', 'Actions')}</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-gray-100 dark:divide-white/5">
+                                    <tbody className="divide-y divide-border/50">
                                         {filteredJobs.map((job) => (
                                             <tr key={job.id} className={tableRowClass}>
                                                 <td className="px-6 py-4">
@@ -307,7 +307,7 @@ export default function JobsTab() {
                                         </span>
                                     </div>
                                     
-                                    <div className="space-y-2 mb-4 pb-4 border-b border-gray-100 dark:border-white/10">
+                                    <div className="space-y-2 mb-4 pb-4 border-b border-border">
                                         <div className="flex justify-between text-sm">
                                             <span className="text-muted">{tr('العميل', 'Client', 'Client')}</span>
                                             <span className="font-medium text-foreground">{job.client?.full_name}</span>
@@ -338,8 +338,8 @@ export default function JobsTab() {
             <Modal isOpen={confirmAction.isOpen} onClose={closeConfirm} title={confirmAction.title} size="md">
                 <div className="space-y-6 pt-2">
                     <p className="text-muted leading-relaxed font-medium">{confirmAction.message}</p>
-                    <div className="flex justify-end gap-3 pt-6 border-t border-gray-100 dark:border-white/10 mt-6">
-                        <Button variant="ghost" className="text-muted hover:bg-gray-100 dark:hover:bg-white/5" onClick={closeConfirm}>
+                    <div className="flex justify-end gap-3 pt-6 border-t border-border mt-6">
+                        <Button variant="ghost" className="text-muted hover:bg-surface" onClick={closeConfirm}>
                             {tr('إلغاء', 'Cancel', 'Annuler')}
                         </Button>
                         <Button

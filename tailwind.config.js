@@ -8,15 +8,47 @@ export default {
     theme: {
         extend: {
             colors: {
+                // --- CSS VARIABLES DESIGN SYSTEM TOKENS ---
+                // These point to the tokens mapped in src/index.css
+                // Enabling semantic dark mode without manual `dark:bg-[#xxx]`
+                background: 'var(--page-bg)',
+                surface: 'var(--surface-bg)',
+                card: 'var(--card-bg)',
+                sidebar: 'var(--sidebar-bg)',
+                foreground: 'var(--text-primary)',
+                muted: {
+                    DEFAULT: 'var(--text-muted)',
+                    foreground: 'var(--text-secondary)'
+                },
+                border: {
+                    DEFAULT: 'var(--border)',
+                    strong: 'var(--border-strong)'
+                },
+                input: {
+                    bg: 'var(--input-bg)',
+                    border: 'var(--input-border)',
+                    focus: 'var(--input-border-focus)'
+                },
+                brand: {
+                    DEFAULT: 'var(--workspace-primary)',
+                    hover: 'var(--workspace-primary-hover)',
+                    light: 'var(--workspace-primary-light)',
+                    mid: 'var(--workspace-primary-mid)',
+                    text: 'var(--workspace-primary-text)',
+                    accent: 'var(--brand-accent)',
+                    'accent-hover': 'var(--brand-accent-hover)',
+                },
+                // --- END CSS VARIABLES ---
+
                 // Brand Primary - Vivid Purple (from Logo)
                 primary: {
-                    50: '#f5f3ff',
-                    100: '#ede9fe',
-                    200: '#ddd6fe',
+                    50: '#f8f4ff',
+                    100: '#f1eaff',
+                    200: '#e5d7ff',
                     300: '#c4b5fd',
                     400: '#a78bfa',
                     500: '#8b5cf6',
-                    600: '#7c3aed',
+                    600: '#8b5cf6',
                     700: '#6d28d9',
                     800: '#5b21b6',
                     900: '#4c1d95',
@@ -36,19 +68,19 @@ export default {
                     900: '#78350f',
                     950: '#451a03',
                 },
-                // Secondary - Trustworthy Blue (Supporting)
+                // Secondary - Brand-supporting plum neutrals
                 secondary: {
-                    50: '#eff6ff',
-                    100: '#dbeafe',
-                    200: '#bfdbfe',
-                    300: '#93c5fd',
-                    400: '#60a5fa',
-                    500: '#3b82f6',
-                    600: '#2563eb',
-                    700: '#1d4ed8',
-                    800: '#1e40af',
-                    900: '#1e3a8a',
-                    950: '#172554',
+                    50: '#faf8ff',
+                    100: '#f3eeff',
+                    200: '#e7def8',
+                    300: '#d6c8f2',
+                    400: '#b7a8d6',
+                    500: '#8b8aa0',
+                    600: '#746c8c',
+                    700: '#4f4766',
+                    800: '#242235',
+                    900: '#1a1825',
+                    950: '#100d16',
                 },
                 // Success
                 success: {
@@ -148,8 +180,8 @@ export default {
                     '100%': { opacity: '1', transform: 'scale(1)' },
                 },
                 pulseGlow: {
-                    '0%, 100%': { boxShadow: '0 0 20px rgba(21, 84, 247, 0.2)' },
-                    '50%': { boxShadow: '0 0 40px rgba(21, 84, 247, 0.4)' },
+                    '0%, 100%': { boxShadow: '0 0 20px rgba(139, 92, 246, 0.22)' },
+                    '50%': { boxShadow: '0 0 40px rgba(245, 158, 11, 0.2)' },
                 },
                 float: {
                     '0%, 100%': { transform: 'translateY(0)' },
@@ -176,8 +208,8 @@ export default {
                 '4xl': '2rem',
             },
             boxShadow: {
-                'glow': '0 0 40px -10px rgba(21, 84, 247, 0.3)',
-                'glow-accent': '0 0 40px -10px rgba(248, 101, 69, 0.3)',
+                'glow': '0 0 40px -10px rgba(139, 92, 246, 0.32)',
+                'glow-accent': '0 0 40px -10px rgba(245, 158, 11, 0.28)',
                 'inner-glow': 'inset 0 2px 20px 0 rgba(255, 255, 255, 0.1)',
                 'elevated': '0 20px 50px -15px rgba(0, 0, 0, 0.15)',
                 'elevated-dark': '0 20px 50px -15px rgba(0, 0, 0, 0.5)',

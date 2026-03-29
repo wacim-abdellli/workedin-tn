@@ -78,13 +78,13 @@ export default function UsersTab() {
         onConfirm: () => {},
     });
 
-    const panelClass = 'card border-white/45 dark:border-white/10 bg-white/80 dark:bg-slate-950/55 backdrop-blur-xl shadow-[0_16px_45px_-24px_rgba(21,84,247,0.38)]';
-    const tableShellClass = 'hidden md:block card p-0 overflow-hidden border-white/40 dark:border-white/10 bg-white/75 dark:bg-slate-950/45';
-    const tableHeadClass = 'bg-white/90 dark:bg-slate-900/88 border-b border-gray-200 dark:border-white/10 sticky top-0 z-10 backdrop-blur';
-    const tableRowClass = 'group hover:bg-primary-50/60 dark:hover:bg-primary-500/10 transition-colors';
-    const iconActionClass = 'p-2 rounded-xl bg-gray-100/85 dark:bg-white/5 text-gray-500 transition-colors';
-    const inputClass = 'w-full h-12 pe-11 ps-4 border rounded-xl bg-white/92 dark:bg-slate-900/70 border-gray-200 dark:border-white/12 text-foreground placeholder:text-muted shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500/35 focus:border-primary-400/40';
-    const selectClass = 'h-12 px-4 border rounded-xl bg-white/92 dark:bg-slate-900/70 border-gray-200 dark:border-white/12 text-foreground shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500/35 focus:border-primary-400/40';
+    const panelClass = 'card border border-border bg-card shadow-sm';
+    const tableShellClass = 'hidden md:block card p-0 overflow-hidden border-border bg-card';
+    const tableHeadClass = 'bg-surface border-b border-border sticky top-0 z-10 backdrop-blur';
+    const tableRowClass = 'group hover:bg-surface transition-colors border-b border-border/50 last:border-0';
+    const iconActionClass = 'p-2 rounded-xl bg-surface hover:bg-border text-muted transition-colors';
+    const inputClass = 'w-full h-12 pe-11 ps-4 border rounded-xl bg-input border-input focus:border-input-focus text-foreground placeholder:text-muted shadow-sm focus:outline-none focus:ring-2 focus:ring-brand/30';
+    const selectClass = 'h-12 px-4 border rounded-xl bg-input border-input focus:border-input-focus text-foreground shadow-sm focus:outline-none focus:ring-2 focus:ring-brand/30';
 
     const closeConfirm = () => setConfirmAction((prev) => ({ ...prev, isOpen: false }));
 
@@ -255,7 +255,7 @@ export default function UsersTab() {
                 <div className={panelClass}>
                     <div className="flex flex-wrap items-center gap-4">
                         <div className="flex-1 relative">
-                            <Search className="absolute end-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                            <Search className="absolute end-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted" />
                             <input
                                 type="text"
                                 value={searchQuery}
@@ -300,11 +300,11 @@ export default function UsersTab() {
                                             <th className="px-6 py-4 text-right text-xs font-semibold text-muted whitespace-nowrap tracking-wide">{tr('إجراءات', 'Actions', 'Actions')}</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-gray-100 dark:divide-white/5">
+                                    <tbody className="divide-y divide-border/50">
                                         {filteredUsers.length === 0 ? (
                                             <tr>
                                                 <td colSpan={5} className="px-6 py-12 text-center text-muted">
-                                                    <Search className="w-8 h-8 mx-auto mb-2 text-gray-300 dark:text-gray-600" />
+                                                    <Search className="w-8 h-8 mx-auto mb-2 text-muted/50" />
                                                     <p className="font-medium">{tr('لا يوجد مستخدمون مطابقون', 'No users match your search', 'Aucun utilisateur ne correspond')}</p>
                                                 </td>
                                             </tr>
@@ -404,7 +404,7 @@ export default function UsersTab() {
                                             {user.cin_verified ? tr('موثق', 'Verified', 'Verifie') : tr('غير موثق', 'Unverified', 'Non verifie')}
                                         </span>
                                     </div>
-                                    <div className="flex items-center justify-between py-2 border-b border-gray-50">
+                                    <div className="flex items-center justify-between py-2 border-b border-border/50">
                                         <span className="text-sm text-muted">{tr('النوع', 'Type', 'Type')}</span>
                                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${user.type === 'freelancer'
                                             ? 'bg-blue-100 text-blue-700'
@@ -414,7 +414,7 @@ export default function UsersTab() {
                                         </span>
                                     </div>
 
-                                    <div className="flex items-center justify-between py-2 border-b border-gray-50 dark:border-white/10">
+                                    <div className="flex items-center justify-between py-2 border-b border-border/50">
                                         <span className="text-sm text-muted">{tr('الوضع النشط', 'Active mode', 'Mode actif')}</span>
                                         <span className="px-2 py-1 rounded-full text-xs font-medium bg-primary-100 text-primary-700">
                                             {user.active_mode === 'freelancer' ? tr('مستقل', 'Freelancer', 'Freelance') : tr('عميل', 'Client', 'Client')}
@@ -426,7 +426,7 @@ export default function UsersTab() {
                                         <span className="text-sm text-foreground">{formatAdminDate(user.last_active)}</span>
                                     </div>
 
-                                    <div className="flex items-center gap-2 pt-3 border-t border-gray-100 dark:border-white/10">
+                                    <div className="flex items-center gap-2 pt-3 border-t border-border">
                                         <Button size="sm" variant="outline" className="flex-1 justify-center" onClick={() => setSelectedUser(user)}>
                                             <Eye className="w-4 h-4 ml-1" />
                                             {tr('عرض', 'View', 'Voir')}
@@ -473,7 +473,7 @@ export default function UsersTab() {
 
             {selectedUser && (
                 <div className="fixed inset-0 z-50 bg-black/55 backdrop-blur-sm flex items-center justify-center p-4">
-                    <div className="w-full max-w-xl card bg-white/95 dark:bg-slate-950/95 border-white/30 dark:border-white/10 shadow-[0_32px_90px_-40px_rgba(6,182,212,0.55)]">
+                    <div className="w-full max-w-xl card bg-card border-border shadow-xl">
                         <div className="flex items-start justify-between gap-3 mb-5">
                             <div>
                                 <h3 className="text-lg font-bold text-foreground">{tr('تفاصيل المستخدم', 'User details', 'Details utilisateur')}</h3>
@@ -481,7 +481,7 @@ export default function UsersTab() {
                             </div>
                             <button
                                 onClick={() => setSelectedUser(null)}
-                                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10"
+                                className="p-2 rounded-lg hover:bg-surface"
                                 aria-label={tr('إغلاق', 'Close', 'Fermer')}
                             >
                                 <X className="w-4 h-4 text-muted" />
@@ -522,8 +522,8 @@ export default function UsersTab() {
             <Modal isOpen={confirmAction.isOpen} onClose={closeConfirm} title={confirmAction.title} size="md">
                 <div className="space-y-6 pt-2">
                     <p className="text-muted leading-relaxed font-medium">{confirmAction.message}</p>
-                    <div className="flex justify-end gap-3 pt-6 border-t border-gray-100 dark:border-white/10 mt-6">
-                        <Button variant="ghost" className="text-muted hover:bg-gray-100 dark:hover:bg-white/5" onClick={closeConfirm}>
+                    <div className="flex justify-end gap-3 pt-6 border-t border-border mt-6">
+                        <Button variant="ghost" className="text-muted hover:bg-surface" onClick={closeConfirm}>
                             {tr('إلغاء', 'Cancel', 'Annuler')}
                         </Button>
                         <Button
