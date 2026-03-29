@@ -69,8 +69,8 @@ function DashboardPanel({ className = '', children }: { className?: string; chil
     return (
         <section className={cn(
             'rounded-lg p-6 border',
-            'bg-white dark:bg-[#1a1825]',
-            'border-gray-100 dark:border-white/6',
+            'bg-card',
+            'border-border',
             'shadow-sm dark:shadow-none',
             className
         )}>
@@ -84,21 +84,19 @@ function MetricCard({
     label,
     value,
     detail,
-    tone,
     isLoading,
 }: {
     icon: ElementType;
     label: string;
     value: string | number;
     detail: string;
-    tone: string;
     isLoading?: boolean;
 }) {
     return (
         <div className={cn(
             'rounded-lg p-5 border',
-            'bg-white dark:bg-[#1a1825]',
-            'border-gray-100 dark:border-white/6',
+            'bg-card',
+            'border-border',
             'shadow-sm dark:shadow-none'
         )}>
             {isLoading ? (
@@ -109,12 +107,10 @@ function MetricCard({
                 </div>
             ) : (
                 <>
-                    <div className={`flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br ${tone}`}>
-                        <Icon className="h-5 w-5" />
-                    </div>
-                    <div className="mt-5 text-2xl font-bold tracking-tight text-[var(--text-primary)]">{value}</div>
-                    <div className="mt-1 text-sm font-semibold text-gray-700 dark:text-gray-300">{label}</div>
-                    <div className="mt-2 text-xs leading-5 text-[var(--text-secondary)]">{detail}</div>
+                    <Icon className="w-8 h-8 text-[color:var(--workspace-primary)] opacity-70 mb-3" />
+                    <div className="text-4xl font-black text-[color:var(--workspace-primary)] leading-none my-2">{value}</div>
+                    <div className="text-sm font-semibold text-[var(--text-secondary)]">{label}</div>
+                    <div className="text-xs text-[var(--text-muted)] leading-relaxed line-clamp-2 mt-1">{detail}</div>
                 </>
             )}
         </div>
@@ -131,12 +127,12 @@ function EmptyState({
     description: string;
 }) {
     return (
-        <div className="flex flex-col items-start rounded-[1.6rem] border border-dashed border-primary-200/70 bg-primary-50/45 p-5 text-left dark:border-white/10 dark:bg-white/[0.04]">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-primary-600 shadow-sm dark:bg-white/10 dark:text-primary-300">
+        <div className="flex flex-col items-start rounded-[1.6rem] border border-dashed border-border bg-surface p-5 text-left">
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-card text-brand shadow-sm">
                 <Icon className="h-5 w-5" />
             </div>
-            <p className="mt-4 text-sm font-semibold text-[#1a1825] dark:text-white">{title}</p>
-            <p className="mt-2 text-sm leading-6 text-[#6b6880] dark:text-[var(--text-muted)]">{description}</p>
+            <p className="mt-4 text-sm font-semibold text-[var(--text-secondary)]">{title}</p>
+            <p className="mt-2 text-sm leading-6 text-[var(--text-muted)]">{description}</p>
         </div>
     );
 }
@@ -308,22 +304,22 @@ function ClientDashboardPage() {
     };
 
     return (
-        <div className="page-shell bg-[#f6f3ff] dark:bg-[#0b0a12]">
+        <div className="page-shell bg-background">
             <SEO {...SEO_CONFIG.dashboard} url="/client/dashboard" noIndex />
             <Header />
 
             <main className="page-shell-content space-y-6">
-                <section className="relative radius-shell overflow-hidden border border-primary-200/40 p-6 shadow-[0_32px_90px_-48px_rgba(14,65,227,0.28)] dark:border-white/10 sm:p-8" style={{
-                    background: 'linear-gradient(135deg, rgba(21,84,247,0.06) 0%, rgba(21,84,247,0.01) 50%, transparent 100%), linear-gradient(135deg,rgba(255,255,255,0.98),rgba(246,239,255,0.92))'
+                <section className="relative radius-shell overflow-hidden border border-primary-200/40 p-6 shadow-[0_32px_90px_-48px_rgba(109,40,217,0.28)] dark:border-white/10 sm:p-8" style={{
+                    background: 'radial-gradient(circle at top left, rgba(139,92,246,0.12), transparent 34%), radial-gradient(circle at top right, rgba(245,158,11,0.08), transparent 26%), linear-gradient(135deg,rgba(255,255,255,0.98),rgba(246,239,255,0.92))'
                 }}>
                     <div className="hidden dark:block absolute inset-0 pointer-events-none" style={{
-                        background: 'linear-gradient(135deg, rgba(21,84,247,0.12) 0%, rgba(21,84,247,0.04) 50%, transparent 100%), linear-gradient(145deg,rgba(18,16,28,0.98),rgba(11,10,18,0.98))'
+                        background: 'radial-gradient(circle at top left, rgba(167,139,250,0.16), transparent 34%), radial-gradient(circle at top right, rgba(245,158,11,0.08), transparent 24%), linear-gradient(145deg,rgba(18,16,28,0.98),rgba(11,10,18,0.98))'
                     }}></div>
                     <div className="relative grid gap-6 xl:grid-cols-[minmax(0,1.08fr)_minmax(360px,0.92fr)]">
                         <div className="space-y-6">
                             <div className="flex items-center gap-2 border-l-2 border-l-[color:var(--workspace-primary)] pl-2">
                                 <Sparkles className="h-3.5 w-3.5 text-[color:var(--workspace-primary)]" />
-                                <p className="text-xs font-semibold uppercase tracking-widest text-[#6b6880] dark:text-gray-400">
+                                <p className="text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">
                                     {tx('dashboard.client.commandCenter', undefined, 'Client command center')}
                                 </p>
                             </div>
@@ -339,24 +335,24 @@ function ClientDashboardPage() {
                                             )}
                                         </div>
                                         <div>
-                                            <p className="text-sm font-medium text-[#6b6880] dark:text-[var(--text-muted)]">
+                                            <p className="text-xs text-[var(--text-muted)] uppercase tracking-wide">
                                                 {tx('dashboard.client.welcomeBack', undefined, 'Welcome back')}
                                             </p>
-                                            <h1 className="mt-1 text-3xl font-semibold tracking-tight text-[var(--text-primary)] sm:text-4xl">
+                                            <h1 className="text-3xl font-black text-[var(--text-primary)] leading-tight sm:text-4xl">
                                                 {tx('dashboard.client.heroGreeting', { name: greeting }, `Welcome back, ${greeting}`)}
                                             </h1>
-                                            <p className="mt-2 text-sm font-medium text-primary-700 dark:text-primary-200">
+                                            <p className="text-sm font-semibold text-[color:var(--workspace-primary)] mt-1">
                                                 {t.dashboard.clientSubtitle}
                                             </p>
                                         </div>
                                     </div>
 
-                                    <p className="mt-5 max-w-2xl text-sm leading-7 text-[#5c5971] dark:text-[#aca9bd] sm:text-base">
+                                    <p className="mt-5 max-w-2xl text-sm leading-7 text-[var(--text-secondary)] sm:text-base">
                                         {tx('dashboard.client.heroDescription', undefined, 'Keep your hiring pipeline clean: post sharper briefs, review proposals faster, and move active work through delivery without extra noise.')}
                                     </p>
                                 </div>
 
-                                <div className="rounded-lg border border-gray-200 dark:border-white/10 bg-white/75 dark:bg-white/5 p-4 shadow-sm sm:min-w-[240px]">
+                                <div className="rounded-lg border border-border bg-card p-4 shadow-sm sm:min-w-[240px]">
                                     <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">
                                         {tx('dashboard.client.focusLabel', undefined, 'Today focus')}
                                     </p>
@@ -370,30 +366,37 @@ function ClientDashboardPage() {
                             </div>
 
                             <div className="flex flex-wrap gap-3">
-                                <div className="inline-flex items-center gap-2 rounded-full border border-primary-100 bg-white/80 px-4 py-2 text-sm text-[#353149] shadow-sm dark:border-white/10 dark:bg-white/5 dark:text-[#e3def7]">
-                                    <Users className="h-4 w-4 text-amber-500" />
-                                    <span>{stats?.totalProposals ?? 0}</span>
-                                    <span className="text-[var(--text-muted)]">{tx('dashboard.client.pipeline.totalProposals', undefined, 'total proposals')}</span>
+                                <div className="summary-chip">
+                                    <Users className="summary-chip-icon" />
+                                    <span className="summary-chip-value">{stats?.totalProposals ?? 0}</span>
+                                    <span className="summary-chip-label">{tx('dashboard.client.pipeline.totalProposals', undefined, 'total proposals')}</span>
                                 </div>
-                                <div className="inline-flex items-center gap-2 rounded-full border border-primary-100 bg-white/80 px-4 py-2 text-sm text-[#353149] shadow-sm dark:border-white/10 dark:bg-white/5 dark:text-[#e3def7]">
-                                    <FolderKanban className="h-4 w-4 text-primary-500" />
-                                    <span>{openJobs}</span>
-                                    <span className="text-[var(--text-muted)]">{tx('dashboard.client.pipeline.openJobs', undefined, 'open jobs')}</span>
+                                <div className="summary-chip">
+                                    <FolderKanban className="summary-chip-icon" />
+                                    <span className="summary-chip-value">{openJobs}</span>
+                                    <span className="summary-chip-label">{tx('dashboard.client.pipeline.openJobs', undefined, 'open jobs')}</span>
                                 </div>
-                                <div className="inline-flex items-center gap-2 rounded-full border border-primary-100 bg-white/80 px-4 py-2 text-sm text-[#353149] shadow-sm dark:border-white/10 dark:bg-white/5 dark:text-[#e3def7]">
-                                    <Bell className="h-4 w-4 text-sky-500" />
-                                    <span>{unreadNotifications.length}</span>
-                                    <span className="text-[var(--text-muted)]">{tx('dashboard.client.pipeline.unreadUpdates', undefined, 'unread updates')}</span>
+                                <div className="summary-chip">
+                                    <Bell className="summary-chip-icon" />
+                                    <span className="summary-chip-value">{unreadNotifications.length}</span>
+                                    <span className="summary-chip-label">{tx('dashboard.client.pipeline.unreadUpdates', undefined, 'unread updates')}</span>
                                 </div>
                             </div>
 
                             <div className="flex flex-wrap gap-3">
-                                <Button size="lg" className="rounded-2xl px-5" leftIcon={<Plus className="h-4 w-4" />} onClick={() => navigate('/jobs/new')}>
-                                    {t.dashboard.postNewJob}
-                                </Button>
-                                <Button variant="outline" size="lg" className="rounded-2xl px-5" leftIcon={<FolderKanban className="h-4 w-4" />} onClick={() => navigate(todayFocus.actionPath)}>
-                                    {todayFocus.actionLabel}
-                                </Button>
+                                <button
+                                    type="button"
+                                    onClick={() => navigate('/jobs/new')}
+                                    className="flex items-center gap-2 bg-[color:var(--workspace-primary)] hover:bg-[color:var(--workspace-primary-hover)] text-[color:var(--workspace-primary-text)] font-semibold text-sm px-5 py-2.5 rounded-xl transition-all duration-200 shadow-sm"
+                                >
+                                    <Plus className="w-4 h-4" />
+                                    Post a New Job
+                                </button>
+                                {todayFocus.actionPath !== '/jobs/new' && (
+                                    <Button variant="outline" size="lg" className="rounded-2xl px-5" leftIcon={<FolderKanban className="h-4 w-4" />} onClick={() => navigate(todayFocus.actionPath)}>
+                                        {todayFocus.actionLabel}
+                                    </Button>
+                                )}
                                 <Button variant="ghost" size="lg" className="rounded-2xl px-5" leftIcon={<Settings className="h-4 w-4" />} onClick={() => navigate('/settings')}>
                                     {tx('dashboard.client.manageWorkspace', undefined, 'Manage workspace')}
                                 </Button>
@@ -408,22 +411,22 @@ function ClientDashboardPage() {
                     </div>
                 </section>
 
-                <div className="grid gap-6 xl:grid-cols-[minmax(0,1.15fr)_360px]">
-                    <div className="space-y-6">
-                        <DashboardPanel>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div className="space-y-6 min-h-[200px] lg:col-span-2">
+                        <DashboardPanel className="bg-card rounded-xl border border-border p-6 min-h-[200px]">
                             <div className="flex items-center justify-between gap-4">
                                 <div>
-                                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary-600 dark:text-primary-300">
+                                    <p className="text-[var(--text-muted)] text-xs font-semibold uppercase tracking-[0.18em]">
                                         {tx('dashboard.client.projectsBadge', undefined, 'Hiring pipeline')}
                                     </p>
                                     <h2 className="mt-3 text-2xl font-semibold tracking-tight text-[var(--text-primary)]">
                                         {t.dashboard.yourJobs}
                                     </h2>
-                                    <p className="mt-2 text-sm leading-6 text-[#6b6880] dark:text-[var(--text-muted)]">
+                                    <p className="mt-2 text-sm leading-6 text-[var(--text-secondary)]">
                                         {tx('dashboard.client.projectsDescription', undefined, 'Latest project briefs, proposal signals, and active delivery states in one place.')}
                                     </p>
                                 </div>
-                                <Button variant="outline" size="sm" className="rounded-2xl" onClick={() => navigate('/client/jobs')}>
+                                <Button variant="outline" size="sm" className="rounded-2xl text-[color:var(--workspace-primary)]" onClick={() => navigate('/client/jobs')}>
                                     {t.dashboard.viewAll}
                                 </Button>
                             </div>
@@ -449,7 +452,7 @@ function ClientDashboardPage() {
                                                 key={job.id}
                                                 type="button"
                                                 onClick={() => navigate(`/jobs/${job.id}`)}
-                                                className="group w-full rounded-[1.6rem] border border-primary-100/70 bg-white/72 p-5 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-primary-200 hover:shadow-md dark:border-white/10 dark:bg-white/[0.04]"
+                                                className="group w-full rounded-[1.6rem] border border-border bg-card p-5 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-brand/40 hover:shadow-md"
                                             >
                                                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                                                     <div className="min-w-0 flex-1">
@@ -464,7 +467,7 @@ function ClientDashboardPage() {
                                                         </p>
                                                     </div>
 
-                                                    <div className="rounded-2xl border border-primary-100 bg-primary-50/60 px-4 py-3 text-right dark:border-white/10 dark:bg-white/[0.04]">
+                                                    <div className="rounded-2xl border border-border bg-surface px-4 py-3 text-right">
                                                         <p className="text-xs font-medium uppercase tracking-[0.15em] text-[var(--text-muted)]">
                                                             {tx('dashboard.client.jobBudget', undefined, 'Budget')}
                                                         </p>
@@ -479,7 +482,7 @@ function ClientDashboardPage() {
                                                 </div>
 
                                                 <div className="mt-5 grid gap-3 sm:grid-cols-3">
-                                                    <div className="rounded-2xl bg-primary-50/70 px-4 py-3 dark:bg-white/[0.04]">
+                                                    <div className="rounded-2xl bg-surface px-4 py-3">
                                                         <p className="text-xs font-medium uppercase tracking-[0.15em] text-[var(--text-muted)]">
                                                             {tx('dashboard.client.proposalsLabel', undefined, 'Proposals')}
                                                         </p>
@@ -487,7 +490,7 @@ function ClientDashboardPage() {
                                                             {tx('dashboard.client.proposalsSubmitted', { count: job.proposals_count }, `${job.proposals_count} proposals submitted`)}
                                                         </p>
                                                     </div>
-                                                    <div className="rounded-2xl bg-primary-50/70 px-4 py-3 dark:bg-white/[0.04]">
+                                                    <div className="rounded-2xl bg-surface px-4 py-3">
                                                         <p className="text-xs font-medium uppercase tracking-[0.15em] text-[var(--text-muted)]">
                                                             {tx('dashboard.client.assigneeLabel', undefined, 'Assigned freelancer')}
                                                         </p>
@@ -495,7 +498,7 @@ function ClientDashboardPage() {
                                                             {assignedFreelancer || tx('dashboard.client.freelancerFallback', undefined, 'Not assigned yet')}
                                                         </p>
                                                     </div>
-                                                    <div className="flex items-center justify-between rounded-2xl bg-primary-50/70 px-4 py-3 dark:bg-white/[0.04]">
+                                                    <div className="flex items-center justify-between rounded-2xl bg-surface px-4 py-3">
                                                         <div>
                                                             <p className="text-xs font-medium uppercase tracking-[0.15em] text-[var(--text-muted)]">
                                                                 {tx('dashboard.client.nextActionLabel', undefined, 'Next action')}
@@ -519,32 +522,32 @@ function ClientDashboardPage() {
                         </DashboardPanel>
                     </div>
 
-                    <div className="space-y-6">
-                        <DashboardPanel>
+                    <div className="space-y-6 min-h-[200px] lg:col-span-1">
+                        <DashboardPanel className="bg-card rounded-xl border border-border p-6 min-h-[200px]">
                             <div className="flex items-start justify-between gap-4">
                                 <div>
-                                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary-600 dark:text-primary-300">
+                                    <p className="text-[var(--text-muted)] text-xs font-semibold uppercase tracking-[0.18em]">
                                         {tx('dashboard.client.pipelineBadge', undefined, 'Decision support')}
                                     </p>
                                     <h2 className="mt-3 text-xl font-semibold tracking-tight text-[var(--text-primary)]">
                                         {tx('dashboard.client.pipelineSummary', undefined, 'Hiring summary')}
                                     </h2>
                                 </div>
-                                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary-50 text-primary-600 dark:bg-white/5 dark:text-primary-300">
+                                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-surface text-brand">
                                     <Users className="h-5 w-5" />
                                 </div>
                             </div>
 
                             <div className="mt-5 grid gap-3">
-                                <div className="rounded-[1.4rem] border border-primary-100/70 bg-white/75 p-4 dark:border-white/10 dark:bg-white/[0.04]">
+                                <div className="rounded-[1.4rem] border border-border/50 bg-card p-4">
                                     <p className="text-xs font-medium uppercase tracking-[0.15em] text-[var(--text-muted)]">{tx('dashboard.client.awaitingReview', undefined, 'Awaiting review')}</p>
                                     <p className="mt-2 text-2xl font-semibold text-[var(--text-primary)]">{stats?.proposalsWaitingReview ?? 0}</p>
                                 </div>
-                                <div className="rounded-[1.4rem] border border-primary-100/70 bg-white/75 p-4 dark:border-white/10 dark:bg-white/[0.04]">
+                                <div className="rounded-[1.4rem] border border-border/50 bg-card p-4">
                                     <p className="text-xs font-medium uppercase tracking-[0.15em] text-[var(--text-muted)]">{tx('dashboard.client.inProgressProjects', undefined, 'In progress')}</p>
                                     <p className="mt-2 text-2xl font-semibold text-[var(--text-primary)]">{inProgressJobs}</p>
                                 </div>
-                                <div className="rounded-[1.4rem] border border-primary-100/70 bg-white/75 p-4 dark:border-white/10 dark:bg-white/[0.04]">
+                                <div className="rounded-[1.4rem] border border-border/50 bg-card p-4">
                                     <p className="text-xs font-medium uppercase tracking-[0.15em] text-[var(--text-muted)]">{tx('dashboard.client.jobsWithProposals', undefined, 'Jobs with proposals')}</p>
                                     <p className="mt-2 text-2xl font-semibold text-[var(--text-primary)]">{jobsWithProposals}</p>
                                 </div>
@@ -561,7 +564,7 @@ function ClientDashboardPage() {
                                         {tx('dashboard.notifications', undefined, 'Notifications')}
                                     </h2>
                                 </div>
-                                <span className="inline-flex min-w-[44px] items-center justify-center rounded-2xl bg-primary-600 px-3 py-2 text-sm font-bold text-white shadow-[0_18px_36px_-20px_rgba(14,65,227,0.9)]">
+                                <span className="inline-flex min-w-[44px] items-center justify-center rounded-2xl bg-primary-600 px-3 py-2 text-sm font-bold text-white shadow-[0_18px_36px_-20px_rgba(109,40,217,0.55)]">
                                     {unreadNotifications.length}
                                 </span>
                             </div>
@@ -577,7 +580,7 @@ function ClientDashboardPage() {
                                     />
                                 ) : (
                                     unreadNotifications.map((notification) => (
-                                        <div key={notification.id} className="rounded-[1.4rem] border border-primary-100/70 bg-white/75 p-4 dark:border-white/10 dark:bg-white/[0.04]">
+                                        <div key={notification.id} className="rounded-[1.4rem] border border-border/50 bg-card p-4">
                                             <p className="text-sm font-semibold text-[var(--text-primary)]">
                                                 {notification.title || tx('dashboard.client.defaultNotificationTitle', undefined, 'Project update')}
                                             </p>
@@ -607,21 +610,21 @@ function ClientDashboardPage() {
                                         {tx('dashboard.client.nextMoves', undefined, 'Best next moves')}
                                     </h2>
                                 </div>
-                                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary-50 text-primary-600 dark:bg-white/5 dark:text-primary-300">
+                                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-surface text-brand">
                                     <FileText className="h-5 w-5" />
                                 </div>
                             </div>
 
                             <div className="mt-5 space-y-3">
-                                <button type="button" onClick={() => navigate('/jobs/new')} className="w-full rounded-[1.4rem] border border-primary-100/70 bg-white/75 p-4 text-left transition-colors hover:border-primary-200 hover:bg-primary-50/60 dark:border-white/10 dark:bg-white/[0.04] dark:hover:bg-white/[0.06]">
+                                <button type="button" onClick={() => navigate('/jobs/new')} className="w-full rounded-[1.4rem] border border-border/50 bg-card p-4 text-left transition-colors hover:bg-surface hover:border-border">
                                     <p className="text-sm font-semibold text-[var(--text-primary)]">{tx('dashboard.postNewJob', undefined, t.dashboard.postNewJob)}</p>
                                     <p className="mt-2 text-sm leading-6 text-[#6b6880] dark:text-[var(--text-muted)]">{tx('dashboard.postNewJobDesc', undefined, t.dashboard.postNewJobDesc)}</p>
                                 </button>
-                                <button type="button" onClick={() => navigate('/client/jobs')} className="w-full rounded-[1.4rem] border border-primary-100/70 bg-white/75 p-4 text-left transition-colors hover:border-primary-200 hover:bg-primary-50/60 dark:border-white/10 dark:bg-white/[0.04] dark:hover:bg-white/[0.06]">
+                                <button type="button" onClick={() => navigate('/client/jobs')} className="w-full rounded-[1.4rem] border border-border/50 bg-card p-4 text-left transition-colors hover:bg-surface hover:border-border">
                                     <p className="text-sm font-semibold text-[var(--text-primary)]">{tx('dashboard.client.reviewPipeline', undefined, 'Review project pipeline')}</p>
                                     <p className="mt-2 text-sm leading-6 text-[#6b6880] dark:text-[var(--text-muted)]">{tx('dashboard.client.reviewPipelineDescription', undefined, 'Compare open briefs, proposal activity, and active delivery in one place.')}</p>
                                 </button>
-                                <button type="button" onClick={() => navigate('/settings')} className="w-full rounded-[1.4rem] border border-primary-100/70 bg-white/75 p-4 text-left transition-colors hover:border-primary-200 hover:bg-primary-50/60 dark:border-white/10 dark:bg-white/[0.04] dark:hover:bg-white/[0.06]">
+                                <button type="button" onClick={() => navigate('/settings')} className="w-full rounded-[1.4rem] border border-border/50 bg-card p-4 text-left transition-colors hover:bg-surface hover:border-border">
                                     <p className="text-sm font-semibold text-[var(--text-primary)]">{tx('dashboard.client.refineProfile', undefined, 'Refine client profile')}</p>
                                     <p className="mt-2 text-sm leading-6 text-[#6b6880] dark:text-[var(--text-muted)]">{tx('dashboard.client.refineProfileDescription', undefined, 'A clearer company profile helps freelancers trust the brief and respond faster.')}</p>
                                 </button>

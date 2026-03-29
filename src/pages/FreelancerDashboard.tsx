@@ -64,8 +64,8 @@ function DashboardPanel({ className = '', children }: { className?: string; chil
     return (
         <section className={cn(
             'rounded-lg p-6 border',
-            'bg-white dark:bg-[#1a1825]',
-            'border-gray-100 dark:border-white/6',
+            'bg-card',
+            'border-border',
             'shadow-sm dark:shadow-none',
             className
         )}>
@@ -79,22 +79,23 @@ function MetricCard({
     label,
     value,
     detail,
-    tone,
     isLoading,
+    accent = false,
 }: {
     icon: ElementType;
     label: string;
     value: string | number;
     detail: string;
-    tone: string;
     isLoading?: boolean;
+    accent?: boolean;
 }) {
     return (
         <div className={cn(
-            'rounded-lg p-5 border',
-            'bg-white dark:bg-[#1a1825]',
-            'border-gray-100 dark:border-white/6',
-            'shadow-sm dark:shadow-none'
+            'rounded-xl p-5 border-2',
+            'bg-card',
+            'border-border/50',
+            'shadow-[0_1px_3px_rgba(0,0,0,0.06),0_4px_16px_rgba(0,0,0,0.04)] dark:shadow-none',
+            accent && 'border-t-4 border-t-[color:var(--workspace-primary)]'
         )}>
             {isLoading ? (
                 <div className="space-y-4">
@@ -104,12 +105,10 @@ function MetricCard({
                 </div>
             ) : (
                 <>
-                    <div className={`flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br ${tone}`}>
-                        <Icon className="h-5 w-5" />
-                    </div>
-                    <div className="mt-5 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">{value}</div>
-                    <div className="mt-1 text-sm font-semibold text-gray-700 dark:text-gray-300">{label}</div>
-                    <div className="mt-2 text-xs leading-5 text-gray-600 dark:text-gray-400">{detail}</div>
+                    <Icon className="w-8 h-8 text-[color:var(--workspace-primary)] opacity-70 mb-3" />
+                    <div className="text-4xl font-black text-[color:var(--workspace-primary)] leading-none my-2">{value}</div>
+                    <div className="text-sm font-semibold text-[var(--text-secondary)]">{label}</div>
+                    <div className="text-xs text-[var(--text-muted)] leading-relaxed line-clamp-2 mt-1">{detail}</div>
                 </>
             )}
         </div>
@@ -126,12 +125,12 @@ function EmptyState({
     description: string;
 }) {
     return (
-        <div className="flex flex-col items-start rounded-[1.6rem] border border-dashed border-primary-200/70 bg-primary-50/45 p-5 text-left dark:border-white/10 dark:bg-white/[0.04]">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-primary-600 shadow-sm dark:bg-white/10 dark:text-primary-300">
-                <Icon className="h-5 w-5" />
+        <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border bg-surface p-8 text-center">
+            <div className="flex items-center justify-center">
+                <Icon className="h-8 w-8 text-gray-400 dark:text-gray-500" />
             </div>
-            <p className="mt-4 text-sm font-semibold text-[#1a1825] dark:text-white">{title}</p>
-            <p className="mt-2 text-sm leading-6 text-[#6b6880] dark:text-[#8b8aa0]">{description}</p>
+            <p className="mt-4 text-sm font-medium text-gray-700 dark:text-gray-300">{title}</p>
+            <p className="mt-2 text-sm leading-6 text-gray-600 dark:text-gray-400">{description}</p>
         </div>
     );
 }
@@ -272,28 +271,28 @@ function FreelancerDashboardPage() {
             value: stats?.activeContracts ?? 0,
             detail: tx('pages.freelancerDashboard.metric.activeContractsDetail', undefined, 'Projects currently moving with approved scope and funded escrow.'),
             icon: Briefcase,
-            tone: 'from-primary-500/20 to-primary-500/5 text-primary-600 dark:text-primary-300',
+            accent: true,
         },
         {
             label: tx('pages.freelancerDashboard.stat.pendingProposals', undefined, 'Pending proposals'),
             value: stats?.pendingProposals ?? 0,
             detail: tx('pages.freelancerDashboard.metric.pendingProposalsDetail', undefined, 'Applications waiting on a client response or next decision.'),
             icon: Send,
-            tone: 'from-amber-400/20 to-amber-400/5 text-amber-600 dark:text-amber-300',
+            accent: false,
         },
         {
             label: tx('pages.freelancerDashboard.stat.totalEarnings', undefined, 'Total earnings'),
             value: formatCurrency(stats?.totalEarnings ?? 0),
             detail: tx('pages.freelancerDashboard.metric.totalEarningsDetail', undefined, 'Released escrow payments collected across your completed work.'),
             icon: DollarSign,
-            tone: 'from-emerald-500/20 to-emerald-500/5 text-emerald-600 dark:text-emerald-300',
+            accent: true,
         },
         {
             label: tx('pages.freelancerDashboard.stat.profileViews', undefined, 'Profile views'),
             value: (stats?.profileViews ?? 0).toLocaleString(locale),
             detail: tx('pages.freelancerDashboard.metric.profileViewsDetail', undefined, 'How often clients opened your profile recently.'),
             icon: Eye,
-            tone: 'from-sky-500/20 to-sky-500/5 text-sky-600 dark:text-sky-300',
+            accent: false,
         },
     ];
 
@@ -305,17 +304,24 @@ function FreelancerDashboardPage() {
     };
 
     return (
-        <div className="page-shell bg-[#f6f3ff] dark:bg-[#0b0a12]">
+        <div className="page-shell bg-background">
             <SEO {...SEO_CONFIG.dashboard} url="/freelancer/dashboard" noIndex />
             <Header />
 
             <main className="page-shell-content space-y-6">
-                <section className="radius-shell overflow-hidden border border-primary-200/40 bg-[radial-gradient(circle_at_top_left,rgba(139,92,246,0.18),transparent_32%),linear-gradient(135deg,rgba(255,255,255,0.98),rgba(246,239,255,0.92))] p-6 shadow-[0_32px_90px_-48px_rgba(76,29,149,0.38)] dark:border-white/10 dark:bg-[radial-gradient(circle_at_top_left,rgba(139,92,246,0.24),transparent_30%),linear-gradient(145deg,rgba(19,16,31,0.98),rgba(11,10,18,0.98))] sm:p-8">
-                    <div className="grid gap-6 xl:grid-cols-[minmax(0,1.08fr)_minmax(360px,0.92fr)]">
+                <section className="relative radius-shell overflow-hidden border border-primary-200/40 p-6 shadow-[0_32px_90px_-48px_rgba(109,40,217,0.34)] dark:border-white/10 sm:p-8" style={{
+                    background: 'radial-gradient(circle at top left, rgba(139,92,246,0.14), transparent 34%), radial-gradient(circle at top right, rgba(245,158,11,0.06), transparent 26%), linear-gradient(135deg,rgba(255,255,255,0.98),rgba(246,239,255,0.92))'
+                }}>
+                    <div className="hidden dark:block absolute inset-0 pointer-events-none" style={{
+                        background: 'radial-gradient(circle at top left, rgba(167,139,250,0.18), transparent 34%), radial-gradient(circle at top right, rgba(245,158,11,0.08), transparent 24%), linear-gradient(145deg,rgba(19,16,31,0.98),rgba(11,10,18,0.98))'
+                    }}></div>
+                    <div className="relative grid gap-6 xl:grid-cols-[minmax(0,1.08fr)_minmax(360px,0.92fr)]">
                         <div className="space-y-6">
-                            <div className="inline-flex items-center gap-2 rounded-full border border-primary-200 bg-white/80 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-primary-700 shadow-sm dark:border-white/10 dark:bg-white/5 dark:text-primary-200">
-                                <Sparkles className="h-3.5 w-3.5" />
-                                {tx('pages.freelancerDashboard.commandCenter', undefined, 'Freelancer command center')}
+                            <div className="flex items-center gap-2 border-l-2 border-l-[color:var(--workspace-primary)] pl-2">
+                                <Sparkles className="h-3.5 w-3.5 text-[color:var(--workspace-primary)]" />
+                                <p className="text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">
+                                    {tx('pages.freelancerDashboard.commandCenter', undefined, 'Freelancer command center')}
+                                </p>
                             </div>
 
                             <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
@@ -329,35 +335,35 @@ function FreelancerDashboardPage() {
                                             )}
                                         </div>
                                         <div>
-                                            <p className="text-sm font-medium text-[#6b6880] dark:text-[#8b8aa0]">
+                                            <p className="text-xs uppercase tracking-wide text-[var(--text-muted)]">
                                                 {tx('pages.freelancerDashboard.welcomeBack', undefined, 'Welcome back')}
                                             </p>
-                                            <h1 className="mt-1 text-3xl font-semibold tracking-tight text-[#171420] dark:text-white sm:text-4xl">
+                                            <h1 className="mt-1 text-3xl font-black tracking-tight text-[var(--text-primary)] leading-tight sm:text-4xl">
                                                 {tx('pages.freelancerDashboard.heroGreeting', { name: greeting }, `Welcome back, ${greeting}`)}
                                             </h1>
-                                            <p className="mt-2 text-sm font-medium text-primary-700 dark:text-primary-200">
+                                            <p className="mt-2 text-sm font-semibold text-[color:var(--workspace-primary)]">
                                                 {stats?.freelancerTitle || tx('pages.freelancerDashboard.defaultTitle', undefined, 'Independent professional')}
                                             </p>
                                         </div>
                                     </div>
 
-                                    <p className="mt-5 max-w-2xl text-sm leading-7 text-[#5c5971] dark:text-[#aca9bd] sm:text-base">
+                                    <p className="mt-5 max-w-[380px] text-sm leading-7 text-[var(--text-secondary)]">
                                         {tx('pages.freelancerDashboard.welcomeDescription', undefined, 'Your freelancer business is looking sharper. Keep momentum high, finish the right profile steps, and stay visible to better-fit clients.')}
                                     </p>
                                 </div>
 
-                                <div className="rounded-[1.6rem] border border-primary-100 bg-white/75 p-4 shadow-sm dark:border-white/10 dark:bg-white/5 sm:min-w-[240px]">
-                                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8b8aa0]">
+                                <div className="rounded-lg border border-border bg-card p-4 shadow-sm sm:min-w-[240px]">
+                                    <p className="text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">
                                         {tx('pages.freelancerDashboard.focusLabel', undefined, 'Today focus')}
                                     </p>
-                                    <p className="mt-3 text-base font-semibold text-[#171420] dark:text-white">
+                                    <p className="mt-3 text-base font-semibold text-[var(--text-primary)]">
                                         {nextMilestone
                                             ? tx('pages.freelancerDashboard.focusMilestone', undefined, 'Prepare your next milestone handoff')
                                             : unreadCount > 0
                                                 ? tx('pages.freelancerDashboard.focusNotifications', undefined, 'Clear your unread updates and keep leads warm')
                                                 : tx('pages.freelancerDashboard.focusProfile', undefined, 'Polish your profile to raise conversion')}
                                     </p>
-                                    <p className="mt-2 text-sm leading-6 text-[#6b6880] dark:text-[#8b8aa0]">
+                                    <p className="mt-2 text-sm leading-6 text-[var(--text-secondary)]">
                                         {nextMilestone
                                             ? (nextMilestone.description || tx('pages.freelancerDashboard.noUpcomingMilestones', undefined, 'No upcoming milestones'))
                                             : latestNotification?.content || tx('pages.freelancerDashboard.focusDefaultDescription', undefined, 'You are in a quiet window. Improve the profile and keep proposals active so the next opportunity lands stronger.')}
@@ -366,23 +372,25 @@ function FreelancerDashboardPage() {
                             </div>
 
                             <div className="flex flex-wrap gap-3">
-                                <div className="inline-flex items-center gap-2 rounded-full border border-primary-100 bg-white/80 px-4 py-2 text-sm text-[#353149] shadow-sm dark:border-white/10 dark:bg-white/5 dark:text-[#e3def7]">                                        <Activity className="h-4 w-4 text-purple-500" />
-                                        <span className="font-bold">{stats?.connectsBalance ?? 0}</span>
-                                        <span className="text-[#7a768e] dark:text-[#8b8aa0]">{tx('pages.freelancerDashboard.pipeline.connects', undefined, 'connects available')}</span>
-                                    </div>
-                                    <div className="inline-flex items-center gap-2 rounded-full border border-primary-100 bg-white/80 px-4 py-2 text-sm text-[#353149] shadow-sm dark:border-white/10 dark:bg-white/5 dark:text-[#e3def7]">                                    <Send className="h-4 w-4 text-amber-500" />
-                                    <span>{stats?.pendingProposals ?? 0}</span>
-                                    <span className="text-[#7a768e] dark:text-[#8b8aa0]">{tx('pages.freelancerDashboard.pipeline.pendingProposals', undefined, 'pending proposals')}</span>
+                                <div className="summary-chip">
+                                    <Activity className="summary-chip-icon" />
+                                    <span className="summary-chip-value">{stats?.connectsBalance ?? 0}</span>
+                                    <span className="summary-chip-label">{tx('pages.freelancerDashboard.pipeline.connects', undefined, 'connects available')}</span>
                                 </div>
-                                <div className="inline-flex items-center gap-2 rounded-full border border-primary-100 bg-white/80 px-4 py-2 text-sm text-[#353149] shadow-sm dark:border-white/10 dark:bg-white/5 dark:text-[#e3def7]">
-                                    <Bell className="h-4 w-4 text-primary-500" />
-                                    <span>{unreadCount}</span>
-                                    <span className="text-[#7a768e] dark:text-[#8b8aa0]">{tx('pages.freelancerDashboard.pipeline.unreadUpdates', undefined, 'unread updates')}</span>
+                                <div className="summary-chip">
+                                    <Send className="summary-chip-icon" />
+                                    <span className="summary-chip-value">{stats?.pendingProposals ?? 0}</span>
+                                    <span className="summary-chip-label">{tx('pages.freelancerDashboard.pipeline.pendingProposals', undefined, 'pending proposals')}</span>
                                 </div>
-                                <div className="inline-flex items-center gap-2 rounded-full border border-primary-100 bg-white/80 px-4 py-2 text-sm text-[#353149] shadow-sm dark:border-white/10 dark:bg-white/5 dark:text-[#e3def7]">
-                                    <Wallet className="h-4 w-4 text-emerald-500" />
-                                    <span>{formatCurrency(stats?.walletBalance ?? 0)}</span>
-                                    <span className="text-[#7a768e] dark:text-[#8b8aa0]">{tx('pages.freelancerDashboard.pipeline.availableBalance', undefined, 'available balance')}</span>
+                                <div className="summary-chip">
+                                    <Bell className="summary-chip-icon" />
+                                    <span className="summary-chip-value">{unreadCount}</span>
+                                    <span className="summary-chip-label">{tx('pages.freelancerDashboard.pipeline.unreadUpdates', undefined, 'unread updates')}</span>
+                                </div>
+                                <div className="summary-chip">
+                                    <Wallet className="summary-chip-icon" />
+                                    <span className="summary-chip-value">{formatCurrency(stats?.walletBalance ?? 0)}</span>
+                                    <span className="summary-chip-label">{tx('pages.freelancerDashboard.pipeline.availableBalance', undefined, 'available balance')}</span>
                                 </div>
                             </div>
 
@@ -412,19 +420,21 @@ function FreelancerDashboardPage() {
                         <DashboardPanel>
                             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                                 <div>
-                                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary-600 dark:text-primary-300">
-                                        {tx('pages.freelancerDashboard.performanceBadge', undefined, 'Performance pulse')}
-                                    </p>
-                                    <h2 className="mt-3 text-2xl font-semibold tracking-tight text-[#171420] dark:text-white">
+                                    <div className="flex items-center gap-2 border-l-2 border-l-[color:var(--workspace-primary)] pl-2 mb-3">
+                                        <p className="text-xs font-semibold uppercase tracking-widest text-gray-600 dark:text-gray-400">
+                                            {tx('pages.freelancerDashboard.performanceBadge', undefined, 'Performance pulse')}
+                                        </p>
+                                    </div>
+                                    <h2 className="text-base font-semibold tracking-tight text-gray-900 dark:text-white">
                                         {tx('pages.freelancerDashboard.earningsTrajectory', undefined, 'Earnings trajectory')}
                                     </h2>
-                                    <p className="mt-2 text-sm leading-6 text-[#6b6880] dark:text-[#8b8aa0]">
+                                    <p className="mt-2 text-sm leading-6 text-gray-600 dark:text-gray-400">
                                         {tx('pages.freelancerDashboard.earningsDescription', undefined, 'Released escrow payments across the last six months, grouped to show momentum at a glance.')}
                                     </p>
                                 </div>
 
                                 <div className="grid gap-3 sm:min-w-[240px]">
-                                    <div className="rounded-2xl border border-primary-100 bg-primary-50/60 px-4 py-3 dark:border-white/10 dark:bg-white/5">
+                                    <div className="rounded-2xl border border-border bg-surface px-4 py-3">
                                         <p className="text-xs font-medium uppercase tracking-[0.15em] text-[#8b8aa0]">
                                             {tx('pages.freelancerDashboard.sixMonthTrend', undefined, '6 month trend')}
                                         </p>
@@ -432,7 +442,7 @@ function FreelancerDashboardPage() {
                                             {formatCurrency(totalChartEarnings)}
                                         </p>
                                     </div>
-                                    <div className="rounded-2xl border border-primary-100 bg-white/75 px-4 py-3 dark:border-white/10 dark:bg-white/[0.04]">
+                                    <div className="rounded-2xl border border-border/50 bg-card px-4 py-3">
                                         <p className="text-xs font-medium uppercase tracking-[0.15em] text-[#8b8aa0]">
                                             {tx('pages.freelancerDashboard.bestMonth', undefined, 'Strongest month')}
                                         </p>
@@ -478,13 +488,15 @@ function FreelancerDashboardPage() {
                         <DashboardPanel>
                             <div className="flex items-center justify-between gap-4">
                                 <div>
-                                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary-600 dark:text-primary-300">
-                                        {tx('pages.freelancerDashboard.activityBadge', undefined, 'Live feed')}
-                                    </p>
-                                    <h2 className="mt-3 text-2xl font-semibold tracking-tight text-[#171420] dark:text-white">
+                                    <div className="flex items-center gap-2 border-l-2 border-l-[color:var(--workspace-primary)] pl-2 mb-3">
+                                        <p className="text-xs font-semibold uppercase tracking-widest text-gray-600 dark:text-gray-400">
+                                            {tx('pages.freelancerDashboard.activityBadge', undefined, 'Live feed')}
+                                        </p>
+                                    </div>
+                                    <h2 className="text-base font-semibold tracking-tight text-gray-900 dark:text-white">
                                         {tx('pages.freelancerDashboard.recentActivity', undefined, 'Recent activity')}
                                     </h2>
-                                    <p className="mt-2 text-sm leading-6 text-[#6b6880] dark:text-[#8b8aa0]">
+                                    <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
                                         {tx('pages.freelancerDashboard.recentActivityDescription', undefined, 'Your latest notifications, proposal events, and system updates in one timeline.')}
                                     </p>
                                 </div>
@@ -508,11 +520,11 @@ function FreelancerDashboardPage() {
                                         const Icon = notificationIcons[notification.type] || Bell;
 
                                         return (
-                                            <div key={notification.id} className="relative flex gap-4 rounded-[1.6rem] border border-primary-100/70 bg-white/70 p-4 dark:border-white/10 dark:bg-white/[0.04]">
+                                            <div key={notification.id} className="relative flex gap-4 rounded-[1.6rem] border border-border/50 bg-card p-4">
                                                 {index !== notifications.length - 1 ? (
-                                                    <div className="absolute bottom-[-18px] left-[31px] top-[52px] w-px bg-primary-100 dark:bg-white/10" />
+                                                    <div className="absolute bottom-[-18px] left-[31px] top-[52px] w-px bg-border" />
                                                 ) : null}
-                                                <div className="relative z-10 flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary-50 text-primary-600 dark:bg-white/8 dark:text-primary-300">
+                                                <div className="relative z-10 flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-surface text-brand">
                                                     <Icon className="h-5 w-5" />
                                                 </div>
                                                 <div className="min-w-0 flex-1">
@@ -542,14 +554,16 @@ function FreelancerDashboardPage() {
                         <DashboardPanel>
                             <div className="flex items-center justify-between gap-4">
                                 <div>
-                                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary-600 dark:text-primary-300">
-                                        {tx('pages.freelancerDashboard.deliveryBadge', undefined, 'Delivery queue')}
-                                    </p>
-                                    <h2 className="mt-3 text-xl font-semibold tracking-tight text-[#171420] dark:text-white">
+                                    <div className="flex items-center gap-2 border-l-2 border-l-[color:var(--workspace-primary)] pl-2 mb-3">
+                                        <p className="text-xs font-semibold uppercase tracking-widest text-gray-600 dark:text-gray-400">
+                                            {tx('pages.freelancerDashboard.deliveryBadge', undefined, 'Delivery queue')}
+                                        </p>
+                                    </div>
+                                    <h2 className="text-base font-semibold tracking-tight text-gray-900 dark:text-white">
                                         {tx('pages.freelancerDashboard.upcomingMilestones', undefined, 'Upcoming milestones')}
                                     </h2>
                                 </div>
-                                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary-50 text-primary-600 dark:bg-white/5 dark:text-primary-300">
+                                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-surface text-brand">
                                     <Calendar className="h-5 w-5" />
                                 </div>
                             </div>
@@ -565,7 +579,7 @@ function FreelancerDashboardPage() {
                                     />
                                 ) : (
                                     milestones.map((milestone) => (
-                                        <div key={milestone.id} className="rounded-[1.4rem] border border-primary-100/70 bg-white/75 p-4 dark:border-white/10 dark:bg-white/[0.04]">
+                                        <div key={milestone.id} className="rounded-[1.4rem] border border-border/50 bg-card p-4">
                                             <div className="flex items-start justify-between gap-4">
                                                 <div>
                                                     <p className="text-sm font-semibold text-[#171420] dark:text-white">{milestone.description}</p>
@@ -595,10 +609,12 @@ function FreelancerDashboardPage() {
                         <DashboardPanel>
                             <div className="flex items-start justify-between gap-4">
                                 <div>
-                                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary-600 dark:text-primary-300">
-                                        {tx('pages.freelancerDashboard.inboxBadge', undefined, 'Inbox pulse')}
-                                    </p>
-                                    <h2 className="mt-3 text-xl font-semibold tracking-tight text-[#171420] dark:text-white">
+                                    <div className="flex items-center gap-2 border-l-2 border-l-[color:var(--workspace-primary)] pl-2 mb-3">
+                                        <p className="text-xs font-semibold uppercase tracking-widest text-gray-600 dark:text-gray-400">
+                                            {tx('pages.freelancerDashboard.inboxBadge', undefined, 'Inbox pulse')}
+                                        </p>
+                                    </div>
+                                    <h2 className="text-base font-semibold tracking-tight text-gray-900 dark:text-white">
                                         {tx('pages.freelancerDashboard.notificationsSummary', undefined, 'Notifications snapshot')}
                                     </h2>
                                 </div>
@@ -607,7 +623,7 @@ function FreelancerDashboardPage() {
                                 </span>
                             </div>
 
-                            <div className="mt-5 rounded-[1.5rem] border border-primary-100/70 bg-white/80 p-4 dark:border-white/10 dark:bg-white/[0.04]">
+                            <div className="mt-5 rounded-[1.5rem] border border-border/50 bg-card p-4">
                                 <p className="text-sm font-semibold text-[#171420] dark:text-white">
                                     {unreadCount > 0
                                         ? tx('pages.freelancerDashboard.unreadSummary', { count: unreadCount }, `${unreadCount} unread updates need your attention`)

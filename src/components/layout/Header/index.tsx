@@ -162,6 +162,17 @@ export default function Header() {
     : (t.auth?.accountPanel?.clientLabel || 'Client')
   const switchActionLabel = t.auth?.accountPanel?.switchAction || 'Switch'
   const switchButtonLabel = `${switchActionLabel}: ${switchTargetLabel}`
+  const switchAccent = targetWorkspace === 'freelancer'
+    ? {
+        borderColor: '#8b5cf6',
+        background: 'linear-gradient(135deg, #8b5cf6, #6d28d9)',
+        color: '#ffffff',
+      }
+    : {
+        borderColor: '#d97706',
+        background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+        color: '#ffffff',
+      }
   const logoSrc = isDark ? '/logos/logo-primary-dark.svg' : '/logos/logo-primary.svg'
   const navActiveClass = 'header-nav-link-active'
   const canAccessAdmin = hasAdminAccess(user, profile)
@@ -200,8 +211,8 @@ export default function Header() {
         dir={dir}
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-200 ${
           scrolled
-            ? 'border-b border-gray-100 bg-white/95 shadow-sm backdrop-blur-md dark:border-white/5 dark:bg-[#0f0e17]/95'
-            : 'border-b border-gray-100 bg-white dark:border-white/5 dark:bg-[#0f0e17]'
+            ? 'border-b border-border/50 bg-surface/95 shadow-sm backdrop-blur-md'
+            : 'border-b border-border/50 bg-surface'
         }`}
       >
         {user ? (
@@ -260,9 +271,7 @@ export default function Header() {
                   disabled={isSwitching}
                   className={`quick-switch-btn flex h-10 items-center gap-2.5 rounded-lg border-2 px-3.5 text-sm font-semibold transition-all duration-200 hover:shadow-md active:scale-95 ${isSwitching ? 'cursor-not-allowed opacity-60' : 'hover:-translate-y-0.5'}`}
                   style={{
-                    borderColor: 'var(--workspace-primary)',
-                    background: `linear-gradient(135deg, var(--workspace-primary), var(--workspace-primary-hover))`,
-                    color: 'white',
+                    ...switchAccent,
                     boxShadow: isSwitching ? 'none' : '0 4px 16px rgba(0, 0, 0, 0.12)',
                   }}
                   aria-label={switchButtonLabel}
@@ -276,7 +285,7 @@ export default function Header() {
 
               <button
                 onClick={() => setSearchOpen(true)}
-                className="flex h-10 min-w-0 w-[120px] items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 text-gray-400 transition-colors hover:bg-gray-50 hover:text-gray-600 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10 dark:hover:text-gray-300 lg:w-[140px] xl:w-[160px]"
+                className="flex h-10 min-w-0 w-[120px] items-center gap-2 rounded-lg border border-border bg-input px-3 text-muted/70 transition-colors hover:bg-surface hover:text-foreground lg:w-[140px] xl:w-[160px]"
               >
                 <Search className="h-4 w-4 flex-shrink-0" />
                 <span className="flex-1 truncate text-start text-xs">{t.common.search}</span>
@@ -288,13 +297,13 @@ export default function Header() {
               <div className="relative" ref={langRef}>
                 <button
                   onClick={() => setLangOpen((open) => !open)}
-                  className="flex h-9 items-center gap-1.5 rounded-xl px-2.5 text-xs font-medium text-gray-500 transition-colors hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-white/5"
+                  className="flex h-9 items-center gap-1.5 rounded-xl px-2.5 text-xs font-medium text-muted transition-colors hover:bg-surface"
                 >
                   <span className="text-xs font-medium">{activeLang.country}</span>
                   <span className="text-xs font-medium text-gray-400">{activeLang.display}</span>
                 </button>
                 {langOpen ? (
-                  <div className="absolute end-0 top-full z-50 mt-1 w-40 overflow-hidden rounded-xl border border-gray-200 bg-white py-1 shadow-xl shadow-black/20 dark:border-white/10 dark:bg-[#1a1825]">
+                  <div className="absolute end-0 top-full z-50 mt-1 w-40 overflow-hidden rounded-xl border border-border bg-card py-1 shadow-xl shadow-brand/5">
                     {LANGS.map((lang) => (
                       <button
                         key={lang.code}
@@ -304,8 +313,8 @@ export default function Header() {
                         }}
                         className={`flex w-full items-center gap-2.5 px-3 py-2 text-sm transition-colors ${
                           currentLang === lang.code
-                            ? 'text-gray-700 dark:text-gray-300'
-                            : 'text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-white/5'
+                            ? 'text-foreground'
+                            : 'text-foreground hover:bg-surface'
                         }`}
                         style={currentLang === lang.code ? {
                           background: 'var(--workspace-primary-light)',
@@ -337,7 +346,7 @@ export default function Header() {
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => navigate('/login')}
-                    className="px-3 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+                    className="px-3 py-1.5 text-sm font-medium text-muted transition-colors hover:text-foreground"
                   >
                     {t.nav?.login || 'Sign in'}
                   </button>
@@ -377,16 +386,19 @@ export default function Header() {
                       {firstName}
                     </span>
                     <span
-                        className={`header-profile-chip flex-shrink-0 ${
-                        isFreelancer
-                          ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300'
-                          : 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300'
-                       }`}
+                        className="header-profile-chip flex-shrink-0 flex items-center gap-1.5"
                       style={{
-                        background: 'var(--workspace-primary-light)',
-                        color: 'var(--workspace-primary)',
+                        background: isFreelancer ? 'var(--workspace-primary)' : 'var(--brand-accent)',
+                        color: isFreelancer ? 'white' : 'var(--text-primary)',
+                        padding: '6px 14px',
+                        borderRadius: '9999px',
+                        fontSize: '0.75rem',
+                        fontWeight: 600,
+                        border: `2px solid ${isFreelancer ? 'rgba(255,255,255,0.18)' : 'rgba(245,158,11,0.18)'}`,
+                        boxShadow: isFreelancer ? '0 0 0 1px rgba(255, 255, 255, 0.08) inset' : '0 0 0 1px rgba(255,255,255,0.35) inset',
                       }}
                     >
+                      <span className={`h-1.5 w-1.5 rounded-full animate-pulse ${isFreelancer ? 'bg-white' : 'bg-foreground'}`} />
                       {isFreelancer ? 'Pro' : 'Client'}
                     </span>
                     <ChevronDown
@@ -397,43 +409,62 @@ export default function Header() {
                   </button>
 
                   {userMenuOpen ? (
-                    <div className="header-dropdown-surface absolute end-0 top-full z-50 mt-2 w-56">
-                      <div className="border-b border-gray-100 px-3 py-2.5 dark:border-white/5">
-                        <p className="truncate text-sm font-medium text-gray-900 dark:text-white">{displayName}</p>
-                        <p className="truncate text-xs text-gray-500 dark:text-gray-400">{user.email}</p>
+                    <div className="absolute end-0 top-full z-50 mt-3 w-[288px] overflow-hidden rounded-[1.4rem] border border-border bg-card p-2.5 shadow-xl backdrop-blur-xl">
+                      <div className="rounded-[1.15rem] border border-border/50 bg-surface px-4 py-3.5">
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="min-w-0">
+                            <p className="truncate text-[15px] font-semibold text-[var(--text-primary)]">{displayName}</p>
+                            <p className="truncate text-xs text-[var(--text-muted)]">{user.email}</p>
+                          </div>
+                          <span
+                            className="inline-flex shrink-0 items-center rounded-full px-2.5 py-1 text-[11px] font-semibold shadow-sm"
+                            style={{
+                              background: isFreelancer ? 'rgba(139,92,246,0.16)' : 'rgba(245,158,11,0.16)',
+                              color: isFreelancer ? '#8b5cf6' : '#d97706',
+                            }}
+                          >
+                            {isFreelancer ? 'Pro' : 'Client'}
+                          </span>
+                        </div>
                       </div>
 
-                      {[
-                        { label: t.nav?.dashboard || 'Dashboard', Icon: User, href: '/dashboard' },
-                        { label: t.nav?.settings || 'Settings', Icon: Settings, href: '/settings' },
-                        { label: t.settings?.cinVerification || 'Verify identity', Icon: Shield, href: '/verify-identity' },
-                        ...(canAccessAdmin
-                          ? [{ label: t.nav?.adminDashboard || 'Admin Dashboard', Icon: Shield, href: '/admin' }]
-                          : []),
-                      ].map(({ label, Icon, href }) => (
-                        <button
-                          key={href}
-                          onClick={() => {
-                            navigate(href)
-                            setUserMenuOpen(false)
-                          }}
-                          className="header-dropdown-item"
-                        >
-                          <Icon className="h-3.5 w-3.5 text-gray-400" />
-                          {label}
-                        </button>
-                      ))}
+                      <div className="mt-2.5 space-y-1.5">
+                        {[
+                          { label: t.nav?.dashboard || 'Dashboard', Icon: User, href: '/dashboard' },
+                          { label: t.nav?.settings || 'Settings', Icon: Settings, href: '/settings' },
+                          { label: t.settings?.cinVerification || 'Verify identity', Icon: Shield, href: '/verify-identity' },
+                          ...(canAccessAdmin
+                            ? [{ label: t.nav?.adminDashboard || 'Admin Dashboard', Icon: Shield, href: '/admin' }]
+                            : []),
+                        ].map(({ label, Icon, href }) => (
+                          <button
+                            key={href}
+                            onClick={() => {
+                              navigate(href)
+                              setUserMenuOpen(false)
+                            }}
+                            className="group flex w-full items-center gap-3 rounded-xl px-3.5 py-3 text-left text-sm font-medium text-foreground transition-all duration-150 hover:bg-surface"
+                          >
+                            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-border bg-surface text-muted transition-colors group-hover:border-brand/16 group-hover:text-brand">
+                              <Icon className="h-4 w-4" />
+                            </span>
+                            <span className="truncate">{label}</span>
+                          </button>
+                        ))}
+                      </div>
 
-                      <div className="mt-1 border-t border-gray-100 pt-1 dark:border-white/5">
+                      <div className="mt-2.5 border-t border-border/50 pt-2.5">
                         <button
                           onClick={async () => {
                             await signOut()
                             setUserMenuOpen(false)
                           }}
-                          className="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-red-600 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
+                          className="group flex w-full items-center gap-3 rounded-xl px-3.5 py-3 text-left text-sm font-semibold text-red-500 transition-all duration-150 hover:bg-red-50 dark:hover:bg-red-500/10"
                         >
-                          <LogOut className="h-3.5 w-3.5" />
-                          {t.nav?.logout || 'Sign out'}
+                          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-red-200 dark:border-red-500/20 bg-red-50 dark:bg-red-500/10 text-red-500 transition-colors">
+                            <LogOut className="h-4 w-4" />
+                          </span>
+                          <span>{t.nav?.logout || 'Sign out'}</span>
                         </button>
                       </div>
                     </div>
@@ -449,14 +480,14 @@ export default function Header() {
         <div className="fixed inset-0 z-[60] md:hidden">
           <button
             aria-label={t.common?.closeMenu || 'Close navigation menu'}
-            className="absolute inset-0 bg-[#0f0e17]/60 backdrop-blur-sm"
+            className="absolute inset-0 bg-foreground/60 backdrop-blur-sm"
             onClick={() => setMobileMenuOpen(false)}
           />
 
-          <div className={`absolute inset-y-0 w-[88vw] max-w-sm bg-white shadow-2xl dark:border-white/10 dark:bg-[#14121f] ${
-            dir === 'rtl' ? 'left-0 border-r border-gray-200' : 'right-0 border-l border-gray-200'
+          <div className={`absolute inset-y-0 w-[88vw] max-w-sm bg-surface border-border shadow-2xl ${
+            dir === 'rtl' ? 'left-0 border-r border-border' : 'right-0 border-l border-border'
           }`}>
-            <div className="flex h-16 items-center justify-between border-b border-gray-100 px-4 dark:border-white/10">
+            <div className="flex h-16 items-center justify-between border-b border-border/50 px-4">
               <button onClick={() => navigate('/')} className="flex items-center">
                 <img src={logoSrc} alt="Khedma TN" style={{ height: '28px', width: 'auto' }} />
               </button>
@@ -475,14 +506,14 @@ export default function Header() {
                   setSearchOpen(true)
                   setMobileMenuOpen(false)
                 }}
-                className="flex h-11 w-full items-center gap-3 rounded-2xl border border-gray-200 bg-gray-50 px-4 text-start text-gray-600 dark:border-white/10 dark:bg-white/5 dark:text-gray-300"
+                className="flex h-11 w-full items-center gap-3 rounded-2xl border border-input bg-input px-4 text-start text-muted"
               >
                 <Search className="h-4 w-4" />
                 <span className="text-sm">{t.common?.search || 'Search'}</span>
               </button>
 
               {user ? (
-                <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4 dark:border-white/10 dark:bg-white/[0.04]">
+                <div className="rounded-2xl border border-border bg-card p-4">
                   <div className="flex items-center gap-3">
                     {profile?.avatar_url ? (
                       <img src={profile.avatar_url} alt={firstName} className="h-11 w-11 rounded-full object-cover" />
@@ -547,7 +578,7 @@ export default function Header() {
                         navigate('/dashboard')
                         setMobileMenuOpen(false)
                       }}
-                      className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-white/5"
+                      className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium text-foreground transition-colors hover:bg-surface"
                     >
                       <User className="h-4 w-4 flex-shrink-0" />
                         {t.nav?.dashboard || 'Dashboard'}
@@ -557,7 +588,7 @@ export default function Header() {
                         navigate('/settings')
                         setMobileMenuOpen(false)
                       }}
-                      className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-white/5"
+                      className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium text-foreground transition-colors hover:bg-surface"
                     >
                       <Settings className="h-4 w-4 flex-shrink-0" />
                         {t.nav?.settings || 'Settings'}
@@ -568,7 +599,7 @@ export default function Header() {
                           navigate('/admin')
                           setMobileMenuOpen(false)
                         }}
-                        className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-white/5"
+                        className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium text-foreground transition-colors hover:bg-surface"
                       >
                         <Shield className="h-4 w-4 flex-shrink-0" />
                         {t.nav?.adminDashboard || 'Admin Dashboard'}
