@@ -201,10 +201,9 @@ export default function ProfileSettings() {
                     <p className="text-muted">{form.phone}</p>
                     <div className="flex flex-wrap gap-2 mt-2">
                         <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${
-                            profile?.user_type === 'freelancer' ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400'
-                            : profile?.user_type === 'client' ? 'bg-secondary-100 dark:bg-secondary-900/30 text-secondary-700 dark:text-secondary-400'
-                            : profile?.user_type === 'both' ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400'
-                            : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'
+                            profile?.user_type === 'both'
+                                ? 'border border-primary-500/20 bg-primary-500/12 text-primary-700 dark:text-primary-200'
+                                : 'border border-gray-200 bg-gray-100 text-gray-700 dark:border-white/10 dark:bg-white/[0.04] dark:text-gray-200'
                         }`}>
                             <User className="w-3 h-3" />
                             {profile?.user_type === 'freelancer' ? tx('settings.accountTypeFreelancer', undefined, 'Freelancer')
@@ -221,12 +220,12 @@ export default function ProfileSettings() {
                                 <Loader2 className="w-3 h-3 animate-spin" />{tx('settings.identityPending', undefined, 'Under review')}
                             </span>
                         ) : (
-                            <button onClick={() => navigate('/verify-identity')} className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                            <button onClick={() => navigate('/verify-identity')} className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border border-primary-500/20 bg-primary-500/12 text-primary-700 transition-colors hover:bg-primary-500/18 dark:text-primary-200">
                                 <Shield className="w-3 h-3" />{tx('settings.verifyIdentity', undefined, 'Verify your identity')}
                             </button>
                         )}
                         {nextSetupPath === null ? (
-                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400">
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">
                                 <Check className="w-3 h-3" />{tx('settings.profileComplete', undefined, 'Profile complete')}
                             </span>
                         ) : showSecondarySetupChip ? (
@@ -239,13 +238,13 @@ export default function ProfileSettings() {
             </div>
 
             {/* Completion widget */}
-            <div className={`p-4 rounded-2xl border-2 ${completionPct === 100 ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800' : 'bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800'}`}>
+            <div className={`p-4 rounded-2xl border-2 ${completionPct === 100 ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800' : 'bg-primary-50 dark:bg-primary-900/20 border-primary-200 dark:border-primary-800/40'}`}>
                 <div className="flex items-center justify-between mb-3">
                     <span className="font-medium text-sm">{tx('settings.profileCompletionTitle', undefined, 'Profile completion')}</span>
-                    <span className={`text-lg font-bold ${completionPct === 100 ? 'text-green-600' : 'text-orange-600'}`}>{completionPct}%</span>
+                    <span className={`text-lg font-bold ${completionPct === 100 ? 'text-green-600' : 'text-primary-600'}`}>{completionPct}%</span>
                 </div>
                 <div className="h-2.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                    <div className={`h-full rounded-full transition-[width] duration-300 ${completionPct === 100 ? 'bg-green-500' : 'bg-gradient-to-r from-orange-400 to-orange-500'}`} style={{ width: `${completionPct}%` }} />
+                    <div className={`h-full rounded-full transition-[width] duration-300 ${completionPct === 100 ? 'bg-green-500' : 'bg-gradient-to-r from-primary-500 to-primary-600'}`} style={{ width: `${completionPct}%` }} />
                 </div>
                 {missingFields.length > 0 && (
                     <div className="mt-3 flex flex-wrap gap-2">
@@ -277,7 +276,7 @@ export default function ProfileSettings() {
                 <div className="mt-4 rounded-2xl border border-gray-200/80 bg-gray-50/90 p-4 dark:border-white/8 dark:bg-white/[0.04]">
                     <div className="flex items-center justify-between gap-3">
                         <div className="flex flex-wrap items-center gap-2">
-                            <span className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium ${activeMode === 'freelancer' ? 'border-violet-500/20 bg-violet-500/12 text-violet-700 dark:text-violet-200' : 'border-emerald-500/20 bg-emerald-500/12 text-emerald-700 dark:text-emerald-200'}`}>
+                            <span className="inline-flex items-center rounded-full border border-primary-500/20 bg-primary-500/12 px-3 py-1 text-xs font-medium text-primary-700 dark:text-primary-200">
                                 {activeMode === 'freelancer' ? t.auth.accountPanel.freelancerLabel : t.auth.accountPanel.clientLabel}
                             </span>
                             <span className="text-sm font-medium text-foreground">{workspaceReady ? t.auth.accountPanel.ready : t.auth.accountPanel.needsSetup}</span>
@@ -285,7 +284,7 @@ export default function ProfileSettings() {
                         <span className="text-sm font-semibold text-muted">{getWorkspaceSetupProgress(profile, freelancerProfile, activeMode)}%</span>
                     </div>
                     <div className="mt-3 h-2 overflow-hidden rounded-full bg-gray-200 dark:bg-white/10">
-                        <div className={`h-full rounded-full transition-[width] duration-300 ${activeMode === 'freelancer' ? 'bg-gradient-to-r from-violet-500 to-fuchsia-400' : 'bg-gradient-to-r from-emerald-500 to-teal-400'}`} style={{ width: `${getWorkspaceSetupProgress(profile, freelancerProfile, activeMode)}%` }} />
+                        <div className="h-full rounded-full bg-gradient-to-r from-primary-500 to-primary-600 transition-[width] duration-300" style={{ width: `${getWorkspaceSetupProgress(profile, freelancerProfile, activeMode)}%` }} />
                     </div>
                     <p className="mt-2 text-xs text-muted">{t.auth.accountPanel.progressLabel}</p>
                 </div>
@@ -307,25 +306,25 @@ export default function ProfileSettings() {
                     <p className="mt-3 text-xs text-muted">{nextSetupHint}</p>
                 </div>
                 <div className="mt-4 grid gap-3 md:grid-cols-2">
-                    {([
-                        { type: 'freelancer' as const, label: t.auth.accountPanel.freelancerLabel, desc: t.auth.accountPanel.freelancerDesc, tone: 'border-violet-300/30 bg-violet-500/[0.05] dark:border-violet-500/20 dark:bg-violet-500/[0.08]', chip: 'border-violet-400/20 bg-violet-500/12 text-violet-700 dark:text-violet-200' },
-                        { type: 'client' as const, label: t.auth.accountPanel.clientLabel, desc: t.auth.accountPanel.clientDesc, tone: 'border-emerald-300/30 bg-emerald-500/[0.05] dark:border-emerald-500/20 dark:bg-emerald-500/[0.08]', chip: 'border-emerald-400/20 bg-emerald-500/12 text-emerald-700 dark:text-emerald-200' },
-                    ] as const).map(({ type, label, desc, tone, chip }) => {
-                        const isActive = activeMode === type;
-                        const isAvailable = profile?.user_type === 'both' || profile?.user_type === type;
-                        const actionLabel = isActive ? t.auth.accountPanel.current : isAvailable ? t.auth.accountPanel.switchAction : t.auth.accountPanel.enable;
-                        return (
-                            <button key={type} type="button" onClick={e => { e.preventDefault(); e.stopPropagation(); void handleWorkspaceSelection(type); }} disabled={isActive || isSwitchingWorkspace !== null}
-                                className={`rounded-2xl border p-4 text-left transition-colors ${isActive ? tone : 'border-gray-200 bg-white hover:border-primary-300 dark:border-white/10 dark:bg-white/[0.03] dark:hover:border-primary-500/30'} ${isActive ? 'cursor-default' : ''}`}>
-                                <div className="flex items-start justify-between gap-3">
-                                    <div>
-                                        <div className="text-sm font-semibold text-foreground">{label}</div>
-                                        <p className="mt-2 text-sm leading-relaxed text-muted">{desc}</p>
+                        {([
+                            { type: 'freelancer' as const, label: t.auth.accountPanel.freelancerLabel, desc: t.auth.accountPanel.freelancerDesc },
+                            { type: 'client' as const, label: t.auth.accountPanel.clientLabel, desc: t.auth.accountPanel.clientDesc },
+                        ] as const).map(({ type, label, desc }) => {
+                            const isActive = activeMode === type;
+                            const isAvailable = profile?.user_type === 'both' || profile?.user_type === type;
+                            const actionLabel = isActive ? t.auth.accountPanel.current : isAvailable ? t.auth.accountPanel.switchAction : t.auth.accountPanel.enable;
+                            return (
+                                <button key={type} type="button" onClick={e => { e.preventDefault(); e.stopPropagation(); void handleWorkspaceSelection(type); }} disabled={isActive || isSwitchingWorkspace !== null}
+                                    className={`rounded-2xl border p-4 text-left transition-colors ${isActive ? 'border-primary-500/20 bg-primary-500/[0.08] dark:border-primary-500/30 dark:bg-primary-500/[0.12]' : 'border-gray-200 bg-white hover:border-primary-300 dark:border-white/10 dark:bg-white/[0.03] dark:hover:border-primary-500/30'} ${isActive ? 'cursor-default' : ''}`}>
+                                    <div className="flex items-start justify-between gap-3">
+                                        <div>
+                                            <div className="text-sm font-semibold text-foreground">{label}</div>
+                                            <p className="mt-2 text-sm leading-relaxed text-muted">{desc}</p>
+                                        </div>
+                                        <span className={`inline-flex min-h-8 items-center gap-1 rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] ${isActive ? 'border-primary-500/20 bg-primary-500/12 text-primary-700 dark:text-primary-200' : 'border-gray-200 bg-gray-100 text-gray-600 dark:border-white/10 dark:bg-white/[0.04] dark:text-gray-300'}`}>
+                                            {isSwitchingWorkspace === type ? <><Loader2 className="h-3 w-3 animate-spin" />{t.auth.accountPanel.switching}</> : actionLabel}
+                                        </span>
                                     </div>
-                                    <span className={`inline-flex min-h-8 items-center gap-1 rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] ${chip}`}>
-                                        {isSwitchingWorkspace === type ? <><Loader2 className="h-3 w-3 animate-spin" />{t.auth.accountPanel.switching}</> : actionLabel}
-                                    </span>
-                                </div>
                             </button>
                         );
                     })}

@@ -61,13 +61,13 @@ export default function AdminDashboard() {
     };
 
     return (
-        <div className="relative min-h-screen overflow-x-hidden bg-[radial-gradient(1200px_circle_at_10%_10%,rgba(21,84,247,0.12),transparent_45%),radial-gradient(900px_circle_at_90%_5%,rgba(147,51,234,0.14),transparent_35%),linear-gradient(180deg,#f4f7ff_0%,#edf2fb_100%)] dark:bg-[radial-gradient(1100px_circle_at_8%_12%,rgba(14,65,227,0.2),transparent_42%),radial-gradient(900px_circle_at_92%_8%,rgba(147,51,234,0.16),transparent_36%),linear-gradient(180deg,#070b14_0%,#0a1220_100%)]">
+        <div className="workspace-admin relative min-h-screen overflow-x-hidden bg-[radial-gradient(1200px_circle_at_10%_10%,rgba(21,84,247,0.12),transparent_45%),radial-gradient(900px_circle_at_90%_5%,rgba(147,51,234,0.14),transparent_35%),linear-gradient(180deg,#f4f7ff_0%,#edf2fb_100%)] dark:bg-[radial-gradient(1100px_circle_at_8%_12%,rgba(14,65,227,0.2),transparent_42%),radial-gradient(900px_circle_at_92%_8%,rgba(147,51,234,0.16),transparent_36%),linear-gradient(180deg,#070b14_0%,#0a1220_100%)]">
             <div className="pointer-events-none absolute inset-0 opacity-70 dark:opacity-80 [background-image:radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.16),transparent_28%),radial-gradient(circle_at_80%_30%,rgba(21,84,247,0.2),transparent_24%),radial-gradient(circle_at_30%_78%,rgba(248,101,69,0.14),transparent_26%)]" />
 
             <header className="sticky top-0 z-40 border-b border-white/35 dark:border-white/10 bg-white/72 dark:bg-slate-950/58 backdrop-blur-2xl">
                 <div className="container-custom flex flex-col gap-4 py-4 sm:flex-row sm:items-center sm:justify-between">
                     <div className="flex items-start gap-4 sm:items-center">
-                        <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#1554f7] to-[#9333ea] shadow-lg shadow-[#1554f7]/35 flex items-center justify-center">
+                        <div className="w-11 h-11 rounded-2xl flex items-center justify-center" style={{ background: 'linear-gradient(to bottom right, var(--workspace-primary), var(--workspace-primary-hover))', boxShadow: '0 12px 28px -10px color-mix(in srgb, var(--workspace-primary) 35%, transparent)' }}>
                             <Shield className="w-6 h-6 text-white" />
                         </div>
                         <div>
@@ -99,9 +99,10 @@ export default function AdminDashboard() {
                                         onClick={() => setActiveTab(tab.id)}
                                         className={`flex w-full min-w-[140px] shrink-0 items-center justify-center gap-2.5 rounded-xl border px-3 py-3 text-start transition-all duration-300 sm:min-w-0 lg:justify-start ${
                                             activeTab === tab.id
-                                                ? 'bg-gradient-to-r from-[#1554f7] to-[#9333ea] text-white border-transparent shadow-lg shadow-[#1554f7]/35 -translate-y-[1px]'
+                                                ? 'text-white border-transparent -translate-y-[1px]'
                                                 : 'text-foreground border-transparent hover:bg-white/75 dark:hover:bg-slate-800/70 hover:border-primary-300/30 dark:hover:border-primary-500/20'
                                         }`}
+                                        style={activeTab === tab.id ? { background: 'linear-gradient(to right, var(--workspace-primary), var(--workspace-primary-hover))', boxShadow: '0 16px 34px -16px color-mix(in srgb, var(--workspace-primary) 35%, transparent)' } : undefined}
                                         dir={dir}
                                     >
                                         <span className={`inline-flex items-center justify-center w-7 h-7 rounded-lg ${activeTab === tab.id ? 'bg-white/15' : 'bg-black/5 dark:bg-white/5'}`}>

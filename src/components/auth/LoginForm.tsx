@@ -63,11 +63,11 @@ function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
                 {/* Header */}
                 <div className="text-center mb-8">
                     <div className="relative inline-block">
-                        <div className="w-20 h-20 rounded-2xl gradient-primary flex items-center justify-center mx-auto mb-5 shadow-lg shadow-primary-600/30">
-                            <Mail className="w-10 h-10 text-white" />
+                        <div className="mx-auto mb-5 flex h-[72px] w-[72px] items-center justify-center rounded-[22px] bg-[linear-gradient(140deg,#2455f5_0%,#6d28d9_55%,#c026d3_100%)] shadow-[0_20px_48px_-22px_rgba(109,40,217,0.75)]">
+                            <Mail className="h-9 w-9 text-white" />
                         </div>
-                        <div className="absolute -top-1 -end-1 w-8 h-8 rounded-xl bg-gradient-to-r from-accent-400 to-accent-600 flex items-center justify-center shadow-lg">
-                            <Sparkles className="w-4 h-4 text-white" />
+                        <div className="absolute -top-1 -end-1 flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 shadow-lg shadow-amber-500/30">
+                            <Sparkles className="h-4 w-4 text-white" />
                         </div>
                     </div>
                     <h2 className="text-center text-2xl font-bold text-[#171420] dark:text-white mb-2">
@@ -99,7 +99,7 @@ function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
                             showToast(t.auth.googleLoginError, 'error');
                         }
                     }}
-                    className="w-full flex items-center justify-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3 font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-white/10 dark:bg-[#221d30] dark:text-gray-200 dark:hover:bg-[#2a2338]"
+                    className="w-full flex items-center justify-center gap-3 rounded-2xl border border-gray-200/80 bg-white px-4 py-3.5 font-medium text-gray-700 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-gray-50 hover:shadow-md dark:border-white/10 dark:bg-[#221d30] dark:text-gray-200 dark:hover:bg-[#2a2338]"
                 >
                     <svg className="w-5 h-5" viewBox="0 0 24 24">
                         <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -182,7 +182,7 @@ function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
                 <button
                     type="submit"
                     disabled={isLoading}
-                    className="group inline-flex w-full items-center justify-center gap-2 rounded-xl bg-purple-600 px-6 py-3 font-semibold text-white shadow-lg shadow-purple-500/20 transition-all duration-200 hover:bg-purple-500 hover:shadow-xl hover:shadow-purple-500/30"
+                    className="group inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[linear-gradient(120deg,#6d28d9_0%,#9333ea_52%,#c026d3_100%)] px-6 py-3.5 font-semibold text-white shadow-[0_20px_48px_-24px_rgba(147,51,234,0.75)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_24px_56px_-24px_rgba(192,38,211,0.85)]"
                 >
                     {isLoading ? (
                         <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />

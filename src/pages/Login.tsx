@@ -1,10 +1,10 @@
-import { Header, Footer } from '../components/layout';
-import { LoginForm } from '../components/auth';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { BadgeCheck, Globe2, ShieldCheck } from 'lucide-react';
+
+import { AuthShell, LoginForm } from '../components/auth';
 import { useAuth } from '../contexts/AuthContext';
 import { useEffect } from 'react';
 import SEO, { SEO_CONFIG } from '../components/common/SEO';
-import { useTheme } from '../contexts/ThemeContext';
 import { Loader2 } from 'lucide-react';
 import { getPostAuthWorkspacePath } from '@/lib/workspaceRoutes';
 import { useTranslation } from '../i18n';
@@ -13,7 +13,6 @@ function Login() {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const { isAuthenticated, isLoading, profile, freelancerProfile } = useAuth();
-    const { theme } = useTheme();
     const { tx } = useTranslation();
     const isOAuthResume = searchParams.get('oauth') === 'resume';
 
@@ -30,27 +29,43 @@ function Login() {
     };
 
     return (
-        <div className="min-h-screen flex flex-col relative overflow-x-hidden bg-dark-50 dark:bg-dark-900">
-            {/* Ambient Background */}
-            <div className="absolute inset-0 pointer-events-none">
-                <div className="absolute top-0 start-0 w-[500px] h-[500px] bg-primary-500/10 rounded-full blur-[100px] mix-blend-multiply dark:mix-blend-screen animate-pulse" />
-                <div className="absolute bottom-0 end-0 w-[500px] h-[500px] bg-accent-500/10 rounded-full blur-[100px] mix-blend-multiply dark:mix-blend-screen animate-pulse animation-delay-200" />
-            </div>
-
+        <>
             <SEO {...SEO_CONFIG.login} url="/login" noIndex />
-            <Header />
-
-            <div className="flex-1 flex items-center justify-center py-16 px-4 relative z-10">
-                <div className="w-full max-w-md animate-slide-up">
-                    <div className="overflow-visible">
-                        <img
-                            src={theme === 'dark' ? '/logos/logo-stacked-dark.svg' : '/logos/logo-stacked.svg'}
-                            alt="Khedma TN"
-                            style={{ height: '72px', width: 'auto', maxWidth: '160px', margin: '0 auto 2rem' }}
-                        />
-                    </div>
+            <AuthShell
+                badge={tx('pages.login.badge', undefined, 'Trusted freelance marketplace')}
+                title={tx('pages.login.heroTitle', undefined, 'Sign in without the clutter and get back to work fast.')}
+                description={tx('pages.login.heroDescription', undefined, 'A calmer auth flow for clients and freelancers, with clearer states, trusted payments, and workspace switching that stays out of your way.')}
+                highlights={[
+                    {
+                        icon: ShieldCheck,
+                        title: tx('pages.login.highlightTrustTitle', undefined, 'Verified identities'),
+                        description: tx('pages.login.highlightTrustDescription', undefined, 'Profiles, contracts, and verification signals stay visible across your workspace.'),
+                    },
+                    {
+                        icon: BadgeCheck,
+                        title: tx('pages.login.highlightPaymentsTitle', undefined, 'Protected transactions'),
+                        description: tx('pages.login.highlightPaymentsDescription', undefined, 'Escrow-first flows keep client payments and freelancer delivery aligned.'),
+                        tone: 'accent',
+                    },
+                    {
+                        icon: Globe2,
+                        title: tx('pages.login.highlightLocaleTitle', undefined, 'Built for Tunisia'),
+                        description: tx('pages.login.highlightLocaleDescription', undefined, 'Arabic, French, and English flows tuned for local freelance work.'),
+                        tone: 'cyan',
+                    },
+                ]}
+                topAction={
+                    <Link
+                        to="/signup"
+                        className="inline-flex items-center rounded-full border border-white/12 bg-white/6 px-4 py-2 text-sm font-medium text-white/80 backdrop-blur-sm transition-colors hover:border-white/20 hover:bg-white/10 hover:text-white"
+                    >
+                        {tx('pages.login.createAccountAction', undefined, 'Create account')}
+                    </Link>
+                }
+            >
+                <div className="animate-slide-up">
                     {isOAuthResume && isLoading ? (
-                        <div className="mx-auto max-w-md rounded-2xl bg-white p-8 text-center shadow-xl shadow-gray-200/50 dark:border dark:border-white/8 dark:bg-[#1a1825] dark:shadow-black/50">
+                        <div className="rounded-3xl border border-white/10 bg-gray-50/70 p-8 text-center dark:bg-white/5">
                             <Loader2 className="mx-auto mb-4 h-12 w-12 animate-spin text-primary-600" />
                             <h1 className="mb-2 text-2xl font-bold text-[#171420] dark:text-white">{tx('pages.login.finishingSignIn', undefined, 'Finishing your sign in')}</h1>
                             <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -58,18 +73,14 @@ function Login() {
                             </p>
                         </div>
                     ) : (
-                        <div className="mx-auto max-w-md rounded-2xl bg-white p-8 shadow-xl shadow-gray-200/50 dark:border dark:border-white/8 dark:bg-[#1a1825] dark:shadow-black/50">
-                            <LoginForm
-                                onSuccess={handleSuccess}
-                                onSwitchToSignup={() => navigate('/signup')}
-                            />
-                        </div>
+                        <LoginForm
+                            onSuccess={handleSuccess}
+                            onSwitchToSignup={() => navigate('/signup')}
+                        />
                     )}
                 </div>
-            </div>
-
-            <Footer />
-        </div>
+            </AuthShell>
+        </>
     );
 }
 

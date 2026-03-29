@@ -9,10 +9,11 @@ import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../components/ui/Toast';
 import { getStorageConfigErrorMessage, isMissingStorageBucketError, supabase, uploadFile, withTimeout } from '../lib/supabase';
 import { supabaseWithRetry } from '../lib/supabaseWithRetry';
-import type { Skill } from '../types';
-import { skillToEntry } from '../types';
+import type { Skill, SkillEntry } from '../types';
+import { PREDEFINED_SKILLS, entryToSkill, skillToEntry } from '../types';
 import { Header } from '../components/layout';
 import SEO, { SEO_CONFIG } from '../components/common/SEO';
+import OnboardingShell from '../components/onboarding/OnboardingShell';
 import OnboardingStep1 from '../components/onboarding/OnboardingStep1';
 import OnboardingStep2 from '../components/onboarding/OnboardingStep2';
 import {
@@ -23,7 +24,7 @@ import {
 } from '../components/onboarding/schemas';
 
 function FreelancerOnboarding() {
-    const { t, language } = useTranslation();
+    const { t, tx, language } = useTranslation();
     const { user, profile, freelancerProfile, refreshProfile, isLoading: isAuthLoading } = useAuth();
     const { showToast } = useToast();
     const navigate = useNavigate();
@@ -58,13 +59,25 @@ function FreelancerOnboarding() {
         step1Form.reset({
             full_name: profile?.full_name || '',
             title: freelancerProfile?.title || '',
+            phone: profile?.phone || '',
             location: profile?.location || '',
+            bio: profile?.bio || '',
         });
 
         step2Form.reset({
             hourly_rate: freelancerProfile?.hourly_rate ? String(freelancerProfile.hourly_rate) : '',
             availability: freelancerProfile?.availability || 'available',
         });
+
+        const skillsMap = Object.fromEntries(PREDEFINED_SKILLS.map((skill) => [skill.id, skill]));
+        const existingSkills = (freelancerProfile?.skills || [])
+            .map((skill) => {
+                if ('name_ar' in skill) return skill as Skill;
+                return entryToSkill(skill as SkillEntry, skillsMap);
+            })
+            .filter(Boolean) as Skill[];
+
+        setSelectedSkills(existingSkills);
     }, [freelancerProfile, profile, step1Form, step2Form]);
 
     const totalSteps = 2;
@@ -166,7 +179,9 @@ function FreelancerOnboarding() {
                 user.id,
                 {
                     full_name: profileUpdate.full_name,
+                    phone: data.phone,
                     location: profileUpdate.location,
+                    bio: data.bio,
                     user_type: profileUpdate.user_type,
                     avatar_url: profileUpdate.avatar_url,
                     updated_at: new Date().toISOString(),
@@ -329,47 +344,33 @@ function FreelancerOnboarding() {
         );
     }
 
+    const steps = [
+        {
+            id: 1,
+            title: t.onboarding.freelancer.stepBasicInfo || 'Basic information',
+            description: tx('onboarding.freelancer.step1Description', undefined, 'Create a stronger first impression with your headline, location, phone, and intro.'),
+        },
+        {
+            id: 2,
+            title: t.onboarding.freelancer.stepSkillsExperience || 'Skills and experience',
+            description: tx('onboarding.freelancer.step2Description', undefined, 'Choose the skills and availability clients will use to evaluate your fit.'),
+        },
+    ];
+
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-dark-900 overflow-hidden relative transition-colors duration-300">
+        <div className="page-shell bg-[#f6f3ff] dark:bg-[#0b0a12] overflow-hidden relative transition-colors duration-300">
             <SEO {...SEO_CONFIG.freelancerOnboarding} url="/onboarding/freelancer" noIndex />
             <Header />
 
-            <div className="container-custom py-12 relative z-10">
-                <div className="max-w-3xl mx-auto">
-                    <div className="text-center mb-10">
-                        <img
-                            src="/logos/logo-primary.svg"
-                            alt="Khedma TN"
-                            style={{ height: '32px', width: 'auto', margin: '0 auto 1rem' }}
-                        />
-                        <h1 className="heading-md mb-2">{t.onboarding.freelancer.welcome}</h1>
-                        <p className="text-muted">{t.onboarding.freelancer.welcomeDesc}</p>
-                    </div>
-
-                    <div className="mb-10">
-                        <div className="flex items-center justify-between mb-3 text-sm font-medium text-dark-500">
-                            <span>{t.onboarding.freelancer.stepCounter?.replace('{{step}}', String(step)).replace('{{total}}', String(totalSteps)) || `Step ${step} of ${totalSteps}`}</span>
-                            <span className="text-primary-600 dark:text-primary-400">
-                                {Math.round((step / totalSteps) * 100)}%
-                            </span>
-                        </div>
-                        <div className="h-2.5 bg-gray-100 dark:bg-dark-800 rounded-full overflow-hidden shadow-inner">
-                            <div
-                                className="h-full bg-gradient-to-r from-primary-500 to-primary-600 rounded-full transition-all duration-500 ease-out shadow-lg shadow-primary-500/30"
-                                style={{ width: `${(step / totalSteps) * 100}%` }}
-                            />
-                        </div>
-                        <div className="flex justify-between mt-3 text-xs text-muted">
-                            <span className={`transition-colors duration-300 ${step >= 1 ? 'text-primary-600 dark:text-primary-400 font-bold' : ''}`}>
-                                {t.onboarding.freelancer.stepBasicInfo || 'Basic information'}
-                            </span>
-                            <span className={`transition-colors duration-300 ${step >= 2 ? 'text-primary-600 dark:text-primary-400 font-bold' : ''}`}>
-                                {t.onboarding.freelancer.stepSkillsExperience || 'Skills and experience'}
-                            </span>
-                        </div>
-                    </div>
-
-                    <div className="card-glass shadow-xl dark:shadow-black/20 animate-fade-in">
+            <OnboardingShell
+                badge={tx('onboarding.freelancer.badge', undefined, 'Freelancer onboarding')}
+                title={t.onboarding.freelancer.welcome}
+                description={tx('onboarding.freelancer.heroDescription', undefined, 'Build a profile clients can trust quickly: start with your visible identity, then define the skills and availability that shape your first opportunities.')}
+                currentStep={step}
+                totalSteps={totalSteps}
+                steps={steps}
+                main={
+                    <div className="animate-fade-in">
                         {step === 1 && (
                             <OnboardingStep1
                                 form={step1Form}
@@ -381,25 +382,68 @@ function FreelancerOnboarding() {
                             />
                         )}
                         {step === 2 && (
-                            <OnboardingStep2
-                                form={step2Form}
-                                onSubmit={onStep2Submit}
-                                onBack={() => setStep(1)}
-                                isLoading={isLoading}
-                                selectedSkills={selectedSkills}
-                                toggleSkill={toggleSkill}
-                                getSkillName={getSkillName}
-                            />
+                            <>
+                                <OnboardingStep2
+                                    form={step2Form}
+                                    onSubmit={onStep2Submit}
+                                    onBack={() => setStep(1)}
+                                    isLoading={isLoading}
+                                    selectedSkills={selectedSkills}
+                                    toggleSkill={toggleSkill}
+                                    getSkillName={getSkillName}
+                                />
+                                <div className="mt-6 text-center text-sm text-muted">
+                                    <p>{t.onboarding.freelancer.completeLaterHint || 'You can add certificates, portfolio, and additional profile details later from Settings.'}</p>
+                                </div>
+                            </>
                         )}
                     </div>
-
-                    {step === 2 && (
-                        <div className="mt-6 text-center text-sm text-muted">
-                            <p>{t.onboarding.freelancer.completeLaterHint || 'You can add certificates, portfolio, and additional profile details later from Settings.'}</p>
+                }
+                aside={
+                    <div className="space-y-5">
+                        <div>
+                            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary-600 dark:text-primary-300">
+                                {tx('onboarding.freelancer.summaryBadge', undefined, 'Why this matters')}
+                            </p>
+                            <h3 className="mt-3 text-xl font-semibold text-[#171420] dark:text-white">
+                                {tx('onboarding.freelancer.summaryTitle', undefined, 'Clients decide in seconds')}
+                            </h3>
+                            <p className="mt-2 text-sm leading-6 text-[#6b6880] dark:text-[#8b8aa0]">
+                                {tx('onboarding.freelancer.summaryDescription', undefined, 'A stronger first profile creates better trust, better proposal odds, and cleaner matching before your portfolio is even explored.')}
+                            </p>
                         </div>
-                    )}
-                </div>
-            </div>
+
+                        <div className="space-y-3">
+                            {[
+                                {
+                                    title: tx('onboarding.freelancer.summaryPoint1', undefined, 'Use a clear professional title'),
+                                    description: tx('onboarding.freelancer.summaryPoint1Desc', undefined, 'Your title is the fastest cue clients use to understand whether you fit the work.'),
+                                },
+                                {
+                                    title: tx('onboarding.freelancer.summaryPoint2', undefined, 'Choose skills carefully'),
+                                    description: tx('onboarding.freelancer.summaryPoint2Desc', undefined, 'A smaller, more relevant skill stack usually performs better than a noisy one.'),
+                                },
+                                {
+                                    title: tx('onboarding.freelancer.summaryPoint3', undefined, 'Set a believable starting rate'),
+                                    description: tx('onboarding.freelancer.summaryPoint3Desc', undefined, 'Your first rate should feel credible for your current profile depth and market position.'),
+                                },
+                            ].map((item, index) => (
+                                <div key={item.title} className="rounded-2xl border border-primary-100/70 bg-primary-50/60 p-4 dark:border-white/10 dark:bg-white/[0.04]">
+                                    <div className="flex items-start gap-3">
+                                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-600 text-sm font-semibold text-white">
+                                            {index + 1}
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-semibold text-[#171420] dark:text-white">{item.title}</p>
+                                            <p className="mt-2 text-sm leading-6 text-[#6b6880] dark:text-[#8b8aa0]">{item.description}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                }
+            />
         </div>
     );
 }

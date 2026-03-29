@@ -1,4 +1,6 @@
-import { Check } from 'lucide-react';
+import type { ReactNode } from 'react';
+import { Check, Sparkles } from 'lucide-react';
+
 import { useTranslation } from '../../i18n';
 
 interface WizardStep {
@@ -10,77 +12,122 @@ interface WizardStep {
 interface JobWizardLayoutProps {
     currentStep: number;
     steps: WizardStep[];
-    children: React.ReactNode;
+    title: string;
+    description: string;
+    meta?: ReactNode;
+    children: ReactNode;
 }
 
-export default function JobWizardLayout({ currentStep, steps, children }: JobWizardLayoutProps) {
+export default function JobWizardLayout({
+    currentStep,
+    steps,
+    title,
+    description,
+    meta,
+    children,
+}: JobWizardLayoutProps) {
     const { tx } = useTranslation();
 
+    const current = steps[currentStep - 1];
+    const completion = Math.round((currentStep / steps.length) * 100);
+
     return (
-        <div className="max-w-4xl mx-auto">
-            {/* Progress Bar */}
-            <div className="mb-8">
-                <div className="flex items-center justify-between relative">
-                    {/* Background Line */}
-                    <div className="absolute top-1/2 left-0 right-0 h-1 -z-10 rounded-full bg-gray-200 dark:bg-white/10" />
+        <div className="mx-auto max-w-6xl space-y-6">
+            <section className="radius-shell overflow-hidden border border-primary-200/40 bg-[radial-gradient(circle_at_top_left,rgba(21,84,247,0.14),transparent_30%),linear-gradient(135deg,rgba(255,255,255,0.98),rgba(244,241,255,0.94))] p-6 shadow-[0_32px_90px_-48px_rgba(14,65,227,0.28)] dark:border-white/10 dark:bg-[radial-gradient(circle_at_top_left,rgba(21,84,247,0.2),transparent_28%),linear-gradient(145deg,rgba(18,16,28,0.98),rgba(11,10,18,0.98))] sm:p-8">
+                <div className="grid gap-6 xl:grid-cols-[minmax(0,1.08fr)_320px]">
+                    <div className="space-y-5">
+                        <div className="inline-flex items-center gap-2 rounded-full border border-primary-200 bg-white/80 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-primary-700 shadow-sm dark:border-white/10 dark:bg-white/5 dark:text-primary-200">
+                            <Sparkles className="h-3.5 w-3.5" />
+                            {tx('jobs.new.wizard.badge', undefined, 'Project posting flow')}
+                        </div>
 
-                    {/* Active Line */}
-                    <div
-                        className="absolute top-1/2 right-0 h-1 bg-primary-600 -z-10 rounded-full transition-all duration-300"
-                        style={{ width: `${((currentStep - 1) / (steps.length - 1)) * 100}%` }}
-                    />
+                        <div>
+                            <h1 className="text-3xl font-semibold tracking-tight text-[#171420] dark:text-white sm:text-4xl">
+                                {title}
+                            </h1>
+                            <p className="mt-3 max-w-2xl text-sm leading-7 text-[#5c5971] dark:text-[#aca9bd] sm:text-base">
+                                {description}
+                            </p>
+                        </div>
 
+                        {meta ? (
+                            <div className="flex flex-wrap items-center gap-3">{meta}</div>
+                        ) : null}
+                    </div>
+
+                    <div className="rounded-[1.75rem] border border-primary-100/70 bg-white/72 p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
+                        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary-600 dark:text-primary-300">
+                            {tx('jobs.new.wizard.currentPhase', undefined, 'Current phase')}
+                        </p>
+                        <h2 className="mt-3 text-xl font-semibold text-[#171420] dark:text-white">
+                            {current?.title}
+                        </h2>
+                        <p className="mt-2 text-sm leading-6 text-[#6b6880] dark:text-[#8b8aa0]">
+                            {current?.description || tx('jobs.new.stepCounter', { current: currentStep, total: steps.length }, `Step ${currentStep} of ${steps.length}`)}
+                        </p>
+
+                        <div className="mt-5 space-y-3">
+                            <div className="flex items-center justify-between text-sm font-medium text-[#353149] dark:text-[#e3def7]">
+                                <span>{tx('jobs.new.wizard.progress', undefined, 'Progress')}</span>
+                                <span>{completion}%</span>
+                            </div>
+                            <div className="h-2.5 overflow-hidden rounded-full bg-primary-100 dark:bg-white/10">
+                                <div className="h-full rounded-full bg-gradient-to-r from-primary-500 to-primary-600 transition-[width] duration-300" style={{ width: `${completion}%` }} />
+                            </div>
+                            <div className="flex items-center justify-between text-xs text-[#8b8aa0]">
+                                <span>{tx('jobs.new.stepCounter', { current: currentStep, total: steps.length }, `Step ${currentStep} of ${steps.length}`)}</span>
+                                <span>{steps.length - currentStep} {tx('jobs.new.wizard.stepsLeft', undefined, 'steps left')}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section className="premium-panel radius-shell p-4 sm:p-5">
+                <div className="grid gap-3 md:grid-cols-4">
                     {steps.map((step) => {
                         const isCompleted = step.id < currentStep;
                         const isCurrent = step.id === currentStep;
 
                         return (
-                            <div key={step.id} className="flex flex-col items-center gap-2">
-                                <div
-                                    className={
-                                        isCompleted
-                                            ? 'flex h-10 w-10 items-center justify-center rounded-full border border-green-200 bg-green-100 text-green-600 transition-all duration-300 dark:border-green-800/30 dark:bg-green-900/30 dark:text-green-400'
-                                            : isCurrent
-                                                ? 'flex h-10 w-10 items-center justify-center rounded-full bg-purple-600 text-sm font-semibold text-white transition-all duration-300'
-                                                : 'flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 bg-gray-100 text-sm font-semibold text-gray-400 transition-all duration-300 dark:border-white/10 dark:bg-white/5 dark:text-gray-600'
-                                    }
-                                >
-                                    {isCompleted ? (
-                                        <Check className="w-5 h-5" />
-                                    ) : (
-                                        <span className="font-semibold text-sm">{step.id}</span>
-                                    )}
-                                </div>
-                                <div className="hidden md:block text-center">
-                                    <p className={isCompleted
-                                        ? 'text-sm text-green-600 dark:text-green-400'
-                                        : isCurrent
-                                            ? 'text-sm font-medium text-purple-600 dark:text-purple-400'
-                                            : 'text-sm text-gray-400 dark:text-gray-600'
-                                    }>
-                                        {step.title}
-                                    </p>
+                            <div
+                                key={step.id}
+                                className={`rounded-[1.4rem] border p-4 transition-all duration-200 ${isCurrent
+                                    ? 'border-primary-500/25 bg-primary-500/[0.08] shadow-[0_22px_44px_-30px_rgba(21,84,247,0.6)]'
+                                    : isCompleted
+                                        ? 'border-primary-200/80 bg-primary-50/60 dark:border-primary-500/20 dark:bg-primary-500/[0.06]'
+                                        : 'border-gray-200/80 bg-white/70 dark:border-white/10 dark:bg-white/[0.03]'}`}
+                            >
+                                <div className="flex items-start gap-3">
+                                    <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl text-sm font-semibold ${isCurrent
+                                        ? 'bg-primary-600 text-white'
+                                        : isCompleted
+                                            ? 'bg-primary-100 text-primary-700 dark:bg-primary-500/12 dark:text-primary-200'
+                                            : 'bg-gray-100 text-gray-500 dark:bg-white/8 dark:text-[#8b8aa0]'}`}
+                                    >
+                                        {isCompleted ? <Check className="h-4 w-4" /> : step.id}
+                                    </div>
+
+                                    <div className="min-w-0">
+                                        <p className={`text-sm font-semibold ${isCurrent || isCompleted ? 'text-[#171420] dark:text-white' : 'text-[#57536a] dark:text-[#b8b3ca]'}`}>
+                                            {step.title}
+                                        </p>
+                                        {step.description ? (
+                                            <p className="mt-1 text-xs leading-5 text-[#8b8aa0]">
+                                                {step.description}
+                                            </p>
+                                        ) : null}
+                                    </div>
                                 </div>
                             </div>
                         );
                     })}
                 </div>
+            </section>
 
-                {/* Mobile Step Title */}
-                <div className="md:hidden text-center mt-4">
-                    <h2 className="text-lg font-bold text-gray-900 dark:text-white">
-                        {steps[currentStep - 1].title}
-                    </h2>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                        {tx('jobs.new.stepCounter', { current: currentStep, total: steps.length }, `Step ${currentStep} of ${steps.length}`)}
-                    </p>
-                </div>
-            </div>
-
-            {/* Content */}
-            <div className="animate-in fade-in slide-in-from-bottom-4 rounded-2xl border border-gray-100 bg-white p-6 shadow-sm duration-500 dark:border-white/5 dark:bg-[#1a1825] md:p-8">
+            <section className="premium-panel radius-shell overflow-hidden p-6 sm:p-8">
                 {children}
-            </div>
+            </section>
         </div>
     );
 }

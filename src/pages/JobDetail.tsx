@@ -29,6 +29,7 @@ import { useToast } from '../components/ui/Toast';
 import SEO from '../components/common/SEO';
 import { Skeleton } from '../components/common/SkeletonCard';
 import { useTranslation } from '../i18n';
+import type { Skill } from '../types';
 
 import ProposalModal from '../components/proposals/ProposalModal';
 import type { ProposalFormData } from '../components/proposals/ProposalModal';
@@ -52,7 +53,7 @@ interface Job {
     estimated_hours?: number;
     duration?: string;
     experience_level: string;
-    required_skills: string[];
+    required_skills: Array<string | Skill>;
     visibility: string;
     status: string;
     proposals_count: number;
@@ -80,6 +81,11 @@ interface Proposal {
     status: string;
     created_at: string;
 }
+
+type SimilarJob = Pick<Job, 'id' | 'title' | 'job_type' | 'budget_min' | 'budget_max' | 'hourly_rate' | 'posted_at'> & {
+    location?: string;
+    required_skills?: string[];
+};
 
 
 
@@ -130,9 +136,21 @@ function JobDetail() {
     const { user, freelancerProfile } = useAuth();
     const { showToast } = useToast();
     const queryClient = useQueryClient();
-    const { t } = useTranslation();
+    const { t, language } = useTranslation();
 
     const [showProposalModal, setShowProposalModal] = useState(false);
+
+    const getSkillLabel = (skill: string | Skill) => {
+        if (typeof skill === 'string') {
+            return skill;
+        }
+
+        return language === 'ar'
+            ? skill.name_ar
+            : language === 'fr'
+                ? skill.name_fr
+                : skill.name_en;
+    };
 
     // Job Fetch
     const { data: job, isLoading } = useQuery({
@@ -173,12 +191,15 @@ function JobDetail() {
     });
 
     // Similar Jobs
-    const { data: similarJobs = [] } = useQuery({
+    const { data: similarJobs = [] } = useQuery<SimilarJob[]>({
         queryKey: ['similarJobs', job?.category],
         queryFn: async () => {
             if (!job) return [];
             const { data } = await jobsService.getSimilarJobs(job.id, job.category);
-            return (data as Job[]) || [];
+            return ((data as Job[]) || []).map((similarJob) => ({
+                ...similarJob,
+                required_skills: (similarJob.required_skills || []).map((skill) => getSkillLabel(skill)),
+            }));
         },
         enabled: !!job,
     });
@@ -200,6 +221,7 @@ function JobDetail() {
         enabled: !!user?.id && !!freelancerProfile,
     });
     const connectsAvailable = connectsBalance?.balance ?? 0;
+    const connectsRemainingAfterSubmit = Math.max(connectsAvailable - CONNECTS_COST, 0);
 
     // Toggle Save Mutation
     const toggleSaveMutation = useMutation({
@@ -381,7 +403,7 @@ function JobDetail() {
                         <div className="card">
                             <div className="flex items-start justify-between mb-4">
                                 <div className="flex-1">
-                                    <h1 className="text-2xl font-bold text-foreground mb-2">{job.title}</h1>
+                                    <h1 className="mb-2 text-2xl font-bold text-foreground break-words [overflow-wrap:anywhere]">{job.title}</h1>
                                     <div className="flex flex-wrap items-center gap-4 text-sm text-muted">
                                         <span className="flex items-center gap-1">
                                             <Clock className="w-4 h-4" />
@@ -457,7 +479,7 @@ function JobDetail() {
                         {/* Description */}
                         <div className="card">
                             <h2 className="text-lg font-bold mb-4">{t.jobDetail.description}</h2>
-                            <div className="prose prose-sm max-w-none text-foreground whitespace-pre-wrap">
+                            <div className="prose prose-sm max-w-none text-foreground whitespace-pre-wrap break-words [overflow-wrap:anywhere]">
                                 {job.description}
                             </div>
                         </div>
@@ -467,19 +489,20 @@ function JobDetail() {
                             <h2 className="text-lg font-bold mb-4">{t.jobDetail.requiredSkills}</h2>
                             <div className="flex flex-wrap gap-2">
                                 {job.required_skills?.map((skill, index) => {
+                                    const skillLabel = getSkillLabel(skill);
                                     const isMatch = freelancerProfile?.skills?.some(
-                                        s => ('name_ar' in s) ? (s.name_ar === skill || s.name_en === skill) : s.name === skill
+                                        s => ('name_ar' in s) ? (s.name_ar === skillLabel || s.name_en === skillLabel || s.name_fr === skillLabel) : s.name === skillLabel
                                     );
                                     return (
                                         <span
                                             key={index}
-                                            className={`px-3 py-1.5 rounded-lg text-sm ${isMatch
+                                            className={`break-words [overflow-wrap:anywhere] px-3 py-1.5 rounded-lg text-sm ${isMatch
                                                 ? 'bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800'
                                                 : 'bg-gray-100 dark:bg-dark-800 text-gray-700 dark:text-gray-300'
                                                 }`}
                                         >
                                             {isMatch && <CheckCircle className="w-3 h-3 inline me-1" />}
-                                            {skill}
+                                            {skillLabel}
                                         </span>
                                     );
                                 })}
@@ -517,7 +540,7 @@ function JobDetail() {
                         {similarJobs.length > 0 && (
                             <div className="card">
                                 <h2 className="text-lg font-bold mb-4">وظائف مشابهة</h2>
-                                <div className="grid gap-3">
+                                <div className="grid gap-3 md:grid-cols-2">
                                     {similarJobs.map(j => (
                                         <SimilarJobCard
                                             key={j.id}
@@ -531,9 +554,9 @@ function JobDetail() {
                     </div>
 
                     {/* Sidebar */}
-                    <div className="lg:w-80 space-y-4">
+                    <div className="lg:w-80 space-y-4 lg:sticky lg:top-24 lg:self-start">
                         {/* Action Card */}
-                        <div className="card sticky top-4">
+                        <div className="card space-y-4">
                             {myProposal ? (
                                 <div className="text-center">
                                     <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-3">
@@ -568,7 +591,7 @@ function JobDetail() {
                                     </Button>
                                 </div>
                             ) : (
-                                <div>
+                                <div className="space-y-4">
                                     <Button
                                         variant="primary"
                                         size="lg"
@@ -579,17 +602,43 @@ function JobDetail() {
                                     >
                                         أرسل عرض
                                     </Button>
-                                    {/* Connects balance indicator */}
+
                                     {freelancerProfile && (
-                                        <div className={`mt-2 flex items-center justify-between text-xs rounded-lg px-3 py-2 ${
+                                        <div className={`rounded-2xl border p-4 ${
                                             connectsAvailable >= CONNECTS_COST
-                                                ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400'
-                                                : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400'
+                                                ? 'border-primary-200 bg-primary-50/70 text-primary-800 dark:border-primary-500/20 dark:bg-primary-500/10 dark:text-primary-200'
+                                                : 'border-red-200 bg-red-50/80 text-red-800 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-200'
                                         }`}>
-                                            <span>رصيد الكونيكتس</span>
-                                            <span className="font-bold">
-                                                {connectsAvailable} / يحتاج {CONNECTS_COST}
-                                            </span>
+                                            <div className="flex items-center justify-between gap-4">
+                                                <div>
+                                                    <p className="text-sm font-semibold">متطلبات التقديم</p>
+                                                    <p className="mt-1 text-xs opacity-80">يحتاج هذا العرض إلى كونيكتس قبل الإرسال.</p>
+                                                </div>
+                                                <span className="rounded-full px-3 py-1 text-xs font-bold bg-white/70 dark:bg-white/10">
+                                                    {connectsAvailable >= CONNECTS_COST ? 'جاهز للتقديم' : 'الرصيد غير كافٍ'}
+                                                </span>
+                                            </div>
+
+                                            <div className="mt-4 grid grid-cols-3 gap-3 text-center">
+                                                <div className="rounded-xl bg-white/70 px-3 py-3 dark:bg-white/5">
+                                                    <p className="text-[11px] font-medium uppercase tracking-[0.14em] opacity-70">الرصيد</p>
+                                                    <p className="mt-2 text-lg font-bold">{connectsAvailable}</p>
+                                                </div>
+                                                <div className="rounded-xl bg-white/70 px-3 py-3 dark:bg-white/5">
+                                                    <p className="text-[11px] font-medium uppercase tracking-[0.14em] opacity-70">المطلوب</p>
+                                                    <p className="mt-2 text-lg font-bold">{CONNECTS_COST}</p>
+                                                </div>
+                                                <div className="rounded-xl bg-white/70 px-3 py-3 dark:bg-white/5">
+                                                    <p className="text-[11px] font-medium uppercase tracking-[0.14em] opacity-70">المتبقي</p>
+                                                    <p className="mt-2 text-lg font-bold">{connectsRemainingAfterSubmit}</p>
+                                                </div>
+                                            </div>
+
+                                            <p className="mt-3 text-xs leading-6 opacity-80">
+                                                {connectsAvailable >= CONNECTS_COST
+                                                    ? 'سيتم خصم 2 كونيكتس مباشرة بعد إرسال العرض.'
+                                                    : `تحتاج إلى ${CONNECTS_COST - connectsAvailable} كونيكتس إضافية قبل إرسال هذا العرض.`}
+                                            </p>
                                         </div>
                                     )}
                                 </div>
@@ -687,7 +736,7 @@ function JobDetail() {
                 </div>
             </div>
 
-            <Footer />
+            {!user ? <Footer /> : null}
 
             {job && (
                 <ProposalModal

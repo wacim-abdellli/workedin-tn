@@ -10,17 +10,20 @@ export default function StepVisibility() {
     return (
         <div className="space-y-8">
             <div className="space-y-4">
-                <h3 className="flex items-center gap-2 text-xl font-bold text-gray-900 dark:text-white">
-                    <Eye className="w-6 h-6 text-primary-600" />
+                <div className="inline-flex items-center gap-2 rounded-full border border-primary-100 bg-primary-50/70 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-primary-700 dark:border-white/10 dark:bg-white/[0.04] dark:text-primary-200">
+                    <Eye className="w-3.5 h-3.5" />
+                    {tx('jobs.new.stepVisibility.badge', undefined, 'Audience control')}
+                </div>
+                <h3 className="text-2xl font-semibold tracking-tight text-[#171420] dark:text-white">
                     {tx('jobs.new.stepVisibility.title', undefined, 'من يمكنه رؤية وظيفتك؟')}
                 </h3>
-                <p className="text-gray-500 dark:text-gray-400">
+                <p className="max-w-3xl text-sm leading-7 text-[#5c5971] dark:text-[#aca9bd] sm:text-base">
                     {tx('jobs.new.stepVisibility.subtitle', undefined, 'حدد مستوى الخصوصية المناسب لمشروعك.')}
                 </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <label className={`cursor-pointer rounded-2xl border-2 p-6 transition-all ${visibility === 'public' ? 'border-primary-600 bg-primary-50 ring-1 ring-primary-600 dark:bg-primary-500/10' : 'border-gray-200 bg-white hover:border-gray-300 dark:border-white/10 dark:bg-[#1a1825] dark:hover:border-white/20'}`}>
+                <label className={`cursor-pointer rounded-[1.6rem] border-2 p-6 transition-all ${visibility === 'public' ? 'border-primary-600 bg-primary-50 ring-1 ring-primary-600 dark:bg-primary-500/10' : 'border-gray-200 bg-white hover:border-primary-200 hover:bg-primary-50/40 dark:border-white/10 dark:bg-[#1a1825] dark:hover:border-primary-500/20 dark:hover:bg-white/[0.06]'}`}>
                     <input type="radio" value="public" {...register('visibility')} className="sr-only" />
                     <div className="flex items-center gap-4 mb-2">
                         <div className={`rounded-lg p-2 ${visibility === 'public' ? 'bg-primary-100 text-primary-600 dark:bg-primary-900/30 dark:text-primary-300' : 'bg-gray-100 text-gray-500 dark:bg-white/10 dark:text-gray-400'}`}>
@@ -33,7 +36,7 @@ export default function StepVisibility() {
                     </p>
                 </label>
 
-                <label className={`cursor-pointer rounded-2xl border-2 p-6 transition-all ${visibility === 'invite_only' ? 'border-primary-600 bg-primary-50 ring-1 ring-primary-600 dark:bg-primary-500/10' : 'border-gray-200 bg-white hover:border-gray-300 dark:border-white/10 dark:bg-[#1a1825] dark:hover:border-white/20'}`}>
+                <label className={`cursor-pointer rounded-[1.6rem] border-2 p-6 transition-all ${visibility === 'invite_only' ? 'border-primary-600 bg-primary-50 ring-1 ring-primary-600 dark:bg-primary-500/10' : 'border-gray-200 bg-white hover:border-primary-200 hover:bg-primary-50/40 dark:border-white/10 dark:bg-[#1a1825] dark:hover:border-primary-500/20 dark:hover:bg-white/[0.06]'}`}>
                     <input type="radio" value="invite_only" {...register('visibility')} className="sr-only" />
                     <div className="flex items-center gap-4 mb-2">
                         <div className={`rounded-lg p-2 ${visibility === 'invite_only' ? 'bg-primary-100 text-primary-600 dark:bg-primary-900/30 dark:text-primary-300' : 'bg-gray-100 text-gray-500 dark:bg-white/10 dark:text-gray-400'}`}>
@@ -47,9 +50,9 @@ export default function StepVisibility() {
                 </label>
             </div>
 
-            <div className="flex gap-3 rounded-xl border border-blue-100 bg-blue-50 p-4 dark:border-blue-500/20 dark:bg-blue-500/10">
-                <Users className="mt-0.5 h-5 w-5 flex-shrink-0 text-blue-600 dark:text-blue-300" />
-                <div className="text-sm text-blue-800 dark:text-blue-100">
+            <div className="flex gap-3 rounded-2xl border border-primary-100/80 bg-primary-50/70 p-4 dark:border-white/10 dark:bg-white/[0.04]">
+                <Users className="mt-0.5 h-5 w-5 flex-shrink-0 text-primary-600 dark:text-primary-300" />
+                <div className="text-sm text-primary-800 dark:text-primary-100">
                     <p className="font-bold mb-1">{tx('jobs.new.stepVisibility.tipTitle', undefined, 'نصيحة:')}</p>
                     <p>
                         {tx('jobs.new.stepVisibility.tipDescription', undefined, 'إذا كنت تبحث عن مهارات نادرة أو لديك مشروع حساس، فإن خيار "دعوة فقط" يمنحك تحكماً أكبر. أما للمشاريع العامة، فإن "عام للجميع" يضمن لك تنافسية أفضل في الأسعار.')}

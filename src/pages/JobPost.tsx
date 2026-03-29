@@ -4,7 +4,7 @@ import { useForm, FormProvider, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, ArrowLeft, Save, Loader2, Check } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Check, Clock3, Loader2, Save } from 'lucide-react';
 import { Header } from '../components/layout';
 import SEO from '../components/common/SEO';
 import Button from '../components/ui/Button';
@@ -134,10 +134,26 @@ export default function JobPost() {
     };
 
     const steps = [
-        { id: 1, title: tx('jobs.new.steps.basics', undefined, 'تفاصيل المهمة') },
-        { id: 2, title: tx('jobs.new.steps.budget', undefined, 'الميزانية والمدة') },
-        { id: 3, title: tx('jobs.new.steps.visibility', undefined, 'الظهور') },
-        { id: 4, title: tx('jobs.new.steps.review', undefined, 'المراجعة والنشر') },
+        {
+            id: 1,
+            title: tx('jobs.new.steps.basics', undefined, 'Job details'),
+            description: tx('jobs.new.steps.basicsDescription', undefined, 'Define the brief, category, and required skills clearly.'),
+        },
+        {
+            id: 2,
+            title: tx('jobs.new.steps.budget', undefined, 'Budget and timeline'),
+            description: tx('jobs.new.steps.budgetDescription', undefined, 'Set pricing model, expected duration, and experience level.'),
+        },
+        {
+            id: 3,
+            title: tx('jobs.new.steps.visibility', undefined, 'Visibility'),
+            description: tx('jobs.new.steps.visibilityDescription', undefined, 'Choose whether the brief is public or invite-only.'),
+        },
+        {
+            id: 4,
+            title: tx('jobs.new.steps.review', undefined, 'Review and publish'),
+            description: tx('jobs.new.steps.reviewDescription', undefined, 'Validate the brief before sending it live.'),
+        },
     ];
 
     const handleNext = async () => {
@@ -297,7 +313,7 @@ export default function JobPost() {
     };
 
     return (
-        <div className="page-shell pb-20">
+        <div className="page-shell bg-[#f6f3ff] dark:bg-[#0b0a12] pb-20">
             <SEO
                 title={tx('jobs.new.seo.title', undefined, 'Post a Project')}
                 description={tx('jobs.new.seo.description', undefined, 'Create a new project, define budget and timeline, and publish it to receive freelancer proposals.')}
@@ -305,30 +321,43 @@ export default function JobPost() {
             <Header />
 
             <div className="page-shell-content">
-                <div className="flex items-center justify-between mb-6">
-                    {/* Autosave Indicator */}
-                    <div className="flex h-6 items-center gap-2 text-sm text-gray-500 dark:text-gray-400" role="status" aria-live="polite">
-                        {status === 'saving' && (
-                            <>
-                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                                <span className="text-xs">{tx('jobs.new.autosave.saving', undefined, 'Saving...')}</span>
-                            </>
-                        )}
-                        {status === 'saved' && (
-                            <>
-                                <Check className="w-3.5 h-3.5 text-green-500" />
-                                <span className="text-xs">{tx('jobs.new.autosave.saved', undefined, 'Saved')}</span>
-                            </>
-                        )}
-                        {status === 'idle' && lastSaved && (
-                            <span className="flex items-center gap-1 text-xs text-gray-400 dark:text-gray-600">
-                                {tx('jobs.new.autosave.lastSaved', { time: timeAgo(lastSaved) }, `Last saved: ${timeAgo(lastSaved)}`)}
-                            </span>
-                        )}
-                    </div>
-                </div>
-
-                <JobWizardLayout currentStep={currentStep} steps={steps}>
+                <JobWizardLayout
+                    currentStep={currentStep}
+                    steps={steps}
+                    title={tx('jobs.new.heroTitle', undefined, 'Post a project with clarity and attract better-fit freelancers.')}
+                    description={tx('jobs.new.heroDescription', undefined, 'Move through the brief in focused phases: define the work, set budget and timing, choose visibility, then review before publishing.')}
+                    meta={
+                        <>
+                            <div className="inline-flex items-center gap-2 rounded-full border border-primary-100 bg-white/80 px-4 py-2 text-sm text-[#353149] shadow-sm dark:border-white/10 dark:bg-white/5 dark:text-[#e3def7]" role="status" aria-live="polite">
+                                {status === 'saving' ? (
+                                    <>
+                                        <Loader2 className="h-3.5 w-3.5 animate-spin text-primary-500" />
+                                        <span>{tx('jobs.new.autosave.saving', undefined, 'Saving...')}</span>
+                                    </>
+                                ) : status === 'saved' ? (
+                                    <>
+                                        <Check className="h-3.5 w-3.5 text-primary-500" />
+                                        <span>{tx('jobs.new.autosave.saved', undefined, 'Saved')}</span>
+                                    </>
+                                ) : lastSaved ? (
+                                    <>
+                                        <Clock3 className="h-3.5 w-3.5 text-primary-500" />
+                                        <span>{tx('jobs.new.autosave.lastSaved', { time: timeAgo(lastSaved) }, `Last saved: ${timeAgo(lastSaved)}`)}</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Clock3 className="h-3.5 w-3.5 text-primary-500" />
+                                        <span>{tx('jobs.new.autosave.ready', undefined, 'Autosave ready')}</span>
+                                    </>
+                                )}
+                            </div>
+                            <div className="inline-flex items-center gap-2 rounded-full border border-primary-100 bg-white/80 px-4 py-2 text-sm text-[#353149] shadow-sm dark:border-white/10 dark:bg-white/5 dark:text-[#e3def7]">
+                                <Save className="h-3.5 w-3.5 text-primary-500" />
+                                <span>{tx('jobs.new.wizard.metaDraft', undefined, 'Draft-safe flow')}</span>
+                            </div>
+                        </>
+                    }
+                >
                     <FormProvider {...methods}>
                         <form onSubmit={methods.handleSubmit(onSubmit as any)} className="space-y-8">
 
@@ -341,11 +370,12 @@ export default function JobPost() {
                             </div>
 
                             {/* Actions */}
-                            <div className="mt-8 flex items-center justify-between border-t border-gray-200 pt-6 dark:border-white/10">
+                            <div className="mt-8 flex items-center justify-between border-t border-primary-100/70 pt-6 dark:border-white/10">
                                 {currentStep > 1 ? (
                                     <Button
                                         type="button"
                                         variant="outline"
+                                        className="rounded-2xl"
                                         onClick={handleBack}
                                         disabled={isSubmitting}
                                         leftIcon={<ArrowLeft className="w-4 h-4 rtl:rotate-180" />}
@@ -360,6 +390,7 @@ export default function JobPost() {
                                     <Button
                                         type="button"
                                         variant="ghost"
+                                        className="rounded-2xl"
                                         isLoading={isSubmitting && submitIntent === 'draft'}
                                         disabled={isSubmitting}
                                         onClick={handleSaveDraft}
@@ -372,6 +403,7 @@ export default function JobPost() {
                                         <Button
                                             type="button"
                                             variant="primary"
+                                            className="rounded-2xl"
                                             onClick={handleNext}
                                             disabled={isSubmitting}
                                             rightIcon={<ArrowRight className="w-4 h-4 rtl:rotate-180" />}
@@ -383,7 +415,7 @@ export default function JobPost() {
                                             type="submit"
                                             variant="primary"
                                             isLoading={isSubmitting && submitIntent === 'publish'}
-                                            className="px-8"
+                                            className="rounded-2xl px-8"
                                             rightIcon={<ArrowRight className="w-4 h-4 rtl:rotate-180" />}
                                         >
                                             {tx('jobs.new.actions.publishJob', undefined, 'Publish job')}

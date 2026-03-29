@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom';
-import { ArrowLeft, TrendingUp, Award } from 'lucide-react';
+import { ArrowLeft, Award, CheckCircle2, Rocket, Target } from 'lucide-react';
+
 import { useAuth } from '../../contexts/AuthContext';
+import { useTranslation } from '../../i18n';
 import { calculateFreelancerProfileCompletion, type ProfileCompletionResult } from '../../lib/profileCompletion';
 
 interface ProfileCompletionCardProps {
@@ -10,115 +12,172 @@ interface ProfileCompletionCardProps {
 
 const ProfileCompletionCard = ({ className = '', maxStepsToShow = 4 }: ProfileCompletionCardProps) => {
     const { profile, freelancerProfile } = useAuth();
+    const { dir, tx } = useTranslation();
 
     const completion: ProfileCompletionResult = calculateFreelancerProfileCompletion(profile, freelancerProfile);
+    const stepsToShow = completion.missingSteps.slice(0, maxStepsToShow);
 
-    // Don't show if profile is complete
+    const strengthLabel = completion.percentage < 30
+        ? tx('components.profileCompletion.weak', undefined, 'Needs work')
+        : completion.percentage < 60
+            ? tx('components.profileCompletion.medium', undefined, 'Getting there')
+            : completion.percentage < 90
+                ? tx('components.profileCompletion.good', undefined, 'Looking solid')
+                : tx('components.profileCompletion.excellent', undefined, 'Standout')
+    ;
+
+    const strengthTone = completion.percentage < 30
+        ? 'bg-red-500/12 text-red-200 border-red-400/20'
+        : completion.percentage < 60
+            ? 'bg-amber-500/12 text-amber-100 border-amber-300/20'
+            : completion.percentage < 90
+                ? 'bg-sky-500/12 text-sky-100 border-sky-300/20'
+                : 'bg-emerald-500/12 text-emerald-100 border-emerald-300/20';
+
+    const getStepLabel = (stepId: string, fallback: string) => {
+        const labels: Record<string, string> = {
+            avatar: tx('components.profileCompletion.steps.avatar', undefined, 'Add a profile photo'),
+            full_name: tx('components.profileCompletion.steps.fullName', undefined, 'Complete your full name'),
+            bio: tx('components.profileCompletion.steps.bio', undefined, 'Write a stronger bio'),
+            phone: tx('components.profileCompletion.steps.phone', undefined, 'Add your phone number'),
+            location: tx('components.profileCompletion.steps.location', undefined, 'Set your location'),
+            title: tx('components.profileCompletion.steps.title', undefined, 'Add your professional title'),
+            skills: tx('components.profileCompletion.steps.skills', undefined, 'Add at least 3 skills'),
+            hourly_rate: tx('components.profileCompletion.steps.hourlyRate', undefined, 'Set your hourly rate'),
+            languages: tx('components.profileCompletion.steps.languages', undefined, 'Add your languages'),
+            education: tx('components.profileCompletion.steps.education', undefined, 'Add education details'),
+            portfolio: tx('components.profileCompletion.steps.portfolio', undefined, 'Show your past work'),
+        };
+
+        return labels[stepId] || fallback;
+    };
+
     if (completion.percentage >= 100) {
         return (
-            <div className={`bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-2xl p-6 border border-green-200 dark:border-green-800 ${className}`}>
-                <div className="flex items-center gap-4">
-                    <div className="w-14 h-14 rounded-xl bg-green-100 dark:bg-green-900/50 flex items-center justify-center">
-                        <Award className="w-7 h-7 text-green-600" />
-                    </div>
-                    <div>
-                        <h3 className="font-bold text-green-800 dark:text-green-200">ملفك الشخصي مكتمل!</h3>
-                        <p className="text-sm text-green-600 dark:text-green-400">أنت مستعد للحصول على أفضل الفرص</p>
+            <div className={`premium-panel radius-panel overflow-hidden ${className}`}>
+                <div className="rounded-[1.6rem] border border-emerald-400/20 bg-[linear-gradient(145deg,rgba(16,185,129,0.18),rgba(12,18,24,0.04))] p-6 dark:bg-[linear-gradient(145deg,rgba(16,185,129,0.16),rgba(12,18,24,0.2))]">
+                    <div className="flex items-start gap-4">
+                        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-500/15 text-emerald-300">
+                            <Award className="h-7 w-7" />
+                        </div>
+                        <div>
+                            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-emerald-300/80">
+                                {tx('components.profileCompletion.readyBadge', undefined, 'Profile ready')}
+                            </p>
+                            <h3 className="mt-2 text-xl font-semibold text-[#1a1825] dark:text-white">
+                                {tx('components.profileCompletion.completeTitle', undefined, 'Your freelancer profile is market-ready')}
+                            </h3>
+                            <p className="mt-2 text-sm leading-6 text-[#5b5870] dark:text-[#aca9bd]">
+                                {tx('components.profileCompletion.completeDescription', undefined, 'Everything important is filled in. Keep proposals active and your portfolio fresh to stay visible.')}
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>
         );
     }
 
-    // Get steps to show (prioritize missing steps)
-    const stepsToShow = completion.missingSteps.slice(0, maxStepsToShow);
-
     return (
-        <div className={`bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-primary-100 dark:border-primary-900/50 overflow-hidden ${className}`}>
-            {/* Header */}
-            <div className="p-6 bg-gradient-to-br from-primary-500 to-primary-600 text-white relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -mr-16 -mt-16 pointer-events-none" />
-
-                <div className="flex items-start justify-between mb-6 relative z-10">
-                    <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/20">
-                            <TrendingUp className="w-6 h-6 text-white" />
+        <div className={`premium-panel radius-panel overflow-hidden ${className}`}>
+            <div className="rounded-[1.6rem] bg-[radial-gradient(circle_at_top_left,rgba(139,92,246,0.28),transparent_40%),linear-gradient(145deg,#6d28d9_0%,#8b5cf6_52%,#c026d3_100%)] p-6 text-white shadow-[0_28px_70px_-38px_rgba(109,40,217,0.85)]">
+                <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-center gap-4">
+                        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/14 backdrop-blur-sm">
+                            <Target className="h-7 w-7" />
                         </div>
                         <div>
-                            <h3 className="font-bold text-lg text-white">اكتمال الملف الشخصي</h3>
-                            <p className="text-sm text-primary-100">أكمل ملفك لزيادة فرص التوظيف</p>
+                            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-white/65">
+                                {tx('components.profileCompletion.badge', undefined, 'Visibility score')}
+                            </p>
+                            <h3 className="mt-2 text-xl font-semibold text-white">
+                                {tx('components.profileCompletion.title', undefined, 'Profile completion')}
+                            </h3>
+                            <p className="mt-1 text-sm leading-6 text-white/72">
+                                {tx('components.profileCompletion.subtitle', undefined, 'Complete the strongest remaining items to increase trust and hiring chances.')}
+                            </p>
                         </div>
                     </div>
-                    <span className={`px-3 py-1 rounded-full text-sm font-bold bg-white/20 backdrop-blur-md border border-white/20 text-white shadow-sm`}>
-                        {completion.strengthLabel}
+                    <span className={`rounded-full border px-3 py-1 text-xs font-semibold backdrop-blur-sm ${strengthTone}`}>
+                        {strengthLabel}
                     </span>
                 </div>
 
-                {/* Progress Bar */}
-                <div className="relative z-10">
-                    <div className="flex justify-between mb-2 text-sm font-medium">
-                        <span className="text-white">{completion.percentage}% مكتمل</span>
-                        <span className="text-primary-100">{completion.completedSteps.length}/{completion.steps.length} خطوات</span>
+                <div className="mt-6 space-y-3">
+                    <div className="flex items-center justify-between text-sm font-medium text-white/85">
+                        <span>{tx('components.profileCompletion.progressLabel', undefined, 'Completion')}</span>
+                        <span>{completion.percentage}%</span>
                     </div>
-                    <div className="h-2.5 bg-black/20 rounded-full overflow-hidden backdrop-blur-sm">
+                    <div className="h-2.5 overflow-hidden rounded-full bg-black/20">
                         <div
-                            className="h-full bg-white rounded-full shadow-lg transition-all duration-1000 ease-out relative"
+                            className="h-full rounded-full bg-white shadow-[0_0_24px_rgba(255,255,255,0.55)] transition-all duration-700"
                             style={{ width: `${completion.percentage}%` }}
-                        >
-                            <div className="absolute top-0 left-0 bottom-0 right-0 bg-gradient-to-r from-transparent via-white/30 to-transparent w-full animate-shimmer" />
-                        </div>
+                        />
+                    </div>
+                    <div className="flex items-center justify-between text-xs text-white/70">
+                        <span>
+                            {completion.completedSteps.length}/{completion.steps.length} {tx('components.profileCompletion.stepsCount', undefined, 'steps done')}
+                        </span>
+                        <span>
+                            {completion.missingSteps.length} {tx('components.profileCompletion.stepsLeft', undefined, 'left')}
+                        </span>
                     </div>
                 </div>
             </div>
 
-            {/* Missing Steps */}
             <div className="p-6">
-                <h4 className="text-sm font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-primary-500" />
-                    الخطوات المتبقية
-                </h4>
-                <ul className="space-y-3">
+                <div className="mb-4 flex items-center justify-between gap-4">
+                    <div>
+                        <p className="text-sm font-semibold text-[#1a1825] dark:text-white">
+                            {tx('components.profileCompletion.nextSteps', undefined, 'Highest-impact next steps')}
+                        </p>
+                        <p className="mt-1 text-xs text-[#6b6880] dark:text-[#8b8aa0]">
+                            {tx('components.profileCompletion.nextStepsDescription', undefined, 'Focus on the items below first for the fastest profile lift.')}
+                        </p>
+                    </div>
+                    <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary-50 text-primary-600 dark:bg-white/5 dark:text-primary-300">
+                        <Rocket className="h-5 w-5" />
+                    </div>
+                </div>
+
+                <div className="space-y-3">
                     {stepsToShow.map((step, index) => (
-                        <li key={step.id}>
-                            <Link
-                                to={step.link || '/settings'}
-                                className="flex items-center gap-4 p-4 rounded-xl border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/30 hover:bg-primary-50 dark:hover:bg-primary-900/10 hover:border-primary-200 dark:hover:border-primary-800 transition-all group shadow-sm hover:shadow-md"
-                            >
-                                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-colors ${index === 0
-                                    ? 'bg-primary-600 text-white shadow-lg shadow-primary-500/30'
-                                    : 'bg-white dark:bg-gray-600 text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-500'
-                                    }`}>
-                                    {index + 1}
-                                </div>
-                                <div className="flex-1">
-                                    <span className="block text-sm font-bold text-gray-900 dark:text-gray-100 group-hover:text-primary-700 dark:group-hover:text-primary-400 transition-colors">
-                                        {step.label}
-                                    </span>
-                                    {index === 0 && (
-                                        <span className="text-xs text-primary-600 dark:text-primary-400 font-medium">خطوتك التالية</span>
-                                    )}
-                                </div>
-                                <div className="w-8 h-8 rounded-full bg-white dark:bg-gray-600 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0 shadow-sm text-primary-600">
-                                    <ArrowLeft className="w-4 h-4 rtl:rotate-180" />
-                                </div>
-                            </Link>
-                        </li>
+                        <Link
+                            key={step.id}
+                            to={step.link || '/settings?tab=profile'}
+                            className="group flex items-center gap-4 rounded-2xl border border-primary-100/80 bg-white/75 p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-primary-200 hover:bg-primary-50/60 dark:border-white/10 dark:bg-white/[0.04] dark:hover:border-primary-400/20 dark:hover:bg-white/[0.06]"
+                        >
+                            <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl text-sm font-bold ${index === 0 ? 'bg-primary-600 text-white shadow-[0_16px_30px_-16px_rgba(109,40,217,0.9)]' : 'bg-gray-100 text-[#57536a] dark:bg-white/10 dark:text-[#c6c2d6]'}`}>
+                                {index + 1}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                                <p className="truncate text-sm font-semibold text-[#1a1825] dark:text-white">
+                                    {getStepLabel(step.id, step.label)}
+                                </p>
+                                <p className="mt-1 text-xs text-[#6b6880] dark:text-[#8b8aa0]">
+                                    {index === 0
+                                        ? tx('components.profileCompletion.topPriority', undefined, 'Top priority right now')
+                                        : tx('components.profileCompletion.nextPriority', undefined, 'Helpful next improvement')}
+                                </p>
+                            </div>
+                            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-100 text-[#57536a] transition-all group-hover:bg-primary-600 group-hover:text-white dark:bg-white/10 dark:text-[#c6c2d6]">
+                                <ArrowLeft className={`h-4 w-4 ${dir === 'rtl' ? 'rotate-180' : ''}`} />
+                            </div>
+                        </Link>
                     ))}
-                </ul>
+                </div>
 
-                {completion.missingSteps.length > maxStepsToShow && (
-                    <p className="text-center text-xs text-gray-400 mt-4 font-medium">
-                        +{completion.missingSteps.length - maxStepsToShow} خطوات أخرى لتحسين ملفك
+                {completion.missingSteps.length > maxStepsToShow ? (
+                    <p className="mt-4 text-center text-xs font-medium text-[#8b8aa0]">
+                        +{completion.missingSteps.length - maxStepsToShow} {tx('components.profileCompletion.moreSteps', undefined, 'more improvements waiting')}
                     </p>
-                )}
+                ) : null}
 
-                {/* Call to Action */}
                 <Link
                     to={stepsToShow[0]?.link || '/settings?tab=profile'}
-                    className="mt-6 w-full py-3.5 px-6 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 active:translate-y-0"
+                    className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[#12101a] px-5 py-3.5 text-sm font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#1a1625] dark:bg-white dark:text-[#171420] dark:hover:bg-white/90"
                 >
-                    <span>أكمل ملفك الآن</span>
-                    <ArrowLeft className="w-5 h-5 rtl:rotate-180" />
+                    <CheckCircle2 className="h-4 w-4" />
+                    {tx('components.profileCompletion.cta', undefined, 'Improve profile now')}
                 </Link>
             </div>
         </div>

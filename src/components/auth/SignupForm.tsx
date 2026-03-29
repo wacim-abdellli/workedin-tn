@@ -141,10 +141,10 @@ function SignupForm({ onComplete }: SignupFormProps) {
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                     <div className="mb-8 text-center">
                         <div className="relative inline-block">
-                            <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-accent-500 to-accent-600 shadow-lg shadow-accent-500/30">
+                            <div className="mx-auto mb-5 flex h-[72px] w-[72px] items-center justify-center rounded-[22px] bg-[linear-gradient(140deg,#f97316_0%,#ec4899_45%,#7c3aed_100%)] shadow-[0_20px_48px_-22px_rgba(236,72,153,0.65)]">
                                 <Sparkles className="h-10 w-10 text-white" />
                             </div>
-                            <div className="absolute -top-1 -end-1 flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-r from-primary-400 to-primary-600 shadow-lg">
+                            <div className="absolute -top-1 -end-1 flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-r from-primary-400 to-primary-600 shadow-lg shadow-primary-500/30">
                                 <User className="h-4 w-4 text-white" />
                             </div>
                         </div>
@@ -176,7 +176,7 @@ function SignupForm({ onComplete }: SignupFormProps) {
                                 showToast(t.auth.googleLoginError, 'error');
                             }
                         }}
-                        className="w-full flex items-center justify-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3 font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-white/10 dark:bg-[#221d30] dark:text-gray-200 dark:hover:bg-[#2a2338]"
+                        className="w-full flex items-center justify-center gap-3 rounded-2xl border border-gray-200/80 bg-white px-4 py-3.5 font-medium text-gray-700 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-gray-50 hover:shadow-md dark:border-white/10 dark:bg-[#221d30] dark:text-gray-200 dark:hover:bg-[#2a2338]"
                     >
                         <svg className="h-5 w-5" viewBox="0 0 24 24">
                             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -261,7 +261,7 @@ function SignupForm({ onComplete }: SignupFormProps) {
                     <button
                         type="submit"
                         disabled={isLoading}
-                        className="group inline-flex w-full items-center justify-center gap-2 rounded-xl bg-purple-600 px-6 py-3 font-semibold text-white shadow-lg shadow-purple-500/20 transition-all duration-200 hover:bg-purple-500 hover:shadow-xl hover:shadow-purple-500/30"
+                        className="group inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[linear-gradient(120deg,#6d28d9_0%,#9333ea_52%,#c026d3_100%)] px-6 py-3.5 font-semibold text-white shadow-[0_20px_48px_-24px_rgba(147,51,234,0.75)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_24px_56px_-24px_rgba(192,38,211,0.85)]"
                     >
                         {isLoading ? (
                             <div className="h-5 w-5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
@@ -305,9 +305,9 @@ function SignupForm({ onComplete }: SignupFormProps) {
                                 type="button"
                                 onClick={() => handleSelectUserType(item.type)}
                                 disabled={isLoading}
-                                className={`group relative w-full overflow-hidden rounded-2xl border-2 p-5 text-start transition-all duration-300 focus:outline-none focus:ring-2 ring-offset-2 hover:-translate-y-1 hover:shadow-xl ${
+                                className={`group relative w-full overflow-hidden rounded-[24px] border p-5 text-start transition-all duration-300 focus:outline-none focus:ring-2 ring-offset-2 hover:-translate-y-1 hover:shadow-xl ${
                                     isLoading ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
-                                } bg-white border-gray-200 hover:border-purple-200 dark:bg-[#1a1825] dark:border-white/10 dark:hover:border-purple-500/30`}
+                                } bg-white border-gray-200/90 hover:border-purple-200 hover:bg-purple-50/40 dark:bg-[#1a1825] dark:border-white/10 dark:hover:border-purple-500/30 dark:hover:bg-white/5`}
                             >
                                 <div className="absolute inset-0 bg-gradient-to-br from-purple-500/0 to-amber-400/0 opacity-0 transition-opacity duration-300 group-hover:opacity-10" />
                                 <div className="relative z-10 flex items-center gap-4">

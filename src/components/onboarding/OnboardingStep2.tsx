@@ -26,7 +26,7 @@ export default function OnboardingStep2({
     toggleSkill,
     getSkillName,
 }: OnboardingStep2Props) {
-    const { t, dir } = useTranslation();
+    const { t, tx, dir } = useTranslation();
     const { register, formState: { errors }, handleSubmit } = form; // Assuming control is passed if needed, but simple register works here
 
     const ArrowIcon = dir === 'rtl' ? ArrowLeft : ArrowRight;
@@ -48,16 +48,16 @@ export default function OnboardingStep2({
     const allSkills = [...PREDEFINED_SKILLS, OTHER_SKILL];
 
     return (
-        <div className="p-6 sm:p-8">
-            <div className="mb-8 text-center sm:text-start">
-                <div className="inline-flex items-center gap-3 mb-3 px-4 py-2 rounded-full bg-gradient-to-r from-primary-50 to-secondary-50 dark:from-primary-900/20 dark:to-secondary-900/20 border border-primary-100 dark:border-primary-800/50 shadow-sm">
+        <div className="space-y-8">
+            <div className="text-center sm:text-start">
+                <div className="inline-flex items-center gap-3 mb-3 px-4 py-2 rounded-full bg-primary-50/70 dark:bg-white/[0.04] border border-primary-100 dark:border-white/10 shadow-sm">
                     <Sparkles className="w-4 h-4 text-primary-600 dark:text-primary-400" />
                     <span className="text-sm font-semibold text-primary-700 dark:text-primary-300">
                         {t.profile.skills} & {t.job.budget}
                     </span>
                 </div>
-                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-2">{t.onboarding.client.profileDesc}</h2>
-                <p className="text-muted text-sm">اختر مهاراتك وحدد سعرك بالساعة</p>
+                <h2 className="text-2xl font-semibold tracking-tight text-[#171420] dark:text-white mb-2">{t.onboarding.freelancer.stepSkillsExperience || 'Skills and experience'}</h2>
+                <p className="text-sm leading-7 text-[#5c5971] dark:text-[#aca9bd]">{tx('onboarding.freelancer.step2Description', undefined, 'Choose your strongest skills and define a believable starting rate and availability.')}</p>
             </div>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
@@ -69,7 +69,7 @@ export default function OnboardingStep2({
                             <span className="text-xs font-normal text-muted">({t.profile.optional})</span>
                         </label>
                         <span className={`text-xs font-bold px-2.5 py-1 rounded-full border ${selectedSkills.length === 5
-                            ? 'bg-orange-50 text-orange-600 border-orange-100'
+                            ? 'bg-primary-50 text-primary-600 border-primary-100 dark:bg-primary-500/10 dark:border-primary-500/20 dark:text-primary-300'
                             : 'bg-gray-100 text-gray-600 border-gray-200 dark:bg-dark-700 dark:text-gray-400 dark:border-dark-600'
                             }`}>
                             {selectedSkills.length}/5

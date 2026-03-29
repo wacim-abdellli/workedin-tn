@@ -20,6 +20,7 @@ import { useTranslation } from '../i18n';
 import SEO, { SEO_CONFIG } from '../components/common/SEO';
 import { SkeletonCard } from '../components/common';
 import EmptyState from '../components/common/EmptyState';
+import type { Skill } from '../types';
 
 // Types
 interface Job {
@@ -120,7 +121,7 @@ function JobBoard() {
     const { user } = useAuth();
     const { showToast } = useToast();
     const [searchParams, setSearchParams] = useSearchParams();
-    const { t } = useTranslation();
+    const { t, language } = useTranslation();
     const queryClient = useQueryClient();
 
     // State
@@ -184,8 +185,22 @@ function JobBoard() {
 
     const jobs = useMemo(() => jobsData?.pages.flatMap((p) => p.data || []) || [], [jobsData]);
     const jobCards = useMemo<JobForCard[]>(
-        () => jobs.map((job) => ({ ...job, skills: job.required_skills || [] })),
-        [jobs]
+        () => jobs.map((job) => ({
+            ...job,
+            skills: (job.required_skills || []).map((skill: string | Skill) => {
+                if (typeof skill === 'string') {
+                    return skill;
+                }
+
+                const skillRecord = skill as Skill;
+                return language === 'ar'
+                    ? skillRecord.name_ar
+                    : language === 'fr'
+                        ? skillRecord.name_fr
+                        : skillRecord.name_en;
+            }),
+        })),
+        [jobs, language]
     );
     const totalCount = jobsData?.pages[0]?.count || 0;
     const isLoading = isFetching && !isFetchingNextPage;

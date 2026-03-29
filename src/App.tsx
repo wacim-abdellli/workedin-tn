@@ -6,6 +6,7 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from './lib/queryClient';
 import { I18nProvider } from './i18n';
 import { useTranslation } from './i18n';
+import { useLocation } from 'react-router-dom';
 import { ToastProvider } from './components/ui/Toast';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ThemeProvider } from './contexts/ThemeContext';
@@ -24,6 +25,7 @@ import { SavedRedirect } from './components/navigation/SavedRedirect';
 import { WorkspaceProvider } from './contexts/WorkspaceContext';
 import { WorkspaceRoute } from './components/routing/WorkspaceRoute';
 import { NotificationsProvider } from './contexts/NotificationsContext';
+import { useWorkspaceStore } from './lib/workspaceState';
 
 // Lazy Load Pages
 import SkipLinks from './components/layout/SkipLinks';
@@ -360,9 +362,16 @@ function AppRoutes() {
 
 function AppContent() {
   useRouteFocus();
+  const { pathname } = useLocation();
+  const activeWorkspace = useWorkspaceStore((state) => state.activeWorkspace);
+  const workspaceClass = pathname.startsWith('/admin')
+    ? 'workspace-admin'
+    : activeWorkspace === 'client'
+      ? 'workspace-client'
+      : '';
 
   return (
-    <div className="animate-fade-in">
+    <div className={`min-h-screen animate-fade-in ${workspaceClass}`}>
       <RouteProgress />
       <ScrollToTop />
       <SkipLinks />

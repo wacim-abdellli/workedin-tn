@@ -155,7 +155,6 @@ export default function Header() {
   const activeLang = LANGS.find((lang) => lang.code === currentLang) ?? LANGS[2]
   const firstName = profile?.full_name?.split(' ')[0] ?? user?.email?.split('@')[0] ?? 'Me'
   const displayName = profile?.full_name ?? user?.user_metadata?.full_name ?? user?.email?.split('@')[0] ?? 'Me'
-  const workspaceAccent = isFreelancer ? '#8b5cf6' : '#f59e0b'
   const targetWorkspace = isFreelancer ? 'client' : 'freelancer'
   const canQuickSwitch = Boolean(user)
   const switchTargetLabel = targetWorkspace === 'freelancer'
@@ -164,7 +163,7 @@ export default function Header() {
   const switchActionLabel = t.auth?.accountPanel?.switchAction || 'Switch'
   const switchButtonLabel = `${switchActionLabel}: ${switchTargetLabel}`
   const logoSrc = isDark ? '/logos/logo-primary-dark.svg' : '/logos/logo-primary.svg'
-  const navActiveClass = isFreelancer ? 'header-nav-link-active-freelancer' : 'header-nav-link-active-client'
+  const navActiveClass = 'header-nav-link-active'
   const canAccessAdmin = hasAdminAccess(user, profile)
 
   const handleQuickWorkspaceSwitch = async () => {
@@ -206,7 +205,7 @@ export default function Header() {
         }`}
       >
         {user ? (
-          <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: workspaceAccent }} />
+          <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: 'var(--workspace-primary)' }} />
         ) : null}
 
         <div className="mx-auto max-w-[1280px] px-4 sm:px-6">
@@ -246,6 +245,7 @@ export default function Header() {
                   key={href}
                   to={href}
                   className={({ isActive }) => (isActive ? navActiveClass : 'header-nav-link')}
+                  style={({ isActive }) => isActive ? { color: 'var(--workspace-primary)', borderColor: 'var(--workspace-primary)' } : undefined}
                 >
                   <Icon className="h-4 w-4 flex-shrink-0" />
                   <span className="truncate">{label}</span>
@@ -258,11 +258,12 @@ export default function Header() {
                 <button
                   onClick={handleQuickWorkspaceSwitch}
                   disabled={isSwitching}
-                  className={`flex h-9 items-center gap-2 rounded-xl border px-3 text-xs font-medium transition-colors ${
-                    isFreelancer
-                      ? 'border-violet-200 bg-violet-50 text-violet-700 hover:bg-violet-100 dark:border-violet-500/30 dark:bg-violet-500/15 dark:text-violet-200 dark:hover:bg-violet-500/25'
-                      : 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:border-emerald-500/30 dark:bg-emerald-500/15 dark:text-emerald-200 dark:hover:bg-emerald-500/25'
-                  } ${isSwitching ? 'cursor-not-allowed opacity-70' : ''}`}
+                  className={`flex h-9 items-center gap-2 rounded-xl border px-3 text-xs font-medium transition-colors ${isSwitching ? 'cursor-not-allowed opacity-70' : ''}`}
+                  style={{
+                    borderColor: 'var(--workspace-primary-mid)',
+                    background: 'var(--workspace-primary-light)',
+                    color: 'var(--workspace-primary)',
+                  }}
                   aria-label={switchButtonLabel}
                   title={switchButtonLabel}
                 >
@@ -302,9 +303,13 @@ export default function Header() {
                         }}
                         className={`flex w-full items-center gap-2.5 px-3 py-2 text-sm transition-colors ${
                           currentLang === lang.code
-                            ? 'bg-purple-50 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400'
+                            ? 'text-gray-700 dark:text-gray-300'
                             : 'text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-white/5'
                         }`}
+                        style={currentLang === lang.code ? {
+                          background: 'var(--workspace-primary-light)',
+                          color: 'var(--workspace-primary)',
+                        } : undefined}
                       >
                         <span className="w-8 text-start text-xs font-semibold text-gray-500 dark:text-gray-400">
                           {lang.country}
@@ -337,7 +342,8 @@ export default function Header() {
                   </button>
                   <button
                     onClick={() => navigate('/signup')}
-                    className="rounded-lg bg-purple-600 px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-purple-500"
+                    className="rounded-lg px-4 py-1.5 text-sm font-medium text-white transition-colors"
+                    style={{ background: 'var(--workspace-primary)' }}
                   >
                     {t.nav?.signup || 'Get started'}
                   </button>
@@ -370,11 +376,15 @@ export default function Header() {
                       {firstName}
                     </span>
                     <span
-                      className={`header-profile-chip flex-shrink-0 ${
+                        className={`header-profile-chip flex-shrink-0 ${
                         isFreelancer
                           ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300'
                           : 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300'
-                      }`}
+                       }`}
+                      style={{
+                        background: 'var(--workspace-primary-light)',
+                        color: 'var(--workspace-primary)',
+                      }}
                     >
                       {isFreelancer ? 'Pro' : 'Client'}
                     </span>
@@ -499,11 +509,11 @@ export default function Header() {
                       setMobileMenuOpen(false)
                     }}
                     disabled={isSwitching}
-                    className={`flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-colors ${
-                      isFreelancer
-                        ? 'text-violet-700 hover:bg-violet-50 dark:text-violet-200 dark:hover:bg-violet-500/10'
-                        : 'text-emerald-700 hover:bg-emerald-50 dark:text-emerald-200 dark:hover:bg-emerald-500/10'
-                    } ${isSwitching ? 'cursor-not-allowed opacity-70' : ''}`}
+                    className={`flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-colors ${isSwitching ? 'cursor-not-allowed opacity-70' : ''}`}
+                    style={{
+                      color: 'var(--workspace-primary)',
+                      background: 'var(--workspace-primary-light)',
+                    }}
                   >
                     <Repeat2 className={`h-4 w-4 flex-shrink-0 ${isSwitching ? 'animate-spin' : ''}`} />
                     {switchButtonLabel}
@@ -518,12 +528,11 @@ export default function Header() {
                     className={({ isActive }) =>
                       `flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-colors ${
                         isActive
-                          ? isFreelancer
-                            ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300'
-                            : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300'
+                          ? 'header-nav-link-active'
                           : 'text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-white/5'
                       }`
                     }
+                    style={({ isActive }) => isActive ? { color: 'var(--workspace-primary)', borderColor: 'var(--workspace-primary)' } : undefined}
                   >
                     <Icon className="h-4 w-4 flex-shrink-0" />
                     <span className="min-w-0 truncate">{label}</span>
@@ -577,9 +586,14 @@ export default function Header() {
                       onClick={() => setLanguage(lang.code)}
                       className={`rounded-xl border px-3 py-2 text-center transition-colors ${
                         currentLang === lang.code
-                          ? 'border-purple-300 bg-purple-50 text-purple-700 dark:border-purple-500/40 dark:bg-purple-900/20 dark:text-purple-300'
+                          ? 'border-gray-200 text-gray-600 dark:border-white/10 dark:text-gray-300'
                           : 'border-gray-200 text-gray-600 dark:border-white/10 dark:text-gray-300'
-                      }`}
+                        }`}
+                      style={currentLang === lang.code ? {
+                        borderColor: 'var(--workspace-primary-mid)',
+                        background: 'var(--workspace-primary-light)',
+                        color: 'var(--workspace-primary)',
+                      } : undefined}
                     >
                       <div className="text-[11px] font-semibold">{lang.country}</div>
                       <div className="text-[11px] text-gray-400">{lang.display}</div>
@@ -603,7 +617,8 @@ export default function Header() {
                       navigate('/login')
                       setMobileMenuOpen(false)
                     }}
-                    className="rounded-2xl bg-purple-600 px-4 py-3 text-sm font-semibold text-white"
+                    className="rounded-2xl px-4 py-3 text-sm font-semibold text-white"
+                    style={{ background: 'var(--workspace-primary)' }}
                   >
                     {t.nav?.login || 'Sign in'}
                   </button>

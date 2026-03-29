@@ -4,11 +4,12 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Link } from 'react-router-dom';
-import { Mail, ArrowLeft, CheckCircle, Loader2 } from 'lucide-react';
+import { KeyRound, Mail, RotateCcw, ShieldCheck, CheckCircle, Loader2 } from 'lucide-react';
 import { useTranslation } from '../i18n';
 import { supabase } from '../lib/supabase';
 import { useToast } from '../components/ui/Toast';
 import Button from '../components/ui/Button';
+import { AuthShell } from '../components/auth';
 
 // Validation schema
 const forgotPasswordSchema = z.object({
@@ -18,7 +19,7 @@ const forgotPasswordSchema = z.object({
 type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
 
 const ForgotPassword = () => {
-    const { t, dir } = useTranslation();
+    const { t, tx } = useTranslation();
     const { showToast } = useToast();
     const [isLoading, setIsLoading] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
@@ -64,33 +65,51 @@ const ForgotPassword = () => {
     };
 
     return (
-        <div
-            className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-primary-50 dark:from-gray-900 dark:via-gray-800 dark:to-primary-900 flex items-center justify-center p-4"
-            dir={dir}
-        >
-            <div className="w-full max-w-md">
-                {/* Back to Login Link */}
+        <AuthShell
+            badge={t.auth.forgotPasswordForm.sendTitle}
+            title={tx('pages.forgotPassword.title', undefined, 'Reset your password without losing your place')}
+            description={tx('pages.forgotPassword.subtitle', undefined, 'Enter your email and we will send a secure recovery link so you can get back into your workspace quickly.')}
+            highlights={[
+                {
+                    icon: KeyRound,
+                    title: t.auth.forgotPasswordForm.sendTitle,
+                    description: tx('pages.forgotPassword.subtitle', undefined, 'Enter your email and we will send a secure recovery link so you can get back into your workspace quickly.'),
+                },
+                {
+                    icon: ShieldCheck,
+                    title: t.auth.forgotPasswordForm.rateLimited,
+                    description: tx('pages.forgotPassword.protection', undefined, 'We protect this flow with rate limits and one-time recovery sessions.'),
+                    tone: 'cyan',
+                },
+                {
+                    icon: RotateCcw,
+                    title: tx('pages.forgotPassword.checkSpamTitle', undefined, 'Check spam if needed'),
+                    description: tx('pages.forgotPassword.checkSpamDescription', undefined, 'If the email takes a minute, check your spam folder before retrying.'),
+                    tone: 'accent',
+                },
+            ]}
+            topAction={
                 <Link
                     to="/login"
-                    className="inline-flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 mb-6 transition-colors"
+                    className="inline-flex items-center rounded-full border border-white/12 bg-white/6 px-4 py-2 text-sm font-medium text-white/80 backdrop-blur-sm transition-colors hover:border-white/20 hover:bg-white/10 hover:text-white"
                 >
-                    <ArrowLeft className="w-4 h-4 rtl:rotate-180" />
-                    <span>العودة لتسجيل الدخول</span>
+                    {tx('pages.forgotPassword.backToLogin', undefined, 'Back to sign in')}
                 </Link>
-
-                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 p-8">
+            }
+        >
+            <div>
                     {!isSuccess ? (
                         <>
                             {/* Header */}
                             <div className="text-center mb-8">
-                                <div className="w-16 h-16 bg-primary-100 dark:bg-primary-900 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <div className="w-16 h-16 bg-primary-100 dark:bg-primary-900/40 rounded-2xl flex items-center justify-center mx-auto mb-4">
                                     <Mail className="w-8 h-8 text-primary-600 dark:text-primary-400" />
                                 </div>
                                 <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                                    نسيت كلمة المرور؟
+                                    {tx('pages.forgotPassword.title', undefined, 'Reset your password')}
                                 </h1>
                                 <p className="text-gray-600 dark:text-gray-400">
-                                    أدخل بريدك الإلكتروني وسنرسل لك رابط إعادة التعيين
+                                    {tx('pages.forgotPassword.subtitle', undefined, 'Enter your email and we will send a secure recovery link so you can get back into your workspace quickly.')}
                                 </p>
                             </div>
 
@@ -121,7 +140,7 @@ const ForgotPassword = () => {
                                 {rateLimitError && (
                                     <div className="p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl">
                                         <p className="text-sm text-amber-800 dark:text-amber-200">
-                                            تم تجاوز الحد الأقصى للطلبات. يرجى الانتظار 10 دقائق قبل المحاولة مرة أخرى.
+                                            {t.auth.forgotPasswordForm.rateLimited}
                                         </p>
                                     </div>
                                 )}
@@ -135,7 +154,7 @@ const ForgotPassword = () => {
                                     {isLoading ? (
                                         <>
                                             <Loader2 className="w-5 h-5 animate-spin ml-2" />
-                                            {t.auth.loggingOut}
+                                            {tx('common.loading', undefined, 'Loading...')}
                                         </>
                                     ) : (
                                         t.auth.forgotPasswordForm.sendTitle
@@ -150,28 +169,25 @@ const ForgotPassword = () => {
                                 <CheckCircle className="w-10 h-10 text-green-600 dark:text-green-400" />
                             </div>
                             <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
-                                تحقق من بريدك الإلكتروني
+                                {tx('pages.forgotPassword.sentTitle', undefined, 'Check your email')}
                             </h2>
                             <p className="text-gray-600 dark:text-gray-400 mb-2">
-                                أرسلنا رابط إعادة التعيين إلى
+                                {tx('pages.forgotPassword.sentDescription', undefined, 'We sent a reset link to')}
                             </p>
                             <p className="font-medium text-gray-900 dark:text-white mb-6">
                                 {getValues('email')}
                             </p>
                             <p className="text-sm text-gray-500 dark:text-gray-400 mb-8">
-                                إذا لم تجد الرسالة، تحقق من مجلد البريد المزعج (Spam)
+                                {tx('pages.forgotPassword.checkSpamDescription', undefined, 'If the email takes a minute, check your spam folder before retrying.')}
                             </p>
                             <Link
                                 to="/login"
                                 className="inline-flex items-center justify-center gap-2 w-full px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-xl transition-colors"
                             >
-                                العودة لتسجيل الدخول
+                                {tx('pages.forgotPassword.backToLogin', undefined, 'Back to sign in')}
                             </Link>
                         </div>
                     )}
-                </div>
-
-                {/* Help Text */}
                 <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-6">
                     هل تحتاج مساعدة؟{' '}
                     <a href="mailto:support@khedma.tn" className="text-primary-600 hover:underline">
@@ -179,7 +195,7 @@ const ForgotPassword = () => {
                     </a>
                 </p>
             </div>
-        </div>
+        </AuthShell>
     );
 };
 

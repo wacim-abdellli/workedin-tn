@@ -4,11 +4,12 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useNavigate } from 'react-router-dom';
-import { Lock, Eye, EyeOff, CheckCircle, Loader2, AlertTriangle, ShieldCheck } from 'lucide-react';
+import { AlertTriangle, CheckCircle, Eye, EyeOff, KeyRound, Loader2, Lock, ShieldCheck, Sparkles } from 'lucide-react';
 import { useTranslation } from '../i18n';
 import { supabase } from '../lib/supabase';
 import { useToast } from '../components/ui/Toast';
 import Button from '../components/ui/Button';
+import { AuthShell } from '../components/auth';
 
 // Password validation schema
 const resetPasswordSchema = z.object({
@@ -41,7 +42,7 @@ const getPasswordStrength = (password: string): { score: number; label: string; 
 };
 
 const ResetPassword = () => {
-    const { dir, t } = useTranslation();
+    const { t, tx } = useTranslation();
     const navigate = useNavigate();
     const { showToast } = useToast();
 
@@ -132,24 +133,54 @@ const ResetPassword = () => {
     // Loading state
     if (isCheckingToken) {
         return (
-            <div
-                className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-primary-50 dark:from-gray-900 dark:via-gray-800 dark:to-primary-900 flex items-center justify-center p-4"
-                dir={dir}
+            <AuthShell
+                badge={t.auth.resetPassword.setNewTitle}
+                title={tx('pages.resetPassword.title', undefined, 'Choose a new password')}
+                description={tx('pages.resetPassword.subtitle', undefined, 'We are validating your recovery session before letting you update your password.')}
+                highlights={[
+                    { icon: KeyRound, title: t.auth.resetPassword.setNewTitle, description: tx('pages.resetPassword.subtitle', undefined, 'We are validating your recovery session before letting you update your password.') },
+                    { icon: ShieldCheck, title: tx('pages.resetPassword.securityTitle', undefined, 'Security first'), description: tx('pages.resetPassword.securityDescription', undefined, 'Recovery links stay temporary and tied to your active session.'), tone: 'cyan' },
+                    { icon: Sparkles, title: tx('pages.resetPassword.requirementsTitle', undefined, 'Strong password rules'), description: tx('pages.resetPassword.requirementsDescription', undefined, 'Use a password with upper/lowercase letters and numbers.'), tone: 'accent' },
+                ]}
+                topAction={
+                    <button
+                        type="button"
+                        onClick={() => navigate('/login')}
+                        className="inline-flex items-center rounded-full border border-white/12 bg-white/6 px-4 py-2 text-sm font-medium text-white/80 backdrop-blur-sm transition-colors hover:border-white/20 hover:bg-white/10 hover:text-white"
+                    >
+                        {tx('pages.resetPassword.backToLogin', undefined, 'Back to sign in')}
+                    </button>
+                }
             >
                 <div className="text-center">
                     <Loader2 className="w-12 h-12 animate-spin text-primary-600 mx-auto mb-4" />
-                    <p className="text-gray-600 dark:text-gray-400">جاري التحقق...</p>
+                    <p className="text-gray-600 dark:text-gray-400">{tx('pages.resetPassword.validating', undefined, 'Validating your recovery link...')}</p>
                 </div>
-            </div>
+            </AuthShell>
         );
     }
 
     // Invalid/expired token state
     if (!isValidToken) {
         return (
-            <div
-                className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-primary-50 dark:from-gray-900 dark:via-gray-800 dark:to-primary-900 flex items-center justify-center p-4"
-                dir={dir}
+            <AuthShell
+                badge={t.auth.resetPassword.linkExpired}
+                title={tx('pages.resetPassword.expiredTitle', undefined, 'This recovery link is no longer valid')}
+                description={tx('pages.resetPassword.expiredDescription', undefined, 'Request a fresh reset link and we will send you back through a clean password recovery flow.')}
+                highlights={[
+                    { icon: AlertTriangle, title: t.auth.resetPassword.linkExpired, description: tx('pages.resetPassword.expiredDescription', undefined, 'Request a fresh reset link and we will send you back through a clean password recovery flow.') },
+                    { icon: ShieldCheck, title: tx('pages.resetPassword.securityTitle', undefined, 'Security first'), description: tx('pages.resetPassword.securityDescription', undefined, 'Recovery links stay temporary and tied to your active session.'), tone: 'cyan' },
+                    { icon: Sparkles, title: tx('pages.resetPassword.retryTitle', undefined, 'Start again cleanly'), description: tx('pages.resetPassword.retryDescription', undefined, 'Generate a new recovery email instead of fighting with an expired token.'), tone: 'accent' },
+                ]}
+                topAction={
+                    <button
+                        type="button"
+                        onClick={() => navigate('/forgot-password')}
+                        className="inline-flex items-center rounded-full border border-white/12 bg-white/6 px-4 py-2 text-sm font-medium text-white/80 backdrop-blur-sm transition-colors hover:border-white/20 hover:bg-white/10 hover:text-white"
+                    >
+                        {tx('pages.resetPassword.requestNew', undefined, 'Request new link')}
+                    </button>
+                }
             >
                 <div className="w-full max-w-md">
                     <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 p-8 text-center">
@@ -170,14 +201,29 @@ const ResetPassword = () => {
                         </Button>
                     </div>
                 </div>
-            </div>
+            </AuthShell>
         );
     }
 
     return (
-        <div
-            className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-primary-50 dark:from-gray-900 dark:via-gray-800 dark:to-primary-900 flex items-center justify-center p-4"
-            dir={dir}
+        <AuthShell
+            badge={t.auth.resetPassword.setNewTitle}
+            title={tx('pages.resetPassword.title', undefined, 'Choose a new password')}
+            description={tx('pages.resetPassword.subtitle', undefined, 'Use a strong password so you can return to your workspace with confidence.')}
+            highlights={[
+                { icon: KeyRound, title: t.auth.resetPassword.setNewTitle, description: tx('pages.resetPassword.subtitle', undefined, 'Use a strong password so you can return to your workspace with confidence.') },
+                { icon: ShieldCheck, title: tx('pages.resetPassword.securityTitle', undefined, 'Security first'), description: tx('pages.resetPassword.securityDescription', undefined, 'Recovery links stay temporary and tied to your active session.'), tone: 'cyan' },
+                { icon: Sparkles, title: tx('pages.resetPassword.requirementsTitle', undefined, 'Strong password rules'), description: tx('pages.resetPassword.requirementsDescription', undefined, 'Use a password with upper/lowercase letters and numbers.'), tone: 'accent' },
+            ]}
+            topAction={
+                <button
+                    type="button"
+                    onClick={() => navigate('/login')}
+                    className="inline-flex items-center rounded-full border border-white/12 bg-white/6 px-4 py-2 text-sm font-medium text-white/80 backdrop-blur-sm transition-colors hover:border-white/20 hover:bg-white/10 hover:text-white"
+                >
+                    {tx('pages.resetPassword.backToLogin', undefined, 'Back to sign in')}
+                </button>
+            }
         >
             <div className="w-full max-w-md">
                 <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 p-8">
@@ -340,7 +386,7 @@ const ResetPassword = () => {
                     )}
                 </div>
             </div>
-        </div>
+        </AuthShell>
     );
 };
 

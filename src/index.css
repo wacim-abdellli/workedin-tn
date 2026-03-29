@@ -8,6 +8,17 @@
    CSS VARIABLES - Light & Dark Mode
    ======================================== */
 :root {
+  /* Workspace theme — default to freelancer (purple) */
+  --workspace-primary: #6D28D9;
+  --workspace-primary-hover: #5B21B6;
+  --workspace-primary-light: #F5F3FF;
+  --workspace-primary-mid: #8B5CF6;
+  --workspace-primary-text: #ffffff;
+
+  /* Shared */
+  --brand-accent: #F59E0B;
+  --brand-accent-hover: #D97706;
+
   --text-xs: clamp(0.75rem, 1.5vw, 0.875rem);
   --text-sm: clamp(0.875rem, 1.8vw, 1rem);
   --text-base: clamp(1rem, 2vw, 1.125rem);
@@ -75,7 +86,36 @@
   --motion-ease-emphasis: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* Client workspace overrides */
+.workspace-client {
+  --workspace-primary: #1554F7;
+  --workspace-primary-hover: #0E41E3;
+  --workspace-primary-light: #EFF6FF;
+  --workspace-primary-mid: #60A5FA;
+}
+
+.dark .workspace-client {
+  --workspace-primary-light: #1E3A8A;
+}
+
+/* Admin overrides */
+.workspace-admin {
+  --workspace-primary: #2563EB;
+  --workspace-primary-hover: #1D4ED8;
+  --workspace-primary-light: #1F2937;
+  --workspace-primary-mid: #60A5FA;
+}
+
 .dark {
+  --workspace-primary: #6D28D9;
+  --workspace-primary-hover: #5B21B6;
+  --workspace-primary-light: #2E1065;
+  --workspace-primary-mid: #8B5CF6;
+  --workspace-primary-text: #ffffff;
+
+  --brand-accent: #F59E0B;
+  --brand-accent-hover: #D97706;
+
   /* Dark Mode — Deep purple-tinted, not flat grey */
   --page-bg: #0f0e17;
   --surface-bg: #14121f;
@@ -234,9 +274,9 @@ h6 {
 
   .btn-primary {
     @apply btn relative overflow-hidden;
-    background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+    background: var(--workspace-primary);
     @apply text-white;
-    box-shadow: 0 4px 15px -3px rgba(124, 58, 237, 0.4);
+    box-shadow: 0 4px 15px -3px color-mix(in srgb, var(--workspace-primary) 40%, transparent);
     isolation: isolate;
   }
 
@@ -262,8 +302,9 @@ h6 {
   }
 
   .btn-primary:hover:not(:disabled) {
+    background: var(--workspace-primary-hover);
     transform: translateY(-1px);
-    box-shadow: 0 8px 25px -5px rgba(124, 58, 237, 0.5);
+    box-shadow: 0 8px 25px -5px color-mix(in srgb, var(--workspace-primary-hover) 50%, transparent);
   }
 
   .btn-accent {
@@ -298,9 +339,14 @@ h6 {
   }
 
   .btn-outline {
-    @apply btn border-2 border-primary-600 text-primary-600;
-    @apply hover:bg-primary-600 hover:text-white;
-    @apply dark:border-primary-400 dark:text-primary-400;
+    @apply btn border-2;
+    border-color: var(--workspace-primary);
+    color: var(--workspace-primary);
+  }
+
+  .btn-outline:hover:not(:disabled) {
+    background: var(--workspace-primary);
+    color: var(--workspace-primary-text);
   }
 
   .btn-ghost {
@@ -603,16 +649,11 @@ h6 {
     @apply dark:text-gray-400 dark:hover:bg-white/10 dark:hover:text-white;
   }
 
-  .header-nav-link-active-freelancer {
+  .header-nav-link-active {
     @apply header-nav-link;
-    @apply bg-purple-100 text-purple-700;
-    @apply dark:bg-purple-900/30 dark:text-purple-300;
-  }
-
-  .header-nav-link-active-client {
-    @apply header-nav-link;
-    @apply bg-amber-100 text-amber-700;
-    @apply dark:bg-amber-900/30 dark:text-amber-300;
+    color: var(--workspace-primary);
+    border-bottom: 2px solid var(--workspace-primary);
+    border-radius: 0.75rem 0.75rem 0 0;
   }
 
   .header-profile-trigger {

@@ -56,6 +56,10 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const showToast = useCallback((message: string, type: ToastType = 'info', duration = 4000, options?: ToastOptions) => {
+    if (type === 'success') {
+      return;
+    }
+
     const id = Math.random().toString(36).slice(2, 9);
     const toast = { id, message, type, duration, position: options?.position ?? 'top-right' };
 

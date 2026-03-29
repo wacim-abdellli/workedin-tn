@@ -44,11 +44,14 @@ export default function StepJobBasics() {
     return (
         <div className="space-y-8">
             <div className="space-y-4">
-                <h3 className="flex items-center gap-2 text-xl font-bold text-gray-900 dark:text-white">
-                    <FileText className="w-6 h-6 text-primary-600" />
+                <div className="inline-flex items-center gap-2 rounded-full border border-primary-100 bg-primary-50/70 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-primary-700 dark:border-white/10 dark:bg-white/[0.04] dark:text-primary-200">
+                    <FileText className="w-3.5 h-3.5" />
+                    {tx('jobs.new.stepBasics.badge', undefined, 'Project brief')}
+                </div>
+                <h3 className="text-2xl font-semibold tracking-tight text-[#171420] dark:text-white">
                     {tx('jobs.new.stepBasics.title', undefined, 'تفاصيل المهمة')}
                 </h3>
-                <p className="text-gray-500 dark:text-gray-400">
+                <p className="max-w-3xl text-sm leading-7 text-[#5c5971] dark:text-[#aca9bd] sm:text-base">
                     {tx('jobs.new.stepBasics.subtitle', undefined, 'ابدأ بعنوان واضح ووصف دقيق لمشروعك لجذب أفضل المستقلين.')}
                 </p>
             </div>
@@ -68,7 +71,7 @@ export default function StepJobBasics() {
                         <div className="relative">
                             <select
                                 {...register('category')}
-                                className="w-full appearance-none rounded-xl border border-gray-200 bg-white ps-4 pe-10 py-3 text-gray-900 transition-all duration-200 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20 dark:border-white/10 dark:bg-[#1a1825] dark:text-white"
+                                className="w-full appearance-none rounded-2xl border border-gray-200 bg-white ps-4 pe-10 py-3 text-gray-900 transition-all duration-200 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:border-white/10 dark:bg-[#1a1825] dark:text-white"
                             >
                                 <option value="">{tx('jobs.new.stepBasics.selectCategory', undefined, 'اختر التصنيف')}</option>
                                 {categories.map(cat => (
@@ -88,7 +91,7 @@ export default function StepJobBasics() {
                     <textarea
                         {...register('description')}
                         rows={8}
-                        className="w-full resize-none rounded-xl border border-gray-200 bg-white px-4 py-3 text-gray-900 placeholder:text-gray-400 transition-all duration-200 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20 dark:border-white/10 dark:bg-[#1a1825] dark:text-white dark:placeholder:text-gray-600"
+                        className="w-full resize-none rounded-2xl border border-gray-200 bg-white px-4 py-3 text-gray-900 placeholder:text-gray-400 transition-all duration-200 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:border-white/10 dark:bg-[#1a1825] dark:text-white dark:placeholder:text-gray-600"
                         placeholder={tx('jobs.new.stepBasics.projectDescriptionPlaceholder', undefined, 'اشرح تفاصيل المشروع، المخرجات المتوقعة، وأي متطلبات خاصة...')}
                     />
                     <div className="flex justify-between px-1 text-xs text-gray-500 dark:text-gray-400">
@@ -99,7 +102,7 @@ export default function StepJobBasics() {
                     </div>
 
                     {/* Tips */}
-                    <div className="mt-2 flex items-start gap-3 rounded-xl bg-blue-50 p-4 text-sm text-blue-700 dark:bg-blue-500/10 dark:text-blue-200">
+                    <div className="mt-2 flex items-start gap-3 rounded-2xl border border-primary-100/80 bg-primary-50/70 p-4 text-sm text-primary-700 dark:border-white/10 dark:bg-white/[0.04] dark:text-primary-200">
                         <Lightbulb className="w-5 h-5 flex-shrink-0" />
                         <ul className="space-y-1 list-disc list-inside">
                             <li>{tx('jobs.new.stepBasics.tip1', undefined, 'كن دقيقاً في وصف المطلوب')}</li>
@@ -123,7 +126,7 @@ export default function StepJobBasics() {
                                         px-3 py-1.5 rounded-full text-sm font-medium border transition-colors
                                         ${isSelected
                                             ? 'border-primary-200 bg-primary-50 text-primary-700 dark:border-primary-500/30 dark:bg-primary-500/10 dark:text-primary-300'
-                                        : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300 dark:border-white/10 dark:bg-[#1a1825] dark:text-gray-300'
+                                        : 'border-gray-200 bg-white text-gray-600 hover:border-primary-200 hover:bg-primary-50/50 dark:border-white/10 dark:bg-[#1a1825] dark:text-gray-300 dark:hover:border-primary-500/20 dark:hover:bg-white/[0.06]'
                                         }
                                     `}
                                 >

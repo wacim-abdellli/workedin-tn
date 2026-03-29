@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Mail, ArrowLeft, CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, Mail, ShieldCheck, Sparkles } from 'lucide-react';
 import { useTranslation } from '../i18n';
 import { supabase } from '../lib/supabase';
 import { useToast } from '../components/ui/Toast';
 import Button from '../components/ui/Button';
+import { AuthShell } from '../components/auth';
 
 function VerifyEmail() {
-    const { t, dir } = useTranslation();
+    const { t } = useTranslation();
     const { showToast } = useToast();
     const [searchParams] = useSearchParams();
     const email = searchParams.get('email') || '';
@@ -47,19 +48,39 @@ function VerifyEmail() {
     };
 
     return (
-        <div
-            className="flex min-h-screen items-center justify-center bg-gradient-to-br from-[#f7f5ff] via-white to-primary-50 p-4 dark:from-[#09070f] dark:via-[#0f0d16] dark:to-primary-950"
-            dir={dir}
+        <AuthShell
+            badge={t.verifyEmail.title}
+            title={t.verifyEmail.title}
+            description={t.verifyEmail.subtitle.replace('{{email}}', email)}
+            highlights={[
+                {
+                    icon: Mail,
+                    title: t.verifyEmail.resend,
+                    description: t.verifyEmail.subtitle.replace('{{email}}', email),
+                },
+                {
+                    icon: ShieldCheck,
+                    title: t.verifyEmail.checkSpam,
+                    description: t.verifyEmail.noEmail,
+                    tone: 'cyan',
+                },
+                {
+                    icon: Sparkles,
+                    title: t.verifyEmail.resendSuccess,
+                    description: t.verifyEmail.resendCooldown.replace('{{seconds}}', '60'),
+                    tone: 'accent',
+                },
+            ]}
+            topAction={
+                <Link
+                    to="/signup"
+                    className="inline-flex items-center rounded-full border border-white/12 bg-white/6 px-4 py-2 text-sm font-medium text-white/80 backdrop-blur-sm transition-colors hover:border-white/20 hover:bg-white/10 hover:text-white"
+                >
+                    {t.verifyEmail.wrongEmail}
+                </Link>
+            }
         >
-            <div className="w-full max-w-md rounded-[28px] border border-white/70 bg-white/90 p-8 text-center shadow-2xl shadow-primary-500/10 backdrop-blur-xl dark:border-white/8 dark:bg-white/5 dark:shadow-none">
-                <img
-                    src="/logos/logo-social.svg"
-                    alt="Khedma TN"
-                    width="88"
-                    height="88"
-                    className="mx-auto mb-6 h-[88px] w-[88px] rounded-[24px] shadow-xl shadow-primary-500/15"
-                />
-
+            <div className="text-center">
                 <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-500 to-primary-600 shadow-lg shadow-primary-500/30">
                     <Mail className="h-10 w-10 text-white" />
                 </div>
@@ -90,7 +111,6 @@ function VerifyEmail() {
 
                     <Link to="/signup">
                         <Button variant="outline" size="lg" className="w-full">
-                            <ArrowLeft className={`h-5 w-5 ${dir === 'rtl' ? 'rotate-180' : ''}`} />
                             {t.verifyEmail.wrongEmail}
                         </Button>
                     </Link>
@@ -105,7 +125,7 @@ function VerifyEmail() {
                     </div>
                 </div>
             </div>
-        </div>
+        </AuthShell>
     );
 }
 

@@ -11,11 +11,14 @@ export default function StepBudget() {
     return (
         <div className="space-y-8">
             <div className="space-y-4">
-                <h3 className="flex items-center gap-2 text-xl font-bold text-gray-900 dark:text-white">
-                    <DollarSign className="w-6 h-6 text-primary-600" />
+                <div className="inline-flex items-center gap-2 rounded-full border border-primary-100 bg-primary-50/70 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-primary-700 dark:border-white/10 dark:bg-white/[0.04] dark:text-primary-200">
+                    <DollarSign className="w-3.5 h-3.5" />
+                    {tx('jobs.new.stepBudget.badge', undefined, 'Pricing setup')}
+                </div>
+                <h3 className="text-2xl font-semibold tracking-tight text-[#171420] dark:text-white">
                     {tx('jobs.new.stepBudget.title', undefined, 'الميزانية والمدة')}
                 </h3>
-                <p className="text-gray-500 dark:text-gray-400">
+                <p className="max-w-3xl text-sm leading-7 text-[#5c5971] dark:text-[#aca9bd] sm:text-base">
                     {tx('jobs.new.stepBudget.subtitle', undefined, 'حدد طريقة الدفع المناسبة وميزانية المشروع')}
                 </p>
             </div>
@@ -26,7 +29,7 @@ export default function StepBudget() {
                     cursor-pointer p-6 rounded-2xl border-2 transition-all
                     ${jobType === 'fixed_price'
                         ? 'border-primary-600 bg-primary-50 ring-1 ring-primary-600 dark:bg-primary-500/10'
-                        : 'border-gray-200 bg-white hover:border-gray-300 dark:border-white/10 dark:bg-[#1a1825] dark:hover:border-white/20'
+                        : 'border-gray-200 bg-white hover:border-primary-200 hover:bg-primary-50/40 dark:border-white/10 dark:bg-[#1a1825] dark:hover:border-primary-500/20 dark:hover:bg-white/[0.06]'
                     }
                 `}>
                     <input
@@ -50,7 +53,7 @@ export default function StepBudget() {
                     cursor-pointer p-6 rounded-2xl border-2 transition-all
                     ${jobType === 'hourly'
                         ? 'border-primary-600 bg-primary-50 ring-1 ring-primary-600 dark:bg-primary-500/10'
-                        : 'border-gray-200 bg-white hover:border-gray-300 dark:border-white/10 dark:bg-[#1a1825] dark:hover:border-white/20'
+                        : 'border-gray-200 bg-white hover:border-primary-200 hover:bg-primary-50/40 dark:border-white/10 dark:bg-[#1a1825] dark:hover:border-primary-500/20 dark:hover:bg-white/[0.06]'
                     }
                 `}>
                     <input
@@ -72,7 +75,7 @@ export default function StepBudget() {
             </div>
 
             {/* Budget Inputs */}
-            <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm dark:border-white/5 dark:bg-[#1a1825]">
+            <div className="rounded-[1.75rem] border border-primary-100/70 bg-white/72 p-6 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
                 {jobType === 'fixed_price' ? (
                     <div className="space-y-4">
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{tx('jobs.new.stepBudget.estimatedBudget', undefined, 'ميزانية المشروع التقديرية (د.ت)')}</label>
@@ -122,7 +125,7 @@ export default function StepBudget() {
                     </label>
                     <select
                         {...register('duration')}
-                        className="w-full appearance-none rounded-xl border border-gray-200 bg-white px-4 py-3 text-gray-900 transition-all duration-200 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20 dark:border-white/10 dark:bg-[#1a1825] dark:text-white"
+                        className="w-full appearance-none rounded-2xl border border-gray-200 bg-white px-4 py-3 text-gray-900 transition-all duration-200 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:border-white/10 dark:bg-[#1a1825] dark:text-white"
                     >
                         <option value="">{tx('jobs.new.stepBudget.selectDuration', undefined, 'اختر المدة')}</option>
                         <option value="less_than_1_month">{tx('jobs.new.stepBudget.durationLessThan1Month', undefined, 'أقل من شهر')}</option>

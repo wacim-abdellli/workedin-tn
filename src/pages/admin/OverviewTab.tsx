@@ -32,11 +32,11 @@ interface OverviewStats {
     }>;
 }
 
-function StatCard({ icon: Icon, label, value, color }: { icon: React.ElementType; label: string; value: number | string; color: string }) {
+function StatCard({ icon: Icon, label, value, tone }: { icon: React.ElementType; label: string; value: number | string; tone?: string }) {
     return (
         <div className="card border-white/50 dark:border-white/12 bg-white/88 dark:bg-slate-950/65 backdrop-blur-xl shadow-[0_24px_60px_-28px_rgba(14,65,227,0.42)] hover:-translate-y-0.5 transition-all duration-300">
             <div className="flex items-start justify-between">
-                <div className={`w-12 h-12 rounded-2xl ${color} flex items-center justify-center shadow-md`}><Icon className="w-6 h-6 text-white" /></div>
+                <div className="w-12 h-12 rounded-2xl flex items-center justify-center shadow-md" style={{ background: tone || 'var(--workspace-primary)' }}><Icon className="w-6 h-6 text-white" /></div>
             </div>
             <p className="text-3xl font-bold text-foreground mt-4">{value}</p>
             <p className="text-sm text-muted">{label}</p>
@@ -106,10 +106,10 @@ export default function OverviewTab() {
     return (
         <div className="space-y-8">
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                <StatCard icon={Users} label={tr('إجمالي المستخدمين', 'Total users', 'Utilisateurs totaux')} value={s.totalUsers} color="bg-[#1554f7]" />
-                <StatCard icon={Briefcase} label={tr('وظائف نشطة', 'Active jobs', 'Offres actives')} value={s.activeJobs} color="bg-[#0e41e3]" />
-                <StatCard icon={FileText} label={tr('عقود نشطة', 'Active contracts', 'Contrats actifs')} value={s.activeContracts} color="bg-[#9333ea]" />
-                <StatCard icon={DollarSign} label={tr('الإيرادات (د.ت)', 'Revenue (TND)', 'Revenus (TND)')} value={s.totalRevenue} color="bg-[#f86545]" />
+                <StatCard icon={Users} label={tr('إجمالي المستخدمين', 'Total users', 'Utilisateurs totaux')} value={s.totalUsers} />
+                <StatCard icon={Briefcase} label={tr('وظائف نشطة', 'Active jobs', 'Offres actives')} value={s.activeJobs} tone="var(--workspace-primary-hover)" />
+                <StatCard icon={FileText} label={tr('عقود نشطة', 'Active contracts', 'Contrats actifs')} value={s.activeContracts} tone="var(--workspace-primary-mid)" />
+                <StatCard icon={DollarSign} label={tr('الإيرادات (د.ت)', 'Revenue (TND)', 'Revenus (TND)')} value={s.totalRevenue} tone="var(--workspace-primary)" />
             </div>
             <div className="grid lg:grid-cols-2 gap-6">
                 <div className={panelClass}>

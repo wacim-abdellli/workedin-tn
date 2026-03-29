@@ -45,7 +45,7 @@ export default function SimilarJobCard({ job, onClick }: SimilarJobCardProps) {
                 </span>
             </div>
 
-            <h4 className="font-bold text-dark-900 dark:text-white line-clamp-2 mb-2 group-hover:text-primary-600 transition-colors">
+            <h4 className="mb-2 line-clamp-2 break-words font-bold text-dark-900 transition-colors [overflow-wrap:anywhere] group-hover:text-primary-600 dark:text-white">
                 {job.title}
             </h4>
 
@@ -71,7 +71,7 @@ export default function SimilarJobCard({ job, onClick }: SimilarJobCardProps) {
                 {skills.slice(0, 3).map((skill, index) => (
                     <span
                         key={index}
-                        className="text-[10px] px-2 py-1 bg-white dark:bg-dark-700 border border-gray-100 dark:border-dark-600 rounded-md text-gray-600 dark:text-gray-300"
+                        className="break-words rounded-md border border-gray-100 bg-white px-2 py-1 text-[10px] text-gray-600 [overflow-wrap:anywhere] dark:border-dark-600 dark:bg-dark-700 dark:text-gray-300"
                     >
                         {skill}
                     </span>
