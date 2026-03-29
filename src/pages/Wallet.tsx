@@ -83,10 +83,10 @@ export default function Wallet() {
         <Header />
         <div className="page-shell-content">
           <div className="animate-pulse space-y-6">
-            <div className="h-48 bg-gray-200 dark:bg-gray-700 rounded-2xl" />
+            <div className="h-48 bg-muted rounded-2xl" />
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
               {[1, 2, 3, 4].map(i => (
-                <div key={i} className="h-24 bg-gray-200 dark:bg-gray-700 rounded-2xl" />
+                <div key={i} className="h-24 bg-muted rounded-2xl" />
               ))}
             </div>
           </div>
@@ -144,7 +144,7 @@ export default function Wallet() {
         {/* SECTION B: Stats Row */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <div className="stat-card">
-            <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm mb-2">
+            <div className="flex items-center gap-2 text-muted-foreground text-sm mb-2">
               <TrendingUp className="w-4 h-4" />
               <span>{t.wallet?.totalEarned || 'Total Earned'}</span>
             </div>
@@ -152,7 +152,7 @@ export default function Wallet() {
           </div>
           
           <div className="stat-card">
-            <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm mb-2">
+            <div className="flex items-center gap-2 text-muted-foreground text-sm mb-2">
               <ArrowUpRight className="w-4 h-4" />
               <span>{t.wallet?.totalWithdrawn || 'Total Withdrawn'}</span>
             </div>
@@ -160,7 +160,7 @@ export default function Wallet() {
           </div>
           
           <div className="stat-card">
-            <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm mb-2">
+            <div className="flex items-center gap-2 text-muted-foreground text-sm mb-2">
               <WalletIcon className="w-4 h-4" />
               <span>{t.wallet?.balance || 'Available Balance'}</span>
             </div>
@@ -168,7 +168,7 @@ export default function Wallet() {
           </div>
           
           <div className="stat-card">
-            <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm mb-2">
+            <div className="flex items-center gap-2 text-muted-foreground text-sm mb-2">
               <Clock className="w-4 h-4" />
               <span>{t.wallet?.pendingBalance || 'Pending in Escrow'}</span>
             </div>
@@ -178,7 +178,7 @@ export default function Wallet() {
 
         {/* SECTION D: Transaction History */}
         <div className="mb-8">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t.wallet?.transactionHistory || 'Transaction History'}</h2>
+          <h2 className="text-lg font-semibold text-foreground mb-4">{t.wallet?.transactionHistory || 'Transaction History'}</h2>
           
           <div className="card overflow-hidden">
             {transactionsLoading ? (
@@ -187,9 +187,9 @@ export default function Wallet() {
               </div>
             ) : transactions.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center px-4">
-                <WalletIcon className="w-12 h-12 text-gray-300 dark:text-gray-600 mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white">{t.wallet?.noTransactions || 'No transactions yet'}</h3>
-                <p className="text-gray-500 dark:text-gray-400 mt-1">{t.wallet?.noTransactionsDesc || 'Your transaction history will appear here'}</p>
+                <WalletIcon className="w-12 h-12 text-muted mb-4" />
+                <h3 className="text-lg font-medium text-foreground">{t.wallet?.noTransactions || 'No transactions yet'}</h3>
+                <p className="text-muted-foreground mt-1">{t.wallet?.noTransactionsDesc || 'Your transaction history will appear here'}</p>
               </div>
             ) : (
               <>
@@ -212,7 +212,7 @@ export default function Wallet() {
                         
                         return (
                           <tr key={tx.id} className="data-table-row">
-                            <td className="data-table-td whitespace-nowrap text-gray-500 dark:text-gray-400">
+                            <td className="data-table-td whitespace-nowrap text-muted-foreground">
                               {formatDate(tx.created_at)}
                             </td>
                             <td className="data-table-td whitespace-nowrap">
@@ -220,14 +220,14 @@ export default function Wallet() {
                                 {formatTransactionType(tx.type, language)}
                               </span>
                             </td>
-                            <td className="data-table-td text-gray-900 dark:text-white">
+                            <td className="data-table-td text-foreground">
                               {tx.description || t.wallet?.transactionLabel || 'Transaction'}
                             </td>
                             <td className="data-table-td whitespace-nowrap text-end">
                               <span className={`text-sm font-semibold ${
                                 isCredit ? 'text-green-600 dark:text-green-400' : 
                                 isDebit ? 'text-red-600 dark:text-red-400' : 
-                                'text-gray-900 dark:text-white'
+                                'text-foreground'
                               }`}>
                                 {isCredit ? '+' : isDebit ? '-' : ''}{formatCurrency(tx.amount, true, language)}
                               </span>
@@ -251,27 +251,27 @@ export default function Wallet() {
                     const isDebit = tx.type === 'withdrawal' || tx.type === 'fee' || tx.type === 'escrow';
                     
                     return (
-                      <div key={tx.id} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 space-y-3">
+                      <div key={tx.id} className="bg-card border border-border rounded-xl p-4 space-y-3">
                         <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                           <div className="min-w-0">
                             <span className="status-pill bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200 text-xs">
                               {formatTransactionType(tx.type, language)}
                             </span>
-                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{formatDate(tx.created_at)}</p>
+                            <p className="text-sm text-muted-foreground mt-1">{formatDate(tx.created_at)}</p>
                           </div>
                           <span className={`text-lg font-bold break-words sm:text-end ${
                             isCredit ? 'text-green-600 dark:text-green-400' : 
                             isDebit ? 'text-red-600 dark:text-red-400' : 
-                            'text-gray-900 dark:text-white'
+                            'text-foreground'
                           }`}>
                             {isCredit ? '+' : isDebit ? '-' : ''}{formatCurrency(tx.amount, true, language)}
                           </span>
                         </div>
-                        <p className="text-sm break-words text-gray-900 dark:text-white">
+                        <p className="text-sm break-words text-foreground">
                           {tx.description || t.wallet?.transactionLabel || 'Transaction'}
                         </p>
                         <div className="flex flex-col gap-2 border-t border-gray-100 pt-2 dark:border-gray-700 sm:flex-row sm:items-center sm:justify-between">
-                          <span className="text-xs text-gray-500 dark:text-gray-400">{t.wallet?.statusLabel || 'Status'}</span>
+                          <span className="text-xs text-muted-foreground">{t.wallet?.statusLabel || 'Status'}</span>
                           <span className={`status-pill text-xs ${getStatusColor(tx.status)}`}>
                             {formatTransactionStatus(tx.status, language)}
                           </span>
@@ -287,17 +287,17 @@ export default function Wallet() {
                     <button
                       onClick={() => setPage(p => Math.max(1, p - 1))}
                       disabled={page === 1}
-                      className="min-h-[44px] px-3 md:px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="min-h-[44px] px-3 md:px-4 py-2 text-sm font-medium text-foreground bg-card border border-border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {t.wallet?.previous || 'Previous'}
                     </button>
-                    <span className="text-xs md:text-sm text-gray-700 dark:text-gray-300">
+                    <span className="text-xs md:text-sm text-foreground">
                       {(t.wallet?.pageOf || 'Page {{page}} of {{totalPages}}').replace('{{page}}', page.toString()).replace('{{totalPages}}', totalPages.toString())}
                     </span>
                     <button
                       onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                       disabled={page === totalPages}
-                      className="min-h-[44px] px-3 md:px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="min-h-[44px] px-3 md:px-4 py-2 text-sm font-medium text-foreground bg-card border border-border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {t.wallet?.next || 'Next'}
                     </button>
@@ -310,7 +310,7 @@ export default function Wallet() {
 
         {/* SECTION E: Withdrawal History */}
         <div>
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t.wallet?.withdrawalHistory || 'Withdrawal History'}</h2>
+          <h2 className="text-lg font-semibold text-foreground mb-4">{t.wallet?.withdrawalHistory || 'Withdrawal History'}</h2>
           
           <div className="card overflow-hidden">
             {withdrawalsLoading ? (
@@ -319,9 +319,9 @@ export default function Wallet() {
               </div>
             ) : !withdrawals || withdrawals.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center px-4">
-                <ArrowUpRight className="w-12 h-12 text-gray-300 dark:text-gray-600 mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white">{t.wallet?.noWithdrawals || 'No withdrawals yet'}</h3>
-                <p className="text-gray-500 dark:text-gray-400 mt-1">{t.wallet?.noWithdrawalsDesc || 'Request a withdrawal to see it here'}</p>
+                <ArrowUpRight className="w-12 h-12 text-muted mb-4" />
+                <h3 className="text-lg font-medium text-foreground">{t.wallet?.noWithdrawals || 'No withdrawals yet'}</h3>
+                <p className="text-muted-foreground mt-1">{t.wallet?.noWithdrawalsDesc || 'Request a withdrawal to see it here'}</p>
               </div>
             ) : (
               <>
@@ -349,10 +349,10 @@ export default function Wallet() {
                         
                         return (
                           <tr key={withdrawal.id} className="data-table-row">
-                            <td className="data-table-td whitespace-nowrap text-gray-500 dark:text-gray-400">
+                            <td className="data-table-td whitespace-nowrap text-muted-foreground">
                               {formatDate(withdrawal.created_at)}
                             </td>
-                            <td className="data-table-td whitespace-nowrap text-end font-medium text-gray-900 dark:text-white">
+                            <td className="data-table-td whitespace-nowrap text-end font-medium text-foreground">
                               {formatCurrency(withdrawal.amount, true, language)}
                             </td>
                             <td className="data-table-td whitespace-nowrap text-end font-semibold text-green-600 dark:text-green-400">
@@ -387,10 +387,10 @@ export default function Wallet() {
                     };
                     
                     return (
-                      <div key={withdrawal.id} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 space-y-3">
+                      <div key={withdrawal.id} className="bg-card border border-border rounded-xl p-4 space-y-3">
                         <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                           <div className="min-w-0">
-                            <p className="text-sm font-medium text-gray-900 dark:text-white">{formatDate(withdrawal.created_at)}</p>
+                            <p className="text-sm font-medium text-foreground">{formatDate(withdrawal.created_at)}</p>
                             <span className="status-pill bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200 text-xs mt-1 inline-block">
                               {formatWithdrawalMethod(withdrawal.method, language)}
                             </span>
@@ -399,15 +399,15 @@ export default function Wallet() {
                             {t.wallet?.status?.[withdrawal.status] || withdrawal.status}
                           </span>
                         </div>
-                        <div className="grid grid-cols-2 gap-3 pt-2 border-t border-gray-100 dark:border-gray-700">
+                        <div className="grid grid-cols-2 gap-3 pt-2 border-t border-border">
                           <div>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">{t.wallet?.amount || 'Amount'}</p>
-                            <p className="text-base font-semibold text-gray-900 dark:text-white mt-0.5">
+                            <p className="text-xs text-muted-foreground">{t.wallet?.amount || 'Amount'}</p>
+                            <p className="text-base font-semibold text-foreground mt-0.5">
                               {formatCurrency(withdrawal.amount, true, language)}
                             </p>
                           </div>
                           <div>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">{t.wallet?.netAmount || 'Net Amount'}</p>
+                            <p className="text-xs text-muted-foreground">{t.wallet?.netAmount || 'Net Amount'}</p>
                             <p className="text-base font-bold text-green-600 dark:text-green-400 mt-0.5">
                               {formatCurrency(withdrawal.net_amount || (withdrawal.amount - (withdrawal.fee || 0)), true, language)}
                             </p>
@@ -528,11 +528,11 @@ function WithdrawalModal({ wallet, onClose, onSuccess }: { wallet: WalletType; o
   if (submitted) {
     return (
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" role="dialog" aria-modal="true" aria-label={t.wallet?.withdrawalSubmittedTitle || 'Withdrawal Request Submitted'}>
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 max-w-md w-full text-center">
+        <div className="bg-card rounded-2xl p-8 max-w-md w-full text-center">
           <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
             <CheckCircle className="w-8 h-8 text-green-600" />
           </div>
-          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+          <h3 className="text-xl font-bold text-foreground mb-2">
             {t.wallet?.withdrawalSubmittedTitle || 'Withdrawal Request Submitted'}
           </h3>
           <p className="text-gray-600 dark:text-gray-400 mb-4">
@@ -548,9 +548,9 @@ function WithdrawalModal({ wallet, onClose, onSuccess }: { wallet: WalletType; o
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto" role="dialog" aria-modal="true" aria-label={t.wallet?.requestWithdrawal || 'Request Withdrawal'}>
-      <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 max-w-md w-full my-8">
+      <div className="bg-card rounded-2xl p-4 sm:p-6 max-w-md w-full my-8">
         <div className="flex items-center justify-between mb-4 sm:mb-6">
-          <h3 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white">
+          <h3 className="text-base sm:text-lg font-bold text-foreground">
             {t.wallet?.requestWithdrawal || 'Request Withdrawal'}
           </h3>
           <button type="button" aria-label={t.common?.close || 'Close'} onClick={onClose} className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 min-h-[44px] min-w-[44px] flex items-center justify-center">
@@ -560,7 +560,7 @@ function WithdrawalModal({ wallet, onClose, onSuccess }: { wallet: WalletType; o
 
         <div className="mb-4 sm:mb-6 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
           <div className="text-sm text-gray-500 mb-1">{t.wallet?.availableBalance || 'Available Balance'}</div>
-          <div className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+          <div className="text-xl sm:text-2xl font-bold text-foreground">
             {formatCurrency(wallet.balance, true, language)}
           </div>
         </div>
@@ -568,7 +568,7 @@ function WithdrawalModal({ wallet, onClose, onSuccess }: { wallet: WalletType; o
         <form onSubmit={handleSubmit} className="space-y-4" noValidate>
           {/* Amount */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-foreground mb-2">
               {t.wallet?.amount || 'Amount'} <span className="text-red-500">*</span>
             </label>
             <input
@@ -579,8 +579,8 @@ function WithdrawalModal({ wallet, onClose, onSuccess }: { wallet: WalletType; o
               min={MIN_WITHDRAWAL_AMOUNT}
               max={wallet.balance}
               step="0.001"
-              className={`w-full px-4 py-3 min-h-[48px] border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
-                amount && !validation.valid ? 'border-red-400 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'
+              className={`w-full px-4 py-3 min-h-[48px] border rounded-lg bg-white dark:bg-gray-700 text-foreground focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
+                amount && !validation.valid ? 'border-red-400 dark:border-red-500' : 'border-border'
               }`}
               dir="ltr"
             />
@@ -591,7 +591,7 @@ function WithdrawalModal({ wallet, onClose, onSuccess }: { wallet: WalletType; o
 
           {/* Method selector */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-foreground mb-2">
               {t.wallet?.method || 'Withdrawal Method'} <span className="text-red-500">*</span>
             </label>
             <div className="grid grid-cols-3 gap-2">
@@ -624,7 +624,7 @@ function WithdrawalModal({ wallet, onClose, onSuccess }: { wallet: WalletType; o
                   value={bankName}
                   onChange={(e) => setBankName(e.target.value)}
                   placeholder={t.wallet?.bankName || 'Bank Name'}
-                  className={`w-full px-4 py-3 min-h-[48px] border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${bankNameError ? 'border-red-400 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'}`}
+                  className={`w-full px-4 py-3 min-h-[48px] border rounded-lg bg-white dark:bg-gray-700 text-foreground ${bankNameError ? 'border-red-400 dark:border-red-500' : 'border-border'}`}
                 />
                 {bankNameError && <p className="text-red-500 text-sm mt-1" role="alert">{bankNameError}</p>}
               </div>
@@ -634,7 +634,7 @@ function WithdrawalModal({ wallet, onClose, onSuccess }: { wallet: WalletType; o
                   value={bankAccountName}
                   onChange={(e) => setBankAccountName(e.target.value)}
                   placeholder={t.wallet?.accountHolder || 'Account Holder Name'}
-                  className={`w-full px-4 py-3 min-h-[48px] border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${bankAccountNameError ? 'border-red-400 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'}`}
+                  className={`w-full px-4 py-3 min-h-[48px] border rounded-lg bg-white dark:bg-gray-700 text-foreground ${bankAccountNameError ? 'border-red-400 dark:border-red-500' : 'border-border'}`}
                 />
                 {bankAccountNameError && <p className="text-red-500 text-sm mt-1" role="alert">{bankAccountNameError}</p>}
               </div>
@@ -645,7 +645,7 @@ function WithdrawalModal({ wallet, onClose, onSuccess }: { wallet: WalletType; o
                   onChange={(e) => setBankIban(e.target.value)}
                   placeholder="TN59 ..."
                   aria-label={t.wallet?.iban || 'IBAN'}
-                  className={`w-full px-4 py-3 min-h-[48px] border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${bankIbanError ? 'border-red-400 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'}`}
+                  className={`w-full px-4 py-3 min-h-[48px] border rounded-lg bg-white dark:bg-gray-700 text-foreground ${bankIbanError ? 'border-red-400 dark:border-red-500' : 'border-border'}`}
                   dir="ltr"
                 />
                 {bankIbanError && <p className="text-red-500 text-sm mt-1" role="alert">{bankIbanError}</p>}
@@ -663,7 +663,7 @@ function WithdrawalModal({ wallet, onClose, onSuccess }: { wallet: WalletType; o
                   value={phoneNumber}
                   onChange={(e) => setPhoneNumber(e.target.value)}
                   placeholder="+216 00 000 000"
-                  className={`w-full ps-10 pe-4 py-3 min-h-[48px] border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${phoneError ? 'border-red-400 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'}`}
+                  className={`w-full ps-10 pe-4 py-3 min-h-[48px] border rounded-lg bg-white dark:bg-gray-700 text-foreground ${phoneError ? 'border-red-400 dark:border-red-500' : 'border-border'}`}
                   dir="ltr"
                 />
               </div>
@@ -698,4 +698,5 @@ function WithdrawalModal({ wallet, onClose, onSuccess }: { wallet: WalletType; o
     </div>
   );
 }
+
 
