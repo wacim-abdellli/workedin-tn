@@ -112,9 +112,9 @@ function MetricCard({
                     <div className={`flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br ${tone}`}>
                         <Icon className="h-5 w-5" />
                     </div>
-                    <div className="mt-5 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">{value}</div>
+                    <div className="mt-5 text-2xl font-bold tracking-tight text-[var(--text-primary)]">{value}</div>
                     <div className="mt-1 text-sm font-semibold text-gray-700 dark:text-gray-300">{label}</div>
-                    <div className="mt-2 text-xs leading-5 text-gray-600 dark:text-gray-400">{detail}</div>
+                    <div className="mt-2 text-xs leading-5 text-[var(--text-secondary)]">{detail}</div>
                 </>
             )}
         </div>
@@ -136,7 +136,7 @@ function EmptyState({
                 <Icon className="h-5 w-5" />
             </div>
             <p className="mt-4 text-sm font-semibold text-[#1a1825] dark:text-white">{title}</p>
-            <p className="mt-2 text-sm leading-6 text-[#6b6880] dark:text-[#8b8aa0]">{description}</p>
+            <p className="mt-2 text-sm leading-6 text-[#6b6880] dark:text-[var(--text-muted)]">{description}</p>
         </div>
     );
 }
@@ -313,12 +313,19 @@ function ClientDashboardPage() {
             <Header />
 
             <main className="page-shell-content space-y-6">
-                <section className="radius-shell overflow-hidden border border-primary-200/40 bg-[radial-gradient(circle_at_top_left,rgba(21,84,247,0.14),transparent_30%),linear-gradient(135deg,rgba(255,255,255,0.98),rgba(244,241,255,0.94))] p-6 shadow-[0_32px_90px_-48px_rgba(14,65,227,0.28)] dark:border-white/10 dark:bg-[radial-gradient(circle_at_top_left,rgba(21,84,247,0.2),transparent_28%),linear-gradient(145deg,rgba(18,16,28,0.98),rgba(11,10,18,0.98))] sm:p-8">
-                    <div className="grid gap-6 xl:grid-cols-[minmax(0,1.08fr)_minmax(360px,0.92fr)]">
+                <section className="relative radius-shell overflow-hidden border border-primary-200/40 p-6 shadow-[0_32px_90px_-48px_rgba(14,65,227,0.28)] dark:border-white/10 sm:p-8" style={{
+                    background: 'linear-gradient(135deg, rgba(21,84,247,0.06) 0%, rgba(21,84,247,0.01) 50%, transparent 100%), linear-gradient(135deg,rgba(255,255,255,0.98),rgba(246,239,255,0.92))'
+                }}>
+                    <div className="hidden dark:block absolute inset-0 pointer-events-none" style={{
+                        background: 'linear-gradient(135deg, rgba(21,84,247,0.12) 0%, rgba(21,84,247,0.04) 50%, transparent 100%), linear-gradient(145deg,rgba(18,16,28,0.98),rgba(11,10,18,0.98))'
+                    }}></div>
+                    <div className="relative grid gap-6 xl:grid-cols-[minmax(0,1.08fr)_minmax(360px,0.92fr)]">
                         <div className="space-y-6">
-                            <div className="inline-flex items-center gap-2 rounded-full border border-primary-200 bg-white/80 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-primary-700 shadow-sm dark:border-white/10 dark:bg-white/5 dark:text-primary-200">
-                                <Sparkles className="h-3.5 w-3.5" />
-                                {tx('dashboard.client.commandCenter', undefined, 'Client command center')}
+                            <div className="flex items-center gap-2 border-l-2 border-l-[color:var(--workspace-primary)] pl-2">
+                                <Sparkles className="h-3.5 w-3.5 text-[color:var(--workspace-primary)]" />
+                                <p className="text-xs font-semibold uppercase tracking-widest text-[#6b6880] dark:text-gray-400">
+                                    {tx('dashboard.client.commandCenter', undefined, 'Client command center')}
+                                </p>
                             </div>
 
                             <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
@@ -332,10 +339,10 @@ function ClientDashboardPage() {
                                             )}
                                         </div>
                                         <div>
-                                            <p className="text-sm font-medium text-[#6b6880] dark:text-[#8b8aa0]">
+                                            <p className="text-sm font-medium text-[#6b6880] dark:text-[var(--text-muted)]">
                                                 {tx('dashboard.client.welcomeBack', undefined, 'Welcome back')}
                                             </p>
-                                            <h1 className="mt-1 text-3xl font-semibold tracking-tight text-[#171420] dark:text-white sm:text-4xl">
+                                            <h1 className="mt-1 text-3xl font-semibold tracking-tight text-[var(--text-primary)] sm:text-4xl">
                                                 {tx('dashboard.client.heroGreeting', { name: greeting }, `Welcome back, ${greeting}`)}
                                             </h1>
                                             <p className="mt-2 text-sm font-medium text-primary-700 dark:text-primary-200">
@@ -349,14 +356,14 @@ function ClientDashboardPage() {
                                     </p>
                                 </div>
 
-                                <div className="rounded-[1.6rem] border border-primary-100 bg-white/75 p-4 shadow-sm dark:border-white/10 dark:bg-white/5 sm:min-w-[240px]">
-                                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8b8aa0]">
+                                <div className="rounded-lg border border-gray-200 dark:border-white/10 bg-white/75 dark:bg-white/5 p-4 shadow-sm sm:min-w-[240px]">
+                                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">
                                         {tx('dashboard.client.focusLabel', undefined, 'Today focus')}
                                     </p>
-                                    <p className="mt-3 text-base font-semibold text-[#171420] dark:text-white">
+                                    <p className="mt-3 text-base font-semibold text-[var(--text-primary)]">
                                         {todayFocus.title}
                                     </p>
-                                    <p className="mt-2 text-sm leading-6 text-[#6b6880] dark:text-[#8b8aa0]">
+                                    <p className="mt-2 text-sm leading-6 text-[#6b6880] dark:text-[var(--text-muted)]">
                                         {todayFocus.description}
                                     </p>
                                 </div>
@@ -366,17 +373,17 @@ function ClientDashboardPage() {
                                 <div className="inline-flex items-center gap-2 rounded-full border border-primary-100 bg-white/80 px-4 py-2 text-sm text-[#353149] shadow-sm dark:border-white/10 dark:bg-white/5 dark:text-[#e3def7]">
                                     <Users className="h-4 w-4 text-amber-500" />
                                     <span>{stats?.totalProposals ?? 0}</span>
-                                    <span className="text-[#7a768e] dark:text-[#8b8aa0]">{tx('dashboard.client.pipeline.totalProposals', undefined, 'total proposals')}</span>
+                                    <span className="text-[var(--text-muted)]">{tx('dashboard.client.pipeline.totalProposals', undefined, 'total proposals')}</span>
                                 </div>
                                 <div className="inline-flex items-center gap-2 rounded-full border border-primary-100 bg-white/80 px-4 py-2 text-sm text-[#353149] shadow-sm dark:border-white/10 dark:bg-white/5 dark:text-[#e3def7]">
                                     <FolderKanban className="h-4 w-4 text-primary-500" />
                                     <span>{openJobs}</span>
-                                    <span className="text-[#7a768e] dark:text-[#8b8aa0]">{tx('dashboard.client.pipeline.openJobs', undefined, 'open jobs')}</span>
+                                    <span className="text-[var(--text-muted)]">{tx('dashboard.client.pipeline.openJobs', undefined, 'open jobs')}</span>
                                 </div>
                                 <div className="inline-flex items-center gap-2 rounded-full border border-primary-100 bg-white/80 px-4 py-2 text-sm text-[#353149] shadow-sm dark:border-white/10 dark:bg-white/5 dark:text-[#e3def7]">
                                     <Bell className="h-4 w-4 text-sky-500" />
                                     <span>{unreadNotifications.length}</span>
-                                    <span className="text-[#7a768e] dark:text-[#8b8aa0]">{tx('dashboard.client.pipeline.unreadUpdates', undefined, 'unread updates')}</span>
+                                    <span className="text-[var(--text-muted)]">{tx('dashboard.client.pipeline.unreadUpdates', undefined, 'unread updates')}</span>
                                 </div>
                             </div>
 
@@ -409,10 +416,10 @@ function ClientDashboardPage() {
                                     <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary-600 dark:text-primary-300">
                                         {tx('dashboard.client.projectsBadge', undefined, 'Hiring pipeline')}
                                     </p>
-                                    <h2 className="mt-3 text-2xl font-semibold tracking-tight text-[#171420] dark:text-white">
+                                    <h2 className="mt-3 text-2xl font-semibold tracking-tight text-[var(--text-primary)]">
                                         {t.dashboard.yourJobs}
                                     </h2>
-                                    <p className="mt-2 text-sm leading-6 text-[#6b6880] dark:text-[#8b8aa0]">
+                                    <p className="mt-2 text-sm leading-6 text-[#6b6880] dark:text-[var(--text-muted)]">
                                         {tx('dashboard.client.projectsDescription', undefined, 'Latest project briefs, proposal signals, and active delivery states in one place.')}
                                     </p>
                                 </div>
@@ -447,21 +454,21 @@ function ClientDashboardPage() {
                                                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                                                     <div className="min-w-0 flex-1">
                                                         <div className="flex flex-wrap items-center gap-3">
-                                                            <h3 className="truncate text-base font-semibold text-[#171420] transition-colors group-hover:text-primary-700 dark:text-white dark:group-hover:text-primary-200">
+                                                            <h3 className="truncate text-base font-semibold text-[var(--text-primary)] transition-colors group-hover:text-primary-700 dark:group-hover:text-primary-200">
                                                                 {job.title}
                                                             </h3>
                                                             {getStatusBadge(job.status)}
                                                         </div>
-                                                        <p className="mt-2 text-sm text-[#7a768e] dark:text-[#8b8aa0]">
+                                                        <p className="mt-2 text-sm text-[var(--text-muted)]">
                                                             {new Date(job.created_at).toLocaleDateString(locale, { month: 'short', day: 'numeric', year: 'numeric' })}
                                                         </p>
                                                     </div>
 
                                                     <div className="rounded-2xl border border-primary-100 bg-primary-50/60 px-4 py-3 text-right dark:border-white/10 dark:bg-white/[0.04]">
-                                                        <p className="text-xs font-medium uppercase tracking-[0.15em] text-[#8b8aa0]">
+                                                        <p className="text-xs font-medium uppercase tracking-[0.15em] text-[var(--text-muted)]">
                                                             {tx('dashboard.client.jobBudget', undefined, 'Budget')}
                                                         </p>
-                                                        <p className="mt-2 text-sm font-semibold text-[#171420] dark:text-white">
+                                                        <p className="mt-2 text-sm font-semibold text-[var(--text-primary)]">
                                                             {job.budget_min && job.budget_max
                                                                 ? `${formatCurrency(job.budget_min, true, language)} - ${formatCurrency(job.budget_max, true, language)}`
                                                                 : job.budget_min
@@ -473,27 +480,27 @@ function ClientDashboardPage() {
 
                                                 <div className="mt-5 grid gap-3 sm:grid-cols-3">
                                                     <div className="rounded-2xl bg-primary-50/70 px-4 py-3 dark:bg-white/[0.04]">
-                                                        <p className="text-xs font-medium uppercase tracking-[0.15em] text-[#8b8aa0]">
+                                                        <p className="text-xs font-medium uppercase tracking-[0.15em] text-[var(--text-muted)]">
                                                             {tx('dashboard.client.proposalsLabel', undefined, 'Proposals')}
                                                         </p>
-                                                        <p className="mt-2 text-sm font-semibold text-[#171420] dark:text-white">
+                                                        <p className="mt-2 text-sm font-semibold text-[var(--text-primary)]">
                                                             {tx('dashboard.client.proposalsSubmitted', { count: job.proposals_count }, `${job.proposals_count} proposals submitted`)}
                                                         </p>
                                                     </div>
                                                     <div className="rounded-2xl bg-primary-50/70 px-4 py-3 dark:bg-white/[0.04]">
-                                                        <p className="text-xs font-medium uppercase tracking-[0.15em] text-[#8b8aa0]">
+                                                        <p className="text-xs font-medium uppercase tracking-[0.15em] text-[var(--text-muted)]">
                                                             {tx('dashboard.client.assigneeLabel', undefined, 'Assigned freelancer')}
                                                         </p>
-                                                        <p className="mt-2 text-sm font-semibold text-[#171420] dark:text-white">
+                                                        <p className="mt-2 text-sm font-semibold text-[var(--text-primary)]">
                                                             {assignedFreelancer || tx('dashboard.client.freelancerFallback', undefined, 'Not assigned yet')}
                                                         </p>
                                                     </div>
                                                     <div className="flex items-center justify-between rounded-2xl bg-primary-50/70 px-4 py-3 dark:bg-white/[0.04]">
                                                         <div>
-                                                            <p className="text-xs font-medium uppercase tracking-[0.15em] text-[#8b8aa0]">
+                                                            <p className="text-xs font-medium uppercase tracking-[0.15em] text-[var(--text-muted)]">
                                                                 {tx('dashboard.client.nextActionLabel', undefined, 'Next action')}
                                                             </p>
-                                                            <p className="mt-2 text-sm font-semibold text-[#171420] dark:text-white">
+                                                            <p className="mt-2 text-sm font-semibold text-[var(--text-primary)]">
                                                                 {job.status === 'open' && job.proposals_count > 0
                                                                     ? tx('dashboard.client.reviewProposals', undefined, 'Review proposals')
                                                                     : job.status === 'in_progress'
@@ -519,7 +526,7 @@ function ClientDashboardPage() {
                                     <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary-600 dark:text-primary-300">
                                         {tx('dashboard.client.pipelineBadge', undefined, 'Decision support')}
                                     </p>
-                                    <h2 className="mt-3 text-xl font-semibold tracking-tight text-[#171420] dark:text-white">
+                                    <h2 className="mt-3 text-xl font-semibold tracking-tight text-[var(--text-primary)]">
                                         {tx('dashboard.client.pipelineSummary', undefined, 'Hiring summary')}
                                     </h2>
                                 </div>
@@ -530,16 +537,16 @@ function ClientDashboardPage() {
 
                             <div className="mt-5 grid gap-3">
                                 <div className="rounded-[1.4rem] border border-primary-100/70 bg-white/75 p-4 dark:border-white/10 dark:bg-white/[0.04]">
-                                    <p className="text-xs font-medium uppercase tracking-[0.15em] text-[#8b8aa0]">{tx('dashboard.client.awaitingReview', undefined, 'Awaiting review')}</p>
-                                    <p className="mt-2 text-2xl font-semibold text-[#171420] dark:text-white">{stats?.proposalsWaitingReview ?? 0}</p>
+                                    <p className="text-xs font-medium uppercase tracking-[0.15em] text-[var(--text-muted)]">{tx('dashboard.client.awaitingReview', undefined, 'Awaiting review')}</p>
+                                    <p className="mt-2 text-2xl font-semibold text-[var(--text-primary)]">{stats?.proposalsWaitingReview ?? 0}</p>
                                 </div>
                                 <div className="rounded-[1.4rem] border border-primary-100/70 bg-white/75 p-4 dark:border-white/10 dark:bg-white/[0.04]">
-                                    <p className="text-xs font-medium uppercase tracking-[0.15em] text-[#8b8aa0]">{tx('dashboard.client.inProgressProjects', undefined, 'In progress')}</p>
-                                    <p className="mt-2 text-2xl font-semibold text-[#171420] dark:text-white">{inProgressJobs}</p>
+                                    <p className="text-xs font-medium uppercase tracking-[0.15em] text-[var(--text-muted)]">{tx('dashboard.client.inProgressProjects', undefined, 'In progress')}</p>
+                                    <p className="mt-2 text-2xl font-semibold text-[var(--text-primary)]">{inProgressJobs}</p>
                                 </div>
                                 <div className="rounded-[1.4rem] border border-primary-100/70 bg-white/75 p-4 dark:border-white/10 dark:bg-white/[0.04]">
-                                    <p className="text-xs font-medium uppercase tracking-[0.15em] text-[#8b8aa0]">{tx('dashboard.client.jobsWithProposals', undefined, 'Jobs with proposals')}</p>
-                                    <p className="mt-2 text-2xl font-semibold text-[#171420] dark:text-white">{jobsWithProposals}</p>
+                                    <p className="text-xs font-medium uppercase tracking-[0.15em] text-[var(--text-muted)]">{tx('dashboard.client.jobsWithProposals', undefined, 'Jobs with proposals')}</p>
+                                    <p className="mt-2 text-2xl font-semibold text-[var(--text-primary)]">{jobsWithProposals}</p>
                                 </div>
                             </div>
                         </DashboardPanel>
@@ -550,7 +557,7 @@ function ClientDashboardPage() {
                                     <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary-600 dark:text-primary-300">
                                         {tx('dashboard.client.updatesBadge', undefined, 'Inbox pulse')}
                                     </p>
-                                    <h2 className="mt-3 text-xl font-semibold tracking-tight text-[#171420] dark:text-white">
+                                    <h2 className="mt-3 text-xl font-semibold tracking-tight text-[var(--text-primary)]">
                                         {tx('dashboard.notifications', undefined, 'Notifications')}
                                     </h2>
                                 </div>
@@ -571,13 +578,13 @@ function ClientDashboardPage() {
                                 ) : (
                                     unreadNotifications.map((notification) => (
                                         <div key={notification.id} className="rounded-[1.4rem] border border-primary-100/70 bg-white/75 p-4 dark:border-white/10 dark:bg-white/[0.04]">
-                                            <p className="text-sm font-semibold text-[#171420] dark:text-white">
+                                            <p className="text-sm font-semibold text-[var(--text-primary)]">
                                                 {notification.title || tx('dashboard.client.defaultNotificationTitle', undefined, 'Project update')}
                                             </p>
-                                            <p className="mt-2 text-sm leading-6 text-[#6b6880] dark:text-[#8b8aa0]">
+                                            <p className="mt-2 text-sm leading-6 text-[#6b6880] dark:text-[var(--text-muted)]">
                                                 {notification.content || tx('dashboard.client.defaultNotificationBody', undefined, 'A project event needs your attention.')}
                                             </p>
-                                            <p className="mt-3 text-xs font-medium text-[#8b8aa0]">
+                                            <p className="mt-3 text-xs font-medium text-[var(--text-muted)]">
                                                 {new Date(notification.created_at).toLocaleDateString(locale, { month: 'short', day: 'numeric' })}
                                             </p>
                                         </div>
@@ -596,7 +603,7 @@ function ClientDashboardPage() {
                                     <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary-600 dark:text-primary-300">
                                         {tx('dashboard.client.playbookBadge', undefined, 'Client playbook')}
                                     </p>
-                                    <h2 className="mt-3 text-xl font-semibold tracking-tight text-[#171420] dark:text-white">
+                                    <h2 className="mt-3 text-xl font-semibold tracking-tight text-[var(--text-primary)]">
                                         {tx('dashboard.client.nextMoves', undefined, 'Best next moves')}
                                     </h2>
                                 </div>
@@ -607,16 +614,16 @@ function ClientDashboardPage() {
 
                             <div className="mt-5 space-y-3">
                                 <button type="button" onClick={() => navigate('/jobs/new')} className="w-full rounded-[1.4rem] border border-primary-100/70 bg-white/75 p-4 text-left transition-colors hover:border-primary-200 hover:bg-primary-50/60 dark:border-white/10 dark:bg-white/[0.04] dark:hover:bg-white/[0.06]">
-                                    <p className="text-sm font-semibold text-[#171420] dark:text-white">{tx('dashboard.postNewJob', undefined, t.dashboard.postNewJob)}</p>
-                                    <p className="mt-2 text-sm leading-6 text-[#6b6880] dark:text-[#8b8aa0]">{tx('dashboard.postNewJobDesc', undefined, t.dashboard.postNewJobDesc)}</p>
+                                    <p className="text-sm font-semibold text-[var(--text-primary)]">{tx('dashboard.postNewJob', undefined, t.dashboard.postNewJob)}</p>
+                                    <p className="mt-2 text-sm leading-6 text-[#6b6880] dark:text-[var(--text-muted)]">{tx('dashboard.postNewJobDesc', undefined, t.dashboard.postNewJobDesc)}</p>
                                 </button>
                                 <button type="button" onClick={() => navigate('/client/jobs')} className="w-full rounded-[1.4rem] border border-primary-100/70 bg-white/75 p-4 text-left transition-colors hover:border-primary-200 hover:bg-primary-50/60 dark:border-white/10 dark:bg-white/[0.04] dark:hover:bg-white/[0.06]">
-                                    <p className="text-sm font-semibold text-[#171420] dark:text-white">{tx('dashboard.client.reviewPipeline', undefined, 'Review project pipeline')}</p>
-                                    <p className="mt-2 text-sm leading-6 text-[#6b6880] dark:text-[#8b8aa0]">{tx('dashboard.client.reviewPipelineDescription', undefined, 'Compare open briefs, proposal activity, and active delivery in one place.')}</p>
+                                    <p className="text-sm font-semibold text-[var(--text-primary)]">{tx('dashboard.client.reviewPipeline', undefined, 'Review project pipeline')}</p>
+                                    <p className="mt-2 text-sm leading-6 text-[#6b6880] dark:text-[var(--text-muted)]">{tx('dashboard.client.reviewPipelineDescription', undefined, 'Compare open briefs, proposal activity, and active delivery in one place.')}</p>
                                 </button>
                                 <button type="button" onClick={() => navigate('/settings')} className="w-full rounded-[1.4rem] border border-primary-100/70 bg-white/75 p-4 text-left transition-colors hover:border-primary-200 hover:bg-primary-50/60 dark:border-white/10 dark:bg-white/[0.04] dark:hover:bg-white/[0.06]">
-                                    <p className="text-sm font-semibold text-[#171420] dark:text-white">{tx('dashboard.client.refineProfile', undefined, 'Refine client profile')}</p>
-                                    <p className="mt-2 text-sm leading-6 text-[#6b6880] dark:text-[#8b8aa0]">{tx('dashboard.client.refineProfileDescription', undefined, 'A clearer company profile helps freelancers trust the brief and respond faster.')}</p>
+                                    <p className="text-sm font-semibold text-[var(--text-primary)]">{tx('dashboard.client.refineProfile', undefined, 'Refine client profile')}</p>
+                                    <p className="mt-2 text-sm leading-6 text-[#6b6880] dark:text-[var(--text-muted)]">{tx('dashboard.client.refineProfileDescription', undefined, 'A clearer company profile helps freelancers trust the brief and respond faster.')}</p>
                                 </button>
                             </div>
                         </DashboardPanel>
