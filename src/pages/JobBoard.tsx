@@ -77,11 +77,11 @@ function SavedJobsSidebar({ savedJobs, onViewJob }: { savedJobs: Job[]; onViewJo
         <div className="hidden xl:block w-80 flex-shrink-0">
             <div className={cn(
                 'sticky top-4 rounded-lg p-5',
-                'bg-white dark:bg-[#1a1825]',
-                'border border-gray-100 dark:border-white/6',
+                'bg-card',
+                'border border-border',
                 'shadow-sm dark:shadow-none'
             )}>
-                <h3 className="font-semibold mb-4 flex items-center gap-2 text-sm text-gray-900 dark:text-white">
+                <h3 className="font-semibold mb-4 flex items-center gap-2 text-sm text-foreground">
                     <Heart className="w-4 h-4 text-red-500 fill-current" />
                     {t.jobs.savedJobs.title}
                 </h3>
@@ -94,13 +94,13 @@ function SavedJobsSidebar({ savedJobs, onViewJob }: { savedJobs: Job[]; onViewJo
                             aria-label={`View saved job: ${job.title}`}
                             className={cn(
                                 'w-full p-3 rounded-lg text-left transition-all',
-                                'bg-gray-50 dark:bg-white/5',
-                                'hover:bg-gray-100 dark:hover:bg-white/8',
-                                'border border-transparent hover:border-gray-200 dark:hover:border-white/10'
+                                'bg-input',
+                                'hover:bg-surface',
+                                'border border-transparent hover:border-border'
                             )}
                         >
-                            <h4 className="font-medium text-xs line-clamp-1 text-gray-900 dark:text-white">{job.title}</h4>
-                            <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-1.5">
+                            <h4 className="font-medium text-xs line-clamp-1 text-foreground">{job.title}</h4>
+                            <p className="text-[11px] text-muted mt-1.5">
                                 {job.job_type === 'fixed_price'
                                     ? `${job.budget_min} - ${job.budget_max} TND`
                                     : `${job.hourly_rate} TND/h`
@@ -285,22 +285,29 @@ function JobBoard() {
             <Header />
 
             <div className="page-shell-content">
-                {/* Search Bar - Top */}
+                {/* Page Header */}
+                <div className="mb-6">
+                    <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-1">{t.jobs.title}</h1>
+                    <p className="text-sm text-[var(--text-muted)]">
+                        Browse and apply to freelance opportunities
+                    </p>
+                </div>
+
+                {/* Search Bar */}
                 <div className="mb-8">
                     <div className="relative max-w-2xl mx-auto">
-                        <Search className="absolute start-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <Search className="absolute start-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted" />
                         <input
                             type="text"
                             value={filters.search}
                             onChange={(e) => updateFilter('search', e.target.value)}
                             placeholder={t.jobs.searchPlaceholder}
                             className={cn(
-                                'w-full rounded-lg border bg-white text-gray-900 py-3 ps-12 pe-4',
-                                'border-gray-200 dark:border-white/10',
-                                'dark:bg-[#1a1825] dark:text-white',
-                                'transition-all',
-                                'focus:border-transparent focus:ring-2 focus:ring-[color:var(--workspace-primary)]/20 focus:ring-offset-2',
-                                'dark:focus:ring-offset-[#0f0e17]'
+                                'w-full rounded-lg border py-3 ps-12 pe-4 text-sm',
+                                'bg-card',
+                                'border-border text-foreground',
+                                'focus:outline-none focus:border-[color:var(--workspace-primary)]',
+                                'focus:ring-2 focus:ring-[color:var(--workspace-primary)]/10'
                             )}
                         />
                     </div>
@@ -320,9 +327,9 @@ function JobBoard() {
                         value={filters.sortBy}
                         onChange={(e) => updateFilter('sortBy', e.target.value)}
                         className={cn(
-                            'flex-1 rounded-lg border bg-white px-3 py-2 text-sm text-gray-900',
-                            'border-gray-200 dark:border-white/10',
-                            'dark:bg-[#1a1825] dark:text-white'
+                            'flex-1 rounded-lg border bg-input px-3 py-2 text-sm text-foreground',
+                            'border-border',
+                            'bg-card text-foreground'
                         )}
                     >
                         {sortOptions.map(opt => (
@@ -345,18 +352,23 @@ function JobBoard() {
                     {/* Main Content */}
                     <div className="flex-1 min-w-0">
                         {/* Results Bar */}
-                        <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-100 dark:border-white/6">
-                            <p className="text-xs text-gray-500 dark:text-gray-400">
-                                <span className="font-semibold text-gray-900 dark:text-white">{totalCount}</span> {t.jobs.stats.availableJobs}
+                        <div className={cn(
+                            'flex items-center justify-between mb-4 px-4 py-3 rounded-xl',
+                            'bg-card',
+                            'border border-border/50'
+                        )}>
+                            <p className="text-sm text-[var(--text-muted)]">
+                                Showing <span className="font-semibold text-[var(--text-primary)]">{totalCount}</span> jobs
                             </p>
                             <div className="hidden lg:flex items-center gap-3">
                                 <select
                                     value={filters.sortBy}
                                     onChange={(e) => updateFilter('sortBy', e.target.value)}
                                     className={cn(
-                                        'rounded-lg border bg-white px-3 py-2 text-sm text-gray-900',
-                                        'border-gray-200 dark:border-white/10',
-                                        'dark:bg-[#1a1825] dark:text-white'
+                                        'rounded-lg border px-3 py-2 text-sm',
+                                        'bg-card',
+                                        'border-border text-foreground',
+                                        'focus:outline-none focus:border-[color:var(--workspace-primary)]'
                                     )}
                                 >
                                     {sortOptions.map(opt => (
@@ -365,8 +377,8 @@ function JobBoard() {
                                 </select>
                                 <div className={cn(
                                     'flex overflow-hidden rounded-lg border',
-                                    'border-gray-200 dark:border-white/10',
-                                    'bg-gray-50 dark:bg-white/5'
+                                    'border-[var(--border)]',
+                                    'bg-[var(--surface-bg)]'
                                 )}>
                                     <button
                                         type="button"
@@ -377,7 +389,7 @@ function JobBoard() {
                                             'p-2 transition-colors',
                                             viewMode === 'list'
                                                 ? 'bg-[color:var(--workspace-primary)]/10 text-[color:var(--workspace-primary)]'
-                                                : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
+                                                : 'text-muted hover:text-foreground'
                                         )}
                                     >
                                         <List className="w-5 h-5" />
@@ -391,7 +403,7 @@ function JobBoard() {
                                             'p-2 transition-colors',
                                             viewMode === 'grid'
                                                 ? 'bg-[color:var(--workspace-primary)]/10 text-[color:var(--workspace-primary)]'
-                                                : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
+                                                : 'text-muted hover:text-foreground'
                                         )}
                                     >
                                         <Grid3X3 className="w-5 h-5" />
@@ -406,7 +418,7 @@ function JobBoard() {
                                 {[...Array(6)].map((_, i) => <SkeletonCard key={i} />)}
                             </div>
                         ) : jobsError ? (
-                            <div className="rounded-xl border border-red-200 bg-red-50 dark:bg-red-900/10 dark:border-red-800 p-6 text-center">
+                            <div className="rounded-xl border border-red-200 dark:border-red-500/20 bg-red-50 dark:bg-red-500/10 p-6 text-center">
                                 <p className="text-red-600 dark:text-red-400 font-medium">{t.jobs?.loadError || 'Failed to load jobs'}</p>
                                 <p className="text-red-500 dark:text-red-500 text-sm mt-1">{(jobsError as Error)?.message || t.common?.error || 'Unknown error'}</p>
                             </div>
@@ -486,3 +498,4 @@ function JobBoard() {
 }
 
 export default JobBoard;
+
