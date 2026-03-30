@@ -109,7 +109,7 @@ export default function Messages() {
         if (!user) return;
 
         const loadConversations = async () => {
-            setIsLoadingConversations(true);
+            if (conversations.length === 0) setIsLoadingConversations(true);
             const { data, error } = await getConversations(user.id);
 
             if (error) {
@@ -134,13 +134,14 @@ export default function Messages() {
                 conversationsChannelRef.current.unsubscribe();
             }
         };
-    }, [user]);
+    }, [user?.id]);
 
     // Load messages when conversation is selected
     useEffect(() => {
         if (!selectedConversation || !user) return;
 
         const loadMessages = async () => {
+            // If we are switching conversations, set loading to true
             setIsLoadingMessages(true);
             const { data, error } = await getMessages(selectedConversation.id);
 
@@ -185,7 +186,7 @@ export default function Messages() {
                 messagesChannelRef.current.unsubscribe();
             }
         };
-    }, [selectedConversation, user]);
+    }, [selectedConversation?.id, user?.id]);
 
     const handleSendMessage = async () => {
         if ((!newMessage.trim() && !selectedFile && !audioBlob) || !selectedConversation || !user) return;
@@ -245,21 +246,6 @@ export default function Messages() {
             setSelectedFile(file);
         }
     };
-
-    async function handleSelectConversation(conversation: Conversation) {
-        setSelectedConversation(conversation);
-        setShowMobileThread(true);
-
-        // Mark as read and update UI
-        if (user && conversation.unread_count > 0) {
-            await markConversationRead(conversation.id, user.id);
-            setConversations((prev) =>
-                prev.map((conv) =>
-                    conv.id === conversation.id ? { ...conv, unread_count: 0 } : conv
-                )
-            );
-        }
-    }
 
     const filteredConversations = conversations.filter((c) => {
         if (filter === 'unread' && c.unread_count === 0) return false;

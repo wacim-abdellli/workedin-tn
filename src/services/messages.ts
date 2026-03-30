@@ -2,6 +2,7 @@
  * Messages Service - Chat/messaging Supabase queries
  */
 import { supabase, uploadFile } from '@/lib/supabase';
+import { supabaseWithRetry } from '@/lib/supabaseWithRetry';
 import type { MessageAttachment } from '@/types';
 import type {
     RealtimeChannel,
@@ -90,11 +91,11 @@ interface ConversationRow {
 
 export async function getConversations(userId: string) {
     try {
-        const { data, error } = await supabase
+        const { data, error } = await supabaseWithRetry(() => supabase
             .from('conversations')
             .select('*')
             .or(`participant_1.eq.${userId},participant_2.eq.${userId}`)
-            .order('last_message_at', { ascending: false });
+            .order('last_message_at', { ascending: false }));
 
         if (error) throw error;
 
@@ -106,10 +107,10 @@ export async function getConversations(userId: string) {
         const profilesById = new Map<string, ConversationParticipantRow>();
 
         if (otherUserIds.length > 0) {
-            const { data: profiles, error: profilesError } = await supabase
+            const { data: profiles, error: profilesError } = await supabaseWithRetry(() => supabase
                 .from('profiles')
                 .select('id, full_name, avatar_url, username')
-                .in('id', otherUserIds);
+                .in('id', otherUserIds));
 
             if (profilesError) throw profilesError;
 
@@ -153,14 +154,14 @@ export async function getConversations(userId: string) {
 
 export async function getMessages(conversationId: string) {
     try {
-        const { data, error } = await supabase
+        const { data, error } = await supabaseWithRetry(() => supabase
             .from('messages')
             .select(`
                 *,
                 sender:profiles!sender_id(id, full_name, avatar_url)
             `)
             .eq('conversation_id', conversationId)
-            .order('created_at', { ascending: true });
+            .order('created_at', { ascending: true }));
 
         if (error) throw error;
 
