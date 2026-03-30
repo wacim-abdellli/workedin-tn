@@ -52,6 +52,7 @@ interface AuthProviderProps {
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const MAX_LOADING_TIME = 4000;
+  const PROFILE_RETRY_COOLDOWN = 30000;
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -62,6 +63,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   // Track the currently loaded user ID to avoid stale closures in onAuthStateChange
   const loadedUserIdRef = useRef<string | null>(null);
+  const lastProfileAttemptRef = useRef<{ userId: string | null; timestamp: number }>({ userId: null, timestamp: 0 });
   const userRef = useRef<User | null>(null);
   const profileRef = useRef<Profile | null>(null);
   const freelancerProfileRef = useRef<FreelancerProfile | null>(null);
@@ -142,6 +144,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const fetchProfile = useCallback(
     async (userId: string) => {
+      lastProfileAttemptRef.current = { userId, timestamp: Date.now() };
       const previousProfile = profileRef.current?.id === userId ? profileRef.current : null;
       const previousFreelancerProfile = previousProfile ? freelancerProfileRef.current : null;
       const currentUser = userRef.current;
@@ -207,7 +210,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
         return { profile: nextProfile, freelancerProfile: nextFreelancerProfile };
       } catch (error) {
-        logger.error('Error fetching profile:', error);
+        const message = error instanceof Error ? error.message.toLowerCase() : '';
+        const isTimeoutError = message.includes('timed out after');
+
+        if (isTimeoutError) {
+          logger.warn('Profile fetch timed out; continuing with current UI state');
+        } else {
+          logger.error('Error fetching profile:', error);
+        }
 
         if (previousProfile) {
           setProfile(previousProfile);
@@ -293,9 +303,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
                 loadedUserIdRef.current = newSession.user.id;
                 await fetchProfile(newSession.user.id);
             } else {
-                // If we don't have the profile but already passed first load, fetch in background without blocking
-                loadedUserIdRef.current = newSession.user.id;
-                void fetchProfile(newSession.user.id);
+                const lastAttempt = lastProfileAttemptRef.current;
+                const shouldRetryProfile =
+                  lastAttempt.userId !== newSession.user.id ||
+                  Date.now() - lastAttempt.timestamp > PROFILE_RETRY_COOLDOWN;
+
+                if (shouldRetryProfile) {
+                  loadedUserIdRef.current = newSession.user.id;
+                  void fetchProfile(newSession.user.id);
+                }
             }
             return;
           }
@@ -349,22 +365,26 @@ export function AuthProvider({ children }: AuthProviderProps) {
     return () => window.clearTimeout(timer);
   }, [isLoading, isProfileReady, MAX_LOADING_TIME]);
 
-  const signInWithEmail = async (email: string, password: string) => {
+  const signInWithEmail = async (email: string, password: string) => {    setIsProfileReady(false);
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
-    if (error) throw error;
+    if (error) {
+      setIsProfileReady(true);
+      throw error;
+    }
 
     if (data.session) {
       setSession(data.session);
       setUser(data.session.user);
       await fetchProfile(data.session.user.id);
+      setIsProfileReady(true);
     }
   };
 
-  const signUpWithEmail = async (email: string, password: string) => {
+  const signUpWithEmail = async (email: string, password: string) => {    setIsProfileReady(false);
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -375,12 +395,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
       },
     });
 
-    if (error) throw error;
+    if (error) {
+      setIsProfileReady(true);
+      throw error;
+    }
 
     if (data.session) {
       setSession(data.session);
       setUser(data.session.user);
       await fetchProfile(data.session.user.id);
+      setIsProfileReady(true);
     }
   };
 
