@@ -1,7 +1,7 @@
 /**
  * Profiles Service — User and freelancer profile queries
  */
-import { supabase, supabaseAnon, uploadFile } from '@/lib/supabase';
+import { supabase, uploadFile } from '@/lib/supabase';
 import { sanitizeFreelancerProfileData } from '@/lib/schemaValidation';
 
 // --- READ ---
