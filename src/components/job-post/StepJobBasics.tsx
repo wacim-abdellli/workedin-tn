@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useFormContext, Controller } from 'react-hook-form';
 import { FileText, Grid, Lightbulb } from 'lucide-react';
 import Input from '../ui/Input';
@@ -5,12 +6,14 @@ import { FileUpload } from '../common/FileUpload';
 import { PREDEFINED_SKILLS } from '../../types';
 import { useTranslation } from '../../i18n';
 import type { Skill } from '../../types';
+import { getJobCategories } from '../../lib/jobCategories';
 
 type JobSkill = Skill;
 
 interface StepJobBasicsFormValues {
     title?: string;
     category?: string;
+    subcategory?: string;
     description?: string;
     required_skills?: JobSkill[];
     attachments_files?: File[];
@@ -20,15 +23,17 @@ export default function StepJobBasics() {
     const { register, control, formState: { errors }, watch, setValue } = useFormContext<StepJobBasicsFormValues>();
     const { language, tx } = useTranslation();
     const description = watch('description') || '';
+    const selectedCategory = watch('category') || '';
+    const selectedSubcategory = watch('subcategory') || '';
     const selectedSkills = watch('required_skills') || [];
+    const categories = getJobCategories(language);
+    const subcategories = categories.find((category) => category.id === selectedCategory)?.subcategories ?? [];
 
-    // Categories mock data - in real app, fetch from DB
-    const categories = [
-        { id: 'design', name: tx('jobs.new.stepBasics.categoryDesign', undefined, 'تصميم وإبداع') },
-        { id: 'development', name: tx('jobs.new.stepBasics.categoryDevelopment', undefined, 'برمجة وتطوير') },
-        { id: 'marketing', name: tx('jobs.new.stepBasics.categoryMarketing', undefined, 'تسويق ومبيعات') },
-        { id: 'writing', name: tx('jobs.new.stepBasics.categoryWriting', undefined, 'كتابة وترجمة') },
-    ];
+    useEffect(() => {
+        if (selectedSubcategory && !subcategories.some((item) => item.id === selectedSubcategory)) {
+            setValue('subcategory', '');
+        }
+    }, [selectedSubcategory, setValue, subcategories]);
 
     const toggleSkill = (skill: JobSkill) => {
         const current = selectedSkills;
@@ -84,6 +89,26 @@ export default function StepJobBasics() {
                             <p className="text-red-500 text-xs">{errors.category.message as string}</p>
                         )}
                     </div>
+
+                    <div className="space-y-2">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{tx('jobs.new.stepBasics.subcategory', undefined, 'التخصص الفرعي')}</label>
+                        <div className="relative">
+                            <select
+                                {...register('subcategory')}
+                                disabled={!selectedCategory}
+                                className="w-full appearance-none rounded-2xl border border-gray-200 bg-white ps-4 pe-10 py-3 text-gray-900 transition-all duration-200 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-400 dark:border-white/10 dark:bg-[#1a1825] dark:text-white dark:disabled:bg-[#14121f]"
+                            >
+                                <option value="">{tx('jobs.new.stepBasics.selectSubcategory', undefined, 'اختر التخصص الفرعي')}</option>
+                                {subcategories.map((subcategory) => (
+                                    <option key={subcategory.id} value={subcategory.id}>{subcategory.name}</option>
+                                ))}
+                            </select>
+                            <Grid className="absolute start-3 top-3.5 w-5 h-5 text-gray-400 pointer-events-none" />
+                        </div>
+                        {errors.subcategory && (
+                            <p className="text-red-500 text-xs">{errors.subcategory.message as string}</p>
+                        )}
+                    </div>
                 </div>
 
                 <div className="space-y-2">
@@ -108,6 +133,7 @@ export default function StepJobBasics() {
                             <li>{tx('jobs.new.stepBasics.tip1', undefined, 'كن دقيقاً في وصف المطلوب')}</li>
                             <li>{tx('jobs.new.stepBasics.tip2', undefined, 'حدد المخرجات النهائية بوضوح')}</li>
                             <li>{tx('jobs.new.stepBasics.tip3', undefined, 'أضف روابط لمشاريع مشابهة إن وجدت')}</li>
+                            <li>{tx('jobs.new.stepBasics.tip4', undefined, 'وضح ما الذي يجب تسليمه ومتى تتوقع الانتهاء')}</li>
                         </ul>
                     </div>
                 </div>

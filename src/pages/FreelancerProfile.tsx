@@ -222,7 +222,7 @@ export default function FreelancerProfile() {
 
                     return {
                         id: review.id,
-                        client_name: reviewer?.full_name || 'عميل',
+                        client_name: reviewer?.full_name || t.reviews?.client || t.reviews?.client || 'عميل',
                         client_avatar: reviewer?.avatar_url || undefined,
                         rating: review.rating,
                         comment: review.comment || '',

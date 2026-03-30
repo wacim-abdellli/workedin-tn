@@ -214,6 +214,29 @@ function ClientDashboardPage() {
         staleTime: 60_000,
     });
 
+    const { data: activeContracts = [] } = useQuery({
+        queryKey: ['clientActiveContracts', profile?.id],
+        enabled: !!profile?.id,
+        queryFn: async () => {
+            const { data, error } = await supabase
+                .from('contracts')
+                .select('id, title, status, total_amount, created_at, freelancer:profiles!contracts_freelancer_id_fkey(id, full_name, avatar_url)')
+                .eq('client_id', profile!.id)
+                .eq('status', 'active')
+                .order('created_at', { ascending: false })
+                .limit(5);
+            if (error) { console.error('clientActiveContracts:', error); return []; }
+            return (data ?? []) as unknown as Array<{
+                id: string;
+                title: string;
+                status: string;
+                total_amount: number;
+                created_at: string;
+                freelancer: { id: string; full_name: string; avatar_url: string | null } | null;
+            }>;
+        },
+        staleTime: 60_000,
+    });
     const openJobs = jobs.filter((job) => job.status === 'open').length;
     const inProgressJobs = jobs.filter((job) => job.status === 'in_progress').length;
     const jobsWithProposals = jobs.filter((job) => job.proposals_count > 0).length;
@@ -390,7 +413,7 @@ function ClientDashboardPage() {
                                     className="flex items-center gap-2 bg-[color:var(--workspace-primary)] hover:bg-[color:var(--workspace-primary-hover)] text-[color:var(--workspace-primary-text)] font-semibold text-sm px-5 py-2.5 rounded-xl transition-all duration-200 shadow-sm"
                                 >
                                     <Plus className="w-4 h-4" />
-                                    Post a New Job
+                                    {tx("dashboard.client.postJob", undefined, "Post a New Job")}
                                 </button>
                                 {todayFocus.actionPath !== '/jobs/new' && (
                                     <Button variant="outline" size="lg" className="rounded-2xl px-5" leftIcon={<FolderKanban className="h-4 w-4" />} onClick={() => navigate(todayFocus.actionPath)}>
@@ -517,6 +540,71 @@ function ClientDashboardPage() {
                                             </button>
                                         );
                                     })
+                                )}
+                            </div>
+                        </DashboardPanel>
+
+                        {/* Active Contracts */}
+                        <DashboardPanel className="bg-card rounded-xl border border-border p-6">
+                            <div className="flex items-center justify-between gap-4">
+                                <div>
+                                    <p className="text-[var(--text-muted)] text-xs font-semibold uppercase tracking-[0.18em]">
+                                        {tx('dashboard.client.contractsBadge', undefined, 'Active delivery')}
+                                    </p>
+                                    <h2 className="mt-3 text-2xl font-semibold tracking-tight text-[var(--text-primary)]">
+                                        {tx('dashboard.client.activeContracts', undefined, 'Active contracts')}
+                                    </h2>
+                                    <p className="mt-2 text-sm leading-6 text-[var(--text-secondary)]">
+                                        {tx('dashboard.client.activeContractsDescription', undefined, 'Contracts currently in progress with assigned freelancers.')}
+                                    </p>
+                                </div>
+                                <Button variant="outline" size="sm" className="rounded-2xl text-[color:var(--workspace-primary)]" onClick={() => navigate('/contracts')}>
+                                    {tx('dashboard.client.viewAllContracts', undefined, 'View all')}
+                                </Button>
+                            </div>
+                            <div className="mt-6 space-y-3">
+                                {isLoading ? (
+                                    [1, 2].map((item) => <Skeleton key={item} className="h-24 rounded-2xl" />)
+                                ) : activeContracts.length === 0 ? (
+                                    <EmptyState
+                                        icon={FileText}
+                                        title={tx('dashboard.client.noActiveContracts', undefined, 'No active contracts')}
+                                        description={tx('dashboard.client.noActiveContractsDescription', undefined, 'Once you accept a proposal and fund the escrow, active contracts will appear here.')}
+                                    />
+                                ) : (
+                                    activeContracts.map((contract) => (
+                                        <button
+                                            key={contract.id}
+                                            type="button"
+                                            onClick={() => navigate(`/contracts/${contract.id}`)}
+                                            className="group w-full text-start rounded-[1.4rem] border border-border/50 bg-card hover:border-[color:var(--workspace-primary)]/30 p-4 transition-colors"
+                                        >
+                                            <div className="flex items-start justify-between gap-3">
+                                                <div className="min-w-0 flex-1">
+                                                    <p className="text-sm font-semibold text-[var(--text-primary)] truncate group-hover:text-[color:var(--workspace-primary)] transition-colors">
+                                                        {contract.title || tx('dashboard.client.untitledContract', undefined, 'Untitled contract')}
+                                                    </p>
+                                                    <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-[var(--text-muted)]">
+                                                        {contract.freelancer?.full_name && (
+                                                            <span className="inline-flex items-center gap-1.5">
+                                                                <div className="h-4 w-4 rounded-full bg-gradient-to-br from-primary-400 to-secondary-500 flex items-center justify-center text-white text-[8px] font-bold shrink-0">
+                                                                    {contract.freelancer.full_name.charAt(0)}
+                                                                </div>
+                                                                {contract.freelancer.full_name}
+                                                            </span>
+                                                        )}
+                                                        <span className="inline-flex items-center gap-1">
+                                                            <DollarSign className="h-3.5 w-3.5" />
+                                                            {formatCurrency(contract.total_amount)}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <span className="inline-flex items-center rounded-full bg-green-500/12 px-3 py-1 text-xs font-semibold text-green-700 dark:text-green-200 shrink-0">
+                                                    {tx('dashboard.client.activeBadge', undefined, 'Active')}
+                                                </span>
+                                            </div>
+                                        </button>
+                                    ))
                                 )}
                             </div>
                         </DashboardPanel>

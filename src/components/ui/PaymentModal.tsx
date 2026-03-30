@@ -93,7 +93,7 @@ export default function PaymentModal({ isOpen, onClose, amount, recipientName, o
             </div>
 
             <Input
-                placeholder="+216 00 000 000"
+                placeholder={t.payment.d17PhonePlaceholder}
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value)}
                 leftIcon={<Smartphone className="w-5 h-5" />}
@@ -140,24 +140,24 @@ export default function PaymentModal({ isOpen, onClose, amount, recipientName, o
                 </div>
                 <div>
                     <h3 className="font-bold text-blue-800 dark:text-blue-400 text-lg">{t.payment.creditCard}</h3>
-                    <p className="text-sm text-blue-600 dark:text-blue-500/80">فيزا / ماستركارد / سي آي بي</p>
+                    <p className="text-sm text-blue-600 dark:text-blue-500/80">{t.payment.cardSchemes}</p>
                 </div>
             </div>
 
             <div className="space-y-4">
                 <Input
                     label={t.payment.cardNumber}
-                    placeholder="0000 0000 0000 0000"
+                    placeholder={t.payment.cardNumberPlaceholder}
                     leftIcon={<CreditCard className="w-5 h-5" />}
                 />
                 <div className="grid grid-cols-2 gap-4">
                     <Input
                         label={t.payment.expiryDate}
-                        placeholder="MM/YY"
+                        placeholder={t.payment.expiryDatePlaceholder}
                     />
                     <Input
-                        label="CVC"
-                        placeholder="123"
+                        label={t.payment.cvc}
+                        placeholder={t.payment.cvcPlaceholder}
                         type="password"
                     />
                 </div>
@@ -200,7 +200,7 @@ export default function PaymentModal({ isOpen, onClose, amount, recipientName, o
         return (
             <div className="space-y-6">
                 {/* Tabs */}
-                <div className="flex bg-gray-100 dark:bg-dark-800 p-1.5 rounded-xl border border-gray-200 dark:border-dark-700" role="tablist" aria-label="اختر طريقة الدفع">
+                <div className="flex bg-gray-100 dark:bg-dark-800 p-1.5 rounded-xl border border-gray-200 dark:border-dark-700" role="tablist" aria-label={t.payment.chooseMethod}>
                     <button
                         type="button"
                         role="tab"

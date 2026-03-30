@@ -19,6 +19,7 @@ import {
   Users,
   Wallet,
   X,
+  MessageSquare,
 } from 'lucide-react'
 
 import { useAuth } from '@/contexts/AuthContext'
@@ -162,6 +163,8 @@ export default function Header() {
     : (t.auth?.accountPanel?.clientLabel || 'Client')
   const switchActionLabel = t.auth?.accountPanel?.switchAction || 'Switch'
   const switchButtonLabel = `${switchActionLabel}: ${switchTargetLabel}`
+  const freelancerVerified = Boolean(profile?.cin_verified || freelancerProfile?.cin_verified)
+  const freelancerPending = Boolean(!freelancerVerified && profile?.cin_submitted)
   const switchAccent = targetWorkspace === 'freelancer'
     ? {
         borderColor: '#8b5cf6',
@@ -174,6 +177,57 @@ export default function Header() {
         color: '#ffffff',
       }
   const logoSrc = isDark ? '/logos/logo-primary-dark.svg' : '/logos/logo-primary.svg'
+  const freelancerBadge = freelancerVerified
+    ? {
+        label: t.auth?.accountPanel?.statusPro || 'Pro',
+        background: 'var(--workspace-primary)',
+        color: '#ffffff',
+        dotClassName: 'bg-white',
+        border: 'rgba(255,255,255,0.18)',
+        insetShadow: '0 0 0 1px rgba(255,255,255,0.08) inset',
+      }
+    : freelancerPending
+      ? {
+          label: t.auth?.accountPanel?.statusPending || 'Pending',
+          background: 'rgba(245,158,11,0.16)',
+          color: '#d97706',
+          dotClassName: 'bg-amber-500',
+          border: 'rgba(245,158,11,0.22)',
+          insetShadow: '0 0 0 1px rgba(255,255,255,0.22) inset',
+        }
+      : {
+          label: t.auth?.accountPanel?.needsSetup || 'Needs setup',
+          background: 'rgba(255,255,255,0.08)',
+          color: 'var(--text-primary)',
+          dotClassName: 'bg-white/70',
+          border: 'rgba(255,255,255,0.14)',
+          insetShadow: '0 0 0 1px rgba(255,255,255,0.06) inset',
+        }
+  const workspaceBadge = isFreelancer
+    ? freelancerBadge
+    : {
+        label: t.auth?.accountPanel?.clientLabel || 'Client',
+        background: 'var(--brand-accent)',
+        color: 'var(--text-primary)',
+        dotClassName: 'bg-foreground',
+        border: 'rgba(245,158,11,0.18)',
+        insetShadow: '0 0 0 1px rgba(255,255,255,0.35) inset',
+      }
+  const triggerWorkspaceBadge = isFreelancer
+    ? {
+        label: t.auth?.accountPanel?.freelancerLabel || 'Freelancer',
+        background: 'rgba(139,92,246,0.14)',
+        color: '#8b5cf6',
+        dotClassName: 'bg-primary-500',
+        border: 'rgba(139,92,246,0.18)',
+      }
+    : {
+        label: t.auth?.accountPanel?.clientLabel || 'Client',
+        background: 'rgba(245,158,11,0.16)',
+        color: '#d97706',
+        dotClassName: 'bg-accent-500',
+        border: 'rgba(245,158,11,0.18)',
+      }
   const navActiveClass = 'header-nav-link-active'
   const canAccessAdmin = hasAdminAccess(user, profile)
 
@@ -209,7 +263,7 @@ export default function Header() {
     <>
       <header
         dir={dir}
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-200 ${
+        className={`fixed top-0 left-0 right-0 z-50 isolate transition-all duration-200 ${
           scrolled
             ? 'border-b border-border/50 bg-surface/95 shadow-sm backdrop-blur-md'
             : 'border-b border-border/50 bg-surface'
@@ -265,24 +319,6 @@ export default function Header() {
             </nav>
 
             <div className="flex min-w-0 items-center justify-end gap-3">
-              {canQuickSwitch ? (
-                <button
-                  onClick={handleQuickWorkspaceSwitch}
-                  disabled={isSwitching}
-                  className={`quick-switch-btn flex h-10 items-center gap-2.5 rounded-lg border-2 px-3.5 text-sm font-semibold transition-all duration-200 hover:shadow-md active:scale-95 ${isSwitching ? 'cursor-not-allowed opacity-60' : 'hover:-translate-y-0.5'}`}
-                  style={{
-                    ...switchAccent,
-                    boxShadow: isSwitching ? 'none' : '0 4px 16px rgba(0, 0, 0, 0.12)',
-                  }}
-                  aria-label={switchButtonLabel}
-                  title={switchButtonLabel}
-                >
-                  <Repeat2 className={`h-4 w-4 flex-shrink-0 ${isSwitching ? 'animate-spin' : 'transition-transform'}`} />
-                  <span className="hidden sm:inline">{switchButtonLabel}</span>
-                  <span className="sm:hidden">{switchTargetLabel}</span>
-                </button>
-              ) : null}
-
               <button
                 onClick={() => setSearchOpen(true)}
                 className="flex h-10 min-w-0 w-[120px] items-center gap-2 rounded-lg border border-border bg-input px-3 text-muted/70 transition-colors hover:bg-surface hover:text-foreground lg:w-[140px] xl:w-[160px]"
@@ -303,7 +339,7 @@ export default function Header() {
                   <span className="text-xs font-medium text-gray-400">{activeLang.display}</span>
                 </button>
                 {langOpen ? (
-                  <div className="absolute end-0 top-full z-50 mt-1 w-40 overflow-hidden rounded-xl border border-border bg-card py-1 shadow-xl shadow-brand/5">
+                  <div className="absolute end-0 top-full z-[70] mt-2 w-52 overflow-hidden rounded-2xl border border-border bg-[var(--card-bg)] p-1.5 shadow-[0_24px_60px_-28px_rgba(15,23,42,0.45)] ring-1 ring-black/[0.03] backdrop-blur-xl dark:ring-white/[0.04]">
                     {LANGS.map((lang) => (
                       <button
                         key={lang.code}
@@ -311,7 +347,7 @@ export default function Header() {
                           setLanguage(lang.code)
                           setLangOpen(false)
                         }}
-                        className={`flex w-full items-center gap-2.5 px-3 py-2 text-sm transition-colors ${
+                        className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors ${
                           currentLang === lang.code
                             ? 'text-foreground'
                             : 'text-foreground hover:bg-surface'
@@ -321,11 +357,11 @@ export default function Header() {
                           color: 'var(--workspace-primary)',
                         } : undefined}
                       >
-                        <span className="w-8 text-start text-xs font-semibold text-gray-500 dark:text-gray-400">
+                        <span className="w-8 shrink-0 text-start text-xs font-semibold text-muted">
                           {lang.country}
                         </span>
-                        <span className="flex-1 text-start">{lang.label}</span>
-                        <span className="text-xs font-medium text-gray-400">{lang.display}</span>
+                        <span className="flex-1 truncate text-start font-medium">{lang.label}</span>
+                        <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">{lang.display}</span>
                       </button>
                     ))}
                   </div>
@@ -340,7 +376,18 @@ export default function Header() {
                 {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
               </button>
 
-              {user ? <NotificationBell /> : null}
+              {user ? (
+                <div className="flex items-center gap-1.5">
+                  <button
+                    onClick={() => navigate('/messages')}
+                    className="header-icon-btn"
+                    aria-label={t.nav?.messages || 'Messages'}
+                  >
+                    <MessageSquare className="h-4 w-4" />
+                  </button>
+                  <NotificationBell />
+                </div>
+              ) : null}
 
               {!user ? (
                 <div className="flex items-center gap-2">
@@ -388,18 +435,18 @@ export default function Header() {
                     <span
                         className="header-profile-chip flex-shrink-0 flex items-center gap-1.5"
                       style={{
-                        background: isFreelancer ? 'var(--workspace-primary)' : 'var(--brand-accent)',
-                        color: isFreelancer ? 'white' : 'var(--text-primary)',
-                        padding: '6px 14px',
+                        background: triggerWorkspaceBadge.background,
+                        color: triggerWorkspaceBadge.color,
+                        padding: '5px 10px',
                         borderRadius: '9999px',
-                        fontSize: '0.75rem',
+                        fontSize: '0.7rem',
                         fontWeight: 600,
-                        border: `2px solid ${isFreelancer ? 'rgba(255,255,255,0.18)' : 'rgba(245,158,11,0.18)'}`,
-                        boxShadow: isFreelancer ? '0 0 0 1px rgba(255, 255, 255, 0.08) inset' : '0 0 0 1px rgba(255,255,255,0.35) inset',
+                        border: `1px solid ${triggerWorkspaceBadge.border}`,
+                        boxShadow: 'none',
                       }}
                     >
-                      <span className={`h-1.5 w-1.5 rounded-full animate-pulse ${isFreelancer ? 'bg-white' : 'bg-foreground'}`} />
-                      {isFreelancer ? 'Pro' : 'Client'}
+                      <span className={`h-1.5 w-1.5 rounded-full ${triggerWorkspaceBadge.dotClassName}`} />
+                      {triggerWorkspaceBadge.label}
                     </span>
                     <ChevronDown
                       className={`h-3 w-3 flex-shrink-0 text-gray-400 transition-transform duration-200 ${
@@ -409,8 +456,8 @@ export default function Header() {
                   </button>
 
                   {userMenuOpen ? (
-                    <div className="absolute end-0 top-full z-50 mt-3 w-[288px] overflow-hidden rounded-[1.4rem] border border-border bg-card p-2.5 shadow-xl backdrop-blur-xl">
-                      <div className="rounded-[1.15rem] border border-border/50 bg-surface px-4 py-3.5">
+                    <div className="absolute end-0 top-full z-[70] mt-3 w-[288px] overflow-hidden rounded-[1.4rem] border border-border bg-[var(--card-bg)] p-2.5 shadow-[0_28px_80px_-30px_rgba(15,23,42,0.48)] ring-1 ring-black/[0.03] backdrop-blur-xl dark:ring-white/[0.04]">
+                      <div className="rounded-[1.15rem] border border-border/50 bg-[var(--surface-bg)] px-4 py-3.5">
                         <div className="flex items-center justify-between gap-3">
                           <div className="min-w-0">
                             <p className="truncate text-[15px] font-semibold text-[var(--text-primary)]">{displayName}</p>
@@ -419,14 +466,34 @@ export default function Header() {
                           <span
                             className="inline-flex shrink-0 items-center rounded-full px-2.5 py-1 text-[11px] font-semibold shadow-sm"
                             style={{
-                              background: isFreelancer ? 'rgba(139,92,246,0.16)' : 'rgba(245,158,11,0.16)',
-                              color: isFreelancer ? '#8b5cf6' : '#d97706',
+                              background: isFreelancer ? workspaceBadge.background : 'rgba(245,158,11,0.16)',
+                              color: isFreelancer ? workspaceBadge.color : '#d97706',
                             }}
                           >
-                            {isFreelancer ? 'Pro' : 'Client'}
+                            {workspaceBadge.label}
                           </span>
                         </div>
                       </div>
+
+                      {canQuickSwitch ? (
+                        <button
+                          onClick={() => {
+                            void handleQuickWorkspaceSwitch()
+                            setUserMenuOpen(false)
+                          }}
+                          disabled={isSwitching}
+                          className={`mt-2.5 flex w-full items-center gap-3 rounded-[1rem] border px-3.5 py-3 text-left text-sm font-semibold transition-all duration-150 ${isSwitching ? 'cursor-not-allowed opacity-60' : 'hover:-translate-y-0.5'}`}
+                          style={{
+                            ...switchAccent,
+                            boxShadow: isSwitching ? 'none' : '0 14px 28px -18px rgba(0, 0, 0, 0.18)',
+                          }}
+                        >
+                          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/12 text-current">
+                            <Repeat2 className={`h-4 w-4 ${isSwitching ? 'animate-spin' : ''}`} />
+                          </span>
+                          <span className="min-w-0 flex-1 truncate">{switchButtonLabel}</span>
+                        </button>
+                      ) : null}
 
                       <div className="mt-2.5 space-y-1.5">
                         {[
@@ -443,9 +510,9 @@ export default function Header() {
                               navigate(href)
                               setUserMenuOpen(false)
                             }}
-                            className="group flex w-full items-center gap-3 rounded-xl px-3.5 py-3 text-left text-sm font-medium text-foreground transition-all duration-150 hover:bg-surface"
+                            className="group flex w-full items-center gap-3 rounded-xl px-3.5 py-3 text-left text-sm font-medium text-foreground transition-all duration-150 hover:bg-[var(--surface-bg)]"
                           >
-                            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-border bg-surface text-muted transition-colors group-hover:border-brand/16 group-hover:text-brand">
+                            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-border bg-[var(--surface-bg)] text-muted transition-colors group-hover:border-brand/16 group-hover:text-brand">
                               <Icon className="h-4 w-4" />
                             </span>
                             <span className="truncate">{label}</span>
@@ -582,6 +649,16 @@ export default function Header() {
                     >
                       <User className="h-4 w-4 flex-shrink-0" />
                         {t.nav?.dashboard || 'Dashboard'}
+                    </button>
+                    <button
+                      onClick={() => {
+                        navigate('/messages')
+                        setMobileMenuOpen(false)
+                      }}
+                      className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium text-foreground transition-colors hover:bg-surface"
+                    >
+                      <MessageSquare className="h-4 w-4 flex-shrink-0" />
+                        {t.nav?.messages || 'Messages'}
                     </button>
                     <button
                       onClick={() => {

@@ -79,9 +79,11 @@ export default function FindFreelancers() {
             const { data, error } = await profilesService.getFreelancers({ search: searchQuery || undefined });
             if (error) { console.error('getFreelancers error:', error); return []; }
             return (data || []).map((p: ProfileWithFreelancer) => {
-                const fp = p.freelancer_profiles?.[0];
+                const fp = Array.isArray(p.freelancer_profiles) 
+                    ? p.freelancer_profiles[0] 
+                    : p.freelancer_profiles;
                 const skills: string[] = Array.isArray(fp?.skills)
-                    ? fp.skills.map((s) => (typeof s === 'string' ? s : s?.name || '')).filter(Boolean)
+                    ? fp.skills.map((s: any) => (typeof s === 'string' ? s : s?.name || '')).filter(Boolean)
                     : [];
                 return {
                     id: p.id,

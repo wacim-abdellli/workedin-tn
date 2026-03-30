@@ -1,7 +1,7 @@
 /**
  * Messages Service - Chat/messaging Supabase queries
  */
-import { supabase } from '@/lib/supabase';
+import { supabase, uploadFile } from '@/lib/supabase';
 import type { MessageAttachment } from '@/types';
 import type {
     RealtimeChannel,
@@ -100,7 +100,7 @@ export async function getConversations(userId: string) {
                 participant2:profiles!conversations_participant_2_fkey(id, full_name, avatar_url, username)
             `)
             .or(`participant_1.eq.${userId},participant_2.eq.${userId}`)
-            .order('last_message_at', { ascending: false, nullsFirst: false });
+            .order('last_message_at', { ascending: false });
 
         if (error) throw error;
 
@@ -159,6 +159,16 @@ export async function getMessages(conversationId: string) {
 }
 
 // --- WRITE ---
+
+export async function uploadMessageAttachment(file: File, conversationId: string): Promise<{ url: string | null; error: Error | null }> {
+    try {
+        const path = `${conversationId}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+        const uploadedUrl = await uploadFile('message_attachments', path, file);
+        return { url: uploadedUrl, error: null };
+    } catch (error) {
+        return { url: null, error: normalizeMessageError(error) };
+    }
+}
 
 export async function sendMessage(params: {
     conversationId: string;

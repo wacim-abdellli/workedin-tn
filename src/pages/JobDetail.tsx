@@ -134,10 +134,11 @@ const CATEGORY_LABELS: Record<string, string> = {
 function JobDetail() {
     const { jobId } = useParams<{ jobId: string }>();
     const navigate = useNavigate();
+    const { t, language } = useTranslation();
+    const tr = (ar: string, en: string, fr?: string) => language === 'ar' ? ar : language === 'fr' ? (fr || en) : en;
     const { user, freelancerProfile } = useAuth();
     const { showToast } = useToast();
     const queryClient = useQueryClient();
-    const { t, language } = useTranslation();
 
     const [showProposalModal, setShowProposalModal] = useState(false);
 
@@ -437,7 +438,7 @@ function JobDetail() {
                                                 ? 'bg-red-50 dark:bg-red-500/15 text-red-500'
                                                 : 'bg-secondary text-muted-foreground hover:text-red-500'
                                         )}
-                                        title={isSaved ? 'Remove from saves' : 'Save this job'}
+                                        title={isSaved ? tr('إزالة من المحفوظات', 'Remove from saves', 'Retirer des favoris') : tr('حفظ هذه الوظيفة', 'Save this job', 'Enregistrer cette offre')}
                                     >
                                         <Heart className={cn('w-5 h-5', isSaved && 'fill-current')} />
                                     </button>
@@ -447,7 +448,7 @@ function JobDetail() {
                                             'p-2.5 rounded-lg transition-colors',
                                             'bg-secondary text-muted-foreground hover:text-[color:var(--workspace-primary)]'
                                         )}
-                                        title="Share this job"
+                                        title={tr('شارك هذه الوظيفة', 'Share this job', 'Partager cette offre')}
                                     >
                                         <Share2 className="w-5 h-5" />
                                     </button>

@@ -104,11 +104,11 @@ export default function MobileNav() {
   const workspaceLabel =
     profile?.user_type === 'both'
       ? activeWorkspace === 'freelancer'
-        ? 'Freelancer workspace'
-        : 'Client workspace'
+        ? tx('pages.mobileNav.workspaceFreelancer', undefined, 'Freelancer workspace')
+        : tx('pages.mobileNav.workspaceClient', undefined, 'Client workspace')
       : profile?.user_type === 'freelancer'
-        ? 'Freelancer'
-        : 'Client';
+        ? tx('pages.mobileNav.freelancer', undefined, 'Freelancer')
+        : tx('pages.mobileNav.client', undefined, 'Client');
 
   return (
     <>
@@ -139,7 +139,7 @@ export default function MobileNav() {
       <header className="fixed left-0 right-0 top-0 z-40 h-14 border-b border-gray-200 bg-white md:hidden dark:border-white/10 dark:bg-[#0f0e17]">
         <div className="flex h-full items-center justify-between px-4">
           <button onClick={() => navigate('/')} className="text-lg font-bold text-primary-600">
-            Khedma
+            {tx('pages.mobileNav.brandName', undefined, 'Khedma')}
           </button>
           <button onClick={() => setShowSearch(true)} className="rounded-full p-2 hover:bg-gray-100 dark:hover:bg-white/5">
             <Search className="h-5 w-5 text-gray-600 dark:text-gray-300" />
@@ -156,7 +156,7 @@ export default function MobileNav() {
             <input
               type="text"
               autoFocus
-              placeholder="Search..."
+              placeholder={tx('pages.mobileNav.searchPlaceholder', undefined, 'Search...')}
               className="flex-1 bg-transparent text-lg outline-none"
               onKeyDown={(event) => {
                 if (event.key !== 'Enter') return;
@@ -180,7 +180,7 @@ export default function MobileNav() {
                   {profile?.full_name?.charAt(0) || 'U'}
                 </div>
                 <div>
-                  <p className="font-semibold text-gray-900 dark:text-white">{profile?.full_name || 'User'}</p>
+                  <p className="font-semibold text-gray-900 dark:text-white">{profile?.full_name || tx('pages.mobileNav.userFallback', undefined, 'User')}</p>
                   <p className="text-sm text-gray-500 dark:text-gray-400">{workspaceLabel}</p>
                 </div>
               </div>

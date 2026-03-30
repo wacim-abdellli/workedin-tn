@@ -29,8 +29,8 @@ export async function getFreelancers(filters: {
     minRate?: number;
     maxRate?: number;
 } = {}, page = 1, pageSize = 20) {
-    // Use anon client — public discovery page, must not hang on token refresh
-    let query = supabaseAnon
+    // Use authenticated client — ensures RLS policies allow reading freelancer_profiles
+    let query = supabase
         .from('profiles')
         .select(`
             id,
@@ -38,7 +38,7 @@ export async function getFreelancers(filters: {
             avatar_url,
             location,
             user_type,
-            freelancer_profiles (
+            freelancer_profiles!inner (
                 id,
                 title,
                 hourly_rate,
@@ -49,8 +49,7 @@ export async function getFreelancers(filters: {
                 cin_verified
             )
         `, { count: 'exact' })
-        .in('user_type', ['freelancer', 'both'])
-        .not('freelancer_profiles', 'is', null);
+        .in('user_type', ['freelancer', 'both']);
 
     if (filters.search) {
         query = query.or(`full_name.ilike.%${filters.search}%`);

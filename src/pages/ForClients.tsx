@@ -28,13 +28,13 @@ function ForClients() {
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(139,92,246,0.18),transparent_35%),radial-gradient(circle_at_top_right,rgba(245,158,11,0.14),transparent_28%),linear-gradient(180deg,rgba(255,255,255,0.94),rgba(248,247,255,0.78))] dark:bg-[radial-gradient(circle_at_top_left,rgba(139,92,246,0.24),transparent_35%),radial-gradient(circle_at_top_right,rgba(245,158,11,0.1),transparent_25%),linear-gradient(180deg,rgba(15,13,22,0.96),rgba(9,7,15,0.94))]" />
                 <div className="container-custom relative z-10">
                     <div className="max-w-3xl">
-                        <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-purple-100 bg-purple-50 px-3 py-1 text-sm font-medium text-purple-700 dark:border-purple-800/30 dark:bg-purple-950/50 dark:text-purple-300">
+                        <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-accent-100 bg-accent-50 px-3 py-1 text-sm font-medium text-accent-700 dark:border-accent-800/30 dark:bg-accent-950/30 dark:text-accent-300">
                             <Star className="h-4 w-4 fill-current" />
                             {t.forClients.hero.badge}
                         </div>
                         <h1 className="text-[clamp(2.5rem,5vw,4rem)] font-bold leading-[1.08] tracking-[-0.03em]">
                             {t.forClients.hero.title}
-                            <span className="mt-1 block bg-gradient-to-br from-purple-400 to-amber-400 bg-clip-text text-transparent">
+                            <span className="mt-1 block bg-gradient-to-br from-primary-400 to-accent-400 bg-clip-text text-transparent">
                                 {t.forClients.hero.titleHighlight}
                             </span>
                         </h1>
@@ -43,7 +43,7 @@ function ForClients() {
                         </p>
                         <div className="flex flex-wrap gap-4">
                             <Link to="/signup?type=client">
-                                <Button variant="secondary" size="lg" className="rounded-xl border-none bg-purple-600 px-6 py-3 font-semibold text-white shadow-lg shadow-purple-500/20 transition-all duration-200 hover:bg-purple-500 hover:shadow-xl hover:shadow-purple-500/30">
+                                <Button variant="secondary" size="lg" className="rounded-xl border-none bg-primary-600 px-6 py-3 font-semibold text-white shadow-lg shadow-primary-500/20 transition-all duration-200 hover:bg-primary-500 hover:shadow-xl hover:shadow-primary-500/30">
                                     {t.forClients.hero.cta}
                                 </Button>
                             </Link>
@@ -66,8 +66,8 @@ function ForClients() {
                 <div className="container-custom">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                         <div className="rounded-[24px] border border-gray-100 bg-white p-8 shadow-sm dark:border-white/5 dark:bg-[#1a1825]">
-                            <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-xl bg-purple-100 dark:bg-purple-900/30">
-                                <Zap className="h-8 w-8 text-purple-600 dark:text-purple-400" />
+                            <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-xl bg-primary-100 dark:bg-primary-900/30">
+                                <Zap className="h-8 w-8 text-primary-600 dark:text-primary-400" />
                             </div>
                             <h3 className="mb-3 text-xl font-bold dark:text-white">{t.forClients.benefits.speed.title}</h3>
                             <p className="text-muted">
@@ -75,8 +75,8 @@ function ForClients() {
                             </p>
                         </div>
                         <div className="rounded-[24px] border border-gray-100 bg-white p-8 shadow-sm dark:border-white/5 dark:bg-[#1a1825]">
-                            <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-xl bg-purple-100 dark:bg-purple-900/30">
-                                <Shield className="h-8 w-8 text-purple-600 dark:text-purple-400" />
+                            <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-xl bg-primary-100 dark:bg-primary-900/30">
+                                <Shield className="h-8 w-8 text-primary-600 dark:text-primary-400" />
                             </div>
                             <h3 className="mb-3 text-xl font-bold dark:text-white">{t.forClients.benefits.secure.title}</h3>
                             <p className="text-muted">
@@ -84,8 +84,8 @@ function ForClients() {
                             </p>
                         </div>
                         <div className="rounded-[24px] border border-gray-100 bg-white p-8 shadow-sm dark:border-white/5 dark:bg-[#1a1825]">
-                            <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-xl bg-purple-100 dark:bg-purple-900/30">
-                                <Users className="h-8 w-8 text-purple-600 dark:text-purple-400" />
+                            <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-xl bg-accent-100 dark:bg-accent-900/30">
+                                <Users className="h-8 w-8 text-accent-600 dark:text-accent-400" />
                             </div>
                             <h3 className="mb-3 text-xl font-bold dark:text-white">{t.forClients.benefits.local.title}</h3>
                             <p className="text-muted">
@@ -102,7 +102,7 @@ function ForClients() {
                     <h2 className="mb-12 text-center text-3xl font-bold dark:text-white">{t.forClients.categories.title}</h2>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         {t.forClients.categories.items.map((cat, i) => (
-                            <div key={i} className="cursor-pointer rounded-xl border border-gray-200 bg-white p-6 text-center transition-all hover:border-secondary-500 hover:shadow-md dark:border-white/5 dark:bg-[#1a1825]">
+                            <div key={i} className="cursor-pointer rounded-xl border border-gray-200 bg-white p-6 text-center transition-all hover:border-primary-300 hover:shadow-md dark:border-white/5 dark:bg-[#1a1825]">
                                 <h3 className="font-bold text-gray-700 transition-colors dark:text-gray-200">{cat}</h3>
                             </div>
                         ))}

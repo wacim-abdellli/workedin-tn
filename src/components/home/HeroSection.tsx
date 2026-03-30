@@ -47,7 +47,7 @@ function HeroStat({
       ref={ref}
       className="rounded-[24px] border border-gray-100 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-white/[0.04]"
     >
-      <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-purple-50 text-purple-600 shadow-sm dark:bg-purple-900/30 dark:text-purple-300">
+      <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary-50 text-primary-600 shadow-sm dark:bg-primary-900/30 dark:text-primary-300">
         <Icon className="h-5 w-5" />
       </div>
       <div className="mt-5 text-3xl font-bold tracking-[-0.03em] text-gray-900 dark:text-white">{formatCompact(count)}</div>
@@ -120,7 +120,7 @@ export default function HeroSection({ stats }: HeroSectionProps) {
       onMouseMove={handlePointerMove}
     >
       <motion.div
-        className="pointer-events-none absolute left-1/4 top-0 h-96 w-96 rounded-full bg-purple-100 opacity-40 blur-3xl dark:bg-purple-900 dark:opacity-15"
+        className="pointer-events-none absolute left-1/4 top-0 h-96 w-96 rounded-full bg-primary-100 opacity-40 blur-3xl dark:bg-primary-900 dark:opacity-15"
         style={{ x: orbLeft, y: useTransform(smoothY, [-0.5, 0.5], [-18, 18]) }}
       />
       <motion.div
@@ -128,7 +128,7 @@ export default function HeroSection({ stats }: HeroSectionProps) {
         style={{ x: orbRight, y: useTransform(smoothY, [-0.5, 0.5], [12, -12]) }}
       />
       <motion.div
-        className="pointer-events-none absolute bottom-[-4rem] left-1/2 h-80 w-80 -translate-x-1/2 rounded-full bg-purple-200 opacity-35 blur-3xl dark:bg-purple-900 dark:opacity-10"
+        className="pointer-events-none absolute bottom-[-4rem] left-1/2 h-80 w-80 -translate-x-1/2 rounded-full bg-primary-200 opacity-35 blur-3xl dark:bg-primary-900 dark:opacity-10"
         style={{ y: orbBottom }}
       />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(139,92,246,0.08),transparent_40%)] dark:bg-[radial-gradient(circle_at_top,rgba(139,92,246,0.16),transparent_34%)]" />
@@ -141,7 +141,7 @@ export default function HeroSection({ stats }: HeroSectionProps) {
               variants={fadeUp}
               initial="hidden"
               animate="visible"
-              className="inline-flex items-center gap-3 rounded-full border border-[rgba(124,58,237,0.14)] bg-[rgba(255,255,255,0.9)] px-4 py-2 text-sm font-medium text-purple-700 shadow-[0_14px_30px_-24px_rgba(76,29,149,0.2)] backdrop-blur-md dark:border-purple-800/30 dark:bg-purple-950/50 dark:text-purple-300"
+              className="inline-flex items-center gap-3 rounded-full border border-primary-200/60 bg-[rgba(255,255,255,0.9)] px-4 py-2 text-sm font-medium text-primary-700 shadow-[0_14px_30px_-24px_rgba(109,40,217,0.24)] backdrop-blur-md dark:border-primary-800/30 dark:bg-primary-950/40 dark:text-primary-300"
               style={{ transform: badgeGlow }}
             >
               <span className="h-2.5 w-2.5 rounded-full bg-green-400 shadow-[0_0_16px_rgba(74,222,128,0.65)] animate-pulse" />
@@ -152,7 +152,7 @@ export default function HeroSection({ stats }: HeroSectionProps) {
               <p className="hero-display-line font-bold tracking-tight text-gray-900 dark:text-white">
                 <span>{headlineStart}</span>
               </p>
-              <h1 className="hero-display-line mt-1 bg-gradient-to-r from-purple-500 to-amber-400 bg-clip-text font-bold italic tracking-tight text-transparent">{headlineHighlight}</h1>
+              <h1 className="hero-display-line mt-1 bg-gradient-to-r from-primary-500 via-primary-600 to-accent-400 bg-clip-text font-bold italic tracking-tight text-transparent">{headlineHighlight}</h1>
             </motion.div>
 
             <motion.p
@@ -176,7 +176,7 @@ export default function HeroSection({ stats }: HeroSectionProps) {
                 <motion.span
                   whileHover={{ y: -2 }}
                   whileTap={{ scale: 0.98 }}
-                  className="group inline-flex items-center gap-2 rounded-xl bg-purple-600 px-6 py-3 font-semibold text-white shadow-lg shadow-purple-500/20 transition-all duration-200 hover:bg-purple-500 hover:shadow-xl hover:shadow-purple-500/30"
+                  className="group inline-flex items-center gap-2 rounded-xl bg-primary-600 px-6 py-3 font-semibold text-white shadow-lg shadow-primary-500/20 transition-all duration-200 hover:bg-primary-500 hover:shadow-xl hover:shadow-primary-500/30"
                 >
                   {primaryCta.label}
                   <ArrowIcon className="h-5 w-5 transition-transform group-hover:translate-x-1 rtl:group-hover:-translate-x-1" />
@@ -242,7 +242,7 @@ export default function HeroSection({ stats }: HeroSectionProps) {
                     {t.hero.activity.title}
                   </h2>
                 </div>
-                <div className="rounded-2xl border border-purple-100 bg-purple-50 px-3 py-2 text-sm font-semibold text-primary-700 shadow-sm dark:border-primary-500/20 dark:bg-primary-500/10 dark:text-primary-300">
+                <div className="rounded-2xl border border-accent-100 bg-accent-50 px-3 py-2 text-sm font-semibold text-accent-700 shadow-sm dark:border-accent-500/20 dark:bg-accent-500/10 dark:text-accent-300">
                   {t.hero.activity.tag}
                 </div>
               </div>

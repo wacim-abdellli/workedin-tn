@@ -7,6 +7,7 @@ export default function StepBudget() {
     const { register, watch, formState: { errors } } = useFormContext();
     const { tx } = useTranslation();
     const jobType = watch('job_type');
+    const today = new Date().toISOString().split('T')[0];
 
     return (
         <div className="space-y-8">
@@ -108,8 +109,10 @@ export default function StepBudget() {
                         <div className="space-y-2">
                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{tx('jobs.new.stepBudget.weeklyHours', undefined, 'الساعات المتوقعة أسبوعياً')}</label>
                             <Input
-                                placeholder={tx('jobs.new.stepBudget.weeklyHoursExample', undefined, 'مثال: 10-20')}
-                                {...register('estimated_hours')}
+                                placeholder={tx('jobs.new.stepBudget.weeklyHoursExample', undefined, 'مثال: 20')}
+                                type="number"
+                                {...register('estimated_hours', { valueAsNumber: true })}
+                                error={errors.estimated_hours?.message as string}
                             />
                         </div>
                     </div>
@@ -117,7 +120,7 @@ export default function StepBudget() {
             </div>
 
             {/* Additional Info */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="space-y-3">
                     <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                         <Calendar className="h-5 w-5 text-gray-500 dark:text-gray-400" />
@@ -136,6 +139,19 @@ export default function StepBudget() {
                     {errors.duration && (
                         <p className="text-red-500 text-xs">{errors.duration.message as string}</p>
                     )}
+                </div>
+
+                <div className="space-y-3">
+                    <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                        <Calendar className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+                        {tx('jobs.new.stepBudget.deadline', undefined, 'الموعد النهائي')}
+                    </label>
+                    <Input
+                        type="date"
+                        min={today}
+                        {...register('deadline')}
+                        error={errors.deadline?.message as string}
+                    />
                 </div>
 
                 <div className="space-y-3">

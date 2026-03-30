@@ -131,6 +131,7 @@ function JobBoard() {
     const { showToast } = useToast();
     const [searchParams, setSearchParams] = useSearchParams();
     const { t, language } = useTranslation();
+    const tr = (ar: string, en: string, fr?: string) => language === "ar" ? ar : language === "fr" ? (fr || en) : en;
     const queryClient = useQueryClient();
 
     // State
@@ -289,7 +290,7 @@ function JobBoard() {
                 <div className="mb-6">
                     <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-1">{t.jobs.title}</h1>
                     <p className="text-sm text-[var(--text-muted)]">
-                        Browse and apply to freelance opportunities
+                        {tr("تصفح وقدم على فرص العمل المستقل", "Browse and apply to freelance opportunities", "Parcourez et postulez aux offres")}
                     </p>
                 </div>
 

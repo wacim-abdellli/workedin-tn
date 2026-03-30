@@ -53,14 +53,14 @@ export default function JobPostSuccess() {
                             </div>
 
                             <div className="flex flex-wrap gap-3">
-                                <div className="inline-flex items-center gap-2 rounded-full border border-primary-100 bg-white/80 px-4 py-2 text-sm text-[#353149] shadow-sm dark:border-white/10 dark:bg-white/5 dark:text-[#e3def7]">
-                                    <FileText className="h-4 w-4 text-primary-500" />
+                                <div className="summary-chip">
+                                    <FileText className="summary-chip-icon" />
                                     <span>{tx('jobs.posted.statusLive', undefined, 'Posting created successfully')}</span>
                                 </div>
                                 {jobId ? (
-                                    <div className="inline-flex items-center gap-2 rounded-full border border-primary-100 bg-white/80 px-4 py-2 text-sm text-[#353149] shadow-sm dark:border-white/10 dark:bg-white/5 dark:text-[#e3def7]">
-                                        <span className="font-medium text-[#8b8aa0]">ID</span>
-                                        <span>{jobId.slice(0, 8)}</span>
+                                    <div className="summary-chip">
+                                        <span className="summary-chip-label">ID</span>
+                                        <span className="summary-chip-value">{jobId.slice(0, 8)}</span>
                                     </div>
                                 ) : null}
                             </div>

@@ -15,6 +15,7 @@ vi.mock('@/lib/supabase', () => ({
             })),
         },
     },
+    withTimeout: vi.fn((promise: Promise<any>) => promise),
 }));
 
 import { formatFileSize, getFileIcon, useFileUpload } from '@/hooks/useFileUpload';

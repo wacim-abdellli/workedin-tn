@@ -150,7 +150,7 @@ describe('jobs service targeted coverage', () => {
             { column: 'posted_at', value: expect.any(String) },
         ]));
         expect(queryState.state.lteCalls).toContainEqual({ column: 'budget_min', value: 100 });
-        expect(queryState.state.orderCalls).toContainEqual({ column: 'budget_max', options: { ascending: false, nullsFirst: false } });
+        expect(queryState.state.orderCalls).toContainEqual({ column: 'budget_max', options: { ascending: false } });
         expect(queryState.state.rangeCalls).toContainEqual({ from: 10, to: 19 });
     });
 

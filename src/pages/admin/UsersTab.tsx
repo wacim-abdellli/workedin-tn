@@ -57,7 +57,7 @@ export async function fetchAdminUsers(): Promise<AdminUser[]> {
 
 export default function UsersTab() {
     const { showToast } = useToast();
-    const { language } = useTranslation();
+    const { language, t } = useTranslation() as any;
     const queryClient = useQueryClient();
     const locale = language === 'ar' ? 'ar-TN' : language === 'fr' ? 'fr-FR' : 'en-US';
     const tr = (ar: string, en: string, fr?: string) => {
@@ -122,7 +122,7 @@ export default function UsersTab() {
             setSelectedUser((prev) => (prev?.id === userId ? { ...prev, active_mode: nextMode } : prev));
             showToast(
                 tr('تم تحويل وضع المستخدم إلى', 'User mode switched to', 'Mode utilisateur bascule vers') +
-                ` ${nextMode === 'freelancer' ? tr('مستقل', 'Freelancer', 'Freelance') : tr('عميل', 'Client', 'Client')}`,
+                ` ${nextMode === 'freelancer' ? tr('مستقل', 'Freelancer', 'Freelance') : tr(t.reviews?.client || t.reviews?.client || 'عميل', 'Client', 'Client')}`,
                 'success'
             );
         },
@@ -326,10 +326,10 @@ export default function UsersTab() {
                                                         ? 'bg-blue-100 dark:bg-blue-500/15 text-blue-700 dark:text-blue-300'
                                                         : 'bg-violet-100 dark:bg-violet-500/15 text-violet-700 dark:text-violet-300'
                                                         }`}>
-                                                        {user.type === 'freelancer' ? tr('موظف حر', 'Freelancer', 'Freelance') : tr('عميل', 'Client', 'Client')}
+                                                        {user.type === 'freelancer' ? tr(t.reviews?.freelancer || t.reviews?.freelancer || 'موظف حر', 'Freelancer', 'Freelance') : tr(t.reviews?.client || t.reviews?.client || 'عميل', 'Client', 'Client')}
                                                     </span>
                                                     <span className="ms-2 px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap bg-primary-100 dark:bg-primary-500/15 text-primary-700 dark:text-primary-300">
-                                                        {tr('الوضع', 'Mode', 'Mode')}: {user.active_mode === 'freelancer' ? tr('مستقل', 'Freelancer', 'Freelance') : tr('عميل', 'Client', 'Client')}
+                                                        {tr('الوضع', 'Mode', 'Mode')}: {user.active_mode === 'freelancer' ? tr('مستقل', 'Freelancer', 'Freelance') : tr(t.reviews?.client || t.reviews?.client || 'عميل', 'Client', 'Client')}
                                                     </span>
                                                 </td>
                                                 <td className="px-6 py-4">
@@ -410,14 +410,14 @@ export default function UsersTab() {
                                             ? 'bg-blue-100 text-blue-700'
                                             : 'bg-purple-100 text-purple-700'
                                             }`}>
-                                            {user.type === 'freelancer' ? tr('موظف حر', 'Freelancer', 'Freelance') : tr('عميل', 'Client', 'Client')}
+                                            {user.type === 'freelancer' ? tr(t.reviews?.freelancer || t.reviews?.freelancer || 'موظف حر', 'Freelancer', 'Freelance') : tr(t.reviews?.client || t.reviews?.client || 'عميل', 'Client', 'Client')}
                                         </span>
                                     </div>
 
                                     <div className="flex items-center justify-between py-2 border-b border-border/50">
                                         <span className="text-sm text-muted">{tr('الوضع النشط', 'Active mode', 'Mode actif')}</span>
                                         <span className="px-2 py-1 rounded-full text-xs font-medium bg-primary-100 text-primary-700">
-                                            {user.active_mode === 'freelancer' ? tr('مستقل', 'Freelancer', 'Freelance') : tr('عميل', 'Client', 'Client')}
+                                            {user.active_mode === 'freelancer' ? tr('مستقل', 'Freelancer', 'Freelance') : tr(t.reviews?.client || t.reviews?.client || 'عميل', 'Client', 'Client')}
                                         </span>
                                     </div>
 
@@ -492,7 +492,7 @@ export default function UsersTab() {
                             <p><strong>{tr('الاسم', 'Name', 'Nom')}:</strong> {getDisplayName(selectedUser)}</p>
                             <p><strong>{tr('البريد', 'Email', 'Email')}:</strong> {selectedUser.email || '-'}</p>
                             <p><strong>{tr('نوع الحساب', 'Account type', 'Type de compte')}:</strong> {selectedUser.type}</p>
-                            <p><strong>{tr('الوضع النشط', 'Active mode', 'Mode actif')}:</strong> {selectedUser.active_mode || tr('عميل', 'Client', 'Client')}</p>
+                            <p><strong>{tr('الوضع النشط', 'Active mode', 'Mode actif')}:</strong> {selectedUser.active_mode || tr(t.reviews?.client || t.reviews?.client || 'عميل', 'Client', 'Client')}</p>
                             <p><strong>{tr('توثيق الهوية', 'Identity verification', 'Verification d identite')}:</strong> {selectedUser.cin_verified ? tr('نعم', 'Yes', 'Oui') : tr('لا', 'No', 'Non')}</p>
                             <p><strong>{tr('مشرف', 'Admin', 'Admin')}:</strong> {selectedUser.is_admin ? tr('نعم', 'Yes', 'Oui') : tr('لا', 'No', 'Non')}</p>
                         </div>

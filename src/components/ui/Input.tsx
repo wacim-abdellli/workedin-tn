@@ -22,10 +22,10 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
       w-full rounded-xl border bg-white text-gray-900 shadow-sm transition-all duration-200
       dark:bg-[#1a1825] dark:text-white
       placeholder:text-gray-400 dark:placeholder:text-gray-600
-      focus:outline-none focus:ring-2 focus:ring-purple-500/20
+      focus:outline-none focus:ring-2 focus:ring-[color:var(--workspace-primary)]/20
       ${error
                 ? 'border-red-500 focus:border-red-500'
-                : 'border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/15 focus:border-purple-500'
+                : 'border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/15 focus:border-[color:var(--workspace-primary)]'
             }
       ${leftIcon ? 'ps-11 py-3' : 'px-4 py-3'}
       ${rightIcon ? 'pe-11 py-3' : 'px-4 py-3'}
@@ -49,7 +49,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
                 )}
                 <div className="relative">
                     {leftIcon && (
-                        <div className="pointer-events-none absolute inset-y-0 start-0 flex items-center ps-4 text-gray-400 transition-colors group-focus-within:text-purple-500 dark:text-gray-500">
+                        <div className="pointer-events-none absolute inset-y-0 start-0 flex items-center ps-4 text-gray-400 transition-colors group-focus-within:text-[color:var(--workspace-primary)] dark:text-gray-500">
                             {leftIcon}
                         </div>
                     )}

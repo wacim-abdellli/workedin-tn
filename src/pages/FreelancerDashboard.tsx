@@ -58,6 +58,20 @@ type DashboardStats = {
     freelancerTitle: string | null;
     notifications: DashboardNotification[];
     milestones: DashboardMilestone[];
+    recentProposals: Array<{
+        id: string;
+        status: string;
+        bid_amount: number;
+        created_at: string;
+        job: { id: string; title: string; category: string; status: string } | null;
+    }>;
+    activeContractsList: Array<{
+        id: string;
+        title: string;
+        status: string;
+        total_amount: number;
+        client: { id: string; full_name: string; avatar_url: string | null } | null;
+    }>;
 };
 
 function DashboardPanel({ className = '', children }: { className?: string; children: ReactNode }) {
@@ -157,7 +171,7 @@ function FreelancerDashboardPage() {
         queryFn: async (): Promise<DashboardStats> => {
             const userId = profile!.id;
 
-            const [contractsCountRes, contractRowsRes, proposalsRes, walletRes, viewsRes, notificationsRes] = await Promise.all([
+            const [contractsCountRes, contractRowsRes, proposalsRes, walletRes, viewsRes, notificationsRes, recentProposalsRes, activeContractsListRes] = await Promise.all([
                 supabase.from('contracts').select('id', { count: 'exact', head: true })
                     .eq('freelancer_id', userId)
                     .eq('status', 'active'),
@@ -172,6 +186,15 @@ function FreelancerDashboardPage() {
                 supabase.from('notifications').select('id,title,content,type,created_at')
                     .eq('user_id', userId)
                     .eq('is_read', false)
+                    .order('created_at', { ascending: false })
+                    .limit(5),
+                supabase.from('proposals').select('id, status, bid_amount, created_at, job:jobs(id, title, category, status)')
+                    .eq('freelancer_id', userId)
+                    .order('created_at', { ascending: false })
+                    .limit(5),
+                supabase.from('contracts').select('id, title, status, total_amount, client:profiles!contracts_client_id_fkey(id, full_name, avatar_url)')
+                    .eq('freelancer_id', userId)
+                    .eq('status', 'active')
                     .order('created_at', { ascending: false })
                     .limit(5),
             ]);
@@ -198,6 +221,8 @@ function FreelancerDashboardPage() {
                 freelancerTitle: viewsRes.data?.title ?? null,
                 notifications: (notificationsRes.data ?? []) as DashboardNotification[],
                 milestones: (milestonesRes.data ?? []) as DashboardMilestone[],
+                recentProposals: (recentProposalsRes.data ?? []) as unknown as DashboardStats['recentProposals'],
+                activeContractsList: (activeContractsListRes.data ?? []) as unknown as DashboardStats['activeContractsList'],
             };
         },
         staleTime: 60_000,
@@ -264,6 +289,8 @@ function FreelancerDashboardPage() {
     const latestNotification = stats?.notifications[0] ?? null;
     const notifications = stats?.notifications ?? [];
     const milestones = stats?.milestones ?? [];
+    const recentProposals = stats?.recentProposals ?? [];
+    const activeContractsList = stats?.activeContractsList ?? [];
 
     const metricCards = [
         {
@@ -481,6 +508,145 @@ function FreelancerDashboardPage() {
                                             <Area type="monotone" dataKey="earnings" stroke="#8b5cf6" strokeWidth={3} fill="url(#earningsFill)" />
                                         </AreaChart>
                                     </ResponsiveContainer>
+                                )}
+                            </div>
+                        </DashboardPanel>
+
+                        {/* Recent Proposals */}
+                        <DashboardPanel>
+                            <div className="flex items-center justify-between gap-4">
+                                <div>
+                                    <div className="flex items-center gap-2 border-l-2 border-l-[color:var(--workspace-primary)] pl-2 mb-3">
+                                        <p className="text-xs font-semibold uppercase tracking-widest text-gray-600 dark:text-gray-400">
+                                            {tx('pages.freelancerDashboard.proposalsBadge', undefined, 'Proposals')}
+                                        </p>
+                                    </div>
+                                    <h2 className="text-base font-semibold tracking-tight text-gray-900 dark:text-white">
+                                        {tx('pages.freelancerDashboard.recentProposals', undefined, 'Recent proposals')}
+                                    </h2>
+                                </div>
+                                <Button variant="outline" size="sm" className="rounded-2xl" onClick={() => navigate('/my-proposals')}>
+                                    {tx('pages.freelancerDashboard.viewAllProposals', undefined, 'View all')}
+                                </Button>
+                            </div>
+                            <div className="mt-5 space-y-3">
+                                {isLoading ? (
+                                    [1, 2, 3].map((item) => <Skeleton key={item} className="h-20 rounded-2xl" />)
+                                ) : recentProposals.length === 0 ? (
+                                    <EmptyState
+                                        icon={Send}
+                                        title={tx('pages.freelancerDashboard.noProposals', undefined, 'No proposals yet')}
+                                        description={tx('pages.freelancerDashboard.noProposalsDescription', undefined, 'Browse the job board and submit your first proposal to get started.')}
+                                    />
+                                ) : (
+                                    recentProposals.map((proposal) => {
+                                        const statusStyles: Record<string, string> = {
+                                            pending: 'bg-amber-500/12 text-amber-700 dark:text-amber-200',
+                                            accepted: 'bg-green-500/12 text-green-700 dark:text-green-200',
+                                            rejected: 'bg-red-500/12 text-red-700 dark:text-red-200',
+                                            withdrawn: 'bg-gray-500/12 text-gray-700 dark:text-gray-300',
+                                        };
+                                        return (
+                                            <div
+                                                key={proposal.id}
+                                                onClick={() => proposal.job?.id && navigate(`/jobs/${proposal.job.id}`)}
+                                                className="rounded-[1.4rem] border border-border/50 bg-card p-4 cursor-pointer hover:border-[color:var(--workspace-primary)]/30 transition-colors"
+                                                role="button"
+                                                tabIndex={0}
+                                                onKeyDown={(e) => {
+                                                    if ((e.key === 'Enter' || e.key === ' ') && proposal.job?.id) navigate(`/jobs/${proposal.job.id}`);
+                                                }}
+                                            >
+                                                <div className="flex items-start justify-between gap-3">
+                                                    <div className="min-w-0 flex-1">
+                                                        <p className="text-sm font-semibold text-[#171420] dark:text-white truncate">
+                                                            {proposal.job?.title || tx('pages.freelancerDashboard.untitledJob', undefined, 'Untitled job')}
+                                                        </p>
+                                                        <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-[#7a768e] dark:text-[#8b8aa0]">
+                                                            <span className="inline-flex items-center gap-1">
+                                                                <DollarSign className="h-3.5 w-3.5" />
+                                                                {formatCurrency(proposal.bid_amount)}
+                                                            </span>
+                                                            <span>
+                                                                {new Date(proposal.created_at).toLocaleDateString(locale, { month: 'short', day: 'numeric' })}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold shrink-0 ${statusStyles[proposal.status] || statusStyles.pending}`}>
+                                                        {proposal.status}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        );
+                                    })
+                                )}
+                            </div>
+                        </DashboardPanel>
+
+                        {/* Active Contracts */}
+                        <DashboardPanel>
+                            <div className="flex items-center justify-between gap-4">
+                                <div>
+                                    <div className="flex items-center gap-2 border-l-2 border-l-[color:var(--workspace-primary)] pl-2 mb-3">
+                                        <p className="text-xs font-semibold uppercase tracking-widest text-gray-600 dark:text-gray-400">
+                                            {tx('pages.freelancerDashboard.contractsBadge', undefined, 'Active work')}
+                                        </p>
+                                    </div>
+                                    <h2 className="text-base font-semibold tracking-tight text-gray-900 dark:text-white">
+                                        {tx('pages.freelancerDashboard.activeContracts', undefined, 'Active contracts')}
+                                    </h2>
+                                </div>
+                                <Button variant="outline" size="sm" className="rounded-2xl" onClick={() => navigate('/contracts')}>
+                                    {tx('pages.freelancerDashboard.viewAllContracts', undefined, 'View all')}
+                                </Button>
+                            </div>
+                            <div className="mt-5 space-y-3">
+                                {isLoading ? (
+                                    [1, 2, 3].map((item) => <Skeleton key={item} className="h-20 rounded-2xl" />)
+                                ) : activeContractsList.length === 0 ? (
+                                    <EmptyState
+                                        icon={Briefcase}
+                                        title={tx('pages.freelancerDashboard.noActiveContracts', undefined, 'No active contracts')}
+                                        description={tx('pages.freelancerDashboard.noActiveContractsDescription', undefined, 'Once a client accepts your proposal and the escrow is funded, your active contracts will appear here.')}
+                                    />
+                                ) : (
+                                    activeContractsList.map((contract) => (
+                                        <div
+                                            key={contract.id}
+                                            onClick={() => navigate(`/contracts/${contract.id}`)}
+                                            className="rounded-[1.4rem] border border-border/50 bg-card p-4 cursor-pointer hover:border-[color:var(--workspace-primary)]/30 transition-colors"
+                                            role="button"
+                                            tabIndex={0}
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter' || e.key === ' ') navigate(`/contracts/${contract.id}`);
+                                            }}
+                                        >
+                                            <div className="flex items-start justify-between gap-3">
+                                                <div className="min-w-0 flex-1">
+                                                    <p className="text-sm font-semibold text-[#171420] dark:text-white truncate">
+                                                        {contract.title || tx('pages.freelancerDashboard.untitledContract', undefined, 'Untitled contract')}
+                                                    </p>
+                                                    <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-[#7a768e] dark:text-[#8b8aa0]">
+                                                        {contract.client?.full_name && (
+                                                            <span className="inline-flex items-center gap-1.5">
+                                                                <div className="h-4 w-4 rounded-full bg-gradient-to-br from-primary-400 to-secondary-500 flex items-center justify-center text-white text-[8px] font-bold shrink-0">
+                                                                    {contract.client.full_name.charAt(0)}
+                                                                </div>
+                                                                {contract.client.full_name}
+                                                            </span>
+                                                        )}
+                                                        <span className="inline-flex items-center gap-1">
+                                                            <Wallet className="h-3.5 w-3.5" />
+                                                            {formatCurrency(contract.total_amount)}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <span className="inline-flex items-center rounded-full bg-green-500/12 px-3 py-1 text-xs font-semibold text-green-700 dark:text-green-200 shrink-0">
+                                                    {tx('pages.freelancerDashboard.activeBadge', undefined, 'Active')}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    ))
                                 )}
                             </div>
                         </DashboardPanel>

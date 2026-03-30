@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Wallet as WalletIcon, TrendingUp, Clock, ArrowUpRight, Building, Phone, X, Info, CheckCircle, Loader2 } from 'lucide-react';
+import { Wallet as WalletIcon, TrendingUp, Clock, ArrowUpRight, ArrowDownLeft, Building, Phone, X, Info, CheckCircle, Plus, CreditCard, AlertCircle, Loader2 } from 'lucide-react';
 import { Header } from '@/components/layout';
 import SEO from '@/components/common/SEO';
 import Button from '@/components/ui/Button';
@@ -27,6 +27,10 @@ export default function Wallet() {
   const { t, tx, language } = useTranslation();
   
   const [isWithdrawalModalOpen, setIsWithdrawalModalOpen] = useState(false);
+  const [isDepositModalOpen, setIsDepositModalOpen] = useState(false);
+  const [depositAmount, setDepositAmount] = useState('');
+  const [isDepositing, setIsDepositing] = useState(false);
+  const [depositError, setDepositError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const pageSize = 10;
 
@@ -68,6 +72,42 @@ export default function Wallet() {
 
   const transactions = transactionsData?.data || [];
   const totalPages = Math.ceil((transactionsData?.count || 0) / pageSize);
+
+  const MIN_DEPOSIT = 10;
+  const MAX_DEPOSIT = 5000;
+
+  const handleDeposit = async () => {
+    const amount = parseFloat(depositAmount);
+    if (!amount || amount < MIN_DEPOSIT || amount > MAX_DEPOSIT) {
+      setDepositError(`المبلغ يجب أن يكون بين ${MIN_DEPOSIT} و ${MAX_DEPOSIT} د.ت`);
+      return;
+    }
+    if (!user?.id) return;
+    setIsDepositing(true);
+    setDepositError(null);
+    try {
+      const { data, error } = await supabase.functions.invoke('create-flouci-payment', {
+        body: {
+          amount: Math.round(amount * 1000),
+          user_id: user.id,
+          success_link: `${window.location.origin}/payment/success`,
+          fail_link: `${window.location.origin}/payment/failed`,
+          note: 'إيداع محفظة Khedma TN',
+        },
+      });
+      if (error) throw new Error(error.message);
+      const payUrl = data?.result?.link || data?.link;
+      if (payUrl) {
+        window.location.href = payUrl;
+      } else {
+        throw new Error('لم يتم إنشاء رابط الدفع');
+      }
+    } catch (err) {
+      setDepositError(err instanceof Error ? err.message : 'حدث خطأ. يرجى المحاولة مرة أخرى.');
+    } finally {
+      setIsDepositing(false);
+    }
+  };
 
   const formatDate = (dateStr: string) => {
     const locale = language === 'ar' ? 'ar-TN' : language === 'fr' ? 'fr-FR' : 'en-US';
@@ -130,14 +170,23 @@ export default function Wallet() {
               </div>
             </div>
             
-            <button
-              onClick={() => setIsWithdrawalModalOpen(true)}
-              disabled={!wallet || wallet.balance < MIN_WITHDRAWAL_AMOUNT}
-              className="bg-white text-purple-600 font-semibold px-6 py-3 rounded-xl hover:bg-purple-50 transition-colors shrink-0 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-            >
-              <ArrowUpRight className="w-5 h-5" />
-              {t.wallet?.requestWithdrawal || 'Request Withdrawal'}
-            </button>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button
+                onClick={() => setIsWithdrawalModalOpen(true)}
+                disabled={!wallet || wallet.balance < MIN_WITHDRAWAL_AMOUNT}
+                className="bg-white text-purple-600 font-semibold px-6 py-3 rounded-xl hover:bg-purple-50 transition-colors shrink-0 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                <ArrowUpRight className="w-5 h-5" />
+                {t.wallet?.requestWithdrawal || 'Request Withdrawal'}
+              </button>
+              <button
+                onClick={() => setIsDepositModalOpen(true)}
+                className="bg-white/20 hover:bg-white/30 text-white font-semibold px-6 py-3 rounded-xl transition-colors shrink-0 flex items-center gap-2 border border-white/30"
+              >
+                <Plus className="w-5 h-5" />
+                {tx('wallet.deposit', undefined, 'Deposit Funds')}
+              </button>
+            </div>
           </div>
         </div>
 
@@ -436,6 +485,80 @@ export default function Wallet() {
             }}
           />
         </ErrorBoundary>
+      )}
+
+      {/* DEPOSIT MODAL */}
+      {isDepositModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <button type="button" aria-label="إغلاق" className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => { setIsDepositModalOpen(false); setDepositError(null); setDepositAmount(''); }} />
+          <div className="relative w-full max-w-md rounded-2xl bg-[var(--surface-bg)] border border-border p-6 shadow-2xl">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center">
+                  <ArrowDownLeft className="w-5 h-5 text-green-600 dark:text-green-400" />
+                </div>
+                <h3 className="text-xl font-bold text-foreground">{tx('wallet.deposit', undefined, 'Deposit Funds')}</h3>
+              </div>
+              <button type="button" aria-label="إغلاق" onClick={() => { setIsDepositModalOpen(false); setDepositError(null); setDepositAmount(''); }} className="p-2 rounded-full hover:bg-secondary transition-colors">
+                <X className="w-5 h-5 text-muted" />
+              </button>
+            </div>
+
+            <div className="mb-4 p-3 rounded-xl bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20 flex items-start gap-2">
+              <CreditCard className="w-4 h-4 text-blue-600 dark:text-blue-400 mt-0.5 shrink-0" />
+              <p className="text-xs text-blue-700 dark:text-blue-300">سيتم توجيهك إلى بوابة Flouci الآمنة لإتمام الدفع ببطاقتك أو حسابك المصرفي.</p>
+            </div>
+
+            <div className="mb-5">
+              <label className="block text-sm font-medium text-foreground mb-2">مبلغ الإيداع (د.ت)</label>
+              <div className="relative">
+                <input
+                  type="number"
+                  min={10}
+                  max={5000}
+                  step="0.500"
+                  value={depositAmount}
+                  onChange={(e) => { setDepositAmount(e.target.value); setDepositError(null); }}
+                  placeholder="0.000"
+                  className="input w-full text-lg font-bold ps-4 pe-16"
+                  dir="ltr"
+                />
+                <span className="absolute end-4 top-1/2 -translate-y-1/2 text-muted text-sm font-medium">TND</span>
+              </div>
+              <p className="text-xs text-muted mt-2">الحد الأدنى: 10 د.ت — الحد الأقصى: 5,000 د.ت</p>
+            </div>
+
+            <div className="grid grid-cols-4 gap-2 mb-5">
+              {[50, 100, 250, 500].map(amt => (
+                <button key={amt} type="button" onClick={() => setDepositAmount(String(amt))} className="py-2 rounded-xl text-sm font-semibold border border-border bg-secondary hover:border-[color:var(--workspace-primary)] hover:text-[color:var(--workspace-primary)] transition-colors">
+                  {amt}
+                </button>
+              ))}
+            </div>
+
+            {depositError && (
+              <div className="mb-4 flex items-center gap-2 p-3 rounded-xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20">
+                <AlertCircle className="w-4 h-4 text-red-500 shrink-0" />
+                <p className="text-sm text-red-600 dark:text-red-400">{depositError}</p>
+              </div>
+            )}
+
+            <div className="flex gap-3">
+              <button type="button" onClick={() => { setIsDepositModalOpen(false); setDepositError(null); setDepositAmount(''); }} className="flex-1 py-3 rounded-xl border border-border text-foreground font-semibold hover:bg-secondary transition-colors">
+                إلغاء
+              </button>
+              <button
+                type="button"
+                onClick={handleDeposit}
+                disabled={isDepositing || !depositAmount}
+                className="flex-1 py-3 rounded-xl bg-green-600 hover:bg-green-700 text-white font-semibold transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isDepositing ? <Loader2 className="w-4 h-4 animate-spin" /> : <ArrowDownLeft className="w-4 h-4" />}
+                {isDepositing ? 'جاري التحويل...' : 'المتابعة للدفع'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
     </ErrorBoundary>

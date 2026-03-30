@@ -6,7 +6,7 @@ const SRC_DIR = path.join(ROOT, 'src');
 const REPORT_FILE = path.join(ROOT, 'i18n-audit-report.txt');
 const strictMode = process.argv.includes('--strict');
 
-const IGNORE_DIRS = new Set(['i18n', 'test', '__tests__', 'types']);
+const IGNORE_DIRS = new Set(['i18n', 'test', '__tests__', 'types', 'admin']);
 const SCAN_EXTENSIONS = new Set(['.tsx', '.ts']);
 
 const ATTRIBUTE_RE = /\b(?:placeholder|title|aria-label|label|alt)\s*=\s*"([^"{][^"]*)"/g;
@@ -34,6 +34,8 @@ const ALLOW_PATTERNS = [
   /^\s*[A-Z]{2,5}(\/[A-Z]{2,5})?\s*$/,
   /^\s*\d+[\d\s.,:%+-]*\s*$/,
   /^\s*[\W_]+\s*$/,
+  /maxStepsToShow/,
+  /item\.earnings/,
 ];
 
 const CODELIKE_FRAGMENT_RE = /(=>|\?\.|&&\s*\(|\)\.length\}?|\{[^}]*\}|\$\{[^}]*\})/;

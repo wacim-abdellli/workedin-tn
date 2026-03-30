@@ -78,7 +78,7 @@ export async function getJobs(filters: JobFilters = {}, page = 1, pageSize = 10)
         }
 
         switch (filters.sortBy) {
-            case 'budget_high': query = query.order('budget_max', { ascending: false, nullsFirst: false }); break;
+            case 'budget_high': query = query.order('budget_max', { ascending: false }); break;
             case 'budget_low': query = query.order('budget_min', { ascending: true }); break;
             case 'proposals_high': query = query.order('proposals_count', { ascending: false }); break;
             case 'proposals_low': query = query.order('proposals_count', { ascending: true }); break;

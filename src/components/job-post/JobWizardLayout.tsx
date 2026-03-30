@@ -33,7 +33,7 @@ export default function JobWizardLayout({
 
     return (
         <div className="mx-auto max-w-6xl space-y-6">
-            <section className="radius-shell overflow-hidden border border-primary-200/40 bg-[radial-gradient(circle_at_top_left,rgba(21,84,247,0.14),transparent_30%),linear-gradient(135deg,rgba(255,255,255,0.98),rgba(244,241,255,0.94))] p-6 shadow-[0_32px_90px_-48px_rgba(14,65,227,0.28)] dark:border-white/10 dark:bg-[radial-gradient(circle_at_top_left,rgba(21,84,247,0.2),transparent_28%),linear-gradient(145deg,rgba(18,16,28,0.98),rgba(11,10,18,0.98))] sm:p-8">
+            <section className="radius-shell overflow-hidden border border-[color:var(--workspace-primary)]/18 bg-[radial-gradient(circle_at_top_left,rgba(139,92,246,0.16),transparent_30%),radial-gradient(circle_at_top_right,rgba(245,158,11,0.10),transparent_26%),linear-gradient(135deg,rgba(255,255,255,0.98),rgba(248,242,255,0.96))] p-6 shadow-[0_32px_90px_-48px_rgba(109,40,217,0.32)] dark:border-white/10 dark:bg-[radial-gradient(circle_at_top_left,rgba(167,139,250,0.18),transparent_30%),radial-gradient(circle_at_top_right,rgba(245,158,11,0.10),transparent_24%),linear-gradient(145deg,rgba(22,18,32,0.98),rgba(15,13,22,0.98))] sm:p-8">
                 <div className="grid gap-6 xl:grid-cols-[minmax(0,1.08fr)_320px]">
                     <div className="space-y-5">
                         <div className="inline-flex items-center gap-2 rounded-full border border-primary-200 bg-white/80 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-primary-700 shadow-sm dark:border-white/10 dark:bg-white/5 dark:text-primary-200">
@@ -55,8 +55,8 @@ export default function JobWizardLayout({
                         ) : null}
                     </div>
 
-                    <div className="rounded-[1.75rem] border border-primary-100/70 bg-white/72 p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
-                        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary-600 dark:text-primary-300">
+                    <div className="rounded-[1.75rem] border border-[color:var(--workspace-primary)]/15 bg-white/78 p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
+                        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[color:var(--workspace-primary)]">
                             {tx('jobs.new.wizard.currentPhase', undefined, 'Current phase')}
                         </p>
                         <h2 className="mt-3 text-xl font-semibold text-[#171420] dark:text-white">
@@ -71,8 +71,8 @@ export default function JobWizardLayout({
                                 <span>{tx('jobs.new.wizard.progress', undefined, 'Progress')}</span>
                                 <span>{completion}%</span>
                             </div>
-                            <div className="h-2.5 overflow-hidden rounded-full bg-primary-100 dark:bg-white/10">
-                                <div className="h-full rounded-full bg-gradient-to-r from-primary-500 to-primary-600 transition-[width] duration-300" style={{ width: `${completion}%` }} />
+                            <div className="h-2.5 overflow-hidden rounded-full bg-black/[0.06] dark:bg-white/10">
+                                <div className="h-full rounded-full bg-[linear-gradient(90deg,var(--workspace-primary),var(--brand-accent))] transition-[width] duration-300" style={{ width: `${completion}%` }} />
                             </div>
                             <div className="flex items-center justify-between text-xs text-[#8b8aa0]">
                                 <span>{tx('jobs.new.stepCounter', { current: currentStep, total: steps.length }, `Step ${currentStep} of ${steps.length}`)}</span>
@@ -93,17 +93,18 @@ export default function JobWizardLayout({
                             <div
                                 key={step.id}
                                 className={`rounded-[1.4rem] border p-4 transition-all duration-200 ${isCurrent
-                                    ? 'border-primary-500/25 bg-primary-500/[0.08] shadow-[0_22px_44px_-30px_rgba(21,84,247,0.6)]'
+                                    ? 'border-[color:var(--workspace-primary)]/28 bg-[color:var(--workspace-primary)]/[0.08] shadow-[0_22px_44px_-30px_rgba(109,40,217,0.55)]'
                                     : isCompleted
-                                        ? 'border-primary-200/80 bg-primary-50/60 dark:border-primary-500/20 dark:bg-primary-500/[0.06]'
+                                        ? 'border-[color:var(--brand-accent)]/30 bg-[color:var(--brand-accent)]/[0.08] dark:border-[color:var(--brand-accent)]/20 dark:bg-[color:var(--brand-accent)]/[0.06]'
                                         : 'border-gray-200/80 bg-white/70 dark:border-white/10 dark:bg-white/[0.03]'}`}
                             >
                                 <div className="flex items-start gap-3">
                                     <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl text-sm font-semibold ${isCurrent
-                                        ? 'bg-primary-600 text-white'
+                                        ? 'text-white'
                                         : isCompleted
-                                            ? 'bg-primary-100 text-primary-700 dark:bg-primary-500/12 dark:text-primary-200'
+                                            ? 'bg-[color:var(--brand-accent)]/15 text-[color:var(--brand-accent)] dark:bg-[color:var(--brand-accent)]/15 dark:text-[#fbbf24]'
                                             : 'bg-gray-100 text-gray-500 dark:bg-white/8 dark:text-[#8b8aa0]'}`}
+                                        style={isCurrent ? { background: 'linear-gradient(135deg, var(--workspace-primary), var(--workspace-primary-hover))' } : undefined}
                                     >
                                         {isCompleted ? <Check className="h-4 w-4" /> : step.id}
                                     </div>

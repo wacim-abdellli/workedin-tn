@@ -391,9 +391,7 @@ export default function ContractWorkspace() {
                         aria-label="إظهار المحادثة"
                         className={`flex min-h-[48px] min-w-[118px] shrink-0 items-center justify-center gap-2 whitespace-nowrap border-b-2 px-4 py-3 text-sm font-medium transition-colors ${activeMobileTab === 'chat' ? 'border-primary-600 text-primary-600' : 'border-transparent text-gray-500'}`}
                     >
-                        <MessageSquare className="w-4 h-4" />
-                        المراسلة
-                    </button>
+                        <MessageSquare className="w-4 h-4" />{t.common?.placeholder || 'المراسلة'}</button>
                     <button
                         type="button"
                         onClick={() => setActiveMobileTab('details')}
@@ -404,9 +402,7 @@ export default function ContractWorkspace() {
                         aria-label="إظهار التفاصيل"
                         className={`flex min-h-[48px] min-w-[118px] shrink-0 items-center justify-center gap-2 whitespace-nowrap border-b-2 px-4 py-3 text-sm font-medium transition-colors ${activeMobileTab === 'details' ? 'border-primary-600 text-primary-600' : 'border-transparent text-gray-500'}`}
                     >
-                        <Info className="w-4 h-4" />
-                        التفاصيل
-                    </button>
+                        <Info className="w-4 h-4" />{t.common?.placeholder || 'التفاصيل'}</button>
                     <button
                         type="button"
                         onClick={() => setActiveMobileTab('files')}
@@ -417,9 +413,7 @@ export default function ContractWorkspace() {
                         aria-label="إظهار الملفات"
                         className={`flex min-h-[48px] min-w-[118px] shrink-0 items-center justify-center gap-2 whitespace-nowrap border-b-2 px-4 py-3 text-sm font-medium transition-colors ${activeMobileTab === 'files' ? 'border-primary-600 text-primary-600' : 'border-transparent text-gray-500'}`}
                     >
-                        <FileText className="w-4 h-4" />
-                        الملفات
-                    </button>
+                        <FileText className="w-4 h-4" />{t.common?.placeholder || 'الملفات'}</button>
                 </div>
             </div>
 
@@ -506,9 +500,7 @@ export default function ContractWorkspace() {
                         aria-label="ملاحظات التسليم"
                     />
                     <div className="flex gap-3 justify-end">
-                        <Button variant="outline" onClick={() => setIsDeliverModalOpen(false)}>
-                            إلغاء
-                        </Button>
+                        <Button variant="outline" onClick={() => setIsDeliverModalOpen(false)}>{t.common?.placeholder || 'إلغاء'}</Button>
                         <Button
                             variant="primary"
                             onClick={handleDeliverWork}
@@ -553,9 +545,7 @@ export default function ContractWorkspace() {
                         aria-label="سبب النزاع"
                     />
                     <div className="flex gap-3 justify-end">
-                        <Button variant="outline" onClick={() => setIsDisputeModalOpen(false)}>
-                            إلغاء
-                        </Button>
+                        <Button variant="outline" onClick={() => setIsDisputeModalOpen(false)}>{t.common?.placeholder || 'إلغاء'}</Button>
                         <Button
                             variant="secondary"
                             onClick={handleOpenDispute}

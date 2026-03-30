@@ -12,22 +12,22 @@ import Button from '../components/ui/Button';
 import { AuthShell } from '../components/auth';
 
 // Password validation schema
-const resetPasswordSchema = z.object({
-    password: z.string()
-        .min(8, 'كلمة المرور يجب أن تكون 8 أحرف على الأقل')
-        .regex(/[A-Z]/, 'يجب أن تحتوي على حرف كبير واحد على الأقل')
-        .regex(/[a-z]/, 'يجب أن تحتوي على حرف صغير واحد على الأقل')
-        .regex(/[0-9]/, 'يجب أن تحتوي على رقم واحد على الأقل'),
-    confirmPassword: z.string(),
+const getResetPasswordSchema = (t: any) => z.object({
+  password: z.string()
+    .min(8, t.auth?.validation?.password?.minLength || "كلمة المرور يجب أن تكون 8 أحرف على الأقل")
+    .regex(/[A-Z]/, t.auth?.validation?.password?.uppercase || "يجب أن تحتوي على حرف كبير واحد على الأقل")
+    .regex(/[a-z]/, t.auth?.validation?.password?.lowercase || "يجب أن تحتوي على حرف صغير واحد على الأقل")
+    .regex(/[0-9]/, t.auth?.validation?.password?.number || "يجب أن تحتوي على رقم واحد على الأقل"),
+  confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
-    message: 'كلمات المرور غير متطابقة',
-    path: ['confirmPassword'],
+  message: t.auth?.validation?.password?.match || "كلمات المرور غير متطابقة",
+  path: ["confirmPassword"],
 });
 
-type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
+type ResetPasswordFormData = z.infer<ReturnType<typeof getResetPasswordSchema>>;
 
 // Password strength calculator
-const getPasswordStrength = (password: string): { score: number; label: string; color: string } => {
+const getPasswordStrength = (password: string, t: any): { score: number; label: string; color: string } => {
     let score = 0;
     if (password.length >= 8) score++;
     if (password.length >= 12) score++;
@@ -36,13 +36,13 @@ const getPasswordStrength = (password: string): { score: number; label: string; 
     if (/[0-9]/.test(password)) score++;
     if (/[^A-Za-z0-9]/.test(password)) score++;
 
-    if (score <= 2) return { score, label: 'ضعيفة', color: 'bg-red-500' };
-    if (score <= 4) return { score, label: 'متوسطة', color: 'bg-yellow-500' };
-    return { score, label: 'قوية', color: 'bg-green-500' };
+    if (score <= 2) return { score, label: t.auth?.passwordStrength?.weak || "ضعيفة", color: 'bg-red-500' };
+    if (score <= 4) return { score, label: t.auth?.passwordStrength?.medium || "متوسطة", color: 'bg-yellow-500' };
+    return { score, label: t.auth?.passwordStrength?.strong || "قوية", color: 'bg-green-500' };
 };
 
 const ResetPassword = () => {
-    const { t, tx } = useTranslation();
+    const { t, tx } = useTranslation() as any;
     const navigate = useNavigate();
     const { showToast } = useToast();
 
@@ -59,11 +59,11 @@ const ResetPassword = () => {
         watch,
         formState: { errors },
     } = useForm<ResetPasswordFormData>({
-        resolver: zodResolver(resetPasswordSchema),
+        resolver: zodResolver(getResetPasswordSchema(t)),
     });
 
     const password = watch('password', '');
-    const passwordStrength = getPasswordStrength(password);
+    const passwordStrength = getPasswordStrength(password, t);
 
     // Check for valid recovery session
     useEffect(() => {
@@ -191,7 +191,7 @@ const ResetPassword = () => {
                             رابط منتهي الصلاحية
                         </h2>
                         <p className="text-gray-600 dark:text-gray-400 mb-8">
-                            رابط إعادة التعيين غير صالح أو منتهي الصلاحية. يرجى طلب رابط جديد.
+                            {t.auth?.resetPassword?.invalidLinkDesc || "رابط إعادة التعيين غير صالح أو منتهي الصلاحية. يرجى طلب رابط جديد."}
                         </p>
                         <Button
                             onClick={() => navigate('/forgot-password')}
@@ -238,7 +238,7 @@ const ResetPassword = () => {
                                     تعيين كلمة مرور جديدة
                                 </h1>
                                 <p className="text-gray-600 dark:text-gray-400">
-                                    أدخل كلمة المرور الجديدة لحسابك
+                                    {t.auth?.resetPassword?.setNewDesc || "أدخل كلمة المرور الجديدة لحسابك"}
                                 </p>
                             </div>
 
@@ -258,7 +258,7 @@ const ResetPassword = () => {
                                             type={showPassword ? 'text' : 'password'}
                                             {...register('password')}
                                             className={`input ps-10 pe-12 ${errors.password ? 'input-error' : ''}`}
-                                            placeholder="أدخل كلمة المرور الجديدة"
+                                            placeholder={t.auth?.passwordPlaceholder?.new || "أدخل كلمة المرور الجديدة"}
                                             disabled={isLoading}
                                         />
                                         <button
@@ -279,7 +279,7 @@ const ResetPassword = () => {
                                     {password && (
                                         <div className="mt-3">
                                             <div className="flex items-center justify-between mb-1">
-                                                <span className="text-xs text-gray-500">قوة كلمة المرور</span>
+                                                <span className="text-xs text-gray-500">{t.auth?.passwordStrength?.label || "قوة كلمة المرور"}</span>
                                                 <span className={`text-xs font-medium ${passwordStrength.color === 'bg-red-500' ? 'text-red-500' :
                                                     passwordStrength.color === 'bg-yellow-500' ? 'text-yellow-500' :
                                                         'text-green-500'
@@ -311,7 +311,7 @@ const ResetPassword = () => {
                                             type={showConfirmPassword ? 'text' : 'password'}
                                             {...register('confirmPassword')}
                                             className={`input ps-10 pe-12 ${errors.confirmPassword ? 'input-error' : ''}`}
-                                            placeholder="أعد إدخال كلمة المرور"
+                                            placeholder={t.auth?.confirmPasswordPlaceholder || "أعد إدخال كلمة المرور"}
                                             disabled={isLoading}
                                         />
                                         <button
@@ -332,7 +332,7 @@ const ResetPassword = () => {
                                 {/* Password Requirements */}
                                 <div className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
                                     <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                        متطلبات كلمة المرور:
+                                        {t.auth?.passwordRequirements?.title || "متطلبات كلمة المرور:"}
                                     </p>
                                     <ul className="space-y-1 text-sm text-gray-600 dark:text-gray-400">
                                         <li className={password.length >= 8 ? 'text-green-600' : ''}>

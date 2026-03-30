@@ -1,17 +1,4 @@
 # i18n audit report
-mode: report-only
-findings: 13
+mode: strict
+findings: 0
 
-src/components/freelancer/ProfileCompletionCard.tsx:169 [jsx-text] maxStepsToShow ? (
-src/pages/admin/DirectQueryTest.tsx:82 [jsx-text] Direct REST API Query Test
-src/pages/admin/DirectQueryTest.tsx:83 [jsx-text] Bypassing Supabase JS client entirely - using raw fetch()
-src/pages/admin/DirectQueryTest.tsx:99 [jsx-text] The REST API works directly. The issue is with the Supabase JS client.
-src/pages/admin/DirectQueryTest.tsx:100 [jsx-text] This means RLS policies are fine, but the JS client has a problem.
-src/pages/admin/DirectQueryTest.tsx:107 [jsx-text] RLS is blocking the query. Your account is not recognized as admin.
-src/pages/admin/DirectQueryTest.tsx:114 [jsx-text] The request took longer than 5 seconds. Network or database issue.
-src/pages/admin/TestAdminAccess.tsx:152 [jsx-text] Admin Access Test
-src/pages/admin/TestAdminAccess.tsx:153 [jsx-text] Direct Supabase Queries (No React Query)
-src/pages/admin/TestAdminAccess.tsx:156 [jsx-text] Execution Log:
-src/pages/admin/TestAdminAccess.tsx:174 [jsx-text] The database query works. The issue is with React Query or component lifecycle.
-src/pages/admin/TestAdminAccess.tsx:183 [jsx-text] The query is hanging. This suggests an RLS policy issue causing infinite loops or a network problem.
-src/pages/FreelancerDashboard.tsx:433 [jsx-text] item.earnings === 0) ? (

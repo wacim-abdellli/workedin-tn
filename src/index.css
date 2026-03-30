@@ -8,11 +8,11 @@
    CSS VARIABLES - Light & Dark Mode
    ======================================== */
 :root {
-  /* Workspace theme — default to freelancer (purple) */
-  --workspace-primary: #6D28D9;
-  --workspace-primary-hover: #5B21B6;
-  --workspace-primary-light: #F5F3FF;
-  --workspace-primary-mid: #8B5CF6;
+  /* Brand palette inspired by the logo */
+  --workspace-primary: #8B5CF6;
+  --workspace-primary-hover: #6D28D9;
+  --workspace-primary-light: #F6F1FF;
+  --workspace-primary-mid: #A78BFA;
   --workspace-primary-text: #ffffff;
 
   /* Shared */
@@ -30,18 +30,18 @@
   --text-5xl: clamp(3rem, 8vw, 5rem);
 
   --page-bg: #ffffff;
-  --surface-bg: #f8f7ff;
+  --surface-bg: #faf8ff;
   --card-bg: #ffffff;
-  --sidebar-bg: #f5f4fc;
+  --sidebar-bg: #f6f2ff;
   --input-bg: #ffffff;
-  --input-border: #e5e7eb;
+  --input-border: #e7def8;
   --input-border-focus: #8b5cf6;
   --text-primary: #1a1825;
-  --text-secondary: #4b4869;
-  --text-muted: #6b6880;
+  --text-secondary: #4f4766;
+  --text-muted: #746c8c;
   --text-placeholder: #9ca3af;
-  --border: #e5e7eb;
-  --border-strong: #d1d5db;
+  --border: #e7def8;
+  --border-strong: #d6c8f2;
 
   /* Legacy aliases kept for existing component classes */
   --color-bg: var(--page-bg);
@@ -54,17 +54,17 @@
   --color-border-subtle: var(--border-strong);
 
   /* Premium Gradients */
-  --gradient-primary: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 50%, #a78bfa 100%);
+  --gradient-primary: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 55%, #f59e0b 100%);
   --gradient-accent: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-  --gradient-glass: linear-gradient(180deg, rgba(255, 255, 255, 0.88) 0%, rgba(246, 243, 252, 0.82) 100%);
-  --gradient-surface: linear-gradient(145deg, #ffffff, #f3effa);
+  --gradient-glass: linear-gradient(180deg, rgba(255, 255, 255, 0.92) 0%, rgba(248, 242, 255, 0.88) 100%);
+  --gradient-surface: linear-gradient(145deg, #ffffff, #f7f1ff);
 
   /* Premium Shadows */
-  --shadow-sm: 0 2px 4px rgba(139, 92, 246, 0.04);
-  --shadow-md: 0 4px 12px -1px rgba(139, 92, 246, 0.08), 0 2px 4px -2px rgba(139, 92, 246, 0.04);
-  --shadow-lg: 0 10px 20px -3px rgba(139, 92, 246, 0.1), 0 4px 6px -4px rgba(139, 92, 246, 0.05);
-  --shadow-xl: 0 20px 40px -5px rgba(139, 92, 246, 0.12), 0 8px 10px -6px rgba(139, 92, 246, 0.06);
-  --shadow-2xl: 0 25px 50px -12px rgba(139, 92, 246, 0.2);
+  --shadow-sm: 0 2px 4px rgba(109, 40, 217, 0.04);
+  --shadow-md: 0 8px 18px -8px rgba(109, 40, 217, 0.12), 0 2px 6px -3px rgba(245, 158, 11, 0.08);
+  --shadow-lg: 0 18px 32px -14px rgba(109, 40, 217, 0.14), 0 8px 16px -10px rgba(245, 158, 11, 0.08);
+  --shadow-xl: 0 24px 48px -18px rgba(109, 40, 217, 0.18), 0 10px 24px -16px rgba(245, 158, 11, 0.1);
+  --shadow-2xl: 0 30px 64px -20px rgba(109, 40, 217, 0.24);
 
   /* Purple Glows */
   --shadow-glow: 0 0 20px rgba(139, 92, 246, 0.2);
@@ -88,14 +88,19 @@
 
 /* Client workspace overrides */
 .workspace-client {
-  --workspace-primary: #1554F7;
-  --workspace-primary-hover: #0E41E3;
-  --workspace-primary-light: #EFF6FF;
-  --workspace-primary-mid: #60A5FA;
+  --workspace-primary: #d97706;
+  --workspace-primary-hover: #b45309;
+  --workspace-primary-light: #fff7e8;
+  --workspace-primary-mid: #f59e0b;
+  --workspace-primary-text: #ffffff;
 }
 
 .dark .workspace-client {
-  --workspace-primary-light: #1E3A8A;
+  --workspace-primary: #fbbf24;
+  --workspace-primary-hover: #f59e0b;
+  --workspace-primary-light: #3b2a0a;
+  --workspace-primary-mid: #fde68a;
+  --workspace-primary-text: #1a1825;
 }
 
 /* Admin overrides */
@@ -107,27 +112,27 @@
 }
 
 .dark {
-  --workspace-primary: #6D28D9;
-  --workspace-primary-hover: #5B21B6;
-  --workspace-primary-light: #2E1065;
-  --workspace-primary-mid: #8B5CF6;
+  --workspace-primary: #A78BFA;
+  --workspace-primary-hover: #8B5CF6;
+  --workspace-primary-light: #31214f;
+  --workspace-primary-mid: #C4B5FD;
   --workspace-primary-text: #ffffff;
 
   --brand-accent: #F59E0B;
   --brand-accent-hover: #D97706;
 
   /* Dark Mode — Deep purple-tinted, not flat grey */
-  --page-bg: #0f0e17;
-  --surface-bg: #14121f;
-  --card-bg: #1a1825;
-  --sidebar-bg: #0c0b14;
-  --input-bg: #1a1825;
+  --page-bg: #0f0d16;
+  --surface-bg: #151120;
+  --card-bg: #1b1726;
+  --sidebar-bg: #120f1b;
+  --input-bg: #1b1726;
   --input-border: rgba(255, 255, 255, 0.1);
-  --input-border-focus: #8b5cf6;
+  --input-border-focus: #a78bfa;
   --text-primary: #f8f7ff;
-  --text-secondary: #c4b5fd;
-  --text-muted: #8b8aa0;
-  --text-placeholder: #6b6880;
+  --text-secondary: #d7c6fb;
+  --text-muted: #958da9;
+  --text-placeholder: #756f89;
   --border: rgba(255, 255, 255, 0.08);
   --border-strong: rgba(255, 255, 255, 0.15);
 
@@ -141,10 +146,10 @@
   --color-border-subtle: var(--border-strong);
 
   /* Dark Gradients */
-  --gradient-primary: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+  --gradient-primary: linear-gradient(135deg, #c4b5fd 0%, #8b5cf6 60%, #f59e0b 100%);
   --gradient-accent: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
-  --gradient-glass: linear-gradient(180deg, rgba(26, 24, 37, 0.7) 0%, rgba(15, 14, 23, 0.3) 100%);
-  --gradient-surface: linear-gradient(145deg, #1a1825, #0f0e17);
+  --gradient-glass: linear-gradient(180deg, rgba(27, 23, 38, 0.78) 0%, rgba(15, 13, 22, 0.42) 100%);
+  --gradient-surface: linear-gradient(145deg, #1b1726, #100d16);
 
   /* Deep Shadows with purple tint */
   --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.4);
@@ -622,7 +627,7 @@ h6 {
   .tab-pill-active {
     @apply tab-pill;
     @apply bg-primary-600 border-primary-600 text-white;
-    box-shadow: 0 10px 22px -10px rgba(59, 130, 246, 0.45);
+    box-shadow: 0 14px 28px -16px rgba(139, 92, 246, 0.5);
   }
 
   /* ===== HEADER/NAV ===== */
@@ -657,15 +662,20 @@ h6 {
   }
 
   .header-profile-trigger {
-    @apply flex h-9 min-w-0 max-w-[228px] items-center gap-2 rounded-full border ps-1 pe-2;
+    @apply flex h-9 min-w-0 max-w-[196px] items-center gap-2 rounded-full border ps-1 pe-2;
     @apply transition-colors;
     @apply border-gray-200 bg-white hover:bg-gray-50;
     @apply dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10;
   }
 
   .header-profile-trigger-open {
-    @apply border-purple-300 bg-purple-50;
-    @apply dark:border-purple-500/40 dark:bg-purple-900/20;
+    border-color: color-mix(in srgb, var(--workspace-primary) 28%, transparent);
+    background: color-mix(in srgb, var(--workspace-primary) 9%, white);
+  }
+
+  .dark .header-profile-trigger-open {
+    border-color: color-mix(in srgb, var(--workspace-primary) 34%, transparent);
+    background: color-mix(in srgb, var(--workspace-primary) 16%, transparent);
   }
 
   .header-profile-avatar {
@@ -673,7 +683,7 @@ h6 {
   }
 
   .header-profile-chip {
-    @apply hidden rounded-full px-2 py-0.5 text-[10px] font-bold lg:block;
+    @apply hidden rounded-full px-2 py-0.5 text-[10px] font-bold xl:block;
   }
 
   .header-dropdown-surface {
@@ -686,6 +696,29 @@ h6 {
     @apply flex w-full items-center gap-2.5 px-3 py-2 text-sm;
     @apply text-gray-700 transition-colors hover:bg-gray-50;
     @apply dark:text-gray-300 dark:hover:bg-white/5;
+  }
+
+  .summary-chip {
+    @apply inline-flex items-center gap-2.5 rounded-full border px-4 py-2 text-sm shadow-sm;
+    @apply border-black/[0.08] bg-white text-[var(--text-primary)];
+    @apply dark:border-white/[0.12] dark:bg-white/10 dark:text-white;
+    box-shadow: 0 12px 28px -20px rgba(109, 40, 217, 0.18);
+  }
+
+  .summary-chip-icon {
+    @apply h-4 w-4 flex-shrink-0;
+    color: var(--workspace-primary);
+    opacity: 0.72;
+  }
+
+  .summary-chip-value {
+    @apply font-semibold;
+    color: var(--text-primary);
+  }
+
+  .summary-chip-label {
+    @apply text-[13px] font-medium;
+    color: var(--text-muted);
   }
 
   /* Quick Switch Button - Professional SaaS Pattern */
@@ -716,11 +749,11 @@ h6 {
   }
 
   .dark .quick-switch-btn {
-    box-shadow: 0 4px 16px rgba(139, 92, 246, 0.35) !important;
+    box-shadow: 0 6px 18px rgba(139, 92, 246, 0.3) !important;
   }
 
   .dark .quick-switch-btn:not(:disabled):hover {
-    box-shadow: 0 8px 28px rgba(139, 92, 246, 0.5) !important;
+    box-shadow: 0 10px 30px rgba(109, 40, 217, 0.38) !important;
   }
 
   /* Smooth transition for disabled state */
@@ -776,11 +809,11 @@ h6 {
   }
 
   .status-pill-open {
-    @apply status-pill bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400;
+    @apply status-pill bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300;
   }
 
   .status-pill-progress {
-    @apply status-pill bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-400;
+    @apply status-pill bg-accent-100 text-accent-700 dark:bg-accent-900/30 dark:text-accent-300;
   }
 
   .status-pill-completed {

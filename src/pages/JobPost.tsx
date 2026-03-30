@@ -15,6 +15,7 @@ import { useTranslation } from '../i18n';
 import { getStorageConfigErrorMessage, isMissingStorageBucketError, supabase } from '../lib/supabase';
 import { supabaseWithRetry } from '../lib/supabaseWithRetry';
 import { useAutosave } from '../hooks/useAutosave';
+import { JOB_CATEGORIES } from '../lib/jobCategories';
 
 // Components
 import JobWizardLayout from '../components/job-post/JobWizardLayout';
@@ -23,39 +24,64 @@ import StepBudget from '../components/job-post/StepBudget';
 import StepVisibility from '../components/job-post/StepVisibility';
 import StepReview from '../components/job-post/StepReview';
 
-// Schema - Using z.coerce.number() to handle string-to-number conversion from form inputs
+const optionalNumber = (message: string) => z.preprocess(
+    (value) => (value === '' || value === null || value === undefined ? undefined : Number(value)),
+    z.number().min(1, message).optional()
+);
+
+const futureDateString = z.string().min(1, 'يرجى تحديد الموعد النهائي').refine((value) => {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return false;
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+    return date >= startOfToday;
+}, 'الموعد النهائي يجب أن يكون اليوم أو بعده');
+
 const jobSchema = z.object({
-    title: z.string().min(5, 'العنوان يجب أن يكون 5 أحرف على الأقل').max(100),
+    title: z.string().trim().min(8, 'العنوان يجب أن يكون 8 أحرف على الأقل').max(100),
     category: z.string().min(1, 'يرجى اختيار التصنيف'),
-    description: z.string().min(50, 'الوصف يجب أن يكون 50 حرف على الأقل'),
+    subcategory: z.string().min(1, 'يرجى اختيار التخصص الفرعي'),
+    description: z.string().trim().min(80, 'الوصف يجب أن يكون 80 حرف على الأقل').max(2000),
     required_skills: z.array(z.any()).min(1, 'يرجى اختيار مهارة واحدة على الأقل').max(5),
     attachments_files: z.array(z.instanceof(File))
         .max(5, 'الحد الأقصى 5 ملفات')
         .optional(),
 
-    // Step 2 - Using coerce.number to handle string inputs from HTML number fields
     job_type: z.enum(['fixed_price', 'hourly']),
-    budget_min: z.coerce.number().min(1, 'الحد الأدنى يجب أن يكون 1 على الأقل').optional().nullable(),
-    budget_max: z.coerce.number().min(1, 'الحد الأقصى يجب أن يكون 1 على الأقل').optional().nullable(),
-    hourly_rate: z.coerce.number().min(1, 'السعر بالساعة يجب أن يكون 1 على الأقل').optional().nullable(),
-    estimated_hours: z.string().optional(),
+    budget_min: optionalNumber('الحد الأدنى يجب أن يكون 1 على الأقل'),
+    budget_max: optionalNumber('الحد الأقصى يجب أن يكون 1 على الأقل'),
+    hourly_rate: optionalNumber('السعر بالساعة يجب أن يكون 1 على الأقل'),
+    estimated_hours: optionalNumber('يرجى إدخال عدد الساعات المتوقعة أسبوعيا'),
     duration: z.string().min(1, 'يرجى تحديد المدة'),
     experience_level: z.enum(['beginner', 'intermediate', 'expert']),
+    deadline: futureDateString,
 
-    // Step 3 (Merged into Step 2 UI or defaulted for now)
     visibility: z.enum(['public', 'invite_only']),
 }).refine((data) => {
     if (data.job_type === 'fixed_price') {
-        // Check for valid numbers (not NaN, not null/undefined)
-        const minValid = typeof data.budget_min === 'number' && !isNaN(data.budget_min) && data.budget_min > 0;
-        const maxValid = typeof data.budget_max === 'number' && !isNaN(data.budget_max) && data.budget_max > 0;
+        const minValid = typeof data.budget_min === 'number' && !Number.isNaN(data.budget_min) && data.budget_min > 0;
+        const maxValid = typeof data.budget_max === 'number' && !Number.isNaN(data.budget_max) && data.budget_max > 0;
         return minValid && maxValid;
     }
-    const rateValid = typeof data.hourly_rate === 'number' && !isNaN(data.hourly_rate) && data.hourly_rate > 0;
-    return rateValid;
+    const rateValid = typeof data.hourly_rate === 'number' && !Number.isNaN(data.hourly_rate) && data.hourly_rate > 0;
+    const hoursValid = typeof data.estimated_hours === 'number' && !Number.isNaN(data.estimated_hours) && data.estimated_hours > 0;
+    return rateValid && hoursValid;
 }, {
     message: "يرجى تحديد الميزانية",
     path: ["budget_min"],
+}).refine((data) => {
+    if (data.job_type !== 'fixed_price') return true;
+    if (typeof data.budget_min !== 'number' || typeof data.budget_max !== 'number') return true;
+    return data.budget_max >= data.budget_min;
+}, {
+    message: 'الحد الأقصى يجب أن يكون اكبر من أو يساوي الحد الأدنى',
+    path: ['budget_max'],
+}).refine((data) => {
+    const category = JOB_CATEGORIES.find((item) => item.id === data.category);
+    return Boolean(category?.subcategories.some((item) => item.id === data.subcategory));
+}, {
+    message: 'يرجى اختيار تخصص فرعي مناسب',
+    path: ['subcategory'],
 });
 
 type JobFormData = z.infer<typeof jobSchema>;
@@ -79,7 +105,8 @@ export default function JobPost() {
             job_type: 'fixed_price',
             visibility: 'public',
             required_skills: [],
-            experience_level: 'intermediate'
+            experience_level: 'intermediate',
+            subcategory: '',
         },
         mode: 'onChange'
     });
@@ -159,9 +186,9 @@ export default function JobPost() {
     const handleNext = async () => {
         let isValid = false;
         if (currentStep === 1) {
-            isValid = await methods.trigger(['title', 'category', 'description', 'required_skills']);
+            isValid = await methods.trigger(['title', 'category', 'subcategory', 'description', 'required_skills']);
         } else if (currentStep === 2) {
-            isValid = await methods.trigger(['job_type', 'budget_min', 'budget_max', 'hourly_rate', 'duration', 'experience_level']);
+            isValid = await methods.trigger(['job_type', 'budget_min', 'budget_max', 'hourly_rate', 'estimated_hours', 'duration', 'experience_level', 'deadline']);
         } else if (currentStep === 3) {
             isValid = await methods.trigger(['visibility']);
         }
@@ -254,12 +281,15 @@ export default function JobPost() {
                 title: data.title,
                 description: data.description,
                 category: data.category,
+                subcategory: data.subcategory,
                 job_type: data.job_type,
                 budget_min: toNumberOrNull(data.budget_min),
                 budget_max: toNumberOrNull(data.budget_max),
                 hourly_rate: toNumberOrNull(data.hourly_rate),
+                estimated_hours: toNumberOrNull(data.estimated_hours),
                 duration: data.duration,
                 experience_level: data.experience_level,
+                deadline: data.deadline,
                 visibility: data.visibility,
                 attachments: uploadedUrls,
                 // Note: 'draft' is not in job_status_enum, use 'open' for both
@@ -328,31 +358,31 @@ export default function JobPost() {
                     description={tx('jobs.new.heroDescription', undefined, 'Move through the brief in focused phases: define the work, set budget and timing, choose visibility, then review before publishing.')}
                     meta={
                         <>
-                            <div className="inline-flex items-center gap-2 rounded-full border border-primary-100 bg-white/80 px-4 py-2 text-sm text-[#353149] shadow-sm dark:border-white/10 dark:bg-white/5 dark:text-[#e3def7]" role="status" aria-live="polite">
+                            <div className="summary-chip" role="status" aria-live="polite">
                                 {status === 'saving' ? (
                                     <>
-                                        <Loader2 className="h-3.5 w-3.5 animate-spin text-primary-500" />
+                                        <Loader2 className="summary-chip-icon animate-spin" />
                                         <span>{tx('jobs.new.autosave.saving', undefined, 'Saving...')}</span>
                                     </>
                                 ) : status === 'saved' ? (
                                     <>
-                                        <Check className="h-3.5 w-3.5 text-primary-500" />
+                                        <Check className="summary-chip-icon" />
                                         <span>{tx('jobs.new.autosave.saved', undefined, 'Saved')}</span>
                                     </>
                                 ) : lastSaved ? (
                                     <>
-                                        <Clock3 className="h-3.5 w-3.5 text-primary-500" />
+                                        <Clock3 className="summary-chip-icon" />
                                         <span>{tx('jobs.new.autosave.lastSaved', { time: timeAgo(lastSaved) }, `Last saved: ${timeAgo(lastSaved)}`)}</span>
                                     </>
                                 ) : (
                                     <>
-                                        <Clock3 className="h-3.5 w-3.5 text-primary-500" />
+                                        <Clock3 className="summary-chip-icon" />
                                         <span>{tx('jobs.new.autosave.ready', undefined, 'Autosave ready')}</span>
                                     </>
                                 )}
                             </div>
-                            <div className="inline-flex items-center gap-2 rounded-full border border-primary-100 bg-white/80 px-4 py-2 text-sm text-[#353149] shadow-sm dark:border-white/10 dark:bg-white/5 dark:text-[#e3def7]">
-                                <Save className="h-3.5 w-3.5 text-primary-500" />
+                            <div className="summary-chip">
+                                <Save className="summary-chip-icon" />
                                 <span>{tx('jobs.new.wizard.metaDraft', undefined, 'Draft-safe flow')}</span>
                             </div>
                         </>

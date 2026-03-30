@@ -4,10 +4,10 @@ import {
     Filter,
     X,
     ChevronDown,
-    ChevronUp,
-    Check
+    ChevronUp
 } from 'lucide-react';
 import Button from '../ui/Button';
+import { getJobCategories } from '../../lib/jobCategories';
 
 type FilterValue = string | string[] | null;
 
@@ -41,7 +41,7 @@ export default function FilterSidebar({
     onClose,
     className = ''
 }: FilterSidebarProps) {
-    const { t, dir } = useTranslation();
+    const { t, dir, language } = useTranslation();
     const isRTL = dir === 'rtl';
     const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
         category: true,
@@ -52,17 +52,12 @@ export default function FilterSidebar({
         postedDate: false
     });
 
-    const categories = useMemo(() => [
-        { value: 'design', label: t.jobs.filters.categories.design },
-        { value: 'development', label: t.jobs.filters.categories.development },
-        { value: 'writing', label: t.jobs.filters.categories.writing },
-        { value: 'marketing', label: t.jobs.filters.categories.marketing },
-        { value: 'translation', label: t.jobs.filters.categories.translation },
-        { value: 'video', label: t.jobs.filters.categories.video },
-        { value: 'business', label: t.jobs.filters.categories.business },
-        { value: 'data', label: t.jobs.filters.categories.data },
-        { value: 'other', label: t.jobs.filters.categories.other },
-    ], [t]);
+    const categories = useMemo(() => (
+        getJobCategories(language).map((category) => ({
+            value: category.id,
+            label: category.name,
+        }))
+    ), [language]);
 
     const experienceLevels = useMemo(() => [
         { value: 'entry', label: t.jobs.filters.experience.entry },
@@ -99,21 +94,23 @@ export default function FilterSidebar({
         section: string;
         children: React.ReactNode
     }) => (
-        <div className="border-b border-gray-100 dark:border-white/6 py-4 last:border-0">
+        <div className="border-b border-[var(--border)] pb-4 mb-4 last:border-0 last:pb-0 last:mb-0">
             <button
                 onClick={() => toggleSection(section)}
-                className="flex items-center justify-between w-full text-start group"
+                className="flex items-center justify-between w-full text-start group mb-3"
             >
-                <h3 className="text-xs font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300 group-hover:text-[color:var(--workspace-primary)] transition-colors">
-                    {title}
-                </h3>
+                <div className="flex items-center gap-2 border-l-2 border-l-[color:var(--workspace-primary)] pl-2">
+                    <span className="text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">
+                        {title}
+                    </span>
+                </div>
                 {expandedSections[section] ? (
                     <ChevronUp className="w-4 h-4 text-gray-400 group-hover:text-[color:var(--workspace-primary)]" />
                 ) : (
                     <ChevronDown className="w-4 h-4 text-gray-400 group-hover:text-[color:var(--workspace-primary)]" />
                 )}
             </button>
-            <div className={`space-y-2 overflow-hidden transition-all duration-300 ${expandedSections[section] ? 'max-h-[1000px] opacity-100 mt-3' : 'max-h-0 opacity-0'
+            <div className={`space-y-2 overflow-hidden transition-all duration-300 ${expandedSections[section] ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'
                 }`}>
                 {children}
             </div>
@@ -156,18 +153,18 @@ export default function FilterSidebar({
 
                 <div className={`
                     bg-white dark:bg-[#1a1825] 
-                    rounded-lg border border-gray-100 dark:border-white/6
-                    p-5 shadow-sm dark:shadow-none
+                    rounded-xl border border-black/[0.07] dark:border-white/[0.07]
+                    p-4 shadow-[0_1px_3px_rgba(0,0,0,0.06),0_4px_16px_rgba(0,0,0,0.04)] dark:shadow-none
                     sticky top-0
                 `}>
-                    <div className="flex items-center justify-between mb-5 pb-4 border-b border-gray-100 dark:border-white/6">
-                        <h2 className="font-semibold text-sm text-gray-900 dark:text-white flex items-center gap-2">
+                    <div className="flex items-center justify-between mb-4">
+                        <h2 className="font-semibold text-sm text-[var(--text-primary)] flex items-center gap-2">
                             <Filter className="w-4 h-4 text-[color:var(--workspace-primary)]" />
                             {t.jobs.filters.title}
                         </h2>
                         <button
                             onClick={onClearAll}
-                            className="text-xs font-medium text-[color:var(--workspace-primary)] hover:opacity-75 transition-opacity"
+                            className="text-xs font-medium text-[color:var(--workspace-primary)] hover:underline"
                         >
                             {t.jobs.filters.clearAll}
                         </button>
@@ -177,28 +174,26 @@ export default function FilterSidebar({
                     <FilterSection title={t.jobs.filters.categories.title} section="category">
                         {categories.map(cat => (
                             <label key={cat.value} className="flex items-center gap-2 cursor-pointer group">
-                                <div className="relative flex items-center">
-                                    <input
-                                        type="checkbox"
-                                        className="checkbox peer"
-                                        checked={filters.categories.includes(cat.value)}
-                                        onChange={(e) => {
-                                            const newCategories = e.target.checked
-                                                ? [...filters.categories, cat.value]
-                                                : filters.categories.filter((c: string) => c !== cat.value);
-                                            onFilterChange('categories', newCategories);
-                                        }}
-                                    />
-                                    <div className="checkbox-custom peer-checked:bg-primary-500 peer-checked:border-primary-500">
-                                        <Check className="w-3 h-3 text-white opacity-0 peer-checked:opacity-100" />
-                                    </div>
-                                </div>
-                                <span className="flex-1 text-sm text-gray-600 dark:text-gray-300 group-hover:text-primary-600 transition-colors">
+                                <input
+                                    type="checkbox"
+                                    className="w-4 h-4 rounded border-[var(--border)] text-[color:var(--workspace-primary)] focus:ring-2 focus:ring-[color:var(--workspace-primary)]/20"
+                                    style={{ accentColor: 'var(--workspace-primary)' }}
+                                    checked={filters.categories.includes(cat.value)}
+                                    onChange={(e) => {
+                                        const newCategories = e.target.checked
+                                            ? [...filters.categories, cat.value]
+                                            : filters.categories.filter((c: string) => c !== cat.value);
+                                        onFilterChange('categories', newCategories);
+                                    }}
+                                />
+                                <span className="flex-1 text-sm text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition-colors">
                                     {cat.label}
                                 </span>
-                                <span className="text-xs text-gray-400 bg-gray-50 dark:bg-dark-700 px-2 py-0.5 rounded-full">
-                                    {categoryCounts[cat.value] || 0}
-                                </span>
+                                {categoryCounts[cat.value] > 0 && (
+                                    <span className="w-5 h-5 flex items-center justify-center text-xs rounded-full bg-[color:var(--workspace-primary)] text-white">
+                                        {categoryCounts[cat.value]}
+                                    </span>
+                                )}
                             </label>
                         ))}
                     </FilterSection>
@@ -207,33 +202,16 @@ export default function FilterSidebar({
                     <FilterSection title={t.jobs.filters.jobType.title} section="jobType">
                         {jobTypes.map(type => (
                             <label key={type.value} className="flex items-center gap-2 cursor-pointer group">
-                                <div className="relative flex items-center">
-                                    <input
-                                        type="checkbox"
-                                        className="checkbox peer"
-                                        checked={filters.jobType === type.value} // Fix: was checking includes on maybe string
-                                        onChange={(e) => {
-                                            // Handle single selection logic or adjust if multiple allowed
-                                            // Assuming single select based on JobBoard state
-                                            onFilterChange('jobType', e.target.checked ? type.value : null);
-                                        }}
-                                    />
-                                    {/* Note: Original code used checkboxes but state seemed to hold string | null. 
-                                         Using radio-like behavior or keeping checkbox UI. 
-                                         Original code: checked={filters.jobTypes?.includes(type.value)}
-                                         But filters.jobType in JobBoard is string | null.
-                                         The original code had `filters.jobTypes` but JobBoard passes `filters.jobType`. 
-                                         Wait, JobBoard passes `filters` object. `filters.jobType` is string.
-                                         Original FilterSidebar expected `filters.jobTypes` (plural array).
-                                         But JobBoard state has `jobType` (singular string).
-                                         There was a BUG here in original code too!
-                                         I will assume Single Select for now to match JobBoard state.
-                                     */}
-                                    <div className="checkbox-custom peer-checked:bg-primary-500 peer-checked:border-primary-500">
-                                        <Check className="w-3 h-3 text-white opacity-0 peer-checked:opacity-100" />
-                                    </div>
-                                </div>
-                                <span className="text-sm text-gray-600 dark:text-gray-300 group-hover:text-primary-600 transition-colors">
+                                <input
+                                    type="checkbox"
+                                    className="w-4 h-4 rounded border-[var(--border)] text-[color:var(--workspace-primary)] focus:ring-2 focus:ring-[color:var(--workspace-primary)]/20"
+                                    style={{ accentColor: 'var(--workspace-primary)' }}
+                                    checked={filters.jobType === type.value}
+                                    onChange={(e) => {
+                                        onFilterChange('jobType', e.target.checked ? type.value : null);
+                                    }}
+                                />
+                                <span className="text-sm text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition-colors">
                                     {type.label}
                                 </span>
                             </label>
@@ -288,24 +266,20 @@ export default function FilterSidebar({
                     <FilterSection title={t.jobs.filters.experience.title} section="experience">
                         {experienceLevels.map(level => (
                             <label key={level.value} className="flex items-center gap-2 cursor-pointer group">
-                                <div className="relative flex items-center">
-                                    <input
-                                        type="checkbox"
-                                        className="checkbox peer"
-                                        checked={filters.experienceLevels?.includes(level.value)} // Fix: JobBoard uses `experienceLevels` (plural)
-                                        onChange={(e) => {
-                                            const currentLevels = filters.experienceLevels || [];
-                                            const newLevels = e.target.checked
-                                                ? [...currentLevels, level.value]
-                                                : currentLevels.filter((l: string) => l !== level.value);
-                                            onFilterChange('experienceLevels', newLevels);
-                                        }}
-                                    />
-                                    <div className="checkbox-custom peer-checked:bg-primary-500 peer-checked:border-primary-500">
-                                        <Check className="w-3 h-3 text-white opacity-0 peer-checked:opacity-100" />
-                                    </div>
-                                </div>
-                                <span className="text-sm text-gray-600 dark:text-gray-300 group-hover:text-primary-600 transition-colors">
+                                <input
+                                    type="checkbox"
+                                    className="w-4 h-4 rounded border-[var(--border)] text-[color:var(--workspace-primary)] focus:ring-2 focus:ring-[color:var(--workspace-primary)]/20"
+                                    style={{ accentColor: 'var(--workspace-primary)' }}
+                                    checked={filters.experienceLevels?.includes(level.value)}
+                                    onChange={(e) => {
+                                        const currentLevels = filters.experienceLevels || [];
+                                        const newLevels = e.target.checked
+                                            ? [...currentLevels, level.value]
+                                            : currentLevels.filter((l: string) => l !== level.value);
+                                        onFilterChange('experienceLevels', newLevels);
+                                    }}
+                                />
+                                <span className="text-sm text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition-colors">
                                     {level.label}
                                 </span>
                             </label>

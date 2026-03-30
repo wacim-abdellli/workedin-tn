@@ -2,18 +2,22 @@ import { useFormContext } from 'react-hook-form';
 import { FileText, DollarSign, Calendar, Clock, MapPin, Briefcase, File, Globe, Lock } from 'lucide-react';
 import { useTranslation } from '../../i18n';
 import type { Skill } from '../../types';
+import { getCategoryName, getSubcategoryName } from '../../lib/jobCategories';
 
 interface StepReviewValues {
     title?: string;
     category?: string;
+    subcategory?: string;
     posted_at?: string;
     description?: string;
     job_type?: 'fixed_price' | 'hourly';
     budget_min?: number;
     budget_max?: number;
     hourly_rate?: number;
+    estimated_hours?: number;
     experience_level?: string;
     duration?: string;
+    deadline?: string;
     visibility?: 'public' | 'invite_only';
     attachments_files?: File[];
     required_skills?: Skill[];
@@ -65,7 +69,11 @@ export default function StepReview() {
                     <div className="flex flex-wrap gap-4 text-sm text-gray-500 dark:text-gray-400">
                         <span className="flex items-center gap-1 rounded-full bg-gray-100 px-3 py-1 dark:bg-white/10">
                             <Briefcase className="w-4 h-4" />
-                            {values.category}
+                            {getCategoryName(values.category, language)}
+                        </span>
+                        <span className="flex items-center gap-1 rounded-full bg-gray-100 px-3 py-1 dark:bg-white/10">
+                            <MapPin className="w-4 h-4" />
+                            {getSubcategoryName(values.category, values.subcategory, language)}
                         </span>
                         <span className="flex items-center gap-1 rounded-full bg-gray-100 px-3 py-1 dark:bg-white/10">
                             <Clock className="w-4 h-4" />
@@ -117,6 +125,14 @@ export default function StepReview() {
                         </div>
 
                         <div className="flex gap-4">
+                            <Calendar className="mt-1 h-5 w-5 text-gray-400 dark:text-gray-500" />
+                            <div>
+                                <h4 className="font-bold text-gray-900 dark:text-white">{tx('jobs.new.stepReview.deadline', undefined, 'الموعد النهائي')}</h4>
+                                <p className="text-gray-600 dark:text-gray-400">{values.deadline ? new Date(values.deadline).toLocaleDateString(language === 'ar' ? 'ar-TN' : language === 'fr' ? 'fr-FR' : 'en-US') : '—'}</p>
+                            </div>
+                        </div>
+
+                        <div className="flex gap-4">
                             <MapPin className="mt-1 h-5 w-5 text-gray-400 dark:text-gray-500" />
                             <div>
                                 <h4 className="font-bold text-gray-900 dark:text-white">{tx('jobs.new.stepReview.visibility', undefined, 'الموقع')}</h4>
@@ -125,6 +141,12 @@ export default function StepReview() {
                         </div>
                     </div>
                 </div>
+
+                {values.job_type === 'hourly' && values.estimated_hours ? (
+                    <div className="rounded-2xl border border-primary-100/70 bg-primary-50/60 px-4 py-3 text-sm text-primary-700 dark:border-white/10 dark:bg-white/[0.04] dark:text-primary-200">
+                        {tx('jobs.new.stepReview.estimatedHours', { hours: values.estimated_hours }, `${values.estimated_hours} estimated hours per week`)}
+                    </div>
+                ) : null}
 
                 {/* Visibility */}
                 <div className="flex items-center gap-3 border-t border-primary-100/70 pt-6 dark:border-white/10">

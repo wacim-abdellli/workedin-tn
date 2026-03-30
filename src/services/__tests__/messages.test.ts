@@ -116,7 +116,7 @@ describe('messages service coverage', () => {
             value: 'conversation-1',
         });
         expect(state.orderCalls).toEqual(expect.arrayContaining([
-            { table: 'conversations', column: 'last_message_at', options: { ascending: false, nullsFirst: false } },
+            { table: 'conversations', column: 'last_message_at', options: { ascending: false } },
             { table: 'messages', column: 'created_at', options: { ascending: true } },
         ]));
     });

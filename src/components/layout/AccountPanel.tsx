@@ -86,7 +86,7 @@ export default function AccountPanel({
     user.user_metadata?.full_name ||
     user.user_metadata?.name ||
     user.email?.split('@')[0] ||
-    'Khedma User';
+    copy.defaultUser;
   const avatarUrl = resolveAccountAvatarUrl(profile?.avatar_url, avatarFailed);
   const [avatarFrom, avatarTo] = getAvatarGradient(displayName);
   const availableModes = useMemo(
@@ -114,34 +114,34 @@ export default function AccountPanel({
     () => [
       {
         mode: 'freelancer' as const,
-        title: 'Freelancer',
+        title: copy.freelancerLabel,
         features: [
-          'Browse and apply to jobs',
-          'Receive payments in TND',
-          'Build public portfolio',
+          copy.freelancerFeatureBrowseJobs,
+          copy.freelancerFeatureReceivePayments,
+          copy.freelancerFeaturePortfolio,
         ],
         meta: activeWorkspace === 'freelancer'
-          ? 'Active Workspace'
-          : !freelancerProfile ? 'Set up in 5 min' : 'Switch over',
+          ? copy.workspaceActive
+          : !freelancerProfile ? copy.setupInFiveMinutes : copy.switchOver,
         icon: BriefcaseBusiness,
         accent: 'purple',
       },
       {
         mode: 'client' as const,
-        title: 'Client',
+        title: copy.clientLabel,
         features: [
-          'Post projects for free',
-          'Review verified proposals',
-          'Escrow-protected payments',
+          copy.clientFeaturePostProjects,
+          copy.clientFeatureReviewProposals,
+          copy.clientFeatureEscrow,
         ],
         meta: activeWorkspace === 'client'
-          ? 'Active Workspace'
-          : 'Switch instantly',
+          ? copy.workspaceActive
+          : copy.switchInstantly,
         icon: Building2,
         accent: 'amber',
       },
     ],
-    [activeWorkspace, freelancerProfile]
+    [activeWorkspace, copy, freelancerProfile]
   );
 
   const handleSwitchMode = async (mode: Workspace) => {
@@ -433,7 +433,7 @@ export default function AccountPanel({
                         to="/admin"
                         onClick={onClose}
                         icon={<ShieldCheck className="h-4 w-4 text-primary-600" />}
-                        label="لوحة الإدارة"
+                          label={copy.adminDashboard}
                       />
                     )}
                     <ActionLink
@@ -452,7 +452,7 @@ export default function AccountPanel({
                       to={walletPath}
                       onClick={onClose}
                       icon={<Wallet className="h-4 w-4" />}
-                      label={activeWorkspace === 'freelancer' ? 'Wallet & earnings' : t.settings.payment}
+                          label={activeWorkspace === 'freelancer' ? copy.walletAndEarnings : t.settings.payment}
                     />
                     <ActionLink
                       to={verificationPath}
