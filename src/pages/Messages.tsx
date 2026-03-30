@@ -47,7 +47,7 @@ import { useTranslation } from '../i18n';
 export default function Messages() {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
-    const { user } = useAuth();
+    const { user, profile } = useAuth();
     const { showToast } = useToast();
     const { tx, language } = useTranslation();
     const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -284,9 +284,9 @@ export default function Messages() {
                 <div className="flex items-center justify-between mb-4">
                     <h2 className="text-lg font-bold text-foreground">{tx('pages.messages.title', undefined, 'Messages')}</h2>
                     <Button 
-                        variant="primary" 
-                        size="sm" 
-                        onClick={() => navigate(user?.user_metadata?.user_type === 'client' ? '/find-freelancers' : '/my-jobs')}
+                        variant="primary"
+                        size="sm"
+                        onClick={() => navigate(profile?.user_type === 'client' ? '/find-freelancers' : '/jobs')}
                         title={tx('pages.messages.newConversation', undefined, 'Start a new conversation')}
                     >
                         <Plus className="w-4 h-4" />
