@@ -29,32 +29,32 @@ const optionalNumber = (message: string) => z.preprocess(
     z.number().min(1, message).optional()
 );
 
-const futureDateString = z.string().min(1, 'يرجى تحديد الموعد النهائي').refine((value) => {
+const createFutureDateString = (tx: ReturnType<typeof useTranslation>['tx']) => z.string().min(1, tx('jobs.new.validation.deadlineRequired', undefined, 'Please select a deadline')).refine((value) => {
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) return false;
     const startOfToday = new Date();
     startOfToday.setHours(0, 0, 0, 0);
     return date >= startOfToday;
-}, 'الموعد النهائي يجب أن يكون اليوم أو بعده');
+}, tx('jobs.new.validation.deadlineFuture', undefined, 'Deadline must be today or later'));
 
-const jobSchema = z.object({
-    title: z.string().trim().min(8, 'العنوان يجب أن يكون 8 أحرف على الأقل').max(100),
-    category: z.string().min(1, 'يرجى اختيار التصنيف'),
-    subcategory: z.string().min(1, 'يرجى اختيار التخصص الفرعي'),
-    description: z.string().trim().min(80, 'الوصف يجب أن يكون 80 حرف على الأقل').max(2000),
-    required_skills: z.array(z.any()).min(1, 'يرجى اختيار مهارة واحدة على الأقل').max(5),
+const createJobSchema = (tx: ReturnType<typeof useTranslation>['tx']) => z.object({
+    title: z.string().trim().min(8, tx('jobs.new.validation.titleMin', undefined, 'Title must be at least 8 characters')).max(100),
+    category: z.string().min(1, tx('jobs.new.validation.categoryRequired', undefined, 'Please select a category')),
+    subcategory: z.string().min(1, tx('jobs.new.validation.subcategoryRequired', undefined, 'Please select a subcategory')),
+    description: z.string().trim().min(80, tx('jobs.new.validation.descriptionMin', undefined, 'Description must be at least 80 characters')).max(2000),
+    required_skills: z.array(z.any()).min(1, tx('jobs.new.validation.skillsRequired', undefined, 'Please select at least one skill')).max(5),
     attachments_files: z.array(z.instanceof(File))
-        .max(5, 'الحد الأقصى 5 ملفات')
+        .max(5, tx('jobs.new.validation.maxFiles', undefined, 'Maximum 5 files'))
         .optional(),
 
     job_type: z.enum(['fixed_price', 'hourly']),
-    budget_min: optionalNumber('الحد الأدنى يجب أن يكون 1 على الأقل'),
-    budget_max: optionalNumber('الحد الأقصى يجب أن يكون 1 على الأقل'),
-    hourly_rate: optionalNumber('السعر بالساعة يجب أن يكون 1 على الأقل'),
-    estimated_hours: optionalNumber('يرجى إدخال عدد الساعات المتوقعة أسبوعيا'),
-    duration: z.string().min(1, 'يرجى تحديد المدة'),
+    budget_min: optionalNumber(tx('jobs.new.validation.budgetMin', undefined, 'Minimum budget must be at least 1')),
+    budget_max: optionalNumber(tx('jobs.new.validation.budgetMax', undefined, 'Maximum budget must be at least 1')),
+    hourly_rate: optionalNumber(tx('jobs.new.validation.hourlyRate', undefined, 'Hourly rate must be at least 1')),
+    estimated_hours: optionalNumber(tx('jobs.new.validation.estimatedHours', undefined, 'Please enter estimated weekly hours')),
+    duration: z.string().min(1, tx('jobs.new.validation.durationRequired', undefined, 'Please select a duration')),
     experience_level: z.enum(['beginner', 'intermediate', 'expert']),
-    deadline: futureDateString,
+    deadline: createFutureDateString(tx),
 
     visibility: z.enum(['public', 'invite_only']),
 }).refine((data) => {
@@ -67,30 +67,31 @@ const jobSchema = z.object({
     const hoursValid = typeof data.estimated_hours === 'number' && !Number.isNaN(data.estimated_hours) && data.estimated_hours > 0;
     return rateValid && hoursValid;
 }, {
-    message: "يرجى تحديد الميزانية",
-    path: ["budget_min"],
+    message: tx('jobs.new.validation.budgetRequired', undefined, 'Please set a budget'),
+    path: ['budget_min'],
 }).refine((data) => {
     if (data.job_type !== 'fixed_price') return true;
     if (typeof data.budget_min !== 'number' || typeof data.budget_max !== 'number') return true;
     return data.budget_max >= data.budget_min;
 }, {
-    message: 'الحد الأقصى يجب أن يكون اكبر من أو يساوي الحد الأدنى',
+    message: tx('jobs.new.validation.budgetRange', undefined, 'Maximum budget must be greater than or equal to minimum budget'),
     path: ['budget_max'],
 }).refine((data) => {
     const category = JOB_CATEGORIES.find((item) => item.id === data.category);
     return Boolean(category?.subcategories.some((item) => item.id === data.subcategory));
 }, {
-    message: 'يرجى اختيار تخصص فرعي مناسب',
+    message: tx('jobs.new.validation.subcategoryInvalid', undefined, 'Please select a valid subcategory'),
     path: ['subcategory'],
 });
 
-type JobFormData = z.infer<typeof jobSchema>;
+type JobFormData = z.infer<ReturnType<typeof createJobSchema>>;
 
 export default function JobPost() {
     const { user } = useAuth();
     const { showToast } = useToast();
     const { tx } = useTranslation();
     const navigate = useNavigate();
+    const jobSchema = createJobSchema(tx);
     const [currentStep, setCurrentStep] = useState(1);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitIntent, setSubmitIntent] = useState<'draft' | 'publish' | null>(null);

@@ -1,13 +1,12 @@
 import { logger } from '@/lib/logger';
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { X, Send, AlertCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { X, MessageSquare, Loader2, ArrowUpRight, ShieldCheck } from 'lucide-react';
 import Button from '../ui/Button';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
-import { useToast } from '../ui/Toast'; // Assuming we have a Toast context/hook
+import { useToast } from '../ui/Toast';
+import { useTranslation } from '../../i18n';
 
 interface ContactModalProps {
     isOpen: boolean;
@@ -16,126 +15,108 @@ interface ContactModalProps {
     freelancerName: string;
 }
 
-const contactSchema = z.object({
-    subject: z.string().min(5, 'يجب أن يكون العنوان 5 أحرف على الأقل'),
-    message: z.string().min(20, 'يجب أن تكون الرسالة 20 حرفاً على الأقل'),
-});
-
-type ContactFormData = z.infer<typeof contactSchema>;
-
 export default function ContactModal({ isOpen, onClose, freelancerId, freelancerName }: ContactModalProps) {
     const { user } = useAuth();
     const { showToast } = useToast();
-    const [isSubmitting, setIsSubmitting] = useState(false);
-
-    const { register, handleSubmit, formState: { errors }, reset } = useForm<ContactFormData>({
-        resolver: zodResolver(contactSchema),
-    });
+    const { tx } = useTranslation();
+    const navigate = useNavigate();
+    const [isCreating, setIsCreating] = useState(false);
 
     if (!isOpen) return null;
 
-    const onSubmit = async (data: ContactFormData) => {
+    const startConversation = async () => {
         if (!user) {
-            showToast('يجب تسجيل الدخول لإرسال رسالة', 'error');
+            showToast(tx('pages.freelancerProfile.contactModal.loginRequired', undefined, 'You need to sign in to send a message'), 'error');
             return;
         }
 
-        setIsSubmitting(true);
+        if (user.id === freelancerId) {
+            showToast(tx('pages.freelancerProfile.contactModal.cannotMessageSelf', undefined, 'You cannot message yourself'), 'warning');
+            return;
+        }
+
+        setIsCreating(true);
         try {
-            // First check if a conversation exists or create one
-            // This logic depends on how your messages are structured. 
-            // Assuming a simple messages table or conversation table.
+            const { data: conversationId, error } = await supabase.rpc('get_or_create_conversation', {
+                user1: user.id,
+                user2: freelancerId
+            });
 
-            // For now, let's insert directly into messages if we have a receiver_id
-            const { error } = await supabase
-                .from('messages')
-                .insert({
-                    sender_id: user.id,
-                    receiver_id: freelancerId, // Make sure messages table supports receiver_id or user separate logic
-                    content: `**${data.subject}**\n\n${data.message}`,
-                    read: false,
-                });
+            if (error || !conversationId) throw error || new Error(tx('pages.freelancerProfile.contactModal.createFailed', undefined, 'Failed to create conversation'));
 
-            if (error) throw error;
-
-            showToast('تم إرسال الرسالة بنجاح', 'success');
-            reset();
             onClose();
-        } catch (error) {
-            logger.error('Error sending message:', error);
-            showToast('حدث خطأ أثناء إرسال الرسالة', 'error');
+            navigate(`/messages?conversation=${conversationId}`);
+        } catch (error: any) {
+            logger.error('Error starting conversation:', error);
+            const msg = error?.message || tx('pages.freelancerProfile.contactModal.startError', undefined, 'Something went wrong while starting the conversation');
+            showToast(msg, 'error');
         } finally {
-            setIsSubmitting(false);
+            setIsCreating(false);
         }
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-            <div className="bg-white rounded-2xl w-full max-w-lg shadow-xl animate-in fade-in zoom-in duration-200">
-                <div className="flex items-center justify-between p-6 border-b border-gray-100">
-                    <h3 className="text-xl font-bold text-gray-900">مراسلة {freelancerName}</h3>
-                    <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
-                        <X className="w-6 h-6" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 p-4 backdrop-blur-md">
+            <div className="w-full max-w-lg overflow-hidden rounded-[1.75rem] border border-white/10 bg-[#171421] shadow-[0_32px_90px_-36px_rgba(15,13,22,0.7)] animate-in fade-in zoom-in duration-200">
+                <div className="border-b border-white/8 bg-[linear-gradient(135deg,rgba(139,92,246,0.16)_0%,rgba(245,158,11,0.08)_100%)] px-6 py-5">
+                    <div className="flex items-start justify-between gap-4">
+                        <div>
+                            <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/55">
+                                {tx('pages.freelancerProfile.contactModal.sectionLabel', undefined, 'Direct message')}
+                            </div>
+                            <h3 className="mt-2 text-2xl font-black leading-tight text-white">
+                                {tx('pages.freelancerProfile.contactModal.title', { name: freelancerName }, `Message ${freelancerName}`)}
+                            </h3>
+                        </div>
+                        <button onClick={onClose} className="rounded-xl border border-white/10 p-2 text-white/70 transition-colors hover:bg-white/5 hover:text-white">
+                        <X className="w-5 h-5" />
                     </button>
+                    </div>
                 </div>
 
-                <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-4">
-                    {!user && (
-                        <div className="bg-yellow-50 text-yellow-800 p-4 rounded-xl flex items-start gap-3 text-sm mb-4">
-                            <AlertCircle className="w-5 h-5 flex-shrink-0" />
-                            <p>يجب عليك تسجيل الدخول لتتمكن من مراسلة المستقلين.</p>
+                <div className="p-6 space-y-5">
+                    {!user ? (
+                        <div className="rounded-2xl border border-amber-500/20 bg-amber-500/10 p-4 text-sm text-amber-200">
+                            {tx('pages.freelancerProfile.contactModal.loginPrompt', undefined, 'You need to sign in before contacting freelancers.')}
+                        </div>
+                    ) : (
+                        <div className="rounded-2xl border border-white/8 bg-white/[0.03] p-4">
+                            <div className="flex items-start gap-3">
+                                <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[color:var(--workspace-primary)]/14 text-[color:var(--workspace-primary)]">
+                                    <MessageSquare className="h-5 w-5" />
+                                </div>
+                                <div>
+                                    <p className="text-sm leading-7 text-white/80">
+                                        {tx('pages.freelancerProfile.contactModal.body', { name: freelancerName }, `A direct conversation with ${freelancerName} will open in your messages workspace.`)}
+                                    </p>
+                                    <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-white/8 bg-white/[0.03] px-3 py-1.5 text-xs font-medium text-white/60">
+                                        <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" />
+                                        {tx('pages.freelancerProfile.contactModal.trustNote', undefined, 'Use Khedma messages to keep project communication organized.')}
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     )}
 
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">الموضوع</label>
-                        <input
-                            type="text"
-                            {...register('subject')}
-                            className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all"
-                            placeholder="مثال: استفسار بخصوص مشروع تصميم..."
-                            disabled={!user}
-                        />
-                        {errors.subject && (
-                            <p className="text-red-500 text-xs mt-1">{errors.subject.message}</p>
-                        )}
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">الرسالة</label>
-                        <textarea
-                            {...register('message')}
-                            rows={5}
-                            className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all resize-none"
-                            placeholder="اكتب تفاصيل رسالتك هنا..."
-                            disabled={!user}
-                        />
-                        {errors.message && (
-                            <p className="text-red-500 text-xs mt-1">{errors.message.message}</p>
-                        )}
-                    </div>
-
-                    <div className="pt-4 flex gap-3">
+                    <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                        <Button type="button" variant="outline" className="h-12 rounded-2xl px-6" onClick={onClose}>
+                            {tx('common.cancel', undefined, 'Cancel')}
+                        </Button>
                         <Button
                             type="button"
-                            variant="outline"
-                            className="flex-1"
-                            onClick={onClose}
-                        >
-                            إلغاء
-                        </Button>
-                        <Button
-                            type="submit"
                             variant="primary"
-                            className="flex-1"
-                            isLoading={isSubmitting}
-                            disabled={!user}
-                            leftIcon={<Send className="w-4 h-4" />}
+                            className="h-12 rounded-2xl px-6"
+                            onClick={startConversation}
+                            disabled={!user || isCreating}
+                            leftIcon={isCreating ? <Loader2 className="w-4 h-4 animate-spin" /> : <MessageSquare className="w-4 h-4" />}
+                            rightIcon={!isCreating ? <ArrowUpRight className="w-4 h-4" /> : undefined}
                         >
-                            إرسال
+                            {isCreating
+                                ? tx('pages.freelancerProfile.contactModal.opening', undefined, 'Opening...')
+                                : tx('pages.freelancerProfile.contactModal.startAction', undefined, 'Start conversation')}
                         </Button>
                     </div>
-                </form>
+                </div>
             </div>
         </div>
     );

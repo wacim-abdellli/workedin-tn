@@ -11,7 +11,6 @@ import { ToastProvider } from './components/ui/Toast';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import ErrorBoundary from './components/ui/ErrorBoundary';
-import { Loading } from './components/common';
 import ScrollToTop from './components/ui/ScrollToTop';
 import RouteProgress from './components/ui/RouteProgress';
 
@@ -77,18 +76,31 @@ const Notifications = lazy(() => import('./pages/Notifications'));
 
 // Protected Route wrapper
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isFullyReady } = useAuth();
+  const location = useLocation();
 
-  if (isLoading) {
-    return <Loading fullScreen />;
+  if (!isFullyReady) {
+    return (
+      <div className="fixed inset-0 z-50 bg-[var(--page-bg)] flex flex-col items-center justify-center gap-4">
+        <img src="/favicon.svg" alt="Khedma TN" className="w-10 h-10 mb-2 opacity-80 no-transition" />
+        <div className="w-6 h-6 rounded-full border-2 border-[color:var(--workspace-primary)] border-t-transparent animate-spin no-transition" />
+        <p className="text-xs text-[var(--text-muted)]">Loading...</p>
+      </div>
+    );
   }
 
-  if (!isAuthenticated && !isLoading) {
-    return <Navigate to="/login" replace />;
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace state={{ from: location }} />;
   }
 
   return <>{children}</>;
 }
+
+const PageLoader = () => (
+  <div className="min-h-screen bg-[var(--page-bg)] flex items-center justify-center">
+    <div className="w-6 h-6 rounded-full border-2 border-[color:var(--workspace-primary)] border-t-transparent animate-spin opacity-60 no-transition" />
+  </div>
+)
 // Redirect /profile to the correct dashboard
 
 
@@ -349,6 +361,8 @@ function AppContent() {
   useRouteFocus();
   const { pathname } = useLocation();
   const activeWorkspace = useWorkspaceStore((state) => state.activeWorkspace);
+  const isWorkspaceSwitching = useWorkspaceStore((state) => state.isSwitching);
+
   const workspaceClass = pathname.startsWith('/admin')
     ? 'workspace-admin'
     : activeWorkspace === 'client'
@@ -357,10 +371,18 @@ function AppContent() {
 
   return (
     <div className={`min-h-screen animate-fade-in ${workspaceClass}`}>
+      {isWorkspaceSwitching && (
+        <div className="fixed inset-0 z-50 bg-[var(--page-bg)] flex items-center justify-center transition-opacity duration-150 no-transition">
+          <div className="flex flex-col items-center gap-3">
+            <div className="w-8 h-8 rounded-full border-2 border-[color:var(--workspace-primary)] border-t-transparent animate-spin no-transition" />
+            <p className="text-xs text-[var(--text-muted)]">Switching workspace...</p>
+          </div>
+        </div>
+      )}
       <RouteProgress />
       <ScrollToTop />
       <SkipLinks />
-      <Suspense fallback={<Loading fullScreen />}>
+      <Suspense fallback={<PageLoader />}>
         <div id="main-content" className="min-h-screen">
           <AppRoutes />
         </div>

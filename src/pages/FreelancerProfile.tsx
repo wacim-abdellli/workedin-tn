@@ -5,7 +5,7 @@ import { User } from 'lucide-react';
 import { useTranslation } from '../i18n';
 import { Header, Footer } from '../components/layout';
 import Button from '../components/ui/Button';
-import { supabaseAnon } from '../lib/supabase';
+import { supabase } from '../lib/supabase';
 import type { Skill } from '../types';
 import type {
     FreelancerData,
@@ -51,7 +51,7 @@ function getReviewJobTitle(contract: FreelancerReviewRow['contract']): string | 
 
 export default function FreelancerProfile() {
     const { usernameOrId } = useParams<{ usernameOrId: string }>();
-    const { language, t } = useTranslation();
+    const { language, t, tx } = useTranslation();
     const navigate = useNavigate();
 
     const [freelancer, setFreelancer] = useState<FreelancerData | null>(null);
@@ -88,7 +88,7 @@ export default function FreelancerProfile() {
             let profileId = usernameOrId;
 
             if (!isUUID) {
-                const { data: userProfile, error: userError } = await supabaseAnon
+                const { data: userProfile, error: userError } = await supabase
                     .from('profiles')
                     .select('id')
                     .eq('username', usernameOrId)
@@ -101,7 +101,7 @@ export default function FreelancerProfile() {
             }
 
             // Fetch freelancer_profile with joined profile data
-            const { data: profile, error: profileError } = await supabaseAnon
+            const { data: profile, error: profileError } = await supabase
                 .from('freelancer_profiles')
                 .select(`
                     *,
@@ -140,7 +140,7 @@ export default function FreelancerProfile() {
             });
 
             // Fetch portfolio items
-            const { data: portfolioItems } = await supabaseAnon
+            const { data: portfolioItems } = await supabase
                 .from('portfolio_items')
                 .select('*')
                 .eq('freelancer_id', targetFreelancerId)
@@ -149,7 +149,7 @@ export default function FreelancerProfile() {
             const portfolioRows = (portfolioItems ?? []) as PortfolioItemRow[];
 
             // Fetch reviews
-            const { data: reviews } = await supabaseAnon
+            const { data: reviews } = await supabase
                 .from('reviews')
                 .select(`
                     id,
@@ -192,7 +192,7 @@ export default function FreelancerProfile() {
                 title: profileRow.title,
                 avatar_url: profileRow.profile.avatar_url,
                 bio: profileRow.profile.bio || '',
-                location: profileRow.profile.location || 'تونس',
+                location: profileRow.profile.location || t.footer?.city || 'Tunis, Tunisia',
                 joined_at: profileRow.profile.created_at,
                 voice_intro_url: profileRow.voice_intro_url,
                 hourly_rate: profileRow.hourly_rate || 0,
@@ -222,12 +222,12 @@ export default function FreelancerProfile() {
 
                     return {
                         id: review.id,
-                        client_name: reviewer?.full_name || t.reviews?.client || t.reviews?.client || 'عميل',
+                        client_name: reviewer?.full_name || t.reviews?.client || 'Client',
                         client_avatar: reviewer?.avatar_url || undefined,
                         rating: review.rating,
                         comment: review.comment || '',
                         created_at: review.created_at,
-                        job_title: getReviewJobTitle(review.contract) || 'مهمة',
+                        job_title: getReviewJobTitle(review.contract) || tx('pages.freelancerProfile.jobFallback', undefined, 'Project'),
                         skills_rating: review.skills_rating || undefined,
                     };
                 }),
@@ -265,19 +265,22 @@ export default function FreelancerProfile() {
         }
     };
 
+    const profileNotFoundTitle = tx('pages.freelancerProfile.notFoundTitle', undefined, 'Profile not found');
+    const backHomeLabel = tx('pages.errorBoundary.backHome', undefined, 'Back to home');
+
     if (isLoading) {
         return <ProfileSkeleton />;
     }
 
     if (!freelancer) {
         return (
-            <div className="min-h-screen bg-gray-50">
+            <div className="min-h-screen bg-[var(--surface-bg)]">
                 <Header />
                 <div className="container-custom py-12 text-center">
-                    <User className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                    <h2 className="text-xl font-bold text-gray-700 mb-2">لم يتم العثور على الملف الشخصي</h2>
+                    <User className="w-16 h-16 text-[var(--text-muted)] mx-auto mb-4" />
+                    <h2 className="text-xl font-bold text-[var(--text-primary)] mb-2">{profileNotFoundTitle}</h2>
                     <Button variant="primary" onClick={() => navigate('/')}>
-                        العودة للرئيسية
+                        {backHomeLabel}
                     </Button>
                 </div>
             </div>
@@ -285,7 +288,7 @@ export default function FreelancerProfile() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 pb-20 md:pb-0">
+        <div className="min-h-screen bg-[var(--surface-bg)] pb-20 md:pb-0">
             <SEO
                 title={`${freelancer.full_name} — ${freelancer.title} | ${t.seo.freelancerProfile.titleSuffix}`}
                 description={freelancer.bio?.slice(0, 160) || `${freelancer.title} — ${t.seo.freelancerProfile.descriptionFallback}`}
@@ -301,10 +304,9 @@ export default function FreelancerProfile() {
                 isPlayingVoice={isPlayingVoice}
             />
 
-            <div className="container-custom relative">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    {/* Main Content */}
-                    <div className="lg:col-span-2 space-y-8">
+            <div className="container-custom relative py-2 sm:py-4">
+                <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1.65fr)_360px] gap-8 items-start">
+                    <div className="space-y-8">
                         <AboutSection bio={freelancer.bio} />
                         <SkillsSection skills={freelancer.skills} language={language} />
                         <PortfolioSection
@@ -314,8 +316,7 @@ export default function FreelancerProfile() {
                         <ReviewsSection reviews={freelancer.reviews} stats={freelancer.stats} />
                     </div>
 
-                    {/* Sidebar */}
-                    <div className="lg:col-span-1">
+                    <div>
                         <ProfileSidebar freelancer={freelancer} />
                         <div className="mt-4 flex justify-end">
                             <ReportButton reportedType="user" reportedId={freelancer.id} />
@@ -334,7 +335,7 @@ export default function FreelancerProfile() {
                         <span className="text-4xl">&times;</span>
                     </button>
 
-                    <div className="relative max-w-5xl w-full h-full max-h-[90vh] flex flex-col md:flex-row bg-white rounded-xl overflow-hidden">
+                    <div className="relative max-w-5xl w-full h-full max-h-[90vh] flex flex-col md:flex-row bg-white dark:bg-[#171421] rounded-2xl overflow-hidden border border-white/10">
                         {(() => {
                             const sample = freelancer.work_samples.find(s => s.id === selectedWorkSample);
                             if (!sample) return null;
@@ -350,10 +351,10 @@ export default function FreelancerProfile() {
                                             priority={true}
                                         />
                                     </div>
-                                    <div className="w-full md:w-80 bg-white p-6 overflow-y-auto">
-                                        <h3 className="text-2xl font-bold mb-4">{sample.title}</h3>
-                                        <p className="text-gray-600 mb-6 leading-relaxed whitespace-pre-line">
-                                            {sample.description || 'لا يوجد وصف'}
+                                    <div className="w-full md:w-80 bg-white dark:bg-[#171421] p-6 overflow-y-auto">
+                                        <h3 className="text-2xl font-bold text-[var(--text-primary)] mb-4">{sample.title}</h3>
+                                        <p className="text-[var(--text-secondary)] mb-6 leading-relaxed whitespace-pre-line">
+                                            {sample.description || tx('pages.freelancerProfile.noDescription', undefined, 'No description available')}
                                         </p>
 
                                         {sample.skills_used && sample.skills_used.length > 0 && (

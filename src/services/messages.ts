@@ -9,7 +9,15 @@ import type {
 } from '@supabase/supabase-js';
 
 function normalizeMessageError(error: unknown) {
-    const message = error instanceof Error ? error.message : String(error);
+    const message = error instanceof Error
+        ? error.message
+        : typeof error === 'object' && error !== null
+            ? [
+                'message' in error && typeof error.message === 'string' ? error.message : null,
+                'details' in error && typeof error.details === 'string' ? error.details : null,
+                'hint' in error && typeof error.hint === 'string' ? error.hint : null,
+              ].filter(Boolean).join(' - ') || 'Unexpected error'
+            : String(error);
     if (message.includes('rate_limit_exceeded')) {
         return new Error('Slow down - max 30 messages per minute.');
     }
@@ -74,18 +82,8 @@ interface ConversationRow {
     unread_count_2: number | null;
     created_at: string;
     updated_at: string;
-    participant1: ConversationParticipantRow | ConversationParticipantRow[] | null;
-    participant2: ConversationParticipantRow | ConversationParticipantRow[] | null;
-}
-
-function pickParticipant(
-    participant: ConversationParticipantRow | ConversationParticipantRow[] | null
-): ConversationParticipantRow | null {
-    if (Array.isArray(participant)) {
-        return participant[0] ?? null;
-    }
-
-    return participant;
+    participant1?: ConversationParticipantRow | ConversationParticipantRow[] | null;
+    participant2?: ConversationParticipantRow | ConversationParticipantRow[] | null;
 }
 
 // --- READ ---
@@ -94,22 +92,36 @@ export async function getConversations(userId: string) {
     try {
         const { data, error } = await supabase
             .from('conversations')
-            .select(`
-                *,
-                participant1:profiles!conversations_participant_1_fkey(id, full_name, avatar_url, username),
-                participant2:profiles!conversations_participant_2_fkey(id, full_name, avatar_url, username)
-            `)
+            .select('*')
             .or(`participant_1.eq.${userId},participant_2.eq.${userId}`)
             .order('last_message_at', { ascending: false });
 
         if (error) throw error;
 
-        // Transform data to include otherUser and unread_count
         const rows = (data ?? []) as ConversationRow[];
+        const otherUserIds = Array.from(new Set(rows.map((conv) => (
+            conv.participant_1 === userId ? conv.participant_2 : conv.participant_1
+        )).filter(Boolean)));
+
+        const profilesById = new Map<string, ConversationParticipantRow>();
+
+        if (otherUserIds.length > 0) {
+            const { data: profiles, error: profilesError } = await supabase
+                .from('profiles')
+                .select('id, full_name, avatar_url, username')
+                .in('id', otherUserIds);
+
+            if (profilesError) throw profilesError;
+
+            for (const profile of (profiles ?? []) as ConversationParticipantRow[]) {
+                profilesById.set(profile.id, profile);
+            }
+        }
 
         const conversations: Conversation[] = rows.map((conv) => {
             const isParticipant1 = conv.participant_1 === userId;
-            const otherUser = pickParticipant(isParticipant1 ? conv.participant2 : conv.participant1);
+            const otherUserId = isParticipant1 ? conv.participant_2 : conv.participant_1;
+            const otherUser = (otherUserId ? profilesById.get(otherUserId) : null) ?? null;
             const unread_count = isParticipant1 ? conv.unread_count_1 : conv.unread_count_2;
 
             return {

@@ -7,20 +7,20 @@ import { useWorkspaceStore } from '@/lib/workspaceState';
 
 export const DashboardRedirect = () => {
   const location = useLocation();
-  const { user, profile, isLoading, refreshProfile } = useAuth();
+  const { user, profile, isFullyReady, refreshProfile } = useAuth();
   const activeWorkspace = useWorkspaceStore((state) => state.activeWorkspace);
   const [hasRetriedProfile, setHasRetriedProfile] = useState(false);
 
   useEffect(() => {
-    if (isLoading || !user || profile || hasRetriedProfile) {
+    if (!isFullyReady || !user || profile || hasRetriedProfile) {
       return;
     }
 
     setHasRetriedProfile(true);
     void refreshProfile();
-  }, [hasRetriedProfile, isLoading, profile, refreshProfile, user]);
+  }, [hasRetriedProfile, isFullyReady, profile, refreshProfile, user]);
 
-  if (isLoading || (user && !profile && !hasRetriedProfile)) {
+  if (!isFullyReady || (user && !profile && !hasRetriedProfile)) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary-600 border-t-transparent" />

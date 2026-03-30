@@ -31,6 +31,7 @@ interface AuthContextType {
   activeMode: AccountMode;
   availableModes: AccountMode[];
   isLoading: boolean;
+  isFullyReady: boolean;
   isAuthenticated: boolean;
   signInWithEmail: (email: string, password: string) => Promise<void>;
   signUpWithEmail: (email: string, password: string) => Promise<void>;
@@ -50,11 +51,13 @@ interface AuthProviderProps {
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
+  const MAX_LOADING_TIME = 4000;
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [freelancerProfile, setFreelancerProfile] = useState<FreelancerProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isProfileReady, setIsProfileReady] = useState(false);
   const activeMode = useWorkspaceStore((state) => state.activeWorkspace);
 
   // Track the currently loaded user ID to avoid stale closures in onAuthStateChange
@@ -227,7 +230,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     const initAuth = async () => {
       if (window.location.pathname === '/auth/callback') {
-        if (mounted) setIsLoading(false);
+        if (mounted) {
+          setIsProfileReady(true);
+          setIsLoading(false);
+        }
         return;
       }
 
@@ -242,6 +248,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         }
 
         if (mounted && currentSession) {
+          setIsProfileReady(false);
           setSession(currentSession);
           setUser(currentSession.user);
           loadedUserIdRef.current = currentSession.user.id;
@@ -251,6 +258,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         logger.error('Error initializing auth:', error);
       } finally {
         if (mounted) {
+          setIsProfileReady(true);
           setIsLoading(false);
         }
       }
@@ -261,31 +269,65 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const { data } = supabase.auth.onAuthStateChange(async (event, newSession) => {
       if (!mounted) return;
 
-      setSession(newSession);
-      setUser(newSession?.user ?? null);
+      try {
+        setSession(newSession);
+        setUser(newSession?.user ?? null);
 
-      // Ignore token refresh churn to prevent unnecessary loading flashes
-      // when the user switches tabs and comes back.
-      if (event === 'TOKEN_REFRESHED') {
-        return;
-      }
-
-      if (newSession?.user) {
-        // Only show full-screen loading if we don't already have the profile data.
-        // The loadedUserIdRef bypasses the stale closure of the state variables here.
-        const isFirstLoadTracker = loadedUserIdRef.current !== newSession.user.id;
-        if (isFirstLoadTracker) {
-          setIsLoading(true);
+        // Ignore background auth churn events to prevent unnecessary loading
+        // flashes and duplicate profile fetches.
+        if (event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') {
+          return;
         }
-        await fetchProfile(newSession.user.id);
-        loadedUserIdRef.current = newSession.user.id;
-        if (mounted && isFirstLoadTracker) setIsLoading(false);
-      } else {
+
+        if (newSession?.user) {
+          // Only show full-screen loading if we don't already have the profile data.
+          // The loadedUserIdRef bypasses the stale closure of the state variables here.
+          const isFirstLoadTracker = loadedUserIdRef.current !== newSession.user.id;
+          const hasLoadedProfile = profileRef.current?.id === newSession.user.id;
+
+          // If we ALREADY loaded the UI for this user, do not block the UI again.
+          // Just fetch the profile in the background. This prevents infinite loading loops
+          // if profile fetching fails via RLS/network but token refreshes keep triggering events.
+          if (!isFirstLoadTracker) {
+            if (hasLoadedProfile) {
+                loadedUserIdRef.current = newSession.user.id;
+                await fetchProfile(newSession.user.id);
+            } else {
+                // If we don't have the profile but already passed first load, fetch in background without blocking
+                loadedUserIdRef.current = newSession.user.id;
+                void fetchProfile(newSession.user.id);
+            }
+            return;
+          }
+
+          if (isFirstLoadTracker) {
+            setIsLoading(true);
+          }
+
+          setIsProfileReady(false);
+          await fetchProfile(newSession.user.id);
+          loadedUserIdRef.current = newSession.user.id;
+
+          if (mounted) {
+            setIsProfileReady(true);
+            if (isFirstLoadTracker) setIsLoading(false);
+          }
+          return;
+        }
+
         loadedUserIdRef.current = null;
         setProfile(null);
         setFreelancerProfile(null);
         syncWorkspaceFromProfile(null, null);
+        setIsProfileReady(true);
         setIsLoading(false);
+      } catch (error) {
+        logger.error('Error handling auth state change:', error);
+
+        if (mounted) {
+          setIsProfileReady(true);
+          setIsLoading(false);
+        }
       }
     });
 
@@ -294,6 +336,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
       data.subscription.unsubscribe();
     };
   }, [fetchProfile, syncWorkspaceFromProfile]);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      if (isLoading || !isProfileReady) {
+        logger.warn('Auth loading timeout - forcing ready state');
+        setIsLoading(false);
+        setIsProfileReady(true);
+      }
+    }, MAX_LOADING_TIME);
+
+    return () => window.clearTimeout(timer);
+  }, [isLoading, isProfileReady, MAX_LOADING_TIME]);
 
   const signInWithEmail = async (email: string, password: string) => {
     const { data, error } = await supabase.auth.signInWithPassword({
@@ -356,6 +410,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setProfile(null);
     setFreelancerProfile(null);
     syncWorkspaceFromProfile(null, null);
+    setIsProfileReady(true);
 
     // Clear Sentry user context in production
     if (import.meta.env.PROD && Sentry) {
@@ -364,14 +419,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     clearAllAuthData();
 
-    try {
-      await Promise.race([
+    void Promise.race([
         supabase.auth.signOut({ scope: 'local' }),
         new Promise((_, reject) => setTimeout(() => reject(new Error('Signout timeout')), 3000)),
-      ]);
-    } catch (error) {
-      logger.warn('Supabase signOut call failed, but local cleanup completed:', error);
-    }
+      ]).catch((error) => {
+        logger.warn('Supabase signOut call failed, but local cleanup completed:', error);
+      });
 
     clearAllAuthData();
   };
@@ -478,6 +531,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     return Array.from(new Set([...getWorkspaceCapabilities(profile?.user_type), activeMode])) as AccountMode[];
   }, [activeMode, profile?.user_type]);
 
+  const isFullyReady = !isLoading && isProfileReady;
+
   const value: AuthContextType = {
     user,
     session,
@@ -486,6 +541,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     activeMode,
     availableModes,
     isLoading,
+    isFullyReady,
     isAuthenticated: !!user,
     signInWithEmail,
     signUpWithEmail,

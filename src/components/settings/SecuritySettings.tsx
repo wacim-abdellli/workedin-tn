@@ -66,7 +66,7 @@ export default function SecuritySettings() {
 
     const handleLogout = async () => {
         await signOut();
-        navigate('/');
+        navigate('/login', { replace: true });
     };
 
     const handleDeleteAccount = async () => {

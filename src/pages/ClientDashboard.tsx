@@ -327,7 +327,7 @@ function ClientDashboardPage() {
     };
 
     return (
-        <div className="page-shell bg-background">
+        <div className="page-enter page-shell bg-background">
             <SEO {...SEO_CONFIG.dashboard} url="/client/dashboard" noIndex />
             <Header />
 
@@ -480,7 +480,7 @@ function ClientDashboardPage() {
                                                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                                                     <div className="min-w-0 flex-1">
                                                         <div className="flex flex-wrap items-center gap-3">
-                                                            <h3 className="truncate text-base font-semibold text-[var(--text-primary)] transition-colors group-hover:text-primary-700 dark:group-hover:text-primary-200">
+                                                            <h3 className="truncate text-base font-semibold text-[var(--text-primary)] transition-colors group-hover:text-[color:var(--workspace-primary)]">
                                                                 {job.title}
                                                             </h3>
                                                             {getStatusBadge(job.status)}
@@ -534,7 +534,7 @@ function ClientDashboardPage() {
                                                                         : tx('dashboard.client.viewProject', undefined, 'View project')}
                                                             </p>
                                                         </div>
-                                                        <ArrowUpRight className="h-4 w-4 text-primary-600 dark:text-primary-300" />
+                                                        <ArrowUpRight className="h-4 w-4 text-[color:var(--workspace-primary)]" />
                                                     </div>
                                                 </div>
                                             </button>
@@ -621,7 +621,7 @@ function ClientDashboardPage() {
                                         {tx('dashboard.client.pipelineSummary', undefined, 'Hiring summary')}
                                     </h2>
                                 </div>
-                                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-surface text-brand">
+                                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-surface text-[color:var(--workspace-primary)]">
                                     <Users className="h-5 w-5" />
                                 </div>
                             </div>
@@ -645,14 +645,14 @@ function ClientDashboardPage() {
                         <DashboardPanel>
                             <div className="flex items-start justify-between gap-4">
                                 <div>
-                                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary-600 dark:text-primary-300">
+                                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[color:var(--workspace-primary)]">
                                         {tx('dashboard.client.updatesBadge', undefined, 'Inbox pulse')}
                                     </p>
                                     <h2 className="mt-3 text-xl font-semibold tracking-tight text-[var(--text-primary)]">
-                                        {tx('dashboard.notifications', undefined, 'Notifications')}
+                                        {tx('dashboard.client.notifications', undefined, 'Notifications')}
                                     </h2>
                                 </div>
-                                <span className="inline-flex min-w-[44px] items-center justify-center rounded-2xl bg-primary-600 px-3 py-2 text-sm font-bold text-white shadow-[0_18px_36px_-20px_rgba(109,40,217,0.55)]">
+                                <span className="inline-flex min-w-[44px] items-center justify-center rounded-2xl bg-[color:var(--workspace-primary)] px-3 py-2 text-sm font-bold text-[color:var(--workspace-primary-text)] shadow-sm">
                                     {unreadNotifications.length}
                                 </span>
                             </div>
@@ -691,14 +691,14 @@ function ClientDashboardPage() {
                         <DashboardPanel>
                             <div className="flex items-center justify-between gap-4">
                                 <div>
-                                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary-600 dark:text-primary-300">
+                                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[color:var(--workspace-primary)]">
                                         {tx('dashboard.client.playbookBadge', undefined, 'Client playbook')}
                                     </p>
                                     <h2 className="mt-3 text-xl font-semibold tracking-tight text-[var(--text-primary)]">
                                         {tx('dashboard.client.nextMoves', undefined, 'Best next moves')}
                                     </h2>
                                 </div>
-                                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-surface text-brand">
+                                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-surface text-[color:var(--workspace-primary)]">
                                     <FileText className="h-5 w-5" />
                                 </div>
                             </div>

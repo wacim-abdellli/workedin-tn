@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Briefcase, ShieldCheck, Sparkles } from 'lucide-react';
 
 import { AuthShell, SignupForm } from '../components/auth';
@@ -7,6 +7,7 @@ import { useTranslation } from '../i18n';
 
 function Signup() {
     const { tx } = useTranslation();
+    const location = useLocation();
 
     return (
         <>
@@ -37,6 +38,7 @@ function Signup() {
                 topAction={
                     <Link
                         to="/login"
+                        state={location.state}
                         className="inline-flex items-center rounded-full border border-white/12 bg-white/6 px-4 py-2 text-sm font-medium text-white/80 backdrop-blur-sm transition-colors hover:border-white/20 hover:bg-white/10 hover:text-white"
                     >
                         {tx('pages.signup.signInAction', undefined, 'Sign in')}

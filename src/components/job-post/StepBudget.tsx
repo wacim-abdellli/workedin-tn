@@ -25,11 +25,11 @@ export default function StepBudget() {
             </div>
 
             {/* Job Type */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <label className={`
-                    cursor-pointer p-6 rounded-2xl border-2 transition-all
+                    cursor-pointer rounded-[1.7rem] border-2 p-6 transition-all
                     ${jobType === 'fixed_price'
-                        ? 'border-primary-600 bg-primary-50 ring-1 ring-primary-600 dark:bg-primary-500/10'
+                        ? 'border-primary-600 bg-primary-50 ring-1 ring-primary-600 shadow-[0_20px_40px_-30px_rgba(109,40,217,0.35)] dark:bg-primary-500/10'
                         : 'border-gray-200 bg-white hover:border-primary-200 hover:bg-primary-50/40 dark:border-white/10 dark:bg-[#1a1825] dark:hover:border-primary-500/20 dark:hover:bg-white/[0.06]'
                     }
                 `}>
@@ -51,9 +51,9 @@ export default function StepBudget() {
                 </label>
 
                 <label className={`
-                    cursor-pointer p-6 rounded-2xl border-2 transition-all
+                    cursor-pointer rounded-[1.7rem] border-2 p-6 transition-all
                     ${jobType === 'hourly'
-                        ? 'border-primary-600 bg-primary-50 ring-1 ring-primary-600 dark:bg-primary-500/10'
+                        ? 'border-primary-600 bg-primary-50 ring-1 ring-primary-600 shadow-[0_20px_40px_-30px_rgba(109,40,217,0.35)] dark:bg-primary-500/10'
                         : 'border-gray-200 bg-white hover:border-primary-200 hover:bg-primary-50/40 dark:border-white/10 dark:bg-[#1a1825] dark:hover:border-primary-500/20 dark:hover:bg-white/[0.06]'
                     }
                 `}>
@@ -76,7 +76,7 @@ export default function StepBudget() {
             </div>
 
             {/* Budget Inputs */}
-            <div className="rounded-[1.75rem] border border-primary-100/70 bg-white/72 p-6 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
+            <div className="rounded-[1.8rem] border border-primary-100/70 bg-white/80 p-6 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
                 {jobType === 'fixed_price' ? (
                     <div className="space-y-4">
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{tx('jobs.new.stepBudget.estimatedBudget', undefined, 'ميزانية المشروع التقديرية (د.ت)')}</label>
@@ -120,8 +120,8 @@ export default function StepBudget() {
             </div>
 
             {/* Additional Info */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="space-y-3">
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+                <div className="space-y-3 rounded-[1.6rem] border border-primary-100/70 bg-white/80 p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
                     <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                         <Calendar className="h-5 w-5 text-gray-500 dark:text-gray-400" />
                         {tx('jobs.new.stepBudget.duration', undefined, 'مدة المشروع')}
@@ -141,7 +141,7 @@ export default function StepBudget() {
                     )}
                 </div>
 
-                <div className="space-y-3">
+                <div className="space-y-3 rounded-[1.6rem] border border-primary-100/70 bg-white/80 p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
                     <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                         <Calendar className="h-5 w-5 text-gray-500 dark:text-gray-400" />
                         {tx('jobs.new.stepBudget.deadline', undefined, 'الموعد النهائي')}
@@ -154,21 +154,21 @@ export default function StepBudget() {
                     />
                 </div>
 
-                <div className="space-y-3">
+                <div className="space-y-3 rounded-[1.6rem] border border-primary-100/70 bg-white/80 p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
                     <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                         <TrendingUp className="h-5 w-5 text-gray-500 dark:text-gray-400" />
                         {tx('jobs.new.stepBudget.experienceLevel', undefined, 'مستوى الخبرة المطلوب')}
                     </label>
-                    <div className="flex flex-col gap-2">
-                        <label className="inline-flex items-center gap-2 cursor-pointer">
+                    <div className="grid gap-2">
+                        <label className="inline-flex items-center gap-2 rounded-2xl border border-gray-200 bg-white px-3 py-2.5 cursor-pointer dark:border-white/10 dark:bg-[#1a1825]">
                             <input type="radio" value="beginner" {...register('experience_level')} className="text-primary-600 focus:ring-primary-500" />
                             <span className="text-gray-700 dark:text-gray-300">{tx('jobs.new.stepBudget.beginner', undefined, 'مبتدئ (Beginner)')}</span>
                         </label>
-                        <label className="inline-flex items-center gap-2 cursor-pointer">
+                        <label className="inline-flex items-center gap-2 rounded-2xl border border-gray-200 bg-white px-3 py-2.5 cursor-pointer dark:border-white/10 dark:bg-[#1a1825]">
                             <input type="radio" value="intermediate" {...register('experience_level')} className="text-primary-600 focus:ring-primary-500" />
                             <span className="text-gray-700 dark:text-gray-300">{tx('jobs.new.stepBudget.intermediate', undefined, 'متوسط (Intermediate)')}</span>
                         </label>
-                        <label className="inline-flex items-center gap-2 cursor-pointer">
+                        <label className="inline-flex items-center gap-2 rounded-2xl border border-gray-200 bg-white px-3 py-2.5 cursor-pointer dark:border-white/10 dark:bg-[#1a1825]">
                             <input type="radio" value="expert" {...register('experience_level')} className="text-primary-600 focus:ring-primary-500" />
                             <span className="text-gray-700 dark:text-gray-300">{tx('jobs.new.stepBudget.expert', undefined, 'خبير (Expert)')}</span>
                         </label>

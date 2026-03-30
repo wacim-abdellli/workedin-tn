@@ -22,26 +22,26 @@ function Home() {
 
     useEffect(() => {
         const fetchStats = async () => {
-            const [
-                { count: jobsCount },
-                { count: freelancerCount },
-                { count: contractCount },
-                { data: contracts },
-            ] = await Promise.all([
-                supabaseAnon.from('jobs').select('*', { count: 'exact', head: true }).eq('status', 'open').eq('visibility', 'public'),
-                supabaseAnon.from('profiles').select('*', { count: 'exact', head: true }).in('user_type', ['freelancer', 'both']),
-                supabaseAnon.from('contracts').select('*', { count: 'exact', head: true }),
-                supabaseAnon.from('contracts').select('amount').eq('status', 'completed'),
-            ]);
+            try {
+                const [
+                    { count: jobsCount },
+                    { count: freelancerCount },
+                    { count: contractCount },
+                ] = await Promise.all([
+                    supabaseAnon.from('jobs').select('*', { count: 'exact', head: true }).eq('status', 'open').eq('visibility', 'public'),
+                    supabaseAnon.from('profiles').select('*', { count: 'exact', head: true }).in('user_type', ['freelancer', 'both']),
+                    supabaseAnon.from('contracts').select('*', { count: 'exact', head: true }),
+                ]);
 
-            const totalEarnings = contracts?.reduce((sum, c) => sum + (c.amount || 0), 0) || 0;
-
-            setStats({
-                jobs: jobsCount ?? 0,
-                freelancers: freelancerCount ?? 0,
-                contracts: contractCount ?? 0,
-                earnings: totalEarnings,
-            });
+                setStats({
+                    jobs: jobsCount ?? 0,
+                    freelancers: freelancerCount ?? 0,
+                    contracts: contractCount ?? 0,
+                    earnings: 0,
+                });
+            } catch {
+                // Anon queries may fail if RLS blocks them — use defaults
+            }
         };
 
         fetchStats();

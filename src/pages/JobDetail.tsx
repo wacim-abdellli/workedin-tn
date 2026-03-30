@@ -381,7 +381,7 @@ function JobDetail() {
     }
 
     return (
-        <div className="min-h-screen bg-background transition-colors duration-300">
+        <div className="page-enter min-h-screen bg-background transition-colors duration-300">
             <SEO
                 title={job ? `${job.title} | ${t.seo.jobDetail.titleSuffix}` : t.seo.jobDetail.titleSuffix}
                 description={job?.description?.slice(0, 160) || t.seo.jobDetail.descriptionFallback}

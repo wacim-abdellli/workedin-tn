@@ -1,4 +1,4 @@
-import { Navigate, Link } from 'react-router-dom';
+import { Navigate, Link, useLocation } from 'react-router-dom';
 import { Lock } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTranslation } from '../../i18n';
@@ -10,16 +10,17 @@ import { hasAdminAccess } from '@/lib/adminAccess';
  * Non-admin users are redirected to the home page.
  */
 export function AdminRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, isLoading, profile, user } = useAuth();
+  const { isAuthenticated, isFullyReady, profile, user } = useAuth();
   const { language } = useTranslation();
+  const location = useLocation();
   const tr = (ar: string, en: string, fr?: string) => language === 'ar' ? ar : language === 'fr' ? (fr || en) : en;
 
-  if (isLoading) {
+  if (!isFullyReady) {
     return <Loading fullScreen />;
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/login" replace state={{ from: location }} />;
   }
 
   if (!hasAdminAccess(user, profile)) {

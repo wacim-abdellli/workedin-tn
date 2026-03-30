@@ -331,7 +331,7 @@ function FreelancerDashboardPage() {
     };
 
     return (
-        <div className="page-shell bg-background">
+        <div className="page-enter page-shell bg-background">
             <SEO {...SEO_CONFIG.dashboard} url="/freelancer/dashboard" noIndex />
             <Header />
 

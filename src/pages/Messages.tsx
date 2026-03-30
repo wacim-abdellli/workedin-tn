@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
     Search,
     Send,
@@ -46,6 +46,7 @@ import { useTranslation } from '../i18n';
 
 export default function Messages() {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
     const { user } = useAuth();
     const { showToast } = useToast();
     const { tx, language } = useTranslation();
@@ -75,6 +76,33 @@ export default function Messages() {
     useEffect(() => {
         scrollToBottom();
     }, [messages]);
+
+    const handleSelectConversation = async (conversation: Conversation) => {
+        setSelectedConversation(conversation);
+        setShowMobileThread(true);
+
+        // Mark as read and update UI
+        if (user && conversation.unread_count > 0) {
+            await markConversationRead(conversation.id, user.id);
+            setConversations((prev) =>
+                prev.map((conv) =>
+                    conv.id === conversation.id ? { ...conv, unread_count: 0 } : conv
+                )
+            );
+        }
+    };
+
+    // Auto-select conversation from URL param ?conversation=ID
+    useEffect(() => {
+        const targetId = searchParams.get('conversation');
+        if (!targetId || conversations.length === 0) return;
+        const match = conversations.find(c => c.id === targetId);
+        if (match) {
+            handleSelectConversation(match);
+            // Clean the URL param without re-navigating
+            navigate('/messages', { replace: true });
+        }
+    }, [searchParams, conversations]);
 
     // Load conversations on mount
     useEffect(() => {
@@ -218,7 +246,7 @@ export default function Messages() {
         }
     };
 
-    const handleSelectConversation = async (conversation: Conversation) => {
+    async function handleSelectConversation(conversation: Conversation) {
         setSelectedConversation(conversation);
         setShowMobileThread(true);
 
@@ -231,7 +259,7 @@ export default function Messages() {
                 )
             );
         }
-    };
+    }
 
     const filteredConversations = conversations.filter((c) => {
         if (filter === 'unread' && c.unread_count === 0) return false;
@@ -269,7 +297,12 @@ export default function Messages() {
             <div className="p-4 border-b border-border">
                 <div className="flex items-center justify-between mb-4">
                     <h2 className="text-lg font-bold text-foreground">{tx('pages.messages.title', undefined, 'Messages')}</h2>
-                    <Button variant="primary" size="sm" disabled>
+                    <Button 
+                        variant="primary" 
+                        size="sm" 
+                        onClick={() => navigate(user?.user_metadata?.user_type === 'client' ? '/find-freelancers' : '/my-jobs')}
+                        title={tx('pages.messages.newConversation', undefined, 'Start a new conversation')}
+                    >
                         <Plus className="w-4 h-4" />
                     </Button>
                 </div>

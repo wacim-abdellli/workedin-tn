@@ -230,7 +230,7 @@ function Settings() {
 
     const handleLogout = async () => {
         await signOut();
-        navigate('/');
+        navigate('/login', { replace: true });
     };
 
     const ArrowIcon = dir === 'rtl' ? ChevronLeft : ChevronRight;
@@ -407,7 +407,7 @@ function Settings() {
     };
 
     return (
-        <div className="page-shell bg-[#f6f3ff] dark:bg-[#0b0a12] transition-colors duration-300">
+        <div className="page-enter page-shell bg-[#f6f3ff] dark:bg-[#0b0a12] transition-colors duration-300">
             <SEO {...SEO_CONFIG.settings} url="/settings" noIndex />
             <Header />
 

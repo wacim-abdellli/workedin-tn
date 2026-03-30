@@ -1,4 +1,4 @@
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { BadgeCheck, Globe2, ShieldCheck } from 'lucide-react';
 
 import { AuthShell, LoginForm } from '../components/auth';
@@ -11,17 +11,24 @@ import { useTranslation } from '../i18n';
 
 function Login() {
     const navigate = useNavigate();
+    const location = useLocation();
     const [searchParams] = useSearchParams();
-    const { isAuthenticated, isLoading, profile, freelancerProfile } = useAuth();
+    const { isAuthenticated, isLoading, isFullyReady, profile, freelancerProfile } = useAuth();
     const { tx } = useTranslation();
     const isOAuthResume = searchParams.get('oauth') === 'resume';
+    const redirectTarget = typeof location.state === 'object' && location.state && 'from' in location.state
+        ? (location.state.from as { pathname?: string; search?: string; hash?: string } | undefined)
+        : undefined;
+    const postLoginPath = redirectTarget?.pathname
+        ? `${redirectTarget.pathname}${redirectTarget.search ?? ''}${redirectTarget.hash ?? ''}`
+        : null;
 
     // Redirect authenticated users to appropriate dashboard
     useEffect(() => {
-        if (isLoading || !isAuthenticated) return;
+        if (!isFullyReady || !isAuthenticated) return;
 
-        navigate(getPostAuthWorkspacePath(profile, freelancerProfile));
-    }, [freelancerProfile, isAuthenticated, isLoading, navigate, profile]);
+        navigate(postLoginPath || getPostAuthWorkspacePath(profile, freelancerProfile), { replace: true });
+    }, [freelancerProfile, isAuthenticated, isFullyReady, navigate, postLoginPath, profile]);
 
     const handleSuccess = () => {
         // Navigation is handled by the useEffect above to avoid race conditions
@@ -75,7 +82,7 @@ function Login() {
                     ) : (
                         <LoginForm
                             onSuccess={handleSuccess}
-                            onSwitchToSignup={() => navigate('/signup')}
+                            onSwitchToSignup={() => navigate('/signup', { state: location.state })}
                         />
                     )}
                 </div>

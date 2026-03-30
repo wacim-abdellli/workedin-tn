@@ -739,7 +739,7 @@ export default function Header() {
                   onClick={async () => {
                     await signOut()
                     setMobileMenuOpen(false)
-                    navigate('/')
+                    navigate('/login', { replace: true })
                   }}
                   className="flex w-full items-center justify-center gap-2 rounded-2xl border border-red-200 px-4 py-3 text-sm font-semibold text-red-600 dark:border-red-500/20 dark:text-red-400"
                 >

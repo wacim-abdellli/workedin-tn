@@ -1,6 +1,7 @@
 import { Star, User } from 'lucide-react';
 import { OptimizedImage } from '../../common';
 import type { FreelancerData } from '@/types/freelancer';
+import { useTranslation } from '../../../i18n';
 
 interface ReviewsSectionProps {
     reviews: FreelancerData['reviews'];
@@ -8,6 +9,8 @@ interface ReviewsSectionProps {
 }
 
 export default function ReviewsSection({ reviews, stats }: ReviewsSectionProps) {
+    const { tx, language } = useTranslation();
+
     const renderStars = (rating: number) => {
         return (
             <div className="flex items-center gap-1">
@@ -25,22 +28,25 @@ export default function ReviewsSection({ reviews, stats }: ReviewsSectionProps) 
     };
 
     const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString('ar-TN', {
+        return new Date(dateString).toLocaleDateString(language === 'ar' ? 'ar-TN' : language === 'fr' ? 'fr-FR' : 'en-US', {
             year: 'numeric',
             month: 'long',
         });
     };
 
     return (
-        <section className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-            <h2 className="text-xl font-bold mb-6">تاريخ العمل والتقييمات</h2>
+        <section className="rounded-[1.75rem] border border-black/[0.06] bg-white p-6 shadow-[0_18px_40px_-28px_rgba(26,24,37,0.14)] dark:border-white/8 dark:bg-[#171421]">
+            <div className="mb-6">
+                <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--text-muted)]">{tx('pages.freelancerProfile.sectionLabelTrust', undefined, 'Client trust')}</div>
+                <h2 className="mt-2 text-xl font-bold text-[var(--text-primary)]">{tx('reviews.title', undefined, 'Reviews and work history')}</h2>
+            </div>
 
             {/* Rating Breakdown */}
-            <div className="flex flex-col md:flex-row items-center gap-8 mb-8 bg-gray-50 p-6 rounded-xl">
+            <div className="flex flex-col md:flex-row items-center gap-8 mb-8 bg-[var(--surface-bg)] p-6 rounded-2xl border border-border/60">
                 <div className="text-center md:text-start min-w-[120px]">
-                    <div className="text-4xl font-bold text-gray-900 mb-1">{stats.rating}</div>
+                    <div className="text-4xl font-black text-[var(--text-primary)] mb-1">{stats.rating}</div>
                     {renderStars(stats.rating)}
-                    <p className="text-sm text-muted mt-2">{stats.reviews_count} تقييم</p>
+                    <p className="text-sm text-[var(--text-muted)] mt-2">{tx('pages.freelancerProfile.reviewsCount', { count: stats.reviews_count }, `${stats.reviews_count} reviews`)}</p>
                 </div>
                 <div className="flex-1 w-full space-y-2">
                     {[5, 4, 3, 2, 1].map((stars) => {
@@ -50,14 +56,14 @@ export default function ReviewsSection({ reviews, stats }: ReviewsSectionProps) 
                             : 0;
                         return (
                             <div key={stars} className="flex items-center gap-3">
-                                <span className="text-sm font-medium w-3 text-gray-600">{stars}</span>
-                                <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                                <span className="text-sm font-medium w-3 text-[var(--text-secondary)]">{stars}</span>
+                                <div className="flex-1 h-2 bg-black/[0.08] dark:bg-white/[0.08] rounded-full overflow-hidden">
                                     <div
-                                        className="h-full bg-yellow-400 rounded-full"
+                                        className="h-full bg-[linear-gradient(90deg,var(--workspace-primary),var(--brand-accent))] rounded-full"
                                         style={{ width: `${percentage}%` }}
                                     />
                                 </div>
-                                <span className="text-xs text-muted w-8 text-end">{Math.round(percentage)}%</span>
+                                <span className="text-xs text-[var(--text-muted)] w-8 text-end">{Math.round(percentage)}%</span>
                             </div>
                         );
                     })}
@@ -67,7 +73,7 @@ export default function ReviewsSection({ reviews, stats }: ReviewsSectionProps) 
             {/* Reviews List */}
             <div className="space-y-6">
                 {reviews.map((review) => (
-                    <div key={review.id} className="border-b border-gray-100 pb-6 last:border-0 last:pb-0">
+                    <div key={review.id} className="border-b border-border/70 pb-6 last:border-0 last:pb-0">
                         <div className="flex justify-between items-start mb-2">
                             <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
@@ -83,18 +89,18 @@ export default function ReviewsSection({ reviews, stats }: ReviewsSectionProps) 
                                     )}
                                 </div>
                                 <div>
-                                    <h4 className="font-bold text-sm text-gray-900">{review.client_name}</h4>
-                                    <span className="text-xs text-muted">{formatDate(review.created_at)}</span>
+                                    <h4 className="font-bold text-sm text-[var(--text-primary)]">{review.client_name}</h4>
+                                    <span className="text-xs text-[var(--text-muted)]">{formatDate(review.created_at)}</span>
                                 </div>
                             </div>
                             {renderStars(review.rating)}
                         </div>
-                        <h5 className="font-medium text-sm text-gray-700 mb-1">{review.job_title}</h5>
-                        <p className="text-gray-600 text-sm leading-relaxed">{review.comment}</p>
+                        <h5 className="font-medium text-sm text-[var(--text-secondary)] mb-1">{review.job_title}</h5>
+                        <p className="text-[var(--text-secondary)] text-sm leading-relaxed">{review.comment}</p>
                     </div>
                 ))}
                 {reviews.length === 0 && (
-                    <p className="text-center text-muted py-4">لا توجد تقييمات مكتوبة بعد</p>
+                    <p className="text-center text-[var(--text-muted)] py-4">{tx('pages.freelancerProfile.noReviews', undefined, 'No written reviews yet')}</p>
                 )}
             </div>
         </section>

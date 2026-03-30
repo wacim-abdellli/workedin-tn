@@ -35,6 +35,60 @@ interface VerificationRequest {
     };
 }
 
+const SUPA_URL = import.meta.env.VITE_SUPABASE_URL as string;
+const IDENTITY_DOCS_BUCKET = 'identity-documents';
+const FALLBACK_IDENTITY_BUCKETS = ['identity-documents', 'identity_documents', 'verification-documents', 'verification_documents'];
+const ENV_IDENTITY_BUCKETS = (import.meta.env.VITE_IDENTITY_DOCS_BUCKETS as string | undefined)
+    ?.split(',').map(v => v.trim()).filter(Boolean) ?? [];
+const IDENTITY_BUCKET_CANDIDATES = Array.from(new Set([IDENTITY_DOCS_BUCKET, ...ENV_IDENTITY_BUCKETS, ...FALLBACK_IDENTITY_BUCKETS]));
+
+type ParsedStorageRef =
+    | { kind: 'external'; url: string }
+    | { kind: 'storage'; bucket: string | null; path: string }
+    | null;
+
+function parseStorageReference(input?: string | null): ParsedStorageRef {
+    if (!input) return null;
+    const trimmed = String(input).trim();
+    if (!trimmed) return null;
+
+    const parseStoragePath = (rawPath: string): { bucket: string; path: string } | null => {
+        const cleanPath = rawPath.replace(/^\/+/, '').split('?')[0];
+        const storagePrefixes = ['storage/v1/object/public/', 'storage/v1/object/sign/', 'storage/v1/object/'];
+        for (const prefix of storagePrefixes) {
+            if (cleanPath.startsWith(prefix)) {
+                const rest = cleanPath.slice(prefix.length);
+                const slashIndex = rest.indexOf('/');
+                if (slashIndex <= 0) return null;
+                return { bucket: rest.slice(0, slashIndex), path: rest.slice(slashIndex + 1) };
+            }
+        }
+        return null;
+    };
+
+    if (/^https?:\/\//i.test(trimmed)) {
+        try {
+            const parsed = new URL(trimmed);
+            const supabaseHost = new URL(SUPA_URL).host;
+            if (parsed.host !== supabaseHost) return { kind: 'external', url: trimmed };
+            const parsedStorage = parseStoragePath(parsed.pathname);
+            if (parsedStorage) return { kind: 'storage', bucket: parsedStorage.bucket, path: parsedStorage.path };
+            return { kind: 'external', url: trimmed };
+        } catch {
+            return { kind: 'external', url: trimmed };
+        }
+    }
+
+    const parsedStorage = parseStoragePath(trimmed);
+    if (parsedStorage) return { kind: 'storage', bucket: parsedStorage.bucket, path: parsedStorage.path };
+
+    const clean = trimmed.replace(/^\/+/, '');
+    const bucketMatch = IDENTITY_BUCKET_CANDIDATES.find(bucket => clean.startsWith(`${bucket}/`));
+    if (bucketMatch) return { kind: 'storage', bucket: bucketMatch, path: clean.slice(bucketMatch.length + 1) };
+
+    return { kind: 'storage', bucket: null, path: clean };
+}
+
 export default function VerificationQueue() {
     const { user } = useAuth();
     const { showToast } = useToast();
@@ -95,16 +149,26 @@ export default function VerificationQueue() {
         }
     };
 
-    const getSignedUrl = async (path: string) => {
-        const { data, error } = await supabase.storage
-            .from('identity-documents')
-            .createSignedUrl(path, 3600); // 1 hour expiry
+    const resolveIdentityDocumentUrl = async (url?: string | null) => {
+        const parsed = parseStorageReference(url);
+        if (!parsed) return '';
+        if (parsed.kind === 'external') return parsed.url;
 
-        if (error) {
-            logger.error('Error getting signed URL:', error);
-            return '';
+        const candidates = parsed.bucket
+            ? [parsed.bucket, ...IDENTITY_BUCKET_CANDIDATES.filter(bucket => bucket !== parsed.bucket)]
+            : IDENTITY_BUCKET_CANDIDATES;
+
+        for (const bucket of candidates) {
+            try {
+                const { data, error } = await supabase.storage.from(bucket).createSignedUrl(parsed.path, 3600);
+                if (!error && data?.signedUrl) return data.signedUrl;
+            } catch {
+                // Try next candidate bucket.
+            }
         }
-        return data.signedUrl;
+
+        const fallbackBucket = parsed.bucket || IDENTITY_DOCS_BUCKET;
+        return `${SUPA_URL}/storage/v1/object/public/${fallbackBucket}/${parsed.path}`;
     };
 
     const [documentUrls, setDocumentUrls] = useState<{
@@ -120,10 +184,11 @@ export default function VerificationQueue() {
     }, [selectedVerification]);
 
     const loadDocumentUrls = async (verification: VerificationRequest) => {
+        setDocumentUrls({ front: '', back: '', selfie: '' });
         const [front, back, selfie] = await Promise.all([
-            getSignedUrl(verification.cin_front_url),
-            getSignedUrl(verification.cin_back_url),
-            getSignedUrl(verification.selfie_url),
+            resolveIdentityDocumentUrl(verification.cin_front_url),
+            resolveIdentityDocumentUrl(verification.cin_back_url),
+            resolveIdentityDocumentUrl(verification.selfie_url),
         ]);
         setDocumentUrls({ front, back, selfie });
     };

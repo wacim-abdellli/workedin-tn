@@ -207,7 +207,7 @@ export default function MobileNav() {
                 onClick={async () => {
                   await signOut();
                   setShowMenu(false);
-                  navigate('/');
+                  navigate('/login', { replace: true });
                 }}
                 className="flex w-full items-center gap-4 rounded-xl p-4 text-left text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-500/10"
               >

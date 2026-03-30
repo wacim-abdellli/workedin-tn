@@ -99,7 +99,7 @@ export default function ProfileSettings() {
         try {
             const { error } = await supabase
                 .from('profiles')
-                .update({ full_name: form.full_name, bio: form.bio, location: form.location, updated_at: new Date().toISOString() })
+                .update({ full_name: form.full_name, phone: form.phone, bio: form.bio, location: form.location, updated_at: new Date().toISOString() })
                 .eq('id', user.id);
             if (error) throw error;
             await refreshProfile?.();
@@ -258,7 +258,7 @@ export default function ProfileSettings() {
             {/* Form fields */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Input label={tx('settings.fullName', undefined, 'Full name')} value={form.full_name} onChange={e => setForm({ ...form, full_name: e.target.value })} />
-                <Input label={tx('settings.phoneNumberLabel', undefined, 'Phone number')} value={form.phone} disabled />
+                <Input label={tx('settings.phoneNumberLabel', undefined, 'Phone number')} value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} placeholder={tx('common.phonePlaceholder', undefined, 'Enter your phone number')} />
                 <Input label={tx('settings.emailOptionalLabel', undefined, 'Email (optional)')} type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} placeholder={tx('settings.emailPlaceholder', undefined, 'email@example.com')} />
                 <Input label={tx('settings.location', undefined, 'Location')} value={form.location} onChange={e => setForm({ ...form, location: e.target.value })} />
             </div>
