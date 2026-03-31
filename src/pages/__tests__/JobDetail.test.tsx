@@ -95,6 +95,9 @@ describe('JobDetail', () => {
             isPending: false,
         });
         queryMocks.useQuery.mockImplementation(({ queryKey }: { queryKey: unknown[] }) => {
+            if (!queryKey || queryKey.length === 0) {
+                return { data: null, isLoading: false, error: null };
+            }
             switch (queryKey[0]) {
                 case 'job':
                     return {

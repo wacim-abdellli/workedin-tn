@@ -101,8 +101,9 @@ describe('useContractState', () => {
         expect(hookState.updateCalls).toContainEqual({
             table: 'contracts',
             value: expect.objectContaining({
+                status: 'completed',
                 delivery_note: 'Ready for review',
-                payment_status: 'pending',
+                completed_at: expect.any(String),
                 updated_at: expect.any(String),
             }),
         });

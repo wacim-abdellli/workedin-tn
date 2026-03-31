@@ -148,8 +148,8 @@ describe('SignupForm', () => {
 
             // Fill valid form data
             await user.type(getEmailInput(), 'newuser@example.com');
-            await user.type(getPasswordInput(), 'password123');
-            await user.type(getConfirmPasswordInput(), 'password123');
+            await user.type(getPasswordInput(), 'Password123');
+            await user.type(getConfirmPasswordInput(), 'Password123');
 
             // Submit form
             const submitButton = screen.getByRole('button', { name: /إنشاء حساب|create account/i });

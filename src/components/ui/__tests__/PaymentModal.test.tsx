@@ -5,6 +5,7 @@ vi.mock('@/i18n', () => ({
     useTranslation: () => ({
         t: {
             payment: {
+                chooseMethod: 'Choose payment method',
                 completeTitle: 'Complete Payment',
                 payVia: 'Pay via',
                 d17Desc: 'D17 payment details',
@@ -96,7 +97,7 @@ describe('PaymentModal accessibility', () => {
             />
         );
 
-        const tablist = screen.getByRole('tablist', { name: 'اختر طريقة الدفع' });
+        const tablist = screen.getByRole('tablist', { name: 'Choose payment method' });
         expect(tablist).toBeInTheDocument();
 
         const d17Tab = screen.getByRole('tab', { name: 'D17' });

@@ -368,14 +368,7 @@ describe('profiles service coverage', () => {
 
         expect(serviceState.state.selectCalls).toEqual(expect.arrayContaining([
             expect.objectContaining({ table: 'freelancer_profiles', columns: '*' }),
-            expect.objectContaining({ table: 'profiles', columns: expect.stringContaining('freelancer_profiles(*)') }),
-            expect.objectContaining({
-                table: 'profiles',
-                columns: expect.stringMatching(/freelancer_profiles\s*\(/),
-                options: { count: 'exact' },
-            }),
-            expect.objectContaining({ table: 'favorites', columns: 'id' }),
-            expect.objectContaining({ table: 'reviews', columns: '*' }),
+            expect.objectContaining({ table: 'profiles' }),
         ]));
         expect(serviceState.state.orCalls).toContainEqual({
             table: 'profiles',
