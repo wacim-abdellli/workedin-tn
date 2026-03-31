@@ -302,9 +302,7 @@ function FreelancerOnboarding() {
                     ...(typeof profile?.freelancer_onboarding_completed === 'boolean'
                         ? { freelancer_onboarding_completed: true }
                         : {}),
-                    onboarding_completed: profile?.user_type === 'both'
-                        ? Boolean(profile?.client_onboarding_completed)
-                        : true,
+                    onboarding_completed: true,
                     updated_at: new Date().toISOString(),
                 }
             );

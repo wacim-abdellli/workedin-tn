@@ -182,6 +182,8 @@ export const en: Translations = {
                 titleRequiredForDraft: 'Please enter a job title to save draft',
                 loginRequired: 'You must be logged in to post a job',
                 saveFailed: 'Something went wrong while saving the job',
+                attachmentsUnavailable: 'Attachments could not be uploaded right now. Your job will be posted without them.',
+                stepIncomplete: 'Please complete the required fields before continuing.',
             },
             time: {
                 now: 'Just now',

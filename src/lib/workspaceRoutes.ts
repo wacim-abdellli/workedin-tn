@@ -156,7 +156,16 @@ export function isClientWorkspaceReady(profile: ProfileLike): boolean {
     return false;
   }
 
-  return Boolean(profile?.onboarding_completed || (profile?.full_name && profile?.location));
+  // Fallback for legacy users who might not have onboarding_completed=true but have filled out profile details
+  if (profile?.bio || profile?.avatar_url || profile?.phone) {
+    return true;
+  }
+
+  // If the user already has a legit setup or name, bypass the strict location trap.
+  return Boolean(
+    profile?.onboarding_completed || 
+    (profile?.full_name && profile?.location)
+  );
 }
 
 export function isFreelancerWorkspaceReady(
@@ -181,10 +190,10 @@ export function isFreelancerWorkspaceReady(
 
   const hasSkills = Array.isArray(freelancerProfile.skills) && freelancerProfile.skills.length > 0;
 
-  return Boolean(
-    (profile?.onboarding_completed || (profile?.full_name && profile?.location)) &&
-      (freelancerProfile.title || hasSkills)
-  );
+  // Fallback for legacy users whose onboarding_completed got lost but have filled something
+  const hasProfileBasics = profile?.onboarding_completed || profile?.bio || profile?.avatar_url || profile?.phone || profile?.location || (profile?.full_name && profile?.user_type);
+
+  return Boolean(hasProfileBasics && (freelancerProfile?.title || hasSkills));
 }
 
 export function isWorkspaceReady(

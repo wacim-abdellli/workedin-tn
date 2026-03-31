@@ -1199,21 +1199,50 @@ h6 {
 
   /* Shimmer effect */
   .shimmer {
+    position: relative;
+    overflow: hidden;
     background:
       linear-gradient(90deg,
-        rgba(248, 247, 255, 0) 0%,
-        rgba(237, 233, 254, 0.85) 45%,
-        rgba(248, 247, 255, 0) 100%);
-    background-size: 200% 100%;
-    animation: shimmer-wave 1.8s linear infinite;
+        rgba(248, 247, 255, 0.92) 0%,
+        rgba(241, 236, 255, 0.96) 100%);
+  }
+
+  .shimmer::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(105deg,
+        rgba(255, 255, 255, 0) 20%,
+        rgba(255, 255, 255, 0.48) 42%,
+        rgba(255, 255, 255, 0.08) 54%,
+        rgba(255, 255, 255, 0) 72%);
+    background-size: 220% 100%;
+    animation: shimmer-wave 2.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
   }
 
   .dark .shimmer {
     background:
       linear-gradient(90deg,
-        rgba(26, 24, 37, 0) 0%,
-        rgba(36, 34, 53, 0.9) 45%,
-        rgba(26, 24, 37, 0) 100%);
+        rgba(26, 24, 37, 0.96) 0%,
+        rgba(31, 29, 46, 0.98) 100%);
+  }
+
+  .dark .shimmer::after {
+    background:
+      linear-gradient(105deg,
+        rgba(167, 139, 250, 0) 18%,
+        rgba(167, 139, 250, 0.22) 40%,
+        rgba(255, 255, 255, 0.08) 52%,
+        rgba(167, 139, 250, 0) 72%);
+  }
+
+  .animate-pulse {
+    animation: pulse 2.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  .animate-pulse-slow {
+    animation: pulse 3.2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   }
 
   /* Noise overlay */
@@ -1273,11 +1302,11 @@ h6 {
 
 @keyframes shimmer-wave {
   0% {
-    background-position: -200% 0;
+    transform: translateX(-140%);
   }
 
   100% {
-    background-position: 200% 0;
+    transform: translateX(140%);
   }
 }
 

@@ -15,7 +15,7 @@ import { switchWorkspace } from '@/lib/switchWorkspace';
 
 export default function ProfileSettings() {
     const { dir, t, tx } = useTranslation();
-    const { user, profile, freelancerProfile, activeMode, refreshProfile } = useAuth();
+    const { user, profile, freelancerProfile, activeMode, refreshProfile, updateProfile } = useAuth();
     const { showToast } = useToast();
     const navigate = useNavigate();
 
@@ -97,16 +97,21 @@ export default function ProfileSettings() {
         if (!user?.id) return;
         setIsSaving(true);
         try {
-            const { error } = await supabase
-                .from('profiles')
-                .update({ full_name: form.full_name, phone: form.phone, bio: form.bio, location: form.location, updated_at: new Date().toISOString() })
-                .eq('id', user.id);
-            if (error) throw error;
+            await updateProfile({
+                full_name: form.full_name,
+                phone: form.phone,
+                bio: form.bio,
+                location: form.location,
+            });
             await refreshProfile?.();
             showToast(tx('settings.toasts.profileSaved', undefined, 'Profile updated successfully'), 'success');
-        } catch (error) {
+        } catch (error: any) {
             logger.error('Error saving profile:', error);
-            showToast(tx('settings.toasts.profileSaveError', undefined, 'Failed to save profile changes'), 'error');
+            if (error?.message?.includes('duplicate key value violates unique constraint') && error?.message?.includes('phone')) {
+                showToast(tx('settings.toasts.phoneTaken', undefined, 'This phone number is already in use by another account.'), 'error');
+            } else {
+                showToast(tx('settings.toasts.profileSaveError', undefined, 'Failed to save profile changes'), 'error');
+            }
         } finally {
             setIsSaving(false);
         }

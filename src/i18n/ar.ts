@@ -181,6 +181,8 @@ export const ar = {
                 titleRequiredForDraft: 'يرجى إدخال عنوان الوظيفة لحفظ المسودة',
                 loginRequired: 'يجب تسجيل الدخول لنشر وظيفة',
                 saveFailed: 'حدث خطأ أثناء حفظ الوظيفة',
+                attachmentsUnavailable: 'تعذر رفع المرفقات حالياً. سيتم نشر المهمة بدونها.',
+                stepIncomplete: 'يرجى إكمال الحقول المطلوبة قبل المتابعة.',
             },
             time: {
                 now: 'الآن',

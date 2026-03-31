@@ -51,7 +51,7 @@ export async function supabaseWithRetry<TResult extends SupabaseResultLike<unkno
   const timeoutMs = options.timeoutMs ?? 8000;
   const refreshTimeoutMs = options.refreshTimeoutMs ?? 5000;
 
-  let result = await withTimeout(Promise.resolve(queryFn()), timeoutMs, 'Supabase query');
+  console.log('[ supabaseWithRetry ] Starting query...'); const start = Date.now(); let result = await withTimeout(Promise.resolve(queryFn()), timeoutMs, 'Supabase query'); console.log('[ supabaseWithRetry ] Query done in', (Date.now() - start), 'ms');
 
   if (getResultStatus(result) === 401) {
     const now = Date.now();

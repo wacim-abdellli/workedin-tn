@@ -45,6 +45,7 @@ export interface Conversation {
         username: string | null;
     };
     unread_count: number;
+    message_count?: number;
 }
 
 export interface Message {
@@ -119,6 +120,21 @@ export async function getConversations(userId: string) {
             }
         }
 
+        // Fetch message counts with timeout protection and error handling
+        const messageCounts = new Map<string, number>();
+        const messageCountPromises = rows.map(async (conv) => {
+            try {
+                const { count } = await getMessageCount(conv.id);
+                messageCounts.set(conv.id, count);
+            } catch {
+                // Silently fail - we'll use 0 as fallback
+                messageCounts.set(conv.id, 0);
+            }
+        });
+
+        // Use Promise.allSettled to prevent one failure from blocking all
+        await Promise.allSettled(messageCountPromises);
+
         const conversations: Conversation[] = rows.map((conv) => {
             const isParticipant1 = conv.participant_1 === userId;
             const otherUserId = isParticipant1 ? conv.participant_2 : conv.participant_1;
@@ -143,12 +159,35 @@ export async function getConversations(userId: string) {
                     username: otherUser?.username || null,
                 },
                 unread_count: unread_count || 0,
+                message_count: messageCounts.get(conv.id) ?? 0,
             };
         });
 
         return { data: conversations, error: null };
     } catch (error) {
         return { data: null, error: normalizeMessageError(error) };
+    }
+}
+
+export async function getTotalUnreadCount(userId: string) {
+    try {
+        const { data, error } = await supabaseWithRetry(() => supabase
+            .from('conversations')
+            .select('unread_count_1, unread_count_2, participant_1, participant_2')
+            .or(`participant_1.eq.${userId},participant_2.eq.${userId}`));
+
+        if (error) throw error;
+
+        const rows = (data ?? []) as ConversationRow[];
+        const totalUnread = rows.reduce((sum, conv) => {
+            const isParticipant1 = conv.participant_1 === userId;
+            const unreadCount = isParticipant1 ? conv.unread_count_1 : conv.unread_count_2;
+            return sum + (unreadCount ?? 0);
+        }, 0);
+
+        return { count: totalUnread, error: null };
+    } catch (error) {
+        return { count: 0, error: normalizeMessageError(error) };
     }
 }
 
@@ -168,6 +207,29 @@ export async function getMessages(conversationId: string) {
         return { data: data as Message[], error: null };
     } catch (error) {
         return { data: null, error: normalizeMessageError(error) };
+    }
+}
+
+export async function getMessageCount(conversationId: string) {
+    try {
+        // Create a timeout promise that rejects after 3 seconds
+        const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Query timeout')), 3000)
+        );
+
+        const queryPromise = supabaseWithRetry(() => supabase
+            .from('messages')
+            .select('*', { count: 'exact', head: true })
+            .eq('conversation_id', conversationId));
+
+        const { count, error } = await Promise.race([queryPromise, timeoutPromise]) as any;
+
+        if (error) throw error;
+
+        return { count: count ?? 0, error: null };
+    } catch (error) {
+        // Silently fail with 0 count - this prevents timeout errors from showing
+        return { count: 0, error: null };
     }
 }
 
@@ -352,4 +414,8 @@ export async function sendContractMessage(data: {
     } catch (error) {
         return { data: null, error: normalizeMessageError(error) };
     }
+}
+
+export async function unsubscribeFromChannel(channel: RealtimeChannel) {
+    if (channel) await supabase.removeChannel(channel);
 }

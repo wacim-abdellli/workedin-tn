@@ -122,9 +122,7 @@ function ClientOnboarding() {
                 bio: data.bio,
                 avatar_url: avatarUrl,
                 ...(typeof profile?.client_onboarding_completed === 'boolean' ? { client_onboarding_completed: true } : {}),
-                onboarding_completed: profile?.user_type === 'both'
-                    ? Boolean(profile?.freelancer_onboarding_completed)
-                    : true,
+                onboarding_completed: true,
             });
 
             void Promise.race([

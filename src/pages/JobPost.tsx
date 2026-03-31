@@ -12,7 +12,7 @@ import Modal from '../components/ui/Modal';
 import { useToast } from '../components/ui/Toast';
 import { useAuth } from '../contexts/AuthContext';
 import { useTranslation } from '../i18n';
-import { getStorageConfigErrorMessage, isMissingStorageBucketError, supabase } from '../lib/supabase';
+import { getStorageConfigErrorMessage, isMissingStorageBucketError, isStoragePermissionError, supabase } from '../lib/supabase';
 import { supabaseWithRetry } from '../lib/supabaseWithRetry';
 import { useAutosave } from '../hooks/useAutosave';
 import { JOB_CATEGORIES } from '../lib/jobCategories';
@@ -23,6 +23,14 @@ import StepJobBasics from '../components/job-post/StepJobBasics';
 import StepBudget from '../components/job-post/StepBudget';
 import StepVisibility from '../components/job-post/StepVisibility';
 import StepReview from '../components/job-post/StepReview';
+
+const JOB_POST_DEFAULT_VALUES: Partial<JobFormData> = {
+    job_type: 'fixed_price',
+    visibility: 'public',
+    required_skills: [],
+    experience_level: 'intermediate',
+    subcategory: '',
+};
 
 const optionalNumber = (message: string) => z.preprocess(
     (value) => (value === '' || value === null || value === undefined ? undefined : Number(value)),
@@ -102,13 +110,7 @@ export default function JobPost() {
 
     const methods = useForm<JobFormData>({
         resolver: zodResolver(jobSchema) as any, // Type assertion to fix resolver compatibility
-        defaultValues: {
-            job_type: 'fixed_price',
-            visibility: 'public',
-            required_skills: [],
-            experience_level: 'intermediate',
-            subcategory: '',
-        },
+        defaultValues: JOB_POST_DEFAULT_VALUES,
         mode: 'onChange'
     });
 
@@ -184,20 +186,40 @@ export default function JobPost() {
         },
     ];
 
+    const focusFirstInvalidField = (fieldNames: Array<keyof JobFormData>) => {
+        const errors = methods.formState.errors;
+        const firstInvalidField = fieldNames.find((fieldName) => Boolean(errors[fieldName]));
+
+        if (!firstInvalidField) return;
+
+        methods.setFocus(firstInvalidField);
+
+        const escapedName = String(firstInvalidField).replace(/([.[\]])/g, '\\$1');
+        const fieldElement = document.querySelector<HTMLElement>(`[name="${escapedName}"]`);
+        fieldElement?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    };
+
     const handleNext = async () => {
+        let fieldsToValidate: Array<keyof JobFormData> = [];
         let isValid = false;
         if (currentStep === 1) {
-            isValid = await methods.trigger(['title', 'category', 'subcategory', 'description', 'required_skills']);
+            fieldsToValidate = ['title', 'category', 'subcategory', 'description', 'required_skills'];
         } else if (currentStep === 2) {
-            isValid = await methods.trigger(['job_type', 'budget_min', 'budget_max', 'hourly_rate', 'estimated_hours', 'duration', 'experience_level', 'deadline']);
+            fieldsToValidate = ['job_type', 'budget_min', 'budget_max', 'hourly_rate', 'estimated_hours', 'duration', 'experience_level', 'deadline'];
         } else if (currentStep === 3) {
-            isValid = await methods.trigger(['visibility']);
+            fieldsToValidate = ['visibility'];
         }
+
+        isValid = await methods.trigger(fieldsToValidate);
 
         if (isValid) {
             setCurrentStep(prev => prev + 1);
             window.scrollTo(0, 0);
+            return;
         }
+
+        focusFirstInvalidField(fieldsToValidate);
+        showToast(tx('jobs.new.errors.stepIncomplete', undefined, 'Please complete the required fields before continuing.'), 'warning');
     };
 
     const handleBack = () => {
@@ -236,6 +258,7 @@ export default function JobPost() {
             const uploadedUrls: string[] = [];
             if (data.attachments_files && data.attachments_files.length > 0) {
                 let attachmentsSkipped = false;
+                let attachmentWarningMessage: string | null = null;
                 // ... (Keep existing upload logic)
                 // Note: File lists cannot be easily autosaved/restored from localStorage
                 // We might need to handle this gracefully or ignore files in autosave
@@ -249,8 +272,11 @@ export default function JobPost() {
                         .upload(filePath, file);
 
                     if (uploadError) {
-                        if (isMissingStorageBucketError(uploadError)) {
+                        if (isMissingStorageBucketError(uploadError) || isStoragePermissionError(uploadError)) {
                             attachmentsSkipped = true;
+                            attachmentWarningMessage = isMissingStorageBucketError(uploadError)
+                                ? getStorageConfigErrorMessage('attachments')
+                                : tx('jobs.new.errors.attachmentsUnavailable', undefined, 'Attachments could not be uploaded right now. Your job will be posted without them.');
                             break;
                         }
 
@@ -264,7 +290,7 @@ export default function JobPost() {
                 }
 
                 if (attachmentsSkipped) {
-                    showToast(getStorageConfigErrorMessage('attachments'), 'warning');
+                    showToast(attachmentWarningMessage || getStorageConfigErrorMessage('attachments'), 'warning');
                 }
             }
 
@@ -287,7 +313,6 @@ export default function JobPost() {
                 budget_min: toNumberOrNull(data.budget_min),
                 budget_max: toNumberOrNull(data.budget_max),
                 hourly_rate: toNumberOrNull(data.hourly_rate),
-                estimated_hours: toNumberOrNull(data.estimated_hours),
                 duration: data.duration,
                 experience_level: data.experience_level,
                 deadline: data.deadline,
@@ -317,6 +342,10 @@ export default function JobPost() {
 
             // Clean up autosave
             clearStorage();
+            setDraftToRestore(null);
+            setShowRestoreDraftModal(false);
+            methods.reset(JOB_POST_DEFAULT_VALUES);
+            setCurrentStep(1);
 
             if (status === 'draft') {
                 showToast(tx('jobs.new.toasts.draftSaved', undefined, 'Draft saved successfully'), 'success');

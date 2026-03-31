@@ -9,8 +9,6 @@ import {
     Video,
     Archive,
     Trash2,
-    Check,
-    CheckCheck,
     ChevronLeft,
     Plus,
     FileText,
@@ -21,7 +19,6 @@ import {
     Square,
     X,
     FileAudio,
-    Image as ImageIcon,
 } from 'lucide-react';
 import { Header } from '../components/layout';
 import Button from '../components/ui/Button';
@@ -51,6 +48,7 @@ export default function Messages() {
     const { showToast } = useToast();
     const { tx, language } = useTranslation();
     const messagesEndRef = useRef<HTMLDivElement>(null);
+    const messageInputRef = useRef<HTMLInputElement>(null);
 
     const [conversations, setConversations] = useState<Conversation[]>([]);
     const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
@@ -76,6 +74,16 @@ export default function Messages() {
     useEffect(() => {
         scrollToBottom();
     }, [messages]);
+
+    useEffect(() => {
+        if (!selectedConversation) return;
+
+        const frame = window.requestAnimationFrame(() => {
+            messageInputRef.current?.focus();
+        });
+
+        return () => window.cancelAnimationFrame(frame);
+    }, [selectedConversation?.id, isSending]);
 
     const handleSelectConversation = async (conversation: Conversation) => {
         setSelectedConversation(conversation);
@@ -166,7 +174,7 @@ export default function Messages() {
                 const newMsg = payload.new as Message;
                 setMessages((prev) => [...prev, newMsg]);
 
-                // Update conversation in list
+                // Update conversation in list - move to top and update last message
                 setConversations((prev) =>
                     prev.map((conv) =>
                         conv.id === selectedConversation.id
@@ -174,9 +182,17 @@ export default function Messages() {
                                   ...conv,
                                   last_message_text: newMsg.content,
                                   last_message_at: newMsg.created_at,
+                                  // Decrease unread if this is from the other user
+                                  unread_count: newMsg.sender_id === user?.id ? conv.unread_count : 0,
                               }
                             : conv
                     )
+                    // Sort to keep selected conversation at top
+                    .sort((a, b) => {
+                        if (a.id === selectedConversation.id) return -1;
+                        if (b.id === selectedConversation.id) return 1;
+                        return new Date(b.last_message_at || 0).getTime() - new Date(a.last_message_at || 0).getTime();
+                    })
                 );
             }
         );
@@ -212,11 +228,12 @@ export default function Messages() {
             const { url, error } = await uploadMessageAttachment(selectedFile, selectedConversation.id);
             if (error) {
                  showToast(`${tx('pages.messages.errors.fileUpload', undefined, 'Failed to upload file')}: ${error.message}`, 'error');
-                 setIsSending(false);
-                 return;
-            }
-            if (url) attachments.push({ name: selectedFile.name, url, type: selectedFile.type, size: selectedFile.size });
-            setSelectedFile(null);
+                  setIsSending(false);
+                  return;
+             }
+             if (url) attachments.push({ name: selectedFile.name, url, type: selectedFile.type, size: selectedFile.size });
+             setSelectedFile(null);
+             if (fileInputRef.current) fileInputRef.current.value = '';
         }
 
         const { data, error } = await sendMessage({
@@ -232,6 +249,8 @@ export default function Messages() {
             showToast(error.message, 'error');
         } else if (data) {
             setNewMessage('');
+            if (fileInputRef.current) fileInputRef.current.value = '';
+            messageInputRef.current?.focus();
         }
         setIsSending(false);
     };
@@ -241,6 +260,7 @@ export default function Messages() {
         if (file) {
             if (file.size > 10 * 1024 * 1024) {
                 showToast(tx('pages.messages.errors.fileTooLarge', undefined, 'File size must be less than 10 MB'), 'error');
+                e.target.value = '';
                 return;
             }
             setSelectedFile(file);
@@ -277,17 +297,21 @@ export default function Messages() {
         return date.toLocaleTimeString(language === 'ar' ? 'ar-TN' : language === 'fr' ? 'fr-FR' : 'en-US', { hour: '2-digit', minute: '2-digit' });
     };
 
-    const ConversationList = () => (
-        <div className="h-full flex flex-col border-e border-border">
+    const renderConversationList = () => (
+        <div className="flex h-full flex-col border-e border-border bg-surface backdrop-blur-xl">
             {/* Header */}
-            <div className="p-4 border-b border-border">
-                <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-lg font-bold text-foreground">{tx('pages.messages.title', undefined, 'Messages')}</h2>
+            <div className="border-b border-border px-4 py-5">
+                <div className="mb-4 flex items-center justify-between">
+                    <div>
+                        <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-brand/80">Inbox</p>
+                        <h2 className="text-[1.9rem] font-bold tracking-tight text-foreground">{tx('pages.messages.title', undefined, 'Messages')}</h2>
+                    </div>
                     <Button 
                         variant="primary"
                         size="sm"
                         onClick={() => navigate(profile?.user_type === 'client' ? '/find-freelancers' : '/jobs')}
                         title={tx('pages.messages.newConversation', undefined, 'Start a new conversation')}
+                        className="h-11 w-11 rounded-full border border-brand/20 p-0 shadow-lg hover:shadow-xl text-white transition-all"
                     >
                         <Plus className="w-4 h-4" />
                     </Button>
@@ -299,21 +323,21 @@ export default function Messages() {
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         placeholder={tx('pages.messages.searchPlaceholder', undefined, 'Search conversations...')}
-                        className="w-full pe-10 ps-4 py-2 border border-border rounded-xl text-sm bg-card text-foreground"
+                        className="w-full rounded-xl border border-border bg-input/bg py-3 pe-10 ps-4 text-sm text-foreground shadow-sm focus:border-brand focus:ring-1 focus:ring-brand/50 placeholder:text-muted-foreground transition-colors"
                     />
                 </div>
             </div>
 
             {/* Tabs */}
-            <div className="flex border-b border-border">
+            <div className="flex gap-2 border-b border-border px-4 py-3">
                 {(['all', 'unread'] as const).map((f) => (
                     <button
                         key={f}
                         onClick={() => setFilter(f)}
-                        className={`flex-1 py-3 text-sm font-medium transition-colors ${
+                        className={`flex-1 py-3 text-sm font-medium transition-all rounded-lg ${
                             filter === f
-                                ? 'text-primary-600 border-b-2 border-primary-600'
-                                : 'text-muted hover:text-foreground'
+                                ? 'bg-brand/15 text-brand shadow-sm border border-brand/20'
+                                : 'text-muted hover:bg-surface hover:text-foreground border border-transparent'
                         }`}
                     >
                         {f === 'all' ? tx('pages.messages.filters.all', undefined, 'All') : tx('pages.messages.filters.unread', undefined, 'Unread')}
@@ -322,10 +346,10 @@ export default function Messages() {
             </div>
 
             {/* Conversation List */}
-            <div className="flex-1 overflow-y-auto">
+            <div className="flex-1 space-y-3 overflow-y-auto px-3 py-4">
                 {isLoadingConversations ? (
                     <div className="flex items-center justify-center h-32">
-                        <Loader2 className="w-6 h-6 animate-spin text-primary-600" />
+                        <Loader2 className="w-6 h-6 animate-spin text-brand" />
                     </div>
                 ) : filteredConversations.length === 0 ? (
                     <div className="p-8 text-center">
@@ -350,22 +374,23 @@ export default function Messages() {
                                     handleSelectConversation(conversation);
                                 }
                             }}
-                            className={`p-4 border-b border-border cursor-pointer hover:bg-secondary transition-colors ${
-                                selectedConversation?.id === conversation.id
-                                    ? 'bg-primary-50 dark:bg-primary-900/20'
-                                    : ''
-                            }`}
+                            className={`group relative overflow-hidden rounded-2xl border p-4 transition-all duration-300 cursor-pointer animate-in fade-in ${
+                                 selectedConversation?.id === conversation.id
+                                    ? 'border-brand/30 bg-brand/10 shadow-md'
+                                    : 'border-border bg-card hover:border-border-strong hover:bg-surface hover:shadow-sm'
+                             }`}
                         >
+                            {selectedConversation?.id === conversation.id ? <div className="absolute inset-y-4 start-0 w-1 rounded-full bg-brand" /> : null}
                             <div className="flex items-start gap-3">
                                 <div className="relative">
                                     {conversation.otherUser.avatar_url ? (
                                         <img
                                             src={conversation.otherUser.avatar_url}
                                             alt={conversation.otherUser.full_name}
-                                            className="w-12 h-12 rounded-full object-cover"
+                                            className="h-12 w-12 rounded-full object-cover ring-2 ring-card"
                                         />
                                     ) : (
-                                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary-400 to-secondary-500 flex items-center justify-center text-white font-bold">
+                                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-brand to-brand-mid font-bold text-brand-text shadow-sm">
                                             {conversation.otherUser.full_name.charAt(0)}
                                         </div>
                                     )}
@@ -381,7 +406,7 @@ export default function Messages() {
                                         >
                                             {conversation.otherUser.full_name}
                                         </h3>
-                                        <span className="text-xs text-muted">
+                                        <span className="text-xs text-muted transition-colors group-hover:text-foreground/70">
                                             {formatTime(conversation.last_message_at)}
                                         </span>
                                     </div>
@@ -394,12 +419,17 @@ export default function Messages() {
                                     >
                                         {conversation.last_message_text || tx('pages.messages.noMessagesYet', undefined, 'No messages yet')}
                                     </p>
-                                    <div className="flex items-center justify-between mt-1">
-                                        {conversation.unread_count > 0 && (
-                                            <span className="w-5 h-5 bg-primary-600 text-white text-xs rounded-full flex items-center justify-center">
-                                                {conversation.unread_count}
+                                    <div className="flex items-center justify-between mt-3 gap-2">
+                                        <div className="flex items-center gap-2 flex-1">
+                                            {conversation.unread_count > 0 && (
+                                                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-brand text-xs text-brand-text shadow-sm font-semibold shrink-0">
+                                                    {conversation.unread_count}
+                                                </span>
+                                            )}
+                                            <span className="text-xs text-muted-foreground truncate">
+                                                {conversation.message_count ? `${conversation.message_count} ${conversation.message_count === 1 ? tx('pages.messages.singleMessage', undefined, 'message') : tx('pages.messages.multipleMessages', undefined, 'messages')}` : ''}
                                             </span>
-                                        )}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -410,136 +440,111 @@ export default function Messages() {
         </div>
     );
 
-    const MessageThread = () => (
-        <div className="h-full flex flex-col">
+    const renderMessageThread = () => (
+        <div className="flex flex-col h-full bg-background">
             {selectedConversation ? (
                 <>
-                    {/* Thread Header */}
-                    <div className="p-4 border-b border-border bg-card flex items-center justify-between">
+                    {/* Header */}
+                    <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-card">
                         <div className="flex items-center gap-3">
                             <button
                                 onClick={() => setShowMobileThread(false)}
-                                className="lg:hidden p-2 hover:bg-gray-100 dark:hover:bg-dark-700 rounded-lg"
+                                className="lg:hidden p-2 hover:bg-surface rounded-lg transition-colors"
                             >
-                                <ChevronLeft className="w-5 h-5 rtl:rotate-180" />
+                                <ChevronLeft className="w-5 h-5" />
                             </button>
                             {selectedConversation.otherUser.avatar_url ? (
                                 <img
                                     src={selectedConversation.otherUser.avatar_url}
                                     alt={selectedConversation.otherUser.full_name}
-                                    className="w-10 h-10 rounded-full object-cover"
+                                    className="w-11 h-11 rounded-full object-cover ring-2 ring-border"
                                 />
                             ) : (
-                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-400 to-secondary-500 flex items-center justify-center text-white font-bold">
+                                <div className="w-11 h-11 rounded-full bg-gradient-to-br from-brand to-brand-mid flex items-center justify-center font-bold text-brand-text">
                                     {selectedConversation.otherUser.full_name.charAt(0)}
                                 </div>
                             )}
                             <div>
-                                <h3 className="font-bold text-foreground">
-                                    {selectedConversation.otherUser.full_name}
-                                </h3>
-                                <p className="text-xs text-muted">
-                                    @{selectedConversation.otherUser.username || tx('pages.messages.userFallback', undefined, 'user')}
-                                </p>
+                                <h3 className="font-semibold text-foreground">{selectedConversation.otherUser.full_name}</h3>
+                                <p className="text-sm text-muted-foreground">@{selectedConversation.otherUser.username || 'user'}</p>
                             </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                            <button className="p-2 hover:bg-gray-100 dark:hover:bg-dark-700 rounded-lg text-muted" disabled>
-                                <Phone className="w-5 h-5" />
+                        <div className="flex items-center gap-1">
+                            <button className="p-2 hover:bg-surface rounded-lg transition-colors" disabled>
+                                <Phone className="w-5 h-5 text-muted-foreground" />
                             </button>
-                            <button className="p-2 hover:bg-gray-100 dark:hover:bg-dark-700 rounded-lg text-muted" disabled>
-                                <Video className="w-5 h-5" />
+                            <button className="p-2 hover:bg-surface rounded-lg transition-colors" disabled>
+                                <Video className="w-5 h-5 text-muted-foreground" />
                             </button>
-                            <button className="p-2 hover:bg-gray-100 dark:hover:bg-dark-700 rounded-lg text-muted" disabled>
-                                <MoreVertical className="w-5 h-5" />
+                            <button className="p-2 hover:bg-surface rounded-lg transition-colors" disabled>
+                                <MoreVertical className="w-5 h-5 text-muted-foreground" />
                             </button>
                         </div>
                     </div>
 
-                    {/* Messages */}
-                    <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-background">
+                    {/* Messages Container */}
+                    <div className="flex-1 overflow-y-auto px-6 py-6 space-y-4 flex flex-col">
                         {isLoadingMessages ? (
                             <div className="flex items-center justify-center h-full">
-                                <Loader2 className="w-8 h-8 animate-spin text-primary-600" />
+                                <Loader2 className="w-8 h-8 animate-spin text-brand" />
                             </div>
                         ) : messages.length === 0 ? (
                             <div className="flex items-center justify-center h-full">
-                                <p className="text-muted">{tx('pages.messages.emptyThread', undefined, 'No messages yet. Start the conversation!')}</p>
+                                <div className="text-center">
+                                    <Send className="w-12 h-12 text-muted-foreground/50 mx-auto mb-2" />
+                                    <p className="text-muted-foreground">{tx('pages.messages.emptyThread', undefined, 'No messages yet. Start the conversation!')}</p>
+                                </div>
                             </div>
                         ) : (
                             messages.map((message) => (
                                 <div
                                     key={message.id}
-                                    className={`flex rtl:flex-row-reverse ${
-                                        message.sender_id === user?.id
-                                            ? 'justify-end rtl:justify-start'
-                                            : 'justify-start rtl:justify-end'
-                                    }`}
+                                    className={`flex ${message.sender_id === user?.id ? 'justify-end' : 'justify-start'} rtl:flex-row-reverse animate-in fade-in slide-in-from-bottom-2 duration-300`}
                                 >
-                                    <div
-                                        className={`max-w-[70%] ${
-                                            message.sender_id === user?.id
-                                                ? 'self-end rtl:self-start bg-primary-600 text-white rounded-2xl rounded-se-md'
-                                                : 'self-start rtl:self-end bg-card text-foreground rounded-2xl rounded-ss-md shadow-sm'
-                                         } px-4 py-3`}
-                                    >
-                                        <p className="text-sm whitespace-pre-wrap break-words">{message.content}</p>
-                                        {message.attachments && message.attachments.length > 0 && (
-                                            <div className="mt-2 space-y-2">
-                                                {message.attachments.map((att, i) => {
-                                                    const isImage = att.type?.startsWith('image/');
-                                                    const isAudio = att.type?.startsWith('audio/');
-                                                    
-                                                    if (isImage) {
-                                                        return (
-                                                            <a key={i} href={att.url} target="_blank" rel="noopener noreferrer" className="block max-w-[250px] sm:max-w-xs transition-opacity hover:opacity-90">
-                                                                <img src={att.url} alt={att.name} className="w-full h-auto rounded-lg object-cover" />
-                                                            </a>
-                                                        );
-                                                    }
-                                                    
-                                                    if (isAudio) {
-                                                        return (
-                                                            <audio key={i} controls src={att.url} className="w-full max-w-[250px] h-11" />
-                                                        );
-                                                    }
-
-                                                    return (
-                                                        <a
-                                                            key={i}
-                                                            href={att.url}
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                            className={`flex items-center gap-2 p-2.5 rounded-xl transition-colors ${
-                                                                message.sender_id === user?.id
-                                                                    ? 'bg-primary-700 hover:bg-primary-800 text-white'
-                                                                    : 'bg-secondary hover:bg-secondary-hover text-foreground'
-                                                            }`}
-                                                        >
-                                                            <FileText className="w-5 h-5 shrink-0" />
-                                                            <div className="flex flex-col min-w-0 flex-1">
-                                                                <span className="text-sm font-medium truncate">{att.name}</span>
-                                                            </div>
-                                                        </a>
-                                                    );
-                                                })}
-                                            </div>
-                                        )}
+                                    <div className={`max-w-xs lg:max-w-md ${message.sender_id === user?.id ? '' : 'mr-2'}`}>
                                         <div
-                                            className={`flex items-center justify-end gap-1 mt-1 ${
+                                            className={`rounded-2xl px-4 py-2 transition-all duration-200 ${
                                                 message.sender_id === user?.id
-                                                    ? 'text-primary-100'
-                                                    : 'text-muted'
+                                                    ? 'bg-brand text-brand-text rounded-br-none shadow-md hover:shadow-lg'
+                                                    : 'bg-surface text-foreground rounded-bl-none border border-border shadow-sm hover:shadow-md'
                                             }`}
                                         >
-                                            <span className="text-xs">{formatMessageTime(message.created_at)}</span>
-                                            {message.sender_id === user?.id &&
-                                                (message.is_read ? (
-                                                    <CheckCheck className="w-3 h-3" />
-                                                ) : (
-                                                    <Check className="w-3 h-3" />
-                                                ))}
+                                            <p className="text-sm break-words">{message.content}</p>
+                                            {message.attachments && message.attachments.length > 0 && (
+                                                <div className="mt-2 space-y-2">
+                                                    {message.attachments.map((att, i) => {
+                                                        const isImage = att.type?.startsWith('image/');
+                                                        if (isImage) {
+                                                            return (
+                                                                <a key={i} href={att.url} target="_blank" rel="noopener noreferrer">
+                                                                    <img src={att.url} alt={att.name} className="w-full rounded-lg" />
+                                                                </a>
+                                                            );
+                                                        }
+                                                        const isAudio = att.type?.startsWith('audio/');
+                                                        if (isAudio) {
+                                                            return <audio key={i} controls src={att.url} className="w-full max-w-xs" />;
+                                                        }
+                                                        return (
+                                                            <a
+                                                                key={i}
+                                                                href={att.url}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className="flex items-center gap-2 p-2 rounded-lg hover:bg-white/20 dark:hover:bg-white/5"
+                                                            >
+                                                                <FileText className="w-4 h-4 shrink-0" />
+                                                                <span className="text-xs truncate">{att.name}</span>
+                                                            </a>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
                                         </div>
+                                        <p className={`text-xs mt-1 ${message.sender_id === user?.id ? 'text-end' : 'text-start'} text-muted-foreground`}>
+                                            {formatMessageTime(message.created_at)}
+                                            {message.sender_id === user?.id && (message.is_read ? ' ✓✓' : ' ✓')}
+                                        </p>
                                     </div>
                                 </div>
                             ))
@@ -547,171 +552,144 @@ export default function Messages() {
                         <div ref={messagesEndRef} />
                     </div>
 
-                    {/* Previews */}
-                    {(selectedFile || audioBlob || isRecording) && (
-                        <div className="p-3 border-t border-border bg-card">
-                            {isRecording ? (
-                                <div className="flex items-center justify-between bg-red-50 dark:bg-red-900/10 rounded-xl p-3 border border-red-100 dark:border-red-900/30">
-                                    <div className="flex items-center gap-3 text-red-500">
-                                        <div className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse" />
-                                        <span className="text-sm font-medium">{tx('pages.messages.recording', undefined, 'Recording...')} 00:{recordingTime.toString().padStart(2, '0')}</span>
+                    {/* Input Area */}
+                    <div className="border-t border-border bg-card px-6 py-4">
+                        {(selectedFile || audioBlob || isRecording) && (
+                            <div className="mb-3">
+                                {isRecording ? (
+                                    <div className="flex items-center gap-2 p-2 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/50">
+                                        <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                                        <span className="text-sm text-red-600 dark:text-red-400">Recording: 00:{recordingTime.toString().padStart(2, '0')}</span>
+                                        <button onClick={stopRecording} className="ml-auto p-1 hover:bg-red-100 dark:hover:bg-red-900/40 rounded transition-colors">
+                                            <Square className="w-4 h-4 fill-red-600 dark:fill-red-400" />
+                                        </button>
                                     </div>
-                                    <button onClick={stopRecording} className="p-2 text-red-500 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-lg transition-colors">
-                                        <Square className="w-4 h-4 fill-current" />
-                                    </button>
-                                </div>
-                            ) : audioBlob ? (
-                                <div className="flex items-center gap-3 bg-secondary rounded-xl p-3 border border-border">
-                                    <div className="w-10 h-10 rounded-lg bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center shrink-0">
-                                        <FileAudio className="w-5 h-5 text-primary-600 dark:text-primary-400" />
+                                ) : audioBlob ? (
+                                    <div className="flex items-center gap-2 p-2 rounded-lg bg-surface border border-border">
+                                        <FileAudio className="w-5 h-5 text-brand" />
+                                        <span className="text-sm flex-1">{tx('pages.messages.voiceMemo', undefined, 'Voice memo')} • 00:{recordingTime.toString().padStart(2, '0')}</span>
+                                        <button onClick={cancelRecording} className="p-1 hover:bg-background rounded transition-colors">
+                                            <X className="w-4 h-4" />
+                                        </button>
                                     </div>
-                                    <div className="flex flex-col flex-1 min-w-0">
-                                        <span className="text-sm font-medium truncate">{tx('pages.messages.voiceMemo', undefined, 'Voice memo')}</span>
-                                        <span className="text-xs text-muted">00:{recordingTime.toString().padStart(2, '0')}</span>
+                                ) : selectedFile ? (
+                                    <div className="flex items-center gap-2 p-2 rounded-lg bg-surface border border-border">
+                                        <FileText className="w-5 h-5 text-brand" />
+                                        <span className="text-sm flex-1 truncate">{selectedFile.name}</span>
+                                        <button onClick={() => setSelectedFile(null)} className="p-1 hover:bg-background rounded transition-colors">
+                                            <X className="w-4 h-4" />
+                                        </button>
                                     </div>
-                                    <button onClick={cancelRecording} className="p-2 text-muted hover:text-foreground hover:bg-background rounded-lg transition-colors">
-                                        <X className="w-4 h-4" />
-                                    </button>
-                                </div>
-                            ) : selectedFile ? (
-                                <div className="flex items-center gap-3 bg-secondary rounded-xl p-3 border border-border">
-                                    <div className="w-10 h-10 rounded-lg bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center shrink-0">
-                                        {selectedFile.type.startsWith('image/') ? <ImageIcon className="w-5 h-5 text-primary-600 dark:text-primary-400" /> : <FileText className="w-5 h-5 text-primary-600 dark:text-primary-400" />}
-                                    </div>
-                                    <div className="flex flex-col flex-1 min-w-0">
-                                        <span className="text-sm font-medium truncate">{selectedFile.name}</span>
-                                        <span className="text-xs text-muted">{(selectedFile.size / 1024 / 1024).toFixed(2)} MB</span>
-                                    </div>
-                                    <button onClick={() => setSelectedFile(null)} className="p-2 text-muted hover:text-foreground hover:bg-background rounded-lg transition-colors">
-                                        <X className="w-4 h-4" />
-                                    </button>
-                                </div>
-                            ) : null}
-                        </div>
-                    )}
-
-                    {/* Input */}
-                    <div className="p-3 sm:p-4 border-t border-border bg-card">
-                        <div className="flex flex-wrap sm:flex-nowrap items-end gap-2 sm:gap-3">
+                                ) : null}
+                            </div>
+                        )}
+                        
+                        <div className="flex items-end gap-2">
+                            <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileChange} accept="image/*,application/pdf,.doc,.docx" />
+                            
+                            <button
+                                onClick={() => fileInputRef.current?.click()}
+                                disabled={isSending || !!selectedFile}
+                                className="p-2 hover:bg-surface rounded-lg transition-colors text-muted-foreground hover:text-foreground disabled:opacity-50"
+                            >
+                                <Paperclip className="w-5 h-5" />
+                            </button>
+                            
+                            <button
+                                onClick={isRecording ? stopRecording : startRecording}
+                                disabled={isSending}
+                                className={`p-2 rounded-lg transition-colors ${isRecording ? 'bg-red-500 text-white animate-pulse' : 'hover:bg-surface text-muted-foreground hover:text-foreground'}`}
+                            >
+                                {isRecording ? <Square className="w-5 h-5 fill-current" /> : <Mic className="w-5 h-5" />}
+                            </button>
+                            
                             <input
-                                type="file"
-                                ref={fileInputRef}
-                                className="hidden"
-                                onChange={handleFileChange}
-                                accept="image/*,application/pdf,.doc,.docx"
+                                type="text"
+                                ref={messageInputRef}
+                                value={newMessage}
+                                onChange={(e) => setNewMessage(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter' && !e.shiftKey) {
+                                        e.preventDefault();
+                                        void handleSendMessage();
+                                    }
+                                }}
+                                placeholder={tx('pages.messages.messagePlaceholder', undefined, 'Write your message...')}
+                                disabled={isSending || isRecording || !!selectedFile || !!audioBlob}
+                                className="flex-1 bg-surface border border-border rounded-2xl px-4 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-brand text-foreground placeholder:text-muted-foreground disabled:opacity-50"
                             />
                             
-                            <div className="flex items-center gap-1 sm:gap-2 shrink-0">
-                                {!isRecording && !audioBlob && (
-                                    <button 
-                                        className="p-2.5 sm:p-3 hover:bg-secondary rounded-xl text-muted hover:text-foreground transition-colors" 
-                                        onClick={() => fileInputRef.current?.click()}
-                                        disabled={isSending || !!selectedFile}
-                                        title={tx('pages.messages.attachFile', undefined, 'Attach file')}
-                                    >
-                                        <Paperclip className="w-5 h-5" />
-                                    </button>
-                                )}
-                                
-                                {!selectedFile && !audioBlob && (
-                                    <button 
-                                        className={`p-2.5 sm:p-3 rounded-xl transition-colors ${isRecording ? 'bg-red-500 text-white animate-pulse' : 'hover:bg-secondary text-muted hover:text-foreground'}`}
-                                        onClick={isRecording ? stopRecording : startRecording}
-                                        disabled={isSending}
-                                        title={isRecording ? tx('pages.messages.stopRecording', undefined, 'Stop recording') : tx('pages.messages.recordVoice', undefined, 'Record voice message')}
-                                    >
-                                        {isRecording ? <Square className="w-5 h-5 fill-current" /> : <Mic className="w-5 h-5" />}
-                                    </button>
-                                )}
-                            </div>
-
-                            <div className="flex-1 bg-secondary rounded-xl py-1 px-2 border border-border focus-within:ring-2 focus-within:ring-primary-100 focus-within:border-primary-500 transition-all flex items-center min-h-[46px] sm:min-h-[50px]">
-                                <input
-                                    type="text"
-                                    value={newMessage}
-                                    onChange={(e) => setNewMessage(e.target.value)}
-                                    onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
-                                    placeholder={tx('pages.messages.messagePlaceholder', undefined, 'Write your message...')}
-                                    disabled={isSending || isRecording || !!selectedFile || !!audioBlob}
-                                    className="w-full bg-transparent border-none focus:ring-0 text-foreground text-sm py-2 px-2 disabled:opacity-50"
-                                />
-                            </div>
-
                             <Button
                                 variant="primary"
                                 onClick={handleSendMessage}
                                 disabled={(!newMessage.trim() && !selectedFile && !audioBlob) || isSending || isRecording}
                                 isLoading={isSending}
-                                className="shrink-0 h-[46px] w-[46px] sm:h-[50px] sm:w-[50px] rounded-xl p-0 flex items-center justify-center shadow-sm"
+                                className="p-2.5 rounded-lg text-brand-text hover:opacity-90 transition-opacity disabled:opacity-50"
                             >
-                                <Send className="w-5 h-5 rtl:rotate-180" />
+                                <Send className="w-5 h-5" />
                             </Button>
                         </div>
                     </div>
                 </>
             ) : (
-                <div className="h-full flex items-center justify-center bg-background border-s border-border">
-                    <EmptyState
-                        icon={Send}
-                        title={tx('pages.messages.selectConversationTitle', undefined, 'Select a conversation')}
-                        description={tx('pages.messages.selectConversationDescription', undefined, 'Choose a conversation from the list to start messaging')}
-                        illustration={
-                            <div className="w-32 h-32 bg-primary-50 dark:bg-primary-900/10 rounded-full flex items-center justify-center mb-6 animate-pulse-slow">
-                                <Send className="w-12 h-12 text-primary-500" />
-                            </div>
-                        }
-                    />
+                <div className="flex items-center justify-center h-full">
+                    <div className="text-center">
+                        <Send className="w-16 h-16 text-muted-foreground/30 mx-auto mb-4" />
+                        <h3 className="text-lg font-semibold text-foreground mb-2">{tx('pages.messages.selectConversationTitle', undefined, 'Select a conversation')}</h3>
+                        <p className="text-muted-foreground">{tx('pages.messages.selectConversationDescription', undefined, 'Choose a conversation to start messaging')}</p>
+                    </div>
                 </div>
             )}
         </div>
     );
 
-    const ContactDetails = () => (
-        <div className="h-full border-s border-border p-6 overflow-y-auto">
+    const renderContactDetails = () => (
+        <div className="h-full overflow-y-auto border-s border-border bg-background/95 backdrop-blur-sm p-6">
             {selectedConversation ? (
                 <div className="space-y-6">
                     {/* Profile */}
-                    <div className="text-center">
+                    <div className="rounded-2xl border border-border bg-card px-5 py-7 text-center shadow-sm">
                         {selectedConversation.otherUser.avatar_url ? (
                             <img
                                 src={selectedConversation.otherUser.avatar_url}
                                 alt={selectedConversation.otherUser.full_name}
-                                className="w-24 h-24 rounded-full object-cover mx-auto mb-4"
+                                className="mx-auto mb-4 h-24 w-24 rounded-full object-cover ring-2 ring-border"
                             />
                         ) : (
-                            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary-400 to-secondary-500 flex items-center justify-center text-white text-3xl font-bold mx-auto mb-4">
+                            <div className="mx-auto mb-4 flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-brand to-brand-mid text-3xl font-bold text-brand-text shadow-sm">
                                 {selectedConversation.otherUser.full_name.charAt(0)}
                             </div>
                         )}
                         <h3 className="font-bold text-lg text-foreground">
                             {selectedConversation.otherUser.full_name}
                         </h3>
-                        <p className="text-muted">@{selectedConversation.otherUser.username || tx('pages.messages.userFallback', undefined, 'user')}</p>
+                        <p className="text-muted-foreground">@{selectedConversation.otherUser.username || tx('pages.messages.userFallback', undefined, 'user')}</p>
                     </div>
 
                     {/* Quick Actions */}
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-2 gap-3 rounded-2xl border border-border bg-card p-3 shadow-sm">
                         <Button
                             variant="outline"
                             size="sm"
                             onClick={() => navigate(`/freelancer/${selectedConversation.otherUser.id}`)}
+                            className="border-border text-foreground hover:bg-surface hover:border-border transition-colors"
                         >
                             <User className="w-4 h-4 ms-1" />
                             {tx('pages.messages.profileAction', undefined, 'Profile')}
                         </Button>
-                        <Button variant="outline" size="sm" disabled>
+                        <Button variant="outline" size="sm" disabled className="border-border text-muted-foreground opacity-50">
                             <Briefcase className="w-4 h-4 ms-1" />
                             {tx('pages.messages.contractsAction', undefined, 'Contracts')}
                         </Button>
                     </div>
 
                     {/* Actions */}
-                    <div className="pt-4 border-t border-border space-y-2">
-                        <button className="w-full flex items-center gap-3 p-3 text-muted hover:bg-secondary rounded-xl transition-colors" disabled>
+                    <div className="space-y-2 rounded-2xl border border-border bg-card p-3 shadow-sm">
+                        <button className="flex w-full items-center gap-3 rounded-lg p-3 text-muted-foreground transition-colors hover:bg-surface hover:text-foreground" disabled>
                             <Archive className="w-5 h-5" />
                             <span>{tx('pages.messages.archiveConversation', undefined, 'Archive conversation')}</span>
                         </button>
-                        <button className="w-full flex items-center gap-3 p-3 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors" disabled>
+                        <button className="flex w-full items-center gap-3 rounded-lg p-3 text-destructive transition-colors hover:bg-destructive/10" disabled>
                             <Trash2 className="w-5 h-5" />
                             <span>{tx('pages.messages.deleteConversation', undefined, 'Delete conversation')}</span>
                         </button>
@@ -719,39 +697,38 @@ export default function Messages() {
                 </div>
             ) : (
                 <div className="h-full flex items-center justify-center">
-                    <p className="text-muted">{tx('pages.messages.selectConversationDetails', undefined, 'Select a conversation to view details')}</p>
+                    <p className="text-muted-foreground">{tx('pages.messages.selectConversationDetails', undefined, 'Select a conversation to view details')}</p>
                 </div>
             )}
         </div>
     );
 
     return (
-        <div className="min-h-screen bg-card">
+        <div className="min-h-screen bg-background text-foreground">
             <SEO {...SEO_CONFIG.messages} url="/messages" noIndex />
             <Header />
 
-            <div className="h-[calc(100vh-64px)] flex">
-            {/* Conversation List - Desktop */}
-                <div className={`w-80 shrink-0 hidden lg:block`}>
-                    <ConversationList />
+            <div className="h-[calc(100vh-64px)] flex overflow-hidden">
+                {/* Sidebar - Conversations List */}
+                <div className={`w-80 shrink-0 border-e border-border flex flex-col bg-background hidden lg:flex ${showMobileThread ? 'hidden' : ''}`}>
+                    {renderConversationList()}
                 </div>
 
-                {/* Conversation List - Mobile */}
-                <div className={`w-full lg:hidden ${showMobileThread ? 'hidden' : 'block'}`}>
-                    <ConversationList />
+                {/* Mobile Sidebar */}
+                <div className={`w-full border-e border-border flex flex-col bg-background lg:hidden ${showMobileThread ? 'hidden' : 'flex'}`}>
+                    {renderConversationList()}
                 </div>
 
-                {/* Message Thread */}
-                <div className={`flex-1 ${showMobileThread ? 'block' : 'hidden lg:block'}`}>
-                    <MessageThread />
+                {/* Main Message Area */}
+                <div className={`flex-1 flex flex-col overflow-hidden ${showMobileThread ? 'block' : 'hidden lg:flex'}`}>
+                    {renderMessageThread()}
                 </div>
 
-                {/* Contact Details - Desktop only */}
-                <div className="w-80 shrink-0 hidden xl:block">
-                    <ContactDetails />
+                {/* Right Sidebar - Contact Details */}
+                <div className="w-80 shrink-0 border-s border-border bg-background hidden xl:flex flex-col">
+                    {renderContactDetails()}
                 </div>
             </div>
         </div>
     );
 }
-

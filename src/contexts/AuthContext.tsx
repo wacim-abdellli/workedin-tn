@@ -134,6 +134,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
             },
             {
               onConflict: 'id',
+              ignoreDuplicates: true,
             }
           ),
         { timeoutMs: 10000 }

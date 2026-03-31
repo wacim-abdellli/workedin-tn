@@ -25,10 +25,13 @@ import {
 import { useAuth } from '@/contexts/AuthContext'
 import { useTranslation } from '@/i18n'
 import { hasAdminAccess } from '@/lib/adminAccess'
+import { getInitials, resolveAccountAvatarUrl } from '@/lib/avatar'
 import { switchWorkspace } from '@/lib/switchWorkspace'
 import { useWorkspaceStore } from '@/lib/workspaceState'
 import { NotificationBell } from '@/components/ui'
 import { useToast } from '@/components/ui/Toast'
+import { getTotalUnreadCount, subscribeToConversations } from '@/services/messages'
+import type { RealtimeChannel } from '@supabase/supabase-js'
 
 import SearchModal from './SearchModal'
 
@@ -92,9 +95,12 @@ export default function Header() {
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const [langOpen, setLangOpen] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [avatarFailed, setAvatarFailed] = useState(false)
+  const [unreadCount, setUnreadCount] = useState(0)
 
   const userMenuRef = useRef<HTMLDivElement>(null)
   const langRef = useRef<HTMLDivElement>(null)
+  const conversationsChannelRef = useRef<RealtimeChannel | null>(null)
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 10)
@@ -131,6 +137,10 @@ export default function Header() {
   }, [pathname])
 
   useEffect(() => {
+    setAvatarFailed(false)
+  }, [profile?.avatar_url])
+
+  useEffect(() => {
     const previousOverflow = document.body.style.overflow
 
     if (mobileMenuOpen || searchOpen) {
@@ -141,6 +151,31 @@ export default function Header() {
       document.body.style.overflow = previousOverflow
     }
   }, [mobileMenuOpen, searchOpen])
+
+  // Load and subscribe to unread messages count
+  useEffect(() => {
+    if (!user) return
+
+    const loadUnreadCount = async () => {
+      const { count } = await getTotalUnreadCount(user.id)
+      setUnreadCount(count)
+    }
+
+    loadUnreadCount()
+
+    // Subscribe to conversation updates for real-time unread count
+    conversationsChannelRef.current = subscribeToConversations(user.id, () => {
+      // On any conversation change, reload the count
+      // This handles unread count updates when messages are marked as read
+      loadUnreadCount()
+    })
+
+    return () => {
+      if (conversationsChannelRef.current) {
+        conversationsChannelRef.current.unsubscribe()
+      }
+    }
+  }, [user?.id])
 
   const toggleTheme = () => {
     const next = !isDark
@@ -156,6 +191,8 @@ export default function Header() {
   const activeLang = LANGS.find((lang) => lang.code === currentLang) ?? LANGS[2]
   const firstName = profile?.full_name?.split(' ')[0] ?? user?.email?.split('@')[0] ?? 'Me'
   const displayName = profile?.full_name ?? user?.user_metadata?.full_name ?? user?.email?.split('@')[0] ?? 'Me'
+  const avatarUrl = resolveAccountAvatarUrl(profile?.avatar_url, avatarFailed)
+  const avatarInitials = getInitials(displayName)
   const targetWorkspace = isFreelancer ? 'client' : 'freelancer'
   const canQuickSwitch = Boolean(user)
   const switchTargetLabel = targetWorkspace === 'freelancer'
@@ -380,10 +417,15 @@ export default function Header() {
                 <div className="flex items-center gap-1.5">
                   <button
                     onClick={() => navigate('/messages')}
-                    className="header-icon-btn"
+                    className="header-icon-btn relative"
                     aria-label={t.nav?.messages || 'Messages'}
                   >
                     <MessageSquare className="h-4 w-4" />
+                    {unreadCount > 0 && (
+                      <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-brand text-xs font-semibold text-brand-text">
+                        {unreadCount > 99 ? '99+' : unreadCount}
+                      </span>
+                    )}
                   </button>
                   <NotificationBell />
                 </div>
@@ -413,18 +455,19 @@ export default function Header() {
                     onClick={() => setUserMenuOpen((open) => !open)}
                     className={`header-profile-trigger ${userMenuOpen ? 'header-profile-trigger-open' : ''}`}
                   >
-                    {profile?.avatar_url ? (
+                    {avatarUrl ? (
                       <img
-                        src={profile.avatar_url}
+                        src={avatarUrl}
                         alt={firstName}
                         className="header-profile-avatar"
+                        onError={() => setAvatarFailed(true)}
                       />
                     ) : (
                       <div
                         className="header-profile-avatar flex items-center justify-center text-[10px] font-bold text-white"
                         style={{ background: 'linear-gradient(135deg, #8b5cf6, #6d28d9)' }}
                       >
-                        {firstName[0]?.toUpperCase()}
+                        {avatarInitials}
                       </div>
                     )}
                     <span
@@ -582,14 +625,14 @@ export default function Header() {
               {user ? (
                 <div className="rounded-2xl border border-border bg-card p-4">
                   <div className="flex items-center gap-3">
-                    {profile?.avatar_url ? (
-                      <img src={profile.avatar_url} alt={firstName} className="h-11 w-11 rounded-full object-cover" />
+                    {avatarUrl ? (
+                      <img src={avatarUrl} alt={firstName} className="h-11 w-11 rounded-full object-cover" onError={() => setAvatarFailed(true)} />
                     ) : (
                       <div
                         className="flex h-11 w-11 items-center justify-center rounded-full text-sm font-bold text-white"
                         style={{ background: 'linear-gradient(135deg, #8b5cf6, #6d28d9)' }}
                       >
-                        {firstName[0]?.toUpperCase()}
+                        {avatarInitials}
                       </div>
                     )}
                     <div className="min-w-0">
@@ -655,10 +698,15 @@ export default function Header() {
                         navigate('/messages')
                         setMobileMenuOpen(false)
                       }}
-                      className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium text-foreground transition-colors hover:bg-surface"
+                      className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium text-foreground transition-colors hover:bg-surface relative"
                     >
                       <MessageSquare className="h-4 w-4 flex-shrink-0" />
                         {t.nav?.messages || 'Messages'}
+                      {unreadCount > 0 && (
+                        <span className="ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-brand text-xs font-semibold text-brand-text">
+                          {unreadCount > 99 ? '99+' : unreadCount}
+                        </span>
+                      )}
                     </button>
                     <button
                       onClick={() => {

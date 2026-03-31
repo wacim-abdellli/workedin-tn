@@ -105,6 +105,22 @@ export function isMissingStorageBucketError(error: unknown): boolean {
     return statusCode === 404 || message.includes('bucket not found');
 }
 
+export function isStoragePermissionError(error: unknown): boolean {
+    if (!error || typeof error !== 'object') return false;
+
+    const errorRecord = error as Record<string, unknown>;
+    const message = typeof errorRecord.message === 'string' ? errorRecord.message.toLowerCase() : '';
+    const code = typeof errorRecord.code === 'string' ? errorRecord.code : '';
+    const statusCode =
+        typeof errorRecord.statusCode === 'number'
+            ? errorRecord.statusCode
+            : typeof errorRecord.status === 'number'
+                ? errorRecord.status
+                : undefined;
+
+    return code === '42501' || statusCode === 400 || statusCode === 403 || message.includes('row-level security') || message.includes('not authorized');
+}
+
 export function getStorageConfigErrorMessage(bucket: string): string {
     return `Storage bucket "${bucket}" is not configured yet.`;
 }

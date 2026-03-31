@@ -183,6 +183,8 @@ export const fr: Translations = {
                 titleRequiredForDraft: 'Veuillez saisir un titre de mission pour enregistrer le brouillon',
                 loginRequired: 'Vous devez être connecté pour publier une mission',
                 saveFailed: 'Une erreur est survenue lors de l\'enregistrement de la mission',
+                attachmentsUnavailable: 'Les pièces jointes ne peuvent pas être envoyées pour le moment. La mission sera publiée sans elles.',
+                stepIncomplete: 'Veuillez compléter les champs requis avant de continuer.',
             },
             time: {
                 now: 'À l\'instant',
