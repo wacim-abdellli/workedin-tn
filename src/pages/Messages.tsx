@@ -161,7 +161,9 @@ export default function Messages() {
                     // Note: File objects don't survive JSON stringify, but basic text does.
                     const parsed = JSON.parse(savedQueue);
                     setPendingQueue(parsed);
-                } catch(e) {}
+                } catch(e) {
+                    // Ignore invalid JSON in localStorage pending queue
+                }
             }
         }
     }, [selectedConversation?.id]);

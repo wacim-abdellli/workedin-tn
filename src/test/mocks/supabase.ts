@@ -370,11 +370,18 @@ export const mockSupabaseClient = {
  * ```ts
  * vi.mock('@/lib/supabase', () => ({
  *   supabase: mockSupabaseClient,
+ *   withTimeout: mockWithTimeout,
+ *   uploadFile: mockUploadFile,
  * }));
  * ```
  */
+export const mockWithTimeout = vi.fn(async <T>(promise: PromiseLike<T>) => promise);
+export const mockUploadFile = vi.fn(async () => 'https://example.com/mock-file.png');
+
 export const createSupabaseMock = () => ({
     supabase: mockSupabaseClient,
+    withTimeout: mockWithTimeout,
+    uploadFile: mockUploadFile,
 });
 
 export default mockSupabaseClient;

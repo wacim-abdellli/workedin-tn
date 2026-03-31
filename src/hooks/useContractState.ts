@@ -147,32 +147,66 @@ export function useContractState({
             setIsDelivering(true);
             try {
                 const receiverId = getCounterpartyId(contract, userRole);
-            if (!receiverId) throw new Error('Unable to determine message recipient');
+                if (!receiverId) throw new Error('Unable to determine message recipient');
 
-            // CRITICAL PHASE 5 FIX: Verify with payment processor before releasing
-            const isVerified = await verifyPaymentProcessorStatus(contractId);
-            if (!isVerified && process.env.NODE_ENV === 'production') {
-                throw new Error('لم نستطع التحقق من حالة الدفع من البنك. يرجى المحاولة لاحقاً أو مراسلة الدعم.');
+                await updateStatus('completed', {
+                    delivery_note: note,
+                    completed_at: new Date().toISOString(),
+                });
+
+                const { error: messageError } = await sendContractMessage({
+                    contract_id: contractId,
+                    sender_id: userId,
+                    receiver_id: receiverId,
+                    content: `📦 تم تسليم العمل: ${note}`,
+                    message_type: 'delivery',
+                });
+
+                if (messageError) throw messageError;
+            } finally {
+                setIsDelivering(false);
+            }
+        },
+        [contract, contractId, userId, userRole, updateStatus]
+    );
+
+    const acceptWork = useCallback(
+        async () => {
+            if (userRole !== 'client') {
+                throw new Error('فقط العميل يمكنه قبول العمل');
             }
 
-            await updateStatus('completed', {
-                payment_status: 'released',
-                completed_at: new Date().toISOString(),
-            });
+            setIsAccepting(true);
+            try {
+                const receiverId = getCounterpartyId(contract, userRole);
+                if (!receiverId) throw new Error('Unable to determine message recipient');
 
-            const { error: messageError } = await sendContractMessage({
-                contract_id: contractId,
-                sender_id: userId,
-                receiver_id: receiverId,
-                content: '✅ تم قبول العمل وإتمام الدفع',
-                message_type: 'system',
-            });
+                // CRITICAL PHASE 5 FIX: Verify with payment processor before releasing
+                const isVerified = await verifyPaymentProcessorStatus(contractId);
+                if (!isVerified && process.env.NODE_ENV === 'production') {
+                    throw new Error('لم نستطع التحقق من حالة الدفع من البنك. يرجى المحاولة لاحقاً أو مراسلة الدعم.');
+                }
 
-            if (messageError) throw messageError;
-        } finally {
-            setIsAccepting(false);
-        }
-    }, [contract, contractId, userId, userRole, updateStatus]);
+                await updateStatus('completed', {
+                    payment_status: 'released',
+                    completed_at: new Date().toISOString(),
+                });
+
+                const { error: messageError } = await sendContractMessage({
+                    contract_id: contractId,
+                    sender_id: userId,
+                    receiver_id: receiverId,
+                    content: '✅ تم قبول العمل وإتمام الدفع',
+                    message_type: 'system',
+                });
+
+                if (messageError) throw messageError;
+            } finally {
+                setIsAccepting(false);
+            }
+        },
+        [contract, contractId, userId, userRole, updateStatus]
+    );
 
     const requestChanges = useCallback(
         async (feedback: string) => {

@@ -51,6 +51,7 @@ export function useRealtimeChat({
 
     const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+    const senderCacheRef = useRef<Map<string, ChatMessage['sender']>>(new Map());
 
     const fetchMessages = useCallback(async (offset: number = 0) => {
         if (!contractId || !enabled) return;
@@ -110,9 +111,6 @@ export function useRealtimeChat({
         if (!contractId || !enabled) return;
 
         fetchMessages();
-
-        // Cache for sender profiles to avoid N+1 queries on realtime inserts
-        const senderCacheRef = useRef<Map<string, ChatMessage['sender']>>(new Map());
 
         const channel = supabase
             .channel(`contract:${contractId}`)

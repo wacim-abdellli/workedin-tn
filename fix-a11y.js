@@ -10,16 +10,16 @@ code = code.replace(
 // 2. Message read indicators (need careful replacement)
 code = code.replace(
   /\{message\.sender_id === user\?\.id && \(message\.is_read \? ' ✓✓' : ' ✓'\)\}/,
-  '{message.sender_id === user?.id && <span aria-label={message.is_read ? \\'Read\\' : \\'Delivered\\'}>{message.is_read ? \\' ✓✓\\' : \\' ✓\\'}</span>}'
+  '{message.sender_id === user?.id && <span aria-label={message.is_read ? \'Read\' : \'Delivered\'}>{message.is_read ? \' ✓✓\' : \' ✓\'}</span>}'
 );
 // Some files have different unicode variations
 code = code.replace(
   /\{message\.sender_id === user\?\.id && \(message\.is_read \? ' ✔✓' : ' ✓'\)\}/,
-  '{message.sender_id === user?.id && <span aria-label={message.is_read ? \\'Read\\' : \\'Delivered\\'}>{message.is_read ? \\' ✓✓\\' : \\' ✓\\'}</span>}'
+  '{message.sender_id === user?.id && <span aria-label={message.is_read ? \'Read\' : \'Delivered\'}>{message.is_read ? \' ✓✓\' : \' ✓\'}</span>}'
 );
 code = code.replace(
   /\{message\.sender_id === user\?\.id && \(message\.is_read \? ' ✓✓' : ' ✓'\)\}/,
-  '{message.sender_id === user?.id && <span aria-label={message.is_read ? \\'Read\\' : \\'Delivered\\'}>{message.is_read ? \\' ✓✓\\' : \\' ✓\\'}</span>}'
+  '{message.sender_id === user?.id && <span aria-label={message.is_read ? \'Read\' : \'Delivered\'}>{message.is_read ? \' ✓✓\' : \' ✓\'}</span>}'
 );
 
 

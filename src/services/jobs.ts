@@ -54,7 +54,7 @@ export async function getJobs(filters: JobFilters = {}, page = 1, pageSize = 10)
 
         if (filters.search) {
             // Strip out characters that could break PostgREST .or() parsing (like commas and quotes)
-            const safeSearch = filters.search.replace(/[,\"\_\%]/g, ' ').trim();
+            const safeSearch = filters.search.replace(/[,"_%]/g, ' ').trim();
             if (safeSearch) {
                 query = query.or(`title.ilike.%${safeSearch}%,description.ilike.%${safeSearch}%`);
             }

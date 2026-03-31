@@ -69,6 +69,8 @@ vi.mock('@/lib/supabase', () => {
                 return channel;
             }),
         },
+        withTimeout: vi.fn(async <T>(promise: PromiseLike<T>) => promise),
+        uploadFile: vi.fn(async () => 'https://mock-url.com/file.jpg'),
     };
 });
 
