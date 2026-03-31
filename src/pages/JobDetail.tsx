@@ -156,7 +156,9 @@ function JobDetail() {
 
     // Job Fetch
     const { data: job, isLoading } = useQuery({
-        queryKey: ['job', jobId],
+    staleTime: 5 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+    refetchOnWindowFocus: false,
         queryFn: async () => {
             if (!jobId) throw new Error('No job ID');
             const { data, error } = await jobsService.getJobById(jobId);
@@ -208,7 +210,7 @@ function JobDetail() {
 
     // Client Stats
     const { data: clientStats = { totalJobs: 0, totalSpent: 0, rating: 0 } } = useQuery({
-        queryKey: ['clientStats', job?.client_id],
+    staleTime: 60 * 60 * 1000,
         queryFn: async () => {
             if (!job?.client_id) return { totalJobs: 0, totalSpent: 0, rating: 0 };
             return profilesService.getClientStats(job.client_id);

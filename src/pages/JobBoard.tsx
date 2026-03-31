@@ -186,10 +186,10 @@ function JobBoard() {
         initialPageParam: 1,
         getNextPageParam: (lastPage: { data: Job[], count: number }, pages: { data: Job[], count: number }[]) =>
             lastPage.data?.length === 10 ? pages.length + 1 : undefined,
-        staleTime: 0,
-        gcTime: 0,
-        refetchOnMount: true,
-        refetchOnWindowFocus: true,
+        staleTime: 5 * 60 * 1000,
+        gcTime: 30 * 60 * 1000,
+        refetchOnMount: false,
+        refetchOnWindowFocus: false,
         retry: false,
     });
 
@@ -219,20 +219,19 @@ function JobBoard() {
     const { data: categoryCounts = {} } = useQuery({
         queryKey: ['categoryCounts'],
         queryFn: () => jobsService.getCategoryCounts(CATEGORY_VALUES),
-    });
+          staleTime: 10 * 60 * 1000, // 10 mins cache to prevent query flood
+      });
 
-    // Fetch saved jobs
-    const { data: savedJobsData = [] } = useQuery({
-        queryKey: ['savedJobs', user?.id],
-        queryFn: async () => {
-            if (!user) return [];
-            const { data } = await profilesService.getSavedJobs(user.id);
-            return (data?.map(f => f.jobs).filter(Boolean) as unknown as Job[]) || [];
-        },
-        enabled: !!user,
-    });
-
-    const savedJobIds = useMemo(() => new Set(savedJobsData.map(j => j.id)), [savedJobsData]);
+      // Fetch saved jobs
+      const { data: savedJobsData = [] } = useQuery({
+          queryKey: ['savedJobs', user?.id],
+          queryFn: async () => {
+              if (!user) return [];
+              const { data } = await profilesService.getSavedJobs(user.id);
+              return (data?.map(f => f.jobs).filter(Boolean) as unknown as Job[]) || [];
+          },
+          enabled: !!user,
+          staleTime: 5 * 60 * 1000,
     const savedJobs = savedJobsData;
 
     // Toggle save job
