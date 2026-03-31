@@ -64,6 +64,7 @@ export default function Messages() {
     const [isLoadingConversations, setIsLoadingConversations] = useState(true);
     const [isLoadingMessages, setIsLoadingMessages] = useState(false);
     const [isSending, setIsSending] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0);
     const [page, setPage] = useState(0);
     const [hasMoreConversations, setHasMoreConversations] = useState(true);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -284,54 +285,80 @@ export default function Messages() {
         if ((!newMessage.trim() && !selectedFile && !audioBlob) || !selectedConversation || !user) return;
 
         setIsSending(true);
+        setUploadProgress(0);
+        
+        let progressInterval: NodeJS.Timeout | null = null;
+        if (selectedFile || audioBlob) {
+            // Simulate upload progress
+            progressInterval = setInterval(() => {
+                setUploadProgress(prev => {
+                    if (prev >= 90) return prev;
+                    return prev + 10;
+                });
+            }, 500);
+        }
 
         const attachments = [];
 
-        if (audioBlob) {
-            const fileName = `voice_memo_${Date.now()}.webm`;
-            const audioFile = new File([audioBlob], fileName, { type: audioBlob.type || 'audio/webm' });
-            const { url, error } = await uploadMessageAttachment(audioFile, selectedConversation.id);
-            if (error) {
-                 showToast(`${tx('pages.messages.errors.audioUpload', undefined, 'Failed to upload audio')}: ${error.message}`, 'error');
-                 setIsSending(false);
-                 return;
-            }
-            if (url) attachments.push({ name: tx('pages.messages.voiceMemo', undefined, 'Voice memo'), url, type: audioFile.type, size: audioFile.size });
-        }
-
-        if (selectedFile) {
-            const { url, error } = await uploadMessageAttachment(selectedFile, selectedConversation.id);
-            if (error) {
-                 showToast(`${tx('pages.messages.errors.fileUpload', undefined, 'Failed to upload file')}: ${error.message}`, 'error');
-                  setIsSending(false);
-                  return;
-             }
-             if (url) attachments.push({ name: selectedFile.name, url, type: selectedFile.type, size: selectedFile.size });
-        }
-
-        const { data, error } = await sendMessage({
-            conversationId: selectedConversation.id,
-            senderId: user.id,
-            receiverId: selectedConversation.otherUser.id,
-            content: newMessage.trim(),
-            contractId: selectedConversation.contract_id,
-            attachments: attachments.length > 0 ? attachments : undefined
-        });
-
-        if (error) {
-            showToast(error.message, 'error');
-        } else if (data) {
-            setNewMessage('');
+        try {
             if (audioBlob) {
-                cancelRecording();
+                const fileName = `voice_memo_${Date.now()}.webm`;
+                const audioFile = new File([audioBlob], fileName, { type: audioBlob.type || 'audio/webm' });
+                const { url, error } = await uploadMessageAttachment(audioFile, selectedConversation.id);
+                if (error) {
+                    showToast(`${tx('pages.messages.errors.audioUpload', undefined, 'Failed to upload audio')}: ${error.message}`, 'error');
+                    setIsSending(false);
+                    if (progressInterval) clearInterval(progressInterval);
+                    setUploadProgress(0);
+                    return;
+                }
+                if (url) attachments.push({ name: tx('pages.messages.voiceMemo', undefined, 'Voice memo'), url, type: audioFile.type, size: audioFile.size });
             }
+
             if (selectedFile) {
-                setSelectedFile(null);
+                const { url, error } = await uploadMessageAttachment(selectedFile, selectedConversation.id);
+                if (error) {
+                    showToast(`${tx('pages.messages.errors.fileUpload', undefined, 'Failed to upload file')}: ${error.message}`, 'error');
+                    setIsSending(false);
+                    if (progressInterval) clearInterval(progressInterval);
+                    setUploadProgress(0);
+                    return;
+                }
+                if (url) attachments.push({ name: selectedFile.name, url, type: selectedFile.type, size: selectedFile.size });
             }
-            if (fileInputRef.current) fileInputRef.current.value = '';
-            messageInputRef.current?.focus();
+
+            if (progressInterval) {
+                clearInterval(progressInterval);
+                setUploadProgress(100);
+            }
+
+            const { data, error } = await sendMessage({
+                conversationId: selectedConversation.id,
+                senderId: user.id,
+                receiverId: selectedConversation.otherUser.id,
+                content: newMessage.trim(),
+                contractId: selectedConversation.contract_id,
+                attachments: attachments.length > 0 ? attachments : undefined
+            });
+
+            if (error) {
+                showToast(error.message, 'error');
+            } else if (data) {
+                setNewMessage('');
+                if (audioBlob) {
+                    cancelRecording();
+                }
+                if (selectedFile) {
+                    setSelectedFile(null);
+                }
+                if (fileInputRef.current) fileInputRef.current.value = '';
+                messageInputRef.current?.focus();
+            }
+        } finally {
+            if (progressInterval) clearInterval(progressInterval);
+            setIsSending(false);
+            setTimeout(() => setUploadProgress(0), 1500); // clear progress bar after short delay
         }
-        setIsSending(false);
     };
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -705,20 +732,34 @@ export default function Messages() {
                                         </button>
                                     </div>
                                 ) : audioBlob ? (
-                                    <div className="flex items-center gap-2 p-2 rounded-lg bg-surface border border-border">
-                                        <FileAudio className="w-5 h-5 text-brand" />
-                                        <span className="text-sm flex-1">{tx('pages.messages.voiceMemo', undefined, 'Voice memo')} • {Math.floor(recordingTime / 60).toString().padStart(2, '0')}:{(recordingTime % 60).toString().padStart(2, '0')}</span>
-                                        <button onClick={cancelRecording} className="p-1 hover:bg-background rounded transition-colors">
-                                            <X className="w-4 h-4" />
-                                        </button>
+                                    <div className="flex flex-col gap-2 p-2 rounded-lg bg-surface border border-border">
+                                        <div className="flex items-center gap-2">
+                                            <FileAudio className="w-5 h-5 text-brand" />
+                                            <span className="text-sm flex-1">{tx('pages.messages.voiceMemo', undefined, 'Voice memo')} • {Math.floor(recordingTime / 60).toString().padStart(2, '0')}:{(recordingTime % 60).toString().padStart(2, '0')}</span>
+                                            <button onClick={cancelRecording} disabled={isSending} className="p-1 hover:bg-background rounded transition-colors disabled:opacity-50">
+                                                <X className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                        {isSending && uploadProgress > 0 && (
+                                            <div className="w-full bg-border rounded-full h-1.5 overflow-hidden">
+                                                <div className="bg-brand h-1.5 rounded-full transition-all duration-300" style={{ width: `${uploadProgress}%` }} />
+                                            </div>
+                                        )}
                                     </div>
                                 ) : selectedFile ? (
-                                    <div className="flex items-center gap-2 p-2 rounded-lg bg-surface border border-border">
-                                        <FileText className="w-5 h-5 text-brand" />
-                                        <span className="text-sm flex-1 truncate">{selectedFile.name}</span>
-                                        <button onClick={() => setSelectedFile(null)} className="p-1 hover:bg-background rounded transition-colors">
-                                            <X className="w-4 h-4" />
-                                        </button>
+                                    <div className="flex flex-col gap-2 p-2 rounded-lg bg-surface border border-border">
+                                        <div className="flex items-center gap-2">
+                                            <FileText className="w-5 h-5 text-brand" />
+                                            <span className="text-sm flex-1 truncate">{selectedFile.name}</span>
+                                            <button onClick={() => setSelectedFile(null)} disabled={isSending} className="p-1 hover:bg-background rounded transition-colors disabled:opacity-50">
+                                                <X className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                        {isSending && uploadProgress > 0 && (
+                                            <div className="w-full bg-border rounded-full h-1.5 overflow-hidden">
+                                                <div className="bg-brand h-1.5 rounded-full transition-all duration-300" style={{ width: `${uploadProgress}%` }} />
+                                            </div>
+                                        )}
                                     </div>
                                 ) : null}
                             </div>
