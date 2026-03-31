@@ -173,31 +173,63 @@ export async function getCategoryCounts(categories: string[]) {
 }
 
 export async function getJobById(jobId: string) {
-    // Use anon client — job detail is public, must not hang on token refresh
-    return supabaseAnon
+    const fetchPromise = () => supabaseAnon
         .from('jobs')
-        .select(`*, client:profiles!jobs_client_id_fkey(id, full_name, email, avatar_url, location, created_at)`)
+        .select('*, client:profiles!jobs_client_id_fkey(id, full_name, email, avatar_url, location, created_at)')
         .eq('id', jobId)
         .single();
+    
+    const timeout = new Promise<any>((_, reject) =>
+        setTimeout(() => reject(new Error('getJobById timed out after 8s')), 8000)
+    );
+
+    try {
+        return await Promise.race([fetchPromise(), timeout]);
+    } catch (err) {
+        console.error('[getJobById] fatal:', err);
+        return { data: null, error: err };
+    }
 }
 
 
 export async function getJobsByClient(clientId: string) {
-    return supabase
+    const fetchPromise = () => supabase
         .from('jobs')
         .select('*')
         .eq('client_id', clientId)
         .order('created_at', { ascending: false });
+
+    const timeout = new Promise<any>((_, reject) =>
+        setTimeout(() => reject(new Error('getJobsByClient timed out after 8s')), 8000)
+    );
+
+    try {
+        return await Promise.race([fetchPromise(), timeout]);
+    } catch (err) {
+        console.error('[getJobsByClient] fatal:', err);
+        return { data: [], error: err };
+    }
 }
 
 export async function getSimilarJobs(jobId: string, category: string, limit = 3) {
-    return supabase
+    const fetchPromise = () => supabase
         .from('jobs')
         .select('*')
         .eq('category', category)
         .eq('status', 'open')
         .neq('id', jobId)
         .limit(limit);
+
+    const timeout = new Promise<any>((_, reject) =>
+        setTimeout(() => reject(new Error('getSimilarJobs timed out after 8s')), 8000)
+    );
+
+    try {
+        return await Promise.race([fetchPromise(), timeout]);
+    } catch (err) {
+        console.error('[getSimilarJobs] fatal:', err);
+        return { data: [], error: err };
+    }
 }
 
 // --- WRITE ---
