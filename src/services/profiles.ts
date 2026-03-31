@@ -110,6 +110,7 @@ export async function getSavedJobs(userId: string) {
         .from('favorites')
         .select('job_id, jobs(*)')
         .eq('user_id', userId)
+        .order('created_at', { ascending: false })
         .not('job_id', 'is', null);
 }
 

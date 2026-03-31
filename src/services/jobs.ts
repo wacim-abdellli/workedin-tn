@@ -52,7 +52,13 @@ export async function getJobs(filters: JobFilters = {}, page = 1, pageSize = 10)
             .eq('status', filters.status || 'open')
             .eq('visibility', 'public');
 
-        if (filters.search) query = query.or(`title.ilike.%${filters.search}%,description.ilike.%${filters.search}%`);
+        if (filters.search) {
+            // Strip out characters that could break PostgREST .or() parsing (like commas and quotes)
+            const safeSearch = filters.search.replace(/[,\"\_\%]/g, ' ').trim();
+            if (safeSearch) {
+                query = query.or(`title.ilike.%${safeSearch}%,description.ilike.%${safeSearch}%`);
+            }
+        }
         if (filters.categories && filters.categories.length > 0) query = query.in('category', filters.categories);
         if (filters.jobType) query = query.eq('job_type', filters.jobType);
         if (filters.experienceLevels && filters.experienceLevels.length > 0) query = query.in('experience_level', filters.experienceLevels);
