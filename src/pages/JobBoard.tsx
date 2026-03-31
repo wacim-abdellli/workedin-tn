@@ -232,7 +232,10 @@ function JobBoard() {
           },
           enabled: !!user,
           staleTime: 5 * 60 * 1000,
-    const savedJobs = savedJobsData;
+      });
+      
+      const savedJobs = savedJobsData;
+      const savedJobIds = useMemo(() => new Set(savedJobs.map(job => job.id)), [savedJobs]);
 
     // Toggle save job
     const toggleSaveJobMutation = useMutation({
