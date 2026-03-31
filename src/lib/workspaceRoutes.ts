@@ -15,8 +15,9 @@ type ProfileLike =
         | 'onboarding_completed'
         | 'client_onboarding_completed'
         | 'freelancer_onboarding_completed'
-        | 'username'
-      >
+        | 'username'        | 'bio'
+        | 'avatar_url'
+        | 'phone'      >
     >
   | null
   | undefined;
