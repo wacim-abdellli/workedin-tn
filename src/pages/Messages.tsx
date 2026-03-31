@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useVirtualizer } from '@tanstack/react-virtual';
 import {
     Search,
     Send,
@@ -49,6 +50,9 @@ export default function Messages() {
     const { tx, language } = useTranslation();
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const messageInputRef = useRef<HTMLInputElement>(null);
+
+    const conversationsParentRef = useRef<HTMLDivElement>(null);
+    const messagesParentRef = useRef<HTMLDivElement>(null);
 
     const [conversations, setConversations] = useState<Conversation[]>([]);
     const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
@@ -149,10 +153,32 @@ export default function Messages() {
 
         // Only setup subscription on initial mount/page 0 to avoid duplicates
         if (page === 0) {
-            conversationsChannelRef.current = subscribeToConversations(user.id, () => {
-                // Reload conversations on update, stay on current page limit but probably better to just reload from scratch
-                loadConversations(0, false);
-                setPage(0);
+            conversationsChannelRef.current = subscribeToConversations(user.id, (payload) => {
+                const eventType = payload.eventType;
+                if (eventType === 'UPDATE') {
+                    const changed = payload.new as any;
+                    setConversations(prev => {
+                        const idx = prev.findIndex(c => c.id === changed.id);
+                        if (idx > -1) {
+                            const updated = [...prev];
+                            const isParticipant1 = changed.participant_1 === user.id;
+                            const unread_count = isParticipant1 ? changed.unread_count_1 : changed.unread_count_2;
+                            updated[idx] = {
+                                ...updated[idx],
+                                last_message_text: changed.last_message_text,
+                                last_message_at: changed.last_message_at,
+                                unread_count: unread_count || 0,
+                            };
+                            return updated.sort((a, b) => new Date(b.last_message_at || 0).getTime() - new Date(a.last_message_at || 0).getTime());
+                        }
+                        // If it's a new conversation we don't have loaded, do a fetch
+                        loadConversations(0, false);
+                        return prev;
+                    });
+                } else if (eventType === 'INSERT') {
+                    loadConversations(0, false);
+                    setPage(0);
+                }
             });
         }
 
@@ -303,6 +329,20 @@ export default function Messages() {
         return true;
     });
 
+    const conversationsVirtualizer = useVirtualizer({
+        count: filteredConversations.length,
+        getScrollElement: () => conversationsParentRef.current,
+        estimateSize: () => 80,
+        overscan: 5,
+    });
+
+    const messagesVirtualizer = useVirtualizer({
+        count: messages.length,
+        getScrollElement: () => messagesParentRef.current,
+        estimateSize: () => 60,
+        overscan: 10,
+    });
+
     const formatTime = (timestamp: string | null) => {
         if (!timestamp) return '';
 
@@ -375,7 +415,7 @@ export default function Messages() {
             </div>
 
             {/* Conversation List */}
-            <div className="flex-1 space-y-3 overflow-y-auto px-3 py-4">
+            <div ref={conversationsParentRef} className="flex-1 overflow-y-auto px-3 py-4 relative">
                 {isLoadingConversations ? (
                     <div className="flex items-center justify-center h-32">
                         <Loader2 className="w-6 h-6 animate-spin text-brand" />
@@ -391,9 +431,23 @@ export default function Messages() {
                         />
                     </div>
                 ) : (
-                    filteredConversations.map((conversation) => (
+                    <div style={{ height: `${conversationsVirtualizer.getTotalSize()}px`, width: '100%', position: 'relative' }}>
+                        {conversationsVirtualizer.getVirtualItems().map((virtualRow) => {
+                            const conversation = filteredConversations[virtualRow.index];
+                            return (
                         <div
                             key={conversation.id}
+                            style={{
+                                position: 'absolute',
+                                top: 0,
+                                left: 0,
+                                width: '100%',
+                                height: `${virtualRow.size}px`,
+                                transform: `translateY(${virtualRow.start}px)`,
+                                paddingBottom: '12px'
+                            }}
+                        >
+                        <div
                             onClick={() => handleSelectConversation(conversation)}
                             role="button"
                             tabIndex={0}
@@ -403,7 +457,7 @@ export default function Messages() {
                                     handleSelectConversation(conversation);
                                 }
                             }}
-                            className={`group relative overflow-hidden rounded-2xl border p-4 transition-all duration-300 cursor-pointer animate-in fade-in ${
+                            className={`group relative h-full overflow-hidden rounded-2xl border p-4 transition-all duration-300 cursor-pointer animate-in fade-in ${
                                  selectedConversation?.id === conversation.id
                                     ? 'border-brand/30 bg-brand/10 shadow-md'
                                     : 'border-border bg-card hover:border-border-strong hover:bg-surface hover:shadow-sm'
@@ -463,7 +517,10 @@ export default function Messages() {
                                 </div>
                             </div>
                         </div>
-                    ))
+                        </div>
+                            );
+                        })}
+                    </div>
                 )}
                 
                 {hasMoreConversations && filteredConversations.length > 0 && !searchQuery && (
@@ -525,7 +582,7 @@ export default function Messages() {
                     </div>
 
                     {/* Messages Container */}
-                    <div className="flex-1 overflow-y-auto px-6 py-6 space-y-4 flex flex-col">
+                    <div ref={messagesParentRef} className="flex-1 overflow-y-auto px-6 py-6 flex flex-col relative">
                         {isLoadingMessages ? (
                             <div className="flex items-center justify-center h-full">
                                 <Loader2 className="w-8 h-8 animate-spin text-brand" />
@@ -538,10 +595,24 @@ export default function Messages() {
                                 </div>
                             </div>
                         ) : (
-                            messages.map((message) => (
+                            <div style={{ height: `${messagesVirtualizer.getTotalSize()}px`, width: '100%', position: 'relative' }}>
+                                {messagesVirtualizer.getVirtualItems().map((virtualRow) => {
+                                    const message = messages[virtualRow.index];
+                                    return (
+                                        <div
+                                            key={message.id}
+                                            style={{
+                                                position: 'absolute',
+                                                top: 0,
+                                                left: 0,
+                                                width: '100%',
+                                                height: `${virtualRow.size}px`,
+                                                transform: `translateY(${virtualRow.start}px)`,
+                                                paddingBottom: '16px'
+                                            }}
+                                        >
                                 <div
-                                    key={message.id}
-                                    className={`flex ${message.sender_id === user?.id ? 'justify-end' : 'justify-start'} rtl:flex-row-reverse animate-in fade-in slide-in-from-bottom-2 duration-300`}
+                                    className={`flex ${message.sender_id === user?.id ? 'justify-end' : 'justify-start'} rtl:flex-row-reverse animate-in fade-in slide-in-from-bottom-2 duration-300 w-full`}
                                 >
                                     <div className={`max-w-xs lg:max-w-md ${message.sender_id === user?.id ? '' : 'mr-2'}`}>
                                         <div
@@ -589,7 +660,10 @@ export default function Messages() {
                                         </p>
                                     </div>
                                 </div>
-                            ))
+                                        </div>
+                                    );
+                                })}
+                            </div>
                         )}
                         <div ref={messagesEndRef} />
                     </div>
