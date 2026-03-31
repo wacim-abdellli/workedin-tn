@@ -162,8 +162,9 @@ export default function FilterSidebar({
                         </h2>
                         <button
                             onClick={onClearAll}
-                            className="text-xs font-medium text-[color:var(--workspace-primary)] hover:underline"
-                         aria-label="Clear all filters" className="min-w-[44px] min-h-[44px] px-3">
+                            className="text-xs font-medium text-[color:var(--workspace-primary)] hover:underline min-w-[44px] min-h-[44px] px-3"
+                            aria-label="Clear all filters"
+                        >
                             {t.jobs.filters.clearAll}
                         </button>
                     </div>

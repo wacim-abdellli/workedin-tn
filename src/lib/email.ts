@@ -36,9 +36,7 @@ export async function sendProposalAcceptedEmail(
             </a>
             <p style="color:#888;margin-top:24px;font-size:12px">فريق خدمة</p>
         </div>
-        `,
-        'proposal_accepted',
-        contractId
+        `
     );
 }
 
@@ -66,9 +64,7 @@ export async function sendPaymentReceivedEmail(
             </a>
             <p style="color:#888;margin-top:24px;font-size:12px">فريق خدمة</p>
         </div>
-        `,
-        'payment_received',
-        contractId
+        `
     );
 }
 
@@ -92,8 +88,7 @@ export async function sendNewProposalEmail(
             </a>
             <p style="color:#888;margin-top:24px;font-size:12px">فريق خدمة</p>
         </div>
-        `,
-        'new_proposal'
+        `
     );
 }
 
@@ -120,8 +115,6 @@ export async function sendDisputeOpenedEmail(
             </a>
             <p style="color:#888;margin-top:24px;font-size:12px">فريق خدمة — disputes@khedma.tn</p>
         </div>
-        `,
-        'dispute_opened',
-        contractId
+        `
     );
 }
