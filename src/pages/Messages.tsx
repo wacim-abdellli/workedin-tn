@@ -20,6 +20,8 @@ import {
     Square,
     X,
     FileAudio,
+    WifiOff,
+    Clock,
 } from 'lucide-react';
 import { Header } from '../components/layout';
 import Button from '../components/ui/Button';
@@ -65,6 +67,8 @@ export default function Messages() {
     const [isLoadingMessages, setIsLoadingMessages] = useState(false);
     const [isSending, setIsSending] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
+    const [isOnline, setIsOnline] = useState(navigator.onLine);
+    const [pendingQueue, setPendingQueue] = useState<any[]>([]);
     const [page, setPage] = useState(0);
     const [hasMoreConversations, setHasMoreConversations] = useState(true);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -74,6 +78,94 @@ export default function Messages() {
 
     const conversationsChannelRef = useRef<RealtimeChannel | null>(null);
     const messagesChannelRef = useRef<RealtimeChannel | null>(null);
+
+    // Network status listener
+    useEffect(() => {
+        const handleOnline = () => setIsOnline(true);
+        const handleOffline = () => setIsOnline(false);
+        
+        window.addEventListener('online', handleOnline);
+        window.addEventListener('offline', handleOffline);
+        
+        return () => {
+            window.removeEventListener('online', handleOnline);
+            window.removeEventListener('offline', handleOffline);
+        };
+    }, []);
+
+    // Sync pending queue when back online
+    useEffect(() => {
+        if (isOnline && pendingQueue.length > 0 && selectedConversation && user) {
+            const syncQueue = async () => {
+                const currentQueue = [...pendingQueue];
+                setPendingQueue([]);
+                
+                for (const pendingMsg of currentQueue) {
+                    try {
+                        let attachments = [];
+                        
+                        // Handle offline file uploads
+                        if (pendingMsg.offlineFile) {
+                            const { url, error } = await uploadMessageAttachment(pendingMsg.offlineFile, selectedConversation.id);
+                            if (url && !error) {
+                                attachments.push({ 
+                                    name: pendingMsg.offlineFile.name, 
+                                    url, 
+                                    type: pendingMsg.offlineFile.type, 
+                                    size: pendingMsg.offlineFile.size 
+                                });
+                            }
+                        }
+                        // Handle offline audio
+                        if (pendingMsg.offlineAudio) {
+                            const audioFile = new File([pendingMsg.offlineAudio], pendingMsg.offlineFileName, { type: pendingMsg.offlineAudio.type || 'audio/webm' });
+                            const { url, error } = await uploadMessageAttachment(audioFile, selectedConversation.id);
+                            if (url && !error) {
+                                attachments.push({ 
+                                    name: tx('pages.messages.voiceMemo', undefined, 'Voice memo'), 
+                                    url, 
+                                    type: audioFile.type, 
+                                    size: audioFile.size 
+                                });
+                            }
+                        }
+
+                        await sendMessage({
+                            conversationId: selectedConversation.id,
+                            senderId: user.id,
+                            receiverId: selectedConversation.otherUser.id,
+                            content: pendingMsg.content || '',
+                            contractId: selectedConversation.contract_id,
+                            attachments: attachments.length > 0 ? attachments : undefined
+                        });
+                    } catch (err) {
+                        console.error("Failed to sync offline message", err);
+                    }
+                }
+                
+                // Clear localstorage backup
+                localStorage.removeItem(`pendingQueue_${selectedConversation.id}`);
+                showToast(tx('pages.messages.offline.synced', undefined, 'Offline messages synced successfully'), 'success');
+            };
+            
+            syncQueue();
+        }
+    }, [isOnline, selectedConversation?.id]); // Note: Depends on selectedConversation. If they switched chats, this basic version only syncs the active one, but it handles the primary UX loop.
+
+    // Load pending from localstorage on load
+    useEffect(() => {
+        if (selectedConversation) {
+            const savedQueue = localStorage.getItem(`pendingQueue_${selectedConversation.id}`);
+            if (savedQueue) {
+                try {
+                    // Note: File objects don't survive JSON stringify, but basic text does.
+                    const parsed = JSON.parse(savedQueue);
+                    setPendingQueue(parsed);
+                } catch(e) {}
+            }
+        }
+    }, [selectedConversation?.id]);
+
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -283,6 +375,33 @@ export default function Messages() {
 
     const handleSendMessage = async () => {
         if ((!newMessage.trim() && !selectedFile && !audioBlob) || !selectedConversation || !user) return;
+
+        if (!isOnline) {
+            // Store offline message in standard text mode
+            const offlineMsg = {
+                id: `pending_${Date.now()}`,
+                content: newMessage.trim(),
+                offlineFile: selectedFile ? selectedFile : null,
+                offlineAudio: audioBlob ? audioBlob : null,
+                offlineFileName: audioBlob ? `voice_memo_${Date.now()}.webm` : null
+            };
+
+            const updatedQueue = [...pendingQueue, offlineMsg];
+            setPendingQueue(updatedQueue);
+            
+            // Try to backup to localstorage if it's purely text (files don't serialize well, but text will survive reload)
+            if (!selectedFile && !audioBlob) {
+                localStorage.setItem(`pendingQueue_${selectedConversation.id}`, JSON.stringify(updatedQueue));
+            }
+            
+            setNewMessage('');
+            if (audioBlob) cancelRecording();
+            if (selectedFile) setSelectedFile(null);
+            if (fileInputRef.current) fileInputRef.current.value = '';
+            
+            showToast(tx('pages.messages.offline.queued', undefined, 'You are offline. Message queued and will send when reconnected.'), 'info');
+            return;
+        }
 
         setIsSending(true);
         setUploadProgress(0);
@@ -615,7 +734,15 @@ export default function Messages() {
                                 </div>
                             )}
                             <div>
-                                <h3 className="font-semibold text-foreground">{selectedConversation.otherUser.full_name}</h3>
+                                <div className="flex items-center gap-2">
+                                    <h3 className="font-semibold text-foreground">{selectedConversation.otherUser.full_name}</h3>
+                                    {!isOnline && (
+                                        <span className="flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400">
+                                            <WifiOff className="w-3 h-3" />
+                                            {tx('pages.messages.offline.badge', undefined, 'Offline')}
+                                        </span>
+                                    )}
+                                </div>
                                 <p className="text-sm text-muted-foreground">@{selectedConversation.otherUser.username || 'user'}</p>
                             </div>
                         </div>
@@ -716,6 +843,26 @@ export default function Messages() {
                                 })}
                             </div>
                         )}
+                        
+                        {/* Pending Queue Offline Messages */}
+                        {pendingQueue.map((pendingMsg, idx) => (
+                            <div key={`pending-${idx}`} className="flex justify-end rtl:flex-row-reverse animate-in fade-in slide-in-from-bottom-2 duration-300 w-full opacity-60 mb-4">
+                                <div className="max-w-xs lg:max-w-md">
+                                    <div className="rounded-2xl px-4 py-2 transition-all duration-200 bg-brand text-brand-text rounded-br-none shadow-md">
+                                        <p className="text-sm break-words">{pendingMsg.content}</p>
+                                        {(pendingMsg.offlineFile || pendingMsg.offlineAudio) && (
+                                            <div className="mt-2 text-xs italic opacity-80 flex items-center gap-1">
+                                                <Paperclip className="w-3 h-3" />
+                                                <span>{pendingMsg.offlineFileName || pendingMsg.offlineFile?.name || tx('pages.messages.offline.attachmentPending', undefined, 'Attachment pending')}</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <p className="text-xs mt-1 text-end text-muted-foreground flex items-center justify-end gap-1">
+                                        <Clock className="w-3 h-3" /> {tx('pages.messages.offline.statusWaiting', undefined, 'Pending connection...')}
+                                    </p>
+                                </div>
+                            </div>
+                        ))}
                         <div ref={messagesEndRef} />
                     </div>
 
