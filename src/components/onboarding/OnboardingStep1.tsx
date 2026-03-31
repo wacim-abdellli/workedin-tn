@@ -80,7 +80,7 @@ export default function OnboardingStep1({
                         <button
                             type="button"
                             onClick={onRemoveAvatar}
-                            className="mt-2 text-sm text-red-500 hover:text-red-600"
+                            className="mt-2 p-3 min-w-[44px] min-h-[44px] flex items-center justify-center text-sm text-red-500 hover:text-red-600"
                         >
                             {t.common.removeImage}
                         </button>

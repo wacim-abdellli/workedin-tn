@@ -1,3 +1,4 @@
+import DOMPurify from 'dompurify';
 import { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { CheckCircle2, Mail, ShieldCheck, Sparkles } from 'lucide-react';
@@ -11,7 +12,8 @@ function VerifyEmail() {
     const { t } = useTranslation();
     const { showToast } = useToast();
     const [searchParams] = useSearchParams();
-    const email = searchParams.get('email') || '';
+    const rawEmail = searchParams.get('email') || '';
+    const email = DOMPurify.sanitize(rawEmail);
     const [isResending, setIsResending] = useState(false);
     const [cooldown, setCooldown] = useState(0);
 

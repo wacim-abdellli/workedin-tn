@@ -30,10 +30,13 @@ function ClientOnboarding() {
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const clientSchema = z.object({
-        full_name: z.string().min(3, 'Minimum 3 characters'),
-        phone: z.string().max(20, 'Maximum 20 characters').optional(),
-        location: z.string().min(1, 'Required'),
-        bio: z.string().max(400, 'Maximum 400 characters').optional(),
+        full_name: z.string().trim().min(3, 'Minimum 3 characters'),
+        phone: z.string().trim().max(20, 'Maximum 20 characters').optional(),        
+        location: z.string().trim().min(1, 'Required').refine(
+            (val) => (GOVERNORATES as readonly string[]).includes(val),
+            { message: 'Invalid location' }
+        ),
+        bio: z.string().trim().max(400, 'Maximum 400 characters').optional(),
     });
 
     type ClientFormData = z.infer<typeof clientSchema>;
@@ -57,13 +60,29 @@ function ClientOnboarding() {
     const bio = watch('bio') || '';
 
     useEffect(() => {
-        reset({
+        let values = {
             full_name: profile?.full_name || '',
             phone: profile?.phone || '',
             location: profile?.location || '',
             bio: profile?.bio || '',
+        };
+        try {
+            const draft = localStorage.getItem(`client_draft_${user?.id}`);
+            if (draft) {
+                values = { ...values, ...JSON.parse(draft) };
+            }
+        } catch (e) {}
+        reset(values);
+    }, [profile, reset, user?.id]);
+
+    useEffect(() => {
+        const subscription = watch((value) => {
+            if (user?.id) {
+                localStorage.setItem(`client_draft_${user.id}`, JSON.stringify(value));
+            }
         });
-    }, [profile, reset]);
+        return () => subscription.unsubscribe();
+    }, [watch, user?.id]);
 
     useEffect(() => {
         return () => {
@@ -129,6 +148,10 @@ function ClientOnboarding() {
                 refreshProfile(),
                 new Promise((_, reject) => setTimeout(() => reject(new Error('REFRESH_TIMEOUT')), 3000)),
             ]).catch((error) => logger.warn('Client profile refresh failed:', error));
+
+            if (user?.id) {
+                localStorage.removeItem(`client_draft_${user.id}`);
+            }
 
             shouldNavigate = true;
         } catch (error) {

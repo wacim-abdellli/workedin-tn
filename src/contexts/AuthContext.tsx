@@ -261,6 +261,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
         }
 
         if (mounted && currentSession) {
+          const isEmailAuth = currentSession.user.app_metadata?.provider === 'email';
+          if (isEmailAuth && !currentSession.user.email_confirmed_at) {
+            await supabase.auth.signOut();
+            setSession(null);
+            setUser(null);
+            return;
+          }
+
           setIsProfileReady(false);
           setSession(currentSession);
           setUser(currentSession.user);
@@ -293,6 +301,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
         }
 
         if (newSession?.user) {
+          const isEmailAuth = newSession.user.app_metadata?.provider === 'email';
+          if (isEmailAuth && !newSession.user.email_confirmed_at) {
+            await supabase.auth.signOut();
+            setSession(null);
+            setUser(null);
+            return;
+          }
+
           // If signInWithEmail / signUpWithEmail is actively handling this sign-in,
           // skip the listener's full-screen loading cycle to prevent a race condition
           // where the listener resets isProfileReady to false AFTER signInWithEmail
@@ -364,17 +380,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
     };
   }, [fetchProfile, syncWorkspaceFromProfile]);
 
+  // Absolute loading safety net - only runs once on mount to prevent reset loops
   useEffect(() => {
     const timer = window.setTimeout(() => {
-      if (isLoading || !isProfileReady) {
-        logger.warn('Auth loading timeout - forcing ready state');
+        logger.warn('Auth absolute loading timeout - forcing ready state');
         setIsLoading(false);
         setIsProfileReady(true);
-      }
     }, MAX_LOADING_TIME);
 
     return () => window.clearTimeout(timer);
-  }, [isLoading, isProfileReady, MAX_LOADING_TIME]);
+  }, []); // Empty dependency array ensures this is an absolute timeout
 
   const signInWithEmail = async (email: string, password: string) => {
     manualSignInInProgressRef.current = true;

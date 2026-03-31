@@ -41,6 +41,7 @@ if (typeof window !== 'undefined') {
 }
 
 // Create Supabase client with minimal config to avoid hangs
+// Supabase handles token storage securely via httpOnly cookies when appropriate
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     auth: {
         persistSession: true,

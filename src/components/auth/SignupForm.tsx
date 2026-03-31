@@ -28,6 +28,17 @@ function SignupForm({ onComplete }: SignupFormProps) {
     const [error, setError] = useState<string | null>(null);
     const [showPassword, setShowPassword] = useState(false);
 
+    const [attempts, setAttempts] = useState(0);
+    const [lockoutUntil, setLockoutTime] = useState<number | null>(() => {
+        const item = localStorage.getItem('khedma_signup_lockout');
+        if (item) {
+            const parsed = parseInt(item, 10);
+            if (parsed > Date.now()) return parsed;
+            localStorage.removeItem('khedma_signup_lockout');
+        }
+        return null;
+    });
+
     useEffect(() => {
         if (urlStep === 'select-type') {
             setStep('userType');
@@ -55,7 +66,11 @@ function SignupForm({ onComplete }: SignupFormProps) {
 
     const signupSchema = z.object({
         email: z.string().email(t.auth.invalidEmail),
-        password: z.string().min(6, t.auth.passwordMinLength),
+        password: z.string()
+            .min(8, 'Password must be at least 8 characters')
+            .regex(/[A-Z]/, 'Must contain at least one uppercase letter')
+            .regex(/[a-z]/, 'Must contain at least one lowercase letter')
+            .regex(/[0-9]/, 'Must contain at least one number'),
         confirmPassword: z.string(),
     }).refine((data) => data.password === data.confirmPassword, {
         message: t.auth.passwordMismatch,
@@ -88,15 +103,36 @@ function SignupForm({ onComplete }: SignupFormProps) {
     ];
 
     const onSubmit = async (data: SignupFormData) => {
+        if (lockoutUntil && Date.now() < lockoutUntil) {
+            const minutes = Math.ceil((lockoutUntil - Date.now()) / 60000);
+            setError(`Too many attempts. Please try again in ${minutes} minutes.`);
+            return;
+        }
+
         setIsLoading(true);
         setError(null);
 
         try {
             await signUpWithEmail(data.email, data.password);
             
+            setAttempts(0);
+            localStorage.removeItem('khedma_signup_lockout');
+
             // Redirect to email verification page
             navigate(`/verify-email?email=${encodeURIComponent(data.email)}`);
         } catch (err) {
+            const newAttempts = attempts + 1;
+            setAttempts(newAttempts);
+            if (newAttempts >= 5) {
+                const lockout = Date.now() + 15 * 60 * 1000;
+                setLockoutTime(lockout);
+                localStorage.setItem('khedma_signup_lockout', lockout.toString());
+                setError(`Too many attempts. Please try again in 15 minutes.`);
+                showToast(`Too many attempts.`, 'error');
+                setIsLoading(false);
+                return;
+            }
+
             const message = (err as Error).message;
             if (message.includes('User already registered')) {
                 setError(t.auth.emailExists);
@@ -159,6 +195,7 @@ function SignupForm({ onComplete }: SignupFormProps) {
                     <button
                         type="button"
                         onClick={async () => {
+                            setIsLoading(true);
                             try {
                                 const { error: oauthError } = await (await import('../../lib/supabase')).supabase.auth.signInWithOAuth({
                                     provider: 'google',
@@ -173,6 +210,7 @@ function SignupForm({ onComplete }: SignupFormProps) {
                                 });
                                 if (oauthError) throw oauthError;
                             } catch {
+                                setIsLoading(false);
                                 showToast(t.auth.googleLoginError, 'error');
                             }
                         }}
@@ -260,7 +298,7 @@ function SignupForm({ onComplete }: SignupFormProps) {
 
                     <button
                         type="submit"
-                        disabled={isLoading}
+                        disabled={isLoading || (lockoutUntil ? Date.now() < lockoutUntil : false)}
                         className="group inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[linear-gradient(120deg,#6d28d9_0%,#9333ea_52%,#c026d3_100%)] px-6 py-3.5 font-semibold text-white shadow-[0_20px_48px_-24px_rgba(147,51,234,0.75)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_24px_56px_-24px_rgba(192,38,211,0.85)]"
                     >
                         {isLoading ? (

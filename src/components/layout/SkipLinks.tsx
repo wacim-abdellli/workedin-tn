@@ -19,7 +19,7 @@ export default function SkipLinks() {
     ];
 
     return (
-        <div className="absolute top-0 start-0 z-[100] w-full pointer-events-none">
+        <div className="fixed top-0 start-0 z-[100] w-full pointer-events-none">
             {links.map((link) => (
                 <a
                     key={link.id}

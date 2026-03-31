@@ -56,19 +56,32 @@ function FreelancerOnboarding() {
     });
 
     useEffect(() => {
-        step1Form.reset({
+        let step1Values = {
             full_name: profile?.full_name || '',
             title: freelancerProfile?.title || '',
             phone: profile?.phone || '',
             location: profile?.location || '',
             bio: profile?.bio || '',
-        });
+        };
 
-        step2Form.reset({
+        let step2Values = {
             hourly_rate: freelancerProfile?.hourly_rate ? String(freelancerProfile.hourly_rate) : '',
             availability: freelancerProfile?.availability || 'available',
-        });
+        };
 
+        try {
+            const draft1 = localStorage.getItem(`freelancer_draft_1_${user?.id}`);
+            const draft2 = localStorage.getItem(`freelancer_draft_2_${user?.id}`);
+            if (draft1) {
+                step1Values = { ...step1Values, ...JSON.parse(draft1) };
+            }
+            if (draft2) {
+                step2Values = { ...step2Values, ...JSON.parse(draft2) };
+            }
+        } catch (e) {}
+
+        step1Form.reset(step1Values);
+        step2Form.reset(step2Values);
         const skillsMap = Object.fromEntries(PREDEFINED_SKILLS.map((skill) => [skill.id, skill]));
         const existingSkills = (freelancerProfile?.skills || [])
             .map((skill) => {
@@ -92,6 +105,19 @@ function FreelancerOnboarding() {
                 return skill.name_ar;
         }
     };
+
+    useEffect(() => {
+        const sub1 = step1Form.watch((value) => {
+            if (user?.id) localStorage.setItem(`freelancer_draft_1_${user.id}`, JSON.stringify(value));
+        });
+        const sub2 = step2Form.watch((value) => {
+            if (user?.id) localStorage.setItem(`freelancer_draft_2_${user.id}`, JSON.stringify(value));
+        });
+        return () => {
+            sub1.unsubscribe();
+            sub2.unsubscribe();
+        };
+    }, [step1Form.watch, step2Form.watch, user?.id]);
 
     const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -310,6 +336,11 @@ function FreelancerOnboarding() {
                 refreshProfile(),
                 new Promise((_, reject) => setTimeout(() => reject(new Error('REFRESH_TIMEOUT')), 3000)),
             ]).catch((e) => logger.warn('Profile refresh failed:', e));
+
+            if (user?.id) {
+                localStorage.removeItem(`freelancer_draft_1_${user.id}`);
+                localStorage.removeItem(`freelancer_draft_2_${user.id}`);
+            }
 
             shouldNavigate = true;
         } catch (error) {

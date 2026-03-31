@@ -556,7 +556,7 @@ h6 {
   }
 
   .form-control {
-    @apply w-full rounded-xl px-3 py-2.5 text-sm;
+    @apply w-full rounded-xl px-3 sm:px-4 py-3 sm:py-2.5 text-sm sm:text-base;
     transition: border-color var(--motion-fast) var(--motion-ease-standard), box-shadow var(--motion-fast) var(--motion-ease-standard), background-color var(--motion-fast) var(--motion-ease-standard), color var(--motion-fast) var(--motion-ease-standard);
     background: var(--color-bg-secondary);
     border: 1px solid var(--color-border);

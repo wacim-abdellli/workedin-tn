@@ -25,9 +25,9 @@ function normalizeSupabaseError(error: unknown): SupabaseErrorLike {
   ) as SupabaseErrorLike;
 
   if (typeof errorRecord.status === 'number') normalized.status = errorRecord.status;
-  if (typeof errorRecord.code === 'string') normalized.code = errorRecord.code;
+  if (typeof errorRecord.code === 'string') normalized.code = errorRecord.code; 
   if (typeof errorRecord.details === 'string') normalized.details = errorRecord.details;
-  if (typeof errorRecord.hint === 'string') normalized.hint = errorRecord.hint;
+  if (typeof errorRecord.hint === 'string') normalized.hint = errorRecord.hint; 
 
   return normalized;
 }
@@ -42,7 +42,8 @@ function getResultStatus(result: SupabaseResultLike<unknown>): number | undefine
   return getErrorStatus(result.error) ?? result.status;
 }
 
-let lastRefreshTime = 0;
+// Promise singleton for token refreshes to prevent race conditions (Blocker #2)
+let refreshPromise: Promise<{ data: any; error: any } | void> | null = null;
 
 export async function supabaseWithRetry<TResult extends SupabaseResultLike<unknown>>(
   queryFn: () => PromiseLike<TResult> | TResult,
@@ -51,21 +52,37 @@ export async function supabaseWithRetry<TResult extends SupabaseResultLike<unkno
   const timeoutMs = options.timeoutMs ?? 8000;
   const refreshTimeoutMs = options.refreshTimeoutMs ?? 5000;
 
-  console.log('[ supabaseWithRetry ] Starting query...'); const start = Date.now(); let result = await withTimeout(Promise.resolve(queryFn()), timeoutMs, 'Supabase query'); console.log('[ supabaseWithRetry ] Query done in', (Date.now() - start), 'ms');
+  let start = 0;
+  if (import.meta.env.DEV) {
+    console.log('[ supabaseWithRetry ] Starting query...');
+    start = Date.now();
+  }
+  
+  let result = await withTimeout(Promise.resolve(queryFn()), timeoutMs, 'Supabase query');
+  
+  if (import.meta.env.DEV) {
+    console.log('[ supabaseWithRetry ] Query done in', (Date.now() - start), 'ms');
+  }
 
   if (getResultStatus(result) === 401) {
-    const now = Date.now();
-    if (now - lastRefreshTime > 10000) {
-      lastRefreshTime = now;
-      const { error: refreshError } = await withTimeout(
+    // If a refresh is not already in progress, start one and save the promise
+    if (!refreshPromise) {
+      refreshPromise = withTimeout(
         supabase.auth.refreshSession(),
         refreshTimeoutMs,
         'Token refresh'
-      );
-
-      if (refreshError) throw refreshError;
+      ).finally(() => {
+        // Clear the singleton once complete (either success or failure)
+        refreshPromise = null;
+      });
     }
 
+    // Wait for the singleton promise to finish, letting concurrent 401s latch on to the same request
+    const refreshResult = await refreshPromise;
+
+    if (refreshResult && refreshResult.error) throw refreshResult.error;
+
+    // Retry original query now that token is refreshed
     result = await withTimeout(Promise.resolve(queryFn()), timeoutMs, 'Supabase query retry');
   }
 
@@ -73,7 +90,6 @@ export async function supabaseWithRetry<TResult extends SupabaseResultLike<unkno
     if (options.throwOnError !== false) {
       throw normalizeSupabaseError(result.error);
     }
-
     return result;
   }
 

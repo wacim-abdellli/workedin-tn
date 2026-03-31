@@ -14,13 +14,13 @@ import { AuthShell } from '../components/auth';
 // Password validation schema
 const getResetPasswordSchema = (t: any) => z.object({
   password: z.string()
-    .min(8, t.auth?.validation?.password?.minLength || "كلمة المرور يجب أن تكون 8 أحرف على الأقل")
-    .regex(/[A-Z]/, t.auth?.validation?.password?.uppercase || "يجب أن تحتوي على حرف كبير واحد على الأقل")
-    .regex(/[a-z]/, t.auth?.validation?.password?.lowercase || "يجب أن تحتوي على حرف صغير واحد على الأقل")
-    .regex(/[0-9]/, t.auth?.validation?.password?.number || "يجب أن تحتوي على رقم واحد على الأقل"),
+    .min(8, t.auth?.validation?.password?.minLength || "Password must be at least 8 characters")
+    .regex(/[A-Z]/, t.auth?.validation?.password?.uppercase || "Must contain at least one uppercase letter")
+    .regex(/[a-z]/, t.auth?.validation?.password?.lowercase || "Must contain at least one lowercase letter")
+    .regex(/[0-9]/, t.auth?.validation?.password?.number || "Must contain at least one number"),
   confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
-  message: t.auth?.validation?.password?.match || "كلمات المرور غير متطابقة",
+  message: t.auth?.validation?.password?.match || "Passwords do not match",
   path: ["confirmPassword"],
 });
 
@@ -36,9 +36,9 @@ const getPasswordStrength = (password: string, t: any): { score: number; label: 
     if (/[0-9]/.test(password)) score++;
     if (/[^A-Za-z0-9]/.test(password)) score++;
 
-    if (score <= 2) return { score, label: t.auth?.passwordStrength?.weak || "ضعيفة", color: 'bg-red-500' };
-    if (score <= 4) return { score, label: t.auth?.passwordStrength?.medium || "متوسطة", color: 'bg-yellow-500' };
-    return { score, label: t.auth?.passwordStrength?.strong || "قوية", color: 'bg-green-500' };
+    if (score <= 2) return { score, label: t.auth?.passwordStrength?.weak, color: 'bg-red-500' };
+    if (score <= 4) return { score, label: t.auth?.passwordStrength?.medium, color: 'bg-yellow-500' };
+    return { score, label: t.auth?.passwordStrength?.strong, color: 'bg-green-500' };
 };
 
 const ResetPassword = () => {
@@ -188,17 +188,15 @@ const ResetPassword = () => {
                             <AlertTriangle className="w-10 h-10 text-red-600 dark:text-red-400" />
                         </div>
                         <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
-                            رابط منتهي الصلاحية
+                            {t.auth?.resetPassword?.expiredLink || "Expired Link"}
                         </h2>
                         <p className="text-gray-600 dark:text-gray-400 mb-8">
-                            {t.auth?.resetPassword?.invalidLinkDesc || "رابط إعادة التعيين غير صالح أو منتهي الصلاحية. يرجى طلب رابط جديد."}
+                            {t.auth?.resetPassword?.invalidLinkDesc || "Invalid reset link."}
                         </p>
                         <Button
                             onClick={() => navigate('/forgot-password')}
                             className="w-full"
-                        >
-                            طلب رابط جديد
-                        </Button>
+                        >{t.auth?.resetPassword?.requestNewLink || "Request New Link"}</Button>
                     </div>
                 </div>
             </AuthShell>
@@ -235,10 +233,10 @@ const ResetPassword = () => {
                                     <ShieldCheck className="w-8 h-8 text-primary-600 dark:text-primary-400" />
                                 </div>
                                 <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                                    تعيين كلمة مرور جديدة
+                                    {t.auth?.resetPassword?.setNew || "Set New Password"}
                                 </h1>
                                 <p className="text-gray-600 dark:text-gray-400">
-                                    {t.auth?.resetPassword?.setNewDesc || "أدخل كلمة المرور الجديدة لحسابك"}
+                                    {t.auth?.resetPassword?.setNewDesc || "Enter your new password"}
                                 </p>
                             </div>
 
@@ -246,9 +244,7 @@ const ResetPassword = () => {
                             <form onSubmit={handleSubmit(onSubmit)} className="form-stack">
                                 {/* New Password Field */}
                                 <div>
-                                    <label htmlFor="password" className="label">
-                                        كلمة المرور الجديدة
-                                    </label>
+                                    <label htmlFor="password" className="label">{t.auth?.password?.new || "New Password"}</label>
                                     <div className="relative">
                                         <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
                                             <Lock className="w-5 h-5 text-gray-400" />
@@ -258,7 +254,7 @@ const ResetPassword = () => {
                                             type={showPassword ? 'text' : 'password'}
                                             {...register('password')}
                                             className={`input ps-10 pe-12 ${errors.password ? 'input-error' : ''}`}
-                                            placeholder={t.auth?.passwordPlaceholder?.new || "أدخل كلمة المرور الجديدة"}
+                                            placeholder={t.auth?.passwordPlaceholder?.new || "Enter your new password"}
                                             disabled={isLoading}
                                         />
                                         <button
@@ -279,7 +275,7 @@ const ResetPassword = () => {
                                     {password && (
                                         <div className="mt-3">
                                             <div className="flex items-center justify-between mb-1">
-                                                <span className="text-xs text-gray-500">{t.auth?.passwordStrength?.label || "قوة كلمة المرور"}</span>
+                                                <span className="text-xs text-gray-500">{t.auth?.passwordStrength?.label || "Password strength"}</span>
                                                 <span className={`text-xs font-medium ${passwordStrength.color === 'bg-red-500' ? 'text-red-500' :
                                                     passwordStrength.color === 'bg-yellow-500' ? 'text-yellow-500' :
                                                         'text-green-500'
@@ -300,7 +296,7 @@ const ResetPassword = () => {
                                 {/* Confirm Password Field */}
                                 <div>
                                     <label htmlFor="confirmPassword" className="label">
-                                        تأكيد كلمة المرور
+                                        {t.auth?.confirmPassword || "Confirm Password"}
                                     </label>
                                     <div className="relative">
                                         <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
@@ -311,7 +307,7 @@ const ResetPassword = () => {
                                             type={showConfirmPassword ? 'text' : 'password'}
                                             {...register('confirmPassword')}
                                             className={`input ps-10 pe-12 ${errors.confirmPassword ? 'input-error' : ''}`}
-                                            placeholder={t.auth?.confirmPasswordPlaceholder || "أعد إدخال كلمة المرور"}
+                                            placeholder={t.auth?.confirmPasswordPlaceholder || "Re-enter your password"}
                                             disabled={isLoading}
                                         />
                                         <button
@@ -332,20 +328,20 @@ const ResetPassword = () => {
                                 {/* Password Requirements */}
                                 <div className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
                                     <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                        {t.auth?.passwordRequirements?.title || "متطلبات كلمة المرور:"}
+                                        {t.auth?.passwordRequirements?.title || "Password Requirements:"}
                                     </p>
                                     <ul className="space-y-1 text-sm text-gray-600 dark:text-gray-400">
                                         <li className={password.length >= 8 ? 'text-green-600' : ''}>
-                                            • 8 أحرف على الأقل
+                                            {t.auth?.passwordRequirements?.req1 || "• At least 8 characters"}
                                         </li>
                                         <li className={/[A-Z]/.test(password) ? 'text-green-600' : ''}>
-                                            • حرف كبير واحد على الأقل
+                                            {t.auth?.passwordRequirements?.req2 || "• At least one uppercase letter"}
                                         </li>
                                         <li className={/[a-z]/.test(password) ? 'text-green-600' : ''}>
-                                            • حرف صغير واحد على الأقل
+                                            {t.auth?.passwordRequirements?.req3 || "• At least one lowercase letter"}
                                         </li>
                                         <li className={/[0-9]/.test(password) ? 'text-green-600' : ''}>
-                                            • رقم واحد على الأقل
+                                            {t.auth?.passwordRequirements?.req4 || "• At least one number"}
                                         </li>
                                     </ul>
                                 </div>
@@ -374,13 +370,13 @@ const ResetPassword = () => {
                                 <CheckCircle className="w-10 h-10 text-green-600 dark:text-green-400" />
                             </div>
                             <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
-                                تم تغيير كلمة المرور بنجاح!
+                                {t.auth?.resetPassword?.success || "Password changed successfully!"}
                             </h2>
                             <p className="text-gray-600 dark:text-gray-400 mb-6">
-                                يمكنك الآن تسجيل الدخول بكلمة المرور الجديدة.
+                                {t.auth?.resetPassword?.successDesc || "You can now log in with your new password."}
                             </p>
                             <p className="text-sm text-gray-500 dark:text-gray-400">
-                                جاري تحويلك لصفحة تسجيل الدخول...
+                                {t.auth?.resetPassword?.redirecting || "Redirecting to login..."}
                             </p>
                         </div>
                     )}
