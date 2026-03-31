@@ -1,7 +1,9 @@
 import { logger } from '@/lib/logger';
 import { useState, useCallback } from 'react';
+import { QueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { sendContractMessage } from '../services/messages';
+import { verifyPaymentProcessorStatus } from '../services/payments';
 import type { ContractStatus } from '../types';
 
 interface ContractData {
@@ -21,6 +23,7 @@ interface UseContractStateOptions {
     contractId: string;
     userId: string;
     userRole: 'client' | 'freelancer';
+    queryClient?: QueryClient;
 }
 
 interface UseContractStateReturn {
@@ -56,6 +59,7 @@ export function useContractState({
     contractId,
     userId,
     userRole,
+    queryClient,
 }: UseContractStateOptions): UseContractStateReturn {
     const [contract, setContract] = useState<ContractData | null>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -104,24 +108,34 @@ export function useContractState({
                 throw new Error('انتقال الحالة غير صالح');
             }
 
-            const { error: updateError } = await supabase
+            const { data, error: updateError } = await supabase
                 .from('contracts')
                 .update({
                     status: newStatus,
                     ...additionalData,
                     updated_at: new Date().toISOString(),
                 })
-                .eq('id', contractId);
+                .eq('id', contractId)
+                .eq('status', contract.status)
+                .select();
 
             if (updateError) throw updateError;
+            if (!data || data.length === 0) {
+                throw new Error('تغيرت حالة العقد أثناء العملية، يرجى تحديث الصفحة');
+            }
 
             setContract({
                 ...contract,
                 status: newStatus,
                 ...additionalData,
             });
+            
+            // Invalidate contract cache so UI updates immediately
+            if (queryClient) {
+                await queryClient.invalidateQueries({ queryKey: ['contract', contractId] });
+            }
         },
-        [contract, contractId, canTransition]
+        [contract, contractId, canTransition, queryClient]
     );
 
     const deliverWork = useCallback(
@@ -133,44 +147,13 @@ export function useContractState({
             setIsDelivering(true);
             try {
                 const receiverId = getCounterpartyId(contract, userRole);
-                if (!receiverId) throw new Error('Unable to determine message recipient');
-
-                const { error: messageError } = await sendContractMessage({
-                    contract_id: contractId,
-                    sender_id: userId,
-                    receiver_id: receiverId,
-                    content: `📦 تم تسليم العمل: ${note}`,
-                    message_type: 'delivery',
-                });
-
-                if (messageError) throw messageError;
-
-                await supabase
-                    .from('contracts')
-                    .update({
-                        delivery_note: note,
-                        payment_status: 'pending',
-                        updated_at: new Date().toISOString(),
-                    })
-                    .eq('id', contractId);
-
-                await refresh();
-            } finally {
-                setIsDelivering(false);
-            }
-        },
-        [contract, contractId, userId, userRole, refresh]
-    );
-
-    const acceptWork = useCallback(async () => {
-        if (userRole !== 'client') {
-            throw new Error('فقط العميل يمكنه قبول العمل');
-        }
-
-        setIsAccepting(true);
-        try {
-            const receiverId = getCounterpartyId(contract, userRole);
             if (!receiverId) throw new Error('Unable to determine message recipient');
+
+            // CRITICAL PHASE 5 FIX: Verify with payment processor before releasing
+            const isVerified = await verifyPaymentProcessorStatus(contractId);
+            if (!isVerified && process.env.NODE_ENV === 'production') {
+                throw new Error('لم نستطع التحقق من حالة الدفع من البنك. يرجى المحاولة لاحقاً أو مراسلة الدعم.');
+            }
 
             await updateStatus('completed', {
                 payment_status: 'released',

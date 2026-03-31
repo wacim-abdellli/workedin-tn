@@ -167,11 +167,17 @@ export const uploadFile = async (
     path: string,
     file: File
 ): Promise<string> => {
+    // Calculate timeout based on file size
+    // Base time: 5 seconds + 5ms per KB for mobile 3G compatibility (100MB = 500s)
+    // Minimum 15s for small files, maximum 600s (10 minutes) for large files
+    const fileSizeKB = file.size / 1024;
+    const calculatedTimeout = Math.min(Math.max(5000 + (fileSizeKB * 5), 15000), 600000);
+    
     const { error } = await withTimeout(
         supabase.storage
             .from(bucket)
             .upload(path, file, { upsert: true }),
-        15000,
+        calculatedTimeout,
         `Upload ${bucket}/${path}`
     );
 

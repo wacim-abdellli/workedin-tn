@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { CreditCard, CheckCircle, Loader2, Smartphone, Building, ShieldCheck } from 'lucide-react';
 import Modal from './Modal';
 import Button from './Button';
@@ -33,23 +33,32 @@ export default function PaymentModal({ isOpen, onClose, amount, recipientName, o
         }
     }, [isOpen]);
 
+    const isPaymentPending = useRef(false);
+
     const handlePayment = async () => {
         if (method === 'd17' && !phoneNumber) return;
+        if (isPaymentPending.current) return;
+        
+        isPaymentPending.current = true;
+        try {
+            setIsLoading(true);
+            // Simulate API delay
+            await new Promise(resolve => setTimeout(resolve, 2000));
 
-        setIsLoading(true);
-        // Simulate API delay
-        await new Promise(resolve => setTimeout(resolve, 2000));
+            setStep('processing');
+            // Simulate processing time
+            await new Promise(resolve => setTimeout(resolve, 2000));
 
-        setStep('processing');
-        // Simulate processing time
-        await new Promise(resolve => setTimeout(resolve, 2000));
+            setStep('success');
+            // Wait a bit before closing/calling success
+            await new Promise(resolve => setTimeout(resolve, 1500));
 
-        setStep('success');
-        // Wait a bit before closing/calling success
-        await new Promise(resolve => setTimeout(resolve, 1500));
-
-        await onSuccess();
-        onClose();
+            await onSuccess();
+            onClose();
+        } finally {
+            isPaymentPending.current = false;
+            setIsLoading(false);
+        }
     };
 
     const renderD17 = () => (

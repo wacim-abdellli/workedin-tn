@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
     ArrowLeft,
@@ -144,6 +144,7 @@ export default function ContractWorkspace() {
         contractId: contractId || '',
         userId: user?.id || '',
         userRole,
+        queryClient,
     });
 
     // Refresh contract state on mount
@@ -208,7 +209,11 @@ export default function ContractWorkspace() {
         }
     };
 
+    const isActionPending = useRef(false);
+
     const handleAcceptAndPay = async () => {
+        if (isActionPending.current) return;
+        isActionPending.current = true;
         try {
             await acceptWork();
             showToast(t.contract.workAccepted, 'success');
@@ -216,6 +221,8 @@ export default function ContractWorkspace() {
             navigate('/client/dashboard');
         } catch {
             showToast(t.contract.acceptError, 'error');
+        } finally {
+            isActionPending.current = false;
         }
     };
 

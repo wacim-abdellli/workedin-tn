@@ -113,3 +113,23 @@ export async function reconcilePayment(transactionId: string): Promise<Reconcile
     const result = (data ?? {}) as { message?: string };
     return { success: true, message: result.message || 'Reconciliation succeeded' };
 }
+
+
+export async function verifyPaymentProcessorStatus(contractId: string): Promise<boolean> {
+    try {
+        const { data, error } = await supabase.functions.invoke('flouci-verify-payment', {
+            body: { contract_id: contractId },
+        });
+        
+        if (error) {
+            console.error('Payment verification edge function error:', error);
+            return false;
+        }
+        
+        // Ensure successful response from Flouci (or handle mock gracefully in dev)
+        return data?.status === 'SUCCESS' || data?.success === true;
+    } catch (err) {
+        console.error('Payment verification failed:', err);
+        return false;
+    }
+}

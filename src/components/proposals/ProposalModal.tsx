@@ -107,7 +107,8 @@ export default function ProposalModal({
             title={`تقديم عرض: ${job.title}`}
             size="lg"
         >
-            <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-6">
+            <form onSubmit={handleSubmit(onFormSubmit)}>
+                <fieldset disabled={isSubmitting} className="space-y-6">
                 {/* Bid Details */}
                 <div className="grid md:grid-cols-2 gap-6">
                     {/* Amount */}
@@ -235,7 +236,9 @@ export default function ProposalModal({
                 </div>
 
                 {/* Actions */}
-                <div className="flex gap-3 pt-4 border-t border-gray-100 dark:border-dark-700">
+                </fieldset>
+
+                    <div className="flex gap-3 pt-4 border-t border-gray-100 dark:border-dark-700">
                     <Button
                         type="button"
                         variant="ghost"

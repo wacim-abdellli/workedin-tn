@@ -2,6 +2,8 @@ import React, { useRef, useEffect, useState } from 'react';
 import { Send, Paperclip, Loader2, FileText, Download, Check, CheckCheck } from 'lucide-react';
 import Button from '../ui/Button';
 import { useTranslation } from '../../i18n';
+import DOMPurify from 'dompurify';
+import ErrorBoundary from '../ErrorBoundary';
 import type { Message } from '../../types';
 interface ChatMessage extends Omit<Message, 'sender'> {
     type?: 'text' | 'system'; // System messages like "Contract Started"
@@ -79,7 +81,14 @@ export default function ChatSection({
     return (
         <div className="flex flex-col h-full bg-white">
             {/* Messages List */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-6 bg-gray-50/50" role="log" aria-live="polite" aria-relevant="additions text">
+            <ErrorBoundary fallback={
+                <div className="flex-1 flex items-center justify-center text-gray-500">
+                    <div className="text-center">
+                        <p>{t.common?.error || 'حدث خطأ في تحميل الرسائل'}</p>
+                    </div>
+                </div>
+            }>
+                <div className="flex-1 overflow-y-auto p-4 space-y-6 bg-gray-50/50" role="log" aria-live="polite" aria-relevant="additions text">
                 {isLoadingHistory && (
                     <div className="flex justify-center py-4">
                         <Loader2 className="w-6 h-6 animate-spin text-primary-600" />
@@ -102,9 +111,7 @@ export default function ChatSection({
                         if (message.type === 'system') {
                             return (
                                 <div key={message.id} className="flex justify-center my-4">
-                                    <span className="bg-gray-200 text-gray-600 text-xs px-3 py-1 rounded-full">
-                                        {message.content}
-                                    </span>
+                                    <span className="bg-gray-200 text-gray-600 text-xs px-3 py-1 rounded-full" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(message.content) }} />
                                 </div>
                             );
                         }
@@ -138,7 +145,7 @@ export default function ChatSection({
                                             : 'bg-white border border-gray-100 text-gray-800 rounded-bl-sm'
                                             }`}>
                                             {/* Text Content */}
-                                            {message.content && <p className="leading-relaxed whitespace-pre-wrap">{message.content}</p>}
+                                            {message.content && <div className="leading-relaxed whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(message.content) }} />}
 
                                             {/* Attachments */}
                                             {message.attachments && message.attachments.length > 0 && (
@@ -157,7 +164,7 @@ export default function ChatSection({
                                                                 href={file.url}
                                                                 target="_blank"
                                                                 rel="noopener noreferrer"
-                                                                className={`p-1.5 rounded-full transition-colors ${isOwn ? 'hover:bg-white/20' : 'hover:bg-gray-100'
+                                                                className={`h-10 w-10 flex items-center justify-center rounded-full transition-colors ${isOwn ? 'hover:bg-white/20' : 'hover:bg-gray-100'
                                                                     }`}
                                                                 aria-label={`تحميل المرفق: ${file.name}`}
                                                             >
@@ -201,7 +208,8 @@ export default function ChatSection({
                 )}
 
                 <div ref={messagesEndRef} />
-            </div>
+                </div>
+            </ErrorBoundary>
 
             {/* Input Area */}
             <div className="p-4 bg-white border-t border-gray-100 shrink-0">
@@ -229,7 +237,7 @@ export default function ChatSection({
                     <button
                         type="button"
                         onClick={() => fileInputRef.current?.click()}
-                        className="p-3 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-colors"
+                        className="h-12 w-12 flex items-center justify-center text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-colors"
                         disabled={isUploading}
                         aria-label={t.contract?.attachFile || 'إرفاق ملف'}
                     >
