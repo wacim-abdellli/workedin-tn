@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
     Search,
@@ -15,6 +15,8 @@ import { Header, Footer } from '../components/layout';
 import Button from '../components/ui/Button';
 import { useToast } from '../components/ui/Toast';
 import { FilterSidebar, JobCard } from '../components/jobs';
+import { ErrorBoundary } from 'react-error-boundary';
+import { ErrorFallback } from '../components/ErrorFallback';
 import type { JobForCard } from '../components/jobs/JobCard';
 import { useTranslation } from '../i18n';
 import SEO, { SEO_CONFIG } from '../components/common/SEO';
@@ -458,7 +460,8 @@ function JobBoard() {
                             />
                         ) : (
                             <>
-                                <div className={`${viewMode === 'grid' ? 'grid md:grid-cols-2 gap-4' : 'space-y-4'} cv-auto`}>
+                                <ErrorBoundary FallbackComponent={ErrorFallback} onReset={() => window.location.reload()}>
+                                  <div className={`${viewMode === 'grid' ? 'grid md:grid-cols-2 gap-4' : 'space-y-4'} cv-auto`}>
                                     {jobCards.map(job => (
                                         <JobCard
                                             key={job.id}
@@ -469,6 +472,7 @@ function JobBoard() {
                                         />
                                     ))}
                                 </div>
+                                </ErrorBoundary>
 
                                 {/* Load More */}
                                 {hasNextPage && (

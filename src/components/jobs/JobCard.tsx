@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { ErrorBoundary } from 'react-error-boundary';
+import { JobCardErrorFallback } from '../ErrorFallback';
 import { Clock, Heart, ShieldCheck } from 'lucide-react';
 
 import { useTranslation } from '../../i18n';
@@ -204,4 +206,10 @@ function JobCard({ job, isSaved, onToggleSave, onClick }: JobCardProps) {
   );
 }
 
-export default React.memo(JobCard);
+const JobCardErrorBoundary = (props: JobCardProps) => (
+  <ErrorBoundary FallbackComponent={JobCardErrorFallback}>
+    <JobCard {...props} />
+  </ErrorBoundary>
+);
+
+export default React.memo(JobCardErrorBoundary);
