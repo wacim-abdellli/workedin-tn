@@ -17,6 +17,10 @@ vi.mock('@/services/messages', () => ({
     sendContractMessage: hookState.sendMessage,
 }));
 
+vi.mock('@/services/payments', () => ({
+    verifyPaymentProcessorStatus: vi.fn(async () => true),
+}));
+
 vi.mock('@/lib/supabase', () => {
     const createBuilder = (table: string) => {
         const builder = {

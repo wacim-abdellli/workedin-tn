@@ -104,8 +104,9 @@ describe('messages service coverage', () => {
         await getConversations('user-1');
         await getMessages('conversation-1');
 
+        // After N+1 optimization, conversations are fetched separately from profiles
         expect(state.selectCalls).toEqual(expect.arrayContaining([
-            expect.objectContaining({ table: 'conversations', columns: expect.stringContaining('participant1:profiles') }),
+            expect.objectContaining({ table: 'conversations', columns: expect.stringContaining('messages(count)') }),
             expect.objectContaining({ table: 'messages', columns: expect.stringContaining('sender:profiles!sender_id') }),
         ]));
         expect(state.orCalls).toContainEqual({

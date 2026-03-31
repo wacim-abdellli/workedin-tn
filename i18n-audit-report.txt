@@ -1,4 +1,21 @@
 # i18n audit report
 mode: strict
-findings: 0
+findings: 17
 
+src/App.tsx:383 [jsx-text] Switching workspace...
+src/components/auth/LoginForm.tsx:71 [direct-string] Too many attempts.
+src/components/auth/SignupForm.tsx:131 [direct-string] Too many attempts.
+src/components/ErrorFallback.tsx:11 [jsx-text] Something went wrong
+src/components/ErrorFallback.tsx:20 [jsx-text] Try again
+src/components/ErrorFallback.tsx:32 [jsx-text] Failed to load job card
+src/components/jobs/FilterSidebar.tsx:146 [attribute] Close filters
+src/components/jobs/FilterSidebar.tsx:166 [attribute] Clear all filters
+src/components/jobs/JobCard.tsx:38 [jsx-text] void | Promise
+src/pages/Messages.tsx:753 [attribute] Audio call
+src/pages/Messages.tsx:756 [attribute] Video call
+src/pages/Messages.tsx:759 [attribute] More options
+src/pages/Messages.tsx:880 [attribute] Stop recording
+src/pages/Messages.tsx:889 [attribute] Remove attached item
+src/pages/Messages.tsx:904 [attribute] Remove attached item
+src/pages/Messages.tsx:924 [attribute] Attach file
+src/pages/Messages.tsx:682 [jsx-text] unread messages
