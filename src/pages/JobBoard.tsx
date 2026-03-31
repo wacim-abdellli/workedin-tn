@@ -111,7 +111,7 @@ function SavedJobsSidebar({ savedJobs, onViewJob }: { savedJobs: Job[]; onViewJo
                 </div>
                 {savedJobs.length > 5 && (
                     <button className={cn(
-                        'w-full text-center text-[color:var(--workspace-primary)] text-xs font-medium mt-4 p-2 rounded transition-colors',
+                        'w-full text-center text-[color:var(--workspace-primary)] text-xs font-medium mt-4 p-2 min-h-[44px] rounded transition-colors',
                         'hover:bg-[color:var(--workspace-primary)]/5 dark:hover:bg-[color:var(--workspace-primary)]/10'
                     )}>
                         {t.jobs.savedJobs.viewAll} ({savedJobs.length})
@@ -299,7 +299,7 @@ function JobBoard() {
                 {/* Search Bar */}
                 <div className="mb-8">
                     <div className="relative max-w-2xl mx-auto">
-                        <Search className="absolute start-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted" />
+                        <Search className="absolute start-4 top-1/2 -translate-y-1/2 w-6 h-6 text-muted" />
                         <input
                             type="text"
                             value={filters.search}
@@ -389,13 +389,13 @@ function JobBoard() {
                                         aria-label="عرض قائمة"
                                         aria-pressed={viewMode === 'list'}
                                         className={cn(
-                                            'p-2 transition-colors',
+                                            'p-2 min-w-[44px] min-h-[44px] transition-colors',
                                             viewMode === 'list'
                                                 ? 'bg-[color:var(--workspace-primary)]/10 text-[color:var(--workspace-primary)]'
                                                 : 'text-muted hover:text-foreground'
                                         )}
                                     >
-                                        <List className="w-5 h-5" />
+                                        <List className="w-6 h-6" />
                                     </button>
                                     <button
                                         type="button"
@@ -403,13 +403,13 @@ function JobBoard() {
                                         aria-label="عرض شبكي"
                                         aria-pressed={viewMode === 'grid'}
                                         className={cn(
-                                            'p-2 transition-colors',
+                                            'p-2 min-w-[44px] min-h-[44px] transition-colors',
                                             viewMode === 'grid'
                                                 ? 'bg-[color:var(--workspace-primary)]/10 text-[color:var(--workspace-primary)]'
                                                 : 'text-muted hover:text-foreground'
                                         )}
                                     >
-                                        <Grid3X3 className="w-5 h-5" />
+                                        <Grid3X3 className="w-6 h-6" />
                                     </button>
                                 </div>
                             </div>

@@ -127,7 +127,7 @@ function JobCard({ job, isSaved, onToggleSave, onClick }: JobCardProps) {
               : `${job.hourly_rate} TND/hr`}
           </div>
           <IconButton
-            icon={<Heart className={cn('h-4 w-4 transition-all', isSaved && 'fill-current')} />}
+            icon={<Heart className={cn('h-6 w-6 transition-all', isSaved && 'fill-current')} />}
             label={isSaved ? t.jobs.unsave : t.jobs.save}
             onClick={(event) => {
               event.stopPropagation();

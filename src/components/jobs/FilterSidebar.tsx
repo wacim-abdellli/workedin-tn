@@ -140,14 +140,12 @@ export default function FilterSidebar({
             `}>
                 <div className="flex items-center justify-between mb-6 lg:hidden">
                     <h2 className="text-xl font-bold flex items-center gap-2">
-                        <Filter className="w-5 h-5 text-primary-500" />
+                        <Filter className="w-6 h-6 text-primary-500" />
                         <span>{t.jobs.filters.title}</span>
                     </h2>
-                    <button
-                        onClick={onClose}
-                        className="p-2 hover:bg-gray-100 dark:hover:bg-dark-700 rounded-full transition-colors"
+                    <button onClick={onClose} aria-label="Close filters" className="p-2 min-w-[44px] min-h-[44px] hover:bg-gray-100 dark:hover:bg-dark-700 rounded-full transition-colors"
                     >
-                        <X className="w-5 h-5" />
+                        <X className="w-6 h-6" />
                     </button>
                 </div>
 
@@ -165,7 +163,7 @@ export default function FilterSidebar({
                         <button
                             onClick={onClearAll}
                             className="text-xs font-medium text-[color:var(--workspace-primary)] hover:underline"
-                        >
+                         aria-label="Clear all filters" className="min-w-[44px] min-h-[44px] px-3">
                             {t.jobs.filters.clearAll}
                         </button>
                     </div>
@@ -190,7 +188,7 @@ export default function FilterSidebar({
                                     {cat.label}
                                 </span>
                                 {categoryCounts[cat.value] > 0 && (
-                                    <span className="w-5 h-5 flex items-center justify-center text-xs rounded-full bg-[color:var(--workspace-primary)] text-white">
+                                    <span className="w-6 h-6 flex items-center justify-center text-xs rounded-full bg-[color:var(--workspace-primary)] text-white">
                                         {categoryCounts[cat.value]}
                                     </span>
                                 )}

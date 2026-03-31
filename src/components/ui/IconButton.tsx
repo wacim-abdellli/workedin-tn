@@ -24,9 +24,9 @@ const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
         ...props
     }, ref) => {
         const sizeClasses = {
-            sm: 'w-9 h-9',
-            md: 'w-11 h-11',
-            lg: 'w-14 h-14'
+            sm: 'w-11 h-11 min-h-[44px] min-w-[44px]',
+            md: 'w-12 h-12 min-h-[48px] min-w-[48px]',
+            lg: 'w-14 h-14 min-h-[56px] min-w-[56px]'
         };
 
         const variantClasses = {
@@ -57,7 +57,7 @@ const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
                 {...props}
             >
                 {isLoading ? (
-                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <Loader2 className="w-6 h-6 animate-spin" />
                 ) : (
                     icon
                 )}

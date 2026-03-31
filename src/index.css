@@ -284,6 +284,7 @@ h6 {
 
   /* ===== BUTTONS ===== */
   .btn {
+    @apply min-w-[44px] min-h-[44px];
     @apply inline-flex items-center justify-center gap-2.5;
     @apply px-6 py-3.5 font-semibold rounded-xl;
     transition: transform var(--motion-fast) var(--motion-ease-standard), box-shadow var(--motion-base) var(--motion-ease-standard), background-color var(--motion-fast) var(--motion-ease-standard), border-color var(--motion-fast) var(--motion-ease-standard), color var(--motion-fast) var(--motion-ease-standard);
