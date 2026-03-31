@@ -60,6 +60,9 @@ export default function Messages() {
     const [isLoadingConversations, setIsLoadingConversations] = useState(true);
     const [isLoadingMessages, setIsLoadingMessages] = useState(false);
     const [isSending, setIsSending] = useState(false);
+    const [page, setPage] = useState(0);
+    const [hasMoreConversations, setHasMoreConversations] = useState(true);
+    const [isLoadingMore, setIsLoadingMore] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const { isRecording, recordingTime, startRecording, stopRecording, cancelRecording, audioBlob } = useAudioRecorder();
@@ -112,37 +115,53 @@ export default function Messages() {
         }
     }, [searchParams, conversations]);
 
-    // Load conversations on mount
+    // Load conversations
     useEffect(() => {
         if (!user) return;
 
-        const loadConversations = async () => {
-            if (conversations.length === 0) setIsLoadingConversations(true);
-            const { data, error } = await getConversations(user.id);
+        const loadConversations = async (currentPage: number, append: boolean = false) => {
+            if (!append && conversations.length === 0) setIsLoadingConversations(true);
+            if (append) setIsLoadingMore(true);
+
+            const limit = 20;
+            const { data, count, error } = await getConversations(user.id, currentPage, limit);
 
             if (error) {
                 showToast(error.message, 'error');
             } else if (data) {
-                setConversations(data);
+                if (append) {
+                    setConversations(prev => {
+                        const existingIds = new Set(prev.map(c => c.id));
+                        const uniqueNew = data.filter(c => !existingIds.has(c.id));
+                        return [...prev, ...uniqueNew];
+                    });
+                } else {
+                    setConversations(data);
+                }
+                setHasMoreConversations((currentPage + 1) * limit < (count || 0));
             }
 
             setIsLoadingConversations(false);
+            setIsLoadingMore(false);
         };
 
-        loadConversations();
+        loadConversations(page, page > 0);
 
-        // Subscribe to conversation updates
-        conversationsChannelRef.current = subscribeToConversations(user.id, () => {
-            // Reload conversations when there's an update
-            loadConversations();
-        });
+        // Only setup subscription on initial mount/page 0 to avoid duplicates
+        if (page === 0) {
+            conversationsChannelRef.current = subscribeToConversations(user.id, () => {
+                // Reload conversations on update, stay on current page limit but probably better to just reload from scratch
+                loadConversations(0, false);
+                setPage(0);
+            });
+        }
 
         return () => {
-            if (conversationsChannelRef.current) {
+            if (page === 0 && conversationsChannelRef.current) {
                 conversationsChannelRef.current.unsubscribe();
             }
         };
-    }, [user?.id]);
+    }, [user?.id, page]);
 
     // Load messages when conversation is selected
     useEffect(() => {
@@ -172,7 +191,14 @@ export default function Messages() {
             selectedConversation.id,
             (payload) => {
                 const newMsg = payload.new as Message;
-                setMessages((prev) => [...prev, newMsg]);
+                
+                setMessages((prev) => {
+                    // Deduplicate: Don't add if message with this ID already exists
+                    if (prev.some(m => m.id === newMsg.id)) {
+                        return prev;
+                    }
+                    return [...prev, newMsg];
+                });
 
                 // Update conversation in list - move to top and update last message
                 setConversations((prev) =>
@@ -182,8 +208,8 @@ export default function Messages() {
                                   ...conv,
                                   last_message_text: newMsg.content,
                                   last_message_at: newMsg.created_at,
-                                  // Decrease unread if this is from the other user
-                                  unread_count: newMsg.sender_id === user?.id ? conv.unread_count : 0,
+                                  // Increment unread count if we receive a message from the other user
+                                  unread_count: newMsg.sender_id !== user?.id ? (conv.unread_count || 0) + 1 : conv.unread_count,
                               }
                             : conv
                     )
@@ -221,7 +247,6 @@ export default function Messages() {
                  return;
             }
             if (url) attachments.push({ name: tx('pages.messages.voiceMemo', undefined, 'Voice memo'), url, type: audioFile.type, size: audioFile.size });
-            cancelRecording();
         }
 
         if (selectedFile) {
@@ -232,8 +257,6 @@ export default function Messages() {
                   return;
              }
              if (url) attachments.push({ name: selectedFile.name, url, type: selectedFile.type, size: selectedFile.size });
-             setSelectedFile(null);
-             if (fileInputRef.current) fileInputRef.current.value = '';
         }
 
         const { data, error } = await sendMessage({
@@ -249,6 +272,12 @@ export default function Messages() {
             showToast(error.message, 'error');
         } else if (data) {
             setNewMessage('');
+            if (audioBlob) {
+                cancelRecording();
+            }
+            if (selectedFile) {
+                setSelectedFile(null);
+            }
             if (fileInputRef.current) fileInputRef.current.value = '';
             messageInputRef.current?.focus();
         }
@@ -436,6 +465,19 @@ export default function Messages() {
                         </div>
                     ))
                 )}
+                
+                {hasMoreConversations && filteredConversations.length > 0 && !searchQuery && (
+                    <div className="pt-4 pb-2 flex justify-center">
+                        <Button 
+                            variant="outline" 
+                            size="sm" 
+                            onClick={() => setPage(p => p + 1)}
+                            disabled={isLoadingMore}
+                        >
+                            {isLoadingMore ? tx('common.loading', undefined, 'Loading...') : tx('pages.messages.loadMore', undefined, 'Load more conversations')}
+                        </Button>
+                    </div>
+                )}
             </div>
         </div>
     );
@@ -559,7 +601,7 @@ export default function Messages() {
                                 {isRecording ? (
                                     <div className="flex items-center gap-2 p-2 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/50">
                                         <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                                        <span className="text-sm text-red-600 dark:text-red-400">Recording: 00:{recordingTime.toString().padStart(2, '0')}</span>
+                                        <span className="text-sm text-red-600 dark:text-red-400">Recording: {Math.floor(recordingTime / 60).toString().padStart(2, '0')}:{(recordingTime % 60).toString().padStart(2, '0')}</span>
                                         <button onClick={stopRecording} className="ml-auto p-1 hover:bg-red-100 dark:hover:bg-red-900/40 rounded transition-colors">
                                             <Square className="w-4 h-4 fill-red-600 dark:fill-red-400" />
                                         </button>
@@ -567,7 +609,7 @@ export default function Messages() {
                                 ) : audioBlob ? (
                                     <div className="flex items-center gap-2 p-2 rounded-lg bg-surface border border-border">
                                         <FileAudio className="w-5 h-5 text-brand" />
-                                        <span className="text-sm flex-1">{tx('pages.messages.voiceMemo', undefined, 'Voice memo')} • 00:{recordingTime.toString().padStart(2, '0')}</span>
+                                        <span className="text-sm flex-1">{tx('pages.messages.voiceMemo', undefined, 'Voice memo')} • {Math.floor(recordingTime / 60).toString().padStart(2, '0')}:{(recordingTime % 60).toString().padStart(2, '0')}</span>
                                         <button onClick={cancelRecording} className="p-1 hover:bg-background rounded transition-colors">
                                             <X className="w-4 h-4" />
                                         </button>

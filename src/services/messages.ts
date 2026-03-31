@@ -84,19 +84,24 @@ interface ConversationRow {
     unread_count_2: number | null;
     created_at: string;
     updated_at: string;
+    messages?: { count: number }[];
     participant1?: ConversationParticipantRow | ConversationParticipantRow[] | null;
     participant2?: ConversationParticipantRow | ConversationParticipantRow[] | null;
 }
 
 // --- READ ---
 
-export async function getConversations(userId: string) {
+export async function getConversations(userId: string, page: number = 0, limit: number = 20) {
     try {
-        const { data, error } = await supabaseWithRetry(() => supabase
+        const start = page * limit;
+        const end = start + limit - 1;
+
+        const { data, error, count } = await supabaseWithRetry(() => supabase
             .from('conversations')
-            .select('*')
+            .select('*, messages(count)', { count: 'exact' })
             .or(`participant_1.eq.${userId},participant_2.eq.${userId}`)
-            .order('last_message_at', { ascending: false }));
+            .order('last_message_at', { ascending: false })
+            .range(start, end));
 
         if (error) throw error;
 
@@ -119,21 +124,6 @@ export async function getConversations(userId: string) {
                 profilesById.set(profile.id, profile);
             }
         }
-
-        // Fetch message counts with timeout protection and error handling
-        const messageCounts = new Map<string, number>();
-        const messageCountPromises = rows.map(async (conv) => {
-            try {
-                const { count } = await getMessageCount(conv.id);
-                messageCounts.set(conv.id, count);
-            } catch {
-                // Silently fail - we'll use 0 as fallback
-                messageCounts.set(conv.id, 0);
-            }
-        });
-
-        // Use Promise.allSettled to prevent one failure from blocking all
-        await Promise.allSettled(messageCountPromises);
 
         const conversations: Conversation[] = rows.map((conv) => {
             const isParticipant1 = conv.participant_1 === userId;
@@ -159,13 +149,13 @@ export async function getConversations(userId: string) {
                     username: otherUser?.username || null,
                 },
                 unread_count: unread_count || 0,
-                message_count: messageCounts.get(conv.id) ?? 0,
+                message_count: conv.messages?.[0]?.count ?? 0,
             };
         });
 
-        return { data: conversations, error: null };
+        return { data: conversations, count: count || 0, error: null };
     } catch (error) {
-        return { data: null, error: normalizeMessageError(error) };
+        return { data: null, count: 0, error: normalizeMessageError(error) };
     }
 }
 
@@ -254,7 +244,7 @@ export async function sendMessage(params: {
     attachments?: MessageAttachment[];
 }) {
     try {
-        const { data, error } = await supabase
+        const { data, error } = await supabaseWithRetry(() => supabase
             .from('messages')
             .insert({
                 conversation_id: params.conversationId,
@@ -268,7 +258,7 @@ export async function sendMessage(params: {
                 *,
                 sender:profiles!sender_id(id, full_name, avatar_url)
             `)
-            .single();
+            .single(), { throwOnError: false, timeoutMs: 15000 });
 
         if (error) throw error;
 
