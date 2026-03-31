@@ -299,9 +299,7 @@ function FreelancerOnboarding() {
             await updateProfileWithTimeout(
                 user.id,
                 {
-                    ...(typeof profile?.freelancer_onboarding_completed === 'boolean'
-                        ? { freelancer_onboarding_completed: true }
-                        : {}),
+                    freelancer_onboarding_completed: true,
                     onboarding_completed: true,
                     updated_at: new Date().toISOString(),
                 }

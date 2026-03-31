@@ -6,29 +6,42 @@ import { useAuth } from '../contexts/AuthContext';
 import { useEffect } from 'react';
 import SEO, { SEO_CONFIG } from '../components/common/SEO';
 import { Loader2 } from 'lucide-react';
-import { getPostAuthWorkspacePath } from '@/lib/workspaceRoutes';
 import { useTranslation } from '../i18n';
 
 function Login() {
     const navigate = useNavigate();
     const location = useLocation();
     const [searchParams] = useSearchParams();
-    const { isAuthenticated, isLoading, isFullyReady, profile, freelancerProfile } = useAuth();
+    const { isAuthenticated, isLoading, isFullyReady } = useAuth();
     const { tx } = useTranslation();
     const isOAuthResume = searchParams.get('oauth') === 'resume';
     const redirectTarget = typeof location.state === 'object' && location.state && 'from' in location.state
         ? (location.state.from as { pathname?: string; search?: string; hash?: string } | undefined)
         : undefined;
-    const postLoginPath = redirectTarget?.pathname
+    const rawPostLoginPath = redirectTarget?.pathname
         ? `${redirectTarget.pathname}${redirectTarget.search ?? ''}${redirectTarget.hash ?? ''}`
         : null;
 
-    // Redirect authenticated users to appropriate dashboard
+    // Filter out paths that we should never explicitly bounce back to after login
+    // like onboarding pages (which have their own smart routing via /dashboard) or auth pages.
+    const isAuthOrOnboardingPath = rawPostLoginPath && (
+        rawPostLoginPath.startsWith('/login') ||
+        rawPostLoginPath.startsWith('/signup') ||
+        rawPostLoginPath.startsWith('/onboarding')
+    );
+    const postLoginPath = isAuthOrOnboardingPath ? null : rawPostLoginPath;
+
+    // Redirect authenticated users — always go through /dashboard which waits
+    // for full auth state before deciding where to go. This prevents routing to
+    // /onboarding when the profile hasn't loaded yet.
     useEffect(() => {
         if (!isFullyReady || !isAuthenticated) return;
 
-        navigate(postLoginPath || getPostAuthWorkspacePath(profile, freelancerProfile), { replace: true });
-    }, [freelancerProfile, isAuthenticated, isFullyReady, navigate, postLoginPath, profile]);
+        // If the user was trying to reach a specific protected page, send them there.
+        // Otherwise go to /dashboard which uses DashboardRedirect to safely resolve
+        // the correct workspace page with a fully-loaded profile.
+        navigate(postLoginPath || '/dashboard', { replace: true });
+    }, [isAuthenticated, isFullyReady, navigate, postLoginPath]);
 
     const handleSuccess = () => {
         // Navigation is handled by the useEffect above to avoid race conditions

@@ -67,6 +67,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const userRef = useRef<User | null>(null);
   const profileRef = useRef<Profile | null>(null);
   const freelancerProfileRef = useRef<FreelancerProfile | null>(null);
+  // Prevents onAuthStateChange from overriding loading state while signIn/signUp is actively managing it
+  const manualSignInInProgressRef = useRef(false);
 
   useEffect(() => {
     userRef.current = user;
@@ -144,11 +146,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
   );
 
   const fetchProfile = useCallback(
-    async (userId: string) => {
+    async (userId: string, forceUserObj?: User) => {
       lastProfileAttemptRef.current = { userId, timestamp: Date.now() };
       const previousProfile = profileRef.current?.id === userId ? profileRef.current : null;
       const previousFreelancerProfile = previousProfile ? freelancerProfileRef.current : null;
-      const currentUser = userRef.current;
+      const currentUser = forceUserObj || userRef.current;
 
       try {
         const loadProfile = () =>
@@ -263,7 +265,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           setSession(currentSession);
           setUser(currentSession.user);
           loadedUserIdRef.current = currentSession.user.id;
-          await fetchProfile(currentSession.user.id);
+          await fetchProfile(currentSession.user.id, currentSession.user);
         }
       } catch (error) {
         logger.error('Error initializing auth:', error);
@@ -291,6 +293,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
         }
 
         if (newSession?.user) {
+          // If signInWithEmail / signUpWithEmail is actively handling this sign-in,
+          // skip the listener's full-screen loading cycle to prevent a race condition
+          // where the listener resets isProfileReady to false AFTER signInWithEmail
+          // already fetched the profile and set it to true.
+          if (manualSignInInProgressRef.current) {
+            return;
+          }
+
           // Only show full-screen loading if we don't already have the profile data.
           // The loadedUserIdRef bypasses the stale closure of the state variables here.
           const isFirstLoadTracker = loadedUserIdRef.current !== newSession.user.id;
@@ -302,7 +312,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           if (!isFirstLoadTracker) {
             if (hasLoadedProfile) {
                 loadedUserIdRef.current = newSession.user.id;
-                await fetchProfile(newSession.user.id);
+                await fetchProfile(newSession.user.id, newSession.user);
             } else {
                 const lastAttempt = lastProfileAttemptRef.current;
                 const shouldRetryProfile =
@@ -311,7 +321,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
                 if (shouldRetryProfile) {
                   loadedUserIdRef.current = newSession.user.id;
-                  void fetchProfile(newSession.user.id);
+                  void fetchProfile(newSession.user.id, newSession.user);
                 }
             }
             return;
@@ -322,7 +332,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           }
 
           setIsProfileReady(false);
-          await fetchProfile(newSession.user.id);
+          await fetchProfile(newSession.user.id, newSession.user);
           loadedUserIdRef.current = newSession.user.id;
 
           if (mounted) {
@@ -366,46 +376,60 @@ export function AuthProvider({ children }: AuthProviderProps) {
     return () => window.clearTimeout(timer);
   }, [isLoading, isProfileReady, MAX_LOADING_TIME]);
 
-  const signInWithEmail = async (email: string, password: string) => {    setIsProfileReady(false);
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+  const signInWithEmail = async (email: string, password: string) => {
+    manualSignInInProgressRef.current = true;
+    setIsProfileReady(false);
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-    if (error) {
-      setIsProfileReady(true);
-      throw error;
-    }
+      if (error) {
+        setIsProfileReady(true);
+        throw error;
+      }
 
-    if (data.session) {
-      setSession(data.session);
-      setUser(data.session.user);
-      await fetchProfile(data.session.user.id);
-      setIsProfileReady(true);
+      if (data.session) {
+        setSession(data.session);
+        setUser(data.session.user);
+        loadedUserIdRef.current = data.session.user.id;
+        await fetchProfile(data.session.user.id, data.session.user);
+        setIsProfileReady(true);
+      }
+    } finally {
+      manualSignInInProgressRef.current = false;
     }
   };
 
-  const signUpWithEmail = async (email: string, password: string) => {    setIsProfileReady(false);
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          preferred_language: getPreferredLanguage(),
+  const signUpWithEmail = async (email: string, password: string) => {
+    manualSignInInProgressRef.current = true;
+    setIsProfileReady(false);
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            preferred_language: getPreferredLanguage(),
+          },
         },
-      },
-    });
+      });
 
-    if (error) {
-      setIsProfileReady(true);
-      throw error;
-    }
+      if (error) {
+        setIsProfileReady(true);
+        throw error;
+      }
 
-    if (data.session) {
-      setSession(data.session);
-      setUser(data.session.user);
-      await fetchProfile(data.session.user.id);
-      setIsProfileReady(true);
+      if (data.session) {
+        setSession(data.session);
+        setUser(data.session.user);
+        loadedUserIdRef.current = data.session.user.id;
+        await fetchProfile(data.session.user.id, data.session.user);
+        setIsProfileReady(true);
+      }
+    } finally {
+      manualSignInInProgressRef.current = false;
     }
   };
 
@@ -430,6 +454,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
   };
 
   const signOut = async () => {
+    manualSignInInProgressRef.current = false;
+    loadedUserIdRef.current = null;
     setUser(null);
     setSession(null);
     setProfile(null);

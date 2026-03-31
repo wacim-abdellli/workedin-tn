@@ -12,7 +12,7 @@ interface OnboardingRouteProps {
 }
 
 export function OnboardingRoute({ workspace, children }: OnboardingRouteProps) {
-  const { isLoading, profile, freelancerProfile } = useAuth();
+  const { isFullyReady, profile, freelancerProfile } = useAuth();
   const { activeWorkspace, setWorkspace } = useWorkspaceStore();
 
   useEffect(() => {
@@ -21,7 +21,8 @@ export function OnboardingRoute({ workspace, children }: OnboardingRouteProps) {
     }
   }, [activeWorkspace, setWorkspace, workspace]);
 
-  if (isLoading) {
+  // Wait for auth + profile to be fully loaded before deciding whether to gate
+  if (!isFullyReady) {
     return <Loading fullScreen />;
   }
 

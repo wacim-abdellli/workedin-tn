@@ -121,7 +121,7 @@ function ClientOnboarding() {
                 location: data.location,
                 bio: data.bio,
                 avatar_url: avatarUrl,
-                ...(typeof profile?.client_onboarding_completed === 'boolean' ? { client_onboarding_completed: true } : {}),
+                client_onboarding_completed: true,
                 onboarding_completed: true,
             });
 

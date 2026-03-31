@@ -95,6 +95,10 @@ export default function Messages() {
     const handleSelectConversation = async (conversation: Conversation) => {
         setSelectedConversation(conversation);
         setShowMobileThread(true);
+        
+        // Load draft for this conversation
+        const draft = localStorage.getItem(`draft_${conversation.id}`);
+        setNewMessage(draft || '');
 
         // Mark as read and update UI
         if (user && conversation.unread_count > 0) {
@@ -255,6 +259,26 @@ export default function Messages() {
             }
         };
     }, [selectedConversation?.id, user?.id]);
+
+    // Save draft when message changes
+    useEffect(() => {
+        if (selectedConversation && newMessage !== undefined) {
+            const draftKey = `draft_${selectedConversation.id}`;
+            if (newMessage.trim() === '') {
+                localStorage.removeItem(draftKey);
+            } else {
+                localStorage.setItem(draftKey, newMessage);
+            }
+        }
+    }, [newMessage, selectedConversation?.id]);
+
+    const MAX_RECORDING_SECONDS = 5 * 60; // 5 minutes max recording limit
+    useEffect(() => {
+        if (isRecording && recordingTime >= MAX_RECORDING_SECONDS) {
+            stopRecording();
+            showToast(tx('pages.messages.errors.recordingLimit', undefined, 'Recording limit reached (5 minutes)'), 'warning');
+        }
+    }, [recordingTime, isRecording]);
 
     const handleSendMessage = async () => {
         if ((!newMessage.trim() && !selectedFile && !audioBlob) || !selectedConversation || !user) return;

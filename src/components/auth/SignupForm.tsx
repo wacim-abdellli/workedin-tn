@@ -10,7 +10,7 @@ import { useTranslation } from '../../i18n';
 import { useAuth } from '../../contexts/AuthContext';
 import type { UserType } from '../../types';
 import { useToast } from '../ui/Toast';
-import { getPostAuthWorkspacePath, getWorkspaceOnboardingPath } from '@/lib/workspaceRoutes';
+import { getWorkspaceOnboardingPath } from '@/lib/workspaceRoutes';
 
 interface SignupFormProps {
     onComplete?: () => void;
@@ -18,7 +18,7 @@ interface SignupFormProps {
 
 function SignupForm({ onComplete }: SignupFormProps) {
     const { t, dir } = useTranslation();
-    const { profile, freelancerProfile, refreshProfile, setUserType, signUpWithEmail } = useAuth();
+    const { profile, refreshProfile, setUserType, signUpWithEmail } = useAuth();
     const { showToast } = useToast();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
@@ -48,8 +48,8 @@ function SignupForm({ onComplete }: SignupFormProps) {
         if (step === 'userType') return;
         if (!profile?.user_type) return;
 
-        navigate(getPostAuthWorkspacePath(profile, freelancerProfile));
-    }, [freelancerProfile, navigate, profile, step]);
+        navigate('/dashboard');
+    }, [navigate, profile, step]);
 
     const ArrowIcon = dir === 'rtl' ? ArrowLeft : ArrowRight;
 

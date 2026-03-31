@@ -9,21 +9,23 @@ export const DashboardRedirect = () => {
   const location = useLocation();
   const { user, profile, isFullyReady, refreshProfile } = useAuth();
   const activeWorkspace = useWorkspaceStore((state) => state.activeWorkspace);
-  const [hasRetriedProfile, setHasRetriedProfile] = useState(false);
+  const [retryState, setRetryState] = useState<'idle' | 'retrying' | 'failed'>('idle');
 
   useEffect(() => {
-    if (!isFullyReady || !user || profile || hasRetriedProfile) {
+    if (!isFullyReady || !user || profile || retryState !== 'idle') {
       return;
     }
 
-    setHasRetriedProfile(true);
-    void refreshProfile();
-  }, [hasRetriedProfile, isFullyReady, profile, refreshProfile, user]);
+    setRetryState('retrying');
+    refreshProfile().then(() => {
+        setRetryState('failed');
+    });
+  }, [retryState, isFullyReady, profile, refreshProfile, user]);
 
-  if (!isFullyReady || (user && !profile && !hasRetriedProfile)) {
+  if (!isFullyReady || (user && !profile && retryState !== 'failed')) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary-600 border-t-transparent" />
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-[color:var(--workspace-primary)] border-t-transparent" />
       </div>
     );
   }
