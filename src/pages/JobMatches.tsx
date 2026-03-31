@@ -121,7 +121,7 @@ function JobMatches() {
                     // Bonus: Has verified phone ? 10 : 0 (weight 10%)
 
                     const skillScore = (matchCount / totalRequired) * 70;
-                    const perfScore = (fl.completion_rate || 0 / 100) * 20;
+                    const perfScore = ((fl.completion_rate || 0) / 100) * 20;
                     const verifiedScore = fl.phone ? 10 : 0;
 
                     return {

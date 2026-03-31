@@ -252,12 +252,12 @@ function JobBoard() {
         }
     });
 
-    const toggleSaveJob = useCallback((job: JobForCard) => {
+    const toggleSaveJob = useCallback(async (job: JobForCard) => {
         if (!user) {
             showToast(t.auth.login, 'warning');
             return;
         }
-        toggleSaveJobMutation.mutate({ jobId: job.id, isSaved: savedJobIds.has(job.id) });
+        await toggleSaveJobMutation.mutateAsync({ jobId: job.id, isSaved: savedJobIds.has(job.id) });
     }, [savedJobIds, showToast, t.auth.login, toggleSaveJobMutation, user]);
 
     const handleJobClick = useCallback((jobId: string) => {

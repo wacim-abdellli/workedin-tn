@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Clock, Heart, ShieldCheck } from 'lucide-react';
 
 import { useTranslation } from '../../i18n';
@@ -33,11 +33,12 @@ export interface JobForCard {
 interface JobCardProps {
   job: JobForCard;
   isSaved: boolean;
-  onToggleSave: (job: JobForCard) => void;
+  onToggleSave: (job: JobForCard) => void | Promise<void>;
   onClick: (jobId: string) => void;
 }
 
 function JobCard({ job, isSaved, onToggleSave, onClick }: JobCardProps) {
+  const [isSaving, setIsSaving] = useState(false);
   const { t, language } = useTranslation();
   const [from, to] = getAvatarGradient(job.client?.full_name || 'Khedma');
 
@@ -129,11 +130,19 @@ function JobCard({ job, isSaved, onToggleSave, onClick }: JobCardProps) {
           <IconButton
             icon={<Heart className={cn('h-6 w-6 transition-all', isSaved && 'fill-current')} />}
             label={isSaved ? t.jobs.unsave : t.jobs.save}
-            onClick={(event) => {
-              event.stopPropagation();
-              onToggleSave(job);
-            }}
+            onClick={async (event) => {
+            event.stopPropagation();
+            if (isSaving) return;
+            setIsSaving(true);
+            try {
+              await onToggleSave(job);
+            } finally {
+              setIsSaving(false);
+            }
+          }}
             isActive={isSaved}
+          disabled={isSaving}
+          isLoading={isSaving}
             variant="danger"
             size="sm"
             className="!rounded-full"
