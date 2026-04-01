@@ -1,5 +1,4 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
 
 export type Workspace = 'client' | 'freelancer';
 
@@ -10,17 +9,14 @@ interface WorkspaceState {
   setSwitching: (value: boolean) => void;
 }
 
-export const useWorkspaceStore = create<WorkspaceState>()(
-  persist(
-    (set) => ({
-      activeWorkspace: 'client',
-      isSwitching: false,
-      setWorkspace: (workspace) => set({ activeWorkspace: workspace }),
-      setSwitching: (value) => set({ isSwitching: value }),
-    }),
-    {
-      name: 'khedma-workspace',
-      partialize: (state) => ({ activeWorkspace: state.activeWorkspace }),
-    }
-  )
-);
+// NOTE: Do NOT persist this store. The activeWorkspace is always derived from
+// the authenticated user's DB profile via syncWorkspaceFromProfile() in
+// AuthContext on every login. Persisting it under a shared localStorage key
+// caused cross-user session bleed: user B's workspace value would be read by
+// user A's session before auth finished loading, triggering spurious redirects.
+export const useWorkspaceStore = create<WorkspaceState>()((set) => ({
+  activeWorkspace: 'client',
+  isSwitching: false,
+  setWorkspace: (workspace) => set({ activeWorkspace: workspace }),
+  setSwitching: (value) => set({ isSwitching: value }),
+}));

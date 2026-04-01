@@ -1,6 +1,5 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
-import * as Sentry from '@sentry/react';
 
 import { logger } from '@/lib/logger';
 import { useTranslation } from '@/i18n';
@@ -17,6 +16,11 @@ interface State {
     error: Error | null;
 }
 
+let Sentry: any = null;
+if (import.meta.env.PROD) {
+    import('@sentry/react').then(mod => Sentry = mod);
+}
+
 class ErrorBoundaryInner extends Component<Props & { tx: (key: string, params?: Record<string, string | number>, fallback?: string) => string }, State> {
     public state: State = {
         hasError: false,
@@ -28,7 +32,7 @@ class ErrorBoundaryInner extends Component<Props & { tx: (key: string, params?: 
     }
 
     public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-        Sentry.captureException(error, {
+        Sentry?.captureException(error, {
             contexts: {
                 react: {
                     componentStack: errorInfo.componentStack,

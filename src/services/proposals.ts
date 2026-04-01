@@ -74,13 +74,12 @@ export async function createProposal(data: CreateProposalInput, files: File[] = 
             }
         }
 
-        const attachmentUrls: string[] = [];
-
-        for (const file of files) {
-            const path = `${data.freelancer_id}/${data.job_id}/${Date.now()}-${file.name}`;
-            const uploadedUrl = await uploadFile('attachments', path, file);
-            attachmentUrls.push(uploadedUrl);
-        }
+        const attachmentUrls: string[] = await Promise.all(
+            files.map(async (file) => {
+                const path = `${data.freelancer_id}/${data.job_id}/${Date.now()}-${file.name}`;
+                return await uploadFile('attachments', path, file);
+            })
+        );
 
         const { data: proposal, error } = await supabase
             .from('proposals')

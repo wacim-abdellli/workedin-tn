@@ -1,7 +1,6 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 import { logger } from '@/lib/logger';
-import { Sentry } from '@/lib/sentry';
 import { useTranslation } from '@/i18n';
 import Button from '@/components/ui/Button';
 
@@ -15,6 +14,11 @@ interface Props {
 interface State {
     hasError: boolean;
     error: Error | null;
+}
+
+let Sentry: any = null;
+if (import.meta.env.PROD) {
+    import('@sentry/react').then(mod => Sentry = mod);
 }
 
 class ErrorBoundaryInner extends Component<Props & { language: string }, State> {
@@ -32,7 +36,7 @@ class ErrorBoundaryInner extends Component<Props & { language: string }, State> 
         
         // Send error to Sentry in production
         if (import.meta.env.PROD) {
-            Sentry.captureException(error, {
+            Sentry?.captureException(error, {
                 contexts: {
                     react: {
                         componentStack: errorInfo.componentStack,

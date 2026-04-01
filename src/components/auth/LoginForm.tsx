@@ -7,6 +7,7 @@ import { Mail, ArrowRight, ArrowLeft, Eye, EyeOff, Sparkles, Lock } from 'lucide
 import { useTranslation } from '../../i18n';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../ui/Toast';
+import { useAuthRateLimit } from '../../hooks/useAuthRateLimit';
 
 interface LoginFormProps {
     onSuccess?: () => void;
@@ -20,16 +21,7 @@ function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
     const [error, setError] = useState<string | null>(null);
     const [showPassword, setShowPassword] = useState(false);
 
-    const [attempts, setAttempts] = useState(0);
-    const [lockoutUntil, setLockoutTime] = useState<number | null>(() => {
-        const item = localStorage.getItem('khedma_login_lockout');
-        if (item) {
-            const parsed = parseInt(item, 10);
-            if (parsed > Date.now()) return parsed;
-            localStorage.removeItem('khedma_login_lockout');
-        }
-        return null;
-    });
+    const { recordAttempt, isLockedOut } = useAuthRateLimit('login');
 
     const ArrowIcon = dir === 'rtl' ? ArrowLeft : ArrowRight;
 
@@ -47,34 +39,22 @@ function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
         resolver: zodResolver(emailSchema),
     });
     const onSubmit = async (data: EmailFormData) => {
-        if (lockoutUntil && Date.now() < lockoutUntil) {
-            const minutes = Math.ceil((lockoutUntil - Date.now()) / 60000);
-            setError(`Too many attempts. Please try again in ${minutes} minutes.`);
+        if (isLockedOut) {
+            setError(`Too many attempts. Please try again later.`);
             return;
         }
 
         setIsLoading(true);
         setError(null);
         try {
-            await signInWithEmail(data.email, data.password);
-            setAttempts(0);
-            localStorage.removeItem('khedma_login_lockout');
+            await recordAttempt(() => signInWithEmail(data.email, data.password));
             onSuccess?.();
         } catch (err) {
-            const newAttempts = attempts + 1;
-            setAttempts(newAttempts);
-            if (newAttempts >= 5) {
-                const lockout = Date.now() + 15 * 60 * 1000;
-                setLockoutTime(lockout);
-                localStorage.setItem('khedma_login_lockout', lockout.toString());
-                setError(`Too many attempts. Please try again in 15 minutes.`);
-                showToast(`Too many attempts.`, 'error');
-                setIsLoading(false);
-                return;
-            }
-
             const message = (err as Error).message;
-            if (message.includes('Invalid login credentials')) {
+            if (message.includes('Too many') || message.includes('Rate limit')) {
+                setError(message);
+                showToast(message, 'error');
+            } else if (message.includes('Invalid login credentials')) {
                 setError(t.auth.invalidCredentials);
                 showToast(t.auth.invalidCredentials, 'error');
             } else if (message.includes('Email not confirmed')) {
@@ -214,7 +194,7 @@ function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
                 {/* Submit Button */}
                 <button
                     type="submit"
-                    disabled={isLoading || (lockoutUntil ? Date.now() < lockoutUntil : false)}
+                    disabled={isLoading || isLockedOut}
                     className="group inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[linear-gradient(120deg,#6d28d9_0%,#9333ea_52%,#c026d3_100%)] px-6 py-3.5 font-semibold text-white shadow-[0_20px_48px_-24px_rgba(147,51,234,0.75)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_24px_56px_-24px_rgba(192,38,211,0.85)]"
                 >
                     {isLoading ? (

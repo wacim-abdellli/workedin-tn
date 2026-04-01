@@ -78,7 +78,7 @@ function FreelancerOnboarding() {
             if (draft2) {
                 step2Values = { ...step2Values, ...JSON.parse(draft2) };
             }
-        } catch (e) {
+        } catch {
             // Ignore invalid JSON in localStorage draft
         }
 

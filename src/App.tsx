@@ -30,6 +30,7 @@ import { WorkspaceProvider } from './contexts/WorkspaceContext';
 import { WorkspaceRoute } from './components/routing/WorkspaceRoute';
 import { NotificationsProvider } from './contexts/NotificationsContext';
 import { useWorkspaceStore } from './lib/workspaceState';
+import { useSessionTimeout } from './hooks/useSessionTimeout';
 
 // Lazy Load Pages
 import SkipLinks from './components/layout/SkipLinks';
@@ -84,6 +85,8 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isFullyReady } = useAuth();
   const location = useLocation();
 
+  useSessionTimeout();
+
   if (!isFullyReady) {
     return (
       <div className="fixed inset-0 z-50 bg-[var(--page-bg)] flex flex-col items-center justify-center gap-4">
@@ -113,18 +116,18 @@ function AppRoutes() {
   return (
     <Routes>
       {/* Public routes */}
-      <Route path="/" element={<Home />} />
-      <Route path="/how-it-works" element={<HowItWorks />} />
-      <Route path="/for-clients" element={<ForClients />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/signup" element={<Signup />} />
-      <Route path="/terms" element={<Terms />} />
-      <Route path="/privacy" element={<Privacy />} />
-      <Route path="/faq" element={<FAQ />} />
-      <Route path="/forgot-password" element={<ForgotPassword />} />
-      <Route path="/reset-password" element={<ResetPassword />} />
-      <Route path="/auth/callback" element={<AuthCallback />} />
-      <Route path="/verify-email" element={<VerifyEmail />} />
+      <Route path="/" element={<ErrorBoundary><Home /></ErrorBoundary>} />
+      <Route path="/how-it-works" element={<ErrorBoundary><HowItWorks /></ErrorBoundary>} />
+      <Route path="/for-clients" element={<ErrorBoundary><ForClients /></ErrorBoundary>} />
+      <Route path="/login" element={<ErrorBoundary><Login /></ErrorBoundary>} />
+      <Route path="/signup" element={<ErrorBoundary><Signup /></ErrorBoundary>} />
+      <Route path="/terms" element={<ErrorBoundary><Terms /></ErrorBoundary>} />
+      <Route path="/privacy" element={<ErrorBoundary><Privacy /></ErrorBoundary>} />
+      <Route path="/faq" element={<ErrorBoundary><FAQ /></ErrorBoundary>} />
+      <Route path="/forgot-password" element={<ErrorBoundary><ForgotPassword /></ErrorBoundary>} />
+      <Route path="/reset-password" element={<ErrorBoundary><ResetPassword /></ErrorBoundary>} />
+      <Route path="/auth/callback" element={<ErrorBoundary><AuthCallback /></ErrorBoundary>} />
+      <Route path="/verify-email" element={<ErrorBoundary><VerifyEmail /></ErrorBoundary>} />
 
       {/* Onboarding routes */}
       <Route path="/onboarding/freelancer" element={
@@ -240,7 +243,7 @@ function AppRoutes() {
         </ProtectedRoute>
       } />
       <Route path="/jobs/:jobId" element={<ErrorBoundary><JobDetail /></ErrorBoundary>} />
-      <Route path="/jobs" element={<JobBoard />} />
+      <Route path="/jobs" element={<ErrorBoundary><JobBoard /></ErrorBoundary>} />
 
       {/* Freelancer Discovery */}
       <Route path="/find-freelancers" element={<ErrorBoundary><FindFreelancers /></ErrorBoundary>} />
@@ -345,7 +348,7 @@ function AppRoutes() {
       } />
 
       {/* Search */}
-      <Route path="/search" element={<SearchResults />} />
+      <Route path="/search" element={<ErrorBoundary><SearchResults /></ErrorBoundary>} />
 
       {/* Notifications */}
       <Route path="/notifications" element={
@@ -357,7 +360,7 @@ function AppRoutes() {
       } />
 
       {/* 404 */}
-      <Route path="*" element={<NotFound />} />
+      <Route path="*" element={<ErrorBoundary><NotFound /></ErrorBoundary>} />
     </Routes>
   );
 }

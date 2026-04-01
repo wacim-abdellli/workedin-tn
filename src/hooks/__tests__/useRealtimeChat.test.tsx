@@ -58,7 +58,7 @@ vi.mock('@/lib/supabase', () => {
                 }
                 return builder;
             }),
-            eq: vi.fn((...args: unknown[]) => {
+            eq: vi.fn((..._args: unknown[]) => {
                 if (isCountQuery) {
                     // For count queries, return the result immediately
                     return Promise.resolve({ count: chatState.messagesResult.length, error: null });

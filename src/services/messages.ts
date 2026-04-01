@@ -162,26 +162,18 @@ export async function getConversations(userId: string, page: number = 0, limit: 
 export async function getTotalUnreadCount(userId: string) {
     try {
         const { data, error } = await supabaseWithRetry(() => supabase
-            .from('conversations')
-            .select('unread_count_1, unread_count_2, participant_1, participant_2')
-            .or(`participant_1.eq.${userId},participant_2.eq.${userId}`));
+            .rpc('get_total_unread_count', { custom_user_id: userId })
+        );
 
         if (error) throw error;
 
-        const rows = (data ?? []) as ConversationRow[];
-        const totalUnread = rows.reduce((sum, conv) => {
-            const isParticipant1 = conv.participant_1 === userId;
-            const unreadCount = isParticipant1 ? conv.unread_count_1 : conv.unread_count_2;
-            return sum + (unreadCount ?? 0);
-        }, 0);
-
-        return { count: totalUnread, error: null };
+        return { count: (data as number) ?? 0, error: null };
     } catch (error) {
         return { count: 0, error: normalizeMessageError(error) };
     }
 }
 
-export async function getMessages(conversationId: string) {
+export async function getMessages(conversationId: string, limit: number = 50, offset: number = 0) {
     try {
         const { data, error } = await supabaseWithRetry(() => supabase
             .from('messages')
@@ -190,11 +182,13 @@ export async function getMessages(conversationId: string) {
                 sender:profiles!sender_id(id, full_name, avatar_url)
             `)
             .eq('conversation_id', conversationId)
-            .order('created_at', { ascending: true }));
+            .order('created_at', { ascending: false })
+            .range(offset, offset + limit - 1));
 
         if (error) throw error;
 
-        return { data: data as Message[], error: null };
+        // Since we fetch in descending order to get latest first, reverse them for display
+        return { data: (data as Message[]).reverse(), error: null };
     } catch (error) {
         return { data: null, error: normalizeMessageError(error) };
     }
@@ -217,7 +211,7 @@ export async function getMessageCount(conversationId: string) {
         if (error) throw error;
 
         return { count: count ?? 0, error: null };
-    } catch (error) {
+    } catch (_error) {
         // Silently fail with 0 count - this prevents timeout errors from showing
         return { count: 0, error: null };
     }
@@ -310,28 +304,22 @@ export function subscribeToConversations(
 ): RealtimeChannel {
     const channel = supabase.channel(`conversations:${userId}`);
 
-    // Listen for changes where user is participant_1
     channel.on(
         'postgres_changes',
         {
             event: '*',
             schema: 'public',
             table: 'conversations',
-            filter: `participant_1=eq.${userId}`,
         },
-        callback
-    );
-
-    // Listen for changes where user is participant_2
-    channel.on(
-        'postgres_changes',
-        {
-            event: '*',
-            schema: 'public',
-            table: 'conversations',
-            filter: `participant_2=eq.${userId}`,
-        },
-        callback
+        (payload) => {
+            const newRecord = payload.new as any;
+            const oldRecord = payload.old as any;
+            const isParticipant =
+                (newRecord && (newRecord.participant_1 === userId || newRecord.participant_2 === userId)) ||
+                (oldRecord && (oldRecord.participant_1 === userId || oldRecord.participant_2 === userId));
+                
+            if (isParticipant) callback(payload);
+        }
     );
 
     channel.subscribe();

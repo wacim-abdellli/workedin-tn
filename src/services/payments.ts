@@ -29,12 +29,14 @@ export async function getTransactions(userId: string, page = 1, pageSize = 20) {
 
 // --- WITHDRAWALS ---
 
-export async function getWithdrawals(userId: string) {
+export async function getWithdrawals(userId: string, page = 1, pageSize = 20) {
+    const from = (page - 1) * pageSize;
     return supabase
         .from('withdrawals')
-        .select('*')
+        .select('*', { count: 'exact' })
         .eq('user_id', userId)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .range(from, from + pageSize - 1);
 }
 
 export async function requestWithdrawal(data: WithdrawalRequestInput) {

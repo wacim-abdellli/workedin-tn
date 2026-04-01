@@ -71,7 +71,7 @@ function ClientOnboarding() {
             if (draft) {
                 values = { ...values, ...JSON.parse(draft) };
             }
-        } catch (e) {
+        } catch (_e) {
             // Ignore invalid JSON in localStorage draft
         }
         reset(values);

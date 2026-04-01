@@ -9,11 +9,11 @@ export async function getContractById(contractId: string) {
     return supabase
         .from('contracts')
         .select(`
-            *,
+            id, status, title, amount, total_amount, created_at, client_id, freelancer_id, job_id,
             client:profiles!client_id(id, full_name, avatar_url),
             freelancer:profiles!freelancer_id(id, full_name, avatar_url),
             job:jobs(id, title, category),
-            milestones(*)
+            milestones(id, description, amount, status, due_date)
         `)
         .eq('id', contractId)
         .single();

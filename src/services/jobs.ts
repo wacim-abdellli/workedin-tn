@@ -138,33 +138,24 @@ export async function getJobs(filters: JobFilters = {}, page = 1, pageSize = 10)
 export async function getCategoryCounts(categories: string[]) {
     try {
         const counts: Record<string, number> = {};
-        
+
         // Initialize all categories to 0
         categories.forEach(cat => {
             counts[cat] = 0;
         });
 
-        // Use head:true to get only count without data transfer
-        // This is still parallel but more efficient per query
-        await Promise.all(
-            categories.map(async (cat) => {
-                try {
-                    const { count, error } = await supabaseAnon
-                        .from('jobs')
-                        .select('*', { count: 'exact', head: true })
-                        .eq('status', 'open')
-                        .eq('visibility', 'public')
-                        .eq('category', cat);
-                    
-                    if (!error) {
-                        counts[cat] = count || 0;
-                    }
-                } catch (err) {
-                    console.error(`[getCategoryCounts] error for category ${cat}:`, err);
-                    counts[cat] = 0;
+        // Use database view for O(1) round trips
+        const { data, error } = await supabaseAnon
+            .from('category_job_counts')
+            .select('*');
+
+        if (!error && data) {
+            data.forEach((row: any) => {
+                if (categories.includes(row.category)) {
+                    counts[row.category] = Number(row.job_count);
                 }
-            })
-        );
+            });
+        }
 
         return counts;
     } catch (err) {

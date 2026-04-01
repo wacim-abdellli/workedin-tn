@@ -69,6 +69,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const freelancerProfileRef = useRef<FreelancerProfile | null>(null);
   // Prevents onAuthStateChange from overriding loading state while signIn/signUp is actively managing it
   const manualSignInInProgressRef = useRef(false);
+  // Tracks whether initAuth() has already loaded the profile for this session.
+  // Prevents the onAuthStateChange SIGNED_IN handler from redundantly re-fetching
+  // the profile and flipping the workspace.
+  const initAuthCompletedForRef = useRef<string | null>(null);
 
   useEffect(() => {
     userRef.current = user;
@@ -104,12 +108,31 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       if (!nextProfile) {
         store.setSwitching(false);
-        store.setWorkspace('client');
+        // Only reset to client default if the workspace was never explicitly set
+        // for a loaded user. This prevents flashing 'client' during sign-out transitions.
+        if (!loadedUserIdRef.current) {
+          store.setWorkspace('client');
+        }
         return;
       }
 
-      const workspace = getInitialWorkspace(nextProfile, nextFreelancerProfile);
-      store.setWorkspace(workspace);
+      const desiredWorkspace = getInitialWorkspace(nextProfile, nextFreelancerProfile);
+      const currentWorkspace = store.activeWorkspace;
+
+      // If the workspace is already set to a value the user's profile supports,
+      // do NOT overwrite it. This prevents the flip-flop where multiple fetchProfile
+      // calls (from initAuth + onAuthStateChange) keep re-deriving the workspace
+      // from the DB active_mode, causing redirects.
+      const capabilities = getWorkspaceCapabilities(nextProfile.user_type);
+      const currentIsValid = capabilities.includes(currentWorkspace);
+      
+      if (currentIsValid && loadedUserIdRef.current === nextProfile.id) {
+        // Workspace already set to a valid value for this user — don't flip it.
+        store.setSwitching(false);
+        return;
+      }
+
+      store.setWorkspace(desiredWorkspace);
       store.setSwitching(false);
     },
     []
@@ -274,6 +297,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
           setUser(currentSession.user);
           loadedUserIdRef.current = currentSession.user.id;
           await fetchProfile(currentSession.user.id, currentSession.user);
+          // Mark that initAuth has completed loading for this user.
+          // This prevents the onAuthStateChange SIGNED_IN handler from
+          // redundantly re-fetching the profile and flipping the workspace.
+          initAuthCompletedForRef.current = currentSession.user.id;
         }
       } catch (error) {
         logger.error('Error initializing auth:', error);
@@ -297,6 +324,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
         // Ignore background auth churn events to prevent unnecessary loading
         // flashes and duplicate profile fetches.
         if (event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') {
+          return;
+        }
+
+        // If initAuth already fully loaded the profile for this exact user,
+        // skip the SIGNED_IN handler entirely. This is the primary fix for
+        // the workspace flip-flop bug: initAuth and SIGNED_IN were both
+        // calling fetchProfile → syncWorkspaceFromProfile, causing the
+        // workspace (and therefore the dashboard) to change multiple times.
+        if (
+          event === 'SIGNED_IN' &&
+          newSession?.user &&
+          initAuthCompletedForRef.current === newSession.user.id
+        ) {
           return;
         }
 
@@ -471,6 +511,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const signOut = async () => {
     manualSignInInProgressRef.current = false;
     loadedUserIdRef.current = null;
+    initAuthCompletedForRef.current = null;
     setUser(null);
     setSession(null);
     setProfile(null);

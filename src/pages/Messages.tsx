@@ -102,7 +102,7 @@ export default function Messages() {
                 
                 for (const pendingMsg of currentQueue) {
                     try {
-                        let attachments = [];
+                        const attachments = [];
                         
                         // Handle offline file uploads
                         if (pendingMsg.offlineFile) {
@@ -161,7 +161,7 @@ export default function Messages() {
                     // Note: File objects don't survive JSON stringify, but basic text does.
                     const parsed = JSON.parse(savedQueue);
                     setPendingQueue(parsed);
-                } catch(e) {
+                } catch(_e) {
                     // Ignore invalid JSON in localStorage pending queue
                 }
             }

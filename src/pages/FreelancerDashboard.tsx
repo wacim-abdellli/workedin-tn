@@ -171,11 +171,8 @@ function FreelancerDashboardPage() {
         queryFn: async (): Promise<DashboardStats> => {
             const userId = profile!.id;
 
-            const [contractsCountRes, contractRowsRes, proposalsRes, walletRes, viewsRes, notificationsRes, recentProposalsRes, activeContractsListRes] = await Promise.all([
+            const [contractsCountRes, proposalsRes, walletRes, viewsRes, notificationsRes, recentProposalsRes, activeContractsListRes] = await Promise.all([
                 supabase.from('contracts').select('id', { count: 'exact', head: true })
-                    .eq('freelancer_id', userId)
-                    .eq('status', 'active'),
-                supabase.from('contracts').select('id')
                     .eq('freelancer_id', userId)
                     .eq('status', 'active'),
                 supabase.from('proposals').select('id', { count: 'exact', head: true })
@@ -199,16 +196,13 @@ function FreelancerDashboardPage() {
                     .limit(5),
             ]);
 
-            const contractIds = (contractRowsRes.data ?? []).map((contract) => contract.id);
-
-            const milestonesRes = contractIds.length > 0
-                ? await supabase.from('milestones')
-                    .select('id,description,due_date,amount,status,contract_id')
-                    .in('contract_id', contractIds)
-                    .eq('status', 'pending')
-                    .order('due_date', { ascending: true })
-                    .limit(4)
-                : { data: [] as DashboardMilestone[] };
+            const milestonesRes = await supabase.from('milestones')
+                .select('id,description,due_date,amount,status,contract_id,contracts!inner(freelancer_id, status)')
+                .eq('contracts.freelancer_id', userId)
+                .eq('contracts.status', 'active')
+                .eq('status', 'pending')
+                .order('due_date', { ascending: true })
+                .limit(4);
 
             return {
                 activeContracts: contractsCountRes.count ?? 0,
@@ -266,7 +260,7 @@ function FreelancerDashboardPage() {
                 }
             });
 
-            return months.map(({ key, ...item }) => item);
+            return months.map(({ key: _key, ...item }) => item);
         },
         staleTime: 300_000,
     });

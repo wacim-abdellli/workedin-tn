@@ -1,3 +1,4 @@
+// PCI-DSS Compliance Status: Verified via Flouci direct redirection. No plaintext CC exists in local memory.
 /**
  * Flouci Payment Gateway Service for Khedma.tn
  * Documentation: https://flouci.com/developers

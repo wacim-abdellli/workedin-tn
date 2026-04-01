@@ -18,6 +18,7 @@ export async function getFreelancerWithProfile(userId: string) {
     return supabase
         .from('profiles')
         .select(`*, freelancer_profiles(*), portfolio_items(*)`)
+        .limit(20, { foreignTable: 'portfolio_items' })
         .eq('id', userId)
         .single();
 }
@@ -125,20 +126,16 @@ export async function getReviewsByUser(userId: string) {
 }
 
 export async function getClientStats(clientId: string) {
-    const [jobsResult, contractsResult, reviewsResult] = await Promise.all([
-        supabase.from('jobs').select('*', { count: 'exact', head: true }).eq('client_id', clientId),
-        supabase.from('contracts').select('total_amount').eq('client_id', clientId).eq('status', 'completed'),
-        supabase.from('reviews').select('rating').eq('reviewee_id', clientId),
-    ]);
-
-    const totalSpent = contractsResult.data?.reduce((sum, c) => sum + (c.total_amount || 0), 0) || 0;
-    const avgRating = reviewsResult.data?.length
-        ? reviewsResult.data.reduce((sum, r) => sum + r.rating, 0) / reviewsResult.data.length
-        : 0;
-
+    const { data, error } = await supabase.rpc('get_client_stats_v2', { p_client_id: clientId });
+    
+    if (error) {
+        return { totalJobs: 0, totalSpent: 0, rating: 0 };
+    }
+    
+    const stats = (data as any)?.[0] || {};
     return {
-        totalJobs: jobsResult.count || 0,
-        totalSpent,
-        rating: avgRating,
+        totalJobs: stats.job_count || 0,
+        totalSpent: Number(stats.total_spent) || 0,
+        rating: Number(stats.avg_rating) || 0,
     };
 }
