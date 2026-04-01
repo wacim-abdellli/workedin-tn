@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { Users, Briefcase, DollarSign, FileText, Activity, UserPlus, Shield, Flag } from 'Loader2, lucide-react';
+import { Users, Briefcase, DollarSign, FileText, Activity, UserPlus, Shield, Flag, Loader2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { supabaseWithRetry } from '@/lib/supabaseWithRetry';
 import { useTranslation } from '@/i18n';

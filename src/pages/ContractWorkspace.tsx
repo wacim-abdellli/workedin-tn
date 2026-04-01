@@ -29,35 +29,6 @@ import { Skeleton } from '../components/common/SkeletonCard';
 import ChatSection from '../components/contracts/ChatSection';
 import ContractDetailsSidebar from '../components/contracts/ContractDetailsSidebar';
 
-// Types
-interface ContractData {
-    id: string;
-    job_id: string;
-    freelancer_id: string;
-    client_id: string;
-    job: {
-        id: string;
-        title: string;
-        description: string;
-        budget: number;
-        deadline: string;
-    };
-    freelancer: {
-        id: string;
-        full_name: string;
-        avatar_url: string | null;
-    };
-    client: {
-        id: string;
-        full_name: string;
-        avatar_url: string | null;
-    };
-    status: string;
-    payment_status: string;
-    amount: number;
-    started_at: string;
-}
-
 export default function ContractWorkspace() {
     const { contractId } = useParams<{ contractId: string }>();
     const { t } = useTranslation() as any;
@@ -84,18 +55,24 @@ export default function ContractWorkspace() {
             if (!contractId) throw new Error('No contract id');
             const { data, error } = await getContractById(contractId);
             if (error || !data) throw error || new Error('Not found');
+            
+            // Extract first item from relationship arrays (Supabase returns arrays for foreign relations)
+            const job = Array.isArray(data.job) ? data.job[0] : data.job;
+            const freelancer = Array.isArray(data.freelancer) ? data.freelancer[0] : data.freelancer;
+            const client = Array.isArray(data.client) ? data.client[0] : data.client;
+            
             return {
                 id: data.id,
                 job_id: data.job_id,
                 freelancer_id: data.freelancer_id,
                 client_id: data.client_id,
-                job: data.job as ContractData['job'],
-                freelancer: data.freelancer as ContractData['freelancer'],
-                client: data.client as ContractData['client'],
+                job: job || { id: '', title: '' },
+                freelancer: freelancer || { id: '', full_name: '', avatar_url: null },
+                client: client || { id: '', full_name: '', avatar_url: null },
                 status: data.status,
-                payment_status: data.payment_status,
+                payment_status: (data as Record<string, unknown>).payment_status || 'pending',
                 amount: data.amount,
-                started_at: data.started_at,
+                started_at: (data as Record<string, unknown>).started_at || new Date().toISOString(),
             };
         },
         enabled: !!contractId,

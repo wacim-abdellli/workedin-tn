@@ -60,7 +60,6 @@ export default function UsersTab() {
     const { showToast } = useToast();
     const { language, t } = useTranslation() as any;
     const queryClient = useQueryClient();
-    const locale = language === 'ar' ? 'ar-TN' : language === 'fr' ? 'fr-FR' : 'en-US';
     const tr = (ar: string, en: string, fr?: string) => {
         if (language === 'ar') return ar;
         if (language === 'fr') return fr || en;
