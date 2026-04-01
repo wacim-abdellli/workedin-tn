@@ -15,6 +15,7 @@ const serviceState = vi.hoisted(() => {
         notCalls: [] as Array<{ table: string; column: string; operator: string; value: unknown }>,
         ltCalls: [] as Array<{ table: string; column: string; value: unknown }>,
         rpcCalls: [] as Array<{ fn: string; params: unknown }>,
+        rpcResults: {} as Record<string, unknown>,
         functionCalls: [] as Array<{ name: string; body?: unknown }>,
         singleCalls: [] as string[],
         maybeSingleCalls: [] as string[],
@@ -42,6 +43,7 @@ const serviceState = vi.hoisted(() => {
         state.notCalls = [];
         state.ltCalls = [];
         state.rpcCalls = [];
+        state.rpcResults = {};
         state.functionCalls = [];
         state.singleCalls = [];
         state.maybeSingleCalls = [];
@@ -136,7 +138,7 @@ vi.mock('@/lib/supabase', () => {
             }),
             rpc: vi.fn(async (fn: string, params: unknown) => {
                 serviceState.state.rpcCalls.push({ fn, params });
-                return { data: { ok: true }, error: null };
+                return serviceState.state.rpcResults[fn] ?? { data: { ok: true }, error: null };
             }),
             channel: vi.fn((name: string) => {
                 serviceState.state.channelCalls.push(name);
@@ -236,7 +238,7 @@ describe('contracts service coverage', () => {
         expect(result).toEqual({ data: { id: 'contract-1' }, error: null });
         expect(serviceState.state.selectCalls).toContainEqual(expect.objectContaining({
             table: 'contracts',
-            columns: expect.stringContaining('milestones(*)'),
+            columns: expect.stringContaining('milestones(id'),
         }));
         expect(serviceState.state.eqCalls).toContainEqual({ table: 'contracts', column: 'id', value: 'contract-1' });
         expect(serviceState.state.singleCalls).toContain('contracts');
@@ -387,13 +389,8 @@ describe('profiles service coverage', () => {
     });
 
     it('aggregates client stats from jobs, contracts, and reviews', async () => {
-        serviceState.state.tableResults.jobs = { data: null, error: null, count: 3 };
-        serviceState.state.tableResults.contracts = {
-            data: [{ total_amount: 100 }, { total_amount: 250 }],
-            error: null,
-        };
-        serviceState.state.tableResults.reviews = {
-            data: [{ rating: 4 }, { rating: 5 }],
+        serviceState.state.rpcResults['get_client_stats_v2'] = {
+            data: [{ job_count: 3, total_spent: 350, avg_rating: 4.5 }],
             error: null,
         };
 
