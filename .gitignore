@@ -12,7 +12,7 @@ dist
 dist-ssr
 *.local
 
-# Test coverage
+# Test coverage and E2E
 coverage
 lint.json
 lint_output.txt
@@ -20,6 +20,7 @@ parse_lint.js
 playwright-report/
 test-results/
 artifacts/visual-regression/
+e2e/.auth/
 
 # Editor directories and files
 .vscode/*

@@ -441,30 +441,30 @@ function Settings() {
                 </section>
 
                 <div className="grid gap-6 xl:grid-cols-[248px_minmax(0,1fr)]">
-                    <aside className="xl:sticky xl:top-28 xl:self-start">
+                    <aside className="xl:sticky xl:top-6 xl:self-start xl:h-fit xl:max-h-[calc(100vh-3rem)] xl:overflow-y-auto">
                         <SettingsPanel className="rounded-[1.8rem] border border-black/[0.06] bg-white/92 p-4 shadow-[0_20px_45px_-30px_rgba(26,24,37,0.18)] dark:border-white/10 dark:bg-[#1a1825]">
-                            <nav className="space-y-2.5">
+                            <nav className="space-y-3">
                                 {tabs.map((item) => (
                                     <button
                                         key={item.id}
                                         type="button"
                                         onClick={() => setActiveTab(item.id)}
-                                        className={`group flex w-full items-center gap-3 rounded-[1.35rem] px-4 py-3.5 text-left transition-all duration-200 ${activeTab === item.id
+                                        className={`group flex w-full items-center gap-3 rounded-[1.35rem] px-4 py-4 text-left transition-all duration-200 ${activeTab === item.id
                                             ? 'border border-[color:var(--workspace-primary)]/20 bg-[color:var(--workspace-primary)]/[0.08] text-[var(--text-primary)] shadow-[0_18px_34px_-28px_color-mix(in_srgb,var(--workspace-primary)_55%,transparent)] dark:border-[color:var(--workspace-primary)]/20 dark:bg-[color:var(--workspace-primary)]/[0.10]'
                                             : 'border border-transparent text-[var(--text-secondary)] hover:border-black/[0.05] hover:bg-black/[0.02] hover:text-[var(--text-primary)] dark:hover:border-white/[0.06] dark:hover:bg-white/[0.04] dark:hover:text-white'}`}
                                     >
-                                        <span className={`flex h-11 w-11 items-center justify-center rounded-2xl border transition-colors ${activeTab === item.id
+                                        <span className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-2xl border transition-colors ${activeTab === item.id
                                             ? 'border-[color:var(--workspace-primary)]/20 bg-[color:var(--workspace-primary)] text-[color:var(--workspace-primary-text)]'
                                             : 'border-black/[0.06] bg-black/[0.02] text-[color:var(--workspace-primary)] group-hover:border-[color:var(--workspace-primary)]/16 dark:border-white/[0.08] dark:bg-white/[0.04]'}`}>
                                             <item.icon className="h-4 w-4" />
                                         </span>
                                         <div className="min-w-0 flex-1">
-                                            <p className="text-sm font-semibold leading-none">{item.label}</p>
-                                            <p className={`mt-1.5 truncate text-xs ${activeTab === item.id ? 'text-[var(--text-secondary)] dark:text-[var(--text-muted)]' : 'text-[var(--text-muted)]'}`}>
+                                            <p className="text-sm font-semibold leading-tight">{item.label}</p>
+                                            <p className={`mt-0.5 line-clamp-1 text-xs ${activeTab === item.id ? 'text-[var(--text-secondary)] dark:text-[var(--text-muted)]' : 'text-[var(--text-muted)]'}`}>
                                                 {item.description}
                                             </p>
                                         </div>
-                                        <ArrowIcon className={`h-4 w-4 transition-colors ${activeTab === item.id ? 'text-[color:var(--workspace-primary)]' : 'text-[var(--text-muted)] group-hover:text-[color:var(--workspace-primary)]'}`} />
+                                        <ArrowIcon className={`h-4 w-4 flex-shrink-0 transition-colors ${activeTab === item.id ? 'text-[color:var(--workspace-primary)]' : 'text-[var(--text-muted)] group-hover:text-[color:var(--workspace-primary)]'}`} />
                                     </button>
                                 ))}
                             </nav>

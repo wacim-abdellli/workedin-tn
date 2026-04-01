@@ -49,6 +49,7 @@ type HeaderProfile = {
   bio?: string;
   location?: string;
   cin_verified?: boolean;
+  cin_submitted?: boolean;
   created_at?: string;
   onboarding_completed?: boolean;
 } | null;
@@ -454,12 +455,34 @@ export default function AccountPanel({
                       icon={<Wallet className="h-4 w-4" />}
                           label={activeWorkspace === 'freelancer' ? copy.walletAndEarnings : t.settings.payment}
                     />
-                    <ActionLink
-                      to={verificationPath}
-                      onClick={onClose}
-                      icon={<ShieldCheck className="h-4 w-4" />}
-                      label={t.settings.cinVerification}
-                    />
+                    {isVerified ? (
+                      <div className="inline-flex min-h-[44px] items-center justify-between gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800 opacity-90 cursor-not-allowed dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-400">
+                        <span className="flex items-center gap-3">
+                          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400">
+                            <ShieldCheck className="h-4 w-4" />
+                          </span>
+                          <span>{t.settings.cinVerification}</span>
+                        </span>
+                        <BadgeCheck className="h-4 w-4 text-emerald-500" />
+                      </div>
+                    ) : profile?.cin_submitted ? (
+                      <div className="inline-flex min-h-[44px] items-center justify-between gap-3 rounded-2xl border border-orange-200 bg-orange-50 px-4 py-3 text-sm font-semibold text-orange-800 opacity-90 cursor-not-allowed dark:border-orange-500/30 dark:bg-orange-500/10 dark:text-orange-400">
+                        <span className="flex items-center gap-3">
+                          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-orange-100 text-orange-600 dark:bg-orange-500/20 dark:text-orange-400">
+                            <ShieldCheck className="h-4 w-4" />
+                          </span>
+                          <span>{t.settings.cinVerification}</span>
+                        </span>
+                        <Loader2 className="h-4 w-4 animate-spin text-orange-500" />
+                      </div>
+                    ) : (
+                      <ActionLink
+                        to={verificationPath}
+                        onClick={onClose}
+                        icon={<ShieldCheck className="h-4 w-4" />}
+                        label={t.settings.cinVerification}
+                      />
+                    )}
                   </div>
 
                   <div className="my-4 h-px bg-gray-200 dark:bg-white/10" />

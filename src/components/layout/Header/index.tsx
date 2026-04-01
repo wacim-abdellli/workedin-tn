@@ -20,6 +20,8 @@ import {
   Wallet,
   X,
   MessageSquare,
+  Loader2,
+  CheckCircle2,
 } from 'lucide-react'
 
 import { useAuth } from '@/contexts/AuthContext'
@@ -539,28 +541,80 @@ export default function Header() {
                       ) : null}
 
                       <div className="mt-2.5 space-y-1.5">
-                        {[
-                          { label: t.nav?.dashboard || 'Dashboard', Icon: User, href: '/dashboard' },
-                          { label: t.nav?.settings || 'Settings', Icon: Settings, href: '/settings' },
-                          { label: t.settings?.cinVerification || 'Verify identity', Icon: Shield, href: '/verify-identity' },
-                          ...(canAccessAdmin
-                            ? [{ label: t.nav?.adminDashboard || 'Admin Dashboard', Icon: Shield, href: '/admin' }]
-                            : []),
-                        ].map(({ label, Icon, href }) => (
+                        <button
+                          onClick={() => {
+                            navigate('/dashboard')
+                            setUserMenuOpen(false)
+                          }}
+                          className="group flex w-full items-center gap-3 rounded-xl px-3.5 py-3 text-left text-sm font-medium text-foreground transition-all duration-150 hover:bg-[var(--surface-bg)]"
+                        >
+                          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-border bg-[var(--surface-bg)] text-muted transition-colors group-hover:border-brand/16 group-hover:text-brand">
+                            <User className="h-4 w-4" />
+                          </span>
+                          <span className="truncate">{t.nav?.dashboard || 'Dashboard'}</span>
+                        </button>
+                        <button
+                          onClick={() => {
+                            navigate('/settings')
+                            setUserMenuOpen(false)
+                          }}
+                          className="group flex w-full items-center gap-3 rounded-xl px-3.5 py-3 text-left text-sm font-medium text-foreground transition-all duration-150 hover:bg-[var(--surface-bg)]"
+                        >
+                          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-border bg-[var(--surface-bg)] text-muted transition-colors group-hover:border-brand/16 group-hover:text-brand">
+                            <Settings className="h-4 w-4" />
+                          </span>
+                          <span className="truncate">{t.nav?.settings || 'Settings'}</span>
+                        </button>
+
+                        {freelancerVerified ? (
+                          <div className="flex w-full items-center justify-between gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-3.5 py-3 text-sm font-semibold text-emerald-800 opacity-90 cursor-not-allowed dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-400">
+                            <span className="flex items-center gap-3">
+                              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-100/50 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400">
+                                <Shield className="h-4 w-4" />
+                              </span>
+                              <span className="truncate">{t.settings?.cinVerification || 'Verify identity'}</span>
+                            </span>
+                            <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                          </div>
+                        ) : freelancerPending ? (
+                          <div className="flex w-full items-center justify-between gap-3 rounded-xl border border-orange-200 bg-orange-50 px-3.5 py-3 text-sm font-semibold text-orange-800 opacity-90 cursor-not-allowed dark:border-orange-500/30 dark:bg-orange-500/10 dark:text-orange-400">
+                            <span className="flex items-center gap-3">
+                              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-orange-100/50 dark:bg-orange-500/20 text-orange-600 dark:text-orange-400">
+                                <Shield className="h-4 w-4" />
+                              </span>
+                              <span className="truncate">{t.settings?.cinVerification || 'Verify identity'}</span>
+                            </span>
+                            <Loader2 className="h-4 w-4 animate-spin text-orange-500" />
+                          </div>
+                        ) : (
                           <button
-                            key={href}
                             onClick={() => {
-                              navigate(href)
+                              navigate('/verify-identity')
                               setUserMenuOpen(false)
                             }}
                             className="group flex w-full items-center gap-3 rounded-xl px-3.5 py-3 text-left text-sm font-medium text-foreground transition-all duration-150 hover:bg-[var(--surface-bg)]"
                           >
                             <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-border bg-[var(--surface-bg)] text-muted transition-colors group-hover:border-brand/16 group-hover:text-brand">
-                              <Icon className="h-4 w-4" />
+                              <Shield className="h-4 w-4" />
                             </span>
-                            <span className="truncate">{label}</span>
+                            <span className="truncate">{t.settings?.cinVerification || 'Verify identity'}</span>
                           </button>
-                        ))}
+                        )}
+
+                        {canAccessAdmin && (
+                          <button
+                            onClick={() => {
+                              navigate('/admin')
+                              setUserMenuOpen(false)
+                            }}
+                            className="group flex w-full items-center gap-3 rounded-xl px-3.5 py-3 text-left text-sm font-medium text-foreground transition-all duration-150 hover:bg-[var(--surface-bg)]"
+                          >
+                            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-border bg-[var(--surface-bg)] text-muted transition-colors group-hover:border-brand/16 group-hover:text-brand">
+                              <Shield className="h-4 w-4" />
+                            </span>
+                            <span className="truncate">{t.nav?.adminDashboard || 'Admin Dashboard'}</span>
+                          </button>
+                        )}
                       </div>
 
                       <div className="mt-2.5 border-t border-border/50 pt-2.5">

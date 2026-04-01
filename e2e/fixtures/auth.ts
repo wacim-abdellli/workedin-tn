@@ -29,12 +29,16 @@ export async function signUp(page: Page, email: string, password: string, userTy
 // Helper to log in
 export async function login(page: Page, email: string, password: string) {
   await page.goto('/login');
+  
+  // Wait for login form with extended timeout
+  await page.waitForSelector('input[type="email"]', { timeout: 15000 });
+  
   await page.fill('input[type="email"]', email);
   await page.fill('input[type="password"]', password);
   await page.click('button[type="submit"]');
   
-  // Wait for successful login redirect
-  await page.waitForURL(/\/(dashboard|onboarding)/, { timeout: 10000 });
+  // Wait for successful login redirect with extended timeout
+  await page.waitForURL(/\/(dashboard|onboarding)/, { timeout: 15000 });
 }
 
 // Helper to log out

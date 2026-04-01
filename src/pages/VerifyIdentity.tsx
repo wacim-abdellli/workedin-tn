@@ -252,6 +252,7 @@ export default function VerifyIdentity() {
 
             try {
                 await supabaseWithRetry(() => supabase.from('profiles').update({ cin_submitted: true }).eq('id', authUserId));
+                await refreshProfile?.();
             } catch (e) { logger.error('Profile update error:', e); }
 
             setStep('submitted');

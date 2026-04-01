@@ -196,50 +196,6 @@ export default function VerificationsTab() {
 
             if (!Array.isArray(updatedRows) || updatedRows.length === 0) {
                 throw new Error(tr('لم يتم تحديث طلب التحقق.', 'Verification request was not updated.', 'La demande de verification n a pas ete mise a jour.'));
-            }
-
-            const verification = verifications.find(v => v.id === id);
-            const userId = verification?.user_id || updatedRows[0]?.user_id;
-
-            if (userId) {
-                // Resolve any duplicate pending rows for same user
-                await supabaseWithRetry(() =>
-                    client
-                        .from('identity_verifications')
-                        .update({ status: action, reviewed_at: new Date().toISOString() })
-                        .eq('user_id', userId)
-                        .eq('status', 'pending')
-                        .select('id')
-                ).catch(() => null);
-
-                if (action === 'approved') {
-                    await Promise.all([
-                        supabaseWithRetry(() =>
-                            client.from('profiles').update({ cin_verified: true, cin_submitted: false }).eq('id', userId)
-                        ),
-                        supabaseWithRetry(() =>
-                            client.from('freelancer_profiles').update({ cin_verified: true }).eq('id', userId)
-                        ).catch(() => null),
-                    ]);
-                } else {
-                    await supabaseWithRetry(() =>
-                        client.from('profiles').update({ cin_verified: false, cin_submitted: false }).eq('id', userId)
-                    );
-                }
-            }
-
-            setVerifications(prev => prev.filter(v => v.id !== id));
-            showToast(
-                action === 'approved'
-                    ? tr('تم قبول التحقق ✓', 'Verification approved ✓', 'Verification approuvee ✓')
-                    : tr('تم رفض التحقق', 'Verification rejected', 'Verification refusee'),
-                action === 'approved' ? 'success' : 'warning'
-            );
-        } catch (err) {
-            console.error('Verification action error:', err);
-            showToast(tr('فشل تنفيذ الإجراء', 'Action failed', 'Echec de l action'), 'error');
-        } finally {
-            setActioningId(null);
         }
     };
 
