@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { Users, Briefcase, DollarSign, FileText, Activity, UserPlus, Shield, Flag } from 'lucide-react';
+import { Users, Briefcase, DollarSign, FileText, Activity, UserPlus, Shield, Flag } from 'Loader2, lucide-react';
 import { supabase } from '@/lib/supabase';
 import { supabaseWithRetry } from '@/lib/supabaseWithRetry';
 import { useTranslation } from '@/i18n';
@@ -48,7 +48,7 @@ export default function OverviewTab() {
     const { language } = useTranslation();
     const tr = (ar: string, en: string, fr?: string) => language === 'ar' ? ar : language === 'fr' ? (fr || en) : en;
 
-    const { data: stats } = useQuery({
+    const { data: stats, isLoading } = useQuery({
         queryKey: ['admin-overview-stats'],
         queryFn: async (): Promise<OverviewStats> => {
             const today = new Date().toISOString().split('T')[0];
@@ -102,6 +102,14 @@ export default function OverviewTab() {
         recentVerificationRequests: [],
     };
     const panelClass = 'card border-white/45 dark:border-white/10 bg-white/80 dark:bg-slate-950/55 backdrop-blur-xl shadow-[0_16px_45px_-24px_rgba(21,84,247,0.38)]';
+
+    if (isLoading) {
+        return (
+            <div className="flex h-64 items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-8">

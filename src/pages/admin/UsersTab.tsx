@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react';
-import { Ban, Eye, Loader2, Search, ShieldOff, Trash2, X } from 'lucide-react';
+import { Ban, Eye, Loader2, Search, ShieldOff, Trash2, X, Users } from 'lucide-react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Button from '@/components/ui/Button';
 import Modal from '@/components/ui/Modal';
 import ErrorBoundary from '@/components/common/ErrorBoundary';
+import { EmptyState } from '@/components/common/EmptyState';
 import { useToast } from '@/components/ui/Toast';
 import { supabase } from '@/lib/supabase';
 import { useTranslation } from '@/i18n';
@@ -207,9 +208,31 @@ export default function UsersTab() {
     }), [searchQuery, userFilter, users]);
 
     const formatAdminDate = (value: string) => {
-        const date = new Date(value);
-        if (Number.isNaN(date.getTime())) return value;
-        return new Intl.DateTimeFormat(locale, { day: '2-digit', month: '2-digit', year: 'numeric' }).format(date);
+        try {
+            const date = new Date(value);
+            if (Number.isNaN(date.getTime())) return value;
+            
+            const now = new Date();
+            const diffMs = now.getTime() - date.getTime();
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMs / 3600000);
+            const diffDays = Math.floor(diffMs / 86400000);
+
+            if (diffMins < 1) 
+                return tr('الآن', 'Just now', 'À l\'instant');
+            if (diffMins < 60) 
+                return `${diffMins}${tr('د', 'm', 'm')}`;
+            if (diffHours < 24) 
+                return `${diffHours}${tr('س', 'h', 'h')}`;
+            if (diffDays < 7) 
+                return `${diffDays}${tr('ي', 'd', 'j')}`;
+            if (diffDays < 30) 
+                return `${Math.floor(diffDays / 7)}${tr('أ', 'w', 's')}`;
+            
+            return `${Math.floor(diffDays / 30)}${tr('ش', 'mo', 'm')}`;
+        } catch (error) {
+            return value;
+        }
     };
 
     const getDisplayName = (user: AdminUser) => user.name || tr('مستخدم', 'User', 'Utilisateur');
@@ -303,9 +326,17 @@ export default function UsersTab() {
                                     <tbody className="divide-y divide-border/50">
                                         {filteredUsers.length === 0 ? (
                                             <tr>
-                                                <td colSpan={5} className="px-6 py-12 text-center text-muted">
-                                                    <Search className="w-8 h-8 mx-auto mb-2 text-muted/50" />
-                                                    <p className="font-medium">{tr('لا يوجد مستخدمون مطابقون', 'No users match your search', 'Aucun utilisateur ne correspond')}</p>
+                                                <td colSpan={5} className="px-6 py-12">
+                                                    <EmptyState
+                                                        icon={Users}
+                                                        title={tr('لا يوجد مستخدمون مطابقون', 'No users match your search', 'Aucun utilisateur ne correspond')}
+                                                        description={tr('جرب تغيير معايير البحث أو الفلاتر للعثور على مستخدمين', 'Try adjusting your search criteria or filters', 'Essayez de modifier vos critères de recherche ou filtres')}
+                                                        action={{
+                                                            label: tr('مسح البحث', 'Clear search', 'Effacer la recherche'),
+                                                            onClick: () => setSearchQuery(''),
+                                                            variant: 'outline',
+                                                        }}
+                                                    />
                                                 </td>
                                             </tr>
                                         ) : filteredUsers.map((user) => (

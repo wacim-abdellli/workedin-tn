@@ -130,7 +130,7 @@ export default function ChatSection({
                                     {!isOwn && (
                                         <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center shrink-0 self-end mb-1">
                                             {message.sender?.avatar_url ? (
-                                                <img src={message.sender.avatar_url} alt="" className="w-8 h-8 rounded-full object-cover" />
+                                                  <img src={message.sender.avatar_url} alt={message.sender.full_name || 'User'} className="w-8 h-8 rounded-full object-cover" />
                                             ) : (
                                                 <span className="text-xs font-bold text-primary-700">
                                                     {message.sender?.full_name?.charAt(0)}

@@ -25,6 +25,7 @@ import * as profilesService from '../services/profiles';
 import * as proposalsService from '../services/proposals';
 import { Header, Footer } from '../components/layout';
 import Button from '../components/ui/Button';
+import Modal from '../components/ui/Modal';
 import { useToast } from '../components/ui/Toast';
 import SEO from '../components/common/SEO';
 import { Skeleton } from '../components/common/SkeletonCard';
@@ -321,7 +322,15 @@ function JobDetail() {
         onError: () => showToast(t.jobDetail.withdrawError, 'error')
     });
 
-    const withdrawProposal = () => withdrawProposalMutation.mutate();
+    const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
+
+    const withdrawProposal = () => setIsWithdrawModalOpen(true);
+
+    const confirmWithdrawProposal = () => {
+        withdrawProposalMutation.mutate(undefined, {
+            onSettled: () => setIsWithdrawModalOpen(false)
+        });
+    };
 
     // Share
     const shareJob = () => {
@@ -856,6 +865,34 @@ function JobDetail() {
                     isSubmitting={submitProposalMutation.isPending}
                 />
             )}
+
+            <Modal
+                isOpen={isWithdrawModalOpen}
+                onClose={() => setIsWithdrawModalOpen(false)}
+                title={tr('تأكيد سحب العرض', 'Confirm Withdrawal', 'Confirmer le retrait')}
+                size="md"
+            >
+                <div className="space-y-6 pt-4">
+                    <p className="text-gray-600 dark:text-gray-300">
+                        {tr('هل أنت متأكد أنك تريد سحب هذا العرض؟ لا يمكن التراجع عن هذا الإجراء.', 'Are you sure you want to withdraw this proposal? This action cannot be undone.', 'Êtes-vous sûr de vouloir retirer cette proposition ? Cette action ne peut pas être annulée.')}
+                    </p>
+                    <div className="flex gap-3 justify-end pr-0">
+                        <Button
+                            variant="outline"
+                            onClick={() => setIsWithdrawModalOpen(false)}
+                        >
+                            {tr('إلغاء', 'Cancel', 'Annuler')}
+                        </Button>
+                        <Button
+                            variant="danger"
+                            onClick={confirmWithdrawProposal}
+                            isLoading={withdrawProposalMutation.isPending}
+                        >
+                            {tr('نعم، اسحب العرض', 'Yes, Withdraw Proposal', 'Oui, retirer')}
+                        </Button>
+                    </div>
+                </div>
+            </Modal>
         </div>
     );
 }

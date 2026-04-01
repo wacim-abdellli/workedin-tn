@@ -192,7 +192,7 @@ export default function ContractsList() {
                     <p className="text-sm text-gray-500 dark:text-gray-400">{roleLabel}:</p>
                     <div className="flex items-center gap-1.5">
                       {partner?.avatar_url ? (
-                        <img src={partner.avatar_url} alt="" className="h-5 w-5 rounded-full object-cover" />
+                          <img src={partner.avatar_url} alt={partner?.full_name || 'User'} className="h-5 w-5 rounded-full object-cover" />
                       ) : (
                         <div className="flex h-5 w-5 items-center justify-center rounded-full bg-gray-200 text-[10px] font-bold text-gray-500 dark:bg-gray-800">
                           {partner?.full_name?.charAt(0) || '?'}

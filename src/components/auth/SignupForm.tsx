@@ -85,6 +85,7 @@ function SignupForm({ onComplete }: SignupFormProps) {
         formState: { errors },
     } = useForm<SignupFormData>({
         resolver: zodResolver(signupSchema),
+        mode: 'onChange',
     });
 
     const userTypes: { type: UserType; icon: React.ReactNode; title: string; description: string }[] = [

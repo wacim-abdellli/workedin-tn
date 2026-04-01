@@ -37,6 +37,7 @@ function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
         formState: { errors },
     } = useForm<EmailFormData>({
         resolver: zodResolver(emailSchema),
+        mode: 'onChange',
     });
     const onSubmit = async (data: EmailFormData) => {
         if (isLockedOut) {
