@@ -43,6 +43,7 @@ import {
 import type { RealtimeChannel } from '@supabase/supabase-js';
 import { useAudioRecorder } from '../hooks/useAudioRecorder';
 import { useTypingIndicator } from '../hooks/useTypingIndicator';
+import { useReadReceipts } from '../hooks/useReadReceipts';
 import { useTranslation } from '../i18n';
 
 export default function Messages() {
@@ -62,6 +63,8 @@ export default function Messages() {
     const [messages, setMessages] = useState<Message[]>([]);
     const [newMessage, setNewMessage] = useState('');
     const [searchQuery, setSearchQuery] = useState('');
+    const [messageSearchQuery, setMessageSearchQuery] = useState('');
+    const [showMessageSearch, setShowMessageSearch] = useState(false);
     const [filter, setFilter] = useState<'all' | 'unread' | 'starred'>('all');
     const [showMobileThread, setShowMobileThread] = useState(false);
     const [isLoadingConversations, setIsLoadingConversations] = useState(true);
@@ -85,6 +88,13 @@ export default function Messages() {
         selectedConversation?.id || null,
         user?.id || null
     );
+
+    // Read receipts
+    const { markMessagesAsRead } = useReadReceipts({
+        conversationId: selectedConversation?.id || null,
+        currentUserId: user?.id || null,
+        messages,
+    });
 
     // Network status listener
     useEffect(() => {
@@ -501,11 +511,18 @@ export default function Messages() {
         }
     };
 
+    // Filter conversations based on search and filter
     const filteredConversations = conversations.filter((c) => {
         if (filter === 'unread' && c.unread_count === 0) return false;
         if (searchQuery && !c.otherUser.full_name.toLowerCase().includes(searchQuery.toLowerCase()))
             return false;
         return true;
+    });
+
+    // Filter messages based on search
+    const filteredMessages = messages.filter(message => {
+        if (!messageSearchQuery.trim()) return true;
+        return message.content.toLowerCase().includes(messageSearchQuery.toLowerCase());
     });
 
     const conversationsVirtualizer = useVirtualizer({
@@ -842,9 +859,17 @@ export default function Messages() {
                                                 </div>
                                             )}
                                         </div>
-                                        <p className={`text-xs mt-1 ${message.sender_id === user?.id ? 'text-end' : 'text-start'} text-muted-foreground`}>
-                                            {formatMessageTime(message.created_at)}
-                                            {message.sender_id === user?.id && <span aria-label={message.is_read ? 'Read' : 'Delivered'}>{message.is_read ? ' ✓✓' : ' ✓'}</span>}
+                                        <p className={`text-xs mt-1 ${message.sender_id === user?.id ? 'text-end' : 'text-start'} text-muted-foreground flex items-center justify-${message.sender_id === user?.id ? 'end' : 'start'} gap-1`}>
+                                            <span>{formatMessageTime(message.created_at)}</span>
+                                            {message.sender_id === user?.id && (
+                                                <span className="flex items-center">
+                                                    {message.is_read ? (
+                                                        <span className="text-blue-500" title="Read">✓✓</span>
+                                                    ) : (
+                                                        <span className="text-gray-400" title="Delivered">✓</span>
+                                                    )}
+                                                </span>
+                                            )}
                                         </p>
                                     </div>
                                 </div>
