@@ -89,9 +89,9 @@ export default function HeroSection({ stats }: HeroSectionProps) {
         { icon: ClipboardList, value: stats.contracts ?? 0, label: t.hero.activity.metrics.projectsCompleted },
       ];
 
-  const headlineStart = isFreelancer ? t.hero.headlineStart : t.forClients.hero.title.replace(', delivered.', '');
+  const headlineStart = isFreelancer ? t.hero.headlineStart : t.forClients.hero.title.replace(', delivered.','');
   const headlineHighlight = isFreelancer ? t.hero.headlineHighlight : t.forClients.hero.titleHighlight;
-  const heroSubtitle = isFreelancer 
+  const heroSubtitle = isFreelancer
     ? t.hero.subtitle
     : t.forClients.hero.subtitle;
     
@@ -148,7 +148,7 @@ export default function HeroSection({ stats }: HeroSectionProps) {
               <span>{t.hero.badge}</span>
             </motion.div>
 
-            <motion.div custom={1} variants={fadeUp} initial="hidden" animate="visible" className="mt-8">
+            <motion.div custom={1} variants={fadeUp} initial="hidden" animate="visible" className="mt-4">
               <p className="hero-display-line font-bold tracking-tight text-gray-900 dark:text-white">
                 <span>{headlineStart}</span>
               </p>
