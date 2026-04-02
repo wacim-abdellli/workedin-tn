@@ -153,7 +153,7 @@ function ClientDashboardPage() {
         [profile?.full_name, tx]
     );
 
-    const { data: stats, isLoading } = useQuery({
+    const { data: stats, isLoading: isStatsLoading } = useQuery({
         queryKey: ['clientDashboardStats', profile?.id],
         enabled: !!profile?.id,
         queryFn: async (): Promise<DashboardStats> => {
@@ -327,7 +327,7 @@ function ClientDashboardPage() {
     };
 
     // Show loading state while profile is being loaded
-    if (isAuthLoading || !profile?.id) {
+    if (isAuthLoading || !profile?.id || isStatsLoading) {
         return (
             <div className="page-enter page-shell bg-background">
                 <SEO {...SEO_CONFIG.dashboard} url="/client/dashboard" noIndex />
@@ -446,7 +446,7 @@ function ClientDashboardPage() {
 
                         <div className="grid gap-4 sm:grid-cols-2">
                             {metricCards.map((card) => (
-                                <MetricCard key={card.label} {...card} isLoading={isLoading} />
+                                <MetricCard key={card.label} {...card} isLoading={isStatsLoading} />
                             ))}
                         </div>
                     </div>
@@ -473,7 +473,7 @@ function ClientDashboardPage() {
                             </div>
 
                             <div className="mt-6 space-y-4">
-                                {isLoading ? (
+                                {isStatsLoading ? (
                                     [1, 2, 3].map((item) => <Skeleton key={item} className="h-36 rounded-2xl" />)
                                 ) : jobs.length === 0 ? (
                                     <EmptyState
@@ -581,7 +581,7 @@ function ClientDashboardPage() {
                                 </Button>
                             </div>
                             <div className="mt-6 space-y-3">
-                                {isLoading ? (
+                                {isStatsLoading ? (
                                     [1, 2].map((item) => <Skeleton key={item} className="h-24 rounded-2xl" />)
                                 ) : activeContracts.length === 0 ? (
                                     <EmptyState
@@ -676,7 +676,7 @@ function ClientDashboardPage() {
                             </div>
 
                             <div className="mt-5 space-y-3">
-                                {isLoading ? (
+                                {isStatsLoading ? (
                                     [1, 2, 3].map((item) => <Skeleton key={item} className="h-20 rounded-2xl" />)
                                 ) : unreadNotifications.length === 0 ? (
                                     <EmptyState
