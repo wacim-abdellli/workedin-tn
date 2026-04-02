@@ -116,7 +116,7 @@ export default function HeroSection({ stats }: HeroSectionProps) {
   return (
     <section
       ref={sectionRef}
-      className="relative flex min-h-screen items-start pt-20 overflow-hidden bg-white dark:bg-[#0f0e17]"
+      className="relative flex min-h-screen items-center overflow-hidden bg-white dark:bg-[#0f0e17]"
       onMouseMove={handlePointerMove}
     >
       <motion.div
@@ -132,12 +132,75 @@ export default function HeroSection({ stats }: HeroSectionProps) {
         style={{ y: orbBottom }}
       />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(139,92,246,0.08),transparent_40%)] dark:bg-[radial-gradient(circle_at_top,rgba(139,92,246,0.16),transparent_34%)]" />
+      
+      {/* Floating Success Cards */}
+      <motion.div 
+        className="pointer-events-none absolute left-8 top-24 hidden lg:block"
+        animate={{ y: [-10, 10, -10] }}
+        transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+      >
+        <div className="rounded-2xl border border-green-200/50 bg-white/90 p-4 shadow-lg backdrop-blur-sm dark:border-green-800/30 dark:bg-green-950/20">
+          <div className="flex items-center gap-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-green-100 dark:bg-green-900/50">
+              <span className="text-sm">💰</span>
+            </div>
+            <div>
+              <div className="text-sm font-semibold text-gray-900 dark:text-white">Payment Received</div>
+              <div className="text-xs text-gray-500 dark:text-gray-400">Ahmed K. • 2.5K TND</div>
+            </div>
+          </div>
+        </div>
+      </motion.div>
 
-      <div className="container-custom relative z-10 py-8 lg:py-12">
+      <motion.div 
+        className="pointer-events-none absolute right-8 top-32 hidden lg:block"
+        animate={{ y: [10, -10, 10] }}
+        transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+      >
+        <div className="rounded-2xl border border-blue-200/50 bg-white/90 p-4 shadow-lg backdrop-blur-sm dark:border-blue-800/30 dark:bg-blue-950/20">
+          <div className="flex items-center gap-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900/50">
+              <span className="text-sm">🎯</span>
+            </div>
+            <div>
+              <div className="text-sm font-semibold text-gray-900 dark:text-white">Project Completed</div>
+              <div className="text-xs text-gray-500 dark:text-gray-400">Mobile App Design</div>
+            </div>
+          </div>
+        </div>
+      </motion.div>
+
+      <div className="container-custom relative z-10 py-16 lg:py-20">
+        {/* Floating Status Bar */}
+        <motion.div 
+          custom={0}
+          variants={fadeUp}
+          initial="hidden"
+          animate="visible"
+          className="mb-8 flex justify-center"
+        >
+          <div className="inline-flex items-center gap-6 rounded-2xl border border-white/10 bg-white/5 px-6 py-3 backdrop-blur-xl dark:border-white/20 dark:bg-white/10">
+            <div className="flex items-center gap-2">
+              <div className="h-2 w-2 rounded-full bg-green-400 animate-pulse"></div>
+              <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
+                Live Platform Activity
+              </span>
+            </div>
+            <div className="h-4 w-px bg-gray-300 dark:bg-gray-600"></div>
+            <div className="flex items-center gap-4 text-sm">
+              <span className="text-gray-600 dark:text-gray-300">
+                <span className="font-semibold text-primary-600 dark:text-primary-400">{formatCompact(stats.freelancers)}</span> Active Freelancers
+              </span>
+              <span className="text-gray-600 dark:text-gray-300">
+                <span className="font-semibold text-accent-600 dark:text-accent-400">{formatCompact(stats.jobs ?? 0)}</span> Open Projects
+              </span>
+            </div>
+          </div>
+        </motion.div>
         <div className="mx-auto grid max-w-7xl items-center gap-14 lg:grid-cols-[minmax(0,1.15fr)_minmax(340px,0.85fr)]">
           <div className="text-center lg:text-left rtl:text-right">
             <motion.div
-              custom={0}
+              custom={1}
               variants={fadeUp}
               initial="hidden"
               animate="visible"
@@ -148,7 +211,7 @@ export default function HeroSection({ stats }: HeroSectionProps) {
               <span>{t.hero.badge}</span>
             </motion.div>
 
-            <motion.div custom={1} variants={fadeUp} initial="hidden" animate="visible" className="mt-4">
+            <motion.div custom={2} variants={fadeUp} initial="hidden" animate="visible" className="mt-4">
               <p className="hero-display-line font-bold tracking-tight text-gray-900 dark:text-white">
                 <span>{headlineStart}</span>
               </p>
@@ -156,7 +219,7 @@ export default function HeroSection({ stats }: HeroSectionProps) {
             </motion.div>
 
             <motion.p
-              custom={2}
+              custom={3}
               variants={fadeUp}
               initial="hidden"
               animate="visible"
@@ -166,7 +229,7 @@ export default function HeroSection({ stats }: HeroSectionProps) {
             </motion.p>
 
             <motion.div
-              custom={3}
+              custom={4}
               variants={fadeUp}
               initial="hidden"
               animate="visible"
@@ -195,7 +258,7 @@ export default function HeroSection({ stats }: HeroSectionProps) {
             </motion.div>
 
             <motion.div
-              custom={4}
+              custom={5}
               variants={fadeUp}
               initial="hidden"
               animate="visible"
@@ -227,7 +290,7 @@ export default function HeroSection({ stats }: HeroSectionProps) {
           </div>
 
           <motion.div
-            custom={5}
+            custom={6}
             variants={fadeUp}
             initial="hidden"
             animate="visible"
