@@ -653,6 +653,22 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const isFullyReady = !isLoading && isProfileReady;
 
+  // Refresh profile when window regains focus to sync with admin changes
+  useEffect(() => {
+    const handleFocus = () => {
+      const currentUserId = userRef.current?.id;
+      if (currentUserId && !manualSignInInProgressRef.current) {
+        // Refresh profile silently without showing loading state
+        fetchProfile(currentUserId).catch((err) => {
+          logger.warn('Failed to refresh profile on focus:', err);
+        });
+      }
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, [fetchProfile]);
+
   const value: AuthContextType = {
     user,
     session,
