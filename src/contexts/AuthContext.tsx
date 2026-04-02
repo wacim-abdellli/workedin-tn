@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import type { Session, User } from '@supabase/supabase-js';
+import { useQueryClient } from '@tanstack/react-query';
 
 import { clearAllAuthData } from '@/lib/authUtils';
 import { logger } from '@/lib/logger';
@@ -51,6 +52,7 @@ interface AuthProviderProps {
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
+  const queryClient = useQueryClient();
   const MAX_LOADING_TIME = 4000;
   const PROFILE_RETRY_COOLDOWN = 30000;
   const [user, setUser] = useState<User | null>(null);
@@ -536,37 +538,43 @@ export function AuthProvider({ children }: AuthProviderProps) {
     clearAllAuthData();
   };
 
-  const updateProfile = async (data: Partial<Profile>) => {
-    if (!user) throw new Error('No user logged in');
+   const updateProfile = async (data: Partial<Profile>) => {
+     if (!user) throw new Error('No user logged in');
 
-    if (!profile) {
-      await ensureProfileExists(user);
-    }
+     if (!profile) {
+       await ensureProfileExists(user);
+     }
 
-    await supabaseWithRetry(
-      () =>
-        supabase
-          .from('profiles')
-          .update({
-            ...data,
-            updated_at: new Date().toISOString(),
-          })
-          .eq('id', user.id),
-      { timeoutMs: 10000 }
-    );
+     await supabaseWithRetry(
+       () =>
+         supabase
+           .from('profiles')
+           .update({
+             ...data,
+             updated_at: new Date().toISOString(),
+           })
+           .eq('id', user.id),
+       { timeoutMs: 10000 }
+     );
 
-    const nextProfile = profile ? { ...profile, ...data } : ({ id: user.id, ...data } as Profile);
-    setProfile(nextProfile);
-    syncWorkspaceFromProfile(nextProfile, freelancerProfile);
+     const nextProfile = profile ? { ...profile, ...data } : ({ id: user.id, ...data } as Profile);
+     setProfile(nextProfile);
+     syncWorkspaceFromProfile(nextProfile, freelancerProfile);
 
-    if (
-      nextProfile.onboarding_completed ||
-      nextProfile.client_onboarding_completed ||
-      nextProfile.freelancer_onboarding_completed
-    ) {
-      persistUserTypeSelectionMarker(user.id);
-    }
-  };
+     // Invalidate dashboard query cache to ensure fresh data
+     queryClient.invalidateQueries({ queryKey: ['freelancer-dashboard'] });
+     queryClient.invalidateQueries({ queryKey: ['clientDashboardStats'] });
+     queryClient.invalidateQueries({ queryKey: ['clientDashboardJobs'] });
+     queryClient.invalidateQueries({ queryKey: ['clientActiveContracts'] });
+
+     if (
+       nextProfile.onboarding_completed ||
+       nextProfile.client_onboarding_completed ||
+       nextProfile.freelancer_onboarding_completed
+     ) {
+       persistUserTypeSelectionMarker(user.id);
+     }
+   };
 
   const updateFreelancerProfile = async (data: Partial<FreelancerProfile>) => {
     if (!user) throw new Error('No user logged in');
@@ -627,12 +635,17 @@ export function AuthProvider({ children }: AuthProviderProps) {
     await fetchProfile(user.id);
   };
 
-  const refreshProfile = useCallback(async () => {
-    const currentUserId = userRef.current?.id;
-    if (currentUserId) {
-      await fetchProfile(currentUserId);
-    }
-  }, [fetchProfile]);
+   const refreshProfile = useCallback(async () => {
+     const currentUserId = userRef.current?.id;
+     if (currentUserId) {
+       await fetchProfile(currentUserId);
+       // Invalidate dashboard query cache to ensure fresh data
+       queryClient.invalidateQueries({ queryKey: ['freelancer-dashboard'] });
+       queryClient.invalidateQueries({ queryKey: ['clientDashboardStats'] });
+       queryClient.invalidateQueries({ queryKey: ['clientDashboardJobs'] });
+       queryClient.invalidateQueries({ queryKey: ['clientActiveContracts'] });
+     }
+   }, [fetchProfile, queryClient]);
 
   const availableModes = useMemo(() => {
     return Array.from(new Set([...getWorkspaceCapabilities(profile?.user_type), activeMode])) as AccountMode[];

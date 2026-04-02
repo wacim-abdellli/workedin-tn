@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Camera, Check, Loader2, Save, Shield, User } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from '@/i18n';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/components/ui/Toast';
@@ -18,6 +19,7 @@ export default function ProfileSettings() {
     const { user, profile, freelancerProfile, activeMode, refreshProfile, updateProfile } = useAuth();
     const { showToast } = useToast();
     const navigate = useNavigate();
+    const queryClient = useQueryClient();
 
     const [isSaving, setIsSaving] = useState(false);
     const [isSwitchingWorkspace, setIsSwitchingWorkspace] = useState<'freelancer' | 'client' | null>(null);
@@ -93,29 +95,34 @@ export default function ProfileSettings() {
                 : tx('settings.setupStatus.nextHintProfile', undefined, 'Next step: complete the missing profile fields.')
         : tx('settings.setupStatus.allDone', undefined, 'All required setup steps are complete.');
 
-    const handleSave = async () => {
-        if (!user?.id) return;
-        setIsSaving(true);
-        try {
-            await updateProfile({
-                full_name: form.full_name,
-                phone: form.phone,
-                bio: form.bio,
-                location: form.location,
-            });
-            await refreshProfile?.();
-            showToast(tx('settings.toasts.profileSaved', undefined, 'Profile updated successfully'), 'success');
-        } catch (error: any) {
-            logger.error('Error saving profile:', error);
-            if (error?.message?.includes('duplicate key value violates unique constraint') && error?.message?.includes('phone')) {
-                showToast(tx('settings.toasts.phoneTaken', undefined, 'This phone number is already in use by another account.'), 'error');
-            } else {
-                showToast(tx('settings.toasts.profileSaveError', undefined, 'Failed to save profile changes'), 'error');
-            }
-        } finally {
-            setIsSaving(false);
-        }
-    };
+     const handleSave = async () => {
+         if (!user?.id) return;
+         setIsSaving(true);
+         try {
+             await updateProfile({
+                 full_name: form.full_name,
+                 phone: form.phone,
+                 bio: form.bio,
+                 location: form.location,
+             });
+             await refreshProfile?.();
+             // Invalidate dashboard query cache to ensure fresh data
+             queryClient.invalidateQueries({ queryKey: ['freelancer-dashboard'] });
+             queryClient.invalidateQueries({ queryKey: ['clientDashboardStats'] });
+             queryClient.invalidateQueries({ queryKey: ['clientDashboardJobs'] });
+             queryClient.invalidateQueries({ queryKey: ['clientActiveContracts'] });
+             showToast(tx('settings.toasts.profileSaved', undefined, 'Profile updated successfully'), 'success');
+         } catch (error: any) {
+             logger.error('Error saving profile:', error);
+             if (error?.message?.includes('duplicate key value violates unique constraint') && error?.message?.includes('phone')) {
+                 showToast(tx('settings.toasts.phoneTaken', undefined, 'This phone number is already in use by another account.'), 'error');
+             } else {
+                 showToast(tx('settings.toasts.profileSaveError', undefined, 'Failed to save profile changes'), 'error');
+             }
+         } finally {
+             setIsSaving(false);
+         }
+     };
 
     const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];

@@ -184,12 +184,14 @@ export default function UsersTab() {
                         user_id: user.id,
                         type: 'identity_rejected',
                         title: tr('تم إلغاء توثيق حسابك', 'Your account verification was revoked', 'La verification de votre compte a ete revoquee'),
-                        message: tr('لقد قامت الإدارة بإلغاء توثيق حسابك مؤقتاً. يرجى تقديم طلب توثيق جديد لتتمكن من استخدام المنصة.', 'Administration has temporarily revoked your account verification. Please submit a new verification request to use the platform.', 'L\'administration a temporairement revoque la verification de votre compte. Veuillez soumettre une nouvelle demande.'),
-                        read: false,
+                        body: tr('لقد قامت الإدارة بإلغاء توثيق حسابك مؤقتاً. يرجى تقديم طلب توثيق جديد لتتمكن من استخدام المنصة.', 'Administration has temporarily revoked your account verification. Please submit a new verification request to use the platform.', 'L\'administration a temporairement revoque la verification de votre compte. Veuillez soumettre une nouvelle demande.'),
+                        is_read: false,
                     }),
             ]);
-            const firstError = results.find(r => r.error);
-            if (firstError?.error) throw firstError.error;
+            
+            // Allow notification (index 3) to fail silently, only throw errors for critical operations
+            const criticalError = results.slice(0, 3).find(r => r.error);
+            if (criticalError?.error) throw criticalError.error;
 
             return user.id;
         },
