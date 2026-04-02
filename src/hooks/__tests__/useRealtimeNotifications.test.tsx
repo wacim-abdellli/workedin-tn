@@ -122,7 +122,7 @@ describe('useRealtimeNotifications', () => {
     });
 
     it('handles postgres_changes INSERT event', async () => {
-        let triggerEvent: Function | undefined;
+        let triggerEvent: ((payload: unknown) => void) | undefined;
 
         const mockOn = vi.fn().mockImplementation((event, filter, callback) => {
             triggerEvent = callback;
