@@ -96,9 +96,11 @@ export async function getConversations(userId: string, page: number = 0, limit: 
         const start = page * limit;
         const end = start + limit - 1;
 
+        // Removed expensive messages(count) join - was causing 8+ second timeouts
+        // Message count can be fetched separately if needed
         const { data, error, count } = await supabaseWithRetry(() => supabase
             .from('conversations')
-            .select('*, messages(count)', { count: 'exact' })
+            .select('*', { count: 'exact' })
             .or(`participant_1.eq.${userId},participant_2.eq.${userId}`)
             .order('last_message_at', { ascending: false })
             .range(start, end));
@@ -149,7 +151,7 @@ export async function getConversations(userId: string, page: number = 0, limit: 
                     username: otherUser?.username || null,
                 },
                 unread_count: unread_count || 0,
-                message_count: conv.messages?.[0]?.count ?? 0,
+                message_count: 0, // Removed expensive join - set to 0 for now
             };
         });
 
