@@ -1040,18 +1040,18 @@ export default function Messages() {
             <Header />
 
             <div className="h-[calc(100vh-64px)] flex overflow-hidden">
-                {/* Sidebar - Conversations List */}
-                <div className={`w-80 shrink-0 border-e border-border flex flex-col bg-background hidden lg:flex ${showMobileThread ? 'hidden' : ''}`}>
+                {/* Sidebar - Conversations List - Desktop */}
+                <div className={`w-80 shrink-0 border-e border-border flex flex-col bg-background hidden lg:flex`}>
                     {renderConversationList()}
                 </div>
 
-                {/* Mobile Sidebar */}
-                <div className={`w-full border-e border-border flex flex-col bg-background lg:hidden ${showMobileThread ? 'hidden' : 'flex'}`}>
+                {/* Sidebar - Conversations List - Mobile */}
+                <div className={`w-full border-e border-border flex flex-col bg-background lg:hidden ${!showMobileThread ? 'flex' : 'hidden'}`}>
                     {renderConversationList()}
                 </div>
 
                 {/* Main Message Area */}
-                <div className={`flex-1 flex flex-col overflow-hidden ${showMobileThread ? 'block' : 'hidden lg:flex'}`}>
+                <div className={`flex-1 flex flex-col overflow-hidden ${showMobileThread ? 'flex' : 'hidden lg:flex'}`}>
                     {renderMessageThread()}
                 </div>
 
