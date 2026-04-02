@@ -116,7 +116,7 @@ export default function HeroSection({ stats }: HeroSectionProps) {
   return (
     <section
       ref={sectionRef}
-      className="relative flex min-h-screen items-center overflow-hidden bg-white dark:bg-[#0f0e17]"
+      className="relative flex min-h-screen items-start pt-20 overflow-hidden bg-white dark:bg-[#0f0e17]"
       onMouseMove={handlePointerMove}
     >
       <motion.div
@@ -133,7 +133,7 @@ export default function HeroSection({ stats }: HeroSectionProps) {
       />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(139,92,246,0.08),transparent_40%)] dark:bg-[radial-gradient(circle_at_top,rgba(139,92,246,0.16),transparent_34%)]" />
 
-      <div className="container-custom relative z-10 py-20 lg:py-28">
+      <div className="container-custom relative z-10 py-8 lg:py-12">
         <div className="mx-auto grid max-w-7xl items-center gap-14 lg:grid-cols-[minmax(0,1.15fr)_minmax(340px,0.85fr)]">
           <div className="text-center lg:text-left rtl:text-right">
             <motion.div
