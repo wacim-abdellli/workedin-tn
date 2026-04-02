@@ -1,7 +1,13 @@
 import { createClient } from '@supabase/supabase-js';
 
-const SUPABASE_URL = 'https://wvgkezmboewtlpnyjnyd.supabase.co';
-const SERVICE_ROLE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind2Z2tlem1ib2V3dGxwbnlqbnlkIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2OTUwMjA1MiwiZXhwIjoyMDg1MDc4MDUyfQ.Il2oaNDXnynpqWUPA9g1XTPpJYA9rwxjaP9N1QdiPbc';
+const SUPABASE_URL = process.env.VITE_SUPABASE_URL || 'https://wvgkezmboewtlpnyjnyd.supabase.co';
+const SERVICE_ROLE_KEY = process.env.VITE_SUPABASE_SERVICE_ROLE_KEY;
+
+if (!SERVICE_ROLE_KEY) {
+  console.error('❌ Error: VITE_SUPABASE_SERVICE_ROLE_KEY not set in environment');
+  console.error('Please add it to .env or .env.local file');
+  process.exit(1);
+}
 
 // Create admin client with service role key
 const adminClient = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
