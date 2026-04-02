@@ -42,6 +42,7 @@ import {
 } from '../services/messages';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 import { useAudioRecorder } from '../hooks/useAudioRecorder';
+import { useTypingIndicator } from '../hooks/useTypingIndicator';
 import { useTranslation } from '../i18n';
 
 export default function Messages() {
@@ -78,6 +79,12 @@ export default function Messages() {
 
     const conversationsChannelRef = useRef<RealtimeChannel | null>(null);
     const messagesChannelRef = useRef<RealtimeChannel | null>(null);
+
+    // Typing indicators
+    const { typingUsers, startTyping, stopTyping } = useTypingIndicator(
+        selectedConversation?.id || null,
+        user?.id || null
+    );
 
     // Network status listener
     useEffect(() => {
@@ -869,6 +876,25 @@ export default function Messages() {
                         <div ref={messagesEndRef} />
                     </div>
 
+                    {/* Typing Indicator */}
+                    {typingUsers.length > 0 && (
+                        <div className="px-6 py-2 border-t border-border/50">
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                <div className="flex gap-1">
+                                    <div className="w-2 h-2 bg-brand rounded-full animate-pulse" />
+                                    <div className="w-2 h-2 bg-brand rounded-full animate-pulse animation-delay-200" />
+                                    <div className="w-2 h-2 bg-brand rounded-full animate-pulse animation-delay-400" />
+                                </div>
+                                <span>
+                                    {typingUsers.length === 1 
+                                        ? `${selectedConversation?.otherUser.full_name || 'Someone'} is typing...`
+                                        : `${typingUsers.length} people are typing...`
+                                    }
+                                </span>
+                            </div>
+                        </div>
+                    )}
+
                     {/* Input Area */}
                     <div className="border-t border-border bg-card px-6 py-4">
                         {(selectedFile || audioBlob || isRecording) && (
@@ -938,13 +964,23 @@ export default function Messages() {
                                 type="text"
                                 ref={messageInputRef}
                                 value={newMessage}
-                                onChange={(e) => setNewMessage(e.target.value)}
+                                onChange={(e) => {
+                                    setNewMessage(e.target.value);
+                                    // Trigger typing indicator
+                                    if (e.target.value.trim()) {
+                                        startTyping();
+                                    } else {
+                                        stopTyping();
+                                    }
+                                }}
                                 onKeyDown={(e) => {
                                     if (e.key === 'Enter' && !e.shiftKey) {
                                         e.preventDefault();
+                                        stopTyping();
                                         void handleSendMessage();
                                     }
                                 }}
+                                onBlur={stopTyping}
                                 placeholder={tx('pages.messages.messagePlaceholder', undefined, 'Write your message...')}
                                 disabled={isSending || isRecording || !!selectedFile || !!audioBlob}
                                 className="flex-1 bg-surface border border-border rounded-2xl px-4 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-brand text-foreground placeholder:text-muted-foreground disabled:opacity-50"

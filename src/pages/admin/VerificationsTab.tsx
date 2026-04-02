@@ -222,10 +222,10 @@ export default function VerificationsTab() {
                         supabaseWithRetry(() =>
                             client.from('notifications').insert({
                                 user_id: userId,
-                                type: 'identity_verified',
+                                type: 'system',
                                 title: tr('تم التحقق من هويتك', 'Your identity has been verified', 'Votre identite a ete verifiee'),
-                                message: tr('مبروك! تم التحقق من هويتك بنجاح. يمكنك الآن الوصول لجميع ميزات المنصة.', 'Congratulations! Your identity was successfully verified. You can now access all platform features.', 'Felicitations ! Votre identite a ete verifiee avec succes. Vous pouvez maintenant acceder a toutes les fonctionnalites de la plateforme.'),
-                                read: false,
+                                body: tr('مبروك! تم التحقق من هويتك بنجاح. يمكنك الآن الوصول لجميع ميزات المنصة.', 'Congratulations! Your identity was successfully verified. You can now access all platform features.', 'Felicitations ! Votre identite a ete verifiee avec succes. Vous pouvez maintenant acceder a toutes les fonctionnalites de la plateforme.'),
+                                is_read: false,
                             })
                         ).catch(() => null),
                     ]);
@@ -240,10 +240,10 @@ export default function VerificationsTab() {
                         supabaseWithRetry(() =>
                             client.from('notifications').insert({
                                 user_id: userId,
-                                type: 'identity_rejected',
+                                type: 'system',
                                 title: tr('تم رفض طلب التحقق', 'Verification request rejected', 'Demande de verification refusee'),
-                                message: tr('عذراً، تم رفض طلب التحقق من الهوية. يرجى التأكد من أن صور المستندات واضحة وتقديم الطلب مجدداً', 'Sorry, your identity verification request was rejected. Please ensure document images are clear and apply again.', 'Desole, votre demande de verification a ete refusee. Veuillez vous assurer que les images sont claires et reessayer.'),
-                                read: false,
+                                body: tr('عذراً، تم رفض طلب التحقق من الهوية. يرجى التأكد من أن صور المستندات واضحة وتقديم الطلب مجدداً', 'Sorry, your identity verification request was rejected. Please ensure document images are clear and apply again.', 'Desole, votre demande de verification a ete refusee. Veuillez vous assurer que les images sont claires et reessayer.'),
+                                is_read: false,
                             })
                         ).catch(() => null),
                     ]);

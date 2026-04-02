@@ -224,10 +224,10 @@ export default function VerificationQueue() {
             // Send notification to user
             await supabase.from('notifications').insert({
                 user_id: selectedVerification.user_id,
-                type: 'identity_verified',
+                type: 'system',
                 title: tr('تم التحقق من هويتك', 'Your identity has been verified', 'Votre identite a ete verifiee'),
-                message: tr('مبروك! تم التحقق من هويتك بنجاح. يمكنك الآن الوصول لجميع ميزات المنصة.', 'Congratulations! Your identity was successfully verified. You can now access all platform features.', 'Felicitations ! Votre identite a ete verifiee avec succes. Vous pouvez maintenant acceder a toutes les fonctionnalites de la plateforme.'),
-                read: false,
+                body: tr('مبروك! تم التحقق من هويتك بنجاح. يمكنك الآن الوصول لجميع ميزات المنصة.', 'Congratulations! Your identity was successfully verified. You can now access all platform features.', 'Felicitations ! Votre identite a ete verifiee avec succes. Vous pouvez maintenant acceder a toutes les fonctionnalites de la plateforme.'),
+                is_read: false,
             });
 
             showToast(tr('تم الموافقة على التحقق بنجاح', 'Verification approved successfully', 'Verification approuvee avec succes'), 'success');
@@ -268,10 +268,10 @@ export default function VerificationQueue() {
             // Send notification to user
             await supabase.from('notifications').insert({
                 user_id: selectedVerification.user_id,
-                type: 'identity_rejected',
+                type: 'system',
                 title: tr('تم رفض طلب التحقق', 'Verification request rejected', 'Demande de verification refusee'),
-                message: `${tr('عذراً، تم رفض طلب التحقق من الهوية. السبب', 'Sorry, your identity verification request was rejected. Reason', 'Desole, votre demande de verification d identite a ete refusee. Raison')}: ${rejectionReason}`,
-                read: false,
+                body: `${tr('عذراً، تم رفض طلب التحقق من الهوية. السبب', 'Sorry, your identity verification request was rejected. Reason', 'Desole, votre demande de verification d identite a ete refusee. Raison')}: ${rejectionReason}`,
+                is_read: false,
             });
 
             showToast(tr('تم رفض التحقق', 'Verification rejected', 'Verification refusee'), 'success');

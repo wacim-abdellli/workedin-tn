@@ -96,8 +96,7 @@ export async function getConversations(userId: string, page: number = 0, limit: 
         const start = page * limit;
         const end = start + limit - 1;
 
-        // Removed expensive messages(count) join - was causing 8+ second timeouts
-        // Message count can be fetched separately if needed
+        // Step 1: Get conversations efficiently (no joins)
         const { data, error, count } = await supabaseWithRetry(() => supabase
             .from('conversations')
             .select('*', { count: 'exact' })
@@ -108,22 +107,44 @@ export async function getConversations(userId: string, page: number = 0, limit: 
         if (error) throw error;
 
         const rows = (data ?? []) as ConversationRow[];
+        const conversationIds = rows.map(conv => conv.id);
         const otherUserIds = Array.from(new Set(rows.map((conv) => (
             conv.participant_1 === userId ? conv.participant_2 : conv.participant_1
         )).filter(Boolean)));
 
+        // Step 2: Get profiles in parallel with message counts
+        const [profilesResult, messageCountsResult] = await Promise.all([
+            otherUserIds.length > 0 
+                ? supabaseWithRetry(() => supabase
+                    .from('profiles')
+                    .select('id, full_name, avatar_url, username')
+                    .in('id', otherUserIds))
+                : Promise.resolve({ data: [], error: null }),
+            
+            // Step 3: Get message counts efficiently using a single query
+            conversationIds.length > 0
+                ? supabaseWithRetry(() => supabase
+                    .from('messages')
+                    .select('conversation_id')
+                    .in('conversation_id', conversationIds))
+                : Promise.resolve({ data: [], error: null })
+        ]);
+
+        if (profilesResult.error) throw profilesResult.error;
+        if (messageCountsResult.error) console.warn('Message counts failed:', messageCountsResult.error);
+
+        // Build profiles map
         const profilesById = new Map<string, ConversationParticipantRow>();
+        for (const profile of (profilesResult.data ?? []) as ConversationParticipantRow[]) {
+            profilesById.set(profile.id, profile);
+        }
 
-        if (otherUserIds.length > 0) {
-            const { data: profiles, error: profilesError } = await supabaseWithRetry(() => supabase
-                .from('profiles')
-                .select('id, full_name, avatar_url, username')
-                .in('id', otherUserIds));
-
-            if (profilesError) throw profilesError;
-
-            for (const profile of (profiles ?? []) as ConversationParticipantRow[]) {
-                profilesById.set(profile.id, profile);
+        // Build message counts map
+        const messageCountsById = new Map<string, number>();
+        if (messageCountsResult.data) {
+            for (const msg of messageCountsResult.data) {
+                const current = messageCountsById.get(msg.conversation_id) || 0;
+                messageCountsById.set(msg.conversation_id, current + 1);
             }
         }
 
@@ -151,7 +172,7 @@ export async function getConversations(userId: string, page: number = 0, limit: 
                     username: otherUser?.username || null,
                 },
                 unread_count: unread_count || 0,
-                message_count: 0, // Removed expensive join - set to 0 for now
+                message_count: messageCountsById.get(conv.id) || 0, // Real count now!
             };
         });
 

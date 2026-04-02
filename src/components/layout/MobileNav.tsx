@@ -45,26 +45,79 @@ export default function MobileNav() {
 
     // Fetch initial counts
     const fetchCounts = async () => {
-      const [{ count: notifCount }, { count: msgCount }] = await Promise.all([
-        supabase.from('notifications').select('*', { count: 'exact', head: true }).eq('user_id', user.id).eq('read', false),
-        supabase.from('messages').select('*', { count: 'exact', head: true }).eq('receiver_id', user.id).eq('read', false),
-      ]);
-      setUnreadNotifications(notifCount ?? 0);
-      setUnreadMessages(msgCount ?? 0);
+      try {
+        const [notificationsResult, messagesResult] = await Promise.all([
+          supabase
+            .from('notifications')
+            .select('*', { count: 'exact', head: true })
+            .eq('user_id', user.id)
+            .eq('is_read', false), // Fixed: was 'read', should be 'is_read'
+          
+          // Fixed: Use conversation unread counts instead of individual messages
+          supabase
+            .from('conversations')
+            .select('unread_count_1, unread_count_2, participant_1, participant_2')
+            .or(`participant_1.eq.${user.id},participant_2.eq.${user.id}`)
+        ]);
+
+        const notifCount = notificationsResult.count ?? 0;
+        
+        // Calculate total unread messages from conversations
+        let totalUnread = 0;
+        if (messagesResult.data) {
+          for (const conv of messagesResult.data) {
+            if (conv.participant_1 === user.id) {
+              totalUnread += conv.unread_count_1 || 0;
+            } else if (conv.participant_2 === user.id) {
+              totalUnread += conv.unread_count_2 || 0;
+            }
+          }
+        }
+
+        setUnreadNotifications(notifCount);
+        setUnreadMessages(totalUnread);
+      } catch (error) {
+        console.error('Failed to fetch unread counts:', error);
+        setUnreadNotifications(0);
+        setUnreadMessages(0);
+      }
     };
 
     fetchCounts();
 
     const channel = supabase
       .channel(`mobile-nav:${user.id}`)
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` }, () => {
+      .on('postgres_changes', { 
+        event: 'INSERT', 
+        schema: 'public', 
+        table: 'notifications', 
+        filter: `user_id=eq.${user.id}` 
+      }, () => {
         setUnreadNotifications((prev) => prev + 1);
       })
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` }, () => {
+      .on('postgres_changes', { 
+        event: 'UPDATE', 
+        schema: 'public', 
+        table: 'notifications', 
+        filter: `user_id=eq.${user.id}` 
+      }, () => {
         fetchCounts();
       })
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `receiver_id=eq.${user.id}` }, () => {
-        setUnreadMessages((prev) => prev + 1);
+      .on('postgres_changes', { 
+        event: 'UPDATE', 
+        schema: 'public', 
+        table: 'conversations',
+        filter: `participant_1=eq.${user.id}` 
+      }, () => {
+        fetchCounts(); // Refetch when conversations update
+      })
+      .on('postgres_changes', { 
+        event: 'UPDATE', 
+        schema: 'public', 
+        table: 'conversations',
+        filter: `participant_2=eq.${user.id}` 
+      }, () => {
+        fetchCounts(); // Refetch when conversations update
       })
       .subscribe();
 
