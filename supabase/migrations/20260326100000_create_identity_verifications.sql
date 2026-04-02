@@ -28,6 +28,12 @@ CREATE POLICY "identity_verifications_insert" ON identity_verifications
 CREATE POLICY "identity_verifications_delete" ON identity_verifications
     FOR DELETE USING (auth.uid() = user_id AND status = 'pending');
 
+-- Admins can revoke (delete) verifications
+CREATE POLICY "identity_verifications_delete_admin" ON identity_verifications
+    FOR DELETE USING (
+        (SELECT is_admin FROM profiles WHERE profiles.id = auth.uid())
+    );
+
 -- Index for admin queries
 CREATE INDEX idx_identity_verifications_status ON identity_verifications(status);
 CREATE INDEX idx_identity_verifications_user_id ON identity_verifications(user_id);
