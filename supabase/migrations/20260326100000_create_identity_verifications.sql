@@ -18,22 +18,26 @@ CREATE TABLE IF NOT EXISTS identity_verifications (
 ALTER TABLE identity_verifications ENABLE ROW LEVEL SECURITY;
 
 -- Users can only see and insert their own verification
+DROP POLICY IF EXISTS "identity_verifications_select" ON identity_verifications;
 CREATE POLICY "identity_verifications_select" ON identity_verifications
     FOR SELECT USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "identity_verifications_insert" ON identity_verifications;
 CREATE POLICY "identity_verifications_insert" ON identity_verifications
     FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 -- Users can delete their own pending verification (to resubmit)
+DROP POLICY IF EXISTS "identity_verifications_delete" ON identity_verifications;
 CREATE POLICY "identity_verifications_delete" ON identity_verifications
     FOR DELETE USING (auth.uid() = user_id AND status = 'pending');
 
 -- Admins can revoke (delete) verifications
+DROP POLICY IF EXISTS "identity_verifications_delete_admin" ON identity_verifications;
 CREATE POLICY "identity_verifications_delete_admin" ON identity_verifications
     FOR DELETE USING (
         (SELECT is_admin FROM profiles WHERE profiles.id = auth.uid())
     );
 
 -- Index for admin queries
-CREATE INDEX idx_identity_verifications_status ON identity_verifications(status);
-CREATE INDEX idx_identity_verifications_user_id ON identity_verifications(user_id);
+CREATE INDEX IF NOT EXISTS idx_identity_verifications_status ON identity_verifications(status);
+CREATE INDEX IF NOT EXISTS idx_identity_verifications_user_id ON identity_verifications(user_id);
