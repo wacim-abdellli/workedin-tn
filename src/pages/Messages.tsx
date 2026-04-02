@@ -614,7 +614,10 @@ export default function Messages() {
             <div ref={conversationsParentRef} className="flex-1 overflow-y-auto px-3 py-4 relative">
                 {isLoadingConversations ? (
                     <div className="flex items-center justify-center h-32">
-                        <Loader2 className="w-6 h-6 animate-spin text-brand" />
+                        <div className="text-center">
+                            <Loader2 className="w-6 h-6 animate-spin text-brand mx-auto mb-2" />
+                            <p className="text-sm text-muted-foreground">Loading conversations...</p>
+                        </div>
                     </div>
                 ) : filteredConversations.length === 0 ? (
                     <div className="p-8 text-center">
@@ -790,7 +793,10 @@ export default function Messages() {
                     <div ref={messagesParentRef} className="flex-1 overflow-y-auto px-6 py-6 flex flex-col relative">
                         {isLoadingMessages ? (
                             <div className="flex items-center justify-center h-full">
-                                <Loader2 className="w-8 h-8 animate-spin text-brand" />
+                                <div className="text-center">
+                                    <Loader2 className="w-8 h-8 animate-spin text-brand mx-auto mb-2" />
+                                    <p className="text-sm text-muted-foreground">Loading messages...</p>
+                                </div>
                             </div>
                         ) : messages.length === 0 ? (
                             <div className="flex items-center justify-center h-full">

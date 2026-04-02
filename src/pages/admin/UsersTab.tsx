@@ -182,7 +182,7 @@ export default function UsersTab() {
                     .from('notifications')
                     .insert({
                         user_id: user.id,
-                        type: 'identity_rejected',
+                        notification_type: 'identity_rejected',
                         title: tr('تم إلغاء توثيق حسابك', 'Your account verification was revoked', 'La verification de votre compte a ete revoquee'),
                         body: tr('لقد قامت الإدارة بإلغاء توثيق حسابك مؤقتاً. يرجى تقديم طلب توثيق جديد لتتمكن من استخدام المنصة.', 'Administration has temporarily revoked your account verification. Please submit a new verification request to use the platform.', 'L\'administration a temporairement revoque la verification de votre compte. Veuillez soumettre une nouvelle demande.'),
                         is_read: false,
