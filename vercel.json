@@ -47,5 +47,11 @@
             "source": "/((?!api/).*)",
             "destination": "/index.html"
         }
-    ]
+    ],
+    "functions": {
+        "api/**/*.ts": {
+            "memory": 3008,
+            "maxDuration": 30
+        }
+    }
 }

@@ -252,6 +252,13 @@ export default function VerifyIdentity() {
 
             try {
                 await supabaseWithRetry(() => supabase.from('profiles').update({ cin_submitted: true }).eq('id', authUserId));
+                await supabaseWithRetry(() => supabase.from('notifications').insert({
+                    user_id: authUserId,
+                    type: 'identity_submitted',
+                    title: 'تم استلام طلب التوثيق',
+                    message: 'جاري الآن دراسة طلب التحقق من الهوية من قبل الإدارة. سيتم إعلامك بالنتيجة قريباً.',
+                    read: false,
+                })).catch(() => null);
                 await refreshProfile?.();
             } catch (e) { logger.error('Profile update error:', e); }
 

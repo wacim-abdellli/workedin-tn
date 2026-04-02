@@ -1,0 +1,31 @@
+name: Automated Database Backup
+
+on:
+  schedule:
+    # Run daily at 2:00 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        
+      - name: Set up Postgres client
+        run: sudo apt-get install postgresql-client
+        
+      - name: Run backup script
+        env:
+          SUPABASE_DB_CONNECTION_STRING: ${{ secrets.SUPABASE_DB_CONNECTION_STRING }}
+        run: |
+          chmod +x ./scripts/backup-database.sh
+          ./scripts/backup-database.sh
+          
+      - name: Upload backup as artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: database-backup
+          path: backups/*.sql
+          retention-days: 30

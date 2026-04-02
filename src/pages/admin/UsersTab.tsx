@@ -178,6 +178,15 @@ export default function UsersTab() {
                     .from('identity_verifications')
                     .delete()
                     .eq('user_id', user.id),
+                supabase
+                    .from('notifications')
+                    .insert({
+                        user_id: user.id,
+                        type: 'identity_rejected',
+                        title: tr('تم إلغاء توثيق حسابك', 'Your account verification was revoked', 'La verification de votre compte a ete revoquee'),
+                        message: tr('لقد قامت الإدارة بإلغاء توثيق حسابك مؤقتاً. يرجى تقديم طلب توثيق جديد لتتمكن من استخدام المنصة.', 'Administration has temporarily revoked your account verification. Please submit a new verification request to use the platform.', 'L\'administration a temporairement revoque la verification de votre compte. Veuillez soumettre une nouvelle demande.'),
+                        read: false,
+                    }),
             ]);
             const firstError = results.find(r => r.error);
             if (firstError?.error) throw firstError.error;
