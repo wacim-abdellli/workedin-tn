@@ -193,6 +193,12 @@ export default function UsersTab() {
             const criticalError = results.slice(0, 3).find(r => r.error);
             if (criticalError?.error) throw criticalError.error;
 
+            // Log notification errors for debugging, but don't fail the operation
+            const notificationError = results[3]?.error;
+            if (notificationError) {
+                console.warn('[Admin] Notification insert failed (non-critical):', notificationError);
+            }
+
             return user.id;
         },
         onSuccess: (userId) => {

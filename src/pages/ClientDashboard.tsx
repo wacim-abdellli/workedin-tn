@@ -139,7 +139,7 @@ function EmptyState({
 
 function ClientDashboardPage() {
     const { t, tx, language } = useTranslation();
-    const { profile } = useAuth();
+    const { profile, isLoading: isAuthLoading } = useAuth();
     const navigate = useNavigate();
 
     const locale = useMemo(() => {
@@ -325,6 +325,24 @@ function ClientDashboardPage() {
                 return null;
         }
     };
+
+    // Show loading state while profile is being loaded
+    if (isAuthLoading || !profile?.id) {
+        return (
+            <div className="page-enter page-shell bg-background">
+                <SEO {...SEO_CONFIG.dashboard} url="/client/dashboard" noIndex />
+                <Header />
+                <main className="page-shell-content space-y-6">
+                    <div className="flex items-center justify-center min-h-[400px]">
+                        <div className="text-center">
+                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
+                            <p className="text-muted">{tx('common.loading', undefined, 'Loading...')}</p>
+                        </div>
+                    </div>
+                </main>
+            </div>
+        );
+    }
 
     return (
         <div className="page-enter page-shell bg-background">
