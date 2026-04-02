@@ -222,15 +222,24 @@ export default function Messages() {
     useEffect(() => {
         if (!user) return;
 
+        let isMounted = true;
+
         const loadConversations = async (currentPage: number, append: boolean = false) => {
-            if (!append && conversations.length === 0) setIsLoadingConversations(true);
-            if (append) setIsLoadingMore(true);
+            if (!append) {
+                if (isMounted) setIsLoadingConversations(true);
+            }
+            if (append && isMounted) setIsLoadingMore(true);
 
             const limit = 20;
             const { data, count, error } = await getConversations(user.id, currentPage, limit);
 
+            if (!isMounted) return; // Prevent state updates after unmount
+
             if (error) {
+                console.error('Failed to load conversations:', error);
                 showToast(error.message, 'error');
+                setIsLoadingConversations(false);
+                setIsLoadingMore(false);
             } else if (data) {
                 if (append) {
                     setConversations(prev => {
@@ -242,10 +251,14 @@ export default function Messages() {
                     setConversations(data);
                 }
                 setHasMoreConversations((currentPage + 1) * limit < (count || 0));
+                setIsLoadingConversations(false);
+                setIsLoadingMore(false);
+            } else {
+                // No error but no data either - treat as empty
+                if (!append) setConversations([]);
+                setIsLoadingConversations(false);
+                setIsLoadingMore(false);
             }
-
-            setIsLoadingConversations(false);
-            setIsLoadingMore(false);
         };
 
         loadConversations(page, page > 0);
@@ -253,6 +266,8 @@ export default function Messages() {
         // Only setup subscription on initial mount/page 0 to avoid duplicates
         if (page === 0) {
             conversationsChannelRef.current = subscribeToConversations(user.id, (payload) => {
+                if (!isMounted) return;
+                
                 const eventType = payload.eventType;
                 if (eventType === 'UPDATE') {
                     const changed = payload.new as any;
@@ -282,6 +297,7 @@ export default function Messages() {
         }
 
         return () => {
+            isMounted = false;
             if (page === 0 && conversationsChannelRef.current) {
                 conversationsChannelRef.current.unsubscribe();
             }
