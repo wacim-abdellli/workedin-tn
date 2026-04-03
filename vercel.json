@@ -50,8 +50,8 @@
     ],
     "functions": {
         "api/**/*.ts": {
-            "memory": 3008,
-            "maxDuration": 30
+            "memory": 1024,
+            "maxDuration": 10
         }
     }
 }
