@@ -75,15 +75,10 @@ export async function fetchAdminJobs(): Promise<AdminJob[]> {
 }
 
 export default function JobsTab() {
-    const { showToast } = useToast();
-    const { language } = useTranslation();
-    const queryClient = useQueryClient();
-    const locale = language === 'ar' ? 'ar-TN' : language === 'fr' ? 'fr-FR' : 'en-US';
-    const tr = (ar: string, en: string, fr?: string) => {
-        if (language === 'ar') return ar;
-        if (language === 'fr') return fr || en;
-        return en;
-    };
+     const { showToast } = useToast();
+     const { language, tx } = useTranslation();
+     const queryClient = useQueryClient();
+     const locale = language === 'ar' ? 'ar-TN' : language === 'fr' ? 'fr-FR' : 'en-US';
 
     const [jobSearch, setJobSearch] = useState('');
     const [jobFilter, setJobFilter] = useState<'all' | 'open' | 'in_progress' | 'completed' | 'cancelled'>('all');
@@ -129,13 +124,13 @@ export default function JobsTab() {
             return jobId;
         },
         onSuccess: (jobId) => {
-            updateJobsCache((prev) => prev.filter((job) => job.id !== jobId));
-            showToast(tr('تم حذف الوظيفة بنجاح', 'Job deleted successfully', 'Offre supprimee avec succes'), 'success');
-        },
-        onError: (error) => {
-            console.error('Error deleting job:', error);
-            showToast(tr('حدث خطأ أثناء الحذف', 'An error occurred while deleting', 'Une erreur est survenue lors de la suppression'), 'error');
-        },
+             updateJobsCache((prev) => prev.filter((job) => job.id !== jobId));
+             showToast(tx('dashboard.admin.jobs.deletedSuccess', undefined, 'Job deleted successfully'), 'success');
+         },
+         onError: (error) => {
+             console.error('Error deleting job:', error);
+             showToast(tx('dashboard.admin.jobs.deleteError', undefined, 'An error occurred while deleting'), 'error');
+         },
     });
 
     const filteredJobs = useMemo(() => jobs.filter((job) => {
@@ -155,22 +150,22 @@ export default function JobsTab() {
             return `${job.budget_max} د.ت`;
         }
         if (typeof job.budget_min === 'number') {
-            return `${job.budget_min} د.ت`;
-        }
-        return tr('غير محدد', 'Not specified', 'Non specifie');
+             return `${job.budget_min} د.ت`;
+         }
+         return tx('dashboard.admin.jobs.notSpecified', undefined, 'Not specified');
     };
 
     const handleDeleteJob = (jobId: string) => {
-        setConfirmAction({
-            isOpen: true,
-            title: tr('حذف الوظيفة', 'Delete Job', 'Supprimer l\'offre'),
-            message: tr('هل أنت متأكد من حذف هذه الوظيفة؟', 'Are you sure you want to delete this job?', 'Voulez-vous vraiment supprimer cette offre ?'),
-            actionType: 'danger',
-            onConfirm: () => {
-                deleteJobMutation.mutate(jobId);
-            },
-        });
-    };
+         setConfirmAction({
+             isOpen: true,
+             title: tx('dashboard.admin.jobs.deleteTitle', undefined, 'Delete Job'),
+             message: tx('dashboard.admin.jobs.deleteConfirm', undefined, 'Are you sure you want to delete this job?'),
+             actionType: 'danger',
+             onConfirm: () => {
+                 deleteJobMutation.mutate(jobId);
+             },
+         });
+     };
 
     return (
         <ErrorBoundary
@@ -184,48 +179,48 @@ export default function JobsTab() {
                         <div className="flex-1 relative">
                             <Search className="absolute end-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted" />
                             <input
-                                type="text"
-                                value={jobSearch}
-                                onChange={(event) => setJobSearch(event.target.value)}
-                                placeholder={tr('بحث في الوظائف...', 'Search jobs...', 'Rechercher des offres...')}
-                                className={inputClass}
-                            />
+                                 type="text"
+                                 value={jobSearch}
+                                 onChange={(event) => setJobSearch(event.target.value)}
+                                 placeholder={tx('dashboard.admin.jobs.searchPlaceholder', undefined, 'Search jobs...')}
+                                 className={inputClass}
+                             />
                         </div>
                         <select
-                            value={jobFilter}
-                            onChange={(event) => setJobFilter(event.target.value as typeof jobFilter)}
-                            className={selectClass}
-                        >
-                            <option value="all">{tr('جميع الحالات', 'All statuses', 'Tous les statuts')}</option>
-                            <option value="open">{tr('مفتوحة', 'Open', 'Ouvertes')}</option>
-                            <option value="in_progress">{tr('قيد التنفيذ', 'In progress', 'En cours')}</option>
-                            <option value="completed">{tr('مكتملة', 'Completed', 'Terminees')}</option>
-                            <option value="cancelled">{tr('ملغاة', 'Cancelled', 'Annulees')}</option>
-                        </select>
+                             value={jobFilter}
+                             onChange={(event) => setJobFilter(event.target.value as typeof jobFilter)}
+                             className={selectClass}
+                         >
+                             <option value="all">{tx('dashboard.admin.jobs.allStatuses', undefined, 'All statuses')}</option>
+                             <option value="open">{tx('dashboard.admin.jobs.statusOpen', undefined, 'Open')}</option>
+                             <option value="in_progress">{tx('dashboard.admin.jobs.statusInProgress', undefined, 'In progress')}</option>
+                             <option value="completed">{tx('dashboard.admin.jobs.statusCompleted', undefined, 'Completed')}</option>
+                             <option value="cancelled">{tx('dashboard.admin.jobs.statusCancelled', undefined, 'Cancelled')}</option>
+                         </select>
                     </div>
                 </div>
 
                 {isLoading ? (
-                    <div className={`${panelClass} text-center py-12`}>
-                        <Loader2 className="w-8 h-8 animate-spin text-primary-600 mx-auto mb-2" />
-                        <p className="text-muted">{tr('جاري تحميل الوظائف...', 'Loading jobs...', 'Chargement des offres...')}</p>
-                    </div>
-                ) : isError ? (
-                    <div className={`${panelClass} text-center py-12`}>
-                        <p className="text-red-500 font-medium">{tr('تعذر تحميل الوظائف', 'Failed to load jobs', 'Impossible de charger les offres')}</p>
-                        <p className="text-sm text-muted mt-1">{tr('تحقق من صلاحيات قاعدة البيانات', 'Check database permissions', 'Verifiez les permissions base de donnees')}</p>
-                    </div>
-                ) : filteredJobs.length === 0 ? (
-                    <EmptyState
-                        icon={Briefcase}
-                        title={tr('لا توجد وظائف مطابقة', 'No jobs match your filters', 'Aucune offre ne correspond')}
-                        description={tr('جرب تغيير الفلاتر أو مصطلح البحث', 'Try adjusting your search or filter criteria', 'Essayez de modifier vos criteres de recherche')}
-                        action={{
-                            label: tr('مسح الفلاتر', 'Clear filters', 'Effacer les filtres'),
-                            onClick: () => { setJobSearch(''); setJobFilter('all'); },
-                            variant: 'outline',
-                        }}
-                    />
+                     <div className={`${panelClass} text-center py-12`}>
+                         <Loader2 className="w-8 h-8 animate-spin text-primary-600 mx-auto mb-2" />
+                         <p className="text-muted">{tx('dashboard.admin.jobs.loading', undefined, 'Loading jobs...')}</p>
+                     </div>
+                 ) : isError ? (
+                     <div className={`${panelClass} text-center py-12`}>
+                         <p className="text-red-500 font-medium">{tx('dashboard.admin.jobs.loadError', undefined, 'Failed to load jobs')}</p>
+                         <p className="text-sm text-muted mt-1">{tx('dashboard.admin.jobs.checkPermissions', undefined, 'Check database permissions')}</p>
+                     </div>
+                 ) : filteredJobs.length === 0 ? (
+                     <EmptyState
+                         icon={Briefcase}
+                         title={tx('dashboard.admin.jobs.noResults', undefined, 'No jobs match your filters')}
+                         description={tx('dashboard.admin.jobs.tryAdjusting', undefined, 'Try adjusting your search or filter criteria')}
+                         action={{
+                             label: tx('dashboard.admin.jobs.clearFilters', undefined, 'Clear filters'),
+                             onClick: () => { setJobSearch(''); setJobFilter('all'); },
+                             variant: 'outline',
+                         }}
+                     />
                 ) : (
                     <>
                         {/* Desktop table */}
@@ -234,12 +229,12 @@ export default function JobsTab() {
                                 <table className="w-full">
                                     <thead className={tableHeadClass}>
                                         <tr>
-                                            <th className="px-6 py-4 text-right text-sm font-medium text-muted whitespace-nowrap">{tr('الوظيفة', 'Job', 'Offre')}</th>
-                                            <th className="px-6 py-4 text-right text-sm font-medium text-muted whitespace-nowrap">{tr('العميل', 'Client', 'Client')}</th>
-                                            <th className="px-6 py-4 text-right text-sm font-medium text-muted whitespace-nowrap">{tr('الميزانية', 'Budget', 'Budget')}</th>
-                                            <th className="px-6 py-4 text-right text-sm font-medium text-muted whitespace-nowrap">{tr('الحالة', 'Status', 'Statut')}</th>
-                                            <th className="px-6 py-4 text-center text-sm font-medium text-muted whitespace-nowrap">{tr('إجراءات', 'Actions', 'Actions')}</th>
-                                        </tr>
+                                             <th className="px-6 py-4 text-right text-sm font-medium text-muted whitespace-nowrap">{tx('dashboard.admin.jobs.job', undefined, 'Job')}</th>
+                                             <th className="px-6 py-4 text-right text-sm font-medium text-muted whitespace-nowrap">{tx('dashboard.admin.jobs.client', undefined, 'Client')}</th>
+                                             <th className="px-6 py-4 text-right text-sm font-medium text-muted whitespace-nowrap">{tx('dashboard.admin.jobs.budget', undefined, 'Budget')}</th>
+                                             <th className="px-6 py-4 text-right text-sm font-medium text-muted whitespace-nowrap">{tx('dashboard.admin.jobs.status', undefined, 'Status')}</th>
+                                             <th className="px-6 py-4 text-center text-sm font-medium text-muted whitespace-nowrap">{tx('dashboard.admin.jobs.actions', undefined, 'Actions')}</th>
+                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-border/50">
                                         {filteredJobs.map((job) => (
@@ -262,22 +257,22 @@ export default function JobsTab() {
                                                         job.status === 'completed' ? 'bg-purple-100 text-purple-700' :
                                                         'bg-gray-100 text-gray-700'
                                                     }`}>
-                                                        {job.status === 'open' ? tr('مفتوحة', 'Open', 'Ouverte') :
-                                                         job.status === 'in_progress' ? tr('قيد التنفيذ', 'In progress', 'En cours') :
-                                                         job.status === 'completed' ? tr('مكتملة', 'Completed', 'Terminee') : tr('ملغاة', 'Cancelled', 'Annulee')}
+                                                    {job.status === 'open' ? tx('dashboard.admin.jobs.statusOpen', undefined, 'Open') :
+                                                          job.status === 'in_progress' ? tx('dashboard.admin.jobs.statusInProgress', undefined, 'In progress') :
+                                                          job.status === 'completed' ? tx('dashboard.admin.jobs.statusCompleted', undefined, 'Completed') : tx('dashboard.admin.jobs.statusCancelled', undefined, 'Cancelled')}
                                                     </span>
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center justify-center gap-2">
-                                                        <Button variant="ghost" size="sm" onClick={() => window.open(`/jobs/${job.id}`, '_blank')}>
-                                                            <Eye className="w-4 h-4 ml-1" />
-                                                            {tr('مراجعة', 'Review', 'Verifier')}
-                                                        </Button>
-                                                        <Button variant="ghost" size="sm" className="text-red-600 hover:bg-red-50" onClick={() => handleDeleteJob(job.id)} disabled={deleteJobMutation.isPending}>
-                                                            <Trash2 className="w-4 h-4 ml-1" />
-                                                            {tr('حذف', 'Delete', 'Supprimer')}
-                                                        </Button>
-                                                    </div>
+                                                         <Button variant="ghost" size="sm" onClick={() => window.open(`/jobs/${job.id}`, '_blank')}>
+                                                             <Eye className="w-4 h-4 ml-1" />
+                                                             {tx('dashboard.admin.jobs.review', undefined, 'Review')}
+                                                         </Button>
+                                                         <Button variant="ghost" size="sm" className="text-red-600 hover:bg-red-50" onClick={() => handleDeleteJob(job.id)} disabled={deleteJobMutation.isPending}>
+                                                             <Trash2 className="w-4 h-4 ml-1" />
+                                                             {tx('dashboard.admin.jobs.delete', undefined, 'Delete')}
+                                                         </Button>
+                                                     </div>
                                                 </td>
                                             </tr>
                                         ))}
@@ -296,38 +291,38 @@ export default function JobsTab() {
                                             <p className="text-xs text-muted">{new Date(job.created_at).toLocaleDateString(locale)}</p>
                                         </div>
                                         <span className={`px-2 py-1 rounded-full text-xs font-medium shrink-0 ml-2 ${
-                                            job.status === 'open' ? 'bg-green-100 text-green-700' :
-                                            job.status === 'in_progress' ? 'bg-blue-100 text-blue-700' :
-                                            job.status === 'completed' ? 'bg-purple-100 text-purple-700' :
-                                            'bg-gray-100 text-gray-700'
-                                        }`}>
-                                            {job.status === 'open' ? tr('مفتوحة', 'Open', 'Ouverte') :
-                                             job.status === 'in_progress' ? tr('قيد التنفيذ', 'In progress', 'En cours') :
-                                             job.status === 'completed' ? tr('مكتملة', 'Completed', 'Terminee') : tr('ملغاة', 'Cancelled', 'Annulee')}
-                                        </span>
+                                             job.status === 'open' ? 'bg-green-100 text-green-700' :
+                                             job.status === 'in_progress' ? 'bg-blue-100 text-blue-700' :
+                                             job.status === 'completed' ? 'bg-purple-100 text-purple-700' :
+                                             'bg-gray-100 text-gray-700'
+                                         }`}>
+                                             {job.status === 'open' ? tx('dashboard.admin.jobs.statusOpen', undefined, 'Open') :
+                                              job.status === 'in_progress' ? tx('dashboard.admin.jobs.statusInProgress', undefined, 'In progress') :
+                                              job.status === 'completed' ? tx('dashboard.admin.jobs.statusCompleted', undefined, 'Completed') : tx('dashboard.admin.jobs.statusCancelled', undefined, 'Cancelled')}
+                                         </span>
                                     </div>
                                     
-                                    <div className="space-y-2 mb-4 pb-4 border-b border-border">
-                                        <div className="flex justify-between text-sm">
-                                            <span className="text-muted">{tr('العميل', 'Client', 'Client')}</span>
-                                            <span className="font-medium text-foreground">{job.client?.full_name}</span>
-                                        </div>
-                                        <div className="flex justify-between text-sm">
-                                            <span className="text-muted">{tr('الميزانية', 'Budget', 'Budget')}</span>
-                                            <span className="font-semibold text-foreground">{formatJobBudget(job)}</span>
-                                        </div>
-                                    </div>
+                                     <div className="space-y-2 mb-4 pb-4 border-b border-border">
+                                         <div className="flex justify-between text-sm">
+                                             <span className="text-muted">{tx('dashboard.admin.jobs.client', undefined, 'Client')}</span>
+                                             <span className="font-medium text-foreground">{job.client?.full_name}</span>
+                                         </div>
+                                         <div className="flex justify-between text-sm">
+                                             <span className="text-muted">{tx('dashboard.admin.jobs.budget', undefined, 'Budget')}</span>
+                                             <span className="font-semibold text-foreground">{formatJobBudget(job)}</span>
+                                         </div>
+                                     </div>
                                     
                                     <div className="flex gap-2">
-                                        <Button variant="outline" size="sm" className="flex-1 min-h-[44px]" onClick={() => window.open(`/jobs/${job.id}`, '_blank')}>
-                                            <Eye className="w-4 h-4 ml-1" />
-                                            {tr('مراجعة', 'Review', 'Verifier')}
-                                        </Button>
-                                        <Button variant="ghost" size="sm" className="flex-1 min-h-[44px] text-red-600 hover:bg-red-50" onClick={() => handleDeleteJob(job.id)} disabled={deleteJobMutation.isPending}>
-                                            <Trash2 className="w-4 h-4 ml-1" />
-                                            {tr('حذف', 'Delete', 'Supprimer')}
-                                        </Button>
-                                    </div>
+                                         <Button variant="outline" size="sm" className="flex-1 min-h-[44px]" onClick={() => window.open(`/jobs/${job.id}`, '_blank')}>
+                                             <Eye className="w-4 h-4 ml-1" />
+                                             {tx('dashboard.admin.jobs.review', undefined, 'Review')}
+                                         </Button>
+                                         <Button variant="ghost" size="sm" className="flex-1 min-h-[44px] text-red-600 hover:bg-red-50" onClick={() => handleDeleteJob(job.id)} disabled={deleteJobMutation.isPending}>
+                                             <Trash2 className="w-4 h-4 ml-1" />
+                                             {tx('dashboard.admin.jobs.delete', undefined, 'Delete')}
+                                         </Button>
+                                     </div>
                                 </div>
                             ))}
                         </div>
@@ -340,18 +335,18 @@ export default function JobsTab() {
                     <p className="text-muted leading-relaxed font-medium">{confirmAction.message}</p>
                     <div className="flex justify-end gap-3 pt-6 border-t border-border mt-6">
                         <Button variant="ghost" className="text-muted hover:bg-surface" onClick={closeConfirm}>
-                            {tr('إلغاء', 'Cancel', 'Annuler')}
-                        </Button>
-                        <Button
-                            variant={confirmAction.actionType === 'danger' ? 'danger' : 'primary'}
-                            className={confirmAction.actionType === 'warning' ? 'bg-amber-600 hover:bg-amber-700 text-white border-transparent shadow shadow-amber-600/30' : ''}
-                            onClick={() => {
-                                closeConfirm();
-                                confirmAction.onConfirm();
-                            }}
-                        >
-                            {tr('تأكيد', 'Confirm', 'Confirmer')}
-                        </Button>
+                             {tx('dashboard.admin.jobs.cancel', undefined, 'Cancel')}
+                         </Button>
+                         <Button
+                             variant={confirmAction.actionType === 'danger' ? 'danger' : 'primary'}
+                             className={confirmAction.actionType === 'warning' ? 'bg-amber-600 hover:bg-amber-700 text-white border-transparent shadow shadow-amber-600/30' : ''}
+                             onClick={() => {
+                                 closeConfirm();
+                                 confirmAction.onConfirm();
+                             }}
+                         >
+                             {tx('dashboard.admin.jobs.confirm', undefined, 'Confirm')}
+                         </Button>
                     </div>
                 </div>
             </Modal>

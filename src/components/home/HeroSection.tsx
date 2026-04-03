@@ -54,12 +54,12 @@ export function HeroSection({ stats }: HeroSectionProps) {
         promise: tx('heroSection.freelancer.promise'),
       }
     : {
-        eyebrow: tx('heroSection.client.eyebrow'),
-        titleTop: tx('heroSection.client.titleTop'),
-        titleAccent: tx('heroSection.client.titleAccent'),
-        subtitle: tx('heroSection.client.subtitle'),
-        primaryCta: tx('heroSection.client.cta'),
-        secondaryCta: tx('heroSection.client.secondary'),
+        eyebrow: tx('heroSection.client.eyebrow', undefined, 'Drop the amateurs. Work with the elite.'),
+        titleTop: tx('heroSection.client.titleTop', undefined, 'Drop the amateurs.'),
+        titleAccent: tx('heroSection.client.titleAccent', undefined, 'Work with the elite.'),
+        subtitle: tx('heroSection.client.subtitle', undefined, 'Post your project, skip the gambling, and hire exclusively verified talent.'),
+        primaryCta: tx('heroSection.client.cta', undefined, 'Hire an Expert'),
+        secondaryCta: tx('heroSection.client.secondary', undefined, 'See Top Talent'),
         secondaryPath: '/find-freelancers',
         trustItems: [
           { icon: Shield, label: tx('heroSection.client.trust.verified') },

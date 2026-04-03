@@ -45,8 +45,7 @@ function StatCard({ icon: Icon, label, value, tone }: { icon: React.ElementType;
 }
 
 export default function OverviewTab() {
-    const { language } = useTranslation();
-    const tr = (ar: string, en: string, fr?: string) => language === 'ar' ? ar : language === 'fr' ? (fr || en) : en;
+     const { language, tx } = useTranslation();
 
     const { data: stats, isLoading } = useQuery({
         queryKey: ['admin-overview-stats'],
@@ -114,55 +113,55 @@ export default function OverviewTab() {
     return (
         <div className="space-y-8">
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                <StatCard icon={Users} label={tr('إجمالي المستخدمين', 'Total users', 'Utilisateurs totaux')} value={s.totalUsers} />
-                <StatCard icon={Briefcase} label={tr('وظائف نشطة', 'Active jobs', 'Offres actives')} value={s.activeJobs} tone="var(--workspace-primary-hover)" />
-                <StatCard icon={FileText} label={tr('عقود نشطة', 'Active contracts', 'Contrats actifs')} value={s.activeContracts} tone="var(--workspace-primary-mid)" />
-                <StatCard icon={DollarSign} label={tr('الإيرادات (د.ت)', 'Revenue (TND)', 'Revenus (TND)')} value={s.totalRevenue} tone="var(--workspace-primary)" />
-            </div>
+                 <StatCard icon={Users} label={tx('dashboard.admin.overview.totalUsers', undefined, 'Total users')} value={s.totalUsers} />
+                 <StatCard icon={Briefcase} label={tx('dashboard.admin.overview.activeJobs', undefined, 'Active jobs')} value={s.activeJobs} tone="var(--workspace-primary-hover)" />
+                 <StatCard icon={FileText} label={tx('dashboard.admin.overview.activeContracts', undefined, 'Active contracts')} value={s.activeContracts} tone="var(--workspace-primary-mid)" />
+                 <StatCard icon={DollarSign} label={tx('dashboard.admin.overview.revenue', undefined, 'Revenue (TND)')} value={s.totalRevenue} tone="var(--workspace-primary)" />
+             </div>
             <div className="grid lg:grid-cols-2 gap-6">
                 <div className={panelClass}>
-                    <h3 className="font-bold text-foreground mb-4 flex items-center gap-2">
-                        <Activity className="w-5 h-5 text-cyan-500" />{tr('نشاط اليوم', 'Today activity', 'Activite du jour')}
-                    </h3>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="p-4 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/20 rounded-xl">
-                            <div className="flex items-center gap-2 mb-2"><UserPlus className="w-5 h-5 text-emerald-600 dark:text-emerald-300" /><span className="text-emerald-800 dark:text-emerald-200 font-medium">{tr('تسجيلات جديدة', 'New signups', 'Nouvelles inscriptions')}</span></div>
-                            <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-300">{s.todaySignups}</p>
-                        </div>
-                        <div className="p-4 bg-cyan-50 dark:bg-cyan-500/10 border border-cyan-100 dark:border-cyan-500/20 rounded-xl">
-                            <div className="flex items-center gap-2 mb-2"><FileText className="w-5 h-5 text-cyan-600 dark:text-cyan-300" /><span className="text-cyan-800 dark:text-cyan-200 font-medium">{tr('عقود جديدة', 'New contracts', 'Nouveaux contrats')}</span></div>
-                            <p className="text-2xl font-bold text-cyan-700 dark:text-cyan-300">{s.todayContracts}</p>
-                        </div>
-                    </div>
-                </div>
+                     <h3 className="font-bold text-foreground mb-4 flex items-center gap-2">
+                         <Activity className="w-5 h-5 text-cyan-500" />{tx('dashboard.admin.overview.todayActivity', undefined, 'Today activity')}
+                     </h3>
+                     <div className="grid grid-cols-2 gap-4">
+                         <div className="p-4 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/20 rounded-xl">
+                             <div className="flex items-center gap-2 mb-2"><UserPlus className="w-5 h-5 text-emerald-600 dark:text-emerald-300" /><span className="text-emerald-800 dark:text-emerald-200 font-medium">{tx('dashboard.admin.overview.newSignups', undefined, 'New signups')}</span></div>
+                             <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-300">{s.todaySignups}</p>
+                         </div>
+                         <div className="p-4 bg-cyan-50 dark:bg-cyan-500/10 border border-cyan-100 dark:border-cyan-500/20 rounded-xl">
+                             <div className="flex items-center gap-2 mb-2"><FileText className="w-5 h-5 text-cyan-600 dark:text-cyan-300" /><span className="text-cyan-800 dark:text-cyan-200 font-medium">{tx('dashboard.admin.overview.newContracts', undefined, 'New contracts')}</span></div>
+                             <p className="text-2xl font-bold text-cyan-700 dark:text-cyan-300">{s.todayContracts}</p>
+                         </div>
+                     </div>
+                 </div>
                 <div className={panelClass}>
-                    <h3 className="font-bold text-foreground mb-4 flex items-center gap-2">
-                        <Shield className="w-5 h-5 text-yellow-600" />
-                        {tr('طلبات التحقق المعلقة', 'Pending verifications', 'Verifications en attente')}
-                    </h3>
-                    {s.pendingVerifications === 0 ? (
-                        <p className="text-sm text-muted text-center py-4">{tr('لا توجد طلبات معلقة', 'No pending requests', 'Aucune demande en attente')}</p>
-                    ) : (
-                        <div className="space-y-3">
-                            <div className="flex items-center justify-between rounded-xl border border-yellow-200/60 dark:border-yellow-500/20 bg-yellow-50/70 dark:bg-yellow-500/10 px-4 py-3">
-                                <span className="text-sm font-medium text-yellow-800 dark:text-yellow-200">{tr('عدد الطلبات المعلقة', 'Pending requests count', 'Nombre de demandes en attente')}</span>
-                                <span className="text-lg font-bold text-yellow-700 dark:text-yellow-300">{s.pendingVerifications}</span>
-                            </div>
-                            {s.recentVerificationRequests.map((request) => (
-                                <div key={request.id} className="rounded-xl border border-white/40 dark:border-white/10 bg-white/70 dark:bg-slate-900/50 px-4 py-3">
-                                    <p className="font-medium text-foreground">{request.profile?.full_name || tr('مستخدم', 'User', 'Utilisateur')}</p>
-                                    <p className="text-sm text-muted">{request.profile?.email || ''}</p>
-                                    <p className="mt-1 text-xs text-muted">{new Date(request.submitted_at).toLocaleString(language === 'ar' ? 'ar-TN' : language === 'fr' ? 'fr-FR' : 'en-US')}</p>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
+                     <h3 className="font-bold text-foreground mb-4 flex items-center gap-2">
+                         <Shield className="w-5 h-5 text-yellow-600" />
+                         {tx('dashboard.admin.overview.pendingVerifications', undefined, 'Pending verifications')}
+                     </h3>
+                     {s.pendingVerifications === 0 ? (
+                         <p className="text-sm text-muted text-center py-4">{tx('dashboard.admin.overview.noPendingRequests', undefined, 'No pending requests')}</p>
+                     ) : (
+                         <div className="space-y-3">
+                             <div className="flex items-center justify-between rounded-xl border border-yellow-200/60 dark:border-yellow-500/20 bg-yellow-50/70 dark:bg-yellow-500/10 px-4 py-3">
+                                 <span className="text-sm font-medium text-yellow-800 dark:text-yellow-200">{tx('dashboard.admin.overview.requestsCount', undefined, 'Pending requests count')}</span>
+                                 <span className="text-lg font-bold text-yellow-700 dark:text-yellow-300">{s.pendingVerifications}</span>
+                             </div>
+                             {s.recentVerificationRequests.map((request) => (
+                                 <div key={request.id} className="rounded-xl border border-white/40 dark:border-white/10 bg-white/70 dark:bg-slate-900/50 px-4 py-3">
+                                     <p className="font-medium text-foreground">{request.profile?.full_name || tx('dashboard.admin.overview.user', undefined, 'User')}</p>
+                                     <p className="text-sm text-muted">{request.profile?.email || ''}</p>
+                                     <p className="mt-1 text-xs text-muted">{new Date(request.submitted_at).toLocaleString(language === 'ar' ? 'ar-TN' : language === 'fr' ? 'fr-FR' : 'en-US')}</p>
+                                 </div>
+                             ))}
+                         </div>
+                     )}
+                 </div>
             </div>
             <div className={panelClass}>
-                <h3 className="font-bold text-foreground mb-4 flex items-center gap-2"><Flag className="w-5 h-5 text-red-600" />{tr('البلاغات', 'Reports', 'Signalements')}</h3>
-                <p className="text-sm text-muted text-center py-6">{tr('لا توجد بلاغات حالياً', 'No reports for now', 'Aucun signalement pour le moment')}</p>
-            </div>
+                 <h3 className="font-bold text-foreground mb-4 flex items-center gap-2"><Flag className="w-5 h-5 text-red-600" />{tx('dashboard.admin.overview.reports', undefined, 'Reports')}</h3>
+                 <p className="text-sm text-muted text-center py-6">{tx('dashboard.admin.overview.noReports', undefined, 'No reports for now')}</p>
+             </div>
         </div>
     );
 }

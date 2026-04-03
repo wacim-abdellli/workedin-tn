@@ -2235,11 +2235,11 @@ export const fr: Translations = {
         },
         client: {
             eyebrow: 'Construit en Tunisie. Prêt pour l\'embauche sérieuse.',
-            titleTop: 'Oubliez les entretiens.',
-            titleAccent: 'Obtenez des résultats vérifiés.',
-            subtitle: 'Publiez un projet, examinez les propositions sérieuses, entendez-vous sur des conditions claires et libérez le paiement uniquement lorsque le travail est approuvé.',
-            cta: 'Publiez un projet gratuitement',
-            secondary: 'Trouver des indépendants',
+            titleTop: 'Ignorez les amateurs.',
+            titleAccent: 'Collaborez avec l\'élite.',
+            subtitle: 'Publiez votre projet, évitez les risques et embauchez exclusivement des talents vérifiés.',
+            cta: 'Engager un Expert',
+            secondary: 'Voir les Top Talents',
             trust: {
                 verified: 'Profils vérifiés',
                 faster: 'Embauche plus rapide',

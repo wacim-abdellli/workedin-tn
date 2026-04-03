@@ -2235,11 +2235,11 @@ export const en: Translations = {
         },
         client: {
             eyebrow: 'Built in Tunisia. Ready for serious hiring.',
-            titleTop: 'Skip the interviews.',
-            titleAccent: 'Get verified results.',
-            subtitle: 'Post a project, review serious proposals, agree on clear terms, and release payment only when the work is approved.',
-            cta: 'Post a project free',
-            secondary: 'Find freelancers',
+            titleTop: 'Drop the amateurs.',
+            titleAccent: 'Work with the elite.',
+            subtitle: 'Post your project, skip the gambling, and hire exclusively verified talent.',
+            cta: 'Hire an Expert',
+            secondary: 'See Top Talent',
             trust: {
                 verified: 'Verified profiles',
                 faster: 'Faster hiring',

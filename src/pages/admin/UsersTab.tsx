@@ -58,13 +58,8 @@ export async function fetchAdminUsers(): Promise<AdminUser[]> {
 
 export default function UsersTab() {
     const { showToast } = useToast();
-    const { language, t } = useTranslation() as any;
+    const { tx } = useTranslation();
     const queryClient = useQueryClient();
-    const tr = (ar: string, en: string, fr?: string) => {
-        if (language === 'ar') return ar;
-        if (language === 'fr') return fr || en;
-        return en;
-    };
 
     const [searchQuery, setSearchQuery] = useState('');
     const [userFilter, setUserFilter] = useState<'all' | 'freelancer' | 'client'>('all');
@@ -121,14 +116,14 @@ export default function UsersTab() {
             )));
             setSelectedUser((prev) => (prev?.id === userId ? { ...prev, active_mode: nextMode } : prev));
             showToast(
-                tr('تم تحويل وضع المستخدم إلى', 'User mode switched to', 'Mode utilisateur bascule vers') +
-                ` ${nextMode === 'freelancer' ? tr('مستقل', 'Freelancer', 'Freelance') : tr(t.reviews?.client || t.reviews?.client || 'عميل', 'Client', 'Client')}`,
+                tx('dashboard.admin.users.userModeSwitchedTo', undefined, 'User mode switched to') +
+                ` ${nextMode === 'freelancer' ? tx('dashboard.admin.users.freelancer', undefined, 'Freelancer') : tx('dashboard.admin.users.client', undefined, 'Client')}`,
                 'success'
             );
         },
         onError: (error) => {
             console.error('Toggle user mode error:', error);
-            showToast(tr('فشل تغيير وضع المستخدم', 'Failed to switch user mode', 'Echec du changement de mode utilisateur'), 'error');
+            showToast(tx('dashboard.admin.users.failedToSwitchUserMode', undefined, 'Failed to switch user mode'), 'error');
         },
         onSettled: () => {
             setUserActionLoadingId(null);
@@ -148,11 +143,11 @@ export default function UsersTab() {
         onSuccess: (userId) => {
             updateUsersCache((prev) => prev.filter((user) => user.id !== userId));
             setSelectedUser((prev) => (prev?.id === userId ? null : prev));
-            showToast(tr('تم حذف المستخدم بنجاح', 'User deleted successfully', 'Utilisateur supprime avec succes'), 'success');
+            showToast(tx('dashboard.admin.users.userDeletedSuccessfully', undefined, 'User deleted successfully'), 'success');
         },
         onError: (error) => {
             console.error('Delete user error:', error);
-            showToast(tr('تعذر حذف المستخدم', 'Unable to delete user', 'Impossible de supprimer l utilisateur'), 'error');
+            showToast(tx('dashboard.admin.users.unableToDeleteUser', undefined, 'Unable to delete user'), 'error');
         },
         onSettled: () => {
             setUserActionLoadingId(null);
@@ -183,8 +178,8 @@ export default function UsersTab() {
                     .insert({
                         user_id: user.id,
                         notification_type: 'identity_rejected',
-                        title: tr('تم إلغاء توثيق حسابك', 'Your account verification was revoked', 'La verification de votre compte a ete revoquee'),
-                        body: tr('لقد قامت الإدارة بإلغاء توثيق حسابك مؤقتاً. يرجى تقديم طلب توثيق جديد لتتمكن من استخدام المنصة.', 'Administration has temporarily revoked your account verification. Please submit a new verification request to use the platform.', 'L\'administration a temporairement revoque la verification de votre compte. Veuillez soumettre une nouvelle demande.'),
+                        title: tx('dashboard.admin.users.verificationRevoked', undefined, 'Your account verification was revoked'),
+                        body: tx('dashboard.admin.users.verificationRevokedMessage', undefined, 'Administration has temporarily revoked your account verification. Please submit a new verification request to use the platform.'),
                         is_read: false,
                     }),
             ]);
@@ -206,11 +201,11 @@ export default function UsersTab() {
                 user.id === userId ? { ...user, cin_verified: false } : user
             )));
             setSelectedUser((prev) => (prev?.id === userId ? { ...prev, cin_verified: false } : prev));
-            showToast(tr('تم إلغاء التوثيق بنجاح', 'Verification revoked successfully', 'Verification revoquee avec succes'), 'success');
+            showToast(tx('dashboard.admin.users.verificationRevokedSuccessfully', undefined, 'Verification revoked successfully'), 'success');
         },
         onError: (error) => {
             console.error('Revoke verification error:', error);
-            showToast(tr('تعذر إلغاء التوثيق', 'Unable to revoke verification', 'Impossible de revoquer la verification'), 'error');
+            showToast(tx('dashboard.admin.users.unableToRevokeVerification', undefined, 'Unable to revoke verification'), 'error');
         },
         onSettled: () => {
             setUserActionLoadingId(null);
@@ -235,23 +230,23 @@ export default function UsersTab() {
             const diffDays = Math.floor(diffMs / 86400000);
 
             if (diffMins < 1) 
-                return tr('الآن', 'Just now', 'À l\'instant');
+                return tx('dashboard.admin.users.justNow', undefined, 'Just now');
             if (diffMins < 60) 
-                return `${diffMins}${tr('د', 'm', 'm')}`;
+                return `${diffMins}${tx('dashboard.admin.users.minutesAbbr', undefined, 'm')}`;
             if (diffHours < 24) 
-                return `${diffHours}${tr('س', 'h', 'h')}`;
+                return `${diffHours}${tx('dashboard.admin.users.hoursAbbr', undefined, 'h')}`;
             if (diffDays < 7) 
-                return `${diffDays}${tr('ي', 'd', 'j')}`;
+                return `${diffDays}${tx('dashboard.admin.users.daysAbbr', undefined, 'd')}`;
             if (diffDays < 30) 
-                return `${Math.floor(diffDays / 7)}${tr('أ', 'w', 's')}`;
+                return `${Math.floor(diffDays / 7)}${tx('dashboard.admin.users.weeksAbbr', undefined, 'w')}`;
             
-            return `${Math.floor(diffDays / 30)}${tr('ش', 'mo', 'm')}`;
+            return `${Math.floor(diffDays / 30)}${tx('dashboard.admin.users.monthsAbbr', undefined, 'mo')}`;
         } catch (error) {
             return value;
         }
     };
 
-    const getDisplayName = (user: AdminUser) => user.name || tr('مستخدم', 'User', 'Utilisateur');
+    const getDisplayName = (user: AdminUser) => user.name || tx('dashboard.admin.users.user', undefined, 'User');
 
     const handleToggleUserMode = (user: AdminUser) => {
         setUserActionLoadingId(user.id);
@@ -261,8 +256,8 @@ export default function UsersTab() {
     const handleDeleteUser = (user: AdminUser) => {
         setConfirmAction({
             isOpen: true,
-            title: tr('حذف المستخدم', 'Delete User', 'Supprimer l utilisateur'),
-            message: `${tr('هل تريد حذف المستخدم', 'Do you want to delete user', 'Voulez-vous supprimer l utilisateur')} ${getDisplayName(user)}? ${tr('هذا الإجراء لا يمكن التراجع عنه.', 'This action cannot be undone.', 'Cette action est irreversible.')}`,
+            title: tx('dashboard.admin.users.deleteUser', undefined, 'Delete User'),
+            message: `${tx('dashboard.admin.users.deleteUserConfirm', undefined, 'Do you want to delete user')} ${getDisplayName(user)}? ${tx('dashboard.admin.users.actionCannotBeUndone', undefined, 'This action cannot be undone.')}`,
             actionType: 'danger',
             onConfirm: () => {
                 setUserActionLoadingId(user.id);
@@ -274,8 +269,8 @@ export default function UsersTab() {
     const handleRevokeVerification = (user: AdminUser) => {
         setConfirmAction({
             isOpen: true,
-            title: tr('إلغاء التوثيق', 'Revoke Verification', 'Revoquer la verification'),
-            message: tr('هل أنت متأكد من إلغاء توثيق هذا المستخدم؟ سيحتاج لتقديم هويته مجدداً.', 'Are you sure you want to revoke verification for this user? They will need to submit their ID again.', 'Etes-vous sur de vouloir revoquer la verification de cet utilisateur ?'),
+            title: tx('dashboard.admin.users.revokeVerification', undefined, 'Revoke Verification'),
+            message: tx('dashboard.admin.users.revokeVerificationConfirm', undefined, 'Are you sure you want to revoke verification for this user? They will need to submit their ID again.'),
             actionType: 'warning',
             onConfirm: () => {
                 setUserActionLoadingId(user.id);
@@ -299,7 +294,7 @@ export default function UsersTab() {
                                 type="text"
                                 value={searchQuery}
                                 onChange={(event) => setSearchQuery(event.target.value)}
-                                placeholder={tr('بحث بالاسم أو البريد...', 'Search by name or email...', 'Rechercher par nom ou email...')}
+                                placeholder={tx('dashboard.admin.users.searchByNameOrEmail', undefined, 'Search by name or email...')}
                                 className={inputClass}
                             />
                         </div>
@@ -308,9 +303,9 @@ export default function UsersTab() {
                             onChange={(event) => setUserFilter(event.target.value as typeof userFilter)}
                             className={`${selectClass} min-w-[180px]`}
                         >
-                            <option value="all">{tr('جميع المستخدمين', 'All users', 'Tous les utilisateurs')}</option>
-                            <option value="freelancer">{tr('موظفين حرين', 'Freelancers', 'Freelances')}</option>
-                            <option value="client">{tr('عملاء', 'Clients', 'Clients')}</option>
+                            <option value="all">{tx('dashboard.admin.users.allUsers', undefined, 'All users')}</option>
+                            <option value="freelancer">{tx('dashboard.admin.users.freelancers', undefined, 'Freelancers')}</option>
+                            <option value="client">{tx('dashboard.admin.users.clients', undefined, 'Clients')}</option>
                         </select>
                     </div>
                 </div>
@@ -318,12 +313,12 @@ export default function UsersTab() {
                 {isLoading ? (
                     <div className={`${panelClass} text-center py-12`}>
                         <Loader2 className="w-8 h-8 animate-spin text-primary-600 mx-auto mb-2" />
-                        <p className="text-muted">{tr('جاري تحميل المستخدمين...', 'Loading users...', 'Chargement des utilisateurs...')}</p>
+                        <p className="text-muted">{tx('dashboard.admin.users.loadingUsers', undefined, 'Loading users...')}</p>
                     </div>
                 ) : isError ? (
                     <div className={`${panelClass} text-center py-12`}>
-                        <p className="text-red-500 font-medium">{tr('تعذر تحميل المستخدمين', 'Failed to load users', 'Impossible de charger les utilisateurs')}</p>
-                        <p className="text-sm text-muted mt-1">{tr('تحقق من صلاحيات قاعدة البيانات (is_admin = true)', 'Check database permissions (is_admin = true)', 'Verifiez les permissions base de donnees (is_admin = true)')}</p>
+                        <p className="text-red-500 font-medium">{tx('dashboard.admin.users.failedToLoadUsers', undefined, 'Failed to load users')}</p>
+                        <p className="text-sm text-muted mt-1">{tx('dashboard.admin.users.checkDatabasePermissions', undefined, 'Check database permissions (is_admin = true)')}</p>
                     </div>
                 ) : (
                     <>
@@ -332,11 +327,11 @@ export default function UsersTab() {
                                 <table className="w-full">
                                     <thead className={tableHeadClass}>
                                         <tr>
-                                            <th className="px-6 py-4 text-right text-xs font-semibold text-muted whitespace-nowrap tracking-wide">{tr('المستخدم', 'User', 'Utilisateur')}</th>
-                                            <th className="px-6 py-4 text-right text-xs font-semibold text-muted whitespace-nowrap tracking-wide">{tr('النوع', 'Type', 'Type')}</th>
-                                            <th className="px-6 py-4 text-right text-xs font-semibold text-muted whitespace-nowrap tracking-wide">{tr('الحالة', 'Status', 'Statut')}</th>
-                                            <th className="px-6 py-4 text-right text-xs font-semibold text-muted whitespace-nowrap tracking-wide">{tr('آخر نشاط', 'Last activity', 'Derniere activite')}</th>
-                                            <th className="px-6 py-4 text-right text-xs font-semibold text-muted whitespace-nowrap tracking-wide">{tr('إجراءات', 'Actions', 'Actions')}</th>
+                                            <th className="px-6 py-4 text-right text-xs font-semibold text-muted whitespace-nowrap tracking-wide">{tx('dashboard.admin.users.user', undefined, 'User')}</th>
+                                            <th className="px-6 py-4 text-right text-xs font-semibold text-muted whitespace-nowrap tracking-wide">{tx('dashboard.admin.users.type', undefined, 'Type')}</th>
+                                            <th className="px-6 py-4 text-right text-xs font-semibold text-muted whitespace-nowrap tracking-wide">{tx('dashboard.admin.users.status', undefined, 'Status')}</th>
+                                            <th className="px-6 py-4 text-right text-xs font-semibold text-muted whitespace-nowrap tracking-wide">{tx('dashboard.admin.users.lastActivity', undefined, 'Last activity')}</th>
+                                            <th className="px-6 py-4 text-right text-xs font-semibold text-muted whitespace-nowrap tracking-wide">{tx('dashboard.admin.users.actions', undefined, 'Actions')}</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-border/50">
@@ -345,10 +340,10 @@ export default function UsersTab() {
                                                 <td colSpan={5} className="px-6 py-12">
                                                     <EmptyState
                                                         icon={Users}
-                                                        title={tr('لا يوجد مستخدمون مطابقون', 'No users match your search', 'Aucun utilisateur ne correspond')}
-                                                        description={tr('جرب تغيير معايير البحث أو الفلاتر للعثور على مستخدمين', 'Try adjusting your search criteria or filters', 'Essayez de modifier vos critères de recherche ou filtres')}
+                                                        title={tx('dashboard.admin.users.noUsersMatch', undefined, 'No users match your search')}
+                                                        description={tx('dashboard.admin.users.tryAdjustingSearch', undefined, 'Try adjusting your search criteria or filters')}
                                                         action={{
-                                                            label: tr('مسح البحث', 'Clear search', 'Effacer la recherche'),
+                                                            label: tx('dashboard.admin.users.clearSearch', undefined, 'Clear search'),
                                                             onClick: () => setSearchQuery(''),
                                                             variant: 'outline',
                                                         }}
@@ -373,10 +368,10 @@ export default function UsersTab() {
                                                         ? 'bg-blue-100 dark:bg-blue-500/15 text-blue-700 dark:text-blue-300'
                                                         : 'bg-violet-100 dark:bg-violet-500/15 text-violet-700 dark:text-violet-300'
                                                         }`}>
-                                                        {user.type === 'freelancer' ? tr(t.reviews?.freelancer || t.reviews?.freelancer || 'موظف حر', 'Freelancer', 'Freelance') : tr(t.reviews?.client || t.reviews?.client || 'عميل', 'Client', 'Client')}
+                                                        {user.type === 'freelancer' ? tx('dashboard.admin.users.freelancer', undefined, 'Freelancer') : tx('dashboard.admin.users.client', undefined, 'Client')}
                                                     </span>
                                                     <span className="ms-2 px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap bg-primary-100 dark:bg-primary-500/15 text-primary-700 dark:text-primary-300">
-                                                        {tr('الوضع', 'Mode', 'Mode')}: {user.active_mode === 'freelancer' ? tr('مستقل', 'Freelancer', 'Freelance') : tr(t.reviews?.client || t.reviews?.client || 'عميل', 'Client', 'Client')}
+                                                        {tx('dashboard.admin.users.mode', undefined, 'Mode')}: {user.active_mode === 'freelancer' ? tx('dashboard.admin.users.freelancer', undefined, 'Freelancer') : tx('dashboard.admin.users.client', undefined, 'Client')}
                                                     </span>
                                                 </td>
                                                 <td className="px-6 py-4">
@@ -384,10 +379,10 @@ export default function UsersTab() {
                                                         ? 'bg-emerald-100 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300'
                                                         : 'bg-amber-100 dark:bg-amber-500/15 text-amber-700 dark:text-amber-300'
                                                         }`}>
-                                                        {user.cin_verified ? tr('موثق', 'Verified', 'Verifie') : tr('غير موثق', 'Unverified', 'Non verifie')}
+                                                        {user.cin_verified ? tx('dashboard.admin.users.verified', undefined, 'Verified') : tx('dashboard.admin.users.unverified', undefined, 'Unverified')}
                                                     </span>
                                                     {user.is_admin && (
-                                                        <span className="ms-2 px-2 py-1 rounded-full text-xs font-medium bg-indigo-100 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300">{tr('مشرف', 'Admin', 'Admin')}</span>
+                                                        <span className="ms-2 px-2 py-1 rounded-full text-xs font-medium bg-indigo-100 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300">{tx('dashboard.admin.users.admin', undefined, 'Admin')}</span>
                                                     )}
                                                 </td>
                                                 <td className="px-6 py-4 text-sm text-muted whitespace-nowrap">{formatAdminDate(user.last_active)}</td>
@@ -400,12 +395,12 @@ export default function UsersTab() {
                                                             <Eye className="w-4 h-4" />
                                                         </button>
                                                         {user.cin_verified && (
-                                                            <button
-                                                                disabled={userActionLoadingId === user.id}
-                                                                onClick={() => handleRevokeVerification(user)}
-                                                                title={tr('إلغاء التوثيق', 'Revoke Verification', 'Revoquer la verification')}
-                                                                className={`${iconActionClass} hover:text-yellow-600 dark:hover:text-yellow-300 hover:bg-yellow-50 dark:hover:bg-yellow-500/10 disabled:opacity-50`}
-                                                            >
+                                                        <button
+                                                            disabled={userActionLoadingId === user.id}
+                                                            onClick={() => handleRevokeVerification(user)}
+                                                            title={tx('dashboard.admin.users.revokeVerification', undefined, 'Revoke Verification')}
+                                                            className={`${iconActionClass} hover:text-yellow-600 dark:hover:text-yellow-300 hover:bg-yellow-50 dark:hover:bg-yellow-500/10 disabled:opacity-50`}
+                                                        >
                                                                 <ShieldOff className="w-4 h-4" />
                                                             </button>
                                                         )}
@@ -448,35 +443,35 @@ export default function UsersTab() {
                                             ? 'bg-green-100 text-green-700'
                                             : 'bg-red-100 text-red-700'
                                             }`}>
-                                            {user.cin_verified ? tr('موثق', 'Verified', 'Verifie') : tr('غير موثق', 'Unverified', 'Non verifie')}
+                                            {user.cin_verified ? tx('dashboard.admin.users.verified', undefined, 'Verified') : tx('dashboard.admin.users.unverified', undefined, 'Unverified')}
                                         </span>
                                     </div>
                                     <div className="flex items-center justify-between py-2 border-b border-border/50">
-                                        <span className="text-sm text-muted">{tr('النوع', 'Type', 'Type')}</span>
+                                        <span className="text-sm text-muted">{tx('dashboard.admin.users.type', undefined, 'Type')}</span>
                                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${user.type === 'freelancer'
                                             ? 'bg-blue-100 text-blue-700'
                                             : 'bg-purple-100 text-purple-700'
                                             }`}>
-                                            {user.type === 'freelancer' ? tr(t.reviews?.freelancer || t.reviews?.freelancer || 'موظف حر', 'Freelancer', 'Freelance') : tr(t.reviews?.client || t.reviews?.client || 'عميل', 'Client', 'Client')}
+                                            {user.type === 'freelancer' ? tx('dashboard.admin.users.freelancer', undefined, 'Freelancer') : tx('dashboard.admin.users.client', undefined, 'Client')}
                                         </span>
                                     </div>
 
                                     <div className="flex items-center justify-between py-2 border-b border-border/50">
-                                        <span className="text-sm text-muted">{tr('الوضع النشط', 'Active mode', 'Mode actif')}</span>
+                                        <span className="text-sm text-muted">{tx('dashboard.admin.users.activeMode', undefined, 'Active mode')}</span>
                                         <span className="px-2 py-1 rounded-full text-xs font-medium bg-primary-100 text-primary-700">
-                                            {user.active_mode === 'freelancer' ? tr('مستقل', 'Freelancer', 'Freelance') : tr(t.reviews?.client || t.reviews?.client || 'عميل', 'Client', 'Client')}
+                                            {user.active_mode === 'freelancer' ? tx('dashboard.admin.users.freelancer', undefined, 'Freelancer') : tx('dashboard.admin.users.client', undefined, 'Client')}
                                         </span>
                                     </div>
 
                                     <div className="flex items-center justify-between py-2 mb-4">
-                                        <span className="text-sm text-muted">{tr('آخر نشاط', 'Last activity', 'Derniere activite')}</span>
+                                        <span className="text-sm text-muted">{tx('dashboard.admin.users.lastActivity', undefined, 'Last activity')}</span>
                                         <span className="text-sm text-foreground">{formatAdminDate(user.last_active)}</span>
                                     </div>
 
                                     <div className="flex items-center gap-2 pt-3 border-t border-border">
                                         <Button size="sm" variant="outline" className="flex-1 justify-center" onClick={() => setSelectedUser(user)}>
                                             <Eye className="w-4 h-4 ml-1" />
-                                            {tr('عرض', 'View', 'Voir')}
+                                            {tx('dashboard.admin.users.view', undefined, 'View')}
                                         </Button>
                                         {user.cin_verified && (
                                             <Button
@@ -487,7 +482,7 @@ export default function UsersTab() {
                                                 onClick={() => handleRevokeVerification(user)}
                                             >
                                                 <ShieldOff className="w-4 h-4 ml-1" />
-                                                {tr('إلغاء', 'Revoke', 'Revoquer')}
+                                                {tx('dashboard.admin.users.revoke', undefined, 'Revoke')}
                                             </Button>
                                         )}
                                         <Button
@@ -498,7 +493,7 @@ export default function UsersTab() {
                                             onClick={() => handleToggleUserMode(user)}
                                         >
                                             <Ban className="w-4 h-4 ml-1" />
-                                            {tr('تبديل', 'Switch', 'Basculer')}
+                                            {tx('dashboard.admin.users.switch', undefined, 'Switch')}
                                         </Button>
                                         <Button
                                             size="sm"
@@ -508,7 +503,7 @@ export default function UsersTab() {
                                             onClick={() => handleDeleteUser(user)}
                                         >
                                             <Trash2 className="w-4 h-4 ml-1" />
-                                            {tr('حذف', 'Delete', 'Supprimer')}
+                                            {tx('dashboard.admin.users.delete', undefined, 'Delete')}
                                         </Button>
                                     </div>
                                 </div>
@@ -523,25 +518,25 @@ export default function UsersTab() {
                     <div className="w-full max-w-xl card bg-card border-border shadow-xl">
                         <div className="flex items-start justify-between gap-3 mb-5">
                             <div>
-                                <h3 className="text-lg font-bold text-foreground">{tr('تفاصيل المستخدم', 'User details', 'Details utilisateur')}</h3>
+                                <h3 className="text-lg font-bold text-foreground">{tx('dashboard.admin.users.userDetails', undefined, 'User details')}</h3>
                                 <p className="text-sm text-muted">{selectedUser.id}</p>
                             </div>
                             <button
                                 onClick={() => setSelectedUser(null)}
                                 className="p-2 rounded-lg hover:bg-surface"
-                                aria-label={tr('إغلاق', 'Close', 'Fermer')}
+                                aria-label={tx('dashboard.admin.users.close', undefined, 'Close')}
                             >
                                 <X className="w-4 h-4 text-muted" />
                             </button>
                         </div>
 
                         <div className="space-y-3 text-sm">
-                            <p><strong>{tr('الاسم', 'Name', 'Nom')}:</strong> {getDisplayName(selectedUser)}</p>
-                            <p><strong>{tr('البريد', 'Email', 'Email')}:</strong> {selectedUser.email || '-'}</p>
-                            <p><strong>{tr('نوع الحساب', 'Account type', 'Type de compte')}:</strong> {selectedUser.type}</p>
-                            <p><strong>{tr('الوضع النشط', 'Active mode', 'Mode actif')}:</strong> {selectedUser.active_mode || tr(t.reviews?.client || t.reviews?.client || 'عميل', 'Client', 'Client')}</p>
-                            <p><strong>{tr('توثيق الهوية', 'Identity verification', 'Verification d identite')}:</strong> {selectedUser.cin_verified ? tr('نعم', 'Yes', 'Oui') : tr('لا', 'No', 'Non')}</p>
-                            <p><strong>{tr('مشرف', 'Admin', 'Admin')}:</strong> {selectedUser.is_admin ? tr('نعم', 'Yes', 'Oui') : tr('لا', 'No', 'Non')}</p>
+                            <p><strong>{tx('dashboard.admin.users.name', undefined, 'Name')}:</strong> {getDisplayName(selectedUser)}</p>
+                            <p><strong>{tx('dashboard.admin.users.email', undefined, 'Email')}:</strong> {selectedUser.email || '-'}</p>
+                            <p><strong>{tx('dashboard.admin.users.accountType', undefined, 'Account type')}:</strong> {selectedUser.type}</p>
+                            <p><strong>{tx('dashboard.admin.users.activeMode', undefined, 'Active mode')}:</strong> {selectedUser.active_mode || tx('dashboard.admin.users.client', undefined, 'Client')}</p>
+                            <p><strong>{tx('dashboard.admin.users.identityVerification', undefined, 'Identity verification')}:</strong> {selectedUser.cin_verified ? tx('dashboard.admin.users.yes', undefined, 'Yes') : tx('dashboard.admin.users.no', undefined, 'No')}</p>
+                            <p><strong>{tx('dashboard.admin.users.admin', undefined, 'Admin')}:</strong> {selectedUser.is_admin ? tx('dashboard.admin.users.yes', undefined, 'Yes') : tx('dashboard.admin.users.no', undefined, 'No')}</p>
                         </div>
 
                         <div className="mt-6 flex flex-wrap gap-2">
@@ -551,7 +546,7 @@ export default function UsersTab() {
                                 onClick={() => handleToggleUserMode(selectedUser)}
                             >
                                 <Ban className="w-4 h-4 ml-1" />
-                                {tr('تبديل الوضع', 'Switch mode', 'Basculer le mode')}
+                                {tx('dashboard.admin.users.switchMode', undefined, 'Switch mode')}
                             </Button>
                             <Button
                                 variant="danger"
@@ -559,7 +554,7 @@ export default function UsersTab() {
                                 onClick={() => handleDeleteUser(selectedUser)}
                             >
                                 <Trash2 className="w-4 h-4 ml-1" />
-                                {tr('حذف المستخدم', 'Delete user', 'Supprimer l utilisateur')}
+                                {tx('dashboard.admin.users.deleteUser', undefined, 'Delete user')}
                             </Button>
                         </div>
                     </div>
@@ -571,7 +566,7 @@ export default function UsersTab() {
                     <p className="text-muted leading-relaxed font-medium">{confirmAction.message}</p>
                     <div className="flex justify-end gap-3 pt-6 border-t border-border mt-6">
                         <Button variant="ghost" className="text-muted hover:bg-surface" onClick={closeConfirm}>
-                            {tr('إلغاء', 'Cancel', 'Annuler')}
+                            {tx('dashboard.admin.users.cancel', undefined, 'Cancel')}
                         </Button>
                         <Button
                             variant={confirmAction.actionType === 'danger' ? 'danger' : 'primary'}
@@ -581,7 +576,7 @@ export default function UsersTab() {
                                 confirmAction.onConfirm();
                             }}
                         >
-                            {tr('تأكيد', 'Confirm', 'Confirmer')}
+                            {tx('dashboard.admin.users.confirm', undefined, 'Confirm')}
                         </Button>
                     </div>
                 </div>
