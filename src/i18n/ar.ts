@@ -736,6 +736,7 @@ export const ar = {
             spentLabel: 'تم الإنفاق',
             activeProjects: 'المشاريع النشطة',
             noActiveProjects: 'لا توجد مشاريع نشطة',
+            viewAll: 'عرض الكل',
             postFirstProject: 'انشر مشروعك الأول للعثور على موظفين موهوبين',
             postAProject: 'نشر مشروع',
             recentProposals: 'العروض الحديثة',

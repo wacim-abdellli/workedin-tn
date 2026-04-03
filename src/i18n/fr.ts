@@ -738,6 +738,7 @@ export const fr: Translations = {
             spentLabel: 'Dépensé',
             activeProjects: 'Projets actifs',
             noActiveProjects: 'Aucun projet actif',
+            viewAll: 'Voir tout',
             postFirstProject: 'Publiez votre premier projet pour trouver des freelances talentueux',
             postAProject: 'Publier un projet',
             recentProposals: 'Propositions récentes',
