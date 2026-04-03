@@ -1,27 +1,26 @@
 import { Shield, Users, Wallet } from 'lucide-react';
-
-const props = [
-  {
-    icon: Users,
-    title: 'Matched work',
-    description:
-      'Apply to projects that match your exact skill level and rate. No competing on price - just on quality.',
-  },
-  {
-    icon: Shield,
-    title: 'Protected payouts',
-    description:
-      'Funds are held in escrow before work starts. You get paid the moment the client approves.',
-  },
-  {
-    icon: Wallet,
-    title: 'Build reputation',
-    description:
-      'Show your verified status, portfolio, and reviews. Win trust before you say a word.',
-  },
-];
+import { useTranslation } from 'react-i18next';
 
 export function ValuePropositions() {
+  const { t } = useTranslation();
+
+  const props = [
+    {
+      icon: Users,
+      title: t('valuePropositions.matched.title'),
+      description: t('valuePropositions.matched.description'),
+    },
+    {
+      icon: Shield,
+      title: t('valuePropositions.protected.title'),
+      description: t('valuePropositions.protected.description'),
+    },
+    {
+      icon: Wallet,
+      title: t('valuePropositions.reputation.title'),
+      description: t('valuePropositions.reputation.description'),
+    },
+  ];
   return (
     <section className="py-24" style={{ background: 'var(--surface-bg)' }}>
       <div className="container mx-auto px-6 lg:px-8 max-w-7xl">
@@ -30,13 +29,13 @@ export function ValuePropositions() {
             className="text-xs font-semibold uppercase tracking-[0.2em] mb-3"
             style={{ color: 'var(--workspace-primary-mid)' }}
           >
-            Why Khedma TN
+            {t('valuePropositions.badge')}
           </p>
           <h2
             className="font-display font-bold text-4xl tracking-tight"
             style={{ color: 'var(--text-primary)' }}
           >
-            Built different. For Tunisia.
+            {t('valuePropositions.heading')}
           </h2>
         </div>
 

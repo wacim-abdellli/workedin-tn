@@ -2086,4 +2086,269 @@ export const en: Translations = {
             queryHanging: 'The query is hanging. This suggests an RLS policy issue causing infinite loops or a network problem.',
         },
     },
+
+    heroSection: {
+        freelancer: {
+            eyebrow: 'Built in Tunisia. Built for Tunisia.',
+            titleTop: 'Where Tunisian talent',
+            titleAccent: 'gets paid fairly.',
+            subtitle: 'No auctions. No middlemen. Post a project, agree on terms, get paid in TND - secured by escrow.',
+            cta: 'Start earning today',
+            secondary: 'Browse projects',
+            trust: {
+                payouts: 'Protected payouts',
+                matched: 'Matched work',
+                reputation: 'Build reputation',
+            },
+            stats: {
+                professionals: {
+                    default: '2,500',
+                    label: 'Professionals',
+                },
+                contracts: {
+                    default: '120',
+                    label: 'Contracts done',
+                },
+                rating: {
+                    value: '4.9/5',
+                    label: 'Avg. rating',
+                },
+            },
+            features: {
+                apply: {
+                    title: 'Apply to matched projects',
+                    subtitle: 'Jobs that fit your skill level and rate',
+                },
+                verify: {
+                    title: 'Show verification status',
+                    subtitle: 'Build trust before you say a word',
+                },
+                track: {
+                    title: 'Track milestones and payouts',
+                    subtitle: 'Everything in one place, secured by escrow',
+                },
+            },
+            promise: 'Better presentation helps great freelancers look credible before they say a word.',
+        },
+        client: {
+            eyebrow: 'Built in Tunisia. Ready for serious hiring.',
+            titleTop: 'Where Tunisian businesses',
+            titleAccent: 'find trusted talent.',
+            subtitle: 'Post a project, review serious proposals, agree on clear terms, and release payment only when the work is approved.',
+            cta: 'Post a project free',
+            secondary: 'Find freelancers',
+            trust: {
+                verified: 'Verified profiles',
+                faster: 'Faster hiring',
+                escrow: 'Protected escrow',
+            },
+            stats: {
+                professionals: {
+                    default: '2,500',
+                    label: 'Professionals',
+                },
+                projects: {
+                    default: '120',
+                    label: 'Open projects',
+                },
+                trust: {
+                    value: '4.9/5',
+                    label: 'Avg. trust score',
+                },
+            },
+            features: {
+                post: {
+                    title: 'Post once and get relevant proposals',
+                    subtitle: 'No noisy bidding wars, just quality responses',
+                },
+                review: {
+                    title: 'Review verified local profiles',
+                    subtitle: 'Trust signals appear before the first message',
+                },
+                manage: {
+                    title: 'Manage milestones with escrow',
+                    subtitle: 'Payments stay protected until approval',
+                },
+            },
+            promise: 'Better presentation helps serious clients trust the platform before they post a project.',
+        },
+        promise: {
+            label: 'Khedma Promise',
+        },
+    },
+
+    valuePropositions: {
+        matched: {
+            title: 'Matched work',
+            description: 'Apply to projects that match your exact skill level and rate. No competing on price - just on quality.',
+        },
+        protected: {
+            title: 'Protected payouts',
+            description: 'Funds are held in escrow before work starts. You get paid the moment the client approves.',
+        },
+        reputation: {
+            title: 'Build reputation',
+            description: 'Show your verified status, portfolio, and reviews. Win trust before you say a word.',
+        },
+        badge: 'Why Khedma TN',
+        heading: 'Built different. For Tunisia.',
+    },
+
+    howItWorksSection: {
+        steps: {
+            '1': {
+                step: '01',
+                title: 'Create your profile',
+                subtitle: 'Set your skills, rate, and portfolio in minutes.',
+            },
+            '2': {
+                step: '02',
+                title: 'Apply to matched jobs',
+                subtitle: 'Browse projects that fit your expertise.',
+            },
+            '3': {
+                step: '03',
+                title: 'Agree on terms',
+                subtitle: 'Negotiate directly. No middlemen.',
+            },
+            '4': {
+                step: '04',
+                title: 'Get paid securely',
+                subtitle: 'Funds released via escrow on approval.',
+            },
+        },
+        badge: 'How it works',
+        heading: 'From signup to paid in 4 steps.',
+    },
+
+    ctaSection: {
+        badge: 'Ready?',
+        title: 'Tunisia\'s freelance economy starts here.',
+        subtitle: 'Join thousands of professionals already earning fairly on Khedma TN.',
+        primary: 'Get started free',
+        secondary: 'Post a project',
+    },
+
+    faqPage: {
+        page: {
+            title: 'Frequently Asked Questions',
+            subtitle: 'Answers to the most common questions about using Khedma.TN',
+            searchPlaceholder: 'Search questions...',
+            noAnswer: 'Didn\'t find your answer?',
+            supportReady: 'Our support team is ready to help you 24/7',
+            contactButton: 'Contact us',
+        },
+        categories: {
+            general: {
+                title: 'General',
+                items: [
+                    {
+                        q: 'What is Khedma.TN?',
+                        a: 'Khedma.TN is a Tunisian freelance marketplace connecting businesses with talented professionals. We believe in fair payment, verified profiles, and secure escrow-protected transactions.',
+                    },
+                    {
+                        q: 'Is registration free?',
+                        a: 'Yes, registration is completely free for both freelancers and clients. We only charge a small commission on successfully completed projects.',
+                    },
+                    {
+                        q: 'How long does verification take?',
+                        a: 'Identity verification typically takes 24-48 hours. You can start your profile setup immediately, and verification happens in the background.',
+                    },
+                ],
+            },
+            freelancer: {
+                title: 'For Freelancers',
+                items: [
+                    {
+                        q: 'How do I get started as a freelancer?',
+                        a: 'Sign up, complete your profile with skills and portfolio, then start browsing available projects that match your expertise.',
+                    },
+                    {
+                        q: 'How much can I earn?',
+                        a: 'Your earnings depend on the projects you take and the rates you set. Many Tunisian freelancers earn between 500-5000 TND per month.',
+                    },
+                    {
+                        q: 'How do I get paid?',
+                        a: 'Payments are made via D17, bank transfer, or other local payment methods. You set your preferred payment method in your wallet settings.',
+                    },
+                ],
+            },
+            client: {
+                title: 'For Clients',
+                items: [
+                    {
+                        q: 'How do I post a project?',
+                        a: 'Click "Post a Project", describe your work, set your budget and timeline, then publish. You\'ll receive proposals from verified freelancers.',
+                    },
+                    {
+                        q: 'What if I\'m not satisfied with the work?',
+                        a: 'If work doesn\'t meet agreed terms, you get a full refund. Funds are held in escrow until you approve the delivery.',
+                    },
+                    {
+                        q: 'How is my money protected?',
+                        a: 'Funds are held securely in escrow. The freelancer only receives payment when you approve the completed work.',
+                    },
+                ],
+            },
+            payment: {
+                title: 'Payment & Earnings',
+                items: [
+                    {
+                        q: 'What payment methods do you accept?',
+                        a: 'We support all local Tunisian methods: cards, D17, bank transfer, and cash for small amounts.',
+                    },
+                    {
+                        q: 'When do I get paid?',
+                        a: 'Freelancers are paid within 48 hours after the client approves and releases the escrow.',
+                    },
+                    {
+                        q: 'Are there any hidden fees?',
+                        a: 'No. Our fees are transparent and clearly displayed. We charge a small commission only on completed projects.',
+                    },
+                ],
+            },
+            security: {
+                title: 'Security & Privacy',
+                items: [
+                    {
+                        q: 'Is my personal information safe?',
+                        a: 'Yes. We use industry-standard encryption and security measures. Your data is never shared without your permission.',
+                    },
+                    {
+                        q: 'Why do you need ID verification?',
+                        a: 'ID verification ensures trust and safety for both freelancers and clients. Every professional on Khedma is ID-checked.',
+                    },
+                    {
+                        q: 'Can I remain anonymous?',
+                        a: 'No. Both freelancers and clients must be verified. This protects everyone and ensures accountability.',
+                    },
+                ],
+            },
+        },
+    },
+
+    languages: {
+        ar: {
+            name: 'العربية',
+            code: 'AR',
+            country: 'TN',
+        },
+        fr: {
+            name: 'Français',
+            code: 'FR',
+            country: 'FR',
+        },
+        en: {
+            name: 'English',
+            code: 'EN',
+            country: 'GB',
+        },
+    },
+
+    error: {
+        unexpected: 'An unexpected error occurred while rendering this section.',
+        title: 'Something went wrong',
+        retry: 'Try again',
+        jobCard: 'Failed to load job card',
+    },
 };

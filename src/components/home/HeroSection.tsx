@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowRight, Shield, Zap, Star } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useWorkspaceStore } from '@/lib/workspaceState';
+import { useTranslation } from 'react-i18next';
 
 interface HeroSectionProps {
   stats?: {
@@ -13,77 +14,78 @@ interface HeroSectionProps {
 
 export function HeroSection({ stats }: HeroSectionProps) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const activeWorkspace = useWorkspaceStore((state) => state.activeWorkspace);
   const isFreelancer = activeWorkspace === 'freelancer';
 
   const heroContent = isFreelancer
     ? {
-        eyebrow: 'Built in Tunisia. Built for Tunisia.',
-        titleTop: 'Where Tunisian talent',
-        titleAccent: 'gets paid fairly.',
-        subtitle: 'No auctions. No middlemen. Post a project, agree on terms, get paid in TND - secured by escrow.',
-        primaryCta: 'Start earning today',
-        secondaryCta: 'Browse projects',
+        eyebrow: t('heroSection.freelancer.eyebrow'),
+        titleTop: t('heroSection.freelancer.titleTop'),
+        titleAccent: t('heroSection.freelancer.titleAccent'),
+        subtitle: t('heroSection.freelancer.subtitle'),
+        primaryCta: t('heroSection.freelancer.cta'),
+        secondaryCta: t('heroSection.freelancer.secondary'),
         secondaryPath: '/jobs',
         trustItems: [
-          { icon: Shield, label: 'Protected payouts' },
-          { icon: Zap, label: 'Matched work' },
-          { icon: Star, label: 'Build reputation' },
+          { icon: Shield, label: t('heroSection.freelancer.trust.payouts') },
+          { icon: Zap, label: t('heroSection.freelancer.trust.matched') },
+          { icon: Star, label: t('heroSection.freelancer.trust.reputation') },
         ],
         statsCards: [
-          { value: `${stats?.freelancers || '2,500'}+`, label: 'Professionals' },
-          { value: `${stats?.contracts || '120'}+`, label: 'Contracts done' },
-          { value: '4.9/5', label: 'Avg. rating' },
+          { value: `${stats?.freelancers || t('heroSection.freelancer.stats.professionals.default')}+`, label: t('heroSection.freelancer.stats.professionals.label') },
+          { value: `${stats?.contracts || t('heroSection.freelancer.stats.contracts.default')}+`, label: t('heroSection.freelancer.stats.contracts.label') },
+          { value: t('heroSection.freelancer.stats.rating.value'), label: t('heroSection.freelancer.stats.rating.label') },
         ],
         features: [
           {
-            title: 'Apply to matched projects',
-            sub: 'Jobs that fit your skill level and rate',
+            title: t('heroSection.freelancer.features.apply.title'),
+            sub: t('heroSection.freelancer.features.apply.subtitle'),
           },
           {
-            title: 'Show verification status',
-            sub: 'Build trust before you say a word',
+            title: t('heroSection.freelancer.features.verify.title'),
+            sub: t('heroSection.freelancer.features.verify.subtitle'),
           },
           {
-            title: 'Track milestones and payouts',
-            sub: 'Everything in one place, secured by escrow',
+            title: t('heroSection.freelancer.features.track.title'),
+            sub: t('heroSection.freelancer.features.track.subtitle'),
           },
         ],
-        promise: 'Better presentation helps great freelancers look credible before they say a word.',
+        promise: t('heroSection.freelancer.promise'),
       }
     : {
-        eyebrow: 'Built in Tunisia. Ready for serious hiring.',
-        titleTop: 'Where Tunisian businesses',
-        titleAccent: 'find trusted talent.',
-        subtitle: 'Post a project, review serious proposals, agree on clear terms, and release payment only when the work is approved.',
-        primaryCta: 'Post a project free',
-        secondaryCta: 'Find freelancers',
+        eyebrow: t('heroSection.client.eyebrow'),
+        titleTop: t('heroSection.client.titleTop'),
+        titleAccent: t('heroSection.client.titleAccent'),
+        subtitle: t('heroSection.client.subtitle'),
+        primaryCta: t('heroSection.client.cta'),
+        secondaryCta: t('heroSection.client.secondary'),
         secondaryPath: '/find-freelancers',
         trustItems: [
-          { icon: Shield, label: 'Verified profiles' },
-          { icon: Zap, label: 'Faster hiring' },
-          { icon: Star, label: 'Protected escrow' },
+          { icon: Shield, label: t('heroSection.client.trust.verified') },
+          { icon: Zap, label: t('heroSection.client.trust.faster') },
+          { icon: Star, label: t('heroSection.client.trust.escrow') },
         ],
         statsCards: [
-          { value: `${stats?.freelancers || '2,500'}+`, label: 'Professionals' },
-          { value: `${stats?.jobs || '120'}+`, label: 'Open projects' },
-          { value: '4.9/5', label: 'Avg. trust score' },
+          { value: `${stats?.freelancers || t('heroSection.client.stats.professionals.default')}+`, label: t('heroSection.client.stats.professionals.label') },
+          { value: `${stats?.jobs || t('heroSection.client.stats.projects.default')}+`, label: t('heroSection.client.stats.projects.label') },
+          { value: t('heroSection.client.stats.trust.value'), label: t('heroSection.client.stats.trust.label') },
         ],
         features: [
           {
-            title: 'Post once and get relevant proposals',
-            sub: 'No noisy bidding wars, just quality responses',
+            title: t('heroSection.client.features.post.title'),
+            sub: t('heroSection.client.features.post.subtitle'),
           },
           {
-            title: 'Review verified local profiles',
-            sub: 'Trust signals appear before the first message',
+            title: t('heroSection.client.features.review.title'),
+            sub: t('heroSection.client.features.review.subtitle'),
           },
           {
-            title: 'Manage milestones with escrow',
-            sub: 'Payments stay protected until approval',
+            title: t('heroSection.client.features.manage.title'),
+            sub: t('heroSection.client.features.manage.subtitle'),
           },
         ],
-        promise: 'Better presentation helps serious clients trust the platform before they post a project.',
+        promise: t('heroSection.client.promise'),
       };
 
   return (
@@ -276,7 +278,7 @@ export function HeroSection({ stats }: HeroSectionProps) {
               >
                 <p className="text-xs font-semibold uppercase tracking-wider mb-1"
                    style={{ color: 'var(--workspace-primary-mid)' }}>
-                  Khedma Promise
+                  {t('heroSection.promise.label')}
                 </p>
                 <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
                   {heroContent.promise}

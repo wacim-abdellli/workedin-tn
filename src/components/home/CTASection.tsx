@@ -1,8 +1,10 @@
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 export function CTASection() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   return (
     <section className="py-24" style={{ background: 'var(--page-bg)' }}>
@@ -18,21 +20,20 @@ export function CTASection() {
             className="text-xs font-semibold uppercase tracking-[0.2em] mb-4"
             style={{ color: 'var(--workspace-primary-mid)' }}
           >
-            Ready?
+            {t('ctaSection.badge')}
           </p>
           <h2
             className="font-display font-bold text-4xl sm:text-5xl tracking-tight mb-6"
             style={{ color: 'var(--text-primary)' }}
           >
-            Tunisia's freelance
+            {t('ctaSection.title')}
             <br />
-            economy starts here.
           </h2>
           <p
             className="text-lg mb-10 max-w-xl mx-auto"
             style={{ color: 'var(--text-secondary)' }}
           >
-            Join thousands of professionals already earning fairly on Khedma TN.
+            {t('ctaSection.subtitle')}
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4">
             <button
@@ -40,7 +41,7 @@ export function CTASection() {
               className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl font-semibold text-white transition-all hover:opacity-90 hover:-translate-y-0.5"
               style={{ background: 'var(--workspace-primary)', fontSize: '1rem' }}
             >
-              Get started free <ArrowRight className="w-4 h-4" />
+              {t('ctaSection.primary')} <ArrowRight className="w-4 h-4" />
             </button>
             <button
               onClick={() => navigate('/jobs/new')}
@@ -52,7 +53,7 @@ export function CTASection() {
                 fontSize: '1rem',
               }}
             >
-              Post a project
+              {t('ctaSection.secondary')}
             </button>
           </div>
         </div>

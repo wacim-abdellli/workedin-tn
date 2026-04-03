@@ -2,104 +2,45 @@ import { useState } from 'react';
 import { ChevronDown, ChevronUp, Search, HelpCircle, MessageCircle, FileText, CreditCard, Shield, User } from 'lucide-react';
 import { Header, Footer } from '../components/layout';
 import SEO, { SEO_CONFIG } from '../components/common/SEO';
-
-const FAQ_CATEGORIES = [
-    {
-        id: 'general',
-        icon: HelpCircle,
-        title: 'أسئلة عامة',
-        questions: [
-            {
-                q: 'ما هي خدمة.تن؟',
-                a: 'خدمة.تن هي أول منصة تونسية للعمل الحر، تربط بين الموظفين الحرين والعملاء بطريقة سهلة وآمنة. نوفر نظام دفع محلي ودعم باللغة العربية.'
-            },
-            {
-                q: 'كيف أبدأ؟',
-                a: 'سجل حساب جديد، أكمل ملفك الشخصي، ثم ابدأ بتصفح المهام (كموظف حر) أو نشر مهمة (كعميل). العملية بسيطة ولا تستغرق أكثر من 5 دقائق.'
-            },
-            {
-                q: 'هل المنصة مجانية؟',
-                a: 'التسجيل مجاني تمامًا. نأخذ عمولة 10% فقط من قيمة العقود المكتملة.'
-            }
-        ]
-    },
-    {
-        id: 'freelancer',
-        icon: User,
-        title: 'للموظفين الحرين',
-        questions: [
-            {
-                q: 'كيف أجد عملاً؟',
-                a: 'تصفح لوحة المهام واستخدم الفلاتر للعثور على مهام تناسب مهاراتك. قدم عروضك مع وصف واضح لخبرتك والسعر المقترح.'
-            },
-            {
-                q: 'متى أستلم أرباحي؟',
-                a: 'بعد موافقة العميل على العمل المنجز، تصبح الأموال متاحة للسحب خلال 7 أيام عمل.'
-            },
-            {
-                q: 'كيف أبني سمعة جيدة؟',
-                a: 'أكمل المشاريع في الوقت المحدد، تواصل بشكل واضح، واطلب من العملاء ترك تقييم بعد كل مشروع.'
-            }
-        ]
-    },
-    {
-        id: 'client',
-        icon: FileText,
-        title: 'للعملاء',
-        questions: [
-            {
-                q: 'كيف أنشر مهمة؟',
-                a: 'اضغط على "نشر مهمة"، أضف وصفًا تفصيليًا، حدد الميزانية والمهارات المطلوبة، ثم انشر. ستبدأ بتلقي العروض خلال ساعات.'
-            },
-            {
-                q: 'كيف أختار الموظف المناسب؟',
-                a: 'راجع ملفات المتقدمين، تقييماتهم السابقة، وأعمالهم في المعرض. تواصل معهم لمناقشة تفاصيل المشروع قبل القبول.'
-            },
-            {
-                q: 'ماذا لو لم أكن راضيًا عن العمل؟',
-                a: 'تواصل أولاً مع الموظف لطلب التعديلات. إذا لم تُحل المشكلة، يمكنك فتح نزاع وسيتدخل فريق الدعم للمساعدة.'
-            }
-        ]
-    },
-    {
-        id: 'payment',
-        icon: CreditCard,
-        title: 'الدفع والأرباح',
-        questions: [
-            {
-                q: 'ما هي طرق الدفع المتاحة؟',
-                a: 'نوفر D17، Flouci، والتحويل البنكي. جميع المعاملات آمنة ومشفرة.'
-            },
-            {
-                q: 'ما هي رسوم المنصة؟',
-                a: 'نأخذ 10% من قيمة كل عقد. لا توجد رسوم خفية أو اشتراكات شهرية.'
-            },
-            {
-                q: 'كيف أسحب أرباحي؟',
-                a: 'اذهب إلى صفحة الأرباح، اختر المبلغ وطريقة السحب، ثم أكد العملية. السحب عبر D17 فوري، والتحويل البنكي يستغرق 2-3 أيام.'
-            }
-        ]
-    },
-    {
-        id: 'security',
-        icon: Shield,
-        title: 'الأمان والخصوصية',
-        questions: [
-            {
-                q: 'هل بياناتي آمنة؟',
-                a: 'نستخدم تشفير SSL وأفضل ممارسات الأمان لحماية بياناتك. لا نشارك معلوماتك مع أطراف ثالثة.'
-            },
-            {
-                q: 'كيف أحمي حسابي؟',
-                a: 'استخدم كلمة مرور قوية، فعّل المصادقة الثنائية، ولا تشارك بيانات تسجيل الدخول مع أحد.'
-            }
-        ]
-    }
-];
+import { useTranslation } from 'react-i18next';
 
 export default function FAQ() {
+    const { t } = useTranslation();
     const [searchQuery, setSearchQuery] = useState('');
     const [openItems, setOpenItems] = useState<string[]>([]);
+
+    const FAQ_CATEGORIES = [
+        {
+            id: 'general',
+            icon: HelpCircle,
+            title: t('faqPage.categories.general.title'),
+            questions: t('faqPage.categories.general.items', { returnObjects: true }) as Array<{ q: string; a: string }>
+        },
+        {
+            id: 'freelancer',
+            icon: User,
+            title: t('faqPage.categories.freelancer.title'),
+            questions: t('faqPage.categories.freelancer.items', { returnObjects: true }) as Array<{ q: string; a: string }>
+        },
+        {
+            id: 'client',
+            icon: FileText,
+            title: t('faqPage.categories.client.title'),
+            questions: t('faqPage.categories.client.items', { returnObjects: true }) as Array<{ q: string; a: string }>
+        },
+        {
+            id: 'payment',
+            icon: CreditCard,
+            title: t('faqPage.categories.payment.title'),
+            questions: t('faqPage.categories.payment.items', { returnObjects: true }) as Array<{ q: string; a: string }>
+        },
+        {
+            id: 'security',
+            icon: Shield,
+            title: t('faqPage.categories.security.title'),
+            questions: t('faqPage.categories.security.items', { returnObjects: true }) as Array<{ q: string; a: string }>
+        }
+    ];
 
     const toggleItem = (id: string) => {
         setOpenItems(prev =>
@@ -122,9 +63,9 @@ export default function FAQ() {
             <div className="container-custom py-12">
                 {/* Header */}
                 <div className="text-center mb-12">
-                    <h1 className="text-3xl font-bold text-foreground mb-4">الأسئلة الشائعة</h1>
+                    <h1 className="text-3xl font-bold text-foreground mb-4">{t('faqPage.page.title')}</h1>
                     <p className="text-muted max-w-2xl mx-auto">
-                        إجابات على أكثر الأسئلة شيوعًا حول استخدام خدمة.تن
+                        {t('faqPage.page.subtitle')}
                     </p>
                 </div>
 
@@ -136,7 +77,7 @@ export default function FAQ() {
                             type="text"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            placeholder="ابحث في الأسئلة..."
+                            placeholder={t('faqPage.page.searchPlaceholder')}
                             className="w-full pe-12 ps-4 py-4 border border-gray-200 rounded-2xl text-lg"
                         />
                     </div>
@@ -188,13 +129,13 @@ export default function FAQ() {
                 <div className="max-w-3xl mx-auto mt-12">
                     <div className="card bg-gradient-to-br from-primary-600 to-secondary-600 text-white text-center">
                         <MessageCircle className="w-12 h-12 mx-auto mb-4 opacity-80" />
-                        <h3 className="text-xl font-bold mb-2">لم تجد إجابتك؟</h3>
-                        <p className="opacity-90 mb-4">فريق الدعم جاهز لمساعدتك على مدار الساعة</p>
+                        <h3 className="text-xl font-bold mb-2">{t('faqPage.page.noAnswer')}</h3>
+                        <p className="opacity-90 mb-4">{t('faqPage.page.supportReady')}</p>
                         <a
                             href="mailto:support@khedma.tn"
                             className="inline-block px-6 py-3 bg-white text-primary-600 rounded-xl font-medium hover:bg-gray-100 transition-colors"
                         >
-                            تواصل معنا
+                            {t('faqPage.page.contactButton')}
                         </a>
                     </div>
                 </div>

@@ -1,13 +1,15 @@
 import { UserPlus, Search, CheckCircle, DollarSign } from 'lucide-react';
-
-const steps = [
-  { icon: UserPlus, step: '01', title: 'Create your profile', sub: 'Set your skills, rate, and portfolio in minutes.' },
-  { icon: Search, step: '02', title: 'Apply to matched jobs', sub: 'Browse projects that fit your expertise.' },
-  { icon: CheckCircle, step: '03', title: 'Agree on terms', sub: 'Negotiate directly. No middlemen.' },
-  { icon: DollarSign, step: '04', title: 'Get paid securely', sub: 'Funds released via escrow on approval.' },
-];
+import { useTranslation } from 'react-i18next';
 
 export function HowItWorksSection() {
+  const { t } = useTranslation();
+
+  const steps = [
+    { icon: UserPlus, step: t('howItWorksSection.steps.1.step'), title: t('howItWorksSection.steps.1.title'), sub: t('howItWorksSection.steps.1.subtitle') },
+    { icon: Search, step: t('howItWorksSection.steps.2.step'), title: t('howItWorksSection.steps.2.title'), sub: t('howItWorksSection.steps.2.subtitle') },
+    { icon: CheckCircle, step: t('howItWorksSection.steps.3.step'), title: t('howItWorksSection.steps.3.title'), sub: t('howItWorksSection.steps.3.subtitle') },
+    { icon: DollarSign, step: t('howItWorksSection.steps.4.step'), title: t('howItWorksSection.steps.4.title'), sub: t('howItWorksSection.steps.4.subtitle') },
+  ];
   return (
     <section className="py-24" style={{ background: 'var(--page-bg)' }}>
       <div className="container mx-auto px-6 lg:px-8 max-w-7xl">
@@ -16,13 +18,13 @@ export function HowItWorksSection() {
             className="text-xs font-semibold uppercase tracking-[0.2em] mb-3"
             style={{ color: 'var(--workspace-primary-mid)' }}
           >
-            How it works
+            {t('howItWorksSection.badge')}
           </p>
           <h2
             className="font-display font-bold text-4xl tracking-tight"
             style={{ color: 'var(--text-primary)' }}
           >
-            From signup to paid in 4 steps.
+            {t('howItWorksSection.heading')}
           </h2>
         </div>
 

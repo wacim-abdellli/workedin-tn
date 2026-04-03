@@ -2074,7 +2074,7 @@ export const fr: Translations = {
     admin: {
         debug: {
             restApiTest: 'Test d\'API REST direct',
-            bypassingClient: 'Contournement du client Supabase JS complètement - utilisation de récupération brute',
+            bypassingClient: 'Contournement complet du client Supabase JS - utilisation d\'une récupération brute',
             successMsg: 'L\'API REST fonctionne directement. Le problème se trouve dans le client Supabase JS.',
             clientProblem: 'Cela signifie que les politiques RLS sont correctes, mais le client JS a un problème.',
             rlsBlocking: 'RLS bloque la requête. Votre compte n\'est pas reconnu en tant qu\'administrateur.',
@@ -2085,5 +2085,270 @@ export const fr: Translations = {
             queryWorks: 'La requête de base de données fonctionne. Le problème se trouve dans React Query ou le cycle de vie du composant.',
             queryHanging: 'La requête est bloquée. Cela suggère un problème de politique RLS causant des boucles infinies ou un problème réseau.',
         },
+    },
+
+    heroSection: {
+        freelancer: {
+            eyebrow: 'Construit en Tunisie. Construit pour la Tunisie.',
+            titleTop: 'Où les talents tunisiens',
+            titleAccent: 'sont rémunérés équitablement.',
+            subtitle: 'Sans enchères. Sans intermédiaires. Publiez un projet, entendez-vous sur les conditions, soyez payé en dinars tunisiens - sécurisé par séquestre.',
+            cta: 'Commencez à gagner aujourd\'hui',
+            secondary: 'Parcourir les projets',
+            trust: {
+                payouts: 'Paiements protégés',
+                matched: 'Travail adapté',
+                reputation: 'Construire une réputation',
+            },
+            stats: {
+                professionals: {
+                    default: '2,500',
+                    label: 'Professionnels',
+                },
+                contracts: {
+                    default: '120',
+                    label: 'Contrats réalisés',
+                },
+                rating: {
+                    value: '4.9/5',
+                    label: 'Moyenne des évaluations',
+                },
+            },
+            features: {
+                apply: {
+                    title: 'Postulez pour des projets adaptés',
+                    subtitle: 'Des emplois qui correspondent à votre niveau de compétence et votre tarif',
+                },
+                verify: {
+                    title: 'Afficher l\'état de vérification',
+                    subtitle: 'Établir la confiance avant de dire un mot',
+                },
+                track: {
+                    title: 'Suivre les jalons et les paiements',
+                    subtitle: 'Tout au même endroit, sécurisé par séquestre',
+                },
+            },
+            promise: 'Une meilleure présentation aide les excellents indépendants à paraître crédibles avant de dire un mot.',
+        },
+        client: {
+            eyebrow: 'Construit en Tunisie. Prêt pour l\'embauche sérieuse.',
+            titleTop: 'Où les entreprises tunisiennes',
+            titleAccent: 'trouvent des talents fiables.',
+            subtitle: 'Publiez un projet, examinez les propositions sérieuses, entendez-vous sur des conditions claires et libérez le paiement uniquement lorsque le travail est approuvé.',
+            cta: 'Publiez un projet gratuitement',
+            secondary: 'Trouver des indépendants',
+            trust: {
+                verified: 'Profils vérifiés',
+                faster: 'Embauche plus rapide',
+                escrow: 'Séquestre protégé',
+            },
+            stats: {
+                professionals: {
+                    default: '2,500',
+                    label: 'Professionnels',
+                },
+                projects: {
+                    default: '120',
+                    label: 'Projets ouverts',
+                },
+                trust: {
+                    value: '4.9/5',
+                    label: 'Score de confiance moyen',
+                },
+            },
+            features: {
+                post: {
+                    title: 'Publiez une fois et recevez des propositions pertinentes',
+                    subtitle: 'Pas de guerres d\'enchères bruyantes, juste des réponses de qualité',
+                },
+                review: {
+                    title: 'Examinez les profils locaux vérifiés',
+                    subtitle: 'Les signaux de confiance apparaissent avant le premier message',
+                },
+                manage: {
+                    title: 'Gérez les jalons avec séquestre',
+                    subtitle: 'Les paiements restent protégés jusqu\'à l\'approbation',
+                },
+            },
+            promise: 'Une meilleure présentation aide les clients sérieux à faire confiance à la plateforme avant de publier un projet.',
+        },
+        promise: {
+            label: 'Promesse Khedma',
+        },
+    },
+
+    valuePropositions: {
+        matched: {
+            title: 'Travail adapté',
+            description: 'Postulez pour des projets qui correspondent exactement à votre niveau de compétence et votre tarif. Pas de concurrence sur le prix - juste sur la qualité.',
+        },
+        protected: {
+            title: 'Paiements protégés',
+            description: 'Les fonds sont mis sous séquestre avant le début du travail. Vous êtes payé au moment où le client approuve.',
+        },
+        reputation: {
+            title: 'Construire une réputation',
+            description: 'Affichez votre statut vérifié, votre portefeuille et vos avis. Gagnez la confiance avant de dire un mot.',
+        },
+        badge: 'Pourquoi Khedma TN',
+        heading: 'Construit différemment. Pour la Tunisie.',
+    },
+
+    howItWorksSection: {
+        steps: {
+            '1': {
+                step: '01',
+                title: 'Créez votre profil',
+                subtitle: 'Définissez vos compétences, votre tarif et votre portefeuille en quelques minutes.',
+            },
+            '2': {
+                step: '02',
+                title: 'Postulez pour des emplois adaptés',
+                subtitle: 'Parcourez les projets qui correspondent à votre expertise.',
+            },
+            '3': {
+                step: '03',
+                title: 'Entendez-vous sur les conditions',
+                subtitle: 'Négociez directement. Aucun intermédiaire.',
+            },
+            '4': {
+                step: '04',
+                title: 'Soyez payé de manière sécurisée',
+                subtitle: 'Fonds libérés via séquestre à l\'approbation.',
+            },
+        },
+        badge: 'Comment ça marche',
+        heading: 'De l\'inscription au paiement en 4 étapes.',
+    },
+
+    ctaSection: {
+        badge: 'Prêt?',
+        title: 'L\'économie des indépendants en Tunisie commence ici.',
+        subtitle: 'Rejoignez des milliers de professionnels qui gagnent déjà équitablement sur Khedma TN.',
+        primary: 'Commencez gratuitement',
+        secondary: 'Publiez un projet',
+    },
+
+    faqPage: {
+        page: {
+            title: 'Questions fréquemment posées',
+            subtitle: 'Réponses aux questions les plus courantes sur l\'utilisation de Khedma.TN',
+            searchPlaceholder: 'Rechercher des questions...',
+            noAnswer: 'Vous n\'avez pas trouvé votre réponse?',
+            supportReady: 'Notre équipe d\'assistance est prête à vous aider 24/7',
+            contactButton: 'Contactez-nous',
+        },
+        categories: {
+            general: {
+                title: 'Général',
+                items: [
+                    {
+                        q: 'Qu\'est-ce que Khedma.TN?',
+                        a: 'Khedma.TN est une plateforme tunisienne de travail indépendant reliant les entreprises aux professionnels talentueux. Nous croyons en un paiement équitable, des profils vérifiés et des transactions sécurisées protégées par séquestre.',
+                    },
+                    {
+                        q: 'L\'inscription est-elle gratuite?',
+                        a: 'Oui, l\'inscription est complètement gratuite pour les indépendants et les clients. Nous ne prélevons qu\'une petite commission sur les projets réussis.',
+                    },
+                    {
+                        q: 'Combien de temps prend la vérification?',
+                        a: 'La vérification d\'identité prend généralement 24-48 heures. Vous pouvez commencer la configuration de votre profil immédiatement, et la vérification se fait en arrière-plan.',
+                    },
+                ],
+            },
+            freelancer: {
+                title: 'Pour les indépendants',
+                items: [
+                    {
+                        q: 'Comment commencer en tant qu\'indépendant?',
+                        a: 'Inscrivez-vous, complétez votre profil avec vos compétences et votre portefeuille, puis commencez à parcourir les projets disponibles qui correspondent à votre expertise.',
+                    },
+                    {
+                        q: 'Combien puis-je gagner?',
+                        a: 'Vos gains dépendent des projets que vous acceptez et des tarifs que vous fixez. De nombreux indépendants tunisiens gagnent entre 500-5000 dinars tunisiens par mois.',
+                    },
+                    {
+                        q: 'Comment me fait-on payer?',
+                        a: 'Les paiements s\'effectuent via D17, virement bancaire ou autres méthodes de paiement locales. Vous définissez votre méthode de paiement préférée dans les paramètres du portefeuille.',
+                    },
+                ],
+            },
+            client: {
+                title: 'Pour les clients',
+                items: [
+                    {
+                        q: 'Comment publier un projet?',
+                        a: 'Cliquez sur "Publier un projet", décrivez votre travail, définissez votre budget et votre calendrier, puis publiez. Vous recevrez des propositions d\'indépendants vérifiés.',
+                    },
+                    {
+                        q: 'Que faire si je ne suis pas satisfait du travail?',
+                        a: 'Si le travail ne répond pas aux conditions convenues, vous recevez un remboursement complet. Les fonds sont mis sous séquestre jusqu\'à ce que vous approuviez la livraison.',
+                    },
+                    {
+                        q: 'Comment mon argent est-il protégé?',
+                        a: 'Les fonds sont conservés de manière sécurisée en séquestre. L\'indépendant ne reçoit le paiement que lorsque vous approuvez le travail effectué.',
+                    },
+                ],
+            },
+            payment: {
+                title: 'Paiement et revenus',
+                items: [
+                    {
+                        q: 'Quels modes de paiement acceptez-vous?',
+                        a: 'Nous supportons toutes les méthodes locales tunisiennes: cartes, D17, virement bancaire et espèces pour petits montants.',
+                    },
+                    {
+                        q: 'Quand me fait-on payer?',
+                        a: 'Les indépendants sont payés dans les 48 heures suivant l\'approbation du client et la libération du séquestre.',
+                    },
+                    {
+                        q: 'Y a-t-il des frais cachés?',
+                        a: 'Non. Nos frais sont transparents et clairement affichés. Nous prélevons uniquement une petite commission sur les projets réalisés.',
+                    },
+                ],
+            },
+            security: {
+                title: 'Sécurité et confidentialité',
+                items: [
+                    {
+                        q: 'Mes informations personnelles sont-elles sûres?',
+                        a: 'Oui. Nous utilisons le chiffrement et les mesures de sécurité standard. Vos données ne sont jamais partagées sans votre permission.',
+                    },
+                    {
+                        q: 'Pourquoi avez-vous besoin d\'une vérification d\'identité?',
+                        a: 'La vérification d\'identité garantit la confiance et la sécurité pour les indépendants et les clients. Chaque professionnel sur Khedma est vérifié par identité.',
+                    },
+                    {
+                        q: 'Puis-je rester anonyme?',
+                        a: 'Non. Les indépendants et les clients doivent être vérifiés. Cela protège tout le monde et assure la responsabilité.',
+                    },
+                ],
+            },
+        },
+    },
+
+    languages: {
+        ar: {
+            name: 'العربية',
+            code: 'AR',
+            country: 'TN',
+        },
+        fr: {
+            name: 'Français',
+            code: 'FR',
+            country: 'FR',
+        },
+        en: {
+            name: 'English',
+            code: 'EN',
+            country: 'GB',
+        },
+    },
+
+    error: {
+        unexpected: 'Une erreur inattendue s\'est produite lors du rendu de cette section.',
+        title: 'Quelque chose s\'est mal passé',
+        retry: 'Réessayer',
+        jobCard: 'Impossible de charger la carte d\'emploi',
     },
 };
