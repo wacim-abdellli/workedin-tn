@@ -163,24 +163,24 @@ export default function FindFreelancers() {
         <div className="space-y-8">
             <div className="relative group">
                 <div className="pointer-events-none absolute inset-y-0 end-0 flex items-center pe-3">
-                    <Search className="h-5 w-5 text-[#8a839f] transition-colors group-focus-within:text-primary-500" />
+                    <Search className="h-5 w-5 text-[#8a839f] transition-colors group-focus-within:text-brand" />
                 </div>
                 <input
                     type="text"
                     value={searchQuery}
                     onChange={(event) => setSearchQuery(event.target.value)}
                     placeholder={copy.searchPlaceholder}
-                    className="block w-full rounded-2xl border border-white/70 bg-white/85 p-4 pe-11 text-sm text-[#191627] shadow-sm backdrop-blur transition-colors focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-200 dark:border-white/8 dark:bg-white/5 dark:text-white dark:focus:ring-primary-500/20"
+                    className="block w-full rounded-2xl border border-white/70 bg-white/85 p-4 pe-11 text-sm text-[#191627] shadow-sm backdrop-blur transition-colors focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/30 dark:border-white/8 dark:bg-white/5 dark:text-white dark:focus:ring-brand/20"
                 />
             </div>
 
-            <div className="rounded-3xl border border-emerald-200/60 bg-gradient-to-br from-emerald-50 to-white p-4 shadow-sm dark:border-emerald-500/10 dark:bg-[linear-gradient(135deg,rgba(16,185,129,0.12),rgba(255,255,255,0.03))]">
+            <div className="rounded-3xl border p-4 shadow-sm" style={{ borderColor: 'color-mix(in srgb, var(--brand-accent) 18%, var(--border))', background: 'linear-gradient(135deg, color-mix(in srgb, var(--brand-accent) 8%, transparent), color-mix(in srgb, var(--card-bg) 90%, transparent))' }}>
                 <label className="flex cursor-pointer items-center justify-between gap-4">
                     <div>
                         <div className="font-semibold text-[#191627] dark:text-white">{copy.availableNow}</div>
                         <div className="mt-1 text-sm text-[#6e6884] dark:text-[#9a95ad]">{copy.availableNowDesc}</div>
                     </div>
-                    <div className={`flex h-7 w-12 items-center rounded-full p-1 transition-colors ${availableOnly ? 'bg-emerald-500' : 'bg-gray-300 dark:bg-white/10'}`}>
+                    <div className="flex h-7 w-12 items-center rounded-full p-1 transition-colors" style={{ background: availableOnly ? 'var(--brand-accent)' : 'rgba(255,255,255,0.1)' }}>
                         <div className={`h-5 w-5 rounded-full bg-white shadow transition-transform ${availableOnly ? 'translate-x-5' : ''}`} />
                     </div>
                     <input
@@ -194,7 +194,7 @@ export default function FindFreelancers() {
 
             <div>
                 <h3 className="mb-4 flex items-center gap-2 text-sm font-bold uppercase tracking-[0.18em] text-[#7a7590] dark:text-[#918ba8]">
-                    <Briefcase className="h-4 w-4 text-primary-500" />
+                    <Briefcase className="h-4 w-4 text-brand" />
                     {copy.category}
                 </h3>
                 <div className="space-y-2">
@@ -208,7 +208,7 @@ export default function FindFreelancers() {
                                         prev.includes(category) ? prev.filter((item) => item !== category) : [...prev, category]
                                     )
                                 }
-                                className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                                className="h-4 w-4 rounded border-gray-300 text-brand focus:ring-brand"
                             />
                             <span className="text-sm text-[#413c54] dark:text-[#cecadd]">{category}</span>
                         </label>
@@ -233,8 +233,8 @@ export default function FindFreelancers() {
                                 }
                                 className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
                                     active
-                                        ? 'bg-primary-600 text-white shadow-lg shadow-primary-500/25'
-                                        : 'border border-white/70 bg-white/80 text-[#5f5974] hover:border-primary-200 hover:text-primary-700 dark:border-white/8 dark:bg-white/5 dark:text-[#b9b4c8] dark:hover:border-primary-500/20 dark:hover:text-primary-200'
+                                        ? 'bg-brand text-brand-text shadow-lg shadow-brand/25'
+                                        : 'border border-white/70 bg-white/80 text-[#5f5974] hover:border-brand hover:text-brand dark:border-white/8 dark:bg-white/5 dark:text-[#b9b4c8] dark:hover:border-brand/30 dark:hover:text-brand-mid'
                                 }`}
                             >
                                 {skill}
@@ -251,13 +251,13 @@ export default function FindFreelancers() {
                         type="number"
                         value={rateRange[0]}
                         onChange={(event) => setRateRange([Number(event.target.value), rateRange[1]])}
-                        className="rounded-2xl border border-white/70 bg-white/80 px-3 py-3 text-center text-sm shadow-sm focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-200 dark:border-white/8 dark:bg-white/5 dark:focus:ring-primary-500/20"
+                        className="rounded-2xl border border-white/70 bg-white/80 px-3 py-3 text-center text-sm shadow-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/30 dark:border-white/8 dark:bg-white/5 dark:focus:ring-brand/20"
                     />
                     <input
                         type="number"
                         value={rateRange[1]}
                         onChange={(event) => setRateRange([rateRange[0], Number(event.target.value)])}
-                        className="rounded-2xl border border-white/70 bg-white/80 px-3 py-3 text-center text-sm shadow-sm focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-200 dark:border-white/8 dark:bg-white/5 dark:focus:ring-primary-500/20"
+                        className="rounded-2xl border border-white/70 bg-white/80 px-3 py-3 text-center text-sm shadow-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/30 dark:border-white/8 dark:bg-white/5 dark:focus:ring-brand/20"
                     />
                 </div>
             </div>
@@ -272,8 +272,8 @@ export default function FindFreelancers() {
                             onClick={() => setMinRating(rating)}
                             className={`rounded-2xl px-3 py-2 text-sm font-semibold transition-colors ${
                                 minRating === rating
-                                    ? 'bg-primary-600 text-white shadow-lg shadow-primary-500/20'
-                                    : 'border border-white/70 bg-white/80 text-[#5f5974] dark:border-white/8 dark:bg-white/5 dark:text-[#b9b4c8]'
+                                    ? 'bg-brand text-brand-text shadow-lg shadow-brand/20'
+                                    : 'border border-white/70 bg-white/80 text-[#5f5974] hover:border-brand hover:text-brand dark:border-white/8 dark:bg-white/5 dark:text-[#b9b4c8] dark:hover:border-brand/30 dark:hover:text-brand-mid'
                             }`}
                         >
                             {rating === 0 ? 'All' : `${rating}+`}
@@ -282,13 +282,13 @@ export default function FindFreelancers() {
                 </div>
             </div>
 
-            <div className="rounded-3xl border border-blue-200/60 bg-gradient-to-br from-blue-50 to-white p-4 shadow-sm dark:border-blue-500/10 dark:bg-[linear-gradient(135deg,rgba(59,130,246,0.12),rgba(255,255,255,0.03))]">
+            <div className="rounded-3xl border p-4 shadow-sm" style={{ borderColor: 'color-mix(in srgb, var(--workspace-primary) 18%, var(--border))', background: 'linear-gradient(135deg, color-mix(in srgb, var(--workspace-primary) 8%, transparent), color-mix(in srgb, var(--card-bg) 90%, transparent))' }}>
                 <label className="flex cursor-pointer items-center justify-between gap-4">
                     <div>
                         <div className="font-semibold text-[#191627] dark:text-white">{copy.verifiedOnly}</div>
                         <div className="mt-1 text-sm text-[#6e6884] dark:text-[#9a95ad]">{copy.verifiedOnlyDesc}</div>
                     </div>
-                    <div className={`flex h-7 w-12 items-center rounded-full p-1 transition-colors ${verifiedOnly ? 'bg-blue-500' : 'bg-gray-300 dark:bg-white/10'}`}>
+                    <div className="flex h-7 w-12 items-center rounded-full p-1 transition-colors" style={{ background: verifiedOnly ? 'var(--workspace-primary)' : 'rgba(255,255,255,0.1)' }}>
                         <div className={`h-5 w-5 rounded-full bg-white shadow transition-transform ${verifiedOnly ? 'translate-x-5' : ''}`} />
                     </div>
                     <input
@@ -307,52 +307,53 @@ export default function FindFreelancers() {
     );
 
     return (
-        <div className="min-h-screen bg-[#f8f7ff] text-[#191627] transition-colors duration-300 dark:bg-[#09070f] dark:text-white">
+        <div className="min-h-screen transition-colors duration-300" style={{ background: 'var(--page-bg)', color: 'var(--text-primary)' }}>
             <SEO {...SEO_CONFIG.findFreelancers} url="/find-freelancers" canonical="https://khedma.tn/find-freelancers" />
             <Header />
 
-            <section className="relative overflow-hidden border-b border-white/40 bg-white/80 pt-10 pb-16 backdrop-blur-xl dark:border-white/5 dark:bg-[#0f0d16]">
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(139,92,246,0.18),transparent_35%),radial-gradient(circle_at_top_right,rgba(245,158,11,0.14),transparent_28%),linear-gradient(180deg,rgba(255,255,255,0.92),rgba(248,247,255,0.74))] dark:bg-[radial-gradient(circle_at_top_left,rgba(139,92,246,0.24),transparent_35%),radial-gradient(circle_at_top_right,rgba(245,158,11,0.1),transparent_25%),linear-gradient(180deg,rgba(15,13,22,0.96),rgba(9,7,15,0.94))]" />
+            <section className="relative overflow-hidden border-b pt-10 pb-16 backdrop-blur-xl" style={{ borderColor: 'var(--border)', background: 'var(--page-bg)' }}>
+                <div className="absolute inset-0" style={{ background: 'radial-gradient(circle at top left, color-mix(in srgb, var(--workspace-primary) 18%, transparent), transparent 35%), radial-gradient(circle at top right, color-mix(in srgb, var(--brand-accent) 14%, transparent), transparent 28%), linear-gradient(180deg, color-mix(in srgb, var(--page-bg) 92%, white), color-mix(in srgb, var(--page-bg) 100%, transparent))' }} />
                 <div className="container-custom relative z-10">
                     <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
                         <div className="max-w-3xl">
-                            <div className="inline-flex items-center gap-2 rounded-full border border-primary-200/70 bg-white/80 px-3 py-1 text-xs font-bold text-primary-700 shadow-sm backdrop-blur dark:border-primary-500/20 dark:bg-white/5 dark:text-primary-300">
+                            <div className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-bold shadow-sm backdrop-blur" style={{ borderColor: 'color-mix(in srgb, var(--workspace-primary) 20%, transparent)', background: 'color-mix(in srgb, var(--workspace-primary) 7%, var(--card-bg))', color: 'var(--workspace-primary)' }}>
                                 <Sparkles className="h-3 w-3" />
                                 <span>{copy.hero.badge}</span>
                             </div>
-                            <h1 className="mt-4 text-4xl font-extrabold tracking-[-0.03em] text-[#171420] dark:text-white md:text-5xl">
+                            <h1 className="mt-4 text-4xl font-extrabold tracking-[-0.03em] md:text-5xl" style={{ color: 'var(--text-primary)' }}>
                                 {copy.hero.title}{' '}
-                                <span className="bg-gradient-to-r from-primary-500 via-fuchsia-400 to-amber-400 bg-clip-text text-transparent">
+                                <span className="bg-clip-text text-transparent" style={{ backgroundImage: 'linear-gradient(90deg, var(--workspace-primary), var(--workspace-primary-mid), var(--brand-accent))' }}>
                                     {copy.hero.titleHighlight}
                                 </span>
                             </h1>
-                            <p className="mt-4 max-w-2xl text-base leading-7 text-[#5e5973] dark:text-[#a8a4b9] md:text-lg">
+                            <p className="mt-4 max-w-2xl text-base leading-7 md:text-lg" style={{ color: 'var(--text-secondary)' }}>
                                 {copy.hero.subtitle}
                                 <span className="hidden md:inline">{copy.hero.subtitleDesktop}</span>
                             </p>
                             <div className="mt-6 grid gap-3 sm:grid-cols-3">
-                                <div className="glass-card rounded-[24px] px-4 py-4">
-                                    <div className="text-xs uppercase tracking-[0.18em] text-[#7a7590] dark:text-[#918ba8]">{copy.heroStats.talentPool}</div>
+                                <div className="rounded-[24px] px-4 py-4 border" style={{ background: 'color-mix(in srgb, var(--card-bg) 88%, transparent)', borderColor: 'var(--border)' }}>
+                                    <div className="text-xs uppercase tracking-[0.18em]" style={{ color: 'var(--text-muted)' }}>{copy.heroStats.talentPool}</div>
                                     <div className="mt-2 text-2xl font-bold">{(freelancersData?.length || 0).toLocaleString()}+</div>
                                 </div>
-                                <div className="glass-card rounded-[24px] px-4 py-4">
-                                    <div className="text-xs uppercase tracking-[0.18em] text-[#7a7590] dark:text-[#918ba8]">{copy.heroStats.verified}</div>
+                                <div className="rounded-[24px] px-4 py-4 border" style={{ background: 'color-mix(in srgb, var(--card-bg) 88%, transparent)', borderColor: 'var(--border)' }}>
+                                    <div className="text-xs uppercase tracking-[0.18em]" style={{ color: 'var(--text-muted)' }}>{copy.heroStats.verified}</div>
                                     <div className="mt-2 text-2xl font-bold">{(freelancersData || []).filter((f: FreelancerRecord) => f.is_verified).length}</div>
                                 </div>
-                                <div className="glass-card rounded-[24px] px-4 py-4">
-                                    <div className="text-xs uppercase tracking-[0.18em] text-[#7a7590] dark:text-[#918ba8]">{copy.heroStats.fastReplies}</div>
+                                <div className="rounded-[24px] px-4 py-4 border" style={{ background: 'color-mix(in srgb, var(--card-bg) 88%, transparent)', borderColor: 'var(--border)' }}>
+                                    <div className="text-xs uppercase tracking-[0.18em]" style={{ color: 'var(--text-muted)' }}>{copy.heroStats.fastReplies}</div>
                                     <div className="mt-2 text-2xl font-bold">4.9/5</div>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="inline-flex w-fit items-center gap-2 rounded-2xl border border-white/70 bg-white/80 p-1.5 shadow-lg shadow-primary-500/10 backdrop-blur dark:border-white/8 dark:bg-white/5">
+                        <div className="inline-flex w-fit items-center gap-2 rounded-2xl border p-1.5 shadow-lg backdrop-blur" style={{ borderColor: 'var(--border)', background: 'color-mix(in srgb, var(--card-bg) 88%, transparent)' }}>
                             <button
                                 type="button"
                                 onClick={() => setViewMode('grid')}
                                 aria-label="عرض شبكي"
                                 aria-pressed={viewMode === 'grid'}
-                                className={`rounded-xl p-2.5 transition-colors ${viewMode === 'grid' ? 'bg-primary-50 text-primary-600 dark:bg-primary-500/15 dark:text-primary-300' : 'text-[#87819a] hover:text-[#1d1a28] dark:hover:text-white'}`}
+                                className="rounded-xl p-2.5 transition-colors"
+                                style={viewMode === 'grid' ? { background: 'color-mix(in srgb, var(--workspace-primary) 12%, transparent)', color: 'var(--workspace-primary)' } : { color: 'var(--text-muted)' }}
                             >
                                 <Grid className="h-5 w-5" />
                             </button>
@@ -362,7 +363,8 @@ export default function FindFreelancers() {
                                 onClick={() => setViewMode('list')}
                                 aria-label="عرض قائمة"
                                 aria-pressed={viewMode === 'list'}
-                                className={`rounded-xl p-2.5 transition-colors ${viewMode === 'list' ? 'bg-primary-50 text-primary-600 dark:bg-primary-500/15 dark:text-primary-300' : 'text-[#87819a] hover:text-[#1d1a28] dark:hover:text-white'}`}
+                                className="rounded-xl p-2.5 transition-colors"
+                                style={viewMode === 'list' ? { background: 'color-mix(in srgb, var(--workspace-primary) 12%, transparent)', color: 'var(--workspace-primary)' } : { color: 'var(--text-muted)' }}
                             >
                                 <List className="h-5 w-5" />
                             </button>
@@ -384,10 +386,10 @@ export default function FindFreelancers() {
 
                 <div className="flex items-start gap-8">
                     <aside className="sticky top-28 hidden w-80 shrink-0 lg:block">
-                        <div className="glass-card rounded-[28px] p-6 shadow-xl shadow-primary-500/8">
+                        <div className="rounded-[28px] p-6 border" style={{ background: 'color-mix(in srgb, var(--card-bg) 90%, transparent)', borderColor: 'var(--border)', boxShadow: '0 24px 60px -44px color-mix(in srgb, var(--workspace-primary) 28%, transparent)' }}>
                             <div className="mb-6 flex items-center justify-between">
                                 <div className="flex items-center gap-2">
-                                    <Filter className="h-5 w-5 text-primary-500" />
+                                    <Filter className="h-5 w-5" style={{ color: 'var(--workspace-primary)' }} />
                                     <h2 className="text-lg font-bold">{copy.filterTitle}</h2>
                                 </div>
                                 {activeFilterCount > 0 ? (
@@ -402,17 +404,17 @@ export default function FindFreelancers() {
 
                     <main className="min-w-0 flex-1">
                         <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                            <div className="flex flex-wrap items-center gap-3 text-sm text-[#6e6884] dark:text-[#9a95ad]">
+                            <div className="flex flex-wrap items-center gap-3 text-sm" style={{ color: 'var(--text-muted)' }}>
                                 <span>{copy.resultsCount.replace('{{count}}', filteredFreelancers.length.toString())}</span>
                                 {activeFilterCount > 0 ? (
-                                    <span className="rounded-full border border-primary-200/70 bg-primary-50 px-3 py-1 text-xs font-semibold text-primary-700 dark:border-primary-500/20 dark:bg-primary-500/10 dark:text-primary-300">
+                                    <span className="rounded-full border px-3 py-1 text-xs font-semibold" style={{ borderColor: 'color-mix(in srgb, var(--workspace-primary) 18%, transparent)', background: 'color-mix(in srgb, var(--workspace-primary) 8%, transparent)', color: 'var(--workspace-primary)' }}>
                                         {activeFilterCount} {copy.activeFilters}
                                     </span>
                                 ) : null}
                             </div>
 
-                            <div className="flex items-center gap-2 rounded-full border border-white/70 bg-white/80 px-3 py-2 shadow-sm backdrop-blur dark:border-white/8 dark:bg-white/5">
-                                <span className="hidden text-sm text-[#6e6884] dark:text-[#9a95ad] sm:inline">{copy.sort.label}</span>
+                            <div className="flex items-center gap-2 rounded-full border px-3 py-2 shadow-sm backdrop-blur" style={{ borderColor: 'var(--border)', background: 'color-mix(in srgb, var(--card-bg) 90%, transparent)' }}>
+                                <span className="hidden text-sm sm:inline" style={{ color: 'var(--text-muted)' }}>{copy.sort.label}</span>
                                 <select
                                     value={sortBy}
                                     onChange={(event) => setSortBy(event.target.value)}
@@ -427,18 +429,18 @@ export default function FindFreelancers() {
 
                         {!isLoading && filteredFreelancers.length > 0 ? (
                             <div className="mb-6 grid gap-3 sm:grid-cols-3">
-                                <div className="rounded-[24px] border border-white/70 bg-white/80 px-4 py-4 shadow-sm backdrop-blur dark:border-white/8 dark:bg-white/5">
-                                    <div className="text-xs uppercase tracking-[0.18em] text-[#7a7590] dark:text-[#918ba8]">{copy.resultStats.availableNow}</div>
+                                <div className="rounded-[24px] border px-4 py-4 shadow-sm backdrop-blur" style={{ borderColor: 'var(--border)', background: 'color-mix(in srgb, var(--card-bg) 90%, transparent)' }}>
+                                    <div className="text-xs uppercase tracking-[0.18em]" style={{ color: 'var(--text-muted)' }}>{copy.resultStats.availableNow}</div>
                                     <div className="mt-2 text-2xl font-bold">
                                         {filteredFreelancers.filter((freelancer) => freelancer.is_available).length}
                                     </div>
                                 </div>
-                                <div className="rounded-[24px] border border-white/70 bg-white/80 px-4 py-4 shadow-sm backdrop-blur dark:border-white/8 dark:bg-white/5">
-                                    <div className="text-xs uppercase tracking-[0.18em] text-[#7a7590] dark:text-[#918ba8]">{copy.resultStats.averageRate}</div>
+                                <div className="rounded-[24px] border px-4 py-4 shadow-sm backdrop-blur" style={{ borderColor: 'var(--border)', background: 'color-mix(in srgb, var(--card-bg) 90%, transparent)' }}>
+                                    <div className="text-xs uppercase tracking-[0.18em]" style={{ color: 'var(--text-muted)' }}>{copy.resultStats.averageRate}</div>
                                     <div className="mt-2 text-2xl font-bold">{averageRate} TND</div>
                                 </div>
-                                <div className="rounded-[24px] border border-white/70 bg-white/80 px-4 py-4 shadow-sm backdrop-blur dark:border-white/8 dark:bg-white/5">
-                                    <div className="text-xs uppercase tracking-[0.18em] text-[#7a7590] dark:text-[#918ba8]">{copy.resultStats.topRating}</div>
+                                <div className="rounded-[24px] border px-4 py-4 shadow-sm backdrop-blur" style={{ borderColor: 'var(--border)', background: 'color-mix(in srgb, var(--card-bg) 90%, transparent)' }}>
+                                    <div className="text-xs uppercase tracking-[0.18em]" style={{ color: 'var(--text-muted)' }}>{copy.resultStats.topRating}</div>
                                     <div className="mt-2 text-2xl font-bold">{topRating}</div>
                                 </div>
                             </div>

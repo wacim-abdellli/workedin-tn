@@ -1,112 +1,72 @@
-import { Link } from 'react-router-dom';
-import { Users, Briefcase, ArrowRight, ArrowLeft } from 'lucide-react';
-import { useTranslation } from '@/i18n';
-import { useAuth } from '@/contexts/AuthContext';
-import Button from '@/components/ui/Button';
-import { getWorkspaceDashboardPath, getWorkspaceOnboardingPath, isWorkspaceReady } from '@/lib/workspaceRoutes';
+import { UserPlus, Search, CheckCircle, DollarSign } from 'lucide-react';
 
-export default function HowItWorksSection() {
-    const { t, dir } = useTranslation();
-    const { isAuthenticated, profile, freelancerProfile } = useAuth();
-    const ArrowIcon = dir === 'rtl' ? ArrowLeft : ArrowRight;
+const steps = [
+  { icon: UserPlus, step: '01', title: 'Create your profile', sub: 'Set your skills, rate, and portfolio in minutes.' },
+  { icon: Search, step: '02', title: 'Apply to matched jobs', sub: 'Browse projects that fit your expertise.' },
+  { icon: CheckCircle, step: '03', title: 'Agree on terms', sub: 'Negotiate directly. No middlemen.' },
+  { icon: DollarSign, step: '04', title: 'Get paid securely', sub: 'Funds released via escrow on approval.' },
+];
 
-    const getFreelancerLink = () => {
-        if (isAuthenticated) {
-            return isWorkspaceReady({ ...profile, user_type: 'freelancer' }, freelancerProfile, 'freelancer')
-                ? getWorkspaceDashboardPath('freelancer')
-                : getWorkspaceOnboardingPath('freelancer');
-        }
-        return '/signup?type=freelancer';
-    };
+export function HowItWorksSection() {
+  return (
+    <section className="py-24" style={{ background: 'var(--page-bg)' }}>
+      <div className="container mx-auto px-6 lg:px-8 max-w-7xl">
+        <div className="text-center mb-16">
+          <p
+            className="text-xs font-semibold uppercase tracking-[0.2em] mb-3"
+            style={{ color: 'var(--workspace-primary-mid)' }}
+          >
+            How it works
+          </p>
+          <h2
+            className="font-display font-bold text-4xl tracking-tight"
+            style={{ color: 'var(--text-primary)' }}
+          >
+            From signup to paid in 4 steps.
+          </h2>
+        </div>
 
-    const getClientLink = () => {
-        if (isAuthenticated) {
-            return isWorkspaceReady({ ...profile, user_type: 'client' }, freelancerProfile, 'client')
-                ? getWorkspaceDashboardPath('client')
-                : getWorkspaceOnboardingPath('client');
-        }
-        return '/signup?type=client';
-    };
-
-    return (
-        <section className="section bg-dark-50 dark:bg-dark-900">
-            <div className="container-custom">
-                <div className="text-center mb-16">
-                    <span className="badge-primary mb-4">{t.home.sections.howItWorks.badge}</span>
-                    <h2 className="heading-lg mb-4">
-                        {t.howItWorks.title}
-                    </h2>
-                    <p className="text-muted max-w-2xl mx-auto">
-                        {t.home.sections.howItWorks.subtitle}
-                    </p>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {steps.map((s, i) => (
+            <div key={s.step} className="relative">
+              {i < steps.length - 1 && (
+                <div
+                  className="hidden lg:block absolute top-8 left-[calc(100%-1rem)] w-full h-px"
+                  style={{ background: 'var(--border)' }}
+                />
+              )}
+              <div
+                className="rounded-2xl border p-6"
+                style={{ background: 'var(--card-bg)', borderColor: 'var(--border)' }}
+              >
+                <div
+                  className="w-14 h-14 rounded-2xl flex items-center justify-center mb-5"
+                  style={{ background: 'color-mix(in srgb, var(--workspace-primary) 10%, transparent)' }}
+                >
+                  <s.icon className="w-7 h-7" style={{ color: 'var(--workspace-primary)' }} />
                 </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    {/* For Freelancers */}
-                    <div className="card p-8 relative overflow-hidden group">
-                        <div className="absolute top-0 end-0 w-32 h-32 bg-gradient-to-br from-primary-500/10 to-transparent rounded-bl-full" />
-                        <div className="flex items-center gap-4 mb-8">
-                            <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center shadow-lg shadow-primary-600/25">
-                                <Users className="w-7 h-7 text-white" />
-                            </div>
-                            <div>
-                                <h3 className="text-xl font-bold">{t.howItWorks.tabs.freelancer}</h3>
-                                <p className="text-sm text-muted">{t.home.sections.howItWorks.freelancerDesc}</p>
-                            </div>
-                        </div>
-
-                        <div className="space-y-5">
-                            {t.howItWorks.freelancerSteps.slice(0, 3).map((step, index) => (
-                                <div key={index} className="flex items-center gap-4 group/item">
-                                    <div className="w-12 h-12 rounded-xl bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 flex items-center justify-center font-bold flex-shrink-0 group-hover/item:bg-primary-600 group-hover/item:text-white transition-colors">
-                                        {index + 1}
-                                    </div>
-                                    <span className="text-lg font-medium">{step.title}</span>
-                                </div>
-                            ))}
-                        </div>
-
-                        <Link to={getFreelancerLink()} className="mt-8 block">
-                            <Button variant="primary" className="w-full" rightIcon={<ArrowIcon className="w-5 h-5" />}>
-                                {t.howItWorks.cta.freelancer}
-                            </Button>
-                        </Link>
-                    </div>
-
-                    {/* For Clients */}
-                    <div className="card p-8 relative overflow-hidden group">
-                        <div className="absolute top-0 end-0 w-32 h-32 bg-gradient-to-br from-accent-500/10 to-transparent rounded-bl-full" />
-                        <div className="flex items-center gap-4 mb-8">
-                            <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-accent-500 to-accent-700 flex items-center justify-center shadow-lg shadow-accent-500/25">
-                                <Briefcase className="w-7 h-7 text-white" />
-                            </div>
-                            <div>
-                                <h3 className="text-xl font-bold">{t.howItWorks.tabs.client}</h3>
-                                <p className="text-sm text-muted">{t.home.sections.howItWorks.clientDesc}</p>
-                            </div>
-                        </div>
-
-                        <div className="space-y-5">
-                            {t.howItWorks.clientSteps.slice(0, 3).map((step, index) => (
-                                <div key={index} className="flex items-center gap-4 group/item">
-                                    <div className="w-12 h-12 rounded-xl bg-accent-100 dark:bg-accent-900/30 text-accent-600 dark:text-accent-400 flex items-center justify-center font-bold flex-shrink-0 group-hover/item:bg-accent-600 group-hover/item:text-white transition-colors">
-                                        {index + 1}
-                                    </div>
-                                    <span className="text-lg font-medium">{step.title}</span>
-                                </div>
-                            ))}
-                        </div>
-
-                        <Link to={getClientLink()} className="mt-8 block">
-                            <button className="btn-accent w-full btn-lg">
-                                <span>{t.howItWorks.cta.client}</span>
-                                <ArrowIcon className="w-5 h-5" />
-                            </button>
-                        </Link>
-                    </div>
-                </div>
+                <p
+                  className="font-display font-bold text-4xl mb-3 opacity-10"
+                  style={{ color: 'var(--workspace-primary)' }}
+                >
+                  {s.step}
+                </p>
+                <h3
+                  className="font-display font-bold text-lg mb-2"
+                  style={{ color: 'var(--text-primary)' }}
+                >
+                  {s.title}
+                </h3>
+                <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                  {s.sub}
+                </p>
+              </div>
             </div>
-        </section>
-    );
+          ))}
+        </div>
+      </div>
+    </section>
+  );
 }
 
+export default HowItWorksSection;

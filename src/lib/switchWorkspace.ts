@@ -75,7 +75,7 @@ export async function switchWorkspace({
   const target = getWorkspaceTargetRoute(nextProfile, freelancerProfile, targetWorkspace);
   sessionStorage.setItem('workspace_switched', targetWorkspace);
 
-  navigate(target.path, {
+  navigate('/', {
     state: {
       switching: true,
       workspace: targetWorkspace,

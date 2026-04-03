@@ -1,81 +1,64 @@
-import { Link } from 'react-router-dom';
-import { Sparkles, ArrowRight, ArrowLeft, Play } from 'lucide-react';
-import { useTranslation } from '@/i18n';
-import { useAuth } from '@/contexts/AuthContext';
-import Button from '@/components/ui/Button';
-import {
-    getWorkspaceDashboardPath,
-    getWorkspaceJobsPath,
-    getWorkspaceOnboardingPath,
-    getWorkspaceTargetRoute,
-    isWorkspaceReady,
-} from '@/lib/workspaceRoutes';
-import { useWorkspaceStore } from '@/lib/workspaceState';
+import { useNavigate } from 'react-router-dom';
+import { ArrowRight } from 'lucide-react';
 
-export default function CTASection() {
-    const { t, dir } = useTranslation();
-    const { isAuthenticated, profile, freelancerProfile } = useAuth();
-    const activeWorkspace = useWorkspaceStore((state) => state.activeWorkspace);
-    const ArrowIcon = dir === 'rtl' ? ArrowLeft : ArrowRight;
+export function CTASection() {
+  const navigate = useNavigate();
 
-    // Determine where to redirect based on auth status
-    const getStartLink = () => {
-        if (isAuthenticated) {
-            return isWorkspaceReady({ ...profile, user_type: 'freelancer' }, freelancerProfile, 'freelancer')
-                ? getWorkspaceDashboardPath('freelancer')
-                : getWorkspaceOnboardingPath('freelancer');
-        }
-        return '/signup?type=freelancer';
-    };
-
-    const primaryLabel = isAuthenticated ? t.nav.dashboard : t.home.sections.cta.btnStart;
-    const primaryLink = isAuthenticated
-        ? getWorkspaceTargetRoute(profile, freelancerProfile, activeWorkspace).path
-        : getStartLink();
-
-    const secondaryLink = isAuthenticated
-        ? getWorkspaceJobsPath(activeWorkspace)
-        : '/how-it-works';
-
-    const secondaryLabel = isAuthenticated
-        ? activeWorkspace === 'client'
-            ? t.hero.ctaClient
-            : t.nav.findWork
-        : t.home.sections.cta.btnWatch;
-
-    return (
-        <section className="py-24 relative overflow-hidden">
-            <div className="absolute inset-0 gradient-mesh" />
-            <div className="container-custom relative">
-                <div className="max-w-4xl mx-auto text-center">
-                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 text-sm font-semibold mb-6">
-                        <Sparkles className="w-4 h-4" />
-                        {t.home.sections.cta.badge}
-                    </div>
-
-                    <h2 className="heading-lg mb-6">
-                        {t.home.sections.cta.title}
-                    </h2>
-                    <p className="text-xl text-muted mb-10 max-w-2xl mx-auto">
-                        {t.home.sections.cta.subtitle}
-                    </p>
-
-                    <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                        <Link to={primaryLink}>
-                            <button className="btn-primary btn-lg">
-                                <span>{primaryLabel}</span>
-                                <ArrowIcon className="w-5 h-5" />
-                            </button>
-                        </Link>
-                        <Link to={secondaryLink}>
-                            <Button variant="outline" size="lg" leftIcon={<Play className="w-5 h-5" />}>
-                                {secondaryLabel}
-                            </Button>
-                        </Link>
-                    </div>
-                </div>
-            </div>
-        </section>
-    );
+  return (
+    <section className="py-24" style={{ background: 'var(--page-bg)' }}>
+      <div className="container mx-auto px-6 lg:px-8 max-w-4xl text-center">
+        <div
+          className="rounded-3xl border p-16"
+          style={{
+            background: 'linear-gradient(135deg, color-mix(in srgb, var(--workspace-primary) 15%, transparent) 0%, color-mix(in srgb, var(--brand-accent) 8%, transparent) 100%)',
+            borderColor: 'color-mix(in srgb, var(--workspace-primary) 20%, transparent)',
+          }}
+        >
+          <p
+            className="text-xs font-semibold uppercase tracking-[0.2em] mb-4"
+            style={{ color: 'var(--workspace-primary-mid)' }}
+          >
+            Ready?
+          </p>
+          <h2
+            className="font-display font-bold text-4xl sm:text-5xl tracking-tight mb-6"
+            style={{ color: 'var(--text-primary)' }}
+          >
+            Tunisia's freelance
+            <br />
+            economy starts here.
+          </h2>
+          <p
+            className="text-lg mb-10 max-w-xl mx-auto"
+            style={{ color: 'var(--text-secondary)' }}
+          >
+            Join thousands of professionals already earning fairly on Khedma TN.
+          </p>
+          <div className="flex flex-wrap items-center justify-center gap-4">
+            <button
+              onClick={() => navigate('/signup')}
+              className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl font-semibold text-white transition-all hover:opacity-90 hover:-translate-y-0.5"
+              style={{ background: 'var(--workspace-primary)', fontSize: '1rem' }}
+            >
+              Get started free <ArrowRight className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => navigate('/jobs/new')}
+              className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl font-semibold transition-all hover:-translate-y-0.5 border"
+              style={{
+                color: 'var(--text-primary)',
+                borderColor: 'var(--border-strong)',
+                background: 'var(--card-bg)',
+                fontSize: '1rem',
+              }}
+            >
+              Post a project
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
 }
 
+export default CTASection;

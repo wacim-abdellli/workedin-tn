@@ -367,7 +367,7 @@ function FreelancerOnboarding() {
                     alt="Khedma TN"
                     className="h-12 w-auto mb-6 animate-pulse"
                 />
-                <div className="w-12 h-12 border-4 border-primary-100 border-t-primary-600 rounded-full animate-spin"></div>
+                <div className="w-12 h-12 border-4 border-brand-light border-t-brand rounded-full animate-spin"></div>
                 <p className="mt-4 text-muted font-medium animate-pulse">{t.common?.loading || 'جاري التحميل...'}</p>
             </div>
         );
@@ -431,7 +431,7 @@ function FreelancerOnboarding() {
                 aside={
                     <div className="space-y-5">
                         <div>
-                            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary-600 dark:text-primary-300">
+                            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand dark:text-brand-light">
                                 {tx('onboarding.freelancer.summaryBadge', undefined, 'Why this matters')}
                             </p>
                             <h3 className="mt-3 text-xl font-semibold text-[#171420] dark:text-white">
@@ -457,9 +457,9 @@ function FreelancerOnboarding() {
                                     description: tx('onboarding.freelancer.summaryPoint3Desc', undefined, 'Your first rate should feel credible for your current profile depth and market position.'),
                                 },
                             ].map((item, index) => (
-                                <div key={item.title} className="rounded-2xl border border-primary-100/70 bg-primary-50/60 p-4 dark:border-white/10 dark:bg-white/[0.04]">
+                                <div key={item.title} className="rounded-2xl border border-brand-light/70 bg-brand-light/30 p-4 dark:border-white/10 dark:bg-white/[0.04]">
                                     <div className="flex items-start gap-3">
-                                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-600 text-sm font-semibold text-white">
+                                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-brand text-sm font-semibold text-white">
                                             {index + 1}
                                         </div>
                                         <div>

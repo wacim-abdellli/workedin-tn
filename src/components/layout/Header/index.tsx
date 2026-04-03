@@ -92,7 +92,6 @@ export default function Header() {
   const { pathname } = useLocation()
 
   const [isDark, setIsDark] = useState(document.documentElement.classList.contains('dark'))
-  const [scrolled, setScrolled] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const [langOpen, setLangOpen] = useState(false)
@@ -103,12 +102,6 @@ export default function Header() {
   const userMenuRef = useRef<HTMLDivElement>(null)
   const langRef = useRef<HTMLDivElement>(null)
   const conversationsChannelRef = useRef<RealtimeChannel | null>(null)
-
-  useEffect(() => {
-    const handler = () => setScrolled(window.scrollY > 10)
-    window.addEventListener('scroll', handler)
-    return () => window.removeEventListener('scroll', handler)
-  }, [])
 
   useEffect(() => {
     const handler = (event: MouseEvent) => {
@@ -302,11 +295,8 @@ export default function Header() {
     <>
       <header
         dir={dir}
-        className={`fixed top-0 left-0 right-0 z-50 isolate transition-all duration-200 ${
-          scrolled
-            ? 'border-b border-border/50 bg-surface/95 shadow-sm backdrop-blur-md'
-            : 'border-b border-border/50 bg-surface'
-        }`}
+        className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl border-b"
+        style={{ background: 'rgba(10, 9, 18, 0.85)', borderColor: 'var(--dash-border)' }}
       >
         {user ? (
           <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: 'var(--workspace-primary)' }} />

@@ -30,20 +30,22 @@ export default function TestimonialsSection() {
                 </div>
 
                 <div className="max-w-4xl mx-auto">
-                    <div className="card p-8 md:p-12 relative overflow-hidden">
+                    <div className="p-8 md:p-12 relative overflow-hidden rounded-[2rem] border" style={{ background: 'var(--card-bg)', borderColor: 'var(--border)', boxShadow: 'var(--shadow-lg)' }}>
                         {/* Decorative */}
-                        <div className="absolute top-0 start-0 w-32 h-32 bg-gradient-to-br from-primary-500/10 to-transparent rounded-br-full" />
+                        <div className="absolute top-0 start-0 w-32 h-32 rounded-br-full" style={{ background: 'linear-gradient(135deg, color-mix(in srgb, var(--workspace-primary) 14%, transparent), transparent)' }} />
 
                         {/* Navigation */}
                         <button
                             onClick={prevTestimonial}
-                            className="absolute start-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-xl bg-dark-100 dark:bg-dark-800 hover:bg-dark-200 dark:hover:bg-dark-700 flex items-center justify-center transition-all shadow-lg"
+                            className="absolute start-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-xl flex items-center justify-center transition-all shadow-lg"
+                            style={{ background: 'var(--surface-bg)', color: 'var(--text-primary)' }}
                         >
                             <PrevIcon className="w-6 h-6" />
                         </button>
                         <button
                             onClick={nextTestimonial}
-                            className="absolute end-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-xl bg-dark-100 dark:bg-dark-800 hover:bg-dark-200 dark:hover:bg-dark-700 flex items-center justify-center transition-all shadow-lg"
+                            className="absolute end-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-xl flex items-center justify-center transition-all shadow-lg"
+                            style={{ background: 'var(--surface-bg)', color: 'var(--text-primary)' }}
                         >
                             <NextIcon className="w-6 h-6" />
                         </button>
@@ -53,14 +55,15 @@ export default function TestimonialsSection() {
                                 <OptimizedImage
                                     src={testimonials[currentTestimonial].image}
                                     alt={testimonials[currentTestimonial].name}
-                                    className="w-full h-full rounded-2xl ring-4 ring-primary-100 dark:ring-primary-900/50 shadow-xl"
+                                    className="w-full h-full rounded-2xl shadow-xl"
+                                    style={{ boxShadow: '0 0 0 4px color-mix(in srgb, var(--workspace-primary) 14%, transparent), var(--shadow-lg)' }}
                                     imgClassName="object-cover"
                                 />
                             </div>
 
                             <div className="flex items-center justify-center gap-1 mb-6">
                                 {[...Array(5)].map((_, i) => (
-                                    <Star key={i} className="w-6 h-6 text-warning-400 fill-current" />
+                                    <Star key={i} className="w-6 h-6 fill-current" style={{ color: 'var(--brand-accent)' }} />
                                 ))}
                             </div>
 
@@ -74,7 +77,7 @@ export default function TestimonialsSection() {
                             <div className="text-muted mb-3">
                                 {testimonials[currentTestimonial].role}
                             </div>
-                            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-success-100 dark:bg-success-900/30 text-success-600 dark:text-success-400 font-semibold">
+                            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl font-semibold" style={{ background: 'color-mix(in srgb, var(--workspace-primary) 12%, transparent)', color: 'var(--workspace-primary)' }}>
                                 <TrendingUp className="w-4 h-4" />
                                 {t.home.sections.testimonials.earned} {testimonials[currentTestimonial].earned} {t.common.tnd}
                             </div>
@@ -87,9 +90,12 @@ export default function TestimonialsSection() {
                                     key={index}
                                     onClick={() => setCurrentTestimonial(index)}
                                     className={`h-2 rounded-full transition-all duration-300 ${index === currentTestimonial
-                                        ? 'w-8 bg-gradient-to-r from-primary-500 to-primary-700'
-                                        : 'w-2 bg-dark-200 dark:bg-dark-700 hover:bg-dark-300'
+                                        ? 'w-8'
+                                        : 'w-2'
                                         }`}
+                                    style={index === currentTestimonial
+                                        ? { background: 'linear-gradient(135deg, var(--workspace-primary), var(--workspace-primary-mid))' }
+                                        : { background: 'color-mix(in srgb, var(--text-muted) 32%, transparent)' }}
                                 />
                             ))}
                         </div>

@@ -112,7 +112,7 @@ function FreelancerCard({
               {freelancer.name}
               {freelancer.is_verified ? (
                 <span title={tx('pages.freelancerCard.verifiedProfile', undefined, 'Verified profile')}>
-                  <BadgeCheck className="h-4 w-4 text-blue-500" />
+                  <BadgeCheck className="h-4 w-4" style={{ color: 'var(--workspace-primary)' }} />
                 </span>
               ) : null}
             </h3>
@@ -123,7 +123,12 @@ function FreelancerCard({
                   <span
                     key={badge.label}
                     title={badge.title}
-                    className="inline-flex items-center gap-1 rounded-full border border-primary-100 bg-primary-50/80 px-2.5 py-1 text-[11px] font-semibold text-primary-700 dark:border-white/8 dark:bg-white/5 dark:text-primary-200"
+                    className="inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-semibold"
+                    style={{
+                      borderColor: 'color-mix(in srgb, var(--workspace-primary) 22%, transparent)',
+                      background: 'color-mix(in srgb, var(--workspace-primary) 10%, transparent)',
+                      color: 'var(--workspace-primary)',
+                    }}
                   >
                     <badge.icon className="h-3 w-3" />
                     {badge.label}
@@ -164,12 +169,12 @@ function FreelancerCard({
 
         {viewMode !== 'list' ? (
           <div className="mb-4 grid grid-cols-2 gap-2">
-            <div className="rounded-2xl bg-gray-50 p-3 text-center dark:bg-dark-800">
+            <div className="rounded-2xl p-3 text-center" style={{ background: 'color-mix(in srgb, var(--workspace-primary) 8%, var(--card-bg))' }}>
               <div className="text-lg font-bold text-primary-600 dark:text-primary-400">{freelancer.hourly_rate} TND</div>
               <div className="text-[10px] text-muted">{tx('pages.freelancerCard.hourlyRate', undefined, 'Hourly rate')}</div>
             </div>
-            <div className="rounded-2xl bg-gray-50 p-3 text-center dark:bg-dark-800">
-              <div className="text-lg font-bold text-green-600 dark:text-green-400">{freelancer.success_rate}%</div>
+            <div className="rounded-2xl p-3 text-center" style={{ background: 'color-mix(in srgb, var(--brand-accent) 8%, var(--card-bg))' }}>
+              <div className="text-lg font-bold" style={{ color: 'var(--brand-accent)' }}>{freelancer.success_rate}%</div>
               <div className="text-[10px] text-muted">{tx('pages.freelancerCard.successScore', undefined, 'Success score')}</div>
             </div>
           </div>

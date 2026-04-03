@@ -1,63 +1,85 @@
-import { Zap, Wallet, TrendingUp } from 'lucide-react';
-import { useTranslation } from '@/i18n';
+import { Shield, Users, Wallet } from 'lucide-react';
 
-export default function ValuePropositions() {
-    const { t } = useTranslation();
+const props = [
+  {
+    icon: Users,
+    title: 'Matched work',
+    description:
+      'Apply to projects that match your exact skill level and rate. No competing on price - just on quality.',
+  },
+  {
+    icon: Shield,
+    title: 'Protected payouts',
+    description:
+      'Funds are held in escrow before work starts. You get paid the moment the client approves.',
+  },
+  {
+    icon: Wallet,
+    title: 'Build reputation',
+    description:
+      'Show your verified status, portfolio, and reviews. Win trust before you say a word.',
+  },
+];
 
-    return (
-        <section className="section relative overflow-hidden">
-            <div className="absolute inset-0 gradient-mesh" />
-            <div className="container-custom relative">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    {/* No Bidding */}
-                    <div className="card-hover text-center group p-8 animate-slide-up opacity-0 [animation-fill-mode:forwards]" style={{ animationDelay: '100ms' }}>
-                        <div className="relative">
-                            <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center text-white shadow-lg shadow-primary-600/30 group-hover:scale-110 group-hover:shadow-xl group-hover:shadow-primary-600/40 transition-all duration-300">
-                                <Zap className="w-10 h-10" />
-                            </div>
-                            <div className="absolute -top-2 -end-2 w-6 h-6 rounded-full bg-gradient-to-r from-accent-400 to-accent-600 flex items-center justify-center text-white text-xs font-bold shadow-lg">
-                                ✓
-                            </div>
-                        </div>
-                        <h3 className="text-xl font-bold mb-3">
-                            {t.values.noBidding.title}
-                        </h3>
-                        <p className="text-muted leading-relaxed">
-                            {t.values.noBidding.description}
-                        </p>
-                    </div>
+export function ValuePropositions() {
+  return (
+    <section className="py-24" style={{ background: 'var(--surface-bg)' }}>
+      <div className="container mx-auto px-6 lg:px-8 max-w-7xl">
+        <div className="text-center mb-16">
+          <p
+            className="text-xs font-semibold uppercase tracking-[0.2em] mb-3"
+            style={{ color: 'var(--workspace-primary-mid)' }}
+          >
+            Why Khedma TN
+          </p>
+          <h2
+            className="font-display font-bold text-4xl tracking-tight"
+            style={{ color: 'var(--text-primary)' }}
+          >
+            Built different. For Tunisia.
+          </h2>
+        </div>
 
-                    {/* Local Payment */}
-                    <div className="card-hover text-center group p-8 animate-slide-up opacity-0 [animation-fill-mode:forwards]" style={{ animationDelay: '200ms' }}>
-                        <div className="relative">
-                            <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-success-500 to-success-600 flex items-center justify-center text-white shadow-lg shadow-success-500/30 group-hover:scale-110 group-hover:shadow-xl group-hover:shadow-success-500/40 transition-all duration-300">
-                                <Wallet className="w-10 h-10" />
-                            </div>
-                        </div>
-                        <h3 className="text-xl font-bold mb-3">
-                            {t.values.localPayment.title}
-                        </h3>
-                        <p className="text-muted leading-relaxed">
-                            {t.values.localPayment.description}
-                        </p>
-                    </div>
-
-                    {/* Micro Jobs */}
-                    <div className="card-hover text-center group p-8 animate-slide-up opacity-0 [animation-fill-mode:forwards]" style={{ animationDelay: '300ms' }}>
-                        <div className="relative">
-                            <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-accent-500 to-accent-700 flex items-center justify-center text-white shadow-lg shadow-accent-500/30 group-hover:scale-110 group-hover:shadow-xl group-hover:shadow-accent-500/40 transition-all duration-300">
-                                <TrendingUp className="w-10 h-10" />
-                            </div>
-                        </div>
-                        <h3 className="text-xl font-bold mb-3">
-                            {t.values.microJobs.title}
-                        </h3>
-                        <p className="text-muted leading-relaxed">
-                            {t.values.microJobs.description}
-                        </p>
-                    </div>
-                </div>
+        <div className="grid md:grid-cols-3 gap-6">
+          {props.map((p) => (
+            <div
+              key={p.title}
+              className="rounded-2xl border p-8 transition-all duration-200 hover:-translate-y-1"
+              style={{
+                background: 'var(--card-bg)',
+                borderColor: 'var(--border)',
+                boxShadow: 'var(--shadow-sm)',
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.borderColor = 'var(--workspace-primary)';
+                e.currentTarget.style.boxShadow = 'var(--shadow-glow)';
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.borderColor = 'var(--border)';
+                e.currentTarget.style.boxShadow = 'var(--shadow-sm)';
+              }}
+            >
+              <div
+                className="w-12 h-12 rounded-2xl flex items-center justify-center mb-5"
+                style={{ background: 'color-mix(in srgb, var(--workspace-primary) 10%, transparent)' }}
+              >
+                <p.icon className="w-6 h-6" style={{ color: 'var(--workspace-primary)' }} />
+              </div>
+              <h3
+                className="font-display font-bold text-xl mb-3"
+                style={{ color: 'var(--text-primary)' }}
+              >
+                {p.title}
+              </h3>
+              <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                {p.description}
+              </p>
             </div>
-        </section>
-    );
+          ))}
+        </div>
+      </div>
+    </section>
+  );
 }
+
+export default ValuePropositions;

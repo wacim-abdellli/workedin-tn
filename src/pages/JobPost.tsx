@@ -373,7 +373,7 @@ export default function JobPost() {
     };
 
     return (
-        <div className="page-shell bg-[#f6f3ff] dark:bg-[#0b0a12] pb-20">
+        <div className="page-shell pb-20" style={{ background: 'var(--page-bg)' }}>
             <SEO
                 title={tx('jobs.new.seo.title', undefined, 'Post a Project')}
                 description={tx('jobs.new.seo.description', undefined, 'Create a new project, define budget and timeline, and publish it to receive freelancer proposals.')}
@@ -430,7 +430,7 @@ export default function JobPost() {
                             </div>
 
                             {/* Actions */}
-                            <div className="mt-8 flex items-center justify-between border-t border-primary-100/70 pt-6 dark:border-white/10">
+                            <div className="mt-8 flex items-center justify-between border-t pt-6" style={{ borderColor: 'color-mix(in srgb, var(--workspace-primary) 14%, var(--border))' }}>
                                 {currentStep > 1 ? (
                                     <Button
                                         type="button"

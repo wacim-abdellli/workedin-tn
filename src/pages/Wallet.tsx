@@ -390,8 +390,8 @@ export default function Wallet() {
                       {withdrawals.map((withdrawal: Withdrawal) => {
                         const statusColors: Record<WithdrawalStatus, string> = {
                           pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
-                          approved: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
-                          processing: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
+                          approved: 'bg-primary-100 text-primary-800 dark:bg-primary-900/30 dark:text-primary-300',
+                          processing: 'bg-primary-100 text-primary-800 dark:bg-primary-900/30 dark:text-primary-300',
                           completed: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
                           rejected: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
                         };
@@ -429,8 +429,8 @@ export default function Wallet() {
                   {withdrawals.map((withdrawal: Withdrawal) => {
                     const statusColors: Record<WithdrawalStatus, string> = {
                       pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
-                      approved: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
-                      processing: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
+                      approved: 'bg-primary-100 text-primary-800 dark:bg-primary-900/30 dark:text-primary-300',
+                      processing: 'bg-primary-100 text-primary-800 dark:bg-primary-900/30 dark:text-primary-300',
                       completed: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
                       rejected: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
                     };
@@ -504,9 +504,9 @@ export default function Wallet() {
               </button>
             </div>
 
-            <div className="mb-4 p-3 rounded-xl bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20 flex items-start gap-2">
-              <CreditCard className="w-4 h-4 text-blue-600 dark:text-blue-400 mt-0.5 shrink-0" />
-              <p className="text-xs text-blue-700 dark:text-blue-300">سيتم توجيهك إلى بوابة Flouci الآمنة لإتمام الدفع ببطاقتك أو حسابك المصرفي.</p>
+            <div className="mb-4 p-3 rounded-xl border flex items-start gap-2" style={{ background: 'color-mix(in srgb, var(--workspace-primary) 10%, transparent)', borderColor: 'color-mix(in srgb, var(--workspace-primary) 18%, transparent)' }}>
+              <CreditCard className="w-4 h-4 mt-0.5 shrink-0" style={{ color: 'var(--workspace-primary)' }} />
+              <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>سيتم توجيهك إلى بوابة Flouci الآمنة لإتمام الدفع ببطاقتك أو حسابك المصرفي.</p>
             </div>
 
             <div className="mb-5">

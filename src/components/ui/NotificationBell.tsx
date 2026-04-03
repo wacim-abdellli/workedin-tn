@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { Bell, CheckCheck, Loader2, MessageSquare, ShieldAlert, Sparkles, Wallet } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from '@/i18n';
@@ -22,6 +22,21 @@ export function NotificationBell({ className = '' }: { className?: string }) {
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setIsOpen(false);
+            }
+        }
+        
+        if (isOpen) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [isOpen]);
+
     const formatTimeAgo = (dateString: string) => {
         const diffMs = Date.now() - new Date(dateString).getTime();
         const mins = Math.floor(diffMs / 60000);
@@ -43,7 +58,7 @@ export function NotificationBell({ className = '' }: { className?: string }) {
         <div ref={dropdownRef} className={`relative ${className}`}>
             <button
                 onClick={() => setIsOpen(v => !v)}
-                className="header-icon-btn relative border border-primary-100/70 bg-white/80 dark:border-white/8 dark:bg-white/5"
+                className="header-icon-btn relative border border-brand-light/70 bg-white/80 dark:border-white/8 dark:bg-white/5"
                 aria-label={t.notifications?.title || 'Notifications'}
             >
                 <Bell className="h-4 w-4" />
@@ -61,7 +76,7 @@ export function NotificationBell({ className = '' }: { className?: string }) {
                         {unreadCount > 0 && (
                             <button
                                 onClick={markAllRead}
-                                className="inline-flex items-center gap-1 text-xs font-semibold text-primary-600 transition-colors hover:text-primary-700 dark:text-primary-300"
+                                className="inline-flex items-center gap-1 text-xs font-semibold text-brand transition-colors hover:text-brand-hover dark:text-brand-mid"
                             >
                                 <CheckCheck className="h-3.5 w-3.5" />
                                 {t.notifications?.readAll || 'Mark all read'}
@@ -69,35 +84,39 @@ export function NotificationBell({ className = '' }: { className?: string }) {
                         )}
                     </div>
 
-                    <div className="max-h-[70vh] overflow-y-auto">
+                    <div className="max-h-[70vh] overflow-y-auto px-2 pb-2 space-y-1 mt-2">
                         {isLoading ? (
                             <div className="p-12 text-center">
-                                <Loader2 className="mx-auto mb-3 h-8 w-8 animate-spin text-primary-600/50" />
+                                <Loader2 className="mx-auto mb-3 h-8 w-8 animate-spin text-brand/50" />
                                 <p className="text-sm text-muted">{t.common?.loading || 'Loading...'}</p>
                             </div>
                         ) : notifications.length === 0 ? (
                             <div className="p-12 text-center">
-                                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary-50 text-primary-500 dark:bg-white/5 dark:text-primary-300">
+                                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-brand-light text-brand dark:bg-white/5 dark:text-brand-mid">
                                     <Bell className="h-7 w-7" />
                                 </div>
                                 <p className="font-semibold text-dark-900 dark:text-white">{t.notifications?.empty || 'No notifications'}</p>
-                                <p className="mt-1 text-sm font-medium text-primary-600 dark:text-primary-300">{t.notifications?.caughtUp || "You're all caught up"}</p>
+                                <p className="mt-1 text-sm font-medium text-brand dark:text-brand-mid">{t.notifications?.caughtUp || "You're all caught up"}</p>
                             </div>
                         ) : (
                             notifications.slice(0, 10).map(n => (
                                 <div
                                     key={n.id}
                                     onClick={() => handleNotificationClick(n)}
-                                    className={`header-dropdown-item cursor-pointer border-b border-gray-50 px-4 py-4 last:border-b-0 hover:bg-primary-50/60 dark:border-white/5 dark:hover:bg-white/5 ${!n.is_read ? 'bg-primary-50/70 dark:bg-primary-900/10' : ''}`}
+                                    className={`cursor-pointer rounded-2xl border p-3 transition-all duration-300 hover:shadow-sm ${
+                                        !n.is_read
+                                            ? 'border-brand/30 bg-brand-light/70 dark:border-brand/30 dark:bg-brand/10'
+                                            : 'border-transparent hover:border-gray-100 hover:bg-brand-light/40 dark:hover:border-white/10 dark:hover:bg-white/5'
+                                    }`}
                                 >
-                                    <div className="flex gap-3">
-                                        <div className="mt-0.5 flex h-9 w-9 items-center justify-center rounded-2xl bg-primary-50 text-primary-600 dark:bg-white/5 dark:text-primary-300">
+                                        <div className="flex gap-3">
+                                            <div className="mt-0.5 flex h-9 w-9 items-center justify-center rounded-2xl bg-brand-light text-brand dark:bg-white/5 dark:text-brand-mid">
                                             {iconForType(n.type)}
                                         </div>
                                         <div className="flex-1">
                                             <div className="flex items-start justify-between gap-3">
                                                 <p className="text-sm font-semibold text-dark-900 dark:text-white">{n.title}</p>
-                                                {!n.is_read && <span className="mt-1.5 h-2 w-2 rounded-full bg-primary-500 flex-shrink-0" />}
+                                                {!n.is_read && <span className="mt-1.5 h-2 w-2 rounded-full bg-brand flex-shrink-0" />}
                                             </div>
                                             <p className="mt-1 text-xs leading-relaxed text-dark-500 dark:text-dark-400">{n.body}</p>
                                             <p className="mt-2 text-[11px] font-medium text-dark-400">{formatTimeAgo(n.created_at)}</p>
@@ -112,7 +131,7 @@ export function NotificationBell({ className = '' }: { className?: string }) {
                         <div className="border-t border-gray-100 dark:border-white/8 px-4 py-3">
                             <button
                                 onClick={() => { navigate('/notifications'); setIsOpen(false); }}
-                                className="w-full text-center text-xs font-medium text-primary-600 hover:text-primary-700 dark:text-primary-300"
+                                className="w-full text-center text-xs font-medium text-brand hover:text-brand-hover dark:text-brand-mid"
                             >
                                 {t.notifications?.viewAll || tx('notifications.viewAll', undefined, 'View all notifications')}
                             </button>

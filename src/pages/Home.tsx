@@ -47,8 +47,8 @@ function Home() {
         fetchStats();
     }, []);
 
-    return (
-        <div className="min-h-screen">
+return (
+        <div className="min-h-screen" style={{ background: 'var(--page-bg)' }}>
             <SEO {...SEO_CONFIG.home} url="/" />
             <Header />
 

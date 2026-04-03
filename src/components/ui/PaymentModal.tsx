@@ -143,13 +143,13 @@ export default function PaymentModal({ isOpen, onClose, amount, recipientName, o
 
     const renderCard = () => (
         <div className="space-y-6 animate-fade-in">
-            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-900/30 p-4 rounded-xl flex items-center gap-4 transition-all">
-                <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/40 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm">
-                    <CreditCard className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+            <div className="p-4 rounded-xl flex items-center gap-4 transition-all border" style={{ background: 'color-mix(in srgb, var(--workspace-primary) 10%, transparent)', borderColor: 'color-mix(in srgb, var(--workspace-primary) 18%, transparent)' }}>
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm" style={{ background: 'color-mix(in srgb, var(--workspace-primary) 16%, transparent)' }}>
+                    <CreditCard className="w-6 h-6" style={{ color: 'var(--workspace-primary)' }} />
                 </div>
                 <div>
-                    <h3 className="font-bold text-blue-800 dark:text-blue-400 text-lg">{t.payment.creditCard}</h3>
-                    <p className="text-sm text-blue-600 dark:text-blue-500/80">{t.payment.cardSchemes}</p>
+                    <h3 className="font-bold text-lg" style={{ color: 'var(--workspace-primary)' }}>{t.payment.creditCard}</h3>
+                    <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{t.payment.cardSchemes}</p>
                 </div>
             </div>
 

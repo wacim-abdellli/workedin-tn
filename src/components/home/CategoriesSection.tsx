@@ -54,7 +54,7 @@ export default function CategoriesSection() {
     };
 
     return (
-        <section className="section">
+        <section className="section" style={{ background: 'var(--page-bg)' }}>
             <div className="container-custom">
                 <div className="text-center mb-12">
                     <span className="badge-accent mb-4">{t.home.sections.categories.badge}</span>
@@ -71,16 +71,38 @@ export default function CategoriesSection() {
                         <Link
                             key={category.id}
                             to={`/jobs?cat=${category.id}`}
-                            className="card-hover p-6 text-center group"
-                            style={{ animationDelay: `${index * 50}ms` }}
+                            className="p-6 text-center group rounded-[1.6rem] border transition-all duration-300"
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.borderColor = 'color-mix(in srgb, var(--workspace-primary) 34%, transparent)';
+                                e.currentTarget.style.boxShadow = '0 24px 54px -34px color-mix(in srgb, var(--workspace-primary) 55%, transparent)';
+                                e.currentTarget.style.transform = 'translateY(-4px)';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.borderColor = 'var(--border)';
+                                e.currentTarget.style.boxShadow = 'var(--shadow-sm)';
+                                e.currentTarget.style.transform = 'translateY(0)';
+                            }}
+                            style={{
+                                animationDelay: `${index * 50}ms`,
+                                background: 'var(--card-bg)',
+                                borderColor: 'var(--border)',
+                                boxShadow: 'var(--shadow-sm)',
+                            }}
                         >
-                            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-dark-100 to-dark-200 dark:from-dark-700 dark:to-dark-800 flex items-center justify-center text-dark-500 dark:text-dark-400 group-hover:from-primary-500 group-hover:to-primary-700 group-hover:text-white transition-all duration-300 shadow-lg group-hover:shadow-primary-500/30">
+                            <div
+                                className="w-16 h-16 mx-auto mb-4 rounded-2xl flex items-center justify-center transition-all duration-300 shadow-lg"
+                                style={{
+                                    background: 'linear-gradient(135deg, color-mix(in srgb, var(--workspace-primary) 12%, var(--card-bg)), color-mix(in srgb, var(--workspace-primary) 6%, var(--surface-bg)))',
+                                    color: 'var(--workspace-primary-mid)',
+                                    boxShadow: '0 20px 40px -30px color-mix(in srgb, var(--workspace-primary) 65%, transparent)',
+                                }}
+                            >
                                 {iconMap[category.id]}
                             </div>
-                            <h3 className="font-semibold text-sm mb-1">
+                            <h3 className="font-semibold text-sm mb-1" style={{ color: 'var(--text-primary)' }}>
                                 {category.name}
                             </h3>
-                            <p className="text-xs text-muted">
+                            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
                                 {categoryCounts[category.id] ?? 0} {t.categories.availableJobs}
                             </p>
                         </Link>

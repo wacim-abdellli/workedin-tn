@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react';
 import { Bell, CheckCheck, MessageSquare, ShieldAlert, Sparkles, Wallet } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Header, Footer } from '@/components/layout';
@@ -17,13 +18,13 @@ function iconForType(type: AppNotification['type']) {
     }
 }
 
-const TYPE_COLOR: Record<AppNotification['type'], string> = {
-    message:  'bg-blue-50 text-blue-600 dark:bg-blue-500/15 dark:text-blue-300',
-    proposal: 'bg-purple-50 text-purple-600 dark:bg-purple-500/15 dark:text-purple-300',
-    payment:  'bg-green-50 text-green-600 dark:bg-green-500/15 dark:text-green-300',
-    contract: 'bg-amber-50 text-amber-600 dark:bg-amber-500/15 dark:text-amber-300',
-    system:   'bg-gray-50 text-gray-600 dark:bg-white/5 dark:text-gray-300',
-    review:   'bg-pink-50 text-pink-600 dark:bg-pink-500/15 dark:text-pink-300',
+const TYPE_COLOR: Record<AppNotification['type'], CSSProperties> = {
+    message: { background: 'color-mix(in srgb, var(--workspace-primary) 16%, transparent)', color: 'var(--workspace-primary)' },
+    proposal: { background: 'color-mix(in srgb, var(--workspace-primary) 16%, transparent)', color: 'var(--workspace-primary-mid)' },
+    payment: { background: 'rgba(34,197,94,0.14)', color: 'rgb(74, 222, 128)' },
+    contract: { background: 'color-mix(in srgb, var(--brand-accent) 16%, transparent)', color: 'var(--brand-accent)' },
+    system: { background: 'rgba(255,255,255,0.06)', color: 'var(--text-secondary)' },
+    review: { background: 'color-mix(in srgb, var(--workspace-primary) 12%, transparent)', color: 'var(--workspace-primary-mid)' },
 };
 
 export default function Notifications() {
@@ -98,7 +99,7 @@ export default function Notifications() {
                                 className={`card p-4 cursor-pointer transition-all hover:-translate-y-0.5 ${!n.is_read ? 'border-primary-200 dark:border-primary-500/30 bg-primary-50/50 dark:bg-primary-900/10' : ''}`}
                             >
                                 <div className="flex gap-4">
-                                    <div className={`w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0 ${TYPE_COLOR[n.type]}`}>
+                                    <div className="w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0" style={TYPE_COLOR[n.type]}>
                                         {iconForType(n.type)}
                                     </div>
                                     <div className="flex-1 min-w-0">

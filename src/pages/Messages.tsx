@@ -63,8 +63,6 @@ export default function Messages() {
     const [messages, setMessages] = useState<Message[]>([]);
     const [newMessage, setNewMessage] = useState('');
     const [searchQuery, setSearchQuery] = useState('');
-    const [messageSearchQuery, setMessageSearchQuery] = useState('');
-    const [showMessageSearch, setShowMessageSearch] = useState(false);
     const [filter, setFilter] = useState<'all' | 'unread' | 'starred'>('all');
     const [showMobileThread, setShowMobileThread] = useState(false);
     const [isLoadingConversations, setIsLoadingConversations] = useState(true);
@@ -90,7 +88,7 @@ export default function Messages() {
     );
 
     // Read receipts
-    const { markMessagesAsRead } = useReadReceipts({
+    useReadReceipts({
         conversationId: selectedConversation?.id || null,
         currentUserId: user?.id || null,
         messages,
@@ -519,12 +517,6 @@ export default function Messages() {
         return true;
     });
 
-    // Filter messages based on search
-    const filteredMessages = messages.filter(message => {
-        if (!messageSearchQuery.trim()) return true;
-        return message.content.toLowerCase().includes(messageSearchQuery.toLowerCase());
-    });
-
     const conversationsVirtualizer = useVirtualizer({
         count: filteredConversations.length,
         getScrollElement: () => conversationsParentRef.current,
@@ -870,7 +862,7 @@ export default function Messages() {
                                             {message.sender_id === user?.id && (
                                                 <span className="flex items-center">
                                                     {message.is_read ? (
-                                                        <span className="text-blue-500" title="Read">✓✓</span>
+                                                        <span style={{ color: 'var(--workspace-primary)' }} title="Read">✓✓</span>
                                                     ) : (
                                                         <span className="text-gray-400" title="Delivered">✓</span>
                                                     )}
@@ -1107,13 +1099,8 @@ export default function Messages() {
             <Header />
 
             <div className="h-[calc(100vh-64px)] flex overflow-hidden">
-                {/* Sidebar - Conversations List - Desktop */}
-                <div className={`w-80 shrink-0 border-e border-border flex flex-col bg-background hidden lg:flex`}>
-                    {renderConversationList()}
-                </div>
-
-                {/* Sidebar - Conversations List - Mobile */}
-                <div className={`w-full border-e border-border flex flex-col bg-background lg:hidden ${!showMobileThread ? 'flex' : 'hidden'}`}>
+                {/* Sidebar - Conversations List (Responsive) */}
+                <div className={`shrink-0 border-e border-border flex-col bg-background w-full lg:w-80 ${showMobileThread ? 'hidden lg:flex' : 'flex'}`}>
                     {renderConversationList()}
                 </div>
 

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Syne:wght@700;800&family=Cairo:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Cairo:wght@400;500;600;700;800;900&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -8,16 +8,24 @@
    CSS VARIABLES - Light & Dark Mode
    ======================================== */
 :root {
-  /* Brand palette inspired by the logo */
-  --workspace-primary: #8B5CF6;
-  --workspace-primary-hover: #6D28D9;
-  --workspace-primary-light: #F6F1FF;
-  --workspace-primary-mid: #A78BFA;
+  /* Khedma TN Brand Colors - Spec-Aligned */
+  --khedma-violet: #6f3bff;
+  --khedma-violet-hover: #5527d7;
+  --khedma-blue: #d4a017;
+  --khedma-blue-hover: #b88410;
+  --khedma-amber: #d4a017;
+  --khedma-amber-hover: #b88410;
+
+  /* Freelancer workspace (violet-themed) - Default */
+  --workspace-primary: #6f3bff;
+  --workspace-primary-hover: #5527d7;
+  --workspace-primary-light: #f4efff;
+  --workspace-primary-mid: #9a7bff;
   --workspace-primary-text: #ffffff;
 
-  /* Shared */
-  --brand-accent: #F59E0B;
-  --brand-accent-hover: #D97706;
+  /* Shared CTA */
+  --brand-accent: #d4a017;
+  --brand-accent-hover: #b88410;
 
   --text-xs: clamp(0.75rem, 1.5vw, 0.875rem);
   --text-sm: clamp(0.875rem, 1.8vw, 1rem);
@@ -54,21 +62,21 @@
   --color-border-subtle: var(--border-strong);
 
   /* Premium Gradients */
-  --gradient-primary: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 55%, #f59e0b 100%);
-  --gradient-accent: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-  --gradient-glass: linear-gradient(180deg, rgba(255, 255, 255, 0.92) 0%, rgba(248, 242, 255, 0.88) 100%);
-  --gradient-surface: linear-gradient(145deg, #ffffff, #f7f1ff);
+  --gradient-primary: linear-gradient(135deg, #6f3bff 0%, #5527d7 55%, #d4a017 100%);
+  --gradient-accent: linear-gradient(135deg, #d4a017 0%, #b88410 100%);
+  --gradient-glass: linear-gradient(180deg, rgba(255, 255, 255, 0.92) 0%, rgba(245, 243, 255, 0.88) 100%);
+  --gradient-surface: linear-gradient(145deg, #ffffff, #FAF8FF);
 
   /* Premium Shadows */
-  --shadow-sm: 0 2px 4px rgba(109, 40, 217, 0.04);
-  --shadow-md: 0 8px 18px -8px rgba(109, 40, 217, 0.12), 0 2px 6px -3px rgba(245, 158, 11, 0.08);
-  --shadow-lg: 0 18px 32px -14px rgba(109, 40, 217, 0.14), 0 8px 16px -10px rgba(245, 158, 11, 0.08);
-  --shadow-xl: 0 24px 48px -18px rgba(109, 40, 217, 0.18), 0 10px 24px -16px rgba(245, 158, 11, 0.1);
-  --shadow-2xl: 0 30px 64px -20px rgba(109, 40, 217, 0.24);
+  --shadow-sm: 0 2px 4px rgba(111, 59, 255, 0.04);
+  --shadow-md: 0 8px 18px -8px rgba(111, 59, 255, 0.14), 0 2px 6px -3px rgba(212, 160, 23, 0.08);
+  --shadow-lg: 0 18px 32px -14px rgba(111, 59, 255, 0.16), 0 8px 16px -10px rgba(212, 160, 23, 0.1);
+  --shadow-xl: 0 24px 48px -18px rgba(111, 59, 255, 0.2), 0 10px 24px -16px rgba(212, 160, 23, 0.12);
+  --shadow-2xl: 0 30px 64px -20px rgba(111, 59, 255, 0.28);
 
   /* Purple Glows */
-  --shadow-glow: 0 0 20px rgba(139, 92, 246, 0.2);
-  --shadow-glow-accent: 0 0 20px rgba(245, 158, 11, 0.2);
+  --shadow-glow: 0 0 20px rgba(111, 59, 255, 0.22);
+  --shadow-glow-accent: 0 0 20px rgba(212, 160, 23, 0.22);
 
   /* Radius and elevation tiers */
   --radius-card: 1rem;
@@ -84,23 +92,38 @@
   --motion-slow: 320ms;
   --motion-ease-standard: cubic-bezier(0.2, 0, 0, 1);
   --motion-ease-emphasis: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Dashboard surface system */
+  --dash-bg: #0a0912;
+  --dash-card: #111019;
+  --dash-card-hover: #16141f;
+  --dash-raised: #1a1826;
+  --dash-border: rgba(255, 255, 255, 0.06);
+  --dash-border-hover: rgba(255, 255, 255, 0.12);
+
+  /* Widget accent top-border on hover */
+  --widget-accent-border: 3px solid var(--workspace-primary);
+
+  /* Stat pill */
+  --stat-pill-bg: rgba(255,255,255,0.04);
+  --stat-pill-border: rgba(255,255,255,0.08);
 }
 
-/* Client workspace overrides */
+/* Client workspace overrides - Blue themed per spec */
 .workspace-client {
-  --workspace-primary: #d97706;
-  --workspace-primary-hover: #b45309;
-  --workspace-primary-light: #fff7e8;
-  --workspace-primary-mid: #f59e0b;
+  --workspace-primary: #DBA31A;
+  --workspace-primary-hover: #C4920B;
+  --workspace-primary-light: #fff6dd;
+  --workspace-primary-mid: #F0C95B;
   --workspace-primary-text: #ffffff;
 }
 
 .dark .workspace-client {
-  --workspace-primary: #fbbf24;
-  --workspace-primary-hover: #f59e0b;
-  --workspace-primary-light: #3b2a0a;
-  --workspace-primary-mid: #fde68a;
-  --workspace-primary-text: #1a1825;
+  --workspace-primary: #DBA31A;
+  --workspace-primary-hover: #C4920B;
+  --workspace-primary-light: #3a2a0b;
+  --workspace-primary-mid: #F0C95B;
+  --workspace-primary-text: #ffffff;
 }
 
 /* Admin overrides */
@@ -112,14 +135,14 @@
 }
 
 .dark {
-  --workspace-primary: #A78BFA;
-  --workspace-primary-hover: #8B5CF6;
-  --workspace-primary-light: #31214f;
-  --workspace-primary-mid: #C4B5FD;
+  --workspace-primary: #8a5fff;
+  --workspace-primary-hover: #6f3bff;
+  --workspace-primary-light: #2d1952;
+  --workspace-primary-mid: #b59bff;
   --workspace-primary-text: #ffffff;
 
-  --brand-accent: #F59E0B;
-  --brand-accent-hover: #D97706;
+  --brand-accent: #d4a017;
+  --brand-accent-hover: #b88410;
 
   /* Dark Mode — Deep purple-tinted, not flat grey */
   --page-bg: #0f0d16;
@@ -146,8 +169,8 @@
   --color-border-subtle: var(--border-strong);
 
   /* Dark Gradients */
-  --gradient-primary: linear-gradient(135deg, #c4b5fd 0%, #8b5cf6 60%, #f59e0b 100%);
-  --gradient-accent: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
+  --gradient-primary: linear-gradient(135deg, #9a7bff 0%, #6f3bff 60%, #d4a017 100%);
+  --gradient-accent: linear-gradient(135deg, #f0bf46 0%, #d4a017 100%);
   --gradient-glass: linear-gradient(180deg, rgba(27, 23, 38, 0.78) 0%, rgba(15, 13, 22, 0.42) 100%);
   --gradient-surface: linear-gradient(145deg, #1b1726, #100d16);
 
@@ -162,6 +185,9 @@
   --shadow-glow-accent: 0 0 30px rgba(245, 158, 11, 0.2);
 
   --elevation-modal: 0 28px 72px rgba(0, 0, 0, 0.65);
+
+  /* Dashboard uses its own deeper surface in dark mode */
+  --dash-override-bg: var(--dash-bg);
 }
 
 /* ========================================
@@ -191,7 +217,11 @@ body {
   transition: background-color var(--motion-base) var(--motion-ease-standard), color var(--motion-fast) var(--motion-ease-standard);
   font-size: var(--text-base);
   cursor: auto;
-  font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+  font-family: 'DM Sans', system-ui, sans-serif;
+}
+
+h1, h2, h3, h4 {
+  font-family: 'Outfit', 'DM Sans', sans-serif;
 }
 
 @keyframes fadeIn {

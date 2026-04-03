@@ -42,9 +42,9 @@ const toastConfig: Record<ToastType, { icon: React.ReactNode; accent: string; gl
     glow: 'from-amber-500',
   },
   info: {
-    icon: <Info className="h-5 w-5 text-blue-500" />,
-    accent: 'border-l-[3px] border-blue-500',
-    glow: 'from-blue-500',
+    icon: <Info className="h-5 w-5 text-primary-500" />,
+    accent: 'border-l-[3px] border-primary-500',
+    glow: 'from-primary-500',
   },
 };
 

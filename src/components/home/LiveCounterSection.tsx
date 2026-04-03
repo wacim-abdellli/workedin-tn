@@ -16,26 +16,36 @@ export default function LiveCounterSection({ stats }: LiveCounterSectionProps) {
 
     return (
         <section className="py-24 relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-dark-900 via-dark-950 to-dark-900" />
+            <div className="absolute inset-0" style={{ background: 'linear-gradient(135deg, var(--dash-bg) 0%, color-mix(in srgb, var(--dash-bg) 82%, black) 100%)' }} />
             <div className="absolute inset-0">
-                <div className="absolute top-0 start-1/4 w-64 h-64 bg-primary-600/20 rounded-full blur-[80px]" />
-                <div className="absolute bottom-0 end-1/4 w-64 h-64 bg-accent-500/20 rounded-full blur-[80px]" />
+                <div className="absolute top-0 start-1/4 w-64 h-64 rounded-full blur-[80px]" style={{ background: 'color-mix(in srgb, var(--workspace-primary) 20%, transparent)' }} />
+                <div className="absolute bottom-0 end-1/4 w-64 h-64 rounded-full blur-[80px]" style={{ background: 'color-mix(in srgb, var(--brand-accent) 18%, transparent)' }} />
             </div>
 
             <div className="container-custom relative text-center">
-                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 border border-white/10 text-white/80 text-sm font-medium mb-8 backdrop-blur-sm">
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-medium mb-8 backdrop-blur-sm"
+                    style={{
+                        background: 'rgba(255,255,255,0.06)',
+                        borderColor: 'rgba(255,255,255,0.1)',
+                        color: 'rgba(255,255,255,0.82)',
+                    }}>
                     <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
                     {t.home.stats.live}
                 </div>
 
                 <div className="text-6xl md:text-8xl font-bold text-white mb-4 font-cairo">
-                    <span className="text-gradient">
+                    <span style={{
+                        background: 'linear-gradient(135deg, var(--workspace-primary) 0%, var(--workspace-primary-mid) 55%, var(--brand-accent) 100%)',
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                        backgroundClip: 'text',
+                    }}>
                         {language === 'ar'
                             ? animatedEarnings.toLocaleString('ar-TN')
                             : animatedEarnings.toLocaleString()}
                     </span>
                 </div>
-                <p className="text-xl md:text-2xl text-dark-300">
+                <p className="text-xl md:text-2xl" style={{ color: 'rgba(255,255,255,0.88)' }}>
                     {t.counter.title}
                 </p>
 
@@ -43,16 +53,16 @@ export default function LiveCounterSection({ stats }: LiveCounterSectionProps) {
                 <div className="grid grid-cols-3 gap-8 mt-12 max-w-2xl mx-auto">
                     <div className="text-center">
                         <div className="text-3xl font-bold text-white mb-1">+{stats.jobs}</div>
-                        <div className="text-sm text-dark-400">{t.home.stats.activeJobs}</div>
+                        <div className="text-sm" style={{ color: 'rgba(255,255,255,0.68)' }}>{t.home.stats.activeJobs}</div>
                     </div>
                     <div className="text-center border-x border-white/10">
                         <div className="text-3xl font-bold text-white mb-1">+{stats.freelancers.toLocaleString()}</div>
-                        <div className="text-sm text-dark-400">{t.home.stats.users}</div>
+                        <div className="text-sm" style={{ color: 'rgba(255,255,255,0.68)' }}>{t.home.stats.users}</div>
                     </div>
                     <div className="text-center">
                         <div className="text-3xl font-bold text-white mb-1">4.9</div>
-                        <div className="text-sm text-dark-400 flex items-center justify-center gap-1">
-                            <Star className="w-3 h-3 text-warning-400 fill-current" />
+                        <div className="text-sm flex items-center justify-center gap-1" style={{ color: 'rgba(255,255,255,0.68)' }}>
+                            <Star className="w-3 h-3 fill-current" style={{ color: 'var(--brand-accent)' }} />
                             {t.home.stats.rating}
                         </div>
                     </div>

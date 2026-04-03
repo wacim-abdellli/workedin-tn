@@ -122,7 +122,7 @@ export function calculateFreelancerProfileCompletion(
         strengthColor = 'text-amber-500 bg-amber-100 dark:bg-amber-900/30';
     } else if (percentage < 90) {
         strengthLabel = 'جيد';
-        strengthColor = 'text-blue-500 bg-blue-100 dark:bg-blue-900/30';
+        strengthColor = 'text-primary-600 bg-primary-100 dark:bg-primary-900/30';
     } else {
         strengthLabel = 'ممتاز';
         strengthColor = 'text-green-500 bg-green-100 dark:bg-green-900/30';
@@ -198,7 +198,7 @@ export function calculateClientProfileCompletion(profile: Profile | null): Profi
         strengthColor = 'text-amber-500 bg-amber-100 dark:bg-amber-900/30';
     } else if (percentage < 90) {
         strengthLabel = 'جيد';
-        strengthColor = 'text-blue-500 bg-blue-100 dark:bg-blue-900/30';
+        strengthColor = 'text-primary-600 bg-primary-100 dark:bg-primary-900/30';
     } else {
         strengthLabel = 'ممتاز';
         strengthColor = 'text-green-500 bg-green-100 dark:bg-green-900/30';
