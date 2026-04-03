@@ -138,6 +138,10 @@ export function HeroSection({ stats }: HeroSectionProps) {
               style={{
                 fontSize: 'clamp(3rem, 6vw, 5rem)',
                 color: 'var(--text-primary)',
+                minHeight: 'clamp(6rem, 12vw, 10rem)',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'flex-start',
               }}
             >
               {heroContent.titleTop}
