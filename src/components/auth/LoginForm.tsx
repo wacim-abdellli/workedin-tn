@@ -41,7 +41,7 @@ function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
     });
     const onSubmit = async (data: EmailFormData) => {
         if (isLockedOut) {
-            setError(tx('auth.rateLimitError', undefined, 'Too many attempts. Please try again later.'));
+            setError(tx('authPages.login.rateLimitError', undefined, 'Too many attempts. Please try again later.'));
             return;
         }
 

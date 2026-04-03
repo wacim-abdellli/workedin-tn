@@ -2349,6 +2349,44 @@ export const ar = {
         retry: 'حاول مرة أخرى',
         jobCard: 'فشل تحميل بطاقة الوظيفة',
     },
+
+    authPages: {
+        login: {
+            badge: 'سوق توظيف موثوق',
+            heroTitle: 'سجل الدخول بدون الفوضى واعد إلى العمل بسرعة.',
+            heroDescription: 'تدفق مصادقة أهدأ للعملاء والموظفين المستقلين، مع حالات أوضح، دفعات موثوقة، وتبديل مساحات عمل يبقى بعيداً عن طريقك.',
+            highlightTrustTitle: 'هويات موثقة',
+            highlightTrustDescription: 'تبقى الملفات الشخصية والعقود وإشارات التحقق مرئية عبر مساحة عملك.',
+            highlightPaymentsTitle: 'معاملات محمية',
+            highlightPaymentsDescription: 'تدفقات الضمان أولاً تحافظ على توافق دفعات العميل وتسليم الموظف المستقل.',
+            highlightLocaleTitle: 'مبني لتونس',
+            highlightLocaleDescription: 'تدفقات اللغة العربية والفرنسية والإنجليزية معدلة للعمل الحر المحلي.',
+            createAccountAction: 'إنشاء حساب',
+            finishingSignIn: 'إنهاء دخولك',
+            finishingSignInDescription: 'نحن نؤكد جلستك الآمنة وننقلك إلى مساحة العمل الصحيحة.',
+            rateLimitError: 'عدد محاولات كثير جداً. يرجى المحاولة مرة أخرى لاحقاً.',
+        },
+        signup: {
+            badge: 'أطلق مساحة عملك',
+            heroTitle: 'قم بإنشاء انطباع أول أقوى لكل مشروع تبدأه.',
+            heroDescription: 'اختر دورك، قم بإعداد مساحة عملك، وانتقل إلى الإعداد باستخدام تجربة مصادقة أنظف وأكثر تركيزاً.',
+            highlightRoleTitle: 'إعداد قائم على الدور',
+            highlightRoleDescription: 'ابدأ كعميل أو موظف مستقل وصل إلى مساحة العمل الصحيحة من الخطوة الأولى.',
+            highlightTrustTitle: 'إشارات الثقة جاهزة',
+            highlightTrustDescription: 'التحقق وفحوصات الهوية وبنية الملف الشخصي مدمجة في الرحلة.',
+            highlightWorkTitle: 'معد للعمل الحقيقي',
+            highlightWorkDescription: 'انتقل من التسجيل إلى نشر الوظائف وبناء ملف شخصي وإغلاق العقود بسرعة أكبر.',
+            signInAction: 'تسجيل الدخول',
+            validation: {
+                passwordMinLength: 'يجب أن تكون كلمة المرور 8 أحرف على الأقل',
+                passwordUppercase: 'يجب أن تحتوي على حرف واحد على الأقل بأحرف كبيرة',
+                passwordLowercase: 'يجب أن تحتوي على حرف واحد على الأقل بأحرف صغيرة',
+                passwordNumber: 'يجب أن تحتوي على رقم واحد على الأقل',
+            },
+            rateLimitErrorMinutes: 'عدد محاولات كثير جداً. يرجى المحاولة مرة أخرى في {{minutes}} دقيقة.',
+            rateLimitError15Min: 'عدد محاولات كثير جداً. يرجى المحاولة مرة أخرى في 15 دقيقة.',
+        },
+    },
 };
 
 export type Translations = typeof ar;

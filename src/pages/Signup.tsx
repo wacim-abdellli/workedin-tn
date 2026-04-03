@@ -13,25 +13,25 @@ function Signup() {
         <>
             <SEO {...SEO_CONFIG.signup} url="/signup" />
             <AuthShell
-                badge={tx('pages.signup.badge', undefined, 'Launch your workspace')}
-                title={tx('pages.signup.heroTitle', undefined, 'Create a sharper first impression for every project you start.')}
-                description={tx('pages.signup.heroDescription', undefined, 'Choose your role, set up your workspace, and move into onboarding with a cleaner, more focused auth experience.')}
+                badge={tx('authPages.signup.badge', undefined, 'Launch your workspace')}
+                title={tx('authPages.signup.heroTitle', undefined, 'Create a sharper first impression for every project you start.')}
+                description={tx('authPages.signup.heroDescription', undefined, 'Choose your role, set up your workspace, and move into onboarding with a cleaner, more focused auth experience.')}
                 highlights={[
                     {
                         icon: Sparkles,
-                        title: tx('pages.signup.highlightRoleTitle', undefined, 'Role-first onboarding'),
-                        description: tx('pages.signup.highlightRoleDescription', undefined, 'Start as client or freelancer and land in the right workspace from the first step.'),
+                        title: tx('authPages.signup.highlightRoleTitle', undefined, 'Role-first onboarding'),
+                        description: tx('authPages.signup.highlightRoleDescription', undefined, 'Start as client or freelancer and land in the right workspace from the first step.'),
                     },
                     {
                         icon: ShieldCheck,
-                        title: tx('pages.signup.highlightTrustTitle', undefined, 'Trust signals ready'),
-                        description: tx('pages.signup.highlightTrustDescription', undefined, 'Verification, identity checks, and profile structure are built into the journey.'),
+                        title: tx('authPages.signup.highlightTrustTitle', undefined, 'Trust signals ready'),
+                        description: tx('authPages.signup.highlightTrustDescription', undefined, 'Verification, identity checks, and profile structure are built into the journey.'),
                         tone: 'cyan',
                     },
                     {
                         icon: Briefcase,
-                        title: tx('pages.signup.highlightWorkTitle', undefined, 'Prepared for real work'),
-                        description: tx('pages.signup.highlightWorkDescription', undefined, 'Move from sign-up to posting jobs, building a profile, and closing contracts faster.'),
+                        title: tx('authPages.signup.highlightWorkTitle', undefined, 'Prepared for real work'),
+                        description: tx('authPages.signup.highlightWorkDescription', undefined, 'Move from sign-up to posting jobs, building a profile, and closing contracts faster.'),
                         tone: 'accent',
                     },
                 ]}
@@ -41,7 +41,7 @@ function Signup() {
                         state={location.state}
                         className="inline-flex items-center rounded-full border border-white/12 bg-white/6 px-4 py-2 text-sm font-medium text-white/80 backdrop-blur-sm transition-colors hover:border-white/20 hover:bg-white/10 hover:text-white"
                     >
-                        {tx('pages.signup.signInAction', undefined, 'Sign in')}
+                        {tx('authPages.signup.signInAction', undefined, 'Sign in')}
                     </Link>
                 }
             >

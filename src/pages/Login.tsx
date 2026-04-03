@@ -52,25 +52,25 @@ function Login() {
         <>
             <SEO {...SEO_CONFIG.login} url="/login" noIndex />
             <AuthShell
-                badge={tx('pages.login.badge', undefined, 'Trusted freelance marketplace')}
-                title={tx('pages.login.heroTitle', undefined, 'Sign in without the clutter and get back to work fast.')}
-                description={tx('pages.login.heroDescription', undefined, 'A calmer auth flow for clients and freelancers, with clearer states, trusted payments, and workspace switching that stays out of your way.')}
+                badge={tx('authPages.login.badge', undefined, 'Trusted freelance marketplace')}
+                title={tx('authPages.login.heroTitle', undefined, 'Sign in without the clutter and get back to work fast.')}
+                description={tx('authPages.login.heroDescription', undefined, 'A calmer auth flow for clients and freelancers, with clearer states, trusted payments, and workspace switching that stays out of your way.')}
                 highlights={[
                     {
                         icon: ShieldCheck,
-                        title: tx('pages.login.highlightTrustTitle', undefined, 'Verified identities'),
-                        description: tx('pages.login.highlightTrustDescription', undefined, 'Profiles, contracts, and verification signals stay visible across your workspace.'),
+                        title: tx('authPages.login.highlightTrustTitle', undefined, 'Verified identities'),
+                        description: tx('authPages.login.highlightTrustDescription', undefined, 'Profiles, contracts, and verification signals stay visible across your workspace.'),
                     },
                     {
                         icon: BadgeCheck,
-                        title: tx('pages.login.highlightPaymentsTitle', undefined, 'Protected transactions'),
-                        description: tx('pages.login.highlightPaymentsDescription', undefined, 'Escrow-first flows keep client payments and freelancer delivery aligned.'),
+                        title: tx('authPages.login.highlightPaymentsTitle', undefined, 'Protected transactions'),
+                        description: tx('authPages.login.highlightPaymentsDescription', undefined, 'Escrow-first flows keep client payments and freelancer delivery aligned.'),
                         tone: 'accent',
                     },
                     {
                         icon: Globe2,
-                        title: tx('pages.login.highlightLocaleTitle', undefined, 'Built for Tunisia'),
-                        description: tx('pages.login.highlightLocaleDescription', undefined, 'Arabic, French, and English flows tuned for local freelance work.'),
+                        title: tx('authPages.login.highlightLocaleTitle', undefined, 'Built for Tunisia'),
+                        description: tx('authPages.login.highlightLocaleDescription', undefined, 'Arabic, French, and English flows tuned for local freelance work.'),
                         tone: 'cyan',
                     },
                 ]}
@@ -79,7 +79,7 @@ function Login() {
                         to="/signup"
                         className="inline-flex items-center rounded-full border border-white/12 bg-white/6 px-4 py-2 text-sm font-medium text-white/80 backdrop-blur-sm transition-colors hover:border-white/20 hover:bg-white/10 hover:text-white"
                     >
-                        {tx('pages.login.createAccountAction', undefined, 'Create account')}
+                        {tx('authPages.login.createAccountAction', undefined, 'Create account')}
                     </Link>
                 }
             >
@@ -87,9 +87,9 @@ function Login() {
                     {isOAuthResume && isLoading ? (
                         <div className="rounded-3xl border border-white/10 bg-gray-50/70 p-8 text-center dark:bg-white/5">
                             <Loader2 className="mx-auto mb-4 h-12 w-12 animate-spin text-primary-600" />
-                            <h1 className="mb-2 text-2xl font-bold text-[#171420] dark:text-white">{tx('pages.login.finishingSignIn', undefined, 'Finishing your sign in')}</h1>
+                            <h1 className="mb-2 text-2xl font-bold text-[#171420] dark:text-white">{tx('authPages.login.finishingSignIn', undefined, 'Finishing your sign in')}</h1>
                             <p className="text-sm text-gray-500 dark:text-gray-400">
-                                {tx('pages.login.finishingSignInDescription', undefined, 'We are confirming your secure session and sending you to the right workspace.')}
+                                {tx('authPages.login.finishingSignInDescription', undefined, 'We are confirming your secure session and sending you to the right workspace.')}
                             </p>
                         </div>
                     ) : (

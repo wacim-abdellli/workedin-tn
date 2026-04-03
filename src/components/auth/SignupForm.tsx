@@ -67,10 +67,10 @@ function SignupForm({ onComplete }: SignupFormProps) {
     const signupSchema = z.object({
         email: z.string().email(t.auth.invalidEmail),
         password: z.string()
-            .min(8, tx('auth.validation.password.minLength', undefined, 'Password must be at least 8 characters'))
-            .regex(/[A-Z]/, tx('auth.validation.password.uppercase', undefined, 'Must contain at least one uppercase letter'))
-            .regex(/[a-z]/, tx('auth.validation.password.lowercase', undefined, 'Must contain at least one lowercase letter'))
-            .regex(/[0-9]/, tx('auth.validation.password.number', undefined, 'Must contain at least one number')),
+            .min(8, tx('authPages.signup.validation.passwordMinLength', undefined, 'Password must be at least 8 characters'))
+            .regex(/[A-Z]/, tx('authPages.signup.validation.passwordUppercase', undefined, 'Must contain at least one uppercase letter'))
+            .regex(/[a-z]/, tx('authPages.signup.validation.passwordLowercase', undefined, 'Must contain at least one lowercase letter'))
+            .regex(/[0-9]/, tx('authPages.signup.validation.passwordNumber', undefined, 'Must contain at least one number')),
         confirmPassword: z.string(),
     }).refine((data) => data.password === data.confirmPassword, {
         message: t.auth.passwordMismatch,
@@ -106,7 +106,7 @@ function SignupForm({ onComplete }: SignupFormProps) {
     const onSubmit = async (data: SignupFormData) => {
         if (lockoutUntil && Date.now() < lockoutUntil) {
             const minutes = Math.ceil((lockoutUntil - Date.now()) / 60000);
-            setError(tx('auth.rateLimitErrorMinutes', { minutes: String(minutes) }, 'Too many attempts. Please try again in {{minutes}} minutes.'));
+            setError(tx('authPages.signup.rateLimitErrorMinutes', { minutes: String(minutes) }, 'Too many attempts. Please try again in {{minutes}} minutes.'));
             return;
         }
 
@@ -123,17 +123,17 @@ function SignupForm({ onComplete }: SignupFormProps) {
             navigate(`/verify-email?email=${encodeURIComponent(data.email)}`);
         } catch (err) {
             const newAttempts = attempts + 1;
-            setAttempts(newAttempts);
-            if (newAttempts >= 5) {
-                const lockout = Date.now() + 15 * 60 * 1000;
-                setLockoutTime(lockout);
-                localStorage.setItem('khedma_signup_lockout', lockout.toString());
-                const msg = tx('auth.rateLimitError15Min', undefined, 'Too many attempts. Please try again in 15 minutes.');
-                setError(msg);
-                showToast(msg, 'error');
-                setIsLoading(false);
-                return;
-            }
+             setAttempts(newAttempts);
+             if (newAttempts >= 5) {
+                 const lockout = Date.now() + 15 * 60 * 1000;
+                 setLockoutTime(lockout);
+                 localStorage.setItem('khedma_signup_lockout', lockout.toString());
+                 const msg = tx('authPages.signup.rateLimitError15Min', undefined, 'Too many attempts. Please try again in 15 minutes.');
+                 setError(msg);
+                 showToast(msg, 'error');
+                 setIsLoading(false);
+                 return;
+             }
 
             const message = (err as Error).message;
             if (message.includes('User already registered')) {
