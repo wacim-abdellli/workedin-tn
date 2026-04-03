@@ -22,8 +22,7 @@ type Tab = 'overview' | 'users' | 'jobs' | 'payments' | 'verifications' | 'dispu
 
 export default function AdminDashboard() {
     const navigate = useNavigate();
-    const { language, dir } = useTranslation();
-    const tr = (ar: string, en: string, fr?: string) => language === 'ar' ? ar : language === 'fr' ? (fr || en) : en;
+    const { dir, tx } = useTranslation();
 
     const [activeTab, setActiveTab] = useState<Tab>(() => {
         const stored = sessionStorage.getItem(ACTIVE_TAB_KEY);
@@ -36,14 +35,14 @@ export default function AdminDashboard() {
     }, [activeTab]);
 
     const tabs: { id: Tab; label: string; icon: React.ElementType }[] = [
-        { id: 'overview', label: tr('نظرة عامة', 'Overview', 'Vue d\'ensemble'), icon: BarChart3 },
-        { id: 'users', label: tr('المستخدمون', 'Users', 'Utilisateurs'), icon: Users },
-        { id: 'jobs', label: tr('الوظائف', 'Jobs', 'Offres'), icon: Briefcase },
-        { id: 'payments', label: tr('المدفوعات', 'Payments', 'Paiements'), icon: CreditCard },
-        { id: 'verifications', label: tr('التحقق', 'Verification', 'Verification'), icon: Shield },
-        { id: 'disputes', label: tr('النزاعات', 'Disputes', 'Litiges'), icon: AlertTriangle },
-        { id: 'reports', label: tr('البلاغات', 'Reports', 'Signalements'), icon: Flag },
-        { id: 'settings', label: tr('الإعدادات', 'Settings', 'Parametres'), icon: Settings },
+        { id: 'overview', label: tx('dashboard.admin.overview', undefined, 'Overview'), icon: BarChart3 },
+        { id: 'users', label: tx('dashboard.admin.users', undefined, 'Users'), icon: Users },
+        { id: 'jobs', label: tx('dashboard.admin.jobs', undefined, 'Jobs'), icon: Briefcase },
+        { id: 'payments', label: tx('dashboard.admin.payments', undefined, 'Payments'), icon: CreditCard },
+        { id: 'verifications', label: tx('dashboard.admin.verification', undefined, 'Verification'), icon: Shield },
+        { id: 'disputes', label: tx('dashboard.admin.disputes', undefined, 'Disputes'), icon: AlertTriangle },
+        { id: 'reports', label: tx('dashboard.admin.reports', undefined, 'Reports'), icon: Flag },
+        { id: 'settings', label: tx('dashboard.admin.settings', undefined, 'Settings'), icon: Settings },
     ];
 
     const renderTab = () => {
@@ -71,18 +70,18 @@ export default function AdminDashboard() {
                             <Shield className="w-6 h-6 text-white" />
                         </div>
                         <div>
-                            <h1 className="text-xl font-extrabold text-foreground">{tr('لوحة الإدارة', 'Admin Dashboard', 'Tableau de bord admin')}</h1>
-                            <p className="text-sm text-muted">Khedma TN • {tr('مركز المراقبة', 'Operations Center', 'Centre de supervision')}</p>
+                            <h1 className="text-xl font-extrabold text-foreground">{tx('dashboard.admin.adminDashboard', undefined, 'Admin Dashboard')}</h1>
+                            <p className="text-sm text-muted">Khedma TN • {tx('dashboard.admin.operationsCenter', undefined, 'Operations Center')}</p>
                         </div>
                     </div>
                     <div className="flex w-full flex-wrap items-center justify-between gap-3 sm:w-auto sm:justify-end">
                         <div className="hidden md:flex items-center gap-2 px-3 py-2 rounded-xl border border-primary-500/25 bg-primary-500/10 text-primary-700 dark:text-primary-300 text-sm font-medium">
                             <Activity className="w-4 h-4" />
-                            {tr('الوضع الليلي جاهز', 'Night mode ready', 'Mode nuit pret')}
+                            {tx('dashboard.admin.nightModeReady', undefined, 'Night mode ready')}
                         </div>
                         <ThemeToggle />
                         <Button variant="ghost" size="sm" className="w-full justify-center border border-border bg-card hover:bg-surface sm:w-auto" onClick={() => navigate('/')}>
-                            <ChevronLeft className="ms-1 w-4 h-4 rtl:rotate-180" />{tr('العودة للموقع', 'Back to site', 'Retour au site')}
+                            <ChevronLeft className="ms-1 w-4 h-4 rtl:rotate-180" />{tx('dashboard.admin.backToSite', undefined, 'Back to site')}
                         </Button>
                     </div>
                 </div>
