@@ -92,7 +92,7 @@ type SimilarJob = Pick<Job, 'id' | 'title' | 'job_type' | 'budget_min' | 'budget
 
 
 // Helper functions (Restored)
-function timeAgo(date: string): string {
+function timeAgo(date: string, tx: any): string {
     const now = new Date();
     const posted = new Date(date);
     const diffMs = now.getTime() - posted.getTime();
@@ -100,11 +100,11 @@ function timeAgo(date: string): string {
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
 
-    if (diffMins < 60) return `منذ ${diffMins} دقيقة`;
-    if (diffHours < 24) return `منذ ${diffHours} ساعة`;
-    if (diffDays < 7) return `منذ ${diffDays} يوم`;
-    if (diffDays < 30) return `منذ ${Math.floor(diffDays / 7)} أسبوع`;
-    return `منذ ${Math.floor(diffDays / 30)} شهر`;
+    if (diffMins < 60) return tx('jobDetail.timeAgo.minutes', { count: diffMins }, `منذ ${diffMins} دقيقة`);
+    if (diffHours < 24) return tx('jobDetail.timeAgo.hours', { count: diffHours }, `منذ ${diffHours} ساعة`);
+    if (diffDays < 7) return tx('jobDetail.timeAgo.days', { count: diffDays }, `منذ ${diffDays} يوم`);
+    if (diffDays < 30) return tx('jobDetail.timeAgo.weeks', { count: Math.floor(diffDays / 7) }, `منذ ${Math.floor(diffDays / 7)} أسبوع`);
+    return tx('jobDetail.timeAgo.months', { count: Math.floor(diffDays / 30) }, `منذ ${Math.floor(diffDays / 30)} شهر`);
 }
 
 function formatDate(date: string): string {
@@ -135,8 +135,7 @@ const CATEGORY_LABELS: Record<string, string> = {
 function JobDetail() {
     const { jobId } = useParams<{ jobId: string }>();
     const navigate = useNavigate();
-    const { t, language } = useTranslation();
-    const tr = (ar: string, en: string, fr?: string) => language === 'ar' ? ar : language === 'fr' ? (fr || en) : en;
+    const { t, language, tx } = useTranslation();
     const { user, freelancerProfile } = useAuth();
     const { showToast } = useToast();
     const queryClient = useQueryClient();
@@ -430,15 +429,15 @@ function JobDetail() {
                                     <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
                                         <span className="flex items-center gap-1.5">
                                             <Clock className="w-3.5 h-3.5" />
-                                            نُشرت {timeAgo(job.posted_at)}
+                                            {tx('jobDetail.postedLabel', undefined, 'نُشرت')} {timeAgo(job.posted_at, tx)}
                                         </span>
                                         <span className="flex items-center gap-1.5">
                                             <Users className="w-3.5 h-3.5" />
-                                            {job.proposals_count} عرض
+                                            {job.proposals_count} {tx('jobDetail.proposalsCountLabel', undefined, 'عرض')}
                                         </span>
                                         <span className="flex items-center gap-1.5">
                                             <Eye className="w-3.5 h-3.5" />
-                                            {job.views_count} مشاهدة
+                                            {job.views_count} {tx('jobDetail.viewsCountLabel', undefined, 'مشاهدة')}
                                         </span>
                                     </div>
                                 </div>
@@ -451,7 +450,7 @@ function JobDetail() {
                                                 ? 'bg-red-50 dark:bg-red-500/15 text-red-500'
                                                 : 'bg-secondary text-muted-foreground hover:text-red-500'
                                         )}
-                                        title={isSaved ? tr('إزالة من المحفوظات', 'Remove from saves', 'Retirer des favoris') : tr('حفظ هذه الوظيفة', 'Save this job', 'Enregistrer cette offre')}
+                                        title={isSaved ? tx('jobDetail.removeFromSaves', undefined, 'Remove from saves') : tx('jobDetail.saveJob', undefined, 'Save this job')}
                                     >
                                         <Heart className={cn('w-5 h-5', isSaved && 'fill-current')} />
                                     </button>
@@ -461,7 +460,7 @@ function JobDetail() {
                                             'p-2.5 rounded-lg transition-colors',
                                             'bg-secondary text-muted-foreground hover:text-[color:var(--workspace-primary)]'
                                         )}
-                                        title={tr('شارك هذه الوظيفة', 'Share this job', 'Partager cette offre')}
+                                        title={tx('jobDetail.shareJob', undefined, 'Share this job')}
                                     >
                                         <Share2 className="w-5 h-5" />
                                     </button>
@@ -504,13 +503,13 @@ function JobDetail() {
                                     {t.jobDetail.budget}
                                 </p>
                                 <p className="text-2xl font-bold text-foreground">
-                                    {job.job_type === 'fixed_price' ? (
+                                            {job.job_type === 'fixed_price' ? (
                                         job.budget_min === job.budget_max || !job.budget_max
-                                            ? `${job.budget_min} د.ت`
-                                            : `${job.budget_min} - ${job.budget_max} د.ت`
+                                            ? `${job.budget_min} ${tx('common.currency', undefined, 'د.ت')}`
+                                            : `${job.budget_min} - ${job.budget_max} ${tx('common.currency', undefined, 'د.ت')}`
                                     ) : (
                                         <>
-                                            {job.hourly_rate} د.ت<span className="text-sm font-normal">{t.jobDetail.perHour}</span>
+                                            {job.hourly_rate} {tx('common.currency', undefined, 'د.ت')}<span className="text-sm font-normal">{t.jobDetail.perHour}</span>
                                             {job.estimated_hours && (
                                                 <span className="text-xs font-normal text-muted-foreground block mt-1">
                                                     {t.jobDetail.approxHours.replace('{{count}}', String(job.estimated_hours))}
@@ -611,7 +610,7 @@ function JobDetail() {
                                  'border-border',
                                  'shadow-sm dark:shadow-none'
                              )}>
-                                 <h2 className="text-lg font-semibold mb-4 text-foreground">وظائف مشابهة</h2>
+                                 <h2 className="text-lg font-semibold mb-4 text-foreground">{tx('jobDetail.similarJobs', undefined, 'وظائف مشابهة')}</h2>
                                  <div className="grid gap-3 md:grid-cols-2">
                                      {similarJobs.map(j => (
                                          <SimilarJobCard
@@ -640,32 +639,32 @@ function JobDetail() {
                                      <div className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-500/15 flex items-center justify-center mx-auto mb-3">
                                          <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400" />
                                      </div>
-                                     <h3 className="font-semibold text-base text-foreground mb-1">تم تقديم عرضك</h3>
+                                     <h3 className="font-semibold text-base text-foreground mb-1">{tx('jobDetail.proposalSubmitted', undefined, 'تم تقديم عرضك')}</h3>
                                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                                         عرضك: {myProposal.bid_amount} د.ت
+                                         {tx('jobDetail.yourBid', undefined, 'عرضك:')} {myProposal.bid_amount} {tx('common.currency', undefined, 'د.ت')}
                                      </p>
                                      <div className="space-y-2">
                                          <Button variant="outline" className="w-full">
-                                             عرض عرضي
+                                             {tx('jobDetail.viewProposal', undefined, 'عرض عرضي')}
                                          </Button>
                                          <Button
                                              variant="ghost"
                                              className="w-full text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10"
                                              onClick={withdrawProposal}
                                          >
-                                             سحب العرض
+                                             {tx('jobDetail.withdrawProposal', undefined, 'سحب العرض')}
                                          </Button>
                                      </div>
                                  </div>
                              ) : user?.id === job.client_id ? (
                                  <div className="text-center">
-                                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">هذه وظيفتك</p>
+                                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">{tx('jobDetail.yourJob', undefined, 'هذه وظيفتك')}</p>
                                      <Button
                                          variant="primary"
                                          className="w-full"
                                          onClick={() => navigate(`/client/jobs/${job.id}`)}
                                      >
-                                         إدارة الوظيفة
+                                         {tx('jobDetail.manageJob', undefined, 'إدارة الوظيفة')}
                                      </Button>
                                  </div>
                              ) : (
@@ -678,7 +677,7 @@ function JobDetail() {
                                          rightIcon={<Send className="w-5 h-5" />}
                                          disabled={!!freelancerProfile && connectsAvailable < CONNECTS_COST}
                                      >
-                                         أرسل عرض
+                                         {tx('jobDetail.sendProposal', undefined, 'أرسل عرض')}
                                      </Button>
 
                                      {freelancerProfile && (
@@ -756,7 +755,7 @@ function JobDetail() {
                              'border-border',
                              'shadow-sm dark:shadow-none'
                          )}>
-                             <h3 className="font-semibold text-base text-foreground mb-4">عن العميل</h3>
+                             <h3 className="font-semibold text-base text-foreground mb-4">{tx('jobDetail.aboutClient', undefined, 'عن العميل')}</h3>
                              <div className="flex items-center gap-3 mb-5 pb-5 border-b border-border">
                                  {job.client?.avatar_url ? (
                                      <OptimizedImage
@@ -824,7 +823,7 @@ function JobDetail() {
                              'border-border',
                              'shadow-sm dark:shadow-none'
                          )}>
-                             <h3 className="font-semibold text-base text-foreground mb-4">إحصائيات الوظيفة</h3>
+                             <h3 className="font-semibold text-base text-foreground mb-4">{tx('jobDetail.jobStats', undefined, 'إحصائيات الوظيفة')}</h3>
                              <div className="space-y-3 text-sm">
                                  <div className="flex justify-between pb-3 border-b border-border">
                                      <span className="text-gray-600 dark:text-gray-400 font-medium">العروض</span>
@@ -869,26 +868,26 @@ function JobDetail() {
             <Modal
                 isOpen={isWithdrawModalOpen}
                 onClose={() => setIsWithdrawModalOpen(false)}
-                title={tr('تأكيد سحب العرض', 'Confirm Withdrawal', 'Confirmer le retrait')}
+                title={tx('jobDetail.confirmWithdrawal', undefined, 'Confirm Withdrawal')}
                 size="md"
             >
                 <div className="space-y-6 pt-4">
                     <p className="text-gray-600 dark:text-gray-300">
-                        {tr('هل أنت متأكد أنك تريد سحب هذا العرض؟ لا يمكن التراجع عن هذا الإجراء.', 'Are you sure you want to withdraw this proposal? This action cannot be undone.', 'Êtes-vous sûr de vouloir retirer cette proposition ? Cette action ne peut pas être annulée.')}
+                        {tx('jobDetail.withdrawConfirmDesc', undefined, 'Are you sure you want to withdraw this proposal? This action cannot be undone.')}
                     </p>
                     <div className="flex gap-3 justify-end pr-0">
                         <Button
                             variant="outline"
                             onClick={() => setIsWithdrawModalOpen(false)}
                         >
-                            {tr('إلغاء', 'Cancel', 'Annuler')}
+                            {tx('common.cancel', undefined, 'Cancel')}
                         </Button>
                         <Button
                             variant="danger"
                             onClick={confirmWithdrawProposal}
                             isLoading={withdrawProposalMutation.isPending}
                         >
-                            {tr('نعم، اسحب العرض', 'Yes, Withdraw Proposal', 'Oui, retirer')}
+                            {tx('jobDetail.yesWithdraw', undefined, 'Yes, Withdraw Proposal')}
                         </Button>
                     </div>
                 </div>

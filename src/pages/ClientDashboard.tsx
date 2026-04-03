@@ -8,7 +8,7 @@ import {
     FileText,
     FolderOpen,
     MessageSquare,
-    PlusCircle,
+    Plus,
     Settings,
     Users,
 } from 'lucide-react';
@@ -253,10 +253,10 @@ function ClientDashboardPage() {
 
                     <div className="flex flex-wrap gap-3">
                         {[
-                            { label: 'Projects', value: statsData.totalJobs },
-                            { label: 'Active', value: statsData.activeJobs },
-                            { label: 'Proposals', value: statsData.totalProposals },
-                            { label: 'Spent', value: formatCurrency(statsData.totalSpent, true, language), accent: true },
+                            { label: tx('dashboard.client.projectsLabel', undefined, 'Projects'), value: statsData.totalJobs },
+                            { label: tx('dashboard.client.activeLabel', undefined, 'Active'), value: statsData.activeJobs },
+                            { label: tx('dashboard.client.proposalsLabel', undefined, 'Proposals'), value: statsData.totalProposals },
+                            { label: tx('dashboard.client.spentLabel', undefined, 'Spent'), value: formatCurrency(statsData.totalSpent, true, language), accent: true },
                         ].map((stat) => (
                             <div
                                 key={stat.label}
@@ -280,16 +280,16 @@ function ClientDashboardPage() {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
                     <motion.div className="lg:col-span-2 space-y-5" variants={containerVariants} initial="hidden" animate="show">
                         <motion.div variants={itemVariants}>
-                            <DashWidget title="Active Projects" icon={<FolderOpen className="w-4 h-4" />} action={{ label: 'View all', onClick: () => navigate('/client/jobs') }}>
+                            <DashWidget title={tx('dashboard.client.activeProjects', undefined, 'Active Projects')} icon={<FolderOpen className="w-4 h-4" />} action={{ label: tx('dashboard.client.viewAll', undefined, 'View all'), onClick: () => navigate('/client/jobs') }}>
                                 {isStatsLoading ? (
                                     <SkeletonCard />
                                 ) : jobs.length === 0 ? (
                                     <EmptyState
                                         icon={FolderOpen}
-                                        title="No active projects"
-                                        description="Post your first project to find talented freelancers"
+                                        title={tx('dashboard.client.noActiveProjects', undefined, 'No active projects')}
+                                        description={tx('dashboard.client.postFirstProject', undefined, 'Post your first project to find talented freelancers')}
                                         className="min-h-[360px] rounded-[1.6rem] border"
-                                        action={{ label: 'Post a Project', onClick: () => navigate('/jobs/new') }}
+                                        action={{ label: tx('dashboard.client.postAProject', undefined, 'Post a Project'), onClick: () => navigate('/jobs/new') }}
                                     />
                                 ) : (
                                     <div className="divide-y" style={{ borderColor: 'var(--dash-border)' }}>
@@ -304,11 +304,11 @@ function ClientDashboardPage() {
                                                         {job.title}
                                                     </p>
                                                     <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
-                                                        {job.proposals_count ?? 0} proposals · {job.status}
+                                                        {job.proposals_count ?? 0} {tx('dashboard.client.proposalsCountText', undefined, 'proposals')} · {tx(`status.${job.status}`, undefined, job.status)}
                                                     </p>
                                                 </div>
                                                 <div className="flex items-center gap-2 shrink-0 ml-4">
-                                                    <Badge variant={job.status === 'open' ? 'info' : job.status === 'in_progress' ? 'warning' : 'default'}>{job.status}</Badge>
+                                                    <Badge variant={job.status === 'open' ? 'info' : job.status === 'in_progress' ? 'warning' : 'default'}>{tx(`status.${job.status}`, undefined, job.status)}</Badge>
                                                     <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: 'var(--workspace-primary)' }} />
                                                 </div>
                                             </div>
@@ -319,14 +319,14 @@ function ClientDashboardPage() {
                         </motion.div>
 
                         <motion.div variants={itemVariants}>
-                            <DashWidget title="Recent Proposals" icon={<FileText className="w-4 h-4" />}>
+                            <DashWidget title={tx('dashboard.client.recentProposals', undefined, 'Recent Proposals')} icon={<FileText className="w-4 h-4" />}>
                                 {isLoadingProposals ? (
                                     <SkeletonCard />
                                 ) : proposals.length === 0 ? (
                                     <EmptyState
                                         icon={FileText}
-                                        title="No proposals yet"
-                                        description="Post a project to start receiving proposals"
+                                        title={tx('dashboard.client.noProposalsYet', undefined, 'No proposals yet')}
+                                        description={tx('dashboard.client.postJobToReceiveProposals', undefined, 'Post a project to start receiving proposals')}
                                         className="rounded-[1.5rem] border"
                                     />
                                 ) : (
@@ -349,14 +349,14 @@ function ClientDashboardPage() {
                                                     </div>
                                                     <div className="min-w-0">
                                                         <p className="font-semibold text-sm truncate" style={{ color: 'var(--text-primary)' }}>
-                                                            {proposal.freelancer?.full_name ?? 'Freelancer'}
+                                                            {proposal.freelancer?.full_name ?? tx('dashboard.client.freelancerFallback', undefined, 'Freelancer')}
                                                         </p>
                                                         <p className="text-xs truncate" style={{ color: 'var(--text-muted)' }}>
-                                                            {proposal.job?.title ?? 'Untitled job'} · {formatCurrency(proposal.bid_amount ?? 0, true, language)}
+                                                            {proposal.job?.title ?? tx('dashboard.client.untitledJob', undefined, 'Untitled job')} · {formatCurrency(proposal.bid_amount ?? 0, true, language)}
                                                         </p>
                                                     </div>
                                                 </div>
-                                                <Badge variant="warning">Review</Badge>
+                                                <Badge variant="warning">{tx('dashboard.client.reviewBadge', undefined, 'Review')}</Badge>
                                             </div>
                                         ))}
                                     </div>
@@ -365,14 +365,14 @@ function ClientDashboardPage() {
                         </motion.div>
 
                         <motion.div variants={itemVariants}>
-                            <DashWidget title="Active Contracts" icon={<Briefcase className="w-4 h-4" />} action={{ label: 'View all', onClick: () => navigate('/contracts') }}>
+                            <DashWidget title={tx('dashboard.client.activeContracts', undefined, 'Active Contracts')} icon={<Briefcase className="w-4 h-4" />} action={{ label: tx('dashboard.client.viewAll', undefined, 'View all'), onClick: () => navigate('/contracts') }}>
                                 {isStatsLoading ? (
                                     <SkeletonCard />
                                 ) : activeContracts.length === 0 ? (
                                     <EmptyState
                                         icon={Briefcase}
-                                        title="No active contracts"
-                                        description="Accept a proposal to start a contract"
+                                        title={tx('dashboard.client.noActiveContracts', undefined, 'No active contracts')}
+                                        description={tx('dashboard.client.acceptProposalToStart', undefined, 'Accept a proposal to start a contract')}
                                         className="rounded-[1.5rem] border"
                                     />
                                 ) : (
@@ -388,10 +388,10 @@ function ClientDashboardPage() {
                                                         {contract.title}
                                                     </p>
                                                     <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
-                                                        {contract.freelancer?.full_name ?? 'Freelancer'} · {formatCurrency(contract.total_amount ?? 0, true, language)}
+                                                        {contract.freelancer?.full_name ?? tx('dashboard.client.freelancerFallback', undefined, 'Freelancer')} · {formatCurrency(contract.total_amount ?? 0, true, language)}
                                                     </p>
                                                 </div>
-                                                <Badge variant={contract.status === 'active' ? 'success' : 'warning'}>{contract.status}</Badge>
+                                                <Badge variant={contract.status === 'active' ? 'success' : 'warning'}>{tx(`status.${contract.status}`, undefined, contract.status)}</Badge>
                                             </div>
                                         ))}
                                     </div>
@@ -403,51 +403,59 @@ function ClientDashboardPage() {
                     <motion.div className="space-y-5" variants={containerVariants} initial="hidden" animate="show">
                         <motion.div variants={itemVariants}>
                             <div
-                                className="rounded-2xl p-5 border"
-                                style={{
-                                    background: 'linear-gradient(135deg, var(--workspace-primary) 0%, var(--workspace-primary-mid) 100%)',
-                                    borderColor: 'transparent',
-                                }}
+                                className="relative overflow-hidden rounded-[1.75rem] p-6 sm:p-8"
+                                style={{ background: 'var(--workspace-primary)' }}
                             >
-                                <PlusCircle className="w-8 h-8 mb-3 text-white opacity-90" />
-                                <h3 className="font-display font-bold text-lg text-white mb-1">Need something done?</h3>
-                                <p className="text-sm text-white/75 mb-4 leading-relaxed">
-                                    Post a project free. Get proposals from verified Tunisian talent.
-                                </p>
-                                <button
-                                    onClick={() => navigate('/jobs/new')}
-                                    className="w-full py-2.5 rounded-xl text-sm font-semibold transition-opacity hover:opacity-90"
-                                    style={{ background: 'var(--brand-accent)', color: '#fff' }}
-                                >
-                                    Post a project — it's free →
-                                </button>
+                                {/* Decorative elements */}
+                                <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/30 to-transparent" />
+                                <div className="pointer-events-none absolute -right-12 -top-12 h-40 w-40 rounded-full bg-white/20 blur-3xl" />
+                                <div className="pointer-events-none absolute -bottom-12 -left-12 h-40 w-40 rounded-full bg-black/10 blur-3xl" />
+                                
+                                <div className="relative z-10">
+                                    <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-full border border-white/30 bg-white/20 shadow-inner backdrop-blur-md">
+                                        <Plus className="h-6 w-6 text-dark-950" />
+                                    </div>
+                                    <h3 className="mb-2 font-display text-[1.75rem] font-bold tracking-tight text-dark-950 leading-tight">
+                                        {tx('dashboard.client.needSomethingDone', undefined, 'Need something done?')}
+                                    </h3>
+                                    <p className="mb-8 text-[15px] font-medium leading-relaxed text-dark-950/80">
+                                        {tx('dashboard.client.postProjectFree', undefined, 'Post a project free. Get proposals from verified Tunisian talent.')}
+                                    </p>
+                                    <button
+                                        onClick={() => navigate('/jobs/new')}
+                                        className="group flex w-full items-center justify-center gap-2 rounded-xl bg-dark-950 px-4 py-3.5 text-sm font-bold text-white shadow-xl transition-all duration-300 hover:-translate-y-0.5 hover:bg-dark-800 hover:shadow-2xl active:translate-y-0"
+                                    >
+                                        {tx('dashboard.client.postProjectFreeCta', undefined, 'Post a project — it\'s free')}
+                                        <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                                    </button>
+                                </div>
                             </div>
                         </motion.div>
 
                         <motion.div variants={itemVariants}>
-                            <DashWidget title="This Month" icon={<DollarSign className="w-4 h-4" />}>
+                            <DashWidget title={tx('dashboard.client.thisMonth', undefined, 'This Month')} icon={<DollarSign className="w-4 h-4" />}>
                                 <div>
                                     <p className="font-display font-bold text-3xl" style={{ color: 'var(--text-primary)' }}>
                                         {formatCurrency(statsData.monthlySpending, true, language)}
                                     </p>
                                     <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
-                                        Across {statsData.activeContracts} active contracts
+                                        {tx('dashboard.client.acrossActiveContracts', { count: statsData.activeContracts }, `Across ${statsData.activeContracts} active contracts`)}
                                     </p>
                                     <Button variant="outline" size="sm" className="mt-4 w-full" onClick={() => navigate('/wallet')}>
-                                        View Wallet <ArrowRight className="w-3.5 h-3.5 ml-1" />
+                                        {tx('dashboard.client.viewWallet', undefined, 'View Wallet')} <ArrowRight className="w-3.5 h-3.5 ml-1" />
                                     </Button>
                                 </div>
                             </DashWidget>
                         </motion.div>
 
                         <motion.div variants={itemVariants}>
-                            <DashWidget title="Quick Actions" icon={<Settings className="w-4 h-4" />}>
+                            <DashWidget title={tx('dashboard.client.quickActions', undefined, 'Quick Actions')} icon={<Settings className="w-4 h-4" />}>
                                 <div className="space-y-2">
                                     {[
-                                        { label: 'Find Freelancers', icon: Users, path: '/find-freelancers' },
-                                        { label: 'My Projects', icon: FolderOpen, path: '/client/jobs' },
-                                        { label: 'Contracts', icon: Briefcase, path: '/contracts' },
-                                        { label: 'Messages', icon: MessageSquare, path: '/messages' },
+                                        { label: tx('nav.findFreelancers', undefined, 'Find Freelancers'), icon: Users, path: '/find-freelancers' },
+                                        { label: tx('nav.myProjects', undefined, 'My Projects'), icon: FolderOpen, path: '/client/jobs' },
+                                        { label: tx('nav.contracts', undefined, 'Contracts'), icon: Briefcase, path: '/contracts' },
+                                        { label: tx('nav.messages', undefined, 'Messages'), icon: MessageSquare, path: '/messages' },
                                     ].map((action) => (
                                         <button
                                             key={action.label}

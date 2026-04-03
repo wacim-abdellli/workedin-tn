@@ -57,7 +57,7 @@ const CATEGORY_OPTIONS: FreelancerCategory[] = ['Design', 'Development', 'Writin
 const SKILL_OPTIONS = ['React', 'Node.js', 'Logo Design', 'Translation', 'Content Writing', 'Figma', 'Motion', 'SEO'];
 
 export default function FindFreelancers() {
-    const { t } = useTranslation();
+    const { t, tx } = useTranslation();
     const copy = t.findFreelancers;
 
     const [searchQuery, setSearchQuery] = useState('');
@@ -263,7 +263,7 @@ export default function FindFreelancers() {
             </div>
 
             <div>
-                <h3 className="mb-4 text-sm font-bold uppercase tracking-[0.18em] text-[#7a7590] dark:text-[#918ba8]">Rating</h3>
+                <h3 className="mb-4 text-sm font-bold uppercase tracking-[0.18em] text-[#7a7590] dark:text-[#918ba8]">{tx('findFreelancers.rating', undefined, 'Rating')}</h3>
                 <div className="grid grid-cols-4 gap-2">
                     {[0, 4, 4.5, 4.8].map((rating) => (
                         <button
@@ -276,7 +276,7 @@ export default function FindFreelancers() {
                                     : 'border border-white/70 bg-white/80 text-[#5f5974] hover:border-brand hover:text-brand dark:border-white/8 dark:bg-white/5 dark:text-[#b9b4c8] dark:hover:border-brand/30 dark:hover:text-brand-mid'
                             }`}
                         >
-                            {rating === 0 ? 'All' : `${rating}+`}
+                            {rating === 0 ? tx('findFreelancers.all', undefined, 'All') : `${rating}+`}
                         </button>
                     ))}
                 </div>

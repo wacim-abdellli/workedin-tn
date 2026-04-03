@@ -31,7 +31,7 @@ import ContractDetailsSidebar from '../components/contracts/ContractDetailsSideb
 
 export default function ContractWorkspace() {
     const { contractId } = useParams<{ contractId: string }>();
-    const { t } = useTranslation() as any;
+    const { t, tx } = useTranslation() as any;
     const { user } = useAuth();
     const { showToast } = useToast();
     const navigate = useNavigate();
@@ -168,7 +168,7 @@ export default function ContractWorkspace() {
             await sendMessage(`📎 ${file.name}`, receiverId, [
                 { name: file.name, url: uploaded.url, type: file.type, size: (file.size / 1024).toFixed(1) + 'KB' }
             ]);
-            showToast(`تم رفع: ${file.name}`, 'success');
+            showToast(`${tx('contract.fileUploaded', undefined, 'تم رفع:')} ${file.name}`, 'success');
         } catch (error) {
             showToast(error instanceof Error ? error.message : t.contract.fileUploadError, 'error');
         }
@@ -326,7 +326,7 @@ export default function ContractWorkspace() {
         <div className="flex flex-col h-screen bg-white">
             <SEO
                 title={contractData ? `${contractData.job.title} | ${t.contract.workspaceTitle}` : t.contract.workspaceTitle}
-                description="تابع المحادثة والملفات وحالة الدفع الخاصة بالعقد من مساحة العمل."
+                description={t.contract.seoDescription || "Track conversation, files, and payment status for your contract from the workspace."}
                 noIndex
             />
             <Header />
@@ -338,7 +338,7 @@ export default function ContractWorkspace() {
                         type="button"
                         onClick={() => navigate(-1)}
                         className="p-2 hover:bg-gray-100 rounded-full md:hidden"
-                        aria-label="الرجوع للخلف"
+                        aria-label={t.common.back}
                     >
                         <ArrowLeft className="w-5 h-5 text-gray-500 rtl:rotate-180" />
                     </button>
@@ -357,13 +357,13 @@ export default function ContractWorkspace() {
                 </div>
                 <div className="hidden md:flex items-center gap-2">
                     <Button variant="outline" size="sm" onClick={() => window.location.href = `/jobs/${contractData.job.id}`}>
-                        عرض الوظيفة
+                        {t.common.viewJob || 'View Job'}
                     </Button>
                 </div>
             </div>
 
             {/* Mobile Tabs */}
-            <div className="md:hidden shrink-0 border-b border-gray-100 bg-white z-10 overflow-x-auto" role="tablist" aria-label="تبويبات مساحة العمل">
+            <div className="md:hidden shrink-0 border-b border-gray-100 bg-white z-10 overflow-x-auto" role="tablist" aria-label={tx('contract.tabs.ariaLabel', undefined, 'تبويبات مساحة العمل')}>
                 <div className="flex min-w-max">
                     <button
                         type="button"
@@ -372,10 +372,10 @@ export default function ContractWorkspace() {
                         id="workspace-tab-chat"
                         aria-selected={activeMobileTab === 'chat'}
                         aria-controls="workspace-panel-chat"
-                        aria-label="إظهار المحادثة"
+                        aria-label={tx('contract.tabs.chatAria', undefined, 'إظهار المحادثة')}
                         className={`flex min-h-[48px] min-w-[118px] shrink-0 items-center justify-center gap-2 whitespace-nowrap border-b-2 px-4 py-3 text-sm font-medium transition-colors ${activeMobileTab === 'chat' ? 'border-primary-600 text-primary-600' : 'border-transparent text-gray-500'}`}
                     >
-                        <MessageSquare className="w-4 h-4" />{t.common?.placeholder || 'المراسلة'}</button>
+                        <MessageSquare className="w-4 h-4" />{tx('contract.tabs.chat', undefined, 'المراسلة')}</button>
                     <button
                         type="button"
                         onClick={() => setActiveMobileTab('details')}
@@ -383,10 +383,10 @@ export default function ContractWorkspace() {
                         id="workspace-tab-details"
                         aria-selected={activeMobileTab === 'details'}
                         aria-controls="workspace-panel-details"
-                        aria-label="إظهار التفاصيل"
+                        aria-label={tx('contract.tabs.detailsAria', undefined, 'إظهار التفاصيل')}
                         className={`flex min-h-[48px] min-w-[118px] shrink-0 items-center justify-center gap-2 whitespace-nowrap border-b-2 px-4 py-3 text-sm font-medium transition-colors ${activeMobileTab === 'details' ? 'border-primary-600 text-primary-600' : 'border-transparent text-gray-500'}`}
                     >
-                        <Info className="w-4 h-4" />{t.common?.placeholder || 'التفاصيل'}</button>
+                        <Info className="w-4 h-4" />{tx('contract.tabs.details', undefined, 'التفاصيل')}</button>
                     <button
                         type="button"
                         onClick={() => setActiveMobileTab('files')}
@@ -394,10 +394,10 @@ export default function ContractWorkspace() {
                         id="workspace-tab-files"
                         aria-selected={activeMobileTab === 'files'}
                         aria-controls="workspace-panel-files"
-                        aria-label="إظهار الملفات"
+                        aria-label={tx('contract.tabs.filesAria', undefined, 'إظهار الملفات')}
                         className={`flex min-h-[48px] min-w-[118px] shrink-0 items-center justify-center gap-2 whitespace-nowrap border-b-2 px-4 py-3 text-sm font-medium transition-colors ${activeMobileTab === 'files' ? 'border-primary-600 text-primary-600' : 'border-transparent text-gray-500'}`}
                     >
-                        <FileText className="w-4 h-4" />{t.common?.placeholder || 'الملفات'}</button>
+                        <FileText className="w-4 h-4" />{tx('contract.tabs.files', undefined, 'الملفات')}</button>
                 </div>
             </div>
 
@@ -461,7 +461,7 @@ export default function ContractWorkspace() {
                 >
                     <div className="p-8 text-center text-gray-500">
                         <FileText className="w-12 h-12 mx-auto mb-3 opacity-20" />
-                        <p>قائمة الملفات (راجع تبويب المراسلة للمرفقات)</p>
+                        <p>{tx('contract.filesListEmpty', undefined, 'قائمة الملفات (راجع تبويب المراسلة للمرفقات)')}</p>
                     </div>
                 </div>
 
@@ -474,23 +474,23 @@ export default function ContractWorkspace() {
                 title={t.contract.deliverWork}
             >
                 <div className="space-y-4">
-                    <p className="text-muted">أضف ملاحظة للعميل حول التسليم</p>
+                    <p className="text-muted">{tx('contract.deliverNoteLabel', undefined, 'أضف ملاحظة للعميل حول التسليم')}</p>
                     <textarea
                         value={deliveryNote}
                         onChange={(e) => setDeliveryNote(e.target.value)}
-                        placeholder="ملاحظات التسليم (اختياري)..."
+                        placeholder={tx('contract.deliverNotePlaceholder', undefined, 'ملاحظات التسليم (اختياري)...')}
                         rows={4}
                         className="input resize-none w-full"
-                        aria-label="ملاحظات التسليم"
+                        aria-label={tx('contract.deliverNoteAria', undefined, 'ملاحظات التسليم')}
                     />
                     <div className="flex gap-3 justify-end">
-                        <Button variant="outline" onClick={() => setIsDeliverModalOpen(false)}>{t.common?.placeholder || 'إلغاء'}</Button>
+                        <Button variant="outline" onClick={() => setIsDeliverModalOpen(false)}>{t.common?.cancel || 'إلغاء'}</Button>
                         <Button
                             variant="primary"
                             onClick={handleDeliverWork}
                             isLoading={isDelivering}
                         >
-                            تأكيد التسليم
+                            {tx('contract.confirmDelivery', undefined, 'تأكيد التسليم')}
                         </Button>
                     </div>
                 </div>
@@ -516,27 +516,27 @@ export default function ContractWorkspace() {
                 <div className="space-y-4">
                     <div className="p-4 bg-yellow-50 rounded-xl">
                         <p className="text-yellow-800">
-                            فتح نزاع سيعلق العمل حتى يتم حل المشكلة. سيقوم فريقنا بمراجعة الحالة خلال 48 ساعة.
+                            {tx('contract.disputeWarning', undefined, 'فتح نزاع سيعلق العمل حتى يتم حل المشكلة. سيقوم فريقنا بمراجعة الحالة خلال 48 ساعة.')}
                         </p>
                     </div>
                     <textarea
                         value={disputeReason}
                         onChange={(e) => setDisputeReason(e.target.value)}
-                        placeholder="اشرح سبب النزاع..."
+                        placeholder={tx('contract.disputeReasonPlaceholder', undefined, 'اشرح سبب النزاع...')}
                         rows={4}
                         className="input resize-none w-full"
                         required
-                        aria-label="سبب النزاع"
+                        aria-label={tx('contract.disputeReasonAria', undefined, 'سبب النزاع')}
                     />
                     <div className="flex gap-3 justify-end">
-                        <Button variant="outline" onClick={() => setIsDisputeModalOpen(false)}>{t.common?.placeholder || 'إلغاء'}</Button>
+                        <Button variant="outline" onClick={() => setIsDisputeModalOpen(false)}>{t.common?.cancel || 'إلغاء'}</Button>
                         <Button
                             variant="secondary"
                             onClick={handleOpenDispute}
                             isLoading={isDisputing}
                             disabled={!disputeReason.trim()}
                         >
-                            فتح نزاع
+                            {tx('contract.openDisputeAction', undefined, 'فتح نزاع')}
                         </Button>
                     </div>
                 </div>
@@ -547,7 +547,7 @@ export default function ContractWorkspace() {
                 <Modal
                     isOpen={isReviewModalOpen}
                     onClose={() => setIsReviewModalOpen(false)}
-                    title="تقييم التجربة"
+                    title={tx('contract.reviewExperience', undefined, 'تقييم التجربة')}
                 >
                     <ReviewForm
                         jobTitle={contractData.job.title}

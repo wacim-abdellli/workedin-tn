@@ -205,7 +205,7 @@ export default function ClientJobs() {
                 
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mb-3">
                   <p className="text-gray-900 dark:text-white font-semibold flex items-center gap-1">
-                    {job.budget_min}-{job.budget_max} TND
+                    {job.budget_min}-{job.budget_max} {tx('common.currency', undefined, 'TND')}
                   </p>
                   <p className="status-pill-neutral px-2 py-0.5">
                     {job.job_type === 'fixed' ? tx('pages.clientJobs.fixedPrice', undefined, 'Fixed Price') : tx('pages.clientJobs.hourlyRate', undefined, 'Hourly Rate')}

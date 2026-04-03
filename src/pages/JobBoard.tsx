@@ -72,7 +72,7 @@ function useDebounce<T>(value: T, delay: number): T {
 
 // Saved Jobs Sidebar
 function SavedJobsSidebar({ savedJobs, onViewJob }: { savedJobs: Job[]; onViewJob: (id: string) => void }) {
-    const { t } = useTranslation();
+    const { t, tx } = useTranslation();
     if (savedJobs.length === 0) return null;
 
     return (
@@ -104,8 +104,8 @@ function SavedJobsSidebar({ savedJobs, onViewJob }: { savedJobs: Job[]; onViewJo
                             <h4 className="font-medium text-xs line-clamp-1 text-foreground">{job.title}</h4>
                             <p className="text-[11px] text-muted mt-1.5">
                                 {job.job_type === 'fixed_price'
-                                    ? `${job.budget_min} - ${job.budget_max} TND`
-                                    : `${job.hourly_rate} TND/h`
+                                    ? `${job.budget_min} - ${job.budget_max} ${tx('common.currency', undefined, 'TND')}`
+                                    : `${job.hourly_rate} ${tx('common.currencyPerHour', undefined, 'TND/h')}`
                                 }
                             </p>
                         </button>
@@ -132,8 +132,7 @@ function JobBoard() {
     const { user } = useAuth();
     const { showToast } = useToast();
     const [searchParams, setSearchParams] = useSearchParams();
-    const { t, language } = useTranslation();
-    const tr = (ar: string, en: string, fr?: string) => language === "ar" ? ar : language === "fr" ? (fr || en) : en;
+    const { t, language, tx } = useTranslation();
     const queryClient = useQueryClient();
 
     // State
@@ -250,7 +249,7 @@ function JobBoard() {
             showToast(isSaved ? t.jobs.unsave : t.jobs.saved, 'success');
         },
         onError: () => {
-             showToast('Error', 'error');
+             showToast(tx('jobBoard.error', undefined, 'Error'), 'error');
         }
     });
 
@@ -294,7 +293,7 @@ function JobBoard() {
                 <div className="mb-6">
                     <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-1">{t.jobs.title}</h1>
                     <p className="text-sm text-[var(--text-muted)]">
-                        {tr("تصفح وقدم على فرص العمل المستقل", "Browse and apply to freelance opportunities", "Parcourez et postulez aux offres")}
+                        {tx('jobBoard.subtitle', undefined, 'Browse and apply to freelance opportunities')}
                     </p>
                 </div>
 
@@ -363,7 +362,7 @@ function JobBoard() {
                             'border border-border/50'
                         )}>
                             <p className="text-sm text-[var(--text-muted)]">
-                                Showing <span className="font-semibold text-[var(--text-primary)]">{totalCount}</span> jobs
+                                {tx('jobBoard.showing', undefined, 'Showing')} <span className="font-semibold text-[var(--text-primary)]">{totalCount}</span> {tx('jobBoard.jobs', undefined, 'jobs')}
                             </p>
                             <div className="hidden lg:flex items-center gap-3">
                                 <select
@@ -388,7 +387,7 @@ function JobBoard() {
                                     <button
                                         type="button"
                                         onClick={() => setViewMode('list')}
-                                        aria-label="عرض قائمة"
+                                        aria-label={tx('jobBoard.listView', undefined, 'List view')}
                                         aria-pressed={viewMode === 'list'}
                                         className={cn(
                                             'p-2 min-w-[44px] min-h-[44px] transition-colors',
@@ -402,7 +401,7 @@ function JobBoard() {
                                     <button
                                         type="button"
                                         onClick={() => setViewMode('grid')}
-                                        aria-label="عرض شبكي"
+                                        aria-label={tx('jobBoard.gridView', undefined, 'Grid view')}
                                         aria-pressed={viewMode === 'grid'}
                                         className={cn(
                                             'p-2 min-w-[44px] min-h-[44px] transition-colors',
@@ -424,14 +423,14 @@ function JobBoard() {
                             </div>
                         ) : jobsError ? (
                             <div className="rounded-xl border border-red-200 dark:border-red-500/20 bg-red-50 dark:bg-red-500/10 p-6 text-center">
-                                <p className="text-red-600 dark:text-red-400 font-medium">{t.jobs?.loadError || 'Failed to load jobs'}</p>
-                                <p className="text-red-500 dark:text-red-500 text-sm mt-1">{(jobsError as Error)?.message || t.common?.error || 'Unknown error'}</p>
+                                <p className="text-red-600 dark:text-red-400 font-medium">{t.jobs?.loadError || tx('jobBoard.loadError', undefined, 'Failed to load jobs')}</p>
+                                <p className="text-red-500 dark:text-red-500 text-sm mt-1">{(jobsError as Error)?.message || t.common?.error || tx('jobBoard.unknownError', undefined, 'Unknown error')}</p>
                             </div>
                         ) : jobs.length === 0 ? (
                             <EmptyState
                                 icon={Search}
-                                title={t.jobs?.empty?.title || 'No jobs match your search'}
-                                description="Try different keywords or clear your filters to see more relevant freelance opportunities."
+                                title={t.jobs?.empty?.title || tx('jobBoard.emptyTitle', undefined, 'No jobs match your search')}
+                                description={tx('jobBoard.emptyDescription', undefined, 'Try different keywords or clear your filters to see more relevant freelance opportunities.')}
                                 illustration={(
                                     <svg width="220" height="160" viewBox="0 0 220 160" fill="none" aria-hidden="true">
                                         <rect x="52" y="26" width="102" height="76" rx="18" fill="url(#empty-card)" />
@@ -449,12 +448,12 @@ function JobBoard() {
                                     </svg>
                                 )}
                                 action={{
-                                    label: t.jobs?.empty?.action || 'Clear filters',
+                                    label: t.jobs?.empty?.action || tx('jobBoard.clearFilters', undefined, 'Clear filters'),
                                     onClick: clearAllFilters,
                                     variant: 'primary'
                                 }}
                                 secondaryAction={{
-                                    label: "تصفح الفئات",
+                                    label: tx('jobBoard.browseCategories', undefined, 'Browse Categories'),
                                     onClick: () => navigate('/jobs/new')
                                 }}
                             />
@@ -483,7 +482,7 @@ function JobBoard() {
                                             disabled={isFetchingNextPage}
                                             isLoading={isFetchingNextPage}
                                         >
-                                            {isFetchingNextPage ? 'Loading...' : t.jobs.loadMore}
+                                            {isFetchingNextPage ? tx('jobBoard.loading', undefined, 'Loading...') : t.jobs.loadMore}
                                         </Button>
                                     </div>
                                 )}

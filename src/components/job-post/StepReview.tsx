@@ -99,7 +99,7 @@ export default function StepReview() {
                                 <h4 className="font-bold text-gray-900 dark:text-white">{tx('jobs.new.stepReview.budget', undefined, 'الميزانية')}</h4>
                                 <p className="text-gray-600 dark:text-gray-400">
                                     {values.job_type === 'fixed_price'
-                                        ? `${values.budget_min} - ${values.budget_max} د.ت`
+                                        ? tx('jobs.new.stepReview.budgetRange', { min: values.budget_min ?? 0, max: values.budget_max ?? 0 }, `${values.budget_min ?? 0} - ${values.budget_max ?? 0} د.ت`)
                                         : tx('jobs.new.stepReview.hourlyBudget', { rate: values.hourly_rate ?? 0 }, `${values.hourly_rate ?? 0} د.ت / ساعة`)
                                     }
                                 </p>
@@ -178,7 +178,7 @@ export default function StepReview() {
                                     {values.attachments_files.map((file: File, index: number) => (
                                         <div key={index} className="flex items-center gap-2 rounded-lg border border-gray-100 bg-gray-50 p-2 text-sm dark:border-white/10 dark:bg-white/[0.03]">
                                             <span className="truncate font-medium text-gray-700 dark:text-gray-300">{file.name}</span>
-                                            <span className="text-muted text-xs">({(file.size / 1024 / 1024).toFixed(2)} MB)</span>
+                                            <span className="text-muted text-xs">{tx('jobs.new.stepReview.fileSize', { size: (file.size / 1024 / 1024).toFixed(2) }, `(${(file.size / 1024 / 1024).toFixed(2)} MB)`)}</span>
                                         </div>
                                     ))}
                                 </div>

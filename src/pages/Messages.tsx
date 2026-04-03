@@ -560,7 +560,7 @@ export default function Messages() {
             <div className="border-b border-border px-4 py-5">
                 <div className="mb-4 flex items-center justify-between">
                     <div>
-                        <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-brand/80">Inbox</p>
+                        <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-brand/80">{tx('pages.messages.inbox', undefined, 'Inbox')}</p>
                         <h2 className="text-[1.9rem] font-bold tracking-tight text-foreground">{tx('pages.messages.title', undefined, 'Messages')}</h2>
                     </div>
                     <Button 
@@ -696,9 +696,9 @@ export default function Messages() {
                                     <div className="flex items-center justify-between mt-3 gap-2">
                                         <div className="flex items-center gap-2 flex-1">
                                             {conversation.unread_count > 0 && (
-                                                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-brand text-xs text-brand-text shadow-sm font-semibold shrink-0" aria-label={`${conversation.unread_count} unread messages`}>
+                                                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-brand text-xs text-brand-text shadow-sm font-semibold shrink-0" aria-label={`${conversation.unread_count} ${tx('pages.messages.unreadMessages', undefined, 'unread messages')}`}>
                                                 {conversation.unread_count}
-                                                <span className="sr-only">unread messages</span>
+                                                <span className="sr-only">{tx('pages.messages.unreadMessages', undefined, 'unread messages')}</span>
                                             </span>
                                             )}
                                             <span className="text-xs text-muted-foreground truncate">

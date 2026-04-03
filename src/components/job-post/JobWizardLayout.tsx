@@ -93,7 +93,7 @@ export default function JobWizardLayout({
                             </div>
                             <div className="flex items-center justify-between text-xs" style={{ color: 'var(--text-muted)' }}>
                                 <span>{tx('jobs.new.stepCounter', { current: currentStep, total: steps.length }, `Step ${currentStep} of ${steps.length}`)}</span>
-                                <span>{steps.length - currentStep} {tx('jobs.new.wizard.stepsLeft', undefined, 'steps left')}</span>
+                                <span>{tx('jobs.new.wizard.stepsLeft', { count: steps.length - currentStep }, `${steps.length - currentStep} steps left`)}</span>
                             </div>
                         </div>
                     </div>

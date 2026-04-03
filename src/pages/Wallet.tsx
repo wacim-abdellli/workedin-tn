@@ -79,7 +79,7 @@ export default function Wallet() {
   const handleDeposit = async () => {
     const amount = parseFloat(depositAmount);
     if (!amount || amount < MIN_DEPOSIT || amount > MAX_DEPOSIT) {
-      setDepositError(`المبلغ يجب أن يكون بين ${MIN_DEPOSIT} و ${MAX_DEPOSIT} د.ت`);
+      setDepositError(tx('wallet.depositAmountError', { min: MIN_DEPOSIT, max: MAX_DEPOSIT }, `Amount must be between ${MIN_DEPOSIT} and ${MAX_DEPOSIT} TND`));
       return;
     }
     if (!user?.id) return;
@@ -92,7 +92,7 @@ export default function Wallet() {
           user_id: user.id,
           success_link: `${window.location.origin}/payment/success`,
           fail_link: `${window.location.origin}/payment/failed`,
-          note: 'إيداع محفظة Khedma TN',
+          note: tx('wallet.depositNote', undefined, 'Khedma TN Wallet Deposit'),
         },
       });
       if (error) throw new Error(error.message);
@@ -100,10 +100,10 @@ export default function Wallet() {
       if (payUrl) {
         window.location.href = payUrl;
       } else {
-        throw new Error('لم يتم إنشاء رابط الدفع');
+        throw new Error(tx('wallet.noPaymentLink', undefined, 'Payment link was not generated'));
       }
     } catch (err) {
-      setDepositError(err instanceof Error ? err.message : 'حدث خطأ. يرجى المحاولة مرة أخرى.');
+      setDepositError(err instanceof Error ? err.message : tx('wallet.genericError', undefined, 'An error occurred. Please try again.'));
     } finally {
       setIsDepositing(false);
     }
@@ -490,7 +490,7 @@ export default function Wallet() {
       {/* DEPOSIT MODAL */}
       {isDepositModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <button type="button" aria-label="إغلاق" className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => { setIsDepositModalOpen(false); setDepositError(null); setDepositAmount(''); }} />
+          <button type="button" aria-label={tx('common.close', undefined, 'Close')} className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => { setIsDepositModalOpen(false); setDepositError(null); setDepositAmount(''); }} />
           <div className="relative w-full max-w-md rounded-2xl bg-[var(--surface-bg)] border border-border p-6 shadow-2xl">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
@@ -499,18 +499,18 @@ export default function Wallet() {
                 </div>
                 <h3 className="text-xl font-bold text-foreground">{tx('wallet.deposit', undefined, 'Deposit Funds')}</h3>
               </div>
-              <button type="button" aria-label="إغلاق" onClick={() => { setIsDepositModalOpen(false); setDepositError(null); setDepositAmount(''); }} className="p-2 rounded-full hover:bg-secondary transition-colors">
+              <button type="button" aria-label={tx('common.close', undefined, 'Close')} onClick={() => { setIsDepositModalOpen(false); setDepositError(null); setDepositAmount(''); }} className="p-2 rounded-full hover:bg-secondary transition-colors">
                 <X className="w-5 h-5 text-muted" />
               </button>
             </div>
 
             <div className="mb-4 p-3 rounded-xl border flex items-start gap-2" style={{ background: 'color-mix(in srgb, var(--workspace-primary) 10%, transparent)', borderColor: 'color-mix(in srgb, var(--workspace-primary) 18%, transparent)' }}>
               <CreditCard className="w-4 h-4 mt-0.5 shrink-0" style={{ color: 'var(--workspace-primary)' }} />
-              <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>سيتم توجيهك إلى بوابة Flouci الآمنة لإتمام الدفع ببطاقتك أو حسابك المصرفي.</p>
+              <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>{tx('wallet.flouciRedirectMsg', undefined, 'You will be redirected to the secure Flouci gateway to complete payment with your card or bank account.')}</p>
             </div>
 
             <div className="mb-5">
-              <label className="block text-sm font-medium text-foreground mb-2">مبلغ الإيداع (د.ت)</label>
+              <label className="block text-sm font-medium text-foreground mb-2">{tx('wallet.depositAmountLabel', undefined, 'Deposit Amount (TND)')}</label>
               <div className="relative">
                 <input
                   type="number"
@@ -525,7 +525,7 @@ export default function Wallet() {
                 />
                 <span className="absolute end-4 top-1/2 -translate-y-1/2 text-muted text-sm font-medium">TND</span>
               </div>
-              <p className="text-xs text-muted mt-2">الحد الأدنى: 10 د.ت — الحد الأقصى: 5,000 د.ت</p>
+              <p className="text-xs text-muted mt-2">{tx('wallet.depositLimits', undefined, 'Min: 10 TND — Max: 5,000 TND')}</p>
             </div>
 
             <div className="grid grid-cols-4 gap-2 mb-5">
@@ -545,7 +545,7 @@ export default function Wallet() {
 
             <div className="flex gap-3">
               <button type="button" onClick={() => { setIsDepositModalOpen(false); setDepositError(null); setDepositAmount(''); }} className="flex-1 py-3 rounded-xl border border-border text-foreground font-semibold hover:bg-secondary transition-colors">
-                إلغاء
+                {tx('common.cancel', undefined, 'Cancel')}
               </button>
               <button
                 type="button"
@@ -554,7 +554,7 @@ export default function Wallet() {
                 className="flex-1 py-3 rounded-xl bg-green-600 hover:bg-green-700 text-white font-semibold transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isDepositing ? <Loader2 className="w-4 h-4 animate-spin" /> : <ArrowDownLeft className="w-4 h-4" />}
-                {isDepositing ? 'جاري التحويل...' : 'المتابعة للدفع'}
+                {isDepositing ? tx('wallet.processingDeposit', undefined, 'Processing...') : tx('wallet.continueToPayment', undefined, 'Continue to Payment')}
               </button>
             </div>
           </div>
@@ -568,7 +568,7 @@ export default function Wallet() {
 // Withdrawal Modal Component
 function WithdrawalModal({ wallet, onClose, onSuccess }: { wallet: WalletType; onClose: () => void; onSuccess: () => void }) {
   const { user } = useAuth();
-  const { t, language } = useTranslation();
+  const { t, tx, language } = useTranslation();
   const { showToast } = useToast();
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -586,20 +586,20 @@ function WithdrawalModal({ wallet, onClose, onSuccess }: { wallet: WalletType; o
 
   // Inline field-level errors (shown after first submit attempt)
   const bankNameError = touched && method === 'bank_transfer' && !bankName.trim()
-    ? 'Bank name is required'
+    ? tx('wallet.errors.bankNameRequired', undefined, 'Bank name is required')
     : null;
   const bankAccountNameError = touched && method === 'bank_transfer' && !bankAccountName.trim()
-    ? 'Account holder name is required'
+    ? tx('wallet.errors.accountHolderRequired', undefined, 'Account holder name is required')
     : null;
   const bankIbanError = touched && method === 'bank_transfer' && !bankIban.trim()
-    ? 'IBAN is required'
+    ? tx('wallet.errors.ibanRequired', undefined, 'IBAN is required')
     : touched && method === 'bank_transfer' && bankIban.trim() && !/^TN\d{2}/i.test(bankIban.trim())
-    ? 'IBAN must start with TN'
+    ? tx('wallet.errors.ibanInvalid', undefined, 'IBAN must start with TN')
     : null;
   const phoneError = touched && (method === 'd17' || method === 'flouci') && !phoneNumber.trim()
-    ? 'Phone number is required'
+    ? tx('wallet.errors.phoneRequired', undefined, 'Phone number is required')
     : touched && (method === 'd17' || method === 'flouci') && phoneNumber.trim() && !/^\+?[0-9]{8,15}$/.test(phoneNumber.replace(/\s/g, ''))
-    ? 'Enter a valid phone number'
+    ? tx('wallet.errors.phoneInvalid', undefined, 'Enter a valid phone number')
     : null;
 
   const hasFieldErrors = !!(bankNameError || bankAccountNameError || bankIbanError || phoneError);

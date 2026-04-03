@@ -335,7 +335,7 @@ export default function JobPost() {
 
             if (error) {
                 logger.error('Supabase job insert error:', error);
-                throw new Error(`DB Error: ${error.message} (Code: ${error.code})`);
+                throw new Error(tx('jobs.new.errors.dbError', { message: error.message, code: error.code }, `DB Error: ${error.message} (Code: ${error.code})`));
             }
 
             // Skills are already included in jobData as JSONB - no separate table insert needed

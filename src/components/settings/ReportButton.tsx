@@ -10,12 +10,12 @@ import { submitReport } from '@/services/reports';
 import type { ReportedType } from '@/services/reports';
 
 const REASONS = [
-    { value: 'spam', label: 'Spam or misleading' },
-    { value: 'inappropriate', label: 'Inappropriate content' },
-    { value: 'fraud', label: 'Fraud or scam' },
-    { value: 'harassment', label: 'Harassment or abuse' },
-    { value: 'fake', label: 'Fake profile or listing' },
-    { value: 'other', label: 'Other' },
+    { value: 'spam', labelKey: 'report.reasonSpam', defaultLabel: 'Spam or misleading' },
+    { value: 'inappropriate', labelKey: 'report.reasonInappropriate', defaultLabel: 'Inappropriate content' },
+    { value: 'fraud', labelKey: 'report.reasonFraud', defaultLabel: 'Fraud or scam' },
+    { value: 'harassment', labelKey: 'report.reasonHarassment', defaultLabel: 'Harassment or abuse' },
+    { value: 'fake', labelKey: 'report.reasonFake', defaultLabel: 'Fake profile or listing' },
+    { value: 'other', labelKey: 'report.reasonOther', defaultLabel: 'Other' },
 ];
 
 interface ReportButtonProps {
@@ -65,9 +65,9 @@ export default function ReportButton({ reportedType, reportedId, className }: Re
 
     const mutation = useMutation({
         mutationFn: () => {
-            if (!user?.id) throw new Error('Not authenticated');
+            if (!user?.id) throw new Error(tx('common.notAuthenticated', undefined, 'Not authenticated'));
             const finalReason = reason === 'other' ? customReason.trim() : reason;
-            if (!finalReason) throw new Error('Please select a reason');
+            if (!finalReason) throw new Error(tx('common.selectReason', undefined, 'Please select a reason'));
             return submitReport(user.id, reportedType, reportedId, finalReason);
         },
         onSuccess: () => {
@@ -76,14 +76,14 @@ export default function ReportButton({ reportedType, reportedId, className }: Re
             }
 
             setIsReportedThisSession(true);
-            showToast(t.common.reportSubmitted || 'Report submitted. Our team will review it shortly.', 'success');
+            showToast(t.common.reportSubmitted || tx('common.reportSubmittedSuccess', undefined, 'Report submitted. Our team will review it shortly.'), 'success');
             setIsOpen(false);
             setReason('');
             setCustomReason('');
             setTouched(false);
         },
         onError: (err: Error) => {
-            showToast(err.message || t.common.reportError || 'Failed to submit report', 'error');
+            showToast(err.message || t.common.reportError || tx('common.reportFailed', undefined, 'Failed to submit report'), 'error');
         },
     });
 
@@ -100,17 +100,17 @@ export default function ReportButton({ reportedType, reportedId, className }: Re
                         setIsOpen(true);
                     }
                 }}
-                title={isReportedThisSession ? 'Already reported in this session' : (t.common.reportTitle || "Report this content")}
+                title={isReportedThisSession ? tx('common.alreadyReportedSession', undefined, 'Already reported in this session') : (t.common.reportTitle || tx('common.reportContent', undefined, "Report this content"))}
                 disabled={isReportedThisSession}
                 className={className ?? 'inline-flex items-center gap-1.5 text-xs text-gray-400 transition-colors hover:text-red-500 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:text-gray-400'}
             >
                 <Flag className="w-3.5 h-3.5" />
-                <span>{isReportedThisSession ? 'Reported' : t.common.report}</span>
+                <span>{isReportedThisSession ? tx('common.reported', undefined, 'Reported') : t.common.report}</span>
             </button>
 
-            <Modal isOpen={isOpen} onClose={() => setIsOpen(false)} title={t.common.reportContent || "Report content"} size="sm">
+            <Modal isOpen={isOpen} onClose={() => setIsOpen(false)} title={t.common.reportContent || tx('common.reportContentTitle', undefined, "Report content")} size="sm">
                 <div className="space-y-4 pt-1">
-                    <p className="text-sm text-muted">Why are you reporting this {reportedType}?</p>
+                    <p className="text-sm text-muted">{tx('common.whyReport', { type: reportedType }, `Why are you reporting this ${reportedType}?`)}</p>
 
                     <div className="space-y-2">
                         {REASONS.map(r => (
@@ -123,7 +123,7 @@ export default function ReportButton({ reportedType, reportedId, className }: Re
                                     onChange={() => setReason(r.value)}
                                     className="accent-primary-600"
                                 />
-                                <span className="text-sm text-foreground">{r.label}</span>
+                                <span className="text-sm text-foreground">{tx(r.labelKey, undefined, r.defaultLabel)}</span>
                             </label>
                         ))}
                     </div>
@@ -145,7 +145,7 @@ export default function ReportButton({ reportedType, reportedId, className }: Re
 
                     <div className="flex justify-end gap-3 pt-2 border-t border-gray-100 dark:border-white/10">
                         <Button variant="ghost" onClick={() => setIsOpen(false)} disabled={mutation.isPending}>
-                            Cancel
+                            {tx('common.cancel', undefined, 'Cancel')}
                         </Button>
                         <Button
                             variant="danger"

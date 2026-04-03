@@ -12,11 +12,11 @@ import Button from '../components/ui/Button';
 import { AuthShell } from '../components/auth';
 
 // Validation schema
-const forgotPasswordSchema = z.object({
-    email: z.string().email('أدخل بريد إلكتروني صحيح'),
+const getForgotPasswordSchema = (tx: any) => z.object({
+    email: z.string().email(tx('auth.validation.invalidEmail', undefined, 'أدخل بريد إلكتروني صحيح')),
 });
 
-type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
+type ForgotPasswordFormData = z.infer<ReturnType<typeof getForgotPasswordSchema>>;
 
 const ForgotPassword = () => {
     const { t, tx } = useTranslation();
@@ -31,7 +31,7 @@ const ForgotPassword = () => {
         formState: { errors },
         getValues,
     } = useForm<ForgotPasswordFormData>({
-        resolver: zodResolver(forgotPasswordSchema),
+        resolver: zodResolver(getForgotPasswordSchema(tx)),
     });
 
     const onSubmit = async (data: ForgotPasswordFormData) => {
@@ -189,9 +189,9 @@ const ForgotPassword = () => {
                         </div>
                     )}
                 <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-6">
-                    هل تحتاج مساعدة؟{' '}
+                    {tx('pages.forgotPassword.needHelp', undefined, 'Need help?')} {' '}
                     <a href="mailto:support@khedma.tn" className="text-primary-600 hover:underline">
-                        تواصل معنا
+                        {tx('pages.forgotPassword.contactUs', undefined, 'Contact us')}
                     </a>
                 </p>
             </div>

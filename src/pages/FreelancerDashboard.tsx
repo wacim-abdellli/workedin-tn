@@ -240,11 +240,11 @@ function FreelancerDashboardPage() {
     const lastMonthEarnings = chartData[chartData.length - 2]?.earnings ?? 0;
 
     const checklist = [
-        { label: 'Avatar uploaded', done: !!profile?.avatar_url },
-        { label: 'Bio written', done: (profile?.bio?.length ?? 0) > 20 },
-        { label: 'Skills added', done: (freelancerProfile?.skills?.length ?? 0) > 0 },
-        { label: 'Professional title', done: !!stats?.freelancerTitle },
-        { label: 'Identity verified', done: !!profile?.cin_verified },
+        { label: tx('dashboard.freelancer.checklist.avatar', undefined, 'Avatar uploaded'), done: !!profile?.avatar_url },
+        { label: tx('dashboard.freelancer.checklist.bio', undefined, 'Bio written'), done: (profile?.bio?.length ?? 0) > 20 },
+        { label: tx('dashboard.freelancer.checklist.skills', undefined, 'Skills added'), done: (freelancerProfile?.skills?.length ?? 0) > 0 },
+        { label: tx('dashboard.freelancer.checklist.title', undefined, 'Professional title'), done: !!stats?.freelancerTitle },
+        { label: tx('dashboard.freelancer.checklist.identity', undefined, 'Identity verified'), done: !!profile?.cin_verified },
     ];
 
     const profileCompletion = Math.round((checklist.filter((item) => item.done).length / checklist.length) * 100);
@@ -293,10 +293,10 @@ function FreelancerDashboardPage() {
 
                     <div className="flex flex-wrap gap-3">
                         {[
-                            { label: 'Contracts', value: statsData.activeContracts },
-                            { label: 'Proposals', value: statsData.totalProposals },
-                            { label: 'Earnings', value: statsData.totalEarnings, accent: true },
-                            { label: 'Rating', value: `${statsData.rating}/5` },
+                            { label: tx('dashboard.freelancer.contractsLabel', undefined, 'Contracts'), value: statsData.activeContracts },
+                            { label: tx('dashboard.freelancer.proposalsLabel', undefined, 'Proposals'), value: statsData.totalProposals },
+                            { label: tx('dashboard.freelancer.earningsLabel', undefined, 'Earnings'), value: statsData.totalEarnings, accent: true },
+                            { label: tx('dashboard.freelancer.ratingLabel', undefined, 'Rating'), value: `${statsData.rating}/5` },
                         ].map((stat) => (
                             <div
                                 key={stat.label}
@@ -320,15 +320,15 @@ function FreelancerDashboardPage() {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
                     <motion.div className="lg:col-span-2 space-y-5" variants={containerVariants} initial="hidden" animate="show">
                         <motion.div variants={itemVariants}>
-                            <DashWidget title="Active Contracts" icon={<Briefcase className="w-4 h-4" />} action={{ label: 'View all', onClick: () => navigate('/contracts') }}>
+                            <DashWidget title={tx('dashboard.freelancer.activeContracts', undefined, 'Active Contracts')} icon={<Briefcase className="w-4 h-4" />} action={{ label: tx('dashboard.freelancer.viewAll', undefined, 'View all'), onClick: () => navigate('/contracts') }}>
                                 {isLoading ? (
                                     <SkeletonCard />
                                 ) : contracts.length === 0 ? (
                                     <EmptyState
                                         icon={Briefcase}
-                                        title="No active contracts"
-                                        description="Submit proposals to start getting contracts"
-                                        action={{ label: 'Browse Jobs', onClick: () => navigate('/jobs') }}
+                                        title={tx('dashboard.freelancer.noActiveContracts', undefined, 'No active contracts')}
+                                        description={tx('dashboard.freelancer.submitProposalsToStart', undefined, 'Submit proposals to start getting contracts')}
+                                        action={{ label: tx('dashboard.freelancer.browseJobs', undefined, 'Browse Jobs'), onClick: () => navigate('/jobs') }}
                                     />
                                 ) : (
                                     <div className="divide-y" style={{ borderColor: 'var(--dash-border)' }}>
@@ -347,12 +347,12 @@ function FreelancerDashboardPage() {
                                                             {contract.title}
                                                         </p>
                                                         <p className="text-xs truncate" style={{ color: 'var(--text-muted)' }}>
-                                                            {contract.client?.full_name ?? 'Client'}
+                                                            {contract.client?.full_name ?? tx('dashboard.freelancer.clientFallback', undefined, 'Client')}
                                                         </p>
                                                     </div>
                                                 </div>
                                                 <div className="flex items-center gap-3 shrink-0 ml-4">
-                                                    <Badge variant={contract.status === 'active' ? 'success' : 'warning'}>{contract.status}</Badge>
+                                                    <Badge variant={contract.status === 'active' ? 'success' : 'warning'}>{tx(`status.${contract.status}`, undefined, contract.status)}</Badge>
                                                     <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: 'var(--workspace-primary)' }} />
                                                 </div>
                                             </div>
@@ -363,15 +363,15 @@ function FreelancerDashboardPage() {
                         </motion.div>
 
                         <motion.div variants={itemVariants}>
-                            <DashWidget title="Recent Proposals" icon={<FileText className="w-4 h-4" />} action={{ label: 'View all', onClick: () => navigate('/my-proposals') }}>
+                            <DashWidget title={tx('dashboard.freelancer.recentProposals', undefined, 'Recent Proposals')} icon={<FileText className="w-4 h-4" />} action={{ label: tx('dashboard.freelancer.viewAll', undefined, 'View all'), onClick: () => navigate('/my-proposals') }}>
                                 {isLoading ? (
                                     <SkeletonCard />
                                 ) : recentProposals.length === 0 ? (
                                     <EmptyState
                                         icon={FileText}
-                                        title="No proposals yet"
-                                        description="Browse open jobs and send your first proposal"
-                                        action={{ label: 'Browse Jobs', onClick: () => navigate('/jobs') }}
+                                        title={tx('dashboard.freelancer.noProposalsYet', undefined, 'No proposals yet')}
+                                        description={tx('dashboard.freelancer.browseAndSendProposal', undefined, 'Browse open jobs and send your first proposal')}
+                                        action={{ label: tx('dashboard.freelancer.browseJobs', undefined, 'Browse Jobs'), onClick: () => navigate('/jobs') }}
                                     />
                                 ) : (
                                     <div className="divide-y" style={{ borderColor: 'var(--dash-border)' }}>
@@ -379,7 +379,7 @@ function FreelancerDashboardPage() {
                                             <div key={proposal.id} className="flex items-center justify-between py-4 px-1">
                                                 <div className="min-w-0 flex-1">
                                                     <p className="font-semibold text-sm truncate" style={{ color: 'var(--text-primary)' }}>
-                                                        {proposal.job?.title ?? 'Untitled job'}
+                                                        {proposal.job?.title ?? tx('dashboard.freelancer.untitledJob', undefined, 'Untitled job')}
                                                     </p>
                                                     <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
                                                         {formatCurrency(proposal.bid_amount ?? 0, true, language)} · {new Date(proposal.created_at).toLocaleDateString(locale)}
@@ -396,7 +396,7 @@ function FreelancerDashboardPage() {
                                                                     : 'default'
                                                     }
                                                 >
-                                                    {proposal.status}
+                                                    {tx(`status.${proposal.status}`, undefined, proposal.status)}
                                                 </Badge>
                                             </div>
                                         ))}
@@ -406,15 +406,15 @@ function FreelancerDashboardPage() {
                         </motion.div>
 
                         <motion.div variants={itemVariants}>
-                            <DashWidget title="Matched for You" icon={<Target className="w-4 h-4" />} action={{ label: 'See all jobs', onClick: () => navigate('/jobs') }}>
+                            <DashWidget title={tx('dashboard.freelancer.matchedForYou', undefined, 'Matched for You')} icon={<Target className="w-4 h-4" />} action={{ label: tx('dashboard.freelancer.seeAllJobs', undefined, 'See all jobs'), onClick: () => navigate('/jobs') }}>
                                 {isLoadingJobs ? (
                                     <SkeletonCard />
                                 ) : jobs.length === 0 ? (
                                     <EmptyState
                                         icon={Target}
-                                        title="No matches yet"
-                                        description="Add skills to your profile to get matched jobs"
-                                        action={{ label: 'Update Profile', onClick: () => navigate('/settings') }}
+                                        title={tx('dashboard.freelancer.noMatchesYet', undefined, 'No matches yet')}
+                                        description={tx('dashboard.freelancer.addSkillsToMatch', undefined, 'Add skills to your profile to get matched jobs')}
+                                        action={{ label: tx('dashboard.freelancer.updateProfile', undefined, 'Update Profile'), onClick: () => navigate('/settings') }}
                                     />
                                 ) : (
                                     <div className="divide-y" style={{ borderColor: 'var(--dash-border)' }}>
@@ -429,12 +429,12 @@ function FreelancerDashboardPage() {
                                                         {job.title}
                                                     </p>
                                                     <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
-                                                        {job.budget_min ?? 0}–{job.budget_max ?? 0} TND · {job.category ?? 'General'}
+                                                        {job.budget_min ?? 0}–{job.budget_max ?? 0} TND · {tx(`categories.${job.category}`, undefined, job.category ?? 'General')}
                                                     </p>
                                                 </div>
                                                 <div className="flex items-center gap-2 shrink-0 ml-4">
                                                     <span className="text-xs font-medium px-2 py-1 rounded-lg" style={{ background: 'var(--workspace-primary)', color: '#fff', opacity: 0.9 }}>
-                                                        Apply
+                                                        {tx('dashboard.freelancer.apply', undefined, 'Apply')}
                                                     </span>
                                                     <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: 'var(--workspace-primary)' }} />
                                                 </div>
@@ -448,7 +448,7 @@ function FreelancerDashboardPage() {
 
                     <motion.div className="space-y-5" variants={containerVariants} initial="hidden" animate="show">
                         <motion.div variants={itemVariants}>
-                            <DashWidget title="Profile Strength" icon={<User className="w-4 h-4" />}>
+                            <DashWidget title={tx('dashboard.freelancer.profileStrength', undefined, 'Profile Strength')} icon={<User className="w-4 h-4" />}>
                                 <div className="flex flex-col items-center py-2">
                                     <ProfileRing value={profileCompletion} />
                                     <div className="w-full mt-5 space-y-2">
@@ -468,7 +468,7 @@ function FreelancerDashboardPage() {
                         </motion.div>
 
                         <motion.div variants={itemVariants}>
-                            <DashWidget title="This Month" icon={<DollarSign className="w-4 h-4" />}>
+                            <DashWidget title={tx('dashboard.freelancer.thisMonth', undefined, 'This Month')} icon={<DollarSign className="w-4 h-4" />}>
                                 <div>
                                     <p className="font-display font-bold text-3xl" style={{ color: 'var(--text-primary)' }}>
                                         {formatCurrency(statsData.monthlyEarnings, true, language)}
@@ -480,24 +480,24 @@ function FreelancerDashboardPage() {
                                             <TrendingDown className="w-3.5 h-3.5 text-red-400" />
                                         )}
                                         <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                                            vs last month
+                                            {tx('dashboard.freelancer.vsLastMonth', undefined, 'vs last month')}
                                         </span>
                                     </div>
                                     <Button variant="outline" size="sm" className="mt-4 w-full" onClick={() => navigate('/wallet')}>
-                                        View Wallet <ArrowRight className="w-3.5 h-3.5 ml-1" />
+                                        {tx('dashboard.freelancer.viewWallet', undefined, 'View Wallet')} <ArrowRight className="w-3.5 h-3.5 ml-1" />
                                     </Button>
                                 </div>
                             </DashWidget>
                         </motion.div>
 
                         <motion.div variants={itemVariants}>
-                            <DashWidget title="Quick Actions" icon={<Settings className="w-4 h-4" />}>
+                            <DashWidget title={tx('dashboard.freelancer.quickActions', undefined, 'Quick Actions')} icon={<Settings className="w-4 h-4" />}>
                                 <div className="space-y-2">
                                     {[
-                                        { label: 'Browse Jobs', icon: Search, path: '/jobs' },
-                                        { label: 'My Proposals', icon: FileText, path: '/my-proposals' },
-                                        { label: 'Portfolio', icon: Briefcase, path: '/portfolio' },
-                                        { label: 'Messages', icon: MessageSquare, path: '/messages' },
+                                        { label: tx('dashboard.freelancer.browseJobs', undefined, 'Browse Jobs'), icon: Search, path: '/jobs' },
+                                        { label: tx('nav.myProposals', undefined, 'My Proposals'), icon: FileText, path: '/my-proposals' },
+                                        { label: tx('nav.portfolio', undefined, 'Portfolio'), icon: Briefcase, path: '/portfolio' },
+                                        { label: tx('nav.messages', undefined, 'Messages'), icon: MessageSquare, path: '/messages' },
                                     ].map((action) => (
                                         <button
                                             key={action.label}

@@ -56,7 +56,7 @@ export default function SecuritySettings() {
             setNewPassword('');
             setConfirmPassword('');
         } catch (err) {
-            const msg = err instanceof Error ? err.message : 'Failed to update password';
+            const msg = err instanceof Error ? err.message : tx('settings.passwordUpdateFailed', undefined, 'Failed to update password');
             setPasswordError(msg);
             showToast(msg, 'error');
         } finally {
@@ -70,7 +70,7 @@ export default function SecuritySettings() {
     };
 
     const handleDeleteAccount = async () => {
-        showToast(tx('settings.toasts.deleteRequestSent'), 'info');
+        showToast(tx('settings.toasts.deleteRequestSent', undefined, 'Account deletion request sent'), 'info');
         setIsDeleteModalOpen(false);
     };
 

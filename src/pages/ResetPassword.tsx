@@ -12,22 +12,22 @@ import Button from '../components/ui/Button';
 import { AuthShell } from '../components/auth';
 
 // Password validation schema
-const getResetPasswordSchema = (t: any) => z.object({
+const getResetPasswordSchema = (tx: any) => z.object({
   password: z.string()
-    .min(8, t.auth?.validation?.password?.minLength || "Password must be at least 8 characters")
-    .regex(/[A-Z]/, t.auth?.validation?.password?.uppercase || "Must contain at least one uppercase letter")
-    .regex(/[a-z]/, t.auth?.validation?.password?.lowercase || "Must contain at least one lowercase letter")
-    .regex(/[0-9]/, t.auth?.validation?.password?.number || "Must contain at least one number"),
+    .min(8, tx('auth.validation.password.minLength', undefined, 'Password must be at least 8 characters'))
+    .regex(/[A-Z]/, tx('auth.validation.password.uppercase', undefined, 'Must contain at least one uppercase letter'))
+    .regex(/[a-z]/, tx('auth.validation.password.lowercase', undefined, 'Must contain at least one lowercase letter'))
+    .regex(/[0-9]/, tx('auth.validation.password.number', undefined, 'Must contain at least one number')),
   confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
-  message: t.auth?.validation?.password?.match || "Passwords do not match",
+  message: tx('auth.validation.password.match', undefined, 'Passwords do not match'),
   path: ["confirmPassword"],
 });
 
 type ResetPasswordFormData = z.infer<ReturnType<typeof getResetPasswordSchema>>;
 
 // Password strength calculator
-const getPasswordStrength = (password: string, t: any): { score: number; label: string; color: string } => {
+const getPasswordStrength = (password: string, tx: any): { score: number; label: string; color: string } => {
     let score = 0;
     if (password.length >= 8) score++;
     if (password.length >= 12) score++;
@@ -36,9 +36,9 @@ const getPasswordStrength = (password: string, t: any): { score: number; label: 
     if (/[0-9]/.test(password)) score++;
     if (/[^A-Za-z0-9]/.test(password)) score++;
 
-    if (score <= 2) return { score, label: t.auth?.passwordStrength?.weak, color: 'bg-red-500' };
-    if (score <= 4) return { score, label: t.auth?.passwordStrength?.medium, color: 'bg-yellow-500' };
-    return { score, label: t.auth?.passwordStrength?.strong, color: 'bg-green-500' };
+    if (score <= 2) return { score, label: tx('auth.passwordStrength.weak', undefined, 'Weak'), color: 'bg-red-500' };
+    if (score <= 4) return { score, label: tx('auth.passwordStrength.medium', undefined, 'Medium'), color: 'bg-yellow-500' };
+    return { score, label: tx('auth.passwordStrength.strong', undefined, 'Strong'), color: 'bg-green-500' };
 };
 
 const ResetPassword = () => {
@@ -59,11 +59,11 @@ const ResetPassword = () => {
         watch,
         formState: { errors },
     } = useForm<ResetPasswordFormData>({
-        resolver: zodResolver(getResetPasswordSchema(t)),
+        resolver: zodResolver(getResetPasswordSchema(tx)),
     });
 
     const password = watch('password', '');
-    const passwordStrength = getPasswordStrength(password, t);
+    const passwordStrength = getPasswordStrength(password, tx);
 
     // Check for valid recovery session
     useEffect(() => {
@@ -188,15 +188,15 @@ const ResetPassword = () => {
                             <AlertTriangle className="w-10 h-10 text-red-600 dark:text-red-400" />
                         </div>
                         <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
-                            {t.auth?.resetPassword?.expiredLink || "Expired Link"}
+                            {tx('auth.resetPassword.expiredLink', undefined, 'Expired Link')}
                         </h2>
                         <p className="text-gray-600 dark:text-gray-400 mb-8">
-                            {t.auth?.resetPassword?.invalidLinkDesc || "Invalid reset link."}
+                            {tx('auth.resetPassword.invalidLinkDesc', undefined, 'Invalid reset link.')}
                         </p>
                         <Button
                             onClick={() => navigate('/forgot-password')}
                             className="w-full"
-                        >{t.auth?.resetPassword?.requestNewLink || "Request New Link"}</Button>
+                        >{tx('auth.resetPassword.requestNewLink', undefined, 'Request New Link')}</Button>
                     </div>
                 </div>
             </AuthShell>
@@ -233,10 +233,10 @@ const ResetPassword = () => {
                                     <ShieldCheck className="w-8 h-8 text-primary-600 dark:text-primary-400" />
                                 </div>
                                 <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                                    {t.auth?.resetPassword?.setNew || "Set New Password"}
+                                    {tx('auth.resetPassword.setNew', undefined, 'Set New Password')}
                                 </h1>
                                 <p className="text-gray-600 dark:text-gray-400">
-                                    {t.auth?.resetPassword?.setNewDesc || "Enter your new password"}
+                                    {tx('auth.resetPassword.setNewDesc', undefined, 'Enter your new password')}
                                 </p>
                             </div>
 
@@ -244,7 +244,7 @@ const ResetPassword = () => {
                             <form onSubmit={handleSubmit(onSubmit)} className="form-stack">
                                 {/* New Password Field */}
                                 <div>
-                                    <label htmlFor="password" className="label">{t.auth?.password?.new || "New Password"}</label>
+                                    <label htmlFor="password" className="label">{tx('auth.password.new', undefined, 'New Password')}</label>
                                     <div className="relative">
                                         <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
                                             <Lock className="w-5 h-5 text-gray-400" />
@@ -254,7 +254,7 @@ const ResetPassword = () => {
                                             type={showPassword ? 'text' : 'password'}
                                             {...register('password')}
                                             className={`input ps-10 pe-12 ${errors.password ? 'input-error' : ''}`}
-                                            placeholder={t.auth?.passwordPlaceholder?.new || "Enter your new password"}
+                                            placeholder={tx('auth.passwordPlaceholder.new', undefined, 'Enter your new password')}
                                             disabled={isLoading}
                                         />
                                         <button
@@ -275,7 +275,7 @@ const ResetPassword = () => {
                                     {password && (
                                         <div className="mt-3">
                                             <div className="flex items-center justify-between mb-1">
-                                                <span className="text-xs text-gray-500">{t.auth?.passwordStrength?.label || "Password strength"}</span>
+                                                <span className="text-xs text-gray-500">{tx('auth.passwordStrength.label', undefined, 'Password strength')}</span>
                                                 <span className={`text-xs font-medium ${passwordStrength.color === 'bg-red-500' ? 'text-red-500' :
                                                     passwordStrength.color === 'bg-yellow-500' ? 'text-yellow-500' :
                                                         'text-green-500'
@@ -296,7 +296,7 @@ const ResetPassword = () => {
                                 {/* Confirm Password Field */}
                                 <div>
                                     <label htmlFor="confirmPassword" className="label">
-                                        {t.auth?.confirmPassword || "Confirm Password"}
+                                        {tx('auth.confirmPassword', undefined, 'Confirm Password')}
                                     </label>
                                     <div className="relative">
                                         <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
@@ -307,7 +307,7 @@ const ResetPassword = () => {
                                             type={showConfirmPassword ? 'text' : 'password'}
                                             {...register('confirmPassword')}
                                             className={`input ps-10 pe-12 ${errors.confirmPassword ? 'input-error' : ''}`}
-                                            placeholder={t.auth?.confirmPasswordPlaceholder || "Re-enter your password"}
+                                            placeholder={tx('auth.confirmPasswordPlaceholder', undefined, 'Re-enter your password')}
                                             disabled={isLoading}
                                         />
                                         <button
@@ -328,20 +328,20 @@ const ResetPassword = () => {
                                 {/* Password Requirements */}
                                 <div className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
                                     <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                        {t.auth?.passwordRequirements?.title || "Password Requirements:"}
+                                        {tx('auth.passwordRequirements.title', undefined, 'Password Requirements:')}
                                     </p>
                                     <ul className="space-y-1 text-sm text-gray-600 dark:text-gray-400">
                                         <li className={password.length >= 8 ? 'text-green-600' : ''}>
-                                            {t.auth?.passwordRequirements?.req1 || "• At least 8 characters"}
+                                            {tx('auth.passwordRequirements.req1', undefined, '• At least 8 characters')}
                                         </li>
                                         <li className={/[A-Z]/.test(password) ? 'text-green-600' : ''}>
-                                            {t.auth?.passwordRequirements?.req2 || "• At least one uppercase letter"}
+                                            {tx('auth.passwordRequirements.req2', undefined, '• At least one uppercase letter')}
                                         </li>
                                         <li className={/[a-z]/.test(password) ? 'text-green-600' : ''}>
-                                            {t.auth?.passwordRequirements?.req3 || "• At least one lowercase letter"}
+                                            {tx('auth.passwordRequirements.req3', undefined, '• At least one lowercase letter')}
                                         </li>
                                         <li className={/[0-9]/.test(password) ? 'text-green-600' : ''}>
-                                            {t.auth?.passwordRequirements?.req4 || "• At least one number"}
+                                            {tx('auth.passwordRequirements.req4', undefined, '• At least one number')}
                                         </li>
                                     </ul>
                                 </div>
@@ -370,13 +370,13 @@ const ResetPassword = () => {
                                 <CheckCircle className="w-10 h-10 text-green-600 dark:text-green-400" />
                             </div>
                             <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
-                                {t.auth?.resetPassword?.success || "Password changed successfully!"}
+                                {tx('auth.resetPassword.success', undefined, 'Password changed successfully!')}
                             </h2>
                             <p className="text-gray-600 dark:text-gray-400 mb-6">
-                                {t.auth?.resetPassword?.successDesc || "You can now log in with your new password."}
+                                {tx('auth.resetPassword.successDesc', undefined, 'You can now log in with your new password.')}
                             </p>
                             <p className="text-sm text-gray-500 dark:text-gray-400">
-                                {t.auth?.resetPassword?.redirecting || "Redirecting to login..."}
+                                {tx('auth.resetPassword.redirecting', undefined, 'Redirecting to login...')}
                             </p>
                         </div>
                     )}
