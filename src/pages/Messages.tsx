@@ -608,7 +608,7 @@ export default function Messages() {
                     <div className="flex items-center justify-center h-32">
                         <div className="text-center">
                             <Loader2 className="w-6 h-6 animate-spin text-brand mx-auto mb-2" />
-                            <p className="text-sm text-muted-foreground">Loading conversations...</p>
+                            <p className="text-sm text-muted-foreground">{tx('pages.messages.loadingConversations', undefined, 'Loading conversations...')}</p>
                         </div>
                     </div>
                 ) : filteredConversations.length === 0 ? (
@@ -787,7 +787,7 @@ export default function Messages() {
                             <div className="flex items-center justify-center h-full">
                                 <div className="text-center">
                                     <Loader2 className="w-8 h-8 animate-spin text-brand mx-auto mb-2" />
-                                    <p className="text-sm text-muted-foreground">Loading messages...</p>
+                                    <p className="text-sm text-muted-foreground">{tx('pages.messages.loadingMessages', undefined, 'Loading messages...')}</p>
                                 </div>
                             </div>
                         ) : messages.length === 0 ? (
@@ -910,8 +910,8 @@ export default function Messages() {
                                 </div>
                                 <span>
                                     {typingUsers.length === 1 
-                                        ? `${selectedConversation?.otherUser.full_name || 'Someone'} is typing...`
-                                        : `${typingUsers.length} people are typing...`
+                                        ? `${selectedConversation?.otherUser.full_name || 'Someone'} ${tx('pages.messages.typingIndicator.singular', undefined, 'is typing...')}`
+                                        : `${typingUsers.length} ${tx('pages.messages.typingIndicator.plural', undefined, 'people are typing...')}`
                                     }
                                 </span>
                             </div>

@@ -52,25 +52,25 @@ function Login() {
         <>
             <SEO {...SEO_CONFIG.login} url="/login" noIndex />
             <AuthShell
-                badge={tx('authPages.login.badge', undefined, 'Trusted freelance marketplace')}
-                title={tx('authPages.login.heroTitle', undefined, 'Sign in without the clutter and get back to work fast.')}
-                description={tx('authPages.login.heroDescription', undefined, 'A calmer auth flow for clients and freelancers, with clearer states, trusted payments, and workspace switching that stays out of your way.')}
+                badge={tx('authPages.login.badge', undefined, 'Khedma TN')}
+                title={tx('authPages.login.heroTitle', undefined, 'Welcome back. Let\'s get to work.')}
+                description={tx('authPages.login.heroDescription', undefined, 'Access your workspace, manage projects securely, and connect with top talent across Tunisia.')}
                 highlights={[
                     {
                         icon: ShieldCheck,
-                        title: tx('authPages.login.highlightTrustTitle', undefined, 'Verified identities'),
-                        description: tx('authPages.login.highlightTrustDescription', undefined, 'Profiles, contracts, and verification signals stay visible across your workspace.'),
+                        title: tx('authPages.login.highlightTrustTitle', undefined, 'Verified Profiles'),
+                        description: tx('authPages.login.highlightTrustDescription', undefined, 'Work with confidence. Every profile and skill is verified.'),
                     },
                     {
                         icon: BadgeCheck,
-                        title: tx('authPages.login.highlightPaymentsTitle', undefined, 'Protected transactions'),
-                        description: tx('authPages.login.highlightPaymentsDescription', undefined, 'Escrow-first flows keep client payments and freelancer delivery aligned.'),
+                        title: tx('authPages.login.highlightPaymentsTitle', undefined, 'Secure Payments'),
+                        description: tx('authPages.login.highlightPaymentsDescription', undefined, 'Funds are held safely until the milestone or project is delivered.'),
                         tone: 'accent',
                     },
                     {
                         icon: Globe2,
-                        title: tx('authPages.login.highlightLocaleTitle', undefined, 'Built for Tunisia'),
-                        description: tx('authPages.login.highlightLocaleDescription', undefined, 'Arabic, French, and English flows tuned for local freelance work.'),
+                        title: tx('authPages.login.highlightLocaleTitle', undefined, 'Local & Global'),
+                        description: tx('authPages.login.highlightLocaleDescription', undefined, 'Optimized for local talent with fast transactions.'),
                         tone: 'cyan',
                     },
                 ]}
@@ -85,11 +85,15 @@ function Login() {
             >
                 <div className="animate-slide-up">
                     {isOAuthResume && isLoading ? (
-                        <div className="rounded-3xl border border-white/10 bg-gray-50/70 p-8 text-center dark:bg-white/5">
-                            <Loader2 className="mx-auto mb-4 h-12 w-12 animate-spin text-primary-600" />
-                            <h1 className="mb-2 text-2xl font-bold text-[#171420] dark:text-white">{tx('authPages.login.finishingSignIn', undefined, 'Finishing your sign in')}</h1>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                                {tx('authPages.login.finishingSignInDescription', undefined, 'We are confirming your secure session and sending you to the right workspace.')}
+                        <div className="flex min-h-[320px] flex-col items-center justify-center rounded-[24px] border border-white/8 bg-gray-50/50 p-8 text-center dark:bg-white/[0.02]">
+                            <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary-500/10 dark:bg-primary-400/10">
+                                <Loader2 className="h-8 w-8 animate-spin text-primary-600 dark:text-primary-400" />
+                            </div>
+                            <h1 className="mb-3 text-xl font-semibold tracking-tight text-[#171420] dark:text-white">
+                                {tx('authPages.login.finishingSignIn', undefined, 'Securing session...')}
+                            </h1>
+                            <p className="max-w-[280px] text-sm leading-relaxed text-gray-500 dark:text-white/60">
+                                {tx('authPages.login.finishingSignInDescription', undefined, 'Hang tight while we prepare your workspace.')}
                             </p>
                         </div>
                     ) : (

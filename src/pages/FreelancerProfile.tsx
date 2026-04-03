@@ -359,7 +359,7 @@ export default function FreelancerProfile() {
 
                                         {sample.skills_used && sample.skills_used.length > 0 && (
                                             <div className="mb-6">
-                                                <h4 className="font-bold text-sm mb-2">المهارات المستخدمة</h4>
+                                                <h4 className="font-bold text-sm mb-2">{tx('pages.freelancerProfile.portfolio.skillsUsed', undefined, 'Skills Used')}</h4>
                                                 <div className="flex flex-wrap gap-2">
                                                     {sample.skills_used.map((skill, i) => (
                                                         <span key={i} className="text-xs bg-gray-100 px-2 py-1 rounded text-gray-700">
@@ -377,7 +377,7 @@ export default function FreelancerProfile() {
                                                 rel="noopener noreferrer"
                                                 className="block w-full text-center py-3 bg-primary-600 text-white rounded-xl font-medium hover:bg-primary-700 transition"
                                             >
-                                                زيارة المشروع
+                                                {tx('pages.freelancerProfile.portfolio.visitProject', undefined, 'Visit Project')}
                                             </a>
                                         )}
                                     </div>

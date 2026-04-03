@@ -59,8 +59,8 @@ export default function AuthShell({ badge, title, description, highlights, topAc
         </div>
 
         <div className="grid flex-1 items-center gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(420px,520px)] lg:gap-12">
-          <section className="hidden lg:flex lg:flex-col lg:justify-between lg:self-stretch">
-            <div className="max-w-xl space-y-6 pt-6">
+          <section className="hidden lg:flex lg:flex-col lg:justify-center lg:gap-16 lg:self-stretch py-8">
+            <div className="max-w-xl space-y-6">
               <div className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/8 px-4 py-2 text-xs font-medium uppercase tracking-[0.22em] text-white/70 backdrop-blur-sm">
                 <span className="h-2 w-2 rounded-full bg-emerald-400" />
                 {badge}

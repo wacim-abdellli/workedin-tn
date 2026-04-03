@@ -1448,11 +1448,17 @@ export const fr: Translations = {
             archiveConversation: 'Archiver la conversation',
             deleteConversation: 'Supprimer la conversation',
             attachFile: 'Joindre un fichier',
-            stopRecording: 'Arrêter l’enregistrement',
+             stopRecording: 'Arrêter l\'enregistrement',
             recordVoice: 'Enregistrer un message vocal',
             recording: 'Enregistrement...',
             voiceMemo: 'Message vocal',
             userFallback: 'user',
+            loadingConversations: 'Chargement des conversations...',
+            loadingMessages: 'Chargement des messages...',
+            typingIndicator: {
+                singular: 'est en train d\'écrire...',
+                plural: 'personnes sont en train d\'écrire...',
+            },
             filters: {
                 all: 'Tout',
                 unread: 'Non lus',
@@ -1463,9 +1469,9 @@ export const fr: Translations = {
                 noConversationsTitle: 'Aucune conversation pour le moment',
                 noConversationsDescription: 'Commencez par envoyer une proposition ou contacter un freelance.',
             },
-            errors: {
-                audioUpload: 'Échec de l’envoi de l’audio',
-                fileUpload: 'Échec de l’envoi du fichier',
+             errors: {
+                 audioUpload: 'Échec de l\'envoi de l\'audio',
+                 fileUpload: 'Échec de l\'envoi du fichier',
                 fileTooLarge: 'Le fichier doit faire moins de 10 Mo',
             },
             time: {
@@ -1476,10 +1482,14 @@ export const fr: Translations = {
             },
         },
         freelancerProfile: {
+            portfolio: {
+                skillsUsed: 'Compétences utilisées',
+                visitProject: 'Visiter le projet',
+            },
             contactModal: {
                 sectionLabel: 'Message direct',
                 title: 'Écrire à {{name}}',
-                body: 'Une conversation directe avec {{name}} s’ouvrira dans votre espace messages.',
+                body: 'Une conversation directe avec {{name}} s\'ouvrira dans votre espace messages.',
                 trustNote: 'Utilisez la messagerie Khedma pour garder la communication projet claire et organisée.',
                 loginRequired: 'Vous devez vous connecter pour envoyer un message',
                 loginPrompt: 'Vous devez vous connecter avant de contacter des freelances.',

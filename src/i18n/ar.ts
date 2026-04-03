@@ -1451,6 +1451,12 @@ export const ar = {
             recording: 'جاري التسجيل...',
             voiceMemo: 'رسالة صوتية',
             userFallback: 'user',
+            loadingConversations: 'جاري تحميل المحادثات...',
+            loadingMessages: 'جاري تحميل الرسائل...',
+            typingIndicator: {
+                singular: 'يكتب...',
+                plural: 'أشخاص يكتبون...',
+            },
             filters: {
                 all: 'الكل',
                 unread: 'غير مقروءة',
@@ -1474,6 +1480,10 @@ export const ar = {
             },
         },
         freelancerProfile: {
+            portfolio: {
+                skillsUsed: 'المهارات المستخدمة',
+                visitProject: 'زيارة المشروع',
+            },
             contactModal: {
                 sectionLabel: 'مراسلة مباشرة',
                 title: 'مراسلة {{name}}',

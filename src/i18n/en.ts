@@ -1453,6 +1453,12 @@ export const en: Translations = {
             recording: 'Recording...',
             voiceMemo: 'Voice memo',
             userFallback: 'user',
+            loadingConversations: 'Loading conversations...',
+            loadingMessages: 'Loading messages...',
+            typingIndicator: {
+                singular: 'is typing...',
+                plural: 'people are typing...',
+            },
             filters: {
                 all: 'All',
                 unread: 'Unread',
@@ -1476,6 +1482,10 @@ export const en: Translations = {
             },
         },
         freelancerProfile: {
+            portfolio: {
+                skillsUsed: 'Skills Used',
+                visitProject: 'Visit Project',
+            },
             contactModal: {
                 sectionLabel: 'Direct message',
                 title: 'Message {{name}}',
