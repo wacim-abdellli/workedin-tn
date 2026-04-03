@@ -256,9 +256,9 @@ function JobDetail() {
             if (!user || !jobId) throw new Error('Missing auth or job');
 
             // Check connects balance before submitting
-            if (connectsAvailable < CONNECTS_COST) {
-                throw new Error(`تحتاج إلى ${CONNECTS_COST} كونيكتس لإرسال عرض. رصيدك الحالي: ${connectsAvailable}`);
-            }
+             if (connectsAvailable < CONNECTS_COST) {
+                 throw new Error(tx('jobDetail.connectsNeeded', { count: CONNECTS_COST, balance: connectsAvailable }, `You need ${CONNECTS_COST} connects to submit a proposal. Your current balance: ${connectsAvailable}`));
+             }
 
             const { error, data: proposalId } = await proposalsService.createProposal({
                 job_id: jobId,
@@ -383,10 +383,10 @@ function JobDetail() {
                 <Header />
                 <div className="container-custom py-16 text-center">
                     <Briefcase className="w-16 h-16 text-muted mx-auto mb-4" />
-                    <h2 className="text-xl font-bold mb-2">الوظيفة غير موجودة</h2>
-                    <Button variant="primary" onClick={() => navigate('/jobs')}>
-                        تصفح الوظائف
-                    </Button>
+                     <h2 className="text-xl font-bold mb-2">{tx('jobDetail.jobNotFound', undefined, 'Job not found')}</h2>
+                     <Button variant="primary" onClick={() => navigate('/jobs')}>
+                         {tx('jobDetail.browseJobs', undefined, 'Browse Jobs')}
+                     </Button>
                 </div>
             </div>
         );
@@ -693,18 +693,18 @@ function JobDetail() {
                                                      ? 'text-blue-900 dark:text-blue-200'
                                                      : 'text-red-900 dark:text-red-200'
                                              )}>
-                                                 <div>
-                                                     <p className="text-sm font-semibold">متطلبات التقديم</p>
-                                                     <p className="mt-1 text-xs opacity-80">يحتاج هذا العرض إلى كونيكتس قبل الإرسال.</p>
-                                                 </div>
-                                                 <span className={cn(
-                                                     'rounded-full px-3 py-1 text-xs font-bold whitespace-nowrap',
-                                                     connectsAvailable >= CONNECTS_COST
-                                                         ? 'bg-white/70 dark:bg-white/10 text-blue-700 dark:text-blue-300'
-                                                         : 'bg-white/70 dark:bg-white/10 text-red-700 dark:text-red-300'
-                                                 )}>
-                                                     {connectsAvailable >= CONNECTS_COST ? 'جاهز للتقديم' : 'الرصيد غير كافٍ'}
-                                                 </span>
+                                              <div>
+                                                      <p className="text-sm font-semibold">{tx('jobDetail.submissionRequirements', undefined, 'Submission Requirements')}</p>
+                                                      <p className="mt-1 text-xs opacity-80">{tx('jobDetail.connectsRequiredDescription', undefined, 'This proposal requires connects before sending.')}</p>
+                                                  </div>
+                                                  <span className={cn(
+                                                      'rounded-full px-3 py-1 text-xs font-bold whitespace-nowrap',
+                                                      connectsAvailable >= CONNECTS_COST
+                                                          ? 'bg-white/70 dark:bg-white/10 text-blue-700 dark:text-blue-300'
+                                                          : 'bg-white/70 dark:bg-white/10 text-red-700 dark:text-red-300'
+                                                  )}>
+                                                      {connectsAvailable >= CONNECTS_COST ? tx('jobDetail.readyToSubmit', undefined, 'Ready to submit') : tx('jobDetail.insufficientBalance', undefined, 'Insufficient balance')}
+                                                  </span>
                                              </div>
 
                                              <div className="mt-4 grid grid-cols-3 gap-3 text-center">
@@ -714,7 +714,7 @@ function JobDetail() {
                                                          ? 'border-blue-200 dark:border-blue-500/30 bg-white/70 dark:bg-white/5'
                                                          : 'border-red-200 dark:border-red-500/30 bg-white/70 dark:bg-white/5'
                                                  )}>
-                                                     <p className="text-[11px] font-medium uppercase tracking-wider opacity-70">الرصيد</p>
+                                                      <p className="text-[11px] font-medium uppercase tracking-wider opacity-70">{tx('jobDetail.balance', undefined, 'Balance')}</p>
                                                      <p className="mt-2 text-lg font-bold">{connectsAvailable}</p>
                                                  </div>
                                                  <div className={cn(
@@ -723,7 +723,7 @@ function JobDetail() {
                                                          ? 'border-blue-200 dark:border-blue-500/30 bg-white/70 dark:bg-white/5'
                                                          : 'border-red-200 dark:border-red-500/30 bg-white/70 dark:bg-white/5'
                                                  )}>
-                                                     <p className="text-[11px] font-medium uppercase tracking-wider opacity-70">المطلوب</p>
+                                                      <p className="text-[11px] font-medium uppercase tracking-wider opacity-70">{tx('jobDetail.required', undefined, 'Required')}</p>
                                                      <p className="mt-2 text-lg font-bold">{CONNECTS_COST}</p>
                                                  </div>
                                                  <div className={cn(
@@ -732,16 +732,16 @@ function JobDetail() {
                                                          ? 'border-blue-200 dark:border-blue-500/30 bg-white/70 dark:bg-white/5'
                                                          : 'border-red-200 dark:border-red-500/30 bg-white/70 dark:bg-white/5'
                                                  )}>
-                                                     <p className="text-[11px] font-medium uppercase tracking-wider opacity-70">المتبقي</p>
+                                                      <p className="text-[11px] font-medium uppercase tracking-wider opacity-70">{tx('jobDetail.remaining', undefined, 'Remaining')}</p>
                                                      <p className="mt-2 text-lg font-bold">{connectsRemainingAfterSubmit}</p>
                                                  </div>
                                              </div>
 
-                                             <p className="mt-3 text-xs leading-6 opacity-80">
-                                                 {connectsAvailable >= CONNECTS_COST
-                                                     ? 'سيتم خصم 2 كونيكتس مباشرة بعد إرسال العرض.'
-                                                     : `تحتاج إلى ${CONNECTS_COST - connectsAvailable} كونيكتس إضافية قبل إرسال هذا العرض.`}
-                                             </p>
+                                              <p className="mt-3 text-xs leading-6 opacity-80">
+                                                  {connectsAvailable >= CONNECTS_COST
+                                                      ? tx('jobDetail.connectsDeductionWarning', { count: CONNECTS_COST }, `${CONNECTS_COST} connects will be deducted immediately after submitting the proposal.`)
+                                                      : tx('jobDetail.additionalConnectsNeeded', { count: CONNECTS_COST - connectsAvailable }, `You need ${CONNECTS_COST - connectsAvailable} additional connects before submitting this proposal.`)}
+                                              </p>
                                          </div>
                                      )}
                                  </div>
@@ -781,21 +781,21 @@ function JobDetail() {
                              </div>
 
                              <div className="space-y-3 text-sm mb-5">
-                                 <div className="flex justify-between">
-                                     <span className="text-gray-600 dark:text-gray-400 text-xs font-medium">عضو منذ</span>
+                                  <div className="flex justify-between">
+                                      <span className="text-gray-600 dark:text-gray-400 text-xs font-medium">{tx('jobDetail.memberSince', undefined, 'Member since')}</span>
                                      <span className="font-medium text-foreground">{job.client?.created_at ? formatDate(job.client.created_at) : '-'}</span>
                                  </div>
-                                 <div className="flex justify-between">
-                                     <span className="text-gray-600 dark:text-gray-400 text-xs font-medium">الوظائف المنشورة</span>
+                                  <div className="flex justify-between">
+                                      <span className="text-gray-600 dark:text-gray-400 text-xs font-medium">{tx('jobDetail.postedJobs', undefined, 'Posted Jobs')}</span>
                                      <span className="font-medium text-foreground">{clientStats.totalJobs}</span>
                                  </div>
-                                 <div className="flex justify-between">
-                                     <span className="text-gray-600 dark:text-gray-400 text-xs font-medium">إجمالي الإنفاق</span>
+                                  <div className="flex justify-between">
+                                      <span className="text-gray-600 dark:text-gray-400 text-xs font-medium">{tx('jobDetail.totalSpending', undefined, 'Total Spending')}</span>
                                      <span className="font-medium text-foreground">{clientStats.totalSpent.toLocaleString()} د.ت</span>
                                  </div>
                                  {clientStats.rating > 0 && (
                                      <div className="flex justify-between items-center pt-2 border-t border-border">
-                                         <span className="text-gray-600 dark:text-gray-400 text-xs font-medium">التقييم</span>
+                                          <span className="text-gray-600 dark:text-gray-400 text-xs font-medium">{tx('jobDetail.rating', undefined, 'Rating')}</span>
                                          <span className="flex items-center gap-1.5 font-medium">
                                              <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
                                              <span className="text-foreground">{clientStats.rating.toFixed(1)}</span>
@@ -811,9 +811,9 @@ function JobDetail() {
                                      'text-[color:var(--workspace-primary)] border-[color:var(--workspace-primary)]/20',
                                      'hover:bg-[color:var(--workspace-primary)]/5 text-sm font-medium'
                                  )}
-                             >
-                                 عرض الملف الشخصي
-                             </Link>
+                              >
+                                  {tx('jobDetail.viewProfile', undefined, 'View Profile')}
+                              </Link>
                          </div>
 
                         {/* Job Stats */}
@@ -823,19 +823,19 @@ function JobDetail() {
                              'border-border',
                              'shadow-sm dark:shadow-none'
                          )}>
-                             <h3 className="font-semibold text-base text-foreground mb-4">{tx('jobDetail.jobStats', undefined, 'إحصائيات الوظيفة')}</h3>
+                              <h3 className="font-semibold text-base text-foreground mb-4">{tx('jobDetail.jobStats', undefined, 'Job Stats')}</h3>
                              <div className="space-y-3 text-sm">
-                                 <div className="flex justify-between pb-3 border-b border-border">
-                                     <span className="text-gray-600 dark:text-gray-400 font-medium">العروض</span>
+                                  <div className="flex justify-between pb-3 border-b border-border">
+                                      <span className="text-gray-600 dark:text-gray-400 font-medium">{tx('jobDetail.proposals', undefined, 'Proposals')}</span>
                                      <span className="font-semibold text-foreground">{job.proposals_count}</span>
                                  </div>
-                                 <div className="flex justify-between pb-3 border-b border-border">
-                                     <span className="text-gray-600 dark:text-gray-400 font-medium">المشاهدات</span>
+                                  <div className="flex justify-between pb-3 border-b border-border">
+                                      <span className="text-gray-600 dark:text-gray-400 font-medium">{tx('jobDetail.views', undefined, 'Views')}</span>
                                      <span className="font-semibold text-foreground">{job.views_count}</span>
                                  </div>
                                  {job.deadline && (
-                                     <div className="flex justify-between">
-                                         <span className="text-gray-600 dark:text-gray-400 font-medium">الموعد النهائي</span>
+                                      <div className="flex justify-between">
+                                          <span className="text-gray-600 dark:text-gray-400 font-medium">{tx('jobDetail.deadline', undefined, 'Deadline')}</span>
                                          <span className="font-semibold text-foreground">
                                              {new Date(job.deadline).toLocaleDateString('ar-TN')}
                                          </span>
@@ -844,11 +844,11 @@ function JobDetail() {
                              </div>
                          </div>
 
-                        {/* Report */}
-                         <button className="w-full text-center text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 flex items-center justify-center gap-1.5 py-2 transition-colors">
-                             <Flag className="w-4 h-4" />
-                             الإبلاغ عن هذه الوظيفة
-                         </button>
+                         {/* Report */}
+                          <button className="w-full text-center text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 flex items-center justify-center gap-1.5 py-2 transition-colors">
+                              <Flag className="w-4 h-4" />
+                              {tx('jobDetail.reportJob', undefined, 'Report This Job')}
+                          </button>
                     </div>
                 </div>
             </div>
