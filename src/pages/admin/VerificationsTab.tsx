@@ -215,14 +215,17 @@ export default function VerificationsTab() {
                             client.from('freelancer_profiles').update({ cin_verified: true }).eq('id', userId)
                         ).catch(() => null),
                         supabaseWithRetry(() =>
-                             client.from('notifications').insert({
-                                 user_id: userId,
-                                 type: 'system',
-                                 title: tx('dashboard.admin.verification.approvedTitle', undefined, 'Your identity has been verified'),
-                                 body: tx('dashboard.admin.verification.approvedBody', undefined, 'Congratulations! Your identity was successfully verified. You can now access all platform features.'),
-                                 is_read: false,
-                             })
-                         ).catch(() => null),
+                              client.from('notifications').insert({
+                                  user_id: userId,
+                                  type: 'system',
+                                  title: tx('dashboard.admin.verification.approvedTitle', undefined, 'Your identity has been verified'),
+                                  body: tx('dashboard.admin.verification.approvedBody', undefined, 'Congratulations! Your identity was successfully verified. You can now access all platform features.'),
+                                  is_read: false,
+                              })
+                          ).catch((err) => {
+                              console.error('[Notification] Failed to insert approval notification:', err);
+                              return null;
+                          }),
                     ]);
                 } else {
                     await Promise.all([
@@ -233,14 +236,17 @@ export default function VerificationsTab() {
                             client.from('freelancer_profiles').update({ cin_verified: false }).eq('id', userId)
                         ).catch(() => null),
                         supabaseWithRetry(() =>
-                             client.from('notifications').insert({
-                                 user_id: userId,
-                                 type: 'system',
-                                 title: tx('dashboard.admin.verification.rejectedTitle', undefined, 'Verification request rejected'),
-                                 body: tx('dashboard.admin.verification.rejectedBody', undefined, 'Sorry, your identity verification request was rejected. Please ensure document images are clear and apply again.'),
-                                 is_read: false,
-                             })
-                         ).catch(() => null),
+                              client.from('notifications').insert({
+                                  user_id: userId,
+                                  type: 'system',
+                                  title: tx('dashboard.admin.verification.rejectedTitle', undefined, 'Verification request rejected'),
+                                  body: tx('dashboard.admin.verification.rejectedBody', undefined, 'Sorry, your identity verification request was rejected. Please ensure document images are clear and apply again.'),
+                                  is_read: false,
+                              })
+                          ).catch((err) => {
+                              console.error('[Notification] Failed to insert rejection notification:', err);
+                              return null;
+                          }),
                     ]);
                 }
             }

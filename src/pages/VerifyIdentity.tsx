@@ -258,7 +258,10 @@ export default function VerifyIdentity() {
                     title: 'تم استلام طلب التوثيق',
                     body: 'جاري الآن دراسة طلب التحقق من الهوية من قبل الإدارة. سيتم إعلامك بالنتيجة قريباً.',
                     is_read: false,
-                })).catch(() => null);
+                })).catch((err) => {
+                    console.error('[Notification] Failed to insert submission notification:', err);
+                    return null;
+                });
                 await refreshProfile?.();
             } catch (e) { logger.error('Profile update error:', e); }
 
