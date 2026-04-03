@@ -1,14 +1,14 @@
 import { UserPlus, Search, CheckCircle, DollarSign } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '@/i18n';
 
 export function HowItWorksSection() {
-  const { t } = useTranslation();
+  const { tx } = useTranslation();
 
   const steps = [
-    { icon: UserPlus, step: t('howItWorksSection.steps.1.step'), title: t('howItWorksSection.steps.1.title'), sub: t('howItWorksSection.steps.1.subtitle') },
-    { icon: Search, step: t('howItWorksSection.steps.2.step'), title: t('howItWorksSection.steps.2.title'), sub: t('howItWorksSection.steps.2.subtitle') },
-    { icon: CheckCircle, step: t('howItWorksSection.steps.3.step'), title: t('howItWorksSection.steps.3.title'), sub: t('howItWorksSection.steps.3.subtitle') },
-    { icon: DollarSign, step: t('howItWorksSection.steps.4.step'), title: t('howItWorksSection.steps.4.title'), sub: t('howItWorksSection.steps.4.subtitle') },
+    { icon: UserPlus, step: tx('howItWorksSection.steps.1.step'), title: tx('howItWorksSection.steps.1.title'), sub: tx('howItWorksSection.steps.1.subtitle') },
+    { icon: Search, step: tx('howItWorksSection.steps.2.step'), title: tx('howItWorksSection.steps.2.title'), sub: tx('howItWorksSection.steps.2.subtitle') },
+    { icon: CheckCircle, step: tx('howItWorksSection.steps.3.step'), title: tx('howItWorksSection.steps.3.title'), sub: tx('howItWorksSection.steps.3.subtitle') },
+    { icon: DollarSign, step: tx('howItWorksSection.steps.4.step'), title: tx('howItWorksSection.steps.4.title'), sub: tx('howItWorksSection.steps.4.subtitle') },
   ];
   return (
     <section className="py-24" style={{ background: 'var(--page-bg)' }}>
@@ -18,13 +18,13 @@ export function HowItWorksSection() {
             className="text-xs font-semibold uppercase tracking-[0.2em] mb-3"
             style={{ color: 'var(--workspace-primary-mid)' }}
           >
-            {t('howItWorksSection.badge')}
+            {tx('howItWorksSection.badge')}
           </p>
           <h2
             className="font-display font-bold text-4xl tracking-tight"
             style={{ color: 'var(--text-primary)' }}
           >
-            {t('howItWorksSection.heading')}
+            {tx('howItWorksSection.heading')}
           </h2>
         </div>
 

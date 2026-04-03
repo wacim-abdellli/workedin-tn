@@ -1,24 +1,24 @@
 import { Shield, Users, Wallet } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '@/i18n';
 
 export function ValuePropositions() {
-  const { t } = useTranslation();
+  const { tx } = useTranslation();
 
   const props = [
     {
       icon: Users,
-      title: t('valuePropositions.matched.title'),
-      description: t('valuePropositions.matched.description'),
+      title: tx('valuePropositions.matched.title'),
+      description: tx('valuePropositions.matched.description'),
     },
     {
       icon: Shield,
-      title: t('valuePropositions.protected.title'),
-      description: t('valuePropositions.protected.description'),
+      title: tx('valuePropositions.protected.title'),
+      description: tx('valuePropositions.protected.description'),
     },
     {
       icon: Wallet,
-      title: t('valuePropositions.reputation.title'),
-      description: t('valuePropositions.reputation.description'),
+      title: tx('valuePropositions.reputation.title'),
+      description: tx('valuePropositions.reputation.description'),
     },
   ];
   return (
@@ -29,13 +29,13 @@ export function ValuePropositions() {
             className="text-xs font-semibold uppercase tracking-[0.2em] mb-3"
             style={{ color: 'var(--workspace-primary-mid)' }}
           >
-            {t('valuePropositions.badge')}
+            {tx('valuePropositions.badge')}
           </p>
           <h2
             className="font-display font-bold text-4xl tracking-tight"
             style={{ color: 'var(--text-primary)' }}
           >
-            {t('valuePropositions.heading')}
+            {tx('valuePropositions.heading')}
           </h2>
         </div>
 

@@ -2,10 +2,10 @@ import { useState } from 'react';
 import { ChevronDown, ChevronUp, Search, HelpCircle, MessageCircle, FileText, CreditCard, Shield, User } from 'lucide-react';
 import { Header, Footer } from '../components/layout';
 import SEO, { SEO_CONFIG } from '../components/common/SEO';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '@/i18n';
 
 export default function FAQ() {
-    const { t } = useTranslation();
+    const { tx, t } = useTranslation();
     const [searchQuery, setSearchQuery] = useState('');
     const [openItems, setOpenItems] = useState<string[]>([]);
 
@@ -13,32 +13,32 @@ export default function FAQ() {
         {
             id: 'general',
             icon: HelpCircle,
-            title: t('faqPage.categories.general.title'),
-            questions: t('faqPage.categories.general.items', { returnObjects: true }) as Array<{ q: string; a: string }>
+            title: tx('faqPage.categories.general.title'),
+            questions: (t.faqPage.categories.general.items as Array<{ q: string; a: string }>)
         },
         {
             id: 'freelancer',
             icon: User,
-            title: t('faqPage.categories.freelancer.title'),
-            questions: t('faqPage.categories.freelancer.items', { returnObjects: true }) as Array<{ q: string; a: string }>
+            title: tx('faqPage.categories.freelancer.title'),
+            questions: (t.faqPage.categories.freelancer.items as Array<{ q: string; a: string }>)
         },
         {
             id: 'client',
             icon: FileText,
-            title: t('faqPage.categories.client.title'),
-            questions: t('faqPage.categories.client.items', { returnObjects: true }) as Array<{ q: string; a: string }>
+            title: tx('faqPage.categories.client.title'),
+            questions: (t.faqPage.categories.client.items as Array<{ q: string; a: string }>)
         },
         {
             id: 'payment',
             icon: CreditCard,
-            title: t('faqPage.categories.payment.title'),
-            questions: t('faqPage.categories.payment.items', { returnObjects: true }) as Array<{ q: string; a: string }>
+            title: tx('faqPage.categories.payment.title'),
+            questions: (t.faqPage.categories.payment.items as Array<{ q: string; a: string }>)
         },
         {
             id: 'security',
             icon: Shield,
-            title: t('faqPage.categories.security.title'),
-            questions: t('faqPage.categories.security.items', { returnObjects: true }) as Array<{ q: string; a: string }>
+            title: tx('faqPage.categories.security.title'),
+            questions: (t.faqPage.categories.security.items as Array<{ q: string; a: string }>)
         }
     ];
 
@@ -63,9 +63,9 @@ export default function FAQ() {
             <div className="container-custom py-12">
                 {/* Header */}
                 <div className="text-center mb-12">
-                    <h1 className="text-3xl font-bold text-foreground mb-4">{t('faqPage.page.title')}</h1>
+                    <h1 className="text-3xl font-bold text-foreground mb-4">{tx('faqPage.page.title')}</h1>
                     <p className="text-muted max-w-2xl mx-auto">
-                        {t('faqPage.page.subtitle')}
+                        {tx('faqPage.page.subtitle')}
                     </p>
                 </div>
 
@@ -77,7 +77,7 @@ export default function FAQ() {
                             type="text"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            placeholder={t('faqPage.page.searchPlaceholder')}
+                            placeholder={tx('faqPage.page.searchPlaceholder')}
                             className="w-full pe-12 ps-4 py-4 border border-gray-200 rounded-2xl text-lg"
                         />
                     </div>
@@ -129,13 +129,13 @@ export default function FAQ() {
                 <div className="max-w-3xl mx-auto mt-12">
                     <div className="card bg-gradient-to-br from-primary-600 to-secondary-600 text-white text-center">
                         <MessageCircle className="w-12 h-12 mx-auto mb-4 opacity-80" />
-                        <h3 className="text-xl font-bold mb-2">{t('faqPage.page.noAnswer')}</h3>
-                        <p className="opacity-90 mb-4">{t('faqPage.page.supportReady')}</p>
+                        <h3 className="text-xl font-bold mb-2">{tx('faqPage.page.noAnswer')}</h3>
+                         <p className="opacity-90 mb-4">{tx('faqPage.page.supportReady')}</p>
                         <a
                             href="mailto:support@khedma.tn"
                             className="inline-block px-6 py-3 bg-white text-primary-600 rounded-xl font-medium hover:bg-gray-100 transition-colors"
                         >
-                            {t('faqPage.page.contactButton')}
+                            {tx('faqPage.page.contactButton')}
                         </a>
                     </div>
                 </div>

@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowRight, Shield, Zap, Star } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useWorkspaceStore } from '@/lib/workspaceState';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '@/i18n';
 
 interface HeroSectionProps {
   stats?: {
@@ -14,78 +14,78 @@ interface HeroSectionProps {
 
 export function HeroSection({ stats }: HeroSectionProps) {
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { tx } = useTranslation();
   const activeWorkspace = useWorkspaceStore((state) => state.activeWorkspace);
   const isFreelancer = activeWorkspace === 'freelancer';
 
   const heroContent = isFreelancer
     ? {
-        eyebrow: t('heroSection.freelancer.eyebrow'),
-        titleTop: t('heroSection.freelancer.titleTop'),
-        titleAccent: t('heroSection.freelancer.titleAccent'),
-        subtitle: t('heroSection.freelancer.subtitle'),
-        primaryCta: t('heroSection.freelancer.cta'),
-        secondaryCta: t('heroSection.freelancer.secondary'),
+        eyebrow: tx('heroSection.freelancer.eyebrow'),
+        titleTop: tx('heroSection.freelancer.titleTop'),
+        titleAccent: tx('heroSection.freelancer.titleAccent'),
+        subtitle: tx('heroSection.freelancer.subtitle'),
+        primaryCta: tx('heroSection.freelancer.cta'),
+        secondaryCta: tx('heroSection.freelancer.secondary'),
         secondaryPath: '/jobs',
         trustItems: [
-          { icon: Shield, label: t('heroSection.freelancer.trust.payouts') },
-          { icon: Zap, label: t('heroSection.freelancer.trust.matched') },
-          { icon: Star, label: t('heroSection.freelancer.trust.reputation') },
+          { icon: Shield, label: tx('heroSection.freelancer.trust.payouts') },
+          { icon: Zap, label: tx('heroSection.freelancer.trust.matched') },
+          { icon: Star, label: tx('heroSection.freelancer.trust.reputation') },
         ],
         statsCards: [
-          { value: `${stats?.freelancers || t('heroSection.freelancer.stats.professionals.default')}+`, label: t('heroSection.freelancer.stats.professionals.label') },
-          { value: `${stats?.contracts || t('heroSection.freelancer.stats.contracts.default')}+`, label: t('heroSection.freelancer.stats.contracts.label') },
-          { value: t('heroSection.freelancer.stats.rating.value'), label: t('heroSection.freelancer.stats.rating.label') },
+          { value: `${stats?.freelancers || tx('heroSection.freelancer.stats.professionals.default')}+`, label: tx('heroSection.freelancer.stats.professionals.label') },
+          { value: `${stats?.contracts || tx('heroSection.freelancer.stats.contracts.default')}+`, label: tx('heroSection.freelancer.stats.contracts.label') },
+          { value: tx('heroSection.freelancer.stats.rating.value'), label: tx('heroSection.freelancer.stats.rating.label') },
         ],
         features: [
           {
-            title: t('heroSection.freelancer.features.apply.title'),
-            sub: t('heroSection.freelancer.features.apply.subtitle'),
+            title: tx('heroSection.freelancer.features.apply.title'),
+            sub: tx('heroSection.freelancer.features.apply.subtitle'),
           },
           {
-            title: t('heroSection.freelancer.features.verify.title'),
-            sub: t('heroSection.freelancer.features.verify.subtitle'),
+            title: tx('heroSection.freelancer.features.verify.title'),
+            sub: tx('heroSection.freelancer.features.verify.subtitle'),
           },
           {
-            title: t('heroSection.freelancer.features.track.title'),
-            sub: t('heroSection.freelancer.features.track.subtitle'),
+            title: tx('heroSection.freelancer.features.track.title'),
+            sub: tx('heroSection.freelancer.features.track.subtitle'),
           },
         ],
-        promise: t('heroSection.freelancer.promise'),
+        promise: tx('heroSection.freelancer.promise'),
       }
     : {
-        eyebrow: t('heroSection.client.eyebrow'),
-        titleTop: t('heroSection.client.titleTop'),
-        titleAccent: t('heroSection.client.titleAccent'),
-        subtitle: t('heroSection.client.subtitle'),
-        primaryCta: t('heroSection.client.cta'),
-        secondaryCta: t('heroSection.client.secondary'),
+        eyebrow: tx('heroSection.client.eyebrow'),
+        titleTop: tx('heroSection.client.titleTop'),
+        titleAccent: tx('heroSection.client.titleAccent'),
+        subtitle: tx('heroSection.client.subtitle'),
+        primaryCta: tx('heroSection.client.cta'),
+        secondaryCta: tx('heroSection.client.secondary'),
         secondaryPath: '/find-freelancers',
         trustItems: [
-          { icon: Shield, label: t('heroSection.client.trust.verified') },
-          { icon: Zap, label: t('heroSection.client.trust.faster') },
-          { icon: Star, label: t('heroSection.client.trust.escrow') },
+          { icon: Shield, label: tx('heroSection.client.trust.verified') },
+          { icon: Zap, label: tx('heroSection.client.trust.faster') },
+          { icon: Star, label: tx('heroSection.client.trust.escrow') },
         ],
         statsCards: [
-          { value: `${stats?.freelancers || t('heroSection.client.stats.professionals.default')}+`, label: t('heroSection.client.stats.professionals.label') },
-          { value: `${stats?.jobs || t('heroSection.client.stats.projects.default')}+`, label: t('heroSection.client.stats.projects.label') },
-          { value: t('heroSection.client.stats.trust.value'), label: t('heroSection.client.stats.trust.label') },
+          { value: `${stats?.freelancers || tx('heroSection.client.stats.professionals.default')}+`, label: tx('heroSection.client.stats.professionals.label') },
+          { value: `${stats?.jobs || tx('heroSection.client.stats.projects.default')}+`, label: tx('heroSection.client.stats.projects.label') },
+          { value: tx('heroSection.client.stats.trust.value'), label: tx('heroSection.client.stats.trust.label') },
         ],
         features: [
           {
-            title: t('heroSection.client.features.post.title'),
-            sub: t('heroSection.client.features.post.subtitle'),
+            title: tx('heroSection.client.features.post.title'),
+            sub: tx('heroSection.client.features.post.subtitle'),
           },
           {
-            title: t('heroSection.client.features.review.title'),
-            sub: t('heroSection.client.features.review.subtitle'),
+            title: tx('heroSection.client.features.review.title'),
+            sub: tx('heroSection.client.features.review.subtitle'),
           },
           {
-            title: t('heroSection.client.features.manage.title'),
-            sub: t('heroSection.client.features.manage.subtitle'),
+            title: tx('heroSection.client.features.manage.title'),
+            sub: tx('heroSection.client.features.manage.subtitle'),
           },
         ],
-        promise: t('heroSection.client.promise'),
+        promise: tx('heroSection.client.promise'),
       };
 
   return (
@@ -276,10 +276,10 @@ export function HeroSection({ stats }: HeroSectionProps) {
                   borderLeftColor: 'var(--workspace-primary)',
                 }}
               >
-                <p className="text-xs font-semibold uppercase tracking-wider mb-1"
+                 <p className="text-xs font-semibold uppercase tracking-wider mb-1"
                    style={{ color: 'var(--workspace-primary-mid)' }}>
-                  {t('heroSection.promise.label')}
-                </p>
+                   {tx('heroSection.promise.label')}
+                 </p>
                 <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
                   {heroContent.promise}
                 </p>
