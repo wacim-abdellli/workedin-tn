@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useCallback } from 'react';
 import { Ban, Eye, Loader2, Search, ShieldOff, Trash2, X, Users } from 'lucide-react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Button from '@/components/ui/Button';
@@ -6,6 +6,8 @@ import Modal from '@/components/ui/Modal';
 import ErrorBoundary from '@/components/common/ErrorBoundary';
 import { EmptyState } from '@/components/common/EmptyState';
 import { useToast } from '@/components/ui/Toast';
+import { createNotification } from '@/lib/createNotification';
+import { getIdentityNotificationCopy, normalizeIdentityNotificationLanguage } from '@/lib/identityNotificationCopy';
 import { supabase } from '@/lib/supabase';
 import { useTranslation } from '@/i18n';
 import type { AdminUser, AdminUserRow } from '@/types/admin';
@@ -71,6 +73,11 @@ export default function UsersTab() {
         message: '',
         actionType: 'primary',
         onConfirm: () => {},
+    });
+    const [revokeModal, setRevokeModal] = useState<{ isOpen: boolean; user: AdminUser | null; reason: string }>({
+        isOpen: false,
+        user: null,
+        reason: '',
     });
 
     const panelClass = 'card border border-border bg-card shadow-sm';
@@ -155,41 +162,40 @@ export default function UsersTab() {
     });
 
     const revokeVerificationMutation = useMutation({
-        mutationFn: async (user: AdminUser) => {
-            const results = await Promise.all([
-                supabase
-                    .from('profiles')
-                    .update({
-                        cin_verified: false,
-                        cin_submitted: false,
-                        updated_at: new Date().toISOString(),
-                    })
-                    .eq('id', user.id),
-                supabase
-                    .from('freelancer_profiles')
-                    .update({ cin_verified: false })
-                    .eq('id', user.id),
-                supabase
-                    .from('identity_verifications')
-                    .delete()
-                    .eq('user_id', user.id),
-                supabase
-                    .from('notifications')
-                    .insert({
-                        user_id: user.id,
-                        notification_type: 'identity_rejected',
-                        title: tx('dashboard.admin.users.verificationRevoked', undefined, 'Your account verification was revoked'),
-                        body: tx('dashboard.admin.users.verificationRevokedMessage', undefined, 'Administration has temporarily revoked your account verification. Please submit a new verification request to use the platform.'),
-                        is_read: false,
-                    }),
-            ]);
-            
-            // Allow notification (index 3) to fail silently, only throw errors for critical operations
-            const criticalError = results.slice(0, 3).find(r => r.error);
-            if (criticalError?.error) throw criticalError.error;
+        mutationFn: async ({ user, reason }: { user: AdminUser, reason: string }) => {
+            const { data: recipientProfile } = await supabase
+                .from('profiles')
+                .select('preferred_language')
+                .eq('id', user.id)
+                .maybeSingle();
+            const notificationCopy = getIdentityNotificationCopy('rejected', normalizeIdentityNotificationLanguage(recipientProfile?.preferred_language));
+
+            const lang = normalizeIdentityNotificationLanguage(recipientProfile?.preferred_language);
+            const reasonLabel = lang === 'ar' ? '\nالسبب: ' : lang === 'fr' ? '\nRaison: ' : '\nReason: ';
+            const finalBody = reason ? `${notificationCopy.body}${reasonLabel}${reason}` : notificationCopy.body;
+
+            // Use atomic RPC function to prevent race conditions
+            const { data: rpcData, error: rpcError } = await supabase.rpc('revoke_verification_status', {
+                p_user_id: user.id
+            });
+
+            if (rpcError) {
+                throw rpcError;
+            }
+
+            console.log('[UsersTab] Verification revoked atomically:', rpcData);
+
+            // Send notification separately (non-critical, can fail silently)
+            const notificationError = await createNotification({
+                userId: user.id,
+                type: 'system',
+                title: notificationCopy.title,
+                body: finalBody,
+            })
+                .then(() => null)
+                .catch((error) => error);
 
             // Log notification errors for debugging, but don't fail the operation
-            const notificationError = results[3]?.error;
             if (notificationError) {
                 console.warn('[Admin] Notification insert failed (non-critical):', notificationError);
             }
@@ -201,7 +207,7 @@ export default function UsersTab() {
                 user.id === userId ? { ...user, cin_verified: false } : user
             )));
             setSelectedUser((prev) => (prev?.id === userId ? { ...prev, cin_verified: false } : prev));
-            showToast(tx('dashboard.admin.users.verificationRevokedSuccessfully', undefined, 'Verification revoked successfully'), 'success');
+            // User will be notified via notification center
         },
         onError: (error) => {
             console.error('Revoke verification error:', error);
@@ -267,16 +273,24 @@ export default function UsersTab() {
     };
 
     const handleRevokeVerification = (user: AdminUser) => {
-        setConfirmAction({
+        setRevokeModal({
             isOpen: true,
-            title: tx('dashboard.admin.users.revokeVerification', undefined, 'Revoke Verification'),
-            message: tx('dashboard.admin.users.revokeVerificationConfirm', undefined, 'Are you sure you want to revoke verification for this user? They will need to submit their ID again.'),
-            actionType: 'warning',
-            onConfirm: () => {
-                setUserActionLoadingId(user.id);
-                revokeVerificationMutation.mutate(user);
-            },
+            user,
+            reason: '',
         });
+    };
+
+    const closeRevokeModal = useCallback(() => {
+        setRevokeModal(prev => ({ ...prev, isOpen: false }));
+    }, []);
+
+    const confirmRevokeVerification = () => {
+        const { user, reason } = revokeModal;
+        if (!user) return;
+        
+        setRevokeModal((prev) => ({ ...prev, isOpen: false }));
+        setUserActionLoadingId(user.id);
+        revokeVerificationMutation.mutate({ user, reason });
     };
 
     return (
@@ -577,6 +591,48 @@ export default function UsersTab() {
                             }}
                         >
                             {tx('dashboard.admin.users.confirm', undefined, 'Confirm')}
+                        </Button>
+                    </div>
+                </div>
+            </Modal>
+
+            <Modal 
+                isOpen={revokeModal.isOpen} 
+                onClose={closeRevokeModal} 
+                title={tx('dashboard.admin.users.revokeVerification', undefined, 'Revoke Verification')} 
+                size="md"
+            >
+                <div className="space-y-6 pt-2">
+                    <p className="text-muted leading-relaxed font-medium">
+                        {tx('dashboard.admin.users.revokeVerificationConfirm', undefined, 'Are you sure you want to revoke verification for this user? They will need to submit their ID again.')}
+                    </p>
+                    
+                    <div className="space-y-2">
+                        <label htmlFor="revoke-reason" className="block text-sm font-medium text-foreground">
+                            {tx('dashboard.admin.users.revokeReasonLabel', undefined, 'Reason for revocation (Optional)')}
+                        </label>
+                        <textarea
+                            id="revoke-reason"
+                            value={revokeModal.reason}
+                            onChange={(e) => setRevokeModal(prev => ({ ...prev, reason: e.target.value }))}
+                            placeholder={tx('dashboard.admin.users.revokeReasonPlaceholder', undefined, 'e.g., ID document is expired...')}
+                            className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-900 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 resize-none min-h-[100px] text-foreground"
+                        />
+                    </div>
+
+                    <div className="flex justify-end gap-3 pt-6 border-t border-border mt-6">
+                        <Button 
+                            variant="ghost" 
+                            className="text-muted hover:bg-surface" 
+                            onClick={closeRevokeModal}
+                        >
+                            {tx('dashboard.admin.users.cancel', undefined, 'Cancel')}
+                        </Button>
+                        <Button
+                            variant="primary"
+                            onClick={confirmRevokeVerification}
+                        >
+                            {tx('dashboard.admin.users.revoke', undefined, 'Revoke')}
                         </Button>
                     </div>
                 </div>

@@ -16,6 +16,7 @@ import { supabase } from '@/lib/supabase';
 import { useToast } from '@/components/ui/Toast';
 import SEO from '@/components/common/SEO';
 import { useTranslation } from '@/i18n';
+import { getPendingVerifications, subscribeToPendingQueue } from '@/lib/verificationStatus';
 
 
 interface VerificationRequest {
@@ -104,41 +105,45 @@ export default function VerificationQueue() {
 
     useEffect(() => {
         fetchPendingVerifications();
+        
+        // Real-time sync - admin queue updates automatically
+        const unsubscribe = subscribeToPendingQueue(() => {
+            fetchPendingVerifications();
+        });
+        
+        return unsubscribe;
     }, []);
 
     const fetchPendingVerifications = async () => {
         setError(null);
         try {
-            // Add timeout of 10 seconds
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 10000);
-
-            const { data, error: fetchError } = await supabase
-                .from('identity_verifications')
-                .select(`
-                    *,
-                    profile:profiles(full_name, email, avatar_url)
-                `)
-                .eq('status', 'pending')
-                .order('submitted_at', { ascending: true });
-
-            clearTimeout(timeoutId);
-
-            if (fetchError) {
-                 logger.error('Supabase error:', fetchError);
-                 setError(`${tx('dashboard.admin.verificationQueue.error', undefined, 'Error')}: ${fetchError.message}`);
-                 return;
-             }
-            setVerifications(data || []);
+            // Use shared helper - single source of truth
+            const data = await getPendingVerifications();
+            
+            // Transform to match component interface
+            const transformed = data.map(v => ({
+                id: v.id,
+                user_id: v.user_id,
+                cin_number: v.cin_number,
+                cin_front_url: '', // Will be loaded separately
+                cin_back_url: '',
+                selfie_url: '',
+                status: 'pending' as const,
+                rejection_reason: null,
+                submitted_at: v.submitted_at,
+                profile: {
+                    full_name: v.profile?.full_name || 'Unknown',
+                    email: v.profile?.email || '',
+                    avatar_url: v.profile?.avatar_url || ''
+                }
+            }));
+            
+            setVerifications(transformed);
         } catch (err) {
             const msg = err instanceof Error ? err.message : String(err);
             logger.error('Error fetching verifications:', err);
-             if (err instanceof Error && err.name === 'AbortError') {
-                 setError(tx('dashboard.admin.verificationQueue.timeout', undefined, 'Connection timed out. Check your internet connection or Supabase settings.'));
-             } else {
-                 setError(msg || tx('dashboard.admin.verificationQueue.loadError', undefined, 'Failed to load verification requests'));
-             }
-             showToast(tx('dashboard.admin.verificationQueue.loadError', undefined, 'Failed to load verification requests'), 'error');
+            setError(msg || tx('dashboard.admin.verificationQueue.loadError', undefined, 'Failed to load verification requests'));
+            showToast(tx('dashboard.admin.verificationQueue.loadError', undefined, 'Failed to load verification requests'), 'error');
         } finally {
             setLoading(false);
         }
@@ -209,30 +214,20 @@ export default function VerificationQueue() {
             const { error: profileError } = await supabase
                 .from('profiles')
                 .update({
-                    cin_verified: true,
-                    cin_submitted: false,
+                    cin_verified: true
                 })
                 .eq('id', selectedVerification.user_id);
 
             if (profileError) throw profileError;
 
-             // Send notification to user
-             await supabase.from('notifications').insert({
-                 user_id: selectedVerification.user_id,
-                 type: 'system',
-                 title: tx('dashboard.admin.verificationQueue.approvedTitle', undefined, 'Your identity has been verified'),
-                 body: tx('dashboard.admin.verificationQueue.approvedBody', undefined, 'Congratulations! Your identity was successfully verified. You can now access all platform features.'),
-                 is_read: false,
-             });
-
-             showToast(tx('dashboard.admin.verificationQueue.approvedToast', undefined, 'Verification approved successfully'), 'success');
+            // User will be notified via notification center
             setSelectedVerification(null);
             fetchPendingVerifications();
          } catch (error) {
              logger.error('Error approving verification:', error);
              showToast(tx('dashboard.admin.verificationQueue.approveFailed', undefined, 'Failed to approve verification'), 'error');
          } finally {
-             setActionLoading(false);
+                 setActionLoading(false);
          }
     };
 
@@ -254,22 +249,7 @@ export default function VerificationQueue() {
 
             if (updateError) throw updateError;
 
-            // Update user's profile
-            await supabase
-                .from('profiles')
-                .update({ cin_submitted: false })
-                .eq('id', selectedVerification.user_id);
-
-             // Send notification to user
-             await supabase.from('notifications').insert({
-                 user_id: selectedVerification.user_id,
-                 type: 'system',
-                 title: tx('dashboard.admin.verificationQueue.rejectedTitle', undefined, 'Verification request rejected'),
-                 body: `${tx('dashboard.admin.verificationQueue.rejectedReason', undefined, 'Sorry, your identity verification request was rejected. Reason')}: ${rejectionReason}`,
-                 is_read: false,
-             });
-
-             showToast(tx('dashboard.admin.verificationQueue.rejectedToast', undefined, 'Verification rejected'), 'success');
+             // User will be notified via notification center
             setSelectedVerification(null);
             setShowRejectModal(false);
             setRejectionReason('');

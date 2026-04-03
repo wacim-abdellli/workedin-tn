@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Wallet as WalletIcon, TrendingUp, Clock, ArrowUpRight, ArrowDownLeft, Building, Phone, X, Info, CheckCircle, Plus, CreditCard, AlertCircle, Loader2 } from 'lucide-react';
 import { Header } from '@/components/layout';
 import SEO from '@/components/common/SEO';
@@ -13,7 +13,6 @@ import { getWallet, getTransactions, getWithdrawals } from '@/services/payments'
 import { formatCurrency, formatTransactionType, formatTransactionStatus, formatWithdrawalMethod, getStatusColor, validateWithdrawalAmount } from '@/lib/currencyUtils';
 import { MIN_WITHDRAWAL_AMOUNT } from '@/types/payment';
 import type {
-  CreateWithdrawalRequest,
   Transaction,
   TransactionsPage,
   Wallet as WalletType,
@@ -69,6 +68,33 @@ export default function Wallet() {
     },
     enabled: !!user?.id,
   });
+
+  // Real-time wallet balance updates
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const channel = supabase
+      .channel(`wallet:${user.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'wallets',
+          filter: `user_id=eq.${user.id}`,
+        },
+        (payload) => {
+          console.log('[Wallet] Real-time balance update:', payload);
+          // Refetch wallet data when balance changes
+          refetchWallet();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id, refetchWallet]);
 
   const transactions = transactionsData?.data || [];
   const totalPages = Math.ceil((transactionsData?.count || 0) / pageSize);
@@ -622,19 +648,16 @@ function WithdrawalModal({ wallet, onClose, onSuccess }: { wallet: WalletType; o
     try {
       if (!user) throw new Error(t.wallet?.notAuthenticated || 'Not authenticated');
 
-      const withdrawalRequest: CreateWithdrawalRequest = {
-        user_id: user.id,
-        wallet_id: wallet.id,
-        amount: amountValue,
-        method,
-        status: 'pending',
-        bank_name: method === 'bank_transfer' ? bankName : null,
-        bank_account_name: method === 'bank_transfer' ? bankAccountName : null,
-        iban: method === 'bank_transfer' ? bankIban : null,
-        d17_phone: method !== 'bank_transfer' ? phoneNumber : null,
-      };
-
-      const { error } = await supabase.from('withdrawals').insert(withdrawalRequest);
+      const { error } = await supabase.rpc('request_withdrawal_atomic', {
+        p_wallet_id: wallet.id,
+        p_amount: amountValue,
+        p_method: method,
+        p_client_request_id: crypto.randomUUID(),
+        p_bank_name: method === 'bank_transfer' ? bankName : null,
+        p_bank_account_name: method === 'bank_transfer' ? bankAccountName : null,
+        p_bank_iban: method === 'bank_transfer' ? bankIban : null,
+        p_phone_number: method !== 'bank_transfer' ? phoneNumber : null,
+      });
       if (error) throw error;
 
       setSubmitted(true);

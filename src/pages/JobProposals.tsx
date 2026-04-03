@@ -14,6 +14,7 @@ import { useToast } from '../components/ui/Toast';
 import { useAuth } from '../contexts/AuthContext';
 import { logger } from '../lib/logger';
 import { useTranslation } from '../i18n';
+import { useMutation } from '@tanstack/react-query';
 
 interface JobData {
     id: string;
@@ -39,7 +40,6 @@ export default function JobProposals() {
     const [proposals, setProposals] = useState<Proposal[]>([]);
     const [filteredProposals, setFilteredProposals] = useState<Proposal[]>([]);
     const [loading, setLoading] = useState(true);
-    const [actionLoading, setActionLoading] = useState(false);
     const [shortlistedIds, setShortlistedIds] = useState<string[]>([]);
     const [job, setJob] = useState<JobData | null>(null);
     const [filters, setFilters] = useState<ProposalFilters>({});
@@ -216,58 +216,29 @@ export default function JobProposals() {
         }
     }, [shortlistedIds, showToast]);
 
-    // Hire handler - create contract
-    const handleHire = useCallback(async (proposalId: string) => {
-        const proposal = proposals.find(p => p.id === proposalId);
-        if (!proposal || !job || !user) return;
+    // Hire mutation - create contract with retry logic
+    const hireMutation = useMutation({
+        mutationFn: async (proposalId: string) => {
+            const proposal = proposals.find(p => p.id === proposalId);
+            if (!proposal || !job || !user) {
+                throw new Error('Missing required data');
+            }
 
-        try {
-            setActionLoading(true);
-
-            // 1. Update proposal status to accepted
-            const { error: proposalError } = await withTimeout(
-                supabase
-                    .from('proposals')
-                    .update({ status: 'accepted' })
-                    .eq('id', proposalId),
+            const { data: hireResult, error: hireError } = await withTimeout(
+                supabase.rpc('hire_proposal_atomic', {
+                    p_proposal_id: proposalId,
+                }),
                 15000
             );
 
-            if (proposalError) throw proposalError;
+            if (hireError) throw hireError;
 
-            // 2. Reject all other proposals for this job
-            await supabase
-                .from('proposals')
-                .update({ status: 'rejected' })
-                .eq('job_id', jobId)
-                .neq('id', proposalId);
+            const contractId = (hireResult as { contract_id?: string } | null)?.contract_id;
+            if (!contractId) {
+                throw new Error('Atomic hire did not return a contract id');
+            }
 
-            // 3. Create contract
-            const { data: contract, error: contractError } = await withTimeout(
-                supabase
-                    .from('contracts')
-                    .insert({
-                        job_id: jobId,
-                        proposal_id: proposalId,
-                        client_id: user.id,
-                        freelancer_id: proposal.freelancer_id,
-                        amount: proposal.bid_amount,
-                        status: 'pending_payment'
-                    })
-                    .select()
-                    .single(),
-                15000
-            );
-
-            if (contractError) throw contractError;
-
-            // 4. Update job status
-            await supabase
-                .from('jobs')
-                .update({ status: 'in_progress' })
-                .eq('id', jobId);
-
-            // 5. Send notification to freelancer
+            // Non-critical follow-up effects stay outside the transaction.
             await supabase
                 .from('notifications')
                 .insert({
@@ -275,10 +246,10 @@ export default function JobProposals() {
                     type: 'proposal_accepted',
                     title: t.jobProposals.proposalAccepted,
                     message: `تم قبول عرضك على المشروع: ${job.title}`,
-                    data: { contract_id: contract.id, job_id: jobId }
+                    data: { contract_id: contractId, job_id: jobId }
                 });
 
-            // 6. Send email notification (fire-and-forget)
+            // Fire-and-forget email.
             supabase
                 .from('profiles')
                 .select('email, full_name')
@@ -287,21 +258,28 @@ export default function JobProposals() {
                 .then(({ data: fp }) => {
                     if (fp?.email) {
                         import('../lib/email').then(({ sendProposalAcceptedEmail }) => {
-                            sendProposalAcceptedEmail(fp.email, fp.full_name || t.jobProposals.defaultFreelancer, job.title, contract.id);
+                            sendProposalAcceptedEmail(fp.email, fp.full_name || t.jobProposals.defaultFreelancer, job.title, contractId);
                         });
                     }
                 });
 
+            return { id: contractId };
+        },
+        retry: 2,
+        retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 5000),
+        onSuccess: (contract) => {
             showToast(t.jobProposals.hireSuccess, 'success');
             navigate(`/contracts/${contract.id}`);
-
-        } catch (error) {
+        },
+        onError: (error) => {
             logger.error('Hire error', error);
             showToast(t.jobProposals.hireError, 'error');
-        } finally {
-            setActionLoading(false);
         }
-    }, [proposals, job, user, jobId, navigate, showToast]);
+    });
+
+    const handleHire = useCallback((proposalId: string) => {
+        hireMutation.mutate(proposalId);
+    }, [hireMutation]);
 
     // Filter change handler
     const handleFilterChange = useCallback((newFilters: ProposalFilters) => {
@@ -502,7 +480,7 @@ export default function JobProposals() {
 
                         {/* List */}
                         <div className="space-y-4">
-                            {actionLoading && (
+                            {hireMutation.isPending && (
                                 <div className="flex items-center justify-center py-4">
                                     <Loader2 className="w-6 h-6 animate-spin text-primary-600" />
                                 </div>

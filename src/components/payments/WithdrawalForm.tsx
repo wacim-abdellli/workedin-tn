@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Loader2, Building, Phone, X, AlertCircle, CheckCircle } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useToast } from '../ui/Toast';
+import { useMutation } from '@tanstack/react-query';
 import {
     formatCurrency,
     formatWithdrawalMethod,
@@ -17,7 +18,6 @@ import type { WithdrawalFormProps, WithdrawalMethod } from '../../types/payment'
  */
 const WithdrawalForm = ({ wallet, onSuccess, onCancel }: WithdrawalFormProps) => {
     const { showToast } = useToast();
-    const [loading, setLoading] = useState(false);
     const [submitted, setSubmitted] = useState(false);
 
     // Form state
@@ -29,71 +29,39 @@ const WithdrawalForm = ({ wallet, onSuccess, onCancel }: WithdrawalFormProps) =>
     const [phoneNumber, setPhoneNumber] = useState('');
 
     const amountValue = parseFloat(amount) || 0;
-    const validation = validateWithdrawalAmount(amountValue, wallet.balance, MIN_WITHDRAWAL_AMOUNT);
+    const validation = validateWithdrawalAmount(amountValue, wallet.balance);
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
+    // Withdrawal mutation with retry logic
+    const withdrawalMutation = useMutation({
+        mutationFn: async ({ requestId }: { requestId: string }) => {
+            logger.log('[WithdrawalForm] Submitting withdrawal request');
 
-        if (!validation.valid) {
-            showToast(validation.error || 'خطأ في البيانات', 'error');
-            return;
-        }
-
-        // Validate method-specific fields
-        if (method === 'bank_transfer') {
-            if (!bankName || !bankAccountName || !bankIban) {
-                showToast('الرجاء إدخال جميع بيانات الحساب البنكي', 'error');
-                return;
-            }
-        } else if (method === 'd17' || method === 'flouci') {
-            if (!phoneNumber) {
-                showToast('الرجاء إدخال رقم الهاتف', 'error');
-                return;
-            }
-        }
-
-        setLoading(true);
-        logger.log('[WithdrawalForm] Submitting withdrawal request');
-
-        try {
             // Get current user
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) {
                 throw new Error('يجب تسجيل الدخول أولاً');
             }
 
-            // Create withdrawal request
-            const { error: withdrawalError } = await supabase.from('withdrawals').insert({
-                user_id: user.id,
-                wallet_id: wallet.id,
-                amount: amountValue,
-                currency: 'TND',
-                method,
-                status: 'pending',
-                bank_name: method === 'bank_transfer' ? bankName : null,
-                bank_account_name: method === 'bank_transfer' ? bankAccountName : null,
-                bank_iban: method === 'bank_transfer' ? bankIban : null,
-                phone_number: method !== 'bank_transfer' ? phoneNumber : null,
+            const { error: withdrawalError } = await supabase.rpc('request_withdrawal_atomic', {
+                p_wallet_id: wallet.id,
+                p_amount: amountValue,
+                p_method: method,
+                p_client_request_id: requestId,
+                p_bank_name: method === 'bank_transfer' ? bankName : null,
+                p_bank_account_name: method === 'bank_transfer' ? bankAccountName : null,
+                p_bank_iban: method === 'bank_transfer' ? bankIban : null,
+                p_phone_number: method !== 'bank_transfer' ? phoneNumber : null,
             });
 
             if (withdrawalError) {
                 throw withdrawalError;
             }
 
-            // Deduct from wallet balance (move to pending state)
-            const { error: updateError } = await supabase
-                .rpc('update_wallet_balance', {
-                    p_user_id: user.id,
-                    p_amount: amountValue,
-                    p_type: 'subtract_balance',
-                });
-
-            if (updateError) {
-                logger.error('[WithdrawalForm] Wallet update error:', updateError);
-                // Withdrawal was created, but wallet not updated - admin will handle
-            }
-
             logger.log('[WithdrawalForm] Withdrawal submitted successfully');
+        },
+        retry: 2,
+        retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 5000),
+        onSuccess: () => {
             setSubmitted(true);
             showToast('تم إرسال طلب السحب بنجاح', 'success');
 
@@ -101,13 +69,36 @@ const WithdrawalForm = ({ wallet, onSuccess, onCancel }: WithdrawalFormProps) =>
             setTimeout(() => {
                 onSuccess?.();
             }, 2000);
-        } catch (error) {
+        },
+        onError: (error) => {
             logger.error('[WithdrawalForm] Error:', error);
             const message = error instanceof Error ? error.message : 'فشل في إرسال طلب السحب';
             showToast(message, 'error');
-        } finally {
-            setLoading(false);
         }
+    });
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        // Validation
+        if (!validation.valid) {
+            showToast(validation.error || 'خطأ في التحقق من المبلغ', 'error');
+            return;
+        }
+
+        if (method === 'bank_transfer') {
+            if (!bankName.trim() || !bankAccountName.trim() || !bankIban.trim()) {
+                showToast('الرجاء إدخال بيانات البنك كاملة', 'error');
+                return;
+            }
+        } else {
+            if (!phoneNumber.trim()) {
+                showToast('الرجاء إدخال رقم الهاتف', 'error');
+                return;
+            }
+        }
+
+        withdrawalMutation.mutate({ requestId: crypto.randomUUID() });
     };
 
     if (submitted) {
@@ -282,10 +273,10 @@ const WithdrawalForm = ({ wallet, onSuccess, onCancel }: WithdrawalFormProps) =>
             {/* Submit Button */}
             <button
                 type="submit"
-                disabled={loading || !validation.valid || !amount}
+                disabled={withdrawalMutation.isPending || !validation.valid || !amount}
                 className="w-full btn-primary btn-lg justify-center disabled:opacity-50 disabled:cursor-not-allowed"
             >
-                {loading ? (
+                {withdrawalMutation.isPending ? (
                     <>
                         <Loader2 className="w-5 h-5 animate-spin" />
                         <span>جاري الإرسال...</span>

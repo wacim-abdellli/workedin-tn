@@ -40,7 +40,16 @@ export async function getWithdrawals(userId: string, page = 1, pageSize = 20) {
 }
 
 export async function requestWithdrawal(data: WithdrawalRequestInput) {
-    return supabase.from('withdrawals').insert({ ...data, status: 'pending' });
+    return supabase.rpc('request_withdrawal_atomic', {
+        p_wallet_id: (data as WithdrawalRequestInput & { wallet_id?: string }).wallet_id,
+        p_amount: data.amount,
+        p_method: data.method,
+        p_client_request_id: crypto.randomUUID(),
+        p_bank_name: data.details.bank_name ?? null,
+        p_bank_account_name: data.details.bank_account_name ?? null,
+        p_bank_iban: data.details.bank_iban ?? data.details.iban ?? null,
+        p_phone_number: data.details.phone_number ?? data.details.d17_phone ?? null,
+    });
 }
 
 // --- PAYMENT METHODS ---

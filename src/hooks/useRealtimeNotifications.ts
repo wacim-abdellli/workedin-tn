@@ -4,6 +4,13 @@ import type { RealtimeChannel } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/components/ui/Toast';
 
+function shouldShowIncomingToast(_notification: AppNotification) {
+    // Don't show any toast popups for incoming notifications
+    // All notifications will only appear in the notification bell
+    // This prevents annoying popups interrupting user workflow
+    return false;
+}
+
 export interface AppNotification {
     id: string;
     user_id: string;
@@ -69,8 +76,9 @@ export function useRealtimeNotifications(userId: string | undefined) {
                         (prev = []) => [incoming, ...prev].slice(0, 50)
                     );
 
-                    // Show a toast for the incoming notification
-                    showToast(incoming.title, 'info');
+                    if (shouldShowIncomingToast(incoming)) {
+                        showToast(incoming.title, 'info');
+                    }
                 }
             )
             .subscribe();
@@ -113,5 +121,32 @@ export function useRealtimeNotifications(userId: string | undefined) {
             .eq('is_read', false);
     }, [userId, queryClient]);
 
-    return { notifications, unreadCount, isLoading, markAsRead, markAllRead };
+    const deleteNotification = useCallback(async (notificationId: string) => {
+        if (!userId) return;
+
+        // Save previous state for rollback
+        const previousNotifications = queryClient.getQueryData<AppNotification[]>(NOTIFICATIONS_QUERY_KEY(userId));
+
+        // Optimistic update
+        queryClient.setQueryData<AppNotification[]>(
+            NOTIFICATIONS_QUERY_KEY(userId),
+            (prev = []) => prev.filter(n => n.id !== notificationId)
+        );
+
+        const { data, error } = await supabase
+            .from('notifications')
+            .delete()
+            .eq('id', notificationId)
+            .select('id');
+
+        if (error || !data || data.length === 0) {
+            console.error('Failed to delete notification:', error || '0 rows affected (RLS constraint)');
+            if (previousNotifications) {
+                queryClient.setQueryData<AppNotification[]>(NOTIFICATIONS_QUERY_KEY(userId), previousNotifications);
+            }
+            showToast('Failed to delete notification', 'error');
+        }
+    }, [userId, queryClient, showToast]);
+
+    return { notifications, unreadCount, isLoading, markAsRead, markAllRead, deleteNotification };
 }

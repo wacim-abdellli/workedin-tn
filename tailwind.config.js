@@ -8,9 +8,6 @@ export default {
     theme: {
         extend: {
             colors: {
-                // --- CSS VARIABLES DESIGN SYSTEM TOKENS ---
-                // These point to the tokens mapped in src/index.css
-                // Enabling semantic dark mode without manual `dark:bg-[#xxx]`
                 background: 'var(--page-bg)',
                 surface: 'var(--surface-bg)',
                 card: 'var(--card-bg)',
@@ -25,6 +22,8 @@ export default {
                     strong: 'var(--border-strong)'
                 },
                 input: {
+                    light: '#ffffff',
+                    dark: '#1a1825',
                     bg: 'var(--input-bg)',
                     border: 'var(--input-border)',
                     focus: 'var(--input-border-focus)'
@@ -38,9 +37,6 @@ export default {
                     accent: 'var(--brand-accent)',
                     'accent-hover': 'var(--brand-accent-hover)',
                 },
-                // --- END CSS VARIABLES ---
-
-                // Brand Primary - Khedma Violet (Freelancer workspace)
                 primary: {
                     50: '#F5F0FF',
                     100: '#EDE3FF',
@@ -54,7 +50,6 @@ export default {
                     900: '#34197F',
                     950: '#241050',
                 },
-                // Client Blue - Client workspace
                 blue: {
                     50: '#FFF8E7',
                     100: '#FDEFC4',
@@ -107,7 +102,6 @@ export default {
                     900: '#52390B',
                     950: '#302004',
                 },
-                // Brand Accent - Warm Gold/Amber for Tunisian feel
                 accent: {
                     50: '#FFF8E7',
                     100: '#FDEFC4',
@@ -121,7 +115,6 @@ export default {
                     900: '#52390B',
                     950: '#302004',
                 },
-                // Secondary - Brand-supporting plum neutrals
                 secondary: {
                     50: '#faf8ff',
                     100: '#f3eeff',
@@ -135,7 +128,6 @@ export default {
                     900: '#1a1825',
                     950: '#100d16',
                 },
-                // Success
                 success: {
                     50: '#ecfdf5',
                     100: '#d1fae5',
@@ -143,7 +135,6 @@ export default {
                     500: '#10b981',
                     600: '#059669',
                 },
-                // Warning
                 warning: {
                     50: '#fffbeb',
                     100: '#fef3c7',
@@ -151,7 +142,6 @@ export default {
                     500: '#f59e0b',
                     600: '#d97706',
                 },
-                // Dark mode palette
                 dark: {
                     50: '#f8fafc',
                     100: '#f1f5f9',
@@ -165,7 +155,6 @@ export default {
                     900: '#0f0e17',
                     950: '#0a0914',
                 },
-                // Surface tokens for cards and panels
                 surface: {
                     light: '#ffffff',
                     'light-2': '#f8f7ff',
@@ -173,14 +162,6 @@ export default {
                     dark: '#0f0e17',
                     'dark-2': '#1a1825',
                     'dark-3': '#242235',
-                },
-                card: {
-                    light: '#ffffff',
-                    dark: '#1a1825',
-                },
-                input: {
-                    light: '#ffffff',
-                    dark: '#1a1825',
                 },
                 page: {
                     light: '#ffffff',

@@ -1285,11 +1285,24 @@ export const en: Translations = {
 
     notifications: {
         title: 'Notifications',
+        time: {
+            justNow: 'Just now',
+            minutesAgo: '{{count}}m ago',
+            hoursAgo: '{{count}}h ago',
+            daysAgo: '{{count}}d ago',
+        },
         readAll: 'Mark all as read',
         empty: 'No notifications',
         caughtUp: "You're all caught up",
-        emptyDesc: 'We will notify you when something new arrives',
+        emptyDesc: 'We will notify you when something important happens with your projects or payments',
         viewAll: 'View all notifications',
+        delete: 'Delete notification',
+        identity: {
+            rejected: {
+                title: 'Identity verification request rejected',
+                body: 'Your identity verification request was rejected. Please make sure the images are clear and submit again.',
+            },
+        },
     },
 
     globalSearch: {
@@ -1672,7 +1685,7 @@ export const en: Translations = {
             title: 'Your request is under review',
             description: 'Your identity verification request has been received successfully. Our team is reviewing your documents.',
             reviewTime: 'Review time: up to 24 hours',
-            emailNotice: 'You will be notified by email once the review is complete',
+            emailNotice: 'You will be notified once the review is complete',
         },
         submitted: {
             seoTitle: 'Request submitted',

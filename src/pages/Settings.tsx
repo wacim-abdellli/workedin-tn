@@ -244,15 +244,11 @@ function Settings() {
 
     const identityLabel = profile?.cin_verified
         ? tx('settings.identityVerified', undefined, 'Identity verified')
-        : profile?.cin_submitted
-            ? tx('settings.identityPending', undefined, 'Under review')
-            : tx('settings.verifyIdentity', undefined, 'Verify your identity');
+        : tx('settings.verifyIdentity', undefined, 'Verify your identity');
 
     const identityTone = profile?.cin_verified
         ? 'border-emerald-500/20 bg-emerald-500/12 text-emerald-700 dark:text-emerald-200'
-        : profile?.cin_submitted
-            ? 'border-amber-500/20 bg-amber-500/12 text-amber-700 dark:text-amber-200'
-            : 'border-primary-500/20 bg-primary-500/12 text-primary-700 dark:text-primary-200';
+        : 'border-primary-500/20 bg-primary-500/12 text-primary-700 dark:text-primary-200';
 
     const onboardingLabel = profile?.onboarding_completed
         ? tx('settings.setupStatus.complete', undefined, 'Complete')

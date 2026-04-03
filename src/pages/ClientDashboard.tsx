@@ -50,7 +50,7 @@ interface DashboardJob {
 type DashboardNotification = {
     id: string;
     title: string | null;
-    content: string | null;
+    body: string | null;
     created_at: string;
 };
 
@@ -117,7 +117,7 @@ function ClientDashboardPage() {
                     .eq('status', 'completed'),
                 supabase.from('wallets').select('total_withdrawn').eq('user_id', userId).maybeSingle(),
                 supabase.from('jobs').select('status, proposals_count').eq('client_id', userId),
-                supabase.from('notifications').select('id,title,content,created_at')
+                supabase.from('notifications').select('id,title,body,created_at')
                     .eq('user_id', userId)
                     .eq('is_read', false)
                     .order('created_at', { ascending: false })

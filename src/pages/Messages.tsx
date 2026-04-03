@@ -45,8 +45,39 @@ import { useAudioRecorder } from '../hooks/useAudioRecorder';
 import { useTypingIndicator } from '../hooks/useTypingIndicator';
 import { useReadReceipts } from '../hooks/useReadReceipts';
 import { useTranslation } from '../i18n';
+import ErrorBoundary from '../components/ErrorBoundary';
 
-export default function Messages() {
+// Helper functions for offline file handling
+const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = error => reject(error);
+    });
+};
+
+const base64ToFile = (base64: string, filename: string, mimeType: string): File => {
+    const arr = base64.split(',');
+    const bstr = atob(arr[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    while (n--) {
+        u8arr[n] = bstr.charCodeAt(n);
+    }
+    return new File([u8arr], filename, { type: mimeType });
+};
+
+const blobToBase64 = (blob: Blob): Promise<string> => {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(blob);
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = error => reject(error);
+    });
+};
+
+function MessagesComponent() {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const { user, profile } = useAuth();
@@ -119,7 +150,34 @@ export default function Messages() {
                     try {
                         const attachments = [];
                         
-                        // Handle offline file uploads
+                        // Handle base64-encoded files (new format)
+                        if (pendingMsg.fileBase64 && pendingMsg.fileName && pendingMsg.fileType) {
+                            const file = base64ToFile(pendingMsg.fileBase64, pendingMsg.fileName, pendingMsg.fileType);
+                            const { url, error } = await uploadMessageAttachment(file, selectedConversation.id);
+                            if (url && !error) {
+                                attachments.push({ 
+                                    name: pendingMsg.fileName, 
+                                    url, 
+                                    type: pendingMsg.fileType, 
+                                    size: pendingMsg.fileSize || file.size 
+                                });
+                            }
+                        }
+                        // Handle base64-encoded audio (new format)
+                        if (pendingMsg.audioBase64 && pendingMsg.audioFileName && pendingMsg.audioType) {
+                            const audioFile = base64ToFile(pendingMsg.audioBase64, pendingMsg.audioFileName, pendingMsg.audioType);
+                            const { url, error } = await uploadMessageAttachment(audioFile, selectedConversation.id);
+                            if (url && !error) {
+                                attachments.push({ 
+                                    name: tx('pages.messages.voiceMemo', undefined, 'Voice memo'), 
+                                    url, 
+                                    type: audioFile.type, 
+                                    size: audioFile.size 
+                                });
+                            }
+                        }
+                        
+                        // Legacy support: Handle old format with File objects (won't survive reload but works in-session)
                         if (pendingMsg.offlineFile) {
                             const { url, error } = await uploadMessageAttachment(pendingMsg.offlineFile, selectedConversation.id);
                             if (url && !error) {
@@ -131,7 +189,6 @@ export default function Messages() {
                                 });
                             }
                         }
-                        // Handle offline audio
                         if (pendingMsg.offlineAudio) {
                             const audioFile = new File([pendingMsg.offlineAudio], pendingMsg.offlineFileName, { type: pendingMsg.offlineAudio.type || 'audio/webm' });
                             const { url, error } = await uploadMessageAttachment(audioFile, selectedConversation.id);
@@ -394,21 +451,70 @@ export default function Messages() {
         if ((!newMessage.trim() && !selectedFile && !audioBlob) || !selectedConversation || !user) return;
 
         if (!isOnline) {
-            // Store offline message in standard text mode
+            // Store offline message with base64-encoded files for persistence
+            const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB limit for offline storage
+            
+            let fileBase64: string | null = null;
+            let fileName: string | null = null;
+            let fileType: string | null = null;
+            let fileSize: number | null = null;
+            
+            let audioBase64: string | null = null;
+            let audioFileName: string | null = null;
+            let audioType: string | null = null;
+            
+            try {
+                // Convert file to base64 if small enough
+                if (selectedFile) {
+                    if (selectedFile.size <= MAX_FILE_SIZE) {
+                        fileBase64 = await fileToBase64(selectedFile);
+                        fileName = selectedFile.name;
+                        fileType = selectedFile.type;
+                        fileSize = selectedFile.size;
+                    } else {
+                        showToast(tx('pages.messages.offline.fileTooLarge', undefined, 'File too large for offline storage (max 5MB)'), 'warning');
+                        return;
+                    }
+                }
+                
+                // Convert audio blob to base64
+                if (audioBlob) {
+                    if (audioBlob.size <= MAX_FILE_SIZE) {
+                        audioBase64 = await blobToBase64(audioBlob);
+                        audioFileName = `voice_memo_${Date.now()}.webm`;
+                        audioType = audioBlob.type || 'audio/webm';
+                    } else {
+                        showToast(tx('pages.messages.offline.audioTooLarge', undefined, 'Audio too large for offline storage'), 'warning');
+                        return;
+                    }
+                }
+            } catch (error) {
+                console.error('[Offline Queue] Failed to encode file:', error);
+                showToast(tx('pages.messages.offline.encodingFailed', undefined, 'Failed to prepare file for offline storage'), 'error');
+                return;
+            }
+            
             const offlineMsg = {
                 id: `pending_${Date.now()}`,
                 content: newMessage.trim(),
-                offlineFile: selectedFile ? selectedFile : null,
-                offlineAudio: audioBlob ? audioBlob : null,
-                offlineFileName: audioBlob ? `voice_memo_${Date.now()}.webm` : null
+                fileBase64,
+                fileName,
+                fileType,
+                fileSize,
+                audioBase64,
+                audioFileName,
+                audioType,
             };
 
             const updatedQueue = [...pendingQueue, offlineMsg];
             setPendingQueue(updatedQueue);
             
-            // Try to backup to localstorage if it's purely text (files don't serialize well, but text will survive reload)
-            if (!selectedFile && !audioBlob) {
+            // Save to localStorage with base64-encoded files
+            try {
                 localStorage.setItem(`pendingQueue_${selectedConversation.id}`, JSON.stringify(updatedQueue));
+            } catch (error) {
+                console.error('[Offline Queue] localStorage failed:', error);
+                showToast(tx('pages.messages.offline.storageFailed', undefined, 'Failed to save message offline'), 'error');
             }
             
             setNewMessage('');
@@ -883,10 +989,10 @@ export default function Messages() {
                                 <div className="max-w-xs lg:max-w-md">
                                     <div className="rounded-2xl px-4 py-2 transition-all duration-200 bg-brand text-brand-text rounded-br-none shadow-md">
                                         <p className="text-sm break-words">{pendingMsg.content}</p>
-                                        {(pendingMsg.offlineFile || pendingMsg.offlineAudio) && (
+                                        {(pendingMsg.fileName || pendingMsg.audioFileName || pendingMsg.offlineFile || pendingMsg.offlineAudio) && (
                                             <div className="mt-2 text-xs italic opacity-80 flex items-center gap-1">
                                                 <Paperclip className="w-3 h-3" />
-                                                <span>{pendingMsg.offlineFileName || pendingMsg.offlineFile?.name || tx('pages.messages.offline.attachmentPending', undefined, 'Attachment pending')}</span>
+                                                <span>{pendingMsg.fileName || pendingMsg.audioFileName || pendingMsg.offlineFileName || pendingMsg.offlineFile?.name || tx('pages.messages.offline.attachmentPending', undefined, 'Attachment pending')}</span>
                                             </div>
                                         )}
                                     </div>
@@ -1115,5 +1221,13 @@ export default function Messages() {
                 </div>
             </div>
         </div>
+    );
+}
+
+export default function Messages() {
+    return (
+        <ErrorBoundary>
+            <MessagesComponent />
+        </ErrorBoundary>
     );
 }

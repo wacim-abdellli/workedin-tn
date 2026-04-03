@@ -38,7 +38,7 @@ export default function ProfileSettings() {
     }, [profile]);
 
     const workspaceReady = isWorkspaceReady(profile, freelancerProfile, activeMode);
-    const needsIdentityVerification = !profile?.cin_verified && !profile?.cin_submitted;
+    const needsIdentityVerification = !profile?.cin_verified;
     const needsCoreProfileFields = !profile?.bio || !profile?.avatar_url || !profile?.location || !profile?.full_name;
 
     const nextSetupPath = !workspaceReady
@@ -55,8 +55,8 @@ export default function ProfileSettings() {
 
     const showSecondarySetupChip = nextSetupPath !== null && nextSetupPath !== '/verify-identity';
 
-    const identityStatus: 'verified' | 'pending' | 'missing' = profile?.cin_verified
-        ? 'verified' : profile?.cin_submitted ? 'pending' : 'missing';
+    const identityStatus: 'verified' | 'missing' = profile?.cin_verified
+        ? 'verified' : 'missing';
 
     const coreProfileFilledCount = [profile?.full_name, profile?.avatar_url, profile?.location, profile?.bio].filter(Boolean).length;
     const isCoreProfileComplete = coreProfileFilledCount === 4;
@@ -74,9 +74,7 @@ export default function ProfileSettings() {
             label: tx('settings.setupStatus.identityVerification', undefined, 'Identity verification'),
             done: identityStatus === 'verified',
             doneText: tx('settings.setupStatus.verified', undefined, 'Verified'),
-            pendingText: identityStatus === 'pending'
-                ? tx('settings.setupStatus.underReview', undefined, 'Under review')
-                : tx('settings.setupStatus.required', undefined, 'Required'),
+            pendingText: tx('settings.setupStatus.required', undefined, 'Required'),
         },
         {
             key: 'profile',
@@ -179,7 +177,7 @@ export default function ProfileSettings() {
         { key: 'location', label: tx('settings.completion.location', undefined, 'Location'), value: profile?.location },
         { key: 'bio', label: tx('settings.completion.bio', undefined, 'Bio'), value: profile?.bio },
         { key: 'user_type', label: tx('settings.completion.accountType', undefined, 'Account type'), value: profile?.user_type },
-        { key: 'identity_verification', label: tx('settings.completion.identityVerification', undefined, 'Identity verification'), value: Boolean(profile?.cin_verified || profile?.cin_submitted) },
+        { key: 'identity_verification', label: tx('settings.completion.identityVerification', undefined, 'Identity verification'), value: Boolean(profile?.cin_verified) },
         { key: 'onboarding_completed', label: tx('settings.completion.onboarding', undefined, 'Onboarding'), value: profile?.onboarding_completed },
     ];
     const completedCount = completionFields.filter(f => f.value).length;
@@ -226,10 +224,6 @@ export default function ProfileSettings() {
                         {profile?.cin_verified ? (
                             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">
                                 <Check className="w-3 h-3" />{tx('settings.identityVerified', undefined, 'Identity verified')}
-                            </span>
-                        ) : profile?.cin_submitted ? (
-                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400">
-                                <Loader2 className="w-3 h-3 animate-spin" />{tx('settings.identityPending', undefined, 'Under review')}
                             </span>
                         ) : (
                             <button onClick={() => navigate('/verify-identity')} className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border border-primary-500/20 bg-primary-500/12 text-primary-700 transition-colors hover:bg-primary-500/18 dark:text-primary-200">
@@ -308,7 +302,6 @@ export default function ProfileSettings() {
                                 <p className="text-xs font-medium text-muted">{item.label}</p>
                                 <div className="mt-1 inline-flex items-center gap-1.5 text-xs font-semibold">
                                     {item.done ? <Check className="h-3.5 w-3.5 text-green-600 dark:text-green-300" />
-                                        : identityStatus === 'pending' && item.key === 'identity' ? <Loader2 className="h-3.5 w-3.5 animate-spin text-orange-600 dark:text-orange-300" />
                                         : <Shield className="h-3.5 w-3.5 text-orange-600 dark:text-orange-300" />}
                                     <span className={item.done ? 'text-green-700 dark:text-green-200' : 'text-orange-700 dark:text-orange-200'}>{item.done ? item.doneText : item.pendingText}</span>
                                 </div>

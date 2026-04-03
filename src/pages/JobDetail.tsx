@@ -235,6 +235,8 @@ function JobDetail() {
             await profilesService.toggleFavorite(user!.id, jobId!, isSaved);
             return !isSaved;
         },
+        retry: 2,
+        retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 5000),
         onSuccess: (newSavedStatus) => {
             queryClient.setQueryData(['savedStatus', jobId, user?.id], newSavedStatus);
             showToast(newSavedStatus ? t.jobDetail.jobSaved : t.jobDetail.jobRemoved, 'success');
@@ -276,12 +278,50 @@ function JobDetail() {
                     logger.warn('[Connects] Spend failed after proposal created:', connectsResult.error);
                 }
             }
+
+            return proposalId;
+        },
+        onMutate: async ({ data }) => {
+            // Cancel outgoing refetches
+            await queryClient.cancelQueries({ queryKey: ['myProposal', jobId, user?.id] });
+            await queryClient.cancelQueries({ queryKey: ['connectsBalance', user?.id] });
+
+            // Snapshot previous values
+            const previousProposal = queryClient.getQueryData(['myProposal', jobId, user?.id]);
+            const previousConnects = queryClient.getQueryData(['connectsBalance', user?.id]);
+
+            // Optimistically update proposal
+            const optimisticProposal: Proposal = {
+                id: 'temp-optimistic-id',
+                job_id: jobId!,
+                freelancer_id: user!.id,
+                cover_letter: data.cover_letter,
+                bid_amount: data.bid_amount,
+                delivery_days: data.delivery_days,
+                status: 'pending',
+                created_at: new Date().toISOString(),
+            };
+
+            queryClient.setQueryData(['myProposal', jobId, user?.id], optimisticProposal);
+
+            // Optimistically update connects balance
+            const newBalance = Math.max((connectsBalance?.balance ?? 0) - CONNECTS_COST, 0);
+            queryClient.setQueryData(['connectsBalance', user?.id], {
+                balance: newBalance,
+                used: (connectsBalance?.used ?? 0) + CONNECTS_COST,
+            });
+
+            // Close modal immediately for instant feedback
+            setShowProposalModal(false);
+
+            return { previousProposal, previousConnects };
         },
         onSuccess: () => {
+            // Invalidate to get real data from server
             queryClient.invalidateQueries({ queryKey: ['myProposal', jobId, user?.id] });
             queryClient.invalidateQueries({ queryKey: ['connectsBalance', user?.id] });
             showToast(t.jobDetail.proposalSent, 'success');
-            setShowProposalModal(false);
+            
             // Notify client by email (fire-and-forget)
             if (job?.client?.email && job.title && jobId) {
                 sendNewProposalEmail(
@@ -292,9 +332,20 @@ function JobDetail() {
                 );
             }
         },
-        onError: (err) => {
+        onError: (err, _variables, context) => {
+            // Rollback optimistic updates on error
+            if (context?.previousProposal !== undefined) {
+                queryClient.setQueryData(['myProposal', jobId, user?.id], context.previousProposal);
+            }
+            if (context?.previousConnects !== undefined) {
+                queryClient.setQueryData(['connectsBalance', user?.id], context.previousConnects);
+            }
+
             logger.error('Error submitting proposal:', err);
             showToast(err instanceof Error ? err.message : t.jobDetail.proposalError, 'error');
+            
+            // Reopen modal so user can try again
+            setShowProposalModal(true);
         }
     });
 
@@ -309,6 +360,8 @@ function JobDetail() {
             const { error } = await proposalsService.withdrawProposal(myProposal.id);
             if (error) throw error;
         },
+        retry: 2,
+        retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 5000),
         onSuccess: () => {
             // Refund connects
             if (user?.id && myProposal?.id) {

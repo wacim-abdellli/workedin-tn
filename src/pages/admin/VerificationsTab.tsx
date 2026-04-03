@@ -157,6 +157,7 @@ export default function VerificationsTab() {
     const [expandedDocId, setExpandedDocId] = useState<string | null>(null);
 
     const panelClass = 'card border-white/45 dark:border-white/10 bg-white/80 dark:bg-slate-950/55 backdrop-blur-xl shadow-[0_16px_45px_-24px_rgba(21,84,247,0.38)]';
+    const actionTimeoutMs = 20_000;
 
      const load = async () => {
          setLoading(true);
@@ -181,83 +182,33 @@ export default function VerificationsTab() {
         setActioningId(id);
         try {
             const client = supabase;
-            const { data: updatedRows } = await supabaseWithRetry(() =>
-                client
-                    .from('identity_verifications')
-                    .update({ status: action, reviewed_at: new Date().toISOString() })
-                    .eq('id', id)
-                    .select('id,user_id')
-            );
-             if (!Array.isArray(updatedRows) || updatedRows.length === 0) {
-                 throw new Error(tx('dashboard.admin.verification.notUpdated', undefined, 'Verification request was not updated.'));
-             }
-
             const verification = verifications.find(v => v.id === id);
-            const userId = verification?.user_id || updatedRows[0]?.user_id;
+            const userId = verification?.user_id ?? null;
 
-            if (userId) {
-                // Resolve any duplicate pending rows for same user
-                await supabaseWithRetry(() =>
-                    client
-                        .from('identity_verifications')
-                        .update({ status: action, reviewed_at: new Date().toISOString() })
-                        .eq('user_id', userId)
-                        .eq('status', 'pending')
-                        .select('id')
-                ).catch(() => null);
-
-                if (action === 'approved') {
-                    await Promise.all([
-                        supabaseWithRetry(() =>
-                            client.from('profiles').update({ cin_verified: true, cin_submitted: false }).eq('id', userId)
-                        ),
-                        supabaseWithRetry(() =>
-                            client.from('freelancer_profiles').update({ cin_verified: true }).eq('id', userId)
-                        ).catch(() => null),
-                        supabaseWithRetry(() =>
-                              client.from('notifications').insert({
-                                  user_id: userId,
-                                  type: 'system',
-                                  title: tx('dashboard.admin.verification.approvedTitle', undefined, 'Your identity has been verified'),
-                                  body: tx('dashboard.admin.verification.approvedBody', undefined, 'Congratulations! Your identity was successfully verified. You can now access all platform features.'),
-                                  is_read: false,
-                              })
-                          ).catch((err) => {
-                              console.error('[Notification] Failed to insert approval notification:', err);
-                              return null;
-                          }),
-                    ]);
-                } else {
-                    await Promise.all([
-                        supabaseWithRetry(() =>
-                            client.from('profiles').update({ cin_verified: false, cin_submitted: false }).eq('id', userId)
-                        ),
-                        supabaseWithRetry(() =>
-                            client.from('freelancer_profiles').update({ cin_verified: false }).eq('id', userId)
-                        ).catch(() => null),
-                        supabaseWithRetry(() =>
-                              client.from('notifications').insert({
-                                  user_id: userId,
-                                  type: 'system',
-                                  title: tx('dashboard.admin.verification.rejectedTitle', undefined, 'Verification request rejected'),
-                                  body: tx('dashboard.admin.verification.rejectedBody', undefined, 'Sorry, your identity verification request was rejected. Please ensure document images are clear and apply again.'),
-                                  is_read: false,
-                              })
-                          ).catch((err) => {
-                              console.error('[Notification] Failed to insert rejection notification:', err);
-                              return null;
-                          }),
-                    ]);
-                }
+            if (!userId) {
+                throw new Error(tx('dashboard.admin.verification.notUpdated', undefined, 'Verification request was not updated.'));
             }
 
-            setVerifications(prev => prev.filter(v => v.id !== id));
-            showToast(
-                 action === 'approved'
-                     ? tx('dashboard.admin.verification.approvedToast', undefined, 'Verification approved ✓')
-                     : tx('dashboard.admin.verification.rejectedToast', undefined, 'Verification rejected'),
-                 action === 'approved' ? 'success' : 'warning'
-             );
+            // Use atomic RPC function to prevent race conditions
+            const { data, error: rpcError } = await supabaseWithRetry(() =>
+                client.rpc('update_verification_status', {
+                    p_user_id: userId,
+                    p_action: action,
+                    p_reviewed_at: new Date().toISOString()
+                })
+            , { timeoutMs: actionTimeoutMs });
+
+            if (rpcError) {
+                throw rpcError;
+            }
+
+            // Log success for debugging
+            console.log('[VerificationsTab] Verification status updated atomically:', data);
+
+            await Promise.resolve(load()).catch((reloadError) => {
+                console.warn('Verification reload failed after action:', reloadError);
+            });
+            // User will be notified via notification center - no toast needed
          } catch (err) {
              console.error('Verification action error:', err);
              showToast(tx('dashboard.admin.verification.actionFailed', undefined, 'Action failed'), 'error');

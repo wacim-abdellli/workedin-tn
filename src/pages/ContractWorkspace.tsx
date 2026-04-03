@@ -24,12 +24,13 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import SEO from '../components/common/SEO';
 import { sendDisputeOpenedEmail } from '../lib/email';
 import { Skeleton } from '../components/common/SkeletonCard';
+import ErrorBoundary from '../components/ErrorBoundary';
 
 // Components
 import ChatSection from '../components/contracts/ChatSection';
 import ContractDetailsSidebar from '../components/contracts/ContractDetailsSidebar';
 
-export default function ContractWorkspace() {
+function ContractWorkspaceComponent() {
     const { contractId } = useParams<{ contractId: string }>();
     const { t, tx } = useTranslation() as any;
     const { user } = useAuth();
@@ -174,51 +175,57 @@ export default function ContractWorkspace() {
         }
     };
 
-    // Actions Handlers
-    const handleDeliverWork = async () => {
-        try {
-            await deliverWork(deliveryNote);
+    // Actions Mutations with retry logic
+    const deliverWorkMutation = useMutation({
+        mutationFn: async (note: string) => {
+            await deliverWork(note);
+        },
+        retry: 2,
+        retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 5000),
+        onSuccess: () => {
             showToast(t.contract.workDelivered, 'success');
             setIsDeliverModalOpen(false);
             setDeliveryNote('');
-        } catch {
+        },
+        onError: () => {
             showToast(t.contract.deliverError, 'error');
         }
-    };
+    });
 
-    const isActionPending = useRef(false);
-
-    const handleAcceptAndPay = async () => {
-        if (isActionPending.current) return;
-        isActionPending.current = true;
-        try {
+    const acceptWorkMutation = useMutation({
+        mutationFn: async () => {
             await acceptWork();
+        },
+        retry: 2,
+        retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 5000),
+        onSuccess: () => {
             showToast(t.contract.workAccepted, 'success');
             setIsPaymentModalOpen(false);
             navigate('/client/dashboard');
-        } catch {
+        },
+        onError: () => {
             showToast(t.contract.acceptError, 'error');
-        } finally {
-            isActionPending.current = false;
         }
-    };
+    });
 
-    const handleRequestChanges = async () => {
-        try {
-            await requestChanges(t.contract.requestRevision);
+    const requestChangesMutation = useMutation({
+        mutationFn: async (feedback: string) => {
+            await requestChanges(feedback);
+        },
+        retry: 2,
+        retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 5000),
+        onSuccess: () => {
             showToast(t.contract.revisionSent, 'info');
-        } catch {
+        },
+        onError: () => {
             showToast(t.contract.error, 'error');
         }
-    };
+    });
 
-    const handleOpenDispute = async () => {
-        if (!disputeReason.trim()) return;
-        try {
-            await openDispute(disputeReason);
-            showToast(t.contract.disputeOpened, 'warning');
-            setIsDisputeModalOpen(false);
-
+    const openDisputeMutation = useMutation({
+        mutationFn: async (reason: string) => {
+            await openDispute(reason);
+            
             // Notify both parties by email — fire-and-forget
             if (contractData) {
                 const { data: profiles } = await supabase
@@ -235,22 +242,55 @@ export default function ContractWorkspace() {
                         sendDisputeOpenedEmail(
                             client.email, client.full_name,
                             contractId, userRole === 'client' ? 'client' : 'freelancer',
-                            disputeReason,
+                            reason,
                         );
                     }
                     if (freelancer?.email) {
                         sendDisputeOpenedEmail(
                             freelancer.email, freelancer.full_name,
                             contractId, userRole === 'client' ? 'client' : 'freelancer',
-                            disputeReason,
+                            reason,
                         );
                     }
                 }
             }
+        },
+        retry: 2,
+        retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 5000),
+        onSuccess: () => {
+            showToast(t.contract.disputeOpened, 'warning');
+            setIsDisputeModalOpen(false);
             setDisputeReason('');
-        } catch {
+        },
+        onError: () => {
             showToast(t.contract.disputeError, 'error');
         }
+    });
+
+    // Actions Handlers
+    const handleDeliverWork = async () => {
+        deliverWorkMutation.mutate(deliveryNote);
+    };
+
+    const isActionPending = useRef(false);
+
+    const handleAcceptAndPay = async () => {
+        if (isActionPending.current || acceptWorkMutation.isPending) return;
+        isActionPending.current = true;
+        try {
+            acceptWorkMutation.mutate();
+        } finally {
+            isActionPending.current = false;
+        }
+    };
+
+    const handleRequestChanges = async () => {
+        requestChangesMutation.mutate(t.contract.requestRevision);
+    };
+
+    const handleOpenDispute = async () => {
+        if (!disputeReason.trim()) return;
+        openDisputeMutation.mutate(disputeReason);
     };
 
     const submitReviewMutation = useMutation({
@@ -270,6 +310,8 @@ export default function ContractWorkspace() {
 
             if (error) throw error;
         },
+        retry: 2,
+        retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 5000),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['review', contractId, user?.id] });
             setIsReviewModalOpen(false);
@@ -560,5 +602,13 @@ export default function ContractWorkspace() {
                 </Modal>
             )}
         </div>
+    );
+}
+
+export default function ContractWorkspace() {
+    return (
+        <ErrorBoundary>
+            <ContractWorkspaceComponent />
+        </ErrorBoundary>
     );
 }

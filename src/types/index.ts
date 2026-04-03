@@ -43,7 +43,6 @@ export interface Profile {
     location?: string;
     preferred_language: Language;
     cin_verified?: boolean;
-    cin_submitted?: boolean;
     onboarding_completed?: boolean;
     client_onboarding_completed?: boolean;
     freelancer_onboarding_completed?: boolean;

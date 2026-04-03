@@ -10,6 +10,7 @@ interface NotificationsContextType {
     isLoading: boolean;
     markAsRead: (id: string) => Promise<void>;
     markAllRead: () => Promise<void>;
+    deleteNotification: (id: string) => Promise<void>;
 }
 
 const NotificationsContext = createContext<NotificationsContextType>({
@@ -18,6 +19,7 @@ const NotificationsContext = createContext<NotificationsContextType>({
     isLoading: false,
     markAsRead: async () => {},
     markAllRead: async () => {},
+    deleteNotification: async () => {},
 });
 
 export function NotificationsProvider({ children }: { children: ReactNode }) {

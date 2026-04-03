@@ -11,8 +11,6 @@ interface Toast {
   id: string;
   message: string;
   type: ToastType;
-  duration: number;
-  position: ToastPosition;
 }
 
 interface ToastOptions {
@@ -25,26 +23,30 @@ interface ToastContextType {
 
 const ToastContext = createContext<ToastContextType | undefined>(undefined);
 
-const toastConfig: Record<ToastType, { icon: React.ReactNode; accent: string; glow: string }> = {
+const toastConfig: Record<ToastType, { icon: React.ReactNode; title: string; colorClass: string; bgClass: string }> = {
   success: {
-    icon: <CheckCircle className="h-5 w-5 text-green-500" />,
-    accent: 'border-l-[3px] border-green-500',
-    glow: 'from-green-500',
+    icon: <CheckCircle className="h-6 w-6 text-green-500" />,
+    title: 'Success',
+    colorClass: 'text-green-500',
+    bgClass: 'bg-green-50 dark:bg-green-500/10',
   },
   error: {
-    icon: <AlertCircle className="h-5 w-5 text-red-500" />,
-    accent: 'border-l-[3px] border-red-500',
-    glow: 'from-red-500',
+    icon: <AlertCircle className="h-6 w-6 text-red-500" />,
+    title: 'Error',
+    colorClass: 'text-red-500',
+    bgClass: 'bg-red-50 dark:bg-red-500/10',
   },
   warning: {
-    icon: <AlertTriangle className="h-5 w-5 text-amber-500" />,
-    accent: 'border-l-[3px] border-amber-500',
-    glow: 'from-amber-500',
+    icon: <AlertTriangle className="h-6 w-6 text-amber-500" />,
+    title: 'Warning',
+    colorClass: 'text-amber-500',
+    bgClass: 'bg-amber-50 dark:bg-amber-500/10',
   },
   info: {
-    icon: <Info className="h-5 w-5 text-primary-500" />,
-    accent: 'border-l-[3px] border-primary-500',
-    glow: 'from-primary-500',
+    icon: <Info className="h-6 w-6 text-primary-500" />,
+    title: 'Info',
+    colorClass: 'text-primary-500',
+    bgClass: 'bg-primary-50 dark:bg-primary-500/10',
   },
 };
 
@@ -55,20 +57,10 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     setToasts((prev) => prev.filter((toast) => toast.id !== id));
   }, []);
 
-  const showToast = useCallback((message: string, type: ToastType = 'info', duration = 4000, options?: ToastOptions) => {
-    if (type === 'success') {
-      return;
-    }
-
+  const showToast = useCallback((message: string, type: ToastType = 'info', _duration?: number, _options?: ToastOptions) => {
     const id = Math.random().toString(36).slice(2, 9);
-    const toast = { id, message, type, duration, position: options?.position ?? 'top-right' };
-
-    setToasts((prev) => [...prev.slice(-2), toast]);
-
-    if (duration > 0) {
-      window.setTimeout(() => removeToast(id), duration);
-    }
-  }, [removeToast]);
+    setToasts((prev) => [...prev, { id, message, type }]);
+  }, []);
 
   const value = useMemo(() => ({ showToast }), [showToast]);
 
@@ -76,85 +68,61 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     <ToastContext.Provider value={value}>
       {children}
       {createPortal(
-        <>
-          <ToastStack
-            toasts={toasts.filter((toast) => toast.position === 'top-right')}
-            removeToast={removeToast}
-            className="fixed right-4 top-4 z-[110] flex w-[min(100vw-2rem,24rem)] flex-col gap-3"
-            initial={{ opacity: 0, x: 32, y: -8 }}
-            animate={{ opacity: 1, x: 0, y: 0 }}
-            exit={{ opacity: 0, x: 32, scale: 0.98 }}
-          />
-          <ToastStack
-            toasts={toasts.filter((toast) => toast.position === 'bottom-center')}
-            removeToast={removeToast}
-            className="fixed bottom-6 left-1/2 z-[110] flex w-[min(100vw-2rem,28rem)] -translate-x-1/2 flex-col gap-3"
-            initial={{ opacity: 0, y: 24, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 24, scale: 0.98 }}
-          />
-        </>,
+        <AnimatePresence>
+          {toasts.length > 0 && (
+            <ModalToast
+              key={toasts[0].id}
+              toast={toasts[0]}
+              onClose={() => removeToast(toasts[0].id)}
+            />
+          )}
+        </AnimatePresence>,
         document.body
       )}
     </ToastContext.Provider>
   );
 }
 
-function ToastStack({
-  toasts,
-  removeToast,
-  className,
-  initial,
-  animate,
-  exit,
-}: {
-  toasts: Toast[];
-  removeToast: (id: string) => void;
-  className: string;
-  initial: Record<string, number>;
-  animate: Record<string, number>;
-  exit: Record<string, number>;
-}) {
-  if (toasts.length === 0) return null;
+function ModalToast({ toast, onClose }: { toast: Toast; onClose: () => void }) {
+  const config = toastConfig[toast.type];
 
   return (
-    <div className={className}>
-      <AnimatePresence initial={false}>
-        {toasts.map((toast) => {
-          const config = toastConfig[toast.type];
-
-          return (
-            <motion.button
-              key={toast.id}
-              type="button"
-              onClick={() => removeToast(toast.id)}
-              className={`glass-card ${config.accent} relative overflow-hidden rounded-2xl px-4 py-4 text-left shadow-2xl`}
-              initial={initial}
-              animate={animate}
-              exit={exit}
-              transition={{ duration: 0.22, ease: 'easeOut' }}
-            >
-              <div className={`pointer-events-none absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r ${config.glow} to-transparent`}>
-                <motion.div
-                  className="h-full bg-white/60 dark:bg-white/25"
-                  initial={{ width: '100%' }}
-                  animate={{ width: '0%' }}
-                  transition={{ duration: toast.duration / 1000, ease: 'linear' }}
-                />
-              </div>
-              <div className="flex items-start gap-3">
-                <span className="mt-0.5 flex-shrink-0">{config.icon}</span>
-                <div className="flex-1">
-                  <p className="text-sm font-semibold text-[#1a1825] dark:text-white">{toast.message}</p>
-                </div>
-                <span className="flex h-7 w-7 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-black/5 hover:text-gray-700 dark:hover:bg-white/5 dark:hover:text-white">
-                  <X className="h-4 w-4" />
-                </span>
-              </div>
-            </motion.button>
-          );
-        })}
-      </AnimatePresence>
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 10 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 10 }}
+        transition={{ duration: 0.2 }}
+        className="relative w-full max-w-sm overflow-hidden rounded-2xl bg-white shadow-2xl dark:bg-gray-900"
+      >
+        <div className={`flex items-center gap-3 border-b border-gray-100 p-4 dark:border-gray-800 ${config.bgClass}`}>
+          {config.icon}
+          <h3 className={`text-lg font-semibold ${config.colorClass}`}>
+            {config.title}
+          </h3>
+          <button
+            onClick={onClose}
+            className="ml-auto rounded-full p-1 text-gray-400 hover:bg-black/5 hover:text-gray-700 dark:hover:bg-white/5 dark:hover:text-gray-200"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+        
+        <div className="p-6">
+          <p className="text-gray-700 dark:text-gray-300">
+            {toast.message}
+          </p>
+        </div>
+        
+        <div className="flex justify-end border-t border-gray-100 bg-gray-50 p-4 dark:border-gray-800 dark:bg-gray-800/50">
+          <button
+            onClick={onClose}
+            className="rounded-lg bg-primary-600 px-6 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600 dark:bg-primary-500 dark:hover:bg-primary-400"
+          >
+            OK
+          </button>
+        </div>
+      </motion.div>
     </div>
   );
 }

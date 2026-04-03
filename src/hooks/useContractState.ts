@@ -187,10 +187,22 @@ export function useContractState({
                     throw new Error('لم نستطع التحقق من حالة الدفع من البنك. يرجى المحاولة لاحقاً أو مراسلة الدعم.');
                 }
 
-                await updateStatus('completed', {
-                    payment_status: 'released',
-                    completed_at: new Date().toISOString(),
+                const { error: releaseError } = await supabase.rpc('release_contract_payment_atomic', {
+                    p_contract_id: contractId,
                 });
+
+                if (releaseError) throw releaseError;
+
+                setContract(current => current ? {
+                    ...current,
+                    status: 'completed',
+                    payment_status: 'released',
+                    completed_at: current.completed_at || new Date().toISOString(),
+                } : current);
+
+                if (queryClient) {
+                    await queryClient.invalidateQueries({ queryKey: ['contract', contractId] });
+                }
 
                 const { error: messageError } = await sendContractMessage({
                     contract_id: contractId,
@@ -205,7 +217,7 @@ export function useContractState({
                 setIsAccepting(false);
             }
         },
-        [contract, contractId, userId, userRole, updateStatus]
+        [contract, contractId, userId, userRole, queryClient]
     );
 
     const requestChanges = useCallback(

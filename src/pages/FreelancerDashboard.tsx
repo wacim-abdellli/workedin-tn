@@ -33,7 +33,7 @@ import { formatCurrency } from '../lib/currencyUtils';
 type DashboardNotification = {
     id: string;
     title: string | null;
-    content: string | null;
+    body: string | null;
     type: string;
     created_at: string;
 };
@@ -127,7 +127,7 @@ function FreelancerDashboardPage() {
                     .eq('status', 'pending'),
                 supabase.from('wallets').select('balance,pending_balance,total_earned').eq('user_id', userId).maybeSingle(),
                 supabase.from('freelancer_profiles').select('profile_views,title,connects_balance').eq('id', userId).maybeSingle(),
-                supabase.from('notifications').select('id,title,content,type,created_at')
+                supabase.from('notifications').select('id,title,body,type,created_at')
                     .eq('user_id', userId)
                     .eq('is_read', false)
                     .order('created_at', { ascending: false })

@@ -323,9 +323,24 @@ export function AuthProvider({ children }: AuthProviderProps) {
         setSession(newSession);
         setUser(newSession?.user ?? null);
 
-        // Ignore background auth churn events to prevent unnecessary loading
-        // flashes and duplicate profile fetches.
-        if (event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') {
+        // Handle token refresh events
+        if (event === 'TOKEN_REFRESHED') {
+          // Verify the session is still valid
+          if (!newSession) {
+            logger.error('[Auth] Token refresh resulted in no session');
+            // Session lost during refresh - log out user
+            await supabase.auth.signOut();
+            setSession(null);
+            setUser(null);
+            setProfile(null);
+            setFreelancerProfile(null);
+            // Don't show toast here as user will be redirected to login automatically
+          }
+          return;
+        }
+
+        // Ignore initial session to prevent duplicate loads
+        if (event === 'INITIAL_SESSION') {
           return;
         }
 

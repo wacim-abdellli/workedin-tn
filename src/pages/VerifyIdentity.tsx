@@ -1,4 +1,5 @@
 import { useState, useCallback, useMemo, useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { Camera, CheckCircle2, Shield, Loader2, Sparkles, Lock, ScanLine, AlertCircle } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -12,6 +13,8 @@ import DocumentUpload from '@/components/verify/DocumentUpload';
 import type { FileMeta } from '@/components/verify/DocumentUpload';
 import VerificationStepper from '@/components/verify/VerificationStepper';
 import VerificationReview from '@/components/verify/VerificationReview';
+import { NOTIFICATIONS_QUERY_KEY } from '@/hooks/useRealtimeNotifications';
+import { getVerificationStatus, subscribeToVerificationChanges, type VerificationStatus } from '@/lib/verificationStatus';
 
 type UploadStep = 'front' | 'back' | 'selfie' | 'review' | 'submitted';
 
@@ -23,6 +26,7 @@ export default function VerifyIdentity() {
     const { tx } = useTranslation();
     const navigate = useNavigate();
     const { showToast } = useToast();
+    const queryClient = useQueryClient();
 
     const [step, setStep] = useState<UploadStep>('front');
     const [uploads, setUploads] = useState<UploadState>({ front: null, back: null, selfie: null });
@@ -33,51 +37,56 @@ export default function VerifyIdentity() {
     const [isProcessingFile, setIsProcessingFile] = useState(false);
     const [loading, setLoading] = useState(false);
     const [consent, setConsent] = useState(false);
-    const [resolvedIdentityStatus, setResolvedIdentityStatus] = useState<'verified' | 'pending' | 'missing' | null>(null);
+    const [resolvedIdentityStatus, setResolvedIdentityStatus] = useState<VerificationStatus | null>(null);
 
     useEffect(() => { window.scrollTo({ top: 0, behavior: 'smooth' }); }, [step]);
 
-    // Resolve identity status from DB (with profile fallback)
+    // Use shared verification status helper - single source of truth
     useEffect(() => {
-        let isCancelled = false;
-        const deriveFromProfile = (): 'verified' | 'pending' | 'missing' =>
-            profile?.cin_verified ? 'verified' : profile?.cin_submitted ? 'pending' : 'missing';
+        if (!user?.id) {
+            setResolvedIdentityStatus('missing');
+            return;
+        }
 
-        const resolve = async () => {
-            if (!user?.id) { if (!isCancelled) setResolvedIdentityStatus('missing'); return; }
-            if (!isCancelled) setResolvedIdentityStatus(deriveFromProfile());
+        let isCancelled = false;
+
+        const fetchStatus = async () => {
             try {
-                const { data: latest } = await supabaseWithRetry(() =>
-                    supabase.from('identity_verifications')
-                        .select('id,status,submitted_at,reviewed_at')
-                        .eq('user_id', user.id)
-                        .order('submitted_at', { ascending: false })
-                        .limit(1).maybeSingle()
-                );
-                if (isCancelled) return;
-                if (!latest) { setResolvedIdentityStatus(deriveFromProfile()); return; }
-                if (latest.status === 'approved') {
-                    setResolvedIdentityStatus('verified');
-                    if (!profile?.cin_verified || profile?.cin_submitted) {
-                        await supabaseWithRetry(() => supabase.from('profiles').update({ cin_verified: true, cin_submitted: false }).eq('id', user.id));
+                const state = await getVerificationStatus(user.id);
+                if (!isCancelled) {
+                    setResolvedIdentityStatus(state.status);
+                    
+                    // Sync profile if needed
+                    if (state.status === 'verified' && !profile?.cin_verified) {
+                        await supabase.from('profiles').update({ 
+                            cin_verified: true, 
+                            cin_submitted: false 
+                        }).eq('id', user.id);
                         await refreshProfile?.();
                     }
-                    return;
-                }
-                if (latest.status === 'pending') { setResolvedIdentityStatus('pending'); return; }
-                setResolvedIdentityStatus('missing');
-                if (profile?.cin_submitted && !profile?.cin_verified) {
-                    await supabaseWithRetry(() => supabase.from('profiles').update({ cin_submitted: false }).eq('id', user.id));
-                    await refreshProfile?.();
                 }
             } catch (error) {
-                logger.warn('Failed to resolve identity status; using profile fallback.', error);
-                if (!isCancelled) setResolvedIdentityStatus(deriveFromProfile());
+                logger.error('Failed to fetch verification status', error);
+                if (!isCancelled) {
+                    setResolvedIdentityStatus(profile?.cin_verified ? 'verified' : 'missing');
+                }
             }
         };
-        void resolve();
-        return () => { isCancelled = true; };
-    }, [user?.id, profile?.cin_verified, profile?.cin_submitted]);
+
+        fetchStatus();
+
+        // Real-time sync - updates when admin approves/rejects
+        const unsubscribe = subscribeToVerificationChanges(user.id, (state) => {
+            if (!isCancelled) {
+                setResolvedIdentityStatus(state.status);
+            }
+        });
+
+        return () => {
+            isCancelled = true;
+            unsubscribe();
+        };
+    }, [user?.id, profile?.cin_verified]);
 
     const handleFileSelect = useCallback(async (type: 'front' | 'back' | 'selfie', file: File) => {
         setIsProcessingFile(true);
@@ -250,20 +259,9 @@ export default function VerifyIdentity() {
                 throw fetchError;
             }
 
-            try {
-                await supabaseWithRetry(() => supabase.from('profiles').update({ cin_submitted: true }).eq('id', authUserId));
-                await supabaseWithRetry(() => supabase.from('notifications').insert({
-                    user_id: authUserId,
-                    type: 'system',
-                    title: 'تم استلام طلب التوثيق',
-                    body: 'جاري الآن دراسة طلب التحقق من الهوية من قبل الإدارة. سيتم إعلامك بالنتيجة قريباً.',
-                    is_read: false,
-                })).catch((err) => {
-                    console.error('[Notification] Failed to insert submission notification:', err);
-                    return null;
-                });
-                await refreshProfile?.();
-            } catch (e) { logger.error('Profile update error:', e); }
+            // No need to update cin_submitted - verification table is source of truth
+            await refreshProfile?.();
+            void queryClient.invalidateQueries({ queryKey: NOTIFICATIONS_QUERY_KEY(authUserId) });
 
             setStep('submitted');
             showToast(tx('verifyIdentity.success.submitted', undefined, 'تم تقديم طلب التحقق بنجاح'), 'success');
@@ -297,7 +295,7 @@ export default function VerifyIdentity() {
         { key: 'consent', ok: consent, label: tx('verifyIdentity.review.checkConsent', undefined, 'Privacy consent accepted') },
     ], [uploads.front, uploads.back, uploads.selfie, cinNumber.length, consent, tx]);
 
-    const effectiveStatus = resolvedIdentityStatus ?? (profile?.cin_verified ? 'verified' : profile?.cin_submitted ? 'pending' : 'missing');
+    const effectiveStatus = resolvedIdentityStatus ?? 'missing';
 
     // ── Status screens ──────────────────────────────────────────────────────────
     if (effectiveStatus === 'verified') {

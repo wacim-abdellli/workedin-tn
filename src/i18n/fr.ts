@@ -1285,11 +1285,24 @@ export const fr: Translations = {
 
     notifications: {
         title: 'Notifications',
+        time: {
+            justNow: 'À l\'instant',
+            minutesAgo: 'Il y a {{count}}m',
+            hoursAgo: 'Il y a {{count}}h',
+            daysAgo: 'Il y a {{count}}j',
+        },
         readAll: 'Tout marquer comme lu',
-        empty: 'Pas de notifications',
+        empty: 'Aucune notification',
         caughtUp: 'Vous êtes à jour',
-        emptyDesc: 'Nous vous informerons dès qu\'il y a du nouveau',
+        emptyDesc: 'Nous vous informerons dès qu\'il y a du nouveau sur vos projets ou paiements.',
         viewAll: 'Voir toutes les notifications',
+        delete: 'Supprimer la notification',
+        identity: {
+            rejected: {
+                title: 'Demande de verification rejetee',
+                body: 'Votre demande de verification d\'identite a ete rejetee. Assurez-vous que les images sont claires puis renvoyez votre demande.',
+            },
+        },
     },
 
     globalSearch: {
@@ -1672,7 +1685,7 @@ export const fr: Translations = {
             title: 'Votre demande est en cours de révision',
             description: 'Votre demande de vérification d\'identité a été reçue avec succès. Notre équipe examine vos documents.',
             reviewTime: 'Délai de révision : jusqu\'à 24 heures',
-            emailNotice: 'Vous serez notifié par e-mail dès la fin de la révision',
+            emailNotice: 'Vous serez notifié dès la fin de la révision',
         },
         submitted: {
             seoTitle: 'Demande envoyée',

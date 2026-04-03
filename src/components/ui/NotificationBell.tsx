@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from '@/i18n';
 import { useNotifications } from '@/contexts/NotificationsContext';
 import type { AppNotification } from '@/hooks/useRealtimeNotifications';
+import { getDisplayNotification } from '@/lib/notificationDisplay';
 
 function iconForType(type: AppNotification['type']) {
     switch (type) {
@@ -28,12 +29,21 @@ export function NotificationBell({ className = '' }: { className?: string }) {
                 setIsOpen(false);
             }
         }
-        
+
+        function handleScroll(event: Event) {
+            if (dropdownRef.current && dropdownRef.current.contains(event.target as Node)) {
+                return;
+            }
+            setIsOpen(false);
+        }
+
         if (isOpen) {
             document.addEventListener('mousedown', handleClickOutside);
+            window.addEventListener('scroll', handleScroll, { capture: true, passive: true });
         }
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
+            window.removeEventListener('scroll', handleScroll, { capture: true });
         };
     }, [isOpen]);
 
@@ -63,14 +73,14 @@ export function NotificationBell({ className = '' }: { className?: string }) {
             >
                 <Bell className="h-4 w-4" />
                 {unreadCount > 0 && (
-                    <span className="absolute -right-1 -top-1 flex min-h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white shadow-lg shadow-red-500/30 animate-pulse">
+                    <span className="absolute -top-1 ltr:-right-1 rtl:-left-1 flex min-h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white shadow-lg shadow-red-500/30 animate-pulse">
                         {unreadCount > 9 ? '9+' : unreadCount}
                     </span>
                 )}
             </button>
 
             {isOpen && (
-                <div className="header-dropdown-surface absolute right-0 top-full z-50 mt-3 w-80 sm:w-96">
+                <div className="header-dropdown-surface absolute ltr:-right-2 ltr:sm:right-0 rtl:-left-2 rtl:sm:left-0 top-full z-50 mt-3 w-[calc(100vw-2rem)] max-w-sm sm:w-96 origin-top">
                     <div className="flex items-center justify-between border-b border-gray-100/80 px-4 py-4 dark:border-white/8">
                         <h3 className="font-bold text-dark-900 dark:text-white">{t.notifications?.title || 'Notifications'}</h3>
                         {unreadCount > 0 && (
@@ -99,7 +109,11 @@ export function NotificationBell({ className = '' }: { className?: string }) {
                                 <p className="mt-1 text-sm font-medium text-brand dark:text-brand-mid">{t.notifications?.caughtUp || "You're all caught up"}</p>
                             </div>
                         ) : (
-                            notifications.slice(0, 10).map(n => (
+                            notifications.slice(0, 10).map(n => {
+                                // Translate notification to user's language
+                                const displayNotif = getDisplayNotification(n, tx);
+                                
+                                return (
                                 <div
                                     key={n.id}
                                     onClick={() => handleNotificationClick(n)}
@@ -115,15 +129,16 @@ export function NotificationBell({ className = '' }: { className?: string }) {
                                         </div>
                                         <div className="flex-1">
                                             <div className="flex items-start justify-between gap-3">
-                                                <p className="text-sm font-semibold text-dark-900 dark:text-white">{n.title}</p>
+                                                <p className="text-sm font-semibold text-dark-900 dark:text-white">{displayNotif.title}</p>
                                                 {!n.is_read && <span className="mt-1.5 h-2 w-2 rounded-full bg-brand flex-shrink-0" />}
                                             </div>
-                                            <p className="mt-1 text-xs leading-relaxed text-dark-500 dark:text-dark-400">{n.body}</p>
+                                            <p className="mt-1 text-xs leading-relaxed text-dark-500 dark:text-dark-400">{displayNotif.body}</p>
                                             <p className="mt-2 text-[11px] font-medium text-dark-400">{formatTimeAgo(n.created_at)}</p>
                                         </div>
                                     </div>
                                 </div>
-                            ))
+                                );
+                            })
                         )}
                     </div>
 

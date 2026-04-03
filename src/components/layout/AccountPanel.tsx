@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -20,6 +20,7 @@ import {
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 
 import { logger } from '@/lib/logger';
+import { supabase } from '@/lib/supabase';
 import { hardLogout, clearAllAuthData } from '@/lib/authUtils';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from '@/i18n';
@@ -35,6 +36,7 @@ import {
 import { useToast } from '@/components/ui/Toast';
 import { switchWorkspace } from '@/lib/switchWorkspace';
 import { useWorkspaceStore, type Workspace } from '@/lib/workspaceState';
+import { getVerificationStatus, subscribeToVerificationChanges, type VerificationStatus } from '@/lib/verificationStatus';
 
 type Mode = 'freelancer' | 'client';
 
@@ -49,7 +51,6 @@ type HeaderProfile = {
   bio?: string;
   location?: string;
   cin_verified?: boolean;
-  cin_submitted?: boolean;
   created_at?: string;
   onboarding_completed?: boolean;
 } | null;
@@ -72,7 +73,7 @@ export default function AccountPanel({
   onClose,
 }: AccountPanelProps) {
   const navigate = useNavigate();
-  const { freelancerProfile } = useAuth();
+  const { freelancerProfile, refreshProfile } = useAuth();
   const { t, language } = useTranslation();
   const { showToast } = useToast();
   const activeWorkspace = useWorkspaceStore((state) => state.activeWorkspace);
@@ -80,6 +81,8 @@ export default function AccountPanel({
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [avatarFailed, setAvatarFailed] = useState(false);
   const [pendingWorkspace, setPendingWorkspace] = useState<Workspace | null>(null);
+  const [resolvedIdentityStatus, setResolvedIdentityStatus] = useState<VerificationStatus | null>(null);
+  const [identityStatusLoaded, setIdentityStatusLoaded] = useState(false);
 
   const copy = t.auth.accountPanel;
   const displayName =
@@ -103,7 +106,65 @@ export default function AccountPanel({
   const profilePath = getWorkspaceProfilePath(profile, activeWorkspace);
   const setupActionTo = currentTarget.isOnboarded ? profilePath : currentTarget.path;
   const setupActionLabel = currentTarget.isOnboarded ? copy.manageProfile : copy.completeSetup;
-  const isVerified = Boolean(profile?.cin_verified || freelancerProfile?.cin_verified);
+  useEffect(() => {
+    if (!profile?.id) {
+      setResolvedIdentityStatus(null);
+      setIdentityStatusLoaded(true);
+      return;
+    }
+
+    let cancelled = false;
+
+    async function fetchStatus() {
+      if (!profile?.id) return;
+      
+      try {
+        setIdentityStatusLoaded(false);
+        const state = await getVerificationStatus(profile.id);
+        
+        if (!cancelled) {
+          setResolvedIdentityStatus(state.status);
+          setIdentityStatusLoaded(true);
+        }
+
+        // Sync profile if needed
+        if (state.status === 'verified' && !profile.cin_verified) {
+          await supabase.from('profiles').update({ cin_verified: true }).eq('id', profile.id);
+          await refreshProfile();
+        }
+      } catch (error) {
+        logger.error('Failed to fetch verification status in AccountPanel', error);
+        if (!cancelled) {
+          setResolvedIdentityStatus(null);
+          setIdentityStatusLoaded(true);
+        }
+      }
+    }
+
+    fetchStatus();
+
+    // Real-time sync
+    if (profile?.id) {
+      const unsubscribe = subscribeToVerificationChanges(profile.id, (state) => {
+        if (!cancelled) {
+          setResolvedIdentityStatus(state.status);
+        }
+      });
+
+      return () => {
+        cancelled = true;
+        unsubscribe();
+      };
+    }
+
+    return () => {
+      cancelled = true;
+    };
+  }, [profile?.id, profile?.cin_verified, refreshProfile]);
+
+  const isVerified = resolvedIdentityStatus === 'verified'
+    || (!identityStatusLoaded && Boolean(profile?.cin_verified || freelancerProfile?.cin_verified));
+  const isPending = !isVerified && resolvedIdentityStatus === 'pending';
   const memberSince = formatMemberSince(profile?.created_at || user.created_at, language);
   const identityLine = [profile?.location, memberSince].filter(Boolean).join(' / ');
   const activeWorkspacePill =
@@ -465,7 +526,7 @@ export default function AccountPanel({
                         </span>
                         <BadgeCheck className="h-4 w-4 text-emerald-500" />
                       </div>
-                    ) : profile?.cin_submitted ? (
+                    ) : isPending ? (
                       <div className="inline-flex min-h-[44px] items-center justify-between gap-3 rounded-2xl border border-orange-200 bg-orange-50 px-4 py-3 text-sm font-semibold text-orange-800 opacity-90 cursor-not-allowed dark:border-orange-500/30 dark:bg-orange-500/10 dark:text-orange-400">
                         <span className="flex items-center gap-3">
                           <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-orange-100 text-orange-600 dark:bg-orange-500/20 dark:text-orange-400">

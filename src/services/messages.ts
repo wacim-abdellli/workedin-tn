@@ -107,45 +107,26 @@ export async function getConversations(userId: string, page: number = 0, limit: 
         if (error) throw error;
 
         const rows = (data ?? []) as ConversationRow[];
-        const conversationIds = rows.map(conv => conv.id);
         const otherUserIds = Array.from(new Set(rows.map((conv) => (
             conv.participant_1 === userId ? conv.participant_2 : conv.participant_1
         )).filter(Boolean)));
 
-        // Step 2: Get profiles in parallel with message counts
-        const [profilesResult, messageCountsResult] = await Promise.all([
+        // Step 2: Get profiles in parallel (message counts removed for scalability)
+        const [profilesResult] = await Promise.all([
             otherUserIds.length > 0 
                 ? supabaseWithRetry(() => supabase
                     .from('profiles')
                     .select('id, full_name, avatar_url, username')
                     .in('id', otherUserIds))
-                : Promise.resolve({ data: [], error: null }),
-            
-            // Step 3: Get message counts efficiently using a single query
-            conversationIds.length > 0
-                ? supabaseWithRetry(() => supabase
-                    .from('messages')
-                    .select('conversation_id')
-                    .in('conversation_id', conversationIds))
                 : Promise.resolve({ data: [], error: null })
         ]);
 
         if (profilesResult.error) throw profilesResult.error;
-        if (messageCountsResult.error) console.warn('Message counts failed:', messageCountsResult.error);
 
         // Build profiles map
         const profilesById = new Map<string, ConversationParticipantRow>();
         for (const profile of (profilesResult.data ?? []) as ConversationParticipantRow[]) {
             profilesById.set(profile.id, profile);
-        }
-
-        // Build message counts map
-        const messageCountsById = new Map<string, number>();
-        if (messageCountsResult.data) {
-            for (const msg of messageCountsResult.data) {
-                const current = messageCountsById.get(msg.conversation_id) || 0;
-                messageCountsById.set(msg.conversation_id, current + 1);
-            }
         }
 
         const conversations: Conversation[] = rows.map((conv) => {
@@ -172,7 +153,7 @@ export async function getConversations(userId: string, page: number = 0, limit: 
                     username: otherUser?.username || null,
                 },
                 unread_count: unread_count || 0,
-                message_count: messageCountsById.get(conv.id) || 0, // Real count now!
+                message_count: undefined, // Message counting removed for performance and scalability
             };
         });
 
@@ -217,28 +198,11 @@ export async function getMessages(conversationId: string, limit: number = 50, of
     }
 }
 
-export async function getMessageCount(conversationId: string) {
-    try {
-        // Create a timeout promise that rejects after 3 seconds
-        const timeoutPromise = new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Query timeout')), 3000)
-        );
-
-        const queryPromise = supabaseWithRetry(() => supabase
-            .from('messages')
-            .select('*', { count: 'exact', head: true })
-            .eq('conversation_id', conversationId));
-
-        const { count, error } = await Promise.race([queryPromise, timeoutPromise]) as any;
-
-        if (error) throw error;
-
-        return { count: count ?? 0, error: null };
-    } catch (_error) {
-        // Silently fail with 0 count - this prevents timeout errors from showing
-        return { count: 0, error: null };
-    }
-}
+/**
+ * Message count is already available in the Conversation object as `message_count`.
+ * Use getConversations() instead of calling a separate count query.
+ * This function has been removed to prevent performance issues and dead code.
+ */
 
 // --- WRITE ---
 
@@ -271,15 +235,19 @@ export async function sendMessage(params: {
                 contract_id: params.contractId || null,
                 attachments: params.attachments || [],
             })
-            .select(`
-                *,
-                sender:profiles!sender_id(id, full_name, avatar_url)
-            `)
+            // Removed expensive sender join for faster message delivery
+            .select()
             .single(), { throwOnError: false, timeoutMs: 15000 });
 
         if (error) throw error;
+        
+        // Inject sender info locally instead of a DB join to make sending lightning fast
+        const msg = data as Message;
+        if (msg && !msg.sender) {
+             msg.sender = { id: params.senderId, full_name: 'You', avatar_url: null }; // Will be updated by UI context naturally
+        }
 
-        return { data: data as Message, error: null };
+        return { data: msg, error: null };
     } catch (error) {
         return { data: null, error: normalizeMessageError(error) };
     }

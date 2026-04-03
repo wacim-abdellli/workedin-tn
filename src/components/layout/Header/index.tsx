@@ -196,7 +196,7 @@ export default function Header() {
   const switchActionLabel = t.auth?.accountPanel?.switchAction || 'Switch'
   const switchButtonLabel = `${switchActionLabel}: ${switchTargetLabel}`
   const freelancerVerified = Boolean(profile?.cin_verified || freelancerProfile?.cin_verified)
-  const freelancerPending = Boolean(!freelancerVerified && profile?.cin_submitted)
+  const freelancerPending = false
   const switchAccent = targetWorkspace === 'freelancer'
     ? {
         borderColor: '#8b5cf6',
