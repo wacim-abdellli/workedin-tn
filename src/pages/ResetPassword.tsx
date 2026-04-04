@@ -146,7 +146,7 @@ const ResetPassword = () => {
                     <button
                         type="button"
                         onClick={() => navigate('/login')}
-                        className="inline-flex items-center rounded-full border border-white/12 bg-white/6 px-4 py-2 text-sm font-medium text-white/80 backdrop-blur-sm transition-colors hover:border-white/20 hover:bg-white/10 hover:text-white"
+                        className="inline-flex items-center rounded-full border border-white/12 bg-white dark:bg-gray-800/6 px-4 py-2 text-sm font-medium text-white/80 backdrop-blur-sm transition-colors hover:border-white/20 hover:bg-white dark:bg-gray-800/10 hover:text-white"
                     >
                         {tx('pages.resetPassword.backToLogin', undefined, 'Back to sign in')}
                     </button>
@@ -176,7 +176,7 @@ const ResetPassword = () => {
                     <button
                         type="button"
                         onClick={() => navigate('/forgot-password')}
-                        className="inline-flex items-center rounded-full border border-white/12 bg-white/6 px-4 py-2 text-sm font-medium text-white/80 backdrop-blur-sm transition-colors hover:border-white/20 hover:bg-white/10 hover:text-white"
+                        className="inline-flex items-center rounded-full border border-white/12 bg-white dark:bg-gray-800/6 px-4 py-2 text-sm font-medium text-white/80 backdrop-blur-sm transition-colors hover:border-white/20 hover:bg-white dark:bg-gray-800/10 hover:text-white"
                     >
                         {tx('pages.resetPassword.requestNew', undefined, 'Request new link')}
                     </button>
@@ -217,7 +217,7 @@ const ResetPassword = () => {
                 <button
                     type="button"
                     onClick={() => navigate('/login')}
-                    className="inline-flex items-center rounded-full border border-white/12 bg-white/6 px-4 py-2 text-sm font-medium text-white/80 backdrop-blur-sm transition-colors hover:border-white/20 hover:bg-white/10 hover:text-white"
+                    className="inline-flex items-center rounded-full border border-white/12 bg-white dark:bg-gray-800/6 px-4 py-2 text-sm font-medium text-white/80 backdrop-blur-sm transition-colors hover:border-white/20 hover:bg-white dark:bg-gray-800/10 hover:text-white"
                 >
                     {tx('pages.resetPassword.backToLogin', undefined, 'Back to sign in')}
                 </button>
@@ -260,7 +260,7 @@ const ResetPassword = () => {
                                         <button
                                             type="button"
                                             onClick={() => setShowPassword(!showPassword)}
-                                            className="absolute inset-y-0 end-0 flex items-center pe-3 text-gray-400 hover:text-gray-600"
+                                            className="absolute inset-y-0 end-0 flex items-center pe-3 text-gray-400 hover:text-gray-600 dark:text-gray-300"
                                         >
                                             {showPassword ? (
                                                 <EyeOff className="w-5 h-5" />
@@ -275,7 +275,7 @@ const ResetPassword = () => {
                                     {password && (
                                         <div className="mt-3">
                                             <div className="flex items-center justify-between mb-1">
-                                                <span className="text-xs text-gray-500">{tx('auth.passwordStrength.label', undefined, 'Password strength')}</span>
+                                                <span className="text-xs text-gray-500 dark:text-gray-400">{tx('auth.passwordStrength.label', undefined, 'Password strength')}</span>
                                                 <span className={`text-xs font-medium ${passwordStrength.color === 'bg-red-500' ? 'text-red-500' :
                                                     passwordStrength.color === 'bg-yellow-500' ? 'text-yellow-500' :
                                                         'text-green-500'
@@ -313,7 +313,7 @@ const ResetPassword = () => {
                                         <button
                                             type="button"
                                             onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                            className="absolute inset-y-0 end-0 flex items-center pe-3 text-gray-400 hover:text-gray-600"
+                                            className="absolute inset-y-0 end-0 flex items-center pe-3 text-gray-400 hover:text-gray-600 dark:text-gray-300"
                                         >
                                             {showConfirmPassword ? (
                                                 <EyeOff className="w-5 h-5" />

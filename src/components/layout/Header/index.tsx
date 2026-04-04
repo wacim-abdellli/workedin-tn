@@ -214,7 +214,7 @@ export default function Header() {
         label: t.auth?.accountPanel?.freelancerLabel || 'Freelancer',
         background: 'var(--workspace-primary)',
         color: '#ffffff',
-        dotClassName: 'bg-white',
+        dotClassName: 'bg-white dark:bg-gray-900',
         border: 'rgba(255,255,255,0.18)',
         insetShadow: '0 0 0 1px rgba(255,255,255,0.08) inset',
       }
@@ -231,7 +231,7 @@ export default function Header() {
           label: t.auth?.accountPanel?.needsSetup || 'Needs setup',
           background: 'rgba(255,255,255,0.08)',
           color: 'var(--text-primary)',
-          dotClassName: 'bg-white/70',
+          dotClassName: 'bg-white dark:bg-gray-900/70',
           border: 'rgba(255,255,255,0.14)',
           insetShadow: '0 0 0 1px rgba(255,255,255,0.06) inset',
         }
@@ -516,7 +516,7 @@ export default function Header() {
                             boxShadow: isSwitching ? 'none' : '0 14px 28px -18px rgba(0, 0, 0, 0.18)',
                           }}
                         >
-                          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/12 text-current">
+                          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white dark:bg-gray-900/12 text-current">
                             <Repeat2 className={`h-4 w-4 ${isSwitching ? 'animate-spin' : ''}`} />
                           </span>
                           <span className="min-w-0 flex-1 truncate">{switchButtonLabel}</span>
@@ -708,7 +708,7 @@ export default function Header() {
                       `flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-colors ${
                         isActive
                           ? 'header-nav-link-active'
-                          : 'text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-white/5'
+                          : 'text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-white dark:bg-gray-900/5'
                       }`
                     }
                     style={({ isActive }) => isActive ? { color: 'var(--workspace-primary)', borderColor: 'var(--workspace-primary)' } : undefined}
@@ -771,7 +771,7 @@ export default function Header() {
                 ) : null}
               </nav>
 
-              <div className="rounded-2xl border border-gray-200 p-4 dark:border-white/10">
+              <div className="rounded-2xl border border-gray-200 dark:border-gray-800 p-4 dark:border-white/10">
                   <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-gray-400">{t.settings?.language || 'Language'}</p>
                 <div className="grid grid-cols-3 gap-2">
                   {LANGS.map((lang) => (
@@ -780,8 +780,8 @@ export default function Header() {
                       onClick={() => setLanguage(lang.code)}
                       className={`rounded-xl border px-3 py-2 text-center transition-colors ${
                         currentLang === lang.code
-                          ? 'border-gray-200 text-gray-600 dark:border-white/10 dark:text-gray-300'
-                          : 'border-gray-200 text-gray-600 dark:border-white/10 dark:text-gray-300'
+                          ? 'border-gray-200 dark:border-gray-800 text-gray-600 dark:text-gray-300 dark:border-white/10 dark:text-gray-300'
+                          : 'border-gray-200 dark:border-gray-800 text-gray-600 dark:text-gray-300 dark:border-white/10 dark:text-gray-300'
                         }`}
                       style={currentLang === lang.code ? {
                         borderColor: 'var(--workspace-primary-mid)',
@@ -799,7 +799,7 @@ export default function Header() {
               <div className="grid grid-cols-2 gap-2">
                 <button
                   onClick={toggleTheme}
-                  className="flex items-center justify-center gap-2 rounded-2xl border border-gray-200 px-4 py-3 text-sm font-medium text-gray-700 dark:border-white/10 dark:text-gray-200"
+                  className="flex items-center justify-center gap-2 rounded-2xl border border-gray-200 dark:border-gray-800 px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-200 dark:border-white/10 dark:text-gray-200"
                 >
                   {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
                   {isDark ? (t.common?.toggleLightMode || 'Light') : (t.common?.toggleDarkMode || 'Dark')}
@@ -837,7 +837,7 @@ export default function Header() {
                     navigate('/signup')
                     setMobileMenuOpen(false)
                   }}
-                  className="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm font-semibold text-gray-700 dark:border-white/10 dark:text-gray-200"
+                  className="w-full rounded-2xl border border-gray-200 dark:border-gray-800 px-4 py-3 text-sm font-semibold text-gray-700 dark:text-gray-200 dark:border-white/10 dark:text-gray-200"
                 >
                   {t.nav?.signup || 'Get started'}
                 </button>

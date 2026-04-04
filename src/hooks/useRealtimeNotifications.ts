@@ -51,7 +51,7 @@ export function useRealtimeNotifications(userId: string | undefined) {
         refetchOnWindowFocus: false,
     });
 
-    // Subscribe to realtime INSERT events
+    // Subscribe to realtime INSERT and UPDATE events
     useEffect(() => {
         if (!userId) return;
 
@@ -79,6 +79,25 @@ export function useRealtimeNotifications(userId: string | undefined) {
                     if (shouldShowIncomingToast(incoming)) {
                         showToast(incoming.title, 'info');
                     }
+                }
+            )
+            // Subscribe to UPDATE events to catch deleted message notifications
+            .on(
+                'postgres_changes',
+                {
+                    event: 'UPDATE',
+                    schema: 'public',
+                    table: 'notifications',
+                    filter: `user_id=eq.${userId}`,
+                },
+                (payload) => {
+                    const updated = payload.new as AppNotification;
+
+                    // Update the notification in cache with new content
+                    queryClient.setQueryData<AppNotification[]>(
+                        NOTIFICATIONS_QUERY_KEY(userId),
+                        (prev = []) => prev.map(n => n.id === updated.id ? updated : n)
+                    );
                 }
             )
             .subscribe();

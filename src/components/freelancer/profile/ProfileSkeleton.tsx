@@ -2,7 +2,7 @@ import { Skeleton } from '@/components/common/SkeletonCard';
 
 export default function ProfileSkeleton() {
     return (
-        <div className="min-h-screen bg-gray-50 pb-20 md:pb-0">
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-20 md:pb-0">
             {/* Header Skeleton */}
             <div className="bg-white dark:bg-dark-800 border-b border-gray-100 dark:border-dark-700 pb-8">
                 <div className="h-48 md:h-64 bg-gray-200 dark:bg-dark-700 animate-pulse" /> {/* Cover */}

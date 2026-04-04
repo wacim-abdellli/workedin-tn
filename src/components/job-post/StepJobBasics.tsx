@@ -49,7 +49,7 @@ export default function StepJobBasics() {
     return (
         <div className="space-y-8">
             <div className="space-y-4">
-                <div className="inline-flex items-center gap-2 rounded-full border border-primary-100 bg-primary-50/70 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-primary-700 dark:border-white/10 dark:bg-white/[0.04] dark:text-primary-200">
+                <div className="inline-flex items-center gap-2 rounded-full border border-primary-100 bg-primary-50/70 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-primary-700 dark:border-white/10 dark:bg-white dark:bg-gray-800/[0.04] dark:text-primary-200">
                     <FileText className="w-3.5 h-3.5" />
                     {tx('jobs.new.stepBasics.badge', undefined, 'Project brief')}
                 </div>
@@ -61,7 +61,7 @@ export default function StepJobBasics() {
                 </p>
             </div>
 
-            <section className="space-y-6 rounded-[1.8rem] border border-primary-100/70 bg-white/80 p-6 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
+            <section className="space-y-6 rounded-[1.8rem] border border-primary-100/70 bg-white dark:bg-gray-800/80 p-6 shadow-sm dark:border-white/10 dark:bg-white dark:bg-gray-800/[0.04]">
                 <Input
                     label={tx('jobs.new.stepBasics.projectTitle', undefined, 'عنوان المشروع')}
                     placeholder={tx('jobs.new.stepBasics.projectTitlePlaceholder', undefined, 'مثال: تصميم شعار لشركة مواد غذائية')}
@@ -76,7 +76,7 @@ export default function StepJobBasics() {
                         <div className="relative">
                             <select
                                 {...register('category')}
-                                className="w-full appearance-none rounded-2xl border border-gray-200 bg-white ps-11 pe-10 py-3 text-gray-900 transition-all duration-200 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:border-white/10 dark:bg-[#1a1825] dark:text-white"
+                                className="w-full appearance-none rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 ps-11 pe-10 py-3 text-gray-900 dark:text-white transition-all duration-200 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:border-white/10 dark:bg-[#1a1825] dark:text-white"
                             >
                                 <option value="">{tx('jobs.new.stepBasics.selectCategory', undefined, 'اختر التصنيف')}</option>
                                 {categories.map(cat => (
@@ -96,7 +96,7 @@ export default function StepJobBasics() {
                             <select
                                 {...register('subcategory')}
                                 disabled={!selectedCategory}
-                                className="w-full appearance-none rounded-2xl border border-gray-200 bg-white ps-11 pe-10 py-3 text-gray-900 transition-all duration-200 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-400 dark:border-white/10 dark:bg-[#1a1825] dark:text-white dark:disabled:bg-[#14121f]"
+                                className="w-full appearance-none rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 ps-11 pe-10 py-3 text-gray-900 dark:text-white transition-all duration-200 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 disabled:cursor-not-allowed disabled:bg-gray-50 dark:bg-gray-900 disabled:text-gray-400 dark:border-white/10 dark:bg-[#1a1825] dark:text-white dark:disabled:bg-[#14121f]"
                             >
                                 <option value="">{tx('jobs.new.stepBasics.selectSubcategory', undefined, 'اختر التخصص الفرعي')}</option>
                                 {subcategories.map((subcategory) => (
@@ -116,17 +116,17 @@ export default function StepJobBasics() {
                     <textarea
                         {...register('description')}
                         rows={8}
-                        className="w-full resize-none rounded-[1.4rem] border border-gray-200 bg-white px-4 py-3 text-gray-900 placeholder:text-gray-400 transition-all duration-200 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:border-white/10 dark:bg-[#1a1825] dark:text-white dark:placeholder:text-gray-600"
+                        className="w-full resize-none rounded-[1.4rem] border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-3 text-gray-900 dark:text-white placeholder:text-gray-400 transition-all duration-200 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:border-white/10 dark:bg-[#1a1825] dark:text-white dark:placeholder:text-gray-600 dark:text-gray-300"
                         placeholder={tx('jobs.new.stepBasics.projectDescriptionPlaceholder', undefined, 'اشرح تفاصيل المشروع، المخرجات المتوقعة، وأي متطلبات خاصة...')}
                     />
                     <div className="flex justify-between px-1 text-xs text-gray-500 dark:text-gray-400">
-                        <span className="rounded-full bg-primary-50 px-2.5 py-1 font-medium text-primary-700 dark:bg-white/[0.05] dark:text-primary-200">{tx('jobs.new.stepBasics.characterCount', { current: description.length, max: 2000 }, `${description.length} / 2000 حرف`)}</span>
+                        <span className="rounded-full bg-primary-50 px-2.5 py-1 font-medium text-primary-700 dark:bg-white dark:bg-gray-800/[0.05] dark:text-primary-200">{tx('jobs.new.stepBasics.characterCount', { current: description.length, max: 2000 }, `${description.length} / 2000 حرف`)}</span>
                         {errors.description && (
                             <span className="text-red-500">{errors.description.message as string}</span>
                         )}
                     </div>
 
-                    <div className="mt-3 flex items-start gap-3 rounded-[1.4rem] border border-primary-100/80 bg-primary-50/70 p-4 text-sm text-primary-700 dark:border-white/10 dark:bg-white/[0.04] dark:text-primary-200">
+                    <div className="mt-3 flex items-start gap-3 rounded-[1.4rem] border border-primary-100/80 bg-primary-50/70 p-4 text-sm text-primary-700 dark:border-white/10 dark:bg-white dark:bg-gray-800/[0.04] dark:text-primary-200">
                         <Lightbulb className="w-5 h-5 flex-shrink-0" />
                         <ul className="space-y-1 list-disc list-inside">
                             <li>{tx('jobs.new.stepBasics.tip1', undefined, 'كن دقيقاً في وصف المطلوب')}</li>
@@ -138,7 +138,7 @@ export default function StepJobBasics() {
                 </div>
             </section>
 
-            <section className="space-y-3 rounded-[1.8rem] border border-primary-100/70 bg-white/80 p-6 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
+            <section className="space-y-3 rounded-[1.8rem] border border-primary-100/70 bg-white dark:bg-gray-800/80 p-6 shadow-sm dark:border-white/10 dark:bg-white dark:bg-gray-800/[0.04]">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{tx('jobs.new.stepBasics.requiredSkills', undefined, 'المهارات المطلوبة (بحد أقصى 5)')}</label>
                 <div className="flex flex-wrap gap-2">
                     {PREDEFINED_SKILLS.map(skill => {
@@ -150,7 +150,7 @@ export default function StepJobBasics() {
                                 onClick={() => toggleSkill(skill)}
                                 className={`px-3 py-2 rounded-full text-sm font-medium border transition-colors ${isSelected
                                     ? 'border-primary-200 bg-primary-50 text-primary-700 dark:border-primary-500/30 dark:bg-primary-500/10 dark:text-primary-300'
-                                    : 'border-gray-200 bg-white text-gray-600 hover:border-primary-200 hover:bg-primary-50/50 dark:border-white/10 dark:bg-[#1a1825] dark:text-gray-300 dark:hover:border-primary-500/20 dark:hover:bg-white/[0.06]'
+                                    : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:border-primary-200 hover:bg-primary-50/50 dark:border-white/10 dark:bg-[#1a1825] dark:text-gray-300 dark:hover:border-primary-500/20 dark:hover:bg-white dark:bg-gray-800/[0.06]'
                                     }`}
                             >
                                 {language === 'ar' ? skill.name_ar : language === 'fr' ? skill.name_fr : skill.name_en}
@@ -163,7 +163,7 @@ export default function StepJobBasics() {
                 )}
             </section>
 
-            <section className="space-y-3 rounded-[1.8rem] border border-primary-100/70 bg-white/80 p-6 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
+            <section className="space-y-3 rounded-[1.8rem] border border-primary-100/70 bg-white dark:bg-gray-800/80 p-6 shadow-sm dark:border-white/10 dark:bg-white dark:bg-gray-800/[0.04]">
                 <Controller
                     name="attachments_files"
                     control={control}

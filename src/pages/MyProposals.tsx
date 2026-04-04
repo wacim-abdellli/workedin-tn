@@ -125,7 +125,7 @@ export default function MyProposals() {
               className={`tab-pill whitespace-nowrap ${
                 activeTab === tab
                   ? 'tab-pill-active bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300'
-                  : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
               }`}
             >
               {tabLabel(tab)}
@@ -154,7 +154,7 @@ export default function MyProposals() {
                 className="list-card group"
               >
                 <div className="mb-2 flex items-start justify-between gap-4">
-                  <h3 className="font-semibold text-gray-900 transition-colors group-hover:text-purple-600 dark:text-white dark:group-hover:text-purple-400">
+                  <h3 className="font-semibold text-gray-900 dark:text-white transition-colors group-hover:text-purple-600 dark:text-white dark:group-hover:text-purple-400">
                     {proposal.jobs?.title || tx('pages.myProposals.unknownProject', undefined, 'Unknown Project')}
                   </h3>
                   <span
@@ -182,7 +182,7 @@ export default function MyProposals() {
                 <p className="text-sm text-gray-400">{tx('pages.myProposals.submittedAgo', { time: formatDaysAgo(proposal.created_at) }, `Submitted ${formatDaysAgo(proposal.created_at)}`)}</p>
 
                 {proposal.status === 'accepted' ? (
-                  <div className="mt-4 border-t border-gray-100 pt-4 dark:border-white/5">
+                  <div className="mt-4 border-t border-gray-100 dark:border-gray-800 pt-4 dark:border-white/5">
                     <button
                       onClick={() => navigate('/contracts')}
                       className="text-sm font-medium text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300"

@@ -368,7 +368,7 @@ export default function FreelancerProfile() {
                                                 <h4 className="font-bold text-sm mb-2">{tx('pages.freelancerProfile.portfolio.skillsUsed', undefined, 'Skills Used')}</h4>
                                                 <div className="flex flex-wrap gap-2">
                                                     {sample.skills_used.map((skill, i) => (
-                                                        <span key={i} className="text-xs bg-gray-100 px-2 py-1 rounded text-gray-700">
+                                                        <span key={i} className="text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-gray-700 dark:text-gray-300">
                                                             {skill}
                                                         </span>
                                                     ))}

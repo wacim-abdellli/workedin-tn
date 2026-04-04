@@ -394,7 +394,7 @@ export default function VerifyIdentity() {
                 <div className="mx-auto max-w-4xl">
                     {/* Header */}
                     <div className="mb-10 text-center px-1">
-                        <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-white/90">
+                        <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white dark:bg-gray-800/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-white/90">
                             <Sparkles className="h-3.5 w-3.5" />
                             {tx('verifyIdentity.header.kicker', undefined, 'Secure Account Upgrade')}
                         </div>
@@ -413,8 +413,8 @@ export default function VerifyIdentity() {
                             { icon: <ScanLine className="h-4 w-4" />, title: tx('verifyIdentity.security.qualityTitle', undefined, 'Smart quality checks'), desc: tx('verifyIdentity.security.qualityDesc', undefined, 'We validate file format, size, and basic image quality before upload.') },
                             { icon: <Loader2 className="h-4 w-4" />, title: tx('verifyIdentity.security.reviewTitle', undefined, 'Fast review'), desc: tx('verifyIdentity.security.reviewDesc', undefined, 'Most verification requests are reviewed within 24 hours.') },
                         ].map((b, i) => (
-                            <div key={i} className="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-slate-200 backdrop-blur-sm">
-                                <div className="mb-2 inline-flex h-9 w-9 items-center justify-center rounded-xl bg-white/10 text-blue-200">{b.icon}</div>
+                            <div key={i} className="rounded-2xl border border-white/10 bg-white dark:bg-gray-800/5 p-4 text-sm text-slate-200 backdrop-blur-sm">
+                                <div className="mb-2 inline-flex h-9 w-9 items-center justify-center rounded-xl bg-white dark:bg-gray-800/10 text-blue-200">{b.icon}</div>
                                 <p className="font-semibold text-white">{b.title}</p>
                                 <p className="mt-1 text-xs text-slate-300">{b.desc}</p>
                             </div>

@@ -486,3 +486,37 @@ export async function sendContractMessage(data: {
 export async function unsubscribeFromChannel(channel: RealtimeChannel) {
     if (channel) await supabase.removeChannel(channel);
 }
+
+// Archive a conversation (soft delete - hidden from user but data preserved)
+export async function archiveConversation(conversationId: string) {
+    try {
+        const { data, error } = await supabase
+            .from('conversations')
+            .update({ archived_at: new Date().toISOString() })
+            .eq('id', conversationId)
+            .select();
+
+        if (error) throw error;
+        return { data, error: null };
+    } catch (error) {
+        console.error('Failed to archive conversation:', error);
+        return { data: null, error: normalizeMessageError(error) };
+    }
+}
+
+// Delete a conversation permanently (use with caution - data is not recoverable)
+export async function deleteConversation(conversationId: string) {
+    try {
+        const { data, error } = await supabase
+            .from('conversations')
+            .delete()
+            .eq('id', conversationId)
+            .select();
+
+        if (error) throw error;
+        return { data, error: null };
+    } catch (error) {
+        console.error('Failed to delete conversation:', error);
+        return { data: null, error: normalizeMessageError(error) };
+    }
+}

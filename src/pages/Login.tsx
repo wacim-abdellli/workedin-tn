@@ -77,7 +77,7 @@ function Login() {
                 topAction={
                     <Link
                         to="/signup"
-                        className="inline-flex items-center rounded-full border border-white/12 bg-white/6 px-4 py-2 text-sm font-medium text-white/80 backdrop-blur-sm transition-colors hover:border-white/20 hover:bg-white/10 hover:text-white"
+                        className="inline-flex items-center rounded-full border border-white/12 bg-white dark:bg-gray-800/6 px-4 py-2 text-sm font-medium text-white/80 backdrop-blur-sm transition-colors hover:border-white/20 hover:bg-white dark:bg-gray-800/10 hover:text-white"
                     >
                         {tx('authPages.login.createAccountAction', undefined, 'Create account')}
                     </Link>
@@ -85,7 +85,7 @@ function Login() {
             >
                 <div className="animate-slide-up">
                     {isOAuthResume && isLoading ? (
-                        <div className="flex min-h-[320px] flex-col items-center justify-center rounded-[24px] border border-white/8 bg-gray-50/50 p-8 text-center dark:bg-white/[0.02]">
+                        <div className="flex min-h-[320px] flex-col items-center justify-center rounded-[24px] border border-white/8 bg-gray-50 dark:bg-gray-900/50 p-8 text-center dark:bg-white dark:bg-gray-800/[0.02]">
                             <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary-500/10 dark:bg-primary-400/10">
                                 <Loader2 className="h-8 w-8 animate-spin text-primary-600 dark:text-primary-400" />
                             </div>

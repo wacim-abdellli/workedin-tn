@@ -1,1 +1,55 @@
-const fs=require('fs');let c=fs.readFileSync('src/pages/Settings.tsx','utf8');c=c.replace(/flex h-8 w-8 items-center\s*justify-center rounded-xl/g,'flex h-7 w-7 items-center justify-center rounded-[8px]');c=c.replace(/<BriefcaseBusiness className=\"h-5 w-5\" \/>/g,'<BriefcaseBusiness className=\"h-[18px] w-[18px]\" />');c=c.replace(/<User className=\"h-5 w-5\" \/>/g,'<User className=\"h-[18px] w-[18px]\" />');c=c.replace(/<CheckCircle2 className=\"h-5 w-5\" \/>/g,'<CheckCircle2 className=\"h-[18px] w-[18px]\" />');c=c.replace(/<AlertCircle className=\"h-5 w-5\" \/>/g,'<AlertCircle className=\"h-[18px] w-[18px]\" />');c=c.replace(/<Shield className=\"h-6 w-6\" \/>/g,'<Shield className=\"h-[20px] w-[20px]\" />');c=c.replace(/flex h-12 w-12 items-center justify-center rounded-2xl/g,'flex h-10 w-10 items-center justify-center rounded-[10px]');fs.writeFileSync('src/pages/Settings.tsx',c);
+const fs = require('fs');
+const path = require('path');
+
+let fixedCount = 0;
+let filesChecked = 0;
+
+function processFile(filePath) {
+    if (!fs.existsSync(filePath)) return;
+    const stat = fs.statSync(filePath);
+    if (stat.isDirectory()) {
+        const files = fs.readdirSync(filePath);
+        for (const file of files) {
+            processFile(path.join(filePath, file));
+        }
+    } else if (filePath.endsWith('.tsx') || filePath.endsWith('.ts')) {
+        filesChecked++;
+        let p = path.resolve(filePath);
+        let content = fs.readFileSync(p, 'utf8');
+        let original = content;
+        
+        let changed = false;
+        
+        content = content.replace(/className={?(["'`])([\s\S]*?)\1}?/g, (match, quote, classes) => {
+            let classList = classes.split(/\s+/).filter(Boolean);
+            let localChanged = false;
+            
+            if (classList.includes('bg-white') && !classList.some(c => c.startsWith('dark:bg-'))) {
+                classList.push('dark:bg-gray-800');
+                localChanged = true;
+            }
+            if (classList.includes('text-gray-900') && !classList.some(c => c.startsWith('dark:text-'))) {
+                classList.push('dark:text-white');
+                localChanged = true;
+            }
+            
+            if (localChanged) {
+                let quoteChar = quote === '`' ? '`' : quote;
+                return `className=${match.startsWith('className={') ? '{' : ''}${quoteChar}${classList.join(' ')}${quoteChar}${match.endsWith('}') ? '}' : ''}`;
+            }
+            return match;
+        });
+
+        if (content !== original) {
+            fs.writeFileSync(p, content, 'utf8');
+            console.log('Fixed:', filePath);
+            fixedCount++;
+        }
+    }
+}
+
+try { processFile('src/components/common/'); } catch(e){}
+try { processFile('src/pages/Messages.tsx'); } catch(e){}
+try { processFile('src/components/verify/'); } catch(e){}
+
+console.log(`\nSummary: Checked ${filesChecked} files. Fixed ${fixedCount} files.`);

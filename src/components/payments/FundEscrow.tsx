@@ -116,7 +116,7 @@ const FundEscrow = ({ contract, onSuccess, onError }: FundEscrowProps) => {
                 </div>
                 <div>
                     <h3 className="font-bold text-gray-900 dark:text-white">تمويل الضمان</h3>
-                    <p className="text-sm text-gray-500">أموالك محفوظة حتى اكتمال العمل</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">أموالك محفوظة حتى اكتمال العمل</p>
                 </div>
             </div>
 
@@ -185,7 +185,7 @@ const FundEscrow = ({ contract, onSuccess, onError }: FundEscrowProps) => {
             </button>
 
             {/* Payment Methods Info */}
-            <p className="text-center text-xs text-gray-500 mt-4">
+            <p className="text-center text-xs text-gray-500 dark:text-gray-400 mt-4">
                 الدفع عبر Flouci - بطاقات بنكية ومحافظ إلكترونية
             </p>
         </div>

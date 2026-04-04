@@ -208,7 +208,7 @@ function ClientOnboarding() {
                 main={
                     <div className="space-y-8">
                         <div className="space-y-3">
-                            <div className="inline-flex items-center gap-2 rounded-full border border-brand-light bg-brand-light/20 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-brand-text dark:border-white/10 dark:bg-white/[0.04] dark:text-brand-light">
+                            <div className="inline-flex items-center gap-2 rounded-full border border-brand-light bg-brand-light/20 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-brand-text dark:border-white/10 dark:bg-white dark:bg-gray-800/[0.04] dark:text-brand-light">
                                 <User className="w-3.5 h-3.5" />
                                 {tx('onboarding.client.profileTitle', undefined, 'Client profile')}
                             </div>
@@ -221,7 +221,7 @@ function ClientOnboarding() {
                         </div>
 
                         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-                            <div className="flex flex-col items-center rounded-[1.6rem] border border-brand-light/70 bg-brand-light/20 p-6 dark:border-white/10 dark:bg-white/[0.03]">
+                            <div className="flex flex-col items-center rounded-[1.6rem] border border-brand-light/70 bg-brand-light/20 p-6 dark:border-white/10 dark:bg-white dark:bg-gray-800/[0.03]">
                                 <div className="relative group">
                                     <div
                                         className="w-28 h-28 rounded-full bg-gray-100 dark:bg-dark-800 flex items-center justify-center overflow-hidden cursor-pointer border-4 border-white dark:border-dark-700 shadow-xl group-hover:shadow-2xl transition-all"
@@ -313,7 +313,7 @@ function ClientOnboarding() {
                                         <textarea
                                             {...register('bio')}
                                             rows={5}
-                                            className="w-full resize-none rounded-2xl border border-gray-200 bg-white px-4 py-3 ps-11 text-gray-900 shadow-sm transition-all duration-200 placeholder:text-gray-400 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20 dark:border-white/10 dark:bg-[#1a1825] dark:text-white dark:placeholder:text-gray-600"
+                                            className="w-full resize-none rounded-2xl border border-gray-200 bg-white dark:bg-gray-800 px-4 py-3 ps-11 text-gray-900 dark:text-gray-100 shadow-sm transition-all duration-200 placeholder:text-gray-400 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20 dark:border-white/10 dark:bg-[#1a1825] dark:text-white dark:placeholder:text-gray-600"
                                             placeholder={tx('profile.aboutPlaceholder', undefined, 'Briefly explain what you build, your company context, or how you like to collaborate.')}
                                         />
                                     </div>
@@ -359,7 +359,7 @@ function ClientOnboarding() {
                                 { icon: MapPin, title: tx('onboarding.client.checklistLocation', undefined, 'Set your location'), description: tx('onboarding.client.checklistLocationDesc', undefined, 'Helps with context, timezone expectations, and local trust.'), },
                                 { icon: ShieldCheck, title: tx('onboarding.client.checklistIntro', undefined, 'Add a short intro'), description: tx('onboarding.client.checklistIntroDesc', undefined, 'A brief note about your goals makes the brief feel more real and easier to answer.') },
                             ].map((item) => (
-                                <div key={item.title} className="rounded-2xl border border-brand-light/70 bg-brand-light/30 p-4 dark:border-white/10 dark:bg-white/[0.04]">
+                                <div key={item.title} className="rounded-2xl border border-brand-light/70 bg-brand-light/30 p-4 dark:border-white/10 dark:bg-white dark:bg-gray-800/[0.04]">
                                     <div className="flex items-start gap-3">
                                         <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-brand text-white">
                                             <item.icon className="h-4 w-4" />

@@ -19,13 +19,13 @@ export default function ProfileSidebar({ freelancer }: SidebarProps) {
     return (
         <div className="space-y-6">
             {/* Availability Card */}
-            <div className="rounded-[1.75rem] p-6 border border-black/[0.06] bg-white shadow-[0_18px_40px_-28px_rgba(26,24,37,0.14)] dark:border-white/8 dark:bg-[#171421]">
+            <div className="rounded-[1.75rem] p-6 border border-black/[0.06] bg-white dark:bg-gray-800 shadow-[0_18px_40px_-28px_rgba(26,24,37,0.14)] dark:border-white/8 dark:bg-[#171421]">
                 <h3 className="font-bold text-[var(--text-primary)] mb-4">{tx('pages.freelancerProfile.workInfo', undefined, 'Work information')}</h3>
                 <div className="space-y-4">
                     <div className="flex justify-between items-center py-2 border-b border-border/60 last:border-0">
                         <span className="text-[var(--text-secondary)]">{tx('pages.freelancerProfile.status', undefined, 'Status')}</span>
                         <span className={`px-3 py-1 rounded-full text-xs font-medium ${freelancer.availability === 'available' ? 'bg-green-100 text-green-700' :
-                            freelancer.availability === 'busy' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-700'
+                            freelancer.availability === 'busy' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
                             }`}>
                             {freelancer.availability === 'available' ? tx('pages.freelancerProfile.available', undefined, 'Available for work') :
                                 freelancer.availability === 'busy' ? tx('pages.freelancerProfile.busy', undefined, 'Busy right now') : tx('pages.freelancerProfile.offline', undefined, 'Offline')}
@@ -44,7 +44,7 @@ export default function ProfileSidebar({ freelancer }: SidebarProps) {
 
             {/* Languages */}
             {freelancer.languages.length > 0 && (
-                <div className="rounded-[1.75rem] p-6 border border-black/[0.06] bg-white shadow-[0_18px_40px_-28px_rgba(26,24,37,0.14)] dark:border-white/8 dark:bg-[#171421]">
+                <div className="rounded-[1.75rem] p-6 border border-black/[0.06] bg-white dark:bg-gray-800 shadow-[0_18px_40px_-28px_rgba(26,24,37,0.14)] dark:border-white/8 dark:bg-[#171421]">
                     <h3 className="font-bold text-[var(--text-primary)] mb-4">{tx('pages.freelancerProfile.languages', undefined, 'Languages')}</h3>
                     <div className="space-y-3">
                         {freelancer.languages.map((lang, idx) => (
@@ -61,7 +61,7 @@ export default function ProfileSidebar({ freelancer }: SidebarProps) {
 
             {/* Education */}
             {freelancer.education.length > 0 && (
-                <div className="rounded-[1.75rem] p-6 border border-black/[0.06] bg-white shadow-[0_18px_40px_-28px_rgba(26,24,37,0.14)] dark:border-white/8 dark:bg-[#171421]">
+                <div className="rounded-[1.75rem] p-6 border border-black/[0.06] bg-white dark:bg-gray-800 shadow-[0_18px_40px_-28px_rgba(26,24,37,0.14)] dark:border-white/8 dark:bg-[#171421]">
                     <h3 className="font-bold text-[var(--text-primary)] mb-4">{tx('pages.freelancerProfile.education', undefined, 'Education')}</h3>
                     <div className="space-y-4">
                         {freelancer.education.map((edu, idx) => (
@@ -76,7 +76,7 @@ export default function ProfileSidebar({ freelancer }: SidebarProps) {
             )}
 
             {/* Verifications */}
-            <div className="rounded-[1.75rem] p-6 border border-black/[0.06] bg-white shadow-[0_18px_40px_-28px_rgba(26,24,37,0.14)] dark:border-white/8 dark:bg-[#171421]">
+            <div className="rounded-[1.75rem] p-6 border border-black/[0.06] bg-white dark:bg-gray-800 shadow-[0_18px_40px_-28px_rgba(26,24,37,0.14)] dark:border-white/8 dark:bg-[#171421]">
                 <h3 className="font-bold text-[var(--text-primary)] mb-4">{tx('pages.freelancerProfile.verifications', undefined, 'Verifications')}</h3>
                 <div className="space-y-3">
                     <div className="flex items-center gap-3">

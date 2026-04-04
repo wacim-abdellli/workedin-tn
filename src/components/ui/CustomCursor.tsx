@@ -37,7 +37,7 @@ export default function CustomCursor() {
   return (
     <motion.div
       aria-hidden="true"
-      className="custom-cursor pointer-events-none fixed left-0 top-0 z-[120] hidden h-4 w-4 rounded-full bg-white lg:block"
+      className="custom-cursor pointer-events-none fixed left-0 top-0 z-[120] hidden h-4 w-4 rounded-full bg-white dark:bg-gray-800 lg:block"
       style={{ x: springX, y: springY, scale: springScale }}
     />
   );

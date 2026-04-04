@@ -108,7 +108,7 @@ const WalletCard = ({ className = '', showWithdrawal = true }: WalletCardProps) 
             <div className={`bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 ${className}`}>
                 <div className="text-center py-4">
                     <Wallet className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                    <p className="text-gray-500">لم يتم إنشاء محفظتك بعد</p>
+                    <p className="text-gray-500 dark:text-gray-400">لم يتم إنشاء محفظتك بعد</p>
                     <button
                         onClick={fetchWalletData}
                         className="mt-2 text-sm text-primary-600 hover:text-primary-700"
@@ -126,14 +126,14 @@ const WalletCard = ({ className = '', showWithdrawal = true }: WalletCardProps) 
             <div className="p-6 bg-gradient-to-br from-primary-500 to-primary-700 text-white">
                 <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
+                        <div className="w-10 h-10 rounded-xl bg-white dark:bg-slate-900/20 flex items-center justify-center">
                             <Wallet className="w-5 h-5" />
                         </div>
                         <h3 className="font-bold text-lg">محفظتي</h3>
                     </div>
                     <button
                         onClick={fetchWalletData}
-                        className="p-2 rounded-lg hover:bg-white/10 transition-colors"
+                        className="p-2 rounded-lg hover:bg-white dark:bg-slate-900/10 transition-colors"
                         title="تحديث"
                     >
                         <RefreshCw className="w-4 h-4" />
@@ -149,14 +149,14 @@ const WalletCard = ({ className = '', showWithdrawal = true }: WalletCardProps) 
 
                 {/* Stats Row */}
                 <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-white/10 rounded-xl p-3">
+                    <div className="bg-white dark:bg-slate-900/10 rounded-xl p-3">
                         <div className="flex items-center gap-2 text-primary-100 text-xs mb-1">
                             <Clock className="w-3 h-3" />
                             <span>قيد الانتظار</span>
                         </div>
                         <div className="font-bold">{formatCurrency(wallet.pending_balance)}</div>
                     </div>
-                    <div className="bg-white/10 rounded-xl p-3">
+                    <div className="bg-white dark:bg-slate-900/10 rounded-xl p-3">
                         <div className="flex items-center gap-2 text-primary-100 text-xs mb-1">
                             <TrendingUp className="w-3 h-3" />
                             <span>إجمالي الأرباح</span>
@@ -195,7 +195,7 @@ const WalletCard = ({ className = '', showWithdrawal = true }: WalletCardProps) 
 
                 {transactions.length === 0 ? (
                     <div className="text-center py-4">
-                        <p className="text-sm text-gray-500">لا توجد معاملات بعد</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">لا توجد معاملات بعد</p>
                     </div>
                 ) : (
                     <div className="space-y-3">
@@ -208,7 +208,7 @@ const WalletCard = ({ className = '', showWithdrawal = true }: WalletCardProps) 
                                     <div className="font-medium text-sm text-gray-900 dark:text-white">
                                         {formatTransactionType(tx.type)}
                                     </div>
-                                    <div className="text-xs text-gray-500">
+                                    <div className="text-xs text-gray-500 dark:text-gray-400">
                                         {new Date(tx.created_at).toLocaleDateString('ar-TN')}
                                     </div>
                                 </div>

@@ -130,7 +130,7 @@ export default function ProposalModal({
                         )}
 
                         <div className="bg-gray-50 dark:bg-dark-800 rounded-lg p-3 space-y-2 text-sm">
-                            <div className="flex justify-between text-gray-500">
+                            <div className="flex justify-between text-gray-500 dark:text-gray-400">
                                 <span>رسوم المنصة ({PLATFORM_FEE_PERCENT}%)</span>
                                 <span>-{platformFee.toFixed(2)} د.ت</span>
                             </div>
@@ -174,7 +174,7 @@ export default function ProposalModal({
                         className={`input w-full resize-none ${errors.cover_letter ? 'border-red-500 focus:ring-red-500' : ''}`}
                         placeholder="اشرح لماذا أنت الشخص المناسب لهذا المشروع..."
                     />
-                    <div className="flex justify-between text-xs text-gray-500">
+                    <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
                         {errors.cover_letter ? (
                             <span className="text-red-500">{errors.cover_letter.message}</span>
                         ) : (
@@ -230,7 +230,7 @@ export default function ProposalModal({
                         className="hidden"
                         accept=".pdf,.doc,.docx,.jpg,.png"
                     />
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
                         يمكنك رفع ملفات بصيغة PDF أو صور حتى 10MB
                     </p>
                 </div>

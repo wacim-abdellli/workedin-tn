@@ -219,7 +219,7 @@ export default function FilterSidebar({
 
                     <FilterSection title={t.jobs.filters.budget.title} section="budget">
                         <div className="space-y-1">
-                            <label className="flex items-center gap-2 cursor-pointer group p-2 hover:bg-gray-50 dark:hover:bg-dark-700/50 rounded-lg transition-colors">
+                            <label className="flex items-center gap-2 cursor-pointer group p-2 hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-dark-700/50 rounded-lg transition-colors">
                                 <div className="relative flex items-center">
                                     <input
                                         type="radio"
@@ -242,7 +242,7 @@ export default function FilterSidebar({
                                 { value: '250-500', label: t.jobs.filters.budget.ranges?.r250_500 || '250-500 د.ت' },
                                 { value: '500+', label: t.jobs.filters.budget.ranges?.r500_plus || 'أكثر من 500 د.ت' },
                             ].map(range => (
-                                <label key={range.value} className="flex items-center gap-2 cursor-pointer group p-2 hover:bg-gray-50 dark:hover:bg-dark-700/50 rounded-lg transition-colors">
+                                <label key={range.value} className="flex items-center gap-2 cursor-pointer group p-2 hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-dark-700/50 rounded-lg transition-colors">
                                     <div className="relative flex items-center">
                                         <input
                                             type="radio"

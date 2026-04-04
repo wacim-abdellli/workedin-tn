@@ -131,16 +131,16 @@ const WithdrawalForm = ({ wallet, onSuccess, onCancel }: WithdrawalFormProps) =>
                     <button
                         type="button"
                         onClick={onCancel}
-                        className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+                        className="p-2 rounded-lg hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700"
                     >
-                        <X className="w-5 h-5 text-gray-500" />
+                        <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
                     </button>
                 )}
             </div>
 
             {/* Available Balance */}
             <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
-                <div className="text-sm text-gray-500 mb-1">الرصيد المتاح</div>
+                <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">الرصيد المتاح</div>
                 <div className="text-2xl font-bold text-gray-900 dark:text-white">
                     {formatCurrency(wallet.balance)}
                 </div>
@@ -163,7 +163,7 @@ const WithdrawalForm = ({ wallet, onSuccess, onCancel }: WithdrawalFormProps) =>
                         className="input w-full ps-16"
                         dir="ltr"
                     />
-                    <span className="absolute start-3 top-1/2 -translate-y-1/2 text-gray-500">
+                    <span className="absolute start-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">
                         د.ت
                     </span>
                 </div>

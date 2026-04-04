@@ -56,7 +56,7 @@ export default function FAQ() {
     })).filter(cat => cat.questions.length > 0);
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-800">
             <SEO {...SEO_CONFIG.faq} url="/faq" />
             <Header />
 
@@ -78,7 +78,7 @@ export default function FAQ() {
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             placeholder={tx('faqPage.page.searchPlaceholder')}
-                            className="w-full pe-12 ps-4 py-4 border border-gray-200 rounded-2xl text-lg"
+                            className="w-full pe-12 ps-4 py-4 border border-gray-200 dark:border-gray-700 rounded-2xl text-lg"
                         />
                     </div>
                 </div>
@@ -100,7 +100,7 @@ export default function FAQ() {
                                     const isOpen = openItems.includes(itemId);
 
                                     return (
-                                        <div key={idx} className="border-b border-gray-100 last:border-0 pb-4 last:pb-0">
+                                        <div key={idx} className="border-b border-gray-100 dark:border-gray-800 last:border-0 pb-4 last:pb-0">
                                             <button
                                                 onClick={() => toggleItem(itemId)}
                                                 className="w-full flex items-center justify-between text-right py-2"
@@ -133,7 +133,7 @@ export default function FAQ() {
                          <p className="opacity-90 mb-4">{tx('faqPage.page.supportReady')}</p>
                         <a
                             href="mailto:support@khedma.tn"
-                            className="inline-block px-6 py-3 bg-white text-primary-600 rounded-xl font-medium hover:bg-gray-100 transition-colors"
+                            className="inline-block px-6 py-3 bg-white dark:bg-gray-900 text-primary-600 rounded-xl font-medium hover:bg-gray-100 dark:bg-gray-800 transition-colors"
                         >
                             {tx('faqPage.page.contactButton')}
                         </a>

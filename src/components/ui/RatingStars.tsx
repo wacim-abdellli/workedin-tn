@@ -34,7 +34,7 @@ export default function RatingStars({
       </span>
 
       {snippet ? (
-        <div className="pointer-events-none absolute left-0 top-full z-30 mt-3 w-60 rounded-2xl border border-primary-100/70 bg-white/95 p-3 text-xs leading-relaxed text-[#4e4a63] opacity-0 shadow-xl transition-opacity group-hover:opacity-100 dark:border-white/8 dark:bg-[#161320] dark:text-[#aba9bc]">
+        <div className="pointer-events-none absolute left-0 top-full z-30 mt-3 w-60 rounded-2xl border border-primary-100/70 bg-white dark:bg-gray-800/95 p-3 text-xs leading-relaxed text-[#4e4a63] opacity-0 shadow-xl transition-opacity group-hover:opacity-100 dark:border-white/8 dark:bg-[#161320] dark:text-[#aba9bc]">
           “{snippet}”
         </div>
       ) : null}

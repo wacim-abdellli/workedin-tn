@@ -365,7 +365,7 @@ function ContractWorkspaceComponent() {
     if (!contractData) return null;
 
     return (
-        <div className="flex flex-col h-screen bg-white">
+        <div className="flex flex-col h-screen bg-white dark:bg-gray-800">
             <SEO
                 title={contractData ? `${contractData.job.title} | ${t.contract.workspaceTitle}` : t.contract.workspaceTitle}
                 description={t.contract.seoDescription || "Track conversation, files, and payment status for your contract from the workspace."}
@@ -374,22 +374,22 @@ function ContractWorkspaceComponent() {
             <Header />
 
             {/* Contract Header Bar */}
-            <div className="h-16 border-b border-gray-200 flex items-center justify-between px-4 sticky top-0 bg-white z-10 shrink-0">
+            <div className="h-16 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between px-4 sticky top-0 bg-white dark:bg-gray-800 z-10 shrink-0">
                 <div className="flex items-center gap-3">
                     <button
                         type="button"
                         onClick={() => navigate(-1)}
-                        className="p-2 hover:bg-gray-100 rounded-full md:hidden"
+                        className="p-2 hover:bg-gray-100 dark:bg-gray-800 rounded-full md:hidden"
                         aria-label={t.common.back}
                     >
-                        <ArrowLeft className="w-5 h-5 text-gray-500 rtl:rotate-180" />
+                        <ArrowLeft className="w-5 h-5 text-gray-500 dark:text-gray-400 rtl:rotate-180" />
                     </button>
                     <div>
                         <h1 className="font-bold text-lg leading-tight truncate max-w-[200px] md:max-w-md flex items-center gap-2">
                             {contractData.job.title}
                             {contractData.status === 'completed' && <CheckCircle className="w-4 h-4 text-green-500" />}
                         </h1>
-                        <div className="flex items-center gap-2 text-xs text-gray-500">
+                        <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
                             <span className={`w-2 h-2 rounded-full ${currentStatus === 'active' ? 'bg-green-500' :
                                 currentStatus === 'completed' ? 'bg-blue-500' : 'bg-gray-400'
                                 }`}></span>
@@ -405,7 +405,7 @@ function ContractWorkspaceComponent() {
             </div>
 
             {/* Mobile Tabs */}
-            <div className="md:hidden shrink-0 border-b border-gray-100 bg-white z-10 overflow-x-auto" role="tablist" aria-label={tx('contract.tabs.ariaLabel', undefined, 'تبويبات مساحة العمل')}>
+            <div className="md:hidden shrink-0 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-800 z-10 overflow-x-auto" role="tablist" aria-label={tx('contract.tabs.ariaLabel', undefined, 'تبويبات مساحة العمل')}>
                 <div className="flex min-w-max">
                     <button
                         type="button"
@@ -415,7 +415,7 @@ function ContractWorkspaceComponent() {
                         aria-selected={activeMobileTab === 'chat'}
                         aria-controls="workspace-panel-chat"
                         aria-label={tx('contract.tabs.chatAria', undefined, 'إظهار المحادثة')}
-                        className={`flex min-h-[48px] min-w-[118px] shrink-0 items-center justify-center gap-2 whitespace-nowrap border-b-2 px-4 py-3 text-sm font-medium transition-colors ${activeMobileTab === 'chat' ? 'border-primary-600 text-primary-600' : 'border-transparent text-gray-500'}`}
+                        className={`flex min-h-[48px] min-w-[118px] shrink-0 items-center justify-center gap-2 whitespace-nowrap border-b-2 px-4 py-3 text-sm font-medium transition-colors ${activeMobileTab === 'chat' ? 'border-primary-600 text-primary-600' : 'border-transparent text-gray-500 dark:text-gray-400'}`}
                     >
                         <MessageSquare className="w-4 h-4" />{tx('contract.tabs.chat', undefined, 'المراسلة')}</button>
                     <button
@@ -426,7 +426,7 @@ function ContractWorkspaceComponent() {
                         aria-selected={activeMobileTab === 'details'}
                         aria-controls="workspace-panel-details"
                         aria-label={tx('contract.tabs.detailsAria', undefined, 'إظهار التفاصيل')}
-                        className={`flex min-h-[48px] min-w-[118px] shrink-0 items-center justify-center gap-2 whitespace-nowrap border-b-2 px-4 py-3 text-sm font-medium transition-colors ${activeMobileTab === 'details' ? 'border-primary-600 text-primary-600' : 'border-transparent text-gray-500'}`}
+                        className={`flex min-h-[48px] min-w-[118px] shrink-0 items-center justify-center gap-2 whitespace-nowrap border-b-2 px-4 py-3 text-sm font-medium transition-colors ${activeMobileTab === 'details' ? 'border-primary-600 text-primary-600' : 'border-transparent text-gray-500 dark:text-gray-400'}`}
                     >
                         <Info className="w-4 h-4" />{tx('contract.tabs.details', undefined, 'التفاصيل')}</button>
                     <button
@@ -437,7 +437,7 @@ function ContractWorkspaceComponent() {
                         aria-selected={activeMobileTab === 'files'}
                         aria-controls="workspace-panel-files"
                         aria-label={tx('contract.tabs.filesAria', undefined, 'إظهار الملفات')}
-                        className={`flex min-h-[48px] min-w-[118px] shrink-0 items-center justify-center gap-2 whitespace-nowrap border-b-2 px-4 py-3 text-sm font-medium transition-colors ${activeMobileTab === 'files' ? 'border-primary-600 text-primary-600' : 'border-transparent text-gray-500'}`}
+                        className={`flex min-h-[48px] min-w-[118px] shrink-0 items-center justify-center gap-2 whitespace-nowrap border-b-2 px-4 py-3 text-sm font-medium transition-colors ${activeMobileTab === 'files' ? 'border-primary-600 text-primary-600' : 'border-transparent text-gray-500 dark:text-gray-400'}`}
                     >
                         <FileText className="w-4 h-4" />{tx('contract.tabs.files', undefined, 'الملفات')}</button>
                 </div>
@@ -448,7 +448,7 @@ function ContractWorkspaceComponent() {
 
                 {/* Left: Chat Section (60% Desktop) */}
                 <div className={`
-                    absolute inset-0 z-0 bg-white md:static md:w-[60%] flex flex-col transition-transform duration-300
+                    absolute inset-0 z-0 bg-white dark:bg-gray-800 md:static md:w-[60%] flex flex-col transition-transform duration-300
                     ${activeMobileTab === 'chat' ? 'translate-x-0' : 'translate-x-full md:translate-x-0'}
                 `}
                     id="workspace-panel-chat"
@@ -471,7 +471,7 @@ function ContractWorkspaceComponent() {
 
                 {/* Right: Contract Details (40% Desktop) */}
                 <div className={`
-                    absolute inset-0 z-0 bg-gray-50 md:static md:w-[40%] md:border-s md:border-gray-200 transition-transform duration-300
+                    absolute inset-0 z-0 bg-gray-50 dark:bg-gray-900 md:static md:w-[40%] md:border-s md:border-gray-200 dark:border-gray-700 transition-transform duration-300
                     ${activeMobileTab === 'details' ? 'translate-x-0' : 'translate-x-full md:translate-x-0'}
                 `}
                     id="workspace-panel-details"
@@ -494,14 +494,14 @@ function ContractWorkspaceComponent() {
 
                 {/* Files Tab (Mobile Only) */}
                 <div className={`
-                    absolute inset-0 z-0 bg-white md:hidden transition-transform duration-300
+                    absolute inset-0 z-0 bg-white dark:bg-gray-800 md:hidden transition-transform duration-300
                     ${activeMobileTab === 'files' ? 'translate-x-0' : 'translate-x-full'}
                 `}
                     id="workspace-panel-files"
                     role="tabpanel"
                     aria-labelledby="workspace-tab-files"
                 >
-                    <div className="p-8 text-center text-gray-500">
+                    <div className="p-8 text-center text-gray-500 dark:text-gray-400">
                         <FileText className="w-12 h-12 mx-auto mb-3 opacity-20" />
                         <p>{tx('contract.filesListEmpty', undefined, 'قائمة الملفات (راجع تبويب المراسلة للمرفقات)')}</p>
                     </div>

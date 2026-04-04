@@ -111,7 +111,7 @@ export default function SecuritySettings() {
 
                 <div className="space-y-4">
                     {/* Password Change Section */}
-                    <div className="rounded-[1.6rem] border border-primary-100/70 bg-white/75 p-5 dark:border-white/10 dark:bg-white/[0.04]">
+                    <div className="rounded-[1.6rem] border border-primary-100/70 bg-white dark:bg-slate-900/75 p-5 dark:border-white/10 dark:bg-white/[0.04]">
                         <div className="flex items-start gap-3">
                             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary-50 text-primary-600 dark:bg-white/8 dark:text-primary-300">
                                 <KeyRound className="h-5 w-5" />
@@ -200,7 +200,7 @@ export default function SecuritySettings() {
                     </div>
 
                     {/* Active Sessions */}
-                    <div className="rounded-[1.6rem] border border-primary-100/70 bg-white/75 p-5 dark:border-white/10 dark:bg-white/[0.04]">
+                    <div className="rounded-[1.6rem] border border-primary-100/70 bg-white dark:bg-slate-900/75 p-5 dark:border-white/10 dark:bg-white/[0.04]">
                         <div className="flex items-start gap-3">
                             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary-50 text-primary-600 dark:bg-white/8 dark:text-primary-300">
                                 <Smartphone className="h-5 w-5" />

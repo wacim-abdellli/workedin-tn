@@ -73,14 +73,14 @@ export default function PaymentModal({ isOpen, onClose, amount, recipientName, o
                 </div>
             </div>
 
-            <div className="border-2 border-dashed border-gray-200 dark:border-dark-600 rounded-2xl p-8 text-center bg-gray-50 dark:bg-dark-800/50 hover:bg-white dark:hover:bg-dark-800/80 hover:border-primary-200 dark:hover:border-primary-900 transition-all duration-300">
-                <div className="w-48 h-48 bg-white p-2 rounded-xl shadow-sm border border-gray-100 mx-auto mb-4 flex items-center justify-center overflow-hidden">
+            <div className="border-2 border-dashed border-gray-200 dark:border-dark-600 rounded-2xl p-8 text-center bg-gray-50 dark:bg-dark-800/50 hover:bg-white dark:bg-gray-800 dark:hover:bg-dark-800/80 hover:border-primary-200 dark:hover:border-primary-900 transition-all duration-300">
+                <div className="w-48 h-48 bg-white dark:bg-gray-800 p-2 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 mx-auto mb-4 flex items-center justify-center overflow-hidden">
                     {/* Placeholder QR Code - Simulated with CSS */}
                     <div className="w-full h-full bg-dark-900 pattern-dots opacity-80" style={{
                         backgroundImage: 'radial-gradient(#000 2px, transparent 2px)',
                         backgroundSize: '16px 16px'
                     }} />
-                    <div className="absolute bg-white p-2 rounded-full shadow-lg">
+                    <div className="absolute bg-white dark:bg-gray-800 p-2 rounded-full shadow-lg">
                         <Smartphone className="w-6 h-6 text-yellow-500" />
                     </div>
                 </div>
@@ -217,7 +217,7 @@ export default function PaymentModal({ isOpen, onClose, amount, recipientName, o
                         aria-selected={method === 'd17'}
                         aria-controls="payment-panel-d17"
                         tabIndex={method === 'd17' ? 0 : -1}
-                        className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all duration-200 ${method === 'd17' ? 'bg-white dark:bg-dark-700 shadow text-primary-600 dark:text-primary-400' : 'text-muted hover:text-dark-900 dark:hover:text-white hover:bg-gray-200/50 dark:hover:bg-dark-700/50'}`}
+                        className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all duration-200 ${method === 'd17' ? 'bg-white dark:bg-dark-700 shadow text-primary-600 dark:text-primary-400' : 'text-muted hover:text-dark-900 dark:hover:text-white hover:bg-gray-200 dark:bg-gray-700/50 dark:hover:bg-dark-700/50'}`}
                         onClick={() => setMethod('d17')}
                     >
                         D17
@@ -229,7 +229,7 @@ export default function PaymentModal({ isOpen, onClose, amount, recipientName, o
                         aria-selected={method === 'flouci'}
                         aria-controls="payment-panel-flouci"
                         tabIndex={method === 'flouci' ? 0 : -1}
-                        className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all duration-200 ${method === 'flouci' ? 'bg-white dark:bg-dark-700 shadow text-primary-600 dark:text-primary-400' : 'text-muted hover:text-dark-900 dark:hover:text-white hover:bg-gray-200/50 dark:hover:bg-dark-700/50'}`}
+                        className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all duration-200 ${method === 'flouci' ? 'bg-white dark:bg-dark-700 shadow text-primary-600 dark:text-primary-400' : 'text-muted hover:text-dark-900 dark:hover:text-white hover:bg-gray-200 dark:bg-gray-700/50 dark:hover:bg-dark-700/50'}`}
                         onClick={() => setMethod('flouci')}
                     >
                         Flouci
@@ -241,7 +241,7 @@ export default function PaymentModal({ isOpen, onClose, amount, recipientName, o
                         aria-selected={method === 'card'}
                         aria-controls="payment-panel-card"
                         tabIndex={method === 'card' ? 0 : -1}
-                        className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all duration-200 ${method === 'card' ? 'bg-white dark:bg-dark-700 shadow text-primary-600 dark:text-primary-400' : 'text-muted hover:text-dark-900 dark:hover:text-white hover:bg-gray-200/50 dark:hover:bg-dark-700/50'}`}
+                        className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all duration-200 ${method === 'card' ? 'bg-white dark:bg-dark-700 shadow text-primary-600 dark:text-primary-400' : 'text-muted hover:text-dark-900 dark:hover:text-white hover:bg-gray-200 dark:bg-gray-700/50 dark:hover:bg-dark-700/50'}`}
                         onClick={() => setMethod('card')}
                     >
                         {t.payment.creditCard}

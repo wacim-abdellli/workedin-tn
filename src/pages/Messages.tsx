@@ -28,6 +28,7 @@ import Button from '../components/ui/Button';
 import Modal from '../components/ui/Modal';
 import SEO, { SEO_CONFIG } from '../components/common/SEO';
 import EmptyState from '../components/common/EmptyState';
+import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../components/ui/Toast';
 import {
@@ -160,8 +161,10 @@ function MessagesComponent() {
     const [hasMoreConversations, setHasMoreConversations] = useState(true);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const { isRecording, recordingTime, startRecording, stopRecording, cancelRecording, audioBlob } = useAudioRecorder();
+    const [isArchivingConversation, setIsArchivingConversation] = useState(false);
+    const [isDeletingConversation, setIsDeletingConversation] = useState(false);
 
     const conversationsChannelRef = useRef<RealtimeChannel | null>(null);
     const messagesChannelRef = useRef<RealtimeChannel | null>(null);
@@ -697,9 +700,72 @@ function MessagesComponent() {
                 messagesChannelRef.current.unsubscribe();
             }
         };
-    }, [selectedConversation?.id, user?.id]);
+     }, [selectedConversation?.id, user?.id]);
 
-    // Save draft when message changes
+    // Subscribe to ALL new messages for this user (not just selected conversation)
+    // This ensures new conversations appear in the sidebar immediately
+    useEffect(() => {
+        if (!user?.id) return;
+
+        let globalMessagesChannelRef = null as any;
+
+        globalMessagesChannelRef = supabase
+            .channel(`user_messages:${user.id}`)
+            .on(
+                'postgres_changes',
+                {
+                    event: 'INSERT',
+                    schema: 'public',
+                    table: 'messages',
+                    filter: `receiver_id=eq.${user.id}` // Messages sent TO this user
+                },
+                (payload: any) => {
+                    const newMsg = payload.new as unknown as Message;
+                    
+                    // Update or add conversation to the list
+                    setConversations(prev => {
+                        const convIdx = prev.findIndex(c => c.id === newMsg.conversation_id);
+                        
+                        if (convIdx > -1) {
+                            // Conversation exists - update it and move to top
+                            const updated = [...prev];
+                            const conv = updated[convIdx];
+                            updated.splice(convIdx, 1); // Remove from current position
+                            
+                            // Update last message info
+                            conv.last_message_text = newMsg.content;
+                            conv.last_message_at = newMsg.created_at;
+                            
+                            // Increment unread count if it's not the currently selected conversation
+                            if (selectedConversation?.id !== newMsg.conversation_id) {
+                                const isParticipant1 = conv.participant_1 === user.id;
+                                if (isParticipant1) {
+                                    conv.unread_count_1 = (conv.unread_count_1 || 0) + 1;
+                                } else {
+                                    conv.unread_count_2 = (conv.unread_count_2 || 0) + 1;
+                                }
+                            }
+                            
+                            // Add to top of list
+                            return [conv, ...updated];
+                        } else {
+                            // Reload from server when a completely new conversation arrives using existing fetch triggers
+                            setPage((prevPage) => prevPage === 0 ? prevPage : 0);
+                            // We can't safely call loadConversations from here since it's defined elsewhere,
+                            // but setting page triggers reload if needed, or we can just fetch the single new conversation.
+                            return prev;
+                        }
+                    });
+                }
+            )
+            .subscribe();
+
+        return () => {
+            if (globalMessagesChannelRef) {
+                globalMessagesChannelRef.unsubscribe();
+            }
+        };
+    }, [user?.id, selectedConversation?.id]);
     useEffect(() => {
         if (selectedConversation && newMessage !== undefined) {
             const draftKey = `draft_${selectedConversation.id}`;

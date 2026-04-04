@@ -45,7 +45,7 @@ export default function ProfileHeader({
 
             {/* Content Container Overlapping */}
             <div className="container-custom relative z-10">
-                <div className="-mt-32 sm:-mt-40 mb-10 rounded-[2.5rem] border border-white/40 bg-white/70 backdrop-blur-3xl px-6 pb-8 pt-8 shadow-[0_20px_80px_-20px_rgba(0,0,0,0.15)] dark:border-white/10 dark:bg-[#120F1A]/80 sm:px-10 lg:px-12">
+                <div className="-mt-32 sm:-mt-40 mb-10 rounded-[2.5rem] border border-white/40 bg-white dark:bg-gray-800/70 backdrop-blur-3xl px-6 pb-8 pt-8 shadow-[0_20px_80px_-20px_rgba(0,0,0,0.15)] dark:border-white/10 dark:bg-[#120F1A]/80 sm:px-10 lg:px-12">
                     
                     <div className="flex flex-col lg:flex-row lg:items-start lg:gap-12">
                         
@@ -54,7 +54,7 @@ export default function ProfileHeader({
                             <div className="flex flex-col items-center sm:flex-row sm:items-end gap-6 sm:gap-8">
                                 {/* Avatar */}
                                 <div className="relative -mt-16 sm:-mt-20 group">
-                                    <div className="relative flex h-36 w-36 sm:h-44 sm:w-44 items-center justify-center overflow-hidden rounded-full border-[6px] border-white/60 bg-white shadow-2xl backdrop-blur-xl transition hover:scale-105 dark:border-[#120F1A]/60 dark:bg-[#1C1827]">
+                                    <div className="relative flex h-36 w-36 sm:h-44 sm:w-44 items-center justify-center overflow-hidden rounded-full border-[6px] border-white/60 bg-white dark:bg-gray-800 shadow-2xl backdrop-blur-xl transition hover:scale-105 dark:border-[#120F1A]/60 dark:bg-[#1C1827]">
                                         {freelancer.avatar_url ? (
                                             <OptimizedImage
                                                 src={freelancer.avatar_url}
@@ -108,7 +108,7 @@ export default function ProfileHeader({
                             </div>
 
                             {/* Bio */}
-                            <div className="mt-8 rounded-2xl bg-white/40 p-6 shadow-sm backdrop-blur-md dark:bg-white/5 sm:p-8 border border-white/50 dark:border-white/10">
+                            <div className="mt-8 rounded-2xl bg-white dark:bg-gray-800/40 p-6 shadow-sm backdrop-blur-md dark:bg-white/5 sm:p-8 border border-white/50 dark:border-white/10">
                                 <p className="text-base sm:text-lg leading-relaxed text-slate-700 dark:text-slate-300 italic font-medium">
                                     "{freelancer.bio || tx('settings.noBio', undefined, 'No bio added yet')}"
                                 </p>
@@ -139,7 +139,7 @@ export default function ProfileHeader({
                                                     size="lg"
                                                     onClick={onMessage}
                                                     leftIcon={<Send className="h-5 w-5" />}
-                                                    className="w-full h-14 rounded-2xl text-base border-2 hover:bg-indigo-100 dark:hover:bg-white/10 font-bold"
+                                                    className="w-full h-14 rounded-2xl text-base border-2 hover:bg-indigo-100 dark:hover:bg-white dark:bg-gray-800/10 font-bold"
                                                 >
                                                     {tx('pages.freelancerProfile.message', undefined, 'Send Message')}
                                                 </Button>
@@ -152,7 +152,7 @@ export default function ProfileHeader({
                                                 className={`group flex h-14 w-full items-center justify-center gap-3 rounded-2xl border-2 text-base font-bold transition-all ${
                                                     isPlayingVoice 
                                                         ? 'border-purple-600 bg-purple-100 text-purple-700 shadow-inner dark:border-purple-500 dark:bg-purple-900/30 dark:text-purple-300' 
-                                                        : 'border-slate-200 bg-white text-slate-700 hover:border-purple-300 hover:bg-slate-50 dark:border-white/10 dark:bg-[#120f1a] dark:text-slate-200 dark:hover:bg-white/5'
+                                                        : 'border-slate-200 bg-white dark:bg-gray-800 text-slate-700 hover:border-purple-300 hover:bg-slate-50 dark:border-white/10 dark:bg-[#120f1a] dark:text-slate-200 dark:hover:bg-white dark:bg-gray-800/5'
                                                 }`}
                                             >
                                                 {isPlayingVoice ? (
@@ -176,7 +176,7 @@ export default function ProfileHeader({
 
                     {/* Stats Grid Bento Box underneath */}
                     <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-4 lg:gap-6">
-                        <div className="group relative overflow-hidden rounded-3xl bg-white p-6 shadow-sm border border-slate-100 transition-all hover:shadow-xl hover:-translate-y-1 dark:bg-[#1a1725] dark:border-white/5">
+                        <div className="group relative overflow-hidden rounded-3xl bg-white dark:bg-gray-800 p-6 shadow-sm border border-slate-100 transition-all hover:shadow-xl hover:-translate-y-1 dark:bg-[#1a1725] dark:border-white/5">
                             <div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-blue-50 transition-transform group-hover:scale-150 dark:bg-blue-900/20" />
                             <div className="relative">
                                 <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-100 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400">
@@ -187,7 +187,7 @@ export default function ProfileHeader({
                             </div>
                         </div>
 
-                        <div className="group relative overflow-hidden rounded-3xl bg-white p-6 shadow-sm border border-slate-100 transition-all hover:shadow-xl hover:-translate-y-1 dark:bg-[#1a1725] dark:border-white/5">
+                        <div className="group relative overflow-hidden rounded-3xl bg-white dark:bg-gray-800 p-6 shadow-sm border border-slate-100 transition-all hover:shadow-xl hover:-translate-y-1 dark:bg-[#1a1725] dark:border-white/5">
                             <div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-emerald-50 transition-transform group-hover:scale-150 dark:bg-emerald-900/20" />
                             <div className="relative">
                                 <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400">
@@ -198,7 +198,7 @@ export default function ProfileHeader({
                             </div>
                         </div>
 
-                        <div className="group relative overflow-hidden rounded-3xl bg-white p-6 shadow-sm border border-slate-100 transition-all hover:shadow-xl hover:-translate-y-1 dark:bg-[#1a1725] dark:border-white/5">
+                        <div className="group relative overflow-hidden rounded-3xl bg-white dark:bg-gray-800 p-6 shadow-sm border border-slate-100 transition-all hover:shadow-xl hover:-translate-y-1 dark:bg-[#1a1725] dark:border-white/5">
                             <div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-amber-50 transofrm-transform group-hover:scale-150 dark:bg-amber-900/20" />
                             <div className="relative">
                                 <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-100 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400">
@@ -209,7 +209,7 @@ export default function ProfileHeader({
                             </div>
                         </div>
 
-                        <div className="group relative overflow-hidden rounded-3xl bg-white p-6 shadow-sm border border-slate-100 transition-all hover:shadow-xl hover:-translate-y-1 dark:bg-[#1a1725] dark:border-white/5">
+                        <div className="group relative overflow-hidden rounded-3xl bg-white dark:bg-gray-800 p-6 shadow-sm border border-slate-100 transition-all hover:shadow-xl hover:-translate-y-1 dark:bg-[#1a1725] dark:border-white/5">
                             <div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-purple-50 transition-transform group-hover:scale-150 dark:bg-purple-900/20" />
                             <div className="relative">
                                 <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-purple-100 text-purple-600 dark:text-purple-400 dark:bg-purple-500/20">

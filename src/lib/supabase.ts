@@ -55,6 +55,15 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
             'x-client-info': 'khedma-tn',
         },
     },
+    // Configure Realtime to prevent 5-second polling fallback
+    // Ensures instant message deletion sync and real-time updates
+    realtime: {
+        headers: {
+            'x-client-info': 'khedma-tn',
+        },
+        // Keep WebSocket connection alive with 30-second heartbeat
+        heartbeatIntervalMs: 30000,
+    },
 });
 
 // Expose supabase client to window for debugging

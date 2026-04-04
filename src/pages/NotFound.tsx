@@ -33,7 +33,7 @@ export default function NotFound() {
         <div className="flex flex-col gap-3 sm:flex-row">
           <button
             onClick={() => navigate(-1)}
-            className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-6 py-3 font-medium text-gray-700 transition hover:bg-gray-50 dark:border-white/10 dark:bg-white/5 dark:text-gray-300 dark:hover:bg-white/10"
+            className="inline-flex items-center gap-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-6 py-3 font-medium text-gray-700 dark:text-gray-200 transition hover:bg-gray-50 dark:bg-gray-800 dark:border-white/10 dark:bg-white dark:bg-gray-900/5 dark:text-gray-300 dark:hover:bg-white dark:bg-gray-900/10"
           >
             <ArrowLeft className="h-5 w-5 rtl:rotate-180" />
             {t.notFound?.goBack || 'Go Back'}

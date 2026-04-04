@@ -33,13 +33,13 @@ export default function SimilarJobCard({ job, onClick }: SimilarJobCardProps) {
     return (
         <div
             onClick={onClick}
-            className="group p-4 bg-gray-50 dark:bg-dark-800/50 rounded-xl cursor-pointer hover:bg-white dark:hover:bg-dark-800 hover:shadow-md transition-all duration-300 border border-transparent hover:border-primary-100 dark:hover:border-primary-900/30"
+            className="group p-4 bg-gray-50 dark:bg-dark-800/50 rounded-xl cursor-pointer hover:bg-white dark:bg-gray-800 dark:hover:bg-dark-800 hover:shadow-md transition-all duration-300 border border-transparent hover:border-primary-100 dark:hover:border-primary-900/30"
         >
             <div className="flex justify-between items-start mb-2">
                 <span className="text-xs font-medium text-primary-600 bg-primary-50 dark:bg-primary-900/20 px-2 py-0.5 rounded-full">
                     {job.job_type === 'fixed_price' ? 'سعر ثابت' : 'بالساعة'}
                 </span>
-                <span className="text-xs text-gray-500 flex items-center gap-1">
+                <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
                     <Clock className="w-3 h-3" />
                     {timeAgo(job.posted_at)}
                 </span>
@@ -49,7 +49,7 @@ export default function SimilarJobCard({ job, onClick }: SimilarJobCardProps) {
                 {job.title}
             </h4>
 
-            <div className="flex items-center gap-2 mb-3 text-sm text-gray-500">
+            <div className="flex items-center gap-2 mb-3 text-sm text-gray-500 dark:text-gray-400">
                 <span className="font-semibold text-dark-900 dark:text-white">
                     {job.job_type === 'fixed_price'
                         ? `${job.budget_min} - ${job.budget_max} د.ت`
@@ -71,7 +71,7 @@ export default function SimilarJobCard({ job, onClick }: SimilarJobCardProps) {
                 {skills.slice(0, 3).map((skill, index) => (
                     <span
                         key={index}
-                        className="break-words rounded-md border border-gray-100 bg-white px-2 py-1 text-[10px] text-gray-600 [overflow-wrap:anywhere] dark:border-dark-600 dark:bg-dark-700 dark:text-gray-300"
+                        className="break-words rounded-md border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-800 px-2 py-1 text-[10px] text-gray-600 dark:text-gray-300 [overflow-wrap:anywhere] dark:border-dark-600 dark:bg-dark-700 dark:text-gray-300"
                     >
                         {skill}
                     </span>

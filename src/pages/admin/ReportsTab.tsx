@@ -155,7 +155,7 @@ export default function ReportsTab() {
                                                                 <Button
                                                                     size="sm"
                                                                     variant="ghost"
-                                                                    className="text-gray-500 hover:bg-gray-100"
+                                                                    className="text-gray-500 hover:bg-gray-100 dark:text-gray-400"
                                                                     disabled={updateMutation.isPending}
                                                                     onClick={() => updateMutation.mutate({ id: report.id, status: 'dismissed' })}
                                                                 >
@@ -225,7 +225,7 @@ export default function ReportsTab() {
                                                 <Button
                                                     size="sm"
                                                     variant="ghost"
-                                                    className="flex-1 min-h-[44px] text-gray-500 hover:bg-gray-100"
+                                                    className="flex-1 min-h-[44px] text-gray-500 hover:bg-gray-100 dark:text-gray-400"
                                                     disabled={updateMutation.isPending}
                                                     onClick={() => updateMutation.mutate({ id: report.id, status: 'dismissed' })}
                                                 >

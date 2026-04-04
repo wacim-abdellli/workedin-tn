@@ -114,7 +114,7 @@ export default function ReportButton({ reportedType, reportedId, className }: Re
 
                     <div className="space-y-2">
                         {REASONS.map(r => (
-                            <label key={r.value} className="flex items-center gap-3 p-3 rounded-xl border border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer transition-colors">
+                            <label key={r.value} className="flex items-center gap-3 p-3 rounded-xl border border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-white dark:bg-slate-900/5 cursor-pointer transition-colors">
                                 <input
                                     type="radio"
                                     name="report-reason"

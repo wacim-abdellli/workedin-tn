@@ -463,7 +463,7 @@ export default function JobProposals() {
                         </div>
 
                         {/* Tabs */}
-                        <div className="tabs-row mb-0 rounded-xl border border-gray-100 bg-white p-1 dark:border-dark-700 dark:bg-dark-800">
+                        <div className="tabs-row mb-0 rounded-xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-800 p-1 dark:border-dark-700 dark:bg-dark-800">
                             {['all', 'new', 'shortlisted', 'archived'].map((tab) => (
                                 <button
                                     key={tab}

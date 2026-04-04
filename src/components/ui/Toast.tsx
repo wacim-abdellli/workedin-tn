@@ -150,7 +150,7 @@ function ToastCard({ toast, onClose }: { toast: Toast; onClose: () => void }) {
         </div>
         <button
           onClick={onClose}
-          className="rounded-full p-1 text-white/50 transition hover:bg-white/5 hover:text-white"
+          className="rounded-full p-1 text-white/50 transition hover:bg-white dark:bg-gray-800/5 hover:text-white"
           aria-label="Close notification"
         >
           <X className="h-4 w-4" />

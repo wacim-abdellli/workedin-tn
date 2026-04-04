@@ -30,9 +30,9 @@ const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
         };
 
         const variantClasses = {
-            ghost: 'hover:bg-gray-100 dark:hover:bg-dark-800 text-gray-500 dark:text-gray-400 hover:text-dark-900 dark:hover:text-white',
-            filled: 'bg-white dark:bg-dark-800 border border-gray-200 dark:border-dark-700 hover:border-gray-300 dark:hover:border-dark-600 text-gray-700 dark:text-gray-200',
-            outline: 'border-2 border-transparent hover:border-gray-200 dark:hover:border-dark-700 text-gray-500 dark:text-gray-400',
+            ghost: 'hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-dark-800 text-gray-500 dark:text-gray-400 hover:text-dark-900 dark:hover:text-white',
+            filled: 'bg-white dark:bg-dark-800 border border-gray-200 dark:border-dark-700 hover:border-gray-300 dark:border-gray-600 dark:hover:border-dark-600 text-gray-700 dark:text-gray-200',
+            outline: 'border-2 border-transparent hover:border-gray-200 dark:border-gray-700 dark:hover:border-dark-700 text-gray-500 dark:text-gray-400',
             danger: 'hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-400 hover:text-red-500',
         };
 

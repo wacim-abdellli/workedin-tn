@@ -66,7 +66,7 @@ function FreelancerCard({
     >
       <div className={cn(
         viewMode === 'list'
-          ? 'shrink-0 border-b border-gray-100 pb-4 md:w-48 md:border-b-0 md:border-s md:border-gray-100 md:pb-0 md:ps-6 dark:border-dark-700'
+          ? 'shrink-0 border-b border-gray-100 dark:border-gray-800 pb-4 md:w-48 md:border-b-0 md:border-s md:border-gray-100 dark:border-gray-800 md:pb-0 md:ps-6 dark:border-dark-700'
           : 'mb-6 text-center'
       )}>
         <div className="relative inline-block">
@@ -184,7 +184,7 @@ function FreelancerCard({
           {freelancer.skills.slice(0, 3).map((skill) => (
             <span
               key={skill}
-              className="rounded-xl border border-gray-200 bg-white px-2.5 py-1 text-xs text-gray-600 transition-colors group-hover:border-primary-200 dark:border-dark-700 dark:bg-dark-800 dark:text-gray-300 dark:group-hover:border-primary-800"
+              className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-2.5 py-1 text-xs text-gray-600 dark:text-gray-300 transition-colors group-hover:border-primary-200 dark:border-dark-700 dark:bg-dark-800 dark:text-gray-300 dark:group-hover:border-primary-800"
             >
               {skill}
             </span>
@@ -193,7 +193,7 @@ function FreelancerCard({
         </div>
 
         {viewMode === 'list' ? (
-          <div className="mt-auto flex items-center justify-between border-t border-gray-100 pt-4 dark:border-dark-700">
+          <div className="mt-auto flex items-center justify-between border-t border-gray-100 dark:border-gray-800 pt-4 dark:border-dark-700">
             <div className="flex items-center gap-6 text-sm text-muted">
               <span className="flex items-center gap-1">
                 <Briefcase className="h-4 w-4" />

@@ -23,9 +23,9 @@ export default function JobSummaryCard({ job }: JobSummaryProps) {
 
     return (
         <div className="space-y-4">
-            <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
-                <div className="p-4 border-b border-gray-100 bg-gray-50">
-                    <h3 className="font-bold text-gray-900">تفاصيل الوظيفة</h3>
+            <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-800 overflow-hidden">
+                <div className="p-4 border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-900">
+                    <h3 className="font-bold text-gray-900 dark:text-white">تفاصيل الوظيفة</h3>
                 </div>
                 <div className="p-4 space-y-4">
                     <div className="flex items-start gap-3">
@@ -33,8 +33,8 @@ export default function JobSummaryCard({ job }: JobSummaryProps) {
                             <DollarSign className="w-4 h-4" />
                         </div>
                         <div>
-                            <p className="text-xs text-gray-500">الميزانية</p>
-                            <p className="font-medium text-gray-900">
+                            <p className="text-xs text-gray-500 dark:text-gray-400">الميزانية</p>
+                            <p className="font-medium text-gray-900 dark:text-white">
                                 {job.budget_min} - {job.budget_max} د.ت
                             </p>
                             <p className="text-xs text-gray-400 mt-0.5">{job.job_type === 'fixed_price' ? 'سعر ثابت' : 'بالساعة'}</p>
@@ -46,8 +46,8 @@ export default function JobSummaryCard({ job }: JobSummaryProps) {
                             <Clock className="w-4 h-4" />
                         </div>
                         <div>
-                            <p className="text-xs text-gray-500">المدة المتوقعة</p>
-                            <p className="font-medium text-gray-900">{job.duration}</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">المدة المتوقعة</p>
+                            <p className="font-medium text-gray-900 dark:text-white">{job.duration}</p>
                         </div>
                     </div>
 
@@ -56,14 +56,14 @@ export default function JobSummaryCard({ job }: JobSummaryProps) {
                             <Calendar className="w-4 h-4" />
                         </div>
                         <div>
-                            <p className="text-xs text-gray-500">تاريخ النشر</p>
-                            <p className="font-medium text-gray-900">
+                            <p className="text-xs text-gray-500 dark:text-gray-400">تاريخ النشر</p>
+                            <p className="font-medium text-gray-900 dark:text-white">
                                 {new Date(job.created_at || Date.now()).toLocaleDateString('ar-TN')}
                             </p>
                         </div>
                     </div>
 
-                    <div className="pt-4 border-t border-gray-100 grid grid-cols-2 gap-2">
+                    <div className="pt-4 border-t border-gray-100 dark:border-gray-800 grid grid-cols-2 gap-2">
                         <Button
                             variant="outline"
                             size="sm"
@@ -90,7 +90,7 @@ export default function JobSummaryCard({ job }: JobSummaryProps) {
                 <p className="text-primary-100 text-sm mb-4">
                     قمنا بتحليل متطلباتك ووجدنا 3 مستقلين يطابقون مشروعك بنسبة 95%.
                 </p>
-                <button className="w-full py-2 bg-white text-primary-900 rounded-lg font-bold text-sm hover:bg-primary-50 transition-colors">
+                <button className="w-full py-2 bg-white dark:bg-gray-800 text-primary-900 rounded-lg font-bold text-sm hover:bg-primary-50 transition-colors">
                     عرض التوصيات
                 </button>
             </div>

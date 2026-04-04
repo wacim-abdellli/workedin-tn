@@ -165,7 +165,7 @@ export default function MobileNav() {
 
   return (
     <>
-      <nav className="fixed bottom-0 left-0 right-0 z-40 h-16 border-t border-gray-200 bg-white md:hidden dark:border-white/10 dark:bg-[#0f0e17]">
+      <nav className="fixed bottom-0 left-0 right-0 z-40 h-16 border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 md:hidden dark:border-white/10 dark:bg-[#0f0e17]">
         <div className="flex h-full items-center justify-around">
           {navItems.map((item) => (
             <button
@@ -189,20 +189,20 @@ export default function MobileNav() {
         </div>
       </nav>
 
-      <header className="fixed left-0 right-0 top-0 z-40 h-14 border-b border-gray-200 bg-white md:hidden dark:border-white/10 dark:bg-[#0f0e17]">
+      <header className="fixed left-0 right-0 top-0 z-40 h-14 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 md:hidden dark:border-white/10 dark:bg-[#0f0e17]">
         <div className="flex h-full items-center justify-between px-4">
           <button onClick={() => navigate('/')} className="text-lg font-bold text-primary-600">
             {tx('pages.mobileNav.brandName', undefined, 'Khedma')}
           </button>
-          <button onClick={() => setShowSearch(true)} className="rounded-full p-2 hover:bg-gray-100 dark:hover:bg-white/5">
+          <button onClick={() => setShowSearch(true)} className="rounded-full p-2 hover:bg-gray-100 dark:hover:bg-white dark:bg-gray-900/5">
             <Search className="h-5 w-5 text-gray-600 dark:text-gray-300" />
           </button>
         </div>
       </header>
 
       {showSearch ? (
-        <div className="fixed inset-0 z-50 bg-white md:hidden dark:bg-[#0f0e17]">
-          <div className="flex items-center gap-3 border-b border-gray-200 p-4 dark:border-white/10">
+        <div className="fixed inset-0 z-50 bg-white dark:bg-gray-900 md:hidden dark:bg-[#0f0e17]">
+          <div className="flex items-center gap-3 border-b border-gray-200 dark:border-gray-800 p-4 dark:border-white/10">
             <button onClick={() => setShowSearch(false)}>
               <X className="h-6 w-6 text-gray-600 dark:text-gray-300" />
             </button>
@@ -224,10 +224,10 @@ export default function MobileNav() {
       {showMenu ? (
         <div className="fixed inset-0 z-50 md:hidden">
           <div className="absolute inset-0 bg-black/50" onClick={() => setShowMenu(false)} />
-          <div className="absolute bottom-0 left-0 right-0 rounded-t-3xl bg-white p-2 dark:bg-[#171421]">
-            <div className="mx-auto mt-3 h-1 w-12 rounded-full bg-gray-300 dark:bg-white/10" />
+          <div className="absolute bottom-0 left-0 right-0 rounded-t-3xl bg-white dark:bg-gray-900 p-2 dark:bg-[#171421]">
+            <div className="mx-auto mt-3 h-1 w-12 rounded-full bg-gray-300 dark:bg-white dark:bg-gray-900/10" />
 
-            <div className="border-b border-gray-100 p-4 dark:border-white/10">
+            <div className="border-b border-gray-100 dark:border-gray-800 p-4 dark:border-white/10">
               <div className="flex items-center gap-3">
                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-primary-400 to-secondary-500 text-white">
                   {profile?.full_name?.charAt(0) || 'U'}
@@ -247,7 +247,7 @@ export default function MobileNav() {
                     navigate(item.path);
                     setShowMenu(false);
                   }}
-                  className="flex w-full items-center gap-4 rounded-xl p-4 text-left hover:bg-gray-50 dark:hover:bg-white/5"
+                  className="flex w-full items-center gap-4 rounded-xl p-4 text-left hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-white dark:bg-gray-900/5"
                 >
                   <item.icon className="h-5 w-5 text-gray-500 dark:text-gray-400" />
                   <span className="font-medium text-gray-900 dark:text-white">{item.label}</span>
@@ -255,7 +255,7 @@ export default function MobileNav() {
               ))}
             </div>
 
-            <div className="border-t border-gray-100 p-2 dark:border-white/10">
+            <div className="border-t border-gray-100 dark:border-gray-800 p-2 dark:border-white/10">
               <button
                 onClick={async () => {
                   await signOut();

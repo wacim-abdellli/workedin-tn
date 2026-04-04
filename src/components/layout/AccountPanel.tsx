@@ -275,7 +275,7 @@ export default function AccountPanel({
               overflowY: 'auto',
             }}
             id="header-account-panel"
-            className="w-full border-b border-gray-100 bg-white shadow-lg shadow-gray-200/50 dark:border-white/5 dark:bg-[#0f0e17] dark:shadow-2xl dark:shadow-black/40"
+            className="w-full border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-lg shadow-gray-200/50 dark:border-white/5 dark:bg-[#0f0e17] dark:shadow-2xl dark:shadow-black/40"
             data-account-panel
           >
             <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8 lg:py-6">
@@ -289,14 +289,14 @@ export default function AccountPanel({
                 <button
                   type="button"
                   onClick={onClose}
-                  className="rounded-full border border-gray-200 bg-white p-2 text-gray-500 transition-colors hover:bg-gray-50 dark:border-white/10 dark:bg-white/5 dark:text-gray-400 dark:hover:bg-white/10"
+                  className="rounded-full border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-2 text-gray-500 dark:text-gray-400 transition-colors hover:bg-gray-50 dark:bg-gray-900 dark:border-white/10 dark:bg-white dark:bg-gray-900/5 dark:text-gray-400 dark:hover:bg-white dark:bg-gray-900/10"
                 >
                   <X className="h-4 w-4" />
                 </button>
               </div>
 
               <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-[minmax(280px,0.92fr)_minmax(340px,1.1fr)_minmax(260px,0.88fr)] lg:gap-5">
-                <section className="rounded-[28px] border border-gray-100 bg-[#fcfbff] p-5 shadow-sm dark:border-white/8 dark:bg-[#171421]">
+                <section className="rounded-[28px] border border-gray-100 dark:border-gray-800 bg-[#fcfbff] p-5 shadow-sm dark:border-white/8 dark:bg-[#171421]">
                   <div className="flex items-start gap-4">
                     {avatarUrl ? (
                       <img
@@ -347,8 +347,8 @@ export default function AccountPanel({
                     </div>
                   </div>
 
-                  <div className="mt-5 rounded-2xl border border-gray-200/80 bg-white/70 p-3 dark:border-white/8 dark:bg-white/[0.03]">
-                    <div className="text-xs font-medium text-gray-500 dark:text-gray-500">
+                  <div className="mt-5 rounded-2xl border border-gray-200 dark:border-gray-800/80 bg-white dark:bg-gray-900/70 p-3 dark:border-white/8 dark:bg-white dark:bg-gray-900/[0.03]">
+                    <div className="text-xs font-medium text-gray-500 dark:text-gray-500 dark:text-gray-400">
                       {isVerified ? t.common.identityVerified : copy.needsSetup}
                     </div>
                     <div className="mt-1 text-sm text-gray-700 dark:text-gray-300">
@@ -363,19 +363,19 @@ export default function AccountPanel({
                   <Link
                     to={profilePath}
                     onClick={onClose}
-                    className="mt-4 inline-flex min-h-[44px] w-full items-center justify-between rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-800 transition-all hover:border-purple-200 hover:bg-purple-50 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:border-purple-500/30 dark:hover:bg-white/10"
+                    className="mt-4 inline-flex min-h-[44px] w-full items-center justify-between rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 px-4 py-3 text-sm font-semibold text-gray-800 dark:text-gray-100 transition-all hover:border-purple-200 hover:bg-purple-50 dark:border-white/10 dark:bg-white dark:bg-gray-900/5 dark:text-white dark:hover:border-purple-500/30 dark:hover:bg-white dark:bg-gray-900/10"
                   >
                     <span>{t.publicProfile.editProfile}</span>
-                    <ChevronRight className="h-4 w-4 text-gray-400 dark:text-gray-500 rtl:rotate-180" />
+                    <ChevronRight className="h-4 w-4 text-gray-400 dark:text-gray-500 dark:text-gray-400 rtl:rotate-180" />
                   </Link>
                 </section>
 
-                <section className="rounded-[28px] border border-gray-100 bg-[#fcfbff] p-5 shadow-sm dark:border-white/8 dark:bg-[#171421]">
-                  <div className="text-xs font-semibold uppercase tracking-[0.22em] text-gray-500 dark:text-gray-500">
+                <section className="rounded-[28px] border border-gray-100 dark:border-gray-800 bg-[#fcfbff] p-5 shadow-sm dark:border-white/8 dark:bg-[#171421]">
+                  <div className="text-xs font-semibold uppercase tracking-[0.22em] text-gray-500 dark:text-gray-500 dark:text-gray-400">
                     {copy.sectionLabel}
                   </div>
 
-                  <div className="mt-4 rounded-[24px] border border-gray-200 bg-white p-4 dark:border-white/10 dark:bg-white/5">
+                  <div className="mt-4 rounded-[24px] border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-4 dark:border-white/10 dark:bg-white dark:bg-gray-900/5">
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <div className="flex flex-wrap items-center gap-2">
                         <span className={cn('rounded-full px-2.5 py-1 text-xs font-semibold', activeWorkspacePill)}>
@@ -398,7 +398,7 @@ export default function AccountPanel({
                       {activeWorkspace === 'freelancer' ? copy.freelancerHint : copy.clientHint}
                     </p>
 
-                    <div className="mt-4 h-2 overflow-hidden rounded-full bg-gray-200 dark:bg-white/10">
+                    <div className="mt-4 h-2 overflow-hidden rounded-full bg-gray-200 dark:bg-white dark:bg-gray-900/10">
                       <div
                         className={cn(
                           'h-full rounded-full transition-all duration-300',
@@ -409,7 +409,7 @@ export default function AccountPanel({
                         style={{ width: `${setupProgress}%` }}
                       />
                     </div>
-                    <div className="mt-2 flex items-center justify-between text-xs text-gray-500 dark:text-gray-500">
+                    <div className="mt-2 flex items-center justify-between text-xs text-gray-500 dark:text-gray-500 dark:text-gray-400">
                       <span>{copy.progressLabel}</span>
                       <span>{setupProgress}%</span>
                     </div>
@@ -440,7 +440,7 @@ export default function AccountPanel({
                           disabled={isSwitching || isActive}
                           className={cn(
                             'rounded-[24px] border p-4 text-start transition-all duration-200',
-                            'border-gray-200 bg-white hover:border-purple-300 dark:border-white/10 dark:bg-white/5 dark:hover:border-purple-500/40',
+                            'border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 hover:border-purple-300 dark:border-white/10 dark:bg-white dark:bg-gray-900/5 dark:hover:border-purple-500/40',
                             isActive && accentClasses,
                             isActive && 'cursor-default'
                           )}
@@ -457,7 +457,7 @@ export default function AccountPanel({
                                     'inline-flex shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold',
                                     isActive
                                       ? activeWorkspacePill
-                                      : 'bg-gray-100 text-gray-600 dark:bg-white/10 dark:text-gray-300'
+                                      : 'bg-gray-100 text-gray-600 dark:text-gray-300 dark:bg-white dark:bg-gray-900/10 dark:text-gray-300'
                                   )}
                                 >
                                   {isSwitchingThis ? copy.switching : actionLabel}
@@ -471,7 +471,7 @@ export default function AccountPanel({
                                   </li>
                                 ))}
                               </ul>
-                              <p className="mt-3 text-xs font-medium text-gray-500 dark:text-gray-500">{item.meta}</p>
+                              <p className="mt-3 text-xs font-medium text-gray-500 dark:text-gray-500 dark:text-gray-400">{item.meta}</p>
                             </div>
                           </div>
                         </button>
@@ -479,13 +479,13 @@ export default function AccountPanel({
                     })}
                   </div>
 
-                  <p className="mt-3 text-center text-xs text-gray-500 dark:text-gray-500">
+                  <p className="mt-3 text-center text-xs text-gray-500 dark:text-gray-500 dark:text-gray-400">
                     {hasDualCapability ? copy.switchWorkspaceBoth : copy.switchWorkspaceSingle}
                   </p>
                 </section>
 
-                <section className="rounded-[28px] border border-gray-100 bg-[#fcfbff] p-5 shadow-sm dark:border-white/8 dark:bg-[#171421] lg:col-span-2 xl:col-span-1">
-                  <div className="text-xs font-semibold uppercase tracking-[0.22em] text-gray-500 dark:text-gray-500">
+                <section className="rounded-[28px] border border-gray-100 dark:border-gray-800 bg-[#fcfbff] p-5 shadow-sm dark:border-white/8 dark:bg-[#171421] lg:col-span-2 xl:col-span-1">
+                  <div className="text-xs font-semibold uppercase tracking-[0.22em] text-gray-500 dark:text-gray-500 dark:text-gray-400">
                     {copy.tools}
                   </div>
 
@@ -546,7 +546,7 @@ export default function AccountPanel({
                     )}
                   </div>
 
-                  <div className="my-4 h-px bg-gray-200 dark:bg-white/10" />
+                  <div className="my-4 h-px bg-gray-200 dark:bg-white dark:bg-gray-900/10" />
 
                   <button
                     type="button"
@@ -557,7 +557,7 @@ export default function AccountPanel({
                     {isLoggingOut ? <Loader2 className="h-4 w-4 animate-spin" /> : <LogOut className="h-4 w-4" />}
                     {copy.logoutAction}
                   </button>
-                  <p className="mt-3 text-sm leading-relaxed text-gray-500 dark:text-gray-500">{copy.logoutDesc}</p>
+                  <p className="mt-3 text-sm leading-relaxed text-gray-500 dark:text-gray-500 dark:text-gray-400">{copy.logoutDesc}</p>
                 </section>
               </div>
             </div>
@@ -583,15 +583,15 @@ function ActionLink({
     <Link
       to={to}
       onClick={onClick}
-      className="inline-flex min-h-[44px] items-center justify-between gap-3 rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-800 transition-all hover:border-purple-200 hover:bg-purple-50 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:border-purple-500/30 dark:hover:bg-white/10"
+      className="inline-flex min-h-[44px] items-center justify-between gap-3 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 px-4 py-3 text-sm font-semibold text-gray-800 dark:text-gray-100 transition-all hover:border-purple-200 hover:bg-purple-50 dark:border-white/10 dark:bg-white dark:bg-gray-900/5 dark:text-white dark:hover:border-purple-500/30 dark:hover:bg-white dark:bg-gray-900/10"
     >
       <span className="flex items-center gap-3">
-        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gray-100 text-gray-500 dark:bg-white/10 dark:text-gray-400">
+        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gray-100 text-gray-500 dark:text-gray-400 dark:bg-white dark:bg-gray-900/10 dark:text-gray-400">
           {icon}
         </span>
         <span>{label}</span>
       </span>
-      <ChevronRight className="h-4 w-4 text-gray-400 dark:text-gray-500 rtl:rotate-180" />
+      <ChevronRight className="h-4 w-4 text-gray-400 dark:text-gray-500 dark:text-gray-400 rtl:rotate-180" />
     </Link>
   );
 }

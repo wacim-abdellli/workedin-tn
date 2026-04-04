@@ -73,7 +73,7 @@ export default function DocumentUpload({
                         <img src={preview} alt={tx('verifyIdentity.preview', undefined, 'Preview')} className="w-full h-64 object-cover" />
                         <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                             <div className="flex items-center gap-3">
-                                <button onClick={() => document.getElementById(inputId)?.click()} className="rounded-lg bg-white px-4 py-2 font-medium text-gray-900 transition-colors hover:bg-gray-100">
+                                <button onClick={() => document.getElementById(inputId)?.click()} className="rounded-lg bg-white px-4 py-2 font-medium text-gray-900 transition-colors hover:bg-gray-100 dark:bg-gray-800 dark:text-white">
                                     {tx('verifyIdentity.changeImage', undefined, 'Change')}
                                 </button>
                                 <button onClick={onClear} className="inline-flex items-center gap-1 rounded-lg border border-white/40 bg-white/15 px-4 py-2 font-medium text-white transition-colors hover:bg-white/25">

@@ -499,7 +499,7 @@ export default function JobPost() {
                     <p className="text-gray-600 dark:text-gray-300">
                         {tx('jobs.new.restoreDraft.description', { time: draftToRestore ? timeAgo(draftToRestore.timestamp) : '' }, `We found a saved draft from ${draftToRestore ? timeAgo(draftToRestore.timestamp) : ''}. Do you want to restore and continue?`)}
                     </p>
-                    <div className="bg-gray-50 dark:bg-dark-800 p-3 rounded-lg text-sm text-gray-500">
+                    <div className="bg-gray-50 dark:bg-dark-800 p-3 rounded-lg text-sm text-gray-500 dark:text-gray-400">
                         <strong>{tx('jobs.new.restoreDraft.jobTitle', undefined, 'Title')}:</strong> {draftToRestore?.data.title || tx('jobs.new.restoreDraft.untitled', undefined, '(Untitled)')}
                     </div>
                     <div className="flex justify-end gap-3 mt-6">

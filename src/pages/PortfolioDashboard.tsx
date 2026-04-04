@@ -122,18 +122,18 @@ export default function PortfolioDashboard() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 pb-20">
+        <div className="min-h-screen bg-gray-50 pb-20 dark:bg-gray-900">
             <Header />
 
             <div className="container-custom py-8">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                     <div>
-                        <h1 className="text-2xl font-bold text-gray-900">{t.portfolio.title}</h1>
-                        <p className="text-gray-500 mt-1">{t.portfolio.subtitle}</p>
+                        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t.portfolio.title}</h1>
+                        <p className="text-gray-500 mt-1 dark:text-gray-400">{t.portfolio.subtitle}</p>
                     </div>
 
                     <div className="flex items-center gap-3">
-                        <div className="flex bg-white rounded-lg p-1 border border-gray-200">
+                        <div className="flex bg-white rounded-lg p-1 border border-gray-200 dark:bg-gray-800 dark:border-gray-700">
                             <button
                                 onClick={() => setViewMode('grid')}
                                 className={`p-2 rounded-md transition-colors ${viewMode === 'grid' ? 'bg-gray-100 text-primary-600' : 'text-gray-400 hover:text-gray-600'}`}
@@ -180,7 +180,7 @@ export default function PortfolioDashboard() {
                         {items.map((item) => (
                             <div
                                 key={item.id}
-                                className={`bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm group hover:shadow-md transition-shadow ${viewMode === 'list' ? 'flex' : ''}`}
+                                className={`bg-white dark:bg-gray-800 rounded-xl overflow-hidden border border-gray-100 shadow-sm group hover:shadow-md transition-shadow ${viewMode === 'list' ? 'flex' : ''} dark:bg-gray-800`}
                             >
                                 <div className={`relative ${viewMode === 'list' ? 'w-48 h-32 flex-shrink-0' : 'aspect-video'}`}>
                                     {item.thumbnail_url || (item.media_urls && item.media_urls[0]) ? (
@@ -191,20 +191,20 @@ export default function PortfolioDashboard() {
                                             imgClassName="object-cover"
                                         />
                                     ) : (
-                                        <div className="w-full h-full bg-gray-100 flex items-center justify-center text-gray-400">
+                                        <div className="w-full h-full bg-gray-100 flex items-center justify-center text-gray-400 dark:bg-gray-800">
                                             <ImageIcon className="w-10 h-10" />
                                         </div>
                                     )}
 
                                     <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                                         <button
-                                            className="p-2 bg-white rounded-full text-gray-700 hover:text-primary-600 transition-colors"
+                                            className="p-2 bg-white rounded-full text-gray-700 hover:text-primary-600 transition-colors dark:bg-gray-800 dark:text-gray-200"
                                             onClick={() => openEditModal(item)}
                                         >
                                             <Edit2 className="w-4 h-4" />
                                         </button>
                                         <button
-                                            className="p-2 bg-white rounded-full text-gray-700 hover:text-red-500 transition-colors"
+                                            className="p-2 bg-white rounded-full text-gray-700 hover:text-red-500 transition-colors dark:bg-gray-800 dark:text-gray-200"
                                             onClick={() => handleDelete(item.id)}
                                         >
                                             <Trash2 className="w-4 h-4" />
@@ -214,18 +214,18 @@ export default function PortfolioDashboard() {
 
                                 <div className="p-4 flex-1 flex flex-col justify-between">
                                     <div>
-                                        <h3 className="font-bold text-gray-900 mb-1">{item.title}</h3>
-                                        <p className="text-sm text-gray-500 line-clamp-2">{item.description}</p>
+                                        <h3 className="font-bold text-gray-900 mb-1 dark:text-white">{item.title}</h3>
+                                        <p className="text-sm text-gray-500 line-clamp-2 dark:text-gray-400">{item.description}</p>
                                     </div>
 
                                     <div className="mt-4 flex flex-wrap gap-2">
                                         {item.skills_used?.slice(0, 3).map((skill, i) => (
-                                            <span key={i} className="px-2 py-1 bg-gray-50 text-gray-600 text-xs rounded-md border border-gray-100">
+                                            <span key={i} className="px-2 py-1 bg-gray-50 text-gray-600 text-xs rounded-md border border-gray-100 dark:bg-gray-900 dark:text-gray-300">
                                                 {skill}
                                             </span>
                                         ))}
                                         {item.skills_used && item.skills_used.length > 3 && (
-                                            <span className="px-2 py-1 bg-gray-50 text-gray-600 text-xs rounded-md border border-gray-100">
+                                            <span className="px-2 py-1 bg-gray-50 text-gray-600 text-xs rounded-md border border-gray-100 dark:bg-gray-900 dark:text-gray-300">
                                                 +{item.skills_used.length - 3}
                                             </span>
                                         )}
@@ -235,12 +235,12 @@ export default function PortfolioDashboard() {
                         ))}
                     </div>
                 ) : (
-                    <div className="text-center py-16 bg-white rounded-2xl border border-dashed border-gray-200">
-                        <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <div className="text-center py-16 bg-white rounded-2xl border border-dashed border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+                        <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 dark:bg-gray-900">
                             <ImageIcon className="w-8 h-8 text-gray-300" />
                         </div>
-                        <h3 className="text-lg font-bold text-gray-900 mb-2">{t.portfolio.empty.title}</h3>
-                        <p className="text-gray-500 mb-6 max-w-sm mx-auto">{t.portfolio.empty.description}</p>
+                        <h3 className="text-lg font-bold text-gray-900 mb-2 dark:text-white">{t.portfolio.empty.title}</h3>
+                        <p className="text-gray-500 mb-6 max-w-sm mx-auto dark:text-gray-400">{t.portfolio.empty.description}</p>
                         <Button
                             variant="primary"
                             leftIcon={<Plus className="w-5 h-5" />}

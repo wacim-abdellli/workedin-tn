@@ -49,19 +49,19 @@ function Footer() {
 
                         <div className="mb-8 space-y-3.5">
                             <div className="flex items-center gap-3 text-[#b8b3ca]">
-                                <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/8 bg-white/[0.04]">
+                                <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/8 bg-white dark:bg-gray-900/[0.04]">
                                     <MapPin className="h-5 w-5 text-[color:var(--workspace-primary)]" />
                                 </div>
                                 <span>{t.footer.city}</span>
                             </div>
                             <div className="flex items-center gap-3 text-[#b8b3ca]">
-                                <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/8 bg-white/[0.04]">
+                                <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/8 bg-white dark:bg-gray-900/[0.04]">
                                     <Mail className="h-5 w-5 text-[color:var(--workspace-primary)]" />
                                 </div>
                                 <span>contact@khedma.tn</span>
                             </div>
                             <div className="flex items-center gap-3 text-[#b8b3ca]">
-                                <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/8 bg-white/[0.04]">
+                                <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/8 bg-white dark:bg-gray-900/[0.04]">
                                     <Phone className="h-5 w-5 text-[color:var(--workspace-primary)]" />
                                 </div>
                                 <span dir="ltr">+216 XX XXX XXX</span>
@@ -74,7 +74,7 @@ function Footer() {
                                     key={social.label}
                                     href={social.href}
                                     aria-label={social.label}
-                                    className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/8 bg-white/[0.04] text-[#a8a2bb] transition-all duration-300 hover:-translate-y-0.5 hover:border-[color:var(--workspace-primary)]/20 hover:bg-[color:var(--workspace-primary)]/12 hover:text-white"
+                                    className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/8 bg-white dark:bg-gray-900/[0.04] text-[#a8a2bb] transition-all duration-300 hover:-translate-y-0.5 hover:border-[color:var(--workspace-primary)]/20 hover:bg-[color:var(--workspace-primary)]/12 hover:text-white"
                                 >
                                     <social.icon className="h-5 w-5" />
                                 </a>
@@ -136,7 +136,7 @@ function Footer() {
 
                     <div>
                         <h3 className="mb-6 text-lg font-bold text-white">{t.footer.contact}</h3>
-                        <div className="rounded-[1.75rem] border border-white/8 bg-white/[0.04] p-5 backdrop-blur-sm">
+                        <div className="rounded-[1.75rem] border border-white/8 bg-white dark:bg-gray-900/[0.04] p-5 backdrop-blur-sm">
                             <h4 className="mb-2 text-xl font-bold text-white">{t.footer.newsletterTitle}</h4>
                             <p className="mb-4 text-sm leading-6 text-[#a8a2bb]">
                                 {t.footer.newsletterDescription}

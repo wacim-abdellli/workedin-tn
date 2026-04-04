@@ -6,7 +6,7 @@ export default function Privacy() {
     const { tx } = useTranslation();
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-800">
             <SEO {...SEO_CONFIG.privacy} url="/privacy" />
             <Header />
 
@@ -19,8 +19,8 @@ export default function Privacy() {
 
                         <section className="mb-8">
                             <h2 className="text-xl font-bold mb-4">{tx('legalPages.privacy.sections.dataCollection.title')}</h2>
-                            <p className="text-gray-700 mb-4">{tx('legalPages.privacy.sections.dataCollection.intro')}</p>
-                            <ul className="list-disc list-inside text-gray-700 space-y-2">
+                            <p className="text-gray-700 dark:text-gray-200 mb-4">{tx('legalPages.privacy.sections.dataCollection.intro')}</p>
+                            <ul className="list-disc list-inside text-gray-700 dark:text-gray-200 space-y-2">
                                 <li>{tx('legalPages.privacy.sections.dataCollection.items.account')}</li>
                                 <li>{tx('legalPages.privacy.sections.dataCollection.items.profile')}</li>
                                 <li>{tx('legalPages.privacy.sections.dataCollection.items.usage')}</li>
@@ -30,7 +30,7 @@ export default function Privacy() {
 
                         <section className="mb-8">
                             <h2 className="text-xl font-bold mb-4">{tx('legalPages.privacy.sections.usage.title')}</h2>
-                            <ul className="list-disc list-inside text-gray-700 space-y-2">
+                            <ul className="list-disc list-inside text-gray-700 dark:text-gray-200 space-y-2">
                                 <li>{tx('legalPages.privacy.sections.usage.items.improve')}</li>
                                 <li>{tx('legalPages.privacy.sections.usage.items.transactions')}</li>
                                 <li>{tx('legalPages.privacy.sections.usage.items.notifications')}</li>
@@ -41,8 +41,8 @@ export default function Privacy() {
 
                         <section className="mb-8">
                             <h2 className="text-xl font-bold mb-4">{tx('legalPages.privacy.sections.sharing.title')}</h2>
-                            <p className="text-gray-700 mb-4">{tx('legalPages.privacy.sections.sharing.intro')}</p>
-                            <ul className="list-disc list-inside text-gray-700 space-y-2">
+                            <p className="text-gray-700 dark:text-gray-200 mb-4">{tx('legalPages.privacy.sections.sharing.intro')}</p>
+                            <ul className="list-disc list-inside text-gray-700 dark:text-gray-200 space-y-2">
                                 <li>{tx('legalPages.privacy.sections.sharing.items.paymentProviders')}</li>
                                 <li>{tx('legalPages.privacy.sections.sharing.items.legalAuthorities')}</li>
                                 <li>{tx('legalPages.privacy.sections.sharing.items.publicProfile')}</li>
@@ -51,8 +51,8 @@ export default function Privacy() {
 
                         <section className="mb-8">
                             <h2 className="text-xl font-bold mb-4">{tx('legalPages.privacy.sections.protection.title')}</h2>
-                            <p className="text-gray-700 mb-4">{tx('legalPages.privacy.sections.protection.intro')}</p>
-                            <ul className="list-disc list-inside text-gray-700 space-y-2">
+                            <p className="text-gray-700 dark:text-gray-200 mb-4">{tx('legalPages.privacy.sections.protection.intro')}</p>
+                            <ul className="list-disc list-inside text-gray-700 dark:text-gray-200 space-y-2">
                                 <li>{tx('legalPages.privacy.sections.protection.items.ssl')}</li>
                                 <li>{tx('legalPages.privacy.sections.protection.items.database')}</li>
                                 <li>{tx('legalPages.privacy.sections.protection.items.audits')}</li>
@@ -61,7 +61,7 @@ export default function Privacy() {
 
                         <section className="mb-8">
                             <h2 className="text-xl font-bold mb-4">{tx('legalPages.privacy.sections.rights.title')}</h2>
-                            <ul className="list-disc list-inside text-gray-700 space-y-2">
+                            <ul className="list-disc list-inside text-gray-700 dark:text-gray-200 space-y-2">
                                 <li>{tx('legalPages.privacy.sections.rights.items.access')}</li>
                                 <li>{tx('legalPages.privacy.sections.rights.items.correction')}</li>
                                 <li>{tx('legalPages.privacy.sections.rights.items.deletion')}</li>
@@ -71,12 +71,12 @@ export default function Privacy() {
 
                         <section className="mb-8">
                             <h2 className="text-xl font-bold mb-4">{tx('legalPages.privacy.sections.cookies.title')}</h2>
-                            <p className="text-gray-700 mb-4">{tx('legalPages.privacy.sections.cookies.text')}</p>
+                            <p className="text-gray-700 dark:text-gray-200 mb-4">{tx('legalPages.privacy.sections.cookies.text')}</p>
                         </section>
 
                         <section className="mb-8">
                             <h2 className="text-xl font-bold mb-4">{tx('legalPages.privacy.sections.contact.title')}</h2>
-                            <p className="text-gray-700">
+                            <p className="text-gray-700 dark:text-gray-200">
                                 {tx('legalPages.privacy.sections.contact.intro')}
                                 <br />
                                 {tx('legalPages.privacy.sections.contact.emailLabel')} privacy@khedma.tn

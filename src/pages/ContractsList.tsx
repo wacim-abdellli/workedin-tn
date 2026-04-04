@@ -158,7 +158,7 @@ export default function ContractsList() {
               return (
                 <div
                   key={contract.id}
-                  className="rounded-2xl border border-gray-100 bg-white p-5 transition-colors hover:border-gray-200 dark:border-white/5 dark:bg-[#1a1825] dark:hover:border-white/10"
+                  className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-800 p-5 transition-colors hover:border-gray-200 dark:border-white/5 dark:bg-[#1a1825] dark:hover:border-white/10"
                 >
                   <div className="mb-3 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                     <div>
@@ -194,7 +194,7 @@ export default function ContractsList() {
                       {partner?.avatar_url ? (
                           <img src={partner.avatar_url} alt={partner?.full_name || 'User'} className="h-5 w-5 rounded-full object-cover" />
                       ) : (
-                        <div className="flex h-5 w-5 items-center justify-center rounded-full bg-gray-200 text-[10px] font-bold text-gray-500 dark:bg-gray-800">
+                        <div className="flex h-5 w-5 items-center justify-center rounded-full bg-gray-200 text-[10px] font-bold text-gray-500 dark:text-gray-400 dark:bg-gray-800">
                           {partner?.full_name?.charAt(0) || '?'}
                         </div>
                       )}
@@ -213,7 +213,7 @@ export default function ContractsList() {
                     </div>
                   </div>
 
-                  <div className="flex justify-end border-t border-gray-100 pt-4 dark:border-white/5">
+                  <div className="flex justify-end border-t border-gray-100 dark:border-gray-800 pt-4 dark:border-white/5">
                     <button
                       onClick={() => navigate(`/contracts/${contract.id}`)}
                       className={`text-sm font-medium transition-colors ${

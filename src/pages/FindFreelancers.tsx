@@ -170,7 +170,7 @@ export default function FindFreelancers() {
                     value={searchQuery}
                     onChange={(event) => setSearchQuery(event.target.value)}
                     placeholder={copy.searchPlaceholder}
-                    className="block w-full rounded-2xl border border-white/70 bg-white/85 p-4 pe-11 text-sm text-[#191627] shadow-sm backdrop-blur transition-colors focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/30 dark:border-white/8 dark:bg-white/5 dark:text-white dark:focus:ring-brand/20"
+                    className="block w-full rounded-2xl border border-white/70 bg-white dark:bg-gray-800/85 p-4 pe-11 text-sm text-[#191627] shadow-sm backdrop-blur transition-colors focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/30 dark:border-white/8 dark:bg-white dark:bg-gray-800/5 dark:text-white dark:focus:ring-brand/20"
                 />
             </div>
 
@@ -181,7 +181,7 @@ export default function FindFreelancers() {
                         <div className="mt-1 text-sm text-[#6e6884] dark:text-[#9a95ad]">{copy.availableNowDesc}</div>
                     </div>
                     <div className="flex h-7 w-12 items-center rounded-full p-1 transition-colors" style={{ background: availableOnly ? 'var(--brand-accent)' : 'rgba(255,255,255,0.1)' }}>
-                        <div className={`h-5 w-5 rounded-full bg-white shadow transition-transform ${availableOnly ? 'translate-x-5' : ''}`} />
+                        <div className={`h-5 w-5 rounded-full bg-white dark:bg-gray-800 shadow transition-transform ${availableOnly ? 'translate-x-5' : ''}`} />
                     </div>
                     <input
                         type="checkbox"
@@ -199,7 +199,7 @@ export default function FindFreelancers() {
                 </h3>
                 <div className="space-y-2">
                     {CATEGORY_OPTIONS.map((category) => (
-                        <label key={category} className="flex cursor-pointer items-center gap-3 rounded-2xl px-3 py-2.5 transition-colors hover:bg-white/70 dark:hover:bg-white/5">
+                        <label key={category} className="flex cursor-pointer items-center gap-3 rounded-2xl px-3 py-2.5 transition-colors hover:bg-white dark:bg-gray-800/70 dark:hover:bg-white dark:bg-gray-800/5">
                             <input
                                 type="checkbox"
                                 checked={selectedCategories.includes(category)}
@@ -234,7 +234,7 @@ export default function FindFreelancers() {
                                 className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
                                     active
                                         ? 'bg-brand text-brand-text shadow-lg shadow-brand/25'
-                                        : 'border border-white/70 bg-white/80 text-[#5f5974] hover:border-brand hover:text-brand dark:border-white/8 dark:bg-white/5 dark:text-[#b9b4c8] dark:hover:border-brand/30 dark:hover:text-brand-mid'
+                                        : 'border border-white/70 bg-white dark:bg-gray-800/80 text-[#5f5974] hover:border-brand hover:text-brand dark:border-white/8 dark:bg-white dark:bg-gray-800/5 dark:text-[#b9b4c8] dark:hover:border-brand/30 dark:hover:text-brand-mid'
                                 }`}
                             >
                                 {skill}
@@ -251,13 +251,13 @@ export default function FindFreelancers() {
                         type="number"
                         value={rateRange[0]}
                         onChange={(event) => setRateRange([Number(event.target.value), rateRange[1]])}
-                        className="rounded-2xl border border-white/70 bg-white/80 px-3 py-3 text-center text-sm shadow-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/30 dark:border-white/8 dark:bg-white/5 dark:focus:ring-brand/20"
+                        className="rounded-2xl border border-white/70 bg-white dark:bg-gray-800/80 px-3 py-3 text-center text-sm shadow-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/30 dark:border-white/8 dark:bg-white dark:bg-gray-800/5 dark:focus:ring-brand/20"
                     />
                     <input
                         type="number"
                         value={rateRange[1]}
                         onChange={(event) => setRateRange([rateRange[0], Number(event.target.value)])}
-                        className="rounded-2xl border border-white/70 bg-white/80 px-3 py-3 text-center text-sm shadow-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/30 dark:border-white/8 dark:bg-white/5 dark:focus:ring-brand/20"
+                        className="rounded-2xl border border-white/70 bg-white dark:bg-gray-800/80 px-3 py-3 text-center text-sm shadow-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/30 dark:border-white/8 dark:bg-white dark:bg-gray-800/5 dark:focus:ring-brand/20"
                     />
                 </div>
             </div>
@@ -273,7 +273,7 @@ export default function FindFreelancers() {
                             className={`rounded-2xl px-3 py-2 text-sm font-semibold transition-colors ${
                                 minRating === rating
                                     ? 'bg-brand text-brand-text shadow-lg shadow-brand/20'
-                                    : 'border border-white/70 bg-white/80 text-[#5f5974] hover:border-brand hover:text-brand dark:border-white/8 dark:bg-white/5 dark:text-[#b9b4c8] dark:hover:border-brand/30 dark:hover:text-brand-mid'
+                                    : 'border border-white/70 bg-white dark:bg-gray-800/80 text-[#5f5974] hover:border-brand hover:text-brand dark:border-white/8 dark:bg-white dark:bg-gray-800/5 dark:text-[#b9b4c8] dark:hover:border-brand/30 dark:hover:text-brand-mid'
                             }`}
                         >
                             {rating === 0 ? tx('findFreelancers.all', undefined, 'All') : `${rating}+`}
@@ -289,7 +289,7 @@ export default function FindFreelancers() {
                         <div className="mt-1 text-sm text-[#6e6884] dark:text-[#9a95ad]">{copy.verifiedOnlyDesc}</div>
                     </div>
                     <div className="flex h-7 w-12 items-center rounded-full p-1 transition-colors" style={{ background: verifiedOnly ? 'var(--workspace-primary)' : 'rgba(255,255,255,0.1)' }}>
-                        <div className={`h-5 w-5 rounded-full bg-white shadow transition-transform ${verifiedOnly ? 'translate-x-5' : ''}`} />
+                        <div className={`h-5 w-5 rounded-full bg-white dark:bg-gray-800 shadow transition-transform ${verifiedOnly ? 'translate-x-5' : ''}`} />
                     </div>
                     <input
                         type="checkbox"
@@ -357,7 +357,7 @@ export default function FindFreelancers() {
                             >
                                 <Grid className="h-5 w-5" />
                             </button>
-                            <div className="h-6 w-px bg-gray-200 dark:bg-white/10" />
+                            <div className="h-6 w-px bg-gray-200 dark:bg-white dark:bg-gray-800/10" />
                             <button
                                 type="button"
                                 onClick={() => setViewMode('list')}
@@ -380,7 +380,7 @@ export default function FindFreelancers() {
                             <SlidersHorizontal className="h-5 w-5" />
                             {copy.filterToggle}
                         </span>
-                        <span className="rounded-full bg-white/20 px-2 py-0.5 text-xs">{filteredFreelancers.length}</span>
+                        <span className="rounded-full bg-white dark:bg-gray-800/20 px-2 py-0.5 text-xs">{filteredFreelancers.length}</span>
                     </Button>
                 </div>
 
@@ -496,7 +496,7 @@ export default function FindFreelancers() {
                     <div className="absolute inset-x-0 bottom-0 top-16 flex flex-col rounded-t-[32px] border border-white/10 bg-[#120f1d] text-white shadow-2xl">
                         <div className="flex items-center justify-between border-b border-white/10 px-6 py-5">
                             <h2 className="text-lg font-bold">{copy.filterTitle}</h2>
-                            <button type="button" onClick={() => setShowFilters(false)} className="rounded-full bg-white/5 p-2">
+                            <button type="button" onClick={() => setShowFilters(false)} className="rounded-full bg-white dark:bg-gray-800/5 p-2">
                                 <X className="h-5 w-5" />
                             </button>
                         </div>

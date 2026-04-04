@@ -55,10 +55,17 @@ export function getDisplayNotification(notification: AppNotification, tx: Tx): A
     // Handle message notifications
     if (notification.type === 'message' && includesAny(haystack, messageMatchers)) {
         const senderName = extractSenderName(notification.title);
+        
+        // Check if message was deleted - backend sets body to "Message deleted" when soft-deleted
+        const isMessageDeleted = notification.body === 'Message deleted' || 
+                                 notification.body.toLowerCase().includes('message deleted');
+        
         return {
             ...notification,
             title: tx('notifications.message.title', { sender: senderName }, `New message from ${senderName}`),
-            body: notification.body, // Keep the message preview as-is
+            body: isMessageDeleted 
+                ? tx('notifications.message.deleted', undefined, 'This message has been deleted')
+                : notification.body, // Keep the message preview for active messages
         };
     }
 

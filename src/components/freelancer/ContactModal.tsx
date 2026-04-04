@@ -68,7 +68,7 @@ export default function ContactModal({ isOpen, onClose, freelancerId, freelancer
                                 {tx('pages.freelancerProfile.contactModal.title', { name: freelancerName }, `Message ${freelancerName}`)}
                             </h3>
                         </div>
-                        <button onClick={onClose} className="rounded-xl border border-white/10 p-2 text-white/70 transition-colors hover:bg-white/5 hover:text-white">
+                        <button onClick={onClose} className="rounded-xl border border-white/10 p-2 text-white/70 transition-colors hover:bg-white dark:bg-gray-800/5 hover:text-white">
                         <X className="w-5 h-5" />
                     </button>
                     </div>
@@ -80,7 +80,7 @@ export default function ContactModal({ isOpen, onClose, freelancerId, freelancer
                             {tx('pages.freelancerProfile.contactModal.loginPrompt', undefined, 'You need to sign in before contacting freelancers.')}
                         </div>
                     ) : (
-                        <div className="rounded-2xl border border-white/8 bg-white/[0.03] p-4">
+                        <div className="rounded-2xl border border-white/8 bg-white dark:bg-gray-800/[0.03] p-4">
                             <div className="flex items-start gap-3">
                                 <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[color:var(--workspace-primary)]/14 text-[color:var(--workspace-primary)]">
                                     <MessageSquare className="h-5 w-5" />
@@ -89,7 +89,7 @@ export default function ContactModal({ isOpen, onClose, freelancerId, freelancer
                                     <p className="text-sm leading-7 text-white/80">
                                         {tx('pages.freelancerProfile.contactModal.body', { name: freelancerName }, `A direct conversation with ${freelancerName} will open in your messages workspace.`)}
                                     </p>
-                                    <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-white/8 bg-white/[0.03] px-3 py-1.5 text-xs font-medium text-white/60">
+                                    <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-white/8 bg-white dark:bg-gray-800/[0.03] px-3 py-1.5 text-xs font-medium text-white/60">
                                         <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" />
                                         {tx('pages.freelancerProfile.contactModal.trustNote', undefined, 'Use Khedma messages to keep project communication organized.')}
                                     </div>
