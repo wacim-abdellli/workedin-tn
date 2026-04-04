@@ -104,7 +104,7 @@ export default function AdminDashboard() {
                                         style={activeTab === tab.id ? { background: 'linear-gradient(to right, var(--workspace-primary), var(--workspace-primary-hover))', boxShadow: '0 16px 34px -16px color-mix(in srgb, var(--workspace-primary) 35%, transparent)' } : undefined}
                                         dir={dir}
                                     >
-                                        <span className={`inline-flex items-center justify-center w-7 h-7 rounded-lg ${activeTab === tab.id ? 'bg-white/15' : 'bg-foreground/5'}`}>
+                                        <span className={`inline-flex items-center justify-center w-7 h-7 rounded-lg ${activeTab === tab.id ? 'bg-white dark:bg-gray-800/15' : 'bg-foreground/5'}`}>
                                             <tab.icon className="w-4 h-4" />
                                         </span>
                                         <span className="truncate whitespace-nowrap text-sm font-medium">{tab.label}</span>

@@ -109,7 +109,7 @@ export default function ReviewDisplay({
                                 <div key={stars} className="flex items-center gap-2">
                                     <span className="w-8 text-sm text-muted">{stars}</span>
                                     <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-                                    <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                                    <div className="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
                                         <div
                                             className="h-full bg-yellow-500 rounded-full"
                                             style={{ width: `${percentage}%` }}
@@ -127,9 +127,9 @@ export default function ReviewDisplay({
                             const value = detailedAverages[cat.key as keyof typeof detailedAverages] || 0;
                             return (
                                 <div key={cat.key} className="flex items-center justify-between">
-                                    <span className="text-sm text-gray-700">{cat.label}</span>
+                                    <span className="text-sm text-gray-700 dark:text-gray-300">{cat.label}</span>
                                     <div className="flex items-center gap-2">
-                                        <div className="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
+                                        <div className="w-24 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
                                             <div
                                                 className="h-full bg-primary-500 rounded-full"
                                                 style={{ width: `${(value / 5) * 100}%` }}
@@ -150,7 +150,7 @@ export default function ReviewDisplay({
                 <select
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-                    className="px-4 py-2 border border-gray-200 rounded-xl text-sm bg-white"
+                    className="px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-xl text-sm bg-white dark:bg-gray-800"
                 >
                     <option value="recent">الأحدث</option>
                     <option value="highest">الأعلى تقييماً</option>
@@ -194,7 +194,7 @@ export default function ReviewDisplay({
 
                         {/* Review Text */}
                         {review.review_text && (
-                            <p className="text-gray-700 mb-4">{review.review_text}</p>
+                            <p className="text-gray-700 dark:text-gray-300 mb-4">{review.review_text}</p>
                         )}
 
                         {/* Detailed Ratings (expandable) */}
@@ -207,7 +207,7 @@ export default function ReviewDisplay({
                         </button>
 
                         {expandedReview === review.id && (
-                            <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-xl mb-4">
+                            <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 dark:bg-gray-900 rounded-xl mb-4">
                                 {detailedCategories.map(cat => {
                                     const value = review.detailed_ratings[cat.key as keyof typeof review.detailed_ratings] || 0;
                                     return (
@@ -237,13 +237,13 @@ export default function ReviewDisplay({
                                     <MessageSquare className="w-4 h-4 text-primary-600" />
                                     <span className="text-sm font-medium text-primary-700">رد المالك</span>
                                 </div>
-                                <p className="text-sm text-gray-700">{review.response.text}</p>
+                                <p className="text-sm text-gray-700 dark:text-gray-300">{review.response.text}</p>
                                 <p className="text-xs text-muted mt-2">{review.response.created_at}</p>
                             </div>
                         )}
 
                         {/* Actions */}
-                        <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                        <div className="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-800">
                             <button className="flex items-center gap-2 text-sm text-muted hover:text-primary-600 transition-colors">
                                 <ThumbsUp className="w-4 h-4" />
                                 مفيد ({review.helpful_count})

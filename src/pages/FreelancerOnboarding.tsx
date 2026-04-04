@@ -361,7 +361,7 @@ function FreelancerOnboarding() {
 
     if (isAuthLoading) {
         return (
-            <div className="min-h-screen bg-gray-50 dark:bg-dark-900 flex flex-col items-center justify-center p-4">
+            <div className="min-h-screen bg-gray-50 dark:bg-gray-900 dark:bg-dark-900 flex flex-col items-center justify-center p-4">
                 <img
                     src="/logos/logo-primary.svg"
                     alt="Khedma TN"
@@ -457,7 +457,7 @@ function FreelancerOnboarding() {
                                     description: tx('onboarding.freelancer.summaryPoint3Desc', undefined, 'Your first rate should feel credible for your current profile depth and market position.'),
                                 },
                             ].map((item, index) => (
-                                <div key={item.title} className="rounded-2xl border border-brand-light/70 bg-brand-light/30 p-4 dark:border-white/10 dark:bg-white dark:bg-gray-800/[0.04]">
+                                <div key={item.title} className="rounded-2xl border border-brand-light/70 bg-brand-light/30 p-4 dark:border-white/10 dark:border-gray-800 dark:bg-white dark:bg-gray-800/[0.04]">
                                     <div className="flex items-start gap-3">
                                         <div className="flex h-8 w-8 items-center justify-center rounded-full bg-brand text-sm font-semibold text-white">
                                             {index + 1}

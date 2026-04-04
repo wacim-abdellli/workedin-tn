@@ -287,7 +287,7 @@ export default function VerificationQueue() {
             <div className="min-h-screen flex items-center justify-center">
                  <div className="text-center p-8 bg-white dark:bg-gray-800 rounded-2xl shadow-lg max-w-md">
                      <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-                     <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{tx('dashboard.admin.verificationQueue.errorTitle', undefined, 'Loading error')}</h2>
+                     <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 dark:text-white mb-2">{tx('dashboard.admin.verificationQueue.errorTitle', undefined, 'Loading error')}</h2>
                      <p className="text-gray-600 dark:text-gray-400 mb-4">{error}</p>
                      <button
                          onClick={() => {
@@ -311,7 +311,7 @@ export default function VerificationQueue() {
                  <div className="mb-8">
                      <div className="flex items-center gap-3 mb-2">
                          <Shield className="w-8 h-8 text-primary-600" />
-                         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                         <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 dark:text-white">
                              {tx('dashboard.admin.verificationQueue.title', undefined, 'Identity verification requests')}
                          </h1>
                      </div>
@@ -322,13 +322,13 @@ export default function VerificationQueue() {
 
                 {/* Stats */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-                     <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-100 dark:border-gray-700">
+                     <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-100 dark:border-gray-800 dark:border-gray-700">
                          <div className="flex items-center gap-3">
                              <div className="w-10 h-10 bg-amber-100 dark:bg-amber-900 rounded-lg flex items-center justify-center">
                                  <Clock className="w-5 h-5 text-amber-600" />
                              </div>
                              <div>
-                                 <p className="text-2xl font-bold text-gray-900 dark:text-white">{verifications.length}</p>
+                                 <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 dark:text-white">{verifications.length}</p>
                                  <p className="text-sm text-gray-600 dark:text-gray-400">{tx('dashboard.admin.verificationQueue.pending', undefined, 'Pending')}</p>
                              </div>
                          </div>
@@ -338,12 +338,12 @@ export default function VerificationQueue() {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                      {/* Queue List */}
                      <div className="space-y-4">
-                         <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                         <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 dark:text-white">
                              {tx('dashboard.admin.verificationQueue.queueTitle', undefined, 'Pending requests')}
                          </h2>
 
                          {verifications.length === 0 ? (
-                             <div className="bg-white dark:bg-gray-800 rounded-xl p-8 text-center border border-gray-100 dark:border-gray-700">
+                             <div className="bg-white dark:bg-gray-800 rounded-xl p-8 text-center border border-gray-100 dark:border-gray-800 dark:border-gray-700">
                                  <CheckCircle2 className="w-12 h-12 text-green-500 mx-auto mb-4" />
                                  <p className="text-gray-600 dark:text-gray-400">
                                      {tx('dashboard.admin.verificationQueue.noPending', undefined, 'No pending verification requests')}
@@ -356,17 +356,17 @@ export default function VerificationQueue() {
                                     onClick={() => setSelectedVerification(verification)}
                                     className={`bg-white dark:bg-gray-800 rounded-xl p-4 cursor-pointer border-2 transition-all ${selectedVerification?.id === verification.id
                                         ? 'border-primary-500 shadow-lg'
-                                        : 'border-transparent hover:border-gray-200 dark:hover:border-gray-600 hover:shadow-md'
+                                        : 'border-transparent hover:border-gray-200 dark:border-gray-700 dark:hover:border-gray-600 hover:shadow-md'
                                         }`}
                                 >
                                     <div className="flex items-center gap-4">
                                         <img
                                             src={verification.profile.avatar_url || '/default-avatar.png'}
                                             alt={verification.profile.full_name}
-                                            className="w-12 h-12 rounded-full object-cover border-2 border-gray-100 dark:border-gray-700"
+                                            className="w-12 h-12 rounded-full object-cover border-2 border-gray-100 dark:border-gray-800 dark:border-gray-700"
                                         />
                                         <div className="flex-1 min-w-0">
-                                            <h3 className="font-semibold text-gray-900 dark:text-white truncate">
+                                            <h3 className="font-semibold text-gray-900 dark:text-gray-100 dark:text-white truncate">
                                                 {verification.profile.full_name}
                                             </h3>
                                             <p className="text-sm text-gray-600 dark:text-gray-400 truncate">
@@ -385,22 +385,22 @@ export default function VerificationQueue() {
 
                      {/* Verification Review Panel */}
                      {selectedVerification ? (
-                         <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-100 dark:border-gray-700 sticky top-8">
-                             <h2 className="text-xl font-bold mb-6 text-gray-900 dark:text-white flex items-center gap-2">
+                         <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-100 dark:border-gray-800 dark:border-gray-700 sticky top-8">
+                             <h2 className="text-xl font-bold mb-6 text-gray-900 dark:text-gray-100 dark:text-white flex items-center gap-2">
                                  <Eye className="w-5 h-5" />
                                  {tx('dashboard.admin.verificationQueue.reviewTitle', undefined, 'Review verification')}
                              </h2>
 
                             {/* User Info */}
-                            <div className="mb-6 pb-6 border-b border-gray-100 dark:border-gray-700">
+                            <div className="mb-6 pb-6 border-b border-gray-100 dark:border-gray-800 dark:border-gray-700">
                                 <div className="flex items-center gap-4">
                                     <img
                                         src={selectedVerification.profile.avatar_url || '/default-avatar.png'}
                                         alt={selectedVerification.profile.full_name}
-                                        className="w-16 h-16 rounded-full object-cover border-2 border-gray-100 dark:border-gray-700"
+                                        className="w-16 h-16 rounded-full object-cover border-2 border-gray-100 dark:border-gray-800 dark:border-gray-700"
                                     />
                                     <div>
-                                        <p className="font-semibold text-gray-900 dark:text-white">
+                                        <p className="font-semibold text-gray-900 dark:text-gray-100 dark:text-white">
                                             {selectedVerification.profile.full_name}
                                         </p>
                                         <p className="text-sm text-gray-600 dark:text-gray-400">
@@ -413,7 +413,7 @@ export default function VerificationQueue() {
                              {/* CIN Number */}
                              <div className="mb-6">
                                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">{tx('dashboard.admin.verificationQueue.idNumber', undefined, 'ID number')}</p>
-                                 <p className="text-3xl font-mono font-bold text-gray-900 dark:text-white tracking-wider" dir="ltr">
+                                 <p className="text-3xl font-mono font-bold text-gray-900 dark:text-gray-100 dark:text-white tracking-wider" dir="ltr">
                                      {selectedVerification.cin_number}
                                  </p>
                              </div>
@@ -425,11 +425,11 @@ export default function VerificationQueue() {
                                      {documentUrls.front ? (
                                          <img
                                              src={documentUrls.front}
-                                             className="w-full rounded-lg border-2 border-gray-200 dark:border-gray-600"
+                                             className="w-full rounded-lg border-2 border-gray-200 dark:border-gray-700 dark:border-gray-600"
                                              alt={tx('dashboard.admin.verificationQueue.cardFrontAlt', undefined, 'ID card front side')}
                                          />
                                      ) : (
-                                         <div className="w-full h-40 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center">
+                                         <div className="w-full h-40 bg-gray-100 dark:bg-gray-800 dark:bg-gray-700 rounded-lg flex items-center justify-center">
                                              <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
                                          </div>
                                      )}
@@ -439,11 +439,11 @@ export default function VerificationQueue() {
                                      {documentUrls.back ? (
                                          <img
                                              src={documentUrls.back}
-                                             className="w-full rounded-lg border-2 border-gray-200 dark:border-gray-600"
+                                             className="w-full rounded-lg border-2 border-gray-200 dark:border-gray-700 dark:border-gray-600"
                                              alt={tx('dashboard.admin.verificationQueue.cardBackAlt', undefined, 'ID card back side')}
                                          />
                                      ) : (
-                                         <div className="w-full h-40 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center">
+                                         <div className="w-full h-40 bg-gray-100 dark:bg-gray-800 dark:bg-gray-700 rounded-lg flex items-center justify-center">
                                              <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
                                          </div>
                                      )}
@@ -453,11 +453,11 @@ export default function VerificationQueue() {
                                      {documentUrls.selfie ? (
                                          <img
                                              src={documentUrls.selfie}
-                                             className="w-full rounded-lg border-2 border-gray-200 dark:border-gray-600"
+                                             className="w-full rounded-lg border-2 border-gray-200 dark:border-gray-700 dark:border-gray-600"
                                              alt={tx('dashboard.admin.verificationQueue.selfieAlt', undefined, 'Selfie')}
                                          />
                                      ) : (
-                                         <div className="w-full h-40 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center">
+                                         <div className="w-full h-40 bg-gray-100 dark:bg-gray-800 dark:bg-gray-700 rounded-lg flex items-center justify-center">
                                              <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
                                          </div>
                                      )}
@@ -512,7 +512,7 @@ export default function VerificationQueue() {
                             </div>
                         </div>
                          ) : (
-                         <div className="bg-white dark:bg-gray-800 rounded-xl p-8 text-center border border-gray-100 dark:border-gray-700">
+                         <div className="bg-white dark:bg-gray-800 rounded-xl p-8 text-center border border-gray-100 dark:border-gray-800 dark:border-gray-700">
                              <User className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                              <p className="text-gray-600 dark:text-gray-400">
                                  {tx('dashboard.admin.verificationQueue.selectRequest', undefined, 'Select a request from the list to review')}
@@ -530,7 +530,7 @@ export default function VerificationQueue() {
                             <div className="w-10 h-10 bg-red-100 dark:bg-red-900 rounded-lg flex items-center justify-center">
                                 <AlertCircle className="w-5 h-5 text-red-600" />
                             </div>
-                             <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                             <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 dark:text-white">
                                  {tx('dashboard.admin.verificationQueue.rejectReason', undefined, 'Rejection reason')}
                              </h3>
                          </div>
@@ -543,7 +543,7 @@ export default function VerificationQueue() {
                              value={rejectionReason}
                              onChange={(e) => setRejectionReason(e.target.value)}
                              placeholder={tx('dashboard.admin.verificationQueue.rejectExample', undefined, 'Example: The image is unclear, please retake it...')}
-                             className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-900 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 resize-none"
+                             className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-900 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 resize-none"
                              rows={3}
                          />
 
@@ -553,7 +553,7 @@ export default function VerificationQueue() {
                                     setShowRejectModal(false);
                                     setRejectionReason('');
                                 }}
-                                className="flex-1 px-4 py-3 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                                className="flex-1 px-4 py-3 bg-gray-100 dark:bg-gray-800 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                              >
                                  {tx('dashboard.admin.verificationQueue.cancel', undefined, 'Cancel')}
                              </button>

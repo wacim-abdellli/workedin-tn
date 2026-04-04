@@ -616,7 +616,7 @@ export default function UsersTab() {
                             value={revokeModal.reason}
                             onChange={(e) => setRevokeModal(prev => ({ ...prev, reason: e.target.value }))}
                             placeholder={tx('dashboard.admin.users.revokeReasonPlaceholder', undefined, 'e.g., ID document is expired...')}
-                            className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-900 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 resize-none min-h-[100px] text-foreground"
+                            className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-900 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 resize-none min-h-[100px] text-foreground"
                         />
                     </div>
 

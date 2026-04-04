@@ -134,7 +134,7 @@ const ProfileCompletionCard = ({ className = '', maxStepsToShow = 4 }: ProfileCo
                             {tx('components.profileCompletion.nextStepsDescription', undefined, 'Focus on the items below first for the fastest profile lift.')}
                         </p>
                     </div>
-                    <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary-50 text-primary-600 dark:bg-white/5 dark:text-primary-300">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary-50 text-primary-600 dark:bg-white dark:bg-gray-800/5 dark:text-primary-300">
                         <Rocket className="h-5 w-5" />
                     </div>
                 </div>
@@ -144,7 +144,7 @@ const ProfileCompletionCard = ({ className = '', maxStepsToShow = 4 }: ProfileCo
                         <Link
                             key={step.id}
                             to={step.link || '/settings?tab=profile'}
-                            className="group flex items-center gap-4 rounded-2xl border border-primary-100/80 bg-white dark:bg-gray-800/75 p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-primary-200 hover:bg-primary-50/60 dark:border-white/10 dark:bg-white/[0.04] dark:hover:border-primary-400/20 dark:hover:bg-white dark:bg-gray-800/[0.06]"
+                            className="group flex items-center gap-4 rounded-2xl border border-primary-100/80 bg-white dark:bg-gray-800/75 p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-primary-200 hover:bg-primary-50/60 dark:border-white/10 dark:border-gray-800 dark:bg-white/[0.04] dark:hover:border-primary-400/20 dark:hover:bg-white dark:bg-gray-800/[0.06]"
                         >
                             <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl text-sm font-bold ${index === 0 ? 'bg-primary-600 text-white shadow-[0_16px_30px_-16px_rgba(109,40,217,0.9)]' : 'bg-gray-100 dark:bg-gray-800 text-[#57536a] dark:bg-white/10 dark:text-[#c6c2d6]'}`}>
                                 {index + 1}

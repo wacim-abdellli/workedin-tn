@@ -49,7 +49,7 @@ export default function FileUpload({
     return (
         <div className="space-y-4">
             {label && (
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 dark:text-gray-200">
                     {label}
                 </label>
             )}
@@ -68,7 +68,7 @@ export default function FileUpload({
                         <Upload className="w-6 h-6" />
                     </div>
                     <div className="space-y-1">
-                        <p className="font-medium text-gray-900 dark:text-white">
+                        <p className="font-medium text-gray-900 dark:text-gray-100 dark:text-white">
                             {isDragActive ? 'افلت الملفات هنا' : 'اضغط للرفع أو اسحب الملفات هنا'}
                         </p>
                         <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -94,7 +94,7 @@ export default function FileUpload({
                                     <File className="w-4 h-4" />
                                 </div>
                                 <div className="min-w-0">
-                                    <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100 dark:text-white truncate">
                                         {file.name}
                                     </p>
                                     <p className="text-xs text-gray-500 dark:text-gray-400">

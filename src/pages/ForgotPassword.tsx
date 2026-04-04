@@ -105,7 +105,7 @@ const ForgotPassword = () => {
                                 <div className="w-16 h-16 bg-primary-100 dark:bg-primary-900/40 rounded-2xl flex items-center justify-center mx-auto mb-4">
                                     <Mail className="w-8 h-8 text-primary-600 dark:text-primary-400" />
                                 </div>
-                                <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                                <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 dark:text-white mb-2">
                                     {tx('pages.forgotPassword.title', undefined, 'Reset your password')}
                                 </h1>
                                 <p className="text-gray-600 dark:text-gray-400">
@@ -168,13 +168,13 @@ const ForgotPassword = () => {
                             <div className="w-20 h-20 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mx-auto mb-6">
                                 <CheckCircle className="w-10 h-10 text-green-600 dark:text-green-400" />
                             </div>
-                            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
+                            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 dark:text-white mb-3">
                                 {tx('pages.forgotPassword.sentTitle', undefined, 'Check your email')}
                             </h2>
                             <p className="text-gray-600 dark:text-gray-400 mb-2">
                                 {tx('pages.forgotPassword.sentDescription', undefined, 'We sent a reset link to')}
                             </p>
-                            <p className="font-medium text-gray-900 dark:text-white mb-6">
+                            <p className="font-medium text-gray-900 dark:text-gray-100 dark:text-white mb-6">
                                 {getValues('email')}
                             </p>
                             <p className="text-sm text-gray-500 dark:text-gray-400 mb-8">

@@ -608,7 +608,7 @@ function JobDetail() {
                                                  'break-words [overflow-wrap:anywhere] px-3 py-1.5 rounded-lg text-sm font-medium border',
                                                  isMatch
                                                      ? 'bg-green-50 dark:bg-green-500/10 text-green-700 dark:text-green-300 border-green-200 dark:border-green-500/30'
-                                                     : 'bg-gray-50 dark:bg-white dark:bg-gray-800/5 text-foreground border-gray-200 dark:border-white/10'
+                                                     : 'bg-gray-50 dark:bg-gray-900 dark:bg-white dark:bg-gray-800/5 text-foreground border-gray-200 dark:border-gray-700 dark:border-white/10 dark:border-gray-800'
                                              )}
                                          >
                                              {isMatch && <CheckCircle className="w-3 h-3 inline me-1" />}
@@ -639,7 +639,7 @@ function JobDetail() {
                                                  rel="noopener noreferrer"
                                                  className={cn(
                                                      'flex items-center justify-between p-3 rounded-lg border',
-                                                     'bg-gray-50 dark:bg-white dark:bg-gray-800/5 border-gray-200 dark:border-white/10',
+                                                     'bg-gray-50 dark:bg-gray-900 dark:bg-white dark:bg-gray-800/5 border-gray-200 dark:border-gray-700 dark:border-white/10 dark:border-gray-800',
                                                      'hover:bg-gray-100 dark:hover:bg-white dark:bg-gray-800/8 transition-colors'
                                                  )}
                                              >

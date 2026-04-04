@@ -26,7 +26,7 @@ export function AdminRoute({ children }: { children: React.ReactNode }) {
   if (!hasAdminAccess(user, profile)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#f8f7ff] dark:bg-[#09070f] p-4">
-        <div className="rounded-[24px] border border-white/70 bg-white/80 dark:border-white/8 dark:bg-white/5 backdrop-blur shadow-xl text-center max-w-md p-8">
+        <div className="rounded-[24px] border border-white/70 bg-white dark:bg-gray-800/80 dark:border-white/8 dark:bg-white dark:bg-gray-800/5 backdrop-blur shadow-xl text-center max-w-md p-8">
           <div className="w-16 h-16 mx-auto rounded-2xl bg-red-500/10 dark:bg-red-500/20 flex items-center justify-center mb-6 border border-red-500/20">
             <Lock className="w-8 h-8 text-red-600 dark:text-red-400" />
           </div>

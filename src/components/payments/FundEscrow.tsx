@@ -115,7 +115,7 @@ const FundEscrow = ({ contract, onSuccess, onError }: FundEscrowProps) => {
                     <CreditCard className="w-6 h-6 text-primary-600" />
                 </div>
                 <div>
-                    <h3 className="font-bold text-gray-900 dark:text-white">تمويل الضمان</h3>
+                    <h3 className="font-bold text-gray-900 dark:text-gray-100 dark:text-white">تمويل الضمان</h3>
                     <p className="text-sm text-gray-500 dark:text-gray-400">أموالك محفوظة حتى اكتمال العمل</p>
                 </div>
             </div>
@@ -141,7 +141,7 @@ const FundEscrow = ({ contract, onSuccess, onError }: FundEscrowProps) => {
                 </button>
 
                 {showBreakdown && (
-                    <div className="space-y-2 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg text-sm">
+                    <div className="space-y-2 p-3 bg-gray-50 dark:bg-gray-900 dark:bg-gray-700/50 rounded-lg text-sm">
                         <div className="flex justify-between">
                             <span className="text-gray-600 dark:text-gray-400">ميزانية المشروع</span>
                             <span className="font-medium">{formatCurrency(originalAmount)}</span>
@@ -150,7 +150,7 @@ const FundEscrow = ({ contract, onSuccess, onError }: FundEscrowProps) => {
                             <span className="text-gray-600 dark:text-gray-400">رسوم المنصة (10%)</span>
                             <span className="font-medium">{formatCurrency(feeAmount)}</span>
                         </div>
-                        <div className="h-px bg-gray-200 dark:bg-gray-600 my-2" />
+                        <div className="h-px bg-gray-200 dark:bg-gray-700 dark:bg-gray-600 my-2" />
                         <div className="flex justify-between font-bold">
                             <span>المجموع</span>
                             <span className="text-primary-600">{formatCurrency(totalAmount)}</span>

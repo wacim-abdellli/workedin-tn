@@ -25,7 +25,7 @@ export default function JobSummaryCard({ job }: JobSummaryProps) {
         <div className="space-y-4">
             <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-800 overflow-hidden">
                 <div className="p-4 border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-900">
-                    <h3 className="font-bold text-gray-900 dark:text-white">تفاصيل الوظيفة</h3>
+                    <h3 className="font-bold text-gray-900 dark:text-gray-100 dark:text-white">تفاصيل الوظيفة</h3>
                 </div>
                 <div className="p-4 space-y-4">
                     <div className="flex items-start gap-3">
@@ -34,7 +34,7 @@ export default function JobSummaryCard({ job }: JobSummaryProps) {
                         </div>
                         <div>
                             <p className="text-xs text-gray-500 dark:text-gray-400">الميزانية</p>
-                            <p className="font-medium text-gray-900 dark:text-white">
+                            <p className="font-medium text-gray-900 dark:text-gray-100 dark:text-white">
                                 {job.budget_min} - {job.budget_max} د.ت
                             </p>
                             <p className="text-xs text-gray-400 mt-0.5">{job.job_type === 'fixed_price' ? 'سعر ثابت' : 'بالساعة'}</p>
@@ -47,7 +47,7 @@ export default function JobSummaryCard({ job }: JobSummaryProps) {
                         </div>
                         <div>
                             <p className="text-xs text-gray-500 dark:text-gray-400">المدة المتوقعة</p>
-                            <p className="font-medium text-gray-900 dark:text-white">{job.duration}</p>
+                            <p className="font-medium text-gray-900 dark:text-gray-100 dark:text-white">{job.duration}</p>
                         </div>
                     </div>
 
@@ -57,7 +57,7 @@ export default function JobSummaryCard({ job }: JobSummaryProps) {
                         </div>
                         <div>
                             <p className="text-xs text-gray-500 dark:text-gray-400">تاريخ النشر</p>
-                            <p className="font-medium text-gray-900 dark:text-white">
+                            <p className="font-medium text-gray-900 dark:text-gray-100 dark:text-white">
                                 {new Date(job.created_at || Date.now()).toLocaleDateString('ar-TN')}
                             </p>
                         </div>

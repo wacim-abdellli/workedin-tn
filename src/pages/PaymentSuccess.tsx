@@ -236,7 +236,7 @@ const PaymentSuccess = () => {
                 {status === 'verifying' && (
                     <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 text-center">
                         <Loader2 className="w-16 h-16 animate-spin text-primary-600 mx-auto mb-6" />
-                        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                        <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 dark:text-white mb-2">
                             جاري التحقق من الدفع...
                         </h2>
                         <p className="text-gray-600 dark:text-gray-400">
@@ -251,7 +251,7 @@ const PaymentSuccess = () => {
                         <div className="w-20 h-20 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
                             <CheckCircle className="w-10 h-10 text-green-600" />
                         </div>
-                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 dark:text-white mb-2">
                             تم الدفع بنجاح! 🎉
                         </h2>
                         <p className="text-gray-600 dark:text-gray-400 mb-4">
@@ -288,7 +288,7 @@ const PaymentSuccess = () => {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                             </svg>
                         </div>
-                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 dark:text-white mb-2">
                             فشل التحقق من الدفع
                         </h2>
                         <p className="text-gray-600 dark:text-gray-400 mb-4">

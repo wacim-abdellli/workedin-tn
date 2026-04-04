@@ -143,7 +143,7 @@ export function NotificationBell({ className = '' }: { className?: string }) {
                     </div>
 
                     {notifications.length > 0 && (
-                        <div className="border-t border-gray-100 dark:border-white/8 px-4 py-3">
+                        <div className="border-t border-gray-100 dark:border-gray-800 dark:border-white/8 px-4 py-3">
                             <button
                                 onClick={() => { navigate('/notifications'); setIsOpen(false); }}
                                 className="w-full text-center text-xs font-medium text-brand hover:text-brand-hover dark:text-brand-mid"

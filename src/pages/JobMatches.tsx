@@ -328,7 +328,7 @@ function JobMatches() {
                                                 {(freelancer.skills as Skill[]).map((skill) => (
                                                     <span
                                                         key={skill.id}
-                                                        className="text-xs px-2 py-1 bg-gray-100 rounded-full text-gray-700 dark:text-gray-200"
+                                                        className="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded-full text-gray-700 dark:text-gray-300 dark:text-gray-200"
                                                     >
                                                         {getSkillName(skill)}
                                                     </span>
@@ -345,7 +345,7 @@ function JobMatches() {
                         mt-4 w-full flex items-center justify-center gap-2 py-3 rounded-xl transition-all
                         ${playingVoice === freelancer.id
                                                     ? 'bg-primary-100 text-primary-700'
-                                                    : 'bg-gray-100 text-gray-700 dark:text-gray-200 hover:bg-gray-200'
+                                                    : 'bg-gray-100 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:bg-gray-700'
                                                 }
                       `}
                                         >
@@ -381,7 +381,7 @@ function JobMatches() {
                                                     />
                                                 ))}
                                                 {freelancer.work_samples.length > 3 && (
-                                                    <div className="w-20 h-16 bg-gray-100 rounded-lg flex items-center justify-center text-sm text-muted flex-shrink-0">
+                                                    <div className="w-20 h-16 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center text-sm text-muted flex-shrink-0">
                                                         +{freelancer.work_samples.length - 3}
                                                     </div>
                                                 )}

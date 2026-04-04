@@ -341,7 +341,7 @@ export default function FreelancerProfile() {
                         <span className="text-4xl">&times;</span>
                     </button>
 
-                    <div className="relative max-w-5xl w-full h-full max-h-[90vh] flex flex-col md:flex-row bg-white dark:bg-[#171421] rounded-2xl overflow-hidden border border-white/10">
+                    <div className="relative max-w-5xl w-full h-full max-h-[90vh] flex flex-col md:flex-row bg-white dark:bg-gray-800 dark:bg-[#171421] rounded-2xl overflow-hidden border border-white/10 dark:border-gray-800">
                         {(() => {
                             const sample = freelancer.work_samples.find(s => s.id === selectedWorkSample);
                             if (!sample) return null;
@@ -357,7 +357,7 @@ export default function FreelancerProfile() {
                                             priority={true}
                                         />
                                     </div>
-                                    <div className="w-full md:w-80 bg-white dark:bg-[#171421] p-6 overflow-y-auto">
+                                    <div className="w-full md:w-80 bg-white dark:bg-gray-800 dark:bg-[#171421] p-6 overflow-y-auto">
                                         <h3 className="text-2xl font-bold text-[var(--text-primary)] mb-4">{sample.title}</h3>
                                         <p className="text-[var(--text-secondary)] mb-6 leading-relaxed whitespace-pre-line">
                                             {sample.description || tx('pages.freelancerProfile.noDescription', undefined, 'No description available')}

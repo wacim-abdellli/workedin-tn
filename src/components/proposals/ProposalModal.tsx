@@ -129,12 +129,12 @@ export default function ProposalModal({
                             <p className="text-red-500 text-xs mt-1">{errors.bid_amount.message}</p>
                         )}
 
-                        <div className="bg-gray-50 dark:bg-dark-800 rounded-lg p-3 space-y-2 text-sm">
+                        <div className="bg-gray-50 dark:bg-gray-900 dark:bg-dark-800 rounded-lg p-3 space-y-2 text-sm">
                             <div className="flex justify-between text-gray-500 dark:text-gray-400">
                                 <span>رسوم المنصة ({PLATFORM_FEE_PERCENT}%)</span>
                                 <span>-{platformFee.toFixed(2)} د.ت</span>
                             </div>
-                            <div className="flex justify-between font-bold text-dark-900 dark:text-white pt-2 border-t border-gray-200 dark:border-dark-700">
+                            <div className="flex justify-between font-bold text-dark-900 dark:text-white pt-2 border-t border-gray-200 dark:border-gray-700 dark:border-dark-700">
                                 <span>ستحصل على</span>
                                 <span className="text-green-600">{netAmount.toFixed(2)} د.ت</span>
                             </div>
@@ -192,7 +192,7 @@ export default function ProposalModal({
 
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         {attachments.map((file, index) => (
-                            <div key={index} className="relative group p-2 border border-gray-200 dark:border-dark-700 rounded-lg">
+                            <div key={index} className="relative group p-2 border border-gray-200 dark:border-gray-700 dark:border-dark-700 rounded-lg">
                                 <button
                                     type="button"
                                     onClick={() => removeAttachment(index)}
@@ -238,7 +238,7 @@ export default function ProposalModal({
                 {/* Actions */}
                 </fieldset>
 
-                    <div className="flex gap-3 pt-4 border-t border-gray-100 dark:border-dark-700">
+                    <div className="flex gap-3 pt-4 border-t border-gray-100 dark:border-gray-800 dark:border-dark-700">
                     <Button
                         type="button"
                         variant="ghost"

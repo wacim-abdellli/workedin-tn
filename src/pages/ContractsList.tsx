@@ -89,7 +89,7 @@ export default function ContractsList() {
       <div className="page-shell-content-narrow">
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{tx('contracts.title', undefined, 'Contracts')}</h1>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 dark:text-white">{tx('contracts.title', undefined, 'Contracts')}</h1>
             {activeCount > 0 ? (
               <span
                 className={`rounded-full px-2 py-1 text-xs font-bold ${
@@ -158,11 +158,11 @@ export default function ContractsList() {
               return (
                 <div
                   key={contract.id}
-                  className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-800 p-5 transition-colors hover:border-gray-200 dark:border-white/5 dark:bg-[#1a1825] dark:hover:border-white/10"
+                  className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-800 p-5 transition-colors hover:border-gray-200 dark:border-gray-700 dark:border-white/5 dark:bg-[#1a1825] dark:hover:border-white/10"
                 >
                   <div className="mb-3 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                     <div>
-                      <h3 className="mb-1 text-lg font-semibold text-gray-900 dark:text-white">
+                      <h3 className="mb-1 text-lg font-semibold text-gray-900 dark:text-gray-100 dark:text-white">
                         {contract.jobs?.title || tx('contracts.unknownProject', undefined, 'Unknown Project')}
                       </h3>
                       <div className="flex items-center gap-2">
@@ -181,7 +181,7 @@ export default function ContractsList() {
                     </div>
 
                     <div className="text-left sm:text-right">
-                      <p className="text-lg font-bold text-gray-900 dark:text-white">{contract.amount} TND</p>
+                      <p className="text-lg font-bold text-gray-900 dark:text-gray-100 dark:text-white">{contract.amount} TND</p>
                       <p className="text-sm text-gray-500 dark:text-gray-400">
                         {tx('contracts.startedOn', { date: formatDate(contract.created_at) }, `Started ${formatDate(contract.created_at)}`)}
                       </p>
@@ -194,11 +194,11 @@ export default function ContractsList() {
                       {partner?.avatar_url ? (
                           <img src={partner.avatar_url} alt={partner?.full_name || 'User'} className="h-5 w-5 rounded-full object-cover" />
                       ) : (
-                        <div className="flex h-5 w-5 items-center justify-center rounded-full bg-gray-200 text-[10px] font-bold text-gray-500 dark:text-gray-400 dark:bg-gray-800">
+                        <div className="flex h-5 w-5 items-center justify-center rounded-full bg-gray-200 dark:bg-gray-700 text-[10px] font-bold text-gray-500 dark:text-gray-400 dark:bg-gray-800">
                           {partner?.full_name?.charAt(0) || '?'}
                         </div>
                       )}
-                      <span className="text-sm font-medium text-gray-900 dark:text-white">
+                      <span className="text-sm font-medium text-gray-900 dark:text-gray-100 dark:text-white">
                         {partner?.full_name || tx('contracts.unknownUser', undefined, 'Unknown User')}
                       </span>
                     </div>
@@ -208,7 +208,7 @@ export default function ContractsList() {
                     <div className="mb-1 flex items-center justify-between">
                       <span className="text-xs text-gray-500 dark:text-gray-400">{tx('contracts.milestonesProgress', undefined, '1 of 3 milestones complete')}</span>
                     </div>
-                    <div className="h-1.5 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-white/5">
+                    <div className="h-1.5 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-white dark:bg-gray-800/5">
                       <div className={`h-full ${progressIndicatorColor}`} style={{ width: `${progressPercentage}%` }} />
                     </div>
                   </div>

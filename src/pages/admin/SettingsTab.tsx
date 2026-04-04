@@ -20,11 +20,11 @@ export default function SettingsTab() {
             <div className={panelClass}>
                 <h3 className="font-bold text-foreground mb-5 flex items-center gap-2"><Settings className="w-5 h-5 text-cyan-500" />{tr('إعدادات لوحة الإدارة', 'Admin dashboard settings', 'Parametres du tableau admin')}</h3>
                 <div className="grid md:grid-cols-2 gap-4">
-                    <label className="flex items-center justify-between p-4 rounded-xl border border-gray-200 dark:border-white/10 bg-white/70 dark:bg-slate-900/55">
+                    <label className="flex items-center justify-between p-4 rounded-xl border border-gray-200 dark:border-gray-700 dark:border-white/10 dark:border-gray-800 bg-white dark:bg-gray-800/70 ">
                         <span className="text-sm font-medium text-foreground">{tr('التحديث التلقائي', 'Auto refresh', 'Actualisation automatique')}</span>
                         <input type="checkbox" checked={autoRefresh} onChange={e => setAutoRefresh(e.target.checked)} className="h-5 w-5 accent-cyan-600" />
                     </label>
-                    <label className="flex items-center justify-between p-4 rounded-xl border border-gray-200 dark:border-white/10 bg-white/70 dark:bg-slate-900/55">
+                    <label className="flex items-center justify-between p-4 rounded-xl border border-gray-200 dark:border-gray-700 dark:border-white/10 dark:border-gray-800 bg-white dark:bg-gray-800/70 ">
                         <span className="text-sm font-medium text-foreground">{tr('فاصل التحديث', 'Refresh interval', 'Intervalle d actualisation')}</span>
                         <select value={refreshIntervalSec} onChange={e => setRefreshIntervalSec(Number(e.target.value))} className={selectClass}>
                             <option value={20}>20 {tr('ثانية', 'seconds', 'secondes')}</option>
@@ -37,7 +37,7 @@ export default function SettingsTab() {
             </div>
             <div className={panelClass}>
                 <h4 className="font-bold text-foreground mb-3">{tr('صحة النظام', 'System health', 'Sante du systeme')}</h4>
-                <div className="flex items-center justify-between p-4 rounded-xl border border-gray-200 dark:border-white/10 bg-white/70 dark:bg-slate-900/55">
+                <div className="flex items-center justify-between p-4 rounded-xl border border-gray-200 dark:border-gray-700 dark:border-white/10 dark:border-gray-800 bg-white dark:bg-gray-800/70 ">
                     <span className="text-muted">{tr('حالة المراقبة', 'Monitoring status', 'Etat de supervision')}</span>
                     <span className="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700">
                         {tr('مستقر', 'Stable', 'Stable')}

@@ -99,7 +99,7 @@ export default function ClientJobs() {
         {/* Header section */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{tx('pages.clientJobs.title', undefined, 'My Projects')}</h1>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 dark:text-white">{tx('pages.clientJobs.title', undefined, 'My Projects')}</h1>
             <p className="text-gray-500 dark:text-gray-400 mt-1">{tx('pages.clientJobs.subtitle', undefined, 'Manage your posted projects and proposals')}</p>
           </div>
           <button
@@ -118,11 +118,11 @@ export default function ClientJobs() {
           </div>
           <div className="stat-card">
             <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">{tx('pages.clientJobs.proposalsReceived', undefined, 'Total proposals received')}</p>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{stats.proposals}</p>
+            <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 dark:text-white mt-1">{stats.proposals}</p>
           </div>
           <div className="stat-card">
             <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">{tx('pages.clientJobs.completed', undefined, 'Completed')}</p>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{stats.completed}</p>
+            <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 dark:text-white mt-1">{stats.completed}</p>
           </div>
         </div>
 
@@ -204,7 +204,7 @@ export default function ClientJobs() {
                 </div>
                 
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mb-3">
-                  <p className="text-gray-900 dark:text-white font-semibold flex items-center gap-1">
+                  <p className="text-gray-900 dark:text-gray-100 dark:text-white font-semibold flex items-center gap-1">
                     {job.budget_min}-{job.budget_max} {tx('common.currency', undefined, 'TND')}
                   </p>
                   <p className="status-pill-neutral px-2 py-0.5">

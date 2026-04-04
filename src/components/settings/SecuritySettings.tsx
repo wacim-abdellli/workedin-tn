@@ -80,7 +80,7 @@ export default function SecuritySettings() {
         <>
             <div className="space-y-3">
                 <div className="grid gap-3 lg:grid-cols-3">
-                    <div className="rounded-xl border border-primary-100/70 bg-primary-50/60 p-4 dark:border-white/10 dark:bg-white/[0.04]">
+                    <div className="rounded-xl border border-primary-100/70 bg-primary-50/60 p-4 dark:border-white/10 dark:border-gray-800 dark:bg-white dark:bg-gray-800/[0.04]">
                         <p className="text-xs font-medium uppercase tracking-[0.15em] text-[#8b8aa0]">
                             {tx('settings.securityPosture', undefined, 'Security posture')}
                         </p>
@@ -89,7 +89,7 @@ export default function SecuritySettings() {
                             {tx('settings.securityPostureValue', undefined, 'Protected by account session controls')}
                         </p>
                     </div>
-                    <div className="rounded-xl border border-primary-100/70 bg-primary-50/60 p-4 dark:border-white/10 dark:bg-white/[0.04]">
+                    <div className="rounded-xl border border-primary-100/70 bg-primary-50/60 p-4 dark:border-white/10 dark:border-gray-800 dark:bg-white dark:bg-gray-800/[0.04]">
                         <p className="text-xs font-medium uppercase tracking-[0.15em] text-[#8b8aa0]">
                             {tx('settings.passwordStatus', undefined, 'Password status')}
                         </p>
@@ -99,7 +99,7 @@ export default function SecuritySettings() {
                                 : tx('settings.noPasswordOAuth', undefined, `Signed in via ${providerLabel} — no password needed`)}
                         </p>
                     </div>
-                    <div className="rounded-xl border border-primary-100/70 bg-primary-50/60 p-4 dark:border-white/10 dark:bg-white/[0.04]">
+                    <div className="rounded-xl border border-primary-100/70 bg-primary-50/60 p-4 dark:border-white/10 dark:border-gray-800 dark:bg-white dark:bg-gray-800/[0.04]">
                         <p className="text-xs font-medium uppercase tracking-[0.15em] text-[#8b8aa0]">
                             {tx('settings.activeSessionsTitle', undefined, 'Active sessions')}
                         </p>
@@ -111,9 +111,9 @@ export default function SecuritySettings() {
 
                 <div className="space-y-4">
                     {/* Password Change Section */}
-                    <div className="rounded-[1.6rem] border border-primary-100/70 bg-white dark:bg-slate-900/75 p-5 dark:border-white/10 dark:bg-white/[0.04]">
+                    <div className="rounded-[1.6rem] border border-primary-100/70 bg-white dark:bg-gray-800 p-5 dark:border-white/10 dark:border-gray-800 dark:bg-white dark:bg-gray-800/[0.04]">
                         <div className="flex items-start gap-3">
-                            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary-50 text-primary-600 dark:bg-white/8 dark:text-primary-300">
+                            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary-50 text-primary-600 dark:bg-white dark:bg-gray-800/8 dark:text-primary-300">
                                 <KeyRound className="h-5 w-5" />
                             </div>
                             <div className="flex-1">
@@ -200,9 +200,9 @@ export default function SecuritySettings() {
                     </div>
 
                     {/* Active Sessions */}
-                    <div className="rounded-[1.6rem] border border-primary-100/70 bg-white dark:bg-slate-900/75 p-5 dark:border-white/10 dark:bg-white/[0.04]">
+                    <div className="rounded-[1.6rem] border border-primary-100/70 bg-white dark:bg-gray-800 p-5 dark:border-white/10 dark:border-gray-800 dark:bg-white dark:bg-gray-800/[0.04]">
                         <div className="flex items-start gap-3">
-                            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary-50 text-primary-600 dark:bg-white/8 dark:text-primary-300">
+                            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary-50 text-primary-600 dark:bg-white dark:bg-gray-800/8 dark:text-primary-300">
                                 <Smartphone className="h-5 w-5" />
                             </div>
                             <div className="flex-1">

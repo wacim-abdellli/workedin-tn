@@ -307,7 +307,7 @@ export default function VerifyIdentity() {
                         <div className="w-24 h-24 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
                             <CheckCircle2 className="w-12 h-12 text-green-600 dark:text-green-400" />
                         </div>
-                        <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">{tx('verifyIdentity.verified.title', undefined, 'تم التحقق من هويتك بنجاح')}</h2>
+                        <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 dark:text-white mb-4">{tx('verifyIdentity.verified.title', undefined, 'تم التحقق من هويتك بنجاح')}</h2>
                         <p className="text-gray-600 dark:text-gray-300 text-lg mb-8">{tx('verifyIdentity.verified.description', undefined, 'حسابك موثق الآن وحصلت على شارة التحقق الزرقاء.')}</p>
                         <button onClick={() => navigate('/settings?tab=profile')} className="bg-primary-600 hover:bg-primary-700 text-white px-8 py-3 rounded-xl font-medium transition-colors shadow-lg shadow-primary-600/20">
                             {tx('verifyIdentity.backToSettings', undefined, 'العودة إلى الإعدادات')}
@@ -332,9 +332,9 @@ export default function VerifyIdentity() {
                         <div className="inline-flex items-center gap-2 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 px-4 py-2 rounded-full text-sm font-medium mb-4">
                             <Loader2 className="w-4 h-4 animate-spin" />{tx('verifyIdentity.pending.badge', undefined, 'قيد المراجعة')}
                         </div>
-                        <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">{tx('verifyIdentity.pending.title', undefined, 'طلبك قيد المراجعة')}</h2>
+                        <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 dark:text-white mb-4">{tx('verifyIdentity.pending.title', undefined, 'طلبك قيد المراجعة')}</h2>
                         <p className="text-gray-600 dark:text-gray-300 text-lg mb-6">{tx('verifyIdentity.pending.description', undefined, 'تم استلام طلب التحقق من هويتك بنجاح.')}</p>
-                        <div className="bg-gray-50 dark:bg-gray-700/50 rounded-2xl p-5 md:p-6 mb-8">
+                        <div className="bg-gray-50 dark:bg-gray-900 dark:bg-gray-700/50 rounded-2xl p-5 md:p-6 mb-8">
                             <div className="flex items-center justify-center gap-3 text-gray-700 dark:text-gray-300">
                                 <AlertCircle className="w-5 h-5 text-orange-500" />
                                 <span>{tx('verifyIdentity.pending.reviewTime', undefined, 'مدة المراجعة: 24 ساعة كحد أقصى')}</span>
@@ -345,7 +345,7 @@ export default function VerifyIdentity() {
                             <button onClick={() => navigate('/settings?tab=profile')} className="w-full sm:w-auto bg-primary-600 hover:bg-primary-700 text-white px-8 py-3 rounded-xl font-medium transition-colors shadow-lg shadow-primary-600/20">
                                 {tx('verifyIdentity.backToSettings', undefined, 'العودة إلى الإعدادات')}
                             </button>
-                            <button onClick={() => navigate('/dashboard')} className="w-full sm:w-auto border border-gray-300 dark:border-gray-600 px-8 py-3 rounded-xl font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                            <button onClick={() => navigate('/dashboard')} className="w-full sm:w-auto border border-gray-300 dark:border-gray-600 px-8 py-3 rounded-xl font-medium text-gray-700 dark:text-gray-300 dark:text-gray-200 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 transition-colors">
                                 {tx('verifyIdentity.goToDashboard', undefined, 'Go to dashboard')}
                             </button>
                         </div>
@@ -370,13 +370,13 @@ export default function VerifyIdentity() {
                         <div className="w-24 h-24 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
                             <Shield className="w-12 h-12 text-primary-600 dark:text-primary-400" />
                         </div>
-                        <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">{tx('verifyIdentity.submitted.title', undefined, 'تم استلام طلبك بنجاح')}</h2>
+                        <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 dark:text-white mb-4">{tx('verifyIdentity.submitted.title', undefined, 'تم استلام طلبك بنجاح')}</h2>
                         <p className="text-gray-600 dark:text-gray-300 text-lg mb-8">{tx('verifyIdentity.submitted.description', undefined, 'سيقوم فريقنا بمراجعة مستنداتك والرد عليك في أقرب وقت ممكن (عادة خلال 24 ساعة).')}</p>
                         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
                             <button onClick={() => navigate('/settings?tab=profile')} className="w-full sm:w-auto bg-primary-600 hover:bg-primary-700 text-white px-8 py-3 rounded-xl font-medium transition-colors shadow-lg shadow-primary-600/20">
                                 {tx('verifyIdentity.backToSettings', undefined, 'العودة إلى الإعدادات')}
                             </button>
-                            <button onClick={() => navigate('/dashboard')} className="w-full sm:w-auto border border-gray-300 dark:border-gray-600 px-8 py-3 rounded-xl font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                            <button onClick={() => navigate('/dashboard')} className="w-full sm:w-auto border border-gray-300 dark:border-gray-600 px-8 py-3 rounded-xl font-medium text-gray-700 dark:text-gray-300 dark:text-gray-200 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 transition-colors">
                                 {tx('verifyIdentity.goToDashboard', undefined, 'Go to dashboard')}
                             </button>
                         </div>
@@ -413,7 +413,7 @@ export default function VerifyIdentity() {
                             { icon: <ScanLine className="h-4 w-4" />, title: tx('verifyIdentity.security.qualityTitle', undefined, 'Smart quality checks'), desc: tx('verifyIdentity.security.qualityDesc', undefined, 'We validate file format, size, and basic image quality before upload.') },
                             { icon: <Loader2 className="h-4 w-4" />, title: tx('verifyIdentity.security.reviewTitle', undefined, 'Fast review'), desc: tx('verifyIdentity.security.reviewDesc', undefined, 'Most verification requests are reviewed within 24 hours.') },
                         ].map((b, i) => (
-                            <div key={i} className="rounded-2xl border border-white/10 bg-white dark:bg-gray-800/5 p-4 text-sm text-slate-200 backdrop-blur-sm">
+                            <div key={i} className="rounded-2xl border border-white/10 dark:border-gray-800 bg-white dark:bg-gray-800/5 p-4 text-sm text-slate-200 backdrop-blur-sm">
                                 <div className="mb-2 inline-flex h-9 w-9 items-center justify-center rounded-xl bg-white dark:bg-gray-800/10 text-blue-200">{b.icon}</div>
                                 <p className="font-semibold text-white">{b.title}</p>
                                 <p className="mt-1 text-xs text-slate-300">{b.desc}</p>

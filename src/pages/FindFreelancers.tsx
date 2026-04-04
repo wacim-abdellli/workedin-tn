@@ -357,7 +357,7 @@ export default function FindFreelancers() {
                             >
                                 <Grid className="h-5 w-5" />
                             </button>
-                            <div className="h-6 w-px bg-gray-200 dark:bg-white dark:bg-gray-800/10" />
+                            <div className="h-6 w-px bg-gray-200 dark:bg-gray-700 dark:bg-white dark:bg-gray-800/10" />
                             <button
                                 type="button"
                                 onClick={() => setViewMode('list')}
@@ -493,8 +493,8 @@ export default function FindFreelancers() {
                         className="absolute inset-0 bg-[#09070f]/70 backdrop-blur-sm"
                         onClick={() => setShowFilters(false)}
                     />
-                    <div className="absolute inset-x-0 bottom-0 top-16 flex flex-col rounded-t-[32px] border border-white/10 bg-[#120f1d] text-white shadow-2xl">
-                        <div className="flex items-center justify-between border-b border-white/10 px-6 py-5">
+                    <div className="absolute inset-x-0 bottom-0 top-16 flex flex-col rounded-t-[32px] border border-white/10 dark:border-gray-800 bg-[#120f1d] text-white shadow-2xl">
+                        <div className="flex items-center justify-between border-b border-white/10 dark:border-gray-800 px-6 py-5">
                             <h2 className="text-lg font-bold">{copy.filterTitle}</h2>
                             <button type="button" onClick={() => setShowFilters(false)} className="rounded-full bg-white dark:bg-gray-800/5 p-2">
                                 <X className="h-5 w-5" />
@@ -503,7 +503,7 @@ export default function FindFreelancers() {
                         <div className="flex-1 overflow-y-auto px-6 py-6">
                             <FilterSidebar />
                         </div>
-                        <div className="border-t border-white/10 p-6">
+                        <div className="border-t border-white/10 dark:border-gray-800 p-6">
                             <Button className="w-full" onClick={() => setShowFilters(false)}>
                                 {copy.resultsCount.replace('{{count}}', filteredFreelancers.length.toString())}
                             </Button>

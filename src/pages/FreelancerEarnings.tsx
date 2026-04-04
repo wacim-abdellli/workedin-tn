@@ -104,31 +104,31 @@ export default function FreelancerEarnings() {
               {tx('pages.freelancerEarnings.pendingClearance', { amount: (balance?.pending || 0).toLocaleString() }, `${(balance?.pending || 0).toLocaleString()} TND pending clearance`)}
             </p>
           </div>
-          <button className="bg-white text-purple-600 font-semibold px-6 py-2.5 rounded-xl hover:bg-purple-50 transition-colors shrink-0">
+          <button className="bg-white dark:bg-gray-800 text-purple-600 font-semibold px-6 py-2.5 rounded-xl hover:bg-purple-50 transition-colors shrink-0">
             {tx('pages.freelancerEarnings.withdraw', undefined, 'Withdraw')}
           </button>
         </div>
 
         {/* Stats row */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-          <div className="bg-white dark:bg-[#1a1825] rounded-2xl p-4 border border-gray-100 dark:border-white/5">
+          <div className="bg-white dark:bg-gray-800 dark:bg-[#1a1825] rounded-2xl p-4 border border-gray-100 dark:border-gray-800 dark:border-white/5">
             <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">{tx('pages.freelancerEarnings.totalEarned', undefined, 'Total earned')}</p>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{stats.totalEarned.toLocaleString()} TND</p>
+            <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 dark:text-white mt-1">{stats.totalEarned.toLocaleString()} TND</p>
           </div>
-          <div className="bg-white dark:bg-[#1a1825] rounded-2xl p-4 border border-gray-100 dark:border-white/5">
+          <div className="bg-white dark:bg-gray-800 dark:bg-[#1a1825] rounded-2xl p-4 border border-gray-100 dark:border-gray-800 dark:border-white/5">
             <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">{tx('pages.freelancerEarnings.thisMonth', undefined, 'This month')}</p>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{stats.thisMonth.toLocaleString()} TND</p>
+            <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 dark:text-white mt-1">{stats.thisMonth.toLocaleString()} TND</p>
           </div>
-          <div className="bg-white dark:bg-[#1a1825] rounded-2xl p-4 border border-gray-100 dark:border-white/5">
+          <div className="bg-white dark:bg-gray-800 dark:bg-[#1a1825] rounded-2xl p-4 border border-gray-100 dark:border-gray-800 dark:border-white/5">
             <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">{tx('pages.freelancerEarnings.completedContracts', undefined, 'Completed contracts')}</p>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{stats.completedContracts}</p>
+            <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 dark:text-white mt-1">{stats.completedContracts}</p>
           </div>
         </div>
 
         {/* Earnings chart section */}
         <div className="mb-8">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{tx('pages.freelancerEarnings.earningsOverview', undefined, 'Earnings overview')}</h2>
-          <div className="bg-white dark:bg-[#1a1825] rounded-2xl p-5 border border-gray-100 dark:border-white/5 h-[240px]">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 dark:text-white mb-4">{tx('pages.freelancerEarnings.earningsOverview', undefined, 'Earnings overview')}</h2>
+          <div className="bg-white dark:bg-gray-800 dark:bg-[#1a1825] rounded-2xl p-5 border border-gray-100 dark:border-gray-800 dark:border-white/5 h-[240px]">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <defs>
@@ -151,9 +151,9 @@ export default function FreelancerEarnings() {
 
         {/* Transaction list */}
         <div>
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{tx('pages.freelancerEarnings.paymentHistory', undefined, 'Payment history')}</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 dark:text-white mb-4">{tx('pages.freelancerEarnings.paymentHistory', undefined, 'Payment history')}</h2>
           
-          <div className="bg-white dark:bg-[#1a1825] rounded-2xl border border-gray-100 dark:border-white/5 overflow-hidden">
+          <div className="bg-white dark:bg-gray-800 dark:bg-[#1a1825] rounded-2xl border border-gray-100 dark:border-gray-800 dark:border-white/5 overflow-hidden">
             {isTxLoading ? (
               <div className="p-4">
                 <SkeletonList count={5} />
@@ -172,9 +172,9 @@ export default function FreelancerEarnings() {
             ) : (
               <div className="divide-y divide-gray-100 dark:divide-white/5">
                 {transactions.map((transaction) => (
-                  <div key={transaction.id} className="flex items-center justify-between px-5 py-3 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+                  <div key={transaction.id} className="flex items-center justify-between px-5 py-3 hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-white dark:bg-gray-800/5 transition-colors">
                     <div className="flex-1 min-w-0 pe-4">
-                      <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100 dark:text-white truncate">
                         {transaction.description || tx('pages.freelancerEarnings.contractPayment', undefined, 'Contract payment')}
                       </p>
                       <p className="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">
@@ -185,7 +185,7 @@ export default function FreelancerEarnings() {
                       <p className="text-sm text-gray-400 mb-0.5">
                         {formatDate(transaction.created_at)}
                       </p>
-                      <p className={`text-sm font-semibold ${transaction.amount > 0 ? 'text-green-600 dark:text-green-400' : 'text-gray-900 dark:text-white'}`}>
+                      <p className={`text-sm font-semibold ${transaction.amount > 0 ? 'text-green-600 dark:text-green-400' : 'text-gray-900 dark:text-gray-100 dark:text-white'}`}>
                         {transaction.amount > 0 ? '+' : ''}{transaction.amount} TND
                       </p>
                     </div>

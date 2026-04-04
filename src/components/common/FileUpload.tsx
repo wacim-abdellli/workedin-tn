@@ -103,11 +103,11 @@ export const FileUpload: React.FC<FileUploadProps> = ({
                     "rounded-[1.6rem] border-2 border-dashed p-8 text-center transition-colors",
                     isDragging
                         ? "border-primary-500 bg-primary-50 dark:bg-primary-950/40"
-                        : "border-primary-100 bg-white/70 dark:border-white/10 dark:bg-white/[0.03]"
+                        : "border-primary-100 bg-white/70 dark:border-white/10 dark:border-gray-800 dark:bg-white/[0.03]"
                 )}
             >
                 <div className="flex justify-center">
-                    <div className="mb-4 rounded-2xl bg-primary-50 p-4 text-primary-600 dark:bg-white/[0.06] dark:text-primary-300">
+                    <div className="mb-4 rounded-2xl bg-primary-50 p-4 text-primary-600 dark:bg-white dark:bg-gray-800/[0.06] dark:text-primary-300">
                         <Upload className="h-8 w-8" />
                     </div>
                 </div>
@@ -127,7 +127,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
                 />
                 <label
                     htmlFor="file-upload"
-                    className="inline-block mt-4 rounded-xl border border-primary-200 bg-white px-4 py-2 font-medium text-primary-700 cursor-pointer hover:bg-primary-50 dark:border-white/10 dark:bg-[#1a1825] dark:text-primary-300 dark:hover:bg-white/[0.06] transition-colors"
+                    className="inline-block mt-4 rounded-xl border border-primary-200 bg-white dark:bg-gray-800 px-4 py-2 font-medium text-primary-700 cursor-pointer hover:bg-primary-50 dark:border-white/10 dark:border-gray-800 dark:bg-[#1a1825] dark:text-primary-300 dark:hover:bg-white dark:bg-gray-800/[0.06] transition-colors"
                 >
                     {tx('common.fileUpload.chooseFiles', undefined, 'Choose files')}
                 </label>
@@ -139,12 +139,12 @@ export const FileUpload: React.FC<FileUploadProps> = ({
                     {value.map((file, index) => (
                         <div
                             key={index}
-                            className="flex items-center justify-between rounded-2xl border border-primary-100/70 bg-gray-50/80 p-3 dark:border-white/10 dark:bg-white/[0.03]"
+                            className="flex items-center justify-between rounded-2xl border border-primary-100/70 bg-gray-50 dark:bg-gray-900/80 p-3 dark:border-white/10 dark:border-gray-800 dark:bg-white dark:bg-gray-800/[0.03]"
                         >
                             <div className="flex items-center gap-3">
                                 <FileText className="w-5 h-5 text-gray-400" />
                                 <div>
-                                    <p className="text-sm font-medium text-gray-900 dark:text-white truncate max-w-[200px]">
+                                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100 dark:text-white truncate max-w-[200px]">
                                         {file.name}
                                     </p>
                                     <p className="text-xs text-gray-500">
@@ -155,7 +155,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
                             <button
                                 type="button"
                                 onClick={() => removeFile(index)}
-                                className="rounded-lg p-1 text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-700"
+                                className="rounded-lg p-1 text-gray-500 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-700"
                                 aria-label={tx('common.fileUpload.removeFileAria', { name: file.name }, `Remove ${file.name}`)}
                             >
                                 <X className="w-4 h-4" />

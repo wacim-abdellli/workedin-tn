@@ -81,7 +81,7 @@ export default function ReportsTab() {
                             <select
                                 value={statusFilter}
                                 onChange={e => setStatusFilter(e.target.value as ReportStatus | 'all')}
-                                className="h-9 px-3 border rounded-xl bg-white/92 dark:bg-slate-900/70 border-gray-200 dark:border-white/12 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary-500/35"
+                                className="h-9 px-3 border rounded-xl bg-white dark:bg-gray-800/92 border-gray-200 dark:border-gray-700 dark:border-white/12 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary-500/35"
                             >
                                 <option value="all">{tr('الكل', 'All', 'Tous')}</option>
                                 <option value="pending">{tr('معلق', 'Pending', 'En attente')}</option>
@@ -111,10 +111,10 @@ export default function ReportsTab() {
                 ) : (
                     <>
                         {/* Desktop table */}
-                        <div className="hidden md:block card p-0 overflow-hidden border-white/40 dark:border-white/10 bg-white/75 dark:bg-slate-950/45">
+                        <div className="hidden md:block card p-0 overflow-hidden border-white/40 dark:border-white/10 dark:border-gray-800 bg-white dark:bg-gray-800/75 ">
                             <div className="overflow-x-auto">
                                 <table className="w-full">
-                                    <thead className="bg-white/90 dark:bg-slate-900/88 border-b border-gray-200 dark:border-white/10 sticky top-0 z-10 backdrop-blur">
+                                    <thead className="bg-white dark:bg-gray-800/90 border-b border-gray-200 dark:border-gray-700 dark:border-white/10 dark:border-gray-800 sticky top-0 z-10 backdrop-blur">
                                         <tr>
                                             <th className="px-5 py-4 text-left text-xs font-semibold text-muted whitespace-nowrap">{tr('المُبلِّغ', 'Reporter', 'Signaleur')}</th>
                                             <th className="px-5 py-4 text-left text-xs font-semibold text-muted whitespace-nowrap">{tr('النوع', 'Type', 'Type')}</th>
@@ -155,7 +155,7 @@ export default function ReportsTab() {
                                                                 <Button
                                                                     size="sm"
                                                                     variant="ghost"
-                                                                    className="text-gray-500 hover:bg-gray-100 dark:text-gray-400"
+                                                                    className="text-gray-500 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-400"
                                                                     disabled={updateMutation.isPending}
                                                                     onClick={() => updateMutation.mutate({ id: report.id, status: 'dismissed' })}
                                                                 >
@@ -199,7 +199,7 @@ export default function ReportsTab() {
                                         </div>
                                     </div>
                                     
-                                    <div className="mb-3 pb-3 border-b border-gray-100 dark:border-white/10">
+                                    <div className="mb-3 pb-3 border-b border-gray-100 dark:border-gray-800 dark:border-white/10">
                                         <p className="text-sm text-muted mb-1">{tr('السبب', 'Reason', 'Raison')}</p>
                                         <p className="text-sm text-foreground">{report.reason}</p>
                                     </div>
@@ -225,7 +225,7 @@ export default function ReportsTab() {
                                                 <Button
                                                     size="sm"
                                                     variant="ghost"
-                                                    className="flex-1 min-h-[44px] text-gray-500 hover:bg-gray-100 dark:text-gray-400"
+                                                    className="flex-1 min-h-[44px] text-gray-500 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-400"
                                                     disabled={updateMutation.isPending}
                                                     onClick={() => updateMutation.mutate({ id: report.id, status: 'dismissed' })}
                                                 >

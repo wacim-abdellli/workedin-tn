@@ -57,7 +57,7 @@ export default function ReviewsSection({ reviews, stats }: ReviewsSectionProps) 
                         return (
                             <div key={stars} className="flex items-center gap-3">
                                 <span className="text-sm font-medium w-3 text-[var(--text-secondary)]">{stars}</span>
-                                <div className="flex-1 h-2 bg-black/[0.08] dark:bg-white/[0.08] rounded-full overflow-hidden">
+                                <div className="flex-1 h-2 bg-black/[0.08] dark:bg-white dark:bg-gray-800/[0.08] rounded-full overflow-hidden">
                                     <div
                                         className="h-full bg-[linear-gradient(90deg,var(--workspace-primary),var(--brand-accent))] rounded-full"
                                         style={{ width: `${percentage}%` }}
@@ -76,7 +76,7 @@ export default function ReviewsSection({ reviews, stats }: ReviewsSectionProps) 
                     <div key={review.id} className="border-b border-border/70 pb-6 last:border-0 last:pb-0">
                         <div className="flex justify-between items-start mb-2">
                             <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
+                                <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center overflow-hidden">
                                     {review.client_avatar ? (
                                         <OptimizedImage
                                             src={review.client_avatar}

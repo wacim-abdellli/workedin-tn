@@ -111,7 +111,7 @@ export default function ChatSection({
                         if (message.type === 'system') {
                             return (
                                 <div key={message.id} className="flex justify-center my-4">
-                                    <span className="bg-gray-200 text-gray-600 dark:text-gray-400 text-xs px-3 py-1 rounded-full" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(message.content) }} />
+                                    <span className="bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400 text-xs px-3 py-1 rounded-full" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(message.content) }} />
                                 </div>
                             );
                         }
@@ -142,7 +142,7 @@ export default function ChatSection({
                                     <div className={`flex flex-col max-w-[70%] ${isOwn ? 'items-end' : 'items-start'}`}>
                                         <div className={`pk-3 py-2 px-4 rounded-2xl shadow-sm text-sm ${isOwn
                                             ? 'bg-primary-600 text-white rounded-br-sm'
-                                            : 'bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-800 text-gray-800 dark:text-gray-100 rounded-bl-sm'
+                                            : 'bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-800 text-gray-800 dark:text-gray-200 dark:text-gray-100 rounded-bl-sm'
                                             }`}>
                                             {/* Text Content */}
                                             {message.content && <div className="leading-relaxed whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(message.content) }} />}
@@ -198,7 +198,7 @@ export default function ChatSection({
                 {otherUserTyping && (
                     <div className="flex justify-start gap-3" role="status" aria-live="polite">
                         <span className="sr-only">الطرف الآخر يكتب الآن</span>
-                        <div className="w-8 h-8 rounded-full bg-gray-200 animate-pulse" />
+                        <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 animate-pulse" />
                         <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl rounded-bl-sm px-4 py-3 shadow-sm flex items-center gap-1">
                             <div className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '0ms' }} />
                             <div className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '150ms' }} />

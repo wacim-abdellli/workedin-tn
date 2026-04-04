@@ -183,11 +183,11 @@ const ResetPassword = () => {
                 }
             >
                 <div className="w-full max-w-md">
-                    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 p-8 text-center">
+                    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 dark:border-gray-700 p-8 text-center">
                         <div className="w-20 h-20 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
                             <AlertTriangle className="w-10 h-10 text-red-600 dark:text-red-400" />
                         </div>
-                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
+                        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 dark:text-white mb-3">
                             {tx('auth.resetPassword.expiredLink', undefined, 'Expired Link')}
                         </h2>
                         <p className="text-gray-600 dark:text-gray-400 mb-8">
@@ -224,7 +224,7 @@ const ResetPassword = () => {
             }
         >
             <div className="w-full max-w-md">
-                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 p-8">
+                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 dark:border-gray-700 p-8">
                     {!isSuccess ? (
                         <>
                             {/* Header */}
@@ -232,7 +232,7 @@ const ResetPassword = () => {
                                 <div className="w-16 h-16 bg-primary-100 dark:bg-primary-900 rounded-full flex items-center justify-center mx-auto mb-4">
                                     <ShieldCheck className="w-8 h-8 text-primary-600 dark:text-primary-400" />
                                 </div>
-                                <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                                <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 dark:text-white mb-2">
                                     {tx('auth.resetPassword.setNew', undefined, 'Set New Password')}
                                 </h1>
                                 <p className="text-gray-600 dark:text-gray-400">
@@ -326,7 +326,7 @@ const ResetPassword = () => {
                                 </div>
 
                                 {/* Password Requirements */}
-                                <div className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
+                                <div className="p-4 bg-gray-50 dark:bg-gray-900 dark:bg-gray-700/50 rounded-xl">
                                     <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                         {tx('auth.passwordRequirements.title', undefined, 'Password Requirements:')}
                                     </p>
@@ -369,7 +369,7 @@ const ResetPassword = () => {
                             <div className="w-20 h-20 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mx-auto mb-6">
                                 <CheckCircle className="w-10 h-10 text-green-600 dark:text-green-400" />
                             </div>
-                            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
+                            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 dark:text-white mb-3">
                                 {tx('auth.resetPassword.success', undefined, 'Password changed successfully!')}
                             </h2>
                             <p className="text-gray-600 dark:text-gray-400 mb-6">

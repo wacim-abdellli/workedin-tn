@@ -14,9 +14,9 @@ export default function VerificationStepper({ step, stepLabels, onStepClick }: V
     const currentStepIndex = STEP_MAP.indexOf(step as UploadStep);
 
     return (
-        <div className="relative mb-10 flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-2 py-5 backdrop-blur-sm md:px-6 md:py-6">
+        <div className="relative mb-10 flex items-center justify-between rounded-2xl border border-white/10 dark:border-gray-800 bg-white dark:bg-gray-800/5 px-2 py-5 backdrop-blur-sm md:px-6 md:py-6">
             {/* Track background */}
-            <div className="absolute left-5 right-5 top-1/2 h-1 -z-10 rounded-full bg-white/15" />
+            <div className="absolute left-5 right-5 top-1/2 h-1 -z-10 rounded-full bg-white dark:bg-gray-800/15" />
             {/* Progress fill */}
             <div
                 className="absolute left-5 top-1/2 h-1 -z-10 rounded-full bg-gradient-to-r from-cyan-400 to-blue-500 transition-[width] duration-300"

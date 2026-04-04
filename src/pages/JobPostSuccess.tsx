@@ -30,10 +30,10 @@ export default function JobPostSuccess() {
             <Header />
 
             <main className="page-shell-content space-y-6">
-                <section className="radius-shell overflow-hidden border border-emerald-200/40 bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.12),transparent_28%),linear-gradient(135deg,rgba(255,255,255,0.98),rgba(244,241,255,0.94))] p-6 shadow-[0_32px_90px_-48px_rgba(16,185,129,0.22)] dark:border-white/10 dark:bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.18),transparent_28%),linear-gradient(145deg,rgba(18,16,28,0.98),rgba(11,10,18,0.98))] sm:p-8">
+                <section className="radius-shell overflow-hidden border border-emerald-200/40 bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.12),transparent_28%),linear-gradient(135deg,rgba(255,255,255,0.98),rgba(244,241,255,0.94))] p-6 shadow-[0_32px_90px_-48px_rgba(16,185,129,0.22)] dark:border-white/10 dark:border-gray-800 dark:bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.18),transparent_28%),linear-gradient(145deg,rgba(18,16,28,0.98),rgba(11,10,18,0.98))] sm:p-8">
                     <div className="grid gap-6 xl:grid-cols-[minmax(0,1.08fr)_320px]">
                         <div className="space-y-5">
-                            <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-white dark:bg-gray-800/80 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700 shadow-sm dark:border-white/10 dark:bg-white dark:bg-gray-800/5 dark:text-emerald-200">
+                            <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-white dark:bg-gray-800/80 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700 shadow-sm dark:border-white/10 dark:border-gray-800 dark:bg-white dark:bg-gray-800/5 dark:text-emerald-200">
                                 <Sparkles className="h-3.5 w-3.5" />
                                 {tx('jobs.posted.badge', undefined, 'Project published')}
                             </div>
@@ -87,14 +87,14 @@ export default function JobPostSuccess() {
                             </div>
                         </div>
 
-                        <div className="rounded-[1.75rem] border border-primary-100/70 bg-white dark:bg-gray-800/72 p-5 shadow-sm dark:border-white/10 dark:bg-white dark:bg-gray-800/[0.04]">
+                        <div className="rounded-[1.75rem] border border-primary-100/70 bg-white dark:bg-gray-800/72 p-5 shadow-sm dark:border-white/10 dark:border-gray-800 dark:bg-white dark:bg-gray-800/[0.04]">
                             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary-600 dark:text-primary-300">
                                 {tx('jobs.posted.whatsNext', undefined, 'What happens next')}
                             </p>
 
                             <div className="mt-5 space-y-3">
                                 {nextSteps.map((step, index) => (
-                                    <div key={step.title} className="rounded-2xl border border-primary-100/70 bg-primary-50/60 p-4 dark:border-white/10 dark:bg-white dark:bg-gray-800/[0.04]">
+                                    <div key={step.title} className="rounded-2xl border border-primary-100/70 bg-primary-50/60 p-4 dark:border-white/10 dark:border-gray-800 dark:bg-white dark:bg-gray-800/[0.04]">
                                         <div className="flex items-start gap-3">
                                             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary-600 text-sm font-semibold text-white">
                                                 {index + 1}
@@ -128,15 +128,15 @@ export default function JobPostSuccess() {
                         </div>
 
                         <div className="mt-6 grid gap-4 md:grid-cols-3">
-                            <div className="rounded-[1.5rem] border border-primary-100/70 bg-white dark:bg-gray-800/72 p-5 dark:border-white/10 dark:bg-white dark:bg-gray-800/[0.04]">
+                            <div className="rounded-[1.5rem] border border-primary-100/70 bg-white dark:bg-gray-800/72 p-5 dark:border-white/10 dark:border-gray-800 dark:bg-white dark:bg-gray-800/[0.04]">
                                 <p className="text-sm font-semibold text-[#171420] dark:text-white">{tx('jobs.posted.cardReviewTitle', undefined, 'Check the brief')}</p>
                                 <p className="mt-2 text-sm leading-6 text-[#6b6880] dark:text-[#8b8aa0]">{tx('jobs.posted.cardReviewDescription', undefined, 'Confirm the final wording, budget, and visibility are exactly how you want them.')}</p>
                             </div>
-                            <div className="rounded-[1.5rem] border border-primary-100/70 bg-white dark:bg-gray-800/72 p-5 dark:border-white/10 dark:bg-white dark:bg-gray-800/[0.04]">
+                            <div className="rounded-[1.5rem] border border-primary-100/70 bg-white dark:bg-gray-800/72 p-5 dark:border-white/10 dark:border-gray-800 dark:bg-white dark:bg-gray-800/[0.04]">
                                 <p className="text-sm font-semibold text-[#171420] dark:text-white">{tx('jobs.posted.cardInviteTitle', undefined, 'Invite selectively')}</p>
                                 <p className="mt-2 text-sm leading-6 text-[#6b6880] dark:text-[#8b8aa0]">{tx('jobs.posted.cardInviteDescription', undefined, 'Bring in freelancers you already trust if you need stronger signal early.')}</p>
                             </div>
-                            <div className="rounded-[1.5rem] border border-primary-100/70 bg-white dark:bg-gray-800/72 p-5 dark:border-white/10 dark:bg-white dark:bg-gray-800/[0.04]">
+                            <div className="rounded-[1.5rem] border border-primary-100/70 bg-white dark:bg-gray-800/72 p-5 dark:border-white/10 dark:border-gray-800 dark:bg-white dark:bg-gray-800/[0.04]">
                                 <p className="text-sm font-semibold text-[#171420] dark:text-white">{tx('jobs.posted.cardDashboardTitle', undefined, 'Return to your dashboard')}</p>
                                 <p className="mt-2 text-sm leading-6 text-[#6b6880] dark:text-[#8b8aa0]">{tx('jobs.posted.cardDashboardDescription', undefined, 'Track pipeline activity, notifications, and proposal volume from your client workspace.')}</p>
                             </div>

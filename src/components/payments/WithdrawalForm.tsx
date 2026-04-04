@@ -107,7 +107,7 @@ const WithdrawalForm = ({ wallet, onSuccess, onCancel }: WithdrawalFormProps) =>
                 <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
                     <CheckCircle className="w-8 h-8 text-green-600" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 dark:text-white mb-2">
                     تم إرسال طلب السحب
                 </h3>
                 <p className="text-gray-600 dark:text-gray-400 mb-4">
@@ -124,7 +124,7 @@ const WithdrawalForm = ({ wallet, onSuccess, onCancel }: WithdrawalFormProps) =>
         <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 rounded-2xl p-6">
             {/* Header */}
             <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 dark:text-white">
                     طلب سحب
                 </h3>
                 {onCancel && (
@@ -139,9 +139,9 @@ const WithdrawalForm = ({ wallet, onSuccess, onCancel }: WithdrawalFormProps) =>
             </div>
 
             {/* Available Balance */}
-            <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
+            <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-900 dark:bg-gray-700/50 rounded-xl">
                 <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">الرصيد المتاح</div>
-                <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                <div className="text-2xl font-bold text-gray-900 dark:text-gray-100 dark:text-white">
                     {formatCurrency(wallet.balance)}
                 </div>
             </div>
@@ -185,7 +185,7 @@ const WithdrawalForm = ({ wallet, onSuccess, onCancel }: WithdrawalFormProps) =>
                             onClick={() => setMethod(m)}
                             className={`p-3 rounded-xl border-2 text-center transition-colors ${method === m
                                 ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300'
-                                : 'border-gray-200 dark:border-gray-600 hover:border-gray-300'
+                                : 'border-gray-200 dark:border-gray-700 dark:border-gray-600 hover:border-gray-300'
                                 }`}
                         >
                             {m === 'bank_transfer' && <Building className="w-5 h-5 mx-auto mb-1" />}

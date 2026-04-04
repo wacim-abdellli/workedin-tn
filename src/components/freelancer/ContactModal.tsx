@@ -57,7 +57,7 @@ export default function ContactModal({ isOpen, onClose, freelancerId, freelancer
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 p-4 backdrop-blur-md">
-            <div className="w-full max-w-lg overflow-hidden rounded-[1.75rem] border border-white/10 bg-[#171421] shadow-[0_32px_90px_-36px_rgba(15,13,22,0.7)] animate-in fade-in zoom-in duration-200">
+            <div className="w-full max-w-lg overflow-hidden rounded-[1.75rem] border border-white/10 dark:border-gray-800 bg-[#171421] shadow-[0_32px_90px_-36px_rgba(15,13,22,0.7)] animate-in fade-in zoom-in duration-200">
                 <div className="border-b border-white/8 bg-[linear-gradient(135deg,rgba(139,92,246,0.16)_0%,rgba(245,158,11,0.08)_100%)] px-6 py-5">
                     <div className="flex items-start justify-between gap-4">
                         <div>
@@ -68,7 +68,7 @@ export default function ContactModal({ isOpen, onClose, freelancerId, freelancer
                                 {tx('pages.freelancerProfile.contactModal.title', { name: freelancerName }, `Message ${freelancerName}`)}
                             </h3>
                         </div>
-                        <button onClick={onClose} className="rounded-xl border border-white/10 p-2 text-white/70 transition-colors hover:bg-white dark:bg-gray-800/5 hover:text-white">
+                        <button onClick={onClose} className="rounded-xl border border-white/10 dark:border-gray-800 p-2 text-white/70 transition-colors hover:bg-white dark:bg-gray-800/5 hover:text-white">
                         <X className="w-5 h-5" />
                     </button>
                     </div>

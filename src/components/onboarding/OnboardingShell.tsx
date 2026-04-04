@@ -34,10 +34,10 @@ export default function OnboardingShell({
 
     return (
         <main className="page-shell-content space-y-6">
-            <section className="radius-shell overflow-hidden border border-primary-200/40 bg-[radial-gradient(circle_at_top_left,rgba(139,92,246,0.15),transparent_30%),radial-gradient(circle_at_top_right,rgba(245,158,11,0.08),transparent_24%),linear-gradient(135deg,rgba(255,255,255,0.98),rgba(244,241,255,0.94))] p-6 shadow-[0_32px_90px_-48px_rgba(109,40,217,0.28)] dark:border-white/10 dark:bg-[radial-gradient(circle_at_top_left,rgba(167,139,250,0.18),transparent_28%),radial-gradient(circle_at_top_right,rgba(245,158,11,0.08),transparent_22%),linear-gradient(145deg,rgba(18,16,28,0.98),rgba(11,10,18,0.98))] sm:p-8">
+            <section className="radius-shell overflow-hidden border border-primary-200/40 bg-[radial-gradient(circle_at_top_left,rgba(139,92,246,0.15),transparent_30%),radial-gradient(circle_at_top_right,rgba(245,158,11,0.08),transparent_24%),linear-gradient(135deg,rgba(255,255,255,0.98),rgba(244,241,255,0.94))] p-6 shadow-[0_32px_90px_-48px_rgba(109,40,217,0.28)] dark:border-white/10 dark:border-gray-800 dark:bg-[radial-gradient(circle_at_top_left,rgba(167,139,250,0.18),transparent_28%),radial-gradient(circle_at_top_right,rgba(245,158,11,0.08),transparent_22%),linear-gradient(145deg,rgba(18,16,28,0.98),rgba(11,10,18,0.98))] sm:p-8">
                     <div className="grid gap-6 xl:grid-cols-[minmax(0,1.08fr)_320px]">
                         <div className="space-y-5">
-                            <div className="inline-flex items-center gap-2 rounded-full border border-primary-200 bg-white/80 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-primary-700 shadow-sm dark:border-white/10 dark:bg-white/5 dark:text-primary-200">
+                            <div className="inline-flex items-center gap-2 rounded-full border border-primary-200 bg-white dark:bg-gray-800/80 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-primary-700 shadow-sm dark:border-white/10 dark:border-gray-800 dark:bg-white dark:bg-gray-800/5 dark:text-primary-200">
                                 <Sparkles className="h-3.5 w-3.5" />
                                 {badge}
                             </div>
@@ -52,7 +52,7 @@ export default function OnboardingShell({
                             </div>
                         </div>
 
-                        <div className="rounded-[1.75rem] border border-primary-100/70 bg-white/72 p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
+                        <div className="rounded-[1.75rem] border border-primary-100/70 bg-white dark:bg-gray-800/72 p-5 shadow-sm dark:border-white/10 dark:border-gray-800 dark:bg-white dark:bg-gray-800/[0.04]">
                             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary-600 dark:text-primary-300">
                                 {tx('onboarding.currentStep', undefined, 'Current step')}
                             </p>
@@ -68,7 +68,7 @@ export default function OnboardingShell({
                                     <span>Progress</span>
                                     <span>{completion}%</span>
                                 </div>
-                                <div className="h-2.5 overflow-hidden rounded-full bg-primary-100 dark:bg-white/10">
+                                <div className="h-2.5 overflow-hidden rounded-full bg-primary-100 dark:bg-white dark:bg-gray-800/10">
                                     <div className="h-full rounded-full bg-[linear-gradient(90deg,var(--workspace-primary),var(--brand-accent))] transition-[width] duration-300" style={{ width: `${completion}%` }} />
                                 </div>
                             </div>
@@ -89,14 +89,14 @@ export default function OnboardingShell({
                                         ? 'border-primary-500/25 bg-primary-500/[0.08] shadow-[0_22px_44px_-30px_rgba(109,40,217,0.52)]'
                                         : isCompleted
                                             ? 'border-accent-200/80 bg-accent-50/60 dark:border-accent-500/20 dark:bg-accent-500/[0.06]'
-                                            : 'border-gray-200/80 bg-white/70 dark:border-white/10 dark:bg-white/[0.03]'}`}
+                                            : 'border-gray-200 dark:border-gray-700/80 bg-white dark:bg-gray-800/70 dark:border-white/10 dark:border-gray-800 dark:bg-white dark:bg-gray-800/[0.03]'}`}
                                 >
                                     <div className="flex items-start gap-3">
                                         <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl text-sm font-semibold ${isCurrent
                                             ? 'bg-primary-600 text-white'
                                             : isCompleted
                                                 ? 'bg-accent-100 text-accent-700 dark:bg-accent-500/12 dark:text-accent-300'
-                                                : 'bg-gray-100 text-gray-500 dark:bg-white/8 dark:text-[#8b8aa0]'}`}
+                                                : 'bg-gray-100 text-gray-500 dark:bg-white dark:bg-gray-800/8 dark:text-[#8b8aa0]'}`}
                                         >
                                             {step.id}
                                         </div>

@@ -237,7 +237,7 @@ function Settings() {
     const renderAccountTab = () => (
         <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-500 relative">
             <div className="grid gap-3 sm:grid-cols-3 relative z-10">
-                <div className="group relative overflow-hidden flex flex-col justify-between p-4 rounded-xl border border-white/10 bg-white/[0.02] backdrop-blur-xl shadow-xl transition-all duration-300 hover:border-brand/40 hover:bg-brand/5">
+                <div className="group relative overflow-hidden flex flex-col justify-between p-4 rounded-xl border border-white/10 dark:border-gray-800 bg-white dark:bg-gray-800/[0.02] backdrop-blur-xl shadow-xl transition-all duration-300 hover:border-brand/40 hover:bg-brand/5">
                     <div className="absolute -right-10 -top-4 h-32 w-32 rounded-full bg-brand/10 blur-[40px] pointer-events-none transition-all group-hover:bg-brand/20" />
                     <div>
                         <div className="flex items-center gap-3">
@@ -257,7 +257,7 @@ function Settings() {
                     </div>
                 </div>
 
-                <div className="group relative overflow-hidden flex flex-col justify-between p-4 rounded-xl border border-white/10 bg-white/[0.02] backdrop-blur-xl shadow-xl transition-all duration-300 hover:border-blue-500/30 hover:bg-blue-500/5">
+                <div className="group relative overflow-hidden flex flex-col justify-between p-4 rounded-xl border border-white/10 dark:border-gray-800 bg-white dark:bg-gray-800/[0.02] backdrop-blur-xl shadow-xl transition-all duration-300 hover:border-blue-500/30 hover:bg-blue-500/5">
                     <div className="absolute -right-10 -top-4 h-32 w-32 rounded-full bg-blue-500/10 blur-[40px] pointer-events-none transition-all group-hover:bg-blue-500/20" />
                     <div>
                         <div className="flex items-center gap-3">
@@ -275,7 +275,7 @@ function Settings() {
                     </div>
                 </div>
 
-                <div className={`group relative overflow-hidden flex flex-col justify-between p-4 rounded-xl border border-white/10 bg-white/[0.02] backdrop-blur-xl shadow-xl transition-all duration-300 ${profile?.onboarding_completed ? 'hover:border-green-500/30 hover:bg-green-500/5' : 'hover:border-orange-500/30 hover:bg-orange-500/5'}`}>
+                <div className={`group relative overflow-hidden flex flex-col justify-between p-4 rounded-xl border border-white/10 dark:border-gray-800 bg-white dark:bg-gray-800/[0.02] backdrop-blur-xl shadow-xl transition-all duration-300 ${profile?.onboarding_completed ? 'hover:border-green-500/30 hover:bg-green-500/5' : 'hover:border-orange-500/30 hover:bg-orange-500/5'}`}>
                     <div className={`absolute -right-10 -top-4 h-32 w-32 rounded-full blur-[40px] pointer-events-none transition-all ${profile?.onboarding_completed ? 'bg-green-500/10 group-hover:bg-green-500/20' : 'bg-orange-500/10 group-hover:bg-orange-500/20'}`} />
                     <div>
                         <div className="flex items-center gap-3">
@@ -294,7 +294,7 @@ function Settings() {
                 </div>
             </div>
 
-            <div className="relative overflow-hidden rounded-xl border border-white/10 bg-black/40 p-5 shadow-2xl backdrop-blur-3xl ring-1 ring-white/5">
+            <div className="relative overflow-hidden rounded-xl border border-white/10 dark:border-gray-800 bg-black/40 p-5 shadow-2xl backdrop-blur-3xl ring-1 ring-white/5">
                 <div className="absolute -left-20 top-20 h-[300px] w-[300px] rounded-full bg-brand/5 blur-[100px] pointer-events-none" />
                 <div className="absolute right-10 bottom-10 h-[200px] w-[200px] rounded-full bg-blue-500/5 blur-[80px] pointer-events-none" />
 
@@ -311,8 +311,8 @@ function Settings() {
                         </p>
                     </div>
 
-                    <div className="md:w-2/3 w-full bg-white/[0.02] p-4 rounded-xl border border-white/5 backdrop-blur-md space-y-4">
-                        <div className="flex items-center justify-between p-5 rounded-xl bg-white/[0.03] border border-white/10">
+                    <div className="md:w-2/3 w-full bg-white dark:bg-gray-800/[0.02] p-4 rounded-xl border border-white/5 backdrop-blur-md space-y-4">
+                        <div className="flex items-center justify-between p-5 rounded-xl bg-white dark:bg-gray-800/[0.03] border border-white/10 dark:border-gray-800">
                             <div className="flex items-center gap-3">
                                 <div className={`p-2.5 rounded-[10px] ${profile?.cin_verified ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-orange-500/20 text-orange-400 border border-orange-500/30'}`}>
                                     <Shield className="w-5 h-5" />
@@ -358,7 +358,7 @@ function Settings() {
     const renderPaymentTab = () => (
         <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-500 relative">
             <div className="grid gap-3 sm:grid-cols-3 relative z-10">
-                <div className="group relative overflow-hidden flex flex-col justify-between p-4 rounded-xl border border-white/10 bg-white/[0.02] backdrop-blur-xl shadow-xl transition-all duration-300 hover:border-emerald-500/30 hover:bg-emerald-500/5">
+                <div className="group relative overflow-hidden flex flex-col justify-between p-4 rounded-xl border border-white/10 dark:border-gray-800 bg-white dark:bg-gray-800/[0.02] backdrop-blur-xl shadow-xl transition-all duration-300 hover:border-emerald-500/30 hover:bg-emerald-500/5">
                     <div className="absolute -right-10 -top-4 h-32 w-32 rounded-full bg-emerald-500/10 blur-[40px] pointer-events-none transition-all group-hover:bg-emerald-500/20" />
                     <div>
                         <div className="flex items-center gap-3">
@@ -385,9 +385,9 @@ function Settings() {
                     </div>
                 </div>
             ) : paymentMethods.length === 0 ? (
-                <div className="relative overflow-hidden rounded-xl border-2 border-dashed border-white/10 bg-white/[0.01] p-5 text-center shadow-2xl backdrop-blur-xl transition-all hover:border-brand/40 group">    
+                <div className="relative overflow-hidden rounded-xl border-2 border-dashed border-white/10 dark:border-gray-800 bg-white dark:bg-gray-800/[0.01] p-5 text-center shadow-2xl backdrop-blur-xl transition-all hover:border-brand/40 group">    
                     <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-brand/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 blur-[50px] pointer-events-none" />
-                    <div className="relative z-10 mx-auto flex h-24 w-24 items-center justify-center rounded-xl bg-card border border-white/10 text-muted-foreground group-hover:text-brand shadow-2xl transition-all duration-500 group-hover:scale-110 group-hover:rotate-6">
+                    <div className="relative z-10 mx-auto flex h-24 w-24 items-center justify-center rounded-xl bg-card border border-white/10 dark:border-gray-800 text-muted-foreground group-hover:text-brand shadow-2xl transition-all duration-500 group-hover:scale-110 group-hover:rotate-6">
                         <CreditCard className="h-8 w-8" />
                     </div>
                     <h3 className="relative z-10 mt-4 text-base font-bold bg-gradient-to-br from-foreground to-foreground/80 bg-clip-text text-transparent">     
@@ -403,7 +403,7 @@ function Settings() {
                     </div>
                 </div>
             ) : (
-                <div className="relative overflow-hidden rounded-xl border border-white/10 bg-black/40 p-5 shadow-2xl backdrop-blur-3xl ring-1 ring-white/5">
+                <div className="relative overflow-hidden rounded-xl border border-white/10 dark:border-gray-800 bg-black/40 p-5 shadow-2xl backdrop-blur-3xl ring-1 ring-white/5">
                     <div className="absolute -left-40 top-20 h-[400px] w-[400px] rounded-full bg-brand/5 blur-[120px] pointer-events-none" />
                     
                     <div className="relative z-10 mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-3">
@@ -419,9 +419,9 @@ function Settings() {
 
                     <div className="relative z-10 space-y-4">
                         {paymentMethods.map((method) => (
-                            <div key={method.id} className={`group flex flex-col md:flex-row md:items-center justify-between gap-3 rounded-xl border p-5 transition-all duration-300 ${method.is_default ? 'border-brand/40 bg-brand/5 shadow-[0_0_30px_-10px_rgba(var(--brand),0.2)]' : 'border-white/5 bg-white/[0.01] hover:border-white/20 hover:bg-white/[0.03]'}`}>
+                            <div key={method.id} className={`group flex flex-col md:flex-row md:items-center justify-between gap-3 rounded-xl border p-5 transition-all duration-300 ${method.is_default ? 'border-brand/40 bg-brand/5 shadow-[0_0_30px_-10px_rgba(var(--brand),0.2)]' : 'border-white/5 bg-white dark:bg-gray-800/[0.01] hover:border-white/20 hover:bg-white dark:bg-gray-800/[0.03]'}`}>
                                 <div className="flex min-w-0 items-center gap-3">    
-                                    <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl shadow-inner transition-colors duration-500 ${method.is_default ? 'bg-brand/20 text-brand border border-brand/30' : 'bg-white/5 text-muted-foreground border border-white/10 group-hover:text-foreground'}`}>
+                                    <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl shadow-inner transition-colors duration-500 ${method.is_default ? 'bg-brand/20 text-brand border border-brand/30' : 'bg-white dark:bg-gray-800/5 text-muted-foreground border border-white/10 dark:border-gray-800 group-hover:text-foreground'}`}>
                                         <CreditCard className={`h-6 w-6 ${method.is_default ? 'drop-shadow-[0_0_8px_rgba(var(--brand),0.8)]' : ''}`} />
                                     </div>
                                     <div className="min-w-0">
@@ -437,7 +437,7 @@ function Settings() {
                                             {tx('settings.default', undefined, 'Default')}
                                         </span>
                                     ) : (
-                                        <Button variant="outline" size="sm" className="rounded-full border-white/10 hover:bg-white/10 transition-colors font-bold tracking-wide" onClick={() => handleSetDefaultPayment(method.id)}> 
+                                        <Button variant="outline" size="sm" className="rounded-full border-white/10 dark:border-gray-800 hover:bg-white dark:bg-gray-800/10 transition-colors font-bold tracking-wide" onClick={() => handleSetDefaultPayment(method.id)}> 
                                             {tx('settings.setDefault', undefined, 'Set default')}
                                         </Button>
                                     )}
@@ -493,7 +493,7 @@ function Settings() {
                                 </p>
                             </div>
                             <div className="flex flex-wrap gap-3 pt-2">
-                                <div className="inline-flex items-center gap-2.5 rounded-full border border-white/10 bg-white/[0.03] px-5 py-2 text-sm font-bold text-foreground shadow-sm backdrop-blur-md hover:bg-white/[0.05] transition-colors">
+                                <div className="inline-flex items-center gap-2.5 rounded-full border border-white/10 dark:border-gray-800 bg-white dark:bg-gray-800/[0.03] px-5 py-2 text-sm font-bold text-foreground shadow-sm backdrop-blur-md hover:bg-white dark:bg-gray-800/[0.05] transition-colors">
                                     <User className="h-4 w-4 text-brand" />
                                     {accountTypeLabel}
                                 </div>
@@ -508,7 +508,7 @@ function Settings() {
                             </div>
                         </div>
 
-                        <Button variant="outline" className="rounded-full shadow-lg border-white/10 bg-white/5 backdrop-blur-md hover:bg-white/10 transition-all hover:scale-105 font-bold tracking-wide border" rightIcon={<ArrowUpRight className="h-4 w-4" />} onClick={() => navigate(dashboardPath)}>
+                        <Button variant="outline" className="rounded-full shadow-lg border-white/10 dark:border-gray-800 bg-white dark:bg-gray-800/5 backdrop-blur-md hover:bg-white dark:bg-gray-800/10 transition-all hover:scale-105 font-bold tracking-wide border" rightIcon={<ArrowUpRight className="h-4 w-4" />} onClick={() => navigate(dashboardPath)}>
                             {tx('settings.goToDashboard', undefined, 'Go to dashboard')}
                         </Button>
                     </div>
@@ -528,14 +528,14 @@ function Settings() {
                                         className={`group relative flex w-full items-center gap-2.5 rounded-[12px] px-3 py-3 text-left transition-all duration-500 overflow-hidden ${
                                             isActive
                                                 ? 'bg-brand/5 shadow-[0_0_30px_-5px_rgba(var(--brand),0.15)] border border-brand/20'
-                                                : 'border border-transparent text-muted-foreground hover:bg-white/5 hover:text-foreground hover:border-white/10'
+                                                : 'border border-transparent text-muted-foreground hover:bg-white dark:bg-gray-800/5 hover:text-foreground hover:border-white/10 dark:border-gray-800'
                                         }`}
                                     >
                                         {isActive && <div className="absolute inset-0 bg-gradient-to-r from-brand/10 to-transparent opacity-50" />}
                                         <span className={`relative z-10 flex h-7 w-7 shrink-0 items-center justify-center rounded-[8px] transition-all duration-500 ${
                                             isActive
                                                 ? 'bg-brand/20 text-brand shadow-[0_0_15px_rgba(var(--brand),0.4)] scale-105 border border-brand/30'
-                                                : 'bg-white/5 text-muted-foreground group-hover:bg-white/10 group-hover:text-foreground group-hover:scale-105 border border-white/10'
+                                                : 'bg-white dark:bg-gray-800/5 text-muted-foreground group-hover:bg-white dark:bg-gray-800/10 group-hover:text-foreground group-hover:scale-105 border border-white/10 dark:border-gray-800'
                                         }`}>
                                             <item.icon className="h-4 w-4" />
                                         </span>
@@ -557,7 +557,7 @@ function Settings() {
                     {/* Main Content Area */}
                     <section className="space-y-3 relative z-10 w-full min-w-0 max-w-full">
                         <div className="min-h-[600px] rounded-xl border border-white/5 bg-card/40 p-4 shadow-2xl backdrop-blur-md ring-1 ring-white/5 sm:p-4 w-full min-w-0 max-w-full transform-gpu">
-                            <div className="mb-3 flex flex-col justify-between items-start sm:flex-row sm:items-end border-b border-white/10 pb-8 gap-3 relative">
+                            <div className="mb-3 flex flex-col justify-between items-start sm:flex-row sm:items-end border-b border-white/10 dark:border-gray-800 pb-8 gap-3 relative">
                                 <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
                                 <div>
                                     <h2 className="text-base font-black tracking-tight bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
@@ -580,7 +580,7 @@ function Settings() {
                         </div>
 
                         <div className="flex justify-center pt-8 pb-4">
-                            <Button variant="ghost" className="relative group overflow-hidden rounded-full px-4 py-5 font-bold tracking-widest uppercase text-sm border border-white/5 bg-white/[0.01] text-muted-foreground hover:text-red-400 hover:border-red-500/30 transition-all shadow-xl hover:shadow-[0_0_30px_-5px_rgba(239,68,68,0.3)] hover:-translate-y-1" onClick={handleLogout}>
+                            <Button variant="ghost" className="relative group overflow-hidden rounded-full px-4 py-5 font-bold tracking-widest uppercase text-sm border border-white/5 bg-white dark:bg-gray-800/[0.01] text-muted-foreground hover:text-red-400 hover:border-red-500/30 transition-all shadow-xl hover:shadow-[0_0_30px_-5px_rgba(239,68,68,0.3)] hover:-translate-y-1" onClick={handleLogout}>
                                 <div className="absolute inset-0 bg-gradient-to-r from-red-500/0 via-red-500/10 to-red-500/0 opacity-0 group-hover:opacity-100 transition-opacity" />
                                 {tx('settings.logout', undefined, 'Sign out securely')}
                             </Button>

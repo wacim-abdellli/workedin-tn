@@ -126,14 +126,14 @@ const WalletCard = ({ className = '', showWithdrawal = true }: WalletCardProps) 
             <div className="p-6 bg-gradient-to-br from-primary-500 to-primary-700 text-white">
                 <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-white dark:bg-slate-900/20 flex items-center justify-center">
+                        <div className="w-10 h-10 rounded-xl bg-white dark:bg-gray-800 flex items-center justify-center">
                             <Wallet className="w-5 h-5" />
                         </div>
                         <h3 className="font-bold text-lg">محفظتي</h3>
                     </div>
                     <button
                         onClick={fetchWalletData}
-                        className="p-2 rounded-lg hover:bg-white dark:bg-slate-900/10 transition-colors"
+                        className="p-2 rounded-lg hover:bg-white dark:bg-gray-800 transition-colors"
                         title="تحديث"
                     >
                         <RefreshCw className="w-4 h-4" />
@@ -149,14 +149,14 @@ const WalletCard = ({ className = '', showWithdrawal = true }: WalletCardProps) 
 
                 {/* Stats Row */}
                 <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-white dark:bg-slate-900/10 rounded-xl p-3">
+                    <div className="bg-white dark:bg-gray-800 rounded-xl p-3">
                         <div className="flex items-center gap-2 text-primary-100 text-xs mb-1">
                             <Clock className="w-3 h-3" />
                             <span>قيد الانتظار</span>
                         </div>
                         <div className="font-bold">{formatCurrency(wallet.pending_balance)}</div>
                     </div>
-                    <div className="bg-white dark:bg-slate-900/10 rounded-xl p-3">
+                    <div className="bg-white dark:bg-gray-800 rounded-xl p-3">
                         <div className="flex items-center gap-2 text-primary-100 text-xs mb-1">
                             <TrendingUp className="w-3 h-3" />
                             <span>إجمالي الأرباح</span>
@@ -168,7 +168,7 @@ const WalletCard = ({ className = '', showWithdrawal = true }: WalletCardProps) 
 
             {/* Actions */}
             {showWithdrawal && wallet.balance > 0 && (
-                <div className="p-4 border-b border-gray-100 dark:border-gray-700">
+                <div className="p-4 border-b border-gray-100 dark:border-gray-800 dark:border-gray-700">
                     <Link
                         to="/freelancer/earnings?action=withdraw"
                         className="btn-primary btn-md w-full justify-center"
@@ -182,7 +182,7 @@ const WalletCard = ({ className = '', showWithdrawal = true }: WalletCardProps) 
             {/* Recent Transactions */}
             <div className="p-4">
                 <div className="flex items-center justify-between mb-3">
-                    <h4 className="font-semibold text-gray-900 dark:text-white text-sm">
+                    <h4 className="font-semibold text-gray-900 dark:text-gray-100 dark:text-white text-sm">
                         آخر المعاملات
                     </h4>
                     <Link
@@ -202,10 +202,10 @@ const WalletCard = ({ className = '', showWithdrawal = true }: WalletCardProps) 
                         {transactions.map((tx) => (
                             <div
                                 key={tx.id}
-                                className="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-700 last:border-0"
+                                className="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-800 dark:border-gray-700 last:border-0"
                             >
                                 <div>
-                                    <div className="font-medium text-sm text-gray-900 dark:text-white">
+                                    <div className="font-medium text-sm text-gray-900 dark:text-gray-100 dark:text-white">
                                         {formatTransactionType(tx.type)}
                                     </div>
                                     <div className="text-xs text-gray-500 dark:text-gray-400">
@@ -217,7 +217,7 @@ const WalletCard = ({ className = '', showWithdrawal = true }: WalletCardProps) 
                                             ? 'text-green-600'
                                             : tx.type === 'withdrawal' || tx.type === 'fee'
                                                 ? 'text-red-600'
-                                                : 'text-gray-900 dark:text-white'
+                                                : 'text-gray-900 dark:text-gray-100 dark:text-white'
                                         }`}>
                                         {tx.type === 'release' || tx.type === 'deposit' ? '+' : '-'}
                                         {formatCurrency(tx.amount)}

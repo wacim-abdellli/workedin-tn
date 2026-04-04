@@ -130,7 +130,7 @@ export default function FilterSidebar({
             {/* Sidebar Container */}
             <aside className={`
                 fixed lg:sticky top-0 lg:top-24 h-full lg:h-[calc(100vh-8rem)]
-                w-80 lg:w-72 bg-white dark:bg-dark-800 lg:bg-transparent lg:dark:bg-transparent
+                w-80 lg:w-72 bg-white dark:bg-gray-800 dark:bg-dark-800 lg:bg-transparent lg:dark:bg-transparent
                 z-50 lg:z-0 shadow-2xl lg:shadow-none
                 transform transition-transform duration-300 ease-in-out
                 ${isOpen ? 'translate-x-0' : isRTL ? 'translate-x-full lg:translate-x-0' : '-translate-x-full lg:translate-x-0'}
@@ -143,14 +143,14 @@ export default function FilterSidebar({
                         <Filter className="w-6 h-6 text-primary-500" />
                         <span>{t.jobs.filters.title}</span>
                     </h2>
-                    <button onClick={onClose} aria-label="Close filters" className="p-2 min-w-[44px] min-h-[44px] hover:bg-gray-100 dark:hover:bg-dark-700 rounded-full transition-colors"
+                    <button onClick={onClose} aria-label="Close filters" className="p-2 min-w-[44px] min-h-[44px] hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-dark-700 rounded-full transition-colors"
                     >
                         <X className="w-6 h-6" />
                     </button>
                 </div>
 
                 <div className={`
-                    bg-white dark:bg-[#1a1825] 
+                    bg-white dark:bg-gray-800 dark:bg-[#1a1825] 
                     rounded-xl border border-black/[0.07] dark:border-white/[0.07]
                     p-4 shadow-[0_1px_3px_rgba(0,0,0,0.06),0_4px_16px_rgba(0,0,0,0.04)] dark:shadow-none
                     sticky top-0
@@ -306,7 +306,7 @@ export default function FilterSidebar({
                         ))}
                     </FilterSection>
 
-                    <div className="pt-4 mt-4 border-t border-gray-100 dark:border-dark-700 lg:hidden">
+                    <div className="pt-4 mt-4 border-t border-gray-100 dark:border-gray-800 dark:border-dark-700 lg:hidden">
                         <Button onClick={onClose} className="w-full">
                             {t.jobs.filters.viewResults}
                         </Button>

@@ -98,14 +98,14 @@ export default function MyProposals() {
 
       <div className="page-shell-content-narrow">
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{tx('pages.myProposals.title', undefined, 'My Proposals')}</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 dark:text-white">{tx('pages.myProposals.title', undefined, 'My Proposals')}</h1>
           <p className="text-gray-500 dark:text-gray-400">{tx('pages.myProposals.subtitle', undefined, "Track every proposal you've sent")}</p>
         </div>
 
         <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
           <div className="stat-card">
             <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{tx('pages.myProposals.sent', undefined, 'Sent')}</p>
-            <p className="mt-1 text-2xl font-bold text-gray-900 dark:text-white">{stats.sent}</p>
+            <p className="mt-1 text-2xl font-bold text-gray-900 dark:text-gray-100 dark:text-white">{stats.sent}</p>
           </div>
           <div className="stat-card">
             <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{tx('pages.myProposals.accepted', undefined, 'Accepted')}</p>
@@ -154,7 +154,7 @@ export default function MyProposals() {
                 className="list-card group"
               >
                 <div className="mb-2 flex items-start justify-between gap-4">
-                  <h3 className="font-semibold text-gray-900 dark:text-white transition-colors group-hover:text-purple-600 dark:text-white dark:group-hover:text-purple-400">
+                  <h3 className="font-semibold text-gray-900 dark:text-gray-100 dark:text-white transition-colors group-hover:text-purple-600 dark:text-white dark:group-hover:text-purple-400">
                     {proposal.jobs?.title || tx('pages.myProposals.unknownProject', undefined, 'Unknown Project')}
                   </h3>
                   <span

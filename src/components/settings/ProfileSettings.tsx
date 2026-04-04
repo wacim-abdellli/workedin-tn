@@ -259,7 +259,7 @@ export default function ProfileSettings() {
             </div>
 
             {/* Completion widget */}
-            <div className={`group relative mt-4 p-5 rounded-xl border border-white/10 shadow-2xl backdrop-blur-xl overflow-hidden ${completionPct === 100 ? 'bg-gradient-to-b from-green-500/10 to-green-500/5' : 'bg-gradient-to-b from-brand/10 to-brand/5'}`}>
+            <div className={`group relative mt-4 p-5 rounded-xl border border-white/10 dark:border-gray-800 shadow-2xl backdrop-blur-xl overflow-hidden ${completionPct === 100 ? 'bg-gradient-to-b from-green-500/10 to-green-500/5' : 'bg-gradient-to-b from-brand/10 to-brand/5'}`}>
                 <div className={`absolute top-0 right-0 h-[200px] w-[200px] rounded-full blur-[80px] pointer-events-none transition-all duration-700 ${completionPct === 100 ? 'bg-green-500/20 group-hover:bg-green-500/30' : 'bg-brand/20 group-hover:bg-brand/30'}`} />
                 <div className="relative z-10 flex items-center justify-between mb-5">
                     <span className="font-bold text-base text-foreground tracking-tight">{tx('settings.profileCompletionTitle', undefined, 'Profile completion')}</span>
@@ -271,7 +271,7 @@ export default function ProfileSettings() {
                 {missingFields.length > 0 && (
                     <div className="relative z-10 mt-3 flex flex-wrap gap-3 items-center">
                         <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground/80">{tx('settings.requiredLabel', undefined, 'Required:')}</span>
-                        {missingFields.slice(0, 3).map(m => <span key={m.key} className="text-xs font-bold px-3 py-1 bg-white dark:bg-slate-900/5 text-foreground rounded-full border border-white/10 shadow-sm backdrop-blur-md">{m.label}</span>)}
+                        {missingFields.slice(0, 3).map(m => <span key={m.key} className="text-xs font-bold px-3 py-1 bg-white dark:bg-gray-800 text-foreground rounded-full border border-white/10 dark:border-gray-800 shadow-sm backdrop-blur-md">{m.label}</span>)}
                         {missingFields.length > 3 && <span className="text-xs font-bold text-brand uppercase tracking-widest px-2">{tx('settings.moreRequired', { count: missingFields.length - 3 }, `+${missingFields.length - 3} more`)}</span>}
                     </div>
                 )}
@@ -286,7 +286,7 @@ export default function ProfileSettings() {
             </div>
 
             {/* Workspace switcher */}
-            <div className="mt-4 relative overflow-hidden rounded-xl border border-white/10 bg-card/80 p-5 shadow-2xl backdrop-blur-xl ring-1 ring-black/5">
+            <div className="mt-4 relative overflow-hidden rounded-xl border border-white/10 dark:border-gray-800 bg-card/80 p-5 shadow-2xl backdrop-blur-xl ring-1 ring-black/5">
                 <div className="absolute -left-20 top-20 h-[300px] w-[300px] rounded-full bg-brand/5 blur-[100px] pointer-events-none" />
                 <div className="relative z-10 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div>
@@ -296,7 +296,7 @@ export default function ProfileSettings() {
                     </div>
                     {nextSetupPath ? <Button variant="primary" className="rounded-xl shadow-lg hover:shadow-brand/25 transition-all hover:-translate-y-0.5" onClick={() => navigate(nextSetupPath)}>{nextSetupLabel}</Button> : null}
                 </div>
-                <div className="relative z-10 mt-3 rounded-xl border border-white/5 bg-white dark:bg-slate-900/[0.02] p-5 backdrop-blur-lg">
+                <div className="relative z-10 mt-3 rounded-xl border border-white/5 bg-white dark:bg-gray-800 ] p-5 backdrop-blur-lg">
                     <div className="flex items-center justify-between gap-3">
                         <div className="flex flex-wrap items-center gap-3">
                             <span className="inline-flex items-center rounded-full border border-brand/30 bg-brand/10 px-4 py-1.5 text-xs font-bold text-brand shadow-sm">
@@ -307,7 +307,7 @@ export default function ProfileSettings() {
                         </div>
                 </div>
                 {/* Setup status summary */}
-                <div className="relative z-10 mt-3 rounded-xl border border-white/5 bg-white dark:bg-slate-900/[0.02] p-5 backdrop-blur-lg">
+                <div className="relative z-10 mt-3 rounded-xl border border-white/5 bg-white dark:bg-gray-800 ] p-5 backdrop-blur-lg">
                     <div className="grid gap-3 sm:grid-cols-3">
                         {setupStatusItems.map(item => (
                             <div key={item.key} className={`rounded-xl border p-4 transition-transform hover:-translate-y-1 ${item.done ? 'border-green-500/30 bg-green-500/10 shadow-[0_4px_20px_-5px_rgba(34,197,94,0.15)]' : 'border-orange-500/30 bg-orange-500/10 shadow-[0_4px_20px_-5px_rgba(249,115,22,0.15)]'}`}>
@@ -333,15 +333,15 @@ export default function ProfileSettings() {
                             const actionLabel = isActive ? t.auth.accountPanel.current : isAvailable ? t.auth.accountPanel.switchAction : t.auth.accountPanel.enable;
                             return (
                                 <button key={type} type="button" onClick={e => { e.preventDefault(); e.stopPropagation(); void handleWorkspaceSelection(type); }} disabled={isActive || isSwitchingWorkspace !== null}
-                                    className={`group rounded-xl border p-4 text-left transition-all duration-300 hover:shadow-2xl ${isActive ? 'border-brand/40 bg-brand/10 shadow-[0_0_30px_-5px_rgba(var(--brand),0.3)]' : 'border-white/10 bg-white dark:bg-slate-900/[0.02] hover:-translate-y-1 hover:border-brand/40 hover:bg-brand/5'} ${isActive ? 'cursor-default pointer-events-none' : ''}`}>
+                                    className={`group rounded-xl border p-4 text-left transition-all duration-300 hover:shadow-2xl ${isActive ? 'border-brand/40 bg-brand/10 shadow-[0_0_30px_-5px_rgba(var(--brand),0.3)]' : 'border-white/10 dark:border-gray-800 bg-white dark:bg-gray-800 dark:bg-gray-900 hover:-translate-y-1 hover:border-brand/40 hover:bg-brand/5'} ${isActive ? 'cursor-default pointer-events-none' : ''}`}>
                                     <div className="flex flex-col h-full justify-between gap-3">
                                         <div>
                                             <div className="text-base font-bold text-foreground">{label}</div>
                                             <p className="mt-3 text-sm leading-relaxed text-muted-foreground/90">{desc}</p>
                                         </div>
                                         <div className="flex items-center justify-between">
-                                            <div className={`h-1.5 w-12 rounded-full ${isActive ? 'bg-brand shadow-[0_0_10px_rgba(var(--brand),0.8)]' : 'bg-white dark:bg-slate-900/10'}`} />
-                                            <span className={`inline-flex min-h-9 items-center gap-2 rounded-full border px-4 py-1.5 text-xs font-black uppercase tracking-widest ${isActive ? 'border-brand/30 bg-brand/20 text-brand shadow-sm' : 'border-white/10 bg-white dark:bg-slate-900/5 text-muted-foreground transition-colors group-hover:border-brand/30 group-hover:text-foreground'}`}>
+                                            <div className={`h-1.5 w-12 rounded-full ${isActive ? 'bg-brand shadow-[0_0_10px_rgba(var(--brand),0.8)]' : 'bg-white dark:bg-gray-800 dark:bg-gray-700'}`} />
+                                            <span className={`inline-flex min-h-9 items-center gap-2 rounded-full border px-4 py-1.5 text-xs font-black uppercase tracking-widest ${isActive ? 'border-brand/30 bg-brand/20 text-brand shadow-sm' : 'border-white/10 dark:border-gray-800 bg-white dark:bg-gray-800 dark:bg-gray-800 text-muted-foreground transition-colors group-hover:border-brand/30 group-hover:text-foreground'}`}>
                                                 {isSwitchingWorkspace === type ? <><Loader2 className="h-4 w-4 animate-spin" />{t.auth.accountPanel.switching}</> : actionLabel}
                                             </span>
                                         </div>

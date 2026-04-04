@@ -216,7 +216,7 @@ function SignupForm({ onComplete }: SignupFormProps) {
                                 showToast(t.auth.googleLoginError, 'error');
                             }
                         }}
-                        className="w-full flex items-center justify-center gap-3 rounded-2xl border border-gray-200/80 bg-white px-4 py-3.5 font-medium text-gray-700 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-gray-50 hover:shadow-md dark:border-white/10 dark:bg-[#221d30] dark:text-gray-200 dark:hover:bg-[#2a2338]"
+                        className="w-full flex items-center justify-center gap-3 rounded-2xl border border-gray-200 dark:border-gray-700/80 bg-white dark:bg-gray-800 px-4 py-3.5 font-medium text-gray-700 dark:text-gray-300 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-gray-50 dark:bg-gray-900 hover:shadow-md dark:border-white/10 dark:border-gray-800 dark:bg-[#221d30] dark:text-gray-200 dark:hover:bg-[#2a2338]"
                     >
                         <svg className="h-5 w-5" viewBox="0 0 24 24">
                             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -229,10 +229,10 @@ function SignupForm({ onComplete }: SignupFormProps) {
 
                     <div className="relative my-6">
                         <div className="absolute inset-0 flex items-center">
-                            <div className="w-full border-t border-gray-200 dark:border-gray-600" />
+                            <div className="w-full border-t border-gray-200 dark:border-gray-700 dark:border-gray-600" />
                         </div>
                         <div className="relative flex justify-center text-sm">
-                            <span className="bg-white px-3 text-gray-500 dark:bg-[#1a1825]">{t.auth.or}</span>
+                            <span className="bg-white dark:bg-gray-800 px-3 text-gray-500 dark:bg-[#1a1825]">{t.auth.or}</span>
                         </div>
                     </div>
 
@@ -304,7 +304,7 @@ function SignupForm({ onComplete }: SignupFormProps) {
                         className="group inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[linear-gradient(120deg,#6d28d9_0%,#9333ea_52%,#c026d3_100%)] px-6 py-3.5 font-semibold text-white shadow-[0_20px_48px_-24px_rgba(147,51,234,0.75)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_24px_56px_-24px_rgba(192,38,211,0.85)]"
                     >
                         {isLoading ? (
-                            <div className="h-5 w-5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                            <div className="h-5 w-5 animate-spin rounded-full border-2 border-white/30 dark:border-gray-800/30 border-t-white" />
                         ) : (
                             <>
                                 <span>{t.auth.createAccount}</span>
@@ -347,7 +347,7 @@ function SignupForm({ onComplete }: SignupFormProps) {
                                 disabled={isLoading}
                                 className={`group relative w-full overflow-hidden rounded-[24px] border p-5 text-start transition-all duration-300 focus:outline-none focus:ring-2 ring-offset-2 hover:-translate-y-1 hover:shadow-xl ${
                                     isLoading ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
-                                } bg-white border-gray-200/90 hover:border-purple-200 hover:bg-purple-50/40 dark:bg-[#1a1825] dark:border-white/10 dark:hover:border-purple-500/30 dark:hover:bg-white/5`}
+                                } bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700/90 hover:border-purple-200 hover:bg-purple-50/40 dark:bg-[#1a1825] dark:border-white/10 dark:border-gray-800 dark:hover:border-purple-500/30 dark:hover:bg-white dark:bg-gray-800/5`}
                             >
                                 <div className="absolute inset-0 bg-gradient-to-br from-purple-500/0 to-amber-400/0 opacity-0 transition-opacity duration-300 group-hover:opacity-10" />
                                 <div className="relative z-10 flex items-center gap-4">

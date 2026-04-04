@@ -73,7 +73,7 @@ export default function PaymentModal({ isOpen, onClose, amount, recipientName, o
                 </div>
             </div>
 
-            <div className="border-2 border-dashed border-gray-200 dark:border-dark-600 rounded-2xl p-8 text-center bg-gray-50 dark:bg-dark-800/50 hover:bg-white dark:bg-gray-800 dark:hover:bg-dark-800/80 hover:border-primary-200 dark:hover:border-primary-900 transition-all duration-300">
+            <div className="border-2 border-dashed border-gray-200 dark:border-gray-700 dark:border-dark-600 rounded-2xl p-8 text-center bg-gray-50 dark:bg-gray-900 dark:bg-dark-800/50 hover:bg-white dark:bg-gray-800 dark:hover:bg-dark-800/80 hover:border-primary-200 dark:hover:border-primary-900 transition-all duration-300">
                 <div className="w-48 h-48 bg-white dark:bg-gray-800 p-2 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 mx-auto mb-4 flex items-center justify-center overflow-hidden">
                     {/* Placeholder QR Code - Simulated with CSS */}
                     <div className="w-full h-full bg-dark-900 pattern-dots opacity-80" style={{
@@ -85,7 +85,7 @@ export default function PaymentModal({ isOpen, onClose, amount, recipientName, o
                     </div>
                 </div>
                 <p className="text-sm text-muted mb-3 font-medium">{t.payment.scanD17}</p>
-                <div className="inline-flex items-center gap-3 px-4 py-2 bg-white dark:bg-dark-700 rounded-full border border-gray-100 dark:border-dark-600 shadow-sm">
+                <div className="inline-flex items-center gap-3 px-4 py-2 bg-white dark:bg-gray-800 dark:bg-dark-700 rounded-full border border-gray-100 dark:border-gray-800 dark:border-dark-600 shadow-sm">
                     <span className="text-sm font-bold text-dark-900 dark:text-white">{t.payment.amount}: {amount} {t.common.tnd}</span>
                     <span className="w-1 h-1 bg-gray-300 dark:bg-dark-500 rounded-full" />
                     <span className="text-sm text-dark-600 dark:text-dark-300">{t.payment.to}: {recipientName}</span>
@@ -94,10 +94,10 @@ export default function PaymentModal({ isOpen, onClose, amount, recipientName, o
 
             <div className="relative">
                 <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t border-gray-200 dark:border-dark-700" />
+                    <span className="w-full border-t border-gray-200 dark:border-gray-700 dark:border-dark-700" />
                 </div>
                 <div className="relative flex justify-center text-xs uppercase font-medium">
-                    <span className="bg-white dark:bg-dark-900 px-3 text-muted">{t.payment.orEnterPhone}</span>
+                    <span className="bg-white dark:bg-gray-800 dark:bg-dark-900 px-3 text-muted">{t.payment.orEnterPhone}</span>
                 </div>
             </div>
 
@@ -123,7 +123,7 @@ export default function PaymentModal({ isOpen, onClose, amount, recipientName, o
                 </div>
             </div>
 
-            <div className="text-center py-12 bg-gray-50 dark:bg-dark-800/50 rounded-2xl border border-gray-100 dark:border-dark-700">
+            <div className="text-center py-12 bg-gray-50 dark:bg-gray-900 dark:bg-dark-800/50 rounded-2xl border border-gray-100 dark:border-gray-800 dark:border-dark-700">
                 <p className="text-muted mb-8 font-medium">{t.payment.flouciRedirect}</p>
                 <Button
                     variant="outline"
@@ -199,7 +199,7 @@ export default function PaymentModal({ isOpen, onClose, amount, recipientName, o
                     </div>
                     <h3 className="text-2xl font-bold mb-3 text-dark-900 dark:text-white">{t.payment.success}</h3>
                     <p className="text-muted text-lg mb-8">{t.payment.transferred} <span className="font-bold text-dark-900 dark:text-white">{amount} {t.common.tnd}</span> {t.payment.to} {recipientName}</p>
-                    <div className="p-4 bg-gray-50 dark:bg-dark-800 rounded-xl border border-gray-100 dark:border-dark-700 text-sm text-dark-500">
+                    <div className="p-4 bg-gray-50 dark:bg-gray-900 dark:bg-dark-800 rounded-xl border border-gray-100 dark:border-gray-800 dark:border-dark-700 text-sm text-dark-500">
                         {t.payment.transactionId}: #{Math.floor(Math.random() * 1000000)}
                     </div>
                 </div>
@@ -209,7 +209,7 @@ export default function PaymentModal({ isOpen, onClose, amount, recipientName, o
         return (
             <div className="space-y-6">
                 {/* Tabs */}
-                <div className="flex bg-gray-100 dark:bg-dark-800 p-1.5 rounded-xl border border-gray-200 dark:border-dark-700" role="tablist" aria-label={t.payment.chooseMethod}>
+                <div className="flex bg-gray-100 dark:bg-gray-800 dark:bg-dark-800 p-1.5 rounded-xl border border-gray-200 dark:border-gray-700 dark:border-dark-700" role="tablist" aria-label={t.payment.chooseMethod}>
                     <button
                         type="button"
                         role="tab"
@@ -217,7 +217,7 @@ export default function PaymentModal({ isOpen, onClose, amount, recipientName, o
                         aria-selected={method === 'd17'}
                         aria-controls="payment-panel-d17"
                         tabIndex={method === 'd17' ? 0 : -1}
-                        className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all duration-200 ${method === 'd17' ? 'bg-white dark:bg-dark-700 shadow text-primary-600 dark:text-primary-400' : 'text-muted hover:text-dark-900 dark:hover:text-white hover:bg-gray-200 dark:bg-gray-700/50 dark:hover:bg-dark-700/50'}`}
+                        className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all duration-200 ${method === 'd17' ? 'bg-white dark:bg-gray-800 dark:bg-dark-700 shadow text-primary-600 dark:text-primary-400' : 'text-muted hover:text-dark-900 dark:hover:text-white hover:bg-gray-200 dark:bg-gray-700/50 dark:hover:bg-dark-700/50'}`}
                         onClick={() => setMethod('d17')}
                     >
                         D17
@@ -229,7 +229,7 @@ export default function PaymentModal({ isOpen, onClose, amount, recipientName, o
                         aria-selected={method === 'flouci'}
                         aria-controls="payment-panel-flouci"
                         tabIndex={method === 'flouci' ? 0 : -1}
-                        className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all duration-200 ${method === 'flouci' ? 'bg-white dark:bg-dark-700 shadow text-primary-600 dark:text-primary-400' : 'text-muted hover:text-dark-900 dark:hover:text-white hover:bg-gray-200 dark:bg-gray-700/50 dark:hover:bg-dark-700/50'}`}
+                        className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all duration-200 ${method === 'flouci' ? 'bg-white dark:bg-gray-800 dark:bg-dark-700 shadow text-primary-600 dark:text-primary-400' : 'text-muted hover:text-dark-900 dark:hover:text-white hover:bg-gray-200 dark:bg-gray-700/50 dark:hover:bg-dark-700/50'}`}
                         onClick={() => setMethod('flouci')}
                     >
                         Flouci
@@ -241,7 +241,7 @@ export default function PaymentModal({ isOpen, onClose, amount, recipientName, o
                         aria-selected={method === 'card'}
                         aria-controls="payment-panel-card"
                         tabIndex={method === 'card' ? 0 : -1}
-                        className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all duration-200 ${method === 'card' ? 'bg-white dark:bg-dark-700 shadow text-primary-600 dark:text-primary-400' : 'text-muted hover:text-dark-900 dark:hover:text-white hover:bg-gray-200 dark:bg-gray-700/50 dark:hover:bg-dark-700/50'}`}
+                        className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all duration-200 ${method === 'card' ? 'bg-white dark:bg-gray-800 dark:bg-dark-700 shadow text-primary-600 dark:text-primary-400' : 'text-muted hover:text-dark-900 dark:hover:text-white hover:bg-gray-200 dark:bg-gray-700/50 dark:hover:bg-dark-700/50'}`}
                         onClick={() => setMethod('card')}
                     >
                         {t.payment.creditCard}
@@ -261,7 +261,7 @@ export default function PaymentModal({ isOpen, onClose, amount, recipientName, o
                 </div>
 
                 {/* Footer */}
-                <div className="flex items-center justify-between border-t border-gray-100 dark:border-dark-700 pt-6 mt-6">
+                <div className="flex items-center justify-between border-t border-gray-100 dark:border-gray-800 dark:border-dark-700 pt-6 mt-6">
                     <div>
                         <p className="text-muted text-xs mb-1 font-medium">{t.payment.totalToPay}</p>
                         <p className="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-primary-600 to-primary-500">{amount} <span className="text-sm text-dark-500 font-bold">{t.common.tnd}</span></p>

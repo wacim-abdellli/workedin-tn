@@ -45,14 +45,14 @@ function HowItWorks() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-[#0b0912] transition-colors duration-300">
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 dark:bg-[#0b0912] transition-colors duration-300">
             <SEO {...SEO_CONFIG.howItWorks} url="/how-it-works" />
             <Header />
 
             {/* Hero */}
-            <section className="relative overflow-hidden bg-white dark:bg-gray-900 py-20 transition-colors duration-500 dark:bg-[#0b0912]">
+            <section className="relative overflow-hidden bg-white dark:bg-gray-800 dark:bg-gray-900 py-20 transition-colors duration-500 dark:bg-[#0b0912]">
                 <div className="container-custom relative z-10 text-center">
-                    <h1 className="text-[clamp(2.5rem,5vw,4rem)] font-bold leading-[1.08] tracking-[-0.03em] text-gray-900 dark:text-white">
+                    <h1 className="text-[clamp(2.5rem,5vw,4rem)] font-bold leading-[1.08] tracking-[-0.03em] text-gray-900 dark:text-gray-100 dark:text-white">
                         {t.howItWorks.heroTitle}
                         <span className="block bg-gradient-to-br from-purple-400 to-amber-400 bg-clip-text text-transparent">
                             {t.howItWorks.heroTitleHighlight}
@@ -67,7 +67,7 @@ function HowItWorks() {
                             onClick={() => setActiveTab('freelancer')}
                             className={`px-8 py-4 rounded-full text-lg font-bold transition-all ${activeTab === 'freelancer'
                                 ? 'bg-primary-600 text-white shadow-lg scale-105'
-                                : 'bg-gray-100 dark:bg-dark-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-dark-700'
+                                : 'bg-gray-100 dark:bg-dark-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-dark-700'
                                 }`}
                         >
                             {t.howItWorks.tabs.freelancer}
@@ -76,7 +76,7 @@ function HowItWorks() {
                             onClick={() => setActiveTab('client')}
                             className={`px-8 py-4 rounded-full text-lg font-bold transition-all ${activeTab === 'client'
                                 ? 'bg-secondary-600 text-white shadow-lg scale-105'
-                                : 'bg-gray-100 dark:bg-dark-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-dark-700'
+                                : 'bg-gray-100 dark:bg-dark-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-dark-700'
                                 }`}
                         >
                             {t.howItWorks.tabs.client}
@@ -94,7 +94,7 @@ function HowItWorks() {
                 <div className="container-custom">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                         {steps[activeTab].map((step, index) => (
-                            <div key={index} className="relative rounded-[24px] border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-8 shadow-sm transition-transform duration-300 hover:-translate-y-2 dark:border-white/5 dark:bg-[#1a1825]">
+                            <div key={index} className="relative rounded-[24px] border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-800 dark:bg-gray-900 p-8 shadow-sm transition-transform duration-300 hover:-translate-y-2 dark:border-white/5 dark:bg-[#1a1825]">
                                 {index !== steps[activeTab].length - 1 ? (
                                     <div className="absolute left-[calc(50%+1.5rem)] top-[2rem] hidden h-[2px] w-[calc(100%-2rem)] bg-gradient-to-r from-purple-200 to-amber-200 lg:block dark:from-purple-800/30 dark:to-amber-800/30" />
                                 ) : null}
@@ -127,28 +127,28 @@ function HowItWorks() {
             </section>
 
             {/* Trust Badges */}
-            <section className="border-y border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 py-16 dark:border-white/5 dark:bg-[#120f1c]">
+            <section className="border-y border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-800 dark:bg-gray-900 py-16 dark:border-white/5 dark:bg-[#120f1c]">
                 <div className="container-custom">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-                        <div className="flex flex-col items-center rounded-[24px] border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 px-6 py-8 dark:border-white/5 dark:bg-[#1a1825]">
+                        <div className="flex flex-col items-center rounded-[24px] border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-800 dark:bg-gray-900 px-6 py-8 dark:border-white/5 dark:bg-[#1a1825]">
                             <div className="mb-4 rounded-xl bg-purple-100 p-3 dark:bg-purple-900/30">
                                 <Shield className="h-6 w-6 text-purple-600 dark:text-purple-400" />
                             </div>
-                            <h3 className="mb-2 text-lg font-semibold text-gray-900 dark:text-white">{t.howItWorks.trust.money.title}</h3>
+                            <h3 className="mb-2 text-lg font-semibold text-gray-900 dark:text-gray-100 dark:text-white">{t.howItWorks.trust.money.title}</h3>
                             <p className="text-sm text-gray-500 dark:text-gray-400">{t.howItWorks.trust.money.desc}</p>
                         </div>
-                        <div className="flex flex-col items-center rounded-[24px] border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 px-6 py-8 dark:border-white/5 dark:bg-[#1a1825]">
+                        <div className="flex flex-col items-center rounded-[24px] border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-800 dark:bg-gray-900 px-6 py-8 dark:border-white/5 dark:bg-[#1a1825]">
                             <div className="mb-4 rounded-xl bg-purple-100 p-3 dark:bg-purple-900/30">
                                 <CheckCircle className="h-6 w-6 text-purple-600 dark:text-purple-400" />
                             </div>
-                            <h3 className="mb-2 text-lg font-semibold text-gray-900 dark:text-white">{t.howItWorks.trust.verified.title}</h3>
+                            <h3 className="mb-2 text-lg font-semibold text-gray-900 dark:text-gray-100 dark:text-white">{t.howItWorks.trust.verified.title}</h3>
                             <p className="text-sm text-gray-500 dark:text-gray-400">{t.howItWorks.trust.verified.desc}</p>
                         </div>
-                        <div className="flex flex-col items-center rounded-[24px] border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 px-6 py-8 dark:border-white/5 dark:bg-[#1a1825]">
+                        <div className="flex flex-col items-center rounded-[24px] border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-800 dark:bg-gray-900 px-6 py-8 dark:border-white/5 dark:bg-[#1a1825]">
                             <div className="mb-4 rounded-xl bg-purple-100 p-3 dark:bg-purple-900/30">
                                 <HelpCircle className="h-6 w-6 text-purple-600 dark:text-purple-400" />
                             </div>
-                            <h3 className="mb-2 text-lg font-semibold text-gray-900 dark:text-white">{t.howItWorks.trust.support.title}</h3>
+                            <h3 className="mb-2 text-lg font-semibold text-gray-900 dark:text-gray-100 dark:text-white">{t.howItWorks.trust.support.title}</h3>
                             <p className="text-sm text-gray-500 dark:text-gray-400">{t.howItWorks.trust.support.desc}</p>
                         </div>
                     </div>
@@ -165,7 +165,7 @@ function HowItWorks() {
                             <div key={index} className="card overflow-hidden">
                                 <button
                                     onClick={() => toggleFaq(index)}
-                                    className="w-full flex items-center justify-between p-6 text-right font-bold hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-dark-800 transition-colors"
+                                    className="w-full flex items-center justify-between p-6 text-right font-bold hover:bg-gray-50 dark:bg-gray-900 dark:bg-gray-800 dark:hover:bg-dark-800 transition-colors"
                                 >
                                     <span>{faq.q}</span>
                                     {openFaq === index ? (
@@ -175,7 +175,7 @@ function HowItWorks() {
                                     )}
                                 </button>
                                 {openFaq === index && (
-                                    <div className="px-6 pb-6 text-muted leading-relaxed border-t border-gray-100 dark:border-dark-700 pt-4 bg-gray-50 dark:bg-gray-800/50 dark:bg-dark-800/50">
+                                    <div className="px-6 pb-6 text-muted leading-relaxed border-t border-gray-100 dark:border-gray-800 dark:border-dark-700 pt-4 bg-gray-50 dark:bg-gray-900 dark:bg-gray-800/50 dark:bg-dark-800/50">
                                         {faq.a}
                                     </div>
                                 )}

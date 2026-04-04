@@ -40,6 +40,8 @@ import {
     markConversationRead,
     subscribeToConversation,
     subscribeToConversations,
+    archiveConversation,
+    deleteConversation,
     type Conversation,
     type Message,
 } from '../services/messages';
@@ -324,8 +326,20 @@ function MessagesComponent() {
         });
     };
 
+    // Check if user is viewing the bottom of the conversation (within 500px)
+    const isUserViewingBottom = () => {
+        const parent = messagesParentRef.current;
+        if (!parent) return false;
+        
+        return (parent.scrollHeight - parent.scrollTop - parent.clientHeight) < 500;
+    };
+
     useEffect(() => {
-        scrollToBottom();
+        // Only auto-scroll to bottom if user is already viewing the bottom
+        // This prevents jarring scroll when deleting messages higher up
+        if (isUserViewingBottom()) {
+            scrollToBottom('auto');
+        }
     }, [messages]);
 
     useEffect(() => {
@@ -455,6 +469,56 @@ function MessagesComponent() {
         }
 
         setDeletingMessageId(null);
+    };
+
+    const handleArchiveConversation = async () => {
+        if (!selectedConversation) return;
+
+        setIsArchivingConversation(true);
+        try {
+            const { error } = await archiveConversation(selectedConversation.id);
+            
+            if (error) {
+                showToast(error.message || 'Failed to archive conversation', 'error');
+                return;
+            }
+
+            // Remove from UI
+            setConversations(prev => prev.filter(c => c.id !== selectedConversation.id));
+            setSelectedConversation(null);
+            setShowMobileThread(false);
+            showToast('Conversation archived successfully', 'success');
+        } catch (err) {
+            console.error('Archive conversation error:', err);
+            showToast('Failed to archive conversation', 'error');
+        } finally {
+            setIsArchivingConversation(false);
+        }
+    };
+
+    const handleDeleteConversation = async () => {
+        if (!selectedConversation) return;
+
+        setIsDeletingConversation(true);
+        try {
+            const { error } = await deleteConversation(selectedConversation.id);
+            
+            if (error) {
+                showToast(error.message || 'Failed to delete conversation', 'error');
+                return;
+            }
+
+            // Remove from UI
+            setConversations(prev => prev.filter(c => c.id !== selectedConversation.id));
+            setSelectedConversation(null);
+            setShowMobileThread(false);
+            showToast('Conversation deleted successfully', 'success');
+        } catch (err) {
+            console.error('Delete conversation error:', err);
+            showToast('Failed to delete conversation', 'error');
+        } finally {
+            setIsDeletingConversation(false);
+        }
     };
 
     useEffect(() => {
@@ -1412,7 +1476,7 @@ function MessagesComponent() {
                                                                 href={att.url}
                                                                 target="_blank"
                                                                 rel="noopener noreferrer"
-                                                                className="flex items-center gap-2 p-2 rounded-lg hover:bg-white/20 dark:hover:bg-white/5"
+                                                                className="flex items-center gap-2 p-2 rounded-lg hover:bg-white dark:bg-gray-800/20 dark:hover:bg-white dark:bg-gray-800/5"
                                                             >
                                                                 <FileText className="w-4 h-4 shrink-0" />
                                                                 <span className="text-xs truncate">{att.name}</span>
@@ -1577,7 +1641,11 @@ function MessagesComponent() {
                                     }
                                 }}
                                 onBlur={stopTyping}
-                                placeholder={tx('pages.messages.messagePlaceholder', undefined, 'Write your message...')}
+                                placeholder={
+                                    selectedConversation 
+                                        ? `${tx('pages.messages.messageTo', undefined, 'Message')} ${selectedConversation.otherUser.full_name}...`
+                                        : tx('pages.messages.messagePlaceholder', undefined, 'Write your message...')
+                                }
                                 disabled={isSending || isRecording}
                                 className="flex-1 bg-surface border border-border rounded-2xl px-4 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-brand text-foreground placeholder:text-muted-foreground disabled:opacity-50"
                             />
@@ -1648,12 +1716,26 @@ function MessagesComponent() {
 
                     {/* Actions */}
                     <div className="space-y-2 rounded-2xl border border-border bg-card p-3 shadow-sm">
-                        <button className="flex w-full items-center gap-3 rounded-lg p-3 text-muted-foreground transition-colors hover:bg-surface hover:text-foreground" disabled>
-                            <Archive className="w-5 h-5" />
+                        <button 
+                            onClick={handleArchiveConversation}
+                            disabled={isArchivingConversation}
+                            className="flex w-full items-center gap-3 rounded-lg p-3 text-muted-foreground transition-colors hover:bg-surface hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed">
+                            {isArchivingConversation ? (
+                                <Loader2 className="w-5 h-5 animate-spin" />
+                            ) : (
+                                <Archive className="w-5 h-5" />
+                            )}
                             <span>{tx('pages.messages.archiveConversation', undefined, 'Archive conversation')}</span>
                         </button>
-                        <button className="flex w-full items-center gap-3 rounded-lg p-3 text-destructive transition-colors hover:bg-destructive/10" disabled>
-                            <Trash2 className="w-5 h-5" />
+                        <button 
+                            onClick={handleDeleteConversation}
+                            disabled={isDeletingConversation}
+                            className="flex w-full items-center gap-3 rounded-lg p-3 text-destructive transition-colors hover:bg-destructive/10 disabled:opacity-50 disabled:cursor-not-allowed">
+                            {isDeletingConversation ? (
+                                <Loader2 className="w-5 h-5 animate-spin" />
+                            ) : (
+                                <Trash2 className="w-5 h-5" />
+                            )}
                             <span>{tx('pages.messages.deleteConversation', undefined, 'Delete conversation')}</span>
                         </button>
                     </div>

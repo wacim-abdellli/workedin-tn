@@ -252,10 +252,10 @@ export default function VerificationsTab() {
                     ) : (
                         <div className="space-y-4">
                             {verifications.map(v => (
-                                <div key={v.id} className="border border-gray-200 dark:border-white/10 rounded-xl overflow-hidden">
-                                    <div className="flex items-center justify-between p-4 bg-white/60 dark:bg-slate-900/60">
+                                <div key={v.id} className="border border-gray-200 dark:border-gray-700 dark:border-white/10 dark:border-gray-800 rounded-xl overflow-hidden">
+                                    <div className="flex items-center justify-between p-4 bg-white dark:bg-gray-800/60 ">
                                             <div className="flex items-center gap-4">
-                                            <div className="w-12 h-12 rounded-xl bg-gray-200 dark:bg-white/10 flex items-center justify-center shrink-0 overflow-hidden">
+                                            <div className="w-12 h-12 rounded-xl bg-gray-200 dark:bg-gray-700 dark:bg-white dark:bg-gray-800/10 flex items-center justify-center shrink-0 overflow-hidden">
                                                 {v.profile?.avatar_url ? (
                                                     <img src={v.profile.avatar_url} alt={v.profile.full_name || 'user'} className="w-full h-full object-cover" />
                                                 ) : (
@@ -308,35 +308,35 @@ export default function VerificationsTab() {
                                     </div>
 
                                     {expandedDocId === v.id && (
-                                        <div className="p-4 bg-white/70 dark:bg-slate-900/50 border-t border-gray-100 dark:border-white/10 grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <div className="p-4 bg-white dark:bg-gray-800/70 border-t border-gray-100 dark:border-gray-800 dark:border-white/10 grid grid-cols-1 md:grid-cols-3 gap-4">
                                             <div>
                                                  <p className="text-sm font-medium text-muted mb-2">{tx('dashboard.admin.verification.frontSide', undefined, 'Front side')}</p>
                                                  {v.front_image_url ? (
                                                      <a href={v.front_image_url} target="_blank" rel="noopener noreferrer">
-                                                         <img src={v.front_image_url} alt="front" className="w-full rounded-lg object-cover aspect-video border border-gray-200 dark:border-white/10 hover:opacity-90 transition" />
+                                                         <img src={v.front_image_url} alt="front" className="w-full rounded-lg object-cover aspect-video border border-gray-200 dark:border-gray-700 dark:border-white/10 dark:border-gray-800 hover:opacity-90 transition" />
                                                      </a>
                                                  ) : (
-                                                     <div className="w-full rounded-lg aspect-video bg-gray-100 dark:bg-white/10 flex items-center justify-center text-muted text-sm">{tx('dashboard.admin.verification.noImage', undefined, 'No image')}</div>
+                                                     <div className="w-full rounded-lg aspect-video bg-gray-100 dark:bg-white dark:bg-gray-800/10 flex items-center justify-center text-muted text-sm">{tx('dashboard.admin.verification.noImage', undefined, 'No image')}</div>
                                                  )}
                                              </div>
                                             <div>
                                                  <p className="text-sm font-medium text-muted mb-2">{tx('dashboard.admin.verification.backSide', undefined, 'Back side')}</p>
                                                  {v.back_image_url ? (
                                                      <a href={v.back_image_url} target="_blank" rel="noopener noreferrer">
-                                                         <img src={v.back_image_url} alt="back" className="w-full rounded-lg object-cover aspect-video border border-gray-200 dark:border-white/10 hover:opacity-90 transition" />
+                                                         <img src={v.back_image_url} alt="back" className="w-full rounded-lg object-cover aspect-video border border-gray-200 dark:border-gray-700 dark:border-white/10 dark:border-gray-800 hover:opacity-90 transition" />
                                                      </a>
                                                  ) : (
-                                                     <div className="w-full rounded-lg aspect-video bg-gray-100 dark:bg-white/10 flex items-center justify-center text-muted text-sm">{tx('dashboard.admin.verification.noImage', undefined, 'No image')}</div>
+                                                     <div className="w-full rounded-lg aspect-video bg-gray-100 dark:bg-white dark:bg-gray-800/10 flex items-center justify-center text-muted text-sm">{tx('dashboard.admin.verification.noImage', undefined, 'No image')}</div>
                                                  )}
                                              </div>
                                             <div>
                                                  <p className="text-sm font-medium text-muted mb-2">{tx('dashboard.admin.verification.selfie', undefined, 'Selfie')}</p>
                                                  {v.selfie_url ? (
                                                      <a href={v.selfie_url} target="_blank" rel="noopener noreferrer">
-                                                         <img src={v.selfie_url} alt="selfie" className="w-full rounded-lg object-cover aspect-video border border-gray-200 dark:border-white/10 hover:opacity-90 transition" />
+                                                         <img src={v.selfie_url} alt="selfie" className="w-full rounded-lg object-cover aspect-video border border-gray-200 dark:border-gray-700 dark:border-white/10 dark:border-gray-800 hover:opacity-90 transition" />
                                                      </a>
                                                  ) : (
-                                                     <div className="w-full rounded-lg aspect-video bg-gray-100 dark:bg-white/10 flex items-center justify-center text-muted text-sm">{tx('dashboard.admin.verification.noImage', undefined, 'No image')}</div>
+                                                     <div className="w-full rounded-lg aspect-video bg-gray-100 dark:bg-white dark:bg-gray-800/10 flex items-center justify-center text-muted text-sm">{tx('dashboard.admin.verification.noImage', undefined, 'No image')}</div>
                                                  )}
                                              </div>
                                         </div>

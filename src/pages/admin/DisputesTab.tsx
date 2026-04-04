@@ -83,7 +83,7 @@ export default function DisputesTab() {
                                             <p className="font-bold text-foreground">{d.contract?.job?.title || tr('عقد', 'Contract', 'Contrat')}</p>
                                             <p className="text-sm text-muted">{tr('فتحه', 'Opened by', 'Ouvert par')}: {d.opener?.full_name} — {d.opener?.email}</p>
                                             <p className="text-xs text-muted mt-1">{new Date(d.opened_at).toLocaleString(locale)}</p>
-                                            <div className="mt-3 p-3 bg-white/85 dark:bg-slate-900/55 rounded-lg border border-red-100 dark:border-red-500/20">
+                                            <div className="mt-3 p-3 bg-white dark:bg-gray-800/85 rounded-lg border border-red-100 dark:border-red-500/20">
                                                 <p className="text-sm text-foreground"><strong>{tr('سبب النزاع', 'Dispute reason', 'Raison du litige')}:</strong> {d.reason}</p>
                                             </div>
                                             {d.contract?.amount && <p className="text-sm font-medium text-muted mt-2">{tr('مبلغ العقد', 'Contract amount', 'Montant du contrat')}: {d.contract.amount} د.ت</p>}

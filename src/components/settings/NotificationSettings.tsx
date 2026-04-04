@@ -125,7 +125,7 @@ export default function NotificationSettings() {
         <div className="space-y-4 relative">
             {/* Top Stats Row */}
             <div className="grid gap-3 lg:grid-cols-3 relative z-10">
-                <div className={`group relative overflow-hidden flex flex-col justify-between p-4 rounded-xl border backdrop-blur-xl shadow-xl transition-all duration-300 ${allEnabled ? 'border-brand/40 bg-brand/10 hover:border-brand/50' : 'border-white/10 bg-white dark:bg-slate-900/[0.02] hover:border-brand/30 hover:bg-brand/5'}`}>
+                <div className={`group relative overflow-hidden flex flex-col justify-between p-4 rounded-xl border backdrop-blur-xl shadow-xl transition-all duration-300 ${allEnabled ? 'border-brand/40 bg-brand/10 hover:border-brand/50' : 'border-white/10 dark:border-gray-800 bg-white dark:bg-gray-800 dark:bg-gray-900 hover:border-brand/30 hover:bg-brand/5'}`}>
                     <div className={`absolute -right-10 -top-4 h-32 w-32 rounded-full blur-[40px] pointer-events-none transition-all ${allEnabled ? 'bg-brand/30' : 'bg-brand/10 group-hover:bg-brand/20'}`} />
                     <div>
                         <div className="flex items-center gap-3">
@@ -142,7 +142,7 @@ export default function NotificationSettings() {
                     </div>
                 </div>
 
-                <div className="group relative overflow-hidden flex flex-col justify-between p-4 rounded-xl border border-white/10 bg-white dark:bg-slate-900/[0.02] backdrop-blur-xl shadow-xl transition-all duration-300 hover:border-blue-500/30 hover:bg-blue-500/5">
+                <div className="group relative overflow-hidden flex flex-col justify-between p-4 rounded-xl border border-white/10 dark:border-gray-800 bg-white dark:bg-gray-800 ] backdrop-blur-xl shadow-xl transition-all duration-300 hover:border-blue-500/30 hover:bg-blue-500/5">
                     <div className="absolute -right-10 -top-4 h-32 w-32 rounded-full bg-blue-500/10 blur-[40px] pointer-events-none transition-all group-hover:bg-blue-500/20" />
                     <div>
                         <div className="flex items-center gap-3">
@@ -160,7 +160,7 @@ export default function NotificationSettings() {
                     </div>
                 </div>
 
-                <div className="group relative overflow-hidden flex flex-col justify-between p-4 rounded-xl border border-white/10 bg-white dark:bg-slate-900/[0.02] backdrop-blur-xl shadow-xl transition-all duration-300 hover:border-purple-500/30 hover:bg-purple-500/5">
+                <div className="group relative overflow-hidden flex flex-col justify-between p-4 rounded-xl border border-white/10 dark:border-gray-800 bg-white dark:bg-gray-800 ] backdrop-blur-xl shadow-xl transition-all duration-300 hover:border-purple-500/30 hover:bg-purple-500/5">
                     <div className="absolute -right-10 -top-4 h-32 w-32 rounded-full bg-purple-500/10 blur-[40px] pointer-events-none transition-all group-hover:bg-purple-500/20" />
                     <div>
                         <div className="flex items-center gap-3">
@@ -179,7 +179,7 @@ export default function NotificationSettings() {
                 </div>
             </div>
 
-            <div className="relative overflow-hidden rounded-xl border border-white/10 bg-card/80 p-5 shadow-2xl backdrop-blur-xl ring-1 ring-black/5">
+            <div className="relative overflow-hidden rounded-xl border border-white/10 dark:border-gray-800 bg-card/80 p-5 shadow-2xl backdrop-blur-xl ring-1 ring-black/5">
                 <div className="absolute -left-40 top-20 h-[400px] w-[400px] rounded-full bg-brand/5 blur-[120px] pointer-events-none" />
                 <div className="absolute -right-20 -bottom-20 h-[300px] w-[300px] rounded-full bg-blue-500/5 blur-[100px] pointer-events-none" />
                 
@@ -201,10 +201,10 @@ export default function NotificationSettings() {
                             <div 
                                 key={item.id} 
                                 onClick={() => handleToggle(item.key)}
-                                className={`group flex items-center justify-between gap-3 rounded-xl border p-5 transition-all duration-300 cursor-pointer ${item.enabled ? 'border-brand/40 bg-brand/5 shadow-[0_0_30px_-10px_rgba(var(--brand),0.2)]' : 'border-white/5 bg-white dark:bg-slate-900/[0.01] hover:border-white/20 hover:bg-white dark:bg-slate-900/[0.03]'}`}
+                                className={`group flex items-center justify-between gap-3 rounded-xl border p-5 transition-all duration-300 cursor-pointer ${item.enabled ? 'border-brand/40 bg-brand/5 shadow-[0_0_30px_-10px_rgba(var(--brand),0.2)]' : 'border-white/5 bg-white dark:bg-gray-800 dark:bg-slate-900/[0.01] hover:border-white/20 hover:bg-white dark:bg-gray-800 dark:bg-slate-900/[0.03]'}`}
                             >
                                 <div className="flex min-w-0 items-center gap-3">    
-                                    <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl shadow-inner transition-colors duration-500 ${item.enabled ? 'bg-brand/20 text-brand border border-brand/30' : 'bg-white dark:bg-slate-900/5 text-muted-foreground border border-white/10'}`}>
+                                    <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl shadow-inner transition-colors duration-500 ${item.enabled ? 'bg-brand/20 text-brand border border-brand/30' : 'bg-white dark:bg-gray-800 dark:bg-gray-800 text-muted-foreground border border-white/10 dark:border-gray-800'}`}>
                                         <Icon className={`h-6 w-6 ${item.enabled ? 'drop-shadow-[0_0_8px_rgba(var(--brand),0.8)]' : ''}`} />
                                     </div>
                                     <div className="min-w-0">
@@ -214,9 +214,9 @@ export default function NotificationSettings() {
                                 </div>
 
                                 <div className="shrink-0 flex items-center justify-center">
-                                    <div className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors duration-500 shadow-inner ${item.enabled ? 'bg-brand shadow-[0_0_15px_rgba(var(--brand),0.6)]' : 'bg-black/40 border border-white/10'}`}>
+                                    <div className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors duration-500 shadow-inner ${item.enabled ? 'bg-brand shadow-[0_0_15px_rgba(var(--brand),0.6)]' : 'bg-black/40 border border-white/10 dark:border-gray-800'}`}>
                                         <span
-                                            className={`inline-block h-6 w-6 transform rounded-full bg-white dark:bg-slate-900 shadow-lg transition-transform duration-500 ease-in-out ${item.enabled ? 'translate-x-7' : 'translate-x-1'}`}
+                                            className={`inline-block h-6 w-6 transform rounded-full bg-white dark:bg-gray-800 dark:bg-slate-900 shadow-lg transition-transform duration-500 ease-in-out ${item.enabled ? 'translate-x-7' : 'translate-x-1'}`}
                                         />
                                     </div>
                                 </div>

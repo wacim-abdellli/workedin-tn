@@ -42,13 +42,13 @@ export class ErrorBoundary extends Component<Props, State> {
     render() {
         if (this.state.hasError) {
             return this.props.fallback || (
-                <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-dark-900 p-4">
-                    <div className="bg-white dark:bg-dark-800 rounded-2xl shadow-xl p-8 max-w-md w-full text-center">
+                <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 dark:bg-dark-900 p-4">
+                    <div className="bg-white dark:bg-gray-800 dark:bg-dark-800 rounded-2xl shadow-xl p-8 max-w-md w-full text-center">
                         <div className="w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mx-auto mb-6">
                             <AlertCircle className="w-8 h-8 text-red-500" />
                         </div>
 
-                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
+                        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 dark:text-white mb-3">
                             حدث خطأ غير متوقع
                         </h2>
 
@@ -72,7 +72,7 @@ export class ErrorBoundary extends Component<Props, State> {
                             </button>
                             <button
                                 onClick={this.handleGoHome}
-                                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-gray-100 dark:bg-dark-700 hover:bg-gray-200 dark:hover:bg-dark-600 text-gray-700 dark:text-gray-300 rounded-xl font-medium transition-colors"
+                                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-gray-100 dark:bg-gray-800 dark:bg-dark-700 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-dark-600 text-gray-700 dark:text-gray-300 rounded-xl font-medium transition-colors"
                             >
                                 <Home className="w-4 h-4" />
                                 الرئيسية

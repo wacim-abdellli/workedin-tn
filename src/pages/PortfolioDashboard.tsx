@@ -128,7 +128,7 @@ export default function PortfolioDashboard() {
             <div className="container-custom py-8">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                     <div>
-                        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t.portfolio.title}</h1>
+                        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 dark:text-white">{t.portfolio.title}</h1>
                         <p className="text-gray-500 mt-1 dark:text-gray-400">{t.portfolio.subtitle}</p>
                     </div>
 
@@ -161,7 +161,7 @@ export default function PortfolioDashboard() {
                 {isLoading ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {[...Array(6)].map((_, i) => (
-                            <div key={i} className="bg-white dark:bg-[#1a1825] rounded-xl overflow-hidden border border-gray-100 dark:border-white/5 shadow-sm">
+                            <div key={i} className="bg-white dark:bg-gray-800 dark:bg-[#1a1825] rounded-xl overflow-hidden border border-gray-100 dark:border-gray-800 dark:border-white/5 shadow-sm">
                                 <Skeleton className="aspect-video w-full" />
                                 <div className="p-4 space-y-2">
                                     <Skeleton className="h-5 w-3/4" />
@@ -180,7 +180,7 @@ export default function PortfolioDashboard() {
                         {items.map((item) => (
                             <div
                                 key={item.id}
-                                className={`bg-white dark:bg-gray-800 rounded-xl overflow-hidden border border-gray-100 shadow-sm group hover:shadow-md transition-shadow ${viewMode === 'list' ? 'flex' : ''} dark:bg-gray-800`}
+                                className={`bg-white dark:bg-gray-800 rounded-xl overflow-hidden border border-gray-100 dark:border-gray-800 shadow-sm group hover:shadow-md transition-shadow ${viewMode === 'list' ? 'flex' : ''} dark:bg-gray-800`}
                             >
                                 <div className={`relative ${viewMode === 'list' ? 'w-48 h-32 flex-shrink-0' : 'aspect-video'}`}>
                                     {item.thumbnail_url || (item.media_urls && item.media_urls[0]) ? (
@@ -198,13 +198,13 @@ export default function PortfolioDashboard() {
 
                                     <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                                         <button
-                                            className="p-2 bg-white rounded-full text-gray-700 hover:text-primary-600 transition-colors dark:bg-gray-800 dark:text-gray-200"
+                                            className="p-2 bg-white rounded-full text-gray-700 dark:text-gray-300 hover:text-primary-600 transition-colors dark:bg-gray-800 dark:text-gray-200"
                                             onClick={() => openEditModal(item)}
                                         >
                                             <Edit2 className="w-4 h-4" />
                                         </button>
                                         <button
-                                            className="p-2 bg-white rounded-full text-gray-700 hover:text-red-500 transition-colors dark:bg-gray-800 dark:text-gray-200"
+                                            className="p-2 bg-white rounded-full text-gray-700 dark:text-gray-300 hover:text-red-500 transition-colors dark:bg-gray-800 dark:text-gray-200"
                                             onClick={() => handleDelete(item.id)}
                                         >
                                             <Trash2 className="w-4 h-4" />
@@ -214,18 +214,18 @@ export default function PortfolioDashboard() {
 
                                 <div className="p-4 flex-1 flex flex-col justify-between">
                                     <div>
-                                        <h3 className="font-bold text-gray-900 mb-1 dark:text-white">{item.title}</h3>
+                                        <h3 className="font-bold text-gray-900 dark:text-gray-100 mb-1 dark:text-white">{item.title}</h3>
                                         <p className="text-sm text-gray-500 line-clamp-2 dark:text-gray-400">{item.description}</p>
                                     </div>
 
                                     <div className="mt-4 flex flex-wrap gap-2">
                                         {item.skills_used?.slice(0, 3).map((skill, i) => (
-                                            <span key={i} className="px-2 py-1 bg-gray-50 text-gray-600 text-xs rounded-md border border-gray-100 dark:bg-gray-900 dark:text-gray-300">
+                                            <span key={i} className="px-2 py-1 bg-gray-50 text-gray-600 text-xs rounded-md border border-gray-100 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300">
                                                 {skill}
                                             </span>
                                         ))}
                                         {item.skills_used && item.skills_used.length > 3 && (
-                                            <span className="px-2 py-1 bg-gray-50 text-gray-600 text-xs rounded-md border border-gray-100 dark:bg-gray-900 dark:text-gray-300">
+                                            <span className="px-2 py-1 bg-gray-50 text-gray-600 text-xs rounded-md border border-gray-100 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300">
                                                 +{item.skills_used.length - 3}
                                             </span>
                                         )}
@@ -239,7 +239,7 @@ export default function PortfolioDashboard() {
                         <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 dark:bg-gray-900">
                             <ImageIcon className="w-8 h-8 text-gray-300" />
                         </div>
-                        <h3 className="text-lg font-bold text-gray-900 mb-2 dark:text-white">{t.portfolio.empty.title}</h3>
+                        <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-2 dark:text-white">{t.portfolio.empty.title}</h3>
                         <p className="text-gray-500 mb-6 max-w-sm mx-auto dark:text-gray-400">{t.portfolio.empty.description}</p>
                         <Button
                             variant="primary"

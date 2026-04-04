@@ -114,7 +114,7 @@ export default function ReportButton({ reportedType, reportedId, className }: Re
 
                     <div className="space-y-2">
                         {REASONS.map(r => (
-                            <label key={r.value} className="flex items-center gap-3 p-3 rounded-xl border border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-white dark:bg-slate-900/5 cursor-pointer transition-colors">
+                            <label key={r.value} className="flex items-center gap-3 p-3 rounded-xl border border-gray-200 dark:border-gray-700 dark:border-white/10 dark:border-gray-800 hover:bg-gray-50 dark:bg-gray-900 dark:bg-gray-800 dark:hover:bg-white cursor-pointer transition-colors">
                                 <input
                                     type="radio"
                                     name="report-reason"
@@ -143,7 +143,7 @@ export default function ReportButton({ reportedType, reportedId, className }: Re
                         </div>
                     )}
 
-                    <div className="flex justify-end gap-3 pt-2 border-t border-gray-100 dark:border-white/10">
+                    <div className="flex justify-end gap-3 pt-2 border-t border-gray-100 dark:border-gray-800 dark:border-white/10">
                         <Button variant="ghost" onClick={() => setIsOpen(false)} disabled={mutation.isPending}>
                             {tx('common.cancel', undefined, 'Cancel')}
                         </Button>

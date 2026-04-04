@@ -45,7 +45,7 @@ export default function ProfileHeader({
 
             {/* Content Container Overlapping */}
             <div className="container-custom relative z-10">
-                <div className="-mt-32 sm:-mt-40 mb-10 rounded-[2.5rem] border border-white/40 bg-white dark:bg-gray-800/70 backdrop-blur-3xl px-6 pb-8 pt-8 shadow-[0_20px_80px_-20px_rgba(0,0,0,0.15)] dark:border-white/10 dark:bg-[#120F1A]/80 sm:px-10 lg:px-12">
+                <div className="-mt-32 sm:-mt-40 mb-10 rounded-[2.5rem] border border-white/40 bg-white dark:bg-gray-800/70 backdrop-blur-3xl px-6 pb-8 pt-8 shadow-[0_20px_80px_-20px_rgba(0,0,0,0.15)] dark:border-white/10 dark:border-gray-800 dark:bg-[#120F1A]/80 sm:px-10 lg:px-12">
                     
                     <div className="flex flex-col lg:flex-row lg:items-start lg:gap-12">
                         
@@ -93,7 +93,7 @@ export default function ProfileHeader({
 
                             {/* Tags Section */}
                             <div className="mt-8 flex flex-wrap justify-center sm:justify-start gap-3">
-                                <span className="inline-flex items-center gap-2 rounded-full bg-slate-100/80 px-4 py-2 text-sm font-medium text-slate-700 shadow-sm backdrop-blur-md dark:bg-white/5 dark:text-slate-300">
+                                <span className="inline-flex items-center gap-2 rounded-full bg-slate-100/80 px-4 py-2 text-sm font-medium text-slate-700 shadow-sm backdrop-blur-md dark:bg-white dark:bg-gray-800/5 dark:text-slate-300">
                                     <MapPin className="h-4 w-4 text-rose-500" />
                                     {freelancer.location}
                                 </span>
@@ -108,7 +108,7 @@ export default function ProfileHeader({
                             </div>
 
                             {/* Bio */}
-                            <div className="mt-8 rounded-2xl bg-white dark:bg-gray-800/40 p-6 shadow-sm backdrop-blur-md dark:bg-white/5 sm:p-8 border border-white/50 dark:border-white/10">
+                            <div className="mt-8 rounded-2xl bg-white dark:bg-gray-800/40 p-6 shadow-sm backdrop-blur-md dark:bg-white/5 sm:p-8 border border-white/50 dark:border-white/10 dark:border-gray-800">
                                 <p className="text-base sm:text-lg leading-relaxed text-slate-700 dark:text-slate-300 italic font-medium">
                                     "{freelancer.bio || tx('settings.noBio', undefined, 'No bio added yet')}"
                                 </p>
@@ -152,7 +152,7 @@ export default function ProfileHeader({
                                                 className={`group flex h-14 w-full items-center justify-center gap-3 rounded-2xl border-2 text-base font-bold transition-all ${
                                                     isPlayingVoice 
                                                         ? 'border-purple-600 bg-purple-100 text-purple-700 shadow-inner dark:border-purple-500 dark:bg-purple-900/30 dark:text-purple-300' 
-                                                        : 'border-slate-200 bg-white dark:bg-gray-800 text-slate-700 hover:border-purple-300 hover:bg-slate-50 dark:border-white/10 dark:bg-[#120f1a] dark:text-slate-200 dark:hover:bg-white dark:bg-gray-800/5'
+                                                        : 'border-slate-200 bg-white dark:bg-gray-800 text-slate-700 hover:border-purple-300 hover:bg-slate-50 dark:border-white/10 dark:border-gray-800 dark:bg-[#120f1a] dark:text-slate-200 dark:hover:bg-white dark:bg-gray-800/5'
                                                 }`}
                                             >
                                                 {isPlayingVoice ? (

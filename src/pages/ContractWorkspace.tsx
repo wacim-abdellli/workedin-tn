@@ -330,10 +330,10 @@ function ContractWorkspaceComponent() {
 
     if (isInitialLoading) {
         return (
-            <div className="flex flex-col h-screen bg-white dark:bg-dark-900">
+            <div className="flex flex-col h-screen bg-white dark:bg-gray-800 dark:bg-dark-900">
                 <Header />
                 {/* Contract header bar skeleton */}
-                <div className="border-b border-gray-200 dark:border-dark-700 px-4 py-3 flex items-center justify-between">
+                <div className="border-b border-gray-200 dark:border-gray-700 dark:border-dark-700 px-4 py-3 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <Skeleton className="h-5 w-48" />
                         <Skeleton className="h-6 w-20 rounded-full" />
@@ -352,7 +352,7 @@ function ContractWorkspaceComponent() {
                         ))}
                     </div>
                     {/* Sidebar skeleton */}
-                    <div className="hidden lg:block w-72 border-s border-gray-200 dark:border-dark-700 p-4 space-y-4">
+                    <div className="hidden lg:block w-72 border-s border-gray-200 dark:border-gray-700 dark:border-dark-700 p-4 space-y-4">
                         <Skeleton className="h-24 w-full rounded-xl" />
                         <Skeleton className="h-16 w-full rounded-xl" />
                         <Skeleton className="h-10 w-full rounded-xl" />

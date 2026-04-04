@@ -71,7 +71,7 @@ function JobCard({ job, isSaved, onToggleSave, onClick }: JobCardProps) {
       onClick={() => onClick(job.id)}
       className={cn(
         'group relative rounded-xl p-5 cursor-pointer transition-all duration-200',
-        'bg-white dark:bg-[#1a1825]',
+        'bg-white dark:bg-gray-800 dark:bg-[#1a1825]',
         'border border-black/[0.07] dark:border-white/[0.07]',
         'shadow-[0_1px_3px_rgba(0,0,0,0.06),0_4px_16px_rgba(0,0,0,0.04)] dark:shadow-none',
         'hover:shadow-md hover:border-[color:var(--workspace-primary)]/30',

@@ -106,7 +106,7 @@ export default function ProposalDetailModal({
                                 <span className="absolute bottom-1 end-1 w-5 h-5 bg-green-500 border-4 border-white rounded-full"></span>
                             )}
                         </div>
-                        <h3 className="font-bold text-xl text-gray-900 dark:text-white mb-1">{freelancer.full_name}</h3>
+                        <h3 className="font-bold text-xl text-gray-900 dark:text-gray-100 dark:text-white mb-1">{freelancer.full_name}</h3>
                         <p className="text-gray-500 dark:text-gray-400 text-sm mb-3">{freelancer.title || 'مستقل'}</p>
 
                         <div className="flex items-center justify-center gap-2 text-sm text-gray-600 dark:text-gray-300 mb-4">
@@ -145,7 +145,7 @@ export default function ProposalDetailModal({
                         <h4 className="font-bold text-sm mb-3">المهارات</h4>
                         <div className="flex flex-wrap gap-2">
                             {['React', 'Node.js', 'UI Design', 'TypeScript'].map(skill => (
-                                <span key={skill} className="px-2.5 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-medium text-gray-700 dark:text-gray-200">
+                                <span key={skill} className="px-2.5 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-medium text-gray-700 dark:text-gray-300 dark:text-gray-200">
                                     {skill}
                                 </span>
                             ))}
@@ -160,14 +160,14 @@ export default function ProposalDetailModal({
                     <div className="h-16 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between px-6 bg-white dark:bg-gray-800 sticky top-0 z-20">
                         <div className="flex items-center gap-4">
                             {/* Tabs */}
-                            <div className="flex items-center gap-1 bg-gray-100/50 p-1 rounded-lg">
+                            <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-800/50 p-1 rounded-lg">
                                 {tabs.map(tab => (
                                     <button
                                         key={tab.id}
                                         onClick={() => setActiveTab(tab.id)}
                                         className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${activeTab === tab.id
-                                            ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm'
-                                            : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:text-white hover:bg-gray-200/50'
+                                            ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 dark:text-white shadow-sm'
+                                            : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:text-gray-100 dark:text-white hover:bg-gray-200 dark:bg-gray-700/50'
                                             }`}
                                     >
                                         {tab.label}
@@ -178,7 +178,7 @@ export default function ProposalDetailModal({
 
                         {/* Desktop Actions */}
                         <div className="hidden md:flex items-center gap-2">
-                            <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                            <button onClick={onClose} className="p-2 hover:bg-gray-100 dark:bg-gray-800 rounded-full transition-colors">
                                 <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
                             </button>
                         </div>
@@ -200,7 +200,7 @@ export default function ProposalDetailModal({
                                         </span>
                                     </div>
                                     <h3 className="text-xl font-bold mb-4">خطاب التقديم</h3>
-                                    <div className="prose prose-lg max-w-none text-gray-700 dark:text-gray-200 leading-relaxed whitespace-pre-wrap">
+                                    <div className="prose prose-lg max-w-none text-gray-700 dark:text-gray-300 dark:text-gray-200 leading-relaxed whitespace-pre-wrap">
                                         {proposal.cover_letter}
                                     </div>
                                 </div>
@@ -232,7 +232,7 @@ export default function ProposalDetailModal({
                             <div className="animate-in fade-in duration-300 space-y-8">
                                 <section>
                                     <h3 className="font-bold text-lg mb-3">نبذة عني</h3>
-                                    <p className="text-gray-700 dark:text-gray-200 leading-relaxed">
+                                    <p className="text-gray-700 dark:text-gray-300 dark:text-gray-200 leading-relaxed">
                                         {freelancer.bio || 'لا توجد نبذة شخصية.'}
                                     </p>
                                 </section>
@@ -257,10 +257,10 @@ export default function ProposalDetailModal({
                         {activeTab === 'portfolio' && (
                             <div className="animate-in fade-in duration-300">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div className="aspect-video bg-gray-100 rounded-xl flex items-center justify-center text-gray-400">
+                                    <div className="aspect-video bg-gray-100 dark:bg-gray-800 rounded-xl flex items-center justify-center text-gray-400">
                                         مثال عمل 1 (صورة)
                                     </div>
-                                    <div className="aspect-video bg-gray-100 rounded-xl flex items-center justify-center text-gray-400">
+                                    <div className="aspect-video bg-gray-100 dark:bg-gray-800 rounded-xl flex items-center justify-center text-gray-400">
                                         مثال عمل 2 (صورة)
                                     </div>
                                 </div>
@@ -290,7 +290,7 @@ export default function ProposalDetailModal({
 
                     {/* Bid Card */}
                     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                        <h4 className="font-bold text-gray-900 dark:text-white mb-4">تفاصيل العرض</h4>
+                        <h4 className="font-bold text-gray-900 dark:text-gray-100 dark:text-white mb-4">تفاصيل العرض</h4>
                         <div className="mb-4 text-center">
                             <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">قيمة العرض</p>
                             <p className="text-3xl font-bold text-primary-600">{proposal.bid_amount} <span className="text-lg text-gray-500 dark:text-gray-400 font-normal">د.ت</span></p>

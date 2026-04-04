@@ -31,14 +31,14 @@ export default function VerificationReview({
     const completedCount = checklist.filter(i => i.ok).length;
 
     return (
-        <div className="rounded-3xl border border-white/10 bg-white/90 p-8 shadow-2xl shadow-slate-900/10 backdrop-blur-sm dark:border-white/10 dark:bg-[#1d2231]/90">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 text-center">
+        <div className="rounded-3xl border border-white/10 dark:border-gray-800 bg-white dark:bg-gray-800/90 p-8 shadow-2xl shadow-slate-900/10 backdrop-blur-sm dark:border-white/10 dark:border-gray-800 dark:bg-[#1d2231]/90">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 dark:text-white mb-6 text-center">
                 {tx('verifyIdentity.review.title', undefined, 'مراجعة البيانات')}
             </h2>
 
             {/* Readiness score */}
-            <div className="mb-4 flex items-center justify-between rounded-xl border border-white/10 bg-white/50 px-4 py-2 text-xs dark:bg-white/5">
-                <span className="font-medium text-gray-700 dark:text-gray-200">{tx('verifyIdentity.review.readiness', undefined, 'Readiness score')}</span>
+            <div className="mb-4 flex items-center justify-between rounded-xl border border-white/10 dark:border-gray-800 bg-white dark:bg-gray-800/50 px-4 py-2 text-xs dark:bg-white dark:bg-gray-800/5">
+                <span className="font-medium text-gray-700 dark:text-gray-300 dark:text-gray-200">{tx('verifyIdentity.review.readiness', undefined, 'Readiness score')}</span>
                 <span className="font-semibold text-primary-700 dark:text-primary-300">{completedCount}/{checklist.length}</span>
             </div>
 
@@ -83,13 +83,13 @@ export default function VerificationReview({
 
                 {/* Edit buttons */}
                 <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-                    <button type="button" onClick={onEditFront} className="rounded-lg border border-gray-300/80 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
+                    <button type="button" onClick={onEditFront} className="rounded-lg border border-gray-300/80 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:bg-gray-900 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
                         {tx('verifyIdentity.review.editFront', undefined, 'Edit front image')}
                     </button>
-                    <button type="button" onClick={onEditBack} className="rounded-lg border border-gray-300/80 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
+                    <button type="button" onClick={onEditBack} className="rounded-lg border border-gray-300/80 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:bg-gray-900 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
                         {tx('verifyIdentity.review.editBack', undefined, 'Edit back image')}
                     </button>
-                    <button type="button" onClick={onEditSelfie} className="rounded-lg border border-gray-300/80 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
+                    <button type="button" onClick={onEditSelfie} className="rounded-lg border border-gray-300/80 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:bg-gray-900 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
                         {tx('verifyIdentity.review.editSelfie', undefined, 'Edit selfie')}
                     </button>
                 </div>
@@ -103,7 +103,7 @@ export default function VerificationReview({
                 </div>
 
                 {/* Consent checkbox */}
-                <label htmlFor="identity-consent" className="flex items-center gap-3 p-4 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer">
+                <label htmlFor="identity-consent" className="flex items-center gap-3 p-4 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-gray-700/50 transition-colors cursor-pointer">
                     <input
                         id="identity-consent"
                         type="checkbox"
@@ -120,7 +120,7 @@ export default function VerificationReview({
 
             {/* Actions */}
             <div className="flex items-center justify-between mt-8">
-                <button onClick={onBack} className="flex items-center text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">
+                <button onClick={onBack} className="flex items-center text-gray-600 hover:text-gray-900 dark:text-gray-100 dark:text-gray-400 dark:hover:text-white transition-colors">
                     <ChevronRight className="ms-1 w-5 h-5 rtl:rotate-180" />
                     {tx('common.back', undefined, 'Back')}
                 </button>

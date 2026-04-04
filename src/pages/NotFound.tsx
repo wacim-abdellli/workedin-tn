@@ -8,7 +8,7 @@ export default function NotFound() {
   const { t } = useTranslation();
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-[#0f0e17]">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 dark:bg-[#0f0e17]">
       <Header />
       <main className="flex min-h-screen flex-col items-center justify-center px-4 pt-20">
         {/* Big 404 number */}
@@ -23,7 +23,7 @@ export default function NotFound() {
           </div>
         </div>
 
-        <h1 className="mb-3 text-center text-3xl font-bold text-gray-900 dark:text-white">
+        <h1 className="mb-3 text-center text-3xl font-bold text-gray-900 dark:text-gray-100 dark:text-white">
           {t.notFound?.title || 'Page Not Found'}
         </h1>
         <p className="mb-10 max-w-md text-center text-gray-500 dark:text-gray-400">
@@ -33,7 +33,7 @@ export default function NotFound() {
         <div className="flex flex-col gap-3 sm:flex-row">
           <button
             onClick={() => navigate(-1)}
-            className="inline-flex items-center gap-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-6 py-3 font-medium text-gray-700 dark:text-gray-200 transition hover:bg-gray-50 dark:bg-gray-800 dark:border-white/10 dark:bg-white dark:bg-gray-900/5 dark:text-gray-300 dark:hover:bg-white dark:bg-gray-900/10"
+            className="inline-flex items-center gap-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-6 py-3 font-medium text-gray-700 dark:text-gray-200 transition hover:bg-gray-50 dark:bg-gray-800 dark:border-white/10 dark:border-gray-800 dark:bg-white dark:bg-gray-900/5 dark:text-gray-300 dark:hover:bg-white dark:bg-gray-900/10"
           >
             <ArrowLeft className="h-5 w-5 rtl:rotate-180" />
             {t.notFound?.goBack || 'Go Back'}

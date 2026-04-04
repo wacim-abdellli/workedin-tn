@@ -44,9 +44,9 @@ export default function AuthShell({ badge, title, description, highlights, topAc
         <div className="flex items-center justify-between gap-4 pb-6 sm:pb-8">
           <Link
             to="/"
-            className="inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/5 px-3 py-2 text-sm text-white/90 backdrop-blur-sm transition-colors hover:border-white/20 hover:bg-white/10"
+            className="inline-flex items-center gap-3 rounded-full border border-white/10 dark:border-gray-800 bg-white dark:bg-gray-800/5 px-3 py-2 text-sm text-white/90 backdrop-blur-sm transition-colors hover:border-white/20 hover:bg-white dark:bg-gray-800/10"
           >
-            <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/10 shadow-[0_12px_40px_-20px_rgba(124,58,237,0.85)]">
+            <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white dark:bg-gray-800/10 shadow-[0_12px_40px_-20px_rgba(124,58,237,0.85)]">
               <img src="/logos/logo-social.svg" alt="Khedma TN" className="h-7 w-7" />
             </span>
             <span>
@@ -61,7 +61,7 @@ export default function AuthShell({ badge, title, description, highlights, topAc
         <div className="grid flex-1 items-center gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(420px,520px)] lg:gap-12">
           <section className="hidden lg:flex lg:flex-col lg:justify-center lg:gap-16 lg:self-stretch py-8">
             <div className="max-w-xl space-y-6">
-              <div className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/8 px-4 py-2 text-xs font-medium uppercase tracking-[0.22em] text-white/70 backdrop-blur-sm">
+              <div className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-white dark:bg-gray-800/8 px-4 py-2 text-xs font-medium uppercase tracking-[0.22em] text-white/70 backdrop-blur-sm">
                 <span className="h-2 w-2 rounded-full bg-emerald-400" />
                 {badge}
               </div>
@@ -82,7 +82,7 @@ export default function AuthShell({ badge, title, description, highlights, topAc
                   key={itemTitle}
                   className={`rounded-3xl border p-5 backdrop-blur-md ${toneClasses[tone]}`}
                 >
-                  <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-2xl bg-white/10">
+                  <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-2xl bg-white dark:bg-gray-800/10">
                     <Icon className="h-5 w-5" />
                   </div>
                   <h2 className="text-base font-semibold text-white">{itemTitle}</h2>
@@ -93,8 +93,8 @@ export default function AuthShell({ badge, title, description, highlights, topAc
           </section>
 
           <section className="mx-auto flex w-full max-w-xl items-center justify-center lg:max-w-none">
-            <div className="w-full rounded-[32px] border border-white/12 bg-white/[0.06] p-2 shadow-[0_36px_120px_-54px_rgba(10,14,28,0.95)] backdrop-blur-2xl">
-              <div className="rounded-[28px] border border-white/8 bg-white/92 p-6 shadow-[0_18px_48px_-28px_rgba(23,20,32,0.75)] dark:bg-[#181422]/94 sm:p-8">
+            <div className="w-full rounded-[32px] border border-white/12 bg-white dark:bg-gray-800/[0.06] p-2 shadow-[0_36px_120px_-54px_rgba(10,14,28,0.95)] backdrop-blur-2xl">
+              <div className="rounded-[28px] border border-white/8 bg-white dark:bg-gray-800/92 p-6 shadow-[0_18px_48px_-28px_rgba(23,20,32,0.75)] dark:bg-[#181422]/94 sm:p-8">
                 {children}
               </div>
             </div>

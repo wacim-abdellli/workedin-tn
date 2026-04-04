@@ -127,14 +127,14 @@ export default function ReviewModal({
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-            <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
                 {/* Header */}
-                <div className="sticky top-0 bg-white border-b border-gray-100 p-6 flex items-center justify-between z-10">
+                <div className="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-800 p-6 flex items-center justify-between z-10">
                     <div>
                         <h2 className="text-xl font-bold text-foreground">تقييم {revieweeName}</h2>
                         <p className="text-sm text-muted">مشروع: {projectTitle}</p>
                     </div>
-                    <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full">
+                    <button onClick={onClose} className="p-2 hover:bg-gray-100 dark:bg-gray-800 rounded-full">
                         <X className="w-5 h-5" />
                     </button>
                 </div>
@@ -175,7 +175,7 @@ export default function ReviewModal({
                         <div className="space-y-4">
                             {categories.map(cat => (
                                 <div key={cat.key} className="flex items-center justify-between">
-                                    <span className="text-gray-700">{cat.label}</span>
+                                    <span className="text-gray-700 dark:text-gray-300">{cat.label}</span>
                                     <StarRating
                                         value={detailedRatings[cat.key as keyof typeof detailedRatings]}
                                         onChange={(v) => handleDetailedRating(cat.key, v)}
@@ -195,7 +195,7 @@ export default function ReviewModal({
                                 onClick={() => setWouldWorkAgain(true)}
                                 className={`flex-1 flex items-center justify-center gap-2 p-4 rounded-xl border-2 transition-all ${wouldWorkAgain === true
                                         ? 'border-green-500 bg-green-50 text-green-700'
-                                        : 'border-gray-200 hover:border-green-300'
+                                        : 'border-gray-200 dark:border-gray-700 hover:border-green-300'
                                     }`}
                             >
                                 <ThumbsUp className="w-6 h-6" />
@@ -205,7 +205,7 @@ export default function ReviewModal({
                                 onClick={() => setWouldWorkAgain(false)}
                                 className={`flex-1 flex items-center justify-center gap-2 p-4 rounded-xl border-2 transition-all ${wouldWorkAgain === false
                                         ? 'border-red-500 bg-red-50 text-red-700'
-                                        : 'border-gray-200 hover:border-red-300'
+                                        : 'border-gray-200 dark:border-gray-700 hover:border-red-300'
                                     }`}
                             >
                                 <ThumbsDown className="w-6 h-6" />
@@ -222,7 +222,7 @@ export default function ReviewModal({
                             value={reviewText}
                             onChange={(e) => setReviewText(e.target.value)}
                             placeholder="ما الذي أعجبك؟ ما الذي يمكن تحسينه؟ هل توصي به للآخرين؟"
-                            className="w-full h-32 p-4 border border-gray-200 rounded-xl resize-none focus:ring-2 focus:ring-primary-100 focus:border-primary-500"
+                            className="w-full h-32 p-4 border border-gray-200 dark:border-gray-700 rounded-xl resize-none focus:ring-2 focus:ring-primary-100 focus:border-primary-500"
                             maxLength={1000}
                         />
                         <p className="text-sm text-muted text-left mt-1">{reviewText.length}/1000</p>
@@ -241,7 +241,7 @@ export default function ReviewModal({
                                     key={opt.value}
                                     className={`flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all ${visibility === opt.value
                                             ? 'border-primary-500 bg-primary-50'
-                                            : 'border-gray-200 hover:border-primary-200'
+                                            : 'border-gray-200 dark:border-gray-700 hover:border-primary-200'
                                         }`}
                                 >
                                     <input
@@ -275,7 +275,7 @@ export default function ReviewModal({
                 </div>
 
                 {/* Footer */}
-                <div className="sticky bottom-0 bg-white border-t border-gray-100 p-6 flex gap-3">
+                <div className="sticky bottom-0 bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-800 p-6 flex gap-3">
                     <Button variant="ghost" onClick={onClose} className="flex-1">
                         تخطي الآن
                     </Button>

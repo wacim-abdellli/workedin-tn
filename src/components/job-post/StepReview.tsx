@@ -45,7 +45,7 @@ export default function StepReview() {
     return (
         <div className="space-y-8">
             <div className="space-y-4">
-                <div className="inline-flex items-center gap-2 rounded-full border border-primary-100 bg-primary-50/70 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-primary-700 dark:border-white/10 dark:bg-white dark:bg-gray-800/[0.04] dark:text-primary-200">
+                <div className="inline-flex items-center gap-2 rounded-full border border-primary-100 bg-primary-50/70 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-primary-700 dark:border-white/10 dark:border-gray-800 dark:bg-white dark:bg-gray-800/[0.04] dark:text-primary-200">
                     <FileText className="w-3.5 h-3.5" />
                     {tx('jobs.new.stepReview.badge', undefined, 'Final check')}
                 </div>
@@ -64,8 +64,8 @@ export default function StepReview() {
 
             <div className="space-y-6">
                 {/* Header Preview */}
-                <div className="rounded-[1.85rem] border border-primary-100/70 bg-white dark:bg-gray-800/80 p-6 shadow-sm dark:border-white/10 dark:bg-white dark:bg-gray-800/[0.04]">
-                    <h2 className="mb-2 text-2xl font-bold text-gray-900 dark:text-white">{values.title}</h2>
+                <div className="rounded-[1.85rem] border border-primary-100/70 bg-white dark:bg-gray-800/80 p-6 shadow-sm dark:border-white/10 dark:border-gray-800 dark:bg-white dark:bg-gray-800/[0.04]">
+                    <h2 className="mb-2 text-2xl font-bold text-gray-900 dark:text-gray-100 dark:text-white">{values.title}</h2>
                     <div className="flex flex-wrap gap-4 text-sm text-gray-500 dark:text-gray-400">
                         <span className="flex items-center gap-1 rounded-full bg-gray-100 px-3 py-1 dark:bg-white dark:bg-gray-800/10">
                             <Briefcase className="w-4 h-4" />
@@ -84,19 +84,19 @@ export default function StepReview() {
 
                 {/* Description */}
                 <div>
-                    <h3 className="mb-3 font-bold text-gray-900 dark:text-white">{tx('jobs.new.stepReview.projectDescription', undefined, 'وصف المشروع')}</h3>
+                    <h3 className="mb-3 font-bold text-gray-900 dark:text-gray-100 dark:text-white">{tx('jobs.new.stepReview.projectDescription', undefined, 'وصف المشروع')}</h3>
                     <p className="whitespace-pre-line leading-relaxed text-gray-600 dark:text-gray-300">
                         {values.description}
                     </p>
                 </div>
 
                 {/* Details Grid */}
-                <div className="grid grid-cols-1 gap-6 rounded-[1.85rem] border border-primary-100/70 bg-white dark:bg-gray-800/80 p-6 shadow-sm dark:border-white/10 dark:bg-white dark:bg-gray-800/[0.04] md:grid-cols-2">
+                <div className="grid grid-cols-1 gap-6 rounded-[1.85rem] border border-primary-100/70 bg-white dark:bg-gray-800/80 p-6 shadow-sm dark:border-white/10 dark:border-gray-800 dark:bg-white dark:bg-gray-800/[0.04] md:grid-cols-2">
                     <div className="space-y-4">
                         <div className="flex gap-4">
                             <DollarSign className="mt-1 h-5 w-5 text-gray-400 dark:text-gray-500 dark:text-gray-400" />
                             <div>
-                                <h4 className="font-bold text-gray-900 dark:text-white">{tx('jobs.new.stepReview.budget', undefined, 'الميزانية')}</h4>
+                                <h4 className="font-bold text-gray-900 dark:text-gray-100 dark:text-white">{tx('jobs.new.stepReview.budget', undefined, 'الميزانية')}</h4>
                                 <p className="text-gray-600 dark:text-gray-400">
                                     {values.job_type === 'fixed_price'
                                         ? tx('jobs.new.stepReview.budgetRange', { min: values.budget_min ?? 0, max: values.budget_max ?? 0 }, `${values.budget_min ?? 0} - ${values.budget_max ?? 0} د.ت`)
@@ -109,7 +109,7 @@ export default function StepReview() {
                         <div className="flex gap-4">
                             <Briefcase className="mt-1 h-5 w-5 text-gray-400 dark:text-gray-500 dark:text-gray-400" />
                             <div>
-                                <h4 className="font-bold text-gray-900 dark:text-white">{tx('jobs.new.stepReview.experienceLevel', undefined, 'المستوى المطلوب')}</h4>
+                                <h4 className="font-bold text-gray-900 dark:text-gray-100 dark:text-white">{tx('jobs.new.stepReview.experienceLevel', undefined, 'المستوى المطلوب')}</h4>
                                 <p className="text-gray-600 dark:text-gray-400">{values.experience_level ? experienceMap[values.experience_level] : '—'}</p>
                             </div>
                         </div>
@@ -119,7 +119,7 @@ export default function StepReview() {
                         <div className="flex gap-4">
                             <Calendar className="mt-1 h-5 w-5 text-gray-400 dark:text-gray-500 dark:text-gray-400" />
                             <div>
-                                <h4 className="font-bold text-gray-900 dark:text-white">{tx('jobs.new.stepReview.projectDuration', undefined, 'مدة المشروع')}</h4>
+                                <h4 className="font-bold text-gray-900 dark:text-gray-100 dark:text-white">{tx('jobs.new.stepReview.projectDuration', undefined, 'مدة المشروع')}</h4>
                                 <p className="text-gray-600 dark:text-gray-400">{values.duration ? durationMap[values.duration] : '—'}</p>
                             </div>
                         </div>
@@ -127,7 +127,7 @@ export default function StepReview() {
                         <div className="flex gap-4">
                             <Calendar className="mt-1 h-5 w-5 text-gray-400 dark:text-gray-500 dark:text-gray-400" />
                             <div>
-                                <h4 className="font-bold text-gray-900 dark:text-white">{tx('jobs.new.stepReview.deadline', undefined, 'الموعد النهائي')}</h4>
+                                <h4 className="font-bold text-gray-900 dark:text-gray-100 dark:text-white">{tx('jobs.new.stepReview.deadline', undefined, 'الموعد النهائي')}</h4>
                                 <p className="text-gray-600 dark:text-gray-400">{values.deadline ? new Date(values.deadline).toLocaleDateString(language === 'ar' ? 'ar-TN' : language === 'fr' ? 'fr-FR' : 'en-US') : '—'}</p>
                             </div>
                         </div>
@@ -135,7 +135,7 @@ export default function StepReview() {
                         <div className="flex gap-4">
                             <MapPin className="mt-1 h-5 w-5 text-gray-400 dark:text-gray-500 dark:text-gray-400" />
                             <div>
-                                <h4 className="font-bold text-gray-900 dark:text-white">{tx('jobs.new.stepReview.visibility', undefined, 'الموقع')}</h4>
+                                <h4 className="font-bold text-gray-900 dark:text-gray-100 dark:text-white">{tx('jobs.new.stepReview.visibility', undefined, 'الموقع')}</h4>
                                 <p className="text-gray-600 dark:text-gray-400">{values.visibility === 'invite_only' ? tx('jobs.new.stepReview.inviteOnlyVisibility', undefined, 'خاص (دعوة فقط)') : tx('jobs.new.stepReview.publicVisibility', undefined, 'عام (الجميع)')}</p>
                             </div>
                         </div>
@@ -143,20 +143,20 @@ export default function StepReview() {
                 </div>
 
                 {values.job_type === 'hourly' && values.estimated_hours ? (
-                    <div className="rounded-[1.5rem] border border-primary-100/70 bg-primary-50/60 px-4 py-3 text-sm text-primary-700 dark:border-white/10 dark:bg-white dark:bg-gray-800/[0.04] dark:text-primary-200">
+                    <div className="rounded-[1.5rem] border border-primary-100/70 bg-primary-50/60 px-4 py-3 text-sm text-primary-700 dark:border-white/10 dark:border-gray-800 dark:bg-white dark:bg-gray-800/[0.04] dark:text-primary-200">
                         {tx('jobs.new.stepReview.estimatedHours', { hours: values.estimated_hours }, `${values.estimated_hours} estimated hours per week`)}
                     </div>
                 ) : null}
 
                 {/* Visibility */}
-                <div className="rounded-[1.85rem] border border-primary-100/70 bg-white dark:bg-gray-800/80 p-6 shadow-sm dark:border-white/10 dark:bg-white dark:bg-gray-800/[0.04]">
+                <div className="rounded-[1.85rem] border border-primary-100/70 bg-white dark:bg-gray-800/80 p-6 shadow-sm dark:border-white/10 dark:border-gray-800 dark:bg-white dark:bg-gray-800/[0.04]">
                     <div className="flex items-center gap-3">
                         <div className="rounded-lg bg-primary-50 p-2 text-primary-600 dark:bg-primary-900/20 dark:text-primary-300">
                             {values.visibility === 'public' ? <Globe className="w-5 h-5" /> : <Lock className="w-5 h-5" />}
                         </div>
                         <div>
                             <p className="text-sm text-gray-500 dark:text-gray-400">{tx('jobs.new.stepReview.privacyLevel', undefined, 'مستوى الخصوصية')}</p>
-                            <p className="font-medium text-gray-900 dark:text-white">
+                            <p className="font-medium text-gray-900 dark:text-gray-100 dark:text-white">
                                 {values.visibility === 'public'
                                     ? tx('jobs.new.stepVisibility.publicTitle', undefined, 'عام للجميع')
                                     : tx('jobs.new.stepVisibility.inviteOnlyTitle', undefined, 'دعوة فقط')}
@@ -167,7 +167,7 @@ export default function StepReview() {
 
                 {/* Attachments */}
                 {values.attachments_files && values.attachments_files.length > 0 && (
-                    <div className="rounded-[1.85rem] border border-primary-100/70 bg-white dark:bg-gray-800/80 p-6 shadow-sm dark:border-white/10 dark:bg-white dark:bg-gray-800/[0.04]">
+                    <div className="rounded-[1.85rem] border border-primary-100/70 bg-white dark:bg-gray-800/80 p-6 shadow-sm dark:border-white/10 dark:border-gray-800 dark:bg-white dark:bg-gray-800/[0.04]">
                         <div className="flex items-start gap-3">
                             <div className="rounded-lg bg-gray-50 dark:bg-gray-900 p-2 text-gray-500 dark:text-gray-400 dark:bg-white dark:bg-gray-800/10 dark:text-gray-400">
                                 <File className="w-5 h-5" />
@@ -188,8 +188,8 @@ export default function StepReview() {
                 )}
 
                 {/* Skills */}
-                <div className="rounded-[1.85rem] border border-primary-100/70 bg-white dark:bg-gray-800/80 p-6 shadow-sm dark:border-white/10 dark:bg-white dark:bg-gray-800/[0.04]">
-                    <h3 className="mb-3 font-bold text-gray-900 dark:text-white">{tx('jobs.new.stepReview.requiredSkills', undefined, 'المهارات المطلوبة')}</h3>
+                <div className="rounded-[1.85rem] border border-primary-100/70 bg-white dark:bg-gray-800/80 p-6 shadow-sm dark:border-white/10 dark:border-gray-800 dark:bg-white dark:bg-gray-800/[0.04]">
+                    <h3 className="mb-3 font-bold text-gray-900 dark:text-gray-100 dark:text-white">{tx('jobs.new.stepReview.requiredSkills', undefined, 'المهارات المطلوبة')}</h3>
                     <div className="flex flex-wrap gap-2">
                         {values.required_skills?.map((skill) => (
                             <span key={skill.id} className="rounded-full bg-primary-50 px-3 py-1 text-sm font-medium text-primary-700 dark:bg-primary-900/20 dark:text-primary-300">

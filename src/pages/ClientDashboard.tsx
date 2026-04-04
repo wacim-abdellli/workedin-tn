@@ -408,11 +408,11 @@ function ClientDashboardPage() {
                             >
                                 {/* Decorative elements */}
                                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/30 to-transparent" />
-                                <div className="pointer-events-none absolute -right-12 -top-12 h-40 w-40 rounded-full bg-white/20 blur-3xl" />
+                                <div className="pointer-events-none absolute -right-12 -top-12 h-40 w-40 rounded-full bg-white dark:bg-gray-800/20 blur-3xl" />
                                 <div className="pointer-events-none absolute -bottom-12 -left-12 h-40 w-40 rounded-full bg-black/10 blur-3xl" />
                                 
                                 <div className="relative z-10">
-                                    <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-full border border-white/30 bg-white/20 shadow-inner backdrop-blur-md">
+                                    <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-full border border-white/30 dark:border-gray-800/30 bg-white dark:bg-gray-800/20 shadow-inner backdrop-blur-md">
                                         <Plus className="h-6 w-6 text-dark-950" />
                                     </div>
                                     <h3 className="mb-2 font-display text-[1.75rem] font-bold tracking-tight text-dark-950 leading-tight">

@@ -216,7 +216,7 @@ function FreelancerCard({
                   isActive={isSaved}
                   variant={isSaved ? 'danger' : 'outline'}
                   size="md"
-                  className={cn('rounded-xl', !isSaved && 'border-gray-200 dark:border-dark-600')}
+                  className={cn('rounded-xl', !isSaved && 'border-gray-200 dark:border-gray-700 dark:border-dark-600')}
                 />
               ) : null}
               <Button

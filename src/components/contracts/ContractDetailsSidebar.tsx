@@ -75,7 +75,7 @@ export default function ContractDetailsSidebar({
                     currentStatus === 'disputed' ? 'bg-yellow-50/50' : 'bg-gray-50 dark:bg-gray-900'
                 }`}>
                 <div className="flex items-center justify-between mb-2">
-                    <span className="font-bold text-lg text-gray-900 dark:text-white">
+                    <span className="font-bold text-lg text-gray-900 dark:text-gray-100 dark:text-white">
                         {contract.job?.title}
                     </span>
                     <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium border ${currentStatus === 'active' ? 'bg-blue-100 text-blue-700 border-blue-200' :
@@ -104,7 +104,7 @@ export default function ContractDetailsSidebar({
 
             {/* 2. Actions Section */}
             <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-                <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">{tx('contract.requiredActions', undefined, 'Required actions')}</h3>
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 dark:text-white mb-3">{tx('contract.requiredActions', undefined, 'Required actions')}</h3>
                 <div className="space-y-3">
                     {/* Freelancer: Deliver */}
                     {userRole === 'freelancer' && currentStatus === 'active' && (
@@ -236,7 +236,7 @@ export default function ContractDetailsSidebar({
                         )}
                     </div>
                     <div>
-                        <p className="font-medium text-sm text-gray-900 dark:text-white">{otherParty?.full_name}</p>
+                        <p className="font-medium text-sm text-gray-900 dark:text-gray-100 dark:text-white">{otherParty?.full_name}</p>
                         <p className="text-xs text-green-600 flex items-center gap-1">
                             <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
                             {tx('contract.onlineNow', undefined, 'Online now')}

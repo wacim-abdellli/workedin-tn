@@ -34,7 +34,7 @@ interface OverviewStats {
 
 function StatCard({ icon: Icon, label, value, tone }: { icon: React.ElementType; label: string; value: number | string; tone?: string }) {
     return (
-        <div className="card border-white/50 dark:border-white/12 bg-white/88 dark:bg-slate-950/65 backdrop-blur-xl shadow-[0_24px_60px_-28px_rgba(14,65,227,0.42)] hover:-translate-y-0.5 transition-all duration-300">
+        <div className="card border-white/50 dark:border-white/12 bg-white dark:bg-gray-800/88 backdrop-blur-xl shadow-[0_24px_60px_-28px_rgba(14,65,227,0.42)] hover:-translate-y-0.5 transition-all duration-300">
             <div className="flex items-start justify-between">
                 <div className="w-12 h-12 rounded-2xl flex items-center justify-center shadow-md" style={{ background: tone || 'var(--workspace-primary)' }}><Icon className="w-6 h-6 text-white" /></div>
             </div>
@@ -148,7 +148,7 @@ export default function OverviewTab() {
                                  <span className="text-lg font-bold text-yellow-700 dark:text-yellow-300">{s.pendingVerifications}</span>
                              </div>
                              {s.recentVerificationRequests.map((request) => (
-                                 <div key={request.id} className="rounded-xl border border-white/40 dark:border-white/10 bg-white/70 dark:bg-slate-900/50 px-4 py-3">
+                                 <div key={request.id} className="rounded-xl border border-white/40 dark:border-white/10 dark:border-gray-800 bg-white dark:bg-gray-800/70 px-4 py-3">
                                      <p className="font-medium text-foreground">{request.profile?.full_name || tx('dashboard.admin.overview.user', undefined, 'User')}</p>
                                      <p className="text-sm text-muted">{request.profile?.email || ''}</p>
                                      <p className="mt-1 text-xs text-muted">{new Date(request.submitted_at).toLocaleString(language === 'ar' ? 'ar-TN' : language === 'fr' ? 'fr-FR' : 'en-US')}</p>

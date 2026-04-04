@@ -33,7 +33,7 @@ export default function SimilarJobCard({ job, onClick }: SimilarJobCardProps) {
     return (
         <div
             onClick={onClick}
-            className="group p-4 bg-gray-50 dark:bg-dark-800/50 rounded-xl cursor-pointer hover:bg-white dark:bg-gray-800 dark:hover:bg-dark-800 hover:shadow-md transition-all duration-300 border border-transparent hover:border-primary-100 dark:hover:border-primary-900/30"
+            className="group p-4 bg-gray-50 dark:bg-gray-900 dark:bg-dark-800/50 rounded-xl cursor-pointer hover:bg-white dark:bg-gray-800 dark:hover:bg-dark-800 hover:shadow-md transition-all duration-300 border border-transparent hover:border-primary-100 dark:hover:border-primary-900/30"
         >
             <div className="flex justify-between items-start mb-2">
                 <span className="text-xs font-medium text-primary-600 bg-primary-50 dark:bg-primary-900/20 px-2 py-0.5 rounded-full">
