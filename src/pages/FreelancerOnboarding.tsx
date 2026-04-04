@@ -95,6 +95,21 @@ function FreelancerOnboarding() {
         setSelectedSkills(existingSkills);
     }, [freelancerProfile, profile, step1Form, step2Form]);
 
+    // Block navigation away from onboarding until complete
+    useEffect(() => {
+        const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+            e.preventDefault();
+            e.returnValue = '';
+            return '';
+        };
+
+        window.addEventListener('beforeunload', handleBeforeUnload);
+
+        return () => {
+            window.removeEventListener('beforeunload', handleBeforeUnload);
+        };
+    }, []);
+
     const totalSteps = 2;
 
     const getSkillName = (skill: Skill) => {

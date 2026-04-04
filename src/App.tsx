@@ -31,6 +31,7 @@ import { WorkspaceRoute } from './components/routing/WorkspaceRoute';
 import { NotificationsProvider } from './contexts/NotificationsContext';
 import { useWorkspaceStore } from './lib/workspaceState';
 import { useSessionTimeout } from './hooks/useSessionTimeout';
+import { isWorkspaceReady, getWorkspaceOnboardingPath, getInitialWorkspace } from './lib/workspaceRoutes';
 
 // Lazy Load Pages
 import SkipLinks from './components/layout/SkipLinks';
@@ -82,8 +83,9 @@ const Notifications = lazy(() => import('./pages/Notifications'));
 
 // Protected Route wrapper
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, isFullyReady } = useAuth();
+  const { isAuthenticated, isFullyReady, profile, freelancerProfile } = useAuth();
   const location = useLocation();
+  const activeWorkspace = useWorkspaceStore((state) => state.activeWorkspace);
 
   useSessionTimeout();
 
@@ -99,6 +101,23 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace state={{ from: location }} />;
+  }
+
+  // Skip onboarding check if user is already on an onboarding page
+  const isOnOnboardingPage = location.pathname.startsWith('/onboarding/');
+  
+  if (!isOnOnboardingPage) {
+    // Determine which workspace to check
+    const workspace = activeWorkspace || getInitialWorkspace(profile, freelancerProfile);
+    
+    // Check if onboarding is complete for the active workspace
+    const onboardingComplete = isWorkspaceReady(profile, freelancerProfile, workspace);
+    
+    if (!onboardingComplete) {
+      // Redirect to onboarding if not complete
+      const onboardingPath = getWorkspaceOnboardingPath(workspace);
+      return <Navigate to={onboardingPath} replace state={{ from: location }} />;
+    }
   }
 
   return <>{children}</>;
