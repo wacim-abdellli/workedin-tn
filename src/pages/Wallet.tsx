@@ -175,12 +175,14 @@ export default function Wallet() {
       <div className="page-shell-content">
         
         {/* SECTION A: Header with Balance */}
-        <div className="mb-6 bg-gradient-to-r from-purple-600 to-violet-600 rounded-2xl p-6 text-white shadow-lg">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="mb-6 bg-gradient-to-br from-indigo-600 via-purple-600 to-violet-700 dark:from-indigo-900/90 dark:via-purple-900/80 dark:to-violet-900/80 rounded-2xl p-8 text-white shadow-xl shadow-purple-500/20 dark:shadow-none ring-1 ring-black/5 dark:ring-white/10 relative overflow-hidden">
+          <div className="absolute top-0 right-0 -mt-4 -mr-4 w-48 h-48 bg-white/10 rounded-full blur-3xl pointer-events-none"></div>
+          <div className="absolute bottom-0 left-0 -mb-4 -ml-4 w-32 h-32 bg-black/10 rounded-full blur-2xl pointer-events-none"></div>
+          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 rounded-xl bg-white dark:bg-gray-800/20 flex items-center justify-center">
-                  <WalletIcon className="w-6 h-6" />
+                <div className="w-12 h-12 rounded-xl bg-white/20 dark:bg-white/10 backdrop-blur-md flex items-center justify-center shadow-inner border border-white/20">
+                  <WalletIcon className="w-6 h-6 text-white" />
                 </div>
                 <h1 className="text-2xl font-bold">{t.wallet?.title || 'My Wallet'}</h1>
               </div>

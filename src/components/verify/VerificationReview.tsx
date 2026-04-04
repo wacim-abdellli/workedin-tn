@@ -37,7 +37,7 @@ export default function VerificationReview({
             </h2>
 
             {/* Readiness score */}
-            <div className="mb-4 flex items-center justify-between rounded-xl border border-white/10 dark:border-gray-800 bg-white dark:bg-gray-800/50 px-4 py-2 text-xs dark:bg-white dark:bg-gray-800/5">
+            <div className="mb-4 flex items-center justify-between rounded-xl border border-white/10 dark:border-gray-800 bg-white dark:bg-gray-800/50 px-4 py-2 text-xs dark:bg-white/5">
                 <span className="font-medium text-gray-700 dark:text-gray-300 dark:text-gray-200">{tx('verifyIdentity.review.readiness', undefined, 'Readiness score')}</span>
                 <span className="font-semibold text-primary-700 dark:text-primary-300">{completedCount}/{checklist.length}</span>
             </div>

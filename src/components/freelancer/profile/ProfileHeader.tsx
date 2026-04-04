@@ -93,7 +93,7 @@ export default function ProfileHeader({
 
                             {/* Tags Section */}
                             <div className="mt-8 flex flex-wrap justify-center sm:justify-start gap-3">
-                                <span className="inline-flex items-center gap-2 rounded-full bg-slate-100/80 px-4 py-2 text-sm font-medium text-slate-700 shadow-sm backdrop-blur-md dark:bg-white dark:bg-gray-800/5 dark:text-slate-300">
+                                <span className="inline-flex items-center gap-2 rounded-full bg-slate-100/80 px-4 py-2 text-sm font-medium text-slate-700 shadow-sm backdrop-blur-md dark:bg-white/5 dark:text-slate-300">
                                     <MapPin className="h-4 w-4 text-rose-500" />
                                     {freelancer.location}
                                 </span>

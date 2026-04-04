@@ -170,7 +170,7 @@ export default function FindFreelancers() {
                     value={searchQuery}
                     onChange={(event) => setSearchQuery(event.target.value)}
                     placeholder={copy.searchPlaceholder}
-                    className="block w-full rounded-2xl border border-white/70 bg-white dark:bg-gray-800/85 p-4 pe-11 text-sm text-[#191627] shadow-sm backdrop-blur transition-colors focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/30 dark:border-white/8 dark:bg-white dark:bg-gray-800/5 dark:text-white dark:focus:ring-brand/20"
+                    className="block w-full rounded-2xl border border-white/70 bg-white dark:bg-gray-800/85 p-4 pe-11 text-sm text-[#191627] shadow-sm backdrop-blur transition-colors focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/30 dark:border-white/8 dark:bg-white/5 dark:text-white dark:focus:ring-brand/20"
                 />
             </div>
 
@@ -234,7 +234,7 @@ export default function FindFreelancers() {
                                 className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
                                     active
                                         ? 'bg-brand text-brand-text shadow-lg shadow-brand/25'
-                                        : 'border border-white/70 bg-white dark:bg-gray-800/80 text-[#5f5974] hover:border-brand hover:text-brand dark:border-white/8 dark:bg-white dark:bg-gray-800/5 dark:text-[#b9b4c8] dark:hover:border-brand/30 dark:hover:text-brand-mid'
+                                        : 'border border-white/70 bg-white dark:bg-gray-800/80 text-[#5f5974] hover:border-brand hover:text-brand dark:border-white/8 dark:bg-white/5 dark:text-[#b9b4c8] dark:hover:border-brand/30 dark:hover:text-brand-mid'
                                 }`}
                             >
                                 {skill}
@@ -251,13 +251,13 @@ export default function FindFreelancers() {
                         type="number"
                         value={rateRange[0]}
                         onChange={(event) => setRateRange([Number(event.target.value), rateRange[1]])}
-                        className="rounded-2xl border border-white/70 bg-white dark:bg-gray-800/80 px-3 py-3 text-center text-sm shadow-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/30 dark:border-white/8 dark:bg-white dark:bg-gray-800/5 dark:focus:ring-brand/20"
+                        className="rounded-2xl border border-white/70 bg-white dark:bg-gray-800/80 px-3 py-3 text-center text-sm shadow-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/30 dark:border-white/8 dark:bg-white/5 dark:focus:ring-brand/20"
                     />
                     <input
                         type="number"
                         value={rateRange[1]}
                         onChange={(event) => setRateRange([rateRange[0], Number(event.target.value)])}
-                        className="rounded-2xl border border-white/70 bg-white dark:bg-gray-800/80 px-3 py-3 text-center text-sm shadow-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/30 dark:border-white/8 dark:bg-white dark:bg-gray-800/5 dark:focus:ring-brand/20"
+                        className="rounded-2xl border border-white/70 bg-white dark:bg-gray-800/80 px-3 py-3 text-center text-sm shadow-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/30 dark:border-white/8 dark:bg-white/5 dark:focus:ring-brand/20"
                     />
                 </div>
             </div>
@@ -273,7 +273,7 @@ export default function FindFreelancers() {
                             className={`rounded-2xl px-3 py-2 text-sm font-semibold transition-colors ${
                                 minRating === rating
                                     ? 'bg-brand text-brand-text shadow-lg shadow-brand/20'
-                                    : 'border border-white/70 bg-white dark:bg-gray-800/80 text-[#5f5974] hover:border-brand hover:text-brand dark:border-white/8 dark:bg-white dark:bg-gray-800/5 dark:text-[#b9b4c8] dark:hover:border-brand/30 dark:hover:text-brand-mid'
+                                    : 'border border-white/70 bg-white dark:bg-gray-800/80 text-[#5f5974] hover:border-brand hover:text-brand dark:border-white/8 dark:bg-white/5 dark:text-[#b9b4c8] dark:hover:border-brand/30 dark:hover:text-brand-mid'
                             }`}
                         >
                             {rating === 0 ? tx('findFreelancers.all', undefined, 'All') : `${rating}+`}
@@ -357,7 +357,7 @@ export default function FindFreelancers() {
                             >
                                 <Grid className="h-5 w-5" />
                             </button>
-                            <div className="h-6 w-px bg-gray-200 dark:bg-gray-700 dark:bg-white dark:bg-gray-800/10" />
+                            <div className="h-6 w-px bg-gray-200 dark:bg-gray-700 dark:bg-white/10" />
                             <button
                                 type="button"
                                 onClick={() => setViewMode('list')}

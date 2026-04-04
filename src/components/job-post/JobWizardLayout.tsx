@@ -88,7 +88,7 @@ export default function JobWizardLayout({
                                 <span>{tx('jobs.new.wizard.progress', undefined, 'Progress')}</span>
                                 <span>{completion}%</span>
                             </div>
-                            <div className="h-2.5 overflow-hidden rounded-full bg-black/[0.06] dark:bg-white dark:bg-gray-800/10">
+                            <div className="h-2.5 overflow-hidden rounded-full bg-black/[0.06] dark:bg-white/10">
                                 <div className="h-full rounded-full bg-[linear-gradient(90deg,var(--workspace-primary),var(--brand-accent))] transition-[width] duration-300" style={{ width: `${completion}%` }} />
                             </div>
                             <div className="flex items-center justify-between text-xs" style={{ color: 'var(--text-muted)' }}>
@@ -131,7 +131,7 @@ export default function JobWizardLayout({
                                         ? 'text-white'
                                         : isCompleted
                                             ? 'bg-[color:var(--brand-accent)]/15 text-[color:var(--brand-accent)] dark:bg-[color:var(--brand-accent)]/15 dark:text-[#fbbf24]'
-                                        : 'bg-gray-100 text-gray-500 dark:text-gray-400 dark:bg-white dark:bg-gray-800/8 dark:text-[#8b8aa0]'}`}
+                                        : 'bg-gray-100 text-gray-500 dark:text-gray-400 dark:bg-white/8 dark:text-[#8b8aa0]'}`}
                                         style={isCurrent ? { background: 'linear-gradient(135deg, var(--workspace-primary), var(--workspace-primary-hover))' } : undefined}
                                     >
                                         {isCompleted ? <Check className="h-4 w-4" /> : step.id}

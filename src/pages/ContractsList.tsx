@@ -208,7 +208,7 @@ export default function ContractsList() {
                     <div className="mb-1 flex items-center justify-between">
                       <span className="text-xs text-gray-500 dark:text-gray-400">{tx('contracts.milestonesProgress', undefined, '1 of 3 milestones complete')}</span>
                     </div>
-                    <div className="h-1.5 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-white dark:bg-gray-800/5">
+                    <div className="h-1.5 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-white/5">
                       <div className={`h-full ${progressIndicatorColor}`} style={{ width: `${progressPercentage}%` }} />
                     </div>
                   </div>

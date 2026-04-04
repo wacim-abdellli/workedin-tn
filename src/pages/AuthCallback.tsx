@@ -181,7 +181,7 @@ const AuthCallback = () => {
             className="flex min-h-screen items-center justify-center bg-gradient-to-br from-[#f7f5ff] via-white to-primary-50 p-4 dark:from-[#09070f] dark:via-[#0f0d16] dark:to-primary-950"
             dir={dir}
         >
-            <div className="w-full max-w-md rounded-[28px] border border-white/70 bg-white dark:bg-gray-800/90 p-8 text-center shadow-2xl shadow-primary-500/10 backdrop-blur-xl dark:border-white/8 dark:bg-white dark:bg-gray-800/5 dark:shadow-none">
+            <div className="w-full max-w-md rounded-[28px] border border-white/70 bg-white dark:bg-gray-900 p-8 text-center shadow-2xl shadow-primary-500/10 backdrop-blur-xl dark:border-gray-800 dark:shadow-none">
                 <img
                     src="/logos/logo-social.svg"
                     alt="Khedma TN"

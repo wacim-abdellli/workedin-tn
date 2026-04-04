@@ -197,17 +197,6 @@ export default function Header() {
   const switchButtonLabel = `${switchActionLabel}: ${switchTargetLabel}`
   const freelancerVerified = Boolean(profile?.cin_verified || freelancerProfile?.cin_verified)
   const freelancerPending = false
-  const switchAccent = targetWorkspace === 'freelancer'
-    ? {
-        borderColor: '#8b5cf6',
-        background: 'linear-gradient(135deg, #8b5cf6, #6d28d9)',
-        color: '#ffffff',
-      }
-    : {
-        borderColor: '#d97706',
-        background: 'linear-gradient(135deg, #f59e0b, #d97706)',
-        color: '#ffffff',
-      }
   const logoSrc = isDark ? '/logos/logo-primary-dark.svg' : '/logos/logo-primary.svg'
   const freelancerBadge = freelancerVerified
     ? {
@@ -354,7 +343,7 @@ export default function Header() {
               <div className="relative" ref={langRef}>
                 <button
                   onClick={() => setLangOpen((open) => !open)}
-                  className="flex h-9 items-center gap-1.5 rounded-xl px-2.5 text-xs font-medium text-muted transition-colors hover:bg-surface"
+                  className="flex h-9 w-[68px] justify-center items-center gap-1.5 rounded-xl px-2.5 text-xs font-medium text-muted transition-colors hover:bg-surface shrink-0"
                 >
                   <span className="text-xs font-medium">{activeLang.country}</span>
                   <span className="text-xs font-medium text-gray-400">{activeLang.display}</span>
@@ -399,6 +388,22 @@ export default function Header() {
 
               {user ? (
                 <div className="flex items-center gap-1.5">
+                  {canQuickSwitch && (
+                    <button
+                      onClick={() => void handleQuickWorkspaceSwitch()}
+                      disabled={isSwitching}
+                      className={`hidden sm:flex h-9 items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold backdrop-blur-sm transition-all ${isSwitching ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-90'}`}
+                      style={{
+                        borderColor: isFreelancer ? 'rgba(245,158,11,0.3)' : 'rgba(139,92,246,0.3)',
+                        color: isFreelancer ? '#d97706' : '#8b5cf6',
+                        backgroundColor: isFreelancer ? 'rgba(245,158,11,0.08)' : 'rgba(139,92,246,0.08)',
+                      }}
+                      title={switchButtonLabel}
+                    >
+                      <Repeat2 className={`h-3 w-3 flex-shrink-0 ${isSwitching ? 'animate-spin' : ''}`} />
+                      <span className="hidden lg:inline-block w-[75px] truncate text-center">{switchTargetLabel}</span>
+                    </button>
+                  )}
                   <button
                     onClick={() => navigate('/messages')}
                     className="header-icon-btn relative"
@@ -455,16 +460,16 @@ export default function Header() {
                       </div>
                     )}
                     <span
-                      className="hidden max-w-[72px] truncate text-sm font-medium text-gray-700 dark:text-gray-300 dark:text-gray-200 md:block"
+                      className="hidden w-[80px] text-left truncate text-sm font-medium text-gray-700 dark:text-gray-200 md:block"
                     >
                       {firstName}
                     </span>
                     <span
-                        className="header-profile-chip flex-shrink-0 flex items-center gap-1.5"
+                        className="header-profile-chip flex-shrink-0 flex items-center justify-center gap-1.5 w-[85px]"
                       style={{
                         background: triggerWorkspaceBadge.background,
                         color: triggerWorkspaceBadge.color,
-                        padding: '5px 10px',
+                        padding: '5px 0',
                         borderRadius: '9999px',
                         fontSize: '0.7rem',
                         fontWeight: 600,
@@ -472,8 +477,8 @@ export default function Header() {
                         boxShadow: 'none',
                       }}
                     >
-                      <span className={`h-1.5 w-1.5 rounded-full ${triggerWorkspaceBadge.dotClassName}`} />
-                      {triggerWorkspaceBadge.label}
+                      <span className={`h-1.5 w-1.5 rounded-full shrink-0 ${triggerWorkspaceBadge.dotClassName}`} />
+                      <span className="truncate">{triggerWorkspaceBadge.label}</span>
                     </span>
                     <ChevronDown
                       className={`h-3 w-3 flex-shrink-0 text-gray-400 transition-transform duration-200 ${
@@ -501,26 +506,6 @@ export default function Header() {
                           </span>
                         </div>
                       </div>
-
-                      {canQuickSwitch ? (
-                        <button
-                          onClick={() => {
-                            void handleQuickWorkspaceSwitch()
-                            setUserMenuOpen(false)
-                          }}
-                          disabled={isSwitching}
-                          className={`mt-2.5 flex w-full items-center gap-3 rounded-[1rem] border px-3.5 py-3 text-left text-sm font-semibold transition-all duration-150 ${isSwitching ? 'cursor-not-allowed opacity-60' : 'hover:-translate-y-0.5'}`}
-                          style={{
-                            ...switchAccent,
-                            boxShadow: isSwitching ? 'none' : '0 14px 28px -18px rgba(0, 0, 0, 0.18)',
-                          }}
-                        >
-                          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white dark:bg-gray-800 dark:bg-gray-900/12 text-current">
-                            <Repeat2 className={`h-4 w-4 ${isSwitching ? 'animate-spin' : ''}`} />
-                          </span>
-                          <span className="min-w-0 flex-1 truncate">{switchButtonLabel}</span>
-                        </button>
-                      ) : null}
 
                       <div className="mt-2.5 space-y-1.5">
                         <button

@@ -107,7 +107,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
                 )}
             >
                 <div className="flex justify-center">
-                    <div className="mb-4 rounded-2xl bg-primary-50 p-4 text-primary-600 dark:bg-white dark:bg-gray-800/[0.06] dark:text-primary-300">
+                    <div className="mb-4 rounded-2xl bg-primary-50 p-4 text-primary-600 dark:white/[0.06] dark:text-primary-300">
                         <Upload className="h-8 w-8" />
                     </div>
                 </div>
@@ -139,7 +139,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
                     {value.map((file, index) => (
                         <div
                             key={index}
-                            className="flex items-center justify-between rounded-2xl border border-primary-100/70 bg-gray-50 dark:bg-gray-900/80 p-3 dark:border-white/10 dark:border-gray-800 dark:bg-white dark:bg-gray-800/[0.03]"
+                            className="flex items-center justify-between rounded-2xl border border-primary-100/70 bg-gray-50 dark:bg-gray-900/80 p-3 dark:border-white/10 dark:border-gray-800 dark:white/[0.03]"
                         >
                             <div className="flex items-center gap-3">
                                 <FileText className="w-5 h-5 text-gray-400" />

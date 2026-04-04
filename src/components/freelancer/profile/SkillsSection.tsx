@@ -15,7 +15,7 @@ export default function SkillsSection({ skills, language }: { skills: Skill[], l
                     {skills.map((skill) => (
                         <span
                             key={skill.id}
-                            className="px-4 py-2 rounded-xl text-sm font-medium cursor-default border border-[color:var(--workspace-primary)]/10 bg-[color:var(--workspace-primary)]/[0.08] text-[var(--text-primary)] dark:border-white/10 dark:border-gray-800 dark:bg-white dark:bg-gray-800/[0.04]"
+                            className="px-4 py-2 rounded-xl text-sm font-medium cursor-default border border-[color:var(--workspace-primary)]/10 bg-[color:var(--workspace-primary)]/[0.08] text-[var(--text-primary)] dark:border-white/10 dark:border-gray-800 dark:white/[0.04]"
                         >
                             {language === 'ar' ? skill.name_ar : language === 'fr' ? skill.name_fr : skill.name_en}
                         </span>

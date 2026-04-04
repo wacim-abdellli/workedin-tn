@@ -12,7 +12,7 @@ export default function StepBudget() {
     return (
         <div className="space-y-8">
             <div className="space-y-4">
-                <div className="inline-flex items-center gap-2 rounded-full border border-primary-100 bg-primary-50/70 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-primary-700 dark:border-white/10 dark:border-gray-800 dark:bg-white dark:bg-gray-800/[0.04] dark:text-primary-200">
+                <div className="inline-flex items-center gap-2 rounded-full border border-primary-100 bg-primary-50/70 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-primary-700 dark:border-white/10 dark:border-gray-800 dark:white/[0.04] dark:text-primary-200">
                     <DollarSign className="w-3.5 h-3.5" />
                     {tx('jobs.new.stepBudget.badge', undefined, 'Pricing setup')}
                 </div>
@@ -40,7 +40,7 @@ export default function StepBudget() {
                         className="sr-only"
                     />
                     <div className="flex items-center gap-4 mb-2">
-                        <div className={`rounded-lg p-2 ${jobType === 'fixed_price' ? 'bg-primary-100 text-primary-600 dark:bg-primary-900/30 dark:text-primary-300' : 'bg-gray-100 text-gray-500 dark:text-gray-400 dark:bg-white dark:bg-gray-800/10 dark:text-gray-400'}`}>
+                        <div className={`rounded-lg p-2 ${jobType === 'fixed_price' ? 'bg-primary-100 text-primary-600 dark:bg-primary-900/30 dark:text-primary-300' : 'bg-gray-100 text-gray-500 dark:text-gray-400 dark:bg-white/10 dark:text-gray-400'}`}>
                             <DollarSign className="w-6 h-6" />
                         </div>
                         <span className="text-lg font-bold text-gray-900 dark:text-gray-100 dark:text-white">{tx('jobs.new.stepBudget.fixedPrice', undefined, 'سعر ثابت')}</span>
@@ -64,7 +64,7 @@ export default function StepBudget() {
                         className="sr-only"
                     />
                     <div className="flex items-center gap-4 mb-2">
-                        <div className={`rounded-lg p-2 ${jobType === 'hourly' ? 'bg-primary-100 text-primary-600 dark:bg-primary-900/30 dark:text-primary-300' : 'bg-gray-100 text-gray-500 dark:text-gray-400 dark:bg-white dark:bg-gray-800/10 dark:text-gray-400'}`}>
+                        <div className={`rounded-lg p-2 ${jobType === 'hourly' ? 'bg-primary-100 text-primary-600 dark:bg-primary-900/30 dark:text-primary-300' : 'bg-gray-100 text-gray-500 dark:text-gray-400 dark:bg-white/10 dark:text-gray-400'}`}>
                             <Clock className="w-6 h-6" />
                         </div>
                         <span className="text-lg font-bold text-gray-900 dark:text-gray-100 dark:text-white">{tx('jobs.new.stepBudget.hourly', undefined, 'بالساعة')}</span>
@@ -76,7 +76,7 @@ export default function StepBudget() {
             </div>
 
             {/* Budget Inputs */}
-            <div className="rounded-[1.8rem] border border-primary-100/70 bg-white dark:bg-gray-800/80 p-6 shadow-sm dark:border-white/10 dark:border-gray-800 dark:bg-white dark:bg-gray-800/[0.04]">
+            <div className="rounded-[1.8rem] border border-primary-100/70 bg-white dark:bg-gray-800/80 p-6 shadow-sm dark:border-white/10 dark:border-gray-800 dark:white/[0.04]">
                 {jobType === 'fixed_price' ? (
                     <div className="space-y-4">
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{tx('jobs.new.stepBudget.estimatedBudget', undefined, 'ميزانية المشروع التقديرية (د.ت)')}</label>
@@ -121,7 +121,7 @@ export default function StepBudget() {
 
             {/* Additional Info */}
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-                <div className="space-y-3 rounded-[1.6rem] border border-primary-100/70 bg-white dark:bg-gray-800/80 p-5 shadow-sm dark:border-white/10 dark:border-gray-800 dark:bg-white dark:bg-gray-800/[0.04]">
+                <div className="space-y-3 rounded-[1.6rem] border border-primary-100/70 bg-white dark:bg-gray-800/80 p-5 shadow-sm dark:border-white/10 dark:border-gray-800 dark:white/[0.04]">
                     <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                         <Calendar className="h-5 w-5 text-gray-500 dark:text-gray-400" />
                         {tx('jobs.new.stepBudget.duration', undefined, 'مدة المشروع')}
@@ -141,7 +141,7 @@ export default function StepBudget() {
                     )}
                 </div>
 
-                <div className="space-y-3 rounded-[1.6rem] border border-primary-100/70 bg-white dark:bg-gray-800/80 p-5 shadow-sm dark:border-white/10 dark:border-gray-800 dark:bg-white dark:bg-gray-800/[0.04]">
+                <div className="space-y-3 rounded-[1.6rem] border border-primary-100/70 bg-white dark:bg-gray-800/80 p-5 shadow-sm dark:border-white/10 dark:border-gray-800 dark:white/[0.04]">
                     <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                         <Calendar className="h-5 w-5 text-gray-500 dark:text-gray-400" />
                         {tx('jobs.new.stepBudget.deadline', undefined, 'الموعد النهائي')}
@@ -154,7 +154,7 @@ export default function StepBudget() {
                     />
                 </div>
 
-                <div className="space-y-3 rounded-[1.6rem] border border-primary-100/70 bg-white dark:bg-gray-800/80 p-5 shadow-sm dark:border-white/10 dark:border-gray-800 dark:bg-white dark:bg-gray-800/[0.04]">
+                <div className="space-y-3 rounded-[1.6rem] border border-primary-100/70 bg-white dark:bg-gray-800/80 p-5 shadow-sm dark:border-white/10 dark:border-gray-800 dark:white/[0.04]">
                     <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                         <TrendingUp className="h-5 w-5 text-gray-500 dark:text-gray-400" />
                         {tx('jobs.new.stepBudget.experienceLevel', undefined, 'مستوى الخبرة المطلوب')}

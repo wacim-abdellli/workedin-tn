@@ -50,8 +50,8 @@ export default function ProfileSettings() {
     const nextSetupLabel = !workspaceReady
         ? t.auth.accountPanel.completeSetup
         : needsIdentityVerification
-            ? tx('settings.verifyIdentity', undefined, 'Verify your identity')
-            : tx('settings.completeProfile', undefined, 'Complete your profile');
+            ? tx('settings.setupStatus.verifyIdentity', undefined, 'Verify your identity')
+            : tx('settings.setupStatus.completeProfile', undefined, 'Complete your profile');
 
     const showSecondarySetupChip = nextSetupPath !== null && nextSetupPath !== '/verify-identity';
 

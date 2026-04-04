@@ -255,7 +255,7 @@ export default function VerificationsTab() {
                                 <div key={v.id} className="border border-gray-200 dark:border-gray-700 dark:border-white/10 dark:border-gray-800 rounded-xl overflow-hidden">
                                     <div className="flex items-center justify-between p-4 bg-white dark:bg-gray-800/60 ">
                                             <div className="flex items-center gap-4">
-                                            <div className="w-12 h-12 rounded-xl bg-gray-200 dark:bg-gray-700 dark:bg-white dark:bg-gray-800/10 flex items-center justify-center shrink-0 overflow-hidden">
+                                            <div className="w-12 h-12 rounded-xl bg-gray-200 dark:bg-gray-700 dark:bg-white/10 flex items-center justify-center shrink-0 overflow-hidden">
                                                 {v.profile?.avatar_url ? (
                                                     <img src={v.profile.avatar_url} alt={v.profile.full_name || 'user'} className="w-full h-full object-cover" />
                                                 ) : (
@@ -316,7 +316,7 @@ export default function VerificationsTab() {
                                                          <img src={v.front_image_url} alt="front" className="w-full rounded-lg object-cover aspect-video border border-gray-200 dark:border-gray-700 dark:border-white/10 dark:border-gray-800 hover:opacity-90 transition" />
                                                      </a>
                                                  ) : (
-                                                     <div className="w-full rounded-lg aspect-video bg-gray-100 dark:bg-white dark:bg-gray-800/10 flex items-center justify-center text-muted text-sm">{tx('dashboard.admin.verification.noImage', undefined, 'No image')}</div>
+                                                     <div className="w-full rounded-lg aspect-video bg-gray-100 dark:bg-white/10 flex items-center justify-center text-muted text-sm">{tx('dashboard.admin.verification.noImage', undefined, 'No image')}</div>
                                                  )}
                                              </div>
                                             <div>
@@ -326,7 +326,7 @@ export default function VerificationsTab() {
                                                          <img src={v.back_image_url} alt="back" className="w-full rounded-lg object-cover aspect-video border border-gray-200 dark:border-gray-700 dark:border-white/10 dark:border-gray-800 hover:opacity-90 transition" />
                                                      </a>
                                                  ) : (
-                                                     <div className="w-full rounded-lg aspect-video bg-gray-100 dark:bg-white dark:bg-gray-800/10 flex items-center justify-center text-muted text-sm">{tx('dashboard.admin.verification.noImage', undefined, 'No image')}</div>
+                                                     <div className="w-full rounded-lg aspect-video bg-gray-100 dark:bg-white/10 flex items-center justify-center text-muted text-sm">{tx('dashboard.admin.verification.noImage', undefined, 'No image')}</div>
                                                  )}
                                              </div>
                                             <div>
@@ -336,7 +336,7 @@ export default function VerificationsTab() {
                                                          <img src={v.selfie_url} alt="selfie" className="w-full rounded-lg object-cover aspect-video border border-gray-200 dark:border-gray-700 dark:border-white/10 dark:border-gray-800 hover:opacity-90 transition" />
                                                      </a>
                                                  ) : (
-                                                     <div className="w-full rounded-lg aspect-video bg-gray-100 dark:bg-white dark:bg-gray-800/10 flex items-center justify-center text-muted text-sm">{tx('dashboard.admin.verification.noImage', undefined, 'No image')}</div>
+                                                     <div className="w-full rounded-lg aspect-video bg-gray-100 dark:bg-white/10 flex items-center justify-center text-muted text-sm">{tx('dashboard.admin.verification.noImage', undefined, 'No image')}</div>
                                                  )}
                                              </div>
                                         </div>

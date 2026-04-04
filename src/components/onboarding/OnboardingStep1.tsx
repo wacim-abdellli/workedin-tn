@@ -35,7 +35,7 @@ export default function OnboardingStep1({
     return (
         <div className="space-y-8">
             <div className="space-y-3">
-                <div className="inline-flex items-center gap-2 rounded-full border border-primary-100 bg-primary-50/70 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-primary-700 dark:border-white/10 dark:border-gray-800 dark:bg-white dark:bg-gray-800/[0.04] dark:text-primary-200">
+                <div className="inline-flex items-center gap-2 rounded-full border border-primary-100 bg-primary-50/70 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-primary-700 dark:border-white/10 dark:border-gray-800 dark:white/[0.04] dark:text-primary-200">
                     <User className="w-3.5 h-3.5" />
                     {t.settings.profile}
                 </div>
@@ -49,7 +49,7 @@ export default function OnboardingStep1({
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                 {/* Avatar Upload */}
-                <div className="flex flex-col items-center rounded-[1.6rem] border border-primary-100/70 bg-primary-50/40 p-6 dark:border-white/10 dark:border-gray-800 dark:bg-white dark:bg-gray-800/[0.03]">
+                <div className="flex flex-col items-center rounded-[1.6rem] border border-primary-100/70 bg-primary-50/40 p-6 dark:border-white/10 dark:border-gray-800 dark:white/[0.03]">
                     <div className="relative group">
                         <div
                             className="w-28 h-28 rounded-full bg-gray-100 dark:bg-gray-800 dark:bg-dark-800 flex items-center justify-center overflow-hidden cursor-pointer border-4 border-white dark:border-dark-700 shadow-xl group-hover:shadow-2xl transition-all"

@@ -52,7 +52,7 @@ class ErrorBoundaryInner extends Component<Props & { tx: (key: string, params?: 
             return (
                 <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#f7f5ff] p-4 dark:bg-[#09070f]">
                     <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(139,92,246,0.16),transparent_28%),radial-gradient(circle_at_bottom_right,rgba(245,158,11,0.12),transparent_24%)]" />
-                    <div className="relative w-full max-w-xl rounded-[32px] border border-white/60 bg-white dark:bg-gray-800/85 p-8 text-center shadow-2xl shadow-primary-500/10 backdrop-blur-xl dark:border-white/8 dark:bg-white dark:bg-gray-800/5 dark:shadow-none">
+                    <div className="relative w-full max-w-xl rounded-[32px] border border-white/60 bg-white dark:bg-gray-800/85 p-8 text-center shadow-2xl shadow-primary-500/10 backdrop-blur-xl dark:border-white/8 dark:bg-white/5 dark:shadow-none">
                         <img
                             src="/logos/logo-social.svg"
                             alt="Khedma TN"

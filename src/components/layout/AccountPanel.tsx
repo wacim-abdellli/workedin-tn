@@ -289,7 +289,7 @@ export default function AccountPanel({
                 <button
                   type="button"
                   onClick={onClose}
-                  className="rounded-full border border-gray-200 dark:border-gray-700 dark:border-gray-800 bg-white dark:bg-gray-800 dark:bg-gray-900 p-2 text-gray-500 dark:text-gray-400 transition-colors hover:bg-gray-50 dark:bg-gray-900 dark:border-white/10 dark:bg-white dark:bg-gray-800 dark:bg-gray-900/5 dark:text-gray-400 dark:hover:bg-white dark:bg-gray-800 dark:bg-gray-900/10"
+                  className="rounded-full border border-gray-200 dark:border-gray-700 dark:border-gray-800 bg-white dark:bg-gray-800 dark:bg-gray-900 p-2 text-gray-500 dark:text-gray-400 transition-colors hover:bg-gray-50 dark:bg-gray-900 dark:border-white/10 dark:bg-white dark:bg-gray-900/5 dark:text-gray-400 dark:hover:bg-white dark:bg-gray-800 dark:bg-gray-900/10"
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -347,7 +347,7 @@ export default function AccountPanel({
                     </div>
                   </div>
 
-                  <div className="mt-5 rounded-2xl border border-gray-200 dark:border-gray-700 dark:border-gray-800/80 bg-white dark:bg-gray-800 dark:bg-gray-900/70 p-3 dark:border-white/8 dark:bg-white dark:bg-gray-800 dark:bg-gray-900/[0.03]">
+                  <div className="mt-5 rounded-2xl border border-gray-200 dark:border-gray-700 dark:border-gray-800/80 bg-white dark:bg-gray-800 dark:bg-gray-900/70 p-3 dark:border-white/8 dark:bg-white dark:bg-gray-900/[0.03]">
                     <div className="text-xs font-medium text-gray-500 dark:text-gray-500 dark:text-gray-400">
                       {isVerified ? t.common.identityVerified : copy.needsSetup}
                     </div>
@@ -363,7 +363,7 @@ export default function AccountPanel({
                   <Link
                     to={profilePath}
                     onClick={onClose}
-                    className="mt-4 inline-flex min-h-[44px] w-full items-center justify-between rounded-2xl border border-gray-200 dark:border-gray-700 dark:border-gray-800 bg-white dark:bg-gray-800 dark:bg-gray-900 px-4 py-3 text-sm font-semibold text-gray-800 dark:text-gray-200 dark:text-gray-100 transition-all hover:border-purple-200 hover:bg-purple-50 dark:border-white/10 dark:bg-white dark:bg-gray-800 dark:bg-gray-900/5 dark:text-white dark:hover:border-purple-500/30 dark:hover:bg-white dark:bg-gray-800 dark:bg-gray-900/10"
+                    className="mt-4 inline-flex min-h-[44px] w-full items-center justify-between rounded-2xl border border-gray-200 dark:border-gray-700 dark:border-gray-800 bg-white dark:bg-gray-800 dark:bg-gray-900 px-4 py-3 text-sm font-semibold text-gray-800 dark:text-gray-200 dark:text-gray-100 transition-all hover:border-purple-200 hover:bg-purple-50 dark:border-white/10 dark:bg-white dark:bg-gray-900/5 dark:text-white dark:hover:border-purple-500/30 dark:hover:bg-white dark:bg-gray-800 dark:bg-gray-900/10"
                   >
                     <span>{t.publicProfile.editProfile}</span>
                     <ChevronRight className="h-4 w-4 text-gray-400 dark:text-gray-500 dark:text-gray-400 rtl:rotate-180" />
@@ -375,7 +375,7 @@ export default function AccountPanel({
                     {copy.sectionLabel}
                   </div>
 
-                  <div className="mt-4 rounded-[24px] border border-gray-200 dark:border-gray-700 dark:border-gray-800 bg-white dark:bg-gray-800 dark:bg-gray-900 p-4 dark:border-white/10 dark:bg-white dark:bg-gray-800 dark:bg-gray-900/5">
+                  <div className="mt-4 rounded-[24px] border border-gray-200 dark:border-gray-700 dark:border-gray-800 bg-white dark:bg-gray-800 dark:bg-gray-900 p-4 dark:border-white/10 dark:bg-white dark:bg-gray-900/5">
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <div className="flex flex-wrap items-center gap-2">
                         <span className={cn('rounded-full px-2.5 py-1 text-xs font-semibold', activeWorkspacePill)}>
@@ -398,7 +398,7 @@ export default function AccountPanel({
                       {activeWorkspace === 'freelancer' ? copy.freelancerHint : copy.clientHint}
                     </p>
 
-                    <div className="mt-4 h-2 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700 dark:bg-white dark:bg-gray-800 dark:bg-gray-900/10">
+                    <div className="mt-4 h-2 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700 dark:bg-white dark:bg-gray-900/10">
                       <div
                         className={cn(
                           'h-full rounded-full transition-all duration-300',
@@ -440,7 +440,7 @@ export default function AccountPanel({
                           disabled={isSwitching || isActive}
                           className={cn(
                             'rounded-[24px] border p-4 text-start transition-all duration-200',
-                            'border-gray-200 dark:border-gray-700 dark:border-gray-800 bg-white dark:bg-gray-800 dark:bg-gray-900 hover:border-purple-300 dark:border-white/10 dark:bg-white dark:bg-gray-800 dark:bg-gray-900/5 dark:hover:border-purple-500/40',
+                            'border-gray-200 dark:border-gray-700 dark:border-gray-800 bg-white dark:bg-gray-800 dark:bg-gray-900 hover:border-purple-300 dark:border-white/10 dark:bg-white dark:bg-gray-900/5 dark:hover:border-purple-500/40',
                             isActive && accentClasses,
                             isActive && 'cursor-default'
                           )}
@@ -457,7 +457,7 @@ export default function AccountPanel({
                                     'inline-flex shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold',
                                     isActive
                                       ? activeWorkspacePill
-                                      : 'bg-gray-100 text-gray-600 dark:text-gray-300 dark:bg-white dark:bg-gray-800 dark:bg-gray-900/10 dark:text-gray-300'
+                                      : 'bg-gray-100 text-gray-600 dark:text-gray-300 dark:bg-white dark:bg-gray-900/10 dark:text-gray-300'
                                   )}
                                 >
                                   {isSwitchingThis ? copy.switching : actionLabel}
@@ -546,7 +546,7 @@ export default function AccountPanel({
                     )}
                   </div>
 
-                  <div className="my-4 h-px bg-gray-200 dark:bg-gray-700 dark:bg-white dark:bg-gray-800 dark:bg-gray-900/10" />
+                  <div className="my-4 h-px bg-gray-200 dark:bg-gray-700 dark:bg-white dark:bg-gray-900/10" />
 
                   <button
                     type="button"
@@ -583,10 +583,10 @@ function ActionLink({
     <Link
       to={to}
       onClick={onClick}
-      className="inline-flex min-h-[44px] items-center justify-between gap-3 rounded-2xl border border-gray-200 dark:border-gray-700 dark:border-gray-800 bg-white dark:bg-gray-800 dark:bg-gray-900 px-4 py-3 text-sm font-semibold text-gray-800 dark:text-gray-200 dark:text-gray-100 transition-all hover:border-purple-200 hover:bg-purple-50 dark:border-white/10 dark:bg-white dark:bg-gray-800 dark:bg-gray-900/5 dark:text-white dark:hover:border-purple-500/30 dark:hover:bg-white dark:bg-gray-800 dark:bg-gray-900/10"
+      className="inline-flex min-h-[44px] items-center justify-between gap-3 rounded-2xl border border-gray-200 dark:border-gray-700 dark:border-gray-800 bg-white dark:bg-gray-800 dark:bg-gray-900 px-4 py-3 text-sm font-semibold text-gray-800 dark:text-gray-200 dark:text-gray-100 transition-all hover:border-purple-200 hover:bg-purple-50 dark:border-white/10 dark:bg-white dark:bg-gray-900/5 dark:text-white dark:hover:border-purple-500/30 dark:hover:bg-white dark:bg-gray-800 dark:bg-gray-900/10"
     >
       <span className="flex items-center gap-3">
-        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gray-100 text-gray-500 dark:text-gray-400 dark:bg-white dark:bg-gray-800 dark:bg-gray-900/10 dark:text-gray-400">
+        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gray-100 text-gray-500 dark:text-gray-400 dark:bg-white dark:bg-gray-900/10 dark:text-gray-400">
           {icon}
         </span>
         <span>{label}</span>

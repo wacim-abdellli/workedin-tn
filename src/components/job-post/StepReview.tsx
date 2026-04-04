@@ -45,7 +45,7 @@ export default function StepReview() {
     return (
         <div className="space-y-8">
             <div className="space-y-4">
-                <div className="inline-flex items-center gap-2 rounded-full border border-primary-100 bg-primary-50/70 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-primary-700 dark:border-white/10 dark:border-gray-800 dark:bg-white dark:bg-gray-800/[0.04] dark:text-primary-200">
+                <div className="inline-flex items-center gap-2 rounded-full border border-primary-100 bg-primary-50/70 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-primary-700 dark:border-white/10 dark:border-gray-800 dark:white/[0.04] dark:text-primary-200">
                     <FileText className="w-3.5 h-3.5" />
                     {tx('jobs.new.stepReview.badge', undefined, 'Final check')}
                 </div>
@@ -64,18 +64,18 @@ export default function StepReview() {
 
             <div className="space-y-6">
                 {/* Header Preview */}
-                <div className="rounded-[1.85rem] border border-primary-100/70 bg-white dark:bg-gray-800/80 p-6 shadow-sm dark:border-white/10 dark:border-gray-800 dark:bg-white dark:bg-gray-800/[0.04]">
+                <div className="rounded-[1.85rem] border border-primary-100/70 bg-white dark:bg-gray-800/80 p-6 shadow-sm dark:border-white/10 dark:border-gray-800 dark:white/[0.04]">
                     <h2 className="mb-2 text-2xl font-bold text-gray-900 dark:text-gray-100 dark:text-white">{values.title}</h2>
                     <div className="flex flex-wrap gap-4 text-sm text-gray-500 dark:text-gray-400">
-                        <span className="flex items-center gap-1 rounded-full bg-gray-100 px-3 py-1 dark:bg-white dark:bg-gray-800/10">
+                        <span className="flex items-center gap-1 rounded-full bg-gray-100 px-3 py-1 dark:bg-white/10">
                             <Briefcase className="w-4 h-4" />
                             {getCategoryName(values.category, language)}
                         </span>
-                        <span className="flex items-center gap-1 rounded-full bg-gray-100 px-3 py-1 dark:bg-white dark:bg-gray-800/10">
+                        <span className="flex items-center gap-1 rounded-full bg-gray-100 px-3 py-1 dark:bg-white/10">
                             <MapPin className="w-4 h-4" />
                             {getSubcategoryName(values.category, values.subcategory, language)}
                         </span>
-                        <span className="flex items-center gap-1 rounded-full bg-gray-100 px-3 py-1 dark:bg-white dark:bg-gray-800/10">
+                        <span className="flex items-center gap-1 rounded-full bg-gray-100 px-3 py-1 dark:bg-white/10">
                             <Clock className="w-4 h-4" />
                             {values.posted_at ? new Date(values.posted_at).toLocaleDateString(language === 'ar' ? 'ar-TN' : language === 'fr' ? 'fr-FR' : 'en-US') : tx('jobs.new.stepReview.now', undefined, 'الآن')}
                         </span>
@@ -91,7 +91,7 @@ export default function StepReview() {
                 </div>
 
                 {/* Details Grid */}
-                <div className="grid grid-cols-1 gap-6 rounded-[1.85rem] border border-primary-100/70 bg-white dark:bg-gray-800/80 p-6 shadow-sm dark:border-white/10 dark:border-gray-800 dark:bg-white dark:bg-gray-800/[0.04] md:grid-cols-2">
+                <div className="grid grid-cols-1 gap-6 rounded-[1.85rem] border border-primary-100/70 bg-white dark:bg-gray-800/80 p-6 shadow-sm dark:border-white/10 dark:border-gray-800 dark:white/[0.04] md:grid-cols-2">
                     <div className="space-y-4">
                         <div className="flex gap-4">
                             <DollarSign className="mt-1 h-5 w-5 text-gray-400 dark:text-gray-500 dark:text-gray-400" />
@@ -143,13 +143,13 @@ export default function StepReview() {
                 </div>
 
                 {values.job_type === 'hourly' && values.estimated_hours ? (
-                    <div className="rounded-[1.5rem] border border-primary-100/70 bg-primary-50/60 px-4 py-3 text-sm text-primary-700 dark:border-white/10 dark:border-gray-800 dark:bg-white dark:bg-gray-800/[0.04] dark:text-primary-200">
+                    <div className="rounded-[1.5rem] border border-primary-100/70 bg-primary-50/60 px-4 py-3 text-sm text-primary-700 dark:border-white/10 dark:border-gray-800 dark:white/[0.04] dark:text-primary-200">
                         {tx('jobs.new.stepReview.estimatedHours', { hours: values.estimated_hours }, `${values.estimated_hours} estimated hours per week`)}
                     </div>
                 ) : null}
 
                 {/* Visibility */}
-                <div className="rounded-[1.85rem] border border-primary-100/70 bg-white dark:bg-gray-800/80 p-6 shadow-sm dark:border-white/10 dark:border-gray-800 dark:bg-white dark:bg-gray-800/[0.04]">
+                <div className="rounded-[1.85rem] border border-primary-100/70 bg-white dark:bg-gray-800/80 p-6 shadow-sm dark:border-white/10 dark:border-gray-800 dark:white/[0.04]">
                     <div className="flex items-center gap-3">
                         <div className="rounded-lg bg-primary-50 p-2 text-primary-600 dark:bg-primary-900/20 dark:text-primary-300">
                             {values.visibility === 'public' ? <Globe className="w-5 h-5" /> : <Lock className="w-5 h-5" />}
@@ -167,16 +167,16 @@ export default function StepReview() {
 
                 {/* Attachments */}
                 {values.attachments_files && values.attachments_files.length > 0 && (
-                    <div className="rounded-[1.85rem] border border-primary-100/70 bg-white dark:bg-gray-800/80 p-6 shadow-sm dark:border-white/10 dark:border-gray-800 dark:bg-white dark:bg-gray-800/[0.04]">
+                    <div className="rounded-[1.85rem] border border-primary-100/70 bg-white dark:bg-gray-800/80 p-6 shadow-sm dark:border-white/10 dark:border-gray-800 dark:white/[0.04]">
                         <div className="flex items-start gap-3">
-                            <div className="rounded-lg bg-gray-50 dark:bg-gray-900 p-2 text-gray-500 dark:text-gray-400 dark:bg-white dark:bg-gray-800/10 dark:text-gray-400">
+                            <div className="rounded-lg bg-gray-50 dark:bg-gray-900 p-2 text-gray-500 dark:text-gray-400 dark:bg-white/10 dark:text-gray-400">
                                 <File className="w-5 h-5" />
                             </div>
                             <div className="w-full">
                                 <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">{tx('jobs.new.stepReview.attachments', undefined, 'الملفات المرفقة')}</p>
                                 <div className="space-y-2">
                                     {values.attachments_files.map((file: File, index: number) => (
-                                        <div key={index} className="flex items-center gap-2 rounded-lg border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 p-2 text-sm dark:border-white/10 dark:bg-white dark:bg-gray-800/[0.03]">
+                                        <div key={index} className="flex items-center gap-2 rounded-lg border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 p-2 text-sm dark:border-white/10 dark:white/[0.03]">
                                             <span className="truncate font-medium text-gray-700 dark:text-gray-300">{file.name}</span>
                                             <span className="text-muted text-xs">{tx('jobs.new.stepReview.fileSize', { size: (file.size / 1024 / 1024).toFixed(2) }, `(${(file.size / 1024 / 1024).toFixed(2)} MB)`)}</span>
                                         </div>
@@ -188,7 +188,7 @@ export default function StepReview() {
                 )}
 
                 {/* Skills */}
-                <div className="rounded-[1.85rem] border border-primary-100/70 bg-white dark:bg-gray-800/80 p-6 shadow-sm dark:border-white/10 dark:border-gray-800 dark:bg-white dark:bg-gray-800/[0.04]">
+                <div className="rounded-[1.85rem] border border-primary-100/70 bg-white dark:bg-gray-800/80 p-6 shadow-sm dark:border-white/10 dark:border-gray-800 dark:white/[0.04]">
                     <h3 className="mb-3 font-bold text-gray-900 dark:text-gray-100 dark:text-white">{tx('jobs.new.stepReview.requiredSkills', undefined, 'المهارات المطلوبة')}</h3>
                     <div className="flex flex-wrap gap-2">
                         {values.required_skills?.map((skill) => (

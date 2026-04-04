@@ -225,7 +225,7 @@ export default function MobileNav() {
         <div className="fixed inset-0 z-50 md:hidden">
           <div className="absolute inset-0 bg-black/50" onClick={() => setShowMenu(false)} />
           <div className="absolute bottom-0 left-0 right-0 rounded-t-3xl bg-white dark:bg-gray-800 dark:bg-gray-900 p-2 dark:bg-[#171421]">
-            <div className="mx-auto mt-3 h-1 w-12 rounded-full bg-gray-300 dark:bg-white dark:bg-gray-800 dark:bg-gray-900/10" />
+            <div className="mx-auto mt-3 h-1 w-12 rounded-full bg-gray-300 dark:bg-white dark:bg-gray-900/10" />
 
             <div className="border-b border-gray-100 dark:border-gray-800 p-4 dark:border-white/10">
               <div className="flex items-center gap-3">

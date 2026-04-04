@@ -50,7 +50,7 @@ export default function OnboardingStep2({
     return (
         <div className="space-y-8">
             <div className="text-center sm:text-start">
-                <div className="inline-flex items-center gap-3 mb-3 px-4 py-2 rounded-full bg-primary-50/70 dark:bg-white dark:bg-gray-800/[0.04] border border-primary-100 dark:border-white/10 dark:border-gray-800 shadow-sm">
+                <div className="inline-flex items-center gap-3 mb-3 px-4 py-2 rounded-full bg-primary-50/70 dark:white/[0.04] border border-primary-100 dark:border-white/10 dark:border-gray-800 shadow-sm">
                     <Sparkles className="w-4 h-4 text-primary-600 dark:text-primary-400" />
                     <span className="text-sm font-semibold text-primary-700 dark:text-primary-300">
                         {t.profile.skills} & {t.job.budget}

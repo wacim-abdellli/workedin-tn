@@ -608,7 +608,7 @@ function JobDetail() {
                                                  'break-words [overflow-wrap:anywhere] px-3 py-1.5 rounded-lg text-sm font-medium border',
                                                  isMatch
                                                      ? 'bg-green-50 dark:bg-green-500/10 text-green-700 dark:text-green-300 border-green-200 dark:border-green-500/30'
-                                                     : 'bg-gray-50 dark:bg-gray-900 dark:bg-white dark:bg-gray-800/5 text-foreground border-gray-200 dark:border-gray-700 dark:border-white/10 dark:border-gray-800'
+                                                     : 'bg-gray-50 dark:bg-gray-900 dark:bg-white/5 text-foreground border-gray-200 dark:border-gray-700 dark:border-white/10 dark:border-gray-800'
                                              )}
                                          >
                                              {isMatch && <CheckCircle className="w-3 h-3 inline me-1" />}
@@ -639,7 +639,7 @@ function JobDetail() {
                                                  rel="noopener noreferrer"
                                                  className={cn(
                                                      'flex items-center justify-between p-3 rounded-lg border',
-                                                     'bg-gray-50 dark:bg-gray-900 dark:bg-white dark:bg-gray-800/5 border-gray-200 dark:border-gray-700 dark:border-white/10 dark:border-gray-800',
+                                                     'bg-gray-50 dark:bg-gray-900 dark:bg-white/5 border-gray-200 dark:border-gray-700 dark:border-white/10 dark:border-gray-800',
                                                      'hover:bg-gray-100 dark:hover:bg-white dark:bg-gray-800/8 transition-colors'
                                                  )}
                                              >
@@ -753,8 +753,8 @@ function JobDetail() {
                                                   <span className={cn(
                                                       'rounded-full px-3 py-1 text-xs font-bold whitespace-nowrap',
                                                       connectsAvailable >= CONNECTS_COST
-                                                          ? 'bg-white dark:bg-gray-800/70 dark:bg-white dark:bg-gray-800/10 text-blue-700 dark:text-blue-300'
-                                                          : 'bg-white dark:bg-gray-800/70 dark:bg-white dark:bg-gray-800/10 text-red-700 dark:text-red-300'
+                                                          ? 'bg-white dark:bg-gray-800/70 dark:bg-white/10 text-blue-700 dark:text-blue-300'
+                                                          : 'bg-white dark:bg-gray-800/70 dark:bg-white/10 text-red-700 dark:text-red-300'
                                                   )}>
                                                       {connectsAvailable >= CONNECTS_COST ? tx('jobDetail.readyToSubmit', undefined, 'Ready to submit') : tx('jobDetail.insufficientBalance', undefined, 'Insufficient balance')}
                                                   </span>
@@ -764,8 +764,8 @@ function JobDetail() {
                                                  <div className={cn(
                                                      'rounded-lg p-3 border',
                                                      connectsAvailable >= CONNECTS_COST
-                                                         ? 'border-blue-200 dark:border-blue-500/30 bg-white dark:bg-gray-800/70 dark:bg-white dark:bg-gray-800/5'
-                                                         : 'border-red-200 dark:border-red-500/30 bg-white dark:bg-gray-800/70 dark:bg-white dark:bg-gray-800/5'
+                                                         ? 'border-blue-200 dark:border-blue-500/30 bg-white dark:bg-gray-800/70 dark:bg-white/5'
+                                                         : 'border-red-200 dark:border-red-500/30 bg-white dark:bg-gray-800/70 dark:bg-white/5'
                                                  )}>
                                                       <p className="text-[11px] font-medium uppercase tracking-wider opacity-70">{tx('jobDetail.balance', undefined, 'Balance')}</p>
                                                      <p className="mt-2 text-lg font-bold">{connectsAvailable}</p>
@@ -773,8 +773,8 @@ function JobDetail() {
                                                  <div className={cn(
                                                      'rounded-lg p-3 border',
                                                      connectsAvailable >= CONNECTS_COST
-                                                         ? 'border-blue-200 dark:border-blue-500/30 bg-white dark:bg-gray-800/70 dark:bg-white dark:bg-gray-800/5'
-                                                         : 'border-red-200 dark:border-red-500/30 bg-white dark:bg-gray-800/70 dark:bg-white dark:bg-gray-800/5'
+                                                         ? 'border-blue-200 dark:border-blue-500/30 bg-white dark:bg-gray-800/70 dark:bg-white/5'
+                                                         : 'border-red-200 dark:border-red-500/30 bg-white dark:bg-gray-800/70 dark:bg-white/5'
                                                  )}>
                                                       <p className="text-[11px] font-medium uppercase tracking-wider opacity-70">{tx('jobDetail.required', undefined, 'Required')}</p>
                                                      <p className="mt-2 text-lg font-bold">{CONNECTS_COST}</p>
@@ -782,8 +782,8 @@ function JobDetail() {
                                                  <div className={cn(
                                                      'rounded-lg p-3 border',
                                                      connectsAvailable >= CONNECTS_COST
-                                                         ? 'border-blue-200 dark:border-blue-500/30 bg-white dark:bg-gray-800/70 dark:bg-white dark:bg-gray-800/5'
-                                                         : 'border-red-200 dark:border-red-500/30 bg-white dark:bg-gray-800/70 dark:bg-white dark:bg-gray-800/5'
+                                                         ? 'border-blue-200 dark:border-blue-500/30 bg-white dark:bg-gray-800/70 dark:bg-white/5'
+                                                         : 'border-red-200 dark:border-red-500/30 bg-white dark:bg-gray-800/70 dark:bg-white/5'
                                                  )}>
                                                       <p className="text-[11px] font-medium uppercase tracking-wider opacity-70">{tx('jobDetail.remaining', undefined, 'Remaining')}</p>
                                                      <p className="mt-2 text-lg font-bold">{connectsRemainingAfterSubmit}</p>

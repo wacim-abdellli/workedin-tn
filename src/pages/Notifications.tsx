@@ -76,10 +76,10 @@ export default function Notifications() {
                         Array.from({ length: 5 }).map((_, i) => (
                             <div key={i} className="card p-4 animate-pulse">
                                 <div className="flex gap-4">
-                                    <div className="w-10 h-10 rounded-2xl bg-gray-200 dark:bg-gray-700 dark:bg-white dark:bg-gray-800/10 flex-shrink-0" />
+                                    <div className="w-10 h-10 rounded-2xl bg-gray-200 dark:bg-gray-700 dark:bg-white/10 flex-shrink-0" />
                                     <div className="flex-1 space-y-2">
-                                        <div className="h-4 bg-gray-200 dark:bg-gray-700 dark:bg-white dark:bg-gray-800/10 rounded w-3/4" />
-                                        <div className="h-3 bg-gray-200 dark:bg-gray-700 dark:bg-white dark:bg-gray-800/10 rounded w-1/2" />
+                                        <div className="h-4 bg-gray-200 dark:bg-gray-700 dark:bg-white/10 rounded w-3/4" />
+                                        <div className="h-3 bg-gray-200 dark:bg-gray-700 dark:bg-white/10 rounded w-1/2" />
                                     </div>
                                 </div>
                             </div>
@@ -99,7 +99,7 @@ export default function Notifications() {
                             <div
                                 key={n.id}
                                 onClick={() => handleClick(n)}
-                                className={`card group p-5 cursor-pointer transition-all hover:-translate-y-1 rounded-2xl border shadow-sm ${!n.is_read ? 'border-primary-200 dark:border-primary-500/30 bg-primary-50/50 dark:bg-primary-900/10 shadow-[0_0_15px_rgba(124,58,237,0.05)]' : 'border-gray-100 dark:border-gray-800 dark:border-white/5 bg-white dark:bg-gray-800 dark:bg-white dark:bg-gray-800/[0.02] hover:shadow-md'}`}
+                                className={`card group p-5 cursor-pointer transition-all hover:-translate-y-1 rounded-2xl border shadow-sm ${!n.is_read ? 'border-primary-200 dark:border-primary-500/30 bg-primary-50/50 dark:bg-primary-900/10 shadow-[0_0_15px_rgba(124,58,237,0.05)]' : 'border-gray-100 dark:border-gray-800 dark:border-white/5 bg-white dark:bg-gray-800 dark:white/[0.02] hover:shadow-md'}`}
                             >
                                 <div className="flex gap-4">
                                     <div className="w-12 h-12 rounded-[20px] flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-105 shadow-sm" style={TYPE_COLOR[n.type]}>

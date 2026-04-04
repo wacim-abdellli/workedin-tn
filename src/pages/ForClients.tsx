@@ -57,7 +57,7 @@ function ForClients() {
                 </div>
 
                 {/* Abstract Shapes */}
-                <div className="absolute right-0 top-0 h-full w-1/2 translate-x-1/4 skew-x-12 bg-white dark:bg-gray-800 dark:bg-gray-900/30 dark:bg-white dark:bg-gray-800 dark:bg-gray-900/5" />
+                <div className="absolute right-0 top-0 h-full w-1/2 translate-x-1/4 skew-x-12 bg-white dark:bg-gray-800 dark:bg-gray-900/30 dark:bg-white dark:bg-gray-900/5" />
                 <div className="absolute -bottom-24 -left-24 h-64 w-64 rounded-full bg-primary-600/20 blur-3xl" />
             </section>
 

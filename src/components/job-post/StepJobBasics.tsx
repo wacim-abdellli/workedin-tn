@@ -49,7 +49,7 @@ export default function StepJobBasics() {
     return (
         <div className="space-y-8">
             <div className="space-y-4">
-                <div className="inline-flex items-center gap-2 rounded-full border border-primary-100 bg-primary-50/70 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-primary-700 dark:border-white/10 dark:border-gray-800 dark:bg-white dark:bg-gray-800/[0.04] dark:text-primary-200">
+                <div className="inline-flex items-center gap-2 rounded-full border border-primary-100 bg-primary-50/70 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-primary-700 dark:border-white/10 dark:border-gray-800 dark:white/[0.04] dark:text-primary-200">
                     <FileText className="w-3.5 h-3.5" />
                     {tx('jobs.new.stepBasics.badge', undefined, 'Project brief')}
                 </div>
@@ -61,7 +61,7 @@ export default function StepJobBasics() {
                 </p>
             </div>
 
-            <section className="space-y-6 rounded-[1.8rem] border border-primary-100/70 bg-white dark:bg-gray-800/80 p-6 shadow-sm dark:border-white/10 dark:border-gray-800 dark:bg-white dark:bg-gray-800/[0.04]">
+            <section className="space-y-6 rounded-[1.8rem] border border-primary-100/70 bg-white dark:bg-gray-800/80 p-6 shadow-sm dark:border-white/10 dark:border-gray-800 dark:white/[0.04]">
                 <Input
                     label={tx('jobs.new.stepBasics.projectTitle', undefined, 'عنوان المشروع')}
                     placeholder={tx('jobs.new.stepBasics.projectTitlePlaceholder', undefined, 'مثال: تصميم شعار لشركة مواد غذائية')}
@@ -120,13 +120,13 @@ export default function StepJobBasics() {
                         placeholder={tx('jobs.new.stepBasics.projectDescriptionPlaceholder', undefined, 'اشرح تفاصيل المشروع، المخرجات المتوقعة، وأي متطلبات خاصة...')}
                     />
                     <div className="flex justify-between px-1 text-xs text-gray-500 dark:text-gray-400">
-                        <span className="rounded-full bg-primary-50 px-2.5 py-1 font-medium text-primary-700 dark:bg-white dark:bg-gray-800/[0.05] dark:text-primary-200">{tx('jobs.new.stepBasics.characterCount', { current: description.length, max: 2000 }, `${description.length} / 2000 حرف`)}</span>
+                        <span className="rounded-full bg-primary-50 px-2.5 py-1 font-medium text-primary-700 dark:white/[0.05] dark:text-primary-200">{tx('jobs.new.stepBasics.characterCount', { current: description.length, max: 2000 }, `${description.length} / 2000 حرف`)}</span>
                         {errors.description && (
                             <span className="text-red-500">{errors.description.message as string}</span>
                         )}
                     </div>
 
-                    <div className="mt-3 flex items-start gap-3 rounded-[1.4rem] border border-primary-100/80 bg-primary-50/70 p-4 text-sm text-primary-700 dark:border-white/10 dark:border-gray-800 dark:bg-white dark:bg-gray-800/[0.04] dark:text-primary-200">
+                    <div className="mt-3 flex items-start gap-3 rounded-[1.4rem] border border-primary-100/80 bg-primary-50/70 p-4 text-sm text-primary-700 dark:border-white/10 dark:border-gray-800 dark:white/[0.04] dark:text-primary-200">
                         <Lightbulb className="w-5 h-5 flex-shrink-0" />
                         <ul className="space-y-1 list-disc list-inside">
                             <li>{tx('jobs.new.stepBasics.tip1', undefined, 'كن دقيقاً في وصف المطلوب')}</li>
@@ -138,7 +138,7 @@ export default function StepJobBasics() {
                 </div>
             </section>
 
-            <section className="space-y-3 rounded-[1.8rem] border border-primary-100/70 bg-white dark:bg-gray-800/80 p-6 shadow-sm dark:border-white/10 dark:border-gray-800 dark:bg-white dark:bg-gray-800/[0.04]">
+            <section className="space-y-3 rounded-[1.8rem] border border-primary-100/70 bg-white dark:bg-gray-800/80 p-6 shadow-sm dark:border-white/10 dark:border-gray-800 dark:white/[0.04]">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{tx('jobs.new.stepBasics.requiredSkills', undefined, 'المهارات المطلوبة (بحد أقصى 5)')}</label>
                 <div className="flex flex-wrap gap-2">
                     {PREDEFINED_SKILLS.map(skill => {
@@ -163,7 +163,7 @@ export default function StepJobBasics() {
                 )}
             </section>
 
-            <section className="space-y-3 rounded-[1.8rem] border border-primary-100/70 bg-white dark:bg-gray-800/80 p-6 shadow-sm dark:border-white/10 dark:border-gray-800 dark:bg-white dark:bg-gray-800/[0.04]">
+            <section className="space-y-3 rounded-[1.8rem] border border-primary-100/70 bg-white dark:bg-gray-800/80 p-6 shadow-sm dark:border-white/10 dark:border-gray-800 dark:white/[0.04]">
                 <Controller
                     name="attachments_files"
                     control={control}

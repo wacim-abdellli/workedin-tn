@@ -134,7 +134,7 @@ const ProfileCompletionCard = ({ className = '', maxStepsToShow = 4 }: ProfileCo
                             {tx('components.profileCompletion.nextStepsDescription', undefined, 'Focus on the items below first for the fastest profile lift.')}
                         </p>
                     </div>
-                    <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary-50 text-primary-600 dark:bg-white dark:bg-gray-800/5 dark:text-primary-300">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary-50 text-primary-600 dark:bg-white/5 dark:text-primary-300">
                         <Rocket className="h-5 w-5" />
                     </div>
                 </div>

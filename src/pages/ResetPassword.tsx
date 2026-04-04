@@ -176,7 +176,7 @@ const ResetPassword = () => {
                     <button
                         type="button"
                         onClick={() => navigate('/forgot-password')}
-                        className="inline-flex items-center rounded-full border border-white/12 bg-white dark:bg-gray-800/6 px-4 py-2 text-sm font-medium text-white/80 backdrop-blur-sm transition-colors hover:border-white/20 hover:bg-white dark:bg-gray-800/10 hover:text-white"
+                        className="inline-flex items-center rounded-full border border-white/12 bg-white/6 px-4 py-2 text-sm font-medium text-white/80 backdrop-blur-sm transition-colors hover:border-white/20 hover:bg-white/10 hover:text-white"
                     >
                         {tx('pages.resetPassword.requestNew', undefined, 'Request new link')}
                     </button>

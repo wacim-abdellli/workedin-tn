@@ -257,7 +257,7 @@ function Settings() {
                     </div>
                 </div>
 
-                <div className="group relative overflow-hidden flex flex-col justify-between p-4 rounded-xl border border-white/10 dark:border-gray-800 bg-white dark:bg-gray-800/[0.02] backdrop-blur-xl shadow-xl transition-all duration-300 hover:border-blue-500/30 hover:bg-blue-500/5">
+                <div className="group relative overflow-hidden flex flex-col justify-between p-4 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-800/[0.02] backdrop-blur-xl shadow-sm dark:shadow-xl transition-all duration-300 hover:border-blue-500/30 hover:bg-blue-500/5">
                     <div className="absolute -right-10 -top-4 h-32 w-32 rounded-full bg-blue-500/10 blur-[40px] pointer-events-none transition-all group-hover:bg-blue-500/20" />
                     <div>
                         <div className="flex items-center gap-3">
@@ -275,7 +275,7 @@ function Settings() {
                     </div>
                 </div>
 
-                <div className={`group relative overflow-hidden flex flex-col justify-between p-4 rounded-xl border border-white/10 dark:border-gray-800 bg-white dark:bg-gray-800/[0.02] backdrop-blur-xl shadow-xl transition-all duration-300 ${profile?.onboarding_completed ? 'hover:border-green-500/30 hover:bg-green-500/5' : 'hover:border-orange-500/30 hover:bg-orange-500/5'}`}>
+                <div className={`group relative overflow-hidden flex flex-col justify-between p-4 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-800/[0.02] backdrop-blur-xl shadow-sm dark:shadow-xl transition-all duration-300 ${profile?.onboarding_completed ? 'hover:border-green-500/30 hover:bg-green-500/5' : 'hover:border-orange-500/30 hover:bg-orange-500/5'}`}>
                     <div className={`absolute -right-10 -top-4 h-32 w-32 rounded-full blur-[40px] pointer-events-none transition-all ${profile?.onboarding_completed ? 'bg-green-500/10 group-hover:bg-green-500/20' : 'bg-orange-500/10 group-hover:bg-orange-500/20'}`} />
                     <div>
                         <div className="flex items-center gap-3">
@@ -294,7 +294,7 @@ function Settings() {
                 </div>
             </div>
 
-            <div className="relative overflow-hidden rounded-xl border border-white/10 dark:border-gray-800 bg-black/40 p-5 shadow-2xl backdrop-blur-3xl ring-1 ring-white/5">
+            <div className="relative overflow-hidden rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-black/40 p-5 shadow-sm dark:shadow-2xl backdrop-blur-3xl ring-1 ring-gray-200 dark:ring-white/5">
                 <div className="absolute -left-20 top-20 h-[300px] w-[300px] rounded-full bg-brand/5 blur-[100px] pointer-events-none" />
                 <div className="absolute right-10 bottom-10 h-[200px] w-[200px] rounded-full bg-blue-500/5 blur-[80px] pointer-events-none" />
 
@@ -372,7 +372,7 @@ function Settings() {
                     </div>
                     <div className="mt-3">
                         <p className="text-base font-black text-foreground drop-shadow-sm">{paymentMethods.length}</p>
-                        <p className="text-sm font-medium text-muted-foreground/80 mt-1">Ready for transactions</p>
+                        <p className="text-sm font-medium text-muted-foreground/80 mt-1">{tx('settings.readyForTransactions', undefined, 'Ready for transactions')}</p>
                     </div>
                 </div>
             </div>
@@ -535,13 +535,13 @@ function Settings() {
                                         <span className={`relative z-10 flex h-7 w-7 shrink-0 items-center justify-center rounded-[8px] transition-all duration-500 ${
                                             isActive
                                                 ? 'bg-brand/20 text-brand shadow-[0_0_15px_rgba(var(--brand),0.4)] scale-105 border border-brand/30'
-                                                : 'bg-white dark:bg-gray-800/5 text-muted-foreground group-hover:bg-white dark:bg-gray-800/10 group-hover:text-foreground group-hover:scale-105 border border-white/10 dark:border-gray-800'
+                                                : 'bg-gray-100 dark:bg-gray-800/20 text-muted-foreground group-hover:bg-gray-200 dark:group-hover:bg-gray-800/40 group-hover:text-gray-900 dark:group-hover:text-white group-hover:scale-105 border border-gray-200 dark:border-gray-800'
                                         }`}>
                                             <item.icon className="h-4 w-4" />
                                         </span>
                                         <div className="relative z-10 min-w-0 flex-1">
                                             <p className={`text-sm font-bold tracking-tight transition-colors ${isActive ? 'text-foreground drop-shadow-md' : 'text-foreground/80'}`}>{item.label}</p>
-                                            <p className={`mt-0.5 truncate text-[11px] font-medium transition-colors ${isActive ? 'text-muted-foreground' : 'text-muted-foreground/60 group-hover:text-muted-foreground/80'}`}>
+                                            <p className={`mt-0.5 text-[11px] leading-snug font-medium transition-colors ${isActive ? 'text-muted-foreground' : 'text-muted-foreground/60 group-hover:text-muted-foreground/80'}`}>
                                                 {item.description}
                                             </p>
                                         </div>
