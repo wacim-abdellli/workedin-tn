@@ -152,7 +152,6 @@ function MessagesComponent() {
     const [isLoadingMessages, setIsLoadingMessages] = useState(false);
     const [isSending, setIsSending] = useState(false);
     const [deletingMessageId, setDeletingMessageId] = useState<string | null>(null);
-    const [messagePendingDelete, setMessagePendingDelete] = useState<ThreadMessage | null>(null);
     const [uploadProgress, setUploadProgress] = useState(0);
     const [isOnline, setIsOnline] = useState(navigator.onLine);
     const [pendingQueue, setPendingQueue] = useState<any[]>([]);
@@ -164,6 +163,8 @@ function MessagesComponent() {
     const { isRecording, recordingTime, startRecording, stopRecording, cancelRecording, audioBlob } = useAudioRecorder();
     const [isArchivingConversation, setIsArchivingConversation] = useState(false);
     const [isDeletingConversation, setIsDeletingConversation] = useState(false);
+    const [deletedForMeMessageIds, setDeletedForMeMessageIds] = useState<Set<string>>(new Set());
+    const [messagePendingDelete, setMessagePendingDelete] = useState<ThreadMessage | null>(null);
 
     const conversationsChannelRef = useRef<RealtimeChannel | null>(null);
     const messagesChannelRef = useRef<RealtimeChannel | null>(null);
@@ -423,28 +424,42 @@ function MessagesComponent() {
             return;
         }
 
+        // Show modal to choose delete type
         setMessagePendingDelete(message);
     };
 
-    const confirmDeleteMessage = async () => {
+    const confirmDeleteMessage = async (deleteType: 'me' | 'everyone') => {
         const message = messagePendingDelete;
         if (!message || !selectedConversation || !user) return;
 
+        // Close modal
         setMessagePendingDelete(null);
 
         const previousMessages = messages;
-        const nextMessages = previousMessages.map((item) => (
-            item.id === message.id
-                ? {
-                    ...item,
-                    is_deleted: true,
-                    deleted_at: new Date().toISOString(),
-                    deleted_by: user.id,
-                    attachments: [],
-                    is_read: true,
-                }
-                : item
-        ));
+        let nextMessages: ThreadMessage[];
+        
+        if (deleteType === 'everyone') {
+            // Mark as deleted for everyone
+            nextMessages = previousMessages.map((item) => (
+                item.id === message.id
+                    ? {
+                        ...item,
+                        is_deleted: true,
+                        deleted_at: new Date().toISOString(),
+                        deleted_by: user.id,
+                        attachments: [],
+                        is_read: true,
+                    }
+                    : item
+            ));
+        } else {
+            // Delete for me only - just remove from view and track locally
+            nextMessages = previousMessages.filter(item => item.id !== message.id);
+            const newDeletedForMe = new Set(deletedForMeMessageIds);
+            newDeletedForMe.add(message.id);
+            setDeletedForMeMessageIds(newDeletedForMe);
+        }
+
         const nextPreview = getThreadPreview(nextMessages, deletedMessageLabel);
 
         setDeletingMessageId(message.id);
@@ -454,15 +469,18 @@ function MessagesComponent() {
             ...nextPreview,
         }));
 
-        const { error } = await deleteMessage(message.id);
+        // Only call backend for "delete for everyone"
+        if (deleteType === 'everyone') {
+            const { error } = await deleteMessage(message.id);
 
-        if (error) {
-            setMessages(previousMessages);
-            updateConversationPreview(selectedConversation.id, (conversation) => ({
-                ...conversation,
-                ...getThreadPreview(previousMessages, deletedMessageLabel),
-            }));
-            showToast(error.message, 'error');
+            if (error) {
+                setMessages(previousMessages);
+                updateConversationPreview(selectedConversation.id, (conversation) => ({
+                    ...conversation,
+                    ...getThreadPreview(previousMessages, deletedMessageLabel),
+                }));
+                showToast(error.message, 'error');
+            }
         }
 
         setDeletingMessageId(null);
@@ -1129,8 +1147,11 @@ function MessagesComponent() {
         overscan: 5,
     });
 
-    const messagesVirtualizer = useVirtualizer({
-        count: messages.length,
+    // Filter out messages deleted for the current user
+    const displayMessages = messages.filter((message) => !deletedForMeMessageIds.has(message.id));
+
+     const messagesVirtualizer = useVirtualizer({
+        count: displayMessages.length,
         getScrollElement: () => messagesParentRef.current,
         estimateSize: () => 60,
         overscan: 10,
@@ -1397,7 +1418,7 @@ function MessagesComponent() {
                         ) : (
                             <div style={{ height: `${messagesVirtualizer.getTotalSize()}px`, width: '100%', position: 'relative' }}>
                                 {messagesVirtualizer.getVirtualItems().map((virtualRow) => {
-                                    const message = messages[virtualRow.index];
+                                    const message = displayMessages[virtualRow.index];
                                     return (
                                         <div
                                             key={message.id}
@@ -1759,6 +1780,7 @@ function MessagesComponent() {
                 </div>
             </div>
 
+            {/* Delete Message Modal */}
             <Modal
                 isOpen={!!messagePendingDelete}
                 onClose={() => {
@@ -1770,7 +1792,7 @@ function MessagesComponent() {
             >
                 <div className="space-y-5">
                     <p className="text-sm text-muted-foreground">
-                        {tx('pages.messages.deleteMessageConfirm', undefined, 'Delete this message?')}
+                        {tx('pages.messages.deleteMessagePrompt', undefined, 'Choose how you want to delete this message:')}
                     </p>
 
                     {messagePendingDelete?.content ? (
@@ -1779,24 +1801,36 @@ function MessagesComponent() {
                         </div>
                     ) : null}
 
-                    <div className="flex justify-end gap-3">
+                    <div className="flex flex-col gap-3">
                         <Button
                             type="button"
                             variant="outline"
-                            onClick={() => setMessagePendingDelete(null)}
+                            onClick={() => void confirmDeleteMessage('me')}
                             disabled={!!deletingMessageId}
+                            className="w-full"
                         >
-                            {tx('common.cancel', undefined, 'Cancel')}
+                            {tx('pages.messages.deleteForMe', undefined, 'Delete for me')}
                         </Button>
+                        
                         <Button
                             type="button"
                             variant="primary"
-                            onClick={() => void confirmDeleteMessage()}
+                            onClick={() => void confirmDeleteMessage('everyone')}
                             isLoading={!!deletingMessageId}
                             disabled={!!deletingMessageId}
-                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            className="w-full bg-destructive text-destructive-foreground hover:bg-destructive/90"
                         >
-                            {tx('pages.messages.deleteMessage', undefined, 'Delete message')}
+                            {tx('pages.messages.deleteForEveryone', undefined, 'Delete for everyone')}
+                        </Button>
+
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            onClick={() => setMessagePendingDelete(null)}
+                            disabled={!!deletingMessageId}
+                            className="w-full"
+                        >
+                            {tx('common.cancel', undefined, 'Cancel')}
                         </Button>
                     </div>
                 </div>

@@ -343,6 +343,8 @@ export async function markConversationRead(conversationId: string, userId: strin
 
 export async function deleteMessage(messageId: string) {
     try {
+        // Use the existing delete_message_atomic function
+        // This marks the message as deleted for everyone
         const { data, error } = await supabaseWithRetry(
             () => supabase.rpc('delete_message_atomic', { p_message_id: messageId }),
             { throwOnError: false, timeoutMs: MESSAGE_WRITE_TIMEOUT_MS }
@@ -488,20 +490,12 @@ export async function unsubscribeFromChannel(channel: RealtimeChannel) {
 }
 
 // Archive a conversation (soft delete - hidden from user but data preserved)
-export async function archiveConversation(conversationId: string) {
-    try {
-        const { data, error } = await supabase
-            .from('conversations')
-            .update({ archived_at: new Date().toISOString() })
-            .eq('id', conversationId)
-            .select();
-
-        if (error) throw error;
-        return { data, error: null };
-    } catch (error) {
-        console.error('Failed to archive conversation:', error);
-        return { data: null, error: normalizeMessageError(error) };
-    }
+// NOTE: Archive functionality not implemented yet - archived_at column doesn't exist
+export async function archiveConversation(_conversationId: string) {
+    return { 
+        data: null, 
+        error: new Error('Archive functionality is not implemented yet. Coming in a future update.')
+    };
 }
 
 // Delete a conversation permanently (use with caution - data is not recoverable)
