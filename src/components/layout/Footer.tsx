@@ -24,7 +24,7 @@ function Footer() {
     ];
 
     return (
-        <footer className="relative overflow-hidden border-t border-white/5 bg-[#0f0d16] text-white">
+        <footer className="relative overflow-hidden border-t border-gray-200 dark:border-white/5 bg-gray-50 dark:bg-[#0f0d16] text-gray-900 dark:text-white">
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(139,92,246,0.14),transparent_32%),radial-gradient(circle_at_bottom_right,rgba(245,158,11,0.10),transparent_24%),linear-gradient(180deg,#120f1c_0%,#0d0b14_100%)]" />
             <div className="absolute start-1/4 top-0 h-96 w-96 rounded-full bg-primary-600/10 blur-[120px]" />
             <div className="absolute bottom-0 end-1/4 h-96 w-96 rounded-full bg-accent-500/10 blur-[120px]" />

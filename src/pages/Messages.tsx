@@ -5,9 +5,6 @@ import {
     Search,
     Send,
     Paperclip,
-    MoreVertical,
-    Phone,
-    Video,
     Archive,
     Trash2,
     ChevronLeft,
@@ -1378,17 +1375,7 @@ function MessagesComponent() {
                                 <p className="text-sm text-muted-foreground">@{selectedConversation.otherUser.username || 'user'}</p>
                             </div>
                         </div>
-                        <div className="flex items-center gap-1">
-                            <button aria-label="Audio call" className="p-3 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-surface rounded-lg transition-colors" disabled>
-                                <Phone className="w-5 h-5 text-muted-foreground" />
-                            </button>
-                            <button aria-label="Video call" className="p-3 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-surface rounded-lg transition-colors" disabled>
-                                <Video className="w-5 h-5 text-muted-foreground" />
-                            </button>
-                            <button aria-label="More options" className="p-3 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-surface rounded-lg transition-colors" disabled>
-                                <MoreVertical className="w-5 h-5 text-muted-foreground" />
-                            </button>
-                        </div>
+
                     </div>
 
                     {/* Messages Container */}

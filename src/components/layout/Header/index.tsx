@@ -288,8 +288,7 @@ export default function Header() {
     <>
       <header
         dir={dir}
-        className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl border-b"
-        style={{ background: 'rgba(10, 9, 18, 0.85)', borderColor: 'var(--dash-border)' }}
+        className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl border-b bg-white/85 dark:bg-[#0a0912]/85 border-gray-200 dark:border-[var(--dash-border)]"
       >
         {user ? (
           <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: 'var(--workspace-primary)' }} />

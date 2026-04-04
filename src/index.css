@@ -94,12 +94,12 @@
   --motion-ease-emphasis: cubic-bezier(0.16, 1, 0.3, 1);
 
   /* Dashboard surface system */
-  --dash-bg: #0a0912;
-  --dash-card: #111019;
-  --dash-card-hover: #16141f;
-  --dash-raised: #1a1826;
-  --dash-border: rgba(255, 255, 255, 0.06);
-  --dash-border-hover: rgba(255, 255, 255, 0.12);
+  --dash-bg: #f9fafb;
+  --dash-card: #ffffff;
+  --dash-card-hover: #f3f4f6;
+  --dash-raised: #ffffff;
+  --dash-border: #e5e7eb;
+  --dash-border-hover: #d1d5db;
 
   /* Widget accent top-border on hover */
   --widget-accent-border: 3px solid var(--workspace-primary);
@@ -135,6 +135,13 @@
 }
 
 .dark {
+  --dash-bg: #0a0912;
+  --dash-card: #111019;
+  --dash-card-hover: #16141f;
+  --dash-raised: #1a1826;
+  --dash-border: rgba(255, 255, 255, 0.06);
+  --dash-border-hover: rgba(255, 255, 255, 0.12);
+
   --workspace-primary: #8a5fff;
   --workspace-primary-hover: #6f3bff;
   --workspace-primary-light: #2d1952;
