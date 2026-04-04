@@ -65,12 +65,12 @@ if (typeof window !== 'undefined') {
 /**
  * Wraps a promise with a timeout
  * @param promise The promise to wrap
- * @param timeoutMs Timeout in milliseconds (default: 8000)
+ * @param timeoutMs Timeout in milliseconds (default: 15000)
  * @returns The promise result or throws if timeout exceeded
  */
 export async function withTimeout<T>(
     promise: PromiseLike<T>,
-    timeoutMs: number = 8000,
+    timeoutMs: number = 15000,
     operationName: string = 'Operation'
 ): Promise<T> {
     let timeoutId: ReturnType<typeof setTimeout>;

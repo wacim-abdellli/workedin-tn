@@ -1,6 +1,5 @@
 import { logger } from '@/lib/logger';
 import { useEffect, useMemo, useState } from 'react';
-import type { ReactNode } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import {
     ArrowUpRight,
@@ -26,7 +25,6 @@ import { Header } from '../components/layout';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import Modal from '../components/ui/Modal';
-import { cn } from '../lib/utils';
 import { supabase } from '../lib/supabase';
 import SEO, { SEO_CONFIG } from '../components/common/SEO';
 import ProfileSettings from '../components/settings/ProfileSettings';
@@ -41,20 +39,6 @@ interface PaymentMethod {
     label: string;
     details: string;
     is_default: boolean;
-}
-
-function SettingsPanel({ className = '', children }: { className?: string; children: ReactNode }) {
-    return (
-        <section className={cn(
-            'rounded-lg p-6 border',
-            'bg-card',
-            'border-border',
-            'shadow-sm dark:shadow-none',
-            className
-        )}>
-            {children}
-        </section>
-    );
 }
 
 function Settings() {
@@ -246,134 +230,215 @@ function Settings() {
         ? tx('settings.identityVerified', undefined, 'Identity verified')
         : tx('settings.verifyIdentity', undefined, 'Verify your identity');
 
-    const identityTone = profile?.cin_verified
-        ? 'border-emerald-500/20 bg-emerald-500/12 text-emerald-700 dark:text-emerald-200'
-        : 'border-primary-500/20 bg-primary-500/12 text-primary-700 dark:text-primary-200';
-
     const onboardingLabel = profile?.onboarding_completed
         ? tx('settings.setupStatus.complete', undefined, 'Complete')
         : tx('settings.setupStatus.pending', undefined, 'Pending');
 
     const renderAccountTab = () => (
-        <div className="space-y-6">
-            <div className="grid gap-3 sm:grid-cols-3">
-                <div className="rounded-2xl border border-primary-100/70 bg-primary-50/60 p-4 dark:border-white/10 dark:bg-white/[0.04]">
-                    <p className="text-xs font-medium uppercase tracking-[0.15em] text-[#8b8aa0]">
-                        {tx('settings.currentWorkspace', undefined, 'Current workspace')}
-                    </p>
-                    <p className="mt-2 text-sm font-semibold text-[#171420] dark:text-white">
-                        {activeMode === 'freelancer' ? t.auth.accountPanel.freelancerLabel : t.auth.accountPanel.clientLabel}
-                    </p>
-                </div>
-                <div className="rounded-2xl border border-primary-100/70 bg-primary-50/60 p-4 dark:border-white/10 dark:bg-white/[0.04]">
-                    <p className="text-xs font-medium uppercase tracking-[0.15em] text-[#8b8aa0]">
-                        {tx('settings.accountType', undefined, 'Account type')}
-                    </p>
-                    <p className="mt-2 text-sm font-semibold text-[#171420] dark:text-white">
-                        {accountTypeLabel}
-                    </p>
-                </div>
-                <div className="rounded-2xl border border-primary-100/70 bg-primary-50/60 p-4 dark:border-white/10 dark:bg-white/[0.04]">
-                    <p className="text-xs font-medium uppercase tracking-[0.15em] text-[#8b8aa0]">
-                        {tx('settings.onboardingStatus', undefined, 'Onboarding')}
-                    </p>
-                    <p className="mt-2 text-sm font-semibold text-[#171420] dark:text-white">
-                        {onboardingLabel}
-                    </p>
-                </div>
-            </div>
-
-            <div className="rounded-[1.75rem] border border-primary-100/70 bg-white/72 p-6 dark:border-white/10 dark:bg-white/[0.04]">
-                <div className="flex flex-wrap items-center gap-3">
-                    <div className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold ${identityTone}`}>
-                        <Shield className="h-3.5 w-3.5" />
-                        {identityLabel}
+        <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-500 relative">
+            <div className="grid gap-3 sm:grid-cols-3 relative z-10">
+                <div className="group relative overflow-hidden flex flex-col justify-between p-4 rounded-xl border border-white/10 bg-white/[0.02] backdrop-blur-xl shadow-xl transition-all duration-300 hover:border-brand/40 hover:bg-brand/5">
+                    <div className="absolute -right-10 -top-4 h-32 w-32 rounded-full bg-brand/10 blur-[40px] pointer-events-none transition-all group-hover:bg-brand/20" />
+                    <div>
+                        <div className="flex items-center gap-3">
+                            <div className="flex h-7 w-7 items-center justify-center rounded-[8px] bg-brand/20 text-brand">
+                                <BriefcaseBusiness className="h-4 w-4" />
+                            </div>
+                            <p className="text-sm font-bold uppercase tracking-widest text-foreground/80">
+                                {tx('settings.currentWorkspace', undefined, 'Current workspace')}
+                            </p>
+                        </div>
+                    </div>
+                    <div className="mt-3">
+                        <p className="text-base font-bold text-foreground">
+                            {activeMode === 'freelancer' ? t.auth.accountPanel.freelancerLabel : t.auth.accountPanel.clientLabel}
+                        </p>
+                        <p className="text-sm font-medium text-muted-foreground/80 mt-1">Active context</p>
                     </div>
                 </div>
 
-                <h3 className="mt-4 text-lg font-semibold text-[#171420] dark:text-white">
-                    {tx('settings.accountOverviewTitle', undefined, 'Your workspace identity and setup status')}
-                </h3>
-                <p className="mt-2 max-w-2xl text-sm leading-6 text-[#6b6880] dark:text-[#8b8aa0]">
-                    {tx('settings.accountOverviewDescription', undefined, 'This tab is the control point for how your account is set up. Switch to Profile when you want to edit details or change workspace readiness.')}
-                </p>
-
-                <div className="mt-6 grid gap-3 md:grid-cols-2">
-                    <button type="button" onClick={() => setActiveTab('profile')} className="w-full rounded-2xl border border-primary-100/70 bg-primary-50/60 p-4 text-left transition-colors hover:border-primary-200 hover:bg-primary-50 dark:border-white/10 dark:bg-white/[0.04] dark:hover:bg-white/[0.06]">
-                        <p className="text-sm font-semibold text-[#171420] dark:text-white">{tx('settings.goToProfile', undefined, 'Go to Profile settings')}</p>
-                        <p className="mt-2 text-sm leading-6 text-[#6b6880] dark:text-[#8b8aa0]">{tx('settings.accountTabHint', undefined, 'Go to the Profile tab to switch workspace or update your account type.')}</p>
-                    </button>
-
-                    <button type="button" onClick={() => navigate(dashboardPath)} className="w-full rounded-2xl border border-primary-100/70 bg-white/75 p-4 text-left transition-colors hover:border-primary-200 hover:bg-primary-50/60 dark:border-white/10 dark:bg-white/[0.04] dark:hover:bg-white/[0.06]">
-                        <p className="text-sm font-semibold text-[#171420] dark:text-white">{tx('settings.goToDashboard', undefined, 'Go to dashboard')}</p>
-                        <p className="mt-2 text-sm leading-6 text-[#6b6880] dark:text-[#8b8aa0]">{tx('settings.goToDashboardDescription', undefined, 'Return to your active workspace and continue where you left off.')}</p>
-                    </button>
+                <div className="group relative overflow-hidden flex flex-col justify-between p-4 rounded-xl border border-white/10 bg-white/[0.02] backdrop-blur-xl shadow-xl transition-all duration-300 hover:border-blue-500/30 hover:bg-blue-500/5">
+                    <div className="absolute -right-10 -top-4 h-32 w-32 rounded-full bg-blue-500/10 blur-[40px] pointer-events-none transition-all group-hover:bg-blue-500/20" />
+                    <div>
+                        <div className="flex items-center gap-3">
+                            <div className="flex h-7 w-7 items-center justify-center rounded-[8px] bg-blue-500/20 text-blue-400">
+                                <User className="h-4 w-4" />
+                            </div>
+                            <p className="text-sm font-bold uppercase tracking-widest text-foreground/80">
+                                {tx('settings.accountType', undefined, 'Account type')}
+                            </p>
+                        </div>
+                    </div>
+                    <div className="mt-3">
+                        <p className="text-base font-bold text-foreground">{accountTypeLabel}</p>
+                        <p className="text-sm font-medium text-muted-foreground/80 mt-1">Global permission</p>
+                    </div>
                 </div>
 
-                <button type="button" onClick={() => setActiveTab('notifications')} className="mt-3 w-full rounded-2xl border border-primary-100/70 bg-white/75 p-4 text-left transition-colors hover:border-primary-200 hover:bg-primary-50/60 dark:border-white/10 dark:bg-white/[0.04] dark:hover:bg-white/[0.06]">
-                    <p className="text-sm font-semibold text-[#171420] dark:text-white">{tx('settings.reviewNotifications', undefined, 'Review notification rules')}</p>
-                    <p className="mt-2 text-sm leading-6 text-[#6b6880] dark:text-[#8b8aa0]">{tx('settings.reviewNotificationsDescription', undefined, 'Adjust how updates, reviews, and messages reach you.')}</p>
-                </button>
+                <div className={`group relative overflow-hidden flex flex-col justify-between p-4 rounded-xl border border-white/10 bg-white/[0.02] backdrop-blur-xl shadow-xl transition-all duration-300 ${profile?.onboarding_completed ? 'hover:border-green-500/30 hover:bg-green-500/5' : 'hover:border-orange-500/30 hover:bg-orange-500/5'}`}>
+                    <div className={`absolute -right-10 -top-4 h-32 w-32 rounded-full blur-[40px] pointer-events-none transition-all ${profile?.onboarding_completed ? 'bg-green-500/10 group-hover:bg-green-500/20' : 'bg-orange-500/10 group-hover:bg-orange-500/20'}`} />
+                    <div>
+                        <div className="flex items-center gap-3">
+                            <div className={`flex h-7 w-7 items-center justify-center rounded-[8px] ${profile?.onboarding_completed ? 'bg-green-500/20 text-green-400' : 'bg-orange-500/20 text-orange-400'}`}>
+                                <Check className="h-5 w-5" />
+                            </div>
+                            <p className="text-sm font-bold uppercase tracking-widest text-foreground/80">
+                                {tx('settings.onboardingStatus', undefined, 'Onboarding')}
+                            </p>
+                        </div>
+                    </div>
+                    <div className="mt-3">
+                        <p className="text-base font-bold text-foreground">{onboardingLabel}</p>
+                        <p className="text-sm font-medium text-muted-foreground/80 mt-1">Profile readiness</p>
+                    </div>
+                </div>
+            </div>
+
+            <div className="relative overflow-hidden rounded-xl border border-white/10 bg-black/40 p-5 shadow-2xl backdrop-blur-3xl ring-1 ring-white/5">
+                <div className="absolute -left-20 top-20 h-[300px] w-[300px] rounded-full bg-brand/5 blur-[100px] pointer-events-none" />
+                <div className="absolute right-10 bottom-10 h-[200px] w-[200px] rounded-full bg-blue-500/5 blur-[80px] pointer-events-none" />
+
+                <div className="relative z-10 flex flex-col md:flex-row gap-3 items-start mb-4">
+                    <div className="md:w-1/3">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-brand/10 text-brand shadow-inner border border-brand/20 mb-3 group transition-all duration-500 hover:bg-brand/20 hover:scale-110 hover:shadow-[0_0_20px_rgba(var(--brand),0.3)]">
+                            <Sparkles className="h-4 w-4" />
+                        </div>
+                        <h3 className="text-sm font-bold bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
+                            {tx('settings.accountOverviewTitle', undefined, 'Your workspace identity and setup status')}
+                        </h3>
+                        <p className="mt-2 text-sm leading-relaxed text-muted-foreground/90 max-w-sm">
+                            {tx('settings.accountOverviewDescription', undefined, 'This tab is the control point for how your account is set up. Switch to Profile when you want to edit details or change workspace readiness.')}
+                        </p>
+                    </div>
+
+                    <div className="md:w-2/3 w-full bg-white/[0.02] p-4 rounded-xl border border-white/5 backdrop-blur-md space-y-4">
+                        <div className="flex items-center justify-between p-5 rounded-xl bg-white/[0.03] border border-white/10">
+                            <div className="flex items-center gap-3">
+                                <div className={`p-2.5 rounded-[10px] ${profile?.cin_verified ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-orange-500/20 text-orange-400 border border-orange-500/30'}`}>
+                                    <Shield className="w-5 h-5" />
+                                </div>
+                                <div>
+                                    <p className="font-bold text-foreground">Identity Verification</p>
+                                    <p className="text-sm font-medium text-muted-foreground/80 mt-1">{profile?.cin_verified ? 'Successfully verified by a human' : 'Pending verification review'}</p>
+                                </div>
+                            </div>
+                            <span className={`px-4 py-2 border rounded-full text-xs font-bold uppercase tracking-widest ${profile?.cin_verified ? 'border-green-500/30 bg-green-500/10 text-green-400 shadow-[0_0_15px_rgba(34,197,94,0.2)]' : 'border-orange-500/30 bg-orange-500/10 text-orange-400 shadow-[0_0_15px_rgba(249,115,22,0.2)]'}`}>
+                                {identityLabel}
+                            </span>
+                        </div>
+                        
+                        <div className="grid gap-3 sm:grid-cols-2 pt-2">
+                            <button type="button" onClick={() => setActiveTab('profile')} className="group flex flex-col justify-between rounded-xl border border-white/5 bg-black/20 p-5 text-left transition-all duration-300 hover:-translate-y-1 hover:border-brand/40 hover:bg-brand/5 hover:shadow-[0_0_30px_-5px_rgba(var(--brand),0.3)]">
+                                <div>
+                                    <p className="text-base font-bold text-foreground transition-colors group-hover:text-brand">{tx('settings.goToProfile', undefined, 'Go to Profile settings')}</p>
+                                    <p className="mt-2 text-sm leading-relaxed text-muted-foreground/80">{tx('settings.accountTabHint', undefined, 'Go to the Profile tab to switch workspace or update your account type.')}</p>
+                                </div>
+                            </button>
+
+                            <button type="button" onClick={() => navigate(dashboardPath)} className="group flex flex-col justify-between rounded-xl border border-white/5 bg-black/20 p-5 text-left transition-all duration-300 hover:-translate-y-1 hover:border-blue-500/40 hover:bg-blue-500/5 hover:shadow-[0_0_30px_-5px_rgba(59,130,246,0.3)]">
+                                <div>
+                                    <p className="text-base font-bold text-foreground transition-colors group-hover:text-blue-400">{tx('settings.goToDashboard', undefined, 'Go to dashboard')}</p>
+                                    <p className="mt-2 text-sm leading-relaxed text-muted-foreground/80">{tx('settings.goToDashboardDescription', undefined, 'Return to your active workspace and continue where you left off.')}</p>
+                                </div>
+                            </button>
+                        </div>
+                        
+                        <button type="button" onClick={() => setActiveTab('notifications')} className="group mt-2 w-full flex flex-col justify-between rounded-xl border border-white/5 bg-black/20 p-5 text-left transition-all duration-300 hover:-translate-y-1 hover:border-purple-500/40 hover:bg-purple-500/5 hover:shadow-[0_0_30px_-5px_rgba(168,85,247,0.3)]">
+                            <div>
+                                <p className="text-base font-bold text-foreground transition-colors group-hover:text-purple-400">{tx('settings.reviewNotifications', undefined, 'Review notification rules')}</p>
+                                <p className="mt-2 text-sm leading-relaxed text-muted-foreground/80">{tx('settings.reviewNotificationsDescription', undefined, 'Adjust how updates, reviews, and messages reach you.')}</p>
+                            </div>
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     );
 
     const renderPaymentTab = () => (
-        <div className="space-y-6">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-                <div>
-                    <p className="text-sm text-[#6b6880] dark:text-[#8b8aa0]">
-                        {tx('settings.paymentSubtitle', undefined, 'Payment and payout methods')}
-                    </p>
-                    <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-primary-100 bg-primary-50/70 px-3 py-1 text-xs font-semibold text-primary-700 dark:border-white/10 dark:bg-white/[0.04] dark:text-primary-200">
-                        <Wallet className="h-3.5 w-3.5" />
-                        {tx('settings.paymentMethodsCount', { count: paymentMethods.length }, `${paymentMethods.length} payment methods`)}
+        <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-500 relative">
+            <div className="grid gap-3 sm:grid-cols-3 relative z-10">
+                <div className="group relative overflow-hidden flex flex-col justify-between p-4 rounded-xl border border-white/10 bg-white/[0.02] backdrop-blur-xl shadow-xl transition-all duration-300 hover:border-emerald-500/30 hover:bg-emerald-500/5">
+                    <div className="absolute -right-10 -top-4 h-32 w-32 rounded-full bg-emerald-500/10 blur-[40px] pointer-events-none transition-all group-hover:bg-emerald-500/20" />
+                    <div>
+                        <div className="flex items-center gap-3">
+                            <div className="flex h-7 w-7 items-center justify-center rounded-[8px] bg-emerald-500/20 text-emerald-400">
+                                <Wallet className="h-5 w-5" />
+                            </div>
+                            <p className="text-sm font-bold uppercase tracking-widest text-foreground/80">
+                                {tx('settings.paymentMethodsCount', undefined, 'Saved Methods')}
+                            </p>
+                        </div>
+                    </div>
+                    <div className="mt-3">
+                        <p className="text-base font-black text-foreground drop-shadow-sm">{paymentMethods.length}</p>
+                        <p className="text-sm font-medium text-muted-foreground/80 mt-1">Ready for transactions</p>
                     </div>
                 </div>
-
-                <Button variant="primary" size="sm" className="rounded-2xl" leftIcon={<Plus className="w-4 h-4" />} onClick={() => setIsAddPaymentModalOpen(true)}>
-                    {tx('settings.addMethod', undefined, 'Add method')}
-                </Button>
             </div>
 
             {isLoading ? (
-                <div className="flex justify-center py-10"><Loader2 className="h-6 w-6 animate-spin text-primary-600" /></div>
-            ) : paymentMethods.length === 0 ? (
-                <div className="rounded-[1.75rem] border border-dashed border-primary-200/70 bg-primary-50/45 p-8 text-center dark:border-white/10 dark:bg-white/[0.04]">
-                    <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-primary-600 shadow-sm dark:bg-white/10 dark:text-primary-300">
-                        <CreditCard className="h-6 w-6" />
+                <div className="flex justify-center items-center py-20">
+                    <div className="relative flex justify-center items-center">
+                        <div className="absolute inset-0 rounded-full bg-brand/20 blur-xl animate-pulse"></div>
+                        <Loader2 className="h-8 w-8 animate-spin text-brand relative z-10" />
                     </div>
-                    <p className="mt-5 text-base font-semibold text-[#171420] dark:text-white">
+                </div>
+            ) : paymentMethods.length === 0 ? (
+                <div className="relative overflow-hidden rounded-xl border-2 border-dashed border-white/10 bg-white/[0.01] p-5 text-center shadow-2xl backdrop-blur-xl transition-all hover:border-brand/40 group">    
+                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-brand/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 blur-[50px] pointer-events-none" />
+                    <div className="relative z-10 mx-auto flex h-24 w-24 items-center justify-center rounded-xl bg-card border border-white/10 text-muted-foreground group-hover:text-brand shadow-2xl transition-all duration-500 group-hover:scale-110 group-hover:rotate-6">
+                        <CreditCard className="h-8 w-8" />
+                    </div>
+                    <h3 className="relative z-10 mt-4 text-base font-bold bg-gradient-to-br from-foreground to-foreground/80 bg-clip-text text-transparent">     
                         {tx('settings.noPaymentMethods', undefined, 'No payment method added yet')}
+                    </h3>
+                    <p className="relative z-10 mt-4 max-w-md mx-auto text-base leading-relaxed text-muted-foreground/80">
+                        {tx('settings.noPaymentMethodsDescription', undefined, 'Add a payout method now so contracts, earnings, and withdrawals are ready when you need them. Secure and encrypted.')}
                     </p>
-                    <p className="mt-2 text-sm leading-6 text-[#6b6880] dark:text-[#8b8aa0]">
-                        {tx('settings.noPaymentMethodsDescription', undefined, 'Add a payout method now so contracts, earnings, and withdrawals are ready when you need them.')}
-                    </p>
+                    <div className="mt-4 relative z-10">
+                        <Button variant="primary" size="lg" className="rounded-full shadow-lg hover:shadow-brand/25 transition-all hover:scale-105" leftIcon={<Plus className="w-5 h-5" />} onClick={() => setIsAddPaymentModalOpen(true)}>
+                            {tx('settings.addMethod', undefined, 'Add your first method')}
+                        </Button>
+                    </div>
                 </div>
             ) : (
-                <div className="space-y-4">
-                    {paymentMethods.map((method) => (
-                        <div key={method.id} className="rounded-[1.6rem] border border-primary-100/70 bg-white/75 p-5 dark:border-white/10 dark:bg-white/[0.04]">
-                            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                                <div className="flex items-center gap-4">
-                                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary-50 text-primary-600 dark:bg-white/8 dark:text-primary-300">
-                                        <CreditCard className="h-5 w-5" />
+                <div className="relative overflow-hidden rounded-xl border border-white/10 bg-black/40 p-5 shadow-2xl backdrop-blur-3xl ring-1 ring-white/5">
+                    <div className="absolute -left-40 top-20 h-[400px] w-[400px] rounded-full bg-brand/5 blur-[120px] pointer-events-none" />
+                    
+                    <div className="relative z-10 mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-3">
+                        <div>
+                            <h3 className="text-base font-bold tracking-tight bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
+                                Payout Methods
+                            </h3>
+                            <p className="mt-2 text-sm leading-relaxed text-muted-foreground/90 max-w-xl">
+                                Manage how you receive earnings or make payments. Your default method will be automatically selected during checkout.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="relative z-10 space-y-4">
+                        {paymentMethods.map((method) => (
+                            <div key={method.id} className={`group flex flex-col md:flex-row md:items-center justify-between gap-3 rounded-xl border p-5 transition-all duration-300 ${method.is_default ? 'border-brand/40 bg-brand/5 shadow-[0_0_30px_-10px_rgba(var(--brand),0.2)]' : 'border-white/5 bg-white/[0.01] hover:border-white/20 hover:bg-white/[0.03]'}`}>
+                                <div className="flex min-w-0 items-center gap-3">    
+                                    <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl shadow-inner transition-colors duration-500 ${method.is_default ? 'bg-brand/20 text-brand border border-brand/30' : 'bg-white/5 text-muted-foreground border border-white/10 group-hover:text-foreground'}`}>
+                                        <CreditCard className={`h-6 w-6 ${method.is_default ? 'drop-shadow-[0_0_8px_rgba(var(--brand),0.8)]' : ''}`} />
                                     </div>
-                                    <div>
-                                        <p className="font-semibold text-[#171420] dark:text-white">{method.label}</p>
-                                        <p className="mt-1 text-sm text-[#6b6880] dark:text-[#8b8aa0]">{method.details}</p>
+                                    <div className="min-w-0">
+                                        <p className={`text-base font-bold transition-colors duration-300 ${method.is_default ? 'text-foreground' : 'text-foreground/80 group-hover:text-foreground'}`}>{method.label}</p>
+                                        <p className="mt-1 text-sm font-medium tracking-wider text-muted-foreground/80">{method.details}</p>
                                     </div>
                                 </div>
 
-                                <div className="flex flex-wrap items-center gap-2 md:justify-end">
+                                <div className="shrink-0 flex items-center gap-3">
                                     {method.is_default ? (
-                                        <span className="inline-flex items-center gap-1.5 rounded-full border border-primary-500/20 bg-primary-500/12 px-3 py-1 text-xs font-semibold text-primary-700 dark:text-primary-200">
-                                            <Check className="h-3.5 w-3.5" />
+                                        <span className="inline-flex items-center gap-2 rounded-full border border-brand/30 bg-brand/20 px-4 py-1.5 text-xs font-black uppercase tracking-widest text-brand shadow-[0_0_15px_-3px_rgba(var(--brand),0.4)]">
+                                            <Check className="h-4 w-4" />       
                                             {tx('settings.default', undefined, 'Default')}
                                         </span>
                                     ) : (
-                                        <Button variant="outline" size="sm" className="rounded-2xl" onClick={() => handleSetDefaultPayment(method.id)}>
-                                            {tx('settings.setDefault', undefined, 'Set as default')}
+                                        <Button variant="outline" size="sm" className="rounded-full border-white/10 hover:bg-white/10 transition-colors font-bold tracking-wide" onClick={() => handleSetDefaultPayment(method.id)}> 
+                                            {tx('settings.setDefault', undefined, 'Set default')}
                                         </Button>
                                     )}
 
@@ -381,14 +446,14 @@ function Settings() {
                                         type="button"
                                         onClick={() => handleDeletePayment(method.id)}
                                         aria-label={tx('settings.deletePaymentMethod', { label: method.label }, `Delete ${method.label}`)}
-                                        className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-red-500/15 text-red-500 transition-colors hover:bg-red-500/10"
+                                        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-white/5 bg-black/20 text-muted-foreground transition-all hover:bg-red-500/20 hover:border-red-500/40 hover:text-red-400 hover:shadow-[0_0_15px_rgba(239,68,68,0.4)]"        
                                     >
                                         <Trash2 className="h-4 w-4" />
                                     </button>
                                 </div>
                             </div>
-                        </div>
-                    ))}
+                        ))}
+                    </div>
                 </div>
             )}
         </div>
@@ -403,92 +468,123 @@ function Settings() {
     };
 
     return (
-        <div className="page-enter page-shell bg-[#f6f3ff] dark:bg-[#0b0a12] transition-colors duration-300">
+        <div className="page-enter bg-background min-h-screen selection:bg-brand/30 selection:text-foreground">
             <SEO {...SEO_CONFIG.settings} url="/settings" noIndex />
             <Header />
 
-            <main className="page-shell-content space-y-6">
-                <section className="flex flex-col gap-4 rounded-[1.75rem] border border-primary-100/70 bg-white/72 p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.04] sm:flex-row sm:items-end sm:justify-between sm:p-6">
-                    <div>
-                        <div className="inline-flex items-center gap-2 rounded-full border border-primary-100 bg-primary-50/70 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-primary-700 dark:border-white/10 dark:bg-white/[0.04] dark:text-primary-200">
-                            <Sparkles className="h-3.5 w-3.5" />
-                            {tx('settings.heroBadge', undefined, 'Settings workspace')}
+            <main className="mx-auto max-w-7xl px-4 sm:px-4 lg:px-5 py-5 space-y-4 pb-24">
+                {/* Modern Hero Section */}
+                <section className="relative overflow-hidden rounded-xl border border-white/5 bg-card/40 p-6 shadow-2xl backdrop-blur-md transform-gpu">
+                    <div className="absolute -left-32 -top-32 h-[500px] w-[500px] rounded-full bg-brand/10 blur-[120px] pointer-events-none" />
+                    <div className="absolute right-0 bottom-0 h-[300px] w-[300px] rounded-full bg-blue-500/5 blur-[100px] pointer-events-none" />
+                    
+                    <div className="relative z-10 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                        <div className="space-y-3">
+                            <div className="inline-flex items-center gap-2 rounded-full border border-brand/30 bg-brand/10 px-4 py-1.5 text-xs font-black uppercase tracking-widest text-brand shadow-[0_0_15px_-3px_rgba(var(--brand),0.3)] backdrop-blur-md">
+                                <Sparkles className="h-4 w-4" />
+                                {tx('settings.heroBadge', undefined, 'Settings workspace')}
+                            </div>
+                            <div>
+                                <h1 className="text-base font-black tracking-tight bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent sm:text-base">
+                                    {tx('settings.pageTitle', undefined, 'Settings')}
+                                </h1>
+                                <p className="mt-4 max-w-3xl text-base leading-relaxed text-muted-foreground/90 font-medium">
+                                    {tx('settings.heroDescription', undefined, 'Keep account details, security, payouts, and notification behavior in one consistent control surface. Update what matters without losing your place in the product.')}
+                                </p>
+                            </div>
+                            <div className="flex flex-wrap gap-3 pt-2">
+                                <div className="inline-flex items-center gap-2.5 rounded-full border border-white/10 bg-white/[0.03] px-5 py-2 text-sm font-bold text-foreground shadow-sm backdrop-blur-md hover:bg-white/[0.05] transition-colors">
+                                    <User className="h-4 w-4 text-brand" />
+                                    {accountTypeLabel}
+                                </div>
+                                <div className={`inline-flex items-center gap-2.5 rounded-full border px-5 py-2 text-sm font-bold shadow-sm backdrop-blur-md transition-colors ${
+                                    profile?.cin_verified 
+                                        ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/15' 
+                                        : 'border-amber-500/30 bg-amber-500/10 text-amber-400 hover:bg-amber-500/15'
+                                }`}>
+                                    <Shield className="h-4 w-4" />
+                                    {identityLabel}
+                                </div>
+                            </div>
                         </div>
-                        <h1 className="mt-4 text-3xl font-semibold tracking-tight text-[#171420] dark:text-white">
-                            {tx('settings.pageTitle', undefined, 'Settings')}
-                        </h1>
-                        <p className="mt-2 max-w-3xl text-sm leading-6 text-[#6b6880] dark:text-[#8b8aa0]">
-                            {tx('settings.heroDescription', undefined, 'Keep account details, security, payouts, and notification behavior in one consistent control surface. Update what matters without losing your place in the product.')}
-                        </p>
-                        <div className="mt-4 flex flex-wrap gap-2">
-                            <span className="summary-chip">
-                                {accountTypeLabel}
-                            </span>
-                            <span className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-sm ${identityTone}`}>
-                                <Shield className="h-4 w-4" />
-                                {identityLabel}
-                            </span>
-                        </div>
-                    </div>
 
-                    <Button variant="outline" className="rounded-2xl" rightIcon={<ArrowUpRight className="h-4 w-4" />} onClick={() => navigate(dashboardPath)}>
-                        {tx('settings.goToDashboard', undefined, 'Go to dashboard')}
-                    </Button>
+                        <Button variant="outline" className="rounded-full shadow-lg border-white/10 bg-white/5 backdrop-blur-md hover:bg-white/10 transition-all hover:scale-105 font-bold tracking-wide border" rightIcon={<ArrowUpRight className="h-4 w-4" />} onClick={() => navigate(dashboardPath)}>
+                            {tx('settings.goToDashboard', undefined, 'Go to dashboard')}
+                        </Button>
+                    </div>
                 </section>
 
-                <div className="grid gap-6 xl:grid-cols-[248px_minmax(0,1fr)]">
-                    <aside className="xl:sticky xl:top-6 xl:self-start xl:h-fit xl:max-h-[calc(100vh-3rem)] xl:overflow-y-auto">
-                        <SettingsPanel className="rounded-[1.8rem] border border-black/[0.06] bg-white/92 p-4 shadow-[0_20px_45px_-30px_rgba(26,24,37,0.18)] dark:border-white/10 dark:bg-[#1a1825]">
-                            <nav className="space-y-3">
-                                {tabs.map((item) => (
+                <div className="grid gap-3 lg:grid-cols-[260px_1fr] items-start">
+                    {/* Floating Sidebar Nav */}
+                    <aside className="lg:sticky lg:top-28 lg:max-h-[calc(100vh-9rem)] lg:overflow-y-auto no-scrollbar relative z-20">
+                        <nav className="flex flex-col gap-2 rounded-xl border border-white/5 bg-card/40 p-4 shadow-2xl backdrop-blur-3xl ring-1 ring-white/5">
+                            {tabs.map((item) => {
+                                const isActive = activeTab === item.id;
+                                return (
                                     <button
                                         key={item.id}
                                         type="button"
                                         onClick={() => setActiveTab(item.id)}
-                                        className={`group flex w-full items-center gap-3 rounded-[1.35rem] px-4 py-4 text-left transition-all duration-200 ${activeTab === item.id
-                                            ? 'border border-[color:var(--workspace-primary)]/20 bg-[color:var(--workspace-primary)]/[0.08] text-[var(--text-primary)] shadow-[0_18px_34px_-28px_color-mix(in_srgb,var(--workspace-primary)_55%,transparent)] dark:border-[color:var(--workspace-primary)]/20 dark:bg-[color:var(--workspace-primary)]/[0.10]'
-                                            : 'border border-transparent text-[var(--text-secondary)] hover:border-black/[0.05] hover:bg-black/[0.02] hover:text-[var(--text-primary)] dark:hover:border-white/[0.06] dark:hover:bg-white/[0.04] dark:hover:text-white'}`}
+                                        className={`group relative flex w-full items-center gap-2.5 rounded-[12px] px-3 py-3 text-left transition-all duration-500 overflow-hidden ${
+                                            isActive
+                                                ? 'bg-brand/5 shadow-[0_0_30px_-5px_rgba(var(--brand),0.15)] border border-brand/20'
+                                                : 'border border-transparent text-muted-foreground hover:bg-white/5 hover:text-foreground hover:border-white/10'
+                                        }`}
                                     >
-                                        <span className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-2xl border transition-colors ${activeTab === item.id
-                                            ? 'border-[color:var(--workspace-primary)]/20 bg-[color:var(--workspace-primary)] text-[color:var(--workspace-primary-text)]'
-                                            : 'border-black/[0.06] bg-black/[0.02] text-[color:var(--workspace-primary)] group-hover:border-[color:var(--workspace-primary)]/16 dark:border-white/[0.08] dark:bg-white/[0.04]'}`}>
+                                        {isActive && <div className="absolute inset-0 bg-gradient-to-r from-brand/10 to-transparent opacity-50" />}
+                                        <span className={`relative z-10 flex h-7 w-7 shrink-0 items-center justify-center rounded-[8px] transition-all duration-500 ${
+                                            isActive
+                                                ? 'bg-brand/20 text-brand shadow-[0_0_15px_rgba(var(--brand),0.4)] scale-105 border border-brand/30'
+                                                : 'bg-white/5 text-muted-foreground group-hover:bg-white/10 group-hover:text-foreground group-hover:scale-105 border border-white/10'
+                                        }`}>
                                             <item.icon className="h-4 w-4" />
                                         </span>
-                                        <div className="min-w-0 flex-1">
-                                            <p className="text-sm font-semibold leading-tight">{item.label}</p>
-                                            <p className={`mt-0.5 line-clamp-1 text-xs ${activeTab === item.id ? 'text-[var(--text-secondary)] dark:text-[var(--text-muted)]' : 'text-[var(--text-muted)]'}`}>
+                                        <div className="relative z-10 min-w-0 flex-1">
+                                            <p className={`text-sm font-bold tracking-tight transition-colors ${isActive ? 'text-foreground drop-shadow-md' : 'text-foreground/80'}`}>{item.label}</p>
+                                            <p className={`mt-0.5 truncate text-[11px] font-medium transition-colors ${isActive ? 'text-muted-foreground' : 'text-muted-foreground/60 group-hover:text-muted-foreground/80'}`}>
                                                 {item.description}
                                             </p>
                                         </div>
-                                        <ArrowIcon className={`h-4 w-4 flex-shrink-0 transition-colors ${activeTab === item.id ? 'text-[color:var(--workspace-primary)]' : 'text-[var(--text-muted)] group-hover:text-[color:var(--workspace-primary)]'}`} />
+                                        <ArrowIcon className={`relative z-10 h-4 w-4 shrink-0 transition-all duration-300 ${
+                                            isActive ? 'text-brand translate-x-1 opacity-100' : 'text-transparent -translate-x-2 opacity-0 group-hover:translate-x-0 group-hover:text-muted-foreground group-hover:opacity-100'
+                                        }`} />
                                     </button>
-                                ))}
-                            </nav>
-                        </SettingsPanel>
+                                );
+                            })}
+                        </nav>
                     </aside>
 
-                    <section className="space-y-6">
-                        <div className="premium-panel radius-shell p-6 sm:p-8">
-                            <div className="mb-8 border-b border-primary-100/70 pb-6 dark:border-white/10">
-                                <h2 className="text-2xl font-semibold tracking-tight text-[#171420] dark:text-white">
-                                    {currentTab.label}
-                                </h2>
-                                <p className="mt-2 max-w-2xl text-sm leading-6 text-[#6b6880] dark:text-[#8b8aa0]">
-                                    {currentTab.description}
-                                </p>
+                    {/* Main Content Area */}
+                    <section className="space-y-3 relative z-10 w-full min-w-0 max-w-full">
+                        <div className="min-h-[600px] rounded-xl border border-white/5 bg-card/40 p-4 shadow-2xl backdrop-blur-md ring-1 ring-white/5 sm:p-4 w-full min-w-0 max-w-full transform-gpu">
+                            <div className="mb-3 flex flex-col justify-between items-start sm:flex-row sm:items-end border-b border-white/10 pb-8 gap-3 relative">
+                                <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+                                <div>
+                                    <h2 className="text-base font-black tracking-tight bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
+                                        {currentTab.label}
+                                    </h2>
+                                    <p className="mt-3 text-base leading-relaxed text-muted-foreground/90 font-medium">
+                                        {currentTab.description}
+                                    </p>
+                                </div>
                                 {activeTab === 'payment' ? (
-                                    <Button variant="primary" size="sm" className="rounded-2xl" leftIcon={<Plus className="w-4 h-4" />} onClick={() => setIsAddPaymentModalOpen(true)}>
+                                    <Button variant="primary" size="lg" className="rounded-full shrink-0 shadow-[0_0_20px_-5px_rgba(var(--brand),0.6)] font-bold tracking-wide transition-all hover:scale-105 hover:-translate-y-0.5" leftIcon={<Plus className="w-5 h-5" />} onClick={() => setIsAddPaymentModalOpen(true)}>
                                         {tx('settings.addMethod', undefined, 'Add method')}
                                     </Button>
                                 ) : null}
                             </div>
 
-                            {renderActiveTab()}
+                            <div className="w-full min-w-0 max-w-full relative z-10">
+                                {renderActiveTab()}
+                            </div>
                         </div>
 
-                        <Button variant="ghost" className="rounded-2xl text-[#8b8aa0] hover:text-red-500" onClick={handleLogout}>
-                            {tx('settings.logout', undefined, 'Sign out')}
-                        </Button>
+                        <div className="flex justify-center pt-8 pb-4">
+                            <Button variant="ghost" className="relative group overflow-hidden rounded-full px-4 py-5 font-bold tracking-widest uppercase text-sm border border-white/5 bg-white/[0.01] text-muted-foreground hover:text-red-400 hover:border-red-500/30 transition-all shadow-xl hover:shadow-[0_0_30px_-5px_rgba(239,68,68,0.3)] hover:-translate-y-1" onClick={handleLogout}>
+                                <div className="absolute inset-0 bg-gradient-to-r from-red-500/0 via-red-500/10 to-red-500/0 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                {tx('settings.logout', undefined, 'Sign out securely')}
+                            </Button>
+                        </div>
                     </section>
                 </div>
             </main>

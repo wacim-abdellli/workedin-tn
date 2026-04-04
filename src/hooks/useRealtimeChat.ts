@@ -46,7 +46,6 @@ export function useRealtimeChat({
     const [isSending, setIsSending] = useState(false);
     const [isTyping, setIsTyping] = useState(false);
     const [otherUserTyping, setOtherUserTyping] = useState(false);
-    const [totalMessageCount, setTotalMessageCount] = useState(0);
     const [hasMoreMessages, setHasMoreMessages] = useState(false);
 
     const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -60,17 +59,6 @@ export function useRealtimeChat({
         setError(null);
 
         try {
-            // Get total count first
-            if (offset === 0) {
-                const { count, error: countError } = await supabase
-                    .from('messages')
-                    .select('*', { count: 'exact', head: true })
-                    .eq('contract_id', contractId);
-
-                if (countError) throw countError;
-                setTotalMessageCount(count || 0);
-            }
-
             const { data, error: fetchError } = await supabase
                 .from('messages')
                 .select(`
@@ -97,15 +85,14 @@ export function useRealtimeChat({
                 setMessages(prev => [...newMessages, ...prev]);
             }
             
-            // Check if there are more messages to load
-            setHasMoreMessages((offset + MESSAGES_PER_PAGE) < (totalMessageCount || 0));
+            setHasMoreMessages(newMessages.length === MESSAGES_PER_PAGE);
         } catch (err) {
             logger.error('Error fetching messages:', err);
             setError(err as Error);
         } finally {
             setIsLoading(false);
         }
-    }, [contractId, enabled, totalMessageCount]);
+    }, [contractId, enabled]);
 
     useEffect(() => {
         if (!contractId || !enabled) return;
@@ -217,7 +204,7 @@ export function useRealtimeChat({
 
             while (attempt < maxRetries) {
                 try {
-                    const { error: insertError } = await sendMessageRecord({
+                    const { data: persistedMessage, error: insertError } = await sendMessageRecord({
                         contract_id: contractId,
                         sender_id: userId,
                         receiver_id: receiverId,
@@ -226,9 +213,17 @@ export function useRealtimeChat({
                     });
 
                     if (insertError) throw insertError;
-                    
-                    // Success! Remove optimistic message since Realtime will duplicate it
-                    setMessages(prev => prev.filter(m => m.id !== optimisticId));
+
+                    if (persistedMessage) {
+                        setMessages(prev => prev.map(message => (
+                            message.id === optimisticId
+                                ? {
+                                    ...(persistedMessage as ChatMessage),
+                                    status: 'sent',
+                                }
+                                : message
+                        )));
+                    }
                     break;
                 } catch (err) {
                     attempt++;

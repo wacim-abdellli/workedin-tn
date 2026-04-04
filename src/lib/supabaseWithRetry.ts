@@ -49,7 +49,7 @@ export async function supabaseWithRetry<TResult extends SupabaseResultLike<unkno
   queryFn: () => PromiseLike<TResult> | TResult,
   options: { throwOnError?: boolean; timeoutMs?: number; refreshTimeoutMs?: number } = {}
 ): Promise<TResult> {
-  const timeoutMs = options.timeoutMs ?? 8000;
+  const timeoutMs = options.timeoutMs ?? 15000;
   const refreshTimeoutMs = options.refreshTimeoutMs ?? 5000;
   
   let result = await withTimeout(Promise.resolve(queryFn()), timeoutMs, 'Supabase query');

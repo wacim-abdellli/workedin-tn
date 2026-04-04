@@ -9,6 +9,41 @@ import type {
     RealtimePostgresChangesPayload,
 } from '@supabase/supabase-js';
 
+const CONVERSATIONS_TIMEOUT_MS = 20000;
+const MESSAGES_TIMEOUT_MS = 20000;
+const MESSAGE_SEND_TIMEOUT_MS = 20000;
+const MESSAGE_WRITE_TIMEOUT_MS = 12000;
+
+const conversationIdCache = new Map<string, string>();
+
+function getConversationCacheKey(user1: string, user2: string, contractId?: string | null) {
+    return [user1, user2].sort().join(':') + `:${contractId ?? 'none'}`;
+}
+
+async function getOrCreateConversationId(user1: string, user2: string, contractId?: string | null) {
+    const cacheKey = getConversationCacheKey(user1, user2, contractId);
+    const cachedConversationId = conversationIdCache.get(cacheKey);
+
+    if (cachedConversationId) {
+        return { data: cachedConversationId, error: null };
+    }
+
+    const { data, error } = await supabaseWithRetry(
+        () => supabase.rpc('get_or_create_conversation', {
+            user1,
+            user2,
+            p_contract_id: contractId ?? null,
+        }),
+        { throwOnError: false, timeoutMs: MESSAGE_WRITE_TIMEOUT_MS }
+    );
+
+    if (!error && typeof data === 'string') {
+        conversationIdCache.set(cacheKey, data);
+    }
+
+    return { data: typeof data === 'string' ? data : null, error };
+}
+
 function normalizeMessageError(error: unknown) {
     const message = error instanceof Error
         ? error.message
@@ -56,6 +91,9 @@ export interface Message {
     content: string;
     attachments: MessageAttachment[];
     is_read: boolean;
+    is_deleted?: boolean;
+    deleted_at?: string | null;
+    deleted_by?: string | null;
     created_at: string;
     contract_id: string | null;
     proposal_id: string | null;
@@ -96,13 +134,48 @@ export async function getConversations(userId: string, page: number = 0, limit: 
         const start = page * limit;
         const end = start + limit - 1;
 
-        // Step 1: Get conversations efficiently (no joins)
-        const { data, error, count } = await supabaseWithRetry(() => supabase
-            .from('conversations')
-            .select('*', { count: 'exact' })
-            .or(`participant_1.eq.${userId},participant_2.eq.${userId}`)
-            .order('last_message_at', { ascending: false })
-            .range(start, end));
+        // Step 1: Get conversations efficiently using UNION pattern (replaces .or() which defeats indexes)
+        // Two separate indexed queries are faster than .or() with full table scan
+        // Only select needed columns to reduce payload size and query time
+        const [result1, result2] = await Promise.all([
+            supabaseWithRetry(() => supabase
+                .from('conversations')
+                .select('id, participant_1, participant_2, contract_id, last_message_text, last_message_at, unread_count_1, unread_count_2, created_at, updated_at', { count: 'estimated' })
+                .eq('participant_1', userId)
+                .order('last_message_at', { ascending: false }), 
+                { timeoutMs: CONVERSATIONS_TIMEOUT_MS }),
+            supabaseWithRetry(() => supabase
+                .from('conversations')
+                .select('id, participant_1, participant_2, contract_id, last_message_text, last_message_at, unread_count_1, unread_count_2, created_at, updated_at', { count: 'estimated' })
+                .eq('participant_2', userId)
+                .order('last_message_at', { ascending: false }), 
+                { timeoutMs: CONVERSATIONS_TIMEOUT_MS })
+        ]);
+
+        if (result1.error) throw result1.error;
+        if (result2.error) throw result2.error;
+
+        // Merge and deduplicate results in memory
+        const allConversations = [
+            ...(result1.data ?? []),
+            ...(result2.data ?? [])
+        ] as ConversationRow[];
+
+        // Remove duplicates and sort by last_message_at
+        const uniqueConversations = Array.from(
+            new Map(allConversations.map(conv => [conv.id, conv])).values()
+        ).sort((a, b) => {
+            const aTime = new Date(a.last_message_at || 0).getTime();
+            const bTime = new Date(b.last_message_at || 0).getTime();
+            return bTime - aTime;
+        });
+
+        // Apply pagination in memory (limit and offset on deduplicated results)
+        const paginatedConversations = uniqueConversations.slice(start, end + 1);
+        const count = uniqueConversations.length;
+
+        const data = paginatedConversations;
+        const error = null;
 
         if (error) throw error;
 
@@ -117,7 +190,7 @@ export async function getConversations(userId: string, page: number = 0, limit: 
                 ? supabaseWithRetry(() => supabase
                     .from('profiles')
                     .select('id, full_name, avatar_url, username')
-                    .in('id', otherUserIds))
+                    .in('id', otherUserIds), { timeoutMs: CONVERSATIONS_TIMEOUT_MS })
                 : Promise.resolve({ data: [], error: null })
         ]);
 
@@ -167,7 +240,7 @@ export async function getTotalUnreadCount(userId: string) {
     try {
         const { data, error } = await supabaseWithRetry(() => supabase
             .rpc('get_total_unread_count', { custom_user_id: userId })
-        );
+        , { timeoutMs: 12000 });
 
         if (error) throw error;
 
@@ -181,13 +254,10 @@ export async function getMessages(conversationId: string, limit: number = 50, of
     try {
         const { data, error } = await supabaseWithRetry(() => supabase
             .from('messages')
-            .select(`
-                *,
-                sender:profiles!sender_id(id, full_name, avatar_url)
-            `)
+            .select('*')
             .eq('conversation_id', conversationId)
             .order('created_at', { ascending: false })
-            .range(offset, offset + limit - 1));
+            .range(offset, offset + limit - 1), { timeoutMs: MESSAGES_TIMEOUT_MS });
 
         if (error) throw error;
 
@@ -237,7 +307,7 @@ export async function sendMessage(params: {
             })
             // Removed expensive sender join for faster message delivery
             .select()
-            .single(), { throwOnError: false, timeoutMs: 15000 });
+            .single(), { throwOnError: false, timeoutMs: MESSAGE_SEND_TIMEOUT_MS });
 
         if (error) throw error;
         
@@ -255,16 +325,45 @@ export async function sendMessage(params: {
 
 export async function markConversationRead(conversationId: string, userId: string) {
     try {
-        const { error } = await supabase.rpc('mark_conversation_read', {
-            p_conversation_id: conversationId,
-            p_user_id: userId,
-        });
+        const { error } = await supabaseWithRetry(
+            () => supabase.rpc('mark_conversation_read', {
+                p_conversation_id: conversationId,
+                p_user_id: userId,
+            }),
+            { throwOnError: false, timeoutMs: 10000 }
+        );
 
         if (error) throw error;
 
         return { error: null };
     } catch (error) {
         return { error: normalizeMessageError(error) };
+    }
+}
+
+export async function deleteMessage(messageId: string) {
+    try {
+        const { data, error } = await supabaseWithRetry(
+            () => supabase.rpc('delete_message_atomic', { p_message_id: messageId }),
+            { throwOnError: false, timeoutMs: MESSAGE_WRITE_TIMEOUT_MS }
+        );
+
+        if (error) throw error;
+
+        return {
+            data: data as { conversation_id?: string | null } | null,
+            error: null,
+        };
+    } catch (error) {
+        const normalizedError = normalizeMessageError(error);
+        if (normalizedError.message.includes('Could not find the function public.delete_message_atomic')) {
+            return {
+                data: null,
+                error: new Error('Delete message is not enabled in the database yet. Run the latest messages SQL migration first.'),
+            };
+        }
+
+        return { data: null, error: normalizeMessageError(error) };
     }
 }
 
@@ -279,7 +378,7 @@ export function subscribeToConversation(
         .on(
             'postgres_changes',
             {
-                event: 'INSERT',
+                event: '*',
                 schema: 'public',
                 table: 'messages',
                 filter: `conversation_id=eq.${conversationId}`,
@@ -351,31 +450,30 @@ export async function sendContractMessage(data: {
     message_type?: string | null;
 }) {
     try {
-        // Get or create conversation for these users
-        const { data: conversationId, error: convError } = await supabase.rpc(
-            'get_or_create_conversation',
-            {
-                user1: data.sender_id,
-                user2: data.receiver_id,
-                p_contract_id: data.contract_id,
-            }
+        const { data: conversationId, error: convError } = await getOrCreateConversationId(
+            data.sender_id,
+            data.receiver_id,
+            data.contract_id
         );
 
         if (convError) throw convError;
+        if (!conversationId) throw new Error('Failed to resolve conversation');
 
-        // Insert message with conversation_id
-        const { data: message, error } = await supabase
-            .from('messages')
-            .insert({
-                conversation_id: conversationId,
-                sender_id: data.sender_id,
-                receiver_id: data.receiver_id,
-                content: data.content,
-                contract_id: data.contract_id,
-                attachments: data.attachments || [],
-            })
-            .select()
-            .single();
+        const { data: message, error } = await supabaseWithRetry(
+            () => supabase
+                .from('messages')
+                .insert({
+                    conversation_id: conversationId,
+                    sender_id: data.sender_id,
+                    receiver_id: data.receiver_id,
+                    content: data.content,
+                    contract_id: data.contract_id,
+                    attachments: data.attachments || [],
+                })
+                .select()
+                .single(),
+            { throwOnError: false, timeoutMs: MESSAGE_SEND_TIMEOUT_MS }
+        );
 
         if (error) throw error;
 

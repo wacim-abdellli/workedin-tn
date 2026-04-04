@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Camera, Check, Loader2, Save, Shield, User } from 'lucide-react';
+import { Camera, Check, Eye, Loader2, Save, Shield, User } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from '@/i18n';
 import { useAuth } from '@/contexts/AuthContext';
@@ -11,7 +11,7 @@ import OptimizedImage from '@/components/common/OptimizedImage';
 import { supabase } from '@/lib/supabase';
 import { logger } from '@/lib/logger';
 import { getAvatarGradient, getInitials } from '@/lib/avatar';
-import { getWorkspaceOnboardingPath, getWorkspaceSetupProgress, isWorkspaceReady } from '@/lib/workspaceRoutes';
+import { getWorkspaceOnboardingPath, isWorkspaceReady } from '@/lib/workspaceRoutes';
 import { switchWorkspace } from '@/lib/switchWorkspace';
 
 export default function ProfileSettings() {
@@ -30,7 +30,7 @@ export default function ProfileSettings() {
             setForm({
                 full_name: profile.full_name || '',
                 phone: profile.phone || '',
-                email: '',
+                email: profile.email || user?.email || '',
                 bio: profile.bio || '',
                 location: profile.location || '',
             });
@@ -100,7 +100,8 @@ export default function ProfileSettings() {
              await updateProfile({
                  full_name: form.full_name,
                  phone: form.phone,
-                 bio: form.bio,
+                   email: form.email,
+                   bio: form.bio,
                  location: form.location,
              });
              await refreshProfile?.();
@@ -187,33 +188,47 @@ export default function ProfileSettings() {
     void dir; // used by parent via useTranslation
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-3">
             {/* Avatar + user info */}
-            <div className="flex items-center gap-6">
+            <div className="flex items-center gap-3">
                 <div className="relative">
                     {profile?.avatar_url ? (
-                        <OptimizedImage src={profile.avatar_url} alt={form.full_name} className="w-24 h-24 rounded-2xl" imgClassName="object-cover" />
+                        <OptimizedImage src={profile.avatar_url} alt={form.full_name} className="w-24 h-24 rounded-xl" imgClassName="object-cover" />
                     ) : (
                         <div
-                            className="flex h-24 w-24 items-center justify-center rounded-2xl text-3xl font-bold text-white"
+                            className="flex h-24 w-24 items-center justify-center rounded-xl text-base font-bold text-white"
                             style={{ background: `linear-gradient(135deg, ${getAvatarGradient(form.full_name || 'User').join(', ')})` }}
                         >
                             {getInitials(form.full_name || 'User')}
                         </div>
                     )}
-                    <label className="absolute -bottom-2 -end-2 w-8 h-8 bg-primary-600 rounded-full text-white flex items-center justify-center shadow-lg hover:bg-primary-700 transition-colors cursor-pointer">
+                    <label className="absolute -bottom-2 -end-2 w-8 h-8 bg-brand rounded-full text-brand-foreground flex items-center justify-center shadow-lg hover:bg-brand/90 transition-colors cursor-pointer">
                         <Camera className="w-4 h-4" />
                         <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
                     </label>
                 </div>
                 <div className="flex-1">
-                    <h3 className="font-bold text-lg">{form.full_name || tx('settings.userFallback', undefined, 'User')}</h3>
-                    <p className="text-muted">{form.phone}</p>
+                      <div className="flex flex-wrap items-center gap-3">
+                          <h3 className="font-bold text-base text-foreground">{form.full_name || tx('settings.userFallback', undefined, 'User')}</h3>
+                          {(profile?.user_type === 'freelancer' || profile?.user_type === 'both') && (
+                              <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-7 text-xs px-2.5 py-0 gap-1.5 rounded-full"
+                                  onClick={() => navigate(`/freelancer/${profile?.username || user?.id}`)}
+                              >
+                                  <Eye className="w-3 h-3" />
+                                  {tx('settings.viewProfile', undefined, 'View Public Profile')}
+                              </Button>
+                          )}
+                      </div>
+                    <p className="text-muted-foreground">{form.phone}</p>
                     <div className="flex flex-wrap gap-2 mt-2">
                         <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${
                             profile?.user_type === 'both'
-                                ? 'border border-primary-500/20 bg-primary-500/12 text-primary-700 dark:text-primary-200'
-                                : 'border border-gray-200 bg-gray-100 text-gray-700 dark:border-white/10 dark:bg-white/[0.04] dark:text-gray-200'
+                                ? 'border border-brand/20 bg-brand/5 text-brand'
+                                : 'border border-border bg-surface text-muted-foreground'
                         }`}>
                             <User className="w-3 h-3" />
                             {profile?.user_type === 'freelancer' ? tx('settings.accountTypeFreelancer', undefined, 'Freelancer')
@@ -222,20 +237,20 @@ export default function ProfileSettings() {
                                 : tx('settings.accountTypeUnknown', undefined, 'Not set')}
                         </span>
                         {profile?.cin_verified ? (
-                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-green-500/10 text-green-600">
                                 <Check className="w-3 h-3" />{tx('settings.identityVerified', undefined, 'Identity verified')}
                             </span>
                         ) : (
-                            <button onClick={() => navigate('/verify-identity')} className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border border-primary-500/20 bg-primary-500/12 text-primary-700 transition-colors hover:bg-primary-500/18 dark:text-primary-200">
+                            <button onClick={() => navigate('/verify-identity')} className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border border-brand/20 bg-brand/5 text-brand transition-colors hover:bg-brand/10">
                                 <Shield className="w-3 h-3" />{tx('settings.verifyIdentity', undefined, 'Verify your identity')}
                             </button>
                         )}
                         {nextSetupPath === null ? (
-                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-green-500/10 text-green-600">
                                 <Check className="w-3 h-3" />{tx('settings.profileComplete', undefined, 'Profile complete')}
                             </span>
                         ) : showSecondarySetupChip ? (
-                            <button onClick={() => navigate(nextSetupPath)} className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 hover:bg-orange-200 dark:hover:bg-orange-900/50 transition-colors">
+                            <button onClick={() => navigate(nextSetupPath)} className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-orange-500/10 text-orange-600 hover:bg-orange-500/20 transition-colors">
                                 <User className="w-3 h-3" />{nextSetupLabel}
                             </button>
                         ) : null}
@@ -244,25 +259,26 @@ export default function ProfileSettings() {
             </div>
 
             {/* Completion widget */}
-            <div className={`p-4 rounded-2xl border-2 ${completionPct === 100 ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800' : 'bg-primary-50 dark:bg-primary-900/20 border-primary-200 dark:border-primary-800/40'}`}>
-                <div className="flex items-center justify-between mb-3">
-                    <span className="font-medium text-sm">{tx('settings.profileCompletionTitle', undefined, 'Profile completion')}</span>
-                    <span className={`text-lg font-bold ${completionPct === 100 ? 'text-green-600' : 'text-primary-600'}`}>{completionPct}%</span>
+            <div className={`group relative mt-4 p-5 rounded-xl border border-white/10 shadow-2xl backdrop-blur-xl overflow-hidden ${completionPct === 100 ? 'bg-gradient-to-b from-green-500/10 to-green-500/5' : 'bg-gradient-to-b from-brand/10 to-brand/5'}`}>
+                <div className={`absolute top-0 right-0 h-[200px] w-[200px] rounded-full blur-[80px] pointer-events-none transition-all duration-700 ${completionPct === 100 ? 'bg-green-500/20 group-hover:bg-green-500/30' : 'bg-brand/20 group-hover:bg-brand/30'}`} />
+                <div className="relative z-10 flex items-center justify-between mb-5">
+                    <span className="font-bold text-base text-foreground tracking-tight">{tx('settings.profileCompletionTitle', undefined, 'Profile completion')}</span>
+                    <span className={`text-base font-black drop-shadow-sm ${completionPct === 100 ? 'text-green-400' : 'text-brand'}`}>{completionPct}%</span>
                 </div>
-                <div className="h-2.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                    <div className={`h-full rounded-full transition-[width] duration-300 ${completionPct === 100 ? 'bg-green-500' : 'bg-gradient-to-r from-primary-500 to-primary-600'}`} style={{ width: `${completionPct}%` }} />
+                <div className="relative z-10 h-3 bg-black/20 rounded-full overflow-hidden inset-shadow-sm border border-white/5">
+                    <div className={`h-full rounded-full transition-all duration-700 ${completionPct === 100 ? 'bg-gradient-to-r from-green-400 to-green-500 shadow-[0_0_15px_rgba(34,197,94,0.6)]' : 'bg-gradient-to-r from-brand/80 to-brand shadow-[0_0_15px_rgba(var(--brand),0.6)]'}`} style={{ width: `${completionPct}%` }} />
                 </div>
                 {missingFields.length > 0 && (
-                    <div className="mt-3 flex flex-wrap gap-2">
-                        <span className="text-xs text-muted">{tx('settings.requiredLabel', undefined, 'Required:')}</span>
-                        {missingFields.slice(0, 3).map(m => <span key={m.key} className="text-xs px-2 py-0.5 bg-white dark:bg-gray-800 rounded border">{m.label}</span>)}
-                        {missingFields.length > 3 && <span className="text-xs text-muted">{tx('settings.moreRequired', { count: missingFields.length - 3 }, `+${missingFields.length - 3} more`)}</span>}
+                    <div className="relative z-10 mt-3 flex flex-wrap gap-3 items-center">
+                        <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground/80">{tx('settings.requiredLabel', undefined, 'Required:')}</span>
+                        {missingFields.slice(0, 3).map(m => <span key={m.key} className="text-xs font-bold px-3 py-1 bg-white/5 text-foreground rounded-full border border-white/10 shadow-sm backdrop-blur-md">{m.label}</span>)}
+                        {missingFields.length > 3 && <span className="text-xs font-bold text-brand uppercase tracking-widest px-2">{tx('settings.moreRequired', { count: missingFields.length - 3 }, `+${missingFields.length - 3} more`)}</span>}
                     </div>
                 )}
             </div>
 
             {/* Form fields */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <Input label={tx('settings.fullName', undefined, 'Full name')} value={form.full_name} onChange={e => setForm({ ...form, full_name: e.target.value })} />
                 <Input label={tx('settings.phoneNumberLabel', undefined, 'Phone number')} value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} placeholder={tx('common.phonePlaceholder', undefined, 'Enter your phone number')} />
                 <Input label={tx('settings.emailOptionalLabel', undefined, 'Email (optional)')} type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} placeholder={tx('settings.emailPlaceholder', undefined, 'email@example.com')} />
@@ -270,47 +286,44 @@ export default function ProfileSettings() {
             </div>
 
             {/* Workspace switcher */}
-            <div className="mt-6 rounded-2xl border border-gray-200/80 bg-white/80 p-4 shadow-sm dark:border-white/10 dark:bg-white/[0.03]">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div className="mt-4 relative overflow-hidden rounded-xl border border-white/10 bg-card/80 p-5 shadow-2xl backdrop-blur-xl ring-1 ring-black/5">
+                <div className="absolute -left-20 top-20 h-[300px] w-[300px] rounded-full bg-brand/5 blur-[100px] pointer-events-none" />
+                <div className="relative z-10 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div>
-                        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary-500">{t.auth.accountPanel.sectionLabel}</p>
-                        <h4 className="mt-2 text-lg font-semibold text-foreground">{t.auth.accountPanel.switchWorkspace}</h4>
-                        <p className="mt-1 text-sm text-muted">{profile?.user_type === 'both' ? t.auth.accountPanel.switchWorkspaceBoth : t.auth.accountPanel.switchWorkspaceSingle}</p>
+                        <p className="text-xs font-bold uppercase tracking-widest text-brand">{t.auth.accountPanel.sectionLabel}</p>
+                        <h4 className="mt-3 text-base font-bold bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">{t.auth.accountPanel.switchWorkspace}</h4>
+                        <p className="mt-2 text-base text-muted-foreground/90">{profile?.user_type === 'both' ? t.auth.accountPanel.switchWorkspaceBoth : t.auth.accountPanel.switchWorkspaceSingle}</p>
                     </div>
-                    {nextSetupPath ? <Button variant="primary" onClick={() => navigate(nextSetupPath)}>{nextSetupLabel}</Button> : null}
+                    {nextSetupPath ? <Button variant="primary" className="rounded-xl shadow-lg hover:shadow-brand/25 transition-all hover:-translate-y-0.5" onClick={() => navigate(nextSetupPath)}>{nextSetupLabel}</Button> : null}
                 </div>
-                <div className="mt-4 rounded-2xl border border-gray-200/80 bg-gray-50/90 p-4 dark:border-white/8 dark:bg-white/[0.04]">
+                <div className="relative z-10 mt-3 rounded-xl border border-white/5 bg-white/[0.02] p-5 backdrop-blur-lg">
                     <div className="flex items-center justify-between gap-3">
-                        <div className="flex flex-wrap items-center gap-2">
-                            <span className="inline-flex items-center rounded-full border border-primary-500/20 bg-primary-500/12 px-3 py-1 text-xs font-medium text-primary-700 dark:text-primary-200">
+                        <div className="flex flex-wrap items-center gap-3">
+                            <span className="inline-flex items-center rounded-full border border-brand/30 bg-brand/10 px-4 py-1.5 text-xs font-bold text-brand shadow-sm">
                                 {activeMode === 'freelancer' ? t.auth.accountPanel.freelancerLabel : t.auth.accountPanel.clientLabel}
                             </span>
-                            <span className="text-sm font-medium text-foreground">{workspaceReady ? t.auth.accountPanel.ready : t.auth.accountPanel.needsSetup}</span>
+                            <span className="text-sm font-bold text-foreground">{workspaceReady ? t.auth.accountPanel.ready : t.auth.accountPanel.needsSetup}</span>
                         </div>
-                        <span className="text-sm font-semibold text-muted">{getWorkspaceSetupProgress(profile, freelancerProfile, activeMode)}%</span>
-                    </div>
-                    <div className="mt-3 h-2 overflow-hidden rounded-full bg-gray-200 dark:bg-white/10">
-                        <div className="h-full rounded-full bg-gradient-to-r from-primary-500 to-primary-600 transition-[width] duration-300" style={{ width: `${getWorkspaceSetupProgress(profile, freelancerProfile, activeMode)}%` }} />
-                    </div>
-                    <p className="mt-2 text-xs text-muted">{t.auth.accountPanel.progressLabel}</p>
+                        </div>
                 </div>
                 {/* Setup status summary */}
-                <div className="mt-4 rounded-2xl border border-gray-200/80 bg-white/70 p-4 dark:border-white/10 dark:bg-white/[0.03]">
-                    <div className="grid gap-2 sm:grid-cols-3">
+                <div className="relative z-10 mt-3 rounded-xl border border-white/5 bg-white/[0.02] p-5 backdrop-blur-lg">
+                    <div className="grid gap-3 sm:grid-cols-3">
                         {setupStatusItems.map(item => (
-                            <div key={item.key} className={`rounded-xl border px-3 py-2 ${item.done ? 'border-green-200 bg-green-50/80 dark:border-green-500/30 dark:bg-green-500/10' : 'border-orange-200 bg-orange-50/80 dark:border-orange-500/30 dark:bg-orange-500/10'}`}>
-                                <p className="text-xs font-medium text-muted">{item.label}</p>
-                                <div className="mt-1 inline-flex items-center gap-1.5 text-xs font-semibold">
-                                    {item.done ? <Check className="h-3.5 w-3.5 text-green-600 dark:text-green-300" />
-                                        : <Shield className="h-3.5 w-3.5 text-orange-600 dark:text-orange-300" />}
-                                    <span className={item.done ? 'text-green-700 dark:text-green-200' : 'text-orange-700 dark:text-orange-200'}>{item.done ? item.doneText : item.pendingText}</span>
+                            <div key={item.key} className={`rounded-xl border p-4 transition-transform hover:-translate-y-1 ${item.done ? 'border-green-500/30 bg-green-500/10 shadow-[0_4px_20px_-5px_rgba(34,197,94,0.15)]' : 'border-orange-500/30 bg-orange-500/10 shadow-[0_4px_20px_-5px_rgba(249,115,22,0.15)]'}`}>
+                                <p className="text-xs font-bold tracking-wide text-foreground/80 uppercase">{item.label}</p>
+                                <div className="mt-3 flex items-center gap-2">
+                                    <div className={`flex h-6 w-6 items-center justify-center rounded-full ${item.done ? 'bg-green-500/20 text-green-400' : 'bg-orange-500/20 text-orange-400'}`}>
+                                        {item.done ? <Check className="h-3.5 w-3.5" /> : <Shield className="h-3.5 w-3.5" />}
+                                    </div>
+                                    <span className={`text-sm font-bold ${item.done ? 'text-green-400' : 'text-orange-400'}`}>{item.done ? item.doneText : item.pendingText}</span>
                                 </div>
                             </div>
                         ))}
                     </div>
-                    <p className="mt-3 text-xs text-muted">{nextSetupHint}</p>
+                    <p className="mt-5 text-sm font-medium text-muted-foreground/80 border-t border-white/5 pt-4">{nextSetupHint}</p>
                 </div>
-                <div className="mt-4 grid gap-3 md:grid-cols-2">
+                <div className="relative z-10 mt-3 grid gap-3 md:grid-cols-2">
                         {([
                             { type: 'freelancer' as const, label: t.auth.accountPanel.freelancerLabel, desc: t.auth.accountPanel.freelancerDesc },
                             { type: 'client' as const, label: t.auth.accountPanel.clientLabel, desc: t.auth.accountPanel.clientDesc },
@@ -320,15 +333,18 @@ export default function ProfileSettings() {
                             const actionLabel = isActive ? t.auth.accountPanel.current : isAvailable ? t.auth.accountPanel.switchAction : t.auth.accountPanel.enable;
                             return (
                                 <button key={type} type="button" onClick={e => { e.preventDefault(); e.stopPropagation(); void handleWorkspaceSelection(type); }} disabled={isActive || isSwitchingWorkspace !== null}
-                                    className={`rounded-2xl border p-4 text-left transition-colors ${isActive ? 'border-primary-500/20 bg-primary-500/[0.08] dark:border-primary-500/30 dark:bg-primary-500/[0.12]' : 'border-gray-200 bg-white hover:border-primary-300 dark:border-white/10 dark:bg-white/[0.03] dark:hover:border-primary-500/30'} ${isActive ? 'cursor-default' : ''}`}>
-                                    <div className="flex items-start justify-between gap-3">
+                                    className={`group rounded-xl border p-4 text-left transition-all duration-300 hover:shadow-2xl ${isActive ? 'border-brand/40 bg-brand/10 shadow-[0_0_30px_-5px_rgba(var(--brand),0.3)]' : 'border-white/10 bg-white/[0.02] hover:-translate-y-1 hover:border-brand/40 hover:bg-brand/5'} ${isActive ? 'cursor-default pointer-events-none' : ''}`}>
+                                    <div className="flex flex-col h-full justify-between gap-3">
                                         <div>
-                                            <div className="text-sm font-semibold text-foreground">{label}</div>
-                                            <p className="mt-2 text-sm leading-relaxed text-muted">{desc}</p>
+                                            <div className="text-base font-bold text-foreground">{label}</div>
+                                            <p className="mt-3 text-sm leading-relaxed text-muted-foreground/90">{desc}</p>
                                         </div>
-                                        <span className={`inline-flex min-h-8 items-center gap-1 rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] ${isActive ? 'border-primary-500/20 bg-primary-500/12 text-primary-700 dark:text-primary-200' : 'border-gray-200 bg-gray-100 text-gray-600 dark:border-white/10 dark:bg-white/[0.04] dark:text-gray-300'}`}>
-                                            {isSwitchingWorkspace === type ? <><Loader2 className="h-3 w-3 animate-spin" />{t.auth.accountPanel.switching}</> : actionLabel}
-                                        </span>
+                                        <div className="flex items-center justify-between">
+                                            <div className={`h-1.5 w-12 rounded-full ${isActive ? 'bg-brand shadow-[0_0_10px_rgba(var(--brand),0.8)]' : 'bg-white/10'}`} />
+                                            <span className={`inline-flex min-h-9 items-center gap-2 rounded-full border px-4 py-1.5 text-xs font-black uppercase tracking-widest ${isActive ? 'border-brand/30 bg-brand/20 text-brand shadow-sm' : 'border-white/10 bg-white/5 text-muted-foreground transition-colors group-hover:border-brand/30 group-hover:text-foreground'}`}>
+                                                {isSwitchingWorkspace === type ? <><Loader2 className="h-4 w-4 animate-spin" />{t.auth.accountPanel.switching}</> : actionLabel}
+                                            </span>
+                                        </div>
                                     </div>
                             </button>
                         );

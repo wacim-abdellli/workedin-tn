@@ -211,7 +211,7 @@ export default function Header() {
   const logoSrc = isDark ? '/logos/logo-primary-dark.svg' : '/logos/logo-primary.svg'
   const freelancerBadge = freelancerVerified
     ? {
-        label: t.auth?.accountPanel?.statusPro || 'Pro',
+        label: t.auth?.accountPanel?.freelancerLabel || 'Freelancer',
         background: 'var(--workspace-primary)',
         color: '#ffffff',
         dotClassName: 'bg-white',
@@ -275,13 +275,6 @@ export default function Header() {
         freelancerProfile: freelancerProfile ?? null,
         navigate,
       })
-
-      showToast(
-        targetWorkspace === 'freelancer'
-          ? (t.auth?.accountPanel?.switchedFreelancer || 'Freelancer workspace is now active.')
-          : (t.auth?.accountPanel?.switchedClient || 'Client workspace is now active.'),
-        'success'
-      )
     } catch {
       showToast(t.auth?.accountPanel?.switchError || 'We could not switch your workspace right now.', 'error')
     }

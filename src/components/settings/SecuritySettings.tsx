@@ -78,9 +78,9 @@ export default function SecuritySettings() {
 
     return (
         <>
-            <div className="space-y-6">
-                <div className="grid gap-4 lg:grid-cols-3">
-                    <div className="rounded-2xl border border-primary-100/70 bg-primary-50/60 p-4 dark:border-white/10 dark:bg-white/[0.04]">
+            <div className="space-y-3">
+                <div className="grid gap-3 lg:grid-cols-3">
+                    <div className="rounded-xl border border-primary-100/70 bg-primary-50/60 p-4 dark:border-white/10 dark:bg-white/[0.04]">
                         <p className="text-xs font-medium uppercase tracking-[0.15em] text-[#8b8aa0]">
                             {tx('settings.securityPosture', undefined, 'Security posture')}
                         </p>
@@ -89,7 +89,7 @@ export default function SecuritySettings() {
                             {tx('settings.securityPostureValue', undefined, 'Protected by account session controls')}
                         </p>
                     </div>
-                    <div className="rounded-2xl border border-primary-100/70 bg-primary-50/60 p-4 dark:border-white/10 dark:bg-white/[0.04]">
+                    <div className="rounded-xl border border-primary-100/70 bg-primary-50/60 p-4 dark:border-white/10 dark:bg-white/[0.04]">
                         <p className="text-xs font-medium uppercase tracking-[0.15em] text-[#8b8aa0]">
                             {tx('settings.passwordStatus', undefined, 'Password status')}
                         </p>
@@ -99,7 +99,7 @@ export default function SecuritySettings() {
                                 : tx('settings.noPasswordOAuth', undefined, `Signed in via ${providerLabel} — no password needed`)}
                         </p>
                     </div>
-                    <div className="rounded-2xl border border-primary-100/70 bg-primary-50/60 p-4 dark:border-white/10 dark:bg-white/[0.04]">
+                    <div className="rounded-xl border border-primary-100/70 bg-primary-50/60 p-4 dark:border-white/10 dark:bg-white/[0.04]">
                         <p className="text-xs font-medium uppercase tracking-[0.15em] text-[#8b8aa0]">
                             {tx('settings.activeSessionsTitle', undefined, 'Active sessions')}
                         </p>
@@ -112,8 +112,8 @@ export default function SecuritySettings() {
                 <div className="space-y-4">
                     {/* Password Change Section */}
                     <div className="rounded-[1.6rem] border border-primary-100/70 bg-white/75 p-5 dark:border-white/10 dark:bg-white/[0.04]">
-                        <div className="flex items-start gap-4">
-                            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary-50 text-primary-600 dark:bg-white/8 dark:text-primary-300">
+                        <div className="flex items-start gap-3">
+                            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary-50 text-primary-600 dark:bg-white/8 dark:text-primary-300">
                                 <KeyRound className="h-5 w-5" />
                             </div>
                             <div className="flex-1">
@@ -175,7 +175,7 @@ export default function SecuritySettings() {
                                         )}
                                         <Button
                                             variant="primary"
-                                            className="rounded-2xl"
+                                            className="rounded-xl"
                                             onClick={handleChangePassword}
                                             disabled={isChangingPassword || !newPassword || !confirmPassword}
                                             leftIcon={isChangingPassword ? <Loader2 className="w-4 h-4 animate-spin" /> : undefined}
@@ -190,7 +190,7 @@ export default function SecuritySettings() {
                                         <p className="mt-2 text-sm leading-6 text-[#6b6880] dark:text-[#8b8aa0]">
                                             {tx('settings.oauthPasswordMessage', undefined, `You signed in with ${providerLabel}. Password management is handled by your identity provider.`)}
                                         </p>
-                                        <Button variant="outline" disabled className="mt-4 rounded-2xl">
+                                        <Button variant="outline" disabled className="mt-4 rounded-xl">
                                             {tx('settings.managedByProvider', undefined, `Managed by ${providerLabel}`)}
                                         </Button>
                                     </>
@@ -201,8 +201,8 @@ export default function SecuritySettings() {
 
                     {/* Active Sessions */}
                     <div className="rounded-[1.6rem] border border-primary-100/70 bg-white/75 p-5 dark:border-white/10 dark:bg-white/[0.04]">
-                        <div className="flex items-start gap-4">
-                            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary-50 text-primary-600 dark:bg-white/8 dark:text-primary-300">
+                        <div className="flex items-start gap-3">
+                            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary-50 text-primary-600 dark:bg-white/8 dark:text-primary-300">
                                 <Smartphone className="h-5 w-5" />
                             </div>
                             <div className="flex-1">
@@ -212,7 +212,7 @@ export default function SecuritySettings() {
                                 <p className="mt-2 text-sm leading-6 text-[#6b6880] dark:text-[#8b8aa0]">
                                     {tx('settings.activeSessionsMessage', undefined, 'This device is your only active session')}
                                 </p>
-                                <Button variant="outline" className="mt-4 rounded-2xl" onClick={handleLogout}>
+                                <Button variant="outline" className="mt-4 rounded-xl" onClick={handleLogout}>
                                     {tx('settings.signOutAllDevices', undefined, 'Sign out from all devices')}
                                 </Button>
                             </div>
@@ -221,8 +221,8 @@ export default function SecuritySettings() {
 
                     {/* Delete Account */}
                     <div className="rounded-[1.6rem] border border-red-500/15 bg-red-500/[0.06] p-5 dark:border-red-500/20 dark:bg-red-500/[0.08]">
-                        <div className="flex items-start gap-4">
-                            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-red-500/12 text-red-500">
+                        <div className="flex items-start gap-3">
+                            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-red-500/12 text-red-500">
                                 <AlertTriangle className="h-5 w-5" />
                             </div>
                             <div className="flex-1">
@@ -232,7 +232,7 @@ export default function SecuritySettings() {
                                 <p className="mt-2 text-sm leading-6 text-red-700/80 dark:text-red-200/80">
                                     {tx('settings.deleteAccountDescription', undefined, 'Your account and all data will be permanently deleted. This action cannot be undone.')}
                                 </p>
-                                <Button variant="danger" className="mt-4 rounded-2xl" onClick={() => setIsDeleteModalOpen(true)} leftIcon={<Trash2 className="w-4 h-4" />}>
+                                <Button variant="danger" className="mt-4 rounded-xl" onClick={() => setIsDeleteModalOpen(true)} leftIcon={<Trash2 className="w-4 h-4" />}>
                                     {tx('settings.deleteMyAccount', undefined, 'Delete my account')}
                                 </Button>
                             </div>

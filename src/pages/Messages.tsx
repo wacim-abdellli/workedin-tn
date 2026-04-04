@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { Header } from '../components/layout';
 import Button from '../components/ui/Button';
+import Modal from '../components/ui/Modal';
 import SEO, { SEO_CONFIG } from '../components/common/SEO';
 import EmptyState from '../components/common/EmptyState';
 import { useAuth } from '../contexts/AuthContext';
@@ -32,6 +33,7 @@ import { useToast } from '../components/ui/Toast';
 import {
     getConversations,
     getMessages,
+    deleteMessage,
     sendMessage,
     uploadMessageAttachment,
     markConversationRead,
@@ -77,12 +79,62 @@ const blobToBase64 = (blob: Blob): Promise<string> => {
     });
 };
 
+type ThreadMessage = Message & {
+    status?: 'sending' | 'failed';
+};
+
+const MAX_CACHED_CONVERSATIONS = 50;
+const MAX_CACHED_MESSAGES = 200;
+
+const getConversationsCacheKey = (userId: string) => `messages:conversations:${userId}`;
+const getMessagesCacheKey = (conversationId: string) => `messages:thread:${conversationId}`;
+
+const readSessionCache = <T,>(key: string): T | null => {
+    try {
+        const raw = sessionStorage.getItem(key);
+        return raw ? JSON.parse(raw) as T : null;
+    } catch {
+        return null;
+    }
+};
+
+const writeSessionCache = (key: string, value: unknown) => {
+    try {
+        sessionStorage.setItem(key, JSON.stringify(value));
+    } catch {
+        // Ignore session storage write failures.
+    }
+};
+
+const sortConversationsByActivity = (items: Conversation[]) => {
+    return [...items].sort(
+        (a, b) => new Date(b.last_message_at || 0).getTime() - new Date(a.last_message_at || 0).getTime()
+    );
+};
+
+const isDeletedMessage = (message: ThreadMessage | null | undefined) => Boolean(message?.is_deleted);
+
+const getMessageDisplayText = (message: ThreadMessage | null | undefined, deletedLabel: string) => {
+    if (!message) return null;
+    return isDeletedMessage(message) ? deletedLabel : message.content;
+};
+
+const getThreadPreview = (threadMessages: ThreadMessage[], deletedLabel: string) => {
+    const lastMessage = threadMessages[threadMessages.length - 1] ?? null;
+
+    return {
+        last_message_text: getMessageDisplayText(lastMessage, deletedLabel),
+        last_message_at: lastMessage?.created_at ?? null,
+    };
+};
+
 function MessagesComponent() {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const { user, profile } = useAuth();
     const { showToast } = useToast();
     const { tx, language } = useTranslation();
+    const deletedMessageLabel = tx('pages.messages.deletedMessage', undefined, 'Message deleted');
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const messageInputRef = useRef<HTMLInputElement>(null);
 
@@ -91,7 +143,7 @@ function MessagesComponent() {
 
     const [conversations, setConversations] = useState<Conversation[]>([]);
     const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
-    const [messages, setMessages] = useState<Message[]>([]);
+    const [messages, setMessages] = useState<ThreadMessage[]>([]);
     const [newMessage, setNewMessage] = useState('');
     const [searchQuery, setSearchQuery] = useState('');
     const [filter, setFilter] = useState<'all' | 'unread' | 'starred'>('all');
@@ -99,6 +151,8 @@ function MessagesComponent() {
     const [isLoadingConversations, setIsLoadingConversations] = useState(true);
     const [isLoadingMessages, setIsLoadingMessages] = useState(false);
     const [isSending, setIsSending] = useState(false);
+    const [deletingMessageId, setDeletingMessageId] = useState<string | null>(null);
+    const [messagePendingDelete, setMessagePendingDelete] = useState<ThreadMessage | null>(null);
     const [uploadProgress, setUploadProgress] = useState(0);
     const [isOnline, setIsOnline] = useState(navigator.onLine);
     const [pendingQueue, setPendingQueue] = useState<any[]>([]);
@@ -111,6 +165,9 @@ function MessagesComponent() {
 
     const conversationsChannelRef = useRef<RealtimeChannel | null>(null);
     const messagesChannelRef = useRef<RealtimeChannel | null>(null);
+    const messageRequestIdRef = useRef(0);
+    const messageCacheRef = useRef<Record<string, ThreadMessage[]>>({});
+    const prefetchedConversationIdsRef = useRef<Set<string>>(new Set());
 
     // Typing indicators
     const { typingUsers, startTyping, stopTyping } = useTypingIndicator(
@@ -123,6 +180,19 @@ function MessagesComponent() {
         conversationId: selectedConversation?.id || null,
         currentUserId: user?.id || null,
         messages,
+        onMarkedRead: (messageIds) => {
+            const ids = new Set(messageIds);
+            setMessages((prev) => prev.map((message) => (
+                ids.has(message.id) ? { ...message, is_read: true, status: undefined } : message
+            )));
+            if (selectedConversation) {
+                setConversations((prev) => prev.map((conversation) => (
+                    conversation.id === selectedConversation.id
+                        ? { ...conversation, unread_count: 0 }
+                        : conversation
+                )));
+            }
+        },
     });
 
     // Network status listener
@@ -241,13 +311,24 @@ function MessagesComponent() {
     }, [selectedConversation?.id]);
 
 
-    const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    const scrollToBottom = (behavior: ScrollBehavior = 'smooth') => {
+        const parent = messagesParentRef.current;
+        if (!parent) return;
+
+        window.requestAnimationFrame(() => {
+            messagesVirtualizer.scrollToIndex(Math.max(messages.length - 1, 0), { align: 'end' });
+            parent.scrollTo({ top: parent.scrollHeight, behavior });
+        });
     };
 
     useEffect(() => {
         scrollToBottom();
     }, [messages]);
+
+    useEffect(() => {
+        if (!selectedConversation || messages.length === 0 || isLoadingMessages) return;
+        scrollToBottom('auto');
+    }, [selectedConversation?.id, messages.length, isLoadingMessages]);
 
     useEffect(() => {
         if (!selectedConversation) return;
@@ -260,8 +341,19 @@ function MessagesComponent() {
     }, [selectedConversation?.id, isSending]);
 
     const handleSelectConversation = async (conversation: Conversation) => {
+        if (selectedConversation?.id === conversation.id) return;
+
         setSelectedConversation(conversation);
         setShowMobileThread(true);
+
+        const cachedMessages = messageCacheRef.current[conversation.id]
+            ?? readSessionCache<ThreadMessage[]>(getMessagesCacheKey(conversation.id));
+        if (cachedMessages) {
+            setMessages(cachedMessages);
+            setIsLoadingMessages(false);
+        } else {
+            void prefetchConversationMessages(conversation.id);
+        }
         
         // Load draft for this conversation
         const draft = localStorage.getItem(`draft_${conversation.id}`);
@@ -277,6 +369,120 @@ function MessagesComponent() {
             );
         }
     };
+
+    const updateConversationPreview = (
+        conversationId: string,
+        updater: (conversation: Conversation) => Conversation
+    ) => {
+        setConversations((prev) => {
+            const next = prev.map((conversation) => (
+                conversation.id === conversationId ? updater(conversation) : conversation
+            ));
+            return sortConversationsByActivity(next);
+        });
+    };
+
+    const cacheMessagesForConversation = (conversationId: string, threadMessages: ThreadMessage[]) => {
+        messageCacheRef.current[conversationId] = threadMessages;
+        writeSessionCache(
+            getMessagesCacheKey(conversationId),
+            threadMessages.slice(-MAX_CACHED_MESSAGES)
+        );
+    };
+
+    const prefetchConversationMessages = async (conversationId: string) => {
+        if (prefetchedConversationIdsRef.current.has(conversationId)) return;
+        prefetchedConversationIdsRef.current.add(conversationId);
+
+        const cachedMessages = messageCacheRef.current[conversationId]
+            ?? readSessionCache<ThreadMessage[]>(getMessagesCacheKey(conversationId));
+        if (cachedMessages && cachedMessages.length > 0) return;
+
+        const { data } = await getMessages(conversationId);
+        if (data) {
+            cacheMessagesForConversation(conversationId, data as ThreadMessage[]);
+        }
+    };
+
+    const handleDeleteMessage = (message: ThreadMessage) => {
+        if (!selectedConversation || !user || message.sender_id !== user.id || message.status === 'sending') {
+            return;
+        }
+
+        setMessagePendingDelete(message);
+    };
+
+    const confirmDeleteMessage = async () => {
+        const message = messagePendingDelete;
+        if (!message || !selectedConversation || !user) return;
+
+        setMessagePendingDelete(null);
+
+        const previousMessages = messages;
+        const nextMessages = previousMessages.map((item) => (
+            item.id === message.id
+                ? {
+                    ...item,
+                    is_deleted: true,
+                    deleted_at: new Date().toISOString(),
+                    deleted_by: user.id,
+                    attachments: [],
+                    is_read: true,
+                }
+                : item
+        ));
+        const nextPreview = getThreadPreview(nextMessages, deletedMessageLabel);
+
+        setDeletingMessageId(message.id);
+        setMessages(nextMessages);
+        updateConversationPreview(selectedConversation.id, (conversation) => ({
+            ...conversation,
+            ...nextPreview,
+        }));
+
+        const { error } = await deleteMessage(message.id);
+
+        if (error) {
+            setMessages(previousMessages);
+            updateConversationPreview(selectedConversation.id, (conversation) => ({
+                ...conversation,
+                ...getThreadPreview(previousMessages, deletedMessageLabel),
+            }));
+            showToast(error.message, 'error');
+        }
+
+        setDeletingMessageId(null);
+    };
+
+    useEffect(() => {
+        if (!user?.id) return;
+
+        const cachedConversations = readSessionCache<Conversation[]>(getConversationsCacheKey(user.id));
+        if (cachedConversations && cachedConversations.length > 0) {
+            setConversations(cachedConversations);
+            setIsLoadingConversations(false);
+        }
+    }, [user?.id]);
+
+    useEffect(() => {
+        if (!user?.id || conversations.length === 0) return;
+        writeSessionCache(
+            getConversationsCacheKey(user.id),
+            conversations.slice(0, MAX_CACHED_CONVERSATIONS)
+        );
+
+        conversations.slice(0, 4).forEach((conversation) => {
+            void prefetchConversationMessages(conversation.id);
+        });
+    }, [user?.id, conversations]);
+
+    useEffect(() => {
+        if (!selectedConversation?.id) return;
+        if (messages.length > 0 && messages.some((message) => message.conversation_id !== selectedConversation.id)) {
+            return;
+        }
+        cacheMessagesForConversation(selectedConversation.id, messages);
+    }, [selectedConversation?.id, messages]);
 
     // Auto-select conversation from URL param ?conversation=ID
     useEffect(() => {
@@ -303,24 +509,30 @@ function MessagesComponent() {
 
             if (error) {
                 showToast(error.message, 'error');
+                setIsLoadingConversations(false);
+                setIsLoadingMore(false);
             } else if (data) {
                 if (append) {
                     setConversations(prev => {
                         const existingIds = new Set(prev.map(c => c.id));
                         const uniqueNew = data.filter(c => !existingIds.has(c.id));
-                        return [...prev, ...uniqueNew];
+                        return sortConversationsByActivity([...prev, ...uniqueNew]);
                     });
                 } else {
-                    setConversations(data);
+                    setConversations(sortConversationsByActivity(data));
                 }
                 setHasMoreConversations((currentPage + 1) * limit < (count || 0));
+                setIsLoadingConversations(false);
+                setIsLoadingMore(false);
+            } else {
+                // Handle edge case: no error and no data (should not happen)
+                console.warn('[loadConversations] Unexpected state: no error and no data');
+                setIsLoadingConversations(false);
+                setIsLoadingMore(false);
             }
-
-            setIsLoadingConversations(false);
-            setIsLoadingMore(false);
         };
 
-        loadConversations(page, page > 0);
+        void loadConversations(page, page > 0);
 
         // Only setup subscription on initial mount/page 0 to avoid duplicates
         if (page === 0) {
@@ -340,7 +552,7 @@ function MessagesComponent() {
                                 last_message_at: changed.last_message_at,
                                 unread_count: unread_count || 0,
                             };
-                            return updated.sort((a, b) => new Date(b.last_message_at || 0).getTime() - new Date(a.last_message_at || 0).getTime());
+                            return sortConversationsByActivity(updated);
                         }
                         // If it's a new conversation we don't have loaded, do a fetch
                         loadConversations(0, false);
@@ -360,25 +572,54 @@ function MessagesComponent() {
         };
     }, [user?.id, page]);
 
+    // Reset pagination when filter or search changes
+    useEffect(() => {
+        setPage(0);
+    }, [filter, searchQuery]);
+
     // Load messages when conversation is selected
     useEffect(() => {
         if (!selectedConversation || !user) return;
 
         const loadMessages = async () => {
-            // If we are switching conversations, set loading to true
-            setIsLoadingMessages(true);
+            const requestId = ++messageRequestIdRef.current;
+            const cachedMessages = messageCacheRef.current[selectedConversation.id]
+                ?? readSessionCache<ThreadMessage[]>(getMessagesCacheKey(selectedConversation.id));
+
+            if (cachedMessages && cachedMessages.length > 0) {
+                setMessages(cachedMessages);
+                setIsLoadingMessages(false);
+            } else {
+                setMessages([]);
+                setIsLoadingMessages(true);
+            }
+
             const { data, error } = await getMessages(selectedConversation.id);
 
+            if (messageRequestIdRef.current !== requestId) return;
+
             if (error) {
-                showToast(error.message, 'error');
+                if (!cachedMessages || cachedMessages.length === 0) {
+                    showToast(error.message, 'error');
+                }
             } else if (data) {
-                setMessages(data);
+                setMessages(data as ThreadMessage[]);
+                messageCacheRef.current[selectedConversation.id] = data as ThreadMessage[];
             }
 
             setIsLoadingMessages(false);
 
             // Mark conversation as read
-            await markConversationRead(selectedConversation.id, user.id);
+            const { error: readError } = await markConversationRead(selectedConversation.id, user.id);
+            if (!readError && messageRequestIdRef.current === requestId) {
+                setMessages((prev) => prev.map((message) => (
+                    message.receiver_id === user.id ? { ...message, is_read: true, status: undefined } : message
+                )));
+                updateConversationPreview(selectedConversation.id, (conversation) => ({
+                    ...conversation,
+                    unread_count: 0,
+                }));
+            }
         };
 
         loadMessages();
@@ -387,36 +628,67 @@ function MessagesComponent() {
         messagesChannelRef.current = subscribeToConversation(
             selectedConversation.id,
             (payload) => {
-                const newMsg = payload.new as Message;
-                
+                if (payload.eventType === 'UPDATE') {
+                    const updatedMessage = payload.new as unknown as ThreadMessage;
+                    setMessages((prev) => {
+                        const nextMessages = prev.map((message) => (
+                            message.id === updatedMessage.id ? { ...message, ...updatedMessage, status: undefined } : message
+                        ));
+
+                        updateConversationPreview(selectedConversation.id, (conversation) => ({
+                            ...conversation,
+                            ...getThreadPreview(nextMessages, deletedMessageLabel),
+                        }));
+
+                        return nextMessages;
+                    });
+                    return;
+                }
+
+                if (payload.eventType === 'DELETE') {
+                    const deletedMessage = payload.old as unknown as ThreadMessage;
+                    setMessages((prev) => {
+                        const nextMessages = prev.filter((message) => message.id !== deletedMessage.id);
+                        updateConversationPreview(selectedConversation.id, (conversation) => ({
+                            ...conversation,
+                            ...getThreadPreview(nextMessages, deletedMessageLabel),
+                        }));
+                        return nextMessages;
+                    });
+                    return;
+                }
+
+                if (payload.eventType !== 'INSERT') return;
+
+                const newMsg = payload.new as unknown as ThreadMessage;
+
                 setMessages((prev) => {
-                    // Deduplicate: Don't add if message with this ID already exists
-                    if (prev.some(m => m.id === newMsg.id)) {
+                    if (prev.some((message) => message.id === newMsg.id)) {
                         return prev;
                     }
+
+                    const optimisticIndex = prev.findIndex((message) => (
+                        message.status === 'sending'
+                        && message.sender_id === newMsg.sender_id
+                        && message.receiver_id === newMsg.receiver_id
+                        && message.content === newMsg.content
+                    ));
+
+                    if (optimisticIndex > -1) {
+                        const updated = [...prev];
+                        updated[optimisticIndex] = { ...newMsg };
+                        return updated;
+                    }
+
                     return [...prev, newMsg];
                 });
 
-                // Update conversation in list - move to top and update last message
-                setConversations((prev) =>
-                    prev.map((conv) =>
-                        conv.id === selectedConversation.id
-                            ? {
-                                  ...conv,
-                                  last_message_text: newMsg.content,
-                                  last_message_at: newMsg.created_at,
-                                  // Increment unread count if we receive a message from the other user
-                                  unread_count: newMsg.sender_id !== user?.id ? (conv.unread_count || 0) + 1 : conv.unread_count,
-                              }
-                            : conv
-                    )
-                    // Sort to keep selected conversation at top
-                    .sort((a, b) => {
-                        if (a.id === selectedConversation.id) return -1;
-                        if (b.id === selectedConversation.id) return 1;
-                        return new Date(b.last_message_at || 0).getTime() - new Date(a.last_message_at || 0).getTime();
-                    })
-                );
+                updateConversationPreview(selectedConversation.id, (conversation) => ({
+                    ...conversation,
+                    last_message_text: getMessageDisplayText(newMsg, deletedMessageLabel),
+                    last_message_at: newMsg.created_at,
+                    unread_count: newMsg.sender_id === user.id ? 0 : conversation.unread_count,
+                }));
             }
         );
 
@@ -526,6 +798,62 @@ function MessagesComponent() {
             return;
         }
 
+        stopTyping();
+
+        const activeConversation = selectedConversation;
+        const messageContent = newMessage.trim();
+        const fileToSend = selectedFile;
+        const recordedAudio = audioBlob;
+        const optimisticId = `temp_${Date.now()}`;
+        const optimisticCreatedAt = new Date().toISOString();
+        const previewText = messageContent
+            || (recordedAudio
+                ? tx('pages.messages.voiceMemo', undefined, 'Voice memo')
+                : fileToSend?.name || tx('pages.messages.attachmentLabel', undefined, 'Attachment'));
+        const previousPreview = {
+            last_message_text: activeConversation.last_message_text,
+            last_message_at: activeConversation.last_message_at,
+        };
+
+        const optimisticMessage: ThreadMessage = {
+            id: optimisticId,
+            conversation_id: activeConversation.id,
+            sender_id: user.id,
+            receiver_id: activeConversation.otherUser.id,
+            content: messageContent,
+            attachments: [],
+            is_read: false,
+            created_at: optimisticCreatedAt,
+            contract_id: activeConversation.contract_id,
+            proposal_id: null,
+            status: 'sending',
+            sender: {
+                id: user.id,
+                full_name: profile?.full_name || tx('common.you', undefined, 'You'),
+                avatar_url: profile?.avatar_url || null,
+            },
+        };
+
+        setMessages((prev) => [...prev, optimisticMessage]);
+        updateConversationPreview(activeConversation.id, (conversation) => ({
+            ...conversation,
+            last_message_text: previewText,
+            last_message_at: optimisticCreatedAt,
+            unread_count: 0,
+        }));
+
+        setNewMessage('');
+        if (fileToSend) {
+            setSelectedFile(null);
+        }
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
+        if (recordedAudio) {
+            cancelRecording();
+        }
+        messageInputRef.current?.focus();
+
         setIsSending(true);
         setUploadProgress(0);
         
@@ -540,34 +868,44 @@ function MessagesComponent() {
             }, 500);
         }
 
-        const attachments = [];
+        const attachments: Message['attachments'] = [];
 
         try {
-            if (audioBlob) {
+            const uploadTasks: Promise<Message['attachments'][number]>[] = [];
+
+            if (recordedAudio) {
                 const fileName = `voice_memo_${Date.now()}.webm`;
-                const audioFile = new File([audioBlob], fileName, { type: audioBlob.type || 'audio/webm' });
-                const { url, error } = await uploadMessageAttachment(audioFile, selectedConversation.id);
-                if (error) {
-                    showToast(`${tx('pages.messages.errors.audioUpload', undefined, 'Failed to upload audio')}: ${error.message}`, 'error');
-                    setIsSending(false);
-                    if (progressInterval) clearInterval(progressInterval);
-                    setUploadProgress(0);
-                    return;
-                }
-                if (url) attachments.push({ name: tx('pages.messages.voiceMemo', undefined, 'Voice memo'), url, type: audioFile.type, size: audioFile.size });
+                const audioFile = new File([recordedAudio], fileName, { type: recordedAudio.type || 'audio/webm' });
+                uploadTasks.push((async () => {
+                    const { url, error } = await uploadMessageAttachment(audioFile, activeConversation.id);
+                    if (error || !url) {
+                        throw new Error(`${tx('pages.messages.errors.audioUpload', undefined, 'Failed to upload audio')}: ${error?.message || 'Unknown error'}`);
+                    }
+                    return {
+                        name: tx('pages.messages.voiceMemo', undefined, 'Voice memo'),
+                        url,
+                        type: audioFile.type,
+                        size: audioFile.size,
+                    };
+                })());
             }
 
-            if (selectedFile) {
-                const { url, error } = await uploadMessageAttachment(selectedFile, selectedConversation.id);
-                if (error) {
-                    showToast(`${tx('pages.messages.errors.fileUpload', undefined, 'Failed to upload file')}: ${error.message}`, 'error');
-                    setIsSending(false);
-                    if (progressInterval) clearInterval(progressInterval);
-                    setUploadProgress(0);
-                    return;
-                }
-                if (url) attachments.push({ name: selectedFile.name, url, type: selectedFile.type, size: selectedFile.size });
+            if (fileToSend) {
+                uploadTasks.push((async () => {
+                    const { url, error } = await uploadMessageAttachment(fileToSend, activeConversation.id);
+                    if (error || !url) {
+                        throw new Error(`${tx('pages.messages.errors.fileUpload', undefined, 'Failed to upload file')}: ${error?.message || 'Unknown error'}`);
+                    }
+                    return {
+                        name: fileToSend.name,
+                        url,
+                        type: fileToSend.type,
+                        size: fileToSend.size,
+                    };
+                })());
             }
+
+            attachments.push(...await Promise.all(uploadTasks));
 
             if (progressInterval) {
                 clearInterval(progressInterval);
@@ -575,27 +913,61 @@ function MessagesComponent() {
             }
 
             const { data, error } = await sendMessage({
-                conversationId: selectedConversation.id,
+                conversationId: activeConversation.id,
                 senderId: user.id,
-                receiverId: selectedConversation.otherUser.id,
-                content: newMessage.trim(),
-                contractId: selectedConversation.contract_id,
+                receiverId: activeConversation.otherUser.id,
+                content: messageContent,
+                contractId: activeConversation.contract_id,
                 attachments: attachments.length > 0 ? attachments : undefined
             });
 
             if (error) {
-                showToast(error.message, 'error');
-            } else if (data) {
-                setNewMessage('');
-                if (audioBlob) {
-                    cancelRecording();
-                }
-                if (selectedFile) {
-                    setSelectedFile(null);
-                }
-                if (fileInputRef.current) fileInputRef.current.value = '';
-                messageInputRef.current?.focus();
+                throw error;
             }
+
+            if (data) {
+                const persistedMessage = data as ThreadMessage;
+                setMessages((prev) => {
+                    const alreadyInserted = prev.some((message) => message.id === persistedMessage.id);
+                    if (alreadyInserted) {
+                        return prev.map((message) => (
+                            message.id === persistedMessage.id ? { ...persistedMessage } : message
+                        ));
+                    }
+
+                    const optimisticIndex = prev.findIndex((message) => message.id === optimisticId);
+                    if (optimisticIndex > -1) {
+                        const updated = [...prev];
+                        updated[optimisticIndex] = { ...persistedMessage };
+                        return updated;
+                    }
+
+                    return [...prev, { ...persistedMessage }];
+                });
+            }
+        } catch (error) {
+            const message = error instanceof Error
+                ? error.message
+                : tx('pages.messages.errors.sendFailed', undefined, 'Failed to send message');
+
+            setMessages((prev) => prev.map((item) => (
+                item.id === optimisticId ? { ...item, status: 'failed' } : item
+            )));
+            updateConversationPreview(activeConversation.id, (conversation) => ({
+                ...conversation,
+                last_message_text:
+                    conversation.last_message_at === optimisticCreatedAt
+                        ? previousPreview.last_message_text
+                        : conversation.last_message_text,
+                last_message_at:
+                    conversation.last_message_at === optimisticCreatedAt
+                        ? previousPreview.last_message_at
+                        : conversation.last_message_at,
+            }));
+            if (messageContent) {
+                setNewMessage((current) => current || messageContent);
+            }
+            showToast(message, 'error');
         } finally {
             if (progressInterval) clearInterval(progressInterval);
             setIsSending(false);
@@ -746,6 +1118,8 @@ function MessagesComponent() {
                         >
                         <div
                             onClick={() => handleSelectConversation(conversation)}
+                            onMouseEnter={() => { void prefetchConversationMessages(conversation.id); }}
+                            onFocus={() => { void prefetchConversationMessages(conversation.id); }}
                             role="button"
                             tabIndex={0}
                             onKeyDown={(event) => {
@@ -795,7 +1169,7 @@ function MessagesComponent() {
                                             conversation.unread_count > 0
                                                 ? 'text-foreground'
                                                 : 'text-muted'
-                                        }`}
+                                        } ${conversation.last_message_text === deletedMessageLabel ? 'italic' : ''}`}
                                     >
                                         {conversation.last_message_text || tx('pages.messages.noMessagesYet', undefined, 'No messages yet')}
                                     </p>
@@ -921,18 +1295,37 @@ function MessagesComponent() {
                                             }}
                                         >
                                 <div
-                                    className={`flex ${message.sender_id === user?.id ? 'justify-end' : 'justify-start'} rtl:flex-row-reverse animate-in fade-in slide-in-from-bottom-2 duration-300 w-full`}
+                                    className={`group/message flex ${message.sender_id === user?.id ? 'justify-end' : 'justify-start'} rtl:flex-row-reverse animate-in fade-in slide-in-from-bottom-2 duration-300 w-full`}
                                 >
-                                    <div className={`max-w-xs lg:max-w-md ${message.sender_id === user?.id ? '' : 'mr-2'}`}>
+                                    <div className={`relative max-w-xs lg:max-w-md ${message.sender_id === user?.id ? '' : 'mr-2'}`}>
+                                        {message.sender_id === user?.id && !message.status && !message.is_deleted && (
+                                            <button
+                                                type="button"
+                                                onClick={() => void handleDeleteMessage(message)}
+                                                disabled={deletingMessageId === message.id}
+                                                aria-label={tx('pages.messages.deleteMessage', undefined, 'Delete message')}
+                                                className="absolute -top-2 -start-2 z-10 flex h-8 w-8 items-center justify-center rounded-full border border-border bg-card text-muted-foreground opacity-100 shadow-sm transition hover:text-destructive lg:opacity-0 lg:group-hover/message:opacity-100 disabled:cursor-not-allowed disabled:opacity-60"
+                                            >
+                                                {deletingMessageId === message.id ? (
+                                                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                                ) : (
+                                                    <Trash2 className="h-3.5 w-3.5" />
+                                                )}
+                                            </button>
+                                        )}
                                         <div
                                             className={`rounded-2xl px-4 py-2 transition-all duration-200 ${
-                                                message.sender_id === user?.id
-                                                    ? 'bg-brand text-brand-text rounded-br-none shadow-md hover:shadow-lg'
+                                                isDeletedMessage(message)
+                                                    ? 'border border-dashed border-border bg-card text-muted-foreground rounded-2xl'
+                                                    : message.sender_id === user?.id
+                                                    ? `bg-brand text-brand-text rounded-br-none shadow-md hover:shadow-lg ${message.status === 'failed' ? 'ring-1 ring-red-400/60' : ''} ${message.status === 'sending' ? 'opacity-80' : ''}`
                                                     : 'bg-surface text-foreground rounded-bl-none border border-border shadow-sm hover:shadow-md'
                                             }`}
                                         >
-                                            <p className="text-sm break-words">{message.content}</p>
-                                            {message.attachments && message.attachments.length > 0 && (
+                                            <p className={`text-sm break-words ${isDeletedMessage(message) ? 'italic' : ''}`}>
+                                                {getMessageDisplayText(message, deletedMessageLabel)}
+                                            </p>
+                                            {!isDeletedMessage(message) && message.attachments && message.attachments.length > 0 && (
                                                 <div className="mt-2 space-y-2">
                                                     {message.attachments.map((att, i) => {
                                                         const isImage = att.type?.startsWith('image/');
@@ -965,7 +1358,15 @@ function MessagesComponent() {
                                         </div>
                                         <p className={`text-xs mt-1 ${message.sender_id === user?.id ? 'text-end' : 'text-start'} text-muted-foreground flex items-center justify-${message.sender_id === user?.id ? 'end' : 'start'} gap-1`}>
                                             <span>{formatMessageTime(message.created_at)}</span>
-                                            {message.sender_id === user?.id && (
+                                            {message.sender_id === user?.id && message.status === 'sending' && (
+                                                <Loader2 className="w-3 h-3 animate-spin" />
+                                            )}
+                                            {message.sender_id === user?.id && message.status === 'failed' && (
+                                                <span className="text-red-400">
+                                                    {tx('pages.messages.sendFailed', undefined, 'Failed')}
+                                                </span>
+                                            )}
+                                            {message.sender_id === user?.id && !message.status && !message.is_deleted && (
                                                 <span className="flex items-center">
                                                     {message.is_read ? (
                                                         <span style={{ color: 'var(--workspace-primary)' }} title="Read">✓✓</span>
@@ -1111,7 +1512,7 @@ function MessagesComponent() {
                                 }}
                                 onBlur={stopTyping}
                                 placeholder={tx('pages.messages.messagePlaceholder', undefined, 'Write your message...')}
-                                disabled={isSending || isRecording || !!selectedFile || !!audioBlob}
+                                disabled={isSending || isRecording}
                                 className="flex-1 bg-surface border border-border rounded-2xl px-4 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-brand text-foreground placeholder:text-muted-foreground disabled:opacity-50"
                             />
                             
@@ -1199,28 +1600,73 @@ function MessagesComponent() {
         </div>
     );
 
-    return (
-        <div className="min-h-screen bg-background text-foreground">
-            <SEO {...SEO_CONFIG.messages} url="/messages" noIndex />
-            <Header />
+        return (
+        <>
+            <div className="min-h-screen bg-background text-foreground">
+                <SEO {...SEO_CONFIG.messages} url="/messages" noIndex />
+                <Header />
 
-            <div className="h-[calc(100vh-64px)] flex overflow-hidden">
-                {/* Sidebar - Conversations List (Responsive) */}
-                <div className={`shrink-0 border-e border-border flex-col bg-background w-full lg:w-80 ${showMobileThread ? 'hidden lg:flex' : 'flex'}`}>
-                    {renderConversationList()}
-                </div>
+                <div className="h-[calc(100vh-64px)] flex overflow-hidden">
+                    {/* Sidebar - Conversations List (Responsive) */}
+                    <div className={`shrink-0 border-e border-border flex-col bg-background w-full lg:w-80 ${showMobileThread ? 'hidden lg:flex' : 'flex'}`}>
+                        {renderConversationList()}
+                    </div>
 
-                {/* Main Message Area */}
-                <div className={`flex-1 flex flex-col overflow-hidden ${showMobileThread ? 'flex' : 'hidden lg:flex'}`}>
-                    {renderMessageThread()}
-                </div>
+                    {/* Main Message Area */}
+                    <div className={`flex-1 flex flex-col overflow-hidden ${showMobileThread ? 'flex' : 'hidden lg:flex'}`}>
+                        {renderMessageThread()}
+                    </div>
 
-                {/* Right Sidebar - Contact Details */}
-                <div className="w-80 shrink-0 border-s border-border bg-background hidden xl:flex flex-col">
-                    {renderContactDetails()}
+                    {/* Right Sidebar - Contact Details */}
+                    <div className="w-80 shrink-0 border-s border-border bg-background hidden xl:flex flex-col">
+                        {renderContactDetails()}
+                    </div>
                 </div>
             </div>
-        </div>
+
+            <Modal
+                isOpen={!!messagePendingDelete}
+                onClose={() => {
+                    if (deletingMessageId) return;
+                    setMessagePendingDelete(null);
+                }}
+                title={tx('pages.messages.deleteMessage', undefined, 'Delete message')}
+                size="sm"
+            >
+                <div className="space-y-5">
+                    <p className="text-sm text-muted-foreground">
+                        {tx('pages.messages.deleteMessageConfirm', undefined, 'Delete this message?')}
+                    </p>
+
+                    {messagePendingDelete?.content ? (
+                        <div className="rounded-2xl border border-border bg-surface px-4 py-3 text-sm text-foreground">
+                            {messagePendingDelete.content}
+                        </div>
+                    ) : null}
+
+                    <div className="flex justify-end gap-3">
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setMessagePendingDelete(null)}
+                            disabled={!!deletingMessageId}
+                        >
+                            {tx('common.cancel', undefined, 'Cancel')}
+                        </Button>
+                        <Button
+                            type="button"
+                            variant="primary"
+                            onClick={() => void confirmDeleteMessage()}
+                            isLoading={!!deletingMessageId}
+                            disabled={!!deletingMessageId}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                            {tx('pages.messages.deleteMessage', undefined, 'Delete message')}
+                        </Button>
+                    </div>
+                </div>
+            </Modal>
+        </>
     );
 }
 

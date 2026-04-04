@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { User } from 'lucide-react';
 import { useTranslation } from '../i18n';
+import { useAuth } from '../contexts/AuthContext';
 import { Header, Footer } from '../components/layout';
 import Button from '../components/ui/Button';
 import { supabase } from '../lib/supabase';
@@ -52,6 +53,7 @@ function getReviewJobTitle(contract: FreelancerReviewRow['contract']): string | 
 export default function FreelancerProfile() {
     const { usernameOrId } = useParams<{ usernameOrId: string }>();
     const { language, t, tx } = useTranslation();
+    const { user } = useAuth();
     const navigate = useNavigate();
 
     const [freelancer, setFreelancer] = useState<FreelancerData | null>(null);
@@ -100,30 +102,61 @@ export default function FreelancerProfile() {
                 profileId = userProfileRow.id;
             }
 
-            // Fetch freelancer_profile with joined profile data
-            const { data: profile, error: profileError } = await supabase
-                .from('freelancer_profiles')
-                .select(`
-                    *,
-                    profile:profiles!id (
-                        full_name,
-                        username,
-                        avatar_url,
-                        bio,
-                        location,
+            // Fetch all freelancer data in parallel
+            const [
+                { data: profile, error: profileError },
+                { data: portfolioItems },
+                { data: reviews }
+            ] = await Promise.all([
+                supabase
+                    .from('freelancer_profiles')
+                    .select(`
+                        *,
+                        profile:profiles!id (
+                            full_name,
+                            username,
+                            avatar_url,
+                            bio,
+                            location,
+                            created_at,
+                            phone,
+                            user_type
+                        )
+                    `)
+                    .eq('id', profileId)
+                    .single(),
+                supabase
+                    .from('portfolio_items')
+                    .select('*')
+                    .eq('freelancer_id', profileId)
+                    .order('order_index', { ascending: true }),
+                supabase
+                    .from('reviews')
+                    .select(`
+                        id,
+                        rating,
+                        comment,
                         created_at,
-                        phone,
-                        user_type
-                    )
-                `)
-                .eq('id', profileId)
-                .single();
+                        skills_rating,
+                        reviewer:profiles!reviewer_id (
+                            full_name,
+                            avatar_url
+                        ),
+                        contract:contracts!contract_id (
+                            job:jobs (
+                                title
+                            )
+                        )
+                    `)
+                    .eq('reviewee_id', profileId)
+                    .order('created_at', { ascending: false })
+            ]);
 
             const profileRow = profile as FreelancerProfilePublicRow | null;
 
             if (profileError || !profileRow?.profile) throw profileError || new Error('Freelancer not found');
 
-            const targetFreelancerId = profileRow.id;
+            // const targetFreelancerId = profileRow.id;
 
             // Skills are stored as JSONB in freelancer_profiles.skills
             // Format: [{name: string, level: string}] or [string]
@@ -139,36 +172,7 @@ export default function FreelancerProfile() {
                 };
             });
 
-            // Fetch portfolio items
-            const { data: portfolioItems } = await supabase
-                .from('portfolio_items')
-                .select('*')
-                .eq('freelancer_id', targetFreelancerId)
-                .order('order_index', { ascending: true });
-
             const portfolioRows = (portfolioItems ?? []) as PortfolioItemRow[];
-
-            // Fetch reviews
-            const { data: reviews } = await supabase
-                .from('reviews')
-                .select(`
-                    id,
-                    rating,
-                    comment,
-                    created_at,
-                    skills_rating,
-                    reviewer:profiles!reviewer_id (
-                        full_name,
-                        avatar_url
-                    ),
-                    contract:contracts!contract_id (
-                        job:jobs (
-                            title
-                        )
-                    )
-                `)
-                .eq('reviewee_id', targetFreelancerId)
-                .order('created_at', { ascending: false });
 
             const reviewRows = (reviews ?? []) as FreelancerReviewRow[];
 
@@ -318,9 +322,11 @@ export default function FreelancerProfile() {
 
                     <div>
                         <ProfileSidebar freelancer={freelancer} />
-                        <div className="mt-4 flex justify-end">
-                            <ReportButton reportedType="user" reportedId={freelancer.id} />
-                        </div>
+                        {user?.id !== freelancer.id && user?.id !== (freelancer as any).profile?.id && (
+                            <div className="mt-4 flex justify-end">
+                                <ReportButton reportedType="user" reportedId={freelancer.id} />
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

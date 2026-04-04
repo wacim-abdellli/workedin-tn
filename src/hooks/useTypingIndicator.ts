@@ -18,16 +18,15 @@ export function useTypingIndicator(conversationId: string | null, currentUserId:
 
   // Cleanup typing indicator
   const stopTyping = () => {
-    if (isTyping && conversationId && currentUserId) {
-      supabase.channel(`typing:${conversationId}`)
-        .send({
-          type: 'broadcast',
-          event: 'stop_typing',
-          payload: {
-            userId: currentUserId,
-            conversationId,
-          }
-        });
+    if (isTyping && conversationId && currentUserId && channelRef.current) {
+      channelRef.current.send({
+        type: 'broadcast',
+        event: 'stop_typing',
+        payload: {
+          userId: currentUserId,
+          conversationId,
+        }
+      });
       setIsTyping(false);
     }
   };
@@ -43,8 +42,9 @@ export function useTypingIndicator(conversationId: string | null, currentUserId:
     
     lastTypingBroadcast.current = now;
 
-    supabase.channel(`typing:${conversationId}`)
-      .send({
+    if (!channelRef.current) return;
+
+    channelRef.current.send({
         type: 'broadcast',
         event: 'start_typing',
         payload: {
