@@ -68,7 +68,7 @@ export function NotificationBell({ className = '' }: { className?: string }) {
         <div ref={dropdownRef} className={`relative ${className}`}>
             <button
                 onClick={() => setIsOpen(v => !v)}
-                className="header-icon-btn relative border border-brand-light/70 bg-white dark:bg-gray-800/80 dark:border-white/8 dark:bg-white dark:bg-gray-800/5"
+                className="header-icon-btn relative border border-brand-light/70 bg-white dark:bg-gray-800/80 dark:border-white/10"
                 aria-label={t.notifications?.title || 'Notifications'}
             >
                 <Bell className="h-4 w-4" />
@@ -102,7 +102,7 @@ export function NotificationBell({ className = '' }: { className?: string }) {
                             </div>
                         ) : notifications.length === 0 ? (
                             <div className="p-12 text-center">
-                                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-brand-light text-brand dark:bg-white dark:bg-gray-800/5 dark:text-brand-mid">
+                                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-brand-light text-brand dark:bg-gray-800 dark:text-brand-mid">
                                     <Bell className="h-7 w-7" />
                                 </div>
                                 <p className="font-semibold text-dark-900 dark:text-white">{t.notifications?.empty || 'No notifications'}</p>
@@ -120,11 +120,11 @@ export function NotificationBell({ className = '' }: { className?: string }) {
                                     className={`cursor-pointer rounded-2xl border p-3 transition-all duration-300 hover:shadow-sm ${
                                         !n.is_read
                                             ? 'border-brand/30 bg-brand-light/70 dark:border-brand/30 dark:bg-brand/10'
-                                            : 'border-transparent hover:border-gray-100 dark:border-gray-800 hover:bg-brand-light/40 dark:hover:border-white/10 dark:hover:bg-white dark:bg-gray-800/5'
+                                            : 'border-transparent hover:border-gray-100 dark:border-gray-800 hover:bg-brand-light/40 dark:hover:border-white/10 dark:hover:bg-white/5 dark:bg-gray-800/50'
                                     }`}
                                 >
                                         <div className="flex gap-3">
-                                            <div className="mt-0.5 flex h-9 w-9 items-center justify-center rounded-2xl bg-brand-light text-brand dark:bg-white dark:bg-gray-800/5 dark:text-brand-mid">
+                                            <div className="mt-0.5 flex h-9 w-9 items-center justify-center rounded-2xl bg-brand-light text-brand dark:bg-gray-800 dark:text-brand-mid">
                                             {iconForType(n.type)}
                                         </div>
                                         <div className="flex-1">
