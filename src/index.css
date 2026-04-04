@@ -6,27 +6,32 @@
 
 /* ========================================
    CSS VARIABLES - Light & Dark Mode
+   Professional Color System v2 for Khedma TN
    ======================================== */
 :root {
-  /* Khedma TN Brand Colors - Spec-Aligned */
-  --khedma-violet: #6f3bff;
-  --khedma-violet-hover: #5527d7;
-  --khedma-blue: #d4a017;
-  --khedma-blue-hover: #b88410;
-  --khedma-amber: #d4a017;
-  --khedma-amber-hover: #b88410;
+  /* ===== PRIMARY BRAND COLORS ===== */
+  /* Freelancer workspace - vibrant violet */
+  --violet-600: #7c3aed;
+  --violet-700: #6d28d9;
+  --violet-800: #5b21b6;
 
+  /* Client workspace - premium gold/amber */
+  --amber-600: #d4a017;
+  --amber-700: #b8860b;
+
+  /* ===== WORKSPACE THEMING ===== */
   /* Freelancer workspace (violet-themed) - Default */
-  --workspace-primary: #6f3bff;
-  --workspace-primary-hover: #5527d7;
-  --workspace-primary-light: #f4efff;
-  --workspace-primary-mid: #9a7bff;
+  --workspace-primary: #7c3aed;
+  --workspace-primary-hover: #6d28d9;
+  --workspace-primary-light: #faf5ff;
+  --workspace-primary-mid: #a78bfa;
   --workspace-primary-text: #ffffff;
 
   /* Shared CTA */
   --brand-accent: #d4a017;
-  --brand-accent-hover: #b88410;
+  --brand-accent-hover: #b8860b;
 
+  /* ===== TYPOGRAPHY SCALE ===== */
   --text-xs: clamp(0.75rem, 1.5vw, 0.875rem);
   --text-sm: clamp(0.875rem, 1.8vw, 1rem);
   --text-base: clamp(1rem, 2vw, 1.125rem);
@@ -37,19 +42,20 @@
   --text-4xl: clamp(2.25rem, 6vw, 3.5rem);
   --text-5xl: clamp(3rem, 8vw, 5rem);
 
+  /* ===== LIGHT MODE PALETTE ===== */
   --page-bg: #ffffff;
-  --surface-bg: #faf8ff;
+  --surface-bg: #f9fafb;
   --card-bg: #ffffff;
-  --sidebar-bg: #f6f2ff;
+  --sidebar-bg: #f3f4f6;
   --input-bg: #ffffff;
-  --input-border: #e7def8;
-  --input-border-focus: #8b5cf6;
-  --text-primary: #1a1825;
-  --text-secondary: #4f4766;
-  --text-muted: #5a5568;
-  --text-placeholder: #9ca3af;
-  --border: #e7def8;
-  --border-strong: #d6c8f2;
+  --input-border: #e5e7eb;
+  --input-border-focus: #7c3aed;
+  --text-primary: #111827;
+  --text-secondary: #6b7280;
+  --text-muted: #9ca3af;
+  --text-placeholder: #d1d5db;
+  --border: #e5e7eb;
+  --border-strong: #d1d5db;
 
   /* Legacy aliases kept for existing component classes */
   --color-bg: var(--page-bg);
@@ -61,21 +67,27 @@
   --color-border: var(--border);
   --color-border-subtle: var(--border-strong);
 
-  /* Premium Gradients */
-  --gradient-primary: linear-gradient(135deg, #6f3bff 0%, #5527d7 55%, #d4a017 100%);
-  --gradient-accent: linear-gradient(135deg, #d4a017 0%, #b88410 100%);
-  --gradient-glass: linear-gradient(180deg, rgba(255, 255, 255, 0.92) 0%, rgba(245, 243, 255, 0.88) 100%);
-  --gradient-surface: linear-gradient(145deg, #ffffff, #FAF8FF);
+  /* ===== STATUS COLORS ===== */
+  --success-600: #10b981;
+  --error-600: #ef4444;
+  --warning-600: #f59e0b;
+  --info-600: #3b82f6;
 
-  /* Premium Shadows */
-  --shadow-sm: 0 2px 4px rgba(111, 59, 255, 0.04);
-  --shadow-md: 0 8px 18px -8px rgba(111, 59, 255, 0.14), 0 2px 6px -3px rgba(212, 160, 23, 0.08);
-  --shadow-lg: 0 18px 32px -14px rgba(111, 59, 255, 0.16), 0 8px 16px -10px rgba(212, 160, 23, 0.1);
-  --shadow-xl: 0 24px 48px -18px rgba(111, 59, 255, 0.2), 0 10px 24px -16px rgba(212, 160, 23, 0.12);
-  --shadow-2xl: 0 30px 64px -20px rgba(111, 59, 255, 0.28);
+  /* ===== GRADIENTS ===== */
+  --gradient-primary: linear-gradient(135deg, #7c3aed 0%, #6d28d9 55%, #d4a017 100%);
+  --gradient-accent: linear-gradient(135deg, #d4a017 0%, #b8860b 100%);
+  --gradient-glass: linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(249, 250, 251, 0.92) 100%);
+  --gradient-surface: linear-gradient(145deg, #ffffff, #f9fafb);
 
-  /* Purple Glows */
-  --shadow-glow: 0 0 20px rgba(111, 59, 255, 0.22);
+  /* ===== SHADOWS (Light Mode) ===== */
+  --shadow-sm: 0 2px 4px rgba(124, 58, 237, 0.04);
+  --shadow-md: 0 8px 18px -8px rgba(124, 58, 237, 0.12), 0 2px 6px -3px rgba(212, 160, 23, 0.08);
+  --shadow-lg: 0 18px 32px -14px rgba(124, 58, 237, 0.14), 0 8px 16px -10px rgba(212, 160, 23, 0.1);
+  --shadow-xl: 0 24px 48px -18px rgba(124, 58, 237, 0.18), 0 10px 24px -16px rgba(212, 160, 23, 0.12);
+  --shadow-2xl: 0 30px 64px -20px rgba(124, 58, 237, 0.24);
+
+  /* ===== GLOWS ===== */
+  --shadow-glow: 0 0 20px rgba(124, 58, 237, 0.22);
   --shadow-glow-accent: 0 0 20px rgba(212, 160, 23, 0.22);
 
   /* Radius and elevation tiers */
@@ -109,63 +121,54 @@
   --stat-pill-border: rgba(255,255,255,0.08);
 }
 
-/* Client workspace overrides - Blue themed per spec */
+/* Client workspace overrides - Gold/Amber themed per spec */
 .workspace-client {
-  --workspace-primary: #DBA31A;
-  --workspace-primary-hover: #C4920B;
-  --workspace-primary-light: #fff6dd;
-  --workspace-primary-mid: #F0C95B;
+  --workspace-primary: #d4a017;
+  --workspace-primary-hover: #b8860b;
+  --workspace-primary-light: #fffbeb;
+  --workspace-primary-mid: #f59e0b;
   --workspace-primary-text: #ffffff;
 }
 
 .dark .workspace-client {
-  --workspace-primary: #DBA31A;
-  --workspace-primary-hover: #C4920B;
-  --workspace-primary-light: #3a2a0b;
-  --workspace-primary-mid: #F0C95B;
+  --workspace-primary: #d4a017;
+  --workspace-primary-hover: #b8860b;
+  --workspace-primary-light: #78350f;
+  --workspace-primary-mid: #fbbf24;
   --workspace-primary-text: #ffffff;
 }
 
 /* Admin overrides */
 .workspace-admin {
-  --workspace-primary: #2563EB;
-  --workspace-primary-hover: #1D4ED8;
-  --workspace-primary-light: #1F2937;
-  --workspace-primary-mid: #60A5FA;
+  --workspace-primary: #2563eb;
+  --workspace-primary-hover: #1d4ed8;
+  --workspace-primary-light: #eff6ff;
+  --workspace-primary-mid: #60a5fa;
 }
 
 .dark {
-  --dash-bg: #0a0912;
-  --dash-card: #111019;
-  --dash-card-hover: #16141f;
-  --dash-raised: #1a1826;
-  --dash-border: rgba(255, 255, 255, 0.06);
-  --dash-border-hover: rgba(255, 255, 255, 0.12);
-
-  --workspace-primary: #8a5fff;
-  --workspace-primary-hover: #6f3bff;
-  --workspace-primary-light: #2d1952;
-  --workspace-primary-mid: #b59bff;
-  --workspace-primary-text: #ffffff;
-
-  --brand-accent: #d4a017;
-  --brand-accent-hover: #b88410;
-
-  /* Dark Mode — Deep purple-tinted, not flat grey */
-  --page-bg: #0f0d16;
-  --surface-bg: #151120;
-  --card-bg: #1b1726;
-  --sidebar-bg: #120f1b;
-  --input-bg: #1b1726;
-  --input-border: rgba(255, 255, 255, 0.1);
+  /* ===== DARK MODE PALETTE (Clean, High-Contrast, Professional) ===== */
+  
+  /* Backgrounds - Clean, not muddy */
+  --page-bg: #0f0e17;
+  --surface-bg: #1a1825;
+  --card-bg: #1a1825;
+  --sidebar-bg: #151220;
+  --input-bg: #232230;
+  --input-border: rgba(167, 139, 250, 0.2);
   --input-border-focus: #a78bfa;
-  --text-primary: #f8f7ff;
-  --text-secondary: #d7c6fb;
-  --text-muted: #aca5be;
-  --text-placeholder: #756f89;
-  --border: rgba(255, 255, 255, 0.08);
-  --border-strong: rgba(255, 255, 255, 0.15);
+  
+  /* Text - High Contrast for readability */
+  --text-primary: #ffffff;
+  --text-secondary: #d4d4e8;
+  --text-muted: #9ca3b8;
+  --text-placeholder: #6b7280;
+  
+  /* Borders - Violet-tinted for consistency */
+  --border: rgba(167, 139, 250, 0.18);
+  --border-strong: rgba(167, 139, 250, 0.28);
 
+  /* Legacy aliases */
   --color-bg: var(--page-bg);
   --color-bg-secondary: var(--card-bg);
   --color-bg-tertiary: var(--surface-bg);
@@ -175,28 +178,42 @@
   --color-border: var(--border);
   --color-border-subtle: var(--border-strong);
 
+  /* Workspace theme in dark mode */
+  --workspace-primary: #a78bfa;
+  --workspace-primary-hover: #8b5cf6;
+  --workspace-primary-light: #3730a3;
+  --workspace-primary-mid: #c4b5fd;
+  --workspace-primary-text: #ffffff;
+
+  --brand-accent: #d4a017;
+  --brand-accent-hover: #b8860b;
+
   /* Dark Gradients */
-  --gradient-primary: linear-gradient(135deg, #9a7bff 0%, #6f3bff 60%, #d4a017 100%);
-  --gradient-accent: linear-gradient(135deg, #f0bf46 0%, #d4a017 100%);
-  --gradient-glass: linear-gradient(180deg, rgba(27, 23, 38, 0.78) 0%, rgba(15, 13, 22, 0.42) 100%);
-  --gradient-surface: linear-gradient(145deg, #1b1726, #100d16);
+  --gradient-primary: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 60%, #d4a017 100%);
+  --gradient-accent: linear-gradient(135deg, #fbbf24 0%, #d4a017 100%);
+  --gradient-glass: linear-gradient(180deg, rgba(26, 24, 37, 0.88) 0%, rgba(15, 14, 23, 0.5) 100%);
+  --gradient-surface: linear-gradient(145deg, #1a1825, #151220);
 
-  /* Deep Shadows with purple tint */
-  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 4px 12px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
-  --shadow-lg: 0 10px 20px -3px rgba(0, 0, 0, 0.6), 0 4px 6px -4px rgba(0, 0, 0, 0.4);
-  --shadow-xl: 0 20px 40px -5px rgba(0, 0, 0, 0.7), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
-  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
+  /* Shadows (Dark Mode) - Purple-tinted but clean */
+  --shadow-sm: 0 2px 6px rgba(167, 139, 250, 0.15);
+  --shadow-md: 0 4px 16px rgba(167, 139, 250, 0.18), 0 2px 8px rgba(212, 160, 23, 0.1);
+  --shadow-lg: 0 10px 30px rgba(167, 139, 250, 0.22), 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-xl: 0 20px 50px rgba(167, 139, 250, 0.28), 0 8px 16px rgba(0, 0, 0, 0.5);
+  --shadow-2xl: 0 25px 70px rgba(167, 139, 250, 0.35);
 
-  --shadow-glow: 0 0 30px rgba(139, 92, 246, 0.25);
-  --shadow-glow-accent: 0 0 30px rgba(245, 158, 11, 0.2);
+  --shadow-glow: 0 0 40px rgba(167, 139, 250, 0.32);
+  --shadow-glow-accent: 0 0 35px rgba(245, 158, 11, 0.3);
 
   --elevation-modal: 0 28px 72px rgba(0, 0, 0, 0.65);
 
-  /* Dashboard uses its own deeper surface in dark mode */
-  --dash-override-bg: var(--dash-bg);
+  /* Dashboard surfaces in dark mode */
+  --dash-bg: #0f0e17;
+  --dash-card: #1a1825;
+  --dash-card-hover: #232230;
+  --dash-raised: #2a2438;
+  --dash-border: rgba(167, 139, 250, 0.18);
+  --dash-border-hover: rgba(167, 139, 250, 0.28);
 }
-
 /* ========================================
    BASE STYLES
    ======================================== */
@@ -408,8 +425,8 @@ h6 {
   }
 
   .btn-ghost {
-    @apply btn text-dark-600 hover:bg-dark-100;
-    @apply dark:text-dark-300 dark:hover:bg-dark-800;
+    @apply btn text-gray-600 hover:bg-gray-100;
+    @apply dark:text-gray-300 dark:hover:bg-white/10;
   }
 
   .btn-sm {
@@ -630,8 +647,7 @@ h6 {
   /* ===== MODALS ===== */
   .modal-backdrop {
     @apply fixed inset-0 z-50 flex justify-center;
-    @apply bg-dark-900/55 dark:bg-black/65 backdrop-blur-sm;
-    @apply animate-fade-in;
+    @apply bg-black/55 dark:bg-black/65 backdrop-blur-sm;
   }
 
   .modal-surface {
@@ -644,8 +660,8 @@ h6 {
 
   .modal-header {
     @apply flex items-center justify-between px-6 py-5;
-    @apply border-b border-gray-100 dark:border-dark-700/50;
-    @apply bg-white/85 dark:bg-dark-900/80 backdrop-blur;
+    @apply border-b border-gray-100 dark:border-white/10;
+    @apply bg-white/85 dark:bg-white/5 backdrop-blur;
   }
 
   .modal-close-btn {
@@ -672,9 +688,9 @@ h6 {
   .tab-pill {
     @apply px-4 py-2 rounded-xl whitespace-nowrap border;
     @apply transition-colors;
-    @apply bg-white dark:bg-dark-900 border-gray-200 dark:border-dark-700;
+    @apply bg-white dark:bg-white/10 border-gray-200 dark:border-white/10;
     @apply text-gray-700 dark:text-gray-300;
-    @apply hover:bg-gray-50 dark:hover:bg-dark-800;
+    @apply hover:bg-gray-50 dark:hover:bg-white/20;
   }
 
   .tab-pill-active {
@@ -825,19 +841,19 @@ h6 {
   }
 
   .badge-primary {
-    @apply badge bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-400;
+    @apply badge bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300;
   }
 
   .badge-accent {
-    @apply badge bg-accent-100 text-accent-700 dark:bg-accent-900/30 dark:text-accent-400;
+    @apply badge bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300;
   }
 
   .badge-success {
-    @apply badge bg-success-100 text-success-600 dark:bg-success-500/20 dark:text-success-400;
+    @apply badge bg-green-100 text-green-600 dark:bg-green-500/20 dark:text-green-300;
   }
 
   .badge-warning {
-    @apply badge bg-warning-100 text-warning-600 dark:bg-warning-500/20 dark:text-warning-400;
+    @apply badge bg-yellow-100 text-yellow-600 dark:bg-yellow-500/20 dark:text-yellow-300;
   }
 
   /* ===== DATA DISPLAY ===== */
@@ -862,11 +878,11 @@ h6 {
   }
 
   .status-pill-open {
-    @apply status-pill bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300;
+    @apply status-pill bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300;
   }
 
   .status-pill-progress {
-    @apply status-pill bg-accent-100 text-accent-700 dark:bg-accent-900/30 dark:text-accent-300;
+    @apply status-pill bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300;
   }
 
   .status-pill-completed {
@@ -909,7 +925,7 @@ h6 {
 
   .list-card {
     @apply card p-5;
-    @apply hover:border-primary-200 dark:hover:border-primary-500/30;
+    @apply hover:border-purple-200 dark:hover:border-purple-500/30;
   }
 
   .list-card-compact {
@@ -934,8 +950,8 @@ h6 {
   }
 
   .list-action-btn-primary {
-    @apply list-action-btn bg-primary-50 text-primary-700 hover:bg-primary-100;
-    @apply dark:bg-primary-900/20 dark:text-primary-300 dark:hover:bg-primary-900/40;
+    @apply list-action-btn bg-purple-50 text-purple-700 hover:bg-purple-100;
+    @apply dark:bg-purple-900/20 dark:text-purple-300 dark:hover:bg-purple-900/40;
   }
 
   .list-action-btn-secondary {
@@ -951,9 +967,9 @@ h6 {
 
   .empty-state-icon-shell {
     @apply relative w-24 h-24 rounded-full flex items-center justify-center;
-    @apply border border-primary-200/50 dark:border-primary-500/20;
-    @apply bg-gradient-to-br from-primary-100 to-primary-50;
-    @apply dark:from-primary-900/30 dark:to-primary-950/20;
+    @apply border border-purple-200/50 dark:border-purple-500/20;
+    @apply bg-gradient-to-br from-purple-100 to-purple-50;
+    @apply dark:from-purple-900/30 dark:to-purple-900/10;
   }
 
   /* ===== LAYOUT ===== */
