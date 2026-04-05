@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Award, Briefcase, Filter, Grid, List, Search, SlidersHorizontal, Sparkles, X } from 'lucide-react';
 
@@ -8,8 +9,11 @@ import { SkeletonList, SkeletonProfile } from '../components/common';
 import FreelancerCard from '../components/freelancers/FreelancerCard';
 import { Header } from '../components/layout';
 import Button from '../components/ui/Button';
+import { useAuth } from '../contexts/AuthContext';
+import { useToast } from '../components/ui/Toast';
 import { useTranslation } from '../i18n';
 import * as profilesService from '../services/profiles';
+import { canSaveFreelancer, getAccessMessage } from '../lib/marketplaceAccess';
 
 type FreelancerCategory =
     | 'Design'
@@ -57,7 +61,10 @@ const CATEGORY_OPTIONS: FreelancerCategory[] = ['Design', 'Development', 'Writin
 const SKILL_OPTIONS = ['React', 'Node.js', 'Logo Design', 'Translation', 'Content Writing', 'Figma', 'Motion', 'SEO'];
 
 export default function FindFreelancers() {
+    const navigate = useNavigate();
     const { t, tx } = useTranslation();
+    const { user, profile, freelancerProfile } = useAuth();
+    const { showToast } = useToast();
     const copy = t.findFreelancers;
 
     const [searchQuery, setSearchQuery] = useState('');
@@ -71,6 +78,11 @@ export default function FindFreelancers() {
     const [rateRange, setRateRange] = useState<[number, number]>([0, 100]);
     const [availableOnly, setAvailableOnly] = useState(false);
     const [verifiedOnly, setVerifiedOnly] = useState(false);
+    const saveDecision = canSaveFreelancer({
+        isAuthenticated: !!user,
+        profile,
+        freelancerProfile,
+    });
 
     // Fetch real freelancers from DB
     const { data: freelancersData, isLoading } = useQuery({
@@ -108,8 +120,16 @@ export default function FindFreelancers() {
     });
 
     const toggleSaved = useCallback((id: string) => {
+        if (!saveDecision.allowed) {
+            showToast(getAccessMessage(saveDecision.reason, saveDecision.completion), 'warning');
+            if (saveDecision.nextStepPath) {
+                navigate(saveDecision.nextStepPath, { state: { from: '/find-freelancers' } });
+            }
+            return;
+        }
+
         setSavedFreelancers((prev) => (prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]));
-    }, []);
+    }, [navigate, saveDecision, showToast]);
 
     const savedFreelancerIds = useMemo(() => new Set(savedFreelancers), [savedFreelancers]);
 

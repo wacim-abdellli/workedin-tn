@@ -39,7 +39,7 @@ function Signup() {
                     <Link
                         to="/login"
                         state={location.state}
-                        className="inline-flex items-center rounded-full border border-white/12 bg-white/6 px-4 py-2 text-sm font-medium text-white/80 backdrop-blur-sm transition-colors hover:border-white/20 hover:bg-white/10 hover:text-white"
+                        className="inline-flex items-center rounded-full border border-gray-200 dark:border-white/12 bg-white/60 dark:bg-white/5 px-4 py-2 text-sm font-medium text-gray-900 dark:text-white/80 backdrop-blur-sm shadow-sm transition-colors hover:border-gray-300 dark:hover:border-white/20 hover:bg-gray-50 dark:hover:bg-white/10 dark:hover:text-white"
                     >
                         {tx('authPages.signup.signInAction', undefined, 'Sign in')}
                     </Link>

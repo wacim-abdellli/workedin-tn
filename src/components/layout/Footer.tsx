@@ -3,6 +3,7 @@ import { Facebook, Twitter, Instagram, Linkedin, Mail, MapPin, Phone, Heart } fr
 
 import { useTranslation } from '../../i18n';
 import { useTheme } from '../../contexts/ThemeContext';
+import { Logo } from '../ui/Logo';
 
 function Footer() {
     const { t } = useTranslation();
@@ -32,15 +33,8 @@ function Footer() {
             <div className="container-custom relative py-16 md:py-20">
                 <div className="grid grid-cols-1 gap-12 lg:grid-cols-[minmax(0,1.2fr)_220px_220px_minmax(0,1fr)]">
                     <div className="max-w-xl">
-                        <Link to="/" className="group mb-8 inline-flex items-center">
-                            <img
-                                src={theme === 'dark' ? '/logos/logo-stacked-dark.svg' : '/logos/logo-stacked.svg'}
-                                alt="Khedma TN"
-                                width="100"
-                                height="90"
-                                style={{ height: '72px', width: 'auto' }}
-                                className="object-contain"
-                            />
+                        <Link to="/" className="group mb-8 inline-flex items-center hover:opacity-80 transition-opacity">
+                            <Logo variant="full" size="lg" />
                         </Link>
 
                         <p className="mb-8 max-w-lg text-lg leading-relaxed text-gray-600 dark:text-[#a8a2bb]">

@@ -30,6 +30,7 @@ async function fetchNotifications(userId: string): Promise<AppNotification[]> {
         .from('notifications')
         .select('*')
         .eq('user_id', userId)
+        .neq('type', 'message')
         .order('created_at', { ascending: false })
         .limit(50);
 
@@ -70,6 +71,8 @@ export function useRealtimeNotifications(userId: string | undefined) {
                 (payload) => {
                     const incoming = payload.new as AppNotification;
 
+                    if (incoming.type === 'message') return;
+
                     // Prepend to React Query cache — no refetch needed
                     queryClient.setQueryData<AppNotification[]>(
                         NOTIFICATIONS_QUERY_KEY(userId),
@@ -92,6 +95,8 @@ export function useRealtimeNotifications(userId: string | undefined) {
                 },
                 (payload) => {
                     const updated = payload.new as AppNotification;
+
+                    if (updated.type === 'message') return;
 
                     // Update the notification in cache with new content
                     queryClient.setQueryData<AppNotification[]>(

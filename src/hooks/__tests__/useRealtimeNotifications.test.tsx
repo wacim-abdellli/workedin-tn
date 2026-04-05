@@ -47,22 +47,26 @@ describe('useRealtimeNotifications', () => {
             { id: '2', title: 'Test 2', is_read: true }
         ];
 
+        const mockLimit = vi.fn().mockResolvedValue({
+            data: mockData,
+            error: null
+        });
+        const mockOrder = vi.fn().mockReturnValue({ limit: mockLimit });
+        const mockNeq = vi.fn().mockReturnValue({ order: mockOrder });
+        const mockEq = vi.fn().mockReturnValue({ neq: mockNeq });
         const mockSelect = vi.fn().mockReturnValue({
-            eq: vi.fn().mockReturnValue({
-                order: vi.fn().mockReturnValue({
-                    limit: vi.fn().mockResolvedValue({
-                        data: mockData,
-                        error: null
-                    })
-                })
-            })
+            eq: mockEq
         });
 
         vi.mocked(supabase.from).mockImplementation((() => ({ select: mockSelect })) as any);
 
         const mockSubscribe = vi.fn();
-        const mockOn = vi.fn().mockReturnValue({ subscribe: mockSubscribe });
-        vi.mocked(supabase.channel).mockReturnValue({ on: mockOn } as any);
+        const channel = {
+            on: vi.fn(),
+            subscribe: mockSubscribe,
+        };
+        channel.on.mockReturnValue(channel);
+        vi.mocked(supabase.channel).mockReturnValue(channel as any);
 
         const { result } = renderHook(() => useRealtimeNotifications('user-1'), { wrapper });
 
@@ -73,6 +77,7 @@ describe('useRealtimeNotifications', () => {
         });
         
         expect(result.current.unreadCount).toBe(1);
+        expect(mockNeq).toHaveBeenCalledWith('type', 'message');
     });
 
     it('marks notification as read', async () => {
@@ -124,22 +129,28 @@ describe('useRealtimeNotifications', () => {
     it('handles postgres_changes INSERT event', async () => {
         let triggerEvent: ((payload: unknown) => void) | undefined;
 
-        const mockOn = vi.fn().mockImplementation((event, filter, callback) => {
-            triggerEvent = callback;
-            return { subscribe: vi.fn() };
-        });
-        vi.mocked(supabase.channel).mockReturnValue({ on: mockOn } as any);
+        const channel = {
+            on: vi.fn(),
+            subscribe: vi.fn(),
+        };
+        channel.on
+            .mockImplementationOnce((event, filter, callback) => {
+                triggerEvent = callback;
+                return channel;
+            })
+            .mockImplementationOnce(() => channel);
+        vi.mocked(supabase.channel).mockReturnValue(channel as any);
 
         renderHook(() => useRealtimeNotifications('user-1'), { wrapper });
 
         // Trigger the insert
         triggerEvent?.({
-            new: { id: '3', title: 'New Notification', is_read: false }
+            new: { id: '3', title: 'New Notification', is_read: false, type: 'system' }
         });
 
         // The query cache should have prepended the new item
         const data = queryClient.getQueryData<any[]>(['notifications', 'user-1']);
         expect(data?.[0].id).toBe('3');
-        expect(mockShowToast).toHaveBeenCalledWith('New Notification', 'info');
+        expect(mockShowToast).not.toHaveBeenCalled();
     });
 });

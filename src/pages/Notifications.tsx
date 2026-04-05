@@ -20,12 +20,12 @@ function iconForType(type: AppNotification['type']) {
 }
 
 const TYPE_COLOR: Record<AppNotification['type'], CSSProperties> = {
-    message: { background: 'color-mix(in srgb, var(--workspace-primary) 16%, transparent)', color: 'var(--workspace-primary)' },
-    proposal: { background: 'color-mix(in srgb, var(--workspace-primary) 16%, transparent)', color: 'var(--workspace-primary-mid)' },
+    message: { background: 'color-mix(in srgb, var(--workspace-accent) 16%, transparent)', color: 'var(--workspace-accent)' },
+    proposal: { background: 'color-mix(in srgb, var(--workspace-accent) 16%, transparent)', color: 'var(--workspace-accent)' },
     payment: { background: 'rgba(34,197,94,0.14)', color: 'rgb(74, 222, 128)' },
     contract: { background: 'color-mix(in srgb, var(--brand-accent) 16%, transparent)', color: 'var(--brand-accent)' },
     system: { background: 'rgba(255,255,255,0.06)', color: 'var(--text-secondary)' },
-    review: { background: 'color-mix(in srgb, var(--workspace-primary) 12%, transparent)', color: 'var(--workspace-primary-mid)' },
+    review: { background: 'color-mix(in srgb, var(--workspace-accent) 12%, transparent)', color: 'var(--workspace-accent)' },
 };
 
 export default function Notifications() {
@@ -52,7 +52,7 @@ export default function Notifications() {
     };
 
     return (
-        <div className="flex min-h-screen flex-col bg-gray-50 dark:bg-gray-900 dark:bg-[#090610]">
+        <div className="flex min-h-screen flex-col bg-gray-50 dark:bg-zinc-950">
             <SEO title={tx('seo.notifications.title', undefined, 'Notifications | Khedma TN')} description={tx('seo.notifications.description', undefined, 'Your notifications')} noIndex />
             <Header />
 
@@ -85,9 +85,9 @@ export default function Notifications() {
                             </div>
                         ))
                     ) : notifications.length === 0 ? (
-                        <div className="card text-center py-20 border border-white/5 bg-white dark:bg-gray-800/40 dark:bg-[#120d1e]/40 backdrop-blur-sm rounded-3xl shadow-sm">
-                            <div className="w-20 h-20 bg-primary-50 dark:bg-primary-500/10 rounded-[28px] shrink-0 flex items-center justify-center mx-auto mb-6 shadow-inner">
-                                <Bell className="w-8 h-8 text-primary-500 dark:text-primary-300" />
+                        <div className="card text-center py-20 border border-white/5 bg-white dark:bg-gray-800/40 backdrop-blur-sm rounded-3xl shadow-sm">
+                            <div className="w-20 h-20 rounded-[28px] shrink-0 flex items-center justify-center mx-auto mb-6 shadow-inner" style={{ background: 'color-mix(in srgb, var(--workspace-accent) 10%, transparent)' }}>
+                                <Bell className="w-8 h-8" style={{ color: 'var(--workspace-accent)' }} />
                             </div>
                             <h3 className="text-lg font-semibold text-foreground">{t.notifications?.empty || 'No notifications yet'}</h3>
                             <p className="text-sm text-muted mt-2 max-w-sm mx-auto">{t.notifications?.emptyDesc || "We'll notify you when something important happens with your projects or payments."}</p>
@@ -99,20 +99,23 @@ export default function Notifications() {
                             <div
                                 key={n.id}
                                 onClick={() => handleClick(n)}
-                                className={`card group p-5 cursor-pointer transition-all hover:-translate-y-1 rounded-2xl border shadow-sm ${!n.is_read ? 'border-primary-200 dark:border-primary-500/30 bg-primary-50/50 dark:bg-primary-900/10 shadow-[0_0_15px_rgba(124,58,237,0.05)]' : 'border-gray-100 dark:border-gray-800 dark:border-white/5 bg-white dark:bg-gray-800 dark:white/[0.02] hover:shadow-md'}`}
+                                className={`card group p-5 cursor-pointer transition-all hover:-translate-y-1 rounded-2xl border shadow-sm relative overflow-hidden ${!n.is_read ? 'border-[var(--workspace-accent)]/30 shadow-md' : 'border-gray-100 dark:border-white/5 bg-white dark:bg-white/[0.02] hover:shadow-md'}`}
                             >
+                                {!n.is_read && (
+                                    <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundColor: 'var(--workspace-accent)' }} />
+                                )}
                                 <div className="flex gap-4">
                                     <div className="w-12 h-12 rounded-[20px] flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-105 shadow-sm" style={TYPE_COLOR[n.type]}>
                                         {iconForType(n.type)}
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-start justify-between gap-4">
-                                            <p className={`text-base font-semibold leading-tight text-foreground ${!n.is_read ? 'text-primary-700 dark:text-white' : 'dark:text-white/90'}`}>
+                                            <p className={`text-base font-semibold leading-tight z-10 ${!n.is_read ? 'text-gray-900 dark:text-white' : 'text-gray-700 dark:text-white/90'}`}>
                                                 {n.title}
                                             </p>
-                                            <div className="flex items-center gap-2.5 flex-shrink-0 pt-0.5">
+                                            <div className="flex items-center gap-2.5 flex-shrink-0 pt-0.5 z-10">
                                                 <span className="text-xs font-medium text-muted transition-colors group-hover:text-foreground/70">{formatDate(n.created_at)}</span>
-                                                {!n.is_read && <span className="w-2 h-2 rounded-full bg-primary-500 flex-shrink-0 shadow-[0_0_8px_rgba(124,58,237,0.6)]" />}
+                                                {!n.is_read && <span className="w-2.5 h-2.5 rounded-full flex-shrink-0 animate-pulse" style={{ backgroundColor: 'var(--workspace-accent)', boxShadow: '0 0 10px var(--workspace-accent)' }} />}
                                                 <button 
                                                     onClick={(e) => { e.stopPropagation(); deleteNotification(n.id); }}
                                                     className="p-1.5 -mr-1.5 text-muted hover:text-red-500 rounded-full hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"

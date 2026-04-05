@@ -19,7 +19,8 @@ export default function ProfileSidebar({ freelancer }: SidebarProps) {
     return (
         <div className="space-y-6">
             {/* Availability Card */}
-            <div className="rounded-[1.75rem] p-6 border border-black/[0.06] bg-white dark:bg-gray-800 shadow-[0_18px_40px_-28px_rgba(26,24,37,0.14)] dark:border-white/8 dark:bg-[#171421]">
+            <div className="rounded-[2rem] border border-[var(--border)] bg-white/80 dark:bg-[#1c1a2e]/80 backdrop-blur-2xl p-6 shadow-sm transition-all duration-300 hover:shadow-lg hover:border-[var(--border-strong)] relative overflow-hidden group">
+                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[var(--workspace-primary)]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 <h3 className="font-bold text-[var(--text-primary)] mb-4">{tx('pages.freelancerProfile.workInfo', undefined, 'Work information')}</h3>
                 <div className="space-y-4">
                     <div className="flex justify-between items-center py-2 border-b border-border/60 last:border-0">
@@ -44,7 +45,8 @@ export default function ProfileSidebar({ freelancer }: SidebarProps) {
 
             {/* Languages */}
             {freelancer.languages.length > 0 && (
-                <div className="rounded-[1.75rem] p-6 border border-black/[0.06] bg-white dark:bg-gray-800 shadow-[0_18px_40px_-28px_rgba(26,24,37,0.14)] dark:border-white/8 dark:bg-[#171421]">
+                <div className="rounded-[2rem] border border-[var(--border)] bg-white/80 dark:bg-[#1c1a2e]/80 backdrop-blur-2xl p-6 shadow-sm transition-all duration-300 hover:shadow-lg hover:border-[var(--border-strong)] relative overflow-hidden group">
+                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[var(--workspace-primary)]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                     <h3 className="font-bold text-[var(--text-primary)] mb-4">{tx('pages.freelancerProfile.languages', undefined, 'Languages')}</h3>
                     <div className="space-y-3">
                         {freelancer.languages.map((lang, idx) => (
@@ -61,7 +63,8 @@ export default function ProfileSidebar({ freelancer }: SidebarProps) {
 
             {/* Education */}
             {freelancer.education.length > 0 && (
-                <div className="rounded-[1.75rem] p-6 border border-black/[0.06] bg-white dark:bg-gray-800 shadow-[0_18px_40px_-28px_rgba(26,24,37,0.14)] dark:border-white/8 dark:bg-[#171421]">
+                <div className="rounded-[2rem] border border-[var(--border)] bg-white/80 dark:bg-[#1c1a2e]/80 backdrop-blur-2xl p-6 shadow-sm transition-all duration-300 hover:shadow-lg hover:border-[var(--border-strong)] relative overflow-hidden group">
+                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[var(--workspace-primary)]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                     <h3 className="font-bold text-[var(--text-primary)] mb-4">{tx('pages.freelancerProfile.education', undefined, 'Education')}</h3>
                     <div className="space-y-4">
                         {freelancer.education.map((edu, idx) => (
@@ -76,7 +79,8 @@ export default function ProfileSidebar({ freelancer }: SidebarProps) {
             )}
 
             {/* Verifications */}
-            <div className="rounded-[1.75rem] p-6 border border-black/[0.06] bg-white dark:bg-gray-800 shadow-[0_18px_40px_-28px_rgba(26,24,37,0.14)] dark:border-white/8 dark:bg-[#171421]">
+            <div className="rounded-[2rem] border border-[var(--border)] bg-white/80 dark:bg-[#1c1a2e]/80 backdrop-blur-2xl p-6 shadow-sm transition-all duration-300 hover:shadow-lg hover:border-[var(--border-strong)] relative overflow-hidden group">
+                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[var(--workspace-primary)]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 <h3 className="font-bold text-[var(--text-primary)] mb-4">{tx('pages.freelancerProfile.verifications', undefined, 'Verifications')}</h3>
                 <div className="space-y-3">
                     <div className="flex items-center gap-3">

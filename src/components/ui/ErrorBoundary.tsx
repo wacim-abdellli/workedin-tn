@@ -5,6 +5,7 @@ import { logger } from '@/lib/logger';
 import { useTranslation } from '@/i18n';
 
 import Button from './Button';
+import { Logo } from './Logo';
 
 interface Props {
     children: ReactNode;
@@ -50,16 +51,14 @@ class ErrorBoundaryInner extends Component<Props & { tx: (key: string, params?: 
             }
 
             return (
-                <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#f7f5ff] p-4 dark:bg-[#09070f]">
-                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(139,92,246,0.16),transparent_28%),radial-gradient(circle_at_bottom_right,rgba(245,158,11,0.12),transparent_24%)]" />
-                    <div className="relative w-full max-w-xl rounded-[32px] border border-white/60 bg-white dark:bg-gray-800/85 p-8 text-center shadow-2xl shadow-primary-500/10 backdrop-blur-xl dark:border-white/8 dark:bg-white/5 dark:shadow-none">
-                        <img
-                            src="/logos/logo-social.svg"
-                            alt="Khedma TN"
-                            width="88"
-                            height="88"
-                            className="mx-auto mb-6 h-[88px] w-[88px] rounded-[22px] shadow-xl shadow-primary-500/15"
-                        />
+                <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gray-50 px-4 dark:bg-zinc-950">
+                    <div className="pointer-events-none absolute left-1/2 top-1/2 h-[350px] w-[350px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[color-mix(in_srgb,var(--workspace-accent)_6%,transparent)] blur-[100px]" />
+                    <div className="relative z-10 w-full max-w-xl rounded-[32px] border border-gray-200 bg-white/80 dark:bg-zinc-900/60 p-8 text-center shadow-[0_8px_30px_rgb(0,0,0,0.04)] backdrop-blur-xl dark:border-white/5 dark:shadow-none animate-[fade-in_0.5s_ease-out]">
+                        <div className="flex justify-center mb-6">
+                            <div className="relative flex h-[88px] w-[88px] items-center justify-center rounded-[24px] border border-gray-200 bg-white shadow-sm dark:border-white/5 dark:bg-zinc-900/60">
+                                <Logo variant="mark" size="lg" />
+                            </div>
+                        </div>
                         <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-100 dark:bg-red-500/10">
                             <AlertTriangle className="h-8 w-8 text-red-600 dark:text-red-300" />
                         </div>

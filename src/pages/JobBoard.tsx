@@ -24,6 +24,7 @@ import { SkeletonCard } from '../components/common';
 import EmptyState from '../components/common/EmptyState';
 import type { Skill } from '../types';
 import { cn } from '../lib/utils';
+import { canSaveJob, getAccessMessage } from '../lib/marketplaceAccess';
 
 // Types
 interface Job {
@@ -129,11 +130,16 @@ function SavedJobsSidebar({ savedJobs, onViewJob }: { savedJobs: Job[]; onViewJo
 // Main Component
 function JobBoard() {
     const navigate = useNavigate();
-    const { user } = useAuth();
+    const { user, profile, freelancerProfile } = useAuth();
     const { showToast } = useToast();
     const [searchParams, setSearchParams] = useSearchParams();
     const { t, language, tx } = useTranslation();
     const queryClient = useQueryClient();
+    const saveDecision = canSaveJob({
+        isAuthenticated: !!user,
+        profile,
+        freelancerProfile,
+    });
 
     // State
     const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
@@ -254,12 +260,15 @@ function JobBoard() {
     });
 
     const toggleSaveJob = useCallback(async (job: JobForCard) => {
-        if (!user) {
-            showToast(t.auth.login, 'warning');
+        if (!saveDecision.allowed) {
+            showToast(getAccessMessage(saveDecision.reason, saveDecision.completion), 'warning');
+            if (saveDecision.nextStepPath) {
+                navigate(saveDecision.nextStepPath, { state: { from: '/jobs' } });
+            }
             return;
         }
         await toggleSaveJobMutation.mutateAsync({ jobId: job.id, isSaved: savedJobIds.has(job.id) });
-    }, [savedJobIds, showToast, t.auth.login, toggleSaveJobMutation, user]);
+    }, [navigate, saveDecision, savedJobIds, showToast, toggleSaveJobMutation]);
 
     const handleJobClick = useCallback((jobId: string) => {
         navigate(`/jobs/${jobId}`);

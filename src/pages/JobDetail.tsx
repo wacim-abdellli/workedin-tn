@@ -1,6 +1,6 @@
 import { logger } from '@/lib/logger';
 import { useState } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import {
     Heart,
     Clock,
@@ -39,6 +39,7 @@ import { sendNewProposalEmail } from '../lib/email';
 import { spendConnects, refundConnects, getConnectsBalance, CONNECTS_COST } from '../services/connects';
 import SimilarJobCard from '../components/jobs/SimilarJobCard';
 import OptimizedImage from '../components/common/OptimizedImage';
+import { canApplyToJob, canSaveJob, getAccessMessage } from '../lib/marketplaceAccess';
 
 // Types
 interface Job {
@@ -135,12 +136,23 @@ const CATEGORY_LABELS: Record<string, string> = {
 function JobDetail() {
     const { jobId } = useParams<{ jobId: string }>();
     const navigate = useNavigate();
+    const location = useLocation();
     const { t, language, tx } = useTranslation();
-    const { user, freelancerProfile } = useAuth();
+    const { user, profile, freelancerProfile } = useAuth();
     const { showToast } = useToast();
     const queryClient = useQueryClient();
 
     const [showProposalModal, setShowProposalModal] = useState(false);
+    const saveDecision = canSaveJob({
+        isAuthenticated: !!user,
+        profile,
+        freelancerProfile,
+    });
+    const applyDecision = canApplyToJob({
+        isAuthenticated: !!user,
+        profile,
+        freelancerProfile,
+    });
 
     const getSkillLabel = (skill: string | Skill) => {
         if (typeof skill === 'string') {
@@ -245,11 +257,42 @@ function JobDetail() {
     });
 
     const toggleSave = () => {
-        if (!user || !jobId) {
-            showToast(t.jobDetail.loginToSave, 'warning');
+        if (!jobId) {
+            return;
+        }
+
+        if (!saveDecision.allowed) {
+            showToast(getAccessMessage(saveDecision.reason, saveDecision.completion), 'warning');
+            if (saveDecision.nextStepPath) {
+                navigate(saveDecision.nextStepPath, { state: { from: location.pathname } });
+            }
             return;
         }
         toggleSaveMutation.mutate();
+    };
+
+    const openProposalFlow = () => {
+        if (!applyDecision.allowed) {
+            showToast(getAccessMessage(applyDecision.reason, applyDecision.completion), 'warning');
+            if (applyDecision.nextStepPath) {
+                navigate(applyDecision.nextStepPath, { state: { from: location.pathname } });
+            }
+            return;
+        }
+
+        if (connectsAvailable < CONNECTS_COST) {
+            showToast(
+                tx(
+                    'jobDetail.connectsNeeded',
+                    { count: CONNECTS_COST, balance: connectsAvailable },
+                    `You need ${CONNECTS_COST} connects to submit a proposal. Your current balance: ${connectsAvailable}`
+                ),
+                'warning'
+            );
+            return;
+        }
+
+        setShowProposalModal(true);
     };
 
     // Submit Proposal Mutation
@@ -722,14 +765,13 @@ function JobDetail() {
                                  </div>
                              ) : (
                                  <div className="space-y-4">
-                                     <Button
-                                         variant="primary"
-                                         size="lg"
-                                         className="w-full"
-                                         onClick={() => setShowProposalModal(true)}
-                                         rightIcon={<Send className="w-5 h-5" />}
-                                         disabled={!!freelancerProfile && connectsAvailable < CONNECTS_COST}
-                                     >
+                                      <Button
+                                          variant="primary"
+                                          size="lg"
+                                          className="w-full"
+                                          onClick={openProposalFlow}
+                                          rightIcon={<Send className="w-5 h-5" />}
+                                      >
                                          {tx('jobDetail.sendProposal', undefined, 'أرسل عرض')}
                                      </Button>
 

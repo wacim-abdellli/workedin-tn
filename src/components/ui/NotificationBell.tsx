@@ -68,7 +68,7 @@ export function NotificationBell({ className = '' }: { className?: string }) {
         <div ref={dropdownRef} className={`relative ${className}`}>
             <button
                 onClick={() => setIsOpen(v => !v)}
-                className="header-icon-btn relative border border-brand-light/70 bg-white dark:bg-gray-800/80 dark:border-white/10"
+                className="header-icon-btn relative"
                 aria-label={t.notifications?.title || 'Notifications'}
             >
                 <Bell className="h-4 w-4" />

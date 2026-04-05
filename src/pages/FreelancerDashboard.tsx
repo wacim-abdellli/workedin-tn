@@ -129,6 +129,7 @@ function FreelancerDashboardPage() {
                 supabase.from('freelancer_profiles').select('profile_views,title,connects_balance').eq('id', userId).maybeSingle(),
                 supabase.from('notifications').select('id,title,body,type,created_at')
                     .eq('user_id', userId)
+                    .neq('type', 'message')
                     .eq('is_read', false)
                     .order('created_at', { ascending: false })
                     .limit(5),

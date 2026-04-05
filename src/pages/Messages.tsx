@@ -1186,7 +1186,7 @@ function MessagesComponent() {
             <div className="border-b border-border px-4 py-5">
                 <div className="mb-4 flex items-center justify-between">
                     <div>
-                        <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-brand/80">{tx('pages.messages.inbox', undefined, 'Inbox')}</p>
+                        <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-gray-500 dark:text-zinc-400">{tx('pages.messages.inbox', undefined, 'Inbox')}</p>
                         <h2 className="text-[1.9rem] font-bold tracking-tight text-foreground">{tx('pages.messages.title', undefined, 'Messages')}</h2>
                     </div>
                     <Button 
@@ -1194,7 +1194,7 @@ function MessagesComponent() {
                         size="sm"
                         onClick={() => navigate(profile?.user_type === 'client' ? '/find-freelancers' : '/jobs')}
                         title={tx('pages.messages.newConversation', undefined, 'Start a new conversation')}
-                        className="h-11 w-11 rounded-full border border-brand/20 p-0 shadow-lg hover:shadow-xl text-white transition-all"
+                        className="h-11 w-11 rounded-full border border-gray-200 dark:border-white/10 p-0 shadow-sm hover:shadow-md text-white transition-all bg-gray-900 dark:bg-zinc-800"
                     >
                         <Plus className="w-4 h-4" />
                     </Button>
@@ -1206,7 +1206,7 @@ function MessagesComponent() {
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         placeholder={tx('pages.messages.searchPlaceholder', undefined, 'Search conversations...')}
-                        className="w-full rounded-xl border border-border bg-input/bg py-3 pe-10 ps-4 text-sm text-foreground shadow-sm focus:border-brand focus:ring-1 focus:ring-brand/50 placeholder:text-muted-foreground transition-colors"
+                        className="w-full rounded-xl border border-border bg-input/bg py-3 pe-10 ps-4 text-sm text-foreground shadow-sm focus:border-gray-400 dark:focus:border-gray-500 focus:ring-1 focus:ring-gray-400/20 placeholder:text-muted-foreground transition-colors"
                     />
                 </div>
             </div>
@@ -1219,7 +1219,7 @@ function MessagesComponent() {
                         onClick={() => setFilter(f)}
                         className={`flex-1 py-3 text-sm font-medium transition-all rounded-lg ${
                             filter === f
-                                ? 'bg-brand/15 text-brand shadow-sm border border-brand/20'
+                                ? 'shadow-sm border border-[color-mix(in_srgb,var(--workspace-accent)_20%,transparent)] bg-[color-mix(in_srgb,var(--workspace-accent)_15%,transparent)] text-[var(--workspace-accent)]'
                                 : 'text-muted hover:bg-surface hover:text-foreground border border-transparent'
                         }`}
                     >

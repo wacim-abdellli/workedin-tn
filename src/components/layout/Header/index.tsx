@@ -8,6 +8,7 @@ import {
   FolderOpen,
   LogOut,
   Menu,
+  MoreHorizontal,
   Moon,
   PlusCircle,
   Search,
@@ -30,7 +31,8 @@ import { hasAdminAccess } from '@/lib/adminAccess'
 import { getInitials, resolveAccountAvatarUrl } from '@/lib/avatar'
 import { switchWorkspace } from '@/lib/switchWorkspace'
 import { useWorkspaceStore } from '@/lib/workspaceState'
-import { NotificationBell } from '@/components/ui'
+import { useMediaQuery } from '@/hooks/useMediaQuery'
+import { NotificationBell, Logo } from '@/components/ui'
 import { useToast } from '@/components/ui/Toast'
 import { getTotalUnreadCount, subscribeToConversations } from '@/services/messages'
 import type { RealtimeChannel } from '@supabase/supabase-js'
@@ -47,15 +49,15 @@ const LANGS = [
   { code: 'en', label: 'English', display: 'EN', country: 'GB' },
 ] as const
 
-function AuthHeader({ logoSrc, onHome, dir }: { logoSrc: string; onHome: () => void; dir: 'rtl' | 'ltr' }) {
+function AuthHeader({ onHome, dir }: { onHome: () => void; dir: 'rtl' | 'ltr' }) {
   return (
     <>
       <header
         dir={dir}
         className="fixed top-0 left-0 right-0 z-50 flex h-[60px] items-center justify-center bg-transparent"
       >
-        <button onClick={onHome} className="flex items-center justify-center">
-          <img src={logoSrc} alt="Khedma TN" style={{ height: '28px', width: 'auto' }} />
+        <button onClick={onHome} className="flex items-center justify-center" aria-label="Go to homepage">
+          <Logo variant="mark" size="sm" />
         </button>
       </header>
       <div style={{ height: '64px' }} />
@@ -95,18 +97,22 @@ export default function Header() {
   const [searchOpen, setSearchOpen] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const [langOpen, setLangOpen] = useState(false)
+  const [navMoreOpen, setNavMoreOpen] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [avatarFailed, setAvatarFailed] = useState(false)
   const [unreadCount, setUnreadCount] = useState(0)
 
   const userMenuRef = useRef<HTMLDivElement>(null)
   const langRef = useRef<HTMLDivElement>(null)
+  const navMoreRef = useRef<HTMLDivElement>(null)
   const conversationsChannelRef = useRef<RealtimeChannel | null>(null)
+  const isDesktopCondensed = useMediaQuery('(max-width: 1420px)')
 
   useEffect(() => {
     const handler = (event: MouseEvent) => {
       if (!userMenuRef.current?.contains(event.target as Node)) setUserMenuOpen(false)
       if (!langRef.current?.contains(event.target as Node)) setLangOpen(false)
+      if (!navMoreRef.current?.contains(event.target as Node)) setNavMoreOpen(false)
     }
 
     document.addEventListener('mousedown', handler)
@@ -128,6 +134,7 @@ export default function Header() {
   useEffect(() => {
     setMobileMenuOpen(false)
     setLangOpen(false)
+    setNavMoreOpen(false)
     setUserMenuOpen(false)
   }, [pathname])
 
@@ -182,6 +189,11 @@ export default function Header() {
   const isFreelancer = Boolean(user) && activeWorkspace === 'freelancer'
   const isAuthPage = AUTH_ROUTES.includes(pathname)
   const navItems = !user ? PUBLIC_NAV : isFreelancer ? FREELANCER_NAV : CLIENT_NAV
+  const shouldCondenseDesktopNav = Boolean(user) && isDesktopCondensed && navItems.length > 3
+  const desktopNavItems = shouldCondenseDesktopNav ? navItems.slice(0, 3) : navItems
+  const overflowNavItems = shouldCondenseDesktopNav ? navItems.slice(3) : []
+  const hasOverflowActiveItem = overflowNavItems.some(({ href }) => pathname === href || pathname.startsWith(`${href}/`))
+  const moreLabel = t.pages?.mobileNav?.more || 'More'
   const currentLang = language || 'en'
   const activeLang = LANGS.find((lang) => lang.code === currentLang) ?? LANGS[2]
   const firstName = profile?.full_name?.split(' ')[0] ?? user?.email?.split('@')[0] ?? 'Me'
@@ -197,7 +209,6 @@ export default function Header() {
   const switchButtonLabel = `${switchActionLabel}: ${switchTargetLabel}`
   const freelancerVerified = Boolean(profile?.cin_verified || freelancerProfile?.cin_verified)
   const freelancerPending = false
-  const logoSrc = isDark ? '/logos/logo-primary-dark.svg' : '/logos/logo-primary.svg'
   const freelancerBadge = freelancerVerified
     ? {
         label: t.auth?.accountPanel?.freelancerLabel || 'Freelancer',
@@ -270,23 +281,23 @@ export default function Header() {
   }
 
   if (isAuthPage) {
-    return <AuthHeader logoSrc={logoSrc} onHome={() => navigate('/')} dir={dir} />
+    return <AuthHeader onHome={() => navigate('/')} dir={dir} />
   }
 
   return (
     <>
       <header
         dir={dir}
-        className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl border-b bg-white/85 dark:bg-[#0a0912]/85 border-gray-200 dark:border-[var(--dash-border)]"
+        className="fixed top-0 left-0 right-0 z-50 border-b border-white/20 bg-white/70 backdrop-blur-xl dark:border-white/5 dark:bg-zinc-950/70 shadow-sm dark:shadow-none transition-all duration-300"
       >
         {user ? (
-          <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: 'var(--workspace-primary)' }} />
+          <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: 'linear-gradient(90deg, var(--workspace-accent), var(--workspace-accent-mid))' }} />
         ) : null}
 
         <div className="mx-auto max-w-[1280px] px-4 sm:px-6">
           <div className="flex h-16 items-center justify-between md:hidden">
-            <button onClick={() => navigate('/')} className="flex items-center">
-              <img src={logoSrc} alt="Khedma TN" style={{ height: '28px', width: 'auto' }} />
+            <button onClick={() => navigate('/')} className="flex items-center" aria-label="Go to homepage">
+              <Logo variant="full" size="sm" />
             </button>
 
             <div className="flex items-center gap-1.5">
@@ -307,199 +318,219 @@ export default function Header() {
             </div>
           </div>
 
-          <div className="hidden h-16 items-center gap-3 md:flex">
+          <div className="hidden h-16 items-center gap-6 md:flex">
             <div className="flex shrink-0 items-center">
-              <button onClick={() => navigate('/')} className="flex items-center">
-                <img src={logoSrc} alt="Khedma TN" style={{ height: '28px', width: 'auto' }} />
+              <button
+                onClick={() => navigate('/')}
+                className="flex items-center transition-all hover:opacity-80"
+                aria-label="Go to homepage"
+              >
+                <Logo variant="full" size="sm" />
               </button>
             </div>
 
-            <nav id="main-nav" className="flex min-w-0 flex-1 items-center justify-center gap-1 overflow-hidden">
-              {navItems.map(({ label, Icon, href }) => (
-                <NavLink
-                  key={href}
-                  to={href}
-                  className={({ isActive }) => (isActive ? navActiveClass : 'header-nav-link')}
-                  style={({ isActive }) => isActive ? { color: 'var(--workspace-primary)', borderColor: 'var(--workspace-primary)' } : undefined}
-                >
-                  <Icon className="h-4 w-4 flex-shrink-0" />
-                  <span className="truncate">{label}</span>
-                </NavLink>
-              ))}
-            </nav>
+            <div className="flex min-w-0 flex-1 items-center justify-between">
+              <div className="flex min-w-0 items-center gap-1 xl:gap-2">
+                <nav id="main-nav" className="flex items-center">
+                  {desktopNavItems.map(({ label, Icon, href }) => (
+                    <NavLink
+                      key={href}
+                      to={href}
+                      className={({ isActive }) => (isActive ? navActiveClass : 'header-nav-link')}
+                    >
+                      <Icon className="h-4 w-4 shrink-0" />
+                      <span className="whitespace-nowrap">{label}</span>
+                    </NavLink>
+                  ))}
 
-            <div className="flex min-w-0 items-center justify-end gap-3">
-              <button
-                onClick={() => setSearchOpen(true)}
-                className="flex h-10 min-w-0 w-[120px] items-center gap-2 rounded-lg border border-border bg-input px-3 text-muted/70 transition-colors hover:bg-surface hover:text-foreground lg:w-[140px] xl:w-[160px]"
-              >
-                <Search className="h-4 w-4 flex-shrink-0" />
-                <span className="flex-1 truncate text-start text-xs">{t.common.search}</span>
-                <kbd className="header-kbd hidden xl:inline-flex">
-                  Ctrl+K
-                </kbd>
-              </button>
-
-              <div className="relative" ref={langRef}>
-                <button
-                  onClick={() => setLangOpen((open) => !open)}
-                  className="flex h-9 w-[68px] justify-center items-center gap-1.5 rounded-xl px-2.5 text-xs font-medium text-muted transition-colors hover:bg-surface shrink-0"
-                >
-                  <span className="text-xs font-medium">{activeLang.country}</span>
-                  <span className="text-xs font-medium text-gray-400">{activeLang.display}</span>
-                </button>
-                {langOpen ? (
-                  <div className="absolute end-0 top-full z-[70] mt-2 w-52 overflow-hidden rounded-2xl border border-border bg-[var(--card-bg)] p-1.5 shadow-[0_24px_60px_-28px_rgba(15,23,42,0.45)] ring-1 ring-black/[0.03] backdrop-blur-xl dark:ring-white/[0.04]">
-                    {LANGS.map((lang) => (
+                  {overflowNavItems.length > 0 ? (
+                    <div className="relative" ref={navMoreRef}>
                       <button
-                        key={lang.code}
-                        onClick={() => {
-                          setLanguage(lang.code)
-                          setLangOpen(false)
-                        }}
-                        className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors ${
-                          currentLang === lang.code
-                            ? 'text-foreground'
-                            : 'text-foreground hover:bg-surface'
-                        }`}
-                        style={currentLang === lang.code ? {
-                          background: 'var(--workspace-primary-light)',
-                          color: 'var(--workspace-primary)',
-                        } : undefined}
+                        onClick={() => setNavMoreOpen((open) => !open)}
+                        className={hasOverflowActiveItem ? navActiveClass : 'header-nav-link'}
+                        aria-label={moreLabel}
                       >
-                        <span className="w-8 shrink-0 text-start text-xs font-semibold text-muted">
-                          {lang.country}
-                        </span>
-                        <span className="flex-1 truncate text-start font-medium">{lang.label}</span>
-                        <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">{lang.display}</span>
+                        <MoreHorizontal className="h-4 w-4 shrink-0" />
+                        <span className="whitespace-nowrap">{moreLabel}</span>
+                        <ChevronDown className={`h-3.5 w-3.5 shrink-0 transition-transform ${navMoreOpen ? 'rotate-180' : ''}`} />
                       </button>
-                    ))}
-                  </div>
-                ) : null}
+
+                      {navMoreOpen ? (
+                        <div className="absolute start-0 top-full z-[70] mt-3 w-56 overflow-hidden rounded-[1.25rem] border border-border bg-[var(--card-bg)] p-2 shadow-[0_28px_70px_-30px_rgba(15,23,42,0.4)] ring-1 ring-black/[0.03] backdrop-blur-xl dark:ring-white/[0.04]">
+                          {overflowNavItems.map(({ label, Icon, href }) => (
+                            <NavLink
+                              key={href}
+                              to={href}
+                              onClick={() => setNavMoreOpen(false)}
+                              className={({ isActive }) => `flex items-center gap-3 rounded-[1rem] px-3.5 py-3 text-sm font-medium transition-colors ${isActive ? 'bg-[color:var(--workspace-primary-light)] text-[color:var(--workspace-primary)] dark:bg-white/10 dark:text-white' : 'text-gray-700 hover:bg-gray-50 dark:text-zinc-300 dark:hover:bg-white/[0.06]'}`}
+                            >
+                              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-black/[0.05] bg-black/[0.025] text-[var(--workspace-primary)] dark:border-white/10 dark:bg-white/[0.04]">
+                                <Icon className="h-4 w-4" />
+                              </span>
+                              <span className="truncate">{label}</span>
+                            </NavLink>
+                          ))}
+                        </div>
+                      ) : null}
+                    </div>
+                  ) : null}
+                </nav>
               </div>
 
-              <button
-                onClick={toggleTheme}
-                className="header-icon-btn"
-                aria-label={isDark ? t.common?.toggleLightMode || 'Toggle light mode' : t.common?.toggleDarkMode || 'Toggle dark mode'}
-              >
-                {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-              </button>
+              <div className="flex shrink-0 items-center gap-2 xl:gap-3">
+                <button
+                  onClick={() => setSearchOpen(true)}
+                  className="flex h-9 shrink-0 items-center gap-2 rounded-xl bg-gray-100/50 dark:bg-white/[0.03] px-3 w-auto lg:w-48 xl:w-56 text-sm font-medium text-gray-500 transition-all duration-300 hover:bg-white hover:text-gray-900 border border-transparent hover:border-gray-200 hover:shadow-sm hover:scale-[1.02] dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-white dark:hover:border-white/10 dark:hover:shadow-lg dark:hover:shadow-black/40"
+                >
+                  <Search className="h-4 w-4 flex-shrink-0" />
+                  <span className="truncate text-xs flex-1 text-left hidden lg:block">
+                    {t.common.search}...
+                  </span>
+                  <div className="hidden items-center gap-1 xl:flex">
+                    <kbd className="header-kbd">Ctrl+K</kbd>
+                  </div>
+                </button>
 
-              {user ? (
-                <div className="flex items-center gap-1.5">
-                  {canQuickSwitch && (
-                    <button
-                      onClick={() => void handleQuickWorkspaceSwitch()}
-                      disabled={isSwitching}
-                      className={`hidden sm:flex h-9 items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold backdrop-blur-sm transition-all ${isSwitching ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-90'}`}
-                      style={{
-                        borderColor: isFreelancer ? 'rgba(245,158,11,0.3)' : 'rgba(139,92,246,0.3)',
-                        color: isFreelancer ? '#d97706' : '#8b5cf6',
-                        backgroundColor: isFreelancer ? 'rgba(245,158,11,0.08)' : 'rgba(139,92,246,0.08)',
-                      }}
-                      title={switchButtonLabel}
-                    >
-                      <Repeat2 className={`h-3 w-3 flex-shrink-0 ${isSwitching ? 'animate-spin' : ''}`} />
-                      <span className="hidden lg:inline-block w-[75px] truncate text-center">{switchTargetLabel}</span>
-                    </button>
-                  )}
+                <div className="relative" ref={langRef}>
                   <button
-                    onClick={() => navigate('/messages')}
-                    className="header-icon-btn relative"
-                    aria-label={t.nav?.messages || 'Messages'}
+                    onClick={() => setLangOpen((open) => !open)}
+                    className="flex h-9 items-center justify-center gap-1.5 rounded-full px-3 text-[11px] font-bold uppercase tracking-wider text-gray-500 transition-all hover:bg-black/[0.05] hover:text-gray-900 dark:text-zinc-400 dark:hover:bg-white/[0.06] dark:hover:text-white"
                   >
-                    <MessageSquare className="h-4 w-4" />
-                    {unreadCount > 0 && (
-                      <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-brand text-xs font-semibold text-brand-text">
-                        {unreadCount > 99 ? '99+' : unreadCount}
-                      </span>
-                    )}
+                    <span className="hidden xl:inline text-gray-400 dark:text-zinc-500">{activeLang.country}</span>
+                    <span>{activeLang.display}</span>
                   </button>
-                  <NotificationBell />
+                  {langOpen ? (
+                    <div className="absolute end-0 top-full z-[70] mt-2 w-52 overflow-hidden rounded-2xl border border-border bg-[var(--card-bg)] p-1.5 shadow-[0_24px_60px_-28px_rgba(15,23,42,0.45)] ring-1 ring-black/[0.03] backdrop-blur-xl dark:ring-white/[0.04]">
+                      {LANGS.map((lang) => (
+                        <button
+                          key={lang.code}
+                          onClick={() => {
+                            setLanguage(lang.code)
+                            setLangOpen(false)
+                          }}
+                          className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors ${
+                            currentLang === lang.code
+                              ? 'text-gray-900 dark:text-zinc-100'
+                              : 'text-gray-700 dark:text-zinc-300 hover:bg-gray-50 dark:hover:bg-zinc-800'
+                          }`}
+                          style={currentLang === lang.code ? {
+                            background: isDark ? 'rgba(255,255,255,0.1)' : 'var(--workspace-primary-light)',
+                            color: isDark ? '#fff' : 'var(--workspace-primary)',
+                          } : undefined}
+                        >
+                          <span className="w-8 shrink-0 text-start text-xs font-semibold text-gray-500 dark:text-zinc-400">
+                            {lang.country}
+                          </span>
+                          <span className="flex-1 truncate text-start font-medium">{lang.label}</span>
+                          <span className="text-[11px] font-semibold uppercase tracking-wide text-gray-400 dark:text-zinc-500">{lang.display}</span>
+                        </button>
+                      ))}
+                    </div>
+                  ) : null}
                 </div>
-              ) : null}
 
-              {!user ? (
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => navigate('/login')}
-                    className="px-3 py-1.5 text-sm font-medium text-muted transition-colors hover:text-foreground"
-                  >
-                    {t.nav?.login || 'Sign in'}
-                  </button>
-                  <button
-                    onClick={() => navigate('/signup')}
-                    className="rounded-lg px-4 py-1.5 text-sm font-medium text-white transition-colors"
-                    style={{ background: 'var(--workspace-primary)' }}
-                  >
-                    {t.nav?.signup || 'Get started'}
-                  </button>
-                </div>
-              ) : null}
+                <button
+                  onClick={toggleTheme}
+                  className="header-icon-btn"
+                  aria-label={isDark ? t.common?.toggleLightMode || 'Toggle light mode' : t.common?.toggleDarkMode || 'Toggle dark mode'}
+                >
+                  {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                </button>
 
-              {user ? (
-                <div className="relative" ref={userMenuRef}>
-                  <button
-                    onClick={() => setUserMenuOpen((open) => !open)}
-                    className={`header-profile-trigger ${userMenuOpen ? 'header-profile-trigger-open' : ''}`}
-                  >
-                    {avatarUrl ? (
-                      <img
-                        src={avatarUrl}
-                        alt={firstName}
-                        className="header-profile-avatar"
-                        onError={() => setAvatarFailed(true)}
-                      />
-                    ) : (
-                      <div
-                        className="header-profile-avatar flex items-center justify-center text-[10px] font-bold text-white"
-                        style={{ background: 'linear-gradient(135deg, #8b5cf6, #6d28d9)' }}
+                {user ? (
+                  <>
+                    {canQuickSwitch && (
+                      <button
+                        onClick={() => void handleQuickWorkspaceSwitch()}
+                        disabled={isSwitching}
+                        className={`flex h-9 items-center justify-center gap-2 rounded-full border px-3 text-[11px] font-bold uppercase tracking-wider transition-all ${isSwitching ? 'cursor-not-allowed opacity-50' : 'hover:-translate-y-[1px] shadow-sm hover:shadow'} ${isDesktopCondensed ? 'w-10 px-0' : ''}`}
+                        style={{
+                          borderColor: isFreelancer ? 'rgba(245,158,11,0.3)' : 'rgba(139,92,246,0.3)',
+                          color: isFreelancer ? '#d97706' : '#8b5cf6',
+                          background: isFreelancer ? 'rgba(245,158,11,0.1)' : 'rgba(139,92,246,0.1)',
+                        }}
+                        title={switchButtonLabel}
                       >
-                        {avatarInitials}
-                      </div>
+                        <Repeat2 className={`h-3.5 w-3.5 flex-shrink-0 ${isSwitching ? 'animate-spin' : ''}`} />
+                        {!isDesktopCondensed ? <span className="max-w-[78px] truncate">{switchTargetLabel}</span> : null}
+                      </button>
                     )}
-                    <span
-                      className="hidden w-[80px] text-left truncate text-sm font-medium text-gray-700 dark:text-gray-200 md:block"
-                    >
-                      {firstName}
-                    </span>
-                    <span
-                        className="header-profile-chip flex-shrink-0 flex items-center justify-center gap-1.5 w-[85px]"
-                      style={{
-                        background: triggerWorkspaceBadge.background,
-                        color: triggerWorkspaceBadge.color,
-                        padding: '5px 0',
-                        borderRadius: '9999px',
-                        fontSize: '0.7rem',
-                        fontWeight: 600,
-                        border: `1px solid ${triggerWorkspaceBadge.border}`,
-                        boxShadow: 'none',
-                      }}
-                    >
-                      <span className={`h-1.5 w-1.5 rounded-full shrink-0 ${triggerWorkspaceBadge.dotClassName}`} />
-                      <span className="truncate">{triggerWorkspaceBadge.label}</span>
-                    </span>
-                    <ChevronDown
-                      className={`h-3 w-3 flex-shrink-0 text-gray-400 transition-transform duration-200 ${
-                        userMenuOpen ? 'rotate-180' : ''
-                      }`}
-                    />
-                  </button>
 
-                  {userMenuOpen ? (
-                    <div className="absolute end-0 top-full z-[70] mt-3 w-[288px] overflow-hidden rounded-[1.4rem] border border-border bg-[var(--card-bg)] p-2.5 shadow-[0_28px_80px_-30px_rgba(15,23,42,0.48)] ring-1 ring-black/[0.03] backdrop-blur-xl dark:ring-white/[0.04]">
-                      <div className="rounded-[1.15rem] border border-border/50 bg-[var(--surface-bg)] px-4 py-3.5">
-                        <div className="flex items-center justify-between gap-3">
-                          <div className="min-w-0">
+                    <button
+                      onClick={() => navigate('/messages')}
+                      className="header-icon-btn relative"
+                      aria-label={t.nav?.messages || 'Messages'}
+                    >
+                      <MessageSquare className="h-4 w-4" />
+                      {unreadCount > 0 && (
+                        <span className="absolute -top-1 -right-1 flex min-h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-bold text-white"
+                              style={{ background: 'var(--workspace-accent)' }}>
+                          {unreadCount > 99 ? '99+' : unreadCount}
+                        </span>
+                      )}
+                    </button>
+
+                    <NotificationBell />
+
+                    <div className="relative pl-1" ref={userMenuRef}>
+                      <button
+                        onClick={() => setUserMenuOpen((open) => !open)}
+                        className={`header-profile-trigger ${userMenuOpen ? 'header-profile-trigger-open' : ''}`}
+                      >
+                        {avatarUrl ? (
+                          <img
+                            src={avatarUrl}
+                            alt={firstName}
+                            className="h-7 w-7 rounded-full object-cover"
+                            onError={() => setAvatarFailed(true)}
+                          />
+                        ) : (
+                          <div
+                            className="flex h-7 w-7 items-center justify-center rounded-full text-[10px] font-bold text-white"
+                            style={{ background: 'var(--gradient-primary)' }}
+                          >
+                            {avatarInitials}
+                          </div>
+                        )}
+
+                        {!isDesktopCondensed ? (
+                          <>
+                            <span className="w-[76px] truncate text-left text-sm font-medium text-gray-700 dark:text-gray-200">
+                              {firstName}
+                            </span>
+                            <span
+                              className="flex flex-shrink-0 items-center justify-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold"
+                              style={{
+                                background: triggerWorkspaceBadge.background,
+                                color: triggerWorkspaceBadge.color,
+                                border: `1px solid ${triggerWorkspaceBadge.border}`,
+                              }}
+                            >
+                              <span className={`h-1.5 w-1.5 rounded-full shrink-0 ${triggerWorkspaceBadge.dotClassName}`} />
+                              <span className="truncate">{triggerWorkspaceBadge.label}</span>
+                            </span>
+                          </>
+                        ) : null}
+
+                        <ChevronDown
+                          className={`h-3.5 w-3.5 flex-shrink-0 text-gray-400 transition-transform duration-200 ${userMenuOpen ? 'rotate-180' : ''}`}
+                        />
+                      </button>
+
+                      {userMenuOpen ? (
+                        <div className="absolute end-0 top-full z-[70] mt-3 w-[288px] overflow-hidden rounded-[1.4rem] border border-border bg-[var(--card-bg)] p-2.5 shadow-[0_28px_80px_-30px_rgba(15,23,42,0.48)] ring-1 ring-black/[0.03] backdrop-blur-xl dark:ring-white/[0.04]">
+                          <div className="rounded-[1.15rem] border border-border/50 bg-[var(--surface-bg)] px-4 py-3.5">
+                            <div className="flex items-center justify-between gap-3">
+                              <div className="min-w-0">
                             <p className="truncate text-[15px] font-semibold text-[var(--text-primary)]">{displayName}</p>
                             <p className="truncate text-xs text-[var(--text-muted)]">{user.email}</p>
                           </div>
                           <span
-                            className="inline-flex shrink-0 items-center rounded-full px-2.5 py-1 text-[11px] font-semibold shadow-sm"
+                            className="inline-flex shrink-0 items-center rounded-full border px-2.5 py-1 text-[11px] font-semibold shadow-sm"
                             style={{
                               background: isFreelancer ? workspaceBadge.background : 'rgba(245,158,11,0.16)',
                               color: isFreelancer ? workspaceBadge.color : '#d97706',
+                              borderColor: isFreelancer ? 'rgba(255,255,255,0.08)' : 'rgba(245,158,11,0.24)',
                             }}
                           >
                             {workspaceBadge.label}
@@ -515,7 +546,7 @@ export default function Header() {
                           }}
                           className="group flex w-full items-center gap-3 rounded-xl px-3.5 py-3 text-left text-sm font-medium text-foreground transition-all duration-150 hover:bg-[var(--surface-bg)]"
                         >
-                          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-border bg-[var(--surface-bg)] text-muted transition-colors group-hover:border-brand/16 group-hover:text-brand">
+                          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-border bg-[var(--surface-bg)] text-gray-500 dark:text-zinc-400 transition-colors group-hover:border-brand/16 group-hover:text-brand">
                             <User className="h-4 w-4" />
                           </span>
                           <span className="truncate">{t.nav?.dashboard || 'Dashboard'}</span>
@@ -527,7 +558,7 @@ export default function Header() {
                           }}
                           className="group flex w-full items-center gap-3 rounded-xl px-3.5 py-3 text-left text-sm font-medium text-foreground transition-all duration-150 hover:bg-[var(--surface-bg)]"
                         >
-                          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-border bg-[var(--surface-bg)] text-muted transition-colors group-hover:border-brand/16 group-hover:text-brand">
+                          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-border bg-[var(--surface-bg)] text-gray-500 dark:text-zinc-400 transition-colors group-hover:border-brand/16 group-hover:text-brand">
                             <Settings className="h-4 w-4" />
                           </span>
                           <span className="truncate">{t.nav?.settings || 'Settings'}</span>
@@ -561,7 +592,7 @@ export default function Header() {
                             }}
                             className="group flex w-full items-center gap-3 rounded-xl px-3.5 py-3 text-left text-sm font-medium text-foreground transition-all duration-150 hover:bg-[var(--surface-bg)]"
                           >
-                            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-border bg-[var(--surface-bg)] text-muted transition-colors group-hover:border-brand/16 group-hover:text-brand">
+                            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-border bg-[var(--surface-bg)] text-gray-500 dark:text-zinc-400 transition-colors group-hover:border-brand/16 group-hover:text-brand">
                               <Shield className="h-4 w-4" />
                             </span>
                             <span className="truncate">{t.settings?.cinVerification || 'Verify identity'}</span>
@@ -576,7 +607,7 @@ export default function Header() {
                             }}
                             className="group flex w-full items-center gap-3 rounded-xl px-3.5 py-3 text-left text-sm font-medium text-foreground transition-all duration-150 hover:bg-[var(--surface-bg)]"
                           >
-                            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-border bg-[var(--surface-bg)] text-muted transition-colors group-hover:border-brand/16 group-hover:text-brand">
+                            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-border bg-[var(--surface-bg)] text-gray-500 dark:text-zinc-400 transition-colors group-hover:border-brand/16 group-hover:text-brand">
                               <Shield className="h-4 w-4" />
                             </span>
                             <span className="truncate">{t.nav?.adminDashboard || 'Admin Dashboard'}</span>
@@ -599,9 +630,27 @@ export default function Header() {
                         </button>
                       </div>
                     </div>
-                  ) : null}
-                </div>
-              ) : null}
+                      ) : null}
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex items-center gap-1 pl-1">
+                    <button
+                      onClick={() => navigate('/login')}
+                      className="flex h-10 items-center rounded-[0.95rem] px-3 text-sm font-semibold text-gray-600 transition-all hover:bg-black/[0.04] hover:text-gray-900 dark:text-zinc-300 dark:hover:bg-white/[0.06] dark:hover:text-white"
+                    >
+                      {t.nav?.login || 'Sign in'}
+                    </button>
+                    <button
+                      onClick={() => navigate('/signup')}
+                      className="flex h-10 items-center rounded-[0.95rem] px-4 text-sm font-semibold text-white shadow-[0_18px_38px_-24px_rgba(109,40,217,0.8)] transition-transform hover:-translate-y-0.5"
+                      style={{ background: 'var(--workspace-primary)' }}
+                    >
+                      {t.nav?.signup || 'Get started'}
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -619,8 +668,8 @@ export default function Header() {
             dir === 'rtl' ? 'left-0 border-r border-border' : 'right-0 border-l border-border'
           }`}>
             <div className="flex h-16 items-center justify-between border-b border-border/50 px-4">
-              <button onClick={() => navigate('/')} className="flex items-center">
-                <img src={logoSrc} alt="Khedma TN" style={{ height: '28px', width: 'auto' }} />
+              <button onClick={() => navigate('/')} className="flex items-center" aria-label="Go to homepage">
+                <Logo variant="full" size="sm" />
               </button>
               <button
                 onClick={() => setMobileMenuOpen(false)}
@@ -637,7 +686,7 @@ export default function Header() {
                   setSearchOpen(true)
                   setMobileMenuOpen(false)
                 }}
-                className="flex h-11 w-full items-center gap-3 rounded-2xl border border-input bg-input px-4 text-start text-muted"
+                className="flex h-11 w-full items-center gap-3 rounded-2xl border border-input bg-input px-4 text-start text-gray-500 dark:text-zinc-400"
               >
                 <Search className="h-4 w-4" />
                 <span className="text-sm">{t.common?.search || 'Search'}</span>
@@ -651,7 +700,7 @@ export default function Header() {
                     ) : (
                       <div
                         className="flex h-11 w-11 items-center justify-center rounded-full text-sm font-bold text-white"
-                        style={{ background: 'linear-gradient(135deg, #8b5cf6, #6d28d9)' }}
+                         style={{ background: 'var(--gradient-primary)' }}
                       >
                         {avatarInitials}
                       </div>
@@ -692,10 +741,10 @@ export default function Header() {
                       `flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-colors ${
                         isActive
                           ? 'header-nav-link-active'
-                          : 'text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-white dark:bg-gray-800 dark:bg-gray-900/5'
-                      }`
+                          : 'text-gray-700 hover:bg-gray-50 dark:text-zinc-300 dark:hover:bg-zinc-800'
+                       }`
                     }
-                    style={({ isActive }) => isActive ? { color: 'var(--workspace-primary)', borderColor: 'var(--workspace-primary)' } : undefined}
+                    style={({ isActive }) => isActive ? { color: 'var(--workspace-accent)', borderColor: 'var(--workspace-accent)' } : undefined}
                   >
                     <Icon className="h-4 w-4 flex-shrink-0" />
                     <span className="min-w-0 truncate">{label}</span>
@@ -724,7 +773,8 @@ export default function Header() {
                       <MessageSquare className="h-4 w-4 flex-shrink-0" />
                         {t.nav?.messages || 'Messages'}
                       {unreadCount > 0 && (
-                        <span className="ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-brand text-xs font-semibold text-brand-text">
+                        <span className="ml-auto flex h-5 w-5 items-center justify-center rounded-full text-xs font-bold text-white"
+                              style={{ background: 'var(--workspace-accent)' }}>
                           {unreadCount > 99 ? '99+' : unreadCount}
                         </span>
                       )}

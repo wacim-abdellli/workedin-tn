@@ -113,7 +113,7 @@ function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
                             showToast(t.auth.googleLoginError, 'error');
                         }
                     }}
-                    className="w-full flex items-center justify-center gap-3 rounded-2xl border border-gray-200 dark:border-gray-700/80 bg-white dark:bg-gray-800 px-4 py-3.5 font-medium text-gray-700 dark:text-gray-300 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-gray-50 dark:bg-gray-900 hover:shadow-md dark:border-white/10 dark:border-gray-800 dark:bg-[#221d30] dark:text-gray-200 dark:hover:bg-[#2a2338]"
+                    className="w-full flex items-center justify-center gap-3 rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-zinc-800 px-4 py-3.5 font-medium text-gray-700 dark:text-gray-200 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-gray-50 dark:hover:bg-zinc-700 hover:shadow-md"
                 >
                     <svg className="w-5 h-5" viewBox="0 0 24 24">
                         <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />

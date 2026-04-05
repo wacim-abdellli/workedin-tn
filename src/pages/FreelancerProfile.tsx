@@ -4,7 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { User } from 'lucide-react';
 import { useTranslation } from '../i18n';
 import { useAuth } from '../contexts/AuthContext';
-import { Header, Footer } from '../components/layout';
+import { Header } from '../components/layout';
 import Button from '../components/ui/Button';
 import { supabase } from '../lib/supabase';
 import type { Skill } from '../types';
@@ -400,8 +400,6 @@ export default function FreelancerProfile() {
                 freelancerId={freelancer.id}
                 freelancerName={freelancer.full_name}
             />
-
-            <Footer />
         </div>
     );
 }

@@ -18,6 +18,7 @@ import { ThemeProvider } from './contexts/ThemeContext';
 import ErrorBoundary from './components/ui/ErrorBoundary';
 import ScrollToTop from './components/ui/ScrollToTop';
 import RouteProgress from './components/ui/RouteProgress';
+import { FullScreenLoader } from './components/ui';
 
 import { ProfileRedirect } from './components/routing/ProfileRedirect';
 import { AdminRoute } from './components/routing/AdminRoute';
@@ -91,10 +92,8 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
   if (!isFullyReady) {
     return (
-      <div className="fixed inset-0 z-50 bg-[var(--page-bg)] flex flex-col items-center justify-center gap-4">
-        <img src="/favicon.svg" alt="Khedma TN" className="w-10 h-10 mb-2 opacity-80 no-transition" />
-        <div className="w-6 h-6 rounded-full border-2 border-[color:var(--workspace-primary)] border-t-transparent animate-spin no-transition" />
-        <p className="text-xs text-[var(--text-muted)]">Loading...</p>
+      <div className="fixed inset-0 z-50">
+        <FullScreenLoader label="Loading..." hint="Checking your account and workspace access" />
       </div>
     );
   }
@@ -124,9 +123,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 }
 
 const PageLoader = () => (
-  <div className="min-h-screen bg-[var(--page-bg)] flex items-center justify-center">
-    <div className="w-6 h-6 rounded-full border-2 border-[color:var(--workspace-primary)] border-t-transparent animate-spin opacity-60 no-transition" />
-  </div>
+  <FullScreenLoader label="Loading..." hint="Opening the next page" />
 )
 // Redirect /profile to the correct dashboard
 

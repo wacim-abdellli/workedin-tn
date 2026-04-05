@@ -51,6 +51,7 @@ export default function MobileNav() {
             .from('notifications')
             .select('*', { count: 'exact', head: true })
             .eq('user_id', user.id)
+            .neq('type', 'message')
             .eq('is_read', false), // Fixed: was 'read', should be 'is_read'
           
           // Fixed: Use conversation unread counts instead of individual messages
@@ -92,7 +93,8 @@ export default function MobileNav() {
         schema: 'public', 
         table: 'notifications', 
         filter: `user_id=eq.${user.id}` 
-      }, () => {
+      }, (payload) => {
+        if ((payload.new as { type?: string } | null)?.type === 'message') return;
         setUnreadNotifications((prev) => prev + 1);
       })
       .on('postgres_changes', { 

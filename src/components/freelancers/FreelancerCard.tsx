@@ -70,8 +70,8 @@ function FreelancerCard({
           : 'mb-6 text-center'
       )}>
         <div className="relative inline-block">
-          <div className="absolute inset-0 h-20 w-20 rotate-3 rounded-2xl bg-gradient-to-br from-primary-100 to-primary-50 transition-transform group-hover:rotate-6 dark:from-primary-900/20 dark:to-primary-800/20" />
-          <div className="relative flex h-20 w-20 items-center justify-center overflow-hidden rounded-2xl text-2xl font-bold text-white shadow-lg shadow-primary-500/20 transition-transform duration-300 group-hover:scale-105">
+          <div className="absolute inset-0 h-20 w-20 rotate-3 rounded-2xl transition-transform group-hover:rotate-6" style={{ background: 'color-mix(in srgb, var(--workspace-accent) 15%, transparent)' }} />
+          <div className="relative flex h-20 w-20 items-center justify-center overflow-hidden rounded-2xl text-2xl font-bold text-white shadow-lg transition-transform duration-300 group-hover:scale-105" style={{ boxShadow: '0 10px 15px -3px color-mix(in srgb, var(--workspace-accent) 20%, transparent)' }}>
             {freelancer.avatar ? (
               <img
                 src={freelancer.avatar}
@@ -95,7 +95,7 @@ function FreelancerCard({
 
         {viewMode === 'list' ? (
           <div className="mt-4 text-center">
-            <div className="text-xl font-bold text-primary-600 dark:text-primary-400">
+            <div className="text-xl font-bold" style={{ color: 'var(--workspace-accent)' }}>
               {freelancer.hourly_rate} <span className="text-sm font-normal text-muted">{tx('pages.freelancerCard.tndPerHour', undefined, 'TND/hr')}</span>
             </div>
             <div className="mt-1 inline-block rounded-full bg-green-50 px-2 py-1 text-xs font-medium text-green-600 dark:bg-green-900/20 dark:text-green-400">
@@ -108,8 +108,8 @@ function FreelancerCard({
       <div className="flex-1">
         <div className="mb-2 flex items-start justify-between">
           <div className={cn(viewMode === 'list' ? '' : 'w-full text-center')}>
-            <h3 className="flex items-center justify-center gap-2 text-lg font-bold text-dark-900 transition-colors group-hover:text-primary-600 dark:text-white dark:group-hover:text-primary-400 lg:justify-start">
-              {freelancer.name}
+            <h3 className="flex items-center justify-center gap-2 text-lg font-bold text-dark-900 transition-colors dark:text-white lg:justify-start" style={{ textDecorationColor: 'var(--workspace-accent)' }}>
+              <span className="hover:text-[var(--workspace-accent)] transition-colors">{freelancer.name}</span>
               {freelancer.is_verified ? (
                 <span title={tx('pages.freelancerCard.verifiedProfile', undefined, 'Verified profile')}>
                   <BadgeCheck className="h-4 w-4" style={{ color: 'var(--workspace-primary)' }} />
@@ -170,7 +170,7 @@ function FreelancerCard({
         {viewMode !== 'list' ? (
           <div className="mb-4 grid grid-cols-2 gap-2">
             <div className="rounded-2xl p-3 text-center" style={{ background: 'color-mix(in srgb, var(--workspace-primary) 8%, var(--card-bg))' }}>
-              <div className="text-lg font-bold text-primary-600 dark:text-primary-400">{freelancer.hourly_rate} TND</div>
+              <div className="text-lg font-bold" style={{ color: 'var(--workspace-accent)' }}>{freelancer.hourly_rate} TND</div>
               <div className="text-[10px] text-muted">{tx('pages.freelancerCard.hourlyRate', undefined, 'Hourly rate')}</div>
             </div>
             <div className="rounded-2xl p-3 text-center" style={{ background: 'color-mix(in srgb, var(--brand-accent) 8%, var(--card-bg))' }}>
@@ -184,7 +184,7 @@ function FreelancerCard({
           {freelancer.skills.slice(0, 3).map((skill) => (
             <span
               key={skill}
-              className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-2.5 py-1 text-xs text-gray-600 dark:text-gray-300 transition-colors group-hover:border-primary-200 dark:border-dark-700 dark:bg-dark-800 dark:text-gray-300 dark:group-hover:border-primary-800"
+              className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-2.5 py-1 text-xs text-gray-600 dark:text-gray-300 transition-colors dark:border-dark-700 dark:bg-dark-800 dark:text-gray-300 hover:border-[var(--workspace-accent)]"
             >
               {skill}
             </span>

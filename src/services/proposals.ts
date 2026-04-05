@@ -2,6 +2,8 @@
  * Proposals Service - All proposal-related Supabase queries
  */
 import { supabase, uploadFile } from '@/lib/supabase';
+import { canApplyToJob, getAccessMessage } from '@/lib/marketplaceAccess';
+import type { FreelancerProfile, Profile } from '@/types';
 
 export interface CreateProposalInput {
     job_id: string;
@@ -50,28 +52,33 @@ export async function getProposalsByFreelancer(freelancerId: string) {
 
 export async function createProposal(data: CreateProposalInput, files: File[] = []) {
     try {
-        // freelancer_profiles.id = profiles.id (same UUID as auth user).
-        // Guard: ensure the user has a freelancer_profiles row before inserting.
+        const { data: profile, error: profileError } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', data.freelancer_id)
+            .maybeSingle();
+
+        if (profileError) throw profileError;
+
         const { data: fp, error: fpError } = await supabase
             .from('freelancer_profiles')
-            .select('id')
+            .select('*')
             .eq('id', data.freelancer_id)
             .maybeSingle();
 
         if (fpError) throw fpError;
 
-        if (!fp) {
-            // Auto-create a minimal freelancer_profiles row so the FK is satisfied.
-            // Users can complete their profile later from the dashboard.
-            const { error: insertFpError } = await supabase
-                .from('freelancer_profiles')
-                .insert({ id: data.freelancer_id });
-            if (insertFpError) {
-                return {
-                    data: null,
-                    error: new Error('يجب إكمال ملفك الشخصي كمستقل قبل تقديم العروض.'),
-                };
-            }
+        const accessDecision = canApplyToJob({
+            isAuthenticated: true,
+            profile: (profile as Profile | null) ?? null,
+            freelancerProfile: (fp as FreelancerProfile | null) ?? null,
+        });
+
+        if (!accessDecision.allowed) {
+            return {
+                data: null,
+                error: new Error(getAccessMessage(accessDecision.reason, accessDecision.completion)),
+            };
         }
 
         const attachmentUrls: string[] = await Promise.all(

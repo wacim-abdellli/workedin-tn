@@ -1,6 +1,7 @@
 
 
 import { useTranslation } from '../../i18n';
+import { Logo } from './Logo';
 
 interface LoadingProps {
     fullScreen?: boolean;
@@ -18,12 +19,8 @@ export default function Loading({ fullScreen = false, text }: LoadingProps) {
                 <div className="relative mx-6 flex w-full max-w-[320px] flex-col items-center rounded-[2rem] border border-black/[0.06] bg-white dark:bg-gray-800/88 px-8 py-10 text-center shadow-[0_28px_90px_-36px_rgba(26,24,37,0.28)] backdrop-blur-xl dark:border-white/10 dark:border-gray-800 dark:bg-[#171422]/92">
                     <div className="absolute inset-x-10 top-6 h-20 rounded-full bg-[color:var(--workspace-primary)]/12 blur-3xl dark:bg-[color:var(--workspace-primary)]/14" />
 
-                    <div className="relative flex h-24 w-24 items-center justify-center rounded-[1.75rem] border border-black/[0.05] bg-[linear-gradient(180deg,rgba(255,255,255,0.98)_0%,rgba(247,242,255,0.96)_100%)] shadow-[0_24px_50px_-28px_rgba(109,40,217,0.35)] dark:border-white/[0.08] dark:bg-[linear-gradient(180deg,rgba(36,34,53,0.98)_0%,rgba(23,20,34,0.98)_100%)]">
-                        <img
-                            src="/logos/logo-social.svg"
-                            alt="Khedma TN"
-                            className="h-16 w-16 rounded-[1.1rem]"
-                        />
+                    <div className="relative flex h-24 w-24 items-center justify-center rounded-[1.75rem] border border-gray-200 bg-white shadow-[0_8px_30px_rgb(0,0,0,0.05)] dark:border-white/5 dark:bg-zinc-900/60 dark:shadow-[0_8px_30px_rgb(0,0,0,0.4)]">
+                        <Logo variant="mark" size="lg" />
                     </div>
 
                     <div className="mt-6 text-lg font-semibold text-[var(--text-primary)]">{tr('تجهيز مساحة العمل الخاصة بك', 'Preparing your workspace', 'Préparation de votre espace de travail')}</div>

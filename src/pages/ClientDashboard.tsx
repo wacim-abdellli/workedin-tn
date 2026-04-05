@@ -119,6 +119,7 @@ function ClientDashboardPage() {
                 supabase.from('jobs').select('status, proposals_count').eq('client_id', userId),
                 supabase.from('notifications').select('id,title,body,created_at')
                     .eq('user_id', userId)
+                    .neq('type', 'message')
                     .eq('is_read', false)
                     .order('created_at', { ascending: false })
                     .limit(4),

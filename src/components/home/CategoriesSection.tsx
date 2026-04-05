@@ -58,10 +58,10 @@ export default function CategoriesSection() {
             <div className="container-custom">
                 <div className="text-center mb-12">
                     <span className="badge-accent mb-4">{t.home.sections.categories.badge}</span>
-                    <h2 className="heading-lg mb-4">
+                    <h2 className="heading-lg mb-4 text-gray-900 dark:text-white">
                         {t.categories.title}
                     </h2>
-                    <p className="text-muted max-w-2xl mx-auto">
+                    <p className="text-gray-500 dark:text-zinc-400 max-w-2xl mx-auto">
                         {t.home.sections.categories.subtitle}
                     </p>
                 </div>
@@ -71,38 +71,32 @@ export default function CategoriesSection() {
                         <Link
                             key={category.id}
                             to={`/jobs?cat=${category.id}`}
-                            className="p-6 text-center group rounded-[1.6rem] border transition-all duration-300"
+                            className="p-6 text-center group rounded-[1.6rem] border bg-white dark:bg-zinc-900 border-gray-200 dark:border-white/5 transition-all duration-300 shadow-sm hover:shadow-md"
                             onMouseEnter={(e) => {
-                                e.currentTarget.style.borderColor = 'color-mix(in srgb, var(--workspace-primary) 34%, transparent)';
-                                e.currentTarget.style.boxShadow = '0 24px 54px -34px color-mix(in srgb, var(--workspace-primary) 55%, transparent)';
+                                e.currentTarget.style.borderColor = 'var(--workspace-accent)';
                                 e.currentTarget.style.transform = 'translateY(-4px)';
                             }}
                             onMouseLeave={(e) => {
-                                e.currentTarget.style.borderColor = 'var(--border)';
-                                e.currentTarget.style.boxShadow = 'var(--shadow-sm)';
+                                e.currentTarget.style.borderColor = '';
                                 e.currentTarget.style.transform = 'translateY(0)';
                             }}
                             style={{
-                                animationDelay: `${index * 50}ms`,
-                                background: 'var(--card-bg)',
-                                borderColor: 'var(--border)',
-                                boxShadow: 'var(--shadow-sm)',
+                                animationDelay: `${index * 50}ms`
                             }}
                         >
                             <div
-                                className="w-16 h-16 mx-auto mb-4 rounded-2xl flex items-center justify-center transition-all duration-300 shadow-lg"
+                                className="w-16 h-16 mx-auto mb-4 rounded-2xl flex items-center justify-center transition-all duration-300 shadow-sm group-hover:shadow-md"
                                 style={{
-                                    background: 'linear-gradient(135deg, color-mix(in srgb, var(--workspace-primary) 12%, var(--card-bg)), color-mix(in srgb, var(--workspace-primary) 6%, var(--surface-bg)))',
-                                    color: 'var(--workspace-primary-mid)',
-                                    boxShadow: '0 20px 40px -30px color-mix(in srgb, var(--workspace-primary) 65%, transparent)',
+                                    background: 'color-mix(in srgb, var(--workspace-accent) 15%, transparent)',
+                                    color: 'var(--workspace-accent)'
                                 }}
                             >
                                 {iconMap[category.id]}
                             </div>
-                            <h3 className="font-semibold text-sm mb-1" style={{ color: 'var(--text-primary)' }}>
+                            <h3 className="font-semibold text-sm mb-1 text-gray-900 dark:text-white">
                                 {category.name}
                             </h3>
-                            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                            <p className="text-xs text-gray-600 dark:text-zinc-400">
                                 {categoryCounts[category.id] ?? 0} {t.categories.availableJobs}
                             </p>
                         </Link>

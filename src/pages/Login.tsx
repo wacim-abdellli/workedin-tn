@@ -77,7 +77,7 @@ function Login() {
                 topAction={
                     <Link
                         to="/signup"
-                        className="inline-flex items-center rounded-full border border-white/12 bg-white/6 px-4 py-2 text-sm font-medium text-white/80 backdrop-blur-sm transition-colors hover:border-white/20 hover:bg-white/10 hover:text-white"
+                        className="inline-flex items-center rounded-full border border-gray-200 dark:border-white/12 bg-white/60 dark:bg-white/5 px-4 py-2 text-sm font-medium text-gray-900 dark:text-white/80 backdrop-blur-sm shadow-sm transition-colors hover:border-gray-300 dark:hover:border-white/20 hover:bg-gray-50 dark:hover:bg-white/10 dark:hover:text-white"
                     >
                         {tx('authPages.login.createAccountAction', undefined, 'Create account')}
                     </Link>
@@ -85,14 +85,14 @@ function Login() {
             >
                 <div className="animate-slide-up">
                     {isOAuthResume && isLoading ? (
-                        <div className="flex min-h-[320px] flex-col items-center justify-center rounded-[24px] border border-white/8 bg-gray-50/50 p-8 text-center dark:bg-gray-800">
-                            <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary-500/10 dark:bg-primary-400/10">
-                                <Loader2 className="h-8 w-8 animate-spin text-primary-600 dark:text-primary-400" />
+                        <div className="flex min-h-[320px] flex-col items-center justify-center rounded-[24px] border border-gray-200 dark:border-white/5 bg-white/50 p-8 text-center dark:bg-zinc-900/60 backdrop-blur-md">
+                            <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl" style={{ backgroundColor: 'color-mix(in srgb, var(--workspace-accent) 15%, transparent)' }}>
+                                <Loader2 className="h-8 w-8 animate-spin" style={{ color: 'var(--workspace-accent)' }} />
                             </div>
-                            <h1 className="mb-3 text-xl font-semibold tracking-tight text-[#171420] dark:text-white">
+                            <h1 className="mb-3 text-xl font-semibold tracking-tight text-gray-900 dark:text-white">
                                 {tx('authPages.login.finishingSignIn', undefined, 'Securing session...')}
                             </h1>
-                            <p className="max-w-[280px] text-sm leading-relaxed text-gray-500 dark:text-white/60">
+                            <p className="max-w-[280px] text-sm leading-relaxed text-gray-500 dark:text-zinc-400">
                                 {tx('authPages.login.finishingSignInDescription', undefined, 'Hang tight while we prepare your workspace.')}
                             </p>
                         </div>

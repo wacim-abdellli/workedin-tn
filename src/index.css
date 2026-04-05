@@ -20,11 +20,11 @@
   --amber-700: #b8860b;
 
   /* ===== WORKSPACE THEMING ===== */
-  /* Freelancer workspace (violet-themed) - Default */
-  --workspace-primary: #7c3aed;
-  --workspace-primary-hover: #6d28d9;
-  --workspace-primary-light: #faf5ff;
-  --workspace-primary-mid: #a78bfa;
+  /* Workspace theme using Logo Violet */
+  --workspace-primary: #5b21b6;
+  --workspace-primary-hover: #4c1d95;
+  --workspace-primary-light: #f5f3ff;
+  --workspace-primary-mid: #7c3aed;
   --workspace-primary-text: #ffffff;
 
   /* Shared CTA */
@@ -49,7 +49,7 @@
   --sidebar-bg: #f3f4f6;
   --input-bg: #ffffff;
   --input-border: #e5e7eb;
-  --input-border-focus: #7c3aed;
+  --input-border-focus: #5b21b6;
   --text-primary: #111827;
   --text-secondary: #6b7280;
   --text-muted: #9ca3af;
@@ -74,7 +74,7 @@
   --info-600: #3b82f6;
 
   /* ===== GRADIENTS ===== */
-  --gradient-primary: linear-gradient(135deg, #7c3aed 0%, #6d28d9 55%, #d4a017 100%);
+  --gradient-primary: linear-gradient(135deg, #5b21b6 0%, #4c1d95 55%, #d4a017 100%);
   --gradient-accent: linear-gradient(135deg, #d4a017 0%, #b8860b 100%);
   --gradient-glass: linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(249, 250, 251, 0.92) 100%);
   --gradient-surface: linear-gradient(145deg, #ffffff, #f9fafb);
@@ -149,14 +149,14 @@
 .dark {
   /* ===== DARK MODE PALETTE (Clean, High-Contrast, Professional) ===== */
   
-  /* Backgrounds - Clean, not muddy */
-  --page-bg: #0f0e17;
-  --surface-bg: #1a1825;
-  --card-bg: #1a1825;
-  --sidebar-bg: #151220;
-  --input-bg: #232230;
+  /* Backgrounds - Clear surface hierarchy */
+  --page-bg: #0a0910;
+  --surface-bg: #141320;
+  --card-bg: #1c1a2e;
+  --sidebar-bg: #111020;
+  --input-bg: #1c1a2e;
   --input-border: rgba(167, 139, 250, 0.2);
-  --input-border-focus: #a78bfa;
+  --input-border-focus: #7c3aed;
   
   /* Text - High Contrast for readability */
   --text-primary: #ffffff;
@@ -165,8 +165,8 @@
   --text-placeholder: #6b7280;
   
   /* Borders - Violet-tinted for consistency */
-  --border: rgba(167, 139, 250, 0.18);
-  --border-strong: rgba(167, 139, 250, 0.28);
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.14);
 
   /* Legacy aliases */
   --color-bg: var(--page-bg);
@@ -178,18 +178,18 @@
   --color-border: var(--border);
   --color-border-subtle: var(--border-strong);
 
-  /* Workspace theme in dark mode */
-  --workspace-primary: #a78bfa;
-  --workspace-primary-hover: #8b5cf6;
-  --workspace-primary-light: #3730a3;
-  --workspace-primary-mid: #c4b5fd;
+  /* Workspace theme in dark mode (deep violet) */
+  --workspace-primary: #7c3aed;
+  --workspace-primary-hover: #6d28d9;
+  --workspace-primary-light: #4c1d95;
+  --workspace-primary-mid: #a78bfa;
   --workspace-primary-text: #ffffff;
 
   --brand-accent: #d4a017;
   --brand-accent-hover: #b8860b;
 
   /* Dark Gradients */
-  --gradient-primary: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 60%, #d4a017 100%);
+  --gradient-primary: linear-gradient(135deg, #7c3aed 0%, #6d28d9 60%, #d4a017 100%);
   --gradient-accent: linear-gradient(135deg, #fbbf24 0%, #d4a017 100%);
   --gradient-glass: linear-gradient(180deg, rgba(26, 24, 37, 0.88) 0%, rgba(15, 14, 23, 0.5) 100%);
   --gradient-surface: linear-gradient(145deg, #1a1825, #151220);
@@ -207,12 +207,12 @@
   --elevation-modal: 0 28px 72px rgba(0, 0, 0, 0.65);
 
   /* Dashboard surfaces in dark mode */
-  --dash-bg: #0f0e17;
-  --dash-card: #1a1825;
-  --dash-card-hover: #232230;
-  --dash-raised: #2a2438;
-  --dash-border: rgba(167, 139, 250, 0.18);
-  --dash-border-hover: rgba(167, 139, 250, 0.28);
+  --dash-bg: #0a0910;
+  --dash-card: #1c1a2e;
+  --dash-card-hover: #24223a;
+  --dash-raised: #2a2742;
+  --dash-border: rgba(255, 255, 255, 0.08);
+  --dash-border-hover: rgba(255, 255, 255, 0.14);
 }
 /* ========================================
    BASE STYLES
@@ -701,50 +701,57 @@ h6 {
 
   /* ===== HEADER/NAV ===== */
   .header-icon-btn {
-    @apply inline-flex h-9 w-9 items-center justify-center rounded-xl;
-    @apply text-gray-500 transition-colors;
-    @apply hover:bg-gray-50 hover:text-gray-800;
-    @apply dark:text-gray-400 dark:hover:bg-white/10 dark:hover:text-white;
+    @apply inline-flex h-9 w-9 items-center justify-center rounded-xl border border-gray-200/60 dark:border-white/5;
+    @apply text-gray-500 transition-all duration-300;
+    @apply hover:bg-white hover:text-gray-900 hover:scale-[1.08] hover:shadow-sm hover:border-gray-200;
+    @apply dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-white dark:hover:border-white/10 dark:hover:shadow-lg dark:hover:shadow-black/40;
   }
 
   .header-kbd {
     @apply inline-flex items-center justify-center;
-    @apply rounded border px-1.5 py-0.5;
-    @apply text-[10px] font-mono font-semibold;
-    @apply border-gray-200 bg-white text-gray-400;
-    @apply dark:border-white/10 dark:bg-white/10 dark:text-gray-400;
+    @apply rounded-md border px-1.5 py-0.5;
+    @apply text-[10px] font-mono font-semibold transition-colors;
+    @apply border-gray-200 bg-gray-50 text-gray-400 shadow-sm;
+    @apply dark:border-white/10 dark:bg-white/5 dark:text-zinc-400;
   }
 
   .header-nav-link {
-    @apply flex min-w-0 max-w-[188px] items-center gap-2 rounded-xl px-3 py-2;
+    @apply flex min-w-0 max-w-[188px] items-center gap-2 rounded-xl px-3 py-2 border border-transparent;
     @apply text-sm font-medium whitespace-nowrap;
-    @apply transition-colors;
-    @apply text-gray-600 hover:bg-gray-50 hover:text-gray-900;
-    @apply dark:text-gray-400 dark:hover:bg-white/10 dark:hover:text-white;
+    @apply transition-all duration-300;
+    @apply text-gray-600 hover:bg-gray-50/80 hover:text-gray-900 hover:border-gray-200 hover:shadow-sm hover:scale-[1.02];
+    @apply dark:text-zinc-400 dark:hover:bg-white/5 dark:hover:text-white dark:hover:border-white/5;
   }
 
   .header-nav-link-active {
-    @apply header-nav-link;
-    color: var(--workspace-primary);
-    border-bottom: 2px solid var(--workspace-primary);
-    border-radius: 0.75rem 0.75rem 0 0;
+    @apply header-nav-link shadow-sm scale-100 hover:scale-100;
+    color: var(--workspace-accent) !important;
+    background: color-mix(in srgb, var(--workspace-accent) 8%, white) !important;
+    border-color: color-mix(in srgb, var(--workspace-accent) 25%, transparent) !important;
+  }
+  .dark .header-nav-link-active {
+    background: color-mix(in srgb, var(--workspace-accent) 8%, transparent) !important;
+    border-color: color-mix(in srgb, var(--workspace-accent) 20%, transparent) !important;
+    text-shadow: 0 0 16px color-mix(in srgb, var(--workspace-accent) 40%, transparent);
   }
 
   .header-profile-trigger {
-    @apply flex h-9 min-w-0 max-w-[196px] items-center gap-2 rounded-full border ps-1 pe-2;
-    @apply transition-colors;
-    @apply border-gray-200 bg-white hover:bg-gray-50;
-    @apply dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10;
+    @apply flex h-9 min-w-0 max-w-[196px] items-center gap-2 rounded-full border border-gray-200/60 dark:border-white/5 ps-1 pe-2;
+    @apply transition-all duration-300;
+    @apply bg-transparent hover:bg-white hover:border-gray-200 hover:shadow-sm hover:scale-[1.03];
+    @apply dark:bg-transparent dark:hover:bg-zinc-800 dark:hover:border-white/10 dark:hover:shadow-lg dark:hover:shadow-black/40;
   }
 
   .header-profile-trigger-open {
-    border-color: color-mix(in srgb, var(--workspace-primary) 28%, transparent);
-    background: color-mix(in srgb, var(--workspace-primary) 9%, white);
+    @apply shadow-sm scale-[1.03];
+    border-color: color-mix(in srgb, var(--workspace-accent) 28%, transparent) !important;
+    background: color-mix(in srgb, var(--workspace-accent) 4%, white) !important;
   }
 
   .dark .header-profile-trigger-open {
-    border-color: color-mix(in srgb, var(--workspace-primary) 34%, transparent);
-    background: color-mix(in srgb, var(--workspace-primary) 16%, transparent);
+    @apply shadow-lg shadow-black/40;
+    border-color: color-mix(in srgb, var(--workspace-accent) 34%, transparent) !important;
+    background: color-mix(in srgb, var(--workspace-accent) 12%, transparent) !important;
   }
 
   .header-profile-avatar {

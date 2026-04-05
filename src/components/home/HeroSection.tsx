@@ -178,7 +178,11 @@ export function HeroSection({ stats }: HeroSectionProps) {
               <button
                 onClick={() => navigate(isFreelancer ? '/signup' : '/jobs/new')}
                 className="inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl font-semibold text-white transition-all duration-200 hover:opacity-90 hover:-translate-y-0.5"
-                style={{ background: 'var(--workspace-primary)', fontSize: '1rem' }}
+                style={{
+                  background: 'var(--gradient-primary)',
+                  fontSize: '1rem',
+                  boxShadow: 'var(--shadow-md)',
+                }}
               >
                 {heroContent.primaryCta} <ArrowRight className="w-4 h-4" />
               </button>

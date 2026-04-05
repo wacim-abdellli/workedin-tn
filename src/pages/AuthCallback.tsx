@@ -3,6 +3,7 @@ import { Loader2, RefreshCw } from 'lucide-react';
 
 import { logger } from '@/lib/logger';
 import Button from '@/components/ui/Button';
+import { Logo } from '@/components/ui';
 import { supabase, withTimeout } from '../lib/supabase';
 import { useTranslation } from '../i18n';
 
@@ -178,29 +179,25 @@ const AuthCallback = () => {
 
     return (
         <div
-            className="flex min-h-screen items-center justify-center bg-gradient-to-br from-[#f7f5ff] via-white to-primary-50 p-4 dark:from-[#09070f] dark:via-[#0f0d16] dark:to-primary-950"
+            className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-zinc-950 p-4"
             dir={dir}
         >
-            <div className="w-full max-w-md rounded-[28px] border border-white/70 bg-white dark:bg-gray-900 p-8 text-center shadow-2xl shadow-primary-500/10 backdrop-blur-xl dark:border-gray-800 dark:shadow-none">
-                <img
-                    src="/logos/logo-social.svg"
-                    alt="Khedma TN"
-                    width="88"
-                    height="88"
-                    className="mx-auto mb-6 h-[88px] w-[88px] rounded-[24px] shadow-xl shadow-primary-500/15"
-                />
+            <div className="w-full max-w-md rounded-[28px] border border-white/70 bg-white dark:bg-zinc-900/60 p-8 text-center shadow-lg backdrop-blur-xl dark:border-white/5 dark:shadow-none">
+                <div className="flex justify-center mb-6">
+                    <Logo variant="mark" size="lg" className="shadow-sm h-16 w-16" />
+                </div>
 
                 {status === 'loading' ? (
                     <>
-                        <Loader2 className="mx-auto mb-4 h-12 w-12 animate-spin text-primary-600" />
-                        <h1 className="mb-3 text-2xl font-bold text-[#171420] dark:text-white">{tx('pages.authCallback.signingIn', undefined, 'Signing you in')}</h1>
-                        <p className="text-[#625c78] dark:text-[#a7a2ba]">
+                        <Loader2 className="mx-auto mb-4 h-12 w-12 animate-spin text-[var(--workspace-accent)]" />
+                        <h1 className="mb-3 text-2xl font-bold text-gray-900 dark:text-white">{tx('pages.authCallback.signingIn', undefined, 'Signing you in')}</h1>
+                        <p className="text-gray-500 dark:text-zinc-400">
                             {tx('pages.authCallback.signingInDescription', undefined, 'We are finishing your secure login. This should only take a moment.')}
                         </p>
                     </>
                 ) : (
                     <>
-                        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-amber-100 text-amber-600 dark:bg-amber-500/10 dark:text-amber-300">
+                        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-amber-50 dark:bg-amber-500/10 text-amber-500 dark:text-amber-400">
                             <RefreshCw className="h-7 w-7" />
                         </div>
                         <h1 className="mb-3 text-2xl font-bold text-[#171420] dark:text-white">{tx('pages.authCallback.loginIncomplete', undefined, 'Login did not complete')}</h1>

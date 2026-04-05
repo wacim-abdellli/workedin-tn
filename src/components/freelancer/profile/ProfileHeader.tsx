@@ -25,36 +25,27 @@ export default function ProfileHeader({
     const isOwnProfile = user?.id === freelancer.id || user?.id === (freelancer as any).profile?.id;
 
     return (
-        <div className="relative pb-8">
-            {/* Massive Hero Cover */}
-            <div className="relative overflow-hidden border-b border-border/10 bg-gradient-to-tr from-indigo-950 via-purple-900 to-amber-600 dark:from-indigo-950 dark:via-[#0F081C] dark:to-orange-900">
-                <div className="absolute inset-0 bg-[135deg,rgba(88,49,211,0.4),rgba(59,130,246,0.4)] mix-blend-overlay" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                
-                {freelancer.cover_url ? (
-                    <OptimizedImage
-                        src={freelancer.cover_url}
-                        alt="Cover"
-                        className="absolute inset-0 h-full w-full mix-blend-overlay"
-                        imgClassName="h-full w-full object-cover opacity-60 transition-transform duration-1000 hover:scale-105"
-                        priority={true}
-                    />
-                ) : null}
-                <div className="relative h-[320px] sm:h-[400px] w-full" />
+        <div className="relative pb-8 pt-12 md:pt-20 overflow-hidden sm:overflow-visible">
+            {/* Ambient Mesh Glows */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-5xl h-[400px] -z-10 opacity-40 dark:opacity-20 pointer-events-none">
+                <div className="absolute top-[-10%] left-[15%] w-[40%] h-[70%] rounded-full bg-[var(--workspace-primary)] blur-[100px] mix-blend-normal sm:blur-[120px]" />
+                <div className="absolute top-[20%] right-[15%] w-[35%] h-[60%] rounded-full bg-[color-mix(in_srgb,var(--workspace-primary)_60%,white)] blur-[100px] mix-blend-normal sm:blur-[120px]" />
             </div>
 
-            {/* Content Container Overlapping */}
             <div className="container-custom relative z-10">
-                <div className="-mt-32 sm:-mt-40 mb-10 rounded-[2.5rem] border border-white/40 bg-white dark:bg-gray-800/70 backdrop-blur-3xl px-6 pb-8 pt-8 shadow-[0_20px_80px_-20px_rgba(0,0,0,0.15)] dark:border-white/10 dark:border-gray-800 dark:bg-[#120F1A]/80 sm:px-10 lg:px-12">
+                {/* Main Profile Card (Glassmorphic) */}
+                <div className="mb-8 rounded-[2rem] border border-[var(--border)] bg-white/80 dark:bg-[#1a1825]/70 backdrop-blur-3xl p-6 shadow-2xl shadow-[var(--workspace-primary)]/5 dark:shadow-[var(--workspace-primary)]/5 sm:p-10 lg:p-12 relative overflow-hidden group">
+                    {/* Subtle inner top highlight */}
+                    <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/50 dark:via-white/10 to-transparent" />
                     
                     <div className="flex flex-col lg:flex-row lg:items-start lg:gap-12">
                         
                         {/* Main Profile Info */}
                         <div className="flex-1">
-                            <div className="flex flex-col items-center sm:flex-row sm:items-end gap-6 sm:gap-8">
+                            <div className="flex flex-col items-start sm:flex-row sm:items-center gap-6 sm:gap-8">
                                 {/* Avatar */}
-                                <div className="relative -mt-16 sm:-mt-20 group">
-                                    <div className="relative flex h-36 w-36 sm:h-44 sm:w-44 items-center justify-center overflow-hidden rounded-full border-[6px] border-white/60 bg-white dark:bg-gray-800 shadow-2xl backdrop-blur-xl transition hover:scale-105 dark:border-[#120F1A]/60 dark:bg-[#1C1827]">
+                                <div className="relative shrink-0 group">
+                                    <div className="relative flex h-32 w-32 items-center justify-center overflow-hidden rounded-full border border-[var(--border-strong)] bg-[var(--surface-bg)] shadow-sm transition hover:scale-105">
                                         {freelancer.avatar_url ? (
                                             <OptimizedImage
                                                 src={freelancer.avatar_url}
@@ -64,161 +55,145 @@ export default function ProfileHeader({
                                                 priority={true}
                                             />
                                         ) : (
-                                            <User className="h-16 w-16 text-gray-300 dark:text-gray-600" />
+                                            <User className="h-14 w-14 text-[var(--text-muted)]" />
                                         )}
                                     </div>
                                     
                                     {/* Availability Dot */}
                                     <span 
-                                        className={`absolute bottom-4 end-4 h-6 w-6 sm:h-8 sm:w-8 rounded-full border-[4px] border-white dark:border-[#120F1A] shadow-lg ${
+                                        className={`absolute bottom-2 end-2 h-6 w-6 rounded-full border-4 border-[var(--card-bg)] shadow-sm ${
                                             freelancer.availability === 'available' ? 'bg-emerald-500' : freelancer.availability === 'busy' ? 'bg-amber-500' : 'bg-slate-400'
                                         }`}
                                         title={freelancer.availability}
                                     />
                                 </div>
 
-                                <div className="text-center sm:text-start sm:pb-3 flex-1">
-                                    <div className="inline-flex items-center gap-1.5 rounded-full bg-purple-100/80 px-3.5 py-1.5 text-xs font-bold uppercase tracking-wider text-purple-700 backdrop-blur-md dark:bg-purple-500/20 dark:text-purple-300">
+                                <div className="flex-1">
+                                    <div className="inline-flex items-center gap-1.5 rounded-full bg-[color-mix(in_srgb,var(--workspace-primary)_12%,transparent)] px-3 py-1 text-xs font-bold uppercase tracking-wider text-[var(--workspace-primary)]">
                                         <Sparkles className="h-3.5 w-3.5" />
                                         {tx('auth.accountPanel.freelancerLabel', undefined, 'Freelancer')}
                                     </div>
-                                    <h1 className="mt-3 text-4xl sm:text-5xl font-extrabold tracking-tight text-slate-900 dark:text-white drop-shadow-sm">
+                                    <h1 className="mt-3 text-3xl sm:text-4xl font-extrabold tracking-tight text-[var(--text-primary)]">
                                         {freelancer.full_name}
                                     </h1>
-                                    <p className="mt-2 text-xl font-medium text-purple-600 dark:text-purple-400">
+                                    <p className="mt-1 text-lg font-medium text-[color-mix(in_srgb,var(--text-primary)_70%,var(--workspace-primary))]">
                                         {freelancer.title || tx('auth.accountPanel.freelancerLabel', undefined, 'Freelancer')}
                                     </p>
                                 </div>
                             </div>
 
                             {/* Tags Section */}
-                            <div className="mt-8 flex flex-wrap justify-center sm:justify-start gap-3">
-                                <span className="inline-flex items-center gap-2 rounded-full bg-slate-100/80 px-4 py-2 text-sm font-medium text-slate-700 shadow-sm backdrop-blur-md dark:bg-white/5 dark:text-slate-300">
-                                    <MapPin className="h-4 w-4 text-rose-500" />
+                            <div className="mt-8 flex flex-wrap items-center gap-3">
+                                <span className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--surface-bg)] px-3 py-1.5 text-sm font-medium text-[var(--text-secondary)]">
+                                    <MapPin className="h-4 w-4 shrink-0 text-amber-500" />
                                     {freelancer.location}
                                 </span>
-                                <span className="inline-flex items-center gap-2 rounded-full bg-amber-50/80 px-4 py-2 text-sm font-medium text-amber-800 shadow-sm backdrop-blur-md dark:bg-amber-500/10 dark:text-amber-400">
-                                    <Star className="h-4 w-4 text-amber-500 fill-amber-500" />
+                                <span className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--surface-bg)] px-3 py-1.5 text-sm font-medium text-[var(--text-secondary)]">
+                                    <Star className="h-4 w-4 shrink-0 text-amber-500 fill-amber-500" />
                                     {freelancer.stats.rating} • {tx('pages.freelancerProfile.reviewsCount', { count: freelancer.stats.reviews_count }, `${freelancer.stats.reviews_count} reviews`)}
                                 </span>
-                                <span className="inline-flex items-center gap-2 rounded-full bg-emerald-50/80 px-4 py-2 text-sm font-medium text-emerald-700 shadow-sm backdrop-blur-md dark:bg-emerald-500/10 dark:text-emerald-400">
-                                    <CheckCircle className="h-4 w-4 text-emerald-500" />
+                                <span className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--surface-bg)] px-3 py-1.5 text-sm font-medium text-[var(--text-secondary)]">
+                                    <CheckCircle className="h-4 w-4 shrink-0 text-emerald-500" />
                                     {freelancer.stats.success_rate}% {tx('pages.freelancerProfile.successRate', undefined, 'success')}
                                 </span>
-                            </div>
-
-                            {/* Bio */}
-                            <div className="mt-8 rounded-2xl bg-white dark:bg-gray-800/40 p-6 shadow-sm backdrop-blur-md dark:bg-white/5 sm:p-8 border border-white/50 dark:border-white/10 dark:border-gray-800">
-                                <p className="text-base sm:text-lg leading-relaxed text-slate-700 dark:text-slate-300 italic font-medium">
-                                    "{freelancer.bio || tx('settings.noBio', undefined, 'No bio added yet')}"
-                                </p>
                             </div>
                         </div>
 
                         {/* Quick Actions Sidebar */}
-                        <aside className="mt-10 w-full lg:mt-0 lg:w-[340px] flex-shrink-0">
-                            <div className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-indigo-50 to-purple-50 p-6 shadow-xl dark:from-[#1c1827] dark:to-[#231d33] border border-white/50 dark:border-white/5">
-                                <div className="relative z-10">
-                                    <h3 className="text-sm font-bold uppercase tracking-widest text-indigo-900/60 dark:text-indigo-300/60 mb-5">
-                                        {tx('pages.searchModal.quickActions', undefined, 'Let\'s Connect')}
-                                    </h3>
-                                    
-                                    <div className="space-y-4">
-                                        {!isOwnProfile && (
-                                            <>
-                                                <Button
-                                                    variant="primary"
-                                                    size="lg"
-                                                    onClick={onContact}
-                                                    className="w-full h-14 rounded-2xl text-base shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 transition-all font-bold"
-                                                >
-                                                    {tx('pages.freelancerProfile.hireNow', undefined, 'Hire Me Now')}
-                                                </Button>
-                                                <Button
-                                                    variant="outline"
-                                                    size="lg"
-                                                    onClick={onMessage}
-                                                    leftIcon={<Send className="h-5 w-5" />}
-                                                    className="w-full h-14 rounded-2xl text-base border-2 hover:bg-indigo-100 dark:hover:bg-white dark:bg-gray-800/10 font-bold"
-                                                >
-                                                    {tx('pages.freelancerProfile.message', undefined, 'Send Message')}
-                                                </Button>
-                                            </>
-                                        )}
-                                        
-                                        {freelancer.voice_intro_url ? (
-                                            <button
-                                                onClick={onPlayVoice}
-                                                className={`group flex h-14 w-full items-center justify-center gap-3 rounded-2xl border-2 text-base font-bold transition-all ${
-                                                    isPlayingVoice 
-                                                        ? 'border-purple-600 bg-purple-100 text-purple-700 shadow-inner dark:border-purple-500 dark:bg-purple-900/30 dark:text-purple-300' 
-                                                        : 'border-slate-200 bg-white dark:bg-gray-800 text-slate-700 hover:border-purple-300 hover:bg-slate-50 dark:border-white/10 dark:border-gray-800 dark:bg-[#120f1a] dark:text-slate-200 dark:hover:bg-white dark:bg-gray-800/5'
-                                                }`}
+                        <aside className="mt-8 w-full lg:mt-0 lg:w-[320px] shrink-0">
+                            <div className="rounded-2xl bg-[var(--surface-bg)] p-6 border border-[var(--border)]">
+                                <h3 className="text-xs font-bold uppercase tracking-widest text-[var(--text-muted)] mb-5">
+                                    {tx('pages.searchModal.quickActions', undefined, 'Let\'s Connect')}
+                               </h3>
+                                
+                                <div className="space-y-3">
+                                    {!isOwnProfile && (
+                                        <>
+                                            <Button
+                                                variant="primary"
+                                                size="lg"
+                                                onClick={onContact}
+                                                className="w-full h-12 rounded-xl text-sm font-bold shadow-sm"
+                                                style={{ background: 'var(--workspace-primary)', color: 'white', borderColor: 'var(--workspace-primary-hover)' }}
                                             >
-                                                {isPlayingVoice ? (
-                                                    <span className="flex items-center gap-2">
-                                                        <Pause className="h-5 w-5 animate-pulse" /> 
-                                                        Playing...
-                                                    </span>
-                                                ) : (
-                                                    <span className="flex items-center gap-2 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
-                                                        <Volume2 className="h-5 w-5" />
-                                                        Hear my Voice
-                                                    </span>
-                                                )}
-                                            </button>
-                                        ) : null}
-                                    </div>
+                                                {tx('pages.freelancerProfile.hireNow', undefined, 'Hire Me Now')}
+                                            </Button>
+                                            <Button
+                                                variant="outline"
+                                                size="lg"
+                                                onClick={onMessage}
+                                                leftIcon={<Send className="h-4 w-4" />}
+                                                className="w-full h-12 rounded-xl text-sm font-bold border border-[var(--border-strong)] bg-[var(--card-bg)] text-[var(--text-primary)] hover:bg-[var(--surface-bg)]"
+                                            >
+                                                {tx('pages.freelancerProfile.message', undefined, 'Send Message')}
+                                            </Button>
+                                        </>
+                                    )}
+                                    
+                                    {freelancer.voice_intro_url ? (
+                                        <button
+                                            onClick={onPlayVoice}
+                                            className={`group flex h-12 w-full items-center justify-center gap-2 rounded-xl border text-sm font-bold transition-colors ${
+                                                isPlayingVoice 
+                                                    ? 'border border-[color-mix(in_srgb,var(--workspace-primary)_40%,transparent)] bg-[color-mix(in_srgb,var(--workspace-primary)_12%,transparent)] text-[var(--workspace-primary)]'
+                                                    : 'border border-[var(--border-strong)] bg-[var(--card-bg)] text-[var(--text-secondary)] hover:bg-[var(--surface-bg)] hover:text-[var(--text-primary)]'
+                                            }`}
+                                        >
+                                            {isPlayingVoice ? (
+                                                <span className="flex items-center gap-2">
+                                                    <Pause className="h-4 w-4 animate-pulse" /> 
+                                                    Playing...
+                                                </span>
+                                            ) : (
+                                                <span className="flex items-center gap-2">
+                                                    <Volume2 className="h-4 w-4" />
+                                                    Hear my Voice
+                                                </span>
+                                            )}
+                                        </button>
+                                    ) : null}
                                 </div>
                             </div>
                         </aside>
                     </div>
+                </div>
 
-                    {/* Stats Grid Bento Box underneath */}
-                    <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-4 lg:gap-6">
-                        <div className="group relative overflow-hidden rounded-3xl bg-white dark:bg-gray-800 p-6 shadow-sm border border-slate-100 transition-all hover:shadow-xl hover:-translate-y-1 dark:bg-[#1a1725] dark:border-white/5">
-                            <div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-blue-50 transition-transform group-hover:scale-150 dark:bg-blue-900/20" />
-                            <div className="relative">
-                                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-100 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400">
-                                    <BriefcaseBusiness className="h-6 w-6" />
-                                </div>
-                                <p className="text-4xl font-black text-slate-900 dark:text-white drop-shadow-sm">{freelancer.stats.jobs_completed}</p>
-                                <p className="mt-2 text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{tx('pages.freelancerProfile.completedJobs', undefined, 'Completed')}</p>
-                            </div>
+                {/* Stats Grid Bento Box */}
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 lg:gap-6">
+                    <div className="group rounded-3xl bg-white/60 dark:bg-[#1c1a2e]/60 backdrop-blur-md p-6 shadow-sm border border-[var(--border)] transition-all hover:border-[var(--border-strong)] hover:shadow-lg relative overflow-hidden">
+                        <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-[color-mix(in_srgb,var(--info-600)_15%,transparent)] text-[var(--info-600)] transition-transform group-hover:scale-110">
+                            <BriefcaseBusiness className="h-5 w-5" />
                         </div>
+                        <p className="text-3xl font-bold text-[var(--text-primary)] relative z-10">{freelancer.stats.jobs_completed}</p>
+                        <p className="mt-1 text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider relative z-10">{tx('pages.freelancerProfile.completedJobs', undefined, 'Completed')}</p>
+                        <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-[var(--info-600)]/5 rounded-full blur-2xl group-hover:bg-[var(--info-600)]/10 transition-colors" />
+                    </div>
 
-                        <div className="group relative overflow-hidden rounded-3xl bg-white dark:bg-gray-800 p-6 shadow-sm border border-slate-100 transition-all hover:shadow-xl hover:-translate-y-1 dark:bg-[#1a1725] dark:border-white/5">
-                            <div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-emerald-50 transition-transform group-hover:scale-150 dark:bg-emerald-900/20" />
-                            <div className="relative">
-                                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400">
-                                    <Wallet className="h-6 w-6" />
-                                </div>
-                                <p className="text-4xl font-black text-slate-900 dark:text-white drop-shadow-sm">{freelancer.stats.total_earnings.toLocaleString()}</p>
-                                <p className="mt-2 text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{tx('pages.freelancerProfile.totalEarnings', undefined, 'Earned TND')}</p>
-                            </div>
+                    <div className="group rounded-3xl bg-white/60 dark:bg-[#1c1a2e]/60 backdrop-blur-md p-6 shadow-sm border border-[var(--border)] transition-all hover:border-[var(--border-strong)] hover:shadow-lg relative overflow-hidden">
+                        <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-[color-mix(in_srgb,var(--success-600)_15%,transparent)] text-[var(--success-600)] transition-transform group-hover:scale-110">
+                            <Wallet className="h-5 w-5" />
                         </div>
+                        <p className="text-3xl font-bold text-[var(--text-primary)] relative z-10">{freelancer.stats.total_earnings.toLocaleString()}</p>
+                        <p className="mt-1 text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider relative z-10">{tx('pages.freelancerProfile.totalEarnings', undefined, 'Earned TND')}</p>
+                        <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-[var(--success-600)]/5 rounded-full blur-2xl group-hover:bg-[var(--success-600)]/10 transition-colors" />
+                    </div>
 
-                        <div className="group relative overflow-hidden rounded-3xl bg-white dark:bg-gray-800 p-6 shadow-sm border border-slate-100 transition-all hover:shadow-xl hover:-translate-y-1 dark:bg-[#1a1725] dark:border-white/5">
-                            <div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-amber-50 transofrm-transform group-hover:scale-150 dark:bg-amber-900/20" />
-                            <div className="relative">
-                                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-100 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400">
-                                    <Clock3 className="h-6 w-6" />
-                                </div>
-                                <p className="text-4xl font-black text-slate-900 dark:text-white drop-shadow-sm">{freelancer.stats.response_time_hours}h</p>
-                                <p className="mt-2 text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{tx('pages.freelancerProfile.responseSpeed', undefined, 'Response Time')}</p>
-                            </div>
+                    <div className="group rounded-3xl bg-white/60 dark:bg-[#1c1a2e]/60 backdrop-blur-md p-6 shadow-sm border border-[var(--border)] transition-all hover:border-[var(--border-strong)] hover:shadow-lg relative overflow-hidden">
+                        <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-[color-mix(in_srgb,var(--warning-600)_20%,transparent)] text-[var(--warning-600)] transition-transform group-hover:scale-110">
+                            <Clock3 className="h-5 w-5" />
                         </div>
+                        <p className="text-3xl font-bold text-[var(--text-primary)] relative z-10">{freelancer.stats.response_time_hours}h</p>
+                        <p className="mt-1 text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider relative z-10">{tx('pages.freelancerProfile.responseSpeed', undefined, 'Response Time')}</p>
+                        <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-[var(--warning-600)]/5 rounded-full blur-2xl group-hover:bg-[var(--warning-600)]/10 transition-colors" />
+                    </div>
 
-                        <div className="group relative overflow-hidden rounded-3xl bg-white dark:bg-gray-800 p-6 shadow-sm border border-slate-100 transition-all hover:shadow-xl hover:-translate-y-1 dark:bg-[#1a1725] dark:border-white/5">
-                            <div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-purple-50 transition-transform group-hover:scale-150 dark:bg-purple-900/20" />
-                            <div className="relative">
-                                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-purple-100 text-purple-600 dark:text-purple-400 dark:bg-purple-500/20">
-                                    <Wallet className="h-6 w-6" />
-                                </div>
-                                <p className="text-4xl font-black text-slate-900 dark:text-white drop-shadow-sm">{freelancer.hourly_rate}</p>
-                                <p className="mt-2 text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{tx('findFreelancers.hourlyRate', undefined, 'Rate / Hr')}</p>
-                            </div>
+                    <div className="group rounded-3xl bg-white/60 dark:bg-[#1c1a2e]/60 backdrop-blur-md p-6 shadow-sm border border-[var(--border)] transition-all hover:border-[var(--border-strong)] hover:shadow-lg relative overflow-hidden">
+                        <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-[color-mix(in_srgb,var(--workspace-primary)_15%,transparent)] text-[var(--workspace-primary)] transition-transform group-hover:scale-110">
+                            <Wallet className="h-5 w-5" />
                         </div>
+                        <p className="text-3xl font-bold text-[var(--text-primary)] relative z-10">{freelancer.hourly_rate}</p>
+                        <p className="mt-1 text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider relative z-10">{tx('findFreelancers.hourlyRate', undefined, 'Rate / Hr')}</p>
+                        <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-[var(--workspace-primary)]/5 rounded-full blur-2xl group-hover:bg-[var(--workspace-primary)]/10 transition-colors" />
                     </div>
                 </div>
             </div>

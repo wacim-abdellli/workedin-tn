@@ -15,6 +15,7 @@ import type { Governorate } from '../types';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import Select from '../components/ui/Select';
+import { FullScreenLoader } from '../components/ui';
 import { Header } from '../components/layout';
 import SEO, { SEO_CONFIG } from '../components/common/SEO';
 import OnboardingShell from '../components/onboarding/OnboardingShell';
@@ -192,11 +193,10 @@ function ClientOnboarding() {
 
     if (isAuthLoading) {
         return (
-            <div className="min-h-screen bg-gray-50 dark:bg-gray-900 dark:bg-dark-900 flex flex-col items-center justify-center p-4">
-                <img src="/logos/logo-primary.svg" alt="Khedma TN" className="h-12 w-auto mb-6 animate-pulse" />
-                <div className="w-12 h-12 border-4 border-secondary-100 border-t-secondary-600 rounded-full animate-spin"></div>
-                <p className="mt-4 text-muted font-medium animate-pulse">{t.common.loading || 'Loading...'}</p>
-            </div>
+            <FullScreenLoader
+                label={t.common.loading || 'Loading...'}
+                hint={tx('onboarding.client.loadingHint', undefined, 'Preparing your client onboarding workspace')}
+            />
         );
     }
 

@@ -14,16 +14,16 @@ describe("notifications service", () => {
     });
 
     it("gets notifications", async () => {
+        const mockLimit = vi.fn().mockResolvedValue({
+            data: [{ id: "notif-1" }],
+            error: null
+        });
+        const mockOrder = vi.fn().mockReturnValue({ limit: mockLimit });
+        const mockNeq = vi.fn().mockReturnValue({ order: mockOrder });
+        const mockEq = vi.fn().mockReturnValue({ neq: mockNeq });
         const mockFn = vi.fn().mockReturnValue({
             select: vi.fn().mockReturnValue({
-                eq: vi.fn().mockReturnValue({
-                    order: vi.fn().mockReturnValue({
-                        limit: vi.fn().mockResolvedValue({
-                            data: [{ id: "notif-1" }],
-                            error: null
-                        })
-                    })
-                })
+                eq: mockEq
             })
         });
         vi.mocked(supabase.from).mockImplementation(mockFn as any);
@@ -31,17 +31,20 @@ describe("notifications service", () => {
         const result = await getNotifications("user-1");
         expect(result).toEqual([{ id: "notif-1" }]);
         expect(supabase.from).toHaveBeenCalledWith("notifications");
+        expect(mockEq).toHaveBeenCalledWith('user_id', 'user-1');
+        expect(mockNeq).toHaveBeenCalledWith('type', 'message');
     });
 
     it("gets unread count", async () => {
+        const mockUnreadEq = vi.fn().mockResolvedValue({
+            count: 5,
+            error: null
+        });
+        const mockNeq = vi.fn().mockReturnValue({ eq: mockUnreadEq });
+        const mockUserEq = vi.fn().mockReturnValue({ neq: mockNeq });
         const mockFn = vi.fn().mockReturnValue({
             select: vi.fn().mockReturnValue({
-                eq: vi.fn().mockReturnValue({
-                    eq: vi.fn().mockResolvedValue({
-                        count: 5,
-                        error: null
-                    })
-                })
+                eq: mockUserEq
             })
         });
         vi.mocked(supabase.from).mockImplementation(mockFn as any);
@@ -49,6 +52,9 @@ describe("notifications service", () => {
         const count = await getUnreadCount("user-1");
         expect(count).toBe(5);
         expect(supabase.from).toHaveBeenCalledWith("notifications");
+        expect(mockUserEq).toHaveBeenCalledWith('user_id', 'user-1');
+        expect(mockNeq).toHaveBeenCalledWith('type', 'message');
+        expect(mockUnreadEq).toHaveBeenCalledWith('is_read', false);
     });
 
     it("inserts notification", async () => {

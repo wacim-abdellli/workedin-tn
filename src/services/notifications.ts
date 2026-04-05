@@ -14,6 +14,7 @@ export async function getNotifications(userId: string): Promise<AppNotification[
         .from('notifications')
         .select('*')
         .eq('user_id', userId)
+        .neq('type', 'message')
         .order('created_at', { ascending: false })
         .limit(50);
 
@@ -26,6 +27,7 @@ export async function getUnreadCount(userId: string): Promise<number> {
         .from('notifications')
         .select('*', { count: 'exact', head: true })
         .eq('user_id', userId)
+        .neq('type', 'message')
         .eq('is_read', false);
 
     if (error) throw new Error(error.message);

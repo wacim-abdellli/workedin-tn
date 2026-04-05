@@ -19,17 +19,16 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 const Input = forwardRef<HTMLInputElement, InputProps>(
     ({ label, error, hint, leftIcon, rightIcon, className = '', ...props }, ref) => {
         const inputStyles = `
-      w-full rounded-xl border bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm transition-all duration-200
-      dark:bg-[#1a1825] dark:text-white
-      placeholder:text-gray-400 dark:placeholder:text-gray-600 dark:text-gray-300
-      focus:outline-none focus:ring-2 focus:ring-[color:var(--workspace-primary)]/20
+      w-full rounded-xl border bg-white dark:bg-zinc-900/50 text-gray-900 dark:text-white shadow-sm transition-all duration-200
+      placeholder:text-gray-400 dark:placeholder:text-zinc-600
+      focus:outline-none focus:ring-2 focus:ring-[color:var(--workspace-accent)]/20
       ${error
                 ? 'border-red-500 focus:border-red-500'
-                : 'border-gray-200 dark:border-white/10 hover:border-gray-300 dark:border-gray-600 dark:hover:border-white/15 focus:border-[color:var(--workspace-primary)]'
+                : 'border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20 focus:border-[color:var(--workspace-accent)]'
             }
       ${leftIcon ? 'ps-11 py-3' : 'px-4 py-3'}
       ${rightIcon ? 'pe-11 py-3' : 'px-4 py-3'}
-      disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-gray-100 dark:bg-gray-800 dark:disabled:bg-[#14121f]
+      disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-gray-100 dark:disabled:bg-zinc-800
     `;
 
         const inputId = props.id || props.name;

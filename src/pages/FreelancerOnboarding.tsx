@@ -16,6 +16,7 @@ import SEO, { SEO_CONFIG } from '../components/common/SEO';
 import OnboardingShell from '../components/onboarding/OnboardingShell';
 import OnboardingStep1 from '../components/onboarding/OnboardingStep1';
 import OnboardingStep2 from '../components/onboarding/OnboardingStep2';
+import { FullScreenLoader } from '../components/ui';
 import {
     step1Schema,
     type Step1FormData,
@@ -376,15 +377,10 @@ function FreelancerOnboarding() {
 
     if (isAuthLoading) {
         return (
-            <div className="min-h-screen bg-gray-50 dark:bg-gray-900 dark:bg-dark-900 flex flex-col items-center justify-center p-4">
-                <img
-                    src="/logos/logo-primary.svg"
-                    alt="Khedma TN"
-                    className="h-12 w-auto mb-6 animate-pulse"
-                />
-                <div className="w-12 h-12 border-4 border-brand-light border-t-brand rounded-full animate-spin"></div>
-                <p className="mt-4 text-muted font-medium animate-pulse">{t.common?.loading || 'جاري التحميل...'}</p>
-            </div>
+            <FullScreenLoader
+                label={t.common?.loading || 'جاري التحميل...'}
+                hint={tx('onboarding.freelancer.loadingHint', undefined, 'Preparing your freelancer onboarding workspace')}
+            />
         );
     }
 
