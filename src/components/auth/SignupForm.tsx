@@ -246,7 +246,7 @@ function SignupForm({ onComplete }: SignupFormProps) {
                                 {...register('email')}
                                 type="email"
                                 placeholder={t.auth.emailPlaceholder}
-                                className="input"
+                                className="input placeholder:text-[var(--text-placeholder)]"
                                 dir="ltr"
                             />
                             {errors.email && <p className="form-error">{errors.email.message}</p>}
@@ -262,7 +262,7 @@ function SignupForm({ onComplete }: SignupFormProps) {
                                     {...register('password')}
                                     type={showPassword ? 'text' : 'password'}
                                     placeholder={t.auth.passwordPlaceholder}
-                                    className="input pe-12"
+                                    className="input pe-12 placeholder:text-[var(--text-placeholder)]"
                                     dir="ltr"
                                 />
                                 <button
@@ -285,7 +285,7 @@ function SignupForm({ onComplete }: SignupFormProps) {
                                 {...register('confirmPassword')}
                                 type={showPassword ? 'text' : 'password'}
                                 placeholder={t.auth.confirmPasswordPlaceholder}
-                                className="input"
+                                className="input placeholder:text-[var(--text-placeholder)]"
                                 dir="ltr"
                             />
                             {errors.confirmPassword && <p className="form-error">{errors.confirmPassword.message}</p>}

@@ -9,10 +9,10 @@ import { useTranslation } from '../i18n';
 
 type CallbackState = 'loading' | 'error';
 
-const MAX_WAIT_MS = 12000;
-const POLL_INTERVAL_MS = 400;
-const PRE_EXCHANGE_WAIT_MS = 1800;
-const EXCHANGE_TIMEOUT_MS = 5000;
+const MAX_WAIT_MS = 8000;
+const POLL_INTERVAL_MS = 200;
+const PRE_EXCHANGE_WAIT_MS = 300;
+const EXCHANGE_TIMEOUT_MS = 4000;
 const POST_AUTH_ROUTE = '/login?oauth=resume';
 
 const sleep = (ms: number) => new Promise((resolve) => window.setTimeout(resolve, ms));

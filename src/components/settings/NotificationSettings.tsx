@@ -142,11 +142,11 @@ export default function NotificationSettings() {
                     </div>
                 </div>
 
-                <div className="group relative overflow-hidden flex flex-col justify-between p-4 rounded-xl border border-white/10 dark:border-gray-800 bg-white dark:bg-gray-800 ] backdrop-blur-xl shadow-xl transition-all duration-300 hover:border-blue-500/30 hover:bg-blue-500/5">
-                    <div className="absolute -right-10 -top-4 h-32 w-32 rounded-full bg-blue-500/10 blur-[40px] pointer-events-none transition-all group-hover:bg-blue-500/20" />
+                <div className="group relative overflow-hidden flex flex-col justify-between p-4 rounded-xl border border-white/10 dark:border-gray-800 bg-white dark:bg-gray-800 ] backdrop-blur-xl shadow-xl transition-all duration-300 hover:border-[color:var(--workspace-primary)]/30 hover:bg-[color:var(--workspace-primary)]/5">
+                    <div className="absolute -right-10 -top-4 h-32 w-32 rounded-full bg-[color:var(--workspace-primary)]/10 blur-[40px] pointer-events-none transition-all group-hover:bg-[color:var(--workspace-primary)]/20" />
                     <div>
                         <div className="flex items-center gap-3">
-                            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-blue-500/20 text-blue-400">
+                            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[color:var(--workspace-primary)]/20 text-[color:var(--workspace-primary)]">
                                 <Zap className="h-5 w-5" />
                             </div>
                             <p className="text-sm font-bold uppercase tracking-widest text-foreground/80">
@@ -156,7 +156,7 @@ export default function NotificationSettings() {
                     </div>
                     <div className="mt-3">
                         <p className="text-base font-bold text-foreground">Real-time</p>
-                        <p className="text-sm font-medium text-muted-foreground/80 mt-1">Instant push updates</p>
+                        <p className="text-sm font-medium text-muted-foreground/80 mt-1">{tx('settings.notifications.instantUpdates', undefined, 'Instant push updates')}</p>
                     </div>
                 </div>
 
@@ -173,19 +173,19 @@ export default function NotificationSettings() {
                         </div>
                     </div>
                     <div className="mt-3">
-                        <p className="text-base font-bold text-foreground">In-App & Email</p>
-                        <p className="text-sm font-medium text-muted-foreground/80 mt-1">Omnichannel delivery</p>
+                        <p className="text-base font-bold text-foreground">{tx('settings.notifications.channelInAppEmail', undefined, 'In-App & Email')}</p>
+                        <p className="text-sm font-medium text-muted-foreground/80 mt-1">{tx('settings.notifications.omnichannelDelivery', undefined, 'Omnichannel delivery')}</p>
                     </div>
                 </div>
             </div>
 
             <div className="relative overflow-hidden rounded-xl border border-white/10 dark:border-gray-800 bg-card/80 p-5 shadow-2xl backdrop-blur-xl ring-1 ring-black/5">
                 <div className="absolute -left-40 top-20 h-[400px] w-[400px] rounded-full bg-brand/5 blur-[120px] pointer-events-none" />
-                <div className="absolute -right-20 -bottom-20 h-[300px] w-[300px] rounded-full bg-blue-500/5 blur-[100px] pointer-events-none" />
+                <div className="absolute -right-20 -bottom-20 h-[300px] w-[300px] rounded-full bg-[color:var(--workspace-primary)]/5 blur-[100px] pointer-events-none" />
                 
                 <div className="relative z-10 mb-4 text-center sm:text-start">
                     <h3 className="text-base font-black tracking-tight bg-gradient-to-br from-foreground to-foreground/50 bg-clip-text text-transparent">
-                        Notification Preferences
+                        {tx('settings.notifications.preferencesTitle', undefined, 'Notification Preferences')}
                     </h3>
                     <p className="mt-3 text-base leading-relaxed text-muted-foreground/90 max-w-2xl">
                         {tx('settings.notificationsSubtitle', undefined, 'Choose exactly what you want to be notified about. We recommend keeping important alerts enabled.')}

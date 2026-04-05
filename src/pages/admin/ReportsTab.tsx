@@ -9,6 +9,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from '@/i18n';
 import { getReports, updateReportStatus } from '@/services/reports';
 import type { Report, ReportStatus } from '@/services/reports';
+import { adminPanelClass, adminPillClass, adminSelectClass, adminTableHeadClass, adminTableRowClass, adminTableShellClass } from './adminTheme';
 
 export const ADMIN_REPORTS_QUERY_KEY = ['admin-reports'] as const;
 
@@ -42,13 +43,13 @@ export default function ReportsTab() {
         },
     });
 
-    const panelClass = 'card border-white/45 dark:border-white/10 bg-white/80 dark:bg-slate-950/55 backdrop-blur-xl shadow-[0_16px_45px_-24px_rgba(21,84,247,0.38)]';
+    const panelClass = adminPanelClass;
 
     const statusBadge = (status: ReportStatus) => {
         const map = {
-            pending: 'bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300',
-            reviewed: 'bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-300',
-            dismissed: 'bg-gray-100 text-gray-600 dark:bg-white/10 dark:text-gray-400',
+            pending: adminPillClass('amber'),
+            reviewed: adminPillClass('emerald'),
+            dismissed: adminPillClass('neutral'),
         };
         const labels = {
             pending: tr('معلق', 'Pending', 'En attente'),
@@ -59,7 +60,7 @@ export default function ReportsTab() {
     };
 
     const typeBadge = (type: Report['reported_type']) => {
-        const map = { job: 'bg-blue-100 text-blue-700', user: 'bg-purple-100 text-purple-700', proposal: 'bg-cyan-100 text-cyan-700' };
+        const map = { job: adminPillClass('blue'), user: adminPillClass('violet'), proposal: adminPillClass('cyan') };
         return <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${map[type]}`}>{type}</span>;
     };
 
@@ -81,7 +82,7 @@ export default function ReportsTab() {
                             <select
                                 value={statusFilter}
                                 onChange={e => setStatusFilter(e.target.value as ReportStatus | 'all')}
-                                className="h-9 px-3 border rounded-xl bg-white dark:bg-gray-800/92 border-gray-200 dark:border-gray-700 dark:border-white/12 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary-500/35"
+                                className={`${adminSelectClass} h-9 px-3`}
                             >
                                 <option value="all">{tr('الكل', 'All', 'Tous')}</option>
                                 <option value="pending">{tr('معلق', 'Pending', 'En attente')}</option>
@@ -111,10 +112,10 @@ export default function ReportsTab() {
                 ) : (
                     <>
                         {/* Desktop table */}
-                        <div className="hidden md:block card p-0 overflow-hidden border-white/40 dark:border-white/10 dark:border-gray-800 bg-white dark:bg-gray-800/75 ">
+                        <div className={`hidden md:block ${adminTableShellClass}`}>
                             <div className="overflow-x-auto">
                                 <table className="w-full">
-                                    <thead className="bg-white dark:bg-gray-800/90 border-b border-gray-200 dark:border-gray-700 dark:border-white/10 dark:border-gray-800 sticky top-0 z-10 backdrop-blur">
+                                    <thead className={adminTableHeadClass}>
                                         <tr>
                                             <th className="px-5 py-4 text-left text-xs font-semibold text-muted whitespace-nowrap">{tr('المُبلِّغ', 'Reporter', 'Signaleur')}</th>
                                             <th className="px-5 py-4 text-left text-xs font-semibold text-muted whitespace-nowrap">{tr('النوع', 'Type', 'Type')}</th>
@@ -126,7 +127,7 @@ export default function ReportsTab() {
                                     </thead>
                                     <tbody className="divide-y divide-gray-100 dark:divide-white/5">
                                         {reports.map(report => (
-                                            <tr key={report.id} className="hover:bg-primary-50/60 dark:hover:bg-primary-500/10 transition-colors">
+                                            <tr key={report.id} className={adminTableRowClass}>
                                                 <td className="px-5 py-4">
                                                     <p className="font-medium text-foreground text-sm">{report.reporter?.full_name || '—'}</p>
                                                     <p className="text-xs text-muted">{report.reporter?.email || ''}</p>

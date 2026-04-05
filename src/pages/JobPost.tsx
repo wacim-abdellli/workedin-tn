@@ -135,21 +135,6 @@ export default function JobPost() {
         }
     }, []);
 
-    // Warn before unload
-    useEffect(() => {
-        const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-            // Check if form is dirty or has data
-            const isDirty = methods.formState.isDirty;
-            if (isDirty && !isSubmitting) {
-                e.preventDefault();
-                e.returnValue = '';
-            }
-        };
-
-        window.addEventListener('beforeunload', handleBeforeUnload);
-        return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-    }, [methods.formState.isDirty, isSubmitting]);
-
     const handleRestoreDraft = () => {
         if (draftToRestore) {
             methods.reset(draftToRestore.data);
@@ -185,6 +170,8 @@ export default function JobPost() {
             description: tx('jobs.new.steps.reviewDescription', undefined, 'Validate the brief before sending it live.'),
         },
     ];
+    const currentStepMeta = steps[currentStep - 1];
+    const isFinalStep = currentStep === steps.length;
 
     const focusFirstInvalidField = (fieldNames: Array<keyof JobFormData>) => {
         const errors = methods.formState.errors;
@@ -235,13 +222,40 @@ export default function JobPost() {
     const handleSaveDraft = async () => {
         setSubmitIntent('draft');
         const data = methods.getValues();
-        // Minimal validation for draft
-        if (!data.title) {
-            methods.setError('title', { message: tx('jobs.new.errors.titleRequiredForDraft', undefined, 'Please enter a job title to save draft') });
+
+        const title = data.title?.trim() || '';
+        if (!title) {
+            const message = tx('jobs.new.errors.titleRequiredForDraft', undefined, 'Please enter a job title to save draft');
+            methods.setError('title', { message });
+            methods.setFocus('title');
+            const titleField = document.querySelector<HTMLElement>('[name="title"]');
+            titleField?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            showToast(message, 'warning');
             setSubmitIntent(null);
             return;
         }
-        await submitJob(data, 'draft');
+
+        methods.clearErrors('title');
+
+        try {
+            const draftData: JobFormData = {
+                ...data,
+                title,
+                attachments_files: [],
+            };
+
+            localStorage.setItem('khedma_job_draft', JSON.stringify({
+                data: draftData,
+                timestamp: new Date().toISOString(),
+            }));
+
+            showToast(tx('jobs.new.toasts.draftSaved', undefined, 'Draft saved successfully'), 'success');
+        } catch (error) {
+            logger.error('Error saving local draft:', error);
+            showToast(tx('jobs.new.errors.saveFailed', undefined, 'Something went wrong while saving the job'), 'error');
+        } finally {
+            setSubmitIntent(null);
+        }
     };
 
     const submitJob = async (data: JobFormData, status: 'open' | 'draft') => {
@@ -269,7 +283,7 @@ export default function JobPost() {
 
                     const { error: uploadError } = await supabase.storage
                         .from('attachments')
-                        .upload(filePath, file);
+                        .upload(filePath, file, { upsert: false, contentType: file.type || 'application/octet-stream' });
 
                     if (uploadError) {
                         if (isMissingStorageBucketError(uploadError) || isStoragePermissionError(uploadError)) {
@@ -280,7 +294,10 @@ export default function JobPost() {
                             break;
                         }
 
-                        throw uploadError;
+                        // Skip individual file failures so job publishing still succeeds.
+                        attachmentsSkipped = true;
+                        attachmentWarningMessage = tx('jobs.new.errors.attachmentsPartial', { file: file.name }, `Some attachments could not be uploaded (${file.name}). The job will be posted with the files that succeeded.`);
+                        continue;
                     }
 
                     const { data: { publicUrl } } = supabase.storage
@@ -350,8 +367,9 @@ export default function JobPost() {
             if (status === 'draft') {
                 showToast(tx('jobs.new.toasts.draftSaved', undefined, 'Draft saved successfully'), 'success');
             } else {
+                await import('./JobPostSuccess');
                 showToast(tx('jobs.new.toasts.jobPosted', undefined, 'Job posted successfully!'), 'success');
-                navigate(insertedJob?.id ? `/jobs/posted/${insertedJob.id}` : '/jobs');
+                navigate(insertedJob?.id ? `/jobs/posted/${insertedJob.id}` : '/jobs', { replace: true });
             }
 
         } catch (error) {
@@ -430,57 +448,85 @@ export default function JobPost() {
                             </div>
 
                             {/* Actions */}
-                            <div className="mt-8 flex items-center justify-between border-t pt-6" style={{ borderColor: 'color-mix(in srgb, var(--workspace-primary) 14%, var(--border))' }}>
-                                {currentStep > 1 ? (
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        className="rounded-2xl"
-                                        onClick={handleBack}
-                                        disabled={isSubmitting}
-                                        leftIcon={<ArrowLeft className="w-4 h-4 rtl:rotate-180" />}
-                                    >
-                                        {tx('jobs.new.actions.previous', undefined, 'Previous')}
-                                    </Button>
-                                ) : (
-                                    <div /> // Spacer
-                                )}
+                            <div
+                                className="mt-10 rounded-[1.8rem] border p-5 shadow-sm backdrop-blur-sm sm:p-6"
+                                style={{
+                                    borderColor: 'color-mix(in srgb, var(--brand-accent) 20%, var(--border))',
+                                    background: 'linear-gradient(145deg, color-mix(in srgb, var(--card-bg) 96%, white), color-mix(in srgb, var(--surface-bg) 92%, white))',
+                                    boxShadow: '0 28px 70px -52px rgba(245,158,11,0.24)',
+                                }}
+                            >
+                                <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                                    <div className="min-w-0">
+                                        <div
+                                            className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em]"
+                                            style={{
+                                                borderColor: 'color-mix(in srgb, var(--brand-accent) 22%, transparent)',
+                                                background: 'color-mix(in srgb, var(--brand-accent) 10%, var(--card-bg))',
+                                                color: 'var(--brand-accent)',
+                                            }}
+                                        >
+                                            <span>{tx('jobs.new.stepCounter', { current: currentStep, total: steps.length }, `Step ${currentStep} of ${steps.length}`)}</span>
+                                        </div>
+                                        <p className="mt-3 text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+                                            {currentStepMeta?.title}
+                                        </p>
+                                        <p className="mt-1 text-xs leading-6" style={{ color: 'var(--text-secondary)' }}>
+                                            {isFinalStep
+                                                ? tx('jobs.new.actions.publishHint', undefined, 'Review the brief one last time, then publish it live.')
+                                                : tx('jobs.new.actions.nextHint', undefined, 'Save a draft if needed, or continue to the next step.')}
+                                        </p>
+                                    </div>
 
-                                <div className="flex gap-3">
-                                    <Button
-                                        type="button"
-                                        variant="ghost"
-                                        className="rounded-2xl"
-                                        isLoading={isSubmitting && submitIntent === 'draft'}
-                                        disabled={isSubmitting}
-                                        onClick={handleSaveDraft}
-                                        leftIcon={isSubmitting && submitIntent === 'draft' ? undefined : <Save className="w-4 h-4" />}
-                                    >
-                                        {tx('jobs.new.actions.saveDraft', undefined, 'Save draft')}
-                                    </Button>
+                                    <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
+                                        {currentStep > 1 ? (
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                className="w-full rounded-2xl sm:w-auto"
+                                                onClick={handleBack}
+                                                disabled={isSubmitting}
+                                                leftIcon={<ArrowLeft className="w-4 h-4 rtl:rotate-180" />}
+                                            >
+                                                {tx('jobs.new.actions.previous', undefined, 'Previous')}
+                                            </Button>
+                                        ) : null}
 
-                                    {currentStep < steps.length ? (
                                         <Button
                                             type="button"
-                                            variant="primary"
-                                            className="rounded-2xl"
-                                            onClick={handleNext}
+                                            variant="outline"
+                                            className="w-full rounded-2xl sm:w-auto"
+                                            isLoading={isSubmitting && submitIntent === 'draft'}
                                             disabled={isSubmitting}
-                                            rightIcon={<ArrowRight className="w-4 h-4 rtl:rotate-180" />}
+                                            onClick={handleSaveDraft}
+                                            leftIcon={isSubmitting && submitIntent === 'draft' ? undefined : <Save className="w-4 h-4" />}
                                         >
-                                            {tx('jobs.new.actions.next', undefined, 'Next')}
+                                            {tx('jobs.new.actions.saveDraft', undefined, 'Save draft')}
                                         </Button>
-                                    ) : (
-                                        <Button
-                                            type="submit"
-                                            variant="primary"
-                                            isLoading={isSubmitting && submitIntent === 'publish'}
-                                            className="rounded-2xl px-8"
-                                            rightIcon={<ArrowRight className="w-4 h-4 rtl:rotate-180" />}
-                                        >
-                                            {tx('jobs.new.actions.publishJob', undefined, 'Publish job')}
-                                        </Button>
-                                    )}
+
+                                        {currentStep < steps.length ? (
+                                            <Button
+                                                type="button"
+                                                variant="primary"
+                                                className="w-full rounded-2xl px-6 sm:w-auto"
+                                                onClick={handleNext}
+                                                disabled={isSubmitting}
+                                                rightIcon={<ArrowRight className="w-4 h-4 rtl:rotate-180" />}
+                                            >
+                                                {tx('jobs.new.actions.next', undefined, 'Next')}
+                                            </Button>
+                                        ) : (
+                                            <Button
+                                                type="submit"
+                                                variant="primary"
+                                                isLoading={isSubmitting && submitIntent === 'publish'}
+                                                className="w-full rounded-2xl px-8 sm:w-auto"
+                                                rightIcon={<ArrowRight className="w-4 h-4 rtl:rotate-180" />}
+                                            >
+                                                {tx('jobs.new.actions.publishJob', undefined, 'Publish job')}
+                                            </Button>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
 
@@ -499,8 +545,18 @@ export default function JobPost() {
                     <p className="text-gray-600 dark:text-gray-300">
                         {tx('jobs.new.restoreDraft.description', { time: draftToRestore ? timeAgo(draftToRestore.timestamp) : '' }, `We found a saved draft from ${draftToRestore ? timeAgo(draftToRestore.timestamp) : ''}. Do you want to restore and continue?`)}
                     </p>
-                    <div className="bg-gray-50 dark:bg-gray-900 dark:bg-dark-800 p-3 rounded-lg text-sm text-gray-500 dark:text-gray-400">
-                        <strong>{tx('jobs.new.restoreDraft.jobTitle', undefined, 'Title')}:</strong> {draftToRestore?.data.title || tx('jobs.new.restoreDraft.untitled', undefined, '(Untitled)')}
+                    <div
+                        className="rounded-lg border p-3 text-sm"
+                        style={{
+                            borderColor: 'color-mix(in srgb, var(--brand-accent) 20%, transparent)',
+                            background: 'color-mix(in srgb, var(--brand-accent) 10%, var(--card-bg))',
+                            color: 'var(--text-secondary)',
+                        }}
+                    >
+                        <strong style={{ color: 'var(--text-primary)' }}>{tx('jobs.new.restoreDraft.jobTitle', undefined, 'Title')}:</strong>{' '}
+                        <span style={{ color: 'var(--text-secondary)' }}>
+                            {draftToRestore?.data.title || tx('jobs.new.restoreDraft.untitled', undefined, '(Untitled)')}
+                        </span>
                     </div>
                     <div className="flex justify-end gap-3 mt-6">
                         <Button variant="outline" onClick={handleDiscardDraft}>

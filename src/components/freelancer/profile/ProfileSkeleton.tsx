@@ -2,13 +2,25 @@ import { Skeleton } from '@/components/common/SkeletonCard';
 
 export default function ProfileSkeleton() {
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-20 md:pb-0">
+        <div className="min-h-screen pb-20 md:pb-0" style={{ background: 'var(--page-bg)' }}>
             {/* Header Skeleton */}
-            <div className="bg-white dark:bg-gray-800 dark:bg-dark-800 border-b border-gray-100 dark:border-gray-800 dark:border-dark-700 pb-8">
-                <div className="h-48 md:h-64 bg-gray-200 dark:bg-gray-700 dark:bg-dark-700 animate-pulse" /> {/* Cover */}
+            <div
+                className="border-b pb-8"
+                style={{
+                    background: 'var(--card-bg)',
+                    borderColor: 'var(--border)',
+                }}
+            >
+                <div
+                    className="h-48 md:h-64 shimmer bg-[length:200%_100%]"
+                    style={{
+                        backgroundImage:
+                            'linear-gradient(90deg, var(--dash-raised), var(--dash-card-hover), var(--dash-raised))',
+                    }}
+                />
                 <div className="container-custom relative">
                     <div className="flex flex-col md:flex-row items-start gap-6 -mt-16 md:-mt-20 mb-6">
-                        <Skeleton className="w-32 h-32 md:w-40 md:h-40 rounded-3xl border-4 border-white dark:border-dark-800" />
+                        <Skeleton className="w-32 h-32 md:w-40 md:h-40 rounded-3xl border-4 border-[var(--page-bg)]" />
                         <div className="flex-1 pt-20 md:pt-24 space-y-4 w-full">
                             <div className="flex flex-col md:flex-row justify-between gap-4">
                                 <div className="space-y-2">

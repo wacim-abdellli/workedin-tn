@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import Button from '../../components/ui/Button';
 import { useTranslation } from '@/i18n';
+import { adminInsetClass, adminPanelClass, adminPillClass } from './adminTheme';
 
 interface DisputeRecord {
     id: string;
@@ -50,7 +51,7 @@ export default function DisputesTab() {
         resolveMutation.mutate({ disputeId, resolution, note }, { onSettled: () => setResolvingId(null) });
     };
 
-    const panelClass = 'card border-white/45 dark:border-white/10 bg-white/80 dark:bg-slate-950/55 backdrop-blur-xl shadow-[0_16px_45px_-24px_rgba(21,84,247,0.38)]';
+    const panelClass = adminPanelClass;
 
     return (
         <div className="space-y-6">
@@ -59,7 +60,7 @@ export default function DisputesTab() {
                     <h3 className="font-bold text-foreground flex items-center gap-2">
                         <AlertTriangle className="w-5 h-5 text-red-500" />
                         {tr('نزاعات مفتوحة', 'Open disputes', 'Litiges ouverts')}
-                        {disputes.length > 0 && <span className="px-2 py-0.5 bg-red-100 text-red-800 rounded-full text-sm">{disputes.length}</span>}
+                        {disputes.length > 0 && <span className={`px-2 py-0.5 rounded-full text-sm ${adminPillClass('red')}`}>{disputes.length}</span>}
                     </h3>
                     <Button variant="outline" size="sm" onClick={() => refetch()}>
                         <RefreshCw className={`w-4 h-4 ml-1 ${isLoading ? 'animate-spin' : ''}`} />{tr('تحديث', 'Refresh', 'Actualiser')}
@@ -76,14 +77,14 @@ export default function DisputesTab() {
                 ) : (
                     <div className="space-y-4">
                         {disputes.map(d => (
-                            <div key={d.id} className="border border-red-200 dark:border-red-500/30 rounded-xl overflow-hidden">
-                                <div className="p-4 bg-red-50/85 dark:bg-red-500/10">
+                            <div key={d.id} className={`overflow-hidden rounded-xl ${adminInsetClass} border-red-200/70 dark:border-red-500/18`}>
+                                <div className="p-4">
                                     <div className="flex items-start justify-between gap-4 flex-wrap">
                                         <div className="flex-1 min-w-0">
                                             <p className="font-bold text-foreground">{d.contract?.job?.title || tr('عقد', 'Contract', 'Contrat')}</p>
                                             <p className="text-sm text-muted">{tr('فتحه', 'Opened by', 'Ouvert par')}: {d.opener?.full_name} — {d.opener?.email}</p>
                                             <p className="text-xs text-muted mt-1">{new Date(d.opened_at).toLocaleString(locale)}</p>
-                                            <div className="mt-3 p-3 bg-white dark:bg-gray-800/85 rounded-lg border border-red-100 dark:border-red-500/20">
+                                            <div className={`mt-3 p-3 rounded-lg ${adminPillClass('red')}`}>
                                                 <p className="text-sm text-foreground"><strong>{tr('سبب النزاع', 'Dispute reason', 'Raison du litige')}:</strong> {d.reason}</p>
                                             </div>
                                             {d.contract?.amount && <p className="text-sm font-medium text-muted mt-2">{tr('مبلغ العقد', 'Contract amount', 'Montant du contrat')}: {d.contract.amount} د.ت</p>}

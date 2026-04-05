@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { AlertCircle, AlertTriangle, CheckCircle, Info, X } from 'lucide-react';
+import { useTranslation } from '../../i18n';
 
 type ToastType = 'success' | 'error' | 'warning' | 'info';
 type ToastPosition = 'top-right' | 'bottom-center';
@@ -124,6 +125,7 @@ function ToastViewport({
 }
 
 function ToastCard({ toast, onClose }: { toast: Toast; onClose: () => void }) {
+  const { tx } = useTranslation();
   const config = toastConfig[toast.type];
 
   useEffect(() => {
@@ -151,7 +153,7 @@ function ToastCard({ toast, onClose }: { toast: Toast; onClose: () => void }) {
         <button
           onClick={onClose}
           className="rounded-full p-1 text-white/50 transition hover:bg-white dark:bg-gray-800/5 hover:text-white"
-          aria-label="Close notification"
+          aria-label={tx('toast.close', undefined, 'Close notification')}
         >
           <X className="h-4 w-4" />
         </button>

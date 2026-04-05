@@ -11,6 +11,7 @@ import { getIdentityNotificationCopy, normalizeIdentityNotificationLanguage } fr
 import { supabase } from '@/lib/supabase';
 import { useTranslation } from '@/i18n';
 import type { AdminUser, AdminUserRow } from '@/types/admin';
+import { adminIconButtonClass, adminInputClass, adminPanelClass, adminPillClass, adminSelectClass, adminTableHeadClass, adminTableRowClass, adminTableShellClass } from './adminTheme';
 
 export const ADMIN_USERS_QUERY_KEY = ['admin-users'] as const;
 
@@ -80,13 +81,13 @@ export default function UsersTab() {
         reason: '',
     });
 
-    const panelClass = 'card border border-border bg-card shadow-sm';
-    const tableShellClass = 'hidden md:block card p-0 overflow-hidden border-border bg-card';
-    const tableHeadClass = 'bg-surface border-b border-border sticky top-0 z-10 backdrop-blur';
-    const tableRowClass = 'group hover:bg-surface transition-colors border-b border-border/50 last:border-0';
-    const iconActionClass = 'p-2 rounded-xl bg-surface hover:bg-border text-muted transition-colors';
-    const inputClass = 'w-full h-12 pe-11 ps-4 border rounded-xl bg-input border-input focus:border-input-focus text-foreground placeholder:text-muted shadow-sm focus:outline-none focus:ring-2 focus:ring-brand/30';
-    const selectClass = 'h-12 px-4 border rounded-xl bg-input border-input focus:border-input-focus text-foreground shadow-sm focus:outline-none focus:ring-2 focus:ring-brand/30';
+    const panelClass = adminPanelClass;
+    const tableShellClass = `hidden md:block ${adminTableShellClass}`;
+    const tableHeadClass = adminTableHeadClass;
+    const tableRowClass = adminTableRowClass;
+    const iconActionClass = adminIconButtonClass;
+    const inputClass = `pe-11 ps-4 ${adminInputClass}`;
+    const selectClass = adminSelectClass;
 
     const closeConfirm = () => setConfirmAction((prev) => ({ ...prev, isOpen: false }));
 
@@ -379,24 +380,24 @@ export default function UsersTab() {
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <span className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap ${user.type === 'freelancer'
-                                                        ? 'bg-blue-100 dark:bg-blue-500/15 text-blue-700 dark:text-blue-300'
-                                                        : 'bg-violet-100 dark:bg-violet-500/15 text-violet-700 dark:text-violet-300'
+                                                        ? adminPillClass('blue')
+                                                        : adminPillClass('violet')
                                                         }`}>
                                                         {user.type === 'freelancer' ? tx('dashboard.admin.users.freelancer', undefined, 'Freelancer') : tx('dashboard.admin.users.client', undefined, 'Client')}
                                                     </span>
-                                                    <span className="ms-2 px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap bg-primary-100 dark:bg-primary-500/15 text-primary-700 dark:text-primary-300">
+                                                    <span className={`ms-2 px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap ${adminPillClass('primary')}`}>
                                                         {tx('dashboard.admin.users.mode', undefined, 'Mode')}: {user.active_mode === 'freelancer' ? tx('dashboard.admin.users.freelancer', undefined, 'Freelancer') : tx('dashboard.admin.users.client', undefined, 'Client')}
                                                     </span>
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <span className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap ${user.cin_verified
-                                                        ? 'bg-emerald-100 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300'
-                                                        : 'bg-amber-100 dark:bg-amber-500/15 text-amber-700 dark:text-amber-300'
+                                                        ? adminPillClass('emerald')
+                                                        : adminPillClass('amber')
                                                         }`}>
                                                         {user.cin_verified ? tx('dashboard.admin.users.verified', undefined, 'Verified') : tx('dashboard.admin.users.unverified', undefined, 'Unverified')}
                                                     </span>
                                                     {user.is_admin && (
-                                                        <span className="ms-2 px-2 py-1 rounded-full text-xs font-medium bg-indigo-100 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300">{tx('dashboard.admin.users.admin', undefined, 'Admin')}</span>
+                                                        <span className={`ms-2 px-2 py-1 rounded-full text-xs font-medium ${adminPillClass('indigo')}`}>{tx('dashboard.admin.users.admin', undefined, 'Admin')}</span>
                                                     )}
                                                 </td>
                                                 <td className="px-6 py-4 text-sm text-muted whitespace-nowrap">{formatAdminDate(user.last_active)}</td>
@@ -454,25 +455,25 @@ export default function UsersTab() {
                                             </div>
                                         </div>
                                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${user.status === 'active'
-                                            ? 'bg-green-100 text-green-700'
-                                            : 'bg-red-100 text-red-700'
-                                            }`}>
+                                            ? adminPillClass('emerald')
+                                            : adminPillClass('red')
+                                             }`}>
                                             {user.cin_verified ? tx('dashboard.admin.users.verified', undefined, 'Verified') : tx('dashboard.admin.users.unverified', undefined, 'Unverified')}
                                         </span>
                                     </div>
                                     <div className="flex items-center justify-between py-2 border-b border-border/50">
                                         <span className="text-sm text-muted">{tx('dashboard.admin.users.type', undefined, 'Type')}</span>
                                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${user.type === 'freelancer'
-                                            ? 'bg-blue-100 text-blue-700'
-                                            : 'bg-purple-100 text-purple-700'
-                                            }`}>
+                                            ? adminPillClass('blue')
+                                            : adminPillClass('violet')
+                                             }`}>
                                             {user.type === 'freelancer' ? tx('dashboard.admin.users.freelancer', undefined, 'Freelancer') : tx('dashboard.admin.users.client', undefined, 'Client')}
                                         </span>
                                     </div>
 
                                     <div className="flex items-center justify-between py-2 border-b border-border/50">
                                         <span className="text-sm text-muted">{tx('dashboard.admin.users.activeMode', undefined, 'Active mode')}</span>
-                                        <span className="px-2 py-1 rounded-full text-xs font-medium bg-primary-100 text-primary-700">
+                                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${adminPillClass('primary')}`}>
                                             {user.active_mode === 'freelancer' ? tx('dashboard.admin.users.freelancer', undefined, 'Freelancer') : tx('dashboard.admin.users.client', undefined, 'Client')}
                                         </span>
                                     </div>
@@ -529,7 +530,7 @@ export default function UsersTab() {
 
             {selectedUser && (
                 <div className="fixed inset-0 z-50 bg-black/55 backdrop-blur-sm flex items-center justify-center p-4">
-                    <div className="w-full max-w-xl card bg-card border-border shadow-xl">
+                    <div className={`${adminPanelClass} w-full max-w-xl p-6 sm:p-7`}>
                         <div className="flex items-start justify-between gap-3 mb-5">
                             <div>
                                 <h3 className="text-lg font-bold text-foreground">{tx('dashboard.admin.users.userDetails', undefined, 'User details')}</h3>
@@ -616,7 +617,7 @@ export default function UsersTab() {
                             value={revokeModal.reason}
                             onChange={(e) => setRevokeModal(prev => ({ ...prev, reason: e.target.value }))}
                             placeholder={tx('dashboard.admin.users.revokeReasonPlaceholder', undefined, 'e.g., ID document is expired...')}
-                            className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-900 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 resize-none min-h-[100px] text-foreground"
+                            className={`${adminInputClass} min-h-[100px] resize-none px-4 py-3 h-auto`}
                         />
                     </div>
 

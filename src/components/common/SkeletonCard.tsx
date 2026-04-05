@@ -8,7 +8,7 @@ export function Skeleton({ className }: SkeletonProps) {
     return (
         <div
             className={cn(
-                "shimmer rounded-lg bg-gradient-to-r from-[#f8f7ff] via-[#ede9fe] to-[#f8f7ff] dark:from-[#1a1825] dark:via-[#242235] dark:to-[#1a1825] bg-[length:200%_100%]",
+                "shimmer rounded-lg bg-gradient-to-r from-[var(--card-bg)] via-[var(--dash-card-hover)] to-[var(--card-bg)] bg-[length:200%_100%]",
                 className
             )}
         />

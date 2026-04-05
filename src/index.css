@@ -53,7 +53,68 @@
   --text-primary: #111827;
   --text-secondary: #6b7280;
   --text-muted: #9ca3af;
-  --text-placeholder: #d1d5db;
+  --text-placeholder: #a1a1aa;
+  --border: #e5e7eb;
+  --border-strong: #d1d5db;
+
+  /* Legacy aliases kept for existing component classes */
+  --color-bg: var(--page-bg);
+  --color-bg-secondary: var(--card-bg);
+  --color-bg-tertiary: var(--surface-bg);
+  --color-fg: var(--text-primary);
+  --color-fg-secondary: var(--text-secondary);
+  --color-fg-muted: var(--text-muted);
+  --color-border: var(--border);
+  --color-border-subtle: var(--border-strong);
+
+  /* ===== STATUS COLORS ===== */
+  --success-600: #10b981;
+  --error-600: #ef4444;
+  --warning-600: #f59e0b;
+  --info-600: #3b82f6;
+
+  /* ===== GRADIENTS ===== */
+  --gradient-primary: linear-gradient(135deg, #5b21b6 0%, #4c1d95 55%, #d4a017 100%);
+  --gradient-accent: linear-gradient(135deg, #d4a017 0%, #b8860b 100%);
+  --gradient-glass: linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(249, 250, 251, 0.92) 100%);
+  --gradient-surface: linear-gradient(145deg, #ffffff, #f9fafb);
+
+  /* ===== SHADOWS (Light Mode) ===== */
+  --shadow-sm: 0 2px 4px rgba(124, 58, 237, 0.04);
+  --shadow-md: 0 8px 18px -8px rgba(124, 58, 237, 0.12), 0 2px 6px -3px rgba(212, 160, 23, 0.08);
+  --shadow-lg: 0 18px 32px -14px rgba(124, 58, 237, 0.14), 0 8px 16px -10px rgba(212, 160, 23, 0.1);
+  --shadow-xl: 0 24px 48px -18px rgba(124, 58, 237, 0.18), 0 10px 24px -16px rgba(212, 160, 23, 0.12);
+  --shadow-2xl: 0 30px 64px -20px rgba(124, 58, 237, 0.24);
+
+  /* ===== GLOWS ===== */
+  --shadow-glow: 0 0 20px rgba(124, 58, 237, 0.22);
+  --shadow-glow-accent: 0 0 20px rgba(212, 160, 23, 0.22);
+
+  /* Radius and elevation tiers */
+  --radius-card: 1rem;
+  --radius-panel: 1.75rem;
+  --radius-shell: 2rem;
+  --elevation-1: var(--shadow-md);
+  --elevation-2: var(--shadow-lg);
+  --elevation-modal: 0 25px 60px rgba(0, 0, 0, 0.45);
+
+  /* Motion scale */
+  --motion-fast: 140ms;
+  --motion-base: 220ms;
+  --motion-slow: 320ms;
+  --motion-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --motion-ease-emphasis: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Dashboard surface system */
+  --dash-bg: #f9fafb;
+  --dash-card: #ffffff;
+  --dash-card-hover: #f3f4f6;
+  --dash-raised: #ffffff;
+  --dash-border: #e5e7eb;
+  --dash-border-hover: #d1d5db;
+
+  /* Widget accent top-border on hover */
+  --widget-accent-border: 3px solid var(--workspace-primary);
   --border: #e5e7eb;
   --border-strong: #d1d5db;
 
@@ -119,34 +180,38 @@
   /* Stat pill */
   --stat-pill-bg: rgba(255,255,255,0.04);
   --stat-pill-border: rgba(255,255,255,0.08);
+  
+  /* Workspace shadow colors - Freelancer (Purple) */
+  --workspace-primary-shadow: rgba(109,40,217,0.35);
 }
 
 /* Client workspace overrides - Gold/Amber themed per spec */
 .workspace-client {
-  --workspace-primary: #d4a017;
-  --workspace-primary-hover: #b8860b;
-  --workspace-primary-light: #fffbeb;
-  --workspace-primary-mid: #f59e0b;
-  --workspace-primary-text: #ffffff;
+  --workspace-primary: #F59E0B;
+  --workspace-primary-hover: #D97706;
+  --workspace-primary-light: #FFFBEB;
+  --workspace-primary-mid: #FCD34D;
+  --workspace-primary-shadow: rgba(245,158,11,0.35);
 }
 
 .dark .workspace-client {
-  --workspace-primary: #d4a017;
-  --workspace-primary-hover: #b8860b;
-  --workspace-primary-light: #78350f;
-  --workspace-primary-mid: #fbbf24;
-  --workspace-primary-text: #ffffff;
+  --workspace-primary-light: #451A03;
+  --workspace-primary-shadow: rgba(245,158,11,0.35);
 }
 
 /* Admin overrides */
 .workspace-admin {
-  --workspace-primary: #2563eb;
-  --workspace-primary-hover: #1d4ed8;
-  --workspace-primary-light: #eff6ff;
-  --workspace-primary-mid: #60a5fa;
+  --workspace-primary: #6366F1;
+  --workspace-primary-hover: #4F46E5;
+  --workspace-primary-light: #EEF2FF;
+  --workspace-primary-mid: #A5B4FC;
+  --workspace-primary-shadow: rgba(99,102,241,0.35);
 }
 
 .dark {
+  /* Default Freelancer overrides */
+  --workspace-primary-light: rgba(139, 92, 246, 0.15);
+
   /* ===== DARK MODE PALETTE (Clean, High-Contrast, Professional) ===== */
   
   /* Backgrounds - Clear surface hierarchy */
@@ -162,33 +227,7 @@
   --text-primary: #ffffff;
   --text-secondary: #d4d4e8;
   --text-muted: #9ca3b8;
-  --text-placeholder: #6b7280;
-  
-  /* Borders - Violet-tinted for consistency */
-  --border: rgba(255, 255, 255, 0.08);
-  --border-strong: rgba(255, 255, 255, 0.14);
-
-  /* Legacy aliases */
-  --color-bg: var(--page-bg);
-  --color-bg-secondary: var(--card-bg);
-  --color-bg-tertiary: var(--surface-bg);
-  --color-fg: var(--text-primary);
-  --color-fg-secondary: var(--text-secondary);
-  --color-fg-muted: var(--text-muted);
-  --color-border: var(--border);
-  --color-border-subtle: var(--border-strong);
-
-  /* Workspace theme in dark mode (deep violet) */
-  --workspace-primary: #7c3aed;
-  --workspace-primary-hover: #6d28d9;
-  --workspace-primary-light: #4c1d95;
-  --workspace-primary-mid: #a78bfa;
-  --workspace-primary-text: #ffffff;
-
-  --brand-accent: #d4a017;
-  --brand-accent-hover: #b8860b;
-
-  /* Dark Gradients */
+  --text-placeholder: #8b8aa0;
   --gradient-primary: linear-gradient(135deg, #7c3aed 0%, #6d28d9 60%, #d4a017 100%);
   --gradient-accent: linear-gradient(135deg, #fbbf24 0%, #d4a017 100%);
   --gradient-glass: linear-gradient(180deg, rgba(26, 24, 37, 0.88) 0%, rgba(15, 14, 23, 0.5) 100%);
@@ -267,7 +306,8 @@ select {
 
 input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file'])::placeholder,
 textarea::placeholder {
-  color: var(--text-muted) !important;
+  color: var(--text-placeholder) !important;
+  opacity: 1;
 }
 
 /* RTL Support */
@@ -321,7 +361,7 @@ h6 {
 
 /* Focus styles */
 :focus-visible {
-  outline: 2px solid #8b5cf6;
+  outline: 2px solid rgba(148, 163, 184, 0.45);
   outline-offset: 2px;
 }
 
@@ -592,7 +632,8 @@ h6 {
   }
 
   .input::placeholder {
-    color: var(--color-fg-muted);
+    color: var(--text-placeholder);
+    opacity: 1;
   }
 
   .input:focus {
@@ -619,7 +660,8 @@ h6 {
   }
 
   .form-control::placeholder {
-    color: var(--color-fg-muted);
+    color: var(--text-placeholder);
+    opacity: 1;
   }
 
   .form-control:focus {
@@ -1021,7 +1063,7 @@ h6 {
 
   /* ===== GRADIENTS ===== */
   .gradient-primary {
-    background: linear-gradient(135deg, #1554f7 0%, #0e41e3 50%, #9333ea 100%);
+    background: linear-gradient(135deg, var(--workspace-primary) 0%, var(--workspace-primary-hover) 50%, var(--workspace-primary-mid) 100%);
   }
 
   .gradient-accent {

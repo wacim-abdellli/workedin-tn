@@ -4,6 +4,7 @@ import { getStuckTransactions, reconcilePayment } from '@/services/payments';
 import { useQuery } from '@tanstack/react-query';
 import Button from '../../components/ui/Button';
 import { useTranslation } from '@/i18n';
+import { adminInsetClass, adminPanelClass, adminPillClass } from './adminTheme';
 
 export default function PaymentsTab() {
      const { language, tx } = useTranslation();
@@ -23,7 +24,7 @@ export default function PaymentsTab() {
         refetch();
     };
 
-    const panelClass = 'card border-white/45 dark:border-white/10 bg-white/80 dark:bg-slate-950/55 backdrop-blur-xl shadow-[0_16px_45px_-24px_rgba(21,84,247,0.38)]';
+    const panelClass = adminPanelClass;
 
     return (
         <div className="space-y-6">
@@ -48,12 +49,12 @@ export default function PaymentsTab() {
                  ) : (
                      <div className="space-y-3">
                          {stuckPayments.map(transaction => (
-                             <div key={transaction.id} className="flex items-center justify-between gap-3 p-4 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/25 rounded-xl">
-                                 <div>
-                                     <div className="flex items-center gap-2 mb-1">
-                                         <span className="px-2 py-0.5 bg-amber-200 dark:bg-amber-500/20 text-amber-900 dark:text-amber-200 text-xs rounded-full">{transaction.type}</span>
-                                         <span className="font-medium text-foreground">{transaction.amount} د.ت</span>
-                                     </div>
+                             <div key={transaction.id} className={`flex items-center justify-between gap-3 p-4 ${adminInsetClass}`}>
+                                  <div>
+                                      <div className="flex items-center gap-2 mb-1">
+                                          <span className={`px-2 py-0.5 text-xs rounded-full ${adminPillClass('amber')}`}>{transaction.type}</span>
+                                          <span className="font-medium text-foreground">{transaction.amount} د.ت</span>
+                                      </div>
                                      <p className="text-sm text-muted">ID: {transaction.id.slice(0, 8)}... • {new Date(transaction.created_at).toLocaleString(locale)}</p>
                                  </div>
                                  <Button variant="primary" size="sm" disabled={retryingId === transaction.id} onClick={() => handleRetry(transaction.id)}>

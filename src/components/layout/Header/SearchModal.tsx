@@ -252,7 +252,7 @@ export default function SearchModal({ onClose }: SearchModalProps) {
             </kbd>
           </div>
 
-          <div className="flex min-h-[58px] items-center gap-3 rounded-2xl border border-[color:var(--workspace-primary)]/18 bg-[var(--card-bg)] px-4 shadow-[0_16px_36px_-28px_rgba(109,40,217,0.35)]">
+          <div className="flex min-h-[58px] items-center gap-3 rounded-2xl border border-border bg-[var(--card-bg)] px-4 shadow-[0_16px_36px_-28px_var(--workspace-primary-shadow,rgba(109,40,217,0.35))]">
             <Search className="h-5 w-5 flex-shrink-0 text-[color:var(--workspace-primary)]" />
             <input
               ref={inputRef}
@@ -262,7 +262,7 @@ export default function SearchModal({ onClose }: SearchModalProps) {
                 setSelected(0)
               }}
               placeholder={placeholder}
-              className="flex-1 bg-transparent text-base font-medium text-[var(--text-primary)] outline-none placeholder:text-[var(--text-muted)]"
+              className="flex-1 bg-transparent text-base font-medium text-[var(--text-primary)] outline-none ring-0 focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 placeholder:text-[var(--text-muted)]"
             />
             {query ? (
               <button onClick={() => setQuery('')} className="rounded-lg p-1 text-[var(--text-muted)] transition-colors hover:bg-[var(--surface-bg)] hover:text-[var(--text-primary)]">

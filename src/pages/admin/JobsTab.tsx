@@ -10,6 +10,7 @@ import { supabase } from '@/lib/supabase';
 import { supabaseWithRetry } from '@/lib/supabaseWithRetry';
 import { useTranslation } from '@/i18n';
 import type { AdminJob, AdminJobRow } from '@/types/admin';
+import { adminInputClass, adminPanelClass, adminPillClass, adminSelectClass, adminTableHeadClass, adminTableRowClass, adminTableShellClass } from './adminTheme';
 
 export const ADMIN_JOBS_QUERY_KEY = ['admin-jobs'] as const;
 
@@ -90,12 +91,12 @@ export default function JobsTab() {
         onConfirm: () => {},
     });
 
-    const panelClass = 'card border border-border bg-card shadow-sm';
-    const tableShellClass = 'hidden md:block card p-0 overflow-hidden border-border bg-card';
-    const tableHeadClass = 'bg-surface border-b border-border sticky top-0 z-10 backdrop-blur';
-    const tableRowClass = 'group hover:bg-surface transition-colors border-b border-border/50 last:border-0';
-    const inputClass = 'w-full h-12 pe-11 ps-4 border rounded-xl bg-input border-input focus:border-input-focus text-foreground placeholder:text-muted shadow-sm focus:outline-none focus:ring-2 focus:ring-brand/30';
-    const selectClass = 'h-12 px-4 border rounded-xl bg-input border-input focus:border-input-focus text-foreground shadow-sm focus:outline-none focus:ring-2 focus:ring-brand/30';
+    const panelClass = adminPanelClass;
+    const tableShellClass = `hidden md:block ${adminTableShellClass}`;
+    const tableHeadClass = adminTableHeadClass;
+    const tableRowClass = adminTableRowClass;
+    const inputClass = `pe-11 ps-4 ${adminInputClass}`;
+    const selectClass = adminSelectClass;
 
     const closeConfirm = () => setConfirmAction((prev) => ({ ...prev, isOpen: false }));
 
@@ -252,11 +253,11 @@ export default function JobsTab() {
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                                        job.status === 'open' ? 'bg-green-100 text-green-700' :
-                                                        job.status === 'in_progress' ? 'bg-blue-100 text-blue-700' :
-                                                        job.status === 'completed' ? 'bg-purple-100 text-purple-700' :
-                                                        'bg-gray-100 text-gray-700'
-                                                    }`}>
+                                                         job.status === 'open' ? adminPillClass('emerald') :
+                                                         job.status === 'in_progress' ? adminPillClass('blue') :
+                                                         job.status === 'completed' ? adminPillClass('violet') :
+                                                         adminPillClass('neutral')
+                                                     }`}>
                                                     {job.status === 'open' ? tx('dashboard.admin.jobs.statusOpen', undefined, 'Open') :
                                                           job.status === 'in_progress' ? tx('dashboard.admin.jobs.statusInProgress', undefined, 'In progress') :
                                                           job.status === 'completed' ? tx('dashboard.admin.jobs.statusCompleted', undefined, 'Completed') : tx('dashboard.admin.jobs.statusCancelled', undefined, 'Cancelled')}
@@ -291,11 +292,11 @@ export default function JobsTab() {
                                             <p className="text-xs text-muted">{new Date(job.created_at).toLocaleDateString(locale)}</p>
                                         </div>
                                         <span className={`px-2 py-1 rounded-full text-xs font-medium shrink-0 ml-2 ${
-                                             job.status === 'open' ? 'bg-green-100 text-green-700' :
-                                             job.status === 'in_progress' ? 'bg-blue-100 text-blue-700' :
-                                             job.status === 'completed' ? 'bg-purple-100 text-purple-700' :
-                                             'bg-gray-100 text-gray-700'
-                                         }`}>
+                                              job.status === 'open' ? adminPillClass('emerald') :
+                                              job.status === 'in_progress' ? adminPillClass('blue') :
+                                              job.status === 'completed' ? adminPillClass('violet') :
+                                              adminPillClass('neutral')
+                                          }`}>
                                              {job.status === 'open' ? tx('dashboard.admin.jobs.statusOpen', undefined, 'Open') :
                                               job.status === 'in_progress' ? tx('dashboard.admin.jobs.statusInProgress', undefined, 'In progress') :
                                               job.status === 'completed' ? tx('dashboard.admin.jobs.statusCompleted', undefined, 'Completed') : tx('dashboard.admin.jobs.statusCancelled', undefined, 'Cancelled')}

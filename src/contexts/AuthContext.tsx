@@ -164,7 +164,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
               ignoreDuplicates: true,
             }
           ),
-        { timeoutMs: 10000 }
+        { timeoutMs: 3000 }
       );
     },
     [getPreferredLanguage]
@@ -181,7 +181,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         const loadProfile = () =>
           supabaseWithRetry(
             () => supabase.from('profiles').select('*').eq('id', userId).maybeSingle(),
-            { timeoutMs: 10000 }
+            { timeoutMs: 3000 }
           );
 
         let profileResult = await loadProfile();
@@ -190,10 +190,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
           await ensureProfileExists(currentUser);
           profileResult = await supabaseWithRetry(() =>
             supabase.from('profiles').select('*').eq('id', userId).maybeSingle(),
-            { timeoutMs: 10000 }
+            { timeoutMs: 3000 }
           );
         } else if (!profileResult.data) {
-          await new Promise((resolve) => setTimeout(resolve, 1500));
+          await new Promise((resolve) => setTimeout(resolve, 300));
           profileResult = await loadProfile();
         }
 
@@ -204,8 +204,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
           syncWorkspaceFromProfile(null, null);
           return { profile: null, freelancerProfile: null };
         }
-
-        setProfile(nextProfile);
 
         // Set Sentry user context in production
         if (import.meta.env.PROD && Sentry && nextProfile) {
@@ -224,14 +222,21 @@ export function AuthProvider({ children }: AuthProviderProps) {
           persistUserTypeSelectionMarker(nextProfile.id);
         }
 
+        // Fetch freelancer profile in parallel with setting main profile
         let nextFreelancerProfile: FreelancerProfile | null = null;
-        if (nextProfile.user_type === 'freelancer' || nextProfile.user_type === 'both') {
-          const { data } = await supabaseWithRetry(
-            () => supabase.from('freelancer_profiles').select('*').eq('id', userId).maybeSingle(),
-            { timeoutMs: 10000 }
-          );
-          nextFreelancerProfile = data;
-        }
+        const freelancerProfilePromise = (nextProfile.user_type === 'freelancer' || nextProfile.user_type === 'both')
+          ? supabaseWithRetry(
+              () => supabase.from('freelancer_profiles').select('*').eq('id', userId).maybeSingle(),
+              { timeoutMs: 3000 }
+            )
+          : Promise.resolve({ data: null });
+
+        // Set profile immediately, don't wait for freelancer profile
+        setProfile(nextProfile);
+
+        // Now wait for freelancer profile
+        const { data } = await freelancerProfilePromise;
+        nextFreelancerProfile = data;
 
         setFreelancerProfile(nextFreelancerProfile);
         syncWorkspaceFromProfile(nextProfile, nextFreelancerProfile);
@@ -294,15 +299,22 @@ export function AuthProvider({ children }: AuthProviderProps) {
             return;
           }
 
-          setIsProfileReady(false);
+          // Set session and user immediately
           setSession(currentSession);
           setUser(currentSession.user);
           loadedUserIdRef.current = currentSession.user.id;
-          await fetchProfile(currentSession.user.id, currentSession.user);
-          // Mark that initAuth has completed loading for this user.
-          // This prevents the onAuthStateChange SIGNED_IN handler from
-          // redundantly re-fetching the profile and flipping the workspace.
-          initAuthCompletedForRef.current = currentSession.user.id;
+          
+          // Set ready immediately so UI can render
+          setIsProfileReady(true);
+          setIsLoading(false);
+          
+          // Fetch profile in background - don't block UI
+          fetchProfile(currentSession.user.id, currentSession.user).then(() => {
+            // Mark that initAuth has completed loading for this user.
+            initAuthCompletedForRef.current = currentSession.user.id;
+          }).catch((error) => {
+            logger.error('Background profile fetch failed:', error);
+          });
         }
       } catch (error) {
         logger.error('Error initializing auth:', error);
@@ -569,7 +581,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
              updated_at: new Date().toISOString(),
            })
            .eq('id', user.id),
-       { timeoutMs: 10000 }
+       { timeoutMs: 3000 }
      );
 
      const nextProfile = profile ? { ...profile, ...data } : ({ id: user.id, ...data } as Profile);

@@ -145,7 +145,7 @@ function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
                             {...register('email')}
                             type="email"
                             placeholder={t.auth.emailPlaceholder}
-                            className="input"
+                            className="input placeholder:text-[var(--text-placeholder)]"
                             dir="ltr"
                         />
                         {errors.email && <p className="form-error">{errors.email.message}</p>}
@@ -161,7 +161,7 @@ function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
                                 {...register('password')}
                                 type={showPassword ? 'text' : 'password'}
                                 placeholder={t.auth.passwordPlaceholder}
-                                className="input pe-12"
+                                className="input pe-12 placeholder:text-[var(--text-placeholder)]"
                                 dir="ltr"
                             />
                             <button
@@ -196,7 +196,7 @@ function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
                 <button
                     type="submit"
                     disabled={isLoading || isLockedOut}
-                    className="group inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[linear-gradient(120deg,#6d28d9_0%,#9333ea_52%,#c026d3_100%)] px-6 py-3.5 font-semibold text-white shadow-[0_20px_48px_-24px_rgba(147,51,234,0.75)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_24px_56px_-24px_rgba(192,38,211,0.85)]"
+                    className="group inline-flex w-full items-center justify-center gap-2 whitespace-nowrap rounded-2xl bg-[linear-gradient(120deg,#6d28d9_0%,#9333ea_52%,#c026d3_100%)] px-6 py-3.5 font-semibold text-white shadow-[0_20px_48px_-24px_rgba(147,51,234,0.75)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_24px_56px_-24px_rgba(192,38,211,0.85)]"
                 >
                     {isLoading ? (
                         <div className="w-5 h-5 border-2 border-white/30 dark:border-gray-800/30 border-t-white rounded-full animate-spin" />

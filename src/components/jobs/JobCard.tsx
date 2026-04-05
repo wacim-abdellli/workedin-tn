@@ -35,9 +35,11 @@ export interface JobForCard {
 interface JobCardProps {
   job: JobForCard;
   isSaved: boolean;
-  onToggleSave: (job: JobForCard) => void | Promise<void>;
+  onToggleSave: (job: JobForCard) => Awaitable<void>;
   onClick: (jobId: string) => void;
 }
+
+type Awaitable<T> = T | Promise<T>;
 
 function JobCard({ job, isSaved, onToggleSave, onClick }: JobCardProps) {
   const [isSaving, setIsSaving] = useState(false);

@@ -118,7 +118,7 @@ function FreelancerDashboardPage() {
         queryFn: async (): Promise<DashboardStats> => {
             const userId = profile!.id;
 
-            const [contractsCountRes, proposalsRes, walletRes, viewsRes, notificationsRes, recentProposalsRes, activeContractsListRes] = await Promise.all([
+            const [contractsCountRes, proposalsRes, walletRes, viewsRes, notificationsRes, recentProposalsRes, activeContractsListRes, milestonesRes] = await Promise.all([
                 supabase.from('contracts').select('id', { count: 'exact', head: true })
                     .eq('freelancer_id', userId)
                     .eq('status', 'active'),
@@ -142,15 +142,14 @@ function FreelancerDashboardPage() {
                     .eq('status', 'active')
                     .order('created_at', { ascending: false })
                     .limit(5),
+                            supabase.from('milestones')
+                    .select('id,description,due_date,amount,status,contract_id,contracts!inner(freelancer_id, status)')
+                    .eq('contracts.freelancer_id', userId)
+                    .eq('contracts.status', 'active')
+                    .eq('status', 'pending')
+                    .order('due_date', { ascending: true })
+                    .limit(4),
             ]);
-
-            const milestonesRes = await supabase.from('milestones')
-                .select('id,description,due_date,amount,status,contract_id,contracts!inner(freelancer_id, status)')
-                .eq('contracts.freelancer_id', userId)
-                .eq('contracts.status', 'active')
-                .eq('status', 'pending')
-                .order('due_date', { ascending: true })
-                .limit(4);
 
             return {
                 activeContracts: contractsCountRes.count ?? 0,

@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/components/ui/Toast';
+import { useTranslation } from '@/i18n';
 
 function shouldShowIncomingToast(_notification: AppNotification) {
     // Don't show any toast popups for incoming notifications
@@ -41,6 +42,7 @@ async function fetchNotifications(userId: string): Promise<AppNotification[]> {
 export function useRealtimeNotifications(userId: string | undefined) {
     const queryClient = useQueryClient();
     const { showToast } = useToast();
+    const { tx } = useTranslation();
 
     const queryKey = userId ? NOTIFICATIONS_QUERY_KEY(userId) : null;
 
@@ -168,7 +170,7 @@ export function useRealtimeNotifications(userId: string | undefined) {
             if (previousNotifications) {
                 queryClient.setQueryData<AppNotification[]>(NOTIFICATIONS_QUERY_KEY(userId), previousNotifications);
             }
-            showToast('Failed to delete notification', 'error');
+            showToast(tx('notifications.errors.deleteFailed', undefined, 'Failed to delete notification'), 'error');
         }
     }, [userId, queryClient, showToast]);
 

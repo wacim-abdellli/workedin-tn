@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useId, useState } from 'react';
 import { Upload, FileText, X } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useTranslation } from '../../i18n';
@@ -16,13 +16,14 @@ interface FileUploadProps {
 export const FileUpload: React.FC<FileUploadProps> = ({
     value = [],
     onChange,
-    accept = '.pdf,.doc,.docx,.txt',
+    accept = '.pdf,.doc,.docx,.txt,.png,.jpg,.jpeg,.webp,.zip,.rar',
     maxSize = 10, // 10MB
     maxFiles = 5,
     label,
     description
 }) => {
     const { tx } = useTranslation();
+    const inputId = useId();
     const [isDragging, setIsDragging] = useState(false);
     const [errors, setErrors] = useState<string[]>([]);
 
@@ -102,12 +103,18 @@ export const FileUpload: React.FC<FileUploadProps> = ({
                 className={cn(
                     "rounded-[1.6rem] border-2 border-dashed p-8 text-center transition-colors",
                     isDragging
-                        ? "border-primary-500 bg-primary-50 dark:bg-primary-950/40"
-                        : "border-primary-100 bg-white/70 dark:border-white/10 dark:border-gray-800 dark:bg-white/[0.03]"
+                        ? "border-[color:var(--brand-accent)] bg-[color:var(--brand-accent)]/10"
+                        : "border-border bg-white/70 dark:border-white/10 dark:border-gray-800 dark:bg-white/[0.03]"
                 )}
             >
                 <div className="flex justify-center">
-                    <div className="mb-4 rounded-2xl bg-primary-50 p-4 text-primary-600 dark:white/[0.06] dark:text-primary-300">
+                    <div
+                        className="mb-4 rounded-2xl p-4"
+                        style={{
+                            background: 'color-mix(in srgb, var(--brand-accent) 14%, var(--card-bg))',
+                            color: 'var(--brand-accent)',
+                        }}
+                    >
                         <Upload className="h-8 w-8" />
                     </div>
                 </div>
@@ -123,11 +130,26 @@ export const FileUpload: React.FC<FileUploadProps> = ({
                     accept={accept}
                     onChange={(e) => handleFiles(Array.from(e.target.files || []))}
                     className="hidden"
-                    id="file-upload"
+                    id={inputId}
                 />
                 <label
-                    htmlFor="file-upload"
-                    className="inline-block mt-4 rounded-xl border border-primary-200 bg-white dark:bg-gray-800 px-4 py-2 font-medium text-primary-700 cursor-pointer hover:bg-primary-50 dark:border-white/10 dark:border-gray-800 dark:bg-[#1a1825] dark:text-primary-300 dark:hover:bg-white dark:bg-gray-800/[0.06] transition-colors"
+                    htmlFor={inputId}
+                    className="inline-block mt-4 rounded-xl border px-4 py-2 font-medium cursor-pointer transition-all duration-200 hover:-translate-y-0.5"
+                    style={{
+                        borderColor: 'color-mix(in srgb, var(--brand-accent) 28%, transparent)',
+                        background: 'color-mix(in srgb, var(--brand-accent) 12%, var(--card-bg))',
+                        color: 'var(--brand-accent)',
+                    }}
+                    onMouseEnter={(e) => {
+                        const target = e.currentTarget;
+                        target.style.background = 'color-mix(in srgb, var(--brand-accent) 20%, var(--card-bg))';
+                        target.style.boxShadow = '0 12px 24px -18px rgba(245,158,11,0.35)';
+                    }}
+                    onMouseLeave={(e) => {
+                        const target = e.currentTarget;
+                        target.style.background = 'color-mix(in srgb, var(--brand-accent) 12%, var(--card-bg))';
+                        target.style.boxShadow = 'none';
+                    }}
                 >
                     {tx('common.fileUpload.chooseFiles', undefined, 'Choose files')}
                 </label>
@@ -135,19 +157,32 @@ export const FileUpload: React.FC<FileUploadProps> = ({
 
             {/* File list */}
             {value.length > 0 && (
-                <div className="space-y-2">
+                <div className="space-y-3">
                     {value.map((file, index) => (
                         <div
                             key={index}
-                            className="flex items-center justify-between rounded-2xl border border-primary-100/70 bg-gray-50 dark:bg-gray-900/80 p-3 dark:border-white/10 dark:border-gray-800 dark:white/[0.03]"
+                            className="group flex items-center justify-between rounded-2xl border p-3.5 transition-all duration-200 hover:-translate-y-0.5"
+                            style={{
+                                borderColor: 'color-mix(in srgb, var(--brand-accent) 20%, var(--border))',
+                                background: 'linear-gradient(120deg, color-mix(in srgb, var(--brand-accent) 8%, var(--surface-bg)), color-mix(in srgb, var(--card-bg) 96%, black))',
+                                boxShadow: '0 14px 30px -24px rgba(245,158,11,0.28)',
+                            }}
                         >
                             <div className="flex items-center gap-3">
-                                <FileText className="w-5 h-5 text-gray-400" />
+                                <div
+                                    className="flex h-9 w-9 items-center justify-center rounded-xl"
+                                    style={{
+                                        background: 'color-mix(in srgb, var(--brand-accent) 16%, var(--card-bg))',
+                                        color: 'var(--brand-accent)',
+                                    }}
+                                >
+                                    <FileText className="w-4.5 h-4.5" />
+                                </div>
                                 <div>
-                                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100 dark:text-white truncate max-w-[200px]">
+                                    <p className="text-sm font-semibold truncate max-w-[260px]" style={{ color: 'var(--text-primary)' }}>
                                         {file.name}
                                     </p>
-                                    <p className="text-xs text-gray-500">
+                                    <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
                                         {(file.size / 1024).toFixed(2)} KB
                                     </p>
                                 </div>
@@ -155,7 +190,21 @@ export const FileUpload: React.FC<FileUploadProps> = ({
                             <button
                                 type="button"
                                 onClick={() => removeFile(index)}
-                                className="rounded-lg p-1 text-gray-500 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-700"
+                                className="rounded-xl p-2 transition-all duration-200 hover:scale-105"
+                                style={{
+                                    color: 'var(--text-muted)',
+                                    background: 'color-mix(in srgb, var(--card-bg) 88%, transparent)',
+                                }}
+                                onMouseEnter={(e) => {
+                                    const target = e.currentTarget;
+                                    target.style.color = '#f87171';
+                                    target.style.background = 'rgba(248,113,113,0.12)';
+                                }}
+                                onMouseLeave={(e) => {
+                                    const target = e.currentTarget;
+                                    target.style.color = 'var(--text-muted)';
+                                    target.style.background = 'color-mix(in srgb, var(--card-bg) 88%, transparent)';
+                                }}
                                 aria-label={tx('common.fileUpload.removeFileAria', { name: file.name }, `Remove ${file.name}`)}
                             >
                                 <X className="w-4 h-4" />

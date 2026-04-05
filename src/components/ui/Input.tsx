@@ -24,7 +24,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
       focus:outline-none focus:ring-2 focus:ring-[color:var(--workspace-accent)]/20
       ${error
                 ? 'border-red-500 focus:border-red-500'
-                : 'border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20 focus:border-[color:var(--workspace-accent)]'
+                                : 'border-gray-200 dark:border-white/10 hover:border-[color:var(--workspace-accent)]/35 hover:bg-[color:var(--workspace-primary)]/[0.03] focus:border-[color:var(--workspace-accent)]'
             }
       ${leftIcon ? 'ps-11 py-3' : 'px-4 py-3'}
       ${rightIcon ? 'pe-11 py-3' : 'px-4 py-3'}
@@ -41,7 +41,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
                 {label && (
                     <label
                         htmlFor={inputId}
-                        className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"
+                        className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)] transition-colors"
                     >
                         {label}
                     </label>

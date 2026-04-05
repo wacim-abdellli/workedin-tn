@@ -12,6 +12,7 @@ import type {
     IdentityVerificationLegacyRow,
     IdentityVerificationPrimaryRow,
 } from '@/types/admin';
+import { adminInsetClass, adminPanelClass, adminPillClass } from './adminTheme';
 
 export type { IdentityVerification } from '@/types/admin';
 
@@ -156,7 +157,7 @@ export default function VerificationsTab() {
     const [actioningId, setActioningId] = useState<string | null>(null);
     const [expandedDocId, setExpandedDocId] = useState<string | null>(null);
 
-    const panelClass = 'card border-white/45 dark:border-white/10 bg-white/80 dark:bg-slate-950/55 backdrop-blur-xl shadow-[0_16px_45px_-24px_rgba(21,84,247,0.38)]';
+    const panelClass = adminPanelClass;
     const actionTimeoutMs = 20_000;
 
      const load = async () => {
@@ -230,9 +231,9 @@ export default function VerificationsTab() {
                              <Shield className="w-5 h-5 text-yellow-600" />
                              {tx('dashboard.admin.verification.title', undefined, 'Identity verification requests')}
                              {verifications.length > 0 && (
-                                 <span className="px-2 py-0.5 bg-yellow-100 text-yellow-800 rounded-full text-sm">
-                                     {verifications.length} {tx('dashboard.admin.verification.pending', undefined, 'pending')}
-                                 </span>
+                                 <span className={`px-2 py-0.5 rounded-full text-sm ${adminPillClass('amber')}`}>
+                                      {verifications.length} {tx('dashboard.admin.verification.pending', undefined, 'pending')}
+                                  </span>
                              )}
                          </h3>
                          <Button variant="outline" size="sm" onClick={load}>
@@ -252,8 +253,8 @@ export default function VerificationsTab() {
                     ) : (
                         <div className="space-y-4">
                             {verifications.map(v => (
-                                <div key={v.id} className="border border-gray-200 dark:border-gray-700 dark:border-white/10 dark:border-gray-800 rounded-xl overflow-hidden">
-                                    <div className="flex items-center justify-between p-4 bg-white dark:bg-gray-800/60 ">
+                                <div key={v.id} className={`${adminInsetClass} overflow-hidden`}>
+                                    <div className="flex items-center justify-between p-4">
                                             <div className="flex items-center gap-4">
                                             <div className="w-12 h-12 rounded-xl bg-gray-200 dark:bg-gray-700 dark:bg-white/10 flex items-center justify-center shrink-0 overflow-hidden">
                                                 {v.profile?.avatar_url ? (
@@ -271,7 +272,7 @@ export default function VerificationsTab() {
                                                      {v.cin_number ? <span>{tx('dashboard.admin.verification.idNumber', undefined, 'ID number')}: {v.cin_number}</span> : null}
                                                 </div>
                                                 <div className="flex items-center gap-2 mt-1">
-                                                    <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full">{v.document_type || 'CIN'}</span>
+                                                    <span className={`px-2 py-0.5 text-xs rounded-full ${adminPillClass('blue')}`}>{v.document_type || 'CIN'}</span>
                                                     <span className="text-xs text-muted">{new Date(v.submitted_at).toLocaleString(locale)}</span>
                                                 </div>
                                             </div>
@@ -308,7 +309,7 @@ export default function VerificationsTab() {
                                     </div>
 
                                     {expandedDocId === v.id && (
-                                        <div className="p-4 bg-white dark:bg-gray-800/70 border-t border-gray-100 dark:border-gray-800 dark:border-white/10 grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <div className="grid grid-cols-1 gap-4 border-t border-slate-200/70 p-4 dark:border-white/8 md:grid-cols-3">
                                             <div>
                                                  <p className="text-sm font-medium text-muted mb-2">{tx('dashboard.admin.verification.frontSide', undefined, 'Front side')}</p>
                                                  {v.front_image_url ? (

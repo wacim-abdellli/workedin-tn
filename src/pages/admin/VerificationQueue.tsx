@@ -17,6 +17,7 @@ import { useToast } from '@/components/ui/Toast';
 import SEO from '@/components/common/SEO';
 import { useTranslation } from '@/i18n';
 import { getPendingVerifications, subscribeToPendingQueue } from '@/lib/verificationStatus';
+import { adminInsetClass, adminInputClass, adminPanelClass, adminPillClass } from './adminTheme';
 
 
 interface VerificationRequest {
@@ -285,7 +286,7 @@ export default function VerificationQueue() {
     if (error) {
         return (
             <div className="min-h-screen flex items-center justify-center">
-                 <div className="text-center p-8 bg-white dark:bg-gray-800 rounded-2xl shadow-lg max-w-md">
+                 <div className={`${adminPanelClass} max-w-md p-8 text-center`}>
                      <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
                      <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 dark:text-white mb-2">{tx('dashboard.admin.verificationQueue.errorTitle', undefined, 'Loading error')}</h2>
                      <p className="text-gray-600 dark:text-gray-400 mb-4">{error}</p>
@@ -294,8 +295,8 @@ export default function VerificationQueue() {
                              setLoading(true);
                              fetchPendingVerifications();
                          }}
-                         className="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
-                     >
+                         className="rounded-xl bg-primary-600 px-6 py-2 text-white transition-colors hover:bg-primary-700"
+                      >
                          {tx('dashboard.admin.verificationQueue.retry', undefined, 'Retry')}
                      </button>
                  </div>
@@ -304,7 +305,7 @@ export default function VerificationQueue() {
     }
 
     return (
-         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
+         <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(37,99,235,0.12),transparent_24%),linear-gradient(180deg,#eef3fb_0%,#e8eef8_100%)] py-8 dark:bg-[radial-gradient(circle_at_top_left,rgba(59,130,246,0.16),transparent_22%),linear-gradient(180deg,#050811_0%,#08101c_42%,#0a1220_100%)]">
              <SEO title={tx('dashboard.admin.verificationQueue.seoTitle', undefined, 'Identity verification requests - Admin dashboard')} description={tx('dashboard.admin.verificationQueue.seoDescription', undefined, 'Review and manage submitted identity verification requests')} />
              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                  {/* Header */}
@@ -322,11 +323,11 @@ export default function VerificationQueue() {
 
                 {/* Stats */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-                     <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-100 dark:border-gray-800 dark:border-gray-700">
-                         <div className="flex items-center gap-3">
-                             <div className="w-10 h-10 bg-amber-100 dark:bg-amber-900 rounded-lg flex items-center justify-center">
-                                 <Clock className="w-5 h-5 text-amber-600" />
-                             </div>
+                      <div className={`${adminPanelClass} p-4`}>
+                          <div className="flex items-center gap-3">
+                              <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${adminPillClass('amber')}`}>
+                                  <Clock className="w-5 h-5 text-amber-600" />
+                              </div>
                              <div>
                                  <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 dark:text-white">{verifications.length}</p>
                                  <p className="text-sm text-gray-600 dark:text-gray-400">{tx('dashboard.admin.verificationQueue.pending', undefined, 'Pending')}</p>
@@ -351,14 +352,14 @@ export default function VerificationQueue() {
                              </div>
                         ) : (
                             verifications.map((verification) => (
-                                <div
-                                    key={verification.id}
-                                    onClick={() => setSelectedVerification(verification)}
-                                    className={`bg-white dark:bg-gray-800 rounded-xl p-4 cursor-pointer border-2 transition-all ${selectedVerification?.id === verification.id
-                                        ? 'border-primary-500 shadow-lg'
-                                        : 'border-transparent hover:border-gray-200 dark:border-gray-700 dark:hover:border-gray-600 hover:shadow-md'
-                                        }`}
-                                >
+                             <div
+                                     key={verification.id}
+                                     onClick={() => setSelectedVerification(verification)}
+                                     className={`${adminPanelClass} cursor-pointer p-4 transition-all ${selectedVerification?.id === verification.id
+                                         ? 'border-primary-500 shadow-lg shadow-primary-500/10'
+                                         : 'hover:border-white/70 dark:hover:border-white/14 hover:shadow-md'
+                                         }`}
+                                 >
                                     <div className="flex items-center gap-4">
                                         <img
                                             src={verification.profile.avatar_url || '/default-avatar.png'}
@@ -385,14 +386,14 @@ export default function VerificationQueue() {
 
                      {/* Verification Review Panel */}
                      {selectedVerification ? (
-                         <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-100 dark:border-gray-800 dark:border-gray-700 sticky top-8">
+                         <div className={`${adminPanelClass} sticky top-8 p-6`}>
                              <h2 className="text-xl font-bold mb-6 text-gray-900 dark:text-gray-100 dark:text-white flex items-center gap-2">
                                  <Eye className="w-5 h-5" />
                                  {tx('dashboard.admin.verificationQueue.reviewTitle', undefined, 'Review verification')}
                              </h2>
 
                             {/* User Info */}
-                            <div className="mb-6 pb-6 border-b border-gray-100 dark:border-gray-800 dark:border-gray-700">
+                             <div className="mb-6 border-b border-slate-200/70 pb-6 dark:border-white/8">
                                 <div className="flex items-center gap-4">
                                     <img
                                         src={selectedVerification.profile.avatar_url || '/default-avatar.png'}
@@ -424,48 +425,48 @@ export default function VerificationQueue() {
                                      <p className="text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">{tx('dashboard.admin.verificationQueue.cardFront', undefined, 'Card front')}</p>
                                      {documentUrls.front ? (
                                          <img
-                                             src={documentUrls.front}
-                                             className="w-full rounded-lg border-2 border-gray-200 dark:border-gray-700 dark:border-gray-600"
-                                             alt={tx('dashboard.admin.verificationQueue.cardFrontAlt', undefined, 'ID card front side')}
-                                         />
-                                     ) : (
-                                         <div className="w-full h-40 bg-gray-100 dark:bg-gray-800 dark:bg-gray-700 rounded-lg flex items-center justify-center">
-                                             <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
-                                         </div>
-                                     )}
+                                              src={documentUrls.front}
+                                              className="w-full rounded-lg border border-slate-200/80 dark:border-white/10"
+                                              alt={tx('dashboard.admin.verificationQueue.cardFrontAlt', undefined, 'ID card front side')}
+                                          />
+                                      ) : (
+                                          <div className={`flex h-40 w-full items-center justify-center rounded-lg ${adminInsetClass}`}>
+                                              <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+                                          </div>
+                                      )}
                                  </div>
                                  <div>
                                      <p className="text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">{tx('dashboard.admin.verificationQueue.cardBack', undefined, 'Card back')}</p>
                                      {documentUrls.back ? (
                                          <img
-                                             src={documentUrls.back}
-                                             className="w-full rounded-lg border-2 border-gray-200 dark:border-gray-700 dark:border-gray-600"
-                                             alt={tx('dashboard.admin.verificationQueue.cardBackAlt', undefined, 'ID card back side')}
-                                         />
-                                     ) : (
-                                         <div className="w-full h-40 bg-gray-100 dark:bg-gray-800 dark:bg-gray-700 rounded-lg flex items-center justify-center">
-                                             <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
-                                         </div>
-                                     )}
+                                              src={documentUrls.back}
+                                              className="w-full rounded-lg border border-slate-200/80 dark:border-white/10"
+                                              alt={tx('dashboard.admin.verificationQueue.cardBackAlt', undefined, 'ID card back side')}
+                                          />
+                                      ) : (
+                                          <div className={`flex h-40 w-full items-center justify-center rounded-lg ${adminInsetClass}`}>
+                                              <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+                                          </div>
+                                      )}
                                  </div>
                                  <div>
                                      <p className="text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">{tx('dashboard.admin.verificationQueue.selfie', undefined, 'Selfie')}</p>
                                      {documentUrls.selfie ? (
                                          <img
-                                             src={documentUrls.selfie}
-                                             className="w-full rounded-lg border-2 border-gray-200 dark:border-gray-700 dark:border-gray-600"
-                                             alt={tx('dashboard.admin.verificationQueue.selfieAlt', undefined, 'Selfie')}
-                                         />
-                                     ) : (
-                                         <div className="w-full h-40 bg-gray-100 dark:bg-gray-800 dark:bg-gray-700 rounded-lg flex items-center justify-center">
-                                             <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
-                                         </div>
-                                     )}
+                                              src={documentUrls.selfie}
+                                              className="w-full rounded-lg border border-slate-200/80 dark:border-white/10"
+                                              alt={tx('dashboard.admin.verificationQueue.selfieAlt', undefined, 'Selfie')}
+                                          />
+                                      ) : (
+                                          <div className={`flex h-40 w-full items-center justify-center rounded-lg ${adminInsetClass}`}>
+                                              <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+                                          </div>
+                                      )}
                                  </div>
                              </div>
 
                              {/* Verification Checklist */}
-                             <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-4 mb-6">
+                             <div className={`${adminInsetClass} mb-6 p-4`}>
                                  <p className="text-sm font-medium mb-3 text-gray-700 dark:text-gray-300">{tx('dashboard.admin.verificationQueue.checklist', undefined, 'Verification checklist:')}</p>
                                  <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
                                      <li className="flex items-center gap-2">
@@ -512,7 +513,7 @@ export default function VerificationQueue() {
                             </div>
                         </div>
                          ) : (
-                         <div className="bg-white dark:bg-gray-800 rounded-xl p-8 text-center border border-gray-100 dark:border-gray-800 dark:border-gray-700">
+                         <div className={`${adminPanelClass} p-8 text-center`}>
                              <User className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                              <p className="text-gray-600 dark:text-gray-400">
                                  {tx('dashboard.admin.verificationQueue.selectRequest', undefined, 'Select a request from the list to review')}
@@ -525,11 +526,11 @@ export default function VerificationQueue() {
             {/* Reject Modal */}
             {showRejectModal && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 max-w-md w-full">
+                    <div className={`${adminPanelClass} max-w-md w-full p-6`}>
                         <div className="flex items-center gap-3 mb-4">
-                            <div className="w-10 h-10 bg-red-100 dark:bg-red-900 rounded-lg flex items-center justify-center">
-                                <AlertCircle className="w-5 h-5 text-red-600" />
-                            </div>
+                             <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${adminPillClass('red')}`}>
+                                 <AlertCircle className="w-5 h-5 text-red-600" />
+                             </div>
                              <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 dark:text-white">
                                  {tx('dashboard.admin.verificationQueue.rejectReason', undefined, 'Rejection reason')}
                              </h3>
@@ -543,7 +544,7 @@ export default function VerificationQueue() {
                              value={rejectionReason}
                              onChange={(e) => setRejectionReason(e.target.value)}
                              placeholder={tx('dashboard.admin.verificationQueue.rejectExample', undefined, 'Example: The image is unclear, please retake it...')}
-                             className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-900 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 resize-none"
+                             className={`${adminInputClass} h-auto min-h-[110px] resize-none px-4 py-3`}
                              rows={3}
                          />
 

@@ -49,13 +49,14 @@ const LANGS = [
 ] as const
 
 function AuthHeader({ onHome, dir }: { onHome: () => void; dir: 'rtl' | 'ltr' }) {
+  const { tx } = useTranslation()
   return (
     <>
       <header
         dir={dir}
         className="fixed top-0 left-0 right-0 z-50 flex h-[60px] items-center justify-center bg-transparent"
       >
-        <button onClick={onHome} className="flex items-center justify-center" aria-label="Go to homepage">
+        <button onClick={onHome} className="flex items-center justify-center" aria-label={tx('header.a11y.goHome', undefined, 'Go to homepage')}>
           <Logo variant="mark" size="sm" />
         </button>
       </header>
@@ -67,7 +68,7 @@ function AuthHeader({ onHome, dir }: { onHome: () => void; dir: 'rtl' | 'ltr' })
 export default function Header() {
   const { user, profile, freelancerProfile, signOut } = useAuth()
   const { activeWorkspace, isSwitching } = useWorkspaceStore()
-  const { t, language, setLanguage, dir } = useTranslation()
+  const { t, tx, language, setLanguage, dir } = useTranslation()
   const { showToast } = useToast()
 
   const FREELANCER_NAV = [
@@ -204,62 +205,21 @@ export default function Header() {
     ? (t.auth?.accountPanel?.freelancerLabel || 'Freelancer')
     : (t.auth?.accountPanel?.clientLabel || 'Client')
   const switchActionLabel = t.auth?.accountPanel?.switchAction || 'Switch'
-  const switchButtonLabel = `${switchActionLabel}: ${switchTargetLabel}`
-  const freelancerVerified = Boolean(profile?.cin_verified || freelancerProfile?.cin_verified)
-  const freelancerPending = false
-  const freelancerBadge = freelancerVerified
-    ? {
-        label: t.auth?.accountPanel?.freelancerLabel || 'Freelancer',
-        background: 'var(--workspace-primary)',
-        color: '#ffffff',
-        dotClassName: 'bg-white dark:bg-gray-900',
-        border: 'rgba(255,255,255,0.18)',
-        insetShadow: '0 0 0 1px rgba(255,255,255,0.08) inset',
-      }
-    : freelancerPending
-      ? {
-          label: t.auth?.accountPanel?.statusPending || 'Pending',
-          background: 'rgba(245,158,11,0.16)',
-          color: '#d97706',
-          dotClassName: 'bg-amber-500',
-          border: 'rgba(245,158,11,0.22)',
-          insetShadow: '0 0 0 1px rgba(255,255,255,0.22) inset',
-        }
-      : {
-          label: t.auth?.accountPanel?.needsSetup || 'Needs setup',
-          background: 'rgba(255,255,255,0.08)',
-          color: 'var(--text-primary)',
-          dotClassName: 'bg-white dark:bg-gray-900/70',
-          border: 'rgba(255,255,255,0.14)',
-          insetShadow: '0 0 0 1px rgba(255,255,255,0.06) inset',
-        }
-  const workspaceBadge = isFreelancer
-    ? freelancerBadge
-    : {
-        label: t.auth?.accountPanel?.clientLabel || 'Client',
-        background: 'var(--brand-accent)',
-        color: 'var(--text-primary)',
-        dotClassName: 'bg-foreground',
-        border: 'rgba(245,158,11,0.18)',
-        insetShadow: '0 0 0 1px rgba(255,255,255,0.35) inset',
-      }
-  const triggerWorkspaceBadge = isFreelancer
-    ? {
-        label: t.auth?.accountPanel?.freelancerLabel || 'Freelancer',
-        background: 'rgba(139,92,246,0.14)',
-        color: '#8b5cf6',
-        dotClassName: 'bg-primary-500',
-        border: 'rgba(139,92,246,0.18)',
-      }
-    : {
-        label: t.auth?.accountPanel?.clientLabel || 'Client',
-        background: 'rgba(245,158,11,0.16)',
-        color: '#d97706',
-        dotClassName: 'bg-accent-500',
-        border: 'rgba(245,158,11,0.18)',
-      }
+  const switchButtonLabel = `${switchActionLabel}: ${switchTargetLabel}`;
+  const freelancerVerified = Boolean(profile?.cin_verified || freelancerProfile?.cin_verified);
+  const freelancerPending = false;
+  const triggerWorkspaceBadge = {
+    label: isFreelancer ? (t.auth?.accountPanel?.freelancerLabel || 'Freelancer') : (t.auth?.accountPanel?.clientLabel || 'Client'),
+    background: 'var(--workspace-primary-light)',
+    color: 'var(--workspace-primary)',
+    dotClassName: 'bg-emerald-500 animate-pulse',
+    border: 'var(--workspace-primary-light)',
+  }
   const navActiveClass = 'header-nav-link-active'
   const canAccessAdmin = hasAdminAccess(user, profile)
+  const homeLabel = tx('header.a11y.goHome', undefined, 'Go to homepage')
+  const openSearchLabel = tx('header.a11y.openSearch', undefined, 'Open search')
+  const openMenuLabel = tx('header.a11y.openMenu', undefined, 'Open navigation menu')
 
   const handleQuickWorkspaceSwitch = async () => {
     if (!user || isSwitching) return
@@ -288,13 +248,9 @@ export default function Header() {
         dir={dir}
         className="fixed top-0 left-0 right-0 z-50 border-b border-white/20 bg-white/70 backdrop-blur-xl dark:border-white/5 dark:bg-zinc-950/70 shadow-sm dark:shadow-none transition-all duration-300"
       >
-        {user ? (
-          <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: 'linear-gradient(90deg, var(--workspace-accent), var(--workspace-accent-mid))' }} />
-        ) : null}
-
         <div className="mx-auto max-w-[1536px] px-4 sm:px-6">
           <div className="flex h-16 items-center justify-between lg:hidden">
-            <button onClick={() => navigate('/')} className="flex items-center" aria-label="Go to homepage">
+            <button onClick={() => navigate('/')} className="flex items-center" aria-label={homeLabel}>
               <Logo variant="full" size="sm" />
             </button>
 
@@ -302,14 +258,14 @@ export default function Header() {
               <button
                 onClick={() => setSearchOpen(true)}
                 className="header-icon-btn"
-                aria-label="فتح البحث"
+                aria-label={openSearchLabel}
               >
                 <Search className="h-4 w-4" />
               </button>
               <button
                 onClick={() => setMobileMenuOpen(true)}
                 className="header-icon-btn"
-                aria-label="فتح قائمة التنقل"
+                aria-label={openMenuLabel}
               >
                 <Menu className="h-4 w-4" />
               </button>
@@ -321,14 +277,14 @@ export default function Header() {
               <button
                 onClick={() => navigate('/')}
                 className="flex items-center transition-all hover:opacity-80"
-                aria-label="Go to homepage"
+                aria-label={homeLabel}
               >
                 <Logo variant="full" size="sm" />
               </button>
             </div>
 
             <div className="flex min-w-0 flex-1 items-center justify-between gap-3 2xl:gap-8">
-              <div className="flex min-w-0 items-center gap-0.5 2xl:gap-2">
+              <div className="flex items-center gap-0.5 2xl:gap-2 whitespace-nowrap">
                 <nav id="main-nav" className="flex items-center">
                   {desktopNavItems.map(({ label, Icon, href }) => (
                     <NavLink
@@ -337,7 +293,7 @@ export default function Header() {
                       className={({ isActive }) => (isActive ? navActiveClass : 'header-nav-link')}
                     >
                       <Icon className="h-4 w-4 shrink-0" />
-                      <span className="whitespace-nowrap">{label}</span>
+                      <span className="max-w-[132px] truncate whitespace-nowrap">{label}</span>
                     </NavLink>
                   ))}
 
@@ -375,23 +331,24 @@ export default function Header() {
                 </nav>
               </div>
 
-              <div className="flex shrink-0 items-center gap-2 2xl:gap-4">
-                {/* Search Bar */}
+              <div className="flex min-w-0 flex-1 shrink items-center justify-end gap-2 2xl:gap-4 pl-2 lg:pl-4">
+                {/* Search Bar - Fluid adaptive width */}
                 <button
                   onClick={() => setSearchOpen(true)}
-                  className="flex h-9 shrink-0 items-center justify-center 2xl:justify-start gap-2 rounded-2xl bg-black/[0.03] dark:bg-white/[0.03] w-9 2xl:w-56 px-0 2xl:px-3 text-sm font-medium text-gray-500 transition-all duration-300 hover:bg-black/[0.05] hover:text-gray-900 border border-transparent hover:border-black/5 hover:shadow-sm hover:scale-[1.02] dark:text-zinc-400 dark:hover:bg-white/[0.06] dark:hover:text-white dark:hover:border-white/10 dark:hover:shadow-lg dark:hover:shadow-black/40"
+                  className="flex h-10 min-w-9 max-w-[320px] w-full shrink items-center justify-center lg:justify-start gap-2 rounded-2xl bg-black/[0.03] dark:bg-white/[0.03] px-2 lg:px-3 text-sm font-medium text-gray-500 transition-all duration-300 hover:bg-black/[0.06] hover:text-black dark:hover:bg-white/[0.06] dark:hover:text-white"
+                  aria-label={openSearchLabel}
                 >
-                  <Search className="h-4 w-4 flex-shrink-0" />
-                  <span className="truncate text-xs flex-1 text-left hidden 2xl:block">
+                  <Search className="h-4 w-4 shrink-0" />
+                  <span className="truncate text-xs flex-1 text-start hidden lg:block">
                     {t.common.search}...
                   </span>
-                  <div className="hidden items-center gap-1 2xl:flex">
+                  <div className="hidden items-center gap-1 xl:flex shrink-0">
                     <kbd className="header-kbd">Ctrl+K</kbd>
                   </div>
                 </button>
 
                 {/* Glass Utility Pill */}
-                <div className="flex items-center rounded-2xl border border-black/5 bg-white/50 p-1 shadow-sm backdrop-blur-xl dark:border-white/[0.08] dark:bg-zinc-900/50">
+                <div className="flex shrink-0 items-center rounded-2xl border border-black/5 bg-white/50 p-1 shadow-sm backdrop-blur-xl dark:border-white/[0.08] dark:bg-zinc-900/50">
                   <div className="relative" ref={langRef}>
                     <button
                       onClick={() => setLangOpen((open) => !open)}
@@ -470,22 +427,28 @@ export default function Header() {
                 {/* Profile Identity Pill */}
                 {user ? (
                   <div className="flex items-center gap-2.5 pl-1.5 ml-1 border-l border-black/10 dark:border-white/10">
-                    {canQuickSwitch && (
-                      <button
-                        onClick={() => void handleQuickWorkspaceSwitch()}
-                        disabled={isSwitching}
-                        className={`flex h-8 items-center justify-center gap-1.5 rounded-full border px-0 2xl:px-3 w-8 2xl:w-auto text-[10px] font-bold uppercase tracking-wider transition-all ${isSwitching ? 'cursor-not-allowed opacity-50' : 'hover:-translate-y-[1px] shadow-sm hover:shadow'}`}
-                        style={{
-                          borderColor: isFreelancer ? 'rgba(245,158,11,0.3)' : 'rgba(139,92,246,0.3)',
-                          color: isFreelancer ? '#d97706' : '#8b5cf6',
-                          background: isFreelancer ? 'rgba(245,158,11,0.1)' : 'rgba(139,92,246,0.1)',
-                        }}
-                        title={switchButtonLabel}
-                      >
-                        <Repeat2 className={`h-3.5 w-3.5 flex-shrink-0 ${isSwitching ? 'animate-spin' : ''}`} />
-                        <span className="max-w-[76px] truncate hidden 2xl:inline">{switchTargetLabel}</span>
-                      </button>
-                    )}
+                    {canQuickSwitch && (() => {
+                      const targetColors = targetWorkspace === 'client'
+                        ? { primary: '#F59E0B', light: isDark ? 'rgba(245,158,11,0.15)' : '#FFFBEB' }
+                        : { primary: '#8B5CF6', light: isDark ? 'rgba(139,92,246,0.15)' : '#EDE9FE' };
+                      
+                      return (
+                        <button
+                          onClick={() => void handleQuickWorkspaceSwitch()}
+                          disabled={isSwitching}
+                          className={`flex h-8 items-center justify-center gap-1.5 rounded-full border px-0 xl:px-3 w-8 xl:w-auto text-[10px] font-bold uppercase tracking-wider transition-all ${isSwitching ? 'cursor-not-allowed opacity-50' : 'hover:-translate-y-[1px] shadow-sm hover:shadow'}`}
+                          style={{
+                            borderColor: targetColors.light,
+                            color: targetColors.primary,
+                            background: targetColors.light,
+                          }}
+                          title={switchButtonLabel}
+                        >
+                          <Repeat2 className={`h-3.5 w-3.5 flex-shrink-0 ${isSwitching ? 'animate-spin' : ''}`} />
+                          <span className="max-w-[76px] truncate hidden xl:inline">{switchTargetLabel}</span>
+                        </button>
+                      );
+                    })()}
 
                     <div className="relative" ref={userMenuRef}>
                       <button
@@ -514,7 +477,7 @@ export default function Header() {
                               {firstName}
                             </span>
                             <span
-                              className="flex flex-shrink-0 items-center justify-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold"
+                              className="flex flex-shrink-0 items-center justify-center gap-1.5 rounded-full px-5 py-1 text-[11px] font-semibold"
                               style={{
                                 background: triggerWorkspaceBadge.background,
                                 color: triggerWorkspaceBadge.color,
@@ -541,14 +504,15 @@ export default function Header() {
                             <p className="truncate text-xs text-[var(--text-muted)]">{user.email}</p>
                           </div>
                           <span
-                            className="inline-flex shrink-0 items-center rounded-full border px-2.5 py-1 text-[11px] font-semibold shadow-sm"
+                            className="inline-flex shrink-0 items-center rounded-full border px-5 py-1 text-[11px] font-semibold shadow-sm"
                             style={{
-                              background: isFreelancer ? workspaceBadge.background : 'rgba(245,158,11,0.16)',
-                              color: isFreelancer ? workspaceBadge.color : '#d97706',
-                              borderColor: isFreelancer ? 'rgba(255,255,255,0.08)' : 'rgba(245,158,11,0.24)',
+                              background: triggerWorkspaceBadge.background,
+                              color: triggerWorkspaceBadge.color,
+                              border: `1px solid ${triggerWorkspaceBadge.border}`,
                             }}
                           >
-                            {workspaceBadge.label}
+                            <span className={`h-1.5 w-1.5 rounded-full mr-1.5 ${triggerWorkspaceBadge.dotClassName}`} />
+                            <span className="truncate">{triggerWorkspaceBadge.label}</span>
                           </span>
                         </div>
                       </div>
@@ -649,16 +613,16 @@ export default function Header() {
                 </div>
               </div>
             ) : (
-              <div className="flex items-center gap-1 pl-1">
+              <div className="flex shrink-0 items-center gap-1 pl-1">
                     <button
                       onClick={() => navigate('/login')}
-                      className="flex h-10 items-center rounded-[0.95rem] px-3 text-sm font-semibold text-gray-600 transition-all hover:bg-black/[0.04] hover:text-gray-900 dark:text-zinc-300 dark:hover:bg-white/[0.06] dark:hover:text-white"
+                      className="flex h-10 min-w-[108px] items-center justify-center whitespace-nowrap rounded-[0.95rem] px-3 text-sm font-semibold text-gray-600 transition-all hover:bg-black/[0.04] hover:text-gray-900 dark:text-zinc-300 dark:hover:bg-white/[0.06] dark:hover:text-white"
                     >
                       {t.nav?.login || 'Sign in'}
                     </button>
                     <button
                       onClick={() => navigate('/signup')}
-                      className="flex h-10 items-center rounded-[0.95rem] px-4 text-sm font-semibold text-white shadow-[0_18px_38px_-24px_rgba(109,40,217,0.8)] transition-transform hover:-translate-y-0.5"
+                      className="flex h-10 min-w-[128px] items-center justify-center whitespace-nowrap rounded-[0.95rem] px-4 text-sm font-semibold text-white shadow-[0_18px_38px_-24px_rgba(109,40,217,0.8)] transition-transform hover:-translate-y-0.5"
                       style={{ background: 'var(--workspace-primary)' }}
                     >
                       {t.nav?.signup || 'Get started'}
@@ -683,7 +647,7 @@ export default function Header() {
             dir === 'rtl' ? 'left-0 border-r border-border' : 'right-0 border-l border-border'
           }`}>
             <div className="flex h-16 items-center justify-between border-b border-border/50 px-4">
-              <button onClick={() => navigate('/')} className="flex items-center" aria-label="Go to homepage">
+              <button onClick={() => navigate('/')} className="flex items-center" aria-label={homeLabel}>
                 <Logo variant="full" size="sm" />
               </button>
               <button

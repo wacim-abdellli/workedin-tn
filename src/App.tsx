@@ -90,22 +90,16 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
   useSessionTimeout();
 
-  if (!isFullyReady) {
-    return (
-      <div className="fixed inset-0 z-50">
-        <FullScreenLoader label="Loading..." hint="Checking your account and workspace access" />
-      </div>
-    );
-  }
-
-  if (!isAuthenticated) {
+  // If not authenticated, redirect to login immediately
+  if (isFullyReady && !isAuthenticated) {
     return <Navigate to="/login" replace state={{ from: location }} />;
   }
 
   // Skip onboarding check if user is already on an onboarding page
   const isOnOnboardingPage = location.pathname.startsWith('/onboarding/');
   
-  if (!isOnOnboardingPage) {
+  // If profile is loaded, check onboarding status
+  if (isFullyReady && profile && !isOnOnboardingPage) {
     // Determine which workspace to check
     const workspace = activeWorkspace || getInitialWorkspace(profile, freelancerProfile);
     
@@ -117,6 +111,15 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
       const onboardingPath = getWorkspaceOnboardingPath(workspace);
       return <Navigate to={onboardingPath} replace state={{ from: location }} />;
     }
+  }
+
+  // Show loading only if we're still initializing (not fully ready and no profile yet)
+  if (!isFullyReady && !profile) {
+    return (
+      <div className="fixed inset-0 z-50">
+        <FullScreenLoader label="Loading..." hint="Checking your account and workspace access" />
+      </div>
+    );
   }
 
   return <>{children}</>;
@@ -383,6 +386,7 @@ function AppRoutes() {
 
 function AppContent() {
   useRouteFocus();
+  const { tx } = useTranslation();
   const { pathname } = useLocation();
   const activeWorkspace = useWorkspaceStore((state) => state.activeWorkspace);
   const isWorkspaceSwitching = useWorkspaceStore((state) => state.isSwitching);
@@ -399,7 +403,7 @@ function AppContent() {
         <div className="fixed inset-0 z-50 bg-[var(--page-bg)] flex items-center justify-center transition-opacity duration-150 no-transition">
           <div className="flex flex-col items-center gap-3">
             <div className="w-8 h-8 rounded-full border-2 border-[color:var(--workspace-primary)] border-t-transparent animate-spin no-transition" />
-            <p className="text-xs text-[var(--text-muted)]">Switching workspace...</p>
+            <p className="text-xs text-[var(--text-muted)]">{tx('workspace.switching', undefined, 'Switching workspace...')}</p>
           </div>
         </div>
       )}

@@ -105,10 +105,10 @@ function ClientDashboardPage() {
     const { data: stats, isLoading: isStatsLoading } = useQuery({
         queryKey: ['clientDashboardStats', profile?.id],
         enabled: !!profile?.id,
-        queryFn: async (): Promise<DashboardStats> => {
+        queryFn: async (): Promise<DashboardStats & { jobs: DashboardJob[]; activeContracts: any[]; proposals: RecentProposal[] }> => {
             const userId = profile!.id;
 
-            const [activeJobsRes, completedContractsRes, walletRes, jobsSummaryRes, notificationsRes] = await Promise.all([
+            const [activeJobsRes, completedContractsRes, walletRes, jobsSummaryRes, notificationsRes, jobsRes, activeContractsRes, proposalsRes] = await Promise.all([
                 supabase.from('jobs').select('id', { count: 'exact', head: true })
                     .eq('client_id', userId)
                     .in('status', ['open', 'in_progress']),
@@ -123,6 +123,27 @@ function ClientDashboardPage() {
                     .eq('is_read', false)
                     .order('created_at', { ascending: false })
                     .limit(4),
+                supabase.from('jobs')
+                    .select(`
+                        id, title, budget_min, budget_max, status, created_at,
+                        proposals_count,
+                        contracts(id, status, freelancer:profiles!freelancer_id(full_name))
+                    `)
+                    .eq('client_id', userId)
+                    .order('created_at', { ascending: false })
+                    .limit(6),
+                supabase.from('contracts')
+                    .select('id, title, status, total_amount, created_at, freelancer:profiles!contracts_freelancer_id_fkey(id, full_name, avatar_url)')
+                    .eq('client_id', userId)
+                    .eq('status', 'active')
+                    .order('created_at', { ascending: false })
+                    .limit(5),
+                supabase.from('proposals')
+                    .select('id, job_id, bid_amount, created_at, job:jobs!inner(title, client_id), freelancer:profiles!proposals_freelancer_id_fkey(full_name, avatar_url)')
+                    .eq('job.client_id', userId)
+                    .eq('status', 'pending')
+                    .order('created_at', { ascending: false })
+                    .limit(4),
             ]);
 
             const jobSummaryRows = jobsSummaryRes.data ?? [];
@@ -134,89 +155,21 @@ function ClientDashboardPage() {
                 proposalsWaitingReview: jobSummaryRows.filter((job) => job.status === 'open' && (job.proposals_count ?? 0) > 0).length,
                 totalProposals: jobSummaryRows.reduce((sum, job) => sum + Number(job.proposals_count ?? 0), 0),
                 unreadNotifications: notificationsRes.data ?? [],
+                jobs: (jobsRes.data ?? []) as unknown as DashboardJob[],
+                activeContracts: (activeContractsRes.data ?? []) as unknown as any[],
+                proposals: (proposalsRes.data ?? []) as unknown as RecentProposal[],
             };
         },
         staleTime: 60_000,
-    });
-
-    const { data: jobs = [] } = useQuery<DashboardJob[]>({
-        queryKey: ['clientDashboardJobs', profile?.id],
-        enabled: !!profile?.id,
-        queryFn: async () => {
-            const { data, error } = await supabase
-                .from('jobs')
-                .select(`
-                    id, title, budget_min, budget_max, status, created_at,
-                    proposals_count,
-                    contracts(id, status, freelancer:profiles!freelancer_id(full_name))
-                `)
-                .eq('client_id', profile!.id)
-                .order('created_at', { ascending: false })
-                .limit(6);
-
-            if (error) {
-                console.error('clientDashboardJobs error:', error);
-                return [];
-            }
-
-            return (data ?? []) as unknown as DashboardJob[];
-        },
-        staleTime: 60_000,
-    });
-
-    const { data: activeContracts = [] } = useQuery({
-        queryKey: ['clientActiveContracts', profile?.id],
-        enabled: !!profile?.id,
-        queryFn: async () => {
-            const { data, error } = await supabase
-                .from('contracts')
-                .select('id, title, status, total_amount, created_at, freelancer:profiles!contracts_freelancer_id_fkey(id, full_name, avatar_url)')
-                .eq('client_id', profile!.id)
-                .eq('status', 'active')
-                .order('created_at', { ascending: false })
-                .limit(5);
-            if (error) { console.error('clientActiveContracts:', error); return []; }
-            return (data ?? []) as unknown as Array<{
-                id: string;
-                title: string;
-                status: string;
-                total_amount: number;
-                created_at: string;
-                freelancer: { id: string; full_name: string; avatar_url: string | null } | null;
-            }>;
-        },
-        staleTime: 60_000,
-    });
-
-    const { data: proposals = [], isLoading: isLoadingProposals } = useQuery<RecentProposal[]>({
-        queryKey: ['dashboard', 'recent-proposals', profile?.id],
-        enabled: !!profile?.id,
-        queryFn: async () => {
-            const { data, error } = await supabase
-                .from('proposals')
-                .select('id, job_id, bid_amount, created_at, job:jobs!inner(title, client_id), freelancer:profiles!proposals_freelancer_id_fkey(full_name, avatar_url)')
-                .eq('job.client_id', profile!.id)
-                .eq('status', 'pending')
-                .order('created_at', { ascending: false })
-                .limit(4);
-
-            if (error) {
-                console.error('clientRecentProposals:', error);
-                return [];
-            }
-
-            return (data ?? []) as unknown as RecentProposal[];
-        },
-        staleTime: 60_000,
-    });
+    })
 
     const statsData = {
-        totalJobs: jobs.length,
+        totalJobs: (stats?.jobs?.length ?? 0),
         activeJobs: stats?.activeJobs ?? 0,
         totalProposals: stats?.totalProposals ?? 0,
         totalSpent: stats?.totalSpent ?? 0,
-        monthlySpending: activeContracts.reduce((sum, contract) => sum + Number(contract.total_amount ?? 0), 0),
-        activeContracts: activeContracts.length,
+        monthlySpending: (stats?.activeContracts ?? []).reduce((sum, contract) => sum + Number(contract.total_amount ?? 0), 0),
+        activeContracts: (stats?.activeContracts?.length ?? 0),
     };
 
     if (isAuthLoading || !profile?.id) {
@@ -284,7 +237,7 @@ function ClientDashboardPage() {
                             <DashWidget title={tx('dashboard.client.activeProjects', undefined, 'Active Projects')} icon={<FolderOpen className="w-4 h-4" />} action={{ label: tx('dashboard.client.viewAll', undefined, 'View all'), onClick: () => navigate('/client/jobs') }}>
                                 {isStatsLoading ? (
                                     <SkeletonCard />
-                                ) : jobs.length === 0 ? (
+                                ) : (stats?.jobs?.length ?? 0) === 0 ? (
                                     <EmptyState
                                         icon={FolderOpen}
                                         title={tx('dashboard.client.noActiveProjects', undefined, 'No active projects')}
@@ -294,7 +247,7 @@ function ClientDashboardPage() {
                                     />
                                 ) : (
                                     <div className="divide-y" style={{ borderColor: 'var(--dash-border)' }}>
-                                        {jobs.slice(0, 3).map((job) => (
+                                        {(stats?.jobs ?? []).slice(0, 3).map((job) => (
                                             <div
                                                 key={job.id}
                                                 className="flex items-center justify-between py-4 px-1 cursor-pointer group"
@@ -321,9 +274,9 @@ function ClientDashboardPage() {
 
                         <motion.div variants={itemVariants}>
                             <DashWidget title={tx('dashboard.client.recentProposals', undefined, 'Recent Proposals')} icon={<FileText className="w-4 h-4" />}>
-                                {isLoadingProposals ? (
+                                {isStatsLoading ? (
                                     <SkeletonCard />
-                                ) : proposals.length === 0 ? (
+                                ) : (stats?.proposals?.length ?? 0) === 0 ? (
                                     <EmptyState
                                         icon={FileText}
                                         title={tx('dashboard.client.noProposalsYet', undefined, 'No proposals yet')}
@@ -332,7 +285,7 @@ function ClientDashboardPage() {
                                     />
                                 ) : (
                                     <div className="divide-y" style={{ borderColor: 'var(--dash-border)' }}>
-                                        {proposals.slice(0, 4).map((proposal) => (
+                                        {(stats?.proposals ?? []).slice(0, 4).map((proposal) => (
                                             <div
                                                 key={proposal.id}
                                                 className="flex items-center justify-between py-4 px-1 cursor-pointer group"
@@ -369,7 +322,7 @@ function ClientDashboardPage() {
                             <DashWidget title={tx('dashboard.client.activeContracts', undefined, 'Active Contracts')} icon={<Briefcase className="w-4 h-4" />} action={{ label: tx('dashboard.client.viewAll', undefined, 'View all'), onClick: () => navigate('/contracts') }}>
                                 {isStatsLoading ? (
                                     <SkeletonCard />
-                                ) : activeContracts.length === 0 ? (
+                                ) : (stats?.activeContracts?.length ?? 0) === 0 ? (
                                     <EmptyState
                                         icon={Briefcase}
                                         title={tx('dashboard.client.noActiveContracts', undefined, 'No active contracts')}
@@ -378,7 +331,7 @@ function ClientDashboardPage() {
                                     />
                                 ) : (
                                     <div className="divide-y" style={{ borderColor: 'var(--dash-border)' }}>
-                                        {activeContracts.slice(0, 3).map((contract) => (
+                                        {(stats?.activeContracts ?? []).slice(0, 3).map((contract) => (
                                             <div
                                                 key={contract.id}
                                                 className="flex items-center justify-between py-4 px-1 cursor-pointer group"

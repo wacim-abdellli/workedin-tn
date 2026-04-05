@@ -494,7 +494,7 @@ function MessagesComponent() {
             const { error } = await archiveConversation(selectedConversation.id);
             
             if (error) {
-                showToast(error.message || 'Failed to archive conversation', 'error');
+                showToast(error.message || tx('pages.messages.errors.archiveFailed', undefined, 'Failed to archive conversation'), 'error');
                 return;
             }
 
@@ -502,10 +502,10 @@ function MessagesComponent() {
             setConversations(prev => prev.filter(c => c.id !== selectedConversation.id));
             setSelectedConversation(null);
             setShowMobileThread(false);
-            showToast('Conversation archived successfully', 'success');
+            showToast(tx('pages.messages.success.archived', undefined, 'Conversation archived successfully'), 'success');
         } catch (err) {
             console.error('Archive conversation error:', err);
-            showToast('Failed to archive conversation', 'error');
+            showToast(tx('pages.messages.errors.archiveFailed', undefined, 'Failed to archive conversation'), 'error');
         } finally {
             setIsArchivingConversation(false);
         }
@@ -519,7 +519,7 @@ function MessagesComponent() {
             const { error } = await deleteConversation(selectedConversation.id);
             
             if (error) {
-                showToast(error.message || 'Failed to delete conversation', 'error');
+                showToast(error.message || tx('pages.messages.errors.deleteFailed', undefined, 'Failed to delete conversation'), 'error');
                 return;
             }
 
@@ -527,10 +527,10 @@ function MessagesComponent() {
             setConversations(prev => prev.filter(c => c.id !== selectedConversation.id));
             setSelectedConversation(null);
             setShowMobileThread(false);
-            showToast('Conversation deleted successfully', 'success');
+            showToast(tx('pages.messages.success.deleted', undefined, 'Conversation deleted successfully'), 'success');
         } catch (err) {
             console.error('Delete conversation error:', err);
-            showToast('Failed to delete conversation', 'error');
+            showToast(tx('pages.messages.errors.deleteFailed', undefined, 'Failed to delete conversation'), 'error');
         } finally {
             setIsDeletingConversation(false);
         }
@@ -1571,7 +1571,7 @@ function MessagesComponent() {
                                     <div className="flex items-center gap-2 p-2 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/50">
                                         <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
                                         <span className="text-sm text-red-600 dark:text-red-400">Recording: {Math.floor(recordingTime / 60).toString().padStart(2, '0')}:{(recordingTime % 60).toString().padStart(2, '0')}</span>
-                                        <button onClick={stopRecording} aria-label="Stop recording" className="ml-auto p-2 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-red-100 dark:hover:bg-red-900/40 rounded-full transition-colors">
+                                        <button onClick={stopRecording} aria-label={tx('pages.messages.a11y.stopRecording', undefined, 'Stop recording')} className="ml-auto p-2 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-red-100 dark:hover:bg-red-900/40 rounded-full transition-colors">
                                             <Square className="w-4 h-4 fill-red-600 dark:fill-red-400" />
                                         </button>
                                     </div>
@@ -1580,7 +1580,7 @@ function MessagesComponent() {
                                         <div className="flex items-center gap-2">
                                             <FileAudio className="w-5 h-5 text-brand" />
                                             <span className="text-sm flex-1">{tx('pages.messages.voiceMemo', undefined, 'Voice memo')} • {Math.floor(recordingTime / 60).toString().padStart(2, '0')}:{(recordingTime % 60).toString().padStart(2, '0')}</span>
-                                            <button onClick={cancelRecording} disabled={isSending} aria-label="Remove attached item" className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-background rounded-full transition-colors disabled:opacity-50">
+                                            <button onClick={cancelRecording} disabled={isSending} aria-label={tx('pages.messages.a11y.removeAttachedItem', undefined, 'Remove attached item')} className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-background rounded-full transition-colors disabled:opacity-50">
                                                 <X className="w-4 h-4" />
                                             </button>
                                         </div>
@@ -1595,7 +1595,7 @@ function MessagesComponent() {
                                         <div className="flex items-center gap-2">
                                             <FileText className="w-5 h-5 text-brand" />
                                             <span className="text-sm flex-1 truncate">{selectedFile.name}</span>
-                                            <button onClick={() => setSelectedFile(null)} disabled={isSending} aria-label="Remove attached item" className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-background rounded-full transition-colors disabled:opacity-50">
+                                            <button onClick={() => setSelectedFile(null)} disabled={isSending} aria-label={tx('pages.messages.a11y.removeAttachedItem', undefined, 'Remove attached item')} className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-background rounded-full transition-colors disabled:opacity-50">
                                                 <X className="w-4 h-4" />
                                             </button>
                                         </div>
@@ -1615,7 +1615,7 @@ function MessagesComponent() {
                             <button
                                 onClick={() => fileInputRef.current?.click()}
                                 disabled={isSending || !!selectedFile}
-                                aria-label="Attach file" className="p-3 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-surface rounded-lg transition-colors text-muted-foreground hover:text-foreground disabled:opacity-50"
+                                aria-label={tx('pages.messages.a11y.attachFile', undefined, 'Attach file')} className="p-3 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-surface rounded-lg transition-colors text-muted-foreground hover:text-foreground disabled:opacity-50"
                             >
                                 <Paperclip className="w-5 h-5" />
                             </button>
@@ -1623,7 +1623,10 @@ function MessagesComponent() {
                             <button
                                 onClick={isRecording ? stopRecording : startRecording}
                                 disabled={isSending}
-                                className={`p-2 rounded-lg transition-colors ${isRecording ? 'bg-red-500 text-white animate-pulse' : 'hover:bg-surface text-muted-foreground hover:text-foreground'}`}
+                                aria-label={isRecording
+                                    ? tx('pages.messages.a11y.stopRecording', undefined, 'Stop recording')
+                                    : tx('pages.messages.a11y.startRecording', undefined, 'Start recording')}
+                                className={`p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg transition-colors ${isRecording ? 'bg-red-500 text-white animate-pulse' : 'hover:bg-surface text-muted-foreground hover:text-foreground'}`}
                             >
                                 {isRecording ? <Square className="w-5 h-5 fill-current" /> : <Mic className="w-5 h-5" />}
                             </button>

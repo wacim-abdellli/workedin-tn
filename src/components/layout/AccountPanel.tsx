@@ -446,7 +446,10 @@ export default function AccountPanel({
                           )}
                         >
                           <div className="flex items-start gap-3">
-                            <div className={cn('flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-2xl', iconClasses)}>
+                            <div className={cn('flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-2xl relative', iconClasses)}>
+                              {isActive && (
+                                <div className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-white dark:border-gray-900 shadow-lg animate-pulse" />
+                              )}
                               {isSwitchingThis ? <Loader2 className="h-5 w-5 animate-spin" /> : <Icon className="h-5 w-5" />}
                             </div>
                             <div className="min-w-0 flex-1">

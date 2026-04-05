@@ -147,7 +147,7 @@ export default function ProfileHeader({
                                             ) : (
                                                 <span className="flex items-center gap-2">
                                                     <Volume2 className="h-4 w-4" />
-                                                    Hear my Voice
+                                                    {tx('pages.freelancerProfile.hearVoice', undefined, 'Hear my Voice')}
                                                 </span>
                                             )}
                                         </button>

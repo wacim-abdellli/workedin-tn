@@ -3,6 +3,7 @@ import { Users, Briefcase, DollarSign, FileText, Activity, UserPlus, Shield, Fla
 import { supabase } from '@/lib/supabase';
 import { supabaseWithRetry } from '@/lib/supabaseWithRetry';
 import { useTranslation } from '@/i18n';
+import { adminInsetClass, adminPanelClass, adminPillClass } from './adminTheme';
 
 async function countWithRetry(queryFn: () => PromiseLike<{ count: number | null; error: unknown }>) {
     const { count } = await Promise.race([
@@ -34,7 +35,7 @@ interface OverviewStats {
 
 function StatCard({ icon: Icon, label, value, tone }: { icon: React.ElementType; label: string; value: number | string; tone?: string }) {
     return (
-        <div className="card border-white/50 dark:border-white/12 bg-white dark:bg-gray-800/88 backdrop-blur-xl shadow-[0_24px_60px_-28px_rgba(14,65,227,0.42)] hover:-translate-y-0.5 transition-all duration-300">
+        <div className={`${adminPanelClass} p-6 transition-all duration-300 hover:-translate-y-0.5`}>
             <div className="flex items-start justify-between">
                 <div className="w-12 h-12 rounded-2xl flex items-center justify-center shadow-md" style={{ background: tone || 'var(--workspace-primary)' }}><Icon className="w-6 h-6 text-white" /></div>
             </div>
@@ -100,7 +101,7 @@ export default function OverviewTab() {
         pendingVerifications: 0,
         recentVerificationRequests: [],
     };
-    const panelClass = 'card border-white/45 dark:border-white/10 bg-white/80 dark:bg-slate-950/55 backdrop-blur-xl shadow-[0_16px_45px_-24px_rgba(21,84,247,0.38)]';
+    const panelClass = adminPanelClass;
 
     if (isLoading) {
         return (
@@ -124,14 +125,14 @@ export default function OverviewTab() {
                          <Activity className="w-5 h-5 text-cyan-500" />{tx('dashboard.admin.overview.todayActivity', undefined, 'Today activity')}
                      </h3>
                      <div className="grid grid-cols-2 gap-4">
-                         <div className="p-4 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/20 rounded-xl">
-                             <div className="flex items-center gap-2 mb-2"><UserPlus className="w-5 h-5 text-emerald-600 dark:text-emerald-300" /><span className="text-emerald-800 dark:text-emerald-200 font-medium">{tx('dashboard.admin.overview.newSignups', undefined, 'New signups')}</span></div>
-                             <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-300">{s.todaySignups}</p>
-                         </div>
-                         <div className="p-4 bg-cyan-50 dark:bg-cyan-500/10 border border-cyan-100 dark:border-cyan-500/20 rounded-xl">
-                             <div className="flex items-center gap-2 mb-2"><FileText className="w-5 h-5 text-cyan-600 dark:text-cyan-300" /><span className="text-cyan-800 dark:text-cyan-200 font-medium">{tx('dashboard.admin.overview.newContracts', undefined, 'New contracts')}</span></div>
-                             <p className="text-2xl font-bold text-cyan-700 dark:text-cyan-300">{s.todayContracts}</p>
-                         </div>
+                         <div className={`${adminInsetClass} p-4 ${adminPillClass('emerald')}`}>
+                              <div className="flex items-center gap-2 mb-2"><UserPlus className="w-5 h-5 text-emerald-600 dark:text-emerald-300" /><span className="text-emerald-800 dark:text-emerald-200 font-medium">{tx('dashboard.admin.overview.newSignups', undefined, 'New signups')}</span></div>
+                              <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-300">{s.todaySignups}</p>
+                          </div>
+                          <div className={`${adminInsetClass} p-4 ${adminPillClass('cyan')}`}>
+                              <div className="flex items-center gap-2 mb-2"><FileText className="w-5 h-5 text-cyan-600 dark:text-cyan-300" /><span className="text-cyan-800 dark:text-cyan-200 font-medium">{tx('dashboard.admin.overview.newContracts', undefined, 'New contracts')}</span></div>
+                              <p className="text-2xl font-bold text-cyan-700 dark:text-cyan-300">{s.todayContracts}</p>
+                          </div>
                      </div>
                  </div>
                 <div className={panelClass}>
@@ -143,15 +144,15 @@ export default function OverviewTab() {
                          <p className="text-sm text-muted text-center py-4">{tx('dashboard.admin.overview.noPendingRequests', undefined, 'No pending requests')}</p>
                      ) : (
                          <div className="space-y-3">
-                             <div className="flex items-center justify-between rounded-xl border border-yellow-200/60 dark:border-yellow-500/20 bg-yellow-50/70 dark:bg-yellow-500/10 px-4 py-3">
-                                 <span className="text-sm font-medium text-yellow-800 dark:text-yellow-200">{tx('dashboard.admin.overview.requestsCount', undefined, 'Pending requests count')}</span>
-                                 <span className="text-lg font-bold text-yellow-700 dark:text-yellow-300">{s.pendingVerifications}</span>
-                             </div>
-                             {s.recentVerificationRequests.map((request) => (
-                                 <div key={request.id} className="rounded-xl border border-white/40 dark:border-white/10 dark:border-gray-800 bg-white dark:bg-gray-800/70 px-4 py-3">
-                                     <p className="font-medium text-foreground">{request.profile?.full_name || tx('dashboard.admin.overview.user', undefined, 'User')}</p>
-                                     <p className="text-sm text-muted">{request.profile?.email || ''}</p>
-                                     <p className="mt-1 text-xs text-muted">{new Date(request.submitted_at).toLocaleString(language === 'ar' ? 'ar-TN' : language === 'fr' ? 'fr-FR' : 'en-US')}</p>
+                              <div className={`flex items-center justify-between rounded-xl px-4 py-3 ${adminPillClass('amber')}`}>
+                                  <span className="text-sm font-medium text-yellow-800 dark:text-yellow-200">{tx('dashboard.admin.overview.requestsCount', undefined, 'Pending requests count')}</span>
+                                  <span className="text-lg font-bold text-yellow-700 dark:text-yellow-300">{s.pendingVerifications}</span>
+                              </div>
+                              {s.recentVerificationRequests.map((request) => (
+                                  <div key={request.id} className={`${adminInsetClass} px-4 py-3`}>
+                                      <p className="font-medium text-foreground">{request.profile?.full_name || tx('dashboard.admin.overview.user', undefined, 'User')}</p>
+                                      <p className="text-sm text-muted">{request.profile?.email || ''}</p>
+                                      <p className="mt-1 text-xs text-muted">{new Date(request.submitted_at).toLocaleString(language === 'ar' ? 'ar-TN' : language === 'fr' ? 'fr-FR' : 'en-US')}</p>
                                  </div>
                              ))}
                          </div>

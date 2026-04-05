@@ -41,7 +41,7 @@ export default function FilterSidebar({
     onClose,
     className = ''
 }: FilterSidebarProps) {
-    const { t, dir, language } = useTranslation();
+    const { t, tx, dir, language } = useTranslation();
     const isRTL = dir === 'rtl';
     const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
         category: true,
@@ -143,7 +143,7 @@ export default function FilterSidebar({
                         <Filter className="w-6 h-6 text-primary-500" />
                         <span>{t.jobs.filters.title}</span>
                     </h2>
-                    <button onClick={onClose} aria-label="Close filters" className="p-2 min-w-[44px] min-h-[44px] hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-dark-700 rounded-full transition-colors"
+                    <button onClick={onClose} aria-label={tx('jobs.filters.closeAria', undefined, 'Close filters')} className="p-2 min-w-[44px] min-h-[44px] hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-dark-700 rounded-full transition-colors"
                     >
                         <X className="w-6 h-6" />
                     </button>
@@ -163,7 +163,7 @@ export default function FilterSidebar({
                         <button
                             onClick={onClearAll}
                             className="text-xs font-medium text-[color:var(--workspace-primary)] hover:underline min-w-[44px] min-h-[44px] px-3"
-                            aria-label="Clear all filters"
+                            aria-label={tx('jobs.filters.clearAria', undefined, 'Clear all filters')}
                         >
                             {t.jobs.filters.clearAll}
                         </button>

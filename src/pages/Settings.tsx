@@ -253,15 +253,15 @@ function Settings() {
                         <p className="text-base font-bold text-foreground">
                             {activeMode === 'freelancer' ? t.auth.accountPanel.freelancerLabel : t.auth.accountPanel.clientLabel}
                         </p>
-                        <p className="text-sm font-medium text-muted-foreground/80 mt-1">Active context</p>
+                        <p className="text-sm font-medium text-muted-foreground/80 mt-1">{tx('settings.activeContext', undefined, 'Active context')}</p>
                     </div>
                 </div>
 
-                <div className="group relative overflow-hidden flex flex-col justify-between p-4 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-800/[0.02] backdrop-blur-xl shadow-sm dark:shadow-xl transition-all duration-300 hover:border-blue-500/30 hover:bg-blue-500/5">
-                    <div className="absolute -right-10 -top-4 h-32 w-32 rounded-full bg-blue-500/10 blur-[40px] pointer-events-none transition-all group-hover:bg-blue-500/20" />
+                <div className="group relative overflow-hidden flex flex-col justify-between p-4 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-800/[0.02] backdrop-blur-xl shadow-sm dark:shadow-xl transition-all duration-300 hover:border-[color:var(--workspace-primary)]/30 hover:bg-[color:var(--workspace-primary)]/5">
+                    <div className="absolute -right-10 -top-4 h-32 w-32 rounded-full bg-[color:var(--workspace-primary)]/10 blur-[40px] pointer-events-none transition-all group-hover:bg-[color:var(--workspace-primary)]/20" />
                     <div>
-                        <div className="flex items-center gap-3">
-                            <div className="flex h-7 w-7 items-center justify-center rounded-[8px] bg-blue-500/20 text-blue-400">
+                        <div className="flex items-center gap-3 mb-3">
+                            <div className="flex h-7 w-7 items-center justify-center rounded-[8px] bg-[color:var(--workspace-primary)]/20 text-[color:var(--workspace-primary)]">
                                 <User className="h-4 w-4" />
                             </div>
                             <p className="text-sm font-bold uppercase tracking-widest text-foreground/80">
@@ -271,7 +271,7 @@ function Settings() {
                     </div>
                     <div className="mt-3">
                         <p className="text-base font-bold text-foreground">{accountTypeLabel}</p>
-                        <p className="text-sm font-medium text-muted-foreground/80 mt-1">Global permission</p>
+                        <p className="text-sm font-medium text-muted-foreground/80 mt-1">{tx('settings.globalPermission', undefined, 'Global permission')}</p>
                     </div>
                 </div>
 
@@ -289,14 +289,14 @@ function Settings() {
                     </div>
                     <div className="mt-3">
                         <p className="text-base font-bold text-foreground">{onboardingLabel}</p>
-                        <p className="text-sm font-medium text-muted-foreground/80 mt-1">Profile readiness</p>
+                        <p className="text-sm font-medium text-muted-foreground/80 mt-1">{tx('settings.profileReadiness', undefined, 'Profile readiness')}</p>
                     </div>
                 </div>
             </div>
 
             <div className="relative overflow-hidden rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-black/40 p-5 shadow-sm dark:shadow-2xl backdrop-blur-3xl ring-1 ring-gray-200 dark:ring-white/5">
                 <div className="absolute -left-20 top-20 h-[300px] w-[300px] rounded-full bg-brand/5 blur-[100px] pointer-events-none" />
-                <div className="absolute right-10 bottom-10 h-[200px] w-[200px] rounded-full bg-blue-500/5 blur-[80px] pointer-events-none" />
+                <div className="absolute right-10 bottom-10 h-[200px] w-[200px] rounded-full bg-[color:var(--workspace-primary)]/5 blur-[80px] pointer-events-none" />
 
                 <div className="relative z-10 flex flex-col md:flex-row gap-3 items-start mb-4">
                     <div className="md:w-1/3">
@@ -318,7 +318,7 @@ function Settings() {
                                     <Shield className="w-5 h-5" />
                                 </div>
                                 <div>
-                                    <p className="font-bold text-foreground">Identity Verification</p>
+                                    <p className="font-bold text-foreground">{tx('settings.identityVerificationTitle', undefined, 'Identity Verification')}</p>
                                     <p className="text-sm font-medium text-muted-foreground/80 mt-1">{profile?.cin_verified ? 'Successfully verified by a human' : 'Pending verification review'}</p>
                                 </div>
                             </div>
@@ -335,9 +335,9 @@ function Settings() {
                                 </div>
                             </button>
 
-                            <button type="button" onClick={() => navigate(dashboardPath)} className="group flex flex-col justify-between rounded-xl border border-white/5 bg-black/20 p-5 text-left transition-all duration-300 hover:-translate-y-1 hover:border-blue-500/40 hover:bg-blue-500/5 hover:shadow-[0_0_30px_-5px_rgba(59,130,246,0.3)]">
+                            <button type="button" onClick={() => navigate(dashboardPath)} className="group flex flex-col justify-between rounded-xl border border-white/5 bg-black/20 p-5 text-left transition-all duration-300 hover:-translate-y-1 hover:border-[color:var(--workspace-primary)]/40 hover:bg-[color:var(--workspace-primary)]/5 hover:shadow-[0_0_30px_-5px_rgba(var(--workspace-primary-rgb),0.3)]">
                                 <div>
-                                    <p className="text-base font-bold text-foreground transition-colors group-hover:text-blue-400">{tx('settings.goToDashboard', undefined, 'Go to dashboard')}</p>
+                                    <p className="text-base font-bold text-foreground transition-colors group-hover:text-[color:var(--workspace-primary)]">{tx('settings.goToDashboard', undefined, 'Go to dashboard')}</p>
                                     <p className="mt-2 text-sm leading-relaxed text-muted-foreground/80">{tx('settings.goToDashboardDescription', undefined, 'Return to your active workspace and continue where you left off.')}</p>
                                 </div>
                             </button>
@@ -409,10 +409,10 @@ function Settings() {
                     <div className="relative z-10 mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-3">
                         <div>
                             <h3 className="text-base font-bold tracking-tight bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
-                                Payout Methods
+                                {tx('settings.payoutMethods', undefined, 'Payout Methods')}
                             </h3>
                             <p className="mt-2 text-sm leading-relaxed text-muted-foreground/90 max-w-xl">
-                                Manage how you receive earnings or make payments. Your default method will be automatically selected during checkout.
+                                {tx('settings.payoutMethodsDescription', undefined, 'Manage how you receive earnings or make payments. Your default method will be automatically selected during checkout.')}
                             </p>
                         </div>
                     </div>
@@ -476,7 +476,7 @@ function Settings() {
                 {/* Modern Hero Section */}
                 <section className="relative overflow-hidden rounded-xl border border-white/5 bg-card/40 p-6 shadow-2xl backdrop-blur-md transform-gpu">
                     <div className="absolute -left-32 -top-32 h-[500px] w-[500px] rounded-full bg-brand/10 blur-[120px] pointer-events-none" />
-                    <div className="absolute right-0 bottom-0 h-[300px] w-[300px] rounded-full bg-blue-500/5 blur-[100px] pointer-events-none" />
+                    <div className="absolute right-0 bottom-0 h-[300px] w-[300px] rounded-full bg-[color:var(--workspace-primary)]/5 blur-[100px] pointer-events-none" />
                     
                     <div className="relative z-10 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                         <div className="space-y-3">
