@@ -32,16 +32,16 @@ function LogoMark({ violet, amber, innerViolet, size }: { violet: string; amber:
       <path d="M25 74 Q37 86 50 94 Q63 86 75 74 Z" fill={amber} opacity="0.9" />
       
       {/* K letterform stem — white/primary */}
-      <rect x="32" y="30" width="10" height="44" rx="5" fill="rgba(255,255,255,0.95)" />
+      <rect x="37" y="30" width="10" height="44" rx="5" fill="rgba(255,255,255,0.95)" />
       
       {/* K upper arm — freelancer reaches up (white) */}
-      <path d="M42 52 L68 30" stroke="rgba(255,255,255,0.95)" strokeWidth="10" strokeLinecap="round" fill="none" />
+      <path d="M47 52 L73 30" stroke="rgba(255,255,255,0.95)" strokeWidth="10" strokeLinecap="round" fill="none" />
       
       {/* K lower arm — client reaches down (amber) */}
-      <path d="M42 52 L68 74" stroke={amber} strokeWidth="10" strokeLinecap="round" fill="none" />
+      <path d="M47 52 L73 74" stroke={amber} strokeWidth="10" strokeLinecap="round" fill="none" />
       
       {/* Connection dot at K joint — trust point */}
-      <circle cx="42" cy="52" r="6" fill={amber} />
+      <circle cx="47" cy="52" r="6" fill={amber} />
     </svg>
   );
 }

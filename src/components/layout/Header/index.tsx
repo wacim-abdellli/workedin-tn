@@ -292,8 +292,8 @@ export default function Header() {
           <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: 'linear-gradient(90deg, var(--workspace-accent), var(--workspace-accent-mid))' }} />
         ) : null}
 
-        <div className="mx-auto max-w-[1280px] px-4 sm:px-6">
-          <div className="flex h-16 items-center justify-between xl:hidden">
+        <div className="mx-auto max-w-[1536px] px-4 sm:px-6">
+          <div className="flex h-16 items-center justify-between 2xl:hidden">
             <button onClick={() => navigate('/')} className="flex items-center" aria-label="Go to homepage">
               <Logo variant="full" size="sm" />
             </button>
@@ -316,7 +316,7 @@ export default function Header() {
             </div>
           </div>
 
-          <div className="hidden h-16 items-center gap-6 xl:flex">
+          <div className="hidden h-16 items-center gap-6 2xl:flex">
             <div className="flex shrink-0 items-center">
               <button
                 onClick={() => navigate('/')}
@@ -327,8 +327,8 @@ export default function Header() {
               </button>
             </div>
 
-            <div className="flex min-w-0 flex-1 items-center justify-between gap-4 xl:gap-8">
-              <div className="flex min-w-0 items-center gap-1 xl:gap-2">
+            <div className="flex min-w-0 flex-1 items-center justify-between gap-4 2xl:gap-8">
+              <div className="flex min-w-0 items-center gap-1 2xl:gap-2">
                 <nav id="main-nav" className="flex items-center">
                   {desktopNavItems.map(({ label, Icon, href }) => (
                     <NavLink
@@ -375,16 +375,16 @@ export default function Header() {
                 </nav>
               </div>
 
-              <div className="flex shrink-0 items-center gap-2 xl:gap-3">
+              <div className="flex shrink-0 items-center gap-2 2xl:gap-3">
                 <button
                   onClick={() => setSearchOpen(true)}
-                  className="flex h-9 shrink-0 items-center gap-2 rounded-xl bg-gray-100/50 dark:bg-white/[0.03] px-3 w-auto lg:w-48 xl:w-56 text-sm font-medium text-gray-500 transition-all duration-300 hover:bg-white hover:text-gray-900 border border-transparent hover:border-gray-200 hover:shadow-sm hover:scale-[1.02] dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-white dark:hover:border-white/10 dark:hover:shadow-lg dark:hover:shadow-black/40"
+                  className="flex h-9 shrink-0 items-center gap-2 rounded-xl bg-gray-100/50 dark:bg-white/[0.03] px-3 w-auto lg:w-48 2xl:w-56 text-sm font-medium text-gray-500 transition-all duration-300 hover:bg-white hover:text-gray-900 border border-transparent hover:border-gray-200 hover:shadow-sm hover:scale-[1.02] dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-white dark:hover:border-white/10 dark:hover:shadow-lg dark:hover:shadow-black/40"
                 >
                   <Search className="h-4 w-4 flex-shrink-0" />
                   <span className="truncate text-xs flex-1 text-left hidden lg:block">
                     {t.common.search}...
                   </span>
-                  <div className="hidden items-center gap-1 xl:flex">
+                  <div className="hidden items-center gap-1 2xl:flex">
                     <kbd className="header-kbd">Ctrl+K</kbd>
                   </div>
                 </button>
@@ -394,7 +394,7 @@ export default function Header() {
                     onClick={() => setLangOpen((open) => !open)}
                     className="flex h-9 items-center justify-center gap-1.5 rounded-full px-3 text-[11px] font-bold uppercase tracking-wider text-gray-500 transition-all hover:bg-black/[0.05] hover:text-gray-900 dark:text-zinc-400 dark:hover:bg-white/[0.06] dark:hover:text-white"
                   >
-                    <span className="hidden xl:inline text-gray-400 dark:text-zinc-500">{activeLang.country}</span>
+                    <span className="hidden 2xl:inline text-gray-400 dark:text-zinc-500">{activeLang.country}</span>
                     <span>{activeLang.display}</span>
                   </button>
                   {langOpen ? (
