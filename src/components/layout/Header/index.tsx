@@ -106,7 +106,7 @@ export default function Header() {
   const langRef = useRef<HTMLDivElement>(null)
   const navMoreRef = useRef<HTMLDivElement>(null)
   const conversationsChannelRef = useRef<RealtimeChannel | null>(null)
-  const isDesktopCondensed = useMediaQuery('(max-width: 1420px)')
+  const isDesktopCondensed = false
 
   useEffect(() => {
     const handler = (event: MouseEvent) => {
@@ -189,10 +189,9 @@ export default function Header() {
   const isFreelancer = Boolean(user) && activeWorkspace === 'freelancer'
   const isAuthPage = AUTH_ROUTES.includes(pathname)
   const navItems = !user ? PUBLIC_NAV : isFreelancer ? FREELANCER_NAV : CLIENT_NAV
-  const shouldCondenseDesktopNav = Boolean(user) && isDesktopCondensed && navItems.length > 3
-  const desktopNavItems = shouldCondenseDesktopNav ? navItems.slice(0, 3) : navItems
-  const overflowNavItems = shouldCondenseDesktopNav ? navItems.slice(3) : []
-  const hasOverflowActiveItem = overflowNavItems.some(({ href }) => pathname === href || pathname.startsWith(`${href}/`))
+  const desktopNavItems = navItems
+  const overflowNavItems: typeof navItems = []
+  const hasOverflowActiveItem = false
   const moreLabel = t.pages?.mobileNav?.more || 'More'
   const currentLang = language || 'en'
   const activeLang = LANGS.find((lang) => lang.code === currentLang) ?? LANGS[2]
@@ -295,7 +294,7 @@ export default function Header() {
         ) : null}
 
         <div className="mx-auto max-w-[1280px] px-4 sm:px-6">
-          <div className="flex h-16 items-center justify-between md:hidden">
+          <div className="flex h-16 items-center justify-between lg:hidden">
             <button onClick={() => navigate('/')} className="flex items-center" aria-label="Go to homepage">
               <Logo variant="full" size="sm" />
             </button>
@@ -318,7 +317,7 @@ export default function Header() {
             </div>
           </div>
 
-          <div className="hidden h-16 items-center gap-6 md:flex">
+          <div className="hidden h-16 items-center gap-6 lg:flex">
             <div className="flex shrink-0 items-center">
               <button
                 onClick={() => navigate('/')}
@@ -329,7 +328,7 @@ export default function Header() {
               </button>
             </div>
 
-            <div className="flex min-w-0 flex-1 items-center justify-between">
+            <div className="flex min-w-0 flex-1 items-center justify-between gap-4 xl:gap-8">
               <div className="flex min-w-0 items-center gap-1 xl:gap-2">
                 <nav id="main-nav" className="flex items-center">
                   {desktopNavItems.map(({ label, Icon, href }) => (
