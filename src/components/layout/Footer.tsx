@@ -2,12 +2,10 @@ import { Link } from 'react-router-dom';
 import { Facebook, Twitter, Instagram, Linkedin, Mail, MapPin, Phone, Heart } from 'lucide-react';
 
 import { useTranslation } from '../../i18n';
-import { useTheme } from '../../contexts/ThemeContext';
 import { Logo } from '../ui/Logo';
 
 function Footer() {
     const { t } = useTranslation();
-    const { theme } = useTheme();
 
     const footerLinks = [
         { href: '/about', label: t.footer.about },
