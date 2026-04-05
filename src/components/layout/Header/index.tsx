@@ -316,7 +316,7 @@ export default function Header() {
             </div>
           </div>
 
-          <div className="hidden h-16 items-center gap-4 xl:gap-6 lg:flex">
+          <div className="hidden h-16 items-center gap-4 2xl:gap-6 lg:flex">
             <div className="flex shrink-0 items-center">
               <button
                 onClick={() => navigate('/')}
@@ -327,8 +327,8 @@ export default function Header() {
               </button>
             </div>
 
-            <div className="flex min-w-0 flex-1 items-center justify-between gap-3 xl:gap-8">
-              <div className="flex min-w-0 items-center gap-0.5 xl:gap-2">
+            <div className="flex min-w-0 flex-1 items-center justify-between gap-3 2xl:gap-8">
+              <div className="flex min-w-0 items-center gap-0.5 2xl:gap-2">
                 <nav id="main-nav" className="flex items-center">
                   {desktopNavItems.map(({ label, Icon, href }) => (
                     <NavLink
@@ -375,16 +375,16 @@ export default function Header() {
                 </nav>
               </div>
 
-              <div className="flex shrink-0 items-center gap-1.5 xl:gap-3">
+              <div className="flex shrink-0 items-center gap-1.5 2xl:gap-3">
                 <button
                   onClick={() => setSearchOpen(true)}
-                  className="flex h-9 shrink-0 items-center justify-center xl:justify-start gap-2 rounded-xl bg-gray-100/50 dark:bg-white/[0.03] w-9 xl:w-56 px-0 xl:px-3 text-sm font-medium text-gray-500 transition-all duration-300 hover:bg-white hover:text-gray-900 border border-transparent hover:border-gray-200 hover:shadow-sm hover:scale-[1.02] dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-white dark:hover:border-white/10 dark:hover:shadow-lg dark:hover:shadow-black/40"
+                  className="flex h-9 shrink-0 items-center justify-center 2xl:justify-start gap-2 rounded-xl bg-gray-100/50 dark:bg-white/[0.03] w-9 2xl:w-56 px-0 2xl:px-3 text-sm font-medium text-gray-500 transition-all duration-300 hover:bg-white hover:text-gray-900 border border-transparent hover:border-gray-200 hover:shadow-sm hover:scale-[1.02] dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-white dark:hover:border-white/10 dark:hover:shadow-lg dark:hover:shadow-black/40"
                 >
                   <Search className="h-4 w-4 flex-shrink-0" />
-                  <span className="truncate text-xs flex-1 text-left hidden xl:block">
+                  <span className="truncate text-xs flex-1 text-left hidden 2xl:block">
                     {t.common.search}...
                   </span>
-                  <div className="hidden items-center gap-1 xl:flex">
+                  <div className="hidden items-center gap-1 2xl:flex">
                     <kbd className="header-kbd">Ctrl+K</kbd>
                   </div>
                 </button>
@@ -394,7 +394,7 @@ export default function Header() {
                     onClick={() => setLangOpen((open) => !open)}
                     className="flex h-9 items-center justify-center gap-1.5 rounded-full px-3 text-[11px] font-bold uppercase tracking-wider text-gray-500 transition-all hover:bg-black/[0.05] hover:text-gray-900 dark:text-zinc-400 dark:hover:bg-white/[0.06] dark:hover:text-white"
                   >
-                    <span className="hidden xl:inline text-gray-400 dark:text-zinc-500">{activeLang.country}</span>
+                    <span className="hidden 2xl:inline text-gray-400 dark:text-zinc-500">{activeLang.country}</span>
                     <span>{activeLang.display}</span>
                   </button>
                   {langOpen ? (
@@ -441,7 +441,7 @@ export default function Header() {
                       <button
                         onClick={() => void handleQuickWorkspaceSwitch()}
                         disabled={isSwitching}
-                        className={`flex h-9 items-center justify-center gap-2 rounded-full border px-0 xl:px-3 w-9 xl:w-auto text-[11px] font-bold uppercase tracking-wider transition-all ${isSwitching ? 'cursor-not-allowed opacity-50' : 'hover:-translate-y-[1px] shadow-sm hover:shadow'}`}
+                        className={`flex h-9 items-center justify-center gap-2 rounded-full border px-0 2xl:px-3 w-9 2xl:w-auto text-[11px] font-bold uppercase tracking-wider transition-all ${isSwitching ? 'cursor-not-allowed opacity-50' : 'hover:-translate-y-[1px] shadow-sm hover:shadow'}`}
                         style={{
                           borderColor: isFreelancer ? 'rgba(245,158,11,0.3)' : 'rgba(139,92,246,0.3)',
                           color: isFreelancer ? '#d97706' : '#8b5cf6',
@@ -449,8 +449,8 @@ export default function Header() {
                         }}
                         title={switchButtonLabel}
                       >
-                        <Repeat2 className={`h-4 w-4 xl:h-3.5 xl:w-3.5 flex-shrink-0 ${isSwitching ? 'animate-spin' : ''}`} />
-                        <span className="max-w-[78px] truncate hidden xl:inline">{switchTargetLabel}</span>
+                        <Repeat2 className={`h-4 w-4 2xl:h-3.5 2xl:w-3.5 flex-shrink-0 ${isSwitching ? 'animate-spin' : ''}`} />
+                        <span className="max-w-[78px] truncate hidden 2xl:inline">{switchTargetLabel}</span>
                       </button>
                     )}
 
