@@ -293,7 +293,7 @@ export default function Header() {
         ) : null}
 
         <div className="mx-auto max-w-[1280px] px-4 sm:px-6">
-          <div className="flex h-16 items-center justify-between lg:hidden">
+          <div className="flex h-16 items-center justify-between xl:hidden">
             <button onClick={() => navigate('/')} className="flex items-center" aria-label="Go to homepage">
               <Logo variant="full" size="sm" />
             </button>
@@ -316,7 +316,7 @@ export default function Header() {
             </div>
           </div>
 
-          <div className="hidden h-16 items-center gap-6 lg:flex">
+          <div className="hidden h-16 items-center gap-6 xl:flex">
             <div className="flex shrink-0 items-center">
               <button
                 onClick={() => navigate('/')}
