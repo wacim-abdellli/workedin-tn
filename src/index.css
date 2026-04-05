@@ -716,18 +716,37 @@ h6 {
   }
 
   .header-nav-link {
-    @apply flex shrink-0 max-w-[200px] items-center gap-2 rounded-xl px-2 lg:px-3 py-2 border border-transparent;
-    @apply text-sm font-medium whitespace-nowrap;
+    @apply relative flex shrink-0 max-w-[200px] items-center gap-2 rounded-xl px-2 lg:px-3 py-2;
+    @apply text-sm font-medium whitespace-nowrap z-10;
     @apply transition-all duration-300;
-    @apply text-gray-600 hover:bg-gray-50/80 hover:text-gray-900 hover:border-gray-200 hover:shadow-sm hover:scale-[1.02];
-    @apply dark:text-zinc-400 dark:hover:bg-white/5 dark:hover:text-white dark:hover:border-white/5;
+    @apply text-gray-600 hover:text-gray-900;
+    @apply dark:text-zinc-400 dark:hover:text-white;
+  }
+  
+  .header-nav-link::before {
+    content: '';
+    @apply absolute inset-0 rounded-[0.85rem] opacity-0 transition-all duration-300 scale-95;
+    background: rgba(0,0,0,0.04);
+    z-index: -1;
+  }
+  
+  .dark .header-nav-link::before {
+    background: rgba(255,255,255,0.05);
+  }
+  
+  .header-nav-link:hover::before {
+    @apply opacity-100 scale-100;
   }
 
   .header-nav-link-active {
-    @apply header-nav-link shadow-sm scale-100 hover:scale-100;
-    color: var(--workspace-accent) !important;
-    background: color-mix(in srgb, var(--workspace-accent) 8%, white) !important;
-    border-color: color-mix(in srgb, var(--workspace-accent) 25%, transparent) !important;
+    @apply header-nav-link text-gray-900 dark:text-zinc-100;
+  }
+  
+  .header-nav-link-active::after {
+    content: '';
+    @apply absolute -bottom-1 left-2.5 right-2.5 h-[2px] rounded-t-lg transition-all duration-300;
+    background: var(--workspace-accent);
+    box-shadow: 0 -2px 12px color-mix(in srgb, var(--workspace-accent) 60%, transparent);
   }
   .dark .header-nav-link-active {
     background: color-mix(in srgb, var(--workspace-accent) 8%, transparent) !important;
