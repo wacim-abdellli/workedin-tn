@@ -64,7 +64,7 @@ export function Logo({ variant = 'full', size = 'md', className = '' }: LogoProp
 
   if (variant === 'mark') {
     return (
-      <span className={`inline-flex items-center ${className}`} aria-label="Khedma TN">
+      <span className={`inline-flex items-center justify-center ${className}`} aria-label="Khedma TN">
         <LogoMark violet={violet} amber={amber} innerViolet={innerViolet} size={cfg.markH} />
       </span>
     );
