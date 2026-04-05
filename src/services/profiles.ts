@@ -29,6 +29,7 @@ export async function getFreelancers(filters: {
     availability?: string;
     minRate?: number;
     maxRate?: number;
+    locations?: string[];
 } = {}, page = 1, pageSize = 20) {
     // Use authenticated client — ensures RLS policies allow reading freelancer_profiles
     let query = supabase
@@ -53,11 +54,33 @@ export async function getFreelancers(filters: {
         .in('user_type', ['freelancer', 'both']);
 
     if (filters.search) {
-        query = query.or(`full_name.ilike.%${filters.search}%`);
+        // Strip out characters that could break parsing
+        const safeSearch = filters.search.replace(/[,"_%]/g, ' ').trim();
+        if (safeSearch) {
+            query = query.or(`full_name.ilike.%${safeSearch}%,freelancer_profiles.title.ilike.%${safeSearch}%`);
+        }
     }
 
-    if (filters.availability) {
+    if (filters.availability && filters.availability !== 'any') {
         query = query.eq('freelancer_profiles.availability', filters.availability);
+    }
+
+    if (filters.minRate !== undefined) {
+        query = query.gte('freelancer_profiles.hourly_rate', filters.minRate);
+    }
+
+    if (filters.maxRate !== undefined) {
+        query = query.lte('freelancer_profiles.hourly_rate', filters.maxRate);
+    }
+
+    if (filters.skills && filters.skills.length > 0) {
+        // Assuming skills is a JSONb or text array column
+        // use filter by containing elements. PostgREST allows .cs. for contains.
+        query = query.contains('freelancer_profiles.skills', filters.skills);
+    }
+
+    if (filters.locations && filters.locations.length > 0) {
+        query = query.in('location', filters.locations);
     }
 
     const from = (page - 1) * pageSize;
