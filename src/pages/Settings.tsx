@@ -9,7 +9,7 @@ import {
   CreditCard,
   Loader2,
   Plus,
-  Settings,
+  Settings as SettingsIcon,
   Shield,
   Trash2,
   User,
@@ -514,7 +514,7 @@ function Settings() {
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
             <div className="p-2 rounded-xl shadow-lg" style={{ background: "linear-gradient(135deg, var(--workspace-primary), var(--workspace-accent))" }}>
-              <Settings className="h-6 w-6 text-white" />
+              <SettingsIcon className="h-6 w-6 text-white" />
             </div>
             <h1 className="text-3xl font-bold bg-gradient-to-r from-[var(--color-text-primary)] to-[var(--workspace-primary)] bg-clip-text text-transparent">
               {tx("settings.pageTitle", undefined, "Settings")}
