@@ -317,8 +317,8 @@ export default function StepJobBasics() {
                             value={field.value || []}
                             onChange={field.onChange}
                             label={tx('jobs.new.stepBasics.attachments', undefined, 'المرفقات (اختياري)')}
-                            description={tx('jobs.new.stepBasics.attachmentsDescription', undefined, 'PDF, DOC, DOCX, TXT, PNG, JPG, WEBP, ZIP - حد أقصى 10MB لكل ملف')}
-                            accept=".pdf,.doc,.docx,.txt,.png,.jpg,.jpeg,.webp,.zip,.rar"
+                            description={tx('jobs.new.stepBasics.attachmentsDescription', undefined, 'PDF, DOC, DOCX, TXT, PNG, JPG, WEBP - حد أقصى 10MB لكل ملف')}
+                            accept=".pdf,.doc,.docx,.txt,.png,.jpg,.jpeg,.webp"
                             maxSize={10}
                             maxFiles={5}
                         />

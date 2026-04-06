@@ -267,7 +267,7 @@ function ClientOnboarding() {
                                     <input
                                         ref={fileInputRef}
                                         type="file"
-                                        accept="image/*"
+                                        accept=".jpg,.jpeg,.png,.webp,.gif"
                                         className="hidden"
                                         onChange={handleAvatarChange}
                                     />

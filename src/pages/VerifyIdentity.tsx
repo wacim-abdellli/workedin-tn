@@ -5,7 +5,7 @@ import { Camera, CheckCircle2, Shield, Loader2, Sparkles, Lock, ScanLine, AlertC
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from '@/i18n';
 import { logger } from '@/lib/logger';
-import { getStorageConfigErrorMessage, isMissingStorageBucketError, supabase, withTimeout } from '@/lib/supabase';
+import { supabase, uploadFileWithMetadata, withTimeout } from '@/lib/supabase';
 import { supabaseWithRetry } from '@/lib/supabaseWithRetry';
 import { useToast } from '@/components/ui/Toast';
 import SEO from '@/components/common/SEO';
@@ -187,28 +187,22 @@ export default function VerifyIdentity() {
             const runWithTimeout = <T,>(op: Promise<T>, ms: number, name: string) => withTimeout(op, ms, name);
 
             const uploadFile = async (file: File, path: string): Promise<string> => {
-                try {
-                    const { data, error } = await runWithTimeout(
-                        supabase.storage.from('identity-documents').upload(path, file, { upsert: true, contentType: file.type || 'image/jpeg' }),
-                        20000,
-                        `Upload ${path}`
-                    );
+                const uploaded = await runWithTimeout(
+                    uploadFileWithMetadata('identity-documents', path, file),
+                    20000,
+                    `Upload ${path}`,
+                );
 
-                    if (error) throw error;
-                    return data?.path || path;
-                } catch (error) {
-                    if (isMissingStorageBucketError(error)) {
-                        throw new Error(getStorageConfigErrorMessage('identity-documents'));
-                    }
-
-                    throw error;
-                }
+                return uploaded.path;
             };
 
             const ts = Date.now();
-            const frontPath = await uploadFile(uploads.front, `${authUserId}/cin_front_${ts}.jpg`);
-            const backPath = await uploadFile(uploads.back, `${authUserId}/cin_back_${ts}.jpg`);
-            const selfiePath = await uploadFile(uploads.selfie, `${authUserId}/selfie_${ts}.jpg`);
+            const frontExt = uploads.front.name.split('.').pop() || 'jpg';
+            const backExt = uploads.back.name.split('.').pop() || 'jpg';
+            const selfieExt = uploads.selfie.name.split('.').pop() || 'jpg';
+            const frontPath = await uploadFile(uploads.front, `${authUserId}/cin_front_${ts}.${frontExt}`);
+            const backPath = await uploadFile(uploads.back, `${authUserId}/cin_back_${ts}.${backExt}`);
+            const selfiePath = await uploadFile(uploads.selfie, `${authUserId}/selfie_${ts}.${selfieExt}`);
 
             // Ensure profile exists
             const { data: profileData } = await supabaseWithRetry(() =>

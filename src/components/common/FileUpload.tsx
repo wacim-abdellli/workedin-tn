@@ -16,7 +16,7 @@ interface FileUploadProps {
 export const FileUpload: React.FC<FileUploadProps> = ({
     value = [],
     onChange,
-    accept = '.pdf,.doc,.docx,.txt,.png,.jpg,.jpeg,.webp,.zip,.rar',
+    accept = '.pdf,.doc,.docx,.txt,.png,.jpg,.jpeg,.webp',
     maxSize = 10, // 10MB
     maxFiles = 5,
     label,

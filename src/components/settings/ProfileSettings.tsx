@@ -12,6 +12,7 @@ import { supabase } from '@/lib/supabase';
 import { logger } from '@/lib/logger';
 import { getAvatarGradient, getInitials } from '@/lib/avatar';
 import { switchWorkspace } from '@/lib/switchWorkspace';
+import { uploadAvatar } from '@/services/profiles';
 
 export default function ProfileSettings() {
     const { dir, t, tx } = useTranslation();
@@ -69,12 +70,8 @@ export default function ProfileSettings() {
         const file = e.target.files?.[0];
         if (!file || !user?.id) return;
         try {
-            const fileExt = file.name.split('.').pop();
-            const filePath = `${user.id}/avatar.${fileExt}`;
-            const { error: uploadError } = await supabase.storage.from('avatars').upload(filePath, file, { upsert: true });
-            if (uploadError) throw uploadError;
-            const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(filePath);
-            await supabase.from('profiles').update({ avatar_url: urlData.publicUrl }).eq('id', user.id);
+            const avatarUrl = await uploadAvatar(user.id, file);
+            await supabase.from('profiles').update({ avatar_url: avatarUrl }).eq('id', user.id);
             await refreshProfile?.();
             showToast(tx('settings.toasts.avatarUpdated', undefined, 'Profile image updated'), 'success');
         } catch (error) {
@@ -141,7 +138,7 @@ export default function ProfileSettings() {
                     )}
                     <label className="absolute -bottom-2 -end-2 w-9 h-9 rounded-full flex items-center justify-center shadow-lg cursor-pointer transition-all duration-200 hover:scale-110 text-white" style={{ background: "var(--workspace-primary)" }}>
                         <Camera className="w-4 h-4" />
-                        <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
+                        <input type="file" accept=".jpg,.jpeg,.png,.webp,.gif" className="hidden" onChange={handleAvatarUpload} />
                     </label>
                 </div>
                 <div className="flex-1 min-w-0">

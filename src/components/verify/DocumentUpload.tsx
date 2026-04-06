@@ -114,7 +114,7 @@ export default function DocumentUpload({
                 <input
                     id={inputId}
                     type="file"
-                    accept="image/*"
+                    accept=".jpg,.jpeg,.png,.webp"
                     capture={captureMode}
                     onChange={e => { const file = e.target.files?.[0]; if (file) onFileSelect(file); }}
                     className="hidden"

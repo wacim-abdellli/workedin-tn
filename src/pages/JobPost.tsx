@@ -12,7 +12,7 @@ import Modal from '../components/ui/Modal';
 import { useToast } from '../components/ui/Toast';
 import { useAuth } from '../contexts/AuthContext';
 import { useTranslation } from '../i18n';
-import { getStorageConfigErrorMessage, isMissingStorageBucketError, isStoragePermissionError, supabase } from '../lib/supabase';
+import { getStorageConfigErrorMessage, uploadFile, supabase } from '../lib/supabase';
 import { supabaseWithRetry } from '../lib/supabaseWithRetry';
 import { useAutosave } from '../hooks/useAutosave';
 import { JOB_CATEGORIES } from '../lib/jobCategories';
@@ -281,29 +281,14 @@ export default function JobPost() {
                     const fileName = `${Math.random()}.${fileExt}`;
                     const filePath = `${user.id}/${fileName}`;
 
-                    const { error: uploadError } = await supabase.storage
-                        .from('attachments')
-                        .upload(filePath, file, { upsert: false, contentType: file.type || 'application/octet-stream' });
-
-                    if (uploadError) {
-                        if (isMissingStorageBucketError(uploadError) || isStoragePermissionError(uploadError)) {
-                            attachmentsSkipped = true;
-                            attachmentWarningMessage = isMissingStorageBucketError(uploadError)
-                                ? getStorageConfigErrorMessage('attachments')
-                                : tx('jobs.new.errors.attachmentsUnavailable', undefined, 'Attachments could not be uploaded right now. Your job will be posted without them.');
-                            break;
-                        }
-
-                        // Skip individual file failures so job publishing still succeeds.
+                    try {
+                        uploadedUrls.push(await uploadFile('attachments', filePath, file));
+                    } catch (uploadError) {
                         attachmentsSkipped = true;
-                        attachmentWarningMessage = tx('jobs.new.errors.attachmentsPartial', { file: file.name }, `Some attachments could not be uploaded (${file.name}). The job will be posted with the files that succeeded.`);
-                        continue;
+                        attachmentWarningMessage = uploadError instanceof Error && uploadError.message.includes('bucket')
+                            ? getStorageConfigErrorMessage('attachments')
+                            : tx('jobs.new.errors.attachmentsPartial', { file: file.name }, `Some attachments could not be uploaded (${file.name}). The job will be posted with the files that succeeded.`);
                     }
-
-                    const { data: { publicUrl } } = supabase.storage
-                        .from('attachments')
-                        .getPublicUrl(filePath);
-                    uploadedUrls.push(publicUrl);
                 }
 
                 if (attachmentsSkipped) {
