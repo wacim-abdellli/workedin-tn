@@ -1,0 +1,109 @@
+name: Incident Report
+description: Standardized incident declaration, escalation, and rollback record
+title: "Incident: "
+labels:
+  - incident
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this issue for S0/S1/S2 incidents.
+        For release incidents, link the current release checklist and release-control evidence.
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      options:
+        - S0 - Critical outage
+        - S1 - Major degradation
+        - S2 - Moderate issue
+        - S3 - Minor issue
+    validations:
+      required: true
+
+  - type: dropdown
+    id: taxonomy
+    attributes:
+      label: Error taxonomy
+      options:
+        - auth_session
+        - authorization_policy
+        - input_validation
+        - payment_provider
+        - realtime_transport
+        - deployment_config
+        - dependency_supply_chain
+        - observability
+        - data_integrity
+        - ui_accessibility
+    validations:
+      required: true
+
+  - type: input
+    id: environment
+    attributes:
+      label: Affected environment
+      placeholder: production / staging / preview
+    validations:
+      required: true
+
+  - type: input
+    id: release_label
+    attributes:
+      label: Release label or deployment id
+      placeholder: rc-2026-04-07
+    validations:
+      required: false
+
+  - type: textarea
+    id: affected_systems
+    attributes:
+      label: Affected systems or user journeys
+      description: List the broken routes, features, or external providers.
+    validations:
+      required: true
+
+  - type: textarea
+    id: detection
+    attributes:
+      label: Detection and evidence
+      description: Include alert source, Sentry link, workflow run, screenshots, and release-control report link.
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: containment
+    attributes:
+      label: Containment / rollback checklist
+      options:
+        - label: Incident commander assigned
+        - label: Further deploys frozen
+        - label: Rollback target identified
+        - label: Rollback executed or explicit no-rollback decision documented
+        - label: Post-rollback health verified
+        - label: Monitoring elevated until stable
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Timeline
+      description: Record key timestamps, actions, and decisions.
+    validations:
+      required: true
+
+  - type: input
+    id: owner
+    attributes:
+      label: Current owner
+      placeholder: "@name"
+    validations:
+      required: true
+
+  - type: textarea
+    id: followup
+    attributes:
+      label: Follow-up actions
+      description: Link remediation tasks, postmortem, or release rollback notes.
+    validations:
+      required: true

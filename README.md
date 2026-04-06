@@ -12,6 +12,8 @@ This is the canonical repository entrypoint.
   - canonical docs, scripts, pages, and deprecated artifacts
 - `RELEASE_POLICY.md`
   - mandatory release checklist, sign-off roles, and release-control command
+- `INCIDENT_READINESS.md`
+  - incident severity, error taxonomy, alert routes, and rollback checklist
 - `audit/STRICT_FULL_AUDIT_DOSSIER.md`
   - master audit backlog and phase definitions
 - `audit/*.md`

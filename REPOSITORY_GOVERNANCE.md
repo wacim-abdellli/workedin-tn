@@ -10,6 +10,8 @@ This document is the P3-1 source of truth for canonical docs, canonical scripts,
   - governance source of truth
 - `RELEASE_POLICY.md`
   - release checklist, sign-off roles, and release-control command
+- `INCIDENT_READINESS.md`
+  - incident severity, alert routing, and rollback source of truth
 - `audit/STRICT_FULL_AUDIT_DOSSIER.md`
   - phase/task backlog
 - `audit/*.md`

@@ -354,6 +354,8 @@ Recommendation: Monitor for 7 more days before full celebration
 
 If critical issues occur:
 
+Canonical incident taxonomy, alert routes, and rollback checklist now live in `INCIDENT_READINESS.md`.
+
 ### **Immediate Actions (< 10 minutes)**
 
 1. **Declare incident**
