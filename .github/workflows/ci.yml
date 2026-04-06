@@ -14,6 +14,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -23,6 +25,18 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Resolve design-token diff range
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "TOKEN_COMPLIANCE_FROM=${{ github.event.pull_request.base.sha }}" >> $GITHUB_ENV
+          else
+            echo "TOKEN_COMPLIANCE_FROM=${{ github.event.before }}" >> $GITHUB_ENV
+          fi
+          echo "TOKEN_COMPLIANCE_TO=${{ github.sha }}" >> $GITHUB_ENV
+
+      - name: Design Token Compliance Gate
+        run: npm run tokens:compliance -- --from "$TOKEN_COMPLIANCE_FROM" --to "$TOKEN_COMPLIANCE_TO" --output artifacts/design-token-compliance/report.json
 
       - name: Dependency Vulnerability Audit
         run: npm run deps:audit
@@ -81,4 +95,12 @@ jobs:
         with:
           name: dependency-audit-report
           path: artifacts/dependency-audit/
+          retention-days: 7
+
+      - name: Upload Design Token Compliance Artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: design-token-compliance-report
+          path: artifacts/design-token-compliance/
           retention-days: 7
