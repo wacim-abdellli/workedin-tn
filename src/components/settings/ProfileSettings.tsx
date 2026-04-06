@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Camera, Check, Eye, Loader2, Save, Shield, User, Zap } from 'lucide-react';
-import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from '@/i18n';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/components/ui/Toast';
@@ -19,7 +18,6 @@ export default function ProfileSettings() {
     const { user, profile, freelancerProfile, activeMode, refreshProfile, updateProfile } = useAuth();
     const { showToast } = useToast();
     const navigate = useNavigate();
-    const queryClient = useQueryClient();
 
     const [isSaving, setIsSaving] = useState(false);
     const [isSwitchingWorkspace, setIsSwitchingWorkspace] = useState<'freelancer' | 'client' | null>(null);
@@ -41,19 +39,14 @@ export default function ProfileSettings() {
          if (!user?.id) return;
          setIsSaving(true);
          try {
-             await updateProfile({
-                 full_name: form.full_name,
-                 phone: form.phone,
-                   email: form.email,
-                   bio: form.bio,
-                 location: form.location,
-             });
-             await refreshProfile?.();
-             queryClient.invalidateQueries({ queryKey: ['freelancer-dashboard'] });
-             queryClient.invalidateQueries({ queryKey: ['clientDashboardStats'] });
-             queryClient.invalidateQueries({ queryKey: ['clientDashboardJobs'] });
-             queryClient.invalidateQueries({ queryKey: ['clientActiveContracts'] });
-             showToast(tx('settings.toasts.profileSaved', undefined, 'Profile updated successfully'), 'success');
+              await updateProfile({
+                  full_name: form.full_name,
+                  phone: form.phone,
+                    email: form.email,
+                    bio: form.bio,
+                  location: form.location,
+              });
+              showToast(tx('settings.toasts.profileSaved', undefined, 'Profile updated successfully'), 'success');
          } catch (error: any) {
              logger.error('Error saving profile:', error);
              if (error?.message?.includes('duplicate key value violates unique constraint') && error?.message?.includes('phone')) {
@@ -71,8 +64,7 @@ export default function ProfileSettings() {
         if (!file || !user?.id) return;
         try {
             const avatarUrl = await uploadAvatar(user.id, file);
-            await supabase.from('profiles').update({ avatar_url: avatarUrl }).eq('id', user.id);
-            await refreshProfile?.();
+            await updateProfile({ avatar_url: avatarUrl });
             showToast(tx('settings.toasts.avatarUpdated', undefined, 'Profile image updated'), 'success');
         } catch (error) {
             logger.error('Error uploading avatar:', error);

@@ -4,6 +4,7 @@ import type { Session, User } from '@supabase/supabase-js';
 import { useQueryClient } from '@tanstack/react-query';
 
 import { clearAllAuthData } from '@/lib/authUtils';
+import { invalidateFreelancerDashboardQueries } from '@/lib/dashboardQueries';
 import { logger } from '@/lib/logger';
 import { sanitizeFreelancerProfileData } from '@/lib/schemaValidation';
 import { supabase, withTimeout } from '@/lib/supabase';
@@ -588,12 +589,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
      setProfile(nextProfile);
      syncWorkspaceFromProfile(nextProfile, freelancerProfile);
 
-     // Invalidate dashboard query cache to ensure fresh data
-     queryClient.invalidateQueries({ queryKey: ['freelancer-dashboard'] });
-     queryClient.invalidateQueries({ queryKey: ['clientDashboardStats'] });
-     queryClient.invalidateQueries({ queryKey: ['clientDashboardJobs'] });
-     queryClient.invalidateQueries({ queryKey: ['clientActiveContracts'] });
-
      if (
        nextProfile.onboarding_completed ||
        nextProfile.client_onboarding_completed ||
@@ -629,6 +624,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     setFreelancerProfile(nextFreelancerProfile);
     syncWorkspaceFromProfile(profile, nextFreelancerProfile);
+
+    await invalidateFreelancerDashboardQueries(queryClient, user.id);
   };
 
   const setUserType = async (userType: UserType) => {
@@ -665,14 +662,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
    const refreshProfile = useCallback(async () => {
      const currentUserId = userRef.current?.id;
      if (currentUserId) {
-       await fetchProfile(currentUserId);
-       // Invalidate dashboard query cache to ensure fresh data
-       queryClient.invalidateQueries({ queryKey: ['freelancer-dashboard'] });
-       queryClient.invalidateQueries({ queryKey: ['clientDashboardStats'] });
-       queryClient.invalidateQueries({ queryKey: ['clientDashboardJobs'] });
-       queryClient.invalidateQueries({ queryKey: ['clientActiveContracts'] });
-     }
-   }, [fetchProfile, queryClient]);
+        await fetchProfile(currentUserId);
+      }
+   }, [fetchProfile]);
 
   const availableModes = useMemo(() => {
     return Array.from(new Set([...getWorkspaceCapabilities(profile?.user_type), activeMode])) as AccountMode[];

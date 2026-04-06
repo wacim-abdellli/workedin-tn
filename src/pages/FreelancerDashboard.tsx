@@ -36,6 +36,7 @@ import { DashWidget } from "../components/dashboard/DashWidget";
 import { ProfileRing } from "../components/dashboard/ProfileRing";
 import { useAuth } from "../contexts/AuthContext";
 import { useTranslation } from "../i18n";
+import { dashboardQueryKeys } from "../lib/dashboardQueries";
 import { supabase } from "../lib/supabase";
 import { formatCurrency } from "../lib/currencyUtils";
 
@@ -124,7 +125,7 @@ function FreelancerDashboardPage() {
   }, [language]);
 
   const { data: stats, isLoading } = useQuery({
-    queryKey: ["freelancerDashboardStats", profile?.id],
+    queryKey: dashboardQueryKeys.freelancerStats(profile?.id),
     enabled: !!profile?.id,
     queryFn: async (): Promise<DashboardStats> => {
       const userId = profile!.id;

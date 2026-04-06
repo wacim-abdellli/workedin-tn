@@ -22,6 +22,7 @@ import SkeletonCard from '../components/common/SkeletonCard';
 import EmptyState from '../components/ui/EmptyState';
 import SEO, { SEO_CONFIG } from '../components/common/SEO';
 import { DashWidget } from '../components/dashboard/DashWidget';
+import { dashboardQueryKeys } from '../lib/dashboardQueries';
 import { supabase } from '../lib/supabase';
 import { formatCurrency } from '../lib/currencyUtils';
 
@@ -103,7 +104,7 @@ function ClientDashboardPage() {
     const navigate = useNavigate();
 
     const { data: stats, isLoading: isStatsLoading } = useQuery({
-        queryKey: ['clientDashboardStats', profile?.id],
+        queryKey: dashboardQueryKeys.clientStats(profile?.id),
         enabled: !!profile?.id,
         queryFn: async (): Promise<DashboardStats & { jobs: DashboardJob[]; activeContracts: any[]; proposals: RecentProposal[] }> => {
             const userId = profile!.id;

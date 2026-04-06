@@ -18,7 +18,7 @@ export const queryClient = new QueryClient({
             staleTime: 30_000,      // Data is fresh for 30s
             gcTime: 5 * 60_000,     // Cache for 5 minutes (was cacheTime)
             retry: 2,               // Retry failed requests twice
-            refetchOnWindowFocus: true, // Refetch on tab focus for fresh data
+            refetchOnWindowFocus: false, // Avoid broad focus refetch churn; opt in only where needed
         },
         mutations: {
             retry: 1,
