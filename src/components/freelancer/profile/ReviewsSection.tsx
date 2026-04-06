@@ -8,122 +8,122 @@ interface ReviewsSectionProps {
     stats: FreelancerData['stats'];
 }
 
-export default function ReviewsSection({ reviews, stats }: ReviewsSectionProps) {
-    const { tx, language } = useTranslation();
-
-    const renderStars = (rating: number, size = 'w-4 h-4') => (
+function Stars({ rating, size = 'h-3.5 w-3.5' }: { rating: number; size?: string }) {
+    return (
         <div className="flex items-center gap-0.5">
             {[...Array(5)].map((_, i) => (
-                <Star key={i} className={`${size} transition-colors ${i < Math.round(rating) ? 'text-amber-400 fill-amber-400' : 'text-[var(--color-border-default)]'}`} />
+                <Star key={i} className={`${size} ${i < Math.round(rating) ? 'fill-current' : ''}`}
+                    style={{ color: i < Math.round(rating) ? 'var(--color-status-warning)' : 'var(--color-border-default)' }} />
             ))}
         </div>
     );
+}
 
-    const formatDate = (dateString: string) =>
-        new Date(dateString).toLocaleDateString(
+export default function ReviewsSection({ reviews, stats }: ReviewsSectionProps) {
+    const { tx, language } = useTranslation();
+
+    const formatDate = (d: string) =>
+        new Date(d).toLocaleDateString(
             language === 'ar' ? 'ar-TN' : language === 'fr' ? 'fr-FR' : 'en-US',
             { year: 'numeric', month: 'long' }
         );
 
     return (
-        <section className="group relative rounded-3xl overflow-hidden border-2 p-6 sm:p-8 transition-all duration-500 hover:shadow-2xl"
-            style={{
-                borderColor: 'color-mix(in srgb, #f59e0b 20%, var(--color-border-subtle))',
-                background: 'var(--color-background-elevated)',
-                boxShadow: '0 4px 20px -8px rgba(245,158,11,0.25)',
-            }}
-        >
-            <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#f59e0b] via-[#f97316] to-[#ef4444]" />
-            <div className="absolute top-0 right-0 w-48 h-48 rounded-full blur-3xl opacity-10 group-hover:opacity-20 transition-opacity duration-500 pointer-events-none"
-                style={{ background: 'linear-gradient(135deg, #f59e0b, #f97316)' }} />
+        <section className="rounded-xl border p-5 sm:p-6"
+            style={{ background: 'var(--color-background-elevated)', borderColor: 'var(--color-border-subtle)' }}>
+            <div className="mb-5">
+                <p className="text-[10px] font-bold uppercase tracking-widest mb-0.5"
+                    style={{ color: 'var(--workspace-primary)' }}>
+                    {tx('pages.freelancerProfile.sectionLabelTrust', undefined, 'Client trust')}
+                </p>
+                <h2 className="text-base font-bold" style={{ color: 'var(--color-text-primary)' }}>
+                    {tx('reviews.title', undefined, 'Reviews & work history')}
+                </h2>
+            </div>
 
-            <div className="relative z-10">
-                <div className="flex items-center gap-3 mb-6">
-                    <div className="p-2.5 rounded-xl shadow-lg" style={{ background: 'linear-gradient(135deg, #f59e0b, #f97316)' }}>
-                        <Star className="h-5 w-5 text-white fill-white" />
-                    </div>
-                    <div>
-                        <p className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: '#f59e0b' }}>
-                            {tx('pages.freelancerProfile.sectionLabelTrust', undefined, 'Client trust')}
-                        </p>
-                        <h2 className="text-xl font-bold" style={{ color: 'var(--color-text-primary)' }}>
-                            {tx('reviews.title', undefined, 'Reviews & work history')}
-                        </h2>
-                    </div>
+            {/* Rating summary */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 mb-6 p-4 rounded-xl border"
+                style={{ borderColor: 'var(--color-border-subtle)', background: 'var(--color-background-subtle)' }}>
+                <div className="text-center shrink-0">
+                    <p className="text-4xl font-bold" style={{ color: 'var(--color-text-primary)' }}>{stats.rating}</p>
+                    <Stars rating={stats.rating} size="h-4 w-4" />
+                    <p className="text-xs mt-1" style={{ color: 'var(--color-text-tertiary)' }}>
+                        {stats.reviews_count} {tx('pages.freelancerProfile.reviews', undefined, 'reviews')}
+                    </p>
                 </div>
-
-                {/* Rating Breakdown */}
-                <div className="flex flex-col md:flex-row items-center gap-8 mb-8 p-6 rounded-2xl border-2"
-                    style={{ background: 'color-mix(in srgb, #f59e0b 5%, var(--color-background-subtle))', borderColor: 'color-mix(in srgb, #f59e0b 20%, var(--color-border-subtle))' }}>
-                    <div className="text-center min-w-[120px]">
-                        <div className="text-5xl font-black mb-2" style={{ color: 'var(--color-text-primary)' }}>{stats.rating}</div>
-                        {renderStars(stats.rating, 'w-5 h-5')}
-                        <p className="text-xs mt-2 font-medium" style={{ color: 'var(--color-text-tertiary)' }}>
-                            {stats.reviews_count} {tx('pages.freelancerProfile.reviews', undefined, 'reviews')}
-                        </p>
-                    </div>
-                    <div className="flex-1 w-full space-y-2.5">
-                        {[5, 4, 3, 2, 1].map((stars) => {
-                            const count = reviews.filter(r => Math.round(r.rating) === stars).length;
-                            const pct = stats.reviews_count > 0 ? (count / stats.reviews_count) * 100 : 0;
-                            return (
-                                <div key={stars} className="flex items-center gap-3">
-                                    <span className="text-xs font-bold w-3" style={{ color: 'var(--color-text-secondary)' }}>{stars}</span>
-                                    <div className="flex-1 h-2.5 rounded-full overflow-hidden" style={{ background: 'var(--color-background-muted)' }}>
-                                        <div className="h-full rounded-full transition-all duration-700"
-                                            style={{ width: `${pct}%`, background: 'linear-gradient(90deg, #f59e0b, #f97316)' }} />
-                                    </div>
-                                    <span className="text-xs font-medium w-8 text-end" style={{ color: 'var(--color-text-tertiary)' }}>{Math.round(pct)}%</span>
+                <div className="flex-1 w-full space-y-2">
+                    {[5, 4, 3, 2, 1].map((star) => {
+                        const count = reviews.filter(r => Math.round(r.rating) === star).length;
+                        const pct = stats.reviews_count > 0 ? (count / stats.reviews_count) * 100 : 0;
+                        return (
+                            <div key={star} className="flex items-center gap-2.5">
+                                <span className="text-xs w-3 text-right" style={{ color: 'var(--color-text-tertiary)' }}>{star}</span>
+                                <div className="flex-1 h-1.5 rounded-full overflow-hidden"
+                                    style={{ background: 'var(--color-border-subtle)' }}>
+                                    <div className="h-full rounded-full transition-all duration-500"
+                                        style={{ width: `${pct}%`, background: 'var(--workspace-primary)' }} />
                                 </div>
-                            );
-                        })}
-                    </div>
+                                <span className="text-xs w-7 text-right" style={{ color: 'var(--color-text-tertiary)' }}>
+                                    {Math.round(pct)}%
+                                </span>
+                            </div>
+                        );
+                    })}
                 </div>
+            </div>
 
-                {/* Reviews List */}
-                <div className="space-y-5">
+            {/* Reviews list */}
+            {reviews.length > 0 ? (
+                <div className="space-y-4">
                     {reviews.map((review) => (
-                        <div key={review.id} className="p-5 rounded-2xl border-2 transition-all duration-300 hover:shadow-lg hover:scale-[1.01]"
-                            style={{ borderColor: 'color-mix(in srgb, #f59e0b 15%, var(--color-border-subtle))', background: 'color-mix(in srgb, #f59e0b 3%, var(--color-background-subtle))' }}>
-                            <div className="flex justify-between items-start mb-3">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-full overflow-hidden border-2 shrink-0"
-                                        style={{ borderColor: 'color-mix(in srgb, #f59e0b 30%, transparent)' }}>
+                        <div key={review.id} className="p-4 rounded-xl border"
+                            style={{ borderColor: 'var(--color-border-subtle)', background: 'var(--color-background-subtle)' }}>
+                            <div className="flex items-start justify-between gap-3 mb-2">
+                                <div className="flex items-center gap-2.5">
+                                    <div className="w-8 h-8 rounded-full overflow-hidden shrink-0 border"
+                                        style={{ borderColor: 'var(--color-border-subtle)' }}>
                                         {review.client_avatar ? (
                                             <OptimizedImage src={review.client_avatar} alt={review.client_name}
                                                 className="w-full h-full" imgClassName="object-cover" />
                                         ) : (
-                                            <div className="w-full h-full flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #f59e0b, #f97316)' }}>
-                                                <User className="w-5 h-5 text-white" />
+                                            <div className="w-full h-full flex items-center justify-center"
+                                                style={{ background: 'color-mix(in srgb, var(--workspace-primary) 10%, var(--color-background-muted))' }}>
+                                                <User className="w-4 h-4" style={{ color: 'var(--workspace-primary)' }} />
                                             </div>
                                         )}
                                     </div>
                                     <div>
-                                        <h4 className="font-bold text-sm" style={{ color: 'var(--color-text-primary)' }}>{review.client_name}</h4>
-                                        <span className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>{formatDate(review.created_at)}</span>
+                                        <p className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+                                            {review.client_name}
+                                        </p>
+                                        <p className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
+                                            {formatDate(review.created_at)}
+                                        </p>
                                     </div>
                                 </div>
-                                {renderStars(review.rating)}
+                                <Stars rating={review.rating} />
                             </div>
-                            <p className="text-xs font-semibold mb-2" style={{ color: '#f59e0b' }}>{review.job_title}</p>
-                            <p className="text-sm leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>{review.comment}</p>
-                        </div>
-                    ))}
-
-                    {reviews.length === 0 && (
-                        <div className="text-center py-14 rounded-2xl border-2 border-dashed group/empty transition-all duration-300 hover:border-[#f59e0b]"
-                            style={{ borderColor: 'var(--color-border-subtle)', background: 'var(--color-background-subtle)' }}>
-                            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4 shadow-lg transition-all duration-300 group-hover/empty:scale-110 group-hover/empty:rotate-6"
-                                style={{ background: 'linear-gradient(135deg, #f59e0b, #f97316)' }}>
-                                <Star className="w-7 h-7 text-white fill-white" />
-                            </div>
-                            <p className="text-sm font-medium" style={{ color: 'var(--color-text-tertiary)' }}>
-                                {tx('pages.freelancerProfile.noReviews', undefined, 'No written reviews yet')}
+                            <p className="text-xs font-medium mb-1.5" style={{ color: 'var(--workspace-primary)' }}>
+                                {review.job_title}
+                            </p>
+                            <p className="text-sm leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
+                                {review.comment}
                             </p>
                         </div>
-                    )}
+                    ))}
                 </div>
-            </div>
+            ) : (
+                <div className="py-10 text-center rounded-xl border border-dashed"
+                    style={{ borderColor: 'var(--color-border-default)', background: 'var(--color-background-subtle)' }}>
+                    <div className="inline-flex items-center justify-center w-10 h-10 rounded-xl mb-3"
+                        style={{ background: 'color-mix(in srgb, var(--workspace-primary) 10%, transparent)' }}>
+                        <Star className="w-5 h-5" style={{ color: 'var(--workspace-primary)' }} />
+                    </div>
+                    <p className="text-sm" style={{ color: 'var(--color-text-tertiary)' }}>
+                        {tx('pages.freelancerProfile.noReviews', undefined, 'No written reviews yet')}
+                    </p>
+                </div>
+            )}
         </section>
     );
 }
