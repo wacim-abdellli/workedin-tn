@@ -1,17 +1,15 @@
 import { useMemo, useState, useCallback } from 'react';
-import { Ban, Eye, Loader2, Search, ShieldOff, Trash2, X, Users } from 'lucide-react';
+import { Ban, Eye, Loader2, Repeat2, Search, ShieldOff, X, Users } from 'lucide-react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Button from '@/components/ui/Button';
 import Modal from '@/components/ui/Modal';
 import ErrorBoundary from '@/components/common/ErrorBoundary';
-import { EmptyState } from '@/components/common/EmptyState';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { useToast } from '@/components/ui/Toast';
-import { createNotification } from '@/lib/createNotification';
-import { getIdentityNotificationCopy, normalizeIdentityNotificationLanguage } from '@/lib/identityNotificationCopy';
 import { supabase } from '@/lib/supabase';
 import { useTranslation } from '@/i18n';
 import type { AdminUser, AdminUserRow } from '@/types/admin';
-import { adminIconButtonClass, adminInputClass, adminPanelClass, adminPillClass, adminSelectClass, adminTableHeadClass, adminTableRowClass, adminTableShellClass } from './adminTheme';
+import { adminActionButtonClass, adminIconButtonClass, adminInputClass, adminPanelClass, adminPillClass, adminSelectClass, adminTableHeadClass, adminTableRowClass, adminTableShellClass, adminToolbarClass } from './adminTheme';
 
 export const ADMIN_USERS_QUERY_KEY = ['admin-users'] as const;
 
@@ -25,11 +23,23 @@ interface ConfirmActionState {
 
 export async function fetchAdminUsers(): Promise<AdminUser[]> {
     try {
-        const { data, error } = await supabase
+        let { data, error } = await supabase
             .from('profiles')
-            .select('id,full_name,email,user_type,active_mode,cin_verified,is_admin,created_at')
+            .select('id,full_name,email,user_type,active_mode,cin_verified,is_admin,account_status,created_at')
             .order('created_at', { ascending: false })
             .limit(100);
+
+        // Temporary compatibility path until the account_status migration is applied everywhere.
+        if (error?.message?.toLowerCase().includes('account_status')) {
+            const fallback = await supabase
+                .from('profiles')
+                .select('id,full_name,email,user_type,active_mode,cin_verified,is_admin,created_at')
+                .order('created_at', { ascending: false })
+                .limit(100);
+
+            data = fallback.data?.map((row) => ({ ...row, account_status: 'active' })) as typeof data;
+            error = fallback.error;
+        }
 
         if (error) {
             console.error('fetchAdminUsers error:', error);
@@ -43,7 +53,7 @@ export async function fetchAdminUsers(): Promise<AdminUser[]> {
             name: user.full_name || '',
             email: user.email || '',
             type: user.user_type || 'client',
-            status: 'active',
+            status: user.account_status || 'active',
             last_active: user.created_at,
             active_mode: user.active_mode ?? null,
             cin_verified: Boolean(user.cin_verified),
@@ -138,24 +148,32 @@ export default function UsersTab() {
         },
     });
 
-    const deleteUserMutation = useMutation({
-        mutationFn: async (user: AdminUser) => {
-            const { error } = await supabase
-                .from('profiles')
-                .delete()
-                .eq('id', user.id);
+    const setUserStatusMutation = useMutation({
+        mutationFn: async ({ user, nextStatus, reason }: { user: AdminUser; nextStatus: AdminUser['status']; reason?: string }) => {
+            const { error } = await supabase.rpc('set_user_account_status', {
+                p_user_id: user.id,
+                p_next_status: nextStatus,
+                p_reason: reason ?? null,
+            });
             if (error) throw error;
 
-            return user.id;
+            return { userId: user.id, nextStatus };
         },
-        onSuccess: (userId) => {
-            updateUsersCache((prev) => prev.filter((user) => user.id !== userId));
-            setSelectedUser((prev) => (prev?.id === userId ? null : prev));
-            showToast(tx('dashboard.admin.users.userDeletedSuccessfully', undefined, 'User deleted successfully'), 'success');
+        onSuccess: ({ userId, nextStatus }) => {
+            updateUsersCache((prev) => prev.map((user) => (
+                user.id === userId ? { ...user, status: nextStatus } : user
+            )));
+            setSelectedUser((prev) => (prev?.id === userId ? { ...prev, status: nextStatus } : prev));
+            showToast(
+                nextStatus === 'active'
+                    ? tx('dashboard.admin.users.userReactivated', undefined, 'User reactivated successfully')
+                    : tx('dashboard.admin.users.userSuspended', undefined, 'User suspended successfully'),
+                'success'
+            );
         },
         onError: (error) => {
-            console.error('Delete user error:', error);
-            showToast(tx('dashboard.admin.users.unableToDeleteUser', undefined, 'Unable to delete user'), 'error');
+            console.error('Set user status error:', error);
+            showToast(tx('dashboard.admin.users.unableToUpdateStatus', undefined, 'Unable to update user status'), 'error');
         },
         onSettled: () => {
             setUserActionLoadingId(null);
@@ -164,20 +182,9 @@ export default function UsersTab() {
 
     const revokeVerificationMutation = useMutation({
         mutationFn: async ({ user, reason }: { user: AdminUser, reason: string }) => {
-            const { data: recipientProfile } = await supabase
-                .from('profiles')
-                .select('preferred_language')
-                .eq('id', user.id)
-                .maybeSingle();
-            const notificationCopy = getIdentityNotificationCopy('rejected', normalizeIdentityNotificationLanguage(recipientProfile?.preferred_language));
-
-            const lang = normalizeIdentityNotificationLanguage(recipientProfile?.preferred_language);
-            const reasonLabel = lang === 'ar' ? '\nالسبب: ' : lang === 'fr' ? '\nRaison: ' : '\nReason: ';
-            const finalBody = reason ? `${notificationCopy.body}${reasonLabel}${reason}` : notificationCopy.body;
-
-            // Use atomic RPC function to prevent race conditions
             const { data: rpcData, error: rpcError } = await supabase.rpc('revoke_verification_status', {
-                p_user_id: user.id
+                p_user_id: user.id,
+                p_admin_note: reason || null,
             });
 
             if (rpcError) {
@@ -185,21 +192,6 @@ export default function UsersTab() {
             }
 
             console.log('[UsersTab] Verification revoked atomically:', rpcData);
-
-            // Send notification separately (non-critical, can fail silently)
-            const notificationError = await createNotification({
-                userId: user.id,
-                type: 'system',
-                title: notificationCopy.title,
-                body: finalBody,
-            })
-                .then(() => null)
-                .catch((error) => error);
-
-            // Log notification errors for debugging, but don't fail the operation
-            if (notificationError) {
-                console.warn('[Admin] Notification insert failed (non-critical):', notificationError);
-            }
 
             return user.id;
         },
@@ -254,21 +246,38 @@ export default function UsersTab() {
     };
 
     const getDisplayName = (user: AdminUser) => user.name || tx('dashboard.admin.users.user', undefined, 'User');
+    const getAccountStatusTone = (status: AdminUser['status']): Parameters<typeof adminPillClass>[0] => status === 'active' ? 'emerald' : status === 'suspended' ? 'red' : 'amber';
+    const getAccountStatusLabel = (status: AdminUser['status']) => {
+        if (status === 'suspended') return tx('dashboard.admin.users.suspended', undefined, 'Suspended');
+        if (status === 'archived') return tx('dashboard.admin.users.archived', undefined, 'Archived');
+        return tx('dashboard.admin.users.active', undefined, 'Active');
+    };
 
     const handleToggleUserMode = (user: AdminUser) => {
         setUserActionLoadingId(user.id);
         toggleUserModeMutation.mutate(user);
     };
 
-    const handleDeleteUser = (user: AdminUser) => {
+    const handleToggleUserStatus = (user: AdminUser) => {
+        const nextStatus: AdminUser['status'] = user.status === 'active' ? 'suspended' : 'active';
         setConfirmAction({
             isOpen: true,
-            title: tx('dashboard.admin.users.deleteUser', undefined, 'Delete User'),
-            message: `${tx('dashboard.admin.users.deleteUserConfirm', undefined, 'Do you want to delete user')} ${getDisplayName(user)}? ${tx('dashboard.admin.users.actionCannotBeUndone', undefined, 'This action cannot be undone.')}`,
-            actionType: 'danger',
+            title: nextStatus === 'active'
+                ? tx('dashboard.admin.users.reactivateUser', undefined, 'Reactivate user')
+                : tx('dashboard.admin.users.suspendUser', undefined, 'Suspend user'),
+            message: nextStatus === 'active'
+                ? `${tx('dashboard.admin.users.reactivateUserConfirm', undefined, 'Do you want to restore access for user')} ${getDisplayName(user)}?`
+                : `${tx('dashboard.admin.users.suspendUserConfirm', undefined, 'Do you want to suspend user')} ${getDisplayName(user)}? ${tx('dashboard.admin.users.suspensionKeepsHistory', undefined, 'Their contracts, payments, disputes, and audit history will be kept.')}`,
+            actionType: nextStatus === 'active' ? 'primary' : 'warning',
             onConfirm: () => {
                 setUserActionLoadingId(user.id);
-                deleteUserMutation.mutate(user);
+                setUserStatusMutation.mutate({
+                    user,
+                    nextStatus,
+                    reason: nextStatus === 'active'
+                        ? 'Access restored by admin'
+                        : 'Suspended by admin from admin dashboard',
+                });
             },
         });
     };
@@ -301,7 +310,7 @@ export default function UsersTab() {
             titleEn="Failed to load Users tab — try refreshing"
         >
             <div className="space-y-6">
-                <div className={panelClass}>
+                <div className={adminToolbarClass}>
                     <div className="flex flex-wrap items-center gap-4">
                         <div className="flex-1 relative">
                             <Search className="absolute end-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted" />
@@ -327,19 +336,19 @@ export default function UsersTab() {
 
                 {isLoading ? (
                     <div className={`${panelClass} text-center py-12`}>
-                        <Loader2 className="w-8 h-8 animate-spin text-primary-600 mx-auto mb-2" />
+                        <Loader2 className="w-8 h-8 animate-spin text-[var(--color-brand-primary)] mx-auto mb-2" />
                         <p className="text-muted">{tx('dashboard.admin.users.loadingUsers', undefined, 'Loading users...')}</p>
                     </div>
                 ) : isError ? (
                     <div className={`${panelClass} text-center py-12`}>
-                        <p className="text-red-500 font-medium">{tx('dashboard.admin.users.failedToLoadUsers', undefined, 'Failed to load users')}</p>
+                        <p className="text-[var(--color-status-error)] font-medium">{tx('dashboard.admin.users.failedToLoadUsers', undefined, 'Failed to load users')}</p>
                         <p className="text-sm text-muted mt-1">{tx('dashboard.admin.users.checkDatabasePermissions', undefined, 'Check database permissions (is_admin = true)')}</p>
                     </div>
                 ) : (
                     <>
                         <div className={tableShellClass}>
                             <div className="overflow-x-auto">
-                                <table className="w-full">
+                                <table className="w-full min-w-[980px]">
                                     <thead className={tableHeadClass}>
                                         <tr>
                                             <th className="px-6 py-4 text-right text-xs font-semibold text-muted whitespace-nowrap tracking-wide">{tx('dashboard.admin.users.user', undefined, 'User')}</th>
@@ -349,7 +358,7 @@ export default function UsersTab() {
                                             <th className="px-6 py-4 text-right text-xs font-semibold text-muted whitespace-nowrap tracking-wide">{tx('dashboard.admin.users.actions', undefined, 'Actions')}</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-border/50">
+                                    <tbody>
                                         {filteredUsers.length === 0 ? (
                                             <tr>
                                                 <td colSpan={5} className="px-6 py-12">
@@ -367,54 +376,62 @@ export default function UsersTab() {
                                             </tr>
                                         ) : filteredUsers.map((user) => (
                                             <tr key={user.id} className={tableRowClass}>
-                                                <td className="px-6 py-4">
+                                                <td className="px-6 py-5">
                                                     <div className="flex items-center gap-3">
-                                                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white font-bold shrink-0 shadow-md shadow-cyan-700/20">
+                                                        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-blue-600 text-base font-bold text-white shadow-md shadow-sky-900/20 shrink-0">
                                                             {getDisplayName(user).charAt(0)}
                                                         </div>
                                                         <div>
                                                             <p className="font-semibold text-foreground whitespace-nowrap">{getDisplayName(user)}</p>
-                                                            <p className="text-sm text-muted whitespace-nowrap">{user.email}</p>
+                                                            <p className="mt-0.5 text-sm text-muted whitespace-nowrap">{user.email}</p>
                                                         </div>
                                                     </div>
                                                 </td>
-                                                <td className="px-6 py-4">
-                                                    <span className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap ${user.type === 'freelancer'
+                                                <td className="px-6 py-5">
+                                                    <div className="flex flex-wrap items-center gap-2">
+                                                    <span className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap ${user.type === 'freelancer'
                                                         ? adminPillClass('blue')
                                                         : adminPillClass('violet')
                                                         }`}>
                                                         {user.type === 'freelancer' ? tx('dashboard.admin.users.freelancer', undefined, 'Freelancer') : tx('dashboard.admin.users.client', undefined, 'Client')}
                                                     </span>
-                                                    <span className={`ms-2 px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap ${adminPillClass('primary')}`}>
+                                                    <span className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap ${adminPillClass('primary')}`}>
                                                         {tx('dashboard.admin.users.mode', undefined, 'Mode')}: {user.active_mode === 'freelancer' ? tx('dashboard.admin.users.freelancer', undefined, 'Freelancer') : tx('dashboard.admin.users.client', undefined, 'Client')}
                                                     </span>
+                                                    </div>
                                                 </td>
-                                                <td className="px-6 py-4">
-                                                    <span className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap ${user.cin_verified
+                                                <td className="px-6 py-5">
+                                                    <div className="flex flex-wrap items-center gap-2">
+                                                    <span className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap ${adminPillClass(getAccountStatusTone(user.status))}`}>
+                                                        {getAccountStatusLabel(user.status)}
+                                                    </span>
+                                                    <span className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap ${user.cin_verified
                                                         ? adminPillClass('emerald')
                                                         : adminPillClass('amber')
                                                         }`}>
                                                         {user.cin_verified ? tx('dashboard.admin.users.verified', undefined, 'Verified') : tx('dashboard.admin.users.unverified', undefined, 'Unverified')}
                                                     </span>
                                                     {user.is_admin && (
-                                                        <span className={`ms-2 px-2 py-1 rounded-full text-xs font-medium ${adminPillClass('indigo')}`}>{tx('dashboard.admin.users.admin', undefined, 'Admin')}</span>
+                                                        <span className={`px-3 py-1.5 rounded-full text-xs font-semibold ${adminPillClass('indigo')}`}>{tx('dashboard.admin.users.admin', undefined, 'Admin')}</span>
                                                     )}
+                                                    </div>
                                                 </td>
-                                                <td className="px-6 py-4 text-sm text-muted whitespace-nowrap">{formatAdminDate(user.last_active)}</td>
-                                                <td className="px-6 py-4">
-                                                    <div className="flex items-center gap-2">
+                                                <td className="px-6 py-5 text-sm font-medium text-muted whitespace-nowrap">{formatAdminDate(user.last_active)}</td>
+                                                <td className="px-6 py-5">
+                                                    <div className="flex items-center gap-2 justify-end">
                                                         <button
                                                             onClick={() => setSelectedUser(user)}
-                                                            className={`${iconActionClass} hover:text-primary-600 dark:hover:text-primary-300 hover:bg-primary-50 dark:hover:bg-primary-500/10`}
+                                                            className={`${adminActionButtonClass} border-sky-500/15 text-sky-200 hover:bg-sky-500/10`}
                                                         >
                                                             <Eye className="w-4 h-4" />
+                                                            <span>{tx('dashboard.admin.users.view', undefined, 'View')}</span>
                                                         </button>
                                                         {user.cin_verified && (
                                                         <button
                                                             disabled={userActionLoadingId === user.id}
                                                             onClick={() => handleRevokeVerification(user)}
                                                             title={tx('dashboard.admin.users.revokeVerification', undefined, 'Revoke Verification')}
-                                                            className={`${iconActionClass} hover:text-yellow-600 dark:hover:text-yellow-300 hover:bg-yellow-50 dark:hover:bg-yellow-500/10 disabled:opacity-50`}
+                                                            className={`${iconActionClass} hover:text-[var(--color-status-warning)] dark:hover:text-[var(--color-status-warning)] hover:bg-[var(--color-status-warning-subtle)] dark:hover:bg-[var(--color-status-warning)]/10 disabled:opacity-50`}
                                                         >
                                                                 <ShieldOff className="w-4 h-4" />
                                                             </button>
@@ -422,16 +439,16 @@ export default function UsersTab() {
                                                         <button
                                                             disabled={userActionLoadingId === user.id}
                                                             onClick={() => handleToggleUserMode(user)}
-                                                            className={`${iconActionClass} hover:text-amber-600 dark:hover:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-500/10 disabled:opacity-50`}
+                                                            className={`${iconActionClass} hover:text-[var(--color-status-warning)] dark:hover:text-[var(--color-status-warning)] hover:bg-[var(--color-status-warning-subtle)] dark:hover:bg-[var(--color-status-warning)]/10 disabled:opacity-50`}
                                                         >
-                                                            <Ban className="w-4 h-4" />
+                                                            <Repeat2 className="w-4 h-4" />
                                                         </button>
                                                         <button
                                                             disabled={userActionLoadingId === user.id}
-                                                            onClick={() => handleDeleteUser(user)}
-                                                            className={`${iconActionClass} hover:text-red-600 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-500/10 disabled:opacity-50`}
+                                                            onClick={() => handleToggleUserStatus(user)}
+                                                            className={`${iconActionClass} hover:text-[var(--color-status-error)] dark:hover:text-[var(--color-status-error)] hover:bg-[var(--color-status-error-subtle)] dark:hover:bg-[var(--color-status-error)]/10 disabled:opacity-50`}
                                                         >
-                                                            <Trash2 className="w-4 h-4" />
+                                                            <Ban className="w-4 h-4" />
                                                         </button>
                                                     </div>
                                                 </td>
@@ -454,11 +471,8 @@ export default function UsersTab() {
                                                 <p className="text-xs text-muted">{user.email}</p>
                                             </div>
                                         </div>
-                                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${user.status === 'active'
-                                            ? adminPillClass('emerald')
-                                            : adminPillClass('red')
-                                             }`}>
-                                            {user.cin_verified ? tx('dashboard.admin.users.verified', undefined, 'Verified') : tx('dashboard.admin.users.unverified', undefined, 'Unverified')}
+                                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${adminPillClass(getAccountStatusTone(user.status))}`}>
+                                            {getAccountStatusLabel(user.status)}
                                         </span>
                                     </div>
                                     <div className="flex items-center justify-between py-2 border-b border-border/50">
@@ -492,7 +506,7 @@ export default function UsersTab() {
                                             <Button
                                                 size="sm"
                                                 variant="ghost"
-                                                className="text-amber-600 hover:bg-amber-50 flex-1 justify-center"
+                                                className="text-[var(--color-status-warning)] hover:bg-[var(--color-status-warning-subtle)] flex-1 justify-center"
                                                 disabled={userActionLoadingId === user.id}
                                                 onClick={() => handleRevokeVerification(user)}
                                             >
@@ -503,22 +517,24 @@ export default function UsersTab() {
                                         <Button
                                             size="sm"
                                             variant="ghost"
-                                            className="text-yellow-600 hover:bg-yellow-50 flex-1 justify-center"
+                                            className="text-[var(--color-status-warning)] hover:bg-[var(--color-status-warning-subtle)] flex-1 justify-center"
                                             disabled={userActionLoadingId === user.id}
                                             onClick={() => handleToggleUserMode(user)}
                                         >
-                                            <Ban className="w-4 h-4 ml-1" />
+                                            <Repeat2 className="w-4 h-4 ml-1" />
                                             {tx('dashboard.admin.users.switch', undefined, 'Switch')}
                                         </Button>
                                         <Button
                                             size="sm"
                                             variant="ghost"
-                                            className="text-red-600 hover:bg-red-50 flex-1 justify-center"
+                                            className="text-[var(--color-status-error)] hover:bg-[var(--color-status-error-subtle)] flex-1 justify-center"
                                             disabled={userActionLoadingId === user.id}
-                                            onClick={() => handleDeleteUser(user)}
+                                            onClick={() => handleToggleUserStatus(user)}
                                         >
-                                            <Trash2 className="w-4 h-4 ml-1" />
-                                            {tx('dashboard.admin.users.delete', undefined, 'Delete')}
+                                            <Ban className="w-4 h-4 ml-1" />
+                                            {user.status === 'active'
+                                                ? tx('dashboard.admin.users.suspend', undefined, 'Suspend')
+                                                : tx('dashboard.admin.users.reactivate', undefined, 'Reactivate')}
                                         </Button>
                                     </div>
                                 </div>
@@ -530,11 +546,11 @@ export default function UsersTab() {
 
             {selectedUser && (
                 <div className="fixed inset-0 z-50 bg-black/55 backdrop-blur-sm flex items-center justify-center p-4">
-                    <div className={`${adminPanelClass} w-full max-w-xl p-6 sm:p-7`}>
+                <div className={`${adminPanelClass} w-full max-w-xl p-6 sm:p-7`}>
                         <div className="flex items-start justify-between gap-3 mb-5">
                             <div>
                                 <h3 className="text-lg font-bold text-foreground">{tx('dashboard.admin.users.userDetails', undefined, 'User details')}</h3>
-                                <p className="text-sm text-muted">{selectedUser.id}</p>
+                                <p className="text-sm text-muted">{selectedUser!.id}</p>
                             </div>
                             <button
                                 onClick={() => setSelectedUser(null)}
@@ -546,30 +562,33 @@ export default function UsersTab() {
                         </div>
 
                         <div className="space-y-3 text-sm">
-                            <p><strong>{tx('dashboard.admin.users.name', undefined, 'Name')}:</strong> {getDisplayName(selectedUser)}</p>
-                            <p><strong>{tx('dashboard.admin.users.email', undefined, 'Email')}:</strong> {selectedUser.email || '-'}</p>
-                            <p><strong>{tx('dashboard.admin.users.accountType', undefined, 'Account type')}:</strong> {selectedUser.type}</p>
-                            <p><strong>{tx('dashboard.admin.users.activeMode', undefined, 'Active mode')}:</strong> {selectedUser.active_mode || tx('dashboard.admin.users.client', undefined, 'Client')}</p>
-                            <p><strong>{tx('dashboard.admin.users.identityVerification', undefined, 'Identity verification')}:</strong> {selectedUser.cin_verified ? tx('dashboard.admin.users.yes', undefined, 'Yes') : tx('dashboard.admin.users.no', undefined, 'No')}</p>
-                            <p><strong>{tx('dashboard.admin.users.admin', undefined, 'Admin')}:</strong> {selectedUser.is_admin ? tx('dashboard.admin.users.yes', undefined, 'Yes') : tx('dashboard.admin.users.no', undefined, 'No')}</p>
+                            <p><strong>{tx('dashboard.admin.users.name', undefined, 'Name')}:</strong> {getDisplayName(selectedUser!)}</p>
+                            <p><strong>{tx('dashboard.admin.users.email', undefined, 'Email')}:</strong> {selectedUser!.email || '-'}</p>
+                            <p><strong>{tx('dashboard.admin.users.accountType', undefined, 'Account type')}:</strong> {selectedUser!.type}</p>
+                            <p><strong>{tx('dashboard.admin.users.accountStatus', undefined, 'Account status')}:</strong> {getAccountStatusLabel(selectedUser!.status)}</p>
+                            <p><strong>{tx('dashboard.admin.users.activeMode', undefined, 'Active mode')}:</strong> {selectedUser!.active_mode || tx('dashboard.admin.users.client', undefined, 'Client')}</p>
+                            <p><strong>{tx('dashboard.admin.users.identityVerification', undefined, 'Identity verification')}:</strong> {selectedUser!.cin_verified ? tx('dashboard.admin.users.yes', undefined, 'Yes') : tx('dashboard.admin.users.no', undefined, 'No')}</p>
+                            <p><strong>{tx('dashboard.admin.users.admin', undefined, 'Admin')}:</strong> {selectedUser!.is_admin ? tx('dashboard.admin.users.yes', undefined, 'Yes') : tx('dashboard.admin.users.no', undefined, 'No')}</p>
                         </div>
 
                         <div className="mt-6 flex flex-wrap gap-2">
                             <Button
                                 variant="outline"
-                                disabled={userActionLoadingId === selectedUser.id}
-                                onClick={() => handleToggleUserMode(selectedUser)}
+                                disabled={userActionLoadingId === selectedUser!.id}
+                                onClick={() => handleToggleUserMode(selectedUser!)}
                             >
-                                <Ban className="w-4 h-4 ml-1" />
+                                <Repeat2 className="w-4 h-4 ml-1" />
                                 {tx('dashboard.admin.users.switchMode', undefined, 'Switch mode')}
                             </Button>
                             <Button
-                                variant="danger"
-                                disabled={userActionLoadingId === selectedUser.id}
-                                onClick={() => handleDeleteUser(selectedUser)}
+                                variant={selectedUser!.status === 'active' ? 'danger' : 'primary'}
+                                disabled={userActionLoadingId === selectedUser!.id}
+                                onClick={() => handleToggleUserStatus(selectedUser!)}
                             >
-                                <Trash2 className="w-4 h-4 ml-1" />
-                                {tx('dashboard.admin.users.deleteUser', undefined, 'Delete user')}
+                                <Ban className="w-4 h-4 ml-1" />
+                                {selectedUser!.status === 'active'
+                                    ? tx('dashboard.admin.users.suspendUser', undefined, 'Suspend user')
+                                    : tx('dashboard.admin.users.reactivateUser', undefined, 'Reactivate user')}
                             </Button>
                         </div>
                     </div>
@@ -585,7 +604,7 @@ export default function UsersTab() {
                         </Button>
                         <Button
                             variant={confirmAction.actionType === 'danger' ? 'danger' : 'primary'}
-                            className={confirmAction.actionType === 'warning' ? 'bg-amber-600 hover:bg-amber-700 text-white border-transparent shadow shadow-amber-600/30' : ''}
+                            className={confirmAction.actionType === 'warning' ? 'bg-[var(--color-status-warning)] hover:bg-[var(--color-status-warning-hover)] text-white border-transparent shadow shadow-amber-600/30' : ''}
                             onClick={() => {
                                 closeConfirm();
                                 confirmAction.onConfirm();

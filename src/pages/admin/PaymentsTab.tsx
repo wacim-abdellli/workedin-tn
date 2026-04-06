@@ -31,7 +31,7 @@ export default function PaymentsTab() {
             <div className={panelClass}>
                 <div className="flex items-center justify-between mb-6">
                      <h3 className="font-bold text-foreground flex items-center gap-2">
-                         <CreditCard className="w-5 h-5 text-yellow-600" />
+                         <CreditCard className="w-5 h-5 text-[var(--color-status-warning)]" />
                          {tx('dashboard.admin.payments.title', undefined, 'Stuck payments (older than 1 hour)')}
                      </h3>
                      <Button variant="outline" size="sm" onClick={() => refetch()}>
@@ -39,10 +39,10 @@ export default function PaymentsTab() {
                      </Button>
                  </div>
                 {isLoading ? (
-                     <div className="text-center py-12"><Loader2 className="w-8 h-8 animate-spin text-primary-600 mx-auto mb-2" /><p className="text-muted">{tx('dashboard.admin.payments.loading', undefined, 'Loading...')}</p></div>
+                     <div className="text-center py-12"><Loader2 className="w-8 h-8 animate-spin text-[var(--color-brand-primary)] mx-auto mb-2" /><p className="text-muted">{tx('dashboard.admin.payments.loading', undefined, 'Loading...')}</p></div>
                  ) : stuckPayments.length === 0 ? (
                      <div className="text-center py-12">
-                         <Check className="w-12 h-12 text-green-500 mx-auto mb-2" />
+                         <Check className="w-12 h-12 text-[var(--color-status-success)] mx-auto mb-2" />
                          <p className="text-foreground font-medium">{tx('dashboard.admin.payments.noPayments', undefined, 'No stuck payments')}</p>
                          <p className="text-sm text-muted">{tx('dashboard.admin.payments.allSuccess', undefined, 'All transactions completed successfully')}</p>
                      </div>

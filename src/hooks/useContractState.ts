@@ -249,17 +249,22 @@ export function useContractState({
                 const receiverId = getCounterpartyId(contract, userRole);
                 if (!receiverId) throw new Error('Unable to determine message recipient');
 
-                await updateStatus('disputed', {
-                    dispute_reason: reason,
+                const { error: disputeError } = await supabase.rpc('open_dispute_atomic', {
+                    p_contract_id: contractId,
+                    p_reason: reason,
                 });
 
-                // Create a formal dispute record for admin tracking
-                await supabase.from('disputes').insert({
-                    contract_id: contractId,
-                    opened_by: userId,
-                    reason,
-                    status: 'open',
-                });
+                if (disputeError) throw disputeError;
+
+                setContract((current) => current ? {
+                    ...current,
+                    status: 'disputed',
+                    dispute_reason: reason,
+                } : current);
+
+                if (queryClient) {
+                    await queryClient.invalidateQueries({ queryKey: ['contract', contractId] });
+                }
 
                 const { error: messageError } = await sendContractMessage({
                     contract_id: contractId,
@@ -269,12 +274,14 @@ export function useContractState({
                     message_type: 'dispute',
                 });
 
-                if (messageError) throw messageError;
+                if (messageError) {
+                    logger.warn('Dispute opened but dispute message failed to send', messageError);
+                }
             } finally {
                 setIsDisputing(false);
             }
         },
-        [contract, contractId, userId, userRole, updateStatus]
+        [contract, contractId, queryClient, userId, userRole]
     );
 
     const canDeliver = userRole === 'freelancer' && contract?.status === 'active';

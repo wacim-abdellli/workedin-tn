@@ -231,7 +231,7 @@ export default function StepJobBasics() {
                     <textarea
                         {...register('description')}
                         rows={8}
-                        className="w-full resize-none rounded-[1.4rem] border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-3 text-gray-900 dark:text-gray-100 dark:text-white placeholder:text-gray-400 transition-all duration-200 hover:border-[color:var(--workspace-primary)]/30 hover:bg-[color:var(--workspace-primary)]/5 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:border-white/10 dark:border-gray-800 dark:bg-[#1a1825] dark:text-white dark:placeholder:text-gray-600 dark:text-gray-300"
+                        className="w-full resize-none rounded-[1.4rem] border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-3 text-gray-900 dark:text-gray-100 dark:text-white placeholder:text-gray-400 transition-all duration-200 hover:border-[color:var(--workspace-primary)]/30 hover:bg-[color:var(--workspace-primary)]/5 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:border-white/10 dark:border-gray-800 dark:bg-[var(--color-bg-muted)] dark:text-white dark:placeholder:text-gray-600 dark:text-gray-300"
                         placeholder={tx('jobs.new.stepBasics.projectDescriptionPlaceholder', undefined, 'اشرح تفاصيل المشروع، المخرجات المتوقعة، وأي متطلبات خاصة...')}
                     />
                     <div className="flex justify-between px-1 text-xs">

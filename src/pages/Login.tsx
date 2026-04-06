@@ -31,16 +31,15 @@ function Login() {
     );
     const postLoginPath = isAuthOrOnboardingPath ? null : rawPostLoginPath;
 
-    // Redirect authenticated users — always go through /dashboard which waits
+    // Redirect authenticated users — go to home page which waits
     // for full auth state before deciding where to go. This prevents routing to
     // /onboarding when the profile hasn't loaded yet.
     useEffect(() => {
         if (!isFullyReady || !isAuthenticated) return;
 
         // If the user was trying to reach a specific protected page, send them there.
-        // Otherwise go to /dashboard which uses DashboardRedirect to safely resolve
-        // the correct workspace page with a fully-loaded profile.
-        navigate(postLoginPath || '/dashboard', { replace: true });
+        // Otherwise go to home (/) page.
+        navigate(postLoginPath || '/', { replace: true });
     }, [isAuthenticated, isFullyReady, navigate, postLoginPath]);
 
     const handleSuccess = () => {
@@ -77,7 +76,7 @@ function Login() {
                 topAction={
                     <Link
                         to="/signup"
-                        className="inline-flex items-center rounded-full border border-gray-200 dark:border-white/12 bg-white/60 dark:bg-white/5 px-4 py-2 text-sm font-medium text-gray-900 dark:text-white/80 backdrop-blur-sm shadow-sm transition-colors hover:border-gray-300 dark:hover:border-white/20 hover:bg-gray-50 dark:hover:bg-white/10 dark:hover:text-white"
+                        className="inline-flex items-center rounded-full border border-[var(--color-border-default)] bg-[var(--color-background-base)]/60 px-4 py-2 text-sm font-medium text-[var(--color-text-primary)] backdrop-blur-sm shadow-[var(--shadow-elevation-1)] transition-colors hover:border-[var(--color-border-strong)] hover:bg-[var(--color-background-muted)]"
                     >
                         {tx('authPages.login.createAccountAction', undefined, 'Create account')}
                     </Link>
@@ -85,14 +84,14 @@ function Login() {
             >
                 <div className="animate-slide-up">
                     {isOAuthResume && isLoading ? (
-                        <div className="flex min-h-[320px] flex-col items-center justify-center rounded-[24px] border border-gray-200 dark:border-white/5 bg-white/50 p-8 text-center dark:bg-zinc-900/60 backdrop-blur-md">
+                        <div className="flex min-h-[320px] flex-col items-center justify-center rounded-[24px] border border-[var(--color-border-default)] bg-[var(--color-background-base)]/50 p-8 text-center backdrop-blur-md">
                             <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl" style={{ backgroundColor: 'color-mix(in srgb, var(--workspace-accent) 15%, transparent)' }}>
                                 <Loader2 className="h-8 w-8 animate-spin" style={{ color: 'var(--workspace-accent)' }} />
                             </div>
-                            <h1 className="mb-3 text-xl font-semibold tracking-tight text-gray-900 dark:text-white">
+                            <h1 className="mb-3 text-xl font-semibold tracking-tight text-[var(--color-text-primary)]">
                                 {tx('authPages.login.finishingSignIn', undefined, 'Securing session...')}
                             </h1>
-                            <p className="max-w-[280px] text-sm leading-relaxed text-gray-500 dark:text-zinc-400">
+                            <p className="max-w-[280px] text-sm leading-relaxed text-[var(--color-text-secondary)]">
                                 {tx('authPages.login.finishingSignInDescription', undefined, 'Hang tight while we prepare your workspace.')}
                             </p>
                         </div>

@@ -89,7 +89,7 @@ export default function JobWizardLayout({
                                 <span>{completion}%</span>
                             </div>
                             <div className="h-2.5 overflow-hidden rounded-full bg-black/[0.06] dark:bg-white/10">
-                                <div className="h-full rounded-full bg-[linear-gradient(90deg,var(--brand-accent),#f59e0b)] transition-[width] duration-300" style={{ width: `${completion}%` }} />
+                                <div className="h-full rounded-full bg-gradient-to-r from-[var(--workspace-accent)] to-[var(--workspace-primary)] transition-[width] duration-300" style={{ width: `${completion}%` }} />
                             </div>
                             <div className="flex items-center justify-between text-xs" style={{ color: 'var(--text-muted)' }}>
                                 <span>{tx('jobs.new.stepCounter', { current: currentStep, total: steps.length }, `Step ${currentStep} of ${steps.length}`)}</span>

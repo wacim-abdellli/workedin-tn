@@ -70,11 +70,11 @@ export default function ReportsTab() {
                 <div className={panelClass}>
                     <div className="flex flex-wrap items-center justify-between gap-4">
                         <div className="flex items-center gap-2">
-                            <Flag className="w-5 h-5 text-red-500" />
+                            <Flag className="w-5 h-5 text-[var(--color-status-error)]" />
                             <h3 className="font-bold text-foreground">
                                 {tr('البلاغات', 'Flagged Content', 'Signalements')}
                                 {reports.length > 0 && (
-                                    <span className="ml-2 px-2 py-0.5 bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-300 rounded-full text-xs">{reports.length}</span>
+                                    <span className="ml-2 px-2 py-0.5 bg-[var(--color-status-error-subtle)] text-[var(--color-status-error-hover)] dark:bg-[var(--color-status-error)]/15 dark:text-[var(--color-status-error)] rounded-full text-xs">{reports.length}</span>
                                 )}
                             </h3>
                         </div>
@@ -101,11 +101,11 @@ export default function ReportsTab() {
                     <SkeletonList count={4} />
                 ) : isError ? (
                     <div className={`${panelClass} text-center py-12`}>
-                        <p className="text-red-500 font-medium">{tr('فشل تحميل البلاغات', 'Failed to load reports', 'Impossible de charger les signalements')}</p>
+                        <p className="text-[var(--color-status-error)] font-medium">{tr('فشل تحميل البلاغات', 'Failed to load reports', 'Impossible de charger les signalements')}</p>
                     </div>
                 ) : reports.length === 0 ? (
                     <div className={`${panelClass} text-center py-12`}>
-                        <Check className="w-12 h-12 text-green-500 mx-auto mb-2" />
+                        <Check className="w-12 h-12 text-[var(--color-status-success)] mx-auto mb-2" />
                         <p className="text-foreground font-medium">{tr('لا توجد بلاغات', 'No reports found', 'Aucun signalement')}</p>
                         <p className="text-sm text-muted mt-1">{tr('لا توجد بلاغات بهذه الحالة', 'No reports with this status', 'Aucun signalement avec ce statut')}</p>
                     </div>
@@ -156,7 +156,7 @@ export default function ReportsTab() {
                                                                 <Button
                                                                     size="sm"
                                                                     variant="ghost"
-                                                                    className="text-gray-500 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-400"
+                                                                    className="text-[var(--color-text-muted)] hover:bg-[var(--color-bg-subtle)] dark:bg-[var(--color-bg-elevated)] dark:text-[var(--color-text-muted)]"
                                                                     disabled={updateMutation.isPending}
                                                                     onClick={() => updateMutation.mutate({ id: report.id, status: 'dismissed' })}
                                                                 >
@@ -169,7 +169,7 @@ export default function ReportsTab() {
                                                             <Button
                                                                 size="sm"
                                                                 variant="ghost"
-                                                                className="text-amber-600 hover:bg-amber-50"
+                                                                className="text-[var(--color-status-warning)] hover:bg-[var(--color-status-warning-subtle)]"
                                                                 disabled={updateMutation.isPending}
                                                                 onClick={() => updateMutation.mutate({ id: report.id, status: 'pending' })}
                                                             >
@@ -200,7 +200,7 @@ export default function ReportsTab() {
                                         </div>
                                     </div>
                                     
-                                    <div className="mb-3 pb-3 border-b border-gray-100 dark:border-gray-800 dark:border-white/10">
+                                    <div className="mb-3 pb-3 border-b border-[var(--color-border-subtle)] dark:border-[var(--color-border-strong)] dark:border-white/10">
                                         <p className="text-sm text-muted mb-1">{tr('السبب', 'Reason', 'Raison')}</p>
                                         <p className="text-sm text-foreground">{report.reason}</p>
                                     </div>
@@ -226,7 +226,7 @@ export default function ReportsTab() {
                                                 <Button
                                                     size="sm"
                                                     variant="ghost"
-                                                    className="flex-1 min-h-[44px] text-gray-500 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-400"
+                                                    className="flex-1 min-h-[44px] text-[var(--color-text-muted)] hover:bg-[var(--color-bg-subtle)] dark:bg-[var(--color-bg-elevated)] dark:text-[var(--color-text-muted)]"
                                                     disabled={updateMutation.isPending}
                                                     onClick={() => updateMutation.mutate({ id: report.id, status: 'dismissed' })}
                                                 >

@@ -56,11 +56,15 @@ const PaymentSuccess = () => {
                 // STEP 1: IDEMPOTENCY CHECK
                 // Check if payment was already processed
                 // ================================================
-                const { data: existingTransaction } = await supabase
+                const { data: existingTransaction, error: transactionLookupError } = await supabase
                     .from('transactions')
-                    .select('id, status, amount')
+                    .select('id, status, amount, contract_id, user_id, payment_gateway_id')
                     .eq('payment_gateway_id', payment_id)
-                    .single();
+                    .maybeSingle();
+
+                if (transactionLookupError) {
+                    throw transactionLookupError;
+                }
 
                 if (existingTransaction?.status === 'completed') {
                     logger.log('[PaymentSuccess] Payment already processed (idempotent)');
@@ -81,20 +85,17 @@ const PaymentSuccess = () => {
                 // ================================================
                 // STEP 2: VERIFY WITH FLOUCI
                 // ================================================
-                const verification = await verifyPayment(payment_id);
-                logger.log('[PaymentSuccess] Verification result:', verification);
-
-                if (verification.status !== 'SUCCESS') {
-                    setStatus('failed');
-                    setError('لم يتم التحقق من الدفع');
-                    return;
-                }
-
-                // ================================================
-                // STEP 3: GET CONTRACT DETAILS
-                // ================================================
                 if (!contract_id) {
                     // No contract - just update transaction if exists
+                    const verification = await verifyPayment(payment_id);
+                    logger.log('[PaymentSuccess] Verification result:', verification);
+
+                    if (verification.status !== 'SUCCESS') {
+                        setStatus('failed');
+                        setError('لم يتم التحقق من الدفع');
+                        return;
+                    }
+
                     if (existingTransaction) {
                         await supabase
                             .from('transactions')
@@ -109,6 +110,10 @@ const PaymentSuccess = () => {
                     setStatus('success');
                     setTimeout(() => navigate('/client/dashboard'), 4000);
                     return;
+                }
+
+                if (!existingTransaction) {
+                    throw new Error('Pending payment transaction not found for this payment session');
                 }
 
                 // Get contract with correct field name (amount, not budget)
@@ -134,76 +139,49 @@ const PaymentSuccess = () => {
                     return;
                 }
 
-                // ================================================
-                // STEP 4: ATOMIC PAYMENT COMPLETION
-                // Uses SQL function to update all in single transaction
-                // ================================================
-                if (existingTransaction && contract.freelancer_id) {
-                    logger.log('[PaymentSuccess] Completing payment atomically...');
-
-                    const { data: completionResult, error: completionError } = await supabase.rpc(
-                        'complete_escrow_payment',
-                        {
-                            p_transaction_id: existingTransaction.id,
-                            p_contract_id: contract_id,
-                            p_freelancer_id: contract.freelancer_id,
-                            p_amount: contract.amount,
-                        }
-                    );
-
-                    if (completionError) {
-                        logger.error('[PaymentSuccess] Atomic payment error:', completionError);
-
-                        // Check if it was an idempotent failure (already completed)
-                        if (completionError.message?.includes('already completed')) {
-                            setAmount(contract.amount || 0);
-                            setStatus('success');
-                            setTimeout(() => navigate(`/contracts/${contract_id}`), 3000);
-                            return;
-                        }
-
-                        setStatus('failed');
-                        setError('فشل في إتمام الدفع');
-                        return;
-                    }
-
-                    logger.log('[PaymentSuccess] Atomic completion result:', completionResult);
-                    setAmount(contract.amount || 0);
-
-                    // Fire payment received email — non-blocking
-                    if (contract.freelancer_id) {
-                        supabase
-                            .from('profiles')
-                            .select('email, full_name')
-                            .eq('id', contract.freelancer_id)
-                            .single()
-                            .then(({ data: fp }) => {
-                                if (fp?.email) {
-                                    sendPaymentReceivedEmail(
-                                        fp.email,
-                                        fp.full_name || 'مستقل',
-                                        contract.amount,
-                                        contract_id,
-                                    );
-                                }
-                            });
-                    }
-                } else {
-                    // Fallback: Manual updates if no transaction found
-                    // This shouldn't happen in normal flow but handle it gracefully
-                    logger.log('[PaymentSuccess] No transaction found, updating contract directly');
-
-                    await supabase
-                        .from('contracts')
-                        .update({
-                            escrow_funded: true,
-                            escrow_amount: contract.amount,
-                            funded_at: new Date().toISOString(),
-                        })
-                        .eq('id', contract_id);
-
-                    setAmount(contract.amount || 0);
+                if (!contract.freelancer_id) {
+                    throw new Error('Contract is missing a freelancer reference');
                 }
+
+                logger.log('[PaymentSuccess] Completing payment via secure verification flow...');
+
+                const verification = await verifyPayment(payment_id, {
+                    complete_payment: true,
+                    transaction_id: existingTransaction.id,
+                    contract_id,
+                    freelancer_id: contract.freelancer_id,
+                });
+
+                logger.log('[PaymentSuccess] Verification result:', verification);
+
+                if (verification.status !== 'SUCCESS') {
+                    setStatus('failed');
+                    setError('لم يتم التحقق من الدفع');
+                    return;
+                }
+
+                if (verification.completion?.success === false) {
+                    throw new Error(verification.completion.error || 'فشل في إتمام الدفع');
+                }
+
+                setAmount(contract.amount || 0);
+
+                // Fire payment received email — non-blocking
+                supabase
+                    .from('profiles')
+                    .select('email, full_name')
+                    .eq('id', contract.freelancer_id)
+                    .single()
+                    .then(({ data: fp }) => {
+                        if (fp?.email) {
+                            sendPaymentReceivedEmail(
+                                fp.email,
+                                fp.full_name || 'مستقل',
+                                contract.amount,
+                                contract_id,
+                            );
+                        }
+                    });
 
                 // ================================================
                 // SUCCESS!

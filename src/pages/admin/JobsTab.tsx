@@ -4,13 +4,13 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Button from '@/components/ui/Button';
 import Modal from '@/components/ui/Modal';
 import ErrorBoundary from '@/components/common/ErrorBoundary';
-import EmptyState from '@/components/common/EmptyState';
+import EmptyState from '@/components/ui/EmptyState';
 import { useToast } from '@/components/ui/Toast';
 import { supabase } from '@/lib/supabase';
 import { supabaseWithRetry } from '@/lib/supabaseWithRetry';
 import { useTranslation } from '@/i18n';
 import type { AdminJob, AdminJobRow } from '@/types/admin';
-import { adminInputClass, adminPanelClass, adminPillClass, adminSelectClass, adminTableHeadClass, adminTableRowClass, adminTableShellClass } from './adminTheme';
+import { adminActionButtonClass, adminInputClass, adminPanelClass, adminPillClass, adminSelectClass, adminTableHeadClass, adminTableRowClass, adminTableShellClass, adminToolbarClass } from './adminTheme';
 
 export const ADMIN_JOBS_QUERY_KEY = ['admin-jobs'] as const;
 
@@ -175,7 +175,7 @@ export default function JobsTab() {
             titleEn="Failed to load Jobs tab — try refreshing"
         >
             <div className="space-y-6">
-                <div className={panelClass}>
+                <div className={adminToolbarClass}>
                     <div className="flex flex-wrap items-center gap-4">
                         <div className="flex-1 relative">
                             <Search className="absolute end-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted" />
@@ -203,12 +203,12 @@ export default function JobsTab() {
 
                 {isLoading ? (
                      <div className={`${panelClass} text-center py-12`}>
-                         <Loader2 className="w-8 h-8 animate-spin text-primary-600 mx-auto mb-2" />
+                         <Loader2 className="w-8 h-8 animate-spin text-[var(--color-brand-primary)] mx-auto mb-2" />
                          <p className="text-muted">{tx('dashboard.admin.jobs.loading', undefined, 'Loading jobs...')}</p>
                      </div>
                  ) : isError ? (
                      <div className={`${panelClass} text-center py-12`}>
-                         <p className="text-red-500 font-medium">{tx('dashboard.admin.jobs.loadError', undefined, 'Failed to load jobs')}</p>
+                         <p className="text-[var(--color-status-error)] font-medium">{tx('dashboard.admin.jobs.loadError', undefined, 'Failed to load jobs')}</p>
                          <p className="text-sm text-muted mt-1">{tx('dashboard.admin.jobs.checkPermissions', undefined, 'Check database permissions')}</p>
                      </div>
                  ) : filteredJobs.length === 0 ? (
@@ -227,32 +227,32 @@ export default function JobsTab() {
                         {/* Desktop table */}
                         <div className={`${tableShellClass} hidden md:block`}>
                             <div className="overflow-x-auto">
-                                <table className="w-full">
+                                <table className="w-full min-w-[980px]">
                                     <thead className={tableHeadClass}>
                                         <tr>
-                                             <th className="px-6 py-4 text-right text-sm font-medium text-muted whitespace-nowrap">{tx('dashboard.admin.jobs.job', undefined, 'Job')}</th>
-                                             <th className="px-6 py-4 text-right text-sm font-medium text-muted whitespace-nowrap">{tx('dashboard.admin.jobs.client', undefined, 'Client')}</th>
-                                             <th className="px-6 py-4 text-right text-sm font-medium text-muted whitespace-nowrap">{tx('dashboard.admin.jobs.budget', undefined, 'Budget')}</th>
-                                             <th className="px-6 py-4 text-right text-sm font-medium text-muted whitespace-nowrap">{tx('dashboard.admin.jobs.status', undefined, 'Status')}</th>
-                                             <th className="px-6 py-4 text-center text-sm font-medium text-muted whitespace-nowrap">{tx('dashboard.admin.jobs.actions', undefined, 'Actions')}</th>
-                                         </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-border/50">
+                                             <th className="px-6 py-4 text-right text-xs font-semibold text-muted whitespace-nowrap tracking-wide">{tx('dashboard.admin.jobs.job', undefined, 'Job')}</th>
+                                             <th className="px-6 py-4 text-right text-xs font-semibold text-muted whitespace-nowrap tracking-wide">{tx('dashboard.admin.jobs.client', undefined, 'Client')}</th>
+                                             <th className="px-6 py-4 text-right text-xs font-semibold text-muted whitespace-nowrap tracking-wide">{tx('dashboard.admin.jobs.budget', undefined, 'Budget')}</th>
+                                             <th className="px-6 py-4 text-right text-xs font-semibold text-muted whitespace-nowrap tracking-wide">{tx('dashboard.admin.jobs.status', undefined, 'Status')}</th>
+                                             <th className="px-6 py-4 text-center text-xs font-semibold text-muted whitespace-nowrap tracking-wide">{tx('dashboard.admin.jobs.actions', undefined, 'Actions')}</th>
+                                          </tr>
+                                     </thead>
+                                     <tbody>
                                         {filteredJobs.map((job) => (
                                             <tr key={job.id} className={tableRowClass}>
-                                                <td className="px-6 py-4">
-                                                    <p className="font-medium text-foreground">{job.title}</p>
-                                                    <p className="text-xs text-muted">{new Date(job.created_at).toLocaleDateString(locale)}</p>
+                                                <td className="px-6 py-5">
+                                                    <p className="font-semibold text-foreground">{job.title}</p>
+                                                    <p className="mt-0.5 text-xs text-muted">{new Date(job.created_at).toLocaleDateString(locale)}</p>
                                                 </td>
-                                                <td className="px-6 py-4">
+                                                <td className="px-6 py-5">
                                                     <p className="font-medium text-foreground text-sm">{job.client?.full_name}</p>
-                                                    <p className="text-xs text-muted">{job.client?.email}</p>
+                                                    <p className="mt-0.5 text-xs text-muted">{job.client?.email}</p>
                                                 </td>
-                                                <td className="px-6 py-4 text-sm font-medium text-foreground">
+                                                <td className="px-6 py-5 text-sm font-semibold text-foreground">
                                                     {formatJobBudget(job)}
                                                 </td>
-                                                <td className="px-6 py-4">
-                                                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                                <td className="px-6 py-5">
+                                                    <span className={`px-3 py-1.5 rounded-full text-xs font-semibold ${
                                                          job.status === 'open' ? adminPillClass('emerald') :
                                                          job.status === 'in_progress' ? adminPillClass('blue') :
                                                          job.status === 'completed' ? adminPillClass('violet') :
@@ -263,17 +263,17 @@ export default function JobsTab() {
                                                           job.status === 'completed' ? tx('dashboard.admin.jobs.statusCompleted', undefined, 'Completed') : tx('dashboard.admin.jobs.statusCancelled', undefined, 'Cancelled')}
                                                     </span>
                                                 </td>
-                                                <td className="px-6 py-4">
+                                                <td className="px-6 py-5">
                                                     <div className="flex items-center justify-center gap-2">
-                                                         <Button variant="ghost" size="sm" onClick={() => window.open(`/jobs/${job.id}`, '_blank')}>
-                                                             <Eye className="w-4 h-4 ml-1" />
-                                                             {tx('dashboard.admin.jobs.review', undefined, 'Review')}
-                                                         </Button>
-                                                         <Button variant="ghost" size="sm" className="text-red-600 hover:bg-red-50" onClick={() => handleDeleteJob(job.id)} disabled={deleteJobMutation.isPending}>
-                                                             <Trash2 className="w-4 h-4 ml-1" />
-                                                             {tx('dashboard.admin.jobs.delete', undefined, 'Delete')}
-                                                         </Button>
-                                                     </div>
+                                                         <button className={`${adminActionButtonClass} border-sky-500/15 text-sky-200 hover:bg-sky-500/10`} onClick={() => window.open(`/jobs/${job.id}`, '_blank')}>
+                                                              <Eye className="w-4 h-4 ml-1" />
+                                                              {tx('dashboard.admin.jobs.review', undefined, 'Review')}
+                                                         </button>
+                                                         <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[var(--color-status-error)]/18 bg-[var(--color-status-error)]/10 px-3.5 text-sm font-semibold text-[var(--color-status-error)] transition-all hover:-translate-y-0.5 hover:bg-[var(--color-status-error)]/16 disabled:opacity-50" onClick={() => handleDeleteJob(job.id)} disabled={deleteJobMutation.isPending}>
+                                                              <Trash2 className="w-4 h-4 ml-1" />
+                                                              {tx('dashboard.admin.jobs.delete', undefined, 'Delete')}
+                                                         </button>
+                                                      </div>
                                                 </td>
                                             </tr>
                                         ))}
@@ -319,7 +319,7 @@ export default function JobsTab() {
                                              <Eye className="w-4 h-4 ml-1" />
                                              {tx('dashboard.admin.jobs.review', undefined, 'Review')}
                                          </Button>
-                                         <Button variant="ghost" size="sm" className="flex-1 min-h-[44px] text-red-600 hover:bg-red-50" onClick={() => handleDeleteJob(job.id)} disabled={deleteJobMutation.isPending}>
+                                         <Button variant="ghost" size="sm" className="flex-1 min-h-[44px] text-[var(--color-status-error)] hover:bg-[var(--color-status-error-subtle)]" onClick={() => handleDeleteJob(job.id)} disabled={deleteJobMutation.isPending}>
                                              <Trash2 className="w-4 h-4 ml-1" />
                                              {tx('dashboard.admin.jobs.delete', undefined, 'Delete')}
                                          </Button>
@@ -340,7 +340,7 @@ export default function JobsTab() {
                          </Button>
                          <Button
                              variant={confirmAction.actionType === 'danger' ? 'danger' : 'primary'}
-                             className={confirmAction.actionType === 'warning' ? 'bg-amber-600 hover:bg-amber-700 text-white border-transparent shadow shadow-amber-600/30' : ''}
+                             className={confirmAction.actionType === 'warning' ? 'bg-[var(--color-status-warning)] hover:bg-[var(--color-status-warning-hover)] text-white border-transparent shadow shadow-amber-600/30' : ''}
                              onClick={() => {
                                  closeConfirm();
                                  confirmAction.onConfirm();

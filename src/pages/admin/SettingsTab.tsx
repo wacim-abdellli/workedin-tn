@@ -19,7 +19,7 @@ export default function SettingsTab() {
     return (
         <div className="space-y-6">
             <div className={panelClass}>
-                <h3 className="font-bold text-foreground mb-5 flex items-center gap-2"><Settings className="w-5 h-5 text-cyan-500" />{tr('إعدادات لوحة الإدارة', 'Admin dashboard settings', 'Parametres du tableau admin')}</h3>
+                <h3 className="font-bold text-foreground mb-5 flex items-center gap-2"><Settings className="w-5 h-5 text-[var(--color-status-info)]" />{tr('إعدادات لوحة الإدارة', 'Admin dashboard settings', 'Parametres du tableau admin')}</h3>
                 <div className="grid md:grid-cols-2 gap-4">
                     <label className={`flex items-center justify-between p-4 ${adminInsetClass}`}>
                         <span className="text-sm font-medium text-foreground">{tr('التحديث التلقائي', 'Auto refresh', 'Actualisation automatique')}</span>

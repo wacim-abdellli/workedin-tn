@@ -1,9 +1,16 @@
-<svg width="100" height="108" viewBox="0 0 100 108" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <path d="M50 4 L88 18 L88 56 Q88 84 50 104 Q12 84 12 56 L12 18 Z" fill="#5B21B6" />
-  <path d="M50 13 L80 25 L80 56 Q80 77 50 94 Q20 77 20 56 L20 25 Z" fill="#4C1D95" />
-  <path d="M25 74 Q37 86 50 94 Q63 86 75 74 Z" fill="#D97706" opacity="0.9" />
-  <rect x="32" y="30" width="10" height="44" rx="5" fill="rgba(255,255,255,0.95)" />
-  <path d="M42 52 L68 30" stroke="rgba(255,255,255,0.95)" strokeWidth="10" strokeLinecap="round" fill="none" />
-  <path d="M42 52 L68 74" stroke="#D97706" strokeWidth="10" strokeLinecap="round" fill="none" />
-  <circle cx="42" cy="52" r="6" fill="#D97706" />
+<svg width="130" height="140" viewBox="0 0 100 108" xmlns="http://www.w3.org/2000/svg">
+  <!-- Shield outer -->
+  <path d="M50 4 L88 18 L88 56 Q88 84 50 104 Q12 84 12 56 L12 18 Z" fill="rgba(255,255,255,0.9)"/>
+  <!-- Shield inner face -->
+  <path d="M50 13 L80 25 L80 56 Q80 77 50 94 Q20 77 20 56 L20 25 Z" fill="rgba(255,255,255,0.15)"/>
+  <!-- Accent band bottom of shield -->
+  <path d="M25 74 Q37 86 50 94 Q63 86 75 74 Z" fill="rgba(255,255,255,0.5)"/>
+  <!-- K stem -->
+  <rect x="32" y="30" width="10" height="44" rx="5" fill="#0a0912"/>
+  <!-- K upper arm -->
+  <path d="M42 52 L68 30" stroke="#0a0912" stroke-width="10" stroke-linecap="round" fill="none"/>
+  <!-- K lower arm -->
+  <path d="M42 52 L68 74" stroke="#0a0912" stroke-width="10" stroke-linecap="round" fill="none"/>
+  <!-- Connection dot at K joint -->
+  <circle cx="42" cy="52" r="6" fill="#0a0912"/>
 </svg>

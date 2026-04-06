@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Award, Briefcase, Filter, Grid, List, Search, SlidersHorizontal, Sparkles, X } from 'lucide-react';
 
 import SEO, { SEO_CONFIG } from '../components/common/SEO';
-import EmptyState from '../components/common/EmptyState';
+import EmptyState from '../components/ui/EmptyState';
 import { SkeletonList, SkeletonProfile } from '../components/common';
 import FreelancerCard from '../components/freelancers/FreelancerCard';
 import { Header } from '../components/layout';
@@ -510,20 +510,20 @@ export default function FindFreelancers() {
                 <div className="fixed inset-0 z-50 lg:hidden">
                     <button
                         type="button"
-                        className="absolute inset-0 bg-[#09070f]/70 backdrop-blur-sm"
+                        className="absolute inset-0 bg-black/70 backdrop-blur-sm"
                         onClick={() => setShowFilters(false)}
                     />
-                    <div className="absolute inset-x-0 bottom-0 top-16 flex flex-col rounded-t-[32px] border border-white/10 dark:border-gray-800 bg-[#120f1d] text-white shadow-2xl">
-                        <div className="flex items-center justify-between border-b border-white/10 dark:border-gray-800 px-6 py-5">
+                    <div className="absolute inset-x-0 bottom-0 top-16 flex flex-col rounded-t-[32px] border border-[var(--color-border-default)] bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)] shadow-2xl">
+                        <div className="flex items-center justify-between border-b border-[var(--color-border-default)] px-6 py-5">
                             <h2 className="text-lg font-bold">{copy.filterTitle}</h2>
-                            <button type="button" onClick={() => setShowFilters(false)} className="rounded-full bg-white dark:bg-gray-800/5 p-2">
+                            <button type="button" onClick={() => setShowFilters(false)} className="rounded-full bg-[var(--color-bg-muted)] p-2">
                                 <X className="h-5 w-5" />
                             </button>
                         </div>
                         <div className="flex-1 overflow-y-auto px-6 py-6">
                             <FilterSidebar />
                         </div>
-                        <div className="border-t border-white/10 dark:border-gray-800 p-6">
+                        <div className="border-t border-[var(--color-border-default)] p-6">
                             <Button className="w-full" onClick={() => setShowFilters(false)}>
                                 {copy.resultsCount.replace('{{count}}', filteredFreelancers.length.toString())}
                             </Button>

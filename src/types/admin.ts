@@ -1,4 +1,5 @@
 export type AdminUserMode = 'client' | 'freelancer';
+export type AdminAccountStatus = 'active' | 'suspended' | 'archived';
 
 export interface AdminUserRow {
     id: string;
@@ -8,6 +9,7 @@ export interface AdminUserRow {
     active_mode: AdminUserMode | null;
     cin_verified: boolean | null;
     is_admin: boolean | null;
+    account_status: AdminAccountStatus | null;
     created_at: string;
 }
 
@@ -16,7 +18,7 @@ export interface AdminUser {
     name: string;
     email: string;
     type: string;
-    status: string;
+    status: AdminAccountStatus;
     last_active: string;
     active_mode: AdminUserMode | null;
     cin_verified: boolean;

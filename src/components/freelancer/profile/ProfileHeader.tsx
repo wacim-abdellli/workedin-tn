@@ -34,7 +34,7 @@ export default function ProfileHeader({
 
             <div className="container-custom relative z-10">
                 {/* Main Profile Card (Glassmorphic) */}
-                <div className="mb-8 rounded-[2rem] border border-[var(--border)] bg-white/80 dark:bg-[#1a1825]/70 backdrop-blur-3xl p-6 shadow-2xl shadow-[var(--workspace-primary)]/5 dark:shadow-[var(--workspace-primary)]/5 sm:p-10 lg:p-12 relative overflow-hidden group">
+                <div className="mb-8 rounded-[2rem] border border-[var(--border)] bg-white/80 dark:bg-[var(--color-bg-muted)]/70 backdrop-blur-3xl p-6 shadow-2xl shadow-[var(--workspace-primary)]/5 dark:shadow-[var(--workspace-primary)]/5 sm:p-10 lg:p-12 relative overflow-hidden group">
                     {/* Subtle inner top highlight */}
                     <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/50 dark:via-white/10 to-transparent" />
                     
@@ -160,7 +160,7 @@ export default function ProfileHeader({
 
                 {/* Stats Grid Bento Box */}
                 <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 lg:gap-6">
-                    <div className="group rounded-3xl bg-white/60 dark:bg-[#1c1a2e]/60 backdrop-blur-md p-6 shadow-sm border border-[var(--border)] transition-all hover:border-[var(--border-strong)] hover:shadow-lg relative overflow-hidden">
+                    <div className="group rounded-3xl bg-white/60 dark:bg-[var(--color-bg-muted)]/60 backdrop-blur-md p-6 shadow-sm border border-[var(--border)] transition-all hover:border-[var(--border-strong)] hover:shadow-lg relative overflow-hidden">
                         <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-[color-mix(in_srgb,var(--info-600)_15%,transparent)] text-[var(--info-600)] transition-transform group-hover:scale-110">
                             <BriefcaseBusiness className="h-5 w-5" />
                         </div>
@@ -169,7 +169,7 @@ export default function ProfileHeader({
                         <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-[var(--info-600)]/5 rounded-full blur-2xl group-hover:bg-[var(--info-600)]/10 transition-colors" />
                     </div>
 
-                    <div className="group rounded-3xl bg-white/60 dark:bg-[#1c1a2e]/60 backdrop-blur-md p-6 shadow-sm border border-[var(--border)] transition-all hover:border-[var(--border-strong)] hover:shadow-lg relative overflow-hidden">
+                    <div className="group rounded-3xl bg-white/60 dark:bg-[var(--color-bg-muted)]/60 backdrop-blur-md p-6 shadow-sm border border-[var(--border)] transition-all hover:border-[var(--border-strong)] hover:shadow-lg relative overflow-hidden">
                         <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-[color-mix(in_srgb,var(--success-600)_15%,transparent)] text-[var(--success-600)] transition-transform group-hover:scale-110">
                             <Wallet className="h-5 w-5" />
                         </div>
@@ -178,7 +178,7 @@ export default function ProfileHeader({
                         <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-[var(--success-600)]/5 rounded-full blur-2xl group-hover:bg-[var(--success-600)]/10 transition-colors" />
                     </div>
 
-                    <div className="group rounded-3xl bg-white/60 dark:bg-[#1c1a2e]/60 backdrop-blur-md p-6 shadow-sm border border-[var(--border)] transition-all hover:border-[var(--border-strong)] hover:shadow-lg relative overflow-hidden">
+                    <div className="group rounded-3xl bg-white/60 dark:bg-[var(--color-bg-muted)]/60 backdrop-blur-md p-6 shadow-sm border border-[var(--border)] transition-all hover:border-[var(--border-strong)] hover:shadow-lg relative overflow-hidden">
                         <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-[color-mix(in_srgb,var(--warning-600)_20%,transparent)] text-[var(--warning-600)] transition-transform group-hover:scale-110">
                             <Clock3 className="h-5 w-5" />
                         </div>
@@ -187,7 +187,7 @@ export default function ProfileHeader({
                         <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-[var(--warning-600)]/5 rounded-full blur-2xl group-hover:bg-[var(--warning-600)]/10 transition-colors" />
                     </div>
 
-                    <div className="group rounded-3xl bg-white/60 dark:bg-[#1c1a2e]/60 backdrop-blur-md p-6 shadow-sm border border-[var(--border)] transition-all hover:border-[var(--border-strong)] hover:shadow-lg relative overflow-hidden">
+                    <div className="group rounded-3xl bg-white/60 dark:bg-[var(--color-bg-muted)]/60 backdrop-blur-md p-6 shadow-sm border border-[var(--border)] transition-all hover:border-[var(--border-strong)] hover:shadow-lg relative overflow-hidden">
                         <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-[color-mix(in_srgb,var(--workspace-primary)_15%,transparent)] text-[var(--workspace-primary)] transition-transform group-hover:scale-110">
                             <Wallet className="h-5 w-5" />
                         </div>

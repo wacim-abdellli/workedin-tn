@@ -11,6 +11,8 @@ import { useAuth } from '../../contexts/AuthContext';
 import type { UserType } from '../../types';
 import { useToast } from '../ui/Toast';
 import { getWorkspaceOnboardingPath } from '@/lib/workspaceRoutes';
+import Button from '../ui/Button';
+import Input from '../ui/Input';
 
 interface SignupFormProps {
     onComplete?: () => void;
@@ -179,17 +181,17 @@ function SignupForm({ onComplete }: SignupFormProps) {
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                     <div className="mb-8 text-center">
                         <div className="relative inline-block">
-                            <div className="mx-auto mb-5 flex h-[72px] w-[72px] items-center justify-center rounded-[22px] bg-[linear-gradient(140deg,#f97316_0%,#ec4899_45%,#7c3aed_100%)] shadow-[0_20px_48px_-22px_rgba(236,72,153,0.65)]">
+                            <div className="mx-auto mb-5 flex h-[72px] w-[72px] items-center justify-center rounded-[22px] bg-[var(--workspace-primary)] shadow-[0_20px_48px_-22px_var(--workspace-primary-shadow)]">
                                 <Sparkles className="h-10 w-10 text-white" />
                             </div>
-                            <div className="absolute -top-1 -end-1 flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-r from-primary-400 to-primary-600 shadow-lg shadow-primary-500/30">
+                            <div className="absolute -top-1 -end-1 flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-r from-[var(--color-brand-primary)] to-[var(--purple-600)] shadow-lg shadow-[var(--color-brand-primary)]/30">
                                 <User className="h-4 w-4 text-white" />
                             </div>
                         </div>
-                        <h2 className="mb-2 text-center text-2xl font-bold text-[#171420] dark:text-white">
+                        <h2 className="mb-2 text-center text-2xl font-bold text-[var(--color-text-primary)]">
                             {t.auth.signupTitle}
                         </h2>
-                        <p className="mt-1 text-center text-sm text-gray-500 dark:text-gray-400">
+                        <p className="mt-1 text-center text-sm text-[var(--color-text-secondary)]">
                             {t.auth.signupSubtitle}
                         </p>
                     </div>
@@ -216,7 +218,7 @@ function SignupForm({ onComplete }: SignupFormProps) {
                                 showToast(t.auth.googleLoginError, 'error');
                             }
                         }}
-                        className="w-full flex items-center justify-center gap-3 rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-zinc-800 px-4 py-3.5 font-medium text-gray-700 dark:text-gray-200 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-gray-50 dark:hover:bg-zinc-700 hover:shadow-md"
+                        className="w-full flex items-center justify-center gap-3 rounded-2xl border border-[var(--color-border-default)] bg-[var(--color-background-base)] px-4 py-3.5 font-medium text-[var(--color-text-primary)] shadow-[var(--shadow-elevation-1)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-[var(--color-background-muted)] hover:shadow-[var(--shadow-elevation-2)]"
                     >
                         <svg className="h-5 w-5" viewBox="0 0 24 24">
                             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -229,96 +231,90 @@ function SignupForm({ onComplete }: SignupFormProps) {
 
                     <div className="relative my-6">
                         <div className="absolute inset-0 flex items-center">
-                            <div className="w-full border-t border-gray-200 dark:border-gray-700 dark:border-gray-600" />
+                            <div className="w-full border-t border-[var(--color-border-default)]" />
                         </div>
                         <div className="relative flex justify-center text-sm">
-                            <span className="bg-white dark:bg-gray-800 px-3 text-gray-500 dark:bg-[#1a1825]">{t.auth.or}</span>
+                            <span className="bg-[var(--color-background-base)] px-3 text-[var(--color-text-tertiary)]">{t.auth.or}</span>
                         </div>
                     </div>
 
                     <div className="form-stack">
-                        <div className="relative">
+                        <div>
                             <label className="label flex items-center gap-2">
-                                <Mail className="h-4 w-4 text-primary-500" />
+                                <Mail className="h-4 w-4 text-[var(--color-brand-primary)]" />
                                 {t.auth.email}
                             </label>
-                            <input
-                                {...register('email')}
+                            <Input
                                 type="email"
                                 placeholder={t.auth.emailPlaceholder}
-                                className="input placeholder:text-[var(--text-placeholder)]"
+                                error={errors.email?.message}
                                 dir="ltr"
+                                {...register('email')}
                             />
-                            {errors.email && <p className="form-error">{errors.email.message}</p>}
                         </div>
 
-                        <div className="relative">
+                        <div>
                             <label className="label flex items-center gap-2">
-                                <Lock className="h-4 w-4 text-primary-500" />
+                                <Lock className="h-4 w-4 text-[var(--color-brand-primary)]" />
                                 {t.auth.password.label}
                             </label>
-                            <div className="relative">
-                                <input
-                                    {...register('password')}
-                                    type={showPassword ? 'text' : 'password'}
-                                    placeholder={t.auth.passwordPlaceholder}
-                                    className="input pe-12 placeholder:text-[var(--text-placeholder)]"
-                                    dir="ltr"
-                                />
-                                <button
-                                    type="button"
-                                    onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute end-3 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-lg text-dark-400 transition-colors hover:bg-dark-100 hover:text-dark-600 dark:hover:bg-dark-700 dark:hover:text-dark-300"
-                                >
-                                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                                </button>
-                            </div>
-                            {errors.password && <p className="form-error">{errors.password.message}</p>}
+                            <Input
+                                type={showPassword ? 'text' : 'password'}
+                                placeholder={t.auth.passwordPlaceholder}
+                                error={errors.password?.message}
+                                dir="ltr"
+                                rightIcon={
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="flex h-8 w-8 items-center justify-center rounded-lg text-[var(--color-text-tertiary)] transition-colors hover:bg-[var(--color-background-muted)] hover:text-[var(--color-text-secondary)]"
+                                    >
+                                        {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                    </button>
+                                }
+                                {...register('password')}
+                            />
                         </div>
 
-                        <div className="relative">
+                        <div>
                             <label className="label flex items-center gap-2">
-                                <CheckCircle2 className="h-4 w-4 text-primary-500" />
+                                <CheckCircle2 className="h-4 w-4 text-[var(--color-brand-primary)]" />
                                 {t.auth.confirmPassword}
                             </label>
-                            <input
-                                {...register('confirmPassword')}
+                            <Input
                                 type={showPassword ? 'text' : 'password'}
                                 placeholder={t.auth.confirmPasswordPlaceholder}
-                                className="input placeholder:text-[var(--text-placeholder)]"
+                                error={errors.confirmPassword?.message}
                                 dir="ltr"
+                                {...register('confirmPassword')}
                             />
-                            {errors.confirmPassword && <p className="form-error">{errors.confirmPassword.message}</p>}
                         </div>
                     </div>
 
                     {error ? (
-                        <div className="rounded-xl border border-accent-200 bg-accent-50 p-4 dark:border-accent-800 dark:bg-accent-900/20">
-                            <p className="text-center text-sm font-medium text-accent-600 dark:text-accent-400">{error}</p>
+                        <div className="rounded-xl border border-[var(--red-200)] dark:border-[var(--red-800)] bg-[var(--color-status-error)] p-4">
+                            <p className="text-center text-sm font-medium text-[var(--red-600)] dark:text-[var(--red-400)]">{error}</p>
                         </div>
                     ) : null}
 
-                    <button
+                    <Button
                         type="submit"
+                        variant="primary"
+                        size="md"
+                        className="w-full group"
+                        isLoading={isLoading}
                         disabled={isLoading || (lockoutUntil ? Date.now() < lockoutUntil : false)}
-                        className="group inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[linear-gradient(120deg,#6d28d9_0%,#9333ea_52%,#c026d3_100%)] px-6 py-3.5 font-semibold text-white shadow-[0_20px_48px_-24px_rgba(147,51,234,0.75)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_24px_56px_-24px_rgba(192,38,211,0.85)]"
+                        rightIcon={<ArrowIcon className="h-5 w-5 transition-transform group-hover:translate-x-1 rtl:group-hover:-translate-x-1" />}
                     >
-                        {isLoading ? (
-                            <div className="h-5 w-5 animate-spin rounded-full border-2 border-white/30 dark:border-gray-800/30 border-t-white" />
-                        ) : (
-                            <>
-                                <span>{t.auth.createAccount}</span>
-                                <ArrowIcon className="h-5 w-5 transition-transform group-hover:translate-x-1 rtl:group-hover:-translate-x-1" />
-                            </>
-                        )}
-                    </button>
+                        {t.auth.createAccount}
+                    </Button>
 
-                    <p className="text-center text-muted">
+                    <p className="text-center text-[var(--color-text-secondary)]">
                         {t.auth.hasAccount}{' '}
                         <button
                             type="button"
                             onClick={() => navigate('/login')}
-                            className="font-semibold text-primary-600 hover:underline dark:text-primary-400"
+                            className="font-semibold text-[var(--color-brand-primary)] hover:underline"
                         >
                             {t.nav.login}
                         </button>
@@ -327,13 +323,13 @@ function SignupForm({ onComplete }: SignupFormProps) {
             ) : (
                 <div className="animate-fade-in space-y-6">
                     <div className="mb-8 text-center">
-                        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-500 to-primary-600 shadow-lg shadow-primary-500/30">
+                        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-[var(--color-brand-primary)] to-[var(--purple-600)] shadow-lg shadow-[var(--color-brand-primary)]/30">
                             <Briefcase className="h-8 w-8 text-white" />
                         </div>
-                        <h2 className="mb-2 text-2xl font-bold text-[#171420] dark:text-white">
+                        <h2 className="mb-2 text-2xl font-bold text-[var(--color-text-primary)]">
                             {t.auth.selectUserType}
                         </h2>
-                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                        <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
                             {t.auth.selectUserTypeSubtitle}
                         </p>
                     </div>
@@ -347,23 +343,23 @@ function SignupForm({ onComplete }: SignupFormProps) {
                                 disabled={isLoading}
                                 className={`group relative w-full overflow-hidden rounded-[24px] border p-5 text-start transition-all duration-300 focus:outline-none focus:ring-2 ring-offset-2 hover:-translate-y-1 hover:shadow-xl ${
                                     isLoading ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
-                                } bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700/90 hover:border-purple-200 hover:bg-purple-50/40 dark:bg-[#1a1825] dark:border-white/10 dark:border-gray-800 dark:hover:border-purple-500/30 dark:hover:bg-white dark:bg-gray-800/5`}
+                                } bg-[var(--color-background-base)] border-[var(--color-border-default)] hover:border-[var(--purple-200)] hover:bg-[var(--purple-50)]/40 dark:hover:border-[var(--purple-500)]/30 dark:hover:bg-[var(--color-background-base)]`}
                             >
-                                <div className="absolute inset-0 bg-gradient-to-br from-purple-500/0 to-amber-400/0 opacity-0 transition-opacity duration-300 group-hover:opacity-10" />
+                                <div className="absolute inset-0 bg-gradient-to-br from-[var(--purple-500)]/0 to-[var(--amber-400)]/0 opacity-0 transition-opacity duration-300 group-hover:opacity-10" />
                                 <div className="relative z-10 flex items-center gap-4">
-                                    <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl bg-purple-100 p-3 text-purple-600 shadow-lg dark:bg-purple-900/40 dark:text-purple-300">
+                                    <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl bg-[var(--purple-100)] dark:bg-[var(--purple-900)]/40 p-3 text-[var(--purple-600)] dark:text-[var(--purple-300)] shadow-lg">
                                         {item.icon}
                                     </div>
                                     <div className="flex-1">
-                                        <h3 className="mb-1 text-lg font-bold text-[#171420] dark:text-white">
+                                        <h3 className="mb-1 text-lg font-bold text-[var(--color-text-primary)]">
                                             {item.title}
                                         </h3>
-                                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                                        <p className="text-sm text-[var(--color-text-secondary)]">
                                             {item.description}
                                         </p>
                                     </div>
-                                    <div className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-dark-200 transition-colors dark:border-dark-600">
-                                        <ArrowIcon className="h-4 w-4 text-primary-500" />
+                                    <div className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-[var(--color-border-default)] transition-colors">
+                                        <ArrowIcon className="h-4 w-4 text-[var(--color-brand-primary)]" />
                                     </div>
                                 </div>
                             </button>
@@ -371,11 +367,11 @@ function SignupForm({ onComplete }: SignupFormProps) {
                     </div>
 
                     {error ? (
-                        <div className="rounded-xl border border-accent-200 bg-accent-50 p-4 dark:border-accent-800 dark:bg-accent-900/20">
-                            <p className="text-center text-sm font-medium text-accent-600 dark:text-accent-400">{error}</p>
+                        <div className="rounded-xl border border-[var(--red-200)] dark:border-[var(--red-800)] bg-[var(--color-status-error)] p-4">
+                            <p className="text-center text-sm font-medium text-[var(--red-600)] dark:text-[var(--red-400)]">{error}</p>
                         </div>
                     ) : (
-                        <p className="text-center text-sm text-gray-500 dark:text-gray-400">
+                        <p className="text-center text-sm text-[var(--color-text-secondary)]">
                             {t.auth.selectUserTypeSubtitle}
                         </p>
                     )}

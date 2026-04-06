@@ -1,0 +1,127 @@
+{
+  "scale": {
+    "0": {
+      "value": "0",
+      "description": "No spacing"
+    },
+    "1": {
+      "value": "0.25rem",
+      "pixels": "4px",
+      "description": "Extra small spacing"
+    },
+    "2": {
+      "value": "0.5rem",
+      "pixels": "8px",
+      "description": "Small spacing"
+    },
+    "3": {
+      "value": "0.75rem",
+      "pixels": "12px",
+      "description": "Medium-small spacing"
+    },
+    "4": {
+      "value": "1rem",
+      "pixels": "16px",
+      "description": "Base spacing unit"
+    },
+    "5": {
+      "value": "1.25rem",
+      "pixels": "20px",
+      "description": "Medium spacing"
+    },
+    "6": {
+      "value": "1.5rem",
+      "pixels": "24px",
+      "description": "Medium-large spacing"
+    },
+    "8": {
+      "value": "2rem",
+      "pixels": "32px",
+      "description": "Large spacing"
+    },
+    "10": {
+      "value": "2.5rem",
+      "pixels": "40px",
+      "description": "Extra large spacing"
+    },
+    "12": {
+      "value": "3rem",
+      "pixels": "48px",
+      "description": "2X large spacing"
+    },
+    "16": {
+      "value": "4rem",
+      "pixels": "64px",
+      "description": "3X large spacing"
+    },
+    "20": {
+      "value": "5rem",
+      "pixels": "80px",
+      "description": "4X large spacing"
+    },
+    "24": {
+      "value": "6rem",
+      "pixels": "96px",
+      "description": "5X large spacing"
+    },
+    "32": {
+      "value": "8rem",
+      "pixels": "128px",
+      "description": "6X large spacing"
+    },
+    "40": {
+      "value": "10rem",
+      "pixels": "160px",
+      "description": "7X large spacing"
+    },
+    "48": {
+      "value": "12rem",
+      "pixels": "192px",
+      "description": "8X large spacing"
+    },
+    "56": {
+      "value": "14rem",
+      "pixels": "224px",
+      "description": "9X large spacing"
+    },
+    "64": {
+      "value": "16rem",
+      "pixels": "256px",
+      "description": "10X large spacing"
+    }
+  },
+  "semantic": {
+    "button-padding-x": {
+      "sm": "{scale.3}",
+      "md": "{scale.4}",
+      "lg": "{scale.6}",
+      "description": "Horizontal padding for buttons"
+    },
+    "button-padding-y": {
+      "sm": "{scale.1}",
+      "md": "{scale.2}",
+      "lg": "{scale.3}",
+      "description": "Vertical padding for buttons"
+    },
+    "card-padding": {
+      "sm": "{scale.4}",
+      "md": "{scale.6}",
+      "lg": "{scale.8}",
+      "description": "Padding for card components"
+    },
+    "section-gap": {
+      "sm": "{scale.8}",
+      "md": "{scale.12}",
+      "lg": "{scale.16}",
+      "description": "Gap between major sections"
+    },
+    "input-padding-x": {
+      "value": "{scale.3}",
+      "description": "Horizontal padding for input fields"
+    },
+    "input-padding-y": {
+      "value": "{scale.2}",
+      "description": "Vertical padding for input fields"
+    }
+  }
+}

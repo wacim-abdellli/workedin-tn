@@ -1,0 +1,73 @@
+{
+  "duration": {
+    "instant": {
+      "value": "0ms",
+      "description": "Instant - no animation"
+    },
+    "fast": {
+      "value": "150ms",
+      "description": "Fast - for small UI changes"
+    },
+    "normal": {
+      "value": "250ms",
+      "description": "Normal - default animation speed"
+    },
+    "slow": {
+      "value": "350ms",
+      "description": "Slow - for larger transitions"
+    },
+    "slower": {
+      "value": "500ms",
+      "description": "Slower - for complex animations"
+    }
+  },
+  "easing": {
+    "linear": {
+      "value": "linear",
+      "description": "Linear easing - constant speed"
+    },
+    "ease-in": {
+      "value": "cubic-bezier(0.4, 0, 1, 1)",
+      "description": "Ease in - starts slow, ends fast"
+    },
+    "ease-out": {
+      "value": "cubic-bezier(0, 0, 0.2, 1)",
+      "description": "Ease out - starts fast, ends slow"
+    },
+    "ease-in-out": {
+      "value": "cubic-bezier(0.4, 0, 0.2, 1)",
+      "description": "Ease in-out - smooth acceleration and deceleration"
+    },
+    "bounce": {
+      "value": "cubic-bezier(0.68, -0.55, 0.265, 1.55)",
+      "description": "Bounce - playful overshoot effect"
+    }
+  },
+  "semantic": {
+    "hover": {
+      "duration": "{duration.fast}",
+      "easing": "{easing.ease-out}",
+      "description": "Hover state transition"
+    },
+    "focus": {
+      "duration": "{duration.fast}",
+      "easing": "{easing.ease-out}",
+      "description": "Focus state transition"
+    },
+    "modal": {
+      "duration": "{duration.normal}",
+      "easing": "{easing.ease-in-out}",
+      "description": "Modal open/close animation"
+    },
+    "toast": {
+      "duration": "{duration.normal}",
+      "easing": "{easing.ease-out}",
+      "description": "Toast notification animation"
+    },
+    "page": {
+      "duration": "{duration.slow}",
+      "easing": "{easing.ease-in-out}",
+      "description": "Page transition animation"
+    }
+  }
+}

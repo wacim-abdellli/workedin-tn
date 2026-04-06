@@ -123,7 +123,7 @@ serve(async (req: Request) => {
             // SECURITY: Verify the authenticated user is the contract's client
             const { data: contract, error: contractError } = await supabaseAdmin
                 .from('contracts')
-                .select('client_id')
+                .select('client_id, freelancer_id, amount, escrow_funded')
                 .eq('id', contract_id)
                 .single()
 
@@ -143,12 +143,49 @@ serve(async (req: Request) => {
                 )
             }
 
+            if (contract.freelancer_id !== freelancer_id) {
+                return new Response(
+                    JSON.stringify({ error: 'Freelancer mismatch for contract' }),
+                    { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+                )
+            }
+
+            const { data: transaction, error: transactionError } = await supabaseAdmin
+                .from('transactions')
+                .select('id, contract_id, user_id, payment_gateway_id, status, amount')
+                .eq('id', transaction_id)
+                .maybeSingle()
+
+            if (transactionError || !transaction) {
+                return new Response(
+                    JSON.stringify({ error: 'Pending payment transaction not found' }),
+                    { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+                )
+            }
+
+            if (transaction.user_id !== user.id || transaction.contract_id !== contract_id || transaction.payment_gateway_id !== payment_id) {
+                return new Response(
+                    JSON.stringify({ error: 'Payment transaction does not match this contract session' }),
+                    { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+                )
+            }
+
+            if (transaction.status === 'completed' || contract.escrow_funded === true) {
+                return new Response(
+                    JSON.stringify({
+                        verification: verificationResult,
+                        completion: { success: true, data: { existing: true } }
+                    }),
+                    { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+                )
+            }
+
             // Call atomic function
             const { data: completionResult, error: completionError } = await supabaseAdmin.rpc('complete_escrow_payment', {
                 p_transaction_id: transaction_id,
                 p_contract_id: contract_id,
                 p_freelancer_id: freelancer_id,
-                p_amount: amount || verificationResult.amount / 1000, // Convert millimes to dinars if needed
+                p_amount: contract.amount,
             })
 
             if (completionError) {
@@ -158,7 +195,7 @@ serve(async (req: Request) => {
                 await logPaymentEvent(supabaseAdmin, {
                     user_id: user.id,
                     event_type: 'payment_failed',
-                    amount: amount || verificationResult.amount / 1000,
+                    amount: contract.amount,
                     flouci_session_id: payment_id,
                     contract_id: contract_id,
                     status: 'failed',
@@ -178,7 +215,7 @@ serve(async (req: Request) => {
             await logPaymentEvent(supabaseAdmin, {
                 user_id: user.id,
                 event_type: 'payment_success',
-                amount: amount || verificationResult.amount / 1000,
+                amount: contract.amount,
                 flouci_session_id: payment_id,
                 contract_id: contract_id,
                 status: 'success',

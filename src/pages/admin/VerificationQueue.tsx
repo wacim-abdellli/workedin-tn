@@ -126,9 +126,9 @@ export default function VerificationQueue() {
                 id: v.id,
                 user_id: v.user_id,
                 cin_number: v.cin_number,
-                cin_front_url: '', // Will be loaded separately
-                cin_back_url: '',
-                selfie_url: '',
+                cin_front_url: 'cin_front_url' in v && typeof v.cin_front_url === 'string' ? v.cin_front_url : '',
+                cin_back_url: 'cin_back_url' in v && typeof v.cin_back_url === 'string' ? v.cin_back_url : '',
+                selfie_url: 'selfie_url' in v && typeof v.selfie_url === 'string' ? v.selfie_url : '',
                 status: 'pending' as const,
                 rejection_reason: null,
                 submitted_at: v.submitted_at,
@@ -199,27 +199,14 @@ export default function VerificationQueue() {
 
         setActionLoading(true);
         try {
-            // Update verification status
-            const { error: updateError } = await supabase
-                .from('identity_verifications')
-                .update({
-                    status: 'approved',
-                    reviewed_by: user.id,
-                    reviewed_at: new Date().toISOString(),
-                })
-                .eq('id', selectedVerification.id);
+            const { error: updateError } = await supabase.rpc('update_verification_status', {
+                p_user_id: selectedVerification.user_id,
+                p_action: 'approved',
+                p_reviewed_at: new Date().toISOString(),
+                p_admin_note: null,
+            });
 
             if (updateError) throw updateError;
-
-            // Update user's profile
-            const { error: profileError } = await supabase
-                .from('profiles')
-                .update({
-                    cin_verified: true
-                })
-                .eq('id', selectedVerification.user_id);
-
-            if (profileError) throw profileError;
 
             // User will be notified via notification center
             setSelectedVerification(null);
@@ -237,16 +224,12 @@ export default function VerificationQueue() {
 
         setActionLoading(true);
         try {
-            // Update verification status
-            const { error: updateError } = await supabase
-                .from('identity_verifications')
-                .update({
-                    status: 'rejected',
-                    rejection_reason: rejectionReason,
-                    reviewed_by: user.id,
-                    reviewed_at: new Date().toISOString(),
-                })
-                .eq('id', selectedVerification.id);
+            const { error: updateError } = await supabase.rpc('update_verification_status', {
+                p_user_id: selectedVerification.user_id,
+                p_action: 'rejected',
+                p_reviewed_at: new Date().toISOString(),
+                p_admin_note: rejectionReason,
+            });
 
             if (updateError) throw updateError;
 
@@ -278,7 +261,7 @@ export default function VerificationQueue() {
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center">
-                <Loader2 className="w-8 h-8 animate-spin text-primary-600" />
+                <Loader2 className="w-8 h-8 animate-spin text-[var(--color-brand-primary)]" />
             </div>
         );
     }
@@ -287,15 +270,15 @@ export default function VerificationQueue() {
         return (
             <div className="min-h-screen flex items-center justify-center">
                  <div className={`${adminPanelClass} max-w-md p-8 text-center`}>
-                     <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-                     <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 dark:text-white mb-2">{tx('dashboard.admin.verificationQueue.errorTitle', undefined, 'Loading error')}</h2>
-                     <p className="text-gray-600 dark:text-gray-400 mb-4">{error}</p>
+                     <AlertCircle className="w-12 h-12 text-[var(--color-status-error)] mx-auto mb-4" />
+                     <h2 className="text-xl font-bold text-[var(--color-text-primary)] dark:text-[var(--color-text-primary)] dark:text-white mb-2">{tx('dashboard.admin.verificationQueue.errorTitle', undefined, 'Loading error')}</h2>
+                     <p className="text-[var(--color-text-secondary)] dark:text-[var(--color-text-muted)] mb-4">{error}</p>
                      <button
                          onClick={() => {
                              setLoading(true);
                              fetchPendingVerifications();
                          }}
-                         className="rounded-xl bg-primary-600 px-6 py-2 text-white transition-colors hover:bg-primary-700"
+                         className="rounded-xl bg-[var(--color-brand-primary)] px-6 py-2 text-white transition-colors hover:bg-[var(--color-brand-primary-hover)]"
                       >
                          {tx('dashboard.admin.verificationQueue.retry', undefined, 'Retry')}
                      </button>
@@ -311,12 +294,12 @@ export default function VerificationQueue() {
                  {/* Header */}
                  <div className="mb-8">
                      <div className="flex items-center gap-3 mb-2">
-                         <Shield className="w-8 h-8 text-primary-600" />
-                         <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 dark:text-white">
+                         <Shield className="w-8 h-8 text-[var(--color-brand-primary)]" />
+                         <h1 className="text-2xl font-bold text-[var(--color-text-primary)] dark:text-[var(--color-text-primary)] dark:text-white">
                              {tx('dashboard.admin.verificationQueue.title', undefined, 'Identity verification requests')}
                          </h1>
                      </div>
-                     <p className="text-gray-600 dark:text-gray-400">
+                     <p className="text-[var(--color-text-secondary)] dark:text-[var(--color-text-muted)]">
                          {tx('dashboard.admin.verificationQueue.description', undefined, 'Review and manage identity verification requests submitted by users')}
                      </p>
                  </div>
@@ -326,11 +309,11 @@ export default function VerificationQueue() {
                       <div className={`${adminPanelClass} p-4`}>
                           <div className="flex items-center gap-3">
                               <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${adminPillClass('amber')}`}>
-                                  <Clock className="w-5 h-5 text-amber-600" />
+                                  <Clock className="w-5 h-5 text-[var(--color-status-warning)]" />
                               </div>
                              <div>
-                                 <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 dark:text-white">{verifications.length}</p>
-                                 <p className="text-sm text-gray-600 dark:text-gray-400">{tx('dashboard.admin.verificationQueue.pending', undefined, 'Pending')}</p>
+                                 <p className="text-2xl font-bold text-[var(--color-text-primary)] dark:text-[var(--color-text-primary)] dark:text-white">{verifications.length}</p>
+                                 <p className="text-sm text-[var(--color-text-secondary)] dark:text-[var(--color-text-muted)]">{tx('dashboard.admin.verificationQueue.pending', undefined, 'Pending')}</p>
                              </div>
                          </div>
                      </div>
@@ -339,14 +322,14 @@ export default function VerificationQueue() {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                      {/* Queue List */}
                      <div className="space-y-4">
-                         <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 dark:text-white">
+                         <h2 className="text-lg font-semibold text-[var(--color-text-primary)] dark:text-[var(--color-text-primary)] dark:text-white">
                              {tx('dashboard.admin.verificationQueue.queueTitle', undefined, 'Pending requests')}
                          </h2>
 
                          {verifications.length === 0 ? (
-                             <div className="bg-white dark:bg-gray-800 rounded-xl p-8 text-center border border-gray-100 dark:border-gray-800 dark:border-gray-700">
-                                 <CheckCircle2 className="w-12 h-12 text-green-500 mx-auto mb-4" />
-                                 <p className="text-gray-600 dark:text-gray-400">
+                             <div className="bg-white dark:bg-[var(--color-bg-elevated)] rounded-xl p-8 text-center border border-[var(--color-border-subtle)] dark:border-[var(--color-border-strong)] dark:border-[var(--color-border-default)]">
+                                 <CheckCircle2 className="w-12 h-12 text-[var(--color-status-success)] mx-auto mb-4" />
+                                 <p className="text-[var(--color-text-secondary)] dark:text-[var(--color-text-muted)]">
                                      {tx('dashboard.admin.verificationQueue.noPending', undefined, 'No pending verification requests')}
                                  </p>
                              </div>
@@ -356,7 +339,7 @@ export default function VerificationQueue() {
                                      key={verification.id}
                                      onClick={() => setSelectedVerification(verification)}
                                      className={`${adminPanelClass} cursor-pointer p-4 transition-all ${selectedVerification?.id === verification.id
-                                         ? 'border-primary-500 shadow-lg shadow-primary-500/10'
+                                         ? 'border-[var(--color-brand-primary)] shadow-lg shadow-primary-500/10'
                                          : 'hover:border-white/70 dark:hover:border-white/14 hover:shadow-md'
                                          }`}
                                  >
@@ -364,20 +347,20 @@ export default function VerificationQueue() {
                                         <img
                                             src={verification.profile.avatar_url || '/default-avatar.png'}
                                             alt={verification.profile.full_name}
-                                            className="w-12 h-12 rounded-full object-cover border-2 border-gray-100 dark:border-gray-800 dark:border-gray-700"
+                                            className="w-12 h-12 rounded-full object-cover border-2 border-[var(--color-border-subtle)] dark:border-[var(--color-border-strong)] dark:border-[var(--color-border-default)]"
                                         />
                                         <div className="flex-1 min-w-0">
-                                            <h3 className="font-semibold text-gray-900 dark:text-gray-100 dark:text-white truncate">
+                                            <h3 className="font-semibold text-[var(--color-text-primary)] dark:text-[var(--color-text-primary)] dark:text-white truncate">
                                                 {verification.profile.full_name}
                                             </h3>
-                                            <p className="text-sm text-gray-600 dark:text-gray-400 truncate">
+                                            <p className="text-sm text-[var(--color-text-secondary)] dark:text-[var(--color-text-muted)] truncate">
                                                 {verification.profile.email}
                                             </p>
-                                            <p className="text-xs text-gray-500 dark:text-gray-500">
+                                            <p className="text-xs text-[var(--color-text-muted)] dark:text-[var(--color-text-muted)]">
                                                 {formatDate(verification.submitted_at)}
                                             </p>
                                         </div>
-                                        <ChevronLeft className="w-5 h-5 text-gray-400 rtl:rotate-180" />
+                                        <ChevronLeft className="w-5 h-5 text-[var(--color-text-muted)] rtl:rotate-180" />
                                     </div>
                                 </div>
                             ))
@@ -387,7 +370,7 @@ export default function VerificationQueue() {
                      {/* Verification Review Panel */}
                      {selectedVerification ? (
                          <div className={`${adminPanelClass} sticky top-8 p-6`}>
-                             <h2 className="text-xl font-bold mb-6 text-gray-900 dark:text-gray-100 dark:text-white flex items-center gap-2">
+                             <h2 className="text-xl font-bold mb-6 text-[var(--color-text-primary)] dark:text-[var(--color-text-primary)] dark:text-white flex items-center gap-2">
                                  <Eye className="w-5 h-5" />
                                  {tx('dashboard.admin.verificationQueue.reviewTitle', undefined, 'Review verification')}
                              </h2>
@@ -398,13 +381,13 @@ export default function VerificationQueue() {
                                     <img
                                         src={selectedVerification.profile.avatar_url || '/default-avatar.png'}
                                         alt={selectedVerification.profile.full_name}
-                                        className="w-16 h-16 rounded-full object-cover border-2 border-gray-100 dark:border-gray-800 dark:border-gray-700"
+                                        className="w-16 h-16 rounded-full object-cover border-2 border-[var(--color-border-subtle)] dark:border-[var(--color-border-strong)] dark:border-[var(--color-border-default)]"
                                     />
                                     <div>
-                                        <p className="font-semibold text-gray-900 dark:text-gray-100 dark:text-white">
+                                        <p className="font-semibold text-[var(--color-text-primary)] dark:text-[var(--color-text-primary)] dark:text-white">
                                             {selectedVerification.profile.full_name}
                                         </p>
-                                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                                        <p className="text-sm text-[var(--color-text-secondary)] dark:text-[var(--color-text-muted)]">
                                             {selectedVerification.profile.email}
                                         </p>
                                     </div>
@@ -413,8 +396,8 @@ export default function VerificationQueue() {
 
                              {/* CIN Number */}
                              <div className="mb-6">
-                                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">{tx('dashboard.admin.verificationQueue.idNumber', undefined, 'ID number')}</p>
-                                 <p className="text-3xl font-mono font-bold text-gray-900 dark:text-gray-100 dark:text-white tracking-wider" dir="ltr">
+                                 <p className="text-sm text-[var(--color-text-secondary)] dark:text-[var(--color-text-muted)] mb-1">{tx('dashboard.admin.verificationQueue.idNumber', undefined, 'ID number')}</p>
+                                 <p className="text-3xl font-mono font-bold text-[var(--color-text-primary)] dark:text-[var(--color-text-primary)] dark:text-white tracking-wider" dir="ltr">
                                      {selectedVerification.cin_number}
                                  </p>
                              </div>
@@ -422,7 +405,7 @@ export default function VerificationQueue() {
                              {/* Document Images */}
                              <div className="space-y-4 mb-6">
                                  <div>
-                                     <p className="text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">{tx('dashboard.admin.verificationQueue.cardFront', undefined, 'Card front')}</p>
+                                     <p className="text-sm font-medium mb-2 text-[var(--color-text-secondary)] dark:text-[var(--color-text-disabled)]">{tx('dashboard.admin.verificationQueue.cardFront', undefined, 'Card front')}</p>
                                      {documentUrls.front ? (
                                          <img
                                               src={documentUrls.front}
@@ -431,12 +414,12 @@ export default function VerificationQueue() {
                                           />
                                       ) : (
                                           <div className={`flex h-40 w-full items-center justify-center rounded-lg ${adminInsetClass}`}>
-                                              <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+                                              <Loader2 className="w-6 h-6 animate-spin text-[var(--color-text-muted)]" />
                                           </div>
                                       )}
                                  </div>
                                  <div>
-                                     <p className="text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">{tx('dashboard.admin.verificationQueue.cardBack', undefined, 'Card back')}</p>
+                                     <p className="text-sm font-medium mb-2 text-[var(--color-text-secondary)] dark:text-[var(--color-text-disabled)]">{tx('dashboard.admin.verificationQueue.cardBack', undefined, 'Card back')}</p>
                                      {documentUrls.back ? (
                                          <img
                                               src={documentUrls.back}
@@ -445,12 +428,12 @@ export default function VerificationQueue() {
                                           />
                                       ) : (
                                           <div className={`flex h-40 w-full items-center justify-center rounded-lg ${adminInsetClass}`}>
-                                              <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+                                              <Loader2 className="w-6 h-6 animate-spin text-[var(--color-text-muted)]" />
                                           </div>
                                       )}
                                  </div>
                                  <div>
-                                     <p className="text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">{tx('dashboard.admin.verificationQueue.selfie', undefined, 'Selfie')}</p>
+                                     <p className="text-sm font-medium mb-2 text-[var(--color-text-secondary)] dark:text-[var(--color-text-disabled)]">{tx('dashboard.admin.verificationQueue.selfie', undefined, 'Selfie')}</p>
                                      {documentUrls.selfie ? (
                                          <img
                                               src={documentUrls.selfie}
@@ -459,7 +442,7 @@ export default function VerificationQueue() {
                                           />
                                       ) : (
                                           <div className={`flex h-40 w-full items-center justify-center rounded-lg ${adminInsetClass}`}>
-                                              <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+                                              <Loader2 className="w-6 h-6 animate-spin text-[var(--color-text-muted)]" />
                                           </div>
                                       )}
                                  </div>
@@ -467,22 +450,22 @@ export default function VerificationQueue() {
 
                              {/* Verification Checklist */}
                              <div className={`${adminInsetClass} mb-6 p-4`}>
-                                 <p className="text-sm font-medium mb-3 text-gray-700 dark:text-gray-300">{tx('dashboard.admin.verificationQueue.checklist', undefined, 'Verification checklist:')}</p>
-                                 <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+                                 <p className="text-sm font-medium mb-3 text-[var(--color-text-secondary)] dark:text-[var(--color-text-disabled)]">{tx('dashboard.admin.verificationQueue.checklist', undefined, 'Verification checklist:')}</p>
+                                 <ul className="space-y-2 text-sm text-[var(--color-text-secondary)] dark:text-[var(--color-text-muted)]">
                                      <li className="flex items-center gap-2">
-                                         <input type="checkbox" className="w-4 h-4 text-primary-600 rounded" />
+                                         <input type="checkbox" className="w-4 h-4 text-[var(--color-brand-primary)] rounded" />
                                          <span>{tx('dashboard.admin.verificationQueue.checkFront', undefined, 'Details are clear on front image')}</span>
                                      </li>
                                      <li className="flex items-center gap-2">
-                                         <input type="checkbox" className="w-4 h-4 text-primary-600 rounded" />
+                                         <input type="checkbox" className="w-4 h-4 text-[var(--color-brand-primary)] rounded" />
                                          <span>{tx('dashboard.admin.verificationQueue.checkBack', undefined, 'Barcode is clear on back image')}</span>
                                      </li>
                                      <li className="flex items-center gap-2">
-                                         <input type="checkbox" className="w-4 h-4 text-primary-600 rounded" />
+                                         <input type="checkbox" className="w-4 h-4 text-[var(--color-brand-primary)] rounded" />
                                          <span>{tx('dashboard.admin.verificationQueue.checkMatch', undefined, 'Selfie matches ID card photo')}</span>
                                      </li>
                                      <li className="flex items-center gap-2">
-                                         <input type="checkbox" className="w-4 h-4 text-primary-600 rounded" />
+                                         <input type="checkbox" className="w-4 h-4 text-[var(--color-brand-primary)] rounded" />
                                          <span>{tx('dashboard.admin.verificationQueue.checkDigits', undefined, 'ID number contains 8 digits')}</span>
                                      </li>
                                  </ul>
@@ -493,7 +476,7 @@ export default function VerificationQueue() {
                                 <button
                                     onClick={handleApprove}
                                     disabled={actionLoading}
-                                    className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-green-600 text-white rounded-xl font-medium hover:bg-green-700 disabled:opacity-50 transition-colors"
+                                    className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-[var(--color-status-success)] text-white rounded-xl font-medium hover:bg-[var(--color-status-success-hover)] disabled:opacity-50 transition-colors"
                                 >
                                     {actionLoading ? (
                                         <Loader2 className="w-4 h-4 animate-spin" />
@@ -505,7 +488,7 @@ export default function VerificationQueue() {
                                 <button
                                     onClick={() => setShowRejectModal(true)}
                                     disabled={actionLoading}
-                                    className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-red-600 text-white rounded-xl font-medium hover:bg-red-700 disabled:opacity-50 transition-colors"
+                                    className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-[var(--color-status-error)] text-white rounded-xl font-medium hover:bg-[var(--color-status-error-hover)] disabled:opacity-50 transition-colors"
                                 >
                                     <XCircle className="w-4 h-4" />
                                     {tx('dashboard.admin.verificationQueue.reject', undefined, 'Reject')}
@@ -514,8 +497,8 @@ export default function VerificationQueue() {
                         </div>
                          ) : (
                          <div className={`${adminPanelClass} p-8 text-center`}>
-                             <User className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                             <p className="text-gray-600 dark:text-gray-400">
+                             <User className="w-12 h-12 text-[var(--color-text-muted)] mx-auto mb-4" />
+                             <p className="text-[var(--color-text-secondary)] dark:text-[var(--color-text-muted)]">
                                  {tx('dashboard.admin.verificationQueue.selectRequest', undefined, 'Select a request from the list to review')}
                              </p>
                          </div>
@@ -529,14 +512,14 @@ export default function VerificationQueue() {
                     <div className={`${adminPanelClass} max-w-md w-full p-6`}>
                         <div className="flex items-center gap-3 mb-4">
                              <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${adminPillClass('red')}`}>
-                                 <AlertCircle className="w-5 h-5 text-red-600" />
+                                 <AlertCircle className="w-5 h-5 text-[var(--color-status-error)]" />
                              </div>
-                             <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 dark:text-white">
+                             <h3 className="text-lg font-bold text-[var(--color-text-primary)] dark:text-[var(--color-text-primary)] dark:text-white">
                                  {tx('dashboard.admin.verificationQueue.rejectReason', undefined, 'Rejection reason')}
                              </h3>
                          </div>
 
-                         <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                         <p className="text-sm text-[var(--color-text-secondary)] dark:text-[var(--color-text-muted)] mb-4">
                              {tx('dashboard.admin.verificationQueue.rejectDescription', undefined, 'Please provide the rejection reason so the user can fix the issue')}
                          </p>
 
@@ -554,14 +537,14 @@ export default function VerificationQueue() {
                                     setShowRejectModal(false);
                                     setRejectionReason('');
                                 }}
-                                className="flex-1 px-4 py-3 bg-gray-100 dark:bg-gray-800 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                                className="flex-1 px-4 py-3 bg-[var(--color-bg-subtle)] dark:bg-[var(--color-bg-elevated)] dark:bg-[var(--color-bg-muted)] text-[var(--color-text-secondary)] dark:text-[var(--color-text-disabled)] rounded-xl font-medium hover:bg-[var(--color-bg-muted)] dark:hover:bg-gray-600 transition-colors"
                              >
                                  {tx('dashboard.admin.verificationQueue.cancel', undefined, 'Cancel')}
                              </button>
                              <button
                                  onClick={handleReject}
                                  disabled={!rejectionReason || actionLoading}
-                                 className="flex-1 px-4 py-3 bg-red-600 text-white rounded-xl font-medium hover:bg-red-700 disabled:opacity-50 transition-colors"
+                                 className="flex-1 px-4 py-3 bg-[var(--color-status-error)] text-white rounded-xl font-medium hover:bg-[var(--color-status-error-hover)] disabled:opacity-50 transition-colors"
                              >
                                  {actionLoading ? (
                                      <Loader2 className="w-4 h-4 animate-spin mx-auto" />

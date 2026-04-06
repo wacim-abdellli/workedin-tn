@@ -4,6 +4,7 @@ import { useRealtimeNotifications } from '../useRealtimeNotifications';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { supabase } from '@/lib/supabase';
 import * as toastModule from '@/components/ui/Toast';
+import { I18nProvider } from '@/i18n';
 
 vi.mock('@/lib/supabase', () => ({
     supabase: {
@@ -22,7 +23,9 @@ const queryClient = new QueryClient({
 });
 
 const wrapper = ({ children }: { children: React.ReactNode }) => (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    <I18nProvider defaultLanguage="en">
+        <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    </I18nProvider>
 );
 
 describe('useRealtimeNotifications', () => {

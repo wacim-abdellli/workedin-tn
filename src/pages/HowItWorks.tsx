@@ -20,17 +20,17 @@ function HowItWorks() {
     };
 
     const freelancerIcons = [
-        <User className="w-8 h-8 text-primary-600" />,
-        <Search className="w-8 h-8 text-primary-600" />,
-        <MessageSquare className="w-8 h-8 text-primary-600" />,
-        <CreditCard className="w-8 h-8 text-primary-600" />
+        <User className="w-8 h-8" style={{ color: 'var(--color-brand-primary)' }} />,
+        <Search className="w-8 h-8" style={{ color: 'var(--color-brand-primary)' }} />,
+        <MessageSquare className="w-8 h-8" style={{ color: 'var(--color-brand-primary)' }} />,
+        <CreditCard className="w-8 h-8" style={{ color: 'var(--color-brand-primary)' }} />
     ];
 
     const clientIcons = [
-        <Briefcase className="w-8 h-8 text-secondary-600" />,
-        <CheckCircle className="w-8 h-8 text-secondary-600" />,
-        <MessageSquare className="w-8 h-8 text-secondary-600" />,
-        <Star className="w-8 h-8 text-secondary-600" />
+        <Briefcase className="w-8 h-8" style={{ color: 'var(--color-brand-secondary)' }} />,
+        <CheckCircle className="w-8 h-8" style={{ color: 'var(--color-brand-secondary)' }} />,
+        <MessageSquare className="w-8 h-8" style={{ color: 'var(--color-brand-secondary)' }} />,
+        <Star className="w-8 h-8" style={{ color: 'var(--color-brand-secondary)' }} />
     ];
 
     const steps = {
@@ -45,20 +45,20 @@ function HowItWorks() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 dark:bg-[#0b0912] transition-colors duration-300">
+        <div className="min-h-screen" style={{ background: 'var(--color-bg-subtle)' }}>
             <SEO {...SEO_CONFIG.howItWorks} url="/how-it-works" />
             <Header />
 
             {/* Hero */}
-            <section className="relative overflow-hidden bg-white dark:bg-gray-800 dark:bg-gray-900 py-20 transition-colors duration-500 dark:bg-[#0b0912]">
+            <section className="relative overflow-hidden py-20" style={{ background: 'var(--color-bg-base)' }}>
                 <div className="container-custom relative z-10 text-center">
-                    <h1 className="text-[clamp(2.5rem,5vw,4rem)] font-bold leading-[1.08] tracking-[-0.03em] text-gray-900 dark:text-gray-100 dark:text-white">
+                    <h1 className="text-[clamp(2.5rem,5vw,4rem)] font-bold leading-[1.08] tracking-[-0.03em]" style={{ color: 'var(--color-text-primary)' }}>
                         {t.howItWorks.heroTitle}
                         <span className="block bg-gradient-to-br from-purple-400 to-amber-400 bg-clip-text text-transparent">
                             {t.howItWorks.heroTitleHighlight}
                         </span>
                     </h1>
-                    <p className="mx-auto mb-12 mt-6 max-w-2xl text-lg leading-relaxed text-gray-600 dark:text-gray-300">
+                    <p className="mx-auto mb-12 mt-6 max-w-2xl text-lg leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
                         {t.howItWorks.subtitle}
                     </p>
 
@@ -66,18 +66,26 @@ function HowItWorks() {
                         <button
                             onClick={() => setActiveTab('freelancer')}
                             className={`px-8 py-4 rounded-full text-lg font-bold transition-all ${activeTab === 'freelancer'
-                                ? 'bg-primary-600 text-white shadow-lg scale-105'
-                                : 'bg-gray-100 dark:bg-dark-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-dark-700'
+                                ? 'text-white shadow-lg scale-105'
+                                : 'hover:opacity-80'
                                 }`}
+                            style={activeTab === 'freelancer' 
+                                ? { background: 'var(--color-brand-primary)' }
+                                : { background: 'var(--color-bg-muted)', color: 'var(--color-text-secondary)' }
+                            }
                         >
                             {t.howItWorks.tabs.freelancer}
                         </button>
                         <button
                             onClick={() => setActiveTab('client')}
                             className={`px-8 py-4 rounded-full text-lg font-bold transition-all ${activeTab === 'client'
-                                ? 'bg-secondary-600 text-white shadow-lg scale-105'
-                                : 'bg-gray-100 dark:bg-dark-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-dark-700'
+                                ? 'text-white shadow-lg scale-105'
+                                : 'hover:opacity-80'
                                 }`}
+                            style={activeTab === 'client' 
+                                ? { background: 'var(--color-brand-secondary)' }
+                                : { background: 'var(--color-bg-muted)', color: 'var(--color-text-secondary)' }
+                            }
                         >
                             {t.howItWorks.tabs.client}
                         </button>
@@ -85,8 +93,8 @@ function HowItWorks() {
                 </div>
 
                 {/* Background Decor */}
-                <div className="absolute top-0 left-0 w-64 h-64 bg-primary-50 rounded-full blur-3xl opacity-50 -translate-x-1/2 -translate-y-1/2" />
-                <div className="absolute bottom-0 right-0 w-96 h-96 bg-secondary-50 rounded-full blur-3xl opacity-50 translate-x-1/3 translate-y-1/3" />
+                <div className="absolute top-0 left-0 w-64 h-64 rounded-full blur-3xl opacity-50 -translate-x-1/2 -translate-y-1/2" style={{ background: 'var(--color-brand-primary-light)' }} />
+                <div className="absolute bottom-0 right-0 w-96 h-96 rounded-full blur-3xl opacity-50 translate-x-1/3 translate-y-1/3" style={{ background: 'var(--color-brand-secondary-light)' }} />
             </section>
 
             {/* Steps Section */}
@@ -94,18 +102,34 @@ function HowItWorks() {
                 <div className="container-custom">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                         {steps[activeTab].map((step, index) => (
-                            <div key={index} className="relative rounded-[24px] border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-800 dark:bg-gray-900 p-8 shadow-sm transition-transform duration-300 hover:-translate-y-2 dark:border-white/5 dark:bg-[#1a1825]">
+                            <div 
+                                key={index} 
+                                className="relative rounded-[24px] p-8 shadow-sm transition-transform duration-300 hover:-translate-y-2"
+                                style={{
+                                    background: 'var(--color-bg-elevated)',
+                                    border: '1px solid var(--color-border-subtle)'
+                                }}
+                            >
                                 {index !== steps[activeTab].length - 1 ? (
-                                    <div className="absolute left-[calc(50%+1.5rem)] top-[2rem] hidden h-[2px] w-[calc(100%-2rem)] bg-gradient-to-r from-purple-200 to-amber-200 lg:block dark:from-purple-800/30 dark:to-amber-800/30" />
+                                    <div 
+                                        className="absolute left-[calc(50%+1.5rem)] top-[2rem] hidden h-[2px] w-[calc(100%-2rem)] bg-gradient-to-r from-purple-200 to-amber-200 lg:block"
+                                        style={{ opacity: 0.3 }}
+                                    />
                                 ) : null}
-                                <div className="mb-6 flex h-8 w-8 items-center justify-center rounded-full bg-purple-600 text-sm font-semibold text-white">
+                                <div 
+                                    className="mb-6 flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold text-white"
+                                    style={{ background: 'var(--color-brand-primary)' }}
+                                >
                                     {index + 1}
                                 </div>
-                                <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-purple-100 dark:bg-purple-900/30">
+                                <div 
+                                    className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl"
+                                    style={{ background: 'var(--color-brand-primary-light)' }}
+                                >
                                     {step.icon}
                                 </div>
-                                <h3 className="mb-3 text-xl font-semibold dark:text-white">{step.title}</h3>
-                                <p className="text-sm leading-relaxed text-gray-600 dark:text-gray-400">
+                                <h3 className="mb-3 text-xl font-semibold" style={{ color: 'var(--color-text-primary)' }}>{step.title}</h3>
+                                <p className="text-sm leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
                                     {step.description}
                                 </p>
                             </div>
@@ -127,29 +151,56 @@ function HowItWorks() {
             </section>
 
             {/* Trust Badges */}
-            <section className="border-y border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-800 dark:bg-gray-900 py-16 dark:border-white/5 dark:bg-[#120f1c]">
+            <section className="py-16" style={{ background: 'var(--color-bg-base)', borderTop: '1px solid var(--color-border-subtle)', borderBottom: '1px solid var(--color-border-subtle)' }}>
                 <div className="container-custom">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-                        <div className="flex flex-col items-center rounded-[24px] border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-800 dark:bg-gray-900 px-6 py-8 dark:border-white/5 dark:bg-[#1a1825]">
-                            <div className="mb-4 rounded-xl bg-purple-100 p-3 dark:bg-purple-900/30">
-                                <Shield className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                        <div 
+                            className="flex flex-col items-center rounded-[24px] px-6 py-8"
+                            style={{
+                                background: 'var(--color-bg-elevated)',
+                                border: '1px solid var(--color-border-subtle)'
+                            }}
+                        >
+                            <div 
+                                className="mb-4 rounded-xl p-3"
+                                style={{ background: 'var(--color-brand-primary-light)' }}
+                            >
+                                <Shield className="h-6 w-6" style={{ color: 'var(--color-brand-primary)' }} />
                             </div>
-                            <h3 className="mb-2 text-lg font-semibold text-gray-900 dark:text-gray-100 dark:text-white">{t.howItWorks.trust.money.title}</h3>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">{t.howItWorks.trust.money.desc}</p>
+                            <h3 className="mb-2 text-lg font-semibold" style={{ color: 'var(--color-text-primary)' }}>{t.howItWorks.trust.money.title}</h3>
+                            <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>{t.howItWorks.trust.money.desc}</p>
                         </div>
-                        <div className="flex flex-col items-center rounded-[24px] border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-800 dark:bg-gray-900 px-6 py-8 dark:border-white/5 dark:bg-[#1a1825]">
-                            <div className="mb-4 rounded-xl bg-purple-100 p-3 dark:bg-purple-900/30">
-                                <CheckCircle className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                        <div 
+                            className="flex flex-col items-center rounded-[24px] px-6 py-8"
+                            style={{
+                                background: 'var(--color-bg-elevated)',
+                                border: '1px solid var(--color-border-subtle)'
+                            }}
+                        >
+                            <div 
+                                className="mb-4 rounded-xl p-3"
+                                style={{ background: 'var(--color-brand-primary-light)' }}
+                            >
+                                <CheckCircle className="h-6 w-6" style={{ color: 'var(--color-brand-primary)' }} />
                             </div>
-                            <h3 className="mb-2 text-lg font-semibold text-gray-900 dark:text-gray-100 dark:text-white">{t.howItWorks.trust.verified.title}</h3>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">{t.howItWorks.trust.verified.desc}</p>
+                            <h3 className="mb-2 text-lg font-semibold" style={{ color: 'var(--color-text-primary)' }}>{t.howItWorks.trust.verified.title}</h3>
+                            <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>{t.howItWorks.trust.verified.desc}</p>
                         </div>
-                        <div className="flex flex-col items-center rounded-[24px] border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-800 dark:bg-gray-900 px-6 py-8 dark:border-white/5 dark:bg-[#1a1825]">
-                            <div className="mb-4 rounded-xl bg-purple-100 p-3 dark:bg-purple-900/30">
-                                <HelpCircle className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                        <div 
+                            className="flex flex-col items-center rounded-[24px] px-6 py-8"
+                            style={{
+                                background: 'var(--color-bg-elevated)',
+                                border: '1px solid var(--color-border-subtle)'
+                            }}
+                        >
+                            <div 
+                                className="mb-4 rounded-xl p-3"
+                                style={{ background: 'var(--color-brand-primary-light)' }}
+                            >
+                                <HelpCircle className="h-6 w-6" style={{ color: 'var(--color-brand-primary)' }} />
                             </div>
-                            <h3 className="mb-2 text-lg font-semibold text-gray-900 dark:text-gray-100 dark:text-white">{t.howItWorks.trust.support.title}</h3>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">{t.howItWorks.trust.support.desc}</p>
+                            <h3 className="mb-2 text-lg font-semibold" style={{ color: 'var(--color-text-primary)' }}>{t.howItWorks.trust.support.title}</h3>
+                            <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>{t.howItWorks.trust.support.desc}</p>
                         </div>
                     </div>
                 </div>
@@ -158,24 +209,42 @@ function HowItWorks() {
             {/* FAQ */}
             <section className="py-20">
                 <div className="container-custom max-w-3xl">
-                    <h2 className="text-3xl font-bold text-center mb-12">{t.howItWorks.faq.title}</h2>
+                    <h2 className="text-3xl font-bold text-center mb-12" style={{ color: 'var(--color-text-primary)' }}>{t.howItWorks.faq.title}</h2>
 
                     <div className="space-y-4">
                         {t.howItWorks.faq.items.map((faq, index) => (
-                            <div key={index} className="card overflow-hidden">
+                            <div 
+                                key={index} 
+                                className="overflow-hidden rounded-2xl"
+                                style={{
+                                    background: 'var(--color-bg-elevated)',
+                                    border: '1px solid var(--color-border-subtle)',
+                                    boxShadow: 'var(--shadow-sm)'
+                                }}
+                            >
                                 <button
                                     onClick={() => toggleFaq(index)}
-                                    className="w-full flex items-center justify-between p-6 text-right font-bold hover:bg-gray-50 dark:bg-gray-900 dark:bg-gray-800 dark:hover:bg-dark-800 transition-colors"
+                                    className="w-full flex items-center justify-between p-6 text-right font-bold transition-colors"
+                                    style={{ color: 'var(--color-text-primary)' }}
+                                    onMouseEnter={(e) => e.currentTarget.style.background = 'var(--color-bg-muted)'}
+                                    onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                                 >
                                     <span>{faq.q}</span>
                                     {openFaq === index ? (
-                                        <ChevronUp className="w-5 h-5 text-gray-400" />
+                                        <ChevronUp className="w-5 h-5" style={{ color: 'var(--color-text-tertiary)' }} />
                                     ) : (
-                                        <ChevronDown className="w-5 h-5 text-gray-400" />
+                                        <ChevronDown className="w-5 h-5" style={{ color: 'var(--color-text-tertiary)' }} />
                                     )}
                                 </button>
                                 {openFaq === index && (
-                                    <div className="px-6 pb-6 text-muted leading-relaxed border-t border-gray-100 dark:border-gray-800 dark:border-dark-700 pt-4 bg-gray-50 dark:bg-gray-900 dark:bg-gray-800/50 dark:bg-dark-800/50">
+                                    <div 
+                                        className="px-6 pb-6 leading-relaxed pt-4"
+                                        style={{
+                                            color: 'var(--color-text-secondary)',
+                                            borderTop: '1px solid var(--color-border-subtle)',
+                                            background: 'var(--color-bg-muted)'
+                                        }}
+                                    >
                                         {faq.a}
                                     </div>
                                 )}

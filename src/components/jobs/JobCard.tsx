@@ -1,12 +1,10 @@
 import React, { useState } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import { JobCardErrorFallback } from '../ErrorFallback';
-import { Clock, Heart, ShieldCheck } from 'lucide-react';
+import { Clock, Heart, TrendingUp, MapPin, Sparkles } from 'lucide-react';
 
 import { useTranslation } from '../../i18n';
-import IconButton from '../ui/IconButton';
 import OptimizedImage from '../common/OptimizedImage';
-import { cn } from '../../lib/utils';
 import { getAvatarGradient, getInitials } from '@/lib/avatar';
 
 export interface JobForCard {
@@ -21,6 +19,7 @@ export interface JobForCard {
   proposals_count: number;
   posted_at: string;
   location?: string;
+  category?: string;
   client?: {
     id: string;
     full_name: string;
@@ -41,10 +40,24 @@ interface JobCardProps {
 
 type Awaitable<T> = T | Promise<T>;
 
+// 🎨 VIBRANT CATEGORY COLORS
+const CATEGORY_COLORS: Record<string, { border: string; bg: string; text: string; gradient: string }> = {
+  design: { border: '#EC4899', bg: '#FCE7F3', text: '#BE185D', gradient: 'from-pink-500 to-rose-500' },
+  development: { border: '#8B5CF6', bg: '#EDE9FE', text: '#6D28D9', gradient: 'from-purple-500 to-indigo-500' },
+  writing: { border: '#06B6D4', bg: '#CFFAFE', text: '#0E7490', gradient: 'from-cyan-500 to-blue-500' },
+  translation: { border: '#10B981', bg: '#D1FAE5', text: '#047857', gradient: 'from-emerald-500 to-teal-500' },
+  marketing: { border: '#F59E0B', bg: '#FEF3C7', text: '#D97706', gradient: 'from-amber-500 to-orange-500' },
+  video: { border: '#EF4444', bg: '#FEE2E2', text: '#DC2626', gradient: 'from-red-500 to-pink-500' },
+  data: { border: '#3B82F6', bg: '#DBEAFE', text: '#1E40AF', gradient: 'from-blue-500 to-cyan-500' },
+  other: { border: '#6B7280', bg: '#F3F4F6', text: '#374151', gradient: 'from-gray-500 to-slate-500' },
+};
+
 function JobCard({ job, isSaved, onToggleSave, onClick }: JobCardProps) {
   const [isSaving, setIsSaving] = useState(false);
   const { t, language } = useTranslation();
   const [from, to] = getAvatarGradient(job.client?.full_name || 'Khedma');
+  
+  const categoryColor = CATEGORY_COLORS[job.category || 'other'] || CATEGORY_COLORS.other;
 
   const timeAgo = (dateStr: string) => {
     const date = new Date(dateStr);
@@ -71,137 +84,153 @@ function JobCard({ job, isSaved, onToggleSave, onClick }: JobCardProps) {
   return (
     <div
       onClick={() => onClick(job.id)}
-      className={cn(
-        'group relative rounded-xl p-5 cursor-pointer transition-all duration-200',
-        'bg-white dark:bg-gray-800 dark:bg-[#1a1825]',
-        'border border-black/[0.07] dark:border-white/[0.07]',
-        'shadow-[0_1px_3px_rgba(0,0,0,0.06),0_4px_16px_rgba(0,0,0,0.04)] dark:shadow-none',
-        'hover:shadow-md hover:border-[color:var(--workspace-primary)]/30',
-        'dark:hover:border-[color:var(--workspace-primary)]/30'
-      )}
+      className="group relative overflow-hidden rounded-2xl bg-white dark:bg-[var(--color-bg-elevated)] p-6 cursor-pointer transition-all duration-300 hover:-translate-y-1"
+      style={{
+        boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+        borderLeft: `4px solid ${categoryColor.border}`,
+      }}
     >
-      <div className="absolute left-0 top-0 bottom-0 w-0.5 rounded-l-xl bg-[color:var(--workspace-primary)] opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
-      
-      <div className="space-y-3">
-        {/* Header: Title */}
-        <div className="flex items-start gap-3">
-          {/* Client Avatar - inline with title */}
-          <div className="shrink-0">
-            <div 
-              className="flex h-7 w-7 items-center justify-center overflow-hidden rounded-full text-xs font-semibold text-[color:var(--workspace-primary)] bg-[color:var(--workspace-primary)]/10" 
-              style={job.client?.avatar_url ? { background: `linear-gradient(135deg, ${from}, ${to})` } : undefined}
-            >
-              {job.client?.avatar_url ? (
-                <OptimizedImage
-                  src={job.client.avatar_url}
-                  alt={job.client.full_name}
-                  className="h-full w-full"
-                  imgClassName="rounded-full"
-                  width={28}
-                  height={28}
-                />
-              ) : (
-                getInitials(job.client?.full_name || 'K')
-              )}
-            </div>
-          </div>
-          <div className="flex-1 min-w-0">
-            <h3 className={cn(
-              'text-base font-semibold line-clamp-2 mb-1',
-              'text-[var(--text-primary)]',
-              'transition-colors group-hover:text-[color:var(--workspace-primary)]'
-            )}>
-              {job.title}
-            </h3>
-            {/* Client Info Row */}
-            <div className="flex items-center gap-2 text-sm">
-              <span className="text-[var(--text-secondary)]">{job.client?.full_name || 'Client'}</span>
-              <span className="text-[var(--text-muted)]">•</span>
-              {job.location && (
-                <span className="text-xs text-[var(--text-muted)]">{job.location}</span>
-              )}
-            </div>
-          </div>
-        </div>
+      {/* Gradient Overlay on Hover */}
+      <div 
+        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+        style={{
+          background: `linear-gradient(135deg, ${categoryColor.bg}20 0%, transparent 100%)`,
+        }}
+      />
 
-        {/* Budget Display - PROMINENT */}
-        <div className="flex items-center justify-between gap-4">
-          <div className="text-lg font-bold text-[color:var(--workspace-primary)]">
-            {job.job_type === 'fixed_price'
-              ? `${job.budget_min} - ${job.budget_max} TND`
-              : `${job.hourly_rate} TND/hr`}
-          </div>
-          <IconButton
-            icon={<Heart className={cn('h-6 w-6 transition-all', isSaved && 'fill-current')} />}
-            label={isSaved ? t.jobs.unsave : t.jobs.save}
-            onClick={async (event) => {
-            event.stopPropagation();
-            if (isSaving) return;
-            setIsSaving(true);
-            try {
-              await onToggleSave(job);
-            } finally {
-              setIsSaving(false);
-            }
+      {/* Floating Save Button */}
+      <button
+        onClick={async (event) => {
+          event.stopPropagation();
+          if (isSaving) return;
+          setIsSaving(true);
+          try {
+            await onToggleSave(job);
+          } finally {
+            setIsSaving(false);
+          }
+        }}
+        disabled={isSaving}
+        className="absolute top-4 right-4 z-10 p-2 rounded-full bg-white dark:bg-[var(--color-bg-muted)] shadow-lg hover:scale-110 transition-transform duration-200"
+        style={{
+          boxShadow: isSaved ? `0 4px 12px ${categoryColor.border}40` : '0 2px 8px rgba(0,0,0,0.1)',
+        }}
+      >
+        <Heart 
+          className="w-5 h-5 transition-colors" 
+          fill={isSaved ? categoryColor.border : 'none'}
+          stroke={isSaved ? categoryColor.border : '#9CA3AF'}
+        />
+      </button>
+
+      {/* Category Badge */}
+      {job.category && (
+        <div 
+          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold mb-3"
+          style={{
+            background: categoryColor.bg,
+            color: categoryColor.text,
           }}
-            isActive={isSaved}
-          disabled={isSaving}
-          isLoading={isSaving}
-            variant="danger"
-            size="sm"
-            className="!rounded-full"
-          />
+        >
+          <Sparkles className="w-3 h-3" />
+          {job.category}
         </div>
+      )}
 
-        {/* Job Type + Experience Pills */}
-        <div className="flex flex-wrap gap-2">
-          <span className={cn(
-            'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
-            'bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-400'
-          )}>
-            {job.job_type === 'fixed_price' ? 'Fixed price' : 'Hourly'}
+      {/* Title - Large and Bold */}
+      <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2 line-clamp-2 transition-colors pr-10"
+          style={{ color: 'var(--color-text-primary)' }}>
+        {job.title}
+      </h3>
+
+      {/* Description */}
+      <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mb-4"
+         style={{ color: 'var(--color-text-secondary)' }}>
+        {job.description}
+      </p>
+
+      {/* Budget - Large and Prominent */}
+      <div className="mb-4">
+        <div 
+          className="inline-flex items-baseline gap-2 px-4 py-2 rounded-xl"
+          style={{
+            background: `linear-gradient(135deg, ${categoryColor.border}15, ${categoryColor.border}05)`,
+          }}
+        >
+          <span className="text-2xl font-bold" style={{ color: categoryColor.border }}>
+            {job.job_type === 'fixed_price' 
+              ? `${job.budget_min}-${job.budget_max}`
+              : job.hourly_rate
+            }
+          </span>
+          <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+            {job.job_type === 'fixed_price' ? 'TND' : 'TND/h'}
           </span>
         </div>
+      </div>
 
-        {/* Description */}
-        <p className="line-clamp-2 text-sm text-[var(--text-secondary)]">
-          {job.description}
-        </p>
-
-        {/* Skills Row */}
-        <div className="flex flex-wrap gap-2">
-          {job.skills.slice(0, 3).map((skill) => (
-            <span
-              key={skill}
-              className={cn(
-                'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
-                'bg-[color:var(--workspace-primary)]/10',
-                'text-[color:var(--workspace-primary)]',
-                'border border-[color:var(--workspace-primary)]/20'
-              )}
-            >
-              {skill}
-            </span>
-          ))}
-          {job.skills.length > 3 && (
-            <span className="text-xs text-[var(--text-muted)]">
-              +{job.skills.length - 3} more
-            </span>
-          )}
-        </div>
-
-        {/* Footer Row */}
-        <div className="flex items-center justify-between text-xs text-[var(--text-muted)]">
-          <span className="flex items-center gap-1">
-            <Clock className="h-3.5 w-3.5" />
-            {timeAgo(job.posted_at)}
+      {/* Skills - Colorful Pills */}
+      <div className="flex flex-wrap gap-2 mb-4">
+        {job.skills.slice(0, 4).map((skill, idx) => (
+          <span
+            key={idx}
+            className="px-3 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-purple-50 to-cyan-50 dark:from-purple-950/30 dark:to-cyan-950/30 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800"
+          >
+            {skill}
           </span>
-          <span className="flex items-center gap-1">
-            {job.client?.is_verified && (
-              <ShieldCheck className="h-3.5 w-3.5 text-[color:var(--workspace-primary)]" />
+        ))}
+        {job.skills.length > 4 && (
+          <span className="px-3 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
+            +{job.skills.length - 4}
+          </span>
+        )}
+      </div>
+
+      {/* Footer - Client & Stats */}
+      <div className="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-white/10">
+        {/* Client Info */}
+        <div className="flex items-center gap-2">
+          <div 
+            className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold text-white overflow-hidden"
+            style={{
+              background: job.client?.avatar_url ? `linear-gradient(135deg, ${from}, ${to})` : `linear-gradient(135deg, ${categoryColor.border}, ${categoryColor.text})`,
+              boxShadow: `0 4px 12px ${categoryColor.border}30`,
+            }}
+          >
+            {job.client?.avatar_url ? (
+              <OptimizedImage
+                src={job.client.avatar_url}
+                alt={job.client.full_name}
+                className="h-full w-full"
+                imgClassName="rounded-full"
+                width={32}
+                height={32}
+              />
+            ) : (
+              getInitials(job.client?.full_name || 'C')
             )}
-            {job.proposals_count} {t.jobs.proposals}
-          </span>
+          </div>
+          <div>
+            <p className="text-sm font-medium text-gray-900 dark:text-white">{job.client?.full_name || 'Client'}</p>
+            {job.client?.location && (
+              <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                <MapPin className="w-3 h-3" />
+                {job.client.location}
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Stats */}
+        <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
+          <div className="flex items-center gap-1">
+            <TrendingUp className="w-4 h-4 text-green-500" />
+            <span>{job.proposals_count}</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <Clock className="w-4 h-4 text-blue-500" />
+            <span>{timeAgo(job.posted_at)}</span>
+          </div>
         </div>
       </div>
     </div>

@@ -56,12 +56,8 @@ export default function VerifyIdentity() {
                 if (!isCancelled) {
                     setResolvedIdentityStatus(state.status);
                     
-                    // Sync profile if needed
+                    // Verification approval is now server-owned. Just refresh local profile state.
                     if (state.status === 'verified' && !profile?.cin_verified) {
-                        await supabase.from('profiles').update({ 
-                            cin_verified: true, 
-                            cin_submitted: false 
-                        }).eq('id', user.id);
                         await refreshProfile?.();
                     }
                 }

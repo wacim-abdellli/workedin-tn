@@ -58,7 +58,7 @@ export default function DisputesTab() {
             <div className={panelClass}>
                 <div className="flex items-center justify-between mb-6">
                     <h3 className="font-bold text-foreground flex items-center gap-2">
-                        <AlertTriangle className="w-5 h-5 text-red-500" />
+                        <AlertTriangle className="w-5 h-5 text-[var(--color-status-error)]" />
                         {tr('نزاعات مفتوحة', 'Open disputes', 'Litiges ouverts')}
                         {disputes.length > 0 && <span className={`px-2 py-0.5 rounded-full text-sm ${adminPillClass('red')}`}>{disputes.length}</span>}
                     </h3>
@@ -67,17 +67,17 @@ export default function DisputesTab() {
                     </Button>
                 </div>
                 {isLoading ? (
-                    <div className="text-center py-12"><Loader2 className="w-8 h-8 animate-spin text-primary-600 mx-auto mb-2" /><p className="text-muted">{tr('جاري التحميل...', 'Loading...', 'Chargement...')}</p></div>
+                    <div className="text-center py-12"><Loader2 className="w-8 h-8 animate-spin text-[var(--color-brand-primary)] mx-auto mb-2" /><p className="text-muted">{tr('جاري التحميل...', 'Loading...', 'Chargement...')}</p></div>
                 ) : disputes.length === 0 ? (
                     <div className="text-center py-12">
-                        <Check className="w-12 h-12 text-green-500 mx-auto mb-2" />
+                        <Check className="w-12 h-12 text-[var(--color-status-success)] mx-auto mb-2" />
                         <p className="text-foreground font-medium">{tr('لا توجد نزاعات مفتوحة', 'No open disputes', 'Aucun litige ouvert')}</p>
                         <p className="text-sm text-muted">{tr('كل النزاعات تمت معالجتها', 'All disputes are handled', 'Tous les litiges sont traites')}</p>
                     </div>
                 ) : (
                     <div className="space-y-4">
                         {disputes.map(d => (
-                            <div key={d.id} className={`overflow-hidden rounded-xl ${adminInsetClass} border-red-200/70 dark:border-red-500/18`}>
+                            <div key={d.id} className={`overflow-hidden rounded-xl ${adminInsetClass} border-[var(--color-status-error-subtle)]/70 dark:border-[var(--color-status-error)]/18`}>
                                 <div className="p-4">
                                     <div className="flex items-start justify-between gap-4 flex-wrap">
                                         <div className="flex-1 min-w-0">
@@ -97,7 +97,7 @@ export default function DisputesTab() {
                                                 {resolvingId === d.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4 ml-1" />}
                                                 {tr('لصالح المستقل', 'For freelancer', 'Pour le freelance')}
                                             </Button>
-                                            <Button size="sm" variant="ghost" className="text-blue-600 hover:bg-blue-50" disabled={resolvingId === d.id} onClick={() => handleResolve(d.id, 'resolved_client', tr('نزاع لصالح العميل', 'Dispute resolved for client', 'Litige resolu en faveur du client'))}>
+                                            <Button size="sm" variant="ghost" className="text-[var(--color-status-info)] hover:bg-[var(--color-status-info-subtle)]" disabled={resolvingId === d.id} onClick={() => handleResolve(d.id, 'resolved_client', tr('نزاع لصالح العميل', 'Dispute resolved for client', 'Litige resolu en faveur du client'))}>
                                                 <X className="w-4 h-4 ml-1" />{tr('لصالح العميل', 'For client', 'Pour le client')}
                                             </Button>
                                         </div>

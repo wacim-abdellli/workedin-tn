@@ -9,6 +9,7 @@ import { useTranslation } from '../i18n';
 import { supabase } from '../lib/supabase';
 import { useToast } from '../components/ui/Toast';
 import Button from '../components/ui/Button';
+import Input from '../components/ui/Input';
 import { AuthShell } from '../components/auth';
 
 // Password validation schema
@@ -146,15 +147,15 @@ const ResetPassword = () => {
                     <button
                         type="button"
                         onClick={() => navigate('/login')}
-                        className="inline-flex items-center rounded-full border border-white/12 bg-white dark:bg-gray-800/6 px-4 py-2 text-sm font-medium text-white/80 backdrop-blur-sm transition-colors hover:border-white/20 hover:bg-white dark:bg-gray-800/10 hover:text-white"
+                        className="inline-flex items-center rounded-full border border-[var(--color-border-default)] bg-[var(--color-background-base)]/60 px-4 py-2 text-sm font-medium text-[var(--color-text-primary)] backdrop-blur-sm transition-colors hover:border-[var(--color-border-strong)] hover:bg-[var(--color-background-muted)]"
                     >
                         {tx('pages.resetPassword.backToLogin', undefined, 'Back to sign in')}
                     </button>
                 }
             >
                 <div className="text-center">
-                    <Loader2 className="w-12 h-12 animate-spin text-primary-600 mx-auto mb-4" />
-                    <p className="text-gray-600 dark:text-gray-400">{tx('pages.resetPassword.validating', undefined, 'Validating your recovery link...')}</p>
+                    <Loader2 className="w-12 h-12 animate-spin text-[var(--color-brand-primary)] mx-auto mb-4" />
+                    <p className="text-[var(--color-text-secondary)]">{tx('pages.resetPassword.validating', undefined, 'Validating your recovery link...')}</p>
                 </div>
             </AuthShell>
         );
@@ -176,25 +177,27 @@ const ResetPassword = () => {
                     <button
                         type="button"
                         onClick={() => navigate('/forgot-password')}
-                        className="inline-flex items-center rounded-full border border-white/12 bg-white/6 px-4 py-2 text-sm font-medium text-white/80 backdrop-blur-sm transition-colors hover:border-white/20 hover:bg-white/10 hover:text-white"
+                        className="inline-flex items-center rounded-full border border-[var(--color-border-default)] bg-[var(--color-background-base)]/60 px-4 py-2 text-sm font-medium text-[var(--color-text-primary)] backdrop-blur-sm transition-colors hover:border-[var(--color-border-strong)] hover:bg-[var(--color-background-muted)]"
                     >
                         {tx('pages.resetPassword.requestNew', undefined, 'Request new link')}
                     </button>
                 }
             >
                 <div className="w-full max-w-md">
-                    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 dark:border-gray-700 p-8 text-center">
-                        <div className="w-20 h-20 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
-                            <AlertTriangle className="w-10 h-10 text-red-600 dark:text-red-400" />
+                    <div className="bg-[var(--color-background-base)] rounded-2xl shadow-[var(--shadow-elevation-3)] border border-[var(--color-border-subtle)] p-8 text-center">
+                        <div className="w-20 h-20 bg-[var(--red-100)] dark:bg-[var(--red-900)]/30 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <AlertTriangle className="w-10 h-10 text-[var(--red-600)] dark:text-[var(--red-400)]" />
                         </div>
-                        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 dark:text-white mb-3">
+                        <h2 className="text-2xl font-bold text-[var(--color-text-primary)] mb-3">
                             {tx('auth.resetPassword.expiredLink', undefined, 'Expired Link')}
                         </h2>
-                        <p className="text-gray-600 dark:text-gray-400 mb-8">
+                        <p className="text-[var(--color-text-secondary)] mb-8">
                             {tx('auth.resetPassword.invalidLinkDesc', undefined, 'Invalid reset link.')}
                         </p>
                         <Button
                             onClick={() => navigate('/forgot-password')}
+                            variant="primary"
+                            size="md"
                             className="w-full"
                         >{tx('auth.resetPassword.requestNewLink', undefined, 'Request New Link')}</Button>
                     </div>
@@ -217,25 +220,25 @@ const ResetPassword = () => {
                 <button
                     type="button"
                     onClick={() => navigate('/login')}
-                    className="inline-flex items-center rounded-full border border-white/12 bg-white dark:bg-gray-800/6 px-4 py-2 text-sm font-medium text-white/80 backdrop-blur-sm transition-colors hover:border-white/20 hover:bg-white dark:bg-gray-800/10 hover:text-white"
+                    className="inline-flex items-center rounded-full border border-[var(--color-border-default)] bg-[var(--color-background-base)]/60 px-4 py-2 text-sm font-medium text-[var(--color-text-primary)] backdrop-blur-sm transition-colors hover:border-[var(--color-border-strong)] hover:bg-[var(--color-background-muted)]"
                 >
                     {tx('pages.resetPassword.backToLogin', undefined, 'Back to sign in')}
                 </button>
             }
         >
             <div className="w-full max-w-md">
-                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 dark:border-gray-700 p-8">
+                <div className="bg-[var(--color-background-base)] rounded-2xl shadow-[var(--shadow-elevation-3)] border border-[var(--color-border-subtle)] p-8">
                     {!isSuccess ? (
                         <>
                             {/* Header */}
                             <div className="text-center mb-8">
-                                <div className="w-16 h-16 bg-primary-100 dark:bg-primary-900 rounded-full flex items-center justify-center mx-auto mb-4">
-                                    <ShieldCheck className="w-8 h-8 text-primary-600 dark:text-primary-400" />
+                                <div className="w-16 h-16 bg-[var(--color-brand-primary-light)] rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <ShieldCheck className="w-8 h-8 text-[var(--color-brand-primary)]" />
                                 </div>
-                                <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 dark:text-white mb-2">
+                                <h1 className="text-2xl font-bold text-[var(--color-text-primary)] mb-2">
                                     {tx('auth.resetPassword.setNew', undefined, 'Set New Password')}
                                 </h1>
-                                <p className="text-gray-600 dark:text-gray-400">
+                                <p className="text-[var(--color-text-secondary)]">
                                     {tx('auth.resetPassword.setNewDesc', undefined, 'Enter your new password')}
                                 </p>
                             </div>
@@ -244,46 +247,39 @@ const ResetPassword = () => {
                             <form onSubmit={handleSubmit(onSubmit)} className="form-stack">
                                 {/* New Password Field */}
                                 <div>
-                                    <label htmlFor="password" className="label">{tx('auth.password.new', undefined, 'New Password')}</label>
-                                    <div className="relative">
-                                        <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
-                                            <Lock className="w-5 h-5 text-gray-400" />
-                                        </div>
-                                        <input
-                                            id="password"
-                                            type={showPassword ? 'text' : 'password'}
-                                            {...register('password')}
-                                            className={`input ps-10 pe-12 ${errors.password ? 'input-error' : ''}`}
-                                            placeholder={tx('auth.passwordPlaceholder.new', undefined, 'Enter your new password')}
-                                            disabled={isLoading}
-                                        />
-                                        <button
-                                            type="button"
-                                            onClick={() => setShowPassword(!showPassword)}
-                                            className="absolute inset-y-0 end-0 flex items-center pe-3 text-gray-400 hover:text-gray-600 dark:text-gray-300"
-                                        >
-                                            {showPassword ? (
-                                                <EyeOff className="w-5 h-5" />
-                                            ) : (
-                                                <Eye className="w-5 h-5" />
-                                            )}
-                                        </button>
-                                    </div>
-                                    {errors.password && <p className="form-error">{errors.password.message}</p>}
+                                    <Input
+                                        id="password"
+                                        type={showPassword ? 'text' : 'password'}
+                                        label={tx('auth.password.new', undefined, 'New Password')}
+                                        leftIcon={<Lock className="w-5 h-5" />}
+                                        rightIcon={
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowPassword(!showPassword)}
+                                                className="text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)]"
+                                            >
+                                                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                            </button>
+                                        }
+                                        placeholder={tx('auth.passwordPlaceholder.new', undefined, 'Enter your new password')}
+                                        error={errors.password?.message}
+                                        disabled={isLoading}
+                                        {...register('password')}
+                                    />
 
                                     {/* Password Strength Indicator */}
                                     {password && (
                                         <div className="mt-3">
                                             <div className="flex items-center justify-between mb-1">
-                                                <span className="text-xs text-gray-500 dark:text-gray-400">{tx('auth.passwordStrength.label', undefined, 'Password strength')}</span>
-                                                <span className={`text-xs font-medium ${passwordStrength.color === 'bg-red-500' ? 'text-red-500' :
-                                                    passwordStrength.color === 'bg-yellow-500' ? 'text-yellow-500' :
-                                                        'text-green-500'
+                                                <span className="text-xs text-[var(--color-text-tertiary)]">{tx('auth.passwordStrength.label', undefined, 'Password strength')}</span>
+                                                <span className={`text-xs font-medium ${passwordStrength.color === 'bg-red-500' ? 'text-[var(--red-500)]' :
+                                                    passwordStrength.color === 'bg-yellow-500' ? 'text-[var(--amber-500)]' :
+                                                        'text-[var(--green-500)]'
                                                     }`}>
                                                     {passwordStrength.label}
                                                 </span>
                                             </div>
-                                            <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                                            <div className="h-2 bg-[var(--color-background-muted)] rounded-full overflow-hidden">
                                                 <div
                                                     className={`h-full ${passwordStrength.color} transition-all duration-300`}
                                                     style={{ width: `${(passwordStrength.score / 6) * 100}%` }}
@@ -294,53 +290,42 @@ const ResetPassword = () => {
                                 </div>
 
                                 {/* Confirm Password Field */}
-                                <div>
-                                    <label htmlFor="confirmPassword" className="label">
-                                        {tx('auth.confirmPassword', undefined, 'Confirm Password')}
-                                    </label>
-                                    <div className="relative">
-                                        <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
-                                            <Lock className="w-5 h-5 text-gray-400" />
-                                        </div>
-                                        <input
-                                            id="confirmPassword"
-                                            type={showConfirmPassword ? 'text' : 'password'}
-                                            {...register('confirmPassword')}
-                                            className={`input ps-10 pe-12 ${errors.confirmPassword ? 'input-error' : ''}`}
-                                            placeholder={tx('auth.confirmPasswordPlaceholder', undefined, 'Re-enter your password')}
-                                            disabled={isLoading}
-                                        />
+                                <Input
+                                    id="confirmPassword"
+                                    type={showConfirmPassword ? 'text' : 'password'}
+                                    label={tx('auth.confirmPassword', undefined, 'Confirm Password')}
+                                    leftIcon={<Lock className="w-5 h-5" />}
+                                    rightIcon={
                                         <button
                                             type="button"
                                             onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                            className="absolute inset-y-0 end-0 flex items-center pe-3 text-gray-400 hover:text-gray-600 dark:text-gray-300"
+                                            className="text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)]"
                                         >
-                                            {showConfirmPassword ? (
-                                                <EyeOff className="w-5 h-5" />
-                                            ) : (
-                                                <Eye className="w-5 h-5" />
-                                            )}
+                                            {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                                         </button>
-                                    </div>
-                                    {errors.confirmPassword && <p className="form-error">{errors.confirmPassword.message}</p>}
-                                </div>
+                                    }
+                                    placeholder={tx('auth.confirmPasswordPlaceholder', undefined, 'Re-enter your password')}
+                                    error={errors.confirmPassword?.message}
+                                    disabled={isLoading}
+                                    {...register('confirmPassword')}
+                                />
 
                                 {/* Password Requirements */}
-                                <div className="p-4 bg-gray-50 dark:bg-gray-900 dark:bg-gray-700/50 rounded-xl">
-                                    <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                <div className="p-4 bg-[var(--color-background-muted)] rounded-xl">
+                                    <p className="text-sm font-medium text-[var(--color-text-secondary)] mb-2">
                                         {tx('auth.passwordRequirements.title', undefined, 'Password Requirements:')}
                                     </p>
-                                    <ul className="space-y-1 text-sm text-gray-600 dark:text-gray-400">
-                                        <li className={password.length >= 8 ? 'text-green-600' : ''}>
+                                    <ul className="space-y-1 text-sm text-[var(--color-text-tertiary)]">
+                                        <li className={password.length >= 8 ? 'text-[var(--green-600)]' : ''}>
                                             {tx('auth.passwordRequirements.req1', undefined, '• At least 8 characters')}
                                         </li>
-                                        <li className={/[A-Z]/.test(password) ? 'text-green-600' : ''}>
+                                        <li className={/[A-Z]/.test(password) ? 'text-[var(--green-600)]' : ''}>
                                             {tx('auth.passwordRequirements.req2', undefined, '• At least one uppercase letter')}
                                         </li>
-                                        <li className={/[a-z]/.test(password) ? 'text-green-600' : ''}>
+                                        <li className={/[a-z]/.test(password) ? 'text-[var(--green-600)]' : ''}>
                                             {tx('auth.passwordRequirements.req3', undefined, '• At least one lowercase letter')}
                                         </li>
-                                        <li className={/[0-9]/.test(password) ? 'text-green-600' : ''}>
+                                        <li className={/[0-9]/.test(password) ? 'text-[var(--green-600)]' : ''}>
                                             {tx('auth.passwordRequirements.req4', undefined, '• At least one number')}
                                         </li>
                                     </ul>
@@ -349,33 +334,29 @@ const ResetPassword = () => {
                                 {/* Submit Button */}
                                 <Button
                                     type="submit"
+                                    variant="primary"
+                                    size="md"
                                     className="w-full"
+                                    isLoading={isLoading}
                                     disabled={isLoading}
                                 >
-                                    {isLoading ? (
-                                        <>
-                                            <Loader2 className="w-5 h-5 animate-spin ml-2" />
-                                            {t.auth.loggingOut}
-                                        </>
-                                    ) : (
-                                        t.auth.resetPassword.setNewTitle
-                                    )}
+                                    {t.auth.resetPassword.setNewTitle}
                                 </Button>
                             </form>
                         </>
                     ) : (
                         /* Success State */
                         <div className="text-center py-8">
-                            <div className="w-20 h-20 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mx-auto mb-6">
-                                <CheckCircle className="w-10 h-10 text-green-600 dark:text-green-400" />
+                            <div className="w-20 h-20 bg-[var(--green-100)] dark:bg-[var(--green-900)] rounded-full flex items-center justify-center mx-auto mb-6">
+                                <CheckCircle className="w-10 h-10 text-[var(--green-600)] dark:text-[var(--green-400)]" />
                             </div>
-                            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 dark:text-white mb-3">
+                            <h2 className="text-2xl font-bold text-[var(--color-text-primary)] mb-3">
                                 {tx('auth.resetPassword.success', undefined, 'Password changed successfully!')}
                             </h2>
-                            <p className="text-gray-600 dark:text-gray-400 mb-6">
+                            <p className="text-[var(--color-text-secondary)] mb-6">
                                 {tx('auth.resetPassword.successDesc', undefined, 'You can now log in with your new password.')}
                             </p>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                            <p className="text-sm text-[var(--color-text-tertiary)]">
                                 {tx('auth.resetPassword.redirecting', undefined, 'Redirecting to login...')}
                             </p>
                         </div>

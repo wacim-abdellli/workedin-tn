@@ -56,11 +56,11 @@ const SIZE_CONFIG = {
 export function Logo({ variant = 'full', size = 'md', className = '' }: LogoProps) {
   const cfg = SIZE_CONFIG[size];
 
-  // Colors — locked brand colors
-  const violet = '#5B21B6';        // Light theme primary
-  const innerViolet = '#4C1D95';   // Darker violet inner
-  const amber = '#D97706';          // Accent color
-  const amberLight = '#FCD34D';     // Light theme accent
+  // Colors — using CSS variables for consistency with new color system
+  const violet = '#9333ea';        // Updated to new primary purple
+  const innerViolet = '#7e22ce';   // Darker violet inner
+  const amber = '#d97706';          // Accent color
+  const amberLight = '#fcd34d';     // Light theme accent
 
   if (variant === 'mark') {
     return (
@@ -75,7 +75,7 @@ export function Logo({ variant = 'full', size = 'md', className = '' }: LogoProp
       <span
         className={`inline-flex items-center gap-1.5 px-3 rounded-full ${className}`}
         style={{
-          background: '#5B21B6',
+          background: 'var(--workspace-primary)',
           height: cfg.pillH,
         }}
         aria-label="Khedma TN"

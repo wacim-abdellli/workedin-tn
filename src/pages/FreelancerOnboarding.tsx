@@ -398,7 +398,7 @@ function FreelancerOnboarding() {
     ];
 
     return (
-        <div className="page-shell bg-[#f6f3ff] dark:bg-[#0b0a12] overflow-hidden relative transition-colors duration-300">
+        <div className="page-shell bg-[var(--color-bg-subtle)] dark:bg-[var(--color-bg-base)] overflow-hidden relative transition-colors duration-300">
             <SEO {...SEO_CONFIG.freelancerOnboarding} url="/onboarding/freelancer" noIndex />
             <Header />
 
@@ -468,7 +468,7 @@ function FreelancerOnboarding() {
                                     description: tx('onboarding.freelancer.summaryPoint3Desc', undefined, 'Your first rate should feel credible for your current profile depth and market position.'),
                                 },
                             ].map((item, index) => (
-                                <div key={item.title} className="rounded-2xl border border-brand-light/70 bg-brand-light/30 p-4 dark:border-white/10 dark:border-gray-800 dark:white/[0.04]">
+                                <div key={item.title} className="rounded-2xl border border-brand-light/70 bg-brand-light/30 p-4 dark:border-[var(--color-border-subtle)]">
                                     <div className="flex items-start gap-3">
                                         <div className="flex h-8 w-8 items-center justify-center rounded-full bg-brand text-sm font-semibold text-white">
                                             {index + 1}

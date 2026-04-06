@@ -37,10 +37,10 @@ function StatCard({ icon: Icon, label, value, tone }: { icon: React.ElementType;
     return (
         <div className={`${adminPanelClass} p-6 transition-all duration-300 hover:-translate-y-0.5`}>
             <div className="flex items-start justify-between">
-                <div className="w-12 h-12 rounded-2xl flex items-center justify-center shadow-md" style={{ background: tone || 'var(--workspace-primary)' }}><Icon className="w-6 h-6 text-white" /></div>
+                <div className="flex h-14 w-14 items-center justify-center rounded-[1.35rem] shadow-md" style={{ background: tone || 'linear-gradient(135deg, #7c3aed 0%, #9333ea 100%)' }}><Icon className="w-6 h-6 text-white" /></div>
             </div>
-            <p className="text-3xl font-bold text-foreground mt-4">{value}</p>
-            <p className="text-sm text-muted">{label}</p>
+            <p className="mt-5 text-4xl font-bold tracking-[-0.04em] text-foreground">{value}</p>
+            <p className="mt-1 text-sm font-medium text-muted">{label}</p>
         </div>
     );
 }
@@ -106,14 +106,14 @@ export default function OverviewTab() {
     if (isLoading) {
         return (
             <div className="flex h-64 items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
+                <Loader2 className="h-8 w-8 animate-spin text-[var(--color-brand-primary)]" />
             </div>
         );
     }
 
     return (
         <div className="space-y-8">
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
                  <StatCard icon={Users} label={tx('dashboard.admin.overview.totalUsers', undefined, 'Total users')} value={s.totalUsers} />
                  <StatCard icon={Briefcase} label={tx('dashboard.admin.overview.activeJobs', undefined, 'Active jobs')} value={s.activeJobs} tone="var(--workspace-primary-hover)" />
                  <StatCard icon={FileText} label={tx('dashboard.admin.overview.activeContracts', undefined, 'Active contracts')} value={s.activeContracts} tone="var(--workspace-primary-mid)" />
@@ -122,22 +122,22 @@ export default function OverviewTab() {
             <div className="grid lg:grid-cols-2 gap-6">
                 <div className={panelClass}>
                      <h3 className="font-bold text-foreground mb-4 flex items-center gap-2">
-                         <Activity className="w-5 h-5 text-cyan-500" />{tx('dashboard.admin.overview.todayActivity', undefined, 'Today activity')}
+                         <Activity className="w-5 h-5 text-[var(--color-status-info)]" />{tx('dashboard.admin.overview.todayActivity', undefined, 'Today activity')}
                      </h3>
                      <div className="grid grid-cols-2 gap-4">
                          <div className={`${adminInsetClass} p-4 ${adminPillClass('emerald')}`}>
-                              <div className="flex items-center gap-2 mb-2"><UserPlus className="w-5 h-5 text-emerald-600 dark:text-emerald-300" /><span className="text-emerald-800 dark:text-emerald-200 font-medium">{tx('dashboard.admin.overview.newSignups', undefined, 'New signups')}</span></div>
-                              <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-300">{s.todaySignups}</p>
+                              <div className="flex items-center gap-2 mb-2"><UserPlus className="w-5 h-5 text-[var(--color-status-success)] dark:text-[var(--color-status-success)]" /><span className="text-[var(--color-status-success)] dark:text-[var(--color-status-success)] font-medium">{tx('dashboard.admin.overview.newSignups', undefined, 'New signups')}</span></div>
+                              <p className="text-2xl font-bold text-[var(--color-status-success)] dark:text-[var(--color-status-success)]">{s.todaySignups}</p>
                           </div>
                           <div className={`${adminInsetClass} p-4 ${adminPillClass('cyan')}`}>
-                              <div className="flex items-center gap-2 mb-2"><FileText className="w-5 h-5 text-cyan-600 dark:text-cyan-300" /><span className="text-cyan-800 dark:text-cyan-200 font-medium">{tx('dashboard.admin.overview.newContracts', undefined, 'New contracts')}</span></div>
-                              <p className="text-2xl font-bold text-cyan-700 dark:text-cyan-300">{s.todayContracts}</p>
+                              <div className="flex items-center gap-2 mb-2"><FileText className="w-5 h-5 text-[var(--color-status-info)] dark:text-[var(--color-status-info)]" /><span className="text-[var(--color-status-info)] dark:text-[var(--color-status-info)] font-medium">{tx('dashboard.admin.overview.newContracts', undefined, 'New contracts')}</span></div>
+                              <p className="text-2xl font-bold text-[var(--color-status-info)] dark:text-[var(--color-status-info)]">{s.todayContracts}</p>
                           </div>
                      </div>
                  </div>
                 <div className={panelClass}>
                      <h3 className="font-bold text-foreground mb-4 flex items-center gap-2">
-                         <Shield className="w-5 h-5 text-yellow-600" />
+                         <Shield className="w-5 h-5 text-[var(--color-status-warning)]" />
                          {tx('dashboard.admin.overview.pendingVerifications', undefined, 'Pending verifications')}
                      </h3>
                      {s.pendingVerifications === 0 ? (
@@ -145,8 +145,8 @@ export default function OverviewTab() {
                      ) : (
                          <div className="space-y-3">
                               <div className={`flex items-center justify-between rounded-xl px-4 py-3 ${adminPillClass('amber')}`}>
-                                  <span className="text-sm font-medium text-yellow-800 dark:text-yellow-200">{tx('dashboard.admin.overview.requestsCount', undefined, 'Pending requests count')}</span>
-                                  <span className="text-lg font-bold text-yellow-700 dark:text-yellow-300">{s.pendingVerifications}</span>
+                                  <span className="text-sm font-medium text-[var(--color-status-warning-hover)] dark:text-[var(--color-status-warning)]">{tx('dashboard.admin.overview.requestsCount', undefined, 'Pending requests count')}</span>
+                                  <span className="text-lg font-bold text-[var(--color-status-warning)] dark:text-[var(--color-status-warning)]">{s.pendingVerifications}</span>
                               </div>
                               {s.recentVerificationRequests.map((request) => (
                                   <div key={request.id} className={`${adminInsetClass} px-4 py-3`}>
@@ -160,7 +160,7 @@ export default function OverviewTab() {
                  </div>
             </div>
             <div className={panelClass}>
-                 <h3 className="font-bold text-foreground mb-4 flex items-center gap-2"><Flag className="w-5 h-5 text-red-600" />{tx('dashboard.admin.overview.reports', undefined, 'Reports')}</h3>
+                 <h3 className="font-bold text-foreground mb-4 flex items-center gap-2"><Flag className="w-5 h-5 text-[var(--color-status-error)]" />{tx('dashboard.admin.overview.reports', undefined, 'Reports')}</h3>
                  <p className="text-sm text-muted text-center py-6">{tx('dashboard.admin.overview.noReports', undefined, 'No reports for now')}</p>
              </div>
         </div>

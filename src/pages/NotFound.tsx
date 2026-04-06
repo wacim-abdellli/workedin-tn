@@ -8,7 +8,7 @@ export default function NotFound() {
   const { t } = useTranslation();
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 dark:bg-[#0f0e17]">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 dark:bg-[var(--color-bg-base)]">
       <Header />
       <main className="flex min-h-screen flex-col items-center justify-center px-4 pt-20">
         {/* Big 404 number */}

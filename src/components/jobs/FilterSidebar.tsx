@@ -94,23 +94,24 @@ export default function FilterSidebar({
         section: string;
         children: React.ReactNode
     }) => (
-        <div className="border-b border-[var(--border)] pb-4 mb-4 last:border-0 last:pb-0 last:mb-0">
+        <div className="border-b border-purple-100 dark:border-purple-900/30 pb-5 mb-5 last:border-0 last:pb-0 last:mb-0">
             <button
                 onClick={() => toggleSection(section)}
-                className="flex items-center justify-between w-full text-start group mb-3"
+                className="flex items-center justify-between w-full text-start group mb-4 hover:bg-purple-50/50 dark:hover:bg-purple-950/20 p-2 rounded-lg transition-colors"
             >
-                <div className="flex items-center gap-2 border-l-2 border-l-[color:var(--workspace-primary)] pl-2">
-                    <span className="text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">
+                <div className="flex items-center gap-3">
+                    <div className="w-1 h-6 rounded-full bg-gradient-to-b from-purple-500 to-cyan-500" />
+                    <span className="text-sm font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300">
                         {title}
                     </span>
                 </div>
                 {expandedSections[section] ? (
-                    <ChevronUp className="w-4 h-4 text-gray-400 group-hover:text-[color:var(--workspace-primary)]" />
+                    <ChevronUp className="w-5 h-5 text-purple-500 transition-transform" />
                 ) : (
-                    <ChevronDown className="w-4 h-4 text-gray-400 group-hover:text-[color:var(--workspace-primary)]" />
+                    <ChevronDown className="w-5 h-5 text-gray-400 group-hover:text-purple-500 transition-colors" />
                 )}
             </button>
-            <div className={`space-y-2 overflow-hidden transition-all duration-300 ${expandedSections[section] ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'
+            <div className={`space-y-3 overflow-hidden transition-all duration-300 ${expandedSections[section] ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'
                 }`}>
                 {children}
             </div>
@@ -130,7 +131,7 @@ export default function FilterSidebar({
             {/* Sidebar Container */}
             <aside className={`
                 fixed lg:sticky top-0 lg:top-24 h-full lg:h-[calc(100vh-8rem)]
-                w-80 lg:w-72 bg-white dark:bg-gray-800 dark:bg-dark-800 lg:bg-transparent lg:dark:bg-transparent
+                w-80 lg:w-72 bg-white dark:bg-[var(--color-bg-muted)] lg:bg-transparent lg:dark:bg-transparent
                 z-50 lg:z-0 shadow-2xl lg:shadow-none
                 transform transition-transform duration-300 ease-in-out
                 ${isOpen ? 'translate-x-0' : isRTL ? 'translate-x-full lg:translate-x-0' : '-translate-x-full lg:translate-x-0'}
@@ -143,26 +144,28 @@ export default function FilterSidebar({
                         <Filter className="w-6 h-6 text-primary-500" />
                         <span>{t.jobs.filters.title}</span>
                     </h2>
-                    <button onClick={onClose} aria-label={tx('jobs.filters.closeAria', undefined, 'Close filters')} className="p-2 min-w-[44px] min-h-[44px] hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-dark-700 rounded-full transition-colors"
+                    <button onClick={onClose} aria-label={tx('jobs.filters.closeAria', undefined, 'Close filters')} className="p-2 min-w-[44px] min-h-[44px] hover:bg-gray-100 dark:hover:bg-[var(--color-bg-elevated)] rounded-full transition-colors"
                     >
                         <X className="w-6 h-6" />
                     </button>
                 </div>
 
                 <div className={`
-                    bg-white dark:bg-gray-800 dark:bg-[#1a1825] 
-                    rounded-xl border border-black/[0.07] dark:border-white/[0.07]
-                    p-4 shadow-[0_1px_3px_rgba(0,0,0,0.06),0_4px_16px_rgba(0,0,0,0.04)] dark:shadow-none
+                    bg-gradient-to-br from-white to-purple-50/30 dark:from-[var(--color-bg-elevated)] dark:to-purple-950/10
+                    rounded-2xl border-2 border-purple-100 dark:border-purple-900/30
+                    p-6 shadow-xl shadow-purple-500/10 dark:shadow-none
                     sticky top-0
                 `}>
-                    <div className="flex items-center justify-between mb-4">
-                        <h2 className="font-semibold text-sm text-[var(--text-primary)] flex items-center gap-2">
-                            <Filter className="w-4 h-4 text-[color:var(--workspace-primary)]" />
+                    <div className="flex items-center justify-between mb-6">
+                        <h2 className="font-bold text-lg text-[var(--text-primary)] flex items-center gap-2">
+                            <div className="p-2 rounded-xl bg-gradient-to-br from-purple-500 to-cyan-500 shadow-lg">
+                                <Filter className="w-5 h-5 text-white" />
+                            </div>
                             {t.jobs.filters.title}
                         </h2>
                         <button
                             onClick={onClearAll}
-                            className="text-xs font-medium text-[color:var(--workspace-primary)] hover:underline min-w-[44px] min-h-[44px] px-3"
+                            className="text-sm font-semibold text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300 hover:underline min-w-[44px] min-h-[44px] px-3 transition-colors"
                             aria-label={tx('jobs.filters.clearAria', undefined, 'Clear all filters')}
                         >
                             {t.jobs.filters.clearAll}
@@ -172,11 +175,11 @@ export default function FilterSidebar({
                     {/* Categories */}
                     <FilterSection title={t.jobs.filters.categories.title} section="category">
                         {categories.map(cat => (
-                            <label key={cat.value} className="flex items-center gap-2 cursor-pointer group">
+                            <label key={cat.value} className="flex items-center gap-3 cursor-pointer group p-3 rounded-xl hover:bg-gradient-to-r hover:from-purple-50 hover:to-cyan-50 dark:hover:from-purple-950/30 dark:hover:to-cyan-950/30 transition-all">
                                 <input
                                     type="checkbox"
-                                    className="w-4 h-4 rounded border-[var(--border)] text-[color:var(--workspace-primary)] focus:ring-2 focus:ring-[color:var(--workspace-primary)]/20"
-                                    style={{ accentColor: 'var(--workspace-primary)' }}
+                                    className="w-5 h-5 rounded-lg border-2 border-purple-300 dark:border-purple-700 text-purple-600 focus:ring-2 focus:ring-purple-500/30 transition-all"
+                                    style={{ accentColor: '#9333ea' }}
                                     checked={filters.categories.includes(cat.value)}
                                     onChange={(e) => {
                                         const newCategories = e.target.checked
@@ -185,11 +188,11 @@ export default function FilterSidebar({
                                         onFilterChange('categories', newCategories);
                                     }}
                                 />
-                                <span className="flex-1 text-sm text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition-colors">
+                                <span className="flex-1 text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
                                     {cat.label}
                                 </span>
                                 {categoryCounts[cat.value] > 0 && (
-                                    <span className="w-6 h-6 flex items-center justify-center text-xs rounded-full bg-[color:var(--workspace-primary)] text-white">
+                                    <span className="min-w-[28px] h-7 flex items-center justify-center px-2 text-xs font-bold rounded-full bg-gradient-to-r from-purple-500 to-cyan-500 text-white shadow-lg">
                                         {categoryCounts[cat.value]}
                                     </span>
                                 )}
@@ -200,17 +203,17 @@ export default function FilterSidebar({
                     {/* Job Type */}
                     <FilterSection title={t.jobs.filters.jobType.title} section="jobType">
                         {jobTypes.map(type => (
-                            <label key={type.value} className="flex items-center gap-2 cursor-pointer group">
+                            <label key={type.value} className="flex items-center gap-3 cursor-pointer group p-3 rounded-xl hover:bg-gradient-to-r hover:from-amber-50 hover:to-orange-50 dark:hover:from-amber-950/30 dark:hover:to-orange-950/30 transition-all">
                                 <input
                                     type="checkbox"
-                                    className="w-4 h-4 rounded border-[var(--border)] text-[color:var(--workspace-primary)] focus:ring-2 focus:ring-[color:var(--workspace-primary)]/20"
-                                    style={{ accentColor: 'var(--workspace-primary)' }}
+                                    className="w-5 h-5 rounded-lg border-2 border-amber-300 dark:border-amber-700 text-amber-600 focus:ring-2 focus:ring-amber-500/30 transition-all"
+                                    style={{ accentColor: '#f59e0b' }}
                                     checked={filters.jobType === type.value}
                                     onChange={(e) => {
                                         onFilterChange('jobType', e.target.checked ? type.value : null);
                                     }}
                                 />
-                                <span className="text-sm text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition-colors">
+                                <span className="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
                                     {type.label}
                                 </span>
                             </label>
@@ -219,7 +222,7 @@ export default function FilterSidebar({
 
                     <FilterSection title={t.jobs.filters.budget.title} section="budget">
                         <div className="space-y-1">
-                            <label className="flex items-center gap-2 cursor-pointer group p-2 hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-dark-700/50 rounded-lg transition-colors">
+                            <label className="flex items-center gap-2 cursor-pointer group p-2 hover:bg-gray-50 dark:hover:bg-[var(--color-bg-elevated)] rounded-lg transition-colors">
                                 <div className="relative flex items-center">
                                     <input
                                         type="radio"
@@ -242,7 +245,7 @@ export default function FilterSidebar({
                                 { value: '250-500', label: t.jobs.filters.budget.ranges?.r250_500 || '250-500 د.ت' },
                                 { value: '500+', label: t.jobs.filters.budget.ranges?.r500_plus || 'أكثر من 500 د.ت' },
                             ].map(range => (
-                                <label key={range.value} className="flex items-center gap-2 cursor-pointer group p-2 hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-dark-700/50 rounded-lg transition-colors">
+                                <label key={range.value} className="flex items-center gap-2 cursor-pointer group p-2 hover:bg-gray-50 dark:hover:bg-[var(--color-bg-elevated)] rounded-lg transition-colors">
                                     <div className="relative flex items-center">
                                         <input
                                             type="radio"
@@ -306,7 +309,7 @@ export default function FilterSidebar({
                         ))}
                     </FilterSection>
 
-                    <div className="pt-4 mt-4 border-t border-gray-100 dark:border-gray-800 dark:border-dark-700 lg:hidden">
+                    <div className="pt-4 mt-4 border-t border-gray-100 dark:border-[var(--color-border-subtle)] lg:hidden">
                         <Button onClick={onClose} className="w-full">
                             {t.jobs.filters.viewResults}
                         </Button>

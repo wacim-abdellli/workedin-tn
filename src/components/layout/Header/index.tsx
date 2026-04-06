@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from 'react'
-import { NavLink, useLocation, useNavigate } from 'react-router-dom'
+import { useEffect, useRef, useState } from "react";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   Briefcase,
   ChevronDown,
@@ -23,234 +23,341 @@ import {
   MessageSquare,
   Loader2,
   CheckCircle2,
-} from 'lucide-react'
+} from "lucide-react";
 
-import { useAuth } from '@/contexts/AuthContext'
-import { useTranslation } from '@/i18n'
-import { hasAdminAccess } from '@/lib/adminAccess'
-import { getInitials, resolveAccountAvatarUrl } from '@/lib/avatar'
-import { switchWorkspace } from '@/lib/switchWorkspace'
-import { useWorkspaceStore } from '@/lib/workspaceState'
-import { NotificationBell, Logo } from '@/components/ui'
-import { useToast } from '@/components/ui/Toast'
-import { getTotalUnreadCount, subscribeToConversations } from '@/services/messages'
-import type { RealtimeChannel } from '@supabase/supabase-js'
+import { useAuth } from "@/contexts/AuthContext";
+import { useTranslation } from "@/i18n";
+import { hasAdminAccess } from "@/lib/adminAccess";
+import { getInitials, resolveAccountAvatarUrl } from "@/lib/avatar";
+import { switchWorkspace } from "@/lib/switchWorkspace";
+import { useWorkspaceStore } from "@/lib/workspaceState";
+import { NotificationBell, Logo } from "@/components/ui";
+import { useToast } from "@/components/ui/Toast";
+import {
+  getTotalUnreadCount,
+  subscribeToConversations,
+} from "@/services/messages";
+import type { RealtimeChannel } from "@supabase/supabase-js";
 
-import SearchModal from './SearchModal'
+import SearchModal from "./SearchModal";
 
-// Nav arrays are created inside the component to pick up live translations
-
-const AUTH_ROUTES = ['/login', '/signup', '/forgot-password', '/reset-password', '/auth/callback']
+const AUTH_ROUTES = [
+  "/login",
+  "/signup",
+  "/forgot-password",
+  "/reset-password",
+  "/auth/callback",
+];
 
 const LANGS = [
-  { code: 'ar', label: 'العربية', display: 'AR', country: 'TN' },
-  { code: 'fr', label: 'Francais', display: 'FR', country: 'FR' },
-  { code: 'en', label: 'English', display: 'EN', country: 'GB' },
-] as const
+  { code: "ar", label: "العربية", display: "AR", country: "TN" },
+  { code: "fr", label: "Francais", display: "FR", country: "FR" },
+  { code: "en", label: "English", display: "EN", country: "GB" },
+] as const;
 
-function AuthHeader({ onHome, dir }: { onHome: () => void; dir: 'rtl' | 'ltr' }) {
-  const { tx } = useTranslation()
+function AuthHeader({
+  onHome,
+  dir,
+}: {
+  onHome: () => void;
+  dir: "rtl" | "ltr";
+}) {
+  const { tx } = useTranslation();
+
   return (
     <>
       <header
         dir={dir}
-        className="fixed top-0 left-0 right-0 z-50 flex h-[60px] items-center justify-center bg-transparent"
+        className="fixed top-0 left-0 right-0 z-50 flex h-16 items-center justify-center bg-transparent"
       >
-        <button onClick={onHome} className="flex items-center justify-center" aria-label={tx('header.a11y.goHome', undefined, 'Go to homepage')}>
+        <button
+          onClick={onHome}
+          className="flex items-center justify-center"
+          aria-label={tx("header.a11y.goHome", undefined, "Go to homepage")}
+        >
           <Logo variant="mark" size="sm" />
         </button>
       </header>
-      <div style={{ height: '64px' }} />
+      <div className="h-16" />
     </>
-  )
+  );
 }
 
 export default function Header() {
-  const { user, profile, freelancerProfile, signOut } = useAuth()
-  const { activeWorkspace, isSwitching } = useWorkspaceStore()
-  const { t, tx, language, setLanguage, dir } = useTranslation()
-  const { showToast } = useToast()
+  const { user, profile, freelancerProfile, signOut } = useAuth();
+  const { activeWorkspace, isSwitching } = useWorkspaceStore();
+  const { t, tx, language, setLanguage, dir } = useTranslation();
+  const { showToast } = useToast();
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
 
   const FREELANCER_NAV = [
-    { label: t.nav?.findWork || 'Find Work', Icon: Briefcase, href: '/jobs' },
-    { label: t.nav?.proposals || 'Proposals', Icon: FileText, href: '/my-proposals' },
-    { label: t.nav?.contracts || 'Contracts', Icon: ClipboardList, href: '/contracts' },
-    { label: t.nav?.wallet || 'Wallet', Icon: Wallet, href: '/wallet' },
-  ]
+    { label: t.nav?.findWork || "Find Work", Icon: Briefcase, href: "/jobs" },
+    {
+      label: t.nav?.proposals || "Proposals",
+      Icon: FileText,
+      href: "/my-proposals",
+    },
+    {
+      label: t.nav?.contracts || "Contracts",
+      Icon: ClipboardList,
+      href: "/contracts",
+    },
+    { label: t.nav?.wallet || "Wallet", Icon: Wallet, href: "/wallet" },
+  ];
 
   const CLIENT_NAV = [
-    { label: t.nav?.postProject || 'Post Project', Icon: PlusCircle, href: '/jobs/new' },
-    { label: t.nav?.myProjects || 'My Projects', Icon: FolderOpen, href: '/client/jobs' },
-    { label: t.nav?.findFreelancers || 'Find Freelancers', Icon: Users, href: '/find-freelancers' },
-    { label: t.nav?.contracts || 'Contracts', Icon: ClipboardList, href: '/contracts' },
-  ]
+    {
+      label: t.nav?.postProject || "Post Project",
+      Icon: PlusCircle,
+      href: "/jobs/new",
+    },
+    {
+      label: t.nav?.myProjects || "My Projects",
+      Icon: FolderOpen,
+      href: "/client/jobs",
+    },
+    {
+      label: t.nav?.findFreelancers || "Find Freelancers",
+      Icon: Users,
+      href: "/find-freelancers",
+    },
+    {
+      label: t.nav?.contracts || "Contracts",
+      Icon: ClipboardList,
+      href: "/contracts",
+    },
+  ];
 
   const PUBLIC_NAV = [
-    { label: t.nav?.findWork || 'Find Work', Icon: Briefcase, href: '/jobs' },
-    { label: t.nav?.findFreelancers || 'Find Freelancers', Icon: Users, href: '/find-freelancers' },
-    { label: t.nav?.howItWorks || 'How It Works', Icon: FileText, href: '/how-it-works' },
-  ]
-  const navigate = useNavigate()
-  const { pathname } = useLocation()
+    { label: t.nav?.findWork || "Find Work", Icon: Briefcase, href: "/jobs" },
+    {
+      label: t.nav?.findFreelancers || "Find Freelancers",
+      Icon: Users,
+      href: "/find-freelancers",
+    },
+    {
+      label: t.nav?.howItWorks || "How It Works",
+      Icon: FileText,
+      href: "/how-it-works",
+    },
+  ];
 
-  const [isDark, setIsDark] = useState(document.documentElement.classList.contains('dark'))
-  const [searchOpen, setSearchOpen] = useState(false)
-  const [userMenuOpen, setUserMenuOpen] = useState(false)
-  const [langOpen, setLangOpen] = useState(false)
-  const [navMoreOpen, setNavMoreOpen] = useState(false)
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [avatarFailed, setAvatarFailed] = useState(false)
-  const [unreadCount, setUnreadCount] = useState(0)
+  const [isDark, setIsDark] = useState(
+    document.documentElement.classList.contains("dark"),
+  );
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [langOpen, setLangOpen] = useState(false);
+  const [navMoreOpen, setNavMoreOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [avatarFailed, setAvatarFailed] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
 
-  const userMenuRef = useRef<HTMLDivElement>(null)
-  const langRef = useRef<HTMLDivElement>(null)
-  const navMoreRef = useRef<HTMLDivElement>(null)
-  const conversationsChannelRef = useRef<RealtimeChannel | null>(null)
-  const isDesktopCondensed = false
+  const userMenuRef = useRef<HTMLDivElement>(null);
+  const langRef = useRef<HTMLDivElement>(null);
+  const navMoreRef = useRef<HTMLDivElement>(null);
+  const conversationsChannelRef = useRef<RealtimeChannel | null>(null);
+  const isDesktopCondensed = false;
 
   useEffect(() => {
     const handler = (event: MouseEvent) => {
-      if (!userMenuRef.current?.contains(event.target as Node)) setUserMenuOpen(false)
-      if (!langRef.current?.contains(event.target as Node)) setLangOpen(false)
-      if (!navMoreRef.current?.contains(event.target as Node)) setNavMoreOpen(false)
-    }
+      if (!userMenuRef.current?.contains(event.target as Node))
+        setUserMenuOpen(false);
+      if (!langRef.current?.contains(event.target as Node)) setLangOpen(false);
+      if (!navMoreRef.current?.contains(event.target as Node))
+        setNavMoreOpen(false);
+    };
 
-    document.addEventListener('mousedown', handler)
-    return () => document.removeEventListener('mousedown', handler)
-  }, [])
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
 
   useEffect(() => {
     const handler = (event: KeyboardEvent) => {
-      if ((event.metaKey || event.ctrlKey) && event.key === 'k') {
-        event.preventDefault()
-        setSearchOpen(true)
+      if ((event.metaKey || event.ctrlKey) && event.key === "k") {
+        event.preventDefault();
+        setSearchOpen(true);
       }
-    }
+    };
 
-    document.addEventListener('keydown', handler)
-    return () => document.removeEventListener('keydown', handler)
-  }, [])
-
-  useEffect(() => {
-    setMobileMenuOpen(false)
-    setLangOpen(false)
-    setNavMoreOpen(false)
-    setUserMenuOpen(false)
-  }, [pathname])
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, []);
 
   useEffect(() => {
-    setAvatarFailed(false)
-  }, [profile?.avatar_url])
+    setMobileMenuOpen(false);
+    setLangOpen(false);
+    setNavMoreOpen(false);
+    setUserMenuOpen(false);
+  }, [pathname]);
 
   useEffect(() => {
-    const previousOverflow = document.body.style.overflow
+    setAvatarFailed(false);
+  }, [profile?.avatar_url]);
+
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
 
     if (mobileMenuOpen || searchOpen) {
-      document.body.style.overflow = 'hidden'
+      document.body.style.overflow = "hidden";
     }
 
     return () => {
-      document.body.style.overflow = previousOverflow
-    }
-  }, [mobileMenuOpen, searchOpen])
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [mobileMenuOpen, searchOpen]);
 
-  // Load and subscribe to unread messages count
   useEffect(() => {
-    if (!user) return
+    if (!user) return;
 
     const loadUnreadCount = async () => {
-      const { count } = await getTotalUnreadCount(user.id)
-      setUnreadCount(count)
-    }
+      const { count } = await getTotalUnreadCount(user.id);
+      setUnreadCount(count);
+    };
 
-    loadUnreadCount()
+    loadUnreadCount();
 
-    // Subscribe to conversation updates for real-time unread count
     conversationsChannelRef.current = subscribeToConversations(user.id, () => {
-      // On any conversation change, reload the count
-      // This handles unread count updates when messages are marked as read
-      loadUnreadCount()
-    })
+      loadUnreadCount();
+    });
 
     return () => {
       if (conversationsChannelRef.current) {
-        conversationsChannelRef.current.unsubscribe()
+        conversationsChannelRef.current.unsubscribe();
       }
-    }
-  }, [user?.id])
+    };
+  }, [user?.id]);
 
   const toggleTheme = () => {
-    const next = !isDark
-    setIsDark(next)
-    document.documentElement.classList.toggle('dark', next)
-    localStorage.setItem('theme', next ? 'dark' : 'light')
-  }
+    const next = !isDark;
+    setIsDark(next);
+    document.documentElement.classList.toggle("dark", next);
+    localStorage.setItem("theme", next ? "dark" : "light");
+  };
 
-  const isFreelancer = Boolean(user) && activeWorkspace === 'freelancer'
-  const isAuthPage = AUTH_ROUTES.includes(pathname)
-  const navItems = !user ? PUBLIC_NAV : isFreelancer ? FREELANCER_NAV : CLIENT_NAV
-  const desktopNavItems = navItems
-  const overflowNavItems: typeof navItems = []
-  const hasOverflowActiveItem = false
-  const moreLabel = t.pages?.mobileNav?.more || 'More'
-  const currentLang = language || 'en'
-  const activeLang = LANGS.find((lang) => lang.code === currentLang) ?? LANGS[2]
-  const firstName = profile?.full_name?.split(' ')[0] ?? user?.email?.split('@')[0] ?? 'Me'
-  const displayName = profile?.full_name ?? user?.user_metadata?.full_name ?? user?.email?.split('@')[0] ?? 'Me'
-  const avatarUrl = resolveAccountAvatarUrl(profile?.avatar_url, avatarFailed)
-  const avatarInitials = getInitials(displayName)
-  const targetWorkspace = isFreelancer ? 'client' : 'freelancer'
-  const canQuickSwitch = Boolean(user)
-  const switchTargetLabel = targetWorkspace === 'freelancer'
-    ? (t.auth?.accountPanel?.freelancerLabel || 'Freelancer')
-    : (t.auth?.accountPanel?.clientLabel || 'Client')
-  const switchActionLabel = t.auth?.accountPanel?.switchAction || 'Switch'
+  const isFreelancer = Boolean(user) && activeWorkspace === "freelancer";
+  const isAuthPage = AUTH_ROUTES.includes(pathname);
+  const navItems = !user
+    ? PUBLIC_NAV
+    : isFreelancer
+      ? FREELANCER_NAV
+      : CLIENT_NAV;
+  const desktopNavItems = navItems;
+  const overflowNavItems: typeof navItems = [];
+  const hasOverflowActiveItem = false;
+  const moreLabel = t.pages?.mobileNav?.more || "More";
+  const currentLang = language || "en";
+  const activeLang =
+    LANGS.find((lang) => lang.code === currentLang) ?? LANGS[2];
+  const firstName =
+    profile?.full_name?.split(" ")[0] ?? user?.email?.split("@")[0] ?? "Me";
+  const displayName =
+    profile?.full_name ??
+    user?.user_metadata?.full_name ??
+    user?.email?.split("@")[0] ??
+    "Me";
+  const avatarUrl = resolveAccountAvatarUrl(profile?.avatar_url, avatarFailed);
+  const avatarInitials = getInitials(displayName);
+  const targetWorkspace = isFreelancer ? "client" : "freelancer";
+  const canQuickSwitch = Boolean(user);
+  const switchTargetLabel =
+    targetWorkspace === "freelancer"
+      ? t.auth?.accountPanel?.freelancerLabel || "Freelancer"
+      : t.auth?.accountPanel?.clientLabel || "Client";
+  const switchActionLabel = t.auth?.accountPanel?.switchAction || "Switch";
   const switchButtonLabel = `${switchActionLabel}: ${switchTargetLabel}`;
-  const freelancerVerified = Boolean(profile?.cin_verified || freelancerProfile?.cin_verified);
+  const freelancerVerified = Boolean(
+    profile?.cin_verified || freelancerProfile?.cin_verified,
+  );
   const freelancerPending = false;
+
   const triggerWorkspaceBadge = {
-    label: isFreelancer ? (t.auth?.accountPanel?.freelancerLabel || 'Freelancer') : (t.auth?.accountPanel?.clientLabel || 'Client'),
-    background: 'var(--workspace-primary-light)',
-    color: 'var(--workspace-primary)',
-    dotClassName: 'bg-emerald-500 animate-pulse',
-    border: 'var(--workspace-primary-light)',
-  }
-  const navActiveClass = 'header-nav-link-active'
-  const canAccessAdmin = hasAdminAccess(user, profile)
-  const homeLabel = tx('header.a11y.goHome', undefined, 'Go to homepage')
-  const openSearchLabel = tx('header.a11y.openSearch', undefined, 'Open search')
-  const openMenuLabel = tx('header.a11y.openMenu', undefined, 'Open navigation menu')
+    label: isFreelancer
+      ? t.auth?.accountPanel?.freelancerLabel || "Freelancer"
+      : t.auth?.accountPanel?.clientLabel || "Client",
+    background: "var(--workspace-primary-light)",
+    color: "var(--workspace-primary)",
+    dotClassName: "bg-[var(--color-status-success)] animate-pulse",
+    border: "color-mix(in srgb, var(--workspace-primary) 35%, transparent)",
+  };
+
+  const switchTargetStyles =
+    targetWorkspace === "client"
+      ? {
+          color: "var(--workspace-client-primary)",
+          background: "var(--workspace-client-primary-light)",
+          borderColor:
+            "color-mix(in srgb, var(--workspace-client-primary) 25%, transparent)",
+        }
+      : {
+          color: "var(--workspace-freelancer-primary)",
+          background: "var(--workspace-freelancer-primary-light)",
+          borderColor:
+            "color-mix(in srgb, var(--workspace-freelancer-primary) 25%, transparent)",
+        };
+
+  const navActiveClass = "header-nav-link-active";
+  const canAccessAdmin = hasAdminAccess(user, profile);
+  const homeLabel = tx("header.a11y.goHome", undefined, "Go to homepage");
+  const openSearchLabel = tx(
+    "header.a11y.openSearch",
+    undefined,
+    "Open search",
+  );
+  const openMenuLabel = tx(
+    "header.a11y.openMenu",
+    undefined,
+    "Open navigation menu",
+  );
 
   const handleQuickWorkspaceSwitch = async () => {
-    if (!user || isSwitching) return
+    if (!user || isSwitching) return;
 
     try {
       await switchWorkspace({
         userId: user.id,
         targetWorkspace,
-        currentUserType: profile?.user_type ?? 'client',
+        currentUserType: profile?.user_type ?? "client",
         profile,
         freelancerProfile: freelancerProfile ?? null,
         navigate,
-      })
+      });
     } catch {
-      showToast(t.auth?.accountPanel?.switchError || 'We could not switch your workspace right now.', 'error')
+      showToast(
+        t.auth?.accountPanel?.switchError ||
+          "We could not switch your workspace right now.",
+        "error",
+      );
     }
-  }
+  };
 
   if (isAuthPage) {
-    return <AuthHeader onHome={() => navigate('/')} dir={dir} />
+    return <AuthHeader onHome={() => navigate("/")} dir={dir} />;
   }
 
   return (
     <>
       <header
         dir={dir}
-        className="fixed top-0 left-0 right-0 z-50 border-b border-white/20 bg-white/70 backdrop-blur-xl dark:border-white/5 dark:bg-zinc-950/70 shadow-sm dark:shadow-none transition-all duration-300"
+        className="fixed top-0 left-0 right-0 z-50 border-b shadow-sm transition-all duration-300"
+        style={{
+          borderColor:
+            "color-mix(in srgb, var(--color-border-default) 65%, transparent)",
+          background:
+            "color-mix(in srgb, var(--color-background-elevated) 74%, transparent)",
+          backdropFilter: "blur(16px)",
+          WebkitBackdropFilter: "blur(16px)",
+        }}
       >
         <div className="mx-auto max-w-[1536px] px-4 sm:px-6">
+          {/* Mobile header */}
           <div className="flex h-16 items-center justify-between lg:hidden">
-            <button onClick={() => navigate('/')} className="flex items-center" aria-label={homeLabel}>
+            <button
+              onClick={() => navigate("/")}
+              className="flex items-center"
+              aria-label={homeLabel}
+            >
               <Logo variant="full" size="sm" />
             </button>
 
@@ -272,10 +379,11 @@ export default function Header() {
             </div>
           </div>
 
+          {/* Desktop header */}
           <div className="hidden h-16 items-center gap-4 2xl:gap-6 lg:flex">
             <div className="flex shrink-0 items-center">
               <button
-                onClick={() => navigate('/')}
+                onClick={() => navigate("/")}
                 className="flex items-center transition-all hover:opacity-80"
                 aria-label={homeLabel}
               >
@@ -290,10 +398,14 @@ export default function Header() {
                     <NavLink
                       key={href}
                       to={href}
-                      className={({ isActive }) => (isActive ? navActiveClass : 'header-nav-link')}
+                      className={({ isActive }) =>
+                        isActive ? navActiveClass : "header-nav-link"
+                      }
                     >
                       <Icon className="h-4 w-4 shrink-0" />
-                      <span className="max-w-[132px] truncate whitespace-nowrap">{label}</span>
+                      <span className="max-w-[132px] truncate whitespace-nowrap">
+                        {label}
+                      </span>
                     </NavLink>
                   ))}
 
@@ -301,24 +413,61 @@ export default function Header() {
                     <div className="relative" ref={navMoreRef}>
                       <button
                         onClick={() => setNavMoreOpen((open) => !open)}
-                        className={hasOverflowActiveItem ? navActiveClass : 'header-nav-link'}
+                        className={
+                          hasOverflowActiveItem
+                            ? navActiveClass
+                            : "header-nav-link"
+                        }
                         aria-label={moreLabel}
                       >
                         <MoreHorizontal className="h-4 w-4 shrink-0" />
                         <span className="whitespace-nowrap">{moreLabel}</span>
-                        <ChevronDown className={`h-3.5 w-3.5 shrink-0 transition-transform ${navMoreOpen ? 'rotate-180' : ''}`} />
+                        <ChevronDown
+                          className={`h-3.5 w-3.5 shrink-0 transition-transform ${navMoreOpen ? "rotate-180" : ""}`}
+                        />
                       </button>
 
                       {navMoreOpen ? (
-                        <div className="absolute start-0 top-full z-[70] mt-3 w-56 overflow-hidden rounded-[1.25rem] border border-border bg-[var(--card-bg)] p-2 shadow-[0_28px_70px_-30px_rgba(15,23,42,0.4)] ring-1 ring-black/[0.03] backdrop-blur-xl dark:ring-white/[0.04]">
+                        <div
+                          className="absolute start-0 top-full z-[70] mt-3 w-56 overflow-hidden rounded-[1.25rem] p-2 shadow-[0_28px_70px_-30px_rgba(15,23,42,0.4)] ring-1 backdrop-blur-xl"
+                          style={{
+                            borderColor: "var(--color-border-default)",
+                            borderWidth: "1px",
+                            background: "var(--color-background-elevated)",
+                            boxShadow: "0 24px 50px -28px rgba(15,23,42,0.45)",
+                          }}
+                        >
                           {overflowNavItems.map(({ label, Icon, href }) => (
                             <NavLink
                               key={href}
                               to={href}
                               onClick={() => setNavMoreOpen(false)}
-                              className={({ isActive }) => `flex items-center gap-3 rounded-[1rem] px-3.5 py-3 text-sm font-medium transition-colors ${isActive ? 'bg-[color:var(--workspace-primary-light)] text-[color:var(--workspace-primary)] dark:bg-white/10 dark:text-white' : 'text-gray-700 hover:bg-gray-50 dark:text-zinc-300 dark:hover:bg-white/[0.06]'}`}
+                              className={({ isActive }) =>
+                                `flex items-center gap-3 rounded-[1rem] px-3.5 py-3 text-sm font-medium transition-colors ${
+                                  isActive
+                                    ? "text-[var(--workspace-primary)]"
+                                    : "text-[var(--color-text-primary)] hover:bg-[var(--color-background-subtle)]"
+                                }`
+                              }
+                              style={({ isActive }) =>
+                                isActive
+                                  ? {
+                                      background:
+                                        "var(--workspace-primary-light)",
+                                    }
+                                  : undefined
+                              }
                             >
-                              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-black/[0.05] bg-black/[0.025] text-[var(--workspace-primary)] dark:border-white/10 dark:bg-white/[0.04]">
+                              <span
+                                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
+                                style={{
+                                  border:
+                                    "1px solid color-mix(in srgb, var(--workspace-primary) 16%, transparent)",
+                                  background:
+                                    "color-mix(in srgb, var(--workspace-primary) 8%, transparent)",
+                                  color: "var(--workspace-primary)",
+                                }}
+                              >
                                 <Icon className="h-4 w-4" />
                               </span>
                               <span className="truncate">{label}</span>
@@ -331,11 +480,16 @@ export default function Header() {
                 </nav>
               </div>
 
-              <div className="flex min-w-0 flex-1 shrink items-center justify-end gap-2 2xl:gap-4 pl-2 lg:pl-4">
-                {/* Search Bar - Fluid adaptive width */}
+              <div className="flex min-w-0 flex-1 shrink items-center justify-end gap-2 2xl:gap-4 ps-2 lg:ps-4">
+                {/* Search */}
                 <button
                   onClick={() => setSearchOpen(true)}
-                  className="flex h-10 min-w-9 max-w-[320px] w-full shrink items-center justify-center lg:justify-start gap-2 rounded-2xl bg-black/[0.03] dark:bg-white/[0.03] px-2 lg:px-3 text-sm font-medium text-gray-500 transition-all duration-300 hover:bg-black/[0.06] hover:text-black dark:hover:bg-white/[0.06] dark:hover:text-white"
+                  className="flex h-10 min-w-9 max-w-[320px] w-full shrink items-center justify-center lg:justify-start gap-2 rounded-2xl px-2 lg:px-3 text-sm font-medium transition-all duration-300"
+                  style={{
+                    color: "var(--color-text-secondary)",
+                    background:
+                      "color-mix(in srgb, var(--color-text-primary) 4%, transparent)",
+                  }}
                   aria-label={openSearchLabel}
                 >
                   <Search className="h-4 w-4 shrink-0" />
@@ -347,113 +501,190 @@ export default function Header() {
                   </div>
                 </button>
 
-                {/* Glass Utility Pill */}
-                <div className="flex shrink-0 items-center rounded-2xl border border-black/5 bg-white/50 p-1 shadow-sm backdrop-blur-xl dark:border-white/[0.08] dark:bg-zinc-900/50">
+                {/* Utility pill */}
+                <div
+                  className="flex shrink-0 items-center rounded-2xl p-1 shadow-sm"
+                  style={{
+                    border:
+                      "1px solid color-mix(in srgb, var(--color-border-default) 50%, transparent)",
+                    background: isDark
+                      ? "rgba(255,255,255,0.05)"
+                      : "rgba(255,255,255,0.5)",
+                  }}
+                >
                   <div className="relative" ref={langRef}>
                     <button
                       onClick={() => setLangOpen((open) => !open)}
-                      className="flex h-7 items-center justify-center gap-1.5 rounded-xl px-2.5 text-[11px] font-bold uppercase tracking-wider text-gray-500 transition-all hover:bg-black/[0.05] hover:text-gray-900 dark:text-zinc-400 dark:hover:bg-white/[0.06] dark:hover:text-white"
+                      className="flex h-7 items-center justify-center gap-1.5 rounded-xl px-2.5 text-[11px] font-bold uppercase tracking-wider transition-all"
+                      style={{ color: "var(--color-text-secondary)" }}
                     >
-                      <span className="hidden 2xl:inline text-gray-400 dark:text-zinc-500">{activeLang.country}</span>
+                      <span
+                        className="hidden 2xl:inline"
+                        style={{ color: "var(--color-text-tertiary)" }}
+                      >
+                        {activeLang.country}
+                      </span>
                       <span>{activeLang.display}</span>
                     </button>
+
                     {langOpen ? (
-                      <div className="absolute end-0 top-full z-[70] mt-3 w-52 overflow-hidden rounded-2xl border border-border bg-[var(--card-bg)] p-1.5 shadow-[0_24px_60px_-28px_rgba(15,23,42,0.45)] ring-1 ring-black/[0.03] backdrop-blur-xl dark:ring-white/[0.04]">
+                      <div
+                        className="absolute end-0 top-full z-[70] mt-3 w-52 overflow-hidden rounded-2xl p-1.5 ring-1 backdrop-blur-xl"
+                        style={{
+                          border: "1px solid var(--color-border-default)",
+                          background: "var(--color-background-elevated)",
+                        }}
+                      >
                         {LANGS.map((lang) => (
                           <button
                             key={lang.code}
                             onClick={() => {
-                              setLanguage(lang.code)
-                              setLangOpen(false)
+                              setLanguage(lang.code);
+                              setLangOpen(false);
                             }}
-                            className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors ${
+                            className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors`}
+                            style={
                               currentLang === lang.code
-                                ? 'text-gray-900 dark:text-zinc-100'
-                                : 'text-gray-700 dark:text-zinc-300 hover:bg-gray-50 dark:hover:bg-zinc-800'
-                            }`}
-                            style={currentLang === lang.code ? {
-                              background: isDark ? 'rgba(255,255,255,0.1)' : 'var(--workspace-primary-light)',
-                              color: isDark ? '#fff' : 'var(--workspace-primary)',
-                            } : undefined}
+                                ? {
+                                    background:
+                                      "var(--workspace-primary-light)",
+                                    color: "var(--workspace-primary)",
+                                  }
+                                : {
+                                    color: "var(--color-text-primary)",
+                                  }
+                            }
                           >
-                            <span className="w-8 shrink-0 text-start text-xs font-semibold text-gray-500 dark:text-zinc-400">
+                            <span
+                              className="w-8 shrink-0 text-start text-xs font-semibold"
+                              style={{ color: "var(--color-text-secondary)" }}
+                            >
                               {lang.country}
                             </span>
-                            <span className="flex-1 truncate text-start font-medium">{lang.label}</span>
-                            <span className="text-[11px] font-semibold uppercase tracking-wide text-gray-400 dark:text-zinc-500">{lang.display}</span>
+                            <span className="flex-1 truncate text-start font-medium">
+                              {lang.label}
+                            </span>
+                            <span
+                              className="text-[11px] font-semibold uppercase tracking-wide"
+                              style={{ color: "var(--color-text-tertiary)" }}
+                            >
+                              {lang.display}
+                            </span>
                           </button>
                         ))}
                       </div>
                     ) : null}
                   </div>
 
-                  <div className="mx-0.5 h-4 w-[1px] bg-black/10 dark:bg-white/10" />
+                  <div
+                    className="mx-0.5 h-4 w-[1px]"
+                    style={{
+                      background:
+                        "color-mix(in srgb, var(--color-border-default) 75%, transparent)",
+                    }}
+                  />
 
                   <button
                     onClick={toggleTheme}
-                    className="flex h-7 w-7 items-center justify-center rounded-xl text-gray-500 transition-all hover:bg-black/[0.05] hover:text-gray-900 dark:text-zinc-400 dark:hover:bg-white/[0.06] dark:hover:text-white"
-                    aria-label={isDark ? t.common?.toggleLightMode || 'Toggle light mode' : t.common?.toggleDarkMode || 'Toggle dark mode'}
+                    className="flex h-7 w-7 items-center justify-center rounded-xl transition-all"
+                    aria-label={
+                      isDark
+                        ? t.common?.toggleLightMode || "Toggle light mode"
+                        : t.common?.toggleDarkMode || "Toggle dark mode"
+                    }
+                    style={{ color: "var(--color-text-secondary)" }}
                   >
-                    {isDark ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
+                    {isDark ? (
+                      <Sun className="h-3.5 w-3.5" />
+                    ) : (
+                      <Moon className="h-3.5 w-3.5" />
+                    )}
                   </button>
 
                   {user ? (
                     <>
-                      <div className="mx-0.5 h-4 w-[1px] bg-black/10 dark:bg-white/10" />
+                      <div
+                        className="mx-0.5 h-4 w-[1px]"
+                        style={{
+                          background:
+                            "color-mix(in srgb, var(--color-border-default) 75%, transparent)",
+                        }}
+                      />
 
                       <button
-                        onClick={() => navigate('/messages')}
-                        className="relative flex h-7 w-7 items-center justify-center rounded-xl text-gray-500 transition-all hover:bg-black/[0.05] hover:text-gray-900 dark:text-zinc-400 dark:hover:bg-white/[0.06] dark:hover:text-white"
-                        aria-label={t.nav?.messages || 'Messages'}
+                        onClick={() => navigate("/messages")}
+                        className="relative flex h-7 w-7 items-center justify-center rounded-xl transition-all"
+                        aria-label={t.nav?.messages || "Messages"}
+                        style={{ color: "var(--color-text-secondary)" }}
                       >
                         <MessageSquare className="h-3.5 w-3.5" />
-                        {unreadCount > 0 && (
-                          <span className="absolute -right-0.5 -top-0.5 flex min-h-3.5 min-w-3.5 items-center justify-center rounded-full px-1 text-[9px] font-bold text-white shadow-sm ring-2 ring-white dark:ring-zinc-900"
-                                style={{ background: 'var(--workspace-accent)' }}>
-                            {unreadCount > 99 ? '99+' : unreadCount}
+                        {unreadCount > 0 ? (
+                          <span
+                            className="absolute -right-0.5 -top-0.5 flex min-h-3.5 min-w-3.5 items-center justify-center rounded-full px-1 text-[9px] font-bold text-white shadow-sm ring-2"
+                            style={{
+                              background: "var(--workspace-accent)",
+                              boxShadow:
+                                "0 0 0 2px var(--color-background-elevated)",
+                            }}
+                          >
+                            {unreadCount > 99 ? "99+" : unreadCount}
                           </span>
-                        )}
+                        ) : null}
                       </button>
 
-                      <div className="mx-0.5 h-4 w-[1px] bg-black/10 dark:bg-white/10" />
+                      <div
+                        className="mx-0.5 h-4 w-[1px]"
+                        style={{
+                          background:
+                            "color-mix(in srgb, var(--color-border-default) 75%, transparent)",
+                        }}
+                      />
 
-                      <div className="flex h-7 w-7 items-center justify-center rounded-xl transition-all hover:bg-black/[0.05] dark:hover:bg-white/[0.06]">
+                      <div className="flex h-7 w-7 items-center justify-center rounded-xl transition-all">
                         <NotificationBell />
                       </div>
                     </>
                   ) : null}
                 </div>
 
-                {/* Profile Identity Pill */}
+                {/* Profile section */}
                 {user ? (
-                  <div className="flex items-center gap-2.5 pl-1.5 ml-1 border-l border-black/10 dark:border-white/10">
-                    {canQuickSwitch && (() => {
-                      const targetColors = targetWorkspace === 'client'
-                        ? { primary: '#F59E0B', light: isDark ? 'rgba(245,158,11,0.15)' : '#FFFBEB' }
-                        : { primary: '#8B5CF6', light: isDark ? 'rgba(139,92,246,0.15)' : '#EDE9FE' };
-                      
-                      return (
-                        <button
-                          onClick={() => void handleQuickWorkspaceSwitch()}
-                          disabled={isSwitching}
-                          className={`flex h-8 items-center justify-center gap-1.5 rounded-full border px-0 xl:px-3 w-8 xl:w-auto text-[10px] font-bold uppercase tracking-wider transition-all ${isSwitching ? 'cursor-not-allowed opacity-50' : 'hover:-translate-y-[1px] shadow-sm hover:shadow'}`}
-                          style={{
-                            borderColor: targetColors.light,
-                            color: targetColors.primary,
-                            background: targetColors.light,
-                          }}
-                          title={switchButtonLabel}
-                        >
-                          <Repeat2 className={`h-3.5 w-3.5 flex-shrink-0 ${isSwitching ? 'animate-spin' : ''}`} />
-                          <span className="max-w-[76px] truncate hidden xl:inline">{switchTargetLabel}</span>
-                        </button>
-                      );
-                    })()}
+                  <div
+                    className="flex items-center gap-2.5 ps-1.5 ms-1 border-s"
+                    style={{
+                      borderColor:
+                        "color-mix(in srgb, var(--color-border-default) 75%, transparent)",
+                    }}
+                  >
+                    {canQuickSwitch ? (
+                      <button
+                        onClick={() => void handleQuickWorkspaceSwitch()}
+                        disabled={isSwitching}
+                        className={`flex h-8 w-8 xl:w-auto items-center justify-center gap-1.5 rounded-full border px-0 xl:px-3 text-[10px] font-bold uppercase tracking-wider transition-all ${
+                          isSwitching
+                            ? "cursor-not-allowed opacity-50"
+                            : "hover:-translate-y-[1px] shadow-sm hover:shadow"
+                        }`}
+                        style={{
+                          borderColor: switchTargetStyles.borderColor,
+                          color: switchTargetStyles.color,
+                          background: switchTargetStyles.background,
+                        }}
+                        title={switchButtonLabel}
+                      >
+                        <Repeat2
+                          className={`h-3.5 w-3.5 flex-shrink-0 ${isSwitching ? "animate-spin" : ""}`}
+                        />
+                        <span className="hidden max-w-[76px] truncate xl:inline">
+                          {switchTargetLabel}
+                        </span>
+                      </button>
+                    ) : null}
 
                     <div className="relative" ref={userMenuRef}>
                       <button
                         onClick={() => setUserMenuOpen((open) => !open)}
-                        className={`header-profile-trigger ${userMenuOpen ? 'header-profile-trigger-open' : ''}`}
+                        className={`header-profile-trigger ${userMenuOpen ? "header-profile-trigger-open" : ""}`}
                       >
                         {avatarUrl ? (
                           <img
@@ -465,7 +696,7 @@ export default function Header() {
                         ) : (
                           <div
                             className="flex h-7 w-7 items-center justify-center rounded-full text-[10px] font-bold text-white"
-                            style={{ background: 'var(--gradient-primary)' }}
+                            style={{ background: "var(--gradient-primary)" }}
                           >
                             {avatarInitials}
                           </div>
@@ -473,7 +704,10 @@ export default function Header() {
 
                         {!isDesktopCondensed ? (
                           <>
-                            <span className="w-[76px] truncate text-left text-sm font-medium text-gray-700 dark:text-gray-200">
+                            <span
+                              className="w-[76px] truncate text-left text-sm font-medium"
+                              style={{ color: "var(--color-text-primary)" }}
+                            >
                               {firstName}
                             </span>
                             <span
@@ -484,148 +718,315 @@ export default function Header() {
                                 border: `1px solid ${triggerWorkspaceBadge.border}`,
                               }}
                             >
-                              <span className={`h-1.5 w-1.5 rounded-full shrink-0 ${triggerWorkspaceBadge.dotClassName}`} />
-                              <span className="truncate">{triggerWorkspaceBadge.label}</span>
+                              <span
+                                className={`h-1.5 w-1.5 rounded-full shrink-0 ${triggerWorkspaceBadge.dotClassName}`}
+                              />
+                              <span className="truncate">
+                                {triggerWorkspaceBadge.label}
+                              </span>
                             </span>
                           </>
                         ) : null}
 
                         <ChevronDown
-                          className={`h-3.5 w-3.5 flex-shrink-0 text-gray-400 transition-transform duration-200 ${userMenuOpen ? 'rotate-180' : ''}`}
+                          className={`h-3.5 w-3.5 flex-shrink-0 transition-transform duration-200 ${userMenuOpen ? "rotate-180" : ""}`}
+                          style={{ color: "var(--color-text-tertiary)" }}
                         />
                       </button>
 
                       {userMenuOpen ? (
-                        <div className="absolute end-0 top-full z-[70] mt-3 w-[288px] overflow-hidden rounded-[1.4rem] border border-border bg-[var(--card-bg)] p-2.5 shadow-[0_28px_80px_-30px_rgba(15,23,42,0.48)] ring-1 ring-black/[0.03] backdrop-blur-xl dark:ring-white/[0.04]">
-                          <div className="rounded-[1.15rem] border border-border/50 bg-[var(--surface-bg)] px-4 py-3.5">
+                        <div
+                          className="absolute end-0 top-full z-[70] mt-3 w-[304px] overflow-hidden rounded-[1.45rem] p-2.5 ring-1 backdrop-blur-2xl"
+                          style={{
+                            border: "1px solid var(--color-border-default)",
+                            background:
+                              "color-mix(in srgb, var(--color-background-elevated) 95%, transparent)",
+                            boxShadow: "0 40px 120px -42px rgba(0,0,0,0.75)",
+                          }}
+                        >
+                          <div
+                            className="rounded-[1.2rem] px-4 py-3.5"
+                            style={{
+                              border:
+                                "1px solid color-mix(in srgb, var(--workspace-primary) 20%, transparent)",
+                              background:
+                                "linear-gradient(135deg, color-mix(in srgb, var(--workspace-primary) 10%, transparent), var(--color-background-muted))",
+                            }}
+                          >
                             <div className="flex items-center justify-between gap-3">
                               <div className="min-w-0">
-                            <p className="truncate text-[15px] font-semibold text-[var(--text-primary)]">{displayName}</p>
-                            <p className="truncate text-xs text-[var(--text-muted)]">{user.email}</p>
+                                <p
+                                  className="truncate text-[15px] font-semibold"
+                                  style={{ color: "var(--color-text-primary)" }}
+                                >
+                                  {displayName}
+                                </p>
+                                <p
+                                  className="truncate text-xs"
+                                  style={{
+                                    color: "var(--color-text-secondary)",
+                                  }}
+                                >
+                                  {user.email}
+                                </p>
+                              </div>
+                              <span
+                                className="inline-flex shrink-0 items-center rounded-full px-5 py-1 text-[11px] font-semibold shadow-sm"
+                                style={{
+                                  background: triggerWorkspaceBadge.background,
+                                  color: triggerWorkspaceBadge.color,
+                                  border: `1px solid ${triggerWorkspaceBadge.border}`,
+                                }}
+                              >
+                                <span
+                                  className={`h-1.5 w-1.5 rounded-full me-1.5 ${triggerWorkspaceBadge.dotClassName}`}
+                                />
+                                <span className="truncate">
+                                  {triggerWorkspaceBadge.label}
+                                </span>
+                              </span>
+                            </div>
                           </div>
-                          <span
-                            className="inline-flex shrink-0 items-center rounded-full border px-5 py-1 text-[11px] font-semibold shadow-sm"
+
+                          <div className="mt-2.5 space-y-2">
+                            <button
+                              onClick={() => {
+                                navigate("/dashboard");
+                                setUserMenuOpen(false);
+                              }}
+                              className="group flex w-full items-center gap-3 rounded-xl px-3.5 py-3 text-left text-sm font-medium transition-all duration-150 hover:-translate-y-[1px]"
+                              style={{
+                                color: "var(--color-text-primary)",
+                                border:
+                                  "1px solid color-mix(in srgb, var(--workspace-primary) 14%, transparent)",
+                                background: "var(--color-background-muted)",
+                              }}
+                            >
+                              <span
+                                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
+                                style={{
+                                  border:
+                                    "1px solid color-mix(in srgb, var(--workspace-primary) 22%, transparent)",
+                                  background:
+                                    "color-mix(in srgb, var(--workspace-primary) 10%, transparent)",
+                                  color: "var(--workspace-primary)",
+                                }}
+                              >
+                                <User className="h-4 w-4" />
+                              </span>
+                              <span className="truncate">
+                                {t.nav?.dashboard || "Dashboard"}
+                              </span>
+                            </button>
+
+                            <button
+                              onClick={() => {
+                                navigate("/settings");
+                                setUserMenuOpen(false);
+                              }}
+                              className="group flex w-full items-center gap-3 rounded-xl px-3.5 py-3 text-left text-sm font-medium transition-all duration-150 hover:-translate-y-[1px]"
+                              style={{
+                                color: "var(--color-text-primary)",
+                                border:
+                                  "1px solid color-mix(in srgb, var(--workspace-primary) 14%, transparent)",
+                                background: "var(--color-background-muted)",
+                              }}
+                            >
+                              <span
+                                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
+                                style={{
+                                  border:
+                                    "1px solid color-mix(in srgb, var(--workspace-primary) 22%, transparent)",
+                                  background:
+                                    "color-mix(in srgb, var(--workspace-primary) 10%, transparent)",
+                                  color: "var(--workspace-primary)",
+                                }}
+                              >
+                                <Settings className="h-4 w-4" />
+                              </span>
+                              <span className="truncate">
+                                {t.nav?.settings || "Settings"}
+                              </span>
+                            </button>
+
+                            {freelancerVerified ? (
+                              <div
+                                className="flex w-full items-center justify-between gap-3 rounded-xl px-3.5 py-3 text-sm font-semibold cursor-not-allowed"
+                                style={{
+                                  color: "var(--color-status-success)",
+                                  border:
+                                    "1px solid color-mix(in srgb, var(--color-status-success) 40%, transparent)",
+                                  background: "var(--color-status-success-bg)",
+                                }}
+                              >
+                                <span className="flex items-center gap-3">
+                                  <span
+                                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
+                                    style={{
+                                      border:
+                                        "1px solid color-mix(in srgb, var(--color-status-success) 40%, transparent)",
+                                      background:
+                                        "color-mix(in srgb, var(--color-status-success) 20%, transparent)",
+                                    }}
+                                  >
+                                    <Shield className="h-4 w-4" />
+                                  </span>
+                                  <span className="truncate">
+                                    {t.settings?.cinVerification ||
+                                      "Verify identity"}
+                                  </span>
+                                </span>
+                                <CheckCircle2 className="h-4 w-4" />
+                              </div>
+                            ) : freelancerPending ? (
+                              <div
+                                className="flex w-full items-center justify-between gap-3 rounded-xl px-3.5 py-3 text-sm font-semibold cursor-not-allowed"
+                                style={{
+                                  color: "var(--color-status-warning-text)",
+                                  border:
+                                    "1px solid color-mix(in srgb, var(--color-status-warning) 40%, transparent)",
+                                  background: "var(--color-status-warning-bg)",
+                                }}
+                              >
+                                <span className="flex items-center gap-3">
+                                  <span
+                                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
+                                    style={{
+                                      border:
+                                        "1px solid color-mix(in srgb, var(--color-status-warning) 40%, transparent)",
+                                      background:
+                                        "color-mix(in srgb, var(--color-status-warning) 20%, transparent)",
+                                    }}
+                                  >
+                                    <Shield className="h-4 w-4" />
+                                  </span>
+                                  <span className="truncate">
+                                    {t.settings?.cinVerification ||
+                                      "Verify identity"}
+                                  </span>
+                                </span>
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              </div>
+                            ) : (
+                              <button
+                                onClick={() => {
+                                  navigate("/verify-identity");
+                                  setUserMenuOpen(false);
+                                }}
+                                className="group flex w-full items-center gap-3 rounded-xl px-3.5 py-3 text-left text-sm font-medium transition-all duration-150 hover:-translate-y-[1px]"
+                                style={{
+                                  color: "var(--color-text-primary)",
+                                  border:
+                                    "1px solid color-mix(in srgb, var(--color-status-info) 35%, transparent)",
+                                  background: "var(--color-background-muted)",
+                                }}
+                              >
+                                <span
+                                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
+                                  style={{
+                                    border:
+                                      "1px solid color-mix(in srgb, var(--color-status-info) 35%, transparent)",
+                                    background:
+                                      "color-mix(in srgb, var(--color-status-info) 10%, transparent)",
+                                    color: "var(--color-status-info)",
+                                  }}
+                                >
+                                  <Shield className="h-4 w-4" />
+                                </span>
+                                <span className="truncate">
+                                  {t.settings?.cinVerification ||
+                                    "Verify identity"}
+                                </span>
+                              </button>
+                            )}
+
+                            {canAccessAdmin ? (
+                              <button
+                                onClick={() => {
+                                  navigate("/admin");
+                                  setUserMenuOpen(false);
+                                }}
+                                className="group flex w-full items-center gap-3 rounded-xl px-3.5 py-3 text-left text-sm font-medium transition-all duration-150 hover:-translate-y-[1px]"
+                                style={{
+                                  color: "var(--color-text-primary)",
+                                  border:
+                                    "1px solid color-mix(in srgb, var(--color-status-info) 35%, transparent)",
+                                  background: "var(--color-background-muted)",
+                                }}
+                              >
+                                <span
+                                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
+                                  style={{
+                                    border:
+                                      "1px solid color-mix(in srgb, var(--color-status-info) 35%, transparent)",
+                                    background:
+                                      "color-mix(in srgb, var(--color-status-info) 10%, transparent)",
+                                    color: "var(--color-status-info)",
+                                  }}
+                                >
+                                  <Shield className="h-4 w-4" />
+                                </span>
+                                <span className="truncate">
+                                  {t.nav?.adminDashboard || "Admin Dashboard"}
+                                </span>
+                              </button>
+                            ) : null}
+                          </div>
+
+                          <div
+                            className="mt-2.5 border-t pt-2.5"
                             style={{
-                              background: triggerWorkspaceBadge.background,
-                              color: triggerWorkspaceBadge.color,
-                              border: `1px solid ${triggerWorkspaceBadge.border}`,
+                              borderColor:
+                                "color-mix(in srgb, var(--color-border-default) 80%, transparent)",
                             }}
                           >
-                            <span className={`h-1.5 w-1.5 rounded-full mr-1.5 ${triggerWorkspaceBadge.dotClassName}`} />
-                            <span className="truncate">{triggerWorkspaceBadge.label}</span>
-                          </span>
+                            <button
+                              onClick={async () => {
+                                await signOut();
+                                setUserMenuOpen(false);
+                              }}
+                              className="group flex w-full items-center gap-3 rounded-xl px-3.5 py-3 text-left text-sm font-semibold transition-all duration-150 hover:-translate-y-[1px]"
+                              style={{
+                                color: "#fff",
+                                border:
+                                  "1px solid color-mix(in srgb, var(--color-status-error) 30%, transparent)",
+                                background:
+                                  "color-mix(in srgb, var(--color-status-error) 22%, transparent)",
+                              }}
+                            >
+                              <span
+                                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
+                                style={{
+                                  border:
+                                    "1px solid color-mix(in srgb, var(--color-status-error) 40%, transparent)",
+                                  background:
+                                    "color-mix(in srgb, var(--color-status-error) 24%, transparent)",
+                                }}
+                              >
+                                <LogOut className="h-4 w-4" />
+                              </span>
+                              <span>{t.nav?.logout || "Sign out"}</span>
+                            </button>
+                          </div>
                         </div>
-                      </div>
-
-                      <div className="mt-2.5 space-y-1.5">
-                        <button
-                          onClick={() => {
-                            navigate('/dashboard')
-                            setUserMenuOpen(false)
-                          }}
-                          className="group flex w-full items-center gap-3 rounded-xl px-3.5 py-3 text-left text-sm font-medium text-foreground transition-all duration-150 hover:bg-[var(--surface-bg)]"
-                        >
-                          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-border bg-[var(--surface-bg)] text-gray-500 dark:text-zinc-400 transition-colors group-hover:border-brand/16 group-hover:text-brand">
-                            <User className="h-4 w-4" />
-                          </span>
-                          <span className="truncate">{t.nav?.dashboard || 'Dashboard'}</span>
-                        </button>
-                        <button
-                          onClick={() => {
-                            navigate('/settings')
-                            setUserMenuOpen(false)
-                          }}
-                          className="group flex w-full items-center gap-3 rounded-xl px-3.5 py-3 text-left text-sm font-medium text-foreground transition-all duration-150 hover:bg-[var(--surface-bg)]"
-                        >
-                          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-border bg-[var(--surface-bg)] text-gray-500 dark:text-zinc-400 transition-colors group-hover:border-brand/16 group-hover:text-brand">
-                            <Settings className="h-4 w-4" />
-                          </span>
-                          <span className="truncate">{t.nav?.settings || 'Settings'}</span>
-                        </button>
-
-                        {freelancerVerified ? (
-                          <div className="flex w-full items-center justify-between gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-3.5 py-3 text-sm font-semibold text-emerald-800 opacity-90 cursor-not-allowed dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-400">
-                            <span className="flex items-center gap-3">
-                              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-100/50 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400">
-                                <Shield className="h-4 w-4" />
-                              </span>
-                              <span className="truncate">{t.settings?.cinVerification || 'Verify identity'}</span>
-                            </span>
-                            <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-                          </div>
-                        ) : freelancerPending ? (
-                          <div className="flex w-full items-center justify-between gap-3 rounded-xl border border-orange-200 bg-orange-50 px-3.5 py-3 text-sm font-semibold text-orange-800 opacity-90 cursor-not-allowed dark:border-orange-500/30 dark:bg-orange-500/10 dark:text-orange-400">
-                            <span className="flex items-center gap-3">
-                              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-orange-100/50 dark:bg-orange-500/20 text-orange-600 dark:text-orange-400">
-                                <Shield className="h-4 w-4" />
-                              </span>
-                              <span className="truncate">{t.settings?.cinVerification || 'Verify identity'}</span>
-                            </span>
-                            <Loader2 className="h-4 w-4 animate-spin text-orange-500" />
-                          </div>
-                        ) : (
-                          <button
-                            onClick={() => {
-                              navigate('/verify-identity')
-                              setUserMenuOpen(false)
-                            }}
-                            className="group flex w-full items-center gap-3 rounded-xl px-3.5 py-3 text-left text-sm font-medium text-foreground transition-all duration-150 hover:bg-[var(--surface-bg)]"
-                          >
-                            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-border bg-[var(--surface-bg)] text-gray-500 dark:text-zinc-400 transition-colors group-hover:border-brand/16 group-hover:text-brand">
-                              <Shield className="h-4 w-4" />
-                            </span>
-                            <span className="truncate">{t.settings?.cinVerification || 'Verify identity'}</span>
-                          </button>
-                        )}
-
-                        {canAccessAdmin && (
-                          <button
-                            onClick={() => {
-                              navigate('/admin')
-                              setUserMenuOpen(false)
-                            }}
-                            className="group flex w-full items-center gap-3 rounded-xl px-3.5 py-3 text-left text-sm font-medium text-foreground transition-all duration-150 hover:bg-[var(--surface-bg)]"
-                          >
-                            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-border bg-[var(--surface-bg)] text-gray-500 dark:text-zinc-400 transition-colors group-hover:border-brand/16 group-hover:text-brand">
-                              <Shield className="h-4 w-4" />
-                            </span>
-                            <span className="truncate">{t.nav?.adminDashboard || 'Admin Dashboard'}</span>
-                          </button>
-                        )}
-                      </div>
-
-                      <div className="mt-2.5 border-t border-border/50 pt-2.5">
-                        <button
-                          onClick={async () => {
-                            await signOut()
-                            setUserMenuOpen(false)
-                          }}
-                          className="group flex w-full items-center gap-3 rounded-xl px-3.5 py-3 text-left text-sm font-semibold text-red-500 transition-all duration-150 hover:bg-red-50 dark:hover:bg-red-500/10"
-                        >
-                          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-red-200 dark:border-red-500/20 bg-red-50 dark:bg-red-500/10 text-red-500 transition-colors">
-                            <LogOut className="h-4 w-4" />
-                          </span>
-                          <span>{t.nav?.logout || 'Sign out'}</span>
-                        </button>
-                      </div>
+                      ) : null}
                     </div>
-                  ) : null}
-                </div>
-              </div>
-            ) : (
-              <div className="flex shrink-0 items-center gap-1 pl-1">
+                  </div>
+                ) : (
+                  <div className="flex shrink-0 items-center gap-1 ps-1">
                     <button
-                      onClick={() => navigate('/login')}
-                      className="flex h-10 min-w-[108px] items-center justify-center whitespace-nowrap rounded-[0.95rem] px-3 text-sm font-semibold text-gray-600 transition-all hover:bg-black/[0.04] hover:text-gray-900 dark:text-zinc-300 dark:hover:bg-white/[0.06] dark:hover:text-white"
+                      onClick={() => navigate("/login")}
+                      className="flex h-10 min-w-[108px] items-center justify-center whitespace-nowrap rounded-[0.95rem] px-3 text-sm font-semibold transition-all"
+                      style={{ color: "var(--color-text-secondary)" }}
                     >
-                      {t.nav?.login || 'Sign in'}
+                      {t.nav?.login || "Sign in"}
                     </button>
                     <button
-                      onClick={() => navigate('/signup')}
+                      onClick={() => navigate("/signup")}
                       className="flex h-10 min-w-[128px] items-center justify-center whitespace-nowrap rounded-[0.95rem] px-4 text-sm font-semibold text-white shadow-[0_18px_38px_-24px_rgba(109,40,217,0.8)] transition-transform hover:-translate-y-0.5"
-                      style={{ background: 'var(--workspace-primary)' }}
+                      style={{ background: "var(--workspace-primary)" }}
                     >
-                      {t.nav?.signup || 'Get started'}
+                      {t.nav?.signup || "Get started"}
                     </button>
                   </div>
                 )}
@@ -638,22 +1039,35 @@ export default function Header() {
       {mobileMenuOpen ? (
         <div className="fixed inset-0 z-[60] md:hidden">
           <button
-            aria-label={t.common?.closeMenu || 'Close navigation menu'}
+            aria-label={t.common?.closeMenu || "Close navigation menu"}
             className="absolute inset-0 bg-foreground/60 backdrop-blur-sm"
             onClick={() => setMobileMenuOpen(false)}
           />
 
-          <div className={`absolute inset-y-0 w-[88vw] max-w-sm bg-surface border-border shadow-2xl ${
-            dir === 'rtl' ? 'left-0 border-r border-border' : 'right-0 border-l border-border'
-          }`}>
-            <div className="flex h-16 items-center justify-between border-b border-border/50 px-4">
-              <button onClick={() => navigate('/')} className="flex items-center" aria-label={homeLabel}>
+          <div
+            className={`absolute inset-y-0 w-[88vw] max-w-sm ${
+              dir === "rtl" ? "left-0 border-r" : "right-0 border-l"
+            }`}
+            style={{
+              background: "var(--color-background-elevated)",
+              borderColor: "var(--color-border-default)",
+            }}
+          >
+            <div
+              className="flex h-16 items-center justify-between border-b px-4"
+              style={{ borderColor: "var(--color-border-subtle)" }}
+            >
+              <button
+                onClick={() => navigate("/")}
+                className="flex items-center"
+                aria-label={homeLabel}
+              >
                 <Logo variant="full" size="sm" />
               </button>
               <button
                 onClick={() => setMobileMenuOpen(false)}
                 className="header-icon-btn"
-                aria-label={t.common?.closeMenu || 'Close navigation menu'}
+                aria-label={t.common?.closeMenu || "Close navigation menu"}
               >
                 <X className="h-4 w-4" />
               </button>
@@ -662,31 +1076,57 @@ export default function Header() {
             <div className="space-y-6 p-4">
               <button
                 onClick={() => {
-                  setSearchOpen(true)
-                  setMobileMenuOpen(false)
+                  setSearchOpen(true);
+                  setMobileMenuOpen(false);
                 }}
-                className="flex h-11 w-full items-center gap-3 rounded-2xl border border-input bg-input px-4 text-start text-gray-500 dark:text-zinc-400"
+                className="flex h-11 w-full items-center gap-3 rounded-2xl border px-4 text-start text-sm"
+                style={{
+                  color: "var(--color-text-secondary)",
+                  borderColor: "var(--color-border-default)",
+                  background: "var(--color-background-subtle)",
+                }}
               >
                 <Search className="h-4 w-4" />
-                <span className="text-sm">{t.common?.search || 'Search'}</span>
+                <span>{t.common?.search || "Search"}</span>
               </button>
 
               {user ? (
-                <div className="rounded-2xl border border-border bg-card p-4">
+                <div
+                  className="rounded-2xl border p-4"
+                  style={{
+                    borderColor: "var(--color-border-default)",
+                    background: "var(--color-background-elevated)",
+                  }}
+                >
                   <div className="flex items-center gap-3">
                     {avatarUrl ? (
-                      <img src={avatarUrl} alt={firstName} className="h-11 w-11 rounded-full object-cover" onError={() => setAvatarFailed(true)} />
+                      <img
+                        src={avatarUrl}
+                        alt={firstName}
+                        className="h-11 w-11 rounded-full object-cover"
+                        onError={() => setAvatarFailed(true)}
+                      />
                     ) : (
                       <div
                         className="flex h-11 w-11 items-center justify-center rounded-full text-sm font-bold text-white"
-                         style={{ background: 'var(--gradient-primary)' }}
+                        style={{ background: "var(--gradient-primary)" }}
                       >
                         {avatarInitials}
                       </div>
                     )}
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-semibold text-gray-900 dark:text-gray-100 dark:text-white">{displayName}</p>
-                      <p className="truncate text-xs text-gray-500 dark:text-gray-400">{user.email}</p>
+                      <p
+                        className="truncate text-sm font-semibold"
+                        style={{ color: "var(--color-text-primary)" }}
+                      >
+                        {displayName}
+                      </p>
+                      <p
+                        className="truncate text-xs"
+                        style={{ color: "var(--color-text-secondary)" }}
+                      >
+                        {user.email}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -696,17 +1136,21 @@ export default function Header() {
                 {canQuickSwitch ? (
                   <button
                     onClick={() => {
-                      void handleQuickWorkspaceSwitch()
-                      setMobileMenuOpen(false)
+                      void handleQuickWorkspaceSwitch();
+                      setMobileMenuOpen(false);
                     }}
                     disabled={isSwitching}
-                    className={`flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-colors ${isSwitching ? 'cursor-not-allowed opacity-70' : ''}`}
+                    className={`flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-colors ${
+                      isSwitching ? "cursor-not-allowed opacity-70" : ""
+                    }`}
                     style={{
-                      color: 'var(--workspace-primary)',
-                      background: 'var(--workspace-primary-light)',
+                      color: "var(--workspace-primary)",
+                      background: "var(--workspace-primary-light)",
                     }}
                   >
-                    <Repeat2 className={`h-4 w-4 flex-shrink-0 ${isSwitching ? 'animate-spin' : ''}`} />
+                    <Repeat2
+                      className={`h-4 w-4 flex-shrink-0 ${isSwitching ? "animate-spin" : ""}`}
+                    />
                     {switchButtonLabel}
                   </button>
                 ) : null}
@@ -718,12 +1162,17 @@ export default function Header() {
                     onClick={() => setMobileMenuOpen(false)}
                     className={({ isActive }) =>
                       `flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-colors ${
-                        isActive
-                          ? 'header-nav-link-active'
-                          : 'text-gray-700 hover:bg-gray-50 dark:text-zinc-300 dark:hover:bg-zinc-800'
-                       }`
+                        isActive ? "header-nav-link-active" : ""
+                      }`
                     }
-                    style={({ isActive }) => isActive ? { color: 'var(--workspace-accent)', borderColor: 'var(--workspace-accent)' } : undefined}
+                    style={({ isActive }) =>
+                      isActive
+                        ? {
+                            color: "var(--workspace-accent)",
+                            borderColor: "var(--workspace-accent)",
+                          }
+                        : { color: "var(--color-text-primary)" }
+                    }
                   >
                     <Icon className="h-4 w-4 flex-shrink-0" />
                     <span className="min-w-0 truncate">{label}</span>
@@ -734,76 +1183,101 @@ export default function Header() {
                   <>
                     <button
                       onClick={() => {
-                        navigate('/dashboard')
-                        setMobileMenuOpen(false)
+                        navigate("/dashboard");
+                        setMobileMenuOpen(false);
                       }}
-                      className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium text-foreground transition-colors hover:bg-surface"
+                      className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-colors"
+                      style={{ color: "var(--color-text-primary)" }}
                     >
                       <User className="h-4 w-4 flex-shrink-0" />
-                        {t.nav?.dashboard || 'Dashboard'}
+                      {t.nav?.dashboard || "Dashboard"}
                     </button>
                     <button
                       onClick={() => {
-                        navigate('/messages')
-                        setMobileMenuOpen(false)
+                        navigate("/messages");
+                        setMobileMenuOpen(false);
                       }}
-                      className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium text-foreground transition-colors hover:bg-surface relative"
+                      className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-colors relative"
+                      style={{ color: "var(--color-text-primary)" }}
                     >
                       <MessageSquare className="h-4 w-4 flex-shrink-0" />
-                        {t.nav?.messages || 'Messages'}
-                      {unreadCount > 0 && (
-                        <span className="ml-auto flex h-5 w-5 items-center justify-center rounded-full text-xs font-bold text-white"
-                              style={{ background: 'var(--workspace-accent)' }}>
-                          {unreadCount > 99 ? '99+' : unreadCount}
+                      {t.nav?.messages || "Messages"}
+                      {unreadCount > 0 ? (
+                        <span
+                          className="ms-auto flex h-5 w-5 items-center justify-center rounded-full text-xs font-bold text-white"
+                          style={{ background: "var(--workspace-accent)" }}
+                        >
+                          {unreadCount > 99 ? "99+" : unreadCount}
                         </span>
-                      )}
+                      ) : null}
                     </button>
                     <button
                       onClick={() => {
-                        navigate('/settings')
-                        setMobileMenuOpen(false)
+                        navigate("/settings");
+                        setMobileMenuOpen(false);
                       }}
-                      className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium text-foreground transition-colors hover:bg-surface"
+                      className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-colors"
+                      style={{ color: "var(--color-text-primary)" }}
                     >
                       <Settings className="h-4 w-4 flex-shrink-0" />
-                        {t.nav?.settings || 'Settings'}
+                      {t.nav?.settings || "Settings"}
                     </button>
                     {canAccessAdmin ? (
                       <button
                         onClick={() => {
-                          navigate('/admin')
-                          setMobileMenuOpen(false)
+                          navigate("/admin");
+                          setMobileMenuOpen(false);
                         }}
-                        className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium text-foreground transition-colors hover:bg-surface"
+                        className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-colors"
+                        style={{ color: "var(--color-text-primary)" }}
                       >
                         <Shield className="h-4 w-4 flex-shrink-0" />
-                        {t.nav?.adminDashboard || 'Admin Dashboard'}
+                        {t.nav?.adminDashboard || "Admin Dashboard"}
                       </button>
                     ) : null}
                   </>
                 ) : null}
               </nav>
 
-              <div className="rounded-2xl border border-gray-200 dark:border-gray-700 dark:border-gray-800 p-4 dark:border-white/10">
-                  <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-gray-400">{t.settings?.language || 'Language'}</p>
+              <div
+                className="rounded-2xl border p-4"
+                style={{ borderColor: "var(--color-border-default)" }}
+              >
+                <p
+                  className="mb-3 text-xs font-semibold uppercase tracking-[0.2em]"
+                  style={{ color: "var(--color-text-tertiary)" }}
+                >
+                  {t.settings?.language || "Language"}
+                </p>
+
                 <div className="grid grid-cols-3 gap-2">
                   {LANGS.map((lang) => (
                     <button
                       key={lang.code}
                       onClick={() => setLanguage(lang.code)}
-                      className={`rounded-xl border px-3 py-2 text-center transition-colors ${
+                      className="rounded-xl border px-3 py-2 text-center transition-colors"
+                      style={
                         currentLang === lang.code
-                          ? 'border-gray-200 dark:border-gray-700 dark:border-gray-800 text-gray-600 dark:text-gray-300 dark:border-white/10 dark:text-gray-300'
-                          : 'border-gray-200 dark:border-gray-700 dark:border-gray-800 text-gray-600 dark:text-gray-300 dark:border-white/10 dark:text-gray-300'
-                        }`}
-                      style={currentLang === lang.code ? {
-                        borderColor: 'var(--workspace-primary-mid)',
-                        background: 'var(--workspace-primary-light)',
-                        color: 'var(--workspace-primary)',
-                      } : undefined}
+                          ? {
+                              borderColor: "var(--workspace-primary-mid)",
+                              background: "var(--workspace-primary-light)",
+                              color: "var(--workspace-primary)",
+                            }
+                          : {
+                              borderColor: "var(--color-border-default)",
+                              color: "var(--color-text-secondary)",
+                            }
+                      }
                     >
-                      <div className="text-[11px] font-semibold">{lang.country}</div>
-                      <div className="text-[11px] text-gray-400">{lang.display}</div>
+                      <div className="text-[11px] font-semibold">
+                        {lang.country}
+                      </div>
+                      <div
+                        className="text-[11px]"
+                        style={{ color: "var(--color-text-tertiary)" }}
+                      >
+                        {lang.display}
+                      </div>
                     </button>
                   ))}
                 </div>
@@ -812,22 +1286,32 @@ export default function Header() {
               <div className="grid grid-cols-2 gap-2">
                 <button
                   onClick={toggleTheme}
-                  className="flex items-center justify-center gap-2 rounded-2xl border border-gray-200 dark:border-gray-700 dark:border-gray-800 px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 dark:text-gray-200 dark:border-white/10 dark:text-gray-200"
+                  className="flex items-center justify-center gap-2 rounded-2xl border px-4 py-3 text-sm font-medium"
+                  style={{
+                    borderColor: "var(--color-border-default)",
+                    color: "var(--color-text-secondary)",
+                  }}
                 >
-                  {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-                  {isDark ? (t.common?.toggleLightMode || 'Light') : (t.common?.toggleDarkMode || 'Dark')}
+                  {isDark ? (
+                    <Sun className="h-4 w-4" />
+                  ) : (
+                    <Moon className="h-4 w-4" />
+                  )}
+                  {isDark
+                    ? t.common?.toggleLightMode || "Light"
+                    : t.common?.toggleDarkMode || "Dark"}
                 </button>
 
                 {!user ? (
                   <button
                     onClick={() => {
-                      navigate('/login')
-                      setMobileMenuOpen(false)
+                      navigate("/login");
+                      setMobileMenuOpen(false);
                     }}
                     className="rounded-2xl px-4 py-3 text-sm font-semibold text-white"
-                    style={{ background: 'var(--workspace-primary)' }}
+                    style={{ background: "var(--workspace-primary)" }}
                   >
-                    {t.nav?.login || 'Sign in'}
+                    {t.nav?.login || "Sign in"}
                   </button>
                 ) : null}
               </div>
@@ -835,24 +1319,35 @@ export default function Header() {
               {user ? (
                 <button
                   onClick={async () => {
-                    await signOut()
-                    setMobileMenuOpen(false)
-                    navigate('/login', { replace: true })
+                    await signOut();
+                    setMobileMenuOpen(false);
+                    navigate("/login", { replace: true });
                   }}
-                  className="flex w-full items-center justify-center gap-2 rounded-2xl border border-red-200 px-4 py-3 text-sm font-semibold text-red-600 dark:border-red-500/20 dark:text-red-400"
+                  className="flex w-full items-center justify-center gap-2 rounded-2xl border px-4 py-3 text-sm font-semibold"
+                  style={{
+                    borderColor:
+                      "color-mix(in srgb, var(--color-status-error) 30%, transparent)",
+                    color: "var(--color-status-error)",
+                    background:
+                      "color-mix(in srgb, var(--color-status-error) 8%, transparent)",
+                  }}
                 >
                   <LogOut className="h-4 w-4" />
-                  {t.nav?.logout || 'Sign out'}
+                  {t.nav?.logout || "Sign out"}
                 </button>
               ) : (
                 <button
                   onClick={() => {
-                    navigate('/signup')
-                    setMobileMenuOpen(false)
+                    navigate("/signup");
+                    setMobileMenuOpen(false);
                   }}
-                  className="w-full rounded-2xl border border-gray-200 dark:border-gray-700 dark:border-gray-800 px-4 py-3 text-sm font-semibold text-gray-700 dark:text-gray-300 dark:text-gray-200 dark:border-white/10 dark:text-gray-200"
+                  className="w-full rounded-2xl border px-4 py-3 text-sm font-semibold"
+                  style={{
+                    borderColor: "var(--color-border-default)",
+                    color: "var(--color-text-secondary)",
+                  }}
                 >
-                  {t.nav?.signup || 'Get started'}
+                  {t.nav?.signup || "Get started"}
                 </button>
               )}
             </div>
@@ -860,9 +1355,8 @@ export default function Header() {
         </div>
       ) : null}
 
-      <div style={{ height: '60px' }} />
-
+      <div className="h-16 md:h-16" />
       {searchOpen ? <SearchModal onClose={() => setSearchOpen(false)} /> : null}
     </>
-  )
+  );
 }

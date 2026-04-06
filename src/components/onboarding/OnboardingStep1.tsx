@@ -35,7 +35,7 @@ export default function OnboardingStep1({
     return (
         <div className="space-y-8">
             <div className="space-y-3">
-                <div className="inline-flex items-center gap-2 rounded-full border border-primary-100 bg-primary-50/70 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-primary-700 dark:border-white/10 dark:border-gray-800 dark:white/[0.04] dark:text-primary-200">
+                <div className="inline-flex items-center gap-2 rounded-full border border-primary-100 bg-primary-50/70 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-primary-700 dark:border-[var(--color-border-subtle)] dark:text-primary-200">
                     <User className="w-3.5 h-3.5" />
                     {t.settings.profile}
                 </div>
@@ -49,22 +49,22 @@ export default function OnboardingStep1({
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                 {/* Avatar Upload */}
-                <div className="flex flex-col items-center rounded-[1.6rem] border border-primary-100/70 bg-primary-50/40 p-6 dark:border-white/10 dark:border-gray-800 dark:white/[0.03]">
+                <div className="flex flex-col items-center rounded-[1.6rem] border border-primary-100/70 bg-primary-50/40 p-6 dark:border-[var(--color-border-subtle)]">
                     <div className="relative group">
                         <div
-                            className="w-28 h-28 rounded-full bg-gray-100 dark:bg-gray-800 dark:bg-dark-800 flex items-center justify-center overflow-hidden cursor-pointer border-4 border-white dark:border-dark-700 shadow-xl group-hover:shadow-2xl transition-all"
+                            className="w-28 h-28 rounded-full bg-[var(--color-bg-muted)] flex items-center justify-center overflow-hidden cursor-pointer border-4 border-[var(--color-bg-elevated)] shadow-xl group-hover:shadow-2xl transition-all"
                             onClick={() => fileInputRef.current?.click()}
                         >
                             {avatarPreview ? (
                                 <img src={avatarPreview} alt="Avatar" className="w-full h-full object-cover" />
                             ) : (
-                                <User className="w-10 h-10 text-gray-300 dark:text-dark-600" />
+                                <User className="w-10 h-10 text-[var(--color-text-disabled)]" />
                             )}
                         </div>
                         <button
                             type="button"
                             onClick={() => fileInputRef.current?.click()}
-                            className="absolute -bottom-1 -end-1 w-9 h-9 rounded-full bg-primary-600 text-white flex items-center justify-center shadow-lg hover:bg-primary-700 hover:scale-110 transition-all border-2 border-white dark:border-dark-800"
+                            className="absolute -bottom-1 -end-1 w-9 h-9 rounded-full bg-[var(--color-brand-primary)] text-white flex items-center justify-center shadow-lg hover:bg-[var(--color-brand-primary-hover)] hover:scale-110 transition-all border-2 border-[var(--color-bg-elevated)]"
                         >
                             <Camera className="w-4 h-4" />
                         </button>
@@ -80,7 +80,7 @@ export default function OnboardingStep1({
                         <button
                             type="button"
                             onClick={onRemoveAvatar}
-                            className="mt-2 p-3 min-w-[44px] min-h-[44px] flex items-center justify-center text-sm text-red-500 hover:text-red-600"
+                            className="mt-2 p-3 min-w-[44px] min-h-[44px] flex items-center justify-center text-sm text-[var(--color-error)] hover:text-[var(--color-error-dark)]"
                         >
                             {t.common.removeImage}
                         </button>
@@ -132,21 +132,21 @@ export default function OnboardingStep1({
                     </div>
 
                     <div className="md:col-span-2">
-                        <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        <label className="mb-2 block text-sm font-medium text-[var(--color-text-secondary)]">
                             {t.profile.bio || 'Short bio'}
                         </label>
                         <div className="relative">
-                            <div className="pointer-events-none absolute start-0 top-0 flex items-center ps-4 pt-4 text-gray-400 dark:text-gray-500">
+                            <div className="pointer-events-none absolute start-0 top-0 flex items-center ps-4 pt-4 text-[var(--color-text-disabled)]">
                                 <FileText className="w-5 h-5" />
                             </div>
                             <textarea
                                 {...register('bio')}
                                 rows={5}
-                                className="w-full resize-none rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-3 ps-11 text-gray-900 dark:text-gray-100 shadow-sm transition-all duration-200 placeholder:text-gray-400 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:border-white/10 dark:border-gray-800 dark:bg-[#1a1825] dark:text-white dark:placeholder:text-gray-600"
+                                className="w-full resize-none rounded-2xl border border-[var(--color-border-default)] bg-[var(--color-bg-base)] px-4 py-3 ps-11 text-[var(--color-text-primary)] shadow-sm transition-all duration-200 placeholder:text-[var(--color-text-disabled)] focus:border-[var(--color-brand-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-primary)]/20"
                                 placeholder={t.profile.bioPlaceholder || 'Tell clients what you do best, who you help, and how you usually work.'}
                             />
                         </div>
-                        <div className="mt-2 flex items-center justify-between text-xs text-[#8b8aa0]">
+                        <div className="mt-2 flex items-center justify-between text-xs text-[var(--color-text-tertiary)]">
                             <span>{tx('profile.bioHint', undefined, 'A short summary improves credibility and response quality.')}</span>
                             <span>{bio.length}/400</span>
                         </div>

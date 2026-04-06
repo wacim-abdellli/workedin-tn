@@ -93,11 +93,28 @@ Deno.serve(async (req) => {
       })
     }
 
+    const { data: contract, error: contractError } = await adminClient
+      .from('contracts')
+      .select('id, freelancer_id, amount')
+      .eq('id', transaction.reference_id)
+      .single()
+
+    if (contractError || !contract?.freelancer_id) {
+      return new Response(JSON.stringify({
+        error: 'Contract not found for reconciliation',
+        details: contractError?.message,
+      }), {
+        status: 404,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
     // 5. Call the complete_escrow_payment RPC
     const { error: rpcError } = await adminClient.rpc('complete_escrow_payment', {
-      p_contract_id: transaction.reference_id,
-      p_payment_id: `admin-reconcile-${transaction_id}-${Date.now()}`,
-      p_amount: transaction.amount,
+      p_transaction_id: transaction_id,
+      p_contract_id: contract.id,
+      p_freelancer_id: contract.freelancer_id,
+      p_amount: contract.amount,
     })
 
     if (rpcError) {

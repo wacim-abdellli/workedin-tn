@@ -8,7 +8,7 @@ import ProposalFiltersSidebar from '../components/proposals/ProposalFiltersSideb
 import JobSummaryCard from '../components/proposals/JobSummaryCard';
 import type { Proposal, ProposalStatus, ProposalFilters } from '../types/proposal';
 import ProposalDetailModal from '../components/proposals/ProposalDetailModal';
-import EmptyState from '../components/common/EmptyState';
+import EmptyState from '../components/ui/EmptyState';
 import { supabase, withTimeout } from '../lib/supabase';
 import { useToast } from '../components/ui/Toast';
 import { useAuth } from '../contexts/AuthContext';
@@ -380,42 +380,42 @@ export default function JobProposals() {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-gray-50 dark:bg-gray-900 dark:bg-dark-900">
+            <div className="min-h-screen bg-[var(--page-bg)] transition-colors duration-300">
                 <Header />
                 <div className="flex items-center justify-center h-[60vh]">
-                    <Loader2 className="w-8 h-8 animate-spin text-primary-600" />
+                    <Loader2 className="w-8 h-8 animate-spin text-[var(--workspace-primary)]" />
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 dark:bg-dark-900 pb-20 transition-colors duration-300">
+        <div className="min-h-screen bg-[var(--page-bg)] pb-20 transition-colors duration-300">
             <Header />
 
             {/* Top Section: Job Info */}
-            <div className="bg-white dark:bg-gray-800 dark:bg-dark-800 border-b border-gray-200 dark:border-gray-700 dark:border-dark-700 pt-8 pb-8 transition-colors duration-300">
+            <div className="bg-[var(--card-bg)] border-b border-[var(--border)] pt-8 pb-8 transition-colors duration-300">
                 <div className="container-custom">
                     <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
                         <div>
                             <div className="flex items-center gap-3 mb-2">
-                                <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 dark:text-white">
+                                <h1 className="text-2xl font-bold text-[var(--text-primary)]">
                                     {job?.title || t.jobProposals.loading}
                                 </h1>
-                                <span className="px-2.5 py-0.5 rounded-full bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400 text-xs font-medium border border-green-200 dark:border-green-800">
+                                <span className="px-2.5 py-0.5 rounded-full bg-[var(--color-success-light)] dark:bg-[var(--color-success)]/20 text-[var(--color-success-dark)] dark:text-[var(--color-success)] text-xs font-medium border border-[var(--color-success)]/20 dark:border-[var(--color-success)]/30">
                                     {job?.status === 'open' ? t.jobProposals.open : job?.status}
                                 </span>
                             </div>
 
-                            <div className="flex items-center gap-6 text-sm text-gray-500 dark:text-gray-400">
+                            <div className="flex items-center gap-6 text-sm text-[var(--text-secondary)]">
                                 <span className="flex items-center gap-1">
-                                    <strong className="text-gray-900 dark:text-gray-100 dark:text-white">{stats.proposals}</strong> {t.jobProposals.proposals}
+                                    <strong className="text-[var(--text-primary)]">{stats.proposals}</strong> {t.jobProposals.proposals}
                                 </span>
                                 <span className="flex items-center gap-1">
-                                    <strong className="text-gray-900 dark:text-gray-100 dark:text-white">{stats.interviewing}</strong> {t.jobProposals.interviews}
+                                    <strong className="text-[var(--text-primary)]">{stats.interviewing}</strong> {t.jobProposals.interviews}
                                 </span>
                                 <span className="flex items-center gap-1">
-                                    <strong className="text-gray-900 dark:text-gray-100 dark:text-white">{stats.shortlisted}</strong> {t.jobProposals.shortlist}
+                                    <strong className="text-[var(--text-primary)]">{stats.shortlisted}</strong> {t.jobProposals.shortlist}
                                 </span>
                             </div>
                         </div>
@@ -463,7 +463,7 @@ export default function JobProposals() {
                         </div>
 
                         {/* Tabs */}
-                        <div className="tabs-row mb-0 rounded-xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-800 p-1 dark:border-dark-700 dark:bg-dark-800">
+                        <div className="tabs-row mb-0 rounded-xl border border-[var(--border)] bg-[var(--card-bg)] p-1">
                             {['all', 'new', 'shortlisted', 'archived'].map((tab) => (
                                 <button
                                     key={tab}
@@ -482,7 +482,7 @@ export default function JobProposals() {
                         <div className="space-y-4">
                             {hireMutation.isPending && (
                                 <div className="flex items-center justify-center py-4">
-                                    <Loader2 className="w-6 h-6 animate-spin text-primary-600" />
+                                    <Loader2 className="w-6 h-6 animate-spin text-[var(--workspace-primary)]" />
                                 </div>
                             )}
 

@@ -1,5 +1,6 @@
 export type UserType = 'freelancer' | 'client' | 'both';
 export type AccountMode = 'freelancer' | 'client';
+export type AccountStatus = 'active' | 'suspended' | 'archived';
 export type Language = 'ar' | 'fr' | 'en';
 export type JobStatus = 'open' | 'matched' | 'in_progress' | 'completed' | 'cancelled' | 'disputed';
 export type MatchStatus = 'suggested' | 'accepted' | 'rejected';
@@ -35,6 +36,7 @@ export interface Profile {
     user_type: UserType | null; // ✅ FIXED: Allow null (database allows NULL)
     email?: string; // ✅ ADDED: For Settings.tsx compatibility
     is_admin?: boolean;
+    account_status?: AccountStatus;
     username?: string;
     full_name: string;
     phone?: string;

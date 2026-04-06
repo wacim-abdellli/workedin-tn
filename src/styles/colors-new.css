@@ -1,0 +1,430 @@
+/* ============================================================
+   KHEDMA TN — UNIFIED COLOR SYSTEM
+   Single authoritative source for all color tokens.
+   ⚠️  Do NOT add gradients or animation tokens here.
+       Those live in index.css.
+   ============================================================
+   TABLE OF CONTENTS
+   1.  Primitive tokens  ·  purple / amber / neutral / green / red / blue / cyan
+   2.  Semantic background tokens  (--color-bg-* + --color-background-* aliases)
+   3.  Text tokens
+   4.  Border tokens
+   5.  Workspace tokens  —  default = freelancer (purple)
+   6.  Brand tokens  (aliased → workspace, auto-switch on theme)
+   7.  Status / feedback colors
+   8.  Input tokens
+   9.  Dashboard surface tokens
+   10. Shadow tokens
+   11. Legacy aliases  (backward-compat, do not remove)
+   12. Dark mode  (.dark)
+   13. Client workspace  (.workspace-client)
+   14. Admin workspace   (.workspace-admin)
+   ============================================================ */
+
+/* ============================================================
+   :ROOT  —  Light mode defaults  (Freelancer / Purple)
+   ============================================================ */
+:root {
+  /* ----------------------------------------------------------
+     1. PRIMITIVE TOKENS
+     All raw scale values. Reference these only via semantic
+     or workspace tokens in component code.
+     ---------------------------------------------------------- */
+
+  /* Purple scale */
+  --purple-50: #faf5ff;
+  --purple-100: #f3e8ff;
+  --purple-200: #e9d5ff;
+  --purple-300: #d8b4fe;
+  --purple-400: #c084fc;
+  --purple-500: #a855f7;
+  --purple-600: #9333ea;
+  --purple-700: #7e22ce;
+  --purple-800: #6b21a8;
+  --purple-900: #581c87;
+  --purple-950: #3b0764;
+
+  /* Amber scale */
+  --amber-50: #fffbeb;
+  --amber-100: #fef3c7;
+  --amber-200: #fde68a;
+  --amber-300: #fcd34d;
+  --amber-400: #fbbf24;
+  --amber-500: #f59e0b;
+  --amber-600: #d97706;
+  --amber-700: #b45309;
+  --amber-800: #92400e;
+  --amber-900: #78350f;
+  --amber-950: #451a03;
+
+  /* Neutral scale */
+  --neutral-50: #fafafa;
+  --neutral-100: #f5f5f5;
+  --neutral-200: #e5e5e5;
+  --neutral-300: #d4d4d4;
+  --neutral-400: #a3a3a3;
+  --neutral-500: #737373;
+  --neutral-600: #525252;
+  --neutral-700: #404040;
+  --neutral-800: #262626;
+  --neutral-900: #171717;
+  --neutral-950: #0a0a0a;
+
+  /* Green scale  (success / positive status) */
+  --green-50: #f0fdf4;
+  --green-100: #dcfce7;
+  --green-200: #bbf7d0;
+  --green-300: #86efac;
+  --green-400: #4ade80;
+  --green-500: #22c55e;
+  --green-600: #16a34a;
+  --green-700: #15803d;
+  --green-800: #166534;
+  --green-900: #14532d;
+  --green-950: #052e16;
+
+  /* Red scale  (error / danger status) */
+  --red-50: #fef2f2;
+  --red-100: #fee2e2;
+  --red-200: #fecaca;
+  --red-300: #fca5a5;
+  --red-400: #f87171;
+  --red-500: #ef4444;
+  --red-600: #dc2626;
+  --red-700: #b91c1c;
+  --red-800: #991b1b;
+  --red-900: #7f1d1d;
+  --red-950: #450a0a;
+
+  /* Blue scale  (info / link status) */
+  --blue-50: #eff6ff;
+  --blue-100: #dbeafe;
+  --blue-200: #bfdbfe;
+  --blue-300: #93c5fd;
+  --blue-400: #60a5fa;
+  --blue-500: #3b82f6;
+  --blue-600: #2563eb;
+  --blue-700: #1d4ed8;
+  --blue-800: #1e40af;
+  --blue-900: #1e3a8a;
+  --blue-950: #172554;
+
+  /* Cyan scale  (accent / highlight) */
+  --cyan-50: #ecfeff;
+  --cyan-100: #cffafe;
+  --cyan-200: #a5f3fc;
+  --cyan-300: #67e8f9;
+  --cyan-400: #22d3ee;
+  --cyan-500: #06b6d4;
+  --cyan-600: #0891b2;
+  --cyan-700: #0e7490;
+  --cyan-800: #155e75;
+  --cyan-900: #164e63;
+
+  /* ----------------------------------------------------------
+     2. SEMANTIC BACKGROUND TOKENS
+     Both --color-bg-* and --color-background-* resolve to the
+     same value so that legacy code and new code both work.
+     ---------------------------------------------------------- */
+
+  --color-bg-base: #ffffff;
+  --color-background-base: var(--color-bg-base);
+
+  --color-bg-subtle: var(--neutral-50);
+  --color-background-subtle: var(--color-bg-subtle);
+
+  --color-bg-muted: var(--neutral-100);
+  --color-background-muted: var(--color-bg-muted);
+
+  --color-bg-elevated: #ffffff;
+  --color-background-elevated: var(--color-bg-elevated);
+
+  --color-bg-overlay: rgba(0, 0, 0, 0.4);
+  --color-background-overlay: var(--color-bg-overlay);
+
+  /* ----------------------------------------------------------
+     3. TEXT TOKENS
+     ---------------------------------------------------------- */
+
+  --color-text-primary: var(--neutral-900);
+  --color-text-secondary: var(--neutral-600);
+  --color-text-tertiary: var(--neutral-500);
+  --color-text-disabled: var(--neutral-400);
+  --color-text-inverse: #ffffff;
+
+  /* ----------------------------------------------------------
+     4. BORDER TOKENS
+     ---------------------------------------------------------- */
+
+  --color-border-subtle: var(--neutral-200);
+  --color-border-default: var(--neutral-300);
+  --color-border-strong: var(--neutral-400);
+
+  /* ----------------------------------------------------------
+     5. WORKSPACE TOKENS  —  default = Freelancer (Purple)
+     Override these blocks in .workspace-client / .workspace-admin.
+     ---------------------------------------------------------- */
+
+  /* Primary action color */
+  --workspace-primary: var(--purple-600);
+  --workspace-primary-hover: var(--purple-700);
+  --workspace-primary-active: var(--purple-800);
+  --workspace-primary-light: var(--purple-50);
+  --workspace-primary-mid: var(--purple-500);
+  --workspace-primary-dim: rgba(147, 51, 234, 0.12);
+  --workspace-primary-text: #ffffff;
+
+  /* Secondary / contrast color */
+  --workspace-secondary: var(--amber-600);
+  --workspace-secondary-hover: var(--amber-700);
+  --workspace-secondary-light: var(--amber-50);
+  --workspace-secondary-dim: rgba(217, 119, 6, 0.12);
+
+  /* Accent color */
+  --workspace-accent: var(--amber-500);
+  --workspace-accent-hover: var(--amber-600);
+
+  /* Glow / shadow */
+  --workspace-shadow: rgba(147, 51, 234, 0.25);
+  --workspace-glow: 0 0 32px rgba(147, 51, 234, 0.3);
+
+  /* ----------------------------------------------------------
+     6. BRAND TOKENS
+     These point at workspace tokens — they auto-switch when
+     the workspace class changes. This is the KEY wiring.
+     ---------------------------------------------------------- */
+
+  --color-brand-primary: var(--workspace-primary);
+  --color-brand-primary-hover: var(--workspace-primary-hover);
+  --color-brand-primary-active: var(--workspace-primary-active);
+  --color-brand-primary-light: var(--workspace-primary-light);
+  --color-brand-accent: var(--workspace-secondary);
+  --color-brand-accent-hover: var(--workspace-secondary-hover);
+
+  /* ----------------------------------------------------------
+     7. STATUS / FEEDBACK COLORS
+     ---------------------------------------------------------- */
+
+  /* Success */
+  --color-status-success: #10b981;
+  --color-status-success-bg: #d1fae5;
+  --color-status-success-text: #065f46;
+
+  /* Warning */
+  --color-status-warning: #f59e0b;
+  --color-status-warning-bg: #fef3c7;
+  --color-status-warning-text: #78350f;
+
+  /* Error */
+  --color-status-error: #ef4444;
+  --color-status-error-bg: #fee2e2;
+  --color-status-error-text: #7f1d1d;
+
+  /* Info */
+  --color-status-info: #3b82f6;
+  --color-status-info-bg: #dbeafe;
+  --color-status-info-text: #1e3a8a;
+
+  /* Short-hand aliases for status */
+  --color-success: var(--color-status-success);
+  --color-error: var(--color-status-error);
+  --color-warning: var(--color-status-warning);
+  --color-info: var(--color-status-info);
+
+  /* ----------------------------------------------------------
+     8. INPUT TOKENS
+     ---------------------------------------------------------- */
+
+  --input-bg: var(--color-bg-elevated);
+  --input-border: var(--color-border-default);
+  --input-border-focus: var(--workspace-primary);
+  --input-border-error: var(--color-status-error);
+  --input-text: var(--color-text-primary);
+  --input-placeholder: var(--color-text-tertiary);
+
+  /* ----------------------------------------------------------
+     9. DASHBOARD SURFACE TOKENS
+     ---------------------------------------------------------- */
+
+  --dash-bg: var(--neutral-50);
+  --dash-card: #ffffff;
+  --dash-card-hover: var(--neutral-50);
+  --dash-raised: #ffffff;
+  --dash-border: var(--neutral-200);
+  --dash-border-hover: var(--neutral-300);
+
+  /* ----------------------------------------------------------
+     10. SHADOW TOKENS
+     ---------------------------------------------------------- */
+
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.12);
+  --shadow-2xl: 0 24px 64px rgba(0, 0, 0, 0.14);
+
+  --shadow-glow-primary: var(--workspace-glow);
+  --shadow-glow-accent: 0 0 32px rgba(217, 119, 6, 0.25);
+
+  /* ----------------------------------------------------------
+     11. LEGACY ALIASES
+     Kept for backward-compatibility. Do not remove.
+     ---------------------------------------------------------- */
+
+  --page-bg: var(--color-bg-base);
+  --surface-bg: var(--color-bg-subtle);
+  --card-bg: var(--color-bg-elevated);
+  --sidebar-bg: var(--color-bg-muted);
+
+  --text-primary: var(--color-text-primary);
+  --text-secondary: var(--color-text-secondary);
+  --text-muted: var(--color-text-tertiary);
+
+  --border: var(--color-border-default);
+  --border-strong: var(--color-border-strong);
+
+  --color-bg: var(--color-bg-base);
+  --color-fg: var(--color-text-primary);
+  --color-fg-secondary: var(--color-text-secondary);
+  --color-fg-muted: var(--color-text-tertiary);
+  --color-border: var(--color-border-default);
+
+  --stat-pill-bg: rgba(0, 0, 0, 0.04);
+  --stat-pill-border: rgba(0, 0, 0, 0.08);
+
+  --workspace-primary-shadow: var(--workspace-shadow);
+}
+
+/* ============================================================
+   12. DARK MODE
+   ============================================================ */
+.dark {
+  /* Backgrounds */
+  --color-bg-base: #0a0a0a;
+  --color-background-base: var(--color-bg-base);
+
+  --color-bg-subtle: #141414;
+  --color-background-subtle: var(--color-bg-subtle);
+
+  --color-bg-muted: #1f1f1f;
+  --color-background-muted: var(--color-bg-muted);
+
+  --color-bg-elevated: #252525;
+  --color-background-elevated: var(--color-bg-elevated);
+
+  --color-bg-overlay: rgba(0, 0, 0, 0.7);
+  --color-background-overlay: var(--color-bg-overlay);
+
+  /* Text */
+  --color-text-primary: #fafafa;
+  --color-text-secondary: #d4d4d4;
+  --color-text-tertiary: #a3a3a3;
+  --color-text-disabled: #525252;
+
+  /* Borders */
+  --color-border-subtle: #1f1f1f;
+  --color-border-default: #2d2d2d;
+  --color-border-strong: #404040;
+
+  /* Workspace primary light — dark-safe tint */
+  --workspace-primary-light: rgba(168, 85, 247, 0.12);
+
+  /* Inputs */
+  --input-bg: var(--color-bg-muted);
+
+  /* Shadows (stronger in dark) */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.55);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.6);
+  --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.65);
+  --shadow-2xl: 0 24px 64px rgba(0, 0, 0, 0.7);
+
+  /* Glow — stronger in dark */
+  --workspace-glow: 0 0 40px rgba(147, 51, 234, 0.45);
+  --shadow-glow-primary: var(--workspace-glow);
+  --shadow-glow-accent: 0 0 40px rgba(217, 119, 6, 0.35);
+
+  /* Status backgrounds — dark-safe */
+  --color-status-success-bg: rgba(16, 185, 129, 0.15);
+  --color-status-warning-bg: rgba(245, 158, 11, 0.15);
+  --color-status-error-bg: rgba(239, 68, 68, 0.15);
+  --color-status-info-bg: rgba(59, 130, 246, 0.15);
+
+  /* Dashboard surfaces */
+  --dash-bg: #0a0a0a;
+  --dash-card: #141414;
+  --dash-card-hover: #1f1f1f;
+  --dash-raised: #252525;
+  --dash-border: rgba(255, 255, 255, 0.08);
+  --dash-border-hover: rgba(255, 255, 255, 0.12);
+
+  /* Stat pills */
+  --stat-pill-bg: rgba(255, 255, 255, 0.06);
+  --stat-pill-border: rgba(255, 255, 255, 0.1);
+}
+
+/* ============================================================
+   13. CLIENT WORKSPACE  (.workspace-client)
+   Primary = Amber/Gold  ·  Secondary = Purple
+   ============================================================ */
+.workspace-client {
+  --workspace-primary: var(--amber-600);
+  --workspace-primary-hover: var(--amber-700);
+  --workspace-primary-active: var(--amber-800);
+  --workspace-primary-light: var(--amber-50);
+  --workspace-primary-mid: var(--amber-500);
+  --workspace-primary-dim: rgba(217, 119, 6, 0.12);
+  --workspace-primary-text: #ffffff;
+
+  --workspace-secondary: var(--purple-600);
+  --workspace-secondary-hover: var(--purple-700);
+  --workspace-secondary-light: var(--purple-50);
+  --workspace-secondary-dim: rgba(147, 51, 234, 0.12);
+
+  --workspace-accent: var(--purple-500);
+  --workspace-accent-hover: var(--purple-600);
+
+  --workspace-shadow: rgba(217, 119, 6, 0.25);
+  --workspace-glow: 0 0 32px rgba(217, 119, 6, 0.3);
+
+  --workspace-primary-shadow: var(--workspace-shadow);
+  --shadow-glow-primary: var(--workspace-glow);
+}
+
+.dark .workspace-client {
+  --workspace-primary-light: rgba(245, 158, 11, 0.12);
+  --workspace-secondary-light: rgba(147, 51, 234, 0.12);
+  --workspace-glow: 0 0 40px rgba(217, 119, 6, 0.45);
+  --shadow-glow-primary: var(--workspace-glow);
+}
+
+/* ============================================================
+   14. ADMIN WORKSPACE  (.workspace-admin)
+   Primary = Indigo  ·  Accent = Amber
+   ============================================================ */
+.workspace-admin {
+  --workspace-primary: #6366f1;
+  --workspace-primary-hover: #4f46e5;
+  --workspace-primary-active: #4338ca;
+  --workspace-primary-light: #eef2ff;
+  --workspace-primary-mid: #818cf8;
+  --workspace-primary-dim: rgba(99, 102, 241, 0.12);
+  --workspace-primary-text: #ffffff;
+
+  --workspace-accent: var(--amber-500);
+  --workspace-accent-hover: var(--amber-600);
+
+  --workspace-shadow: rgba(99, 102, 241, 0.25);
+  --workspace-glow: 0 0 32px rgba(99, 102, 241, 0.3);
+
+  --workspace-primary-shadow: var(--workspace-shadow);
+  --shadow-glow-primary: var(--workspace-glow);
+}
+
+.dark .workspace-admin {
+  --workspace-primary-light: rgba(99, 102, 241, 0.12);
+  --workspace-glow: 0 0 40px rgba(99, 102, 241, 0.45);
+  --shadow-glow-primary: var(--workspace-glow);
+}

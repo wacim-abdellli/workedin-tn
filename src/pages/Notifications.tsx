@@ -20,12 +20,12 @@ function iconForType(type: AppNotification['type']) {
 }
 
 const TYPE_COLOR: Record<AppNotification['type'], CSSProperties> = {
-    message: { background: 'color-mix(in srgb, var(--workspace-accent) 16%, transparent)', color: 'var(--workspace-accent)' },
-    proposal: { background: 'color-mix(in srgb, var(--workspace-accent) 16%, transparent)', color: 'var(--workspace-accent)' },
-    payment: { background: 'rgba(34,197,94,0.14)', color: 'rgb(74, 222, 128)' },
-    contract: { background: 'color-mix(in srgb, var(--brand-accent) 16%, transparent)', color: 'var(--brand-accent)' },
-    system: { background: 'rgba(255,255,255,0.06)', color: 'var(--text-secondary)' },
-    review: { background: 'color-mix(in srgb, var(--workspace-accent) 12%, transparent)', color: 'var(--workspace-accent)' },
+    message: { background: 'color-mix(in srgb, var(--color-brand-accent) 16%, transparent)', color: 'var(--color-brand-accent)' },
+    proposal: { background: 'color-mix(in srgb, var(--color-brand-accent) 16%, transparent)', color: 'var(--color-brand-accent)' },
+    payment: { background: 'color-mix(in srgb, var(--color-status-success) 16%, transparent)', color: 'var(--color-status-success)' },
+    contract: { background: 'color-mix(in srgb, var(--color-brand-accent) 16%, transparent)', color: 'var(--color-brand-accent)' },
+    system: { background: 'color-mix(in srgb, var(--color-background-muted) 16%, transparent)', color: 'var(--color-text-secondary)' },
+    review: { background: 'color-mix(in srgb, var(--color-brand-accent) 12%, transparent)', color: 'var(--color-brand-accent)' },
 };
 
 export default function Notifications() {
@@ -52,16 +52,16 @@ export default function Notifications() {
     };
 
     return (
-        <div className="flex min-h-screen flex-col bg-gray-50 dark:bg-zinc-950">
+        <div className="flex min-h-screen flex-col bg-[var(--color-background-base)]">
             <SEO title={tx('seo.notifications.title', undefined, 'Notifications | Khedma TN')} description={tx('seo.notifications.description', undefined, 'Your notifications')} noIndex />
             <Header />
 
             <main className="container-custom flex-1 w-full max-w-3xl py-8 sm:py-12">
                 <div className="mb-8 flex items-center justify-between">
                     <div>
-                        <h1 className="text-3xl font-bold tracking-tight text-foreground">{t.notifications?.title || 'Notifications'}</h1>
+                        <h1 className="text-3xl font-bold tracking-tight text-[var(--color-text-primary)]">{t.notifications?.title || 'Notifications'}</h1>
                         {unreadCount > 0 && (
-                            <p className="mt-1.5 text-sm font-medium text-muted">{tx('notifications.unreadCount', { count: unreadCount }, `${unreadCount} unread`)}</p>
+                            <p className="mt-1.5 text-sm font-medium text-[var(--color-text-secondary)]">{tx('notifications.unreadCount', { count: unreadCount }, `${unreadCount} unread`)}</p>
                         )}
                     </div>
                     {unreadCount > 0 && (
@@ -76,21 +76,21 @@ export default function Notifications() {
                         Array.from({ length: 5 }).map((_, i) => (
                             <div key={i} className="card p-4 animate-pulse">
                                 <div className="flex gap-4">
-                                    <div className="w-10 h-10 rounded-2xl bg-gray-200 dark:bg-gray-700 dark:bg-white/10 flex-shrink-0" />
+                                    <div className="w-10 h-10 rounded-2xl bg-[var(--color-background-subtle)] flex-shrink-0" />
                                     <div className="flex-1 space-y-2">
-                                        <div className="h-4 bg-gray-200 dark:bg-gray-700 dark:bg-white/10 rounded w-3/4" />
-                                        <div className="h-3 bg-gray-200 dark:bg-gray-700 dark:bg-white/10 rounded w-1/2" />
+                                        <div className="h-4 bg-[var(--color-background-subtle)] rounded w-3/4" />
+                                        <div className="h-3 bg-[var(--color-background-subtle)] rounded w-1/2" />
                                     </div>
                                 </div>
                             </div>
                         ))
                     ) : notifications.length === 0 ? (
-                        <div className="card text-center py-20 border border-white/5 bg-white dark:bg-gray-800/40 backdrop-blur-sm rounded-3xl shadow-sm">
-                            <div className="w-20 h-20 rounded-[28px] shrink-0 flex items-center justify-center mx-auto mb-6 shadow-inner" style={{ background: 'color-mix(in srgb, var(--workspace-accent) 10%, transparent)' }}>
-                                <Bell className="w-8 h-8" style={{ color: 'var(--workspace-accent)' }} />
+                        <div className="card text-center py-20 border border-[var(--color-border-subtle)] bg-[var(--color-background-elevated)] backdrop-blur-sm rounded-3xl shadow-sm">
+                            <div className="w-20 h-20 rounded-[28px] shrink-0 flex items-center justify-center mx-auto mb-6 shadow-inner" style={{ background: 'color-mix(in srgb, var(--color-brand-accent) 10%, transparent)' }}>
+                                <Bell className="w-8 h-8" style={{ color: 'var(--color-brand-accent)' }} />
                             </div>
-                            <h3 className="text-lg font-semibold text-foreground">{t.notifications?.empty || 'No notifications yet'}</h3>
-                            <p className="text-sm text-muted mt-2 max-w-sm mx-auto">{t.notifications?.emptyDesc || "We'll notify you when something important happens with your projects or payments."}</p>
+                            <h3 className="text-lg font-semibold text-[var(--color-text-primary)]">{t.notifications?.empty || 'No notifications yet'}</h3>
+                            <p className="text-sm text-[var(--color-text-secondary)] mt-2 max-w-sm mx-auto">{t.notifications?.emptyDesc || "We'll notify you when something important happens with your projects or payments."}</p>
                         </div>
                     ) : (
                         notifications.map((rawNotification) => {
@@ -99,10 +99,10 @@ export default function Notifications() {
                             <div
                                 key={n.id}
                                 onClick={() => handleClick(n)}
-                                className={`card group p-5 cursor-pointer transition-all hover:-translate-y-1 rounded-2xl border shadow-sm relative overflow-hidden ${!n.is_read ? 'border-[var(--workspace-accent)]/30 shadow-md' : 'border-gray-100 dark:border-white/5 bg-white dark:bg-white/[0.02] hover:shadow-md'}`}
+                                className={`card group p-5 cursor-pointer transition-all hover:-translate-y-1 rounded-2xl border shadow-sm relative overflow-hidden ${!n.is_read ? 'border-[var(--color-brand-accent)]/30 shadow-md' : 'border-[var(--color-border-subtle)] bg-[var(--color-background-base)] hover:shadow-md'}`}
                             >
                                 {!n.is_read && (
-                                    <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundColor: 'var(--workspace-accent)' }} />
+                                    <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundColor: 'var(--color-brand-accent)' }} />
                                 )}
                                 <div className="flex gap-4">
                                     <div className="w-12 h-12 rounded-[20px] flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-105 shadow-sm" style={TYPE_COLOR[n.type]}>
@@ -110,15 +110,15 @@ export default function Notifications() {
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-start justify-between gap-4">
-                                            <p className={`text-base font-semibold leading-tight z-10 ${!n.is_read ? 'text-gray-900 dark:text-white' : 'text-gray-700 dark:text-white/90'}`}>
+                                            <p className={`text-base font-semibold leading-tight z-10 ${!n.is_read ? 'text-[var(--color-text-primary)]' : 'text-[var(--color-text-primary)]/90'}`}>
                                                 {n.title}
                                             </p>
                                             <div className="flex items-center gap-2.5 flex-shrink-0 pt-0.5 z-10">
-                                                <span className="text-xs font-medium text-muted transition-colors group-hover:text-foreground/70">{formatDate(n.created_at)}</span>
-                                                {!n.is_read && <span className="w-2.5 h-2.5 rounded-full flex-shrink-0 animate-pulse" style={{ backgroundColor: 'var(--workspace-accent)', boxShadow: '0 0 10px var(--workspace-accent)' }} />}
+                                                <span className="text-xs font-medium text-[var(--color-text-secondary)] transition-colors group-hover:text-[var(--color-text-primary)]/70">{formatDate(n.created_at)}</span>
+                                                {!n.is_read && <span className="w-2.5 h-2.5 rounded-full flex-shrink-0 animate-pulse" style={{ backgroundColor: 'var(--color-brand-accent)', boxShadow: '0 0 10px var(--color-brand-accent)' }} />}
                                                 <button 
                                                     onClick={(e) => { e.stopPropagation(); deleteNotification(n.id); }}
-                                                    className="p-1.5 -mr-1.5 text-muted hover:text-red-500 rounded-full hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
+                                                    className="p-1.5 -mr-1.5 text-[var(--color-text-secondary)] hover:text-[var(--color-status-error)] rounded-full hover:bg-[var(--color-status-error)]/10 transition-colors"
                                                     title={tx('notifications.delete', undefined, 'Delete notification')}
                                                 >
                                                     <Trash2 className="w-4 h-4" />
@@ -126,7 +126,7 @@ export default function Notifications() {
                                             </div>
                                         </div>
                                         {n.body && (
-                                            <p className="text-sm text-muted mt-1.5 leading-relaxed line-clamp-2 dark:text-white/60">{n.body}</p>
+                                            <p className="text-sm text-[var(--color-text-secondary)] mt-1.5 leading-relaxed line-clamp-2">{n.body}</p>
                                         )}
                                     </div>
                                 </div>

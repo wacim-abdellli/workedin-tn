@@ -6,7 +6,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from '@/i18n'
-import EmptyState from '@/components/common/EmptyState'
+import EmptyState from '@/components/ui/EmptyState'
 
 interface JobProposalCountRow {
   count: number;

@@ -195,7 +195,8 @@ export default function VerificationsTab() {
                 client.rpc('update_verification_status', {
                     p_user_id: userId,
                     p_action: action,
-                    p_reviewed_at: new Date().toISOString()
+                    p_reviewed_at: new Date().toISOString(),
+                    p_admin_note: null,
                 })
             , { timeoutMs: actionTimeoutMs });
 
@@ -228,7 +229,7 @@ export default function VerificationsTab() {
                 <div className={panelClass}>
                     <div className="flex items-center justify-between mb-6">
                          <h3 className="font-bold text-foreground flex items-center gap-2">
-                             <Shield className="w-5 h-5 text-yellow-600" />
+                             <Shield className="w-5 h-5 text-[var(--color-status-warning)]" />
                              {tx('dashboard.admin.verification.title', undefined, 'Identity verification requests')}
                              {verifications.length > 0 && (
                                  <span className={`px-2 py-0.5 rounded-full text-sm ${adminPillClass('amber')}`}>
@@ -246,7 +247,7 @@ export default function VerificationsTab() {
                         <SkeletonList count={3} />
                     ) : verifications.length === 0 ? (
                          <div className="text-center py-12">
-                             <Check className="w-12 h-12 text-green-500 mx-auto mb-2" />
+                             <Check className="w-12 h-12 text-[var(--color-status-success)] mx-auto mb-2" />
                              <p className="text-foreground font-medium">{tx('dashboard.admin.verification.noPending', undefined, 'No pending requests')}</p>
                              <p className="text-sm text-muted">{tx('dashboard.admin.verification.allProcessed', undefined, 'All verification requests are processed')}</p>
                          </div>
@@ -256,11 +257,11 @@ export default function VerificationsTab() {
                                 <div key={v.id} className={`${adminInsetClass} overflow-hidden`}>
                                     <div className="flex items-center justify-between p-4">
                                             <div className="flex items-center gap-4">
-                                            <div className="w-12 h-12 rounded-xl bg-gray-200 dark:bg-gray-700 dark:bg-white/10 flex items-center justify-center shrink-0 overflow-hidden">
+                                            <div className="w-12 h-12 rounded-xl bg-[var(--color-bg-muted)] dark:bg-[var(--color-bg-muted)] dark:bg-white/10 flex items-center justify-center shrink-0 overflow-hidden">
                                                 {v.profile?.avatar_url ? (
                                                     <img src={v.profile.avatar_url} alt={v.profile.full_name || 'user'} className="w-full h-full object-cover" />
                                                 ) : (
-                                                    <Shield className="w-6 h-6 text-gray-400 dark:text-gray-300" />
+                                                    <Shield className="w-6 h-6 text-[var(--color-text-muted)] dark:text-[var(--color-text-disabled)]" />
                                                 )}
                                             </div>
                                              <div>
@@ -298,7 +299,7 @@ export default function VerificationsTab() {
                                             <Button
                                                  variant="ghost"
                                                  size="sm"
-                                                 className="text-red-600 hover:bg-red-50"
+                                                 className="text-[var(--color-status-error)] hover:bg-[var(--color-status-error-subtle)]"
                                                  disabled={actioningId === v.id}
                                                  onClick={() => handleAction(v.id, 'rejected')}
                                              >
@@ -314,30 +315,30 @@ export default function VerificationsTab() {
                                                  <p className="text-sm font-medium text-muted mb-2">{tx('dashboard.admin.verification.frontSide', undefined, 'Front side')}</p>
                                                  {v.front_image_url ? (
                                                      <a href={v.front_image_url} target="_blank" rel="noopener noreferrer">
-                                                         <img src={v.front_image_url} alt="front" className="w-full rounded-lg object-cover aspect-video border border-gray-200 dark:border-gray-700 dark:border-white/10 dark:border-gray-800 hover:opacity-90 transition" />
+                                                         <img src={v.front_image_url} alt="front" className="w-full rounded-lg object-cover aspect-video border border-[var(--color-border-default)] dark:border-[var(--color-border-default)] dark:border-white/10 dark:border-[var(--color-border-strong)] hover:opacity-90 transition" />
                                                      </a>
                                                  ) : (
-                                                     <div className="w-full rounded-lg aspect-video bg-gray-100 dark:bg-white/10 flex items-center justify-center text-muted text-sm">{tx('dashboard.admin.verification.noImage', undefined, 'No image')}</div>
+                                                     <div className="w-full rounded-lg aspect-video bg-[var(--color-bg-subtle)] dark:bg-white/10 flex items-center justify-center text-muted text-sm">{tx('dashboard.admin.verification.noImage', undefined, 'No image')}</div>
                                                  )}
                                              </div>
                                             <div>
                                                  <p className="text-sm font-medium text-muted mb-2">{tx('dashboard.admin.verification.backSide', undefined, 'Back side')}</p>
                                                  {v.back_image_url ? (
                                                      <a href={v.back_image_url} target="_blank" rel="noopener noreferrer">
-                                                         <img src={v.back_image_url} alt="back" className="w-full rounded-lg object-cover aspect-video border border-gray-200 dark:border-gray-700 dark:border-white/10 dark:border-gray-800 hover:opacity-90 transition" />
+                                                         <img src={v.back_image_url} alt="back" className="w-full rounded-lg object-cover aspect-video border border-[var(--color-border-default)] dark:border-[var(--color-border-default)] dark:border-white/10 dark:border-[var(--color-border-strong)] hover:opacity-90 transition" />
                                                      </a>
                                                  ) : (
-                                                     <div className="w-full rounded-lg aspect-video bg-gray-100 dark:bg-white/10 flex items-center justify-center text-muted text-sm">{tx('dashboard.admin.verification.noImage', undefined, 'No image')}</div>
+                                                     <div className="w-full rounded-lg aspect-video bg-[var(--color-bg-subtle)] dark:bg-white/10 flex items-center justify-center text-muted text-sm">{tx('dashboard.admin.verification.noImage', undefined, 'No image')}</div>
                                                  )}
                                              </div>
                                             <div>
                                                  <p className="text-sm font-medium text-muted mb-2">{tx('dashboard.admin.verification.selfie', undefined, 'Selfie')}</p>
                                                  {v.selfie_url ? (
                                                      <a href={v.selfie_url} target="_blank" rel="noopener noreferrer">
-                                                         <img src={v.selfie_url} alt="selfie" className="w-full rounded-lg object-cover aspect-video border border-gray-200 dark:border-gray-700 dark:border-white/10 dark:border-gray-800 hover:opacity-90 transition" />
+                                                         <img src={v.selfie_url} alt="selfie" className="w-full rounded-lg object-cover aspect-video border border-[var(--color-border-default)] dark:border-[var(--color-border-default)] dark:border-white/10 dark:border-[var(--color-border-strong)] hover:opacity-90 transition" />
                                                      </a>
                                                  ) : (
-                                                     <div className="w-full rounded-lg aspect-video bg-gray-100 dark:bg-white/10 flex items-center justify-center text-muted text-sm">{tx('dashboard.admin.verification.noImage', undefined, 'No image')}</div>
+                                                     <div className="w-full rounded-lg aspect-video bg-[var(--color-bg-subtle)] dark:bg-white/10 flex items-center justify-center text-muted text-sm">{tx('dashboard.admin.verification.noImage', undefined, 'No image')}</div>
                                                  )}
                                              </div>
                                         </div>

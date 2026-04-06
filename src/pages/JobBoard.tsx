@@ -21,7 +21,7 @@ import type { JobForCard } from '../components/jobs/JobCard';
 import { useTranslation } from '../i18n';
 import SEO, { SEO_CONFIG } from '../components/common/SEO';
 import { SkeletonCard } from '../components/common';
-import EmptyState from '../components/common/EmptyState';
+import EmptyState from '../components/ui/EmptyState';
 import type { Skill } from '../types';
 import { cn } from '../lib/utils';
 import { canSaveJob, getAccessMessage } from '../lib/marketplaceAccess';
@@ -80,12 +80,12 @@ function SavedJobsSidebar({ savedJobs, onViewJob }: { savedJobs: Job[]; onViewJo
         <div className="hidden xl:block w-80 flex-shrink-0">
             <div className={cn(
                 'sticky top-4 rounded-lg p-5',
-                'bg-card',
-                'border border-border',
+                'bg-[var(--card-bg)]',
+                'border border-[var(--border)]',
                 'shadow-sm dark:shadow-none'
             )}>
-                <h3 className="font-semibold mb-4 flex items-center gap-2 text-sm text-foreground">
-                    <Heart className="w-4 h-4 text-red-500 fill-current" />
+                <h3 className="font-semibold mb-4 flex items-center gap-2 text-sm text-[var(--text-primary)]">
+                    <Heart className="w-4 h-4 text-[var(--color-error)] fill-current" />
                     {t.jobs.savedJobs.title}
                 </h3>
                 <div className="space-y-2">
@@ -97,13 +97,13 @@ function SavedJobsSidebar({ savedJobs, onViewJob }: { savedJobs: Job[]; onViewJo
                             aria-label={`View saved job: ${job.title}`}
                             className={cn(
                                 'w-full p-3 rounded-lg text-left transition-all',
-                                'bg-input',
-                                'hover:bg-surface',
-                                'border border-transparent hover:border-border'
+                                'bg-[var(--input-bg)]',
+                                'hover:bg-[var(--surface-bg)]',
+                                'border border-transparent hover:border-[var(--border)]'
                             )}
                         >
-                            <h4 className="font-medium text-xs line-clamp-1 text-foreground">{job.title}</h4>
-                            <p className="text-[11px] text-muted mt-1.5">
+                            <h4 className="font-medium text-xs line-clamp-1 text-[var(--text-primary)]">{job.title}</h4>
+                            <p className="text-[11px] text-[var(--text-muted)] mt-1.5">
                                 {job.job_type === 'fixed_price'
                                     ? `${job.budget_min} - ${job.budget_max} ${tx('common.currency', undefined, 'TND')}`
                                     : `${job.hourly_rate} ${tx('common.currencyPerHour', undefined, 'TND/h')}`
@@ -114,8 +114,8 @@ function SavedJobsSidebar({ savedJobs, onViewJob }: { savedJobs: Job[]; onViewJo
                 </div>
                 {savedJobs.length > 5 && (
                     <button className={cn(
-                        'w-full text-center text-[color:var(--workspace-primary)] text-xs font-medium mt-4 p-2 min-h-[44px] rounded transition-colors',
-                        'hover:bg-[color:var(--workspace-primary)]/5 dark:hover:bg-[color:var(--workspace-primary)]/10'
+                        'w-full text-center text-[var(--workspace-primary)] text-xs font-medium mt-4 p-2 min-h-[44px] rounded transition-colors',
+                        'hover:bg-[var(--workspace-primary)]/5 dark:hover:bg-[var(--workspace-primary)]/10'
                     )}>
                         {t.jobs.savedJobs.viewAll} ({savedJobs.length})
                     </button>
@@ -309,7 +309,7 @@ function JobBoard() {
                 {/* Search Bar */}
                 <div className="mb-8">
                     <div className="relative max-w-2xl mx-auto">
-                        <Search className="absolute start-4 top-1/2 -translate-y-1/2 w-6 h-6 text-muted" />
+                        <Search className="absolute start-4 top-1/2 -translate-y-1/2 w-6 h-6 text-[var(--text-muted)]" />
                         <input
                             type="text"
                             value={filters.search}
@@ -317,10 +317,11 @@ function JobBoard() {
                             placeholder={t.jobs.searchPlaceholder}
                             className={cn(
                                 'w-full rounded-lg border py-3 ps-12 pe-4 text-sm',
-                                'bg-card',
-                                'border-border text-foreground',
-                                'focus:outline-none focus:border-[color:var(--workspace-primary)]',
-                                'focus:ring-2 focus:ring-[color:var(--workspace-primary)]/10'
+                                'bg-[var(--input-bg)]',
+                                'border-[var(--input-border)] text-[var(--input-text)]',
+                                'placeholder:text-[var(--input-placeholder)]',
+                                'focus:outline-none focus:border-[var(--input-border-focus)]',
+                                'focus:ring-2 focus:ring-[var(--workspace-primary)]/10'
                             )}
                         />
                     </div>
@@ -340,9 +341,10 @@ function JobBoard() {
                         value={filters.sortBy}
                         onChange={(e) => updateFilter('sortBy', e.target.value)}
                         className={cn(
-                            'flex-1 rounded-lg border bg-input px-3 py-2 text-sm text-foreground',
-                            'border-border',
-                            'bg-card text-foreground'
+                            'flex-1 rounded-lg border px-3 py-2 text-sm',
+                            'bg-[var(--input-bg)] text-[var(--input-text)]',
+                            'border-[var(--input-border)]',
+                            'focus:outline-none focus:border-[var(--input-border-focus)]'
                         )}
                     >
                         {sortOptions.map(opt => (
@@ -367,8 +369,8 @@ function JobBoard() {
                         {/* Results Bar */}
                         <div className={cn(
                             'flex items-center justify-between mb-4 px-4 py-3 rounded-xl',
-                            'bg-card',
-                            'border border-border/50'
+                            'bg-[var(--card-bg)]',
+                            'border border-[var(--border)]/50'
                         )}>
                             <p className="text-sm text-[var(--text-muted)]">
                                 {tx('jobBoard.showing', undefined, 'Showing')} <span className="font-semibold text-[var(--text-primary)]">{totalCount}</span> {tx('jobBoard.jobs', undefined, 'jobs')}
@@ -379,9 +381,9 @@ function JobBoard() {
                                     onChange={(e) => updateFilter('sortBy', e.target.value)}
                                     className={cn(
                                         'rounded-lg border px-3 py-2 text-sm',
-                                        'bg-card',
-                                        'border-border text-foreground',
-                                        'focus:outline-none focus:border-[color:var(--workspace-primary)]'
+                                        'bg-[var(--input-bg)] text-[var(--input-text)]',
+                                        'border-[var(--input-border)]',
+                                        'focus:outline-none focus:border-[var(--input-border-focus)]'
                                     )}
                                 >
                                     {sortOptions.map(opt => (
@@ -391,7 +393,7 @@ function JobBoard() {
                                 <div className={cn(
                                     'flex overflow-hidden rounded-lg border',
                                     'border-[var(--border)]',
-                                    'bg-[var(--surface-bg)]'
+                                    'bg-[var(--card-bg)]'
                                 )}>
                                     <button
                                         type="button"
@@ -401,8 +403,8 @@ function JobBoard() {
                                         className={cn(
                                             'p-2 min-w-[44px] min-h-[44px] transition-colors',
                                             viewMode === 'list'
-                                                ? 'bg-[color:var(--workspace-primary)]/10 text-[color:var(--workspace-primary)]'
-                                                : 'text-muted hover:text-foreground'
+                                                ? 'bg-[var(--workspace-primary)]/10 text-[var(--workspace-primary)]'
+                                                : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
                                         )}
                                     >
                                         <List className="w-6 h-6" />
@@ -415,8 +417,8 @@ function JobBoard() {
                                         className={cn(
                                             'p-2 min-w-[44px] min-h-[44px] transition-colors',
                                             viewMode === 'grid'
-                                                ? 'bg-[color:var(--workspace-primary)]/10 text-[color:var(--workspace-primary)]'
-                                                : 'text-muted hover:text-foreground'
+                                                ? 'bg-[var(--workspace-primary)]/10 text-[var(--workspace-primary)]'
+                                                : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
                                         )}
                                     >
                                         <Grid3X3 className="w-6 h-6" />
@@ -431,9 +433,9 @@ function JobBoard() {
                                 {[...Array(6)].map((_, i) => <SkeletonCard key={i} />)}
                             </div>
                         ) : jobsError ? (
-                            <div className="rounded-xl border border-red-200 dark:border-red-500/20 bg-red-50 dark:bg-red-500/10 p-6 text-center">
-                                <p className="text-red-600 dark:text-red-400 font-medium">{t.jobs?.loadError || tx('jobBoard.loadError', undefined, 'Failed to load jobs')}</p>
-                                <p className="text-red-500 dark:text-red-500 text-sm mt-1">{(jobsError as Error)?.message || t.common?.error || tx('jobBoard.unknownError', undefined, 'Unknown error')}</p>
+                            <div className="rounded-xl border border-[var(--color-error)]/20 bg-[var(--color-error-light)] dark:bg-[var(--color-error)]/10 p-6 text-center">
+                                <p className="text-[var(--color-error-dark)] dark:text-[var(--color-error)] font-medium">{t.jobs?.loadError || tx('jobBoard.loadError', undefined, 'Failed to load jobs')}</p>
+                                <p className="text-[var(--color-error)] text-sm mt-1">{(jobsError as Error)?.message || t.common?.error || tx('jobBoard.unknownError', undefined, 'Unknown error')}</p>
                             </div>
                         ) : jobs.length === 0 ? (
                             <EmptyState

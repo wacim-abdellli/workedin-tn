@@ -20,7 +20,6 @@ import {
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 
 import { logger } from '@/lib/logger';
-import { supabase } from '@/lib/supabase';
 import { hardLogout, clearAllAuthData } from '@/lib/authUtils';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from '@/i18n';
@@ -127,9 +126,8 @@ export default function AccountPanel({
           setIdentityStatusLoaded(true);
         }
 
-        // Sync profile if needed
+        // Refresh cached profile when verification becomes approved server-side.
         if (state.status === 'verified' && !profile.cin_verified) {
-          await supabase.from('profiles').update({ cin_verified: true }).eq('id', profile.id);
           await refreshProfile();
         }
       } catch (error) {
@@ -275,7 +273,7 @@ export default function AccountPanel({
               overflowY: 'auto',
             }}
             id="header-account-panel"
-            className="w-full border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-800 dark:bg-gray-900 shadow-lg shadow-gray-200/50 dark:border-white/5 dark:bg-[#0f0e17] dark:shadow-2xl dark:shadow-black/40"
+            className="w-full border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-800 dark:bg-gray-900 shadow-lg shadow-gray-200/50 dark:border-white/5 dark:bg-[var(--color-bg-base)] dark:shadow-2xl dark:shadow-black/40"
             data-account-panel
           >
             <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8 lg:py-6">
@@ -296,7 +294,7 @@ export default function AccountPanel({
               </div>
 
               <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-[minmax(280px,0.92fr)_minmax(340px,1.1fr)_minmax(260px,0.88fr)] lg:gap-5">
-                <section className="rounded-[28px] border border-gray-100 dark:border-gray-800 bg-[#fcfbff] p-5 shadow-sm dark:border-white/8 dark:bg-[#171421]">
+                <section className="rounded-[28px] border border-gray-100 dark:border-gray-800 bg-[var(--color-bg-elevated)] p-5 shadow-sm dark:border-white/8 dark:bg-[var(--color-bg-muted)]">
                   <div className="flex items-start gap-4">
                     {avatarUrl ? (
                       <img
@@ -370,7 +368,7 @@ export default function AccountPanel({
                   </Link>
                 </section>
 
-                <section className="rounded-[28px] border border-gray-100 dark:border-gray-800 bg-[#fcfbff] p-5 shadow-sm dark:border-white/8 dark:bg-[#171421]">
+                <section className="rounded-[28px] border border-gray-100 dark:border-gray-800 bg-[var(--color-bg-elevated)] p-5 shadow-sm dark:border-white/8 dark:bg-[var(--color-bg-muted)]">
                   <div className="text-xs font-semibold uppercase tracking-[0.22em] text-gray-500 dark:text-gray-500 dark:text-gray-400">
                     {copy.sectionLabel}
                   </div>
@@ -487,7 +485,7 @@ export default function AccountPanel({
                   </p>
                 </section>
 
-                <section className="rounded-[28px] border border-gray-100 dark:border-gray-800 bg-[#fcfbff] p-5 shadow-sm dark:border-white/8 dark:bg-[#171421] lg:col-span-2 xl:col-span-1">
+                <section className="rounded-[28px] border border-gray-100 dark:border-gray-800 bg-[var(--color-bg-elevated)] p-5 shadow-sm dark:border-white/8 dark:bg-[var(--color-bg-muted)] lg:col-span-2 xl:col-span-1">
                   <div className="text-xs font-semibold uppercase tracking-[0.22em] text-gray-500 dark:text-gray-500 dark:text-gray-400">
                     {copy.tools}
                   </div>

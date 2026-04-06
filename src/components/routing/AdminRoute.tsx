@@ -4,6 +4,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useTranslation } from '../../i18n';
 import { Loading } from '../common';
 import { hasAdminAccess } from '@/lib/adminAccess';
+import AccountStatusGate from './AccountStatusGate';
 
 /**
  * AdminRoute - Only allows access if user is authenticated and has admin role.
@@ -23,10 +24,14 @@ export function AdminRoute({ children }: { children: React.ReactNode }) {
     return <Navigate to="/login" replace state={{ from: location }} />;
   }
 
+  if (profile?.account_status === 'suspended' || profile?.account_status === 'archived') {
+    return <AccountStatusGate status={profile.account_status} />;
+  }
+
   if (!hasAdminAccess(user, profile)) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#f8f7ff] dark:bg-[#09070f] p-4">
-        <div className="rounded-[24px] border border-white/70 bg-white dark:bg-gray-800/80 dark:border-white/8 dark:bg-white/5 backdrop-blur shadow-xl text-center max-w-md p-8">
+      <div className="min-h-screen flex items-center justify-center bg-[var(--color-bg-subtle)] dark:bg-[var(--color-bg-base)] p-4">
+        <div className="rounded-[24px] border border-white/70 bg-white dark:border-white/8 dark:bg-[var(--color-bg-muted)] backdrop-blur shadow-xl text-center max-w-md p-8">
           <div className="w-16 h-16 mx-auto rounded-2xl bg-red-500/10 dark:bg-red-500/20 flex items-center justify-center mb-6 border border-red-500/20">
             <Lock className="w-8 h-8 text-red-600 dark:text-red-400" />
           </div>

@@ -35,7 +35,7 @@ export default function VerificationStepper({ step, stepLabels, onStepClick }: V
                         disabled={idx > currentStepIndex}
                         className="flex flex-col items-center px-2 disabled:cursor-not-allowed"
                     >
-                        <div className={`flex h-10 w-10 items-center justify-center rounded-full border-2 transition-colors duration-200 ${isCompleted || isCurrent ? 'border-primary-500 bg-primary-500 text-white' : 'border-white/35 bg-[#0d1528] text-slate-300'}`}>
+                        <div className={`flex h-10 w-10 items-center justify-center rounded-full border-2 transition-colors duration-200 ${isCompleted || isCurrent ? 'border-primary-500 bg-primary-500 text-white' : 'border-white/35 bg-[var(--color-bg-elevated)] text-slate-300'}`}>
                             {isCompleted ? <CheckCircle2 className="w-6 h-6" /> : <span>{idx + 1}</span>}
                         </div>
                         <span className={`mt-2 text-xs font-medium transition-colors ${isCurrent ? 'text-primary-300' : 'text-slate-400'}`}>

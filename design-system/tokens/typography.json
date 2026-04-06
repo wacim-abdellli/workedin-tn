@@ -1,0 +1,142 @@
+{
+  "fontFamilies": {
+    "heading": {
+      "value": "Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+      "description": "Font family for headings"
+    },
+    "body": {
+      "value": "Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+      "description": "Font family for body text"
+    },
+    "mono": {
+      "value": "'Fira Code', 'Courier New', Courier, monospace",
+      "description": "Font family for code and monospace text"
+    }
+  },
+  "fontSizes": {
+    "xs": {
+      "value": "0.75rem",
+      "pixels": "12px",
+      "description": "Extra small text"
+    },
+    "sm": {
+      "value": "0.875rem",
+      "pixels": "14px",
+      "description": "Small text"
+    },
+    "base": {
+      "value": "1rem",
+      "pixels": "16px",
+      "description": "Base body text size"
+    },
+    "lg": {
+      "value": "1.125rem",
+      "pixels": "18px",
+      "description": "Large text"
+    },
+    "xl": {
+      "value": "1.25rem",
+      "pixels": "20px",
+      "description": "Extra large text"
+    },
+    "2xl": {
+      "value": "1.5rem",
+      "pixels": "24px",
+      "description": "Heading level 4"
+    },
+    "3xl": {
+      "value": "1.875rem",
+      "pixels": "30px",
+      "description": "Heading level 3"
+    },
+    "4xl": {
+      "value": "2.25rem",
+      "pixels": "36px",
+      "description": "Heading level 2"
+    },
+    "5xl": {
+      "value": "3rem",
+      "pixels": "48px",
+      "description": "Heading level 1"
+    },
+    "6xl": {
+      "value": "3.75rem",
+      "pixels": "60px",
+      "description": "Display heading"
+    }
+  },
+  "fontWeights": {
+    "light": {
+      "value": "300",
+      "description": "Light font weight"
+    },
+    "normal": {
+      "value": "400",
+      "description": "Normal font weight"
+    },
+    "medium": {
+      "value": "500",
+      "description": "Medium font weight"
+    },
+    "semibold": {
+      "value": "600",
+      "description": "Semibold font weight"
+    },
+    "bold": {
+      "value": "700",
+      "description": "Bold font weight"
+    },
+    "extrabold": {
+      "value": "800",
+      "description": "Extra bold font weight"
+    }
+  },
+  "lineHeights": {
+    "tight": {
+      "value": "1.25",
+      "description": "Tight line height for headings"
+    },
+    "snug": {
+      "value": "1.375",
+      "description": "Snug line height"
+    },
+    "normal": {
+      "value": "1.5",
+      "description": "Normal line height for body text"
+    },
+    "relaxed": {
+      "value": "1.625",
+      "description": "Relaxed line height"
+    },
+    "loose": {
+      "value": "2",
+      "description": "Loose line height for large text"
+    }
+  },
+  "letterSpacing": {
+    "tighter": {
+      "value": "-0.05em",
+      "description": "Tighter letter spacing"
+    },
+    "tight": {
+      "value": "-0.025em",
+      "description": "Tight letter spacing"
+    },
+    "normal": {
+      "value": "0",
+      "description": "Normal letter spacing"
+    },
+    "wide": {
+      "value": "0.025em",
+      "description": "Wide letter spacing"
+    },
+    "wider": {
+      "value": "0.05em",
+      "description": "Wider letter spacing"
+    },
+    "widest": {
+      "value": "0.1em",
+      "description": "Widest letter spacing"
+    }
+  }
+}

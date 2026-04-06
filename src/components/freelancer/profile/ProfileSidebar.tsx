@@ -19,14 +19,14 @@ export default function ProfileSidebar({ freelancer }: SidebarProps) {
     return (
         <div className="space-y-6">
             {/* Availability Card */}
-            <div className="rounded-[2rem] border border-[var(--border)] bg-white/80 dark:bg-[#1c1a2e]/80 backdrop-blur-2xl p-6 shadow-sm transition-all duration-300 hover:shadow-lg hover:border-[var(--border-strong)] relative overflow-hidden group">
+            <div className="rounded-[2rem] border border-[var(--border)] bg-white/80 dark:bg-[var(--color-bg-muted)]/80 backdrop-blur-2xl p-6 shadow-sm transition-all duration-300 hover:shadow-lg hover:border-[var(--border-strong)] relative overflow-hidden group">
                 <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[var(--workspace-primary)]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 <h3 className="font-bold text-[var(--text-primary)] mb-4">{tx('pages.freelancerProfile.workInfo', undefined, 'Work information')}</h3>
                 <div className="space-y-4">
                     <div className="flex justify-between items-center py-2 border-b border-border/60 last:border-0">
                         <span className="text-[var(--text-secondary)]">{tx('pages.freelancerProfile.status', undefined, 'Status')}</span>
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${freelancer.availability === 'available' ? 'bg-green-100 text-green-700' :
-                            freelancer.availability === 'busy' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
+                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${freelancer.availability === 'available' ? 'bg-[var(--color-success-light)] text-[var(--color-success-dark)]' :
+                            freelancer.availability === 'busy' ? 'bg-[var(--color-warning-light)] text-[var(--color-warning-dark)]' : 'bg-[var(--color-bg-muted)] text-[var(--color-text-secondary)]'
                             }`}>
                             {freelancer.availability === 'available' ? tx('pages.freelancerProfile.available', undefined, 'Available for work') :
                                 freelancer.availability === 'busy' ? tx('pages.freelancerProfile.busy', undefined, 'Busy right now') : tx('pages.freelancerProfile.offline', undefined, 'Offline')}
@@ -45,7 +45,7 @@ export default function ProfileSidebar({ freelancer }: SidebarProps) {
 
             {/* Languages */}
             {freelancer.languages.length > 0 && (
-                <div className="rounded-[2rem] border border-[var(--border)] bg-white/80 dark:bg-[#1c1a2e]/80 backdrop-blur-2xl p-6 shadow-sm transition-all duration-300 hover:shadow-lg hover:border-[var(--border-strong)] relative overflow-hidden group">
+                <div className="rounded-[2rem] border border-[var(--border)] bg-white/80 dark:bg-[var(--color-bg-muted)]/80 backdrop-blur-2xl p-6 shadow-sm transition-all duration-300 hover:shadow-lg hover:border-[var(--border-strong)] relative overflow-hidden group">
                 <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[var(--workspace-primary)]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                     <h3 className="font-bold text-[var(--text-primary)] mb-4">{tx('pages.freelancerProfile.languages', undefined, 'Languages')}</h3>
                     <div className="space-y-3">
@@ -63,7 +63,7 @@ export default function ProfileSidebar({ freelancer }: SidebarProps) {
 
             {/* Education */}
             {freelancer.education.length > 0 && (
-                <div className="rounded-[2rem] border border-[var(--border)] bg-white/80 dark:bg-[#1c1a2e]/80 backdrop-blur-2xl p-6 shadow-sm transition-all duration-300 hover:shadow-lg hover:border-[var(--border-strong)] relative overflow-hidden group">
+                <div className="rounded-[2rem] border border-[var(--border)] bg-white/80 dark:bg-[var(--color-bg-muted)]/80 backdrop-blur-2xl p-6 shadow-sm transition-all duration-300 hover:shadow-lg hover:border-[var(--border-strong)] relative overflow-hidden group">
                 <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[var(--workspace-primary)]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                     <h3 className="font-bold text-[var(--text-primary)] mb-4">{tx('pages.freelancerProfile.education', undefined, 'Education')}</h3>
                     <div className="space-y-4">
@@ -79,24 +79,24 @@ export default function ProfileSidebar({ freelancer }: SidebarProps) {
             )}
 
             {/* Verifications */}
-            <div className="rounded-[2rem] border border-[var(--border)] bg-white/80 dark:bg-[#1c1a2e]/80 backdrop-blur-2xl p-6 shadow-sm transition-all duration-300 hover:shadow-lg hover:border-[var(--border-strong)] relative overflow-hidden group">
+            <div className="rounded-[2rem] border border-[var(--border)] bg-white/80 dark:bg-[var(--color-bg-muted)]/80 backdrop-blur-2xl p-6 shadow-sm transition-all duration-300 hover:shadow-lg hover:border-[var(--border-strong)] relative overflow-hidden group">
                 <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[var(--workspace-primary)]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 <h3 className="font-bold text-[var(--text-primary)] mb-4">{tx('pages.freelancerProfile.verifications', undefined, 'Verifications')}</h3>
                 <div className="space-y-3">
                     <div className="flex items-center gap-3">
-                        <CheckCircle className={`w-5 h-5 ${freelancer.verifications.cin ? 'text-green-500' : 'text-gray-300'}`} />
+                        <CheckCircle className={`w-5 h-5 ${freelancer.verifications.cin ? 'text-[var(--color-success)]' : 'text-[var(--color-text-disabled)]'}`} />
                         <span className={freelancer.verifications.cin ? 'text-[var(--text-primary)]' : 'text-[var(--text-muted)]'}>{tx('pages.freelancerProfile.verificationIdentity', undefined, 'Identity')}</span>
                     </div>
                     <div className="flex items-center gap-3">
-                        <CheckCircle className={`w-5 h-5 ${freelancer.verifications.phone ? 'text-green-500' : 'text-gray-300'}`} />
+                        <CheckCircle className={`w-5 h-5 ${freelancer.verifications.phone ? 'text-[var(--color-success)]' : 'text-[var(--color-text-disabled)]'}`} />
                         <span className={freelancer.verifications.phone ? 'text-[var(--text-primary)]' : 'text-[var(--text-muted)]'}>{tx('pages.freelancerProfile.verificationPhone', undefined, 'Phone')}</span>
                     </div>
                     <div className="flex items-center gap-3">
-                        <CheckCircle className={`w-5 h-5 ${freelancer.verifications.email ? 'text-green-500' : 'text-gray-300'}`} />
+                        <CheckCircle className={`w-5 h-5 ${freelancer.verifications.email ? 'text-[var(--color-success)]' : 'text-[var(--color-text-disabled)]'}`} />
                         <span className={freelancer.verifications.email ? 'text-[var(--text-primary)]' : 'text-[var(--text-muted)]'}>{tx('pages.freelancerProfile.verificationEmail', undefined, 'Email')}</span>
                     </div>
                     <div className="flex items-center gap-3">
-                        <CheckCircle className={`w-5 h-5 ${freelancer.verifications.payment ? 'text-green-500' : 'text-gray-300'}`} />
+                        <CheckCircle className={`w-5 h-5 ${freelancer.verifications.payment ? 'text-[var(--color-success)]' : 'text-[var(--color-text-disabled)]'}`} />
                         <span className={freelancer.verifications.payment ? 'text-[var(--text-primary)]' : 'text-[var(--text-muted)]'}>{tx('pages.freelancerProfile.verificationPayment', undefined, 'Payment method')}</span>
                     </div>
                 </div>

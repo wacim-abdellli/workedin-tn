@@ -6,7 +6,7 @@ import { AlertCircle, AlertTriangle, CheckCircle, Info, X } from 'lucide-react';
 import { useTranslation } from '../../i18n';
 
 type ToastType = 'success' | 'error' | 'warning' | 'info';
-type ToastPosition = 'top-right' | 'bottom-center';
+type ToastPosition = 'top-right' | 'top-center' | 'bottom-right';
 
 interface Toast {
   id: string;
@@ -26,36 +26,41 @@ interface ToastContextType {
 
 const ToastContext = createContext<ToastContextType | undefined>(undefined);
 
-const toastConfig: Record<ToastType, { icon: React.ReactNode; title: string; accentClass: string; cardClass: string }> = {
+const toastConfig: Record<ToastType, { icon: React.ReactNode; title: string; bgClass: string; textClass: string; iconClass: string }> = {
   success: {
-    icon: <CheckCircle className="h-5 w-5 text-emerald-400" />,
+    icon: <CheckCircle className="h-5 w-5" />,
     title: 'Success',
-    accentClass: 'text-emerald-400',
-    cardClass: 'border-emerald-500/25 bg-[#11211e]',
+    bgClass: 'bg-[var(--green-50)] dark:bg-[var(--green-900)]/20 border-[var(--green-200)] dark:border-[var(--green-800)]',
+    textClass: 'text-[var(--green-800)] dark:text-[var(--green-200)]',
+    iconClass: 'text-[var(--green-600)] dark:text-[var(--green-400)]',
   },
   error: {
-    icon: <AlertCircle className="h-5 w-5 text-red-400" />,
+    icon: <AlertCircle className="h-5 w-5" />,
     title: 'Error',
-    accentClass: 'text-red-400',
-    cardClass: 'border-red-500/25 bg-[#24161b]',
+    bgClass: 'bg-[var(--red-50)] dark:bg-[var(--red-900)]/20 border-[var(--red-200)] dark:border-[var(--red-800)]',
+    textClass: 'text-[var(--red-800)] dark:text-[var(--red-200)]',
+    iconClass: 'text-[var(--red-600)] dark:text-[var(--red-400)]',
   },
   warning: {
-    icon: <AlertTriangle className="h-5 w-5 text-amber-400" />,
+    icon: <AlertTriangle className="h-5 w-5" />,
     title: 'Warning',
-    accentClass: 'text-amber-400',
-    cardClass: 'border-amber-500/25 bg-[#241f14]',
+    bgClass: 'bg-[var(--amber-50)] dark:bg-[var(--amber-900)]/20 border-[var(--amber-200)] dark:border-[var(--amber-800)]',
+    textClass: 'text-[var(--amber-800)] dark:text-[var(--amber-200)]',
+    iconClass: 'text-[var(--amber-600)] dark:text-[var(--amber-400)]',
   },
   info: {
-    icon: <Info className="h-5 w-5 text-primary-400" />,
+    icon: <Info className="h-5 w-5" />,
     title: 'Info',
-    accentClass: 'text-primary-400',
-    cardClass: 'border-primary-500/25 bg-[#171b28]',
+    bgClass: 'bg-[var(--blue-50)] dark:bg-[var(--blue-900)]/20 border-[var(--blue-200)] dark:border-[var(--blue-800)]',
+    textClass: 'text-[var(--blue-800)] dark:text-[var(--blue-200)]',
+    iconClass: 'text-[var(--blue-600)] dark:text-[var(--blue-400)]',
   },
 };
 
 const positionClassMap: Record<ToastPosition, string> = {
   'top-right': 'top-4 right-4 items-end',
-  'bottom-center': 'bottom-4 left-1/2 -translate-x-1/2 items-center',
+  'top-center': 'top-4 left-1/2 -translate-x-1/2 items-center',
+  'bottom-right': 'bottom-4 right-4 items-end',
 };
 
 export function ToastProvider({ children }: { children: ReactNode }) {
@@ -78,7 +83,8 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const topRightToasts = toasts.filter((toast) => toast.position === 'top-right');
-  const bottomCenterToasts = toasts.filter((toast) => toast.position === 'bottom-center');
+  const topCenterToasts = toasts.filter((toast) => toast.position === 'top-center');
+  const bottomRightToasts = toasts.filter((toast) => toast.position === 'bottom-right');
 
   const value = useMemo(() => ({ showToast }), [showToast]);
 
@@ -93,8 +99,13 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             onClose={removeToast}
           />
           <ToastViewport
-            toasts={bottomCenterToasts}
-            position="bottom-center"
+            toasts={topCenterToasts}
+            position="top-center"
+            onClose={removeToast}
+          />
+          <ToastViewport
+            toasts={bottomRightToasts}
+            position="bottom-right"
             onClose={removeToast}
           />
         </>,
@@ -139,20 +150,40 @@ function ToastCard({ toast, onClose }: { toast: Toast; onClose: () => void }) {
       initial={{ opacity: 0, y: -12, scale: 0.98 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: -12, scale: 0.98 }}
-      transition={{ duration: 0.18 }}
-      className={`pointer-events-auto w-[min(420px,calc(100vw-2rem))] overflow-hidden rounded-2xl border shadow-2xl backdrop-blur-xl ${config.cardClass}`}
+      transition={{ 
+        duration: parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--animation-toast-duration') || '250') / 1000 
+      }}
+      className={`
+        pointer-events-auto 
+        w-[min(420px,calc(100vw-2rem))] 
+        overflow-hidden 
+        rounded-[var(--radius-lg)]
+        border-2
+        shadow-[var(--shadow-elevation-3)]
+        backdrop-blur-sm
+        ${config.bgClass}
+      `}
       role="status"
       aria-live="polite"
     >
-      <div className="flex items-start gap-3 p-4 text-white">
-        <div className="mt-0.5 shrink-0">{config.icon}</div>
+      <div className={`flex items-start gap-3 p-4 ${config.textClass}`}>
+        <div className={`mt-0.5 shrink-0 ${config.iconClass}`}>{config.icon}</div>
         <div className="min-w-0 flex-1">
-          <div className={`text-sm font-semibold ${config.accentClass}`}>{config.title}</div>
-          <p className="mt-1 text-sm text-white/90">{toast.message}</p>
+          <div className={`text-[var(--font-fontSize-sm)] font-[var(--font-fontWeight-semibold)] ${config.iconClass}`}>
+            {config.title}
+          </div>
+          <p className="mt-1 text-[var(--font-fontSize-sm)]">{toast.message}</p>
         </div>
         <button
           onClick={onClose}
-          className="rounded-full p-1 text-white/50 transition hover:bg-white dark:bg-gray-800/5 hover:text-white"
+          className={`
+            rounded-[var(--radius-sm)] 
+            p-1 
+            transition-colors
+            duration-[var(--animation-hover-duration)]
+            hover:bg-black/10 
+            dark:hover:bg-white/10
+          `}
           aria-label={tx('toast.close', undefined, 'Close notification')}
         >
           <X className="h-4 w-4" />

@@ -167,7 +167,7 @@ export default function MobileNav() {
 
   return (
     <>
-      <nav className="fixed bottom-0 left-0 right-0 z-40 h-16 border-t border-gray-200 dark:border-gray-700 dark:border-gray-800 bg-white dark:bg-gray-800 dark:bg-gray-900 md:hidden dark:border-white/10 dark:bg-[#0f0e17]">
+      <nav className="fixed bottom-0 left-0 right-0 z-40 h-16 border-t border-gray-200 dark:border-gray-700 dark:border-gray-800 bg-white dark:bg-gray-800 dark:bg-gray-900 md:hidden dark:border-white/10 dark:bg-[var(--color-bg-base)]">
         <div className="flex h-full items-center justify-around">
           {navItems.map((item) => (
             <button
@@ -191,7 +191,7 @@ export default function MobileNav() {
         </div>
       </nav>
 
-      <header className="fixed left-0 right-0 top-0 z-40 h-14 border-b border-gray-200 dark:border-gray-700 dark:border-gray-800 bg-white dark:bg-gray-800 dark:bg-gray-900 md:hidden dark:border-white/10 dark:bg-[#0f0e17]">
+      <header className="fixed left-0 right-0 top-0 z-40 h-14 border-b border-gray-200 dark:border-gray-700 dark:border-gray-800 bg-white dark:bg-gray-800 dark:bg-gray-900 md:hidden dark:border-white/10 dark:bg-[var(--color-bg-base)]">
         <div className="flex h-full items-center justify-between px-4">
           <button onClick={() => navigate('/')} className="text-lg font-bold text-primary-600">
             {tx('pages.mobileNav.brandName', undefined, 'Khedma')}
@@ -203,7 +203,7 @@ export default function MobileNav() {
       </header>
 
       {showSearch ? (
-        <div className="fixed inset-0 z-50 bg-white dark:bg-gray-800 dark:bg-gray-900 md:hidden dark:bg-[#0f0e17]">
+        <div className="fixed inset-0 z-50 bg-white dark:bg-gray-800 dark:bg-gray-900 md:hidden dark:bg-[var(--color-bg-base)]">
           <div className="flex items-center gap-3 border-b border-gray-200 dark:border-gray-700 dark:border-gray-800 p-4 dark:border-white/10">
             <button onClick={() => setShowSearch(false)}>
               <X className="h-6 w-6 text-gray-600 dark:text-gray-300" />
@@ -226,7 +226,7 @@ export default function MobileNav() {
       {showMenu ? (
         <div className="fixed inset-0 z-50 md:hidden">
           <div className="absolute inset-0 bg-black/50" onClick={() => setShowMenu(false)} />
-          <div className="absolute bottom-0 left-0 right-0 rounded-t-3xl bg-white dark:bg-gray-800 dark:bg-gray-900 p-2 dark:bg-[#171421]">
+          <div className="absolute bottom-0 left-0 right-0 rounded-t-3xl bg-white dark:bg-gray-800 dark:bg-gray-900 p-2 dark:bg-[var(--color-bg-muted)]">
             <div className="mx-auto mt-3 h-1 w-12 rounded-full bg-gray-300 dark:bg-white dark:bg-gray-900/10" />
 
             <div className="border-b border-gray-100 dark:border-gray-800 p-4 dark:border-white/10">

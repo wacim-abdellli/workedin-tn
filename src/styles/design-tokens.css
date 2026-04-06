@@ -1,0 +1,14 @@
+/**
+ * Design System Tokens
+ * 
+ * This file imports the auto-generated design tokens from the design system.
+ * These tokens provide a unified foundation for colors, typography, spacing,
+ * shadows, border radii, and animations.
+ * 
+ * DO NOT edit the imported tokens directly. To make changes:
+ * 1. Edit the source files in design-system/tokens/
+ * 2. Run: node design-system/build/token-compiler.js
+ * 3. The changes will be reflected here automatically
+ */
+
+@import url('../../design-system/output/tokens.css');

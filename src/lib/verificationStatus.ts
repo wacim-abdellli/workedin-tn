@@ -59,7 +59,7 @@ export async function getVerificationStatus(
     // 3. No verification row exists - check profile for legacy verified flag
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('verified')
+      .select('cin_verified')
       .eq('id', userId)
       .single();
 
@@ -72,8 +72,8 @@ export async function getVerificationStatus(
       return { status: 'missing' };
     }
 
-    // If profile.verified is true but no verification record, treat as verified
-    if (profile?.verified) {
+    // If the profile already reflects verified identity but no verification record exists, treat as verified.
+    if (profile?.cin_verified) {
       return { status: 'verified' };
     }
 
@@ -102,6 +102,9 @@ export async function getPendingVerifications() {
       id,
       user_id,
       cin_number,
+      cin_front_url,
+      cin_back_url,
+      selfie_url,
       submitted_at,
       profiles!inner (
         id,

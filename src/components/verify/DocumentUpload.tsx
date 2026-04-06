@@ -44,7 +44,7 @@ export default function DocumentUpload({
     };
 
     return (
-        <div className="rounded-3xl border border-white/10 dark:border-gray-800 bg-white dark:bg-gray-800/90 p-6 shadow-2xl shadow-slate-900/10 backdrop-blur-sm dark:border-white/10 dark:border-gray-800 dark:bg-[#1d2231]/90 md:p-8">
+        <div className="rounded-3xl border border-white/10 dark:border-gray-800 bg-white dark:bg-gray-800/90 p-6 shadow-2xl shadow-slate-900/10 backdrop-blur-sm dark:border-white/10 dark:border-gray-800 dark:bg-[var(--color-bg-elevated)]/90 md:p-8">
             <div className="mb-5 flex items-center justify-between">
                 <span className="inline-flex items-center gap-2 rounded-full border border-primary-400/30 bg-primary-500/10 px-3 py-1 text-xs font-semibold text-primary-700 dark:text-primary-300">
                     <ScanLine className="h-3.5 w-3.5" />

@@ -19,7 +19,7 @@ import { Header } from '../components/layout';
 import Button from '../components/ui/Button';
 import Badge from '../components/ui/Badge';
 import SkeletonCard from '../components/common/SkeletonCard';
-import EmptyState from '../components/common/EmptyState';
+import EmptyState from '../components/ui/EmptyState';
 import SEO, { SEO_CONFIG } from '../components/common/SEO';
 import { DashWidget } from '../components/dashboard/DashWidget';
 import { supabase } from '../lib/supabase';
@@ -174,10 +174,10 @@ function ClientDashboardPage() {
 
     if (isAuthLoading || !profile?.id) {
         return (
-            <div className="min-h-screen" style={{ background: 'var(--dash-bg)' }}>
+            <div className="min-h-screen bg-[var(--color-background-base)]">
                 <SEO {...SEO_CONFIG.dashboard} url="/client/dashboard" noIndex />
                 <Header />
-                <main className="container mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-12 max-w-7xl">
+                <main className="container mx-auto px-[var(--spacing-4)] sm:px-[var(--spacing-6)] lg:px-[var(--spacing-8)] pt-[var(--spacing-20)] pb-[var(--spacing-12)] max-w-7xl">
                     <SkeletonCard />
                 </main>
             </div>
@@ -185,27 +185,27 @@ function ClientDashboardPage() {
     }
 
     return (
-        <div className="min-h-screen" style={{ background: 'var(--dash-bg)' }}>
+        <div className="min-h-screen bg-[var(--color-background-base)]">
             <SEO {...SEO_CONFIG.dashboard} url="/client/dashboard" noIndex />
             <Header />
 
-            <main className="container mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-12 max-w-7xl">
+            <main className="container mx-auto px-[var(--spacing-4)] sm:px-[var(--spacing-6)] lg:px-[var(--spacing-8)] pt-[var(--spacing-20)] pb-[var(--spacing-12)] max-w-7xl">
                 <motion.div
                     initial={{ opacity: 0, y: -12 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4, ease: motionEase }}
-                    className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 mb-10"
+                    className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-[var(--spacing-6)] mb-[var(--spacing-10)]"
                 >
                     <div>
-                        <p className="text-xs font-semibold uppercase tracking-[0.2em] mb-1" style={{ color: 'var(--workspace-primary-mid)' }}>
+                        <p className="text-[var(--font-fontSize-xs)] font-[var(--font-fontWeight-semibold)] uppercase tracking-[0.2em] mb-[var(--spacing-1)] text-[var(--color-brand-primary)]">
                             {getTimeGreeting(tx)}
                         </p>
-                        <h1 className="font-display text-4xl sm:text-5xl font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
+                        <h1 className="font-display text-[var(--font-fontSize-4xl)] sm:text-[var(--font-fontSize-5xl)] font-[var(--font-fontWeight-bold)] tracking-tight text-[var(--color-text-primary)]">
                             {profile.full_name?.split(' ')[0] || 'Client'}
                         </h1>
                     </div>
 
-                    <div className="flex flex-wrap gap-3">
+                    <div className="flex flex-wrap gap-[var(--spacing-3)]">
                         {[
                             { label: tx('dashboard.client.projectsLabel', undefined, 'Projects'), value: statsData.totalJobs },
                             { label: tx('dashboard.client.activeLabel', undefined, 'Active'), value: statsData.activeJobs },
@@ -214,16 +214,16 @@ function ClientDashboardPage() {
                         ].map((stat) => (
                             <div
                                 key={stat.label}
-                                className="flex flex-col items-center px-4 py-2.5 rounded-2xl border"
+                                className="flex flex-col items-center px-[var(--spacing-4)] py-[var(--spacing-2)] rounded-[var(--radius-2xl)] border"
                                 style={{
-                                    background: stat.accent ? 'var(--workspace-primary)' : 'var(--stat-pill-bg)',
-                                    borderColor: stat.accent ? 'transparent' : 'var(--stat-pill-border)',
+                                    background: stat.accent ? 'var(--color-brand-primary)' : 'var(--color-background-subtle)',
+                                    borderColor: stat.accent ? 'transparent' : 'var(--color-border-subtle)',
                                 }}
                             >
-                                <span className="font-display font-bold text-lg leading-tight" style={{ color: stat.accent ? '#fff' : 'var(--text-primary)' }}>
+                                <span className="font-display font-[var(--font-fontWeight-bold)] text-[var(--font-fontSize-lg)] leading-tight" style={{ color: stat.accent ? '#fff' : 'var(--color-text-primary)' }}>
                                     {stat.value}
                                 </span>
-                                <span className="text-[11px] font-medium uppercase tracking-wider" style={{ color: stat.accent ? 'rgba(255,255,255,0.75)' : 'var(--text-muted)' }}>
+                                <span className="text-[11px] font-[var(--font-fontWeight-medium)] uppercase tracking-wider" style={{ color: stat.accent ? 'rgba(255,255,255,0.75)' : 'var(--color-text-tertiary)' }}>
                                     {stat.label}
                                 </span>
                             </div>
@@ -231,8 +231,8 @@ function ClientDashboardPage() {
                     </div>
                 </motion.div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-                    <motion.div className="lg:col-span-2 space-y-5" variants={containerVariants} initial="hidden" animate="show">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-[var(--spacing-5)]">
+                    <motion.div className="lg:col-span-2 space-y-[var(--spacing-5)]" variants={containerVariants} initial="hidden" animate="show">
                         <motion.div variants={itemVariants}>
                             <DashWidget title={tx('dashboard.client.activeProjects', undefined, 'Active Projects')} icon={<FolderOpen className="w-4 h-4" />} action={{ label: tx('dashboard.client.viewAll', undefined, 'View all'), onClick: () => navigate('/client/jobs') }}>
                                 {isStatsLoading ? (
@@ -246,24 +246,24 @@ function ClientDashboardPage() {
                                         action={{ label: tx('dashboard.client.postAProject', undefined, 'Post a Project'), onClick: () => navigate('/jobs/new') }}
                                     />
                                 ) : (
-                                    <div className="divide-y" style={{ borderColor: 'var(--dash-border)' }}>
+                                    <div className="divide-y divide-[var(--color-border-subtle)]">
                                         {(stats?.jobs ?? []).slice(0, 3).map((job) => (
                                             <div
                                                 key={job.id}
-                                                className="flex items-center justify-between py-4 px-1 cursor-pointer group"
+                                                className="flex items-center justify-between py-[var(--spacing-4)] px-[var(--spacing-1)] cursor-pointer group"
                                                 onClick={() => navigate(`/jobs/${job.id}`)}
                                             >
                                                 <div className="min-w-0 flex-1">
-                                                    <p className="font-semibold text-sm truncate" style={{ color: 'var(--text-primary)' }}>
+                                                    <p className="font-[var(--font-fontWeight-semibold)] text-[var(--font-fontSize-sm)] truncate text-[var(--color-text-primary)]">
                                                         {job.title}
                                                     </p>
-                                                    <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                                                    <p className="text-[var(--font-fontSize-xs)] mt-[var(--spacing-1)] text-[var(--color-text-tertiary)]">
                                                         {job.proposals_count ?? 0} {tx('dashboard.client.proposalsCountText', undefined, 'proposals')} · {tx(`status.${job.status}`, undefined, job.status)}
                                                     </p>
                                                 </div>
-                                                <div className="flex items-center gap-2 shrink-0 ml-4">
+                                                <div className="flex items-center gap-[var(--spacing-2)] shrink-0 ml-[var(--spacing-4)]">
                                                     <Badge variant={job.status === 'open' ? 'info' : job.status === 'in_progress' ? 'warning' : 'default'}>{tx(`status.${job.status}`, undefined, job.status)}</Badge>
-                                                    <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: 'var(--workspace-primary)' }} />
+                                                    <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity text-[var(--color-brand-primary)]" />
                                                 </div>
                                             </div>
                                         ))}
@@ -284,28 +284,28 @@ function ClientDashboardPage() {
                                         className="rounded-[1.5rem] border"
                                     />
                                 ) : (
-                                    <div className="divide-y" style={{ borderColor: 'var(--dash-border)' }}>
+                                    <div className="divide-y divide-[var(--color-border-subtle)]">
                                         {(stats?.proposals ?? []).slice(0, 4).map((proposal) => (
                                             <div
                                                 key={proposal.id}
-                                                className="flex items-center justify-between py-4 px-1 cursor-pointer group"
+                                                className="flex items-center justify-between py-[var(--spacing-4)] px-[var(--spacing-1)] cursor-pointer group"
                                                 onClick={() => navigate(`/jobs/${proposal.job_id}/proposals`)}
                                             >
-                                                <div className="flex items-center gap-3 min-w-0 flex-1">
-                                                    <div className="w-8 h-8 rounded-full overflow-hidden shrink-0" style={{ background: 'var(--dash-raised)' }}>
+                                                <div className="flex items-center gap-[var(--spacing-3)] min-w-0 flex-1">
+                                                    <div className="w-8 h-8 rounded-full overflow-hidden shrink-0 bg-[var(--color-background-elevated)]">
                                                         {proposal.freelancer?.avatar_url ? (
                                                             <img src={proposal.freelancer.avatar_url} className="w-full h-full object-cover" alt="" />
                                                         ) : (
-                                                            <div className="w-full h-full flex items-center justify-center text-xs font-bold" style={{ background: 'var(--workspace-primary)', color: '#fff' }}>
+                                                            <div className="w-full h-full flex items-center justify-center text-[var(--font-fontSize-xs)] font-[var(--font-fontWeight-bold)] bg-[var(--color-brand-primary)] text-white">
                                                                 {proposal.freelancer?.full_name?.[0] ?? 'F'}
                                                             </div>
                                                         )}
                                                     </div>
                                                     <div className="min-w-0">
-                                                        <p className="font-semibold text-sm truncate" style={{ color: 'var(--text-primary)' }}>
+                                                        <p className="font-[var(--font-fontWeight-semibold)] text-[var(--font-fontSize-sm)] truncate text-[var(--color-text-primary)]">
                                                             {proposal.freelancer?.full_name ?? tx('dashboard.client.freelancerFallback', undefined, 'Freelancer')}
                                                         </p>
-                                                        <p className="text-xs truncate" style={{ color: 'var(--text-muted)' }}>
+                                                        <p className="text-[var(--font-fontSize-xs)] truncate text-[var(--color-text-tertiary)]">
                                                             {proposal.job?.title ?? tx('dashboard.client.untitledJob', undefined, 'Untitled job')} · {formatCurrency(proposal.bid_amount ?? 0, true, language)}
                                                         </p>
                                                     </div>
@@ -330,18 +330,18 @@ function ClientDashboardPage() {
                                         className="rounded-[1.5rem] border"
                                     />
                                 ) : (
-                                    <div className="divide-y" style={{ borderColor: 'var(--dash-border)' }}>
+                                    <div className="divide-y divide-[var(--color-border-subtle)]">
                                         {(stats?.activeContracts ?? []).slice(0, 3).map((contract) => (
                                             <div
                                                 key={contract.id}
-                                                className="flex items-center justify-between py-4 px-1 cursor-pointer group"
+                                                className="flex items-center justify-between py-[var(--spacing-4)] px-[var(--spacing-1)] cursor-pointer group"
                                                 onClick={() => navigate(`/contracts/${contract.id}`)}
                                             >
                                                 <div className="min-w-0 flex-1">
-                                                    <p className="font-semibold text-sm truncate" style={{ color: 'var(--text-primary)' }}>
+                                                    <p className="font-[var(--font-fontWeight-semibold)] text-[var(--font-fontSize-sm)] truncate text-[var(--color-text-primary)]">
                                                         {contract.title}
                                                     </p>
-                                                    <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                                                    <p className="text-[var(--font-fontSize-xs)] mt-[var(--spacing-1)] text-[var(--color-text-tertiary)]">
                                                         {contract.freelancer?.full_name ?? tx('dashboard.client.freelancerFallback', undefined, 'Freelancer')} · {formatCurrency(contract.total_amount ?? 0, true, language)}
                                                     </p>
                                                 </div>
@@ -354,11 +354,10 @@ function ClientDashboardPage() {
                         </motion.div>
                     </motion.div>
 
-                    <motion.div className="space-y-5" variants={containerVariants} initial="hidden" animate="show">
+                    <motion.div className="space-y-[var(--spacing-5)]" variants={containerVariants} initial="hidden" animate="show">
                         <motion.div variants={itemVariants}>
                             <div
-                                className="relative overflow-hidden rounded-[1.75rem] p-6 sm:p-8"
-                                style={{ background: 'var(--workspace-primary)' }}
+                                className="relative overflow-hidden rounded-[var(--radius-2xl)] p-[var(--spacing-6)] sm:p-[var(--spacing-8)] bg-[var(--color-brand-primary)]"
                             >
                                 {/* Decorative elements */}
                                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/30 to-transparent" />
@@ -366,18 +365,18 @@ function ClientDashboardPage() {
                                 <div className="pointer-events-none absolute -bottom-12 -left-12 h-40 w-40 rounded-full bg-black/10 blur-3xl" />
                                 
                                 <div className="relative z-10">
-                                    <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-full border border-white/30 dark:border-gray-800/30 bg-white dark:bg-gray-800/20 shadow-inner backdrop-blur-md">
+                                    <div className="mb-[var(--spacing-4)] inline-flex h-12 w-12 items-center justify-center rounded-full border border-white/30 dark:border-gray-800/30 bg-white dark:bg-gray-800/20 shadow-inner backdrop-blur-md">
                                         <Plus className="h-6 w-6 text-dark-950" />
                                     </div>
-                                    <h3 className="mb-2 font-display text-[1.75rem] font-bold tracking-tight text-dark-950 leading-tight">
+                                    <h3 className="mb-[var(--spacing-2)] font-display text-[1.75rem] font-[var(--font-fontWeight-bold)] tracking-tight text-dark-950 leading-tight">
                                         {tx('dashboard.client.needSomethingDone', undefined, 'Need something done?')}
                                     </h3>
-                                    <p className="mb-8 text-[15px] font-medium leading-relaxed text-dark-950/80">
+                                    <p className="mb-[var(--spacing-8)] text-[15px] font-[var(--font-fontWeight-medium)] leading-relaxed text-dark-950/80">
                                         {tx('dashboard.client.postProjectFree', undefined, 'Post a project free. Get proposals from verified Tunisian talent.')}
                                     </p>
                                     <button
                                         onClick={() => navigate('/jobs/new')}
-                                        className="group flex w-full items-center justify-center gap-2 rounded-xl bg-dark-950 px-4 py-3.5 text-sm font-bold text-white shadow-xl transition-all duration-300 hover:-translate-y-0.5 hover:bg-dark-800 hover:shadow-2xl active:translate-y-0"
+                                        className="group flex w-full items-center justify-center gap-[var(--spacing-2)] rounded-xl bg-dark-950 px-[var(--spacing-4)] py-[var(--spacing-3)] text-[var(--font-fontSize-sm)] font-[var(--font-fontWeight-bold)] text-white shadow-[var(--shadow-elevation-3)] transition-all duration-[var(--animation-hover-duration)] hover:-translate-y-0.5 hover:bg-dark-800 hover:shadow-[var(--shadow-elevation-4)] active:translate-y-0"
                                     >
                                         {tx('dashboard.client.postProjectFreeCta', undefined, 'Post a project — it\'s free')}
                                         <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
@@ -389,13 +388,13 @@ function ClientDashboardPage() {
                         <motion.div variants={itemVariants}>
                             <DashWidget title={tx('dashboard.client.thisMonth', undefined, 'This Month')} icon={<DollarSign className="w-4 h-4" />}>
                                 <div>
-                                    <p className="font-display font-bold text-3xl" style={{ color: 'var(--text-primary)' }}>
+                                    <p className="font-display font-[var(--font-fontWeight-bold)] text-[var(--font-fontSize-3xl)] text-[var(--color-text-primary)]">
                                         {formatCurrency(statsData.monthlySpending, true, language)}
                                     </p>
-                                    <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
+                                    <p className="text-[var(--font-fontSize-xs)] mt-[var(--spacing-1)] text-[var(--color-text-tertiary)]">
                                         {tx('dashboard.client.acrossActiveContracts', { count: statsData.activeContracts }, `Across ${statsData.activeContracts} active contracts`)}
                                     </p>
-                                    <Button variant="outline" size="sm" className="mt-4 w-full" onClick={() => navigate('/wallet')}>
+                                    <Button variant="outline" size="sm" className="mt-[var(--spacing-4)] w-full" onClick={() => navigate('/wallet')}>
                                         {tx('dashboard.client.viewWallet', undefined, 'View Wallet')} <ArrowRight className="w-3.5 h-3.5 ml-1" />
                                     </Button>
                                 </div>
@@ -404,7 +403,7 @@ function ClientDashboardPage() {
 
                         <motion.div variants={itemVariants}>
                             <DashWidget title={tx('dashboard.client.quickActions', undefined, 'Quick Actions')} icon={<Settings className="w-4 h-4" />}>
-                                <div className="space-y-2">
+                                <div className="space-y-[var(--spacing-2)]">
                                     {[
                                         { label: tx('nav.findFreelancers', undefined, 'Find Freelancers'), icon: Users, path: '/find-freelancers' },
                                         { label: tx('nav.myProjects', undefined, 'My Projects'), icon: FolderOpen, path: '/client/jobs' },
@@ -414,18 +413,9 @@ function ClientDashboardPage() {
                                         <button
                                             key={action.label}
                                             onClick={() => navigate(action.path)}
-                                            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors text-left"
-                                            style={{ color: 'var(--text-secondary)' }}
-                                            onMouseEnter={(e) => {
-                                                e.currentTarget.style.background = 'var(--dash-raised)';
-                                                e.currentTarget.style.color = 'var(--text-primary)';
-                                            }}
-                                            onMouseLeave={(e) => {
-                                                e.currentTarget.style.background = 'transparent';
-                                                e.currentTarget.style.color = 'var(--text-secondary)';
-                                            }}
+                                            className="w-full flex items-center gap-[var(--spacing-3)] px-[var(--spacing-3)] py-[var(--spacing-2)] rounded-xl text-[var(--font-fontSize-sm)] font-[var(--font-fontWeight-medium)] transition-all duration-[var(--animation-hover-duration)] text-left text-[var(--color-text-secondary)] hover:bg-[var(--color-background-muted)] hover:text-[var(--color-text-primary)]"
                                         >
-                                            <action.icon className="w-4 h-4 shrink-0" style={{ color: 'var(--workspace-primary-mid)' }} />
+                                            <action.icon className="w-4 h-4 shrink-0 text-[var(--color-brand-primary)]" />
                                             {action.label}
                                         </button>
                                     ))}

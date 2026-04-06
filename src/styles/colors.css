@@ -1,0 +1,296 @@
+/* ========================================
+   KHEDMA TN - PROFESSIONAL COLOR SYSTEM 2026
+   Research-based, accessible, scalable
+   ======================================== */
+
+:root {
+  /* ===== PRIMITIVE TOKENS - Purple Scale (Freelancer Brand) ===== */
+  --purple-50: #faf5ff;
+  --purple-100: #f3e8ff;
+  --purple-200: #e9d5ff;
+  --purple-300: #d8b4fe;
+  --purple-400: #c084fc;
+  --purple-500: #a855f7;   /* Base color */
+  --purple-600: #9333ea;   /* Primary actions */
+  --purple-700: #7e22ce;
+  --purple-800: #6b21a8;
+  --purple-900: #581c87;
+  --purple-950: #3b0764;
+
+  /* ===== PRIMITIVE TOKENS - Amber Scale (Client Brand) ===== */
+  --amber-50: #fffbeb;
+  --amber-100: #fef3c7;
+  --amber-200: #fde68a;
+  --amber-300: #fcd34d;
+  --amber-400: #fbbf24;
+  --amber-500: #f59e0b;    /* Base color */
+  --amber-600: #d97706;    /* Primary actions */
+  --amber-700: #b45309;
+  --amber-800: #92400e;
+  --amber-900: #78350f;
+  --amber-950: #451a03;
+
+  /* ===== PRIMITIVE TOKENS - Neutral Scale (Grays) ===== */
+  --neutral-50: #fafafa;
+  --neutral-100: #f5f5f5;
+  --neutral-200: #e5e5e5;
+  --neutral-300: #d4d4d4;
+  --neutral-400: #a3a3a3;
+  --neutral-500: #737373;
+  --neutral-600: #525252;
+  --neutral-700: #404040;
+  --neutral-800: #262626;
+  --neutral-900: #171717;
+  --neutral-950: #0a0a0a;
+
+  /* ===== SEMANTIC TOKENS - Brand Colors ===== */
+  --color-brand-primary: var(--purple-600);
+  --color-brand-primary-hover: var(--purple-700);
+  --color-brand-primary-active: var(--purple-800);
+  --color-brand-primary-light: var(--purple-50);
+  
+  --color-brand-secondary: var(--amber-600);
+  --color-brand-secondary-hover: var(--amber-700);
+  --color-brand-secondary-active: var(--amber-800);
+  --color-brand-secondary-light: var(--amber-50);
+  
+  --color-brand-accent: var(--amber-600);
+  --color-brand-accent-hover: var(--amber-700);
+  --color-brand-accent-active: var(--amber-800);
+  --color-brand-accent-light: var(--amber-50);
+
+  /* ===== SEMANTIC TOKENS - Backgrounds (Light Mode) ===== */
+  --color-bg-base: #ffffff;
+  --color-bg-subtle: var(--neutral-50);
+  --color-bg-muted: var(--neutral-100);
+  --color-bg-elevated: #ffffff;
+  --color-bg-overlay: rgba(0, 0, 0, 0.5);
+
+  /* Aliases for consistency with design system naming */
+  --color-background-base: var(--color-bg-base);
+  --color-background-subtle: var(--color-bg-subtle);
+  --color-background-muted: var(--color-bg-muted);
+  --color-background-elevated: var(--color-bg-elevated);
+  --color-background-overlay: var(--color-bg-overlay);
+
+  /* ===== SEMANTIC TOKENS - Text (Light Mode) ===== */
+  --color-text-primary: var(--neutral-900);
+  --color-text-secondary: var(--neutral-600);
+  --color-text-tertiary: var(--neutral-500);
+  --color-text-disabled: var(--neutral-400);
+  --color-text-inverse: #ffffff;
+
+  /* ===== SEMANTIC TOKENS - Borders (Light Mode) ===== */
+  --color-border-subtle: var(--neutral-200);
+  --color-border-default: var(--neutral-300);
+  --color-border-strong: var(--neutral-400);
+
+  /* ===== SEMANTIC TOKENS - Interactive States ===== */
+  --color-interactive-default: var(--purple-600);
+  --color-interactive-hover: var(--purple-700);
+  --color-interactive-active: var(--purple-800);
+  --color-interactive-disabled: var(--neutral-300);
+
+  /* ===== SEMANTIC TOKENS - Status Colors ===== */
+  --color-success: #10b981;
+  --color-success-light: #d1fae5;
+  --color-success-dark: #059669;
+  
+  --color-status-success: #10b981;
+  --color-status-success-light: #d1fae5;
+  --color-status-success-dark: #059669;
+  
+  --color-warning: #f59e0b;
+  --color-warning-light: #fef3c7;
+  --color-warning-dark: #d97706;
+  
+  --color-status-warning: #f59e0b;
+  --color-status-warning-light: #fef3c7;
+  --color-status-warning-dark: #d97706;
+  
+  --color-error: #ef4444;
+  --color-error-light: #fee2e2;
+  --color-error-dark: #dc2626;
+  
+  --color-status-error: #ef4444;
+  --color-status-error-light: #fee2e2;
+  --color-status-error-dark: #dc2626;
+  
+  --color-info: #3b82f6;
+  --color-info-light: #dbeafe;
+  --color-info-dark: #2563eb;
+  
+  --color-status-info: #3b82f6;
+  --color-status-info-light: #dbeafe;
+  --color-status-info-dark: #2563eb;
+
+  /* ===== WORKSPACE THEMING - Freelancer (Default) ===== */
+  --workspace-primary: var(--purple-600);
+  --workspace-primary-hover: var(--purple-700);
+  --workspace-primary-active: var(--purple-800);
+  --workspace-primary-light: var(--purple-50);
+  --workspace-primary-mid: var(--purple-500);
+  --workspace-primary-text: #ffffff;
+  --workspace-accent: var(--amber-600);
+  --workspace-accent-hover: var(--amber-700);
+
+  /* ===== SHADOWS (Light Mode) ===== */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 12px 24px rgba(0, 0, 0, 0.12);
+  --shadow-xl: 0 24px 48px rgba(0, 0, 0, 0.15);
+  --shadow-2xl: 0 32px 64px rgba(0, 0, 0, 0.18);
+
+  /* ===== GLOWS (Light Mode) ===== */
+  --shadow-glow-primary: 0 0 24px rgba(147, 51, 234, 0.3);
+  --shadow-glow-accent: 0 0 24px rgba(217, 119, 6, 0.3);
+
+  /* ===== DASHBOARD SURFACES (Light Mode) ===== */
+  --dash-bg: var(--neutral-50);
+  --dash-card: #ffffff;
+  --dash-card-hover: var(--neutral-50);
+  --dash-raised: #ffffff;
+  --dash-border: var(--neutral-200);
+  --dash-border-hover: var(--neutral-300);
+
+  /* ===== LEGACY ALIASES (for backward compatibility) ===== */
+  --page-bg: var(--color-bg-base);
+  --surface-bg: var(--color-bg-subtle);
+  --card-bg: var(--color-bg-elevated);
+  --text-primary: var(--color-text-primary);
+  --text-secondary: var(--color-text-secondary);
+  --text-muted: var(--color-text-tertiary);
+  --border: var(--color-border-default);
+  --border-strong: var(--color-border-strong);
+}
+
+/* ===== DARK MODE ===== */
+.dark {
+  /* ===== SEMANTIC TOKENS - Backgrounds (Dark Mode) ===== */
+  --color-bg-base: #0f0f0f;
+  --color-bg-subtle: #1a1a1a;
+  --color-bg-muted: #262626;
+  --color-bg-elevated: #2d2d2d;
+  --color-bg-overlay: rgba(0, 0, 0, 0.7);
+
+  /* Aliases for consistency with design system naming */
+  --color-background-base: var(--color-bg-base);
+  --color-background-subtle: var(--color-bg-subtle);
+  --color-background-muted: var(--color-bg-muted);
+  --color-background-elevated: var(--color-bg-elevated);
+  --color-background-overlay: var(--color-bg-overlay);
+
+  /* ===== SEMANTIC TOKENS - Text (Dark Mode) ===== */
+  --color-text-primary: #fafafa;
+  --color-text-secondary: #d4d4d4;
+  --color-text-tertiary: #a3a3a3;
+  --color-text-disabled: #525252;
+  --color-text-inverse: var(--neutral-900);
+
+  /* ===== SEMANTIC TOKENS - Borders (Dark Mode) ===== */
+  --color-border-subtle: #262626;
+  --color-border-default: #404040;
+  --color-border-strong: #525252;
+
+  /* ===== WORKSPACE THEMING - Dark Mode Adjustments ===== */
+  --workspace-primary-light: rgba(168, 85, 247, 0.1);
+
+  /* ===== SHADOWS (Dark Mode) ===== */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 12px 24px rgba(0, 0, 0, 0.6);
+  --shadow-xl: 0 24px 48px rgba(0, 0, 0, 0.7);
+  --shadow-2xl: 0 32px 64px rgba(0, 0, 0, 0.8);
+
+  /* ===== GLOWS (Dark Mode) ===== */
+  --shadow-glow-primary: 0 0 32px rgba(168, 85, 247, 0.4);
+  --shadow-glow-accent: 0 0 32px rgba(245, 158, 11, 0.4);
+
+  /* ===== DASHBOARD SURFACES (Dark Mode) ===== */
+  --dash-bg: #0f0f0f;
+  --dash-card: #1a1a1a;
+  --dash-card-hover: #262626;
+  --dash-raised: #2d2d2d;
+  --dash-border: rgba(255, 255, 255, 0.08);
+  --dash-border-hover: rgba(255, 255, 255, 0.12);
+
+  /* ===== LEGACY ALIASES (Dark Mode) ===== */
+  --page-bg: var(--color-bg-base);
+  --surface-bg: var(--color-bg-subtle);
+  --card-bg: var(--color-bg-muted);
+  --text-primary: var(--color-text-primary);
+  --text-secondary: var(--color-text-secondary);
+  --text-muted: var(--color-text-tertiary);
+  --border: var(--color-border-default);
+  --border-strong: var(--color-border-strong);
+}
+
+/* ===== CLIENT WORKSPACE OVERRIDES ===== */
+.workspace-client {
+  --workspace-primary: var(--amber-600);
+  --workspace-primary-hover: var(--amber-700);
+  --workspace-primary-active: var(--amber-800);
+  --workspace-primary-light: var(--amber-50);
+  --workspace-primary-mid: var(--amber-500);
+  --workspace-accent: var(--purple-600);
+  --workspace-accent-hover: var(--purple-700);
+}
+
+.dark .workspace-client {
+  --workspace-primary-light: rgba(245, 158, 11, 0.1);
+}
+
+/* ===== ADMIN WORKSPACE OVERRIDES ===== */
+.workspace-admin {
+  --workspace-primary: #6366f1;
+  --workspace-primary-hover: #4f46e5;
+  --workspace-primary-active: #4338ca;
+  --workspace-primary-light: #eef2ff;
+  --workspace-primary-mid: #818cf8;
+  --workspace-accent: var(--amber-600);
+}
+
+.dark .workspace-admin {
+  --workspace-primary-light: rgba(99, 102, 241, 0.1);
+}
+
+/* ===== INPUT COLORS ===== */
+:root {
+  --input-bg: var(--color-bg-elevated);
+  --input-border: var(--color-border-default);
+  --input-border-focus: var(--workspace-primary);
+  --input-border-error: var(--color-error);
+  --input-text: var(--color-text-primary);
+  --input-placeholder: var(--color-text-tertiary);
+}
+
+.dark {
+  --input-bg: var(--color-bg-muted);
+  --input-border: var(--color-border-subtle);
+}
+
+/* ===== STAT PILL COLORS ===== */
+:root {
+  --stat-pill-bg: rgba(0, 0, 0, 0.04);
+  --stat-pill-border: rgba(0, 0, 0, 0.08);
+}
+
+.dark {
+  --stat-pill-bg: rgba(255, 255, 255, 0.04);
+  --stat-pill-border: rgba(255, 255, 255, 0.08);
+}
+
+/* ===== WORKSPACE SHADOW COLORS ===== */
+:root {
+  --workspace-primary-shadow: rgba(147, 51, 234, 0.35);
+}
+
+.workspace-client {
+  --workspace-primary-shadow: rgba(245, 158, 11, 0.35);
+}
+
+.workspace-admin {
+  --workspace-primary-shadow: rgba(99, 102, 241, 0.35);
+}

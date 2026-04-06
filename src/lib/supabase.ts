@@ -67,7 +67,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
 });
 
 // Expose supabase client to window for debugging
-if (typeof window !== 'undefined') {
+if (typeof window !== 'undefined' && import.meta.env.DEV) {
     (window as any).supabase = supabase;
 }
 

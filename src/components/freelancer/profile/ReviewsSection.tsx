@@ -18,8 +18,8 @@ export default function ReviewsSection({ reviews, stats }: ReviewsSectionProps) 
                     <Star
                         key={i}
                         className={`w-4 h-4 ${i < Math.round(rating)
-                            ? 'text-yellow-500 fill-yellow-500'
-                            : 'text-gray-300'
+                            ? 'text-[var(--color-warning)] fill-[var(--color-warning)]'
+                            : 'text-[var(--color-text-disabled)]'
                             }`}
                     />
                 ))}
@@ -35,7 +35,7 @@ export default function ReviewsSection({ reviews, stats }: ReviewsSectionProps) 
     };
 
     return (
-        <section className="rounded-[2rem] border border-[var(--border)] bg-white/80 dark:bg-[#1c1a2e]/80 backdrop-blur-2xl p-6 sm:p-8 shadow-sm transition-all duration-300 hover:shadow-lg hover:border-[var(--border-strong)] relative overflow-hidden group">
+        <section className="rounded-[2rem] border border-[var(--border)] bg-white/80 dark:bg-[var(--color-bg-muted)]/80 backdrop-blur-2xl p-6 sm:p-8 shadow-sm transition-all duration-300 hover:shadow-lg hover:border-[var(--border-strong)] relative overflow-hidden group">
             <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[var(--workspace-primary)]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
             <div className="mb-6">
                 <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--text-muted)]">{tx('pages.freelancerProfile.sectionLabelTrust', undefined, 'Client trust')}</div>
@@ -77,7 +77,7 @@ export default function ReviewsSection({ reviews, stats }: ReviewsSectionProps) 
                     <div key={review.id} className="border-b border-border/70 pb-6 last:border-0 last:pb-0">
                         <div className="flex justify-between items-start mb-2">
                             <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center overflow-hidden">
+                                <div className="w-10 h-10 rounded-full bg-[var(--color-bg-muted)] flex items-center justify-center overflow-hidden">
                                     {review.client_avatar ? (
                                         <OptimizedImage
                                             src={review.client_avatar}
@@ -86,7 +86,7 @@ export default function ReviewsSection({ reviews, stats }: ReviewsSectionProps) 
                                             imgClassName="object-cover"
                                         />
                                     ) : (
-                                        <User className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                                        <User className="w-5 h-5 text-[var(--color-text-disabled)]" />
                                     )}
                                 </div>
                                 <div>
@@ -101,7 +101,7 @@ export default function ReviewsSection({ reviews, stats }: ReviewsSectionProps) 
                     </div>
                 ))}
                 {reviews.length === 0 && (
-                    <div className="text-center py-12 bg-white/50 dark:bg-[#141320]/50 rounded-[1.5rem] border border-dashed border-[var(--border-strong)] relative overflow-hidden group transition-colors hover:border-[var(--workspace-primary)]/50 mt-8">
+                    <div className="text-center py-12 bg-white/50 dark:bg-[var(--color-bg-subtle)]/50 rounded-[1.5rem] border border-dashed border-[var(--border-strong)] relative overflow-hidden group transition-colors hover:border-[var(--workspace-primary)]/50 mt-8">
                         <div className="absolute inset-0 bg-gradient-to-t from-transparent via-[var(--workspace-primary)]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"/>
                         <div className="relative inline-flex items-center justify-center w-16 h-16 rounded-full bg-[var(--card-bg)] border border-[var(--border)] shadow-xl shadow-[var(--workspace-primary)]/10 mb-5 relative top-0 group-hover:-translate-y-2 transition-transform duration-500">
                             <Star className="w-6 h-6 text-[var(--workspace-primary)] opacity-50" />

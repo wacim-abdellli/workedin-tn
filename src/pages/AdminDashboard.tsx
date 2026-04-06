@@ -61,13 +61,14 @@ export default function AdminDashboard() {
     };
 
     return (
-        <div className="workspace-admin relative min-h-screen overflow-x-hidden bg-[radial-gradient(circle_at_top_left,rgba(37,99,235,0.12),transparent_26%),radial-gradient(circle_at_top_right,rgba(124,58,237,0.1),transparent_24%),linear-gradient(180deg,#eef3fb_0%,#e8eef8_100%)] dark:bg-[radial-gradient(circle_at_top_left,rgba(59,130,246,0.16),transparent_24%),radial-gradient(circle_at_top_right,rgba(109,40,217,0.14),transparent_22%),linear-gradient(180deg,#050811_0%,#08101c_42%,#0a1220_100%)]">
-            <div className="pointer-events-none absolute inset-0 opacity-60 dark:opacity-100 [background-image:linear-gradient(rgba(255,255,255,0.3)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.3)_1px,transparent_1px)] bg-[size:88px_88px] dark:[background-image:linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)]" />
+        <div className="workspace-admin relative min-h-screen overflow-x-hidden bg-[linear-gradient(180deg,#eef2fb_0%,#e8eef9_100%)] dark:bg-[radial-gradient(circle_at_top_left,rgba(80,70,229,0.12),transparent_22%),radial-gradient(circle_at_top_right,rgba(168,85,247,0.1),transparent_18%),linear-gradient(180deg,#050812_0%,#09111f_44%,#0b1323_100%)]">
+            <div className="pointer-events-none absolute inset-0 opacity-55 dark:opacity-100 [background-image:linear-gradient(rgba(255,255,255,0.28)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.28)_1px,transparent_1px)] bg-[size:88px_88px] dark:[background-image:linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)]" />
+            <div className="pointer-events-none absolute inset-x-0 top-0 h-48 bg-gradient-to-b from-violet-500/8 to-transparent dark:from-violet-500/10" />
 
-            <header className="sticky top-0 z-40 border-b border-slate-200/70 bg-white/72 backdrop-blur-2xl dark:border-white/8 dark:bg-slate-950/72">
+            <header className="sticky top-0 z-40 border-b border-slate-200/70 bg-white/70 backdrop-blur-2xl dark:border-white/8 dark:bg-[#070b15]/78">
                 <div className="container-custom flex flex-col gap-4 py-4 sm:flex-row sm:items-center sm:justify-between">
                     <div className="flex items-start gap-4 sm:items-center">
-                        <div className="w-11 h-11 rounded-2xl flex items-center justify-center" style={{ background: 'linear-gradient(to bottom right, var(--workspace-primary), var(--workspace-primary-hover))', boxShadow: '0 12px 28px -10px color-mix(in srgb, var(--workspace-primary) 35%, transparent)' }}>
+                        <div className="w-11 h-11 rounded-2xl flex items-center justify-center" style={{ background: 'linear-gradient(to bottom right, var(--color-brand-primary), var(--color-brand-primary-hover))', boxShadow: '0 12px 28px -10px rgba(147, 51, 234, 0.35)' }}>
                             <Shield className="w-6 h-6 text-white" />
                         </div>
                         <div>
@@ -76,12 +77,12 @@ export default function AdminDashboard() {
                         </div>
                     </div>
                     <div className="flex w-full flex-wrap items-center justify-between gap-3 sm:w-auto sm:justify-end">
-                        <div className="hidden md:flex items-center gap-2 rounded-xl border border-primary-500/20 bg-primary-500/8 px-3 py-2 text-sm font-medium text-primary-700 dark:text-primary-200">
+                        <div className="hidden md:flex items-center gap-[var(--spacing-2)] rounded-xl border border-white/10 bg-white/[0.04] px-[var(--spacing-3)] py-[var(--spacing-2)] text-[var(--font-fontSize-sm)] font-[var(--font-fontWeight-medium)] text-violet-200 dark:text-violet-100">
                             <Activity className="w-4 h-4" />
                             {tx('dashboard.admin.nightModeReady', undefined, 'Night mode ready')}
                         </div>
                         <ThemeToggle />
-                        <Button variant="ghost" size="sm" className="w-full justify-center border border-border bg-card hover:bg-surface sm:w-auto" onClick={() => navigate('/')}>
+                        <Button variant="ghost" size="sm" className="w-full justify-center border border-[var(--color-border-default)] bg-[var(--color-background-elevated)] hover:bg-[var(--color-background-subtle)] sm:w-auto" onClick={() => navigate('/')}>
                             <ChevronLeft className="ms-1 w-4 h-4 rtl:rotate-180" />{tx('dashboard.admin.backToSite', undefined, 'Back to site')}
                         </Button>
                     </div>
@@ -90,25 +91,26 @@ export default function AdminDashboard() {
 
             <div className="relative container-custom py-8">
                 <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
-                    <div className="w-full lg:w-72 shrink-0">
-                        <div className={`${adminPanelClass} sticky top-24 p-2.5`}>
+                    <div className="w-full lg:w-[16.5rem] shrink-0">
+                        <div className={`${adminPanelClass} sticky top-24 p-3`}>
+                            <div className="mb-3 px-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-400 dark:text-slate-500">Control Center</div>
                             <div className="flex gap-2 overflow-x-auto pb-1 sm:grid sm:grid-cols-2 sm:overflow-visible md:grid-cols-4 lg:grid-cols-1">
                                 {tabs.map(tab => (
                                     <button
                                         key={tab.id}
                                         onClick={() => setActiveTab(tab.id)}
-                                        className={`flex w-full min-w-[140px] shrink-0 items-center justify-center gap-2.5 rounded-xl border px-3 py-3 text-start transition-all duration-300 sm:min-w-0 lg:justify-start ${
+                                        className={`flex w-full min-w-[140px] shrink-0 items-center justify-center gap-[var(--spacing-3)] rounded-[1rem] border px-[var(--spacing-3)] py-[var(--spacing-3)] text-start transition-all duration-[var(--animation-hover-duration)] sm:min-w-0 lg:justify-start ${
                                             activeTab === tab.id
                                                 ? 'text-white border-transparent -translate-y-[1px]'
-                                                : 'text-foreground border-transparent hover:bg-slate-100/80 dark:hover:bg-white/[0.04] hover:border-border/50'
+                                                : 'text-[var(--color-text-primary)] border-transparent hover:bg-white/70 dark:hover:bg-white/[0.05] hover:border-[var(--color-border-subtle)]'
                                         }`}
-                                        style={activeTab === tab.id ? { background: 'linear-gradient(135deg, var(--workspace-primary) 0%, var(--workspace-primary-hover) 100%)', boxShadow: '0 16px 34px -16px color-mix(in srgb, var(--workspace-primary) 35%, transparent)' } : undefined}
+                                        style={activeTab === tab.id ? { background: 'linear-gradient(135deg, #7c3aed 0%, #9333ea 55%, #a855f7 100%)', boxShadow: '0 18px 34px -18px rgba(147, 51, 234, 0.55)' } : undefined}
                                         dir={dir}
                                     >
-                                        <span className={`inline-flex items-center justify-center w-7 h-7 rounded-lg ${activeTab === tab.id ? 'bg-white/20 text-white' : 'bg-foreground/5 dark:bg-white/[0.05]'}`}>
+                                        <span className={`inline-flex items-center justify-center w-8 h-8 rounded-xl ${activeTab === tab.id ? 'bg-white/18 text-white' : 'bg-black/[0.04] dark:bg-white/[0.05]'}`}>
                                             <tab.icon className="w-4 h-4" />
                                         </span>
-                                        <span className="truncate whitespace-nowrap text-sm font-medium">{tab.label}</span>
+                                        <span className="truncate whitespace-nowrap text-[var(--font-fontSize-sm)] font-semibold">{tab.label}</span>
                                     </button>
                                 ))}
                             </div>

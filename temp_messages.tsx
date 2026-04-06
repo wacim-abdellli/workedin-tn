@@ -24,7 +24,7 @@ import {
 import { Header } from '../components/layout';
 import Button from '../components/ui/Button';
 import SEO, { SEO_CONFIG } from '../components/common/SEO';
-import EmptyState from '../components/common/EmptyState';
+import EmptyState from '../components/ui/EmptyState';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../components/ui/Toast';
 import {

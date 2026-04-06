@@ -24,7 +24,7 @@ import { Header } from '../components/layout';
 import Button from '../components/ui/Button';
 import Modal from '../components/ui/Modal';
 import SEO, { SEO_CONFIG } from '../components/common/SEO';
-import EmptyState from '../components/common/EmptyState';
+import EmptyState from '../components/ui/EmptyState';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../components/ui/Toast';
@@ -1183,43 +1183,43 @@ function MessagesComponent() {
     const renderConversationList = () => (
         <div className="flex h-full flex-col border-e border-border bg-surface backdrop-blur-xl">
             {/* Header */}
-            <div className="border-b border-border px-4 py-5">
+            <div className="border-b border-[var(--color-border-default)] px-4 py-5">
                 <div className="mb-4 flex items-center justify-between">
                     <div>
-                        <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-gray-500 dark:text-zinc-400">{tx('pages.messages.inbox', undefined, 'Inbox')}</p>
-                        <h2 className="text-[1.9rem] font-bold tracking-tight text-foreground">{tx('pages.messages.title', undefined, 'Messages')}</h2>
+                        <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--color-text-secondary)]">{tx('pages.messages.inbox', undefined, 'Inbox')}</p>
+                        <h2 className="text-[1.9rem] font-bold tracking-tight text-[var(--color-text-primary)]">{tx('pages.messages.title', undefined, 'Messages')}</h2>
                     </div>
                     <Button 
                         variant="primary"
                         size="sm"
                         onClick={() => navigate(profile?.user_type === 'client' ? '/find-freelancers' : '/jobs')}
                         title={tx('pages.messages.newConversation', undefined, 'Start a new conversation')}
-                        className="h-11 w-11 rounded-full border border-gray-200 dark:border-white/10 p-0 shadow-sm hover:shadow-md text-white transition-all bg-gray-900 dark:bg-zinc-800"
+                        className="h-11 w-11 rounded-full border border-[var(--color-border-default)] p-0 shadow-sm hover:shadow-md text-[var(--color-text-primary)] transition-all bg-[var(--color-background-elevated)]"
                     >
                         <Plus className="w-4 h-4" />
                     </Button>
                 </div>
                 <div className="relative">
-                    <Search className="absolute end-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Search className="absolute end-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-secondary)]" />
                     <input
                         type="text"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         placeholder={tx('pages.messages.searchPlaceholder', undefined, 'Search conversations...')}
-                        className="w-full rounded-xl border border-border bg-input/bg py-3 pe-10 ps-4 text-sm text-foreground shadow-sm focus:border-gray-400 dark:focus:border-gray-500 focus:ring-1 focus:ring-gray-400/20 placeholder:text-muted-foreground transition-colors"
+                        className="w-full rounded-xl border border-[var(--color-border-default)] bg-[var(--color-background-base)] py-3 pe-10 ps-4 text-sm text-[var(--color-text-primary)] shadow-sm focus:border-[var(--color-border-strong)] focus:ring-1 focus:ring-[var(--color-border-strong)]/20 placeholder:text-[var(--color-text-secondary)] transition-colors"
                     />
                 </div>
             </div>
 
             {/* Tabs */}
-            <div className="flex gap-2 border-b border-border px-4 py-3">
+            <div className="flex gap-2 border-b border-[var(--color-border-default)] px-4 py-3">
                 {(['all', 'unread'] as const).map((f) => (
                     <button
                         key={f}
                         onClick={() => setFilter(f)}
                         className={`flex-1 py-3 text-sm font-medium transition-all rounded-lg ${
                             filter === f
-                                ? 'shadow-sm border border-[color-mix(in_srgb,var(--workspace-accent)_20%,transparent)] bg-[color-mix(in_srgb,var(--workspace-accent)_15%,transparent)] text-[var(--workspace-accent)]'
+                                ? 'shadow-sm border border-[color-mix(in_srgb,var(--color-brand-accent)_20%,transparent)] bg-[color-mix(in_srgb,var(--color-brand-accent)_15%,transparent)] text-[var(--color-brand-accent)]'
                                 : 'text-muted hover:bg-surface hover:text-foreground border border-transparent'
                         }`}
                     >
@@ -1484,7 +1484,7 @@ function MessagesComponent() {
                                                                 href={att.url}
                                                                 target="_blank"
                                                                 rel="noopener noreferrer"
-                                                                className="flex items-center gap-2 p-2 rounded-lg hover:bg-white dark:bg-gray-800/20 dark:hover:bg-white dark:bg-gray-800/5"
+                                                                className="flex items-center gap-2 p-2 rounded-lg hover:bg-[var(--color-background-elevated)]"
                                                             >
                                                                 <FileText className="w-4 h-4 shrink-0" />
                                                                 <span className="text-xs truncate">{att.name}</span>
@@ -1500,16 +1500,16 @@ function MessagesComponent() {
                                                 <Loader2 className="w-3 h-3 animate-spin" />
                                             )}
                                             {message.sender_id === user?.id && message.status === 'failed' && (
-                                                <span className="text-red-400">
+                                                <span className="text-[var(--color-status-error)]">
                                                     {tx('pages.messages.sendFailed', undefined, 'Failed')}
                                                 </span>
                                             )}
                                             {message.sender_id === user?.id && !message.status && !message.is_deleted && (
                                                 <span className="flex items-center">
                                                     {message.is_read ? (
-                                                        <span style={{ color: 'var(--workspace-primary)' }} title="Read">✓✓</span>
+                                                        <span style={{ color: 'var(--color-brand-secondary)' }} title="Read">✓✓</span>
                                                     ) : (
-                                                        <span className="text-gray-400" title="Delivered">✓</span>
+                                                        <span className="text-[var(--color-text-secondary)]" title="Delivered">✓</span>
                                                     )}
                                                 </span>
                                             )}
@@ -1568,11 +1568,11 @@ function MessagesComponent() {
                         {(selectedFile || audioBlob || isRecording) && (
                             <div className="mb-3">
                                 {isRecording ? (
-                                    <div className="flex items-center gap-2 p-2 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/50">
-                                        <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                                        <span className="text-sm text-red-600 dark:text-red-400">Recording: {Math.floor(recordingTime / 60).toString().padStart(2, '0')}:{(recordingTime % 60).toString().padStart(2, '0')}</span>
-                                        <button onClick={stopRecording} aria-label={tx('pages.messages.a11y.stopRecording', undefined, 'Stop recording')} className="ml-auto p-2 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-red-100 dark:hover:bg-red-900/40 rounded-full transition-colors">
-                                            <Square className="w-4 h-4 fill-red-600 dark:fill-red-400" />
+                                    <div className="flex items-center gap-2 p-2 rounded-lg bg-[var(--color-status-error)]/10 border border-[var(--color-status-error)]/30">
+                                        <div className="w-2 h-2 rounded-full bg-[var(--color-status-error)] animate-pulse" />
+                                        <span className="text-sm text-[var(--color-status-error)]">Recording: {Math.floor(recordingTime / 60).toString().padStart(2, '0')}:{(recordingTime % 60).toString().padStart(2, '0')}</span>
+                                        <button onClick={stopRecording} aria-label={tx('pages.messages.a11y.stopRecording', undefined, 'Stop recording')} className="ml-auto p-2 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-[var(--color-status-error)]/20 rounded-full transition-colors">
+                                            <Square className="w-4 h-4 fill-[var(--color-status-error)]" />
                                         </button>
                                     </div>
                                 ) : audioBlob ? (
@@ -1626,7 +1626,7 @@ function MessagesComponent() {
                                 aria-label={isRecording
                                     ? tx('pages.messages.a11y.stopRecording', undefined, 'Stop recording')
                                     : tx('pages.messages.a11y.startRecording', undefined, 'Start recording')}
-                                className={`p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg transition-colors ${isRecording ? 'bg-red-500 text-white animate-pulse' : 'hover:bg-surface text-muted-foreground hover:text-foreground'}`}
+                                className={`p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg transition-colors ${isRecording ? 'bg-[var(--color-status-error)] text-[var(--color-text-primary)] animate-pulse' : 'hover:bg-[var(--color-background-elevated)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'}`}
                             >
                                 {isRecording ? <Square className="w-5 h-5 fill-current" /> : <Mic className="w-5 h-5" />}
                             </button>

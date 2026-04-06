@@ -278,11 +278,11 @@ export default function FreelancerProfile() {
 
     if (!freelancer) {
         return (
-            <div className="min-h-screen bg-[var(--surface-bg)]">
+            <div className="min-h-screen bg-[var(--color-bg-subtle)]">
                 <Header />
                 <div className="container-custom py-12 text-center">
-                    <User className="w-16 h-16 text-[var(--text-muted)] mx-auto mb-4" />
-                    <h2 className="text-xl font-bold text-[var(--text-primary)] mb-2">{profileNotFoundTitle}</h2>
+                    <User className="w-16 h-16 text-[var(--color-text-tertiary)] mx-auto mb-4" />
+                    <h2 className="text-xl font-bold text-[var(--color-text-primary)] mb-2">{profileNotFoundTitle}</h2>
                     <Button variant="primary" onClick={() => navigate('/')}>
                         {backHomeLabel}
                     </Button>
@@ -292,7 +292,7 @@ export default function FreelancerProfile() {
     }
 
     return (
-        <div className="min-h-screen bg-[var(--surface-bg)] pb-20 md:pb-0">
+        <div className="min-h-screen bg-[var(--color-bg-subtle)] pb-20 md:pb-0">
             <SEO
                 title={`${freelancer.full_name} — ${freelancer.title} | ${t.seo.freelancerProfile.titleSuffix}`}
                 description={freelancer.bio?.slice(0, 160) || `${freelancer.title} — ${t.seo.freelancerProfile.descriptionFallback}`}
@@ -333,21 +333,21 @@ export default function FreelancerProfile() {
 
             {/* Lightbox Modal */}
             {selectedWorkSample && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--color-bg-overlay)] p-4">
                     <button
                         onClick={() => setSelectedWorkSample(null)}
-                        className="absolute top-4 end-4 text-white hover:text-gray-300 z-50 p-2"
+                        className="absolute top-4 end-4 text-white hover:text-[var(--color-text-secondary)] z-50 p-2"
                     >
                         <span className="text-4xl">&times;</span>
                     </button>
 
-                    <div className="relative max-w-5xl w-full h-full max-h-[90vh] flex flex-col md:flex-row bg-white dark:bg-gray-800 dark:bg-[#171421] rounded-2xl overflow-hidden border border-white/10 dark:border-gray-800">
+                    <div className="relative max-w-5xl w-full h-full max-h-[90vh] flex flex-col md:flex-row bg-[var(--color-bg-elevated)] rounded-2xl overflow-hidden border border-[var(--color-border-subtle)]">
                         {(() => {
                             const sample = freelancer.work_samples.find(s => s.id === selectedWorkSample);
                             if (!sample) return null;
                             return (
                                 <>
-                                    <div className="flex-1 bg-black flex items-center justify-center relative">
+                                    <div className="flex-1 bg-[var(--neutral-950)] flex items-center justify-center relative">
                                         <OptimizedImage
                                             src={sample.thumbnail_url}
                                             alt={sample.title}
@@ -357,9 +357,9 @@ export default function FreelancerProfile() {
                                             priority={true}
                                         />
                                     </div>
-                                    <div className="w-full md:w-80 bg-white dark:bg-gray-800 dark:bg-[#171421] p-6 overflow-y-auto">
-                                        <h3 className="text-2xl font-bold text-[var(--text-primary)] mb-4">{sample.title}</h3>
-                                        <p className="text-[var(--text-secondary)] mb-6 leading-relaxed whitespace-pre-line">
+                                    <div className="w-full md:w-80 bg-[var(--color-bg-elevated)] p-6 overflow-y-auto">
+                                        <h3 className="text-2xl font-bold text-[var(--color-text-primary)] mb-4">{sample.title}</h3>
+                                        <p className="text-[var(--color-text-secondary)] mb-6 leading-relaxed whitespace-pre-line">
                                             {sample.description || tx('pages.freelancerProfile.noDescription', undefined, 'No description available')}
                                         </p>
 
@@ -368,7 +368,7 @@ export default function FreelancerProfile() {
                                                 <h4 className="font-bold text-sm mb-2">{tx('pages.freelancerProfile.portfolio.skillsUsed', undefined, 'Skills Used')}</h4>
                                                 <div className="flex flex-wrap gap-2">
                                                     {sample.skills_used.map((skill, i) => (
-                                                        <span key={i} className="text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-gray-700 dark:text-gray-300">
+                                                        <span key={i} className="text-xs bg-[var(--color-bg-muted)] px-2 py-1 rounded text-[var(--color-text-secondary)]">
                                                             {skill}
                                                         </span>
                                                     ))}
@@ -381,7 +381,7 @@ export default function FreelancerProfile() {
                                                 href={sample.project_url}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="block w-full text-center py-3 bg-primary-600 text-white rounded-xl font-medium hover:bg-primary-700 transition"
+                                                className="block w-full text-center py-3 bg-[var(--color-brand-primary)] text-white rounded-xl font-medium hover:bg-[var(--color-brand-primary-hover)] transition"
                                             >
                                                 {tx('pages.freelancerProfile.portfolio.visitProject', undefined, 'Visit Project')}
                                             </a>

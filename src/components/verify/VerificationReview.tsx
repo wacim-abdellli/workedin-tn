@@ -31,7 +31,7 @@ export default function VerificationReview({
     const completedCount = checklist.filter(i => i.ok).length;
 
     return (
-        <div className="rounded-3xl border border-white/10 dark:border-gray-800 bg-white dark:bg-gray-800/90 p-8 shadow-2xl shadow-slate-900/10 backdrop-blur-sm dark:border-white/10 dark:border-gray-800 dark:bg-[#1d2231]/90">
+        <div className="rounded-3xl border border-white/10 dark:border-gray-800 bg-white dark:bg-gray-800/90 p-8 shadow-2xl shadow-slate-900/10 backdrop-blur-sm dark:border-white/10 dark:border-gray-800 dark:bg-[var(--color-bg-elevated)]/90">
             <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 dark:text-white mb-6 text-center">
                 {tx('verifyIdentity.review.title', undefined, 'مراجعة البيانات')}
             </h2>
