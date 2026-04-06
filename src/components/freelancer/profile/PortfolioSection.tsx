@@ -1,4 +1,4 @@
-import { Briefcase } from 'lucide-react';
+import { Briefcase, ExternalLink } from 'lucide-react';
 import { OptimizedImage } from '../../common';
 import type { FreelancerData } from '@/types/freelancer';
 import { useTranslation } from '../../../i18n';
@@ -12,48 +12,74 @@ export default function PortfolioSection({ workSamples, onSelectSample }: Portfo
     const { tx } = useTranslation();
 
     return (
-        <section className="rounded-[2rem] border border-[var(--border)] bg-white/80 dark:bg-[var(--color-bg-muted)]/80 backdrop-blur-2xl p-6 sm:p-8 shadow-sm transition-all duration-300 hover:shadow-lg hover:border-[var(--border-strong)] relative overflow-hidden group">
-            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[var(--workspace-primary)]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-            <div className="flex items-center justify-between mb-6">
-                <div>
-                    <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--text-muted)]">{tx('pages.freelancerProfile.sectionLabelWork', undefined, 'Selected work')}</div>
-                    <h2 className="mt-2 text-xl font-bold text-[var(--text-primary)]">{tx('pages.freelancerProfile.portfolioTitle', undefined, 'Portfolio')}</h2>
-                </div>
-                <span className="text-[var(--text-muted)] text-sm">{tx('pages.freelancerProfile.portfolioCount', { count: workSamples.length }, `${workSamples.length} works`)}</span>
-            </div>
+        <section className="group relative rounded-3xl overflow-hidden border-2 p-6 sm:p-8 transition-all duration-500 hover:shadow-2xl"
+            style={{
+                borderColor: 'color-mix(in srgb, #10b981 20%, var(--color-border-subtle))',
+                background: 'var(--color-background-elevated)',
+                boxShadow: '0 4px 20px -8px rgba(16,185,129,0.25)',
+            }}
+        >
+            <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#10b981] via-[#06b6d4] to-[#3b82f6]" />
+            <div className="absolute top-0 right-0 w-48 h-48 rounded-full blur-3xl opacity-10 group-hover:opacity-20 transition-opacity duration-500 pointer-events-none"
+                style={{ background: 'linear-gradient(135deg, #10b981, #06b6d4)' }} />
 
-            {workSamples.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {workSamples.map((sample) => (
-                        <div
-                            key={sample.id}
-                            onClick={() => onSelectSample(sample.id)}
-                            className="group relative aspect-video rounded-2xl overflow-hidden cursor-pointer bg-[var(--surface-bg)] border border-black/[0.05] dark:border-white/8"
-                        >
-                            <OptimizedImage
-                                src={sample.thumbnail_url}
-                                alt={sample.title}
-                                className="w-full h-full"
-                                imgClassName="object-cover transition-transform duration-300 group-hover:scale-105"
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4">
-                                <h3 className="text-white font-bold text-lg line-clamp-1">{sample.title}</h3>
-                                {sample.description && (
-                                    <p className="text-white/80 text-sm line-clamp-1 mt-1">{sample.description}</p>
-                                )}
-                            </div>
+            <div className="relative z-10">
+                <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2.5 rounded-xl shadow-lg" style={{ background: 'linear-gradient(135deg, #10b981, #06b6d4)' }}>
+                            <Briefcase className="h-5 w-5 text-white" />
                         </div>
-                    ))}
-                </div>
-            ) : (
-                <div className="text-center py-16 bg-white/50 dark:bg-[var(--color-bg-subtle)]/50 rounded-[1.5rem] border border-dashed border-[var(--border-strong)] relative overflow-hidden group transition-colors hover:border-[var(--workspace-primary)]/50">
-                    <div className="absolute inset-0 bg-gradient-to-t from-transparent via-[var(--workspace-primary)]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"/>
-                    <div className="relative inline-flex items-center justify-center w-20 h-20 rounded-full bg-[var(--card-bg)] border border-[var(--border)] shadow-xl shadow-[var(--workspace-primary)]/10 mb-5 relative top-0 group-hover:-translate-y-2 transition-transform duration-500">
-                        <Briefcase className="w-8 h-8 text-[var(--workspace-primary)]" />
+                        <div>
+                            <p className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: '#10b981' }}>
+                                {tx('pages.freelancerProfile.sectionLabelWork', undefined, 'Selected work')}
+                            </p>
+                            <h2 className="text-xl font-bold" style={{ color: 'var(--color-text-primary)' }}>
+                                {tx('pages.freelancerProfile.portfolioTitle', undefined, 'Portfolio')}
+                            </h2>
+                        </div>
                     </div>
-                    <p className="text-[var(--text-secondary)] font-medium text-lg relative z-10">{tx('pages.freelancerProfile.noPortfolio', undefined, 'This freelancer has not added work samples yet')}</p>
+                    <span className="px-3 py-1 rounded-full text-xs font-bold border-2"
+                        style={{ background: 'color-mix(in srgb, #10b981 10%, transparent)', borderColor: 'color-mix(in srgb, #10b981 30%, transparent)', color: '#10b981' }}>
+                        {workSamples.length} {tx('pages.freelancerProfile.works', undefined, 'works')}
+                    </span>
                 </div>
-            )}
+
+                {workSamples.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {workSamples.map((sample) => (
+                            <div key={sample.id} onClick={() => onSelectSample(sample.id)}
+                                className="group/card relative aspect-video rounded-2xl overflow-hidden cursor-pointer border-2 transition-all duration-300 hover:scale-[1.02] hover:shadow-xl"
+                                style={{ borderColor: 'color-mix(in srgb, #10b981 20%, var(--color-border-subtle))' }}
+                            >
+                                <OptimizedImage src={sample.thumbnail_url} alt={sample.title}
+                                    className="w-full h-full"
+                                    imgClassName="object-cover transition-transform duration-500 group-hover/card:scale-110"
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent opacity-0 group-hover/card:opacity-100 transition-all duration-300 flex flex-col justify-end p-4">
+                                    <div className="flex items-center justify-between">
+                                        <h3 className="text-white font-bold text-base line-clamp-1">{sample.title}</h3>
+                                        <ExternalLink className="h-4 w-4 text-white shrink-0 ml-2" />
+                                    </div>
+                                    {sample.description && (
+                                        <p className="text-white/70 text-xs line-clamp-1 mt-1">{sample.description}</p>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="text-center py-16 rounded-2xl border-2 border-dashed transition-all duration-300 hover:border-[#10b981] group/empty"
+                        style={{ borderColor: 'var(--color-border-subtle)', background: 'var(--color-background-subtle)' }}>
+                        <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4 shadow-lg transition-all duration-300 group-hover/empty:scale-110 group-hover/empty:rotate-6"
+                            style={{ background: 'linear-gradient(135deg, #10b981, #06b6d4)' }}>
+                            <Briefcase className="w-7 h-7 text-white" />
+                        </div>
+                        <p className="text-sm font-medium" style={{ color: 'var(--color-text-tertiary)' }}>
+                            {tx('pages.freelancerProfile.noPortfolio', undefined, 'No work samples added yet')}
+                        </p>
+                    </div>
+                )}
+            </div>
         </section>
     );
 }

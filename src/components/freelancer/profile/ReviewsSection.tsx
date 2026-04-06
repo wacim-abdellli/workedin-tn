@@ -11,104 +11,118 @@ interface ReviewsSectionProps {
 export default function ReviewsSection({ reviews, stats }: ReviewsSectionProps) {
     const { tx, language } = useTranslation();
 
-    const renderStars = (rating: number) => {
-        return (
-            <div className="flex items-center gap-1">
-                {[...Array(5)].map((_, i) => (
-                    <Star
-                        key={i}
-                        className={`w-4 h-4 ${i < Math.round(rating)
-                            ? 'text-[var(--color-warning)] fill-[var(--color-warning)]'
-                            : 'text-[var(--color-text-disabled)]'
-                            }`}
-                    />
-                ))}
-            </div>
-        );
-    };
+    const renderStars = (rating: number, size = 'w-4 h-4') => (
+        <div className="flex items-center gap-0.5">
+            {[...Array(5)].map((_, i) => (
+                <Star key={i} className={`${size} transition-colors ${i < Math.round(rating) ? 'text-amber-400 fill-amber-400' : 'text-[var(--color-border-default)]'}`} />
+            ))}
+        </div>
+    );
 
-    const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString(language === 'ar' ? 'ar-TN' : language === 'fr' ? 'fr-FR' : 'en-US', {
-            year: 'numeric',
-            month: 'long',
-        });
-    };
+    const formatDate = (dateString: string) =>
+        new Date(dateString).toLocaleDateString(
+            language === 'ar' ? 'ar-TN' : language === 'fr' ? 'fr-FR' : 'en-US',
+            { year: 'numeric', month: 'long' }
+        );
 
     return (
-        <section className="rounded-[2rem] border border-[var(--border)] bg-white/80 dark:bg-[var(--color-bg-muted)]/80 backdrop-blur-2xl p-6 sm:p-8 shadow-sm transition-all duration-300 hover:shadow-lg hover:border-[var(--border-strong)] relative overflow-hidden group">
-            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[var(--workspace-primary)]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-            <div className="mb-6">
-                <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--text-muted)]">{tx('pages.freelancerProfile.sectionLabelTrust', undefined, 'Client trust')}</div>
-                <h2 className="mt-2 text-xl font-bold text-[var(--text-primary)]">{tx('reviews.title', undefined, 'Reviews and work history')}</h2>
-            </div>
+        <section className="group relative rounded-3xl overflow-hidden border-2 p-6 sm:p-8 transition-all duration-500 hover:shadow-2xl"
+            style={{
+                borderColor: 'color-mix(in srgb, #f59e0b 20%, var(--color-border-subtle))',
+                background: 'var(--color-background-elevated)',
+                boxShadow: '0 4px 20px -8px rgba(245,158,11,0.25)',
+            }}
+        >
+            <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#f59e0b] via-[#f97316] to-[#ef4444]" />
+            <div className="absolute top-0 right-0 w-48 h-48 rounded-full blur-3xl opacity-10 group-hover:opacity-20 transition-opacity duration-500 pointer-events-none"
+                style={{ background: 'linear-gradient(135deg, #f59e0b, #f97316)' }} />
 
-            {/* Rating Breakdown */}
-            <div className="flex flex-col md:flex-row items-center gap-8 mb-8 bg-[var(--surface-bg)] p-6 rounded-2xl border border-border/60">
-                <div className="text-center md:text-start min-w-[120px]">
-                    <div className="text-4xl font-black text-[var(--text-primary)] mb-1">{stats.rating}</div>
-                    {renderStars(stats.rating)}
-                    <p className="text-sm text-[var(--text-muted)] mt-2">{tx('pages.freelancerProfile.reviewsCount', { count: stats.reviews_count }, `${stats.reviews_count} reviews`)}</p>
+            <div className="relative z-10">
+                <div className="flex items-center gap-3 mb-6">
+                    <div className="p-2.5 rounded-xl shadow-lg" style={{ background: 'linear-gradient(135deg, #f59e0b, #f97316)' }}>
+                        <Star className="h-5 w-5 text-white fill-white" />
+                    </div>
+                    <div>
+                        <p className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: '#f59e0b' }}>
+                            {tx('pages.freelancerProfile.sectionLabelTrust', undefined, 'Client trust')}
+                        </p>
+                        <h2 className="text-xl font-bold" style={{ color: 'var(--color-text-primary)' }}>
+                            {tx('reviews.title', undefined, 'Reviews & work history')}
+                        </h2>
+                    </div>
                 </div>
-                <div className="flex-1 w-full space-y-2">
-                    {[5, 4, 3, 2, 1].map((stars) => {
-                        const count = reviews.filter(r => Math.round(r.rating) === stars).length;
-                        const percentage = stats.reviews_count > 0
-                            ? (count / stats.reviews_count) * 100
-                            : 0;
-                        return (
-                            <div key={stars} className="flex items-center gap-3">
-                                <span className="text-sm font-medium w-3 text-[var(--text-secondary)]">{stars}</span>
-                                <div className="flex-1 h-2 bg-black/[0.08] dark:white/[0.08] rounded-full overflow-hidden">
-                                    <div
-                                        className="h-full bg-[linear-gradient(90deg,var(--workspace-primary),var(--workspace-primary))] rounded-full"
-                                        style={{ width: `${percentage}%` }}
-                                    />
-                                </div>
-                                <span className="text-xs text-[var(--text-muted)] w-8 text-end">{Math.round(percentage)}%</span>
-                            </div>
-                        );
-                    })}
-                </div>
-            </div>
 
-            {/* Reviews List */}
-            <div className="space-y-6">
-                {reviews.map((review) => (
-                    <div key={review.id} className="border-b border-border/70 pb-6 last:border-0 last:pb-0">
-                        <div className="flex justify-between items-start mb-2">
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-full bg-[var(--color-bg-muted)] flex items-center justify-center overflow-hidden">
-                                    {review.client_avatar ? (
-                                        <OptimizedImage
-                                            src={review.client_avatar}
-                                            alt={review.client_name}
-                                            className="w-full h-full"
-                                            imgClassName="object-cover"
-                                        />
-                                    ) : (
-                                        <User className="w-5 h-5 text-[var(--color-text-disabled)]" />
-                                    )}
+                {/* Rating Breakdown */}
+                <div className="flex flex-col md:flex-row items-center gap-8 mb-8 p-6 rounded-2xl border-2"
+                    style={{ background: 'color-mix(in srgb, #f59e0b 5%, var(--color-background-subtle))', borderColor: 'color-mix(in srgb, #f59e0b 20%, var(--color-border-subtle))' }}>
+                    <div className="text-center min-w-[120px]">
+                        <div className="text-5xl font-black mb-2" style={{ color: 'var(--color-text-primary)' }}>{stats.rating}</div>
+                        {renderStars(stats.rating, 'w-5 h-5')}
+                        <p className="text-xs mt-2 font-medium" style={{ color: 'var(--color-text-tertiary)' }}>
+                            {stats.reviews_count} {tx('pages.freelancerProfile.reviews', undefined, 'reviews')}
+                        </p>
+                    </div>
+                    <div className="flex-1 w-full space-y-2.5">
+                        {[5, 4, 3, 2, 1].map((stars) => {
+                            const count = reviews.filter(r => Math.round(r.rating) === stars).length;
+                            const pct = stats.reviews_count > 0 ? (count / stats.reviews_count) * 100 : 0;
+                            return (
+                                <div key={stars} className="flex items-center gap-3">
+                                    <span className="text-xs font-bold w-3" style={{ color: 'var(--color-text-secondary)' }}>{stars}</span>
+                                    <div className="flex-1 h-2.5 rounded-full overflow-hidden" style={{ background: 'var(--color-background-muted)' }}>
+                                        <div className="h-full rounded-full transition-all duration-700"
+                                            style={{ width: `${pct}%`, background: 'linear-gradient(90deg, #f59e0b, #f97316)' }} />
+                                    </div>
+                                    <span className="text-xs font-medium w-8 text-end" style={{ color: 'var(--color-text-tertiary)' }}>{Math.round(pct)}%</span>
                                 </div>
-                                <div>
-                                    <h4 className="font-bold text-sm text-[var(--text-primary)]">{review.client_name}</h4>
-                                    <span className="text-xs text-[var(--text-muted)]">{formatDate(review.created_at)}</span>
+                            );
+                        })}
+                    </div>
+                </div>
+
+                {/* Reviews List */}
+                <div className="space-y-5">
+                    {reviews.map((review) => (
+                        <div key={review.id} className="p-5 rounded-2xl border-2 transition-all duration-300 hover:shadow-lg hover:scale-[1.01]"
+                            style={{ borderColor: 'color-mix(in srgb, #f59e0b 15%, var(--color-border-subtle))', background: 'color-mix(in srgb, #f59e0b 3%, var(--color-background-subtle))' }}>
+                            <div className="flex justify-between items-start mb-3">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-full overflow-hidden border-2 shrink-0"
+                                        style={{ borderColor: 'color-mix(in srgb, #f59e0b 30%, transparent)' }}>
+                                        {review.client_avatar ? (
+                                            <OptimizedImage src={review.client_avatar} alt={review.client_name}
+                                                className="w-full h-full" imgClassName="object-cover" />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #f59e0b, #f97316)' }}>
+                                                <User className="w-5 h-5 text-white" />
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div>
+                                        <h4 className="font-bold text-sm" style={{ color: 'var(--color-text-primary)' }}>{review.client_name}</h4>
+                                        <span className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>{formatDate(review.created_at)}</span>
+                                    </div>
                                 </div>
+                                {renderStars(review.rating)}
                             </div>
-                            {renderStars(review.rating)}
+                            <p className="text-xs font-semibold mb-2" style={{ color: '#f59e0b' }}>{review.job_title}</p>
+                            <p className="text-sm leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>{review.comment}</p>
                         </div>
-                        <h5 className="font-medium text-sm text-[var(--text-secondary)] mb-1">{review.job_title}</h5>
-                        <p className="text-[var(--text-secondary)] text-sm leading-relaxed">{review.comment}</p>
-                    </div>
-                ))}
-                {reviews.length === 0 && (
-                    <div className="text-center py-12 bg-white/50 dark:bg-[var(--color-bg-subtle)]/50 rounded-[1.5rem] border border-dashed border-[var(--border-strong)] relative overflow-hidden group transition-colors hover:border-[var(--workspace-primary)]/50 mt-8">
-                        <div className="absolute inset-0 bg-gradient-to-t from-transparent via-[var(--workspace-primary)]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"/>
-                        <div className="relative inline-flex items-center justify-center w-16 h-16 rounded-full bg-[var(--card-bg)] border border-[var(--border)] shadow-xl shadow-[var(--workspace-primary)]/10 mb-5 relative top-0 group-hover:-translate-y-2 transition-transform duration-500">
-                            <Star className="w-6 h-6 text-[var(--workspace-primary)] opacity-50" />
+                    ))}
+
+                    {reviews.length === 0 && (
+                        <div className="text-center py-14 rounded-2xl border-2 border-dashed group/empty transition-all duration-300 hover:border-[#f59e0b]"
+                            style={{ borderColor: 'var(--color-border-subtle)', background: 'var(--color-background-subtle)' }}>
+                            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4 shadow-lg transition-all duration-300 group-hover/empty:scale-110 group-hover/empty:rotate-6"
+                                style={{ background: 'linear-gradient(135deg, #f59e0b, #f97316)' }}>
+                                <Star className="w-7 h-7 text-white fill-white" />
+                            </div>
+                            <p className="text-sm font-medium" style={{ color: 'var(--color-text-tertiary)' }}>
+                                {tx('pages.freelancerProfile.noReviews', undefined, 'No written reviews yet')}
+                            </p>
                         </div>
-                        <p className="text-[var(--text-secondary)] font-medium text-base relative z-10">{tx('pages.freelancerProfile.noReviews', undefined, 'No written reviews yet')}</p>
-                    </div>
-                )}
+                    )}
+                </div>
             </div>
         </section>
     );
