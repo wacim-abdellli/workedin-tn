@@ -15,7 +15,7 @@ export function DashWidget({ title, icon, action, children }: DashWidgetProps) {
         background: 'var(--dash-card)',
         borderColor: 'var(--dash-border)',
         borderTop: '2px solid transparent',
-        boxShadow: '0 16px 40px -26px rgba(0, 0, 0, 0.45)',
+        boxShadow: 'var(--shadow-md)',
       }}
       onMouseEnter={(e) => {
         e.currentTarget.style.borderTopColor = 'var(--workspace-primary)';

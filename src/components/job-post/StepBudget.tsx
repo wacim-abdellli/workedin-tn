@@ -36,8 +36,8 @@ export default function StepBudget() {
                 <label className={`
                     cursor-pointer rounded-[1.7rem] border-2 p-6 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_20px_40px_-30px_var(--workspace-primary-shadow,rgba(109,40,217,0.28))]
                     ${jobType === 'fixed_price'
-                        ? 'border-[color:var(--brand-accent)]/40 bg-[color:var(--brand-accent)]/12 ring-1 ring-[color:var(--brand-accent)]/30 shadow-[0_20px_40px_-30px_rgba(245,158,11,0.35)]'
-                            : 'border-border bg-[var(--card-bg)] hover:border-[color:var(--brand-accent)]/24 hover:bg-[color:var(--brand-accent)]/8'
+                        ? 'border-[color:var(--workspace-primary)]/40 bg-[color:var(--workspace-primary)]/12 ring-1 ring-[color:var(--workspace-primary)]/30 shadow-[0_20px_40px_-30px_rgba(245,158,11,0.35)]'
+                            : 'border-border bg-[var(--card-bg)] hover:border-[color:var(--workspace-primary)]/24 hover:bg-[color:var(--workspace-primary)]/8'
                     }
                 `}>
                     <input
@@ -47,7 +47,7 @@ export default function StepBudget() {
                         className="sr-only"
                     />
                     <div className="flex items-center gap-4 mb-2">
-                        <div className={`rounded-lg p-2 ${jobType === 'fixed_price' ? 'bg-[color:var(--brand-accent)]/18 text-[color:var(--brand-accent)]' : 'bg-[var(--surface-bg)] text-[var(--text-muted)]'}`}>
+                        <div className={`rounded-lg p-2 ${jobType === 'fixed_price' ? 'bg-[color:var(--workspace-primary)]/18 text-[color:var(--workspace-primary)]' : 'bg-[var(--surface-bg)] text-[var(--text-muted)]'}`}>
                             <DollarSign className="w-6 h-6" />
                         </div>
                         <span className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>{tx('jobs.new.stepBudget.fixedPrice', undefined, 'سعر ثابت')}</span>
@@ -60,8 +60,8 @@ export default function StepBudget() {
                 <label className={`
                     cursor-pointer rounded-[1.7rem] border-2 p-6 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_20px_40px_-30px_var(--workspace-primary-shadow,rgba(109,40,217,0.28))]
                     ${jobType === 'hourly'
-                        ? 'border-[color:var(--brand-accent)]/40 bg-[color:var(--brand-accent)]/12 ring-1 ring-[color:var(--brand-accent)]/30 shadow-[0_20px_40px_-30px_rgba(245,158,11,0.35)]'
-                            : 'border-border bg-[var(--card-bg)] hover:border-[color:var(--brand-accent)]/24 hover:bg-[color:var(--brand-accent)]/8'
+                        ? 'border-[color:var(--workspace-primary)]/40 bg-[color:var(--workspace-primary)]/12 ring-1 ring-[color:var(--workspace-primary)]/30 shadow-[0_20px_40px_-30px_rgba(245,158,11,0.35)]'
+                            : 'border-border bg-[var(--card-bg)] hover:border-[color:var(--workspace-primary)]/24 hover:bg-[color:var(--workspace-primary)]/8'
                     }
                 `}>
                     <input
@@ -71,7 +71,7 @@ export default function StepBudget() {
                         className="sr-only"
                     />
                     <div className="flex items-center gap-4 mb-2">
-                        <div className={`rounded-lg p-2 ${jobType === 'hourly' ? 'bg-[color:var(--brand-accent)]/18 text-[color:var(--brand-accent)]' : 'bg-[var(--surface-bg)] text-[var(--text-muted)]'}`}>
+                        <div className={`rounded-lg p-2 ${jobType === 'hourly' ? 'bg-[color:var(--workspace-primary)]/18 text-[color:var(--workspace-primary)]' : 'bg-[var(--surface-bg)] text-[var(--text-muted)]'}`}>
                             <Clock className="w-6 h-6" />
                         </div>
                         <span className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>{tx('jobs.new.stepBudget.hourly', undefined, 'بالساعة')}</span>
@@ -86,7 +86,7 @@ export default function StepBudget() {
             <div
                 className="rounded-[1.8rem] border p-6 shadow-sm"
                 style={{
-                    borderColor: 'color-mix(in srgb, var(--brand-accent) 18%, var(--border))',
+                    borderColor: 'color-mix(in srgb, var(--workspace-primary) 18%, var(--border))',
                     background: 'linear-gradient(145deg, color-mix(in srgb, var(--card-bg) 94%, var(--page-bg)), color-mix(in srgb, var(--surface-bg) 90%, var(--page-bg)))',
                     boxShadow: '0 24px 60px -48px rgba(15,23,42,0.42)',
                 }}
@@ -135,7 +135,7 @@ export default function StepBudget() {
 
             {/* Additional Info */}
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-                <div className="space-y-3 rounded-[1.6rem] border p-5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_36px_-28px_rgba(15,23,42,0.34)]" style={{ borderColor: 'color-mix(in srgb, var(--brand-accent) 16%, var(--border))', background: 'color-mix(in srgb, var(--card-bg) 94%, var(--page-bg))' }}>
+                <div className="space-y-3 rounded-[1.6rem] border p-5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_36px_-28px_rgba(15,23,42,0.34)]" style={{ borderColor: 'color-mix(in srgb, var(--workspace-primary) 16%, var(--border))', background: 'color-mix(in srgb, var(--card-bg) 94%, var(--page-bg))' }}>
                     <label className="flex items-center gap-2 text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
                         <Calendar className="h-5 w-5 text-[color:var(--text-muted)]" />
                         {tx('jobs.new.stepBudget.duration', undefined, 'مدة المشروع')}
@@ -155,7 +155,7 @@ export default function StepBudget() {
                     )}
                 </div>
 
-                <div className="space-y-3 rounded-[1.6rem] border p-5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_36px_-28px_rgba(15,23,42,0.34)]" style={{ borderColor: 'color-mix(in srgb, var(--brand-accent) 16%, var(--border))', background: 'color-mix(in srgb, var(--card-bg) 94%, var(--page-bg))' }}>
+                <div className="space-y-3 rounded-[1.6rem] border p-5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_36px_-28px_rgba(15,23,42,0.34)]" style={{ borderColor: 'color-mix(in srgb, var(--workspace-primary) 16%, var(--border))', background: 'color-mix(in srgb, var(--card-bg) 94%, var(--page-bg))' }}>
                     <label className="flex items-center gap-2 text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
                         <Calendar className="h-5 w-5 text-[color:var(--text-muted)]" />
                         {tx('jobs.new.stepBudget.deadline', undefined, 'الموعد النهائي')}
@@ -168,22 +168,22 @@ export default function StepBudget() {
                     />
                 </div>
 
-                <div className="space-y-3 rounded-[1.6rem] border p-5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_36px_-28px_rgba(15,23,42,0.34)]" style={{ borderColor: 'color-mix(in srgb, var(--brand-accent) 16%, var(--border))', background: 'color-mix(in srgb, var(--card-bg) 94%, var(--page-bg))' }}>
+                <div className="space-y-3 rounded-[1.6rem] border p-5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_36px_-28px_rgba(15,23,42,0.34)]" style={{ borderColor: 'color-mix(in srgb, var(--workspace-primary) 16%, var(--border))', background: 'color-mix(in srgb, var(--card-bg) 94%, var(--page-bg))' }}>
                     <label className="flex items-center gap-2 text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
                         <TrendingUp className="h-5 w-5 text-[color:var(--text-muted)]" />
                         {tx('jobs.new.stepBudget.experienceLevel', undefined, 'مستوى الخبرة المطلوب')}
                     </label>
                     <div className="grid gap-2">
                         <label className="inline-flex items-center gap-2 rounded-2xl border px-3 py-2.5 cursor-pointer" style={{ borderColor: 'var(--border)', background: 'var(--card-bg)' }}>
-                            <input type="radio" value="beginner" {...register('experience_level')} className="text-[color:var(--brand-accent)] focus:ring-[color:var(--brand-accent)]" />
+                            <input type="radio" value="beginner" {...register('experience_level')} className="text-[color:var(--workspace-primary)] focus:ring-[color:var(--workspace-primary)]" />
                             <span style={{ color: 'var(--text-secondary)' }}>{tx('jobs.new.stepBudget.beginner', undefined, 'مبتدئ (Beginner)')}</span>
                         </label>
                         <label className="inline-flex items-center gap-2 rounded-2xl border px-3 py-2.5 cursor-pointer" style={{ borderColor: 'var(--border)', background: 'var(--card-bg)' }}>
-                            <input type="radio" value="intermediate" {...register('experience_level')} className="text-[color:var(--brand-accent)] focus:ring-[color:var(--brand-accent)]" />
+                            <input type="radio" value="intermediate" {...register('experience_level')} className="text-[color:var(--workspace-primary)] focus:ring-[color:var(--workspace-primary)]" />
                             <span style={{ color: 'var(--text-secondary)' }}>{tx('jobs.new.stepBudget.intermediate', undefined, 'متوسط (Intermediate)')}</span>
                         </label>
                         <label className="inline-flex items-center gap-2 rounded-2xl border px-3 py-2.5 cursor-pointer" style={{ borderColor: 'var(--border)', background: 'var(--card-bg)' }}>
-                            <input type="radio" value="expert" {...register('experience_level')} className="text-[color:var(--brand-accent)] focus:ring-[color:var(--brand-accent)]" />
+                            <input type="radio" value="expert" {...register('experience_level')} className="text-[color:var(--workspace-primary)] focus:ring-[color:var(--workspace-primary)]" />
                             <span style={{ color: 'var(--text-secondary)' }}>{tx('jobs.new.stepBudget.expert', undefined, 'خبير (Expert)')}</span>
                         </label>
                     </div>

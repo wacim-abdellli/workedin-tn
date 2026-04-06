@@ -15,16 +15,6 @@ export function initSentry(): void {
         Sentry.init({
             dsn: VITE_SENTRY_DSN,
             environment: import.meta.env.MODE,
-            tracesSampleRate: 1.0,
-            integrations: [
-                Sentry.browserTracingIntegration(),
-                Sentry.replayIntegration({
-                    maskAllText: true,
-                    blockAllMedia: true,
-                }),
-            ],
-            replaysSessionSampleRate: 1.0,
-            replaysOnErrorSampleRate: 1.0,
         });
 
         isInitialized = true;

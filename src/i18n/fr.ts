@@ -837,6 +837,7 @@ export const fr: Translations = {
             pageDescription: 'Examinez et gérez les demandes de vérification d\'identité soumises',
             adminDashboard: 'Tableau de bord admin',
             operationsCenter: 'Centre de supervision',
+            controlCenter: 'Centre de controle',
             nightModeReady: 'Mode nuit prêt',
             backToSite: 'Retour au site',
         },
@@ -1188,6 +1189,7 @@ export const fr: Translations = {
 
     common: {
         loading: 'Chargement...',
+        loadingContent: 'Chargement du contenu',
         error: 'Erreur',
         retry: 'Réessayer',
         next: 'Suivant',
@@ -1230,6 +1232,8 @@ export const fr: Translations = {
         refresh: 'Actualiser',
         save: 'Enregistrer',
         unsave: 'Retirer',
+        returnHome: 'Retour a l\'accueil',
+        contactSupport: 'Contacter le support',
         verified: 'Vérifié',
         availableForWork: 'Disponible',
         replyToReview: 'Répondre à l\'avis',
@@ -1281,6 +1285,17 @@ export const fr: Translations = {
             unsupportedType: '{{name}} a un type de fichier non pris en charge',
             maxFilesExceeded: 'Maximum {{count}} fichiers autorises',
             removeFileAria: 'Supprimer {{name}}',
+        },
+    },
+
+    accountStatus: {
+        suspended: {
+            title: 'Compte suspendu',
+            body: 'L\'acces a votre compte est temporairement suspendu. Contactez le support si vous avez besoin d\'aide ou si vous pensez qu\'il s\'agit d\'une erreur.',
+        },
+        archived: {
+            title: 'Compte archive',
+            body: 'Ce compte est archive et ne peut plus acceder aux fonctionnalites protegees de la plateforme. Contactez le support pour obtenir de l\'aide.',
         },
     },
 
@@ -1406,6 +1421,8 @@ export const fr: Translations = {
             viewContract: 'Voir le contrat',
         },
         freelancerEarnings: {
+            seoTitle: 'Gains | Khedma TN',
+            seoDescription: 'Vos gains et votre historique de paiements sur Khedma TN.',
             availableBalance: 'Solde disponible',
             pendingClearance: '{{amount}} TND en attente de validation',
             withdraw: 'Retirer',

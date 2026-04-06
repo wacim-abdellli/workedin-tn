@@ -194,13 +194,13 @@ export default function FindFreelancers() {
                 />
             </div>
 
-            <div className="rounded-3xl border p-4 shadow-sm" style={{ borderColor: 'color-mix(in srgb, var(--brand-accent) 18%, var(--border))', background: 'linear-gradient(135deg, color-mix(in srgb, var(--brand-accent) 8%, transparent), color-mix(in srgb, var(--card-bg) 90%, transparent))' }}>
+            <div className="rounded-3xl border p-4 shadow-sm" style={{ borderColor: 'color-mix(in srgb, var(--workspace-primary) 18%, var(--border))', background: 'linear-gradient(135deg, color-mix(in srgb, var(--workspace-primary) 8%, transparent), color-mix(in srgb, var(--card-bg) 90%, transparent))' }}>
                 <label className="flex cursor-pointer items-center justify-between gap-4">
                     <div>
                         <div className="font-semibold text-[#191627] dark:text-white">{copy.availableNow}</div>
                         <div className="mt-1 text-sm text-[#6e6884] dark:text-[#9a95ad]">{copy.availableNowDesc}</div>
                     </div>
-                    <div className="flex h-7 w-12 items-center rounded-full p-1 transition-colors" style={{ background: availableOnly ? 'var(--brand-accent)' : 'rgba(255,255,255,0.1)' }}>
+                    <div className="flex h-7 w-12 items-center rounded-full p-1 transition-colors" style={{ background: availableOnly ? 'var(--workspace-primary)' : 'rgba(255,255,255,0.1)' }}>
                         <div className={`h-5 w-5 rounded-full bg-white dark:bg-gray-800 shadow transition-transform ${availableOnly ? 'translate-x-5' : ''}`} />
                     </div>
                     <input
@@ -332,7 +332,7 @@ export default function FindFreelancers() {
             <Header />
 
             <section className="relative overflow-hidden border-b pt-10 pb-16 backdrop-blur-xl" style={{ borderColor: 'var(--border)', background: 'var(--page-bg)' }}>
-                <div className="absolute inset-0" style={{ background: 'radial-gradient(circle at top left, color-mix(in srgb, var(--workspace-primary) 18%, transparent), transparent 35%), radial-gradient(circle at top right, color-mix(in srgb, var(--brand-accent) 14%, transparent), transparent 28%), linear-gradient(180deg, color-mix(in srgb, var(--page-bg) 92%, white), color-mix(in srgb, var(--page-bg) 100%, transparent))' }} />
+                <div className="absolute inset-0" style={{ background: 'radial-gradient(circle at top left, color-mix(in srgb, var(--workspace-primary) 18%, transparent), transparent 35%), radial-gradient(circle at top right, color-mix(in srgb, var(--workspace-accent) 14%, transparent), transparent 28%), linear-gradient(180deg, color-mix(in srgb, var(--page-bg) 92%, white), color-mix(in srgb, var(--page-bg) 100%, transparent))' }} />
                 <div className="container-custom relative z-10">
                     <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
                         <div className="max-w-3xl">
@@ -342,7 +342,7 @@ export default function FindFreelancers() {
                             </div>
                             <h1 className="mt-4 text-4xl font-extrabold tracking-[-0.03em] md:text-5xl" style={{ color: 'var(--text-primary)' }}>
                                 {copy.hero.title}{' '}
-                                <span className="bg-clip-text text-transparent" style={{ backgroundImage: 'linear-gradient(90deg, var(--workspace-primary), var(--workspace-primary-mid), var(--brand-accent))' }}>
+                                <span className="bg-clip-text text-transparent" style={{ backgroundImage: 'linear-gradient(90deg, var(--workspace-primary), var(--workspace-primary-mid))' }}>
                                     {copy.hero.titleHighlight}
                                 </span>
                             </h1>

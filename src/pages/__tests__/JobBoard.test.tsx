@@ -57,6 +57,7 @@ vi.mock('@/i18n', () => ({
             },
             auth: { login: 'Login' },
         },
+        tx: (_key: string, _params?: Record<string, string>, fallback?: string) => fallback ?? _key,
         language: 'en',
         dir: 'ltr',
     }),

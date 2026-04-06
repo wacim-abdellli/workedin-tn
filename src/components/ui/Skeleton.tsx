@@ -6,6 +6,8 @@ interface SkeletonProps {
   height?: string | number;
   className?: string;
   animation?: 'pulse' | 'wave' | 'none';
+  ariaLabel?: string;
+  srText?: string;
 }
 
 export const Skeleton: React.FC<SkeletonProps> = ({
@@ -14,6 +16,8 @@ export const Skeleton: React.FC<SkeletonProps> = ({
   height,
   className = '',
   animation = 'pulse',
+  ariaLabel = 'Loading content',
+  srText = 'Loading...',
 }) => {
   const getVariantStyles = () => {
     switch (variant) {
@@ -52,9 +56,9 @@ export const Skeleton: React.FC<SkeletonProps> = ({
       className={`${getVariantStyles()} ${animationClass} ${className}`}
       style={style}
       role="status"
-      aria-label="Loading content"
+      aria-label={ariaLabel}
     >
-      <span className="sr-only">Loading...</span>
+      <span className="sr-only">{srText}</span>
     </div>
   );
 };

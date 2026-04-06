@@ -451,7 +451,7 @@ export default function JobPost() {
                             <div
                                 className="mt-10 rounded-[1.8rem] border p-5 shadow-sm backdrop-blur-sm sm:p-6"
                                 style={{
-                                    borderColor: 'color-mix(in srgb, var(--brand-accent) 20%, var(--border))',
+                                    borderColor: 'color-mix(in srgb, var(--workspace-primary) 20%, var(--border))',
                                     background: 'linear-gradient(145deg, color-mix(in srgb, var(--card-bg) 96%, white), color-mix(in srgb, var(--surface-bg) 92%, white))',
                                     boxShadow: '0 28px 70px -52px rgba(245,158,11,0.24)',
                                 }}
@@ -461,9 +461,9 @@ export default function JobPost() {
                                         <div
                                             className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em]"
                                             style={{
-                                                borderColor: 'color-mix(in srgb, var(--brand-accent) 22%, transparent)',
-                                                background: 'color-mix(in srgb, var(--brand-accent) 10%, var(--card-bg))',
-                                                color: 'var(--brand-accent)',
+                                                borderColor: 'color-mix(in srgb, var(--workspace-primary) 22%, transparent)',
+                                                background: 'color-mix(in srgb, var(--workspace-primary) 10%, var(--card-bg))',
+                                                color: 'var(--workspace-primary)',
                                             }}
                                         >
                                             <span>{tx('jobs.new.stepCounter', { current: currentStep, total: steps.length }, `Step ${currentStep} of ${steps.length}`)}</span>
@@ -548,8 +548,8 @@ export default function JobPost() {
                     <div
                         className="rounded-lg border p-3 text-sm"
                         style={{
-                            borderColor: 'color-mix(in srgb, var(--brand-accent) 20%, transparent)',
-                            background: 'color-mix(in srgb, var(--brand-accent) 10%, var(--card-bg))',
+                            borderColor: 'color-mix(in srgb, var(--workspace-primary) 20%, transparent)',
+                            background: 'color-mix(in srgb, var(--workspace-primary) 10%, var(--card-bg))',
                             color: 'var(--text-secondary)',
                         }}
                     >

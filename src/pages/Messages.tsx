@@ -1219,7 +1219,7 @@ function MessagesComponent() {
                         onClick={() => setFilter(f)}
                         className={`flex-1 py-3 text-sm font-medium transition-all rounded-lg ${
                             filter === f
-                                ? 'shadow-sm border border-[color-mix(in_srgb,var(--color-brand-accent)_20%,transparent)] bg-[color-mix(in_srgb,var(--color-brand-accent)_15%,transparent)] text-[var(--color-brand-accent)]'
+                                ? 'shadow-sm border border-[color-mix(in_srgb,var(--workspace-primary)_20%,transparent)] bg-[color-mix(in_srgb,var(--workspace-primary)_15%,transparent)] text-[var(--workspace-primary)]'
                                 : 'text-muted hover:bg-surface hover:text-foreground border border-transparent'
                         }`}
                     >
@@ -1233,7 +1233,7 @@ function MessagesComponent() {
                 {isLoadingConversations ? (
                     <div className="flex items-center justify-center h-32">
                         <div className="text-center">
-                            <Loader2 className="w-6 h-6 animate-spin text-brand mx-auto mb-2" />
+                            <Loader2 className="w-6 h-6 animate-spin text-[var(--workspace-primary)] mx-auto mb-2" />
                             <p className="text-sm text-muted-foreground">{tx('pages.messages.loadingConversations', undefined, 'Loading conversations...')}</p>
                         </div>
                     </div>
@@ -1278,11 +1278,11 @@ function MessagesComponent() {
                             }}
                             className={`group relative h-full overflow-hidden rounded-2xl border p-4 transition-all duration-300 cursor-pointer animate-in fade-in ${
                                  selectedConversation?.id === conversation.id
-                                    ? 'border-brand/30 bg-brand/10 shadow-md'
+                                    ? 'border-[color-mix(in_srgb,var(--workspace-primary)_30%,transparent)] bg-[color-mix(in_srgb,var(--workspace-primary)_10%,transparent)] shadow-md'
                                     : 'border-border bg-card hover:border-border-strong hover:bg-surface hover:shadow-sm'
                              }`}
                         >
-                            {selectedConversation?.id === conversation.id ? <div className="absolute inset-y-4 start-0 w-1 rounded-full bg-brand" /> : null}
+                            {selectedConversation?.id === conversation.id ? <div className="absolute inset-y-4 start-0 w-1 rounded-full bg-[var(--workspace-primary)]" /> : null}
                             <div className="flex items-start gap-3">
                                 <div className="relative">
                                     {conversation.otherUser.avatar_url ? (
@@ -1292,7 +1292,7 @@ function MessagesComponent() {
                                             className="h-12 w-12 rounded-full object-cover ring-2 ring-card"
                                         />
                                     ) : (
-                                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-brand to-brand-mid font-bold text-brand-text shadow-sm">
+                                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-[var(--workspace-primary)] to-[var(--workspace-primary-mid)] font-bold text-white shadow-sm">
                                             {conversation.otherUser.full_name.charAt(0)}
                                         </div>
                                     )}
@@ -1324,7 +1324,7 @@ function MessagesComponent() {
                                     <div className="flex items-center justify-between mt-3 gap-2">
                                         <div className="flex items-center gap-2 flex-1">
                                             {conversation.unread_count > 0 && (
-                                                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-brand text-xs text-brand-text shadow-sm font-semibold shrink-0" aria-label={`${conversation.unread_count} ${tx('pages.messages.unreadMessages', undefined, 'unread messages')}`}>
+                                                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[var(--workspace-primary)] text-xs text-white shadow-sm font-semibold shrink-0" aria-label={`${conversation.unread_count} ${tx('pages.messages.unreadMessages', undefined, 'unread messages')}`}>
                                                 {conversation.unread_count}
                                                 <span className="sr-only">{tx('pages.messages.unreadMessages', undefined, 'unread messages')}</span>
                                             </span>
@@ -1379,7 +1379,7 @@ function MessagesComponent() {
                                     className="w-11 h-11 rounded-full object-cover ring-2 ring-border"
                                 />
                             ) : (
-                                <div className="w-11 h-11 rounded-full bg-gradient-to-br from-brand to-brand-mid flex items-center justify-center font-bold text-brand-text">
+                                <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[var(--workspace-primary)] to-[var(--workspace-primary-mid)] flex items-center justify-center font-bold text-white">
                                     {selectedConversation.otherUser.full_name.charAt(0)}
                                 </div>
                             )}
@@ -1404,7 +1404,7 @@ function MessagesComponent() {
                         {isLoadingMessages ? (
                             <div className="flex items-center justify-center h-full">
                                 <div className="text-center">
-                                    <Loader2 className="w-8 h-8 animate-spin text-brand mx-auto mb-2" />
+                                    <Loader2 className="w-8 h-8 animate-spin text-[var(--workspace-primary)] mx-auto mb-2" />
                                     <p className="text-sm text-muted-foreground">{tx('pages.messages.loadingMessages', undefined, 'Loading messages...')}</p>
                                 </div>
                             </div>
@@ -1456,7 +1456,7 @@ function MessagesComponent() {
                                                 isDeletedMessage(message)
                                                     ? 'border border-dashed border-border bg-card text-muted-foreground rounded-2xl'
                                                     : message.sender_id === user?.id
-                                                    ? `bg-brand text-brand-text rounded-br-none shadow-md hover:shadow-lg ${message.status === 'failed' ? 'ring-1 ring-red-400/60' : ''} ${message.status === 'sending' ? 'opacity-80' : ''}`
+                                                    ? `bg-[var(--workspace-primary)] text-white rounded-br-none shadow-md hover:shadow-lg ${message.status === 'failed' ? 'ring-1 ring-red-400/60' : ''} ${message.status === 'sending' ? 'opacity-80' : ''}`
                                                     : 'bg-surface text-foreground rounded-bl-none border border-border shadow-sm hover:shadow-md'
                                             }`}
                                         >
@@ -1526,7 +1526,7 @@ function MessagesComponent() {
                         {pendingQueue.map((pendingMsg, idx) => (
                             <div key={`pending-${idx}`} className="flex justify-end rtl:flex-row-reverse animate-in fade-in slide-in-from-bottom-2 duration-300 w-full opacity-60 mb-4">
                                 <div className="max-w-xs lg:max-w-md">
-                                    <div className="rounded-2xl px-4 py-2 transition-all duration-200 bg-brand text-brand-text rounded-br-none shadow-md">
+                                    <div className="rounded-2xl px-4 py-2 transition-all duration-200 bg-[var(--workspace-primary)] text-white rounded-br-none shadow-md">
                                         <p className="text-sm break-words">{pendingMsg.content}</p>
                                         {(pendingMsg.fileName || pendingMsg.audioFileName || pendingMsg.offlineFile || pendingMsg.offlineAudio) && (
                                             <div className="mt-2 text-xs italic opacity-80 flex items-center gap-1">
@@ -1549,9 +1549,9 @@ function MessagesComponent() {
                         <div className="px-6 py-2 border-t border-border/50">
                             <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                 <div className="flex gap-1">
-                                    <div className="w-2 h-2 bg-brand rounded-full animate-pulse" />
-                                    <div className="w-2 h-2 bg-brand rounded-full animate-pulse animation-delay-200" />
-                                    <div className="w-2 h-2 bg-brand rounded-full animate-pulse animation-delay-400" />
+                                    <div className="w-2 h-2 bg-[var(--workspace-primary)] rounded-full animate-pulse" />
+                                    <div className="w-2 h-2 bg-[var(--workspace-primary)] rounded-full animate-pulse animation-delay-200" />
+                                    <div className="w-2 h-2 bg-[var(--workspace-primary)] rounded-full animate-pulse animation-delay-400" />
                                 </div>
                                 <span>
                                     {typingUsers.length === 1 
@@ -1578,7 +1578,7 @@ function MessagesComponent() {
                                 ) : audioBlob ? (
                                     <div className="flex flex-col gap-2 p-2 rounded-lg bg-surface border border-border">
                                         <div className="flex items-center gap-2">
-                                            <FileAudio className="w-5 h-5 text-brand" />
+                                            <FileAudio className="w-5 h-5 text-[var(--workspace-primary)]" />
                                             <span className="text-sm flex-1">{tx('pages.messages.voiceMemo', undefined, 'Voice memo')} • {Math.floor(recordingTime / 60).toString().padStart(2, '0')}:{(recordingTime % 60).toString().padStart(2, '0')}</span>
                                             <button onClick={cancelRecording} disabled={isSending} aria-label={tx('pages.messages.a11y.removeAttachedItem', undefined, 'Remove attached item')} className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-background rounded-full transition-colors disabled:opacity-50">
                                                 <X className="w-4 h-4" />
@@ -1586,14 +1586,14 @@ function MessagesComponent() {
                                         </div>
                                         {isSending && uploadProgress > 0 && (
                                             <div className="w-full bg-border rounded-full h-1.5 overflow-hidden">
-                                                <div className="bg-brand h-1.5 rounded-full transition-all duration-300" style={{ width: `${uploadProgress}%` }} />
+                                                <div className="bg-[var(--workspace-primary)] h-1.5 rounded-full transition-all duration-300" style={{ width: `${uploadProgress}%` }} />
                                             </div>
                                         )}
                                     </div>
                                 ) : selectedFile ? (
                                     <div className="flex flex-col gap-2 p-2 rounded-lg bg-surface border border-border">
                                         <div className="flex items-center gap-2">
-                                            <FileText className="w-5 h-5 text-brand" />
+                                            <FileText className="w-5 h-5 text-[var(--workspace-primary)]" />
                                             <span className="text-sm flex-1 truncate">{selectedFile.name}</span>
                                             <button onClick={() => setSelectedFile(null)} disabled={isSending} aria-label={tx('pages.messages.a11y.removeAttachedItem', undefined, 'Remove attached item')} className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-background rounded-full transition-colors disabled:opacity-50">
                                                 <X className="w-4 h-4" />
@@ -1601,7 +1601,7 @@ function MessagesComponent() {
                                         </div>
                                         {isSending && uploadProgress > 0 && (
                                             <div className="w-full bg-border rounded-full h-1.5 overflow-hidden">
-                                                <div className="bg-brand h-1.5 rounded-full transition-all duration-300" style={{ width: `${uploadProgress}%` }} />
+                                                <div className="bg-[var(--workspace-primary)] h-1.5 rounded-full transition-all duration-300" style={{ width: `${uploadProgress}%` }} />
                                             </div>
                                         )}
                                     </div>
@@ -1666,7 +1666,7 @@ function MessagesComponent() {
                                 onClick={handleSendMessage}
                                 disabled={(!newMessage.trim() && !selectedFile && !audioBlob) || isSending || isRecording}
                                 isLoading={isSending}
-                                className="p-2.5 rounded-lg text-brand-text hover:opacity-90 transition-opacity disabled:opacity-50"
+                                className="p-2.5 rounded-lg text-white hover:opacity-90 transition-opacity disabled:opacity-50"
                             >
                                 <Send className="w-5 h-5" />
                             </Button>
@@ -1698,7 +1698,7 @@ function MessagesComponent() {
                                 className="mx-auto mb-4 h-24 w-24 rounded-full object-cover ring-2 ring-border"
                             />
                         ) : (
-                            <div className="mx-auto mb-4 flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-brand to-brand-mid text-3xl font-bold text-brand-text shadow-sm">
+                            <div className="mx-auto mb-4 flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-[var(--workspace-primary)] to-[var(--workspace-primary-mid)] text-3xl font-bold text-white shadow-sm">
                                 {selectedConversation.otherUser.full_name.charAt(0)}
                             </div>
                         )}
@@ -1849,3 +1849,5 @@ export default function Messages() {
         </ErrorBoundary>
     );
 }
+
+

@@ -13,6 +13,7 @@ const serviceState = vi.hoisted(() => {
         updateCalls: [] as Array<{ table: string; value: unknown }>,
         upsertCalls: [] as Array<{ table: string; value: unknown; options?: unknown }>,
         notCalls: [] as Array<{ table: string; column: string; operator: string; value: unknown }>,
+        neqCalls: [] as Array<{ table: string; column: string; value: unknown }>,
         ltCalls: [] as Array<{ table: string; column: string; value: unknown }>,
         rpcCalls: [] as Array<{ fn: string; params: unknown }>,
         rpcResults: {} as Record<string, unknown>,
@@ -24,7 +25,7 @@ const serviceState = vi.hoisted(() => {
         removeChannelCalls: [] as string[],
         tableResults: {} as Record<string, unknown>,
         session: { access_token: 'session-token' } as { access_token: string } | null,
-        functionResult: { data: { message: 'Reconciled' }, error: null as { message: string } | null },
+        functionResult: { data: { message: 'Reconciled' } as { message: string } | null, error: null as { message: string } | null },
         uploadFileResult: { url: 'https://files.example/avatar.png' } as unknown,
         uploadFileCalls: [] as Array<{ bucket: string; path: string; file: File }>,
     };
@@ -41,6 +42,7 @@ const serviceState = vi.hoisted(() => {
         state.updateCalls = [];
         state.upsertCalls = [];
         state.notCalls = [];
+        state.neqCalls = [];
         state.ltCalls = [];
         state.rpcCalls = [];
         state.rpcResults = {};
@@ -111,6 +113,11 @@ vi.mock('@/lib/supabase', () => {
                 serviceState.state.notCalls.push({ table, column, operator, value });
                 return builder;
             }),
+            neq: vi.fn((column: string, value: unknown) => {
+                serviceState.state.neqCalls.push({ table, column, value });
+                return builder;
+            }),
+            contains: vi.fn(() => builder),
             lt: vi.fn((column: string, value: unknown) => {
                 serviceState.state.ltCalls.push({ table, column, value });
                 return builder;
@@ -374,7 +381,7 @@ describe('profiles service coverage', () => {
         ]));
         expect(serviceState.state.orCalls).toContainEqual({
             table: 'profiles',
-            value: 'full_name.ilike.%amine%',
+            value: 'full_name.ilike.%amine%,freelancer_profiles.title.ilike.%amine%',
         });
         expect(serviceState.state.rangeCalls).toContainEqual({
             table: 'profiles',
@@ -436,7 +443,8 @@ describe('notifications service coverage', () => {
         await createNotification({
             user_id: 'user-1',
             type: 'message',
-            content: 'New message',
+            title: 'New message',
+            body: 'Message body',
             link: '/messages',
         });
         await markNotificationRead('notif-1');
@@ -448,7 +456,8 @@ describe('notifications service coverage', () => {
             value: {
                 user_id: 'user-1',
                 type: 'message',
-                content: 'New message',
+                title: 'New message',
+                body: 'Message body',
                 link: '/messages',
                 is_read: false,
             },
@@ -534,9 +543,14 @@ describe('payments service coverage', () => {
         await completeEscrowPayment('txn-1', 'contract-1', 'free-1', 300);
         const stats = await getEarningsStats('user-1');
 
-        expect(serviceState.state.insertCalls).toContainEqual({
-            table: 'withdrawals',
-            value: expect.objectContaining({ status: 'pending', amount: 50 }),
+        expect(serviceState.state.rpcCalls).toContainEqual({
+            fn: 'request_withdrawal_atomic',
+            params: expect.objectContaining({
+                p_amount: 50,
+                p_method: 'bank',
+                p_bank_iban: 'TN123',
+                p_client_request_id: expect.any(String),
+            }),
         });
         expect(serviceState.state.rpcCalls).toContainEqual({
             fn: 'complete_escrow_payment',

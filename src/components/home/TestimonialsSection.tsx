@@ -63,7 +63,7 @@ export default function TestimonialsSection() {
 
                             <div className="flex items-center justify-center gap-1 mb-6">
                                 {[...Array(5)].map((_, i) => (
-                                    <Star key={i} className="w-6 h-6 fill-current" style={{ color: 'var(--brand-accent)' }} />
+                                    <Star key={i} className="w-6 h-6 fill-current" style={{ color: 'var(--workspace-primary)' }} />
                                 ))}
                             </div>
 

@@ -33,22 +33,18 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
     className = ''
 }) => {
     const isError = variant === 'error';
-    const primaryColor = isError ? 'var(--color-status-error)' : 'var(--color-brand-primary)';
-    const bgColor = isError ? 'var(--red-50)' : 'var(--color-brand-primary-light)';
+    const primaryColor = isError ? 'var(--color-status-error)' : 'var(--workspace-primary)';
+    const bgColor = isError ? 'var(--color-status-error-bg)' : 'var(--workspace-primary-light)';
 
     return (
         <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{
-                duration: 0.5,
-                ease: [0.16, 1, 0.3, 1]
-            }}
-            className={`flex flex-col items-center justify-center text-center p-8 rounded-lg border ${className}`}
+            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+            className={`flex flex-col items-center justify-center text-center p-8 rounded-2xl border ${className}`}
             style={{
-                background: `linear-gradient(180deg, ${bgColor}, transparent 55%)`,
+                background: `linear-gradient(180deg, color-mix(in srgb, ${bgColor} 60%, transparent), transparent 55%)`,
                 borderColor: 'var(--color-border-subtle)',
-                borderRadius: 'var(--radius-lg)',
             }}
         >
             {illustration ? (
@@ -56,11 +52,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
             ) : (
                 <motion.div
                     animate={{ y: [0, -6, 0] }}
-                    transition={{
-                        duration: 3,
-                        repeat: Infinity,
-                        ease: 'easeInOut'
-                    }}
+                    transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
                     className="relative mb-8"
                 >
                     <div
@@ -70,9 +62,9 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
                     <div
                         className="relative w-20 h-20 rounded-full flex items-center justify-center border"
                         style={{
-                            borderColor: 'var(--color-border-subtle)',
+                            borderColor: 'color-mix(in srgb, var(--workspace-primary) 20%, var(--color-border-subtle))',
                             backgroundColor: 'var(--color-background-elevated)',
-                            boxShadow: 'var(--shadow-elevation-2)',
+                            boxShadow: 'var(--shadow-md)',
                         }}
                     >
                         <Icon className="w-10 h-10" style={{ color: primaryColor }} />
@@ -82,22 +74,14 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
 
             <h3
                 className="text-2xl font-semibold tracking-tight mb-3"
-                style={{
-                    color: 'var(--color-text-primary)',
-                    fontFamily: 'var(--font-fontFamily-heading)',
-                    fontWeight: 'var(--font-fontWeight-semibold)',
-                }}
+                style={{ color: 'var(--color-text-primary)' }}
             >
                 {title}
             </h3>
 
             <p
-                className="max-w-md mb-8 leading-relaxed"
-                style={{
-                    color: 'var(--color-text-secondary)',
-                    fontSize: 'var(--font-fontSize-base)',
-                    lineHeight: 'var(--font-lineHeight-relaxed)',
-                }}
+                className="max-w-md mb-8 leading-relaxed text-sm"
+                style={{ color: 'var(--color-text-secondary)' }}
             >
                 {description}
             </p>
@@ -108,14 +92,10 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
                         <Button
                             onClick={action.onClick}
                             variant={action.variant || (isError ? 'danger' : 'primary')}
-                            style={{
-                                boxShadow: 'var(--shadow-elevation-1)',
-                            }}
                         >
                             {action.label}
                         </Button>
                     )}
-
                     {secondaryAction && (
                         <Button
                             onClick={secondaryAction.onClick}

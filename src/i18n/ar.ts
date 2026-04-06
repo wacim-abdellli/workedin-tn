@@ -835,6 +835,7 @@ export const ar = {
             pageDescription: 'مراجعة وإدارة طلبات التحقق من الهوية المقدمة',
             adminDashboard: 'لوحة الإدارة',
             operationsCenter: 'مركز المراقبة',
+            controlCenter: 'مركز التحكم',
             nightModeReady: 'الوضع الليلي جاهز',
             backToSite: 'العودة للموقع',
         },
@@ -1186,6 +1187,7 @@ export const ar = {
 
     common: {
         loading: 'جاري التحميل...',
+        loadingContent: 'تحميل المحتوى',
         error: 'حدث خطأ',
         retry: 'إعادة المحاولة',
         next: 'التالي',
@@ -1228,6 +1230,8 @@ export const ar = {
         refresh: 'تحديث',
         save: 'حفظ',
         unsave: 'إلغاء الحفظ',
+        returnHome: 'العودة للرئيسية',
+        contactSupport: 'تواصل مع الدعم',
         verified: 'موثق',
         availableForWork: 'متاح للعمل',
         replyToReview: 'الرد على التقييم',
@@ -1279,6 +1283,17 @@ export const ar = {
             unsupportedType: '{{name}} نوع غير مدعوم',
             maxFilesExceeded: 'الحد الأقصى {{count}} ملفات',
             removeFileAria: 'حذف {{name}}',
+        },
+    },
+
+    accountStatus: {
+        suspended: {
+            title: 'تم تعليق الحساب',
+            body: 'تم تعليق وصول حسابك مؤقتاً. تواصل مع الدعم إذا كنت بحاجة إلى مساعدة أو تعتقد أن هذا تم بالخطأ.',
+        },
+        archived: {
+            title: 'تمت أرشفة الحساب',
+            body: 'هذا الحساب مؤرشف ولم يعد بإمكانه الوصول إلى ميزات المنصة المحمية. تواصل مع الدعم للمساعدة.',
         },
     },
 
@@ -1404,6 +1419,8 @@ export const ar = {
             viewContract: 'عرض العقد',
         },
         freelancerEarnings: {
+            seoTitle: 'الأرباح | Khedma TN',
+            seoDescription: 'أرباحك وسجل الدفعات على Khedma TN.',
             availableBalance: 'الرصيد المتاح',
             pendingClearance: '{{amount}} د.ت قيد التسوية',
             withdraw: 'سحب',

@@ -2,20 +2,17 @@ import { logger } from "@/lib/logger";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import {
-  ArrowUpRight,
   Bell,
   BriefcaseBusiness,
   Check,
-  ChevronLeft,
   ChevronRight,
   CreditCard,
   Loader2,
   Plus,
+  Settings,
   Shield,
-  Sparkles,
   Trash2,
   User,
-  Wallet,
 } from "lucide-react";
 
 import { useTranslation } from "../i18n";
@@ -47,7 +44,7 @@ interface PaymentMethod {
 }
 
 function Settings() {
-  const { dir, t, tx } = useTranslation();
+  const { t, tx } = useTranslation();
   const { user, profile, activeMode, signOut } = useAuth();
   const { showToast } = useToast();
   const navigate = useNavigate();
@@ -295,7 +292,6 @@ function Settings() {
     navigate("/login", { replace: true });
   };
 
-  const ArrowIcon = dir === "rtl" ? ChevronLeft : ChevronRight;
   const currentTab = tabs.find((item) => item.id === activeTab) ?? tabs[0];
   const dashboardPath =
     activeMode === "freelancer" ? "/freelancer/dashboard" : "/client/dashboard";
@@ -307,370 +303,195 @@ function Settings() {
         : tx("settings.accountTypeClient", undefined, "Client");
 
   const identityLabel = profile?.cin_verified
-    ? tx("settings.identityVerified", undefined, "Identity verified")
-    : tx("settings.verifyIdentity", undefined, "Verify your identity");
-
-  const onboardingLabel = profile?.onboarding_completed
-    ? tx("settings.setupStatus.complete", undefined, "Complete")
-    : tx("settings.setupStatus.pending", undefined, "Pending");
+    ? tx("settings.identityVerified", undefined, "Verified")
+    : tx("settings.verifyIdentity", undefined, "Not verified");
 
   const renderAccountTab = () => (
-    <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-500 relative">
-      <div className="grid gap-3 sm:grid-cols-3 relative z-10">
-        <div className="group relative overflow-hidden flex flex-col justify-between p-4 rounded-xl border border-[var(--color-border-subtle)] bg-[var(--color-background-base)] backdrop-blur-xl shadow-xl transition-all duration-300 hover:border-[var(--color-brand-primary)]/40 hover:bg-[var(--color-brand-primary)]/5">
-          <div className="absolute -right-10 -top-4 h-32 w-32 rounded-full bg-[var(--color-brand-primary)]/10 blur-[40px] pointer-events-none transition-all group-hover:bg-[var(--color-brand-primary)]/20" />
-          <div>
-            <div className="flex items-center gap-3">
-              <div className="flex h-7 w-7 items-center justify-center rounded-[8px] bg-[var(--color-brand-primary)]/20 text-[var(--color-brand-primary)]">
-                <BriefcaseBusiness className="h-4 w-4" />
-              </div>
-              <p className="text-sm font-bold uppercase tracking-widest text-[var(--color-text-primary)]/80">
-                {tx(
-                  "settings.currentWorkspace",
-                  undefined,
-                  "Current workspace",
-                )}
-              </p>
-            </div>
-          </div>
-          <div className="mt-3">
-            <p className="text-base font-bold text-[var(--color-text-primary)]">
-              {activeMode === "freelancer"
-                ? t.auth.accountPanel.freelancerLabel
-                : t.auth.accountPanel.clientLabel}
-            </p>
-            <p className="text-sm font-medium text-[var(--color-text-secondary)]/80 mt-1">
-              {tx("settings.activeContext", undefined, "Active context")}
-            </p>
-          </div>
-        </div>
-
-        <div className="group relative overflow-hidden flex flex-col justify-between p-4 rounded-xl border border-[var(--color-border-default)] bg-[var(--color-background-base)] backdrop-blur-xl shadow-sm transition-all duration-300 hover:border-[var(--color-brand-secondary)]/30 hover:bg-[var(--color-brand-secondary)]/5">
-          <div className="absolute -right-10 -top-4 h-32 w-32 rounded-full bg-[var(--color-brand-secondary)]/10 blur-[40px] pointer-events-none transition-all group-hover:bg-[var(--color-brand-secondary)]/20" />
-          <div>
-            <div className="flex items-center gap-3 mb-3">
-              <div className="flex h-7 w-7 items-center justify-center rounded-[8px] bg-[var(--color-brand-secondary)]/20 text-[var(--color-brand-secondary)]">
-                <User className="h-4 w-4" />
-              </div>
-              <p className="text-sm font-bold uppercase tracking-widest text-[var(--color-text-primary)]/80">
-                {tx("settings.accountType", undefined, "Account type")}
-              </p>
-            </div>
-          </div>
-          <div className="mt-3">
-            <p className="text-base font-bold text-[var(--color-text-primary)]">
-              {accountTypeLabel}
-            </p>
-            <p className="text-sm font-medium text-[var(--color-text-secondary)]/80 mt-1">
-              {tx("settings.globalPermission", undefined, "Global permission")}
-            </p>
-          </div>
-        </div>
-
-        <div
-          className={`group relative overflow-hidden flex flex-col justify-between p-4 rounded-xl border border-[var(--color-border-default)] bg-[var(--color-background-base)] backdrop-blur-xl shadow-sm transition-all duration-300 ${profile?.onboarding_completed ? "hover:border-[var(--color-status-success)]/30 hover:bg-[var(--color-status-success)]/5" : "hover:border-[var(--color-status-warning)]/30 hover:bg-[var(--color-status-warning)]/5"}`}
-        >
+    <div className="space-y-6">
+      {/* Stats Grid */}
+      <div className="grid gap-4 sm:grid-cols-3">
+        {[
+          {
+            label: tx("settings.currentWorkspace", undefined, "Workspace"),
+            value: activeMode === "freelancer" ? t.auth.accountPanel.freelancerLabel : t.auth.accountPanel.clientLabel,
+            icon: BriefcaseBusiness,
+            gradient: "from-purple-500 to-purple-600",
+          },
+          {
+            label: tx("settings.accountType", undefined, "Account type"),
+            value: accountTypeLabel,
+            icon: User,
+            gradient: "from-blue-500 to-cyan-500",
+          },
+          {
+            label: tx("settings.identityVerificationTitle", undefined, "Identity"),
+            value: identityLabel,
+            icon: profile?.cin_verified ? Check : Shield,
+            gradient: profile?.cin_verified ? "from-emerald-500 to-green-600" : "from-amber-500 to-orange-600",
+          },
+        ].map(({ label, value, icon: Icon, gradient }) => (
           <div
-            className={`absolute -right-10 -top-4 h-32 w-32 rounded-full blur-[40px] pointer-events-none transition-all ${profile?.onboarding_completed ? "bg-[var(--color-status-success)]/10 group-hover:bg-[var(--color-status-success)]/20" : "bg-[var(--color-status-warning)]/10 group-hover:bg-[var(--color-status-warning)]/20"}`}
-          />
-          <div>
-            <div className="flex items-center gap-3">
-              <div
-                className={`flex h-7 w-7 items-center justify-center rounded-[8px] ${profile?.onboarding_completed ? "bg-[var(--color-status-success)]/20 text-[var(--color-status-success)]" : "bg-[var(--color-status-warning)]/20 text-[var(--color-status-warning)]"}`}
-              >
-                <Check className="h-5 w-5" />
+            key={label}
+            className="group relative overflow-hidden rounded-xl border p-5 transition-all duration-300 hover:scale-[1.02] hover:shadow-xl cursor-pointer"
+            style={{ 
+              borderColor: "var(--color-border-subtle)", 
+              background: "var(--color-background-elevated)",
+            }}
+          >
+            <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-0 group-hover:opacity-5 transition-opacity duration-300`} />
+            <div className="relative">
+              <div className="flex items-center gap-3 mb-3">
+                <div className={`p-2.5 rounded-xl bg-gradient-to-br ${gradient} shadow-lg`}>
+                  <Icon className="h-4 w-4 text-white" />
+                </div>
+                <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--color-text-tertiary)" }}>
+                  {label}
+                </p>
               </div>
-              <p className="text-sm font-bold uppercase tracking-widest text-[var(--color-text-primary)]/80">
-                {tx("settings.onboardingStatus", undefined, "Onboarding")}
-              </p>
+              <p className="text-base font-bold" style={{ color: "var(--color-text-primary)" }}>{value}</p>
             </div>
           </div>
-          <div className="mt-3">
-            <p className="text-base font-bold text-[var(--color-text-primary)]">
-              {onboardingLabel}
-            </p>
-            <p className="text-sm font-medium text-[var(--color-text-secondary)]/80 mt-1">
-              {tx("settings.profileReadiness", undefined, "Profile readiness")}
-            </p>
-          </div>
-        </div>
+        ))}
       </div>
 
-      <div className="relative overflow-hidden rounded-xl border border-[var(--color-border-default)] bg-[var(--color-background-elevated)] p-5 shadow-sm backdrop-blur-3xl ring-1 ring-[var(--color-border-subtle)]">
-        <div className="absolute -left-20 top-20 h-[300px] w-[300px] rounded-full bg-[var(--color-brand-primary)]/5 blur-[100px] pointer-events-none" />
-        <div className="absolute right-10 bottom-10 h-[200px] w-[200px] rounded-full bg-[var(--color-brand-secondary)]/5 blur-[80px] pointer-events-none" />
-
-        <div className="relative z-10 flex flex-col md:flex-row gap-3 items-start mb-4">
-          <div className="md:w-1/3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[var(--color-brand-primary)]/10 text-[var(--color-brand-primary)] shadow-inner border border-[var(--color-brand-primary)]/20 mb-3 group transition-all duration-500 hover:bg-[var(--color-brand-primary)]/20 hover:scale-110 hover:shadow-[0_0_20px_rgba(var(--brand),0.3)]">
-              <Sparkles className="h-4 w-4" />
-            </div>
-            <h3 className="text-sm font-bold bg-gradient-to-br from-[var(--color-text-primary)] to-[var(--color-text-primary)]/70 bg-clip-text text-transparent">
-              {tx(
-                "settings.accountOverviewTitle",
-                undefined,
-                "Your workspace identity and setup status",
-              )}
-            </h3>
-            <p className="mt-2 text-sm leading-relaxed text-[var(--color-text-secondary)]/90 max-w-sm">
-              {tx(
-                "settings.accountOverviewDescription",
-                undefined,
-                "This tab is the control point for how your account is set up. Switch to Profile when you want to edit details or change workspace readiness.",
-              )}
-            </p>
-          </div>
-
-          <div className="md:w-2/3 w-full bg-[var(--color-background-base)] p-4 rounded-xl border border-[var(--color-border-subtle)] backdrop-blur-md space-y-4">
-            <div className="flex items-center justify-between p-5 rounded-xl bg-[var(--color-background-base)] border border-[var(--color-border-subtle)]">
-              <div className="flex items-center gap-3">
-                <div
-                  className={`p-2.5 rounded-[10px] ${profile?.cin_verified ? "bg-[var(--color-status-success)]/20 text-[var(--color-status-success)] border border-[var(--color-status-success)]/30" : "bg-[var(--color-status-warning)]/20 text-[var(--color-status-warning)] border border-[var(--color-status-warning)]/30"}`}
-                >
-                  <Shield className="w-5 h-5" />
-                </div>
-                <div>
-                  <p className="font-bold text-[var(--color-text-primary)]">
-                    {tx(
-                      "settings.identityVerificationTitle",
-                      undefined,
-                      "Identity Verification",
-                    )}
-                  </p>
-                  <p className="text-sm font-medium text-[var(--color-text-secondary)]/80 mt-1">
-                    {profile?.cin_verified
-                      ? "Successfully verified by a human"
-                      : "Pending verification review"}
-                  </p>
-                </div>
-              </div>
-              <span
-                className={`px-4 py-2 border rounded-full text-xs font-bold uppercase tracking-widest ${profile?.cin_verified ? "border-[var(--color-status-success)]/30 bg-[var(--color-status-success)]/10 text-[var(--color-status-success)] shadow-[0_0_15px_rgba(34,197,94,0.2)]" : "border-[var(--color-status-warning)]/30 bg-[var(--color-status-warning)]/10 text-[var(--color-status-warning)] shadow-[0_0_15px_rgba(249,115,22,0.2)]"}`}
-              >
-                {identityLabel}
-              </span>
-            </div>
-
-            <div className="grid gap-3 sm:grid-cols-2 pt-2">
-              <button
-                type="button"
-                onClick={() => setActiveTab("profile")}
-                className="group flex flex-col justify-between rounded-xl border border-[var(--color-border-subtle)] bg-[var(--color-background-muted)] p-5 text-left transition-all duration-300 hover:-translate-y-1 hover:border-[var(--color-brand-primary)]/40 hover:bg-[var(--color-brand-primary)]/5 hover:shadow-[0_0_30px_-5px_rgba(var(--brand),0.3)]"
-              >
-                <div>
-                  <p className="text-base font-bold text-[var(--color-text-primary)] transition-colors group-hover:text-[var(--color-brand-primary)]">
-                    {tx(
-                      "settings.goToProfile",
-                      undefined,
-                      "Go to Profile settings",
-                    )}
-                  </p>
-                  <p className="mt-2 text-sm leading-relaxed text-[var(--color-text-secondary)]/80">
-                    {tx(
-                      "settings.accountTabHint",
-                      undefined,
-                      "Go to the Profile tab to switch workspace or update your account type.",
-                    )}
-                  </p>
-                </div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => navigate(dashboardPath)}
-                className="group flex flex-col justify-between rounded-xl border border-[var(--color-border-subtle)] bg-[var(--color-background-muted)] p-5 text-left transition-all duration-300 hover:-translate-y-1 hover:border-[var(--color-brand-secondary)]/40 hover:bg-[var(--color-brand-secondary)]/5 hover:shadow-[0_0_30px_-5px_rgba(147,51,234,0.3)]"
-              >
-                <div>
-                  <p className="text-base font-bold text-[var(--color-text-primary)] transition-colors group-hover:text-[var(--color-brand-secondary)]">
-                    {tx("settings.goToDashboard", undefined, "Go to dashboard")}
-                  </p>
-                  <p className="mt-2 text-sm leading-relaxed text-[var(--color-text-secondary)]/80">
-                    {tx(
-                      "settings.goToDashboardDescription",
-                      undefined,
-                      "Return to your active workspace and continue where you left off.",
-                    )}
-                  </p>
-                </div>
-              </button>
-            </div>
-
+      {/* Quick Actions */}
+      <div>
+        <h3 className="text-sm font-semibold mb-4 flex items-center gap-2" style={{ color: "var(--color-text-primary)" }}>
+          <div className="h-1 w-1 rounded-full" style={{ background: "var(--workspace-primary)" }} />
+          {tx("settings.quickActions", undefined, "Quick actions")}
+        </h3>
+        <div className="space-y-3">
+          {[
+            {
+              label: tx("settings.goToProfile", undefined, "Edit profile"),
+              desc: tx("settings.accountTabHint", undefined, "Update your details and workspace"),
+              onClick: () => setActiveTab("profile"),
+              icon: User,
+              gradient: "from-purple-500 to-pink-500",
+            },
+            {
+              label: tx("settings.goToDashboard", undefined, "Go to dashboard"),
+              desc: tx("settings.goToDashboardDescription", undefined, "Return to your workspace"),
+              onClick: () => navigate(dashboardPath),
+              icon: BriefcaseBusiness,
+              gradient: "from-blue-500 to-cyan-500",
+            },
+            {
+              label: tx("settings.reviewNotifications", undefined, "Manage notifications"),
+              desc: tx("settings.reviewNotificationsDescription", undefined, "Control your alerts"),
+              onClick: () => setActiveTab("notifications"),
+              icon: Bell,
+              gradient: "from-amber-500 to-orange-500",
+            },
+          ].map(({ label, desc, onClick, icon: Icon, gradient }) => (
             <button
+              key={label}
               type="button"
-              onClick={() => setActiveTab("notifications")}
-              className="group mt-2 w-full flex flex-col justify-between rounded-xl border border-[var(--color-border-subtle)] bg-[var(--color-background-muted)] p-5 text-left transition-all duration-300 hover:-translate-y-1 hover:border-[var(--color-brand-accent)]/40 hover:bg-[var(--color-brand-accent)]/5 hover:shadow-[0_0_30px_-5px_rgba(168,85,247,0.3)]"
+              onClick={onClick}
+              className="group relative overflow-hidden w-full text-left px-5 py-4 rounded-xl border transition-all duration-300 hover:scale-[1.01] hover:shadow-lg"
+              style={{ borderColor: "var(--color-border-subtle)", background: "var(--color-background-elevated)" }}
             >
-              <div>
-                <p className="text-base font-bold text-[var(--color-text-primary)] transition-colors group-hover:text-[var(--color-brand-accent)]">
-                  {tx(
-                    "settings.reviewNotifications",
-                    undefined,
-                    "Review notification rules",
-                  )}
-                </p>
-                <p className="mt-2 text-sm leading-relaxed text-[var(--color-text-secondary)]/80">
-                  {tx(
-                    "settings.reviewNotificationsDescription",
-                    undefined,
-                    "Adjust how updates, reviews, and messages reach you.",
-                  )}
-                </p>
+              <div className={`absolute inset-0 bg-gradient-to-r ${gradient} opacity-0 group-hover:opacity-5 transition-opacity duration-300`} />
+              <div className="relative flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className={`p-2.5 rounded-xl bg-gradient-to-br ${gradient} shadow-md group-hover:scale-110 transition-transform duration-300`}>
+                    <Icon className="h-4 w-4 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold mb-0.5" style={{ color: "var(--color-text-primary)" }}>
+                      {label}
+                    </p>
+                    <p className="text-xs" style={{ color: "var(--color-text-tertiary)" }}>
+                      {desc}
+                    </p>
+                  </div>
+                </div>
+                <ChevronRight className="h-5 w-5 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300" style={{ color: "var(--workspace-primary)" }} />
               </div>
             </button>
-          </div>
+          ))}
         </div>
       </div>
     </div>
   );
 
   const renderPaymentTab = () => (
-    <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-500 relative">
-      <div className="grid gap-3 sm:grid-cols-3 relative z-10">
-        <div className="group relative overflow-hidden flex flex-col justify-between p-4 rounded-xl border border-[var(--color-border-subtle)] bg-[var(--color-background-base)] backdrop-blur-xl shadow-xl transition-all duration-300 hover:border-[var(--color-status-success)]/30 hover:bg-[var(--color-status-success)]/5">
-          <div className="absolute -right-10 -top-4 h-32 w-32 rounded-full bg-[var(--color-status-success)]/10 blur-[40px] pointer-events-none transition-all group-hover:bg-[var(--color-status-success)]/20" />
-          <div>
-            <div className="flex items-center gap-3">
-              <div className="flex h-7 w-7 items-center justify-center rounded-[8px] bg-[var(--color-status-success)]/20 text-[var(--color-status-success)]">
-                <Wallet className="h-5 w-5" />
-              </div>
-              <p className="text-sm font-bold uppercase tracking-widest text-[var(--color-text-primary)]/80">
-                {tx("settings.paymentMethodsCount", undefined, "Saved Methods")}
-              </p>
-            </div>
-          </div>
-          <div className="mt-3">
-            <p className="text-base font-black text-[var(--color-text-primary)] drop-shadow-sm">
-              {paymentMethods.length}
-            </p>
-            <p className="text-sm font-medium text-[var(--color-text-secondary)]/80 mt-1">
-              {tx(
-                "settings.readyForTransactions",
-                undefined,
-                "Ready for transactions",
-              )}
-            </p>
-          </div>
-        </div>
-      </div>
-
+    <div className="space-y-6">
       {isLoading ? (
-        <div className="flex justify-center items-center py-20">
-          <div className="relative flex justify-center items-center">
-            <div className="absolute inset-0 rounded-full bg-[var(--color-brand-primary)]/20 blur-xl animate-pulse"></div>
-            <Loader2 className="h-8 w-8 animate-spin text-[var(--color-brand-primary)] relative z-10" />
-          </div>
+        <div className="flex justify-center py-12">
+          <Loader2 className="h-5 w-5 animate-spin" style={{ color: "var(--workspace-primary)" }} />
         </div>
       ) : paymentMethods.length === 0 ? (
-        <div className="relative overflow-hidden rounded-xl border-2 border-dashed border-[var(--color-border-subtle)] bg-[var(--color-background-base)] p-5 text-center shadow-2xl backdrop-blur-xl transition-all hover:border-[var(--color-brand-primary)]/40 group">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[var(--color-brand-primary)]/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 blur-[50px] pointer-events-none" />
-          <div className="relative z-10 mx-auto flex h-24 w-24 items-center justify-center rounded-xl bg-[var(--color-background-elevated)] border border-[var(--color-border-subtle)] text-[var(--color-text-secondary)] group-hover:text-[var(--color-brand-primary)] shadow-2xl transition-all duration-500 group-hover:scale-110 group-hover:rotate-6">
-            <CreditCard className="h-8 w-8" />
+        <div className="text-center py-12">
+          <div className="inline-flex h-12 w-12 items-center justify-center rounded-full mb-4" style={{ background: "color-mix(in srgb, var(--workspace-primary) 10%, transparent)" }}>
+            <CreditCard className="h-6 w-6" style={{ color: "var(--workspace-primary)" }} />
           </div>
-          <h3 className="relative z-10 mt-4 text-base font-bold bg-gradient-to-br from-[var(--color-text-primary)] to-[var(--color-text-primary)]/80 bg-clip-text text-transparent">
-            {tx(
-              "settings.noPaymentMethods",
-              undefined,
-              "No payment method added yet",
-            )}
+          <h3 className="text-sm font-medium mb-1" style={{ color: "var(--color-text-primary)" }}>
+            {tx("settings.noPaymentMethods", undefined, "No payment methods")}
           </h3>
-          <p className="relative z-10 mt-4 max-w-md mx-auto text-base leading-relaxed text-[var(--color-text-secondary)]/80">
-            {tx(
-              "settings.noPaymentMethodsDescription",
-              undefined,
-              "Add a payout method now so contracts, earnings, and withdrawals are ready when you need them. Secure and encrypted.",
-            )}
+          <p className="text-xs mb-4 max-w-sm mx-auto" style={{ color: "var(--color-text-tertiary)" }}>
+            {tx("settings.noPaymentMethodsDescription", undefined, "Add a payout method for transactions")}
           </p>
-          <div className="mt-4 relative z-10">
-            <Button
-              variant="primary"
-              size="lg"
-              className="rounded-full shadow-lg hover:shadow-[var(--color-brand-primary)]/25 transition-all hover:scale-105"
-              leftIcon={<Plus className="w-5 h-5" />}
-              onClick={() => setIsAddPaymentModalOpen(true)}
-            >
-              {tx("settings.addMethod", undefined, "Add your first method")}
-            </Button>
-          </div>
+          <Button variant="primary" size="sm" leftIcon={<Plus className="w-3.5 h-3.5" />} onClick={() => setIsAddPaymentModalOpen(true)}>
+            {tx("settings.addMethod", undefined, "Add method")}
+          </Button>
         </div>
       ) : (
-        <div className="relative overflow-hidden rounded-xl border border-[var(--color-border-subtle)] bg-[var(--color-background-elevated)] p-5 shadow-2xl backdrop-blur-3xl ring-1 ring-[var(--color-border-subtle)]">
-          <div className="absolute -left-40 top-20 h-[400px] w-[400px] rounded-full bg-[var(--color-brand-primary)]/5 blur-[120px] pointer-events-none" />
-
-          <div className="relative z-10 mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-3">
-            <div>
-              <h3 className="text-base font-bold tracking-tight bg-gradient-to-br from-[var(--color-text-primary)] to-[var(--color-text-primary)]/70 bg-clip-text text-transparent">
-                {tx("settings.payoutMethods", undefined, "Payout Methods")}
-              </h3>
-              <p className="mt-2 text-sm leading-relaxed text-[var(--color-text-secondary)]/90 max-w-xl">
-                {tx(
-                  "settings.payoutMethodsDescription",
-                  undefined,
-                  "Manage how you receive earnings or make payments. Your default method will be automatically selected during checkout.",
-                )}
-              </p>
-            </div>
+        <>
+          <div className="flex items-center justify-between">
+            <p className="text-xs" style={{ color: "var(--color-text-tertiary)" }}>
+              {paymentMethods.length} {tx("settings.paymentMethodsCount", undefined, "payment methods")}
+            </p>
+            <Button variant="outline" size="xs" leftIcon={<Plus className="w-3 h-3" />} onClick={() => setIsAddPaymentModalOpen(true)}>
+              {tx("settings.addMethod", undefined, "Add")}
+            </Button>
           </div>
-
-          <div className="relative z-10 space-y-4">
+          <div className="space-y-2">
             {paymentMethods.map((method) => (
               <div
                 key={method.id}
-                className={`group flex flex-col md:flex-row md:items-center justify-between gap-3 rounded-xl border p-5 transition-all duration-300 ${method.is_default ? "border-[var(--color-brand-primary)]/40 bg-[var(--color-brand-primary)]/5 shadow-[0_0_30px_-10px_rgba(var(--brand),0.2)]" : "border-[var(--color-border-subtle)] bg-[var(--color-background-base)] hover:border-[var(--color-border-default)] hover:bg-[var(--color-background-elevated)]"}`}
+                className="flex items-center justify-between gap-4 p-4 rounded-lg border"
+                style={{
+                  borderColor: method.is_default ? "color-mix(in srgb, var(--workspace-primary) 25%, var(--color-border-subtle))" : "var(--color-border-subtle)",
+                  background: method.is_default ? "color-mix(in srgb, var(--workspace-primary) 3%, var(--color-background-elevated))" : "var(--color-background-elevated)",
+                }}
               >
-                <div className="flex min-w-0 items-center gap-3">
-                  <div
-                    className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl shadow-inner transition-colors duration-500 ${method.is_default ? "bg-[var(--color-brand-primary)]/20 text-[var(--color-brand-primary)] border border-[var(--color-brand-primary)]/30" : "bg-[var(--color-background-elevated)] text-[var(--color-text-secondary)] border border-[var(--color-border-subtle)] group-hover:text-[var(--color-text-primary)]"}`}
-                  >
-                    <CreditCard
-                      className={`h-6 w-6 ${method.is_default ? "drop-shadow-[0_0_8px_rgba(var(--brand),0.8)]" : ""}`}
-                    />
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg" style={{ background: method.is_default ? "color-mix(in srgb, var(--workspace-primary) 12%, transparent)" : "var(--color-background-subtle)" }}>
+                    <CreditCard className="h-4 w-4" style={{ color: method.is_default ? "var(--workspace-primary)" : "var(--color-text-secondary)" }} />
                   </div>
                   <div className="min-w-0">
-                    <p
-                      className={`text-base font-bold transition-colors duration-300 ${method.is_default ? "text-[var(--color-text-primary)]" : "text-[var(--color-text-primary)]/80 group-hover:text-[var(--color-text-primary)]"}`}
-                    >
-                      {method.label}
-                    </p>
-                    <p className="mt-1 text-sm font-medium tracking-wider text-[var(--color-text-secondary)]/80">
-                      {method.details}
-                    </p>
+                    <p className="text-sm font-medium" style={{ color: "var(--color-text-primary)" }}>{method.label}</p>
+                    <p className="text-xs" style={{ color: "var(--color-text-tertiary)" }}>{method.details}</p>
                   </div>
                 </div>
-
-                <div className="shrink-0 flex items-center gap-3">
+                <div className="flex items-center gap-2 shrink-0">
                   {method.is_default ? (
-                    <span className="inline-flex items-center gap-2 rounded-full border border-[var(--color-brand-primary)]/30 bg-[var(--color-brand-primary)]/20 px-4 py-1.5 text-xs font-black uppercase tracking-widest text-[var(--color-brand-primary)] shadow-[0_0_15px_-3px_rgba(var(--brand),0.4)]">
-                      <Check className="h-4 w-4" />
+                    <span className="flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium" style={{ background: "color-mix(in srgb, var(--workspace-primary) 12%, transparent)", color: "var(--workspace-primary)" }}>
+                      <Check className="h-3 w-3" />
                       {tx("settings.default", undefined, "Default")}
                     </span>
                   ) : (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="rounded-full border-[var(--color-border-subtle)] hover:bg-[var(--color-background-elevated)] transition-colors font-bold tracking-wide"
-                      onClick={() => handleSetDefaultPayment(method.id)}
-                    >
+                    <Button variant="outline" size="xs" onClick={() => handleSetDefaultPayment(method.id)}>
                       {tx("settings.setDefault", undefined, "Set default")}
                     </Button>
                   )}
-
                   <button
                     type="button"
                     onClick={() => handleDeletePayment(method.id)}
-                    aria-label={tx(
-                      "settings.deletePaymentMethod",
-                      { label: method.label },
-                      `Delete ${method.label}`,
-                    )}
-                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[var(--color-border-subtle)] bg-[var(--color-background-muted)] text-[var(--color-text-secondary)] transition-all hover:bg-[var(--color-status-error)]/20 hover:border-[var(--color-status-error)]/40 hover:text-[var(--color-status-error)] hover:shadow-[0_0_15px_rgba(239,68,68,0.4)]"
+                    aria-label={tx("settings.deletePaymentMethod", { label: method.label }, `Delete ${method.label}`)}
+                    className="flex h-7 w-7 items-center justify-center rounded transition-colors"
+                    style={{ color: "var(--color-text-tertiary)" }}
+                    onMouseEnter={e => { e.currentTarget.style.color = "var(--color-status-error)"; e.currentTarget.style.background = "color-mix(in srgb, var(--color-status-error) 8%, transparent)"; }}
+                    onMouseLeave={e => { e.currentTarget.style.color = "var(--color-text-tertiary)"; e.currentTarget.style.background = "transparent"; }}
                   >
-                    <Trash2 className="h-4 w-4" />
+                    <Trash2 className="h-3.5 w-3.5" />
                   </button>
                 </div>
               </div>
             ))}
           </div>
-        </div>
+        </>
       )}
     </div>
   );
@@ -684,67 +505,30 @@ function Settings() {
   };
 
   return (
-    <div className="page-enter bg-[var(--color-background-base)] min-h-screen selection:bg-[var(--color-brand-primary)]/30 selection:text-[var(--color-text-primary)]">
+    <div className="min-h-screen" style={{ background: "var(--color-background-base)" }}>
       <SEO {...SEO_CONFIG.settings} url="/settings" noIndex />
       <Header />
 
-      <main className="mx-auto max-w-7xl px-4 sm:px-4 lg:px-5 py-5 space-y-4 pb-24">
-        {/* Modern Hero Section */}
-        <section className="relative overflow-hidden rounded-xl border border-[var(--color-border-subtle)] bg-[var(--color-background-elevated)] p-6 shadow-2xl backdrop-blur-md transform-gpu">
-          <div className="absolute -left-32 -top-32 h-[500px] w-[500px] rounded-full bg-[var(--color-brand-primary)]/10 blur-[120px] pointer-events-none" />
-          <div className="absolute right-0 bottom-0 h-[300px] w-[300px] rounded-full bg-[var(--color-brand-secondary)]/5 blur-[100px] pointer-events-none" />
-
-          <div className="relative z-10 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-            <div className="space-y-3">
-              <div className="inline-flex items-center gap-2 rounded-full border border-[var(--color-brand-primary)]/30 bg-[var(--color-brand-primary)]/10 px-4 py-1.5 text-xs font-black uppercase tracking-widest text-[var(--color-brand-primary)] shadow-[0_0_15px_-3px_rgba(var(--brand),0.3)] backdrop-blur-md">
-                <Sparkles className="h-4 w-4" />
-                {tx("settings.heroBadge", undefined, "Settings workspace")}
-              </div>
-              <div>
-                <h1 className="text-base font-black tracking-tight bg-gradient-to-br from-[var(--color-text-primary)] to-[var(--color-text-primary)]/70 bg-clip-text text-transparent sm:text-base">
-                  {tx("settings.pageTitle", undefined, "Settings")}
-                </h1>
-                <p className="mt-4 max-w-3xl text-base leading-relaxed text-[var(--color-text-secondary)]/90 font-medium">
-                  {tx(
-                    "settings.heroDescription",
-                    undefined,
-                    "Keep account details, security, payouts, and notification behavior in one consistent control surface. Update what matters without losing your place in the product.",
-                  )}
-                </p>
-              </div>
-              <div className="flex flex-wrap gap-3 pt-2">
-                <div className="inline-flex items-center gap-2.5 rounded-full border border-[var(--color-border-subtle)] bg-[var(--color-background-base)] px-5 py-2 text-sm font-bold text-[var(--color-text-primary)] shadow-sm backdrop-blur-md hover:bg-[var(--color-background-elevated)] transition-colors">
-                  <User className="h-4 w-4 text-[var(--color-brand-primary)]" />
-                  {accountTypeLabel}
-                </div>
-                <div
-                  className={`inline-flex items-center gap-2.5 rounded-full border px-5 py-2 text-sm font-bold shadow-sm backdrop-blur-md transition-colors ${
-                    profile?.cin_verified
-                      ? "border-[var(--color-status-success)]/30 bg-[var(--color-status-success)]/10 text-[var(--color-status-success)] hover:bg-[var(--color-status-success)]/15"
-                      : "border-[var(--color-status-warning)]/30 bg-[var(--color-status-warning)]/10 text-[var(--color-status-warning)] hover:bg-[var(--color-status-warning)]/15"
-                  }`}
-                >
-                  <Shield className="h-4 w-4" />
-                  {identityLabel}
-                </div>
-              </div>
+      <main className="mx-auto max-w-[1400px] px-4 py-6 pb-24 sm:px-6 lg:px-8">
+        {/* Premium Header */}
+        <div className="mb-8">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="p-2 rounded-xl shadow-lg" style={{ background: "linear-gradient(135deg, var(--workspace-primary), var(--workspace-accent))" }}>
+              <Settings className="h-6 w-6 text-white" />
             </div>
-
-            <Button
-              variant="outline"
-              className="rounded-full shadow-lg border-[var(--color-border-subtle)] bg-[var(--color-background-base)] backdrop-blur-md hover:bg-[var(--color-background-elevated)] transition-all hover:scale-105 font-bold tracking-wide border"
-              rightIcon={<ArrowUpRight className="h-4 w-4" />}
-              onClick={() => navigate(dashboardPath)}
-            >
-              {tx("settings.goToDashboard", undefined, "Go to dashboard")}
-            </Button>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-[var(--color-text-primary)] to-[var(--workspace-primary)] bg-clip-text text-transparent">
+              {tx("settings.pageTitle", undefined, "Settings")}
+            </h1>
           </div>
-        </section>
+          <p className="text-sm ml-14" style={{ color: "var(--color-text-tertiary)" }}>
+            {tx("settings.heroDescription", undefined, "Manage your account, profile, and preferences")}
+          </p>
+        </div>
 
-        <div className="grid gap-3 lg:grid-cols-[260px_1fr] items-start">
-          {/* Floating Sidebar Nav */}
-          <aside className="lg:sticky lg:top-28 lg:max-h-[calc(100vh-9rem)] lg:overflow-y-auto no-scrollbar relative z-20">
-            <nav className="flex flex-col gap-2 rounded-xl border border-[var(--color-border-subtle)] bg-[var(--color-background-elevated)] p-4 shadow-2xl backdrop-blur-3xl ring-1 ring-[var(--color-border-subtle)]">
+        {/* Premium Full-Width Tab Navigation */}
+        <div className="mb-8 -mx-4 sm:-mx-6 lg:-mx-8">
+          <div className="border-b-2" style={{ borderColor: "var(--color-border-subtle)" }}>
+            <nav className="flex gap-1 px-4 sm:px-6 lg:px-8 overflow-x-auto scrollbar-hide">
               {tabs.map((item) => {
                 const isActive = activeTab === item.id;
                 return (
@@ -752,91 +536,141 @@ function Settings() {
                     key={item.id}
                     type="button"
                     onClick={() => setActiveTab(item.id)}
-                    className={`group relative flex w-full items-center gap-2.5 rounded-[12px] px-3 py-3 text-left transition-all duration-500 overflow-hidden ${
-                      isActive
-                        ? "bg-[var(--color-brand-primary)]/5 shadow-[0_0_30px_-5px_rgba(var(--brand),0.15)] border border-[var(--color-brand-primary)]/20"
-                        : "border border-transparent text-[var(--color-text-secondary)] hover:bg-[var(--color-background-elevated)] hover:text-[var(--color-text-primary)] hover:border-[var(--color-border-subtle)]"
-                    }`}
+                    className="group relative flex items-center gap-3 px-6 py-4 text-sm font-semibold transition-all duration-300 whitespace-nowrap"
+                    style={{
+                      color: isActive ? "var(--workspace-primary)" : "var(--color-text-secondary)",
+                    }}
                   >
-                    {isActive && (
-                      <div className="absolute inset-0 bg-gradient-to-r from-[var(--color-brand-primary)]/10 to-transparent opacity-50" />
-                    )}
-                    <span
-                      className={`relative z-10 flex h-7 w-7 shrink-0 items-center justify-center rounded-[8px] transition-all duration-500 ${
-                        isActive
-                          ? "bg-[var(--color-brand-primary)]/20 text-[var(--color-brand-primary)] shadow-[0_0_15px_rgba(var(--brand),0.4)] scale-105 border border-[var(--color-brand-primary)]/30"
-                          : "bg-[var(--color-background-subtle)] text-[var(--color-text-secondary)] group-hover:bg-[var(--color-background-muted)] group-hover:text-[var(--color-text-primary)] group-hover:scale-105 border border-[var(--color-border-default)]"
-                      }`}
-                    >
-                      <item.icon className="h-4 w-4" />
-                    </span>
-                    <div className="relative z-10 min-w-0 flex-1">
-                      <p
-                        className={`text-sm font-bold tracking-tight transition-colors ${isActive ? "text-[var(--color-text-primary)] drop-shadow-md" : "text-[var(--color-text-primary)]/80"}`}
-                      >
-                        {item.label}
-                      </p>
-                      <p
-                        className={`mt-0.5 text-[11px] leading-snug font-medium transition-colors ${isActive ? "text-[var(--color-text-secondary)]" : "text-[var(--color-text-secondary)]/60 group-hover:text-[var(--color-text-secondary)]/80"}`}
-                      >
-                        {item.description}
-                      </p>
-                    </div>
-                    <ArrowIcon
-                      className={`relative z-10 h-4 w-4 shrink-0 transition-all duration-300 ${
-                        isActive
-                          ? "text-[var(--color-brand-primary)] translate-x-1 opacity-100"
-                          : "text-transparent -translate-x-2 opacity-0 group-hover:translate-x-0 group-hover:text-[var(--color-text-secondary)] group-hover:opacity-100"
-                      }`}
+                    {/* Animated background on hover/active */}
+                    <div 
+                      className="absolute inset-0 rounded-t-xl transition-all duration-300"
+                      style={{
+                        background: isActive 
+                          ? "color-mix(in srgb, var(--workspace-primary) 8%, transparent)" 
+                          : "transparent",
+                        opacity: isActive ? 1 : 0,
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!isActive) {
+                          e.currentTarget.style.background = "color-mix(in srgb, var(--workspace-primary) 4%, transparent)";
+                          e.currentTarget.style.opacity = "1";
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!isActive) {
+                          e.currentTarget.style.opacity = "0";
+                        }
+                      }}
                     />
+                    
+                    {/* Icon with gradient background */}
+                    <div 
+                      className="relative z-10 p-2 rounded-lg transition-all duration-300 group-hover:scale-110"
+                      style={{
+                        background: isActive 
+                          ? "linear-gradient(135deg, var(--workspace-primary), var(--workspace-accent))"
+                          : "var(--color-background-subtle)",
+                      }}
+                    >
+                      <item.icon 
+                        className="h-4 w-4 transition-colors duration-300" 
+                        style={{ color: isActive ? "#ffffff" : "var(--color-text-tertiary)" }}
+                      />
+                    </div>
+                    
+                    {/* Label */}
+                    <span className="relative z-10 font-bold">{item.label}</span>
+                    
+                    {/* Active indicator bar */}
+                    <div 
+                      className="absolute bottom-0 left-0 right-0 h-1 rounded-t-full transition-all duration-300"
+                      style={{
+                        background: isActive 
+                          ? "linear-gradient(90deg, var(--workspace-primary), var(--workspace-accent))"
+                          : "transparent",
+                        transform: isActive ? "scaleX(1)" : "scaleX(0)",
+                        boxShadow: isActive ? "0 -2px 10px -2px var(--workspace-primary-shadow)" : "none",
+                      }}
+                    />
+                    
+                    {/* Notification badge (example for notifications tab) */}
+                    {item.id === "notifications" && (
+                      <div className="relative z-10 flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold text-white" style={{ background: "linear-gradient(135deg, #ef4444, #f97316)" }}>
+                        3
+                      </div>
+                    )}
                   </button>
                 );
               })}
             </nav>
-          </aside>
+          </div>
+          
+          {/* Tab description bar */}
+          <div className="px-4 sm:px-6 lg:px-8 py-4" style={{ background: "color-mix(in srgb, var(--workspace-primary) 3%, var(--color-background-base))" }}>
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg" style={{ background: "color-mix(in srgb, var(--workspace-primary) 12%, transparent)" }}>
+                <currentTab.icon className="h-4 w-4" style={{ color: "var(--workspace-primary)" }} />
+              </div>
+              <p className="text-sm" style={{ color: "var(--color-text-secondary)" }}>
+                {currentTab.description}
+              </p>
+            </div>
+          </div>
+        </div>
 
-          {/* Main Content Area */}
-          <section className="space-y-3 relative z-10 w-full min-w-0 max-w-full">
-            <div className="min-h-[600px] rounded-xl border border-[var(--color-border-subtle)] bg-[var(--color-background-elevated)] p-4 shadow-2xl backdrop-blur-md ring-1 ring-[var(--color-border-subtle)] sm:p-4 w-full min-w-0 max-w-full transform-gpu">
-              <div className="mb-3 flex flex-col justify-between items-start sm:flex-row sm:items-end border-b border-[var(--color-border-subtle)] pb-8 gap-3 relative">
-                <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-[var(--color-border-default)] to-transparent" />
-                <div>
-                  <h2 className="text-base font-black tracking-tight bg-gradient-to-br from-[var(--color-text-primary)] to-[var(--color-text-primary)]/70 bg-clip-text text-transparent">
+        {/* Content with Premium Layout */}
+        <div className="grid gap-8 lg:grid-cols-[2fr_1fr]">
+          <div className="space-y-6">{renderActiveTab()}</div>
+          
+          {/* Enhanced Sidebar Info */}
+          <div className="space-y-6">
+            {/* Current Tab Info Card */}
+            <div className="rounded-2xl border-2 p-6 backdrop-blur-sm relative overflow-hidden group transition-all duration-300 hover:shadow-xl" style={{ borderColor: "color-mix(in srgb, var(--workspace-primary) 20%, var(--color-border-subtle))", background: "color-mix(in srgb, var(--workspace-primary) 5%, var(--color-background-elevated))" }}>
+              <div className="absolute top-0 right-0 w-32 h-32 rounded-full blur-3xl opacity-20 group-hover:opacity-30 transition-opacity" style={{ background: "linear-gradient(135deg, var(--workspace-primary), var(--workspace-accent))" }} />
+              <div className="relative z-10">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-3 rounded-xl shadow-lg" style={{ background: "linear-gradient(135deg, var(--workspace-primary), var(--workspace-accent))" }}>
+                    <currentTab.icon className="h-5 w-5 text-white" />
+                  </div>
+                  <h3 className="text-lg font-bold" style={{ color: "var(--color-text-primary)" }}>
                     {currentTab.label}
-                  </h2>
-                  <p className="mt-3 text-base leading-relaxed text-[var(--color-text-secondary)]/90 font-medium">
-                    {currentTab.description}
-                  </p>
+                  </h3>
                 </div>
-                {activeTab === "payment" ? (
-                  <Button
-                    variant="primary"
-                    size="lg"
-                    className="rounded-full shrink-0 shadow-[0_0_20px_-5px_rgba(var(--brand),0.6)] font-bold tracking-wide transition-all hover:scale-105 hover:-translate-y-0.5"
-                    leftIcon={<Plus className="w-5 h-5" />}
-                    onClick={() => setIsAddPaymentModalOpen(true)}
-                  >
-                    {tx("settings.addMethod", undefined, "Add method")}
-                  </Button>
-                ) : null}
-              </div>
-
-              <div className="w-full min-w-0 max-w-full relative z-10">
-                {renderActiveTab()}
+                <p className="text-sm leading-relaxed" style={{ color: "var(--color-text-secondary)" }}>
+                  {currentTab.description}
+                </p>
               </div>
             </div>
-
-            <div className="flex justify-center pt-8 pb-4">
-              <Button
-                variant="ghost"
-                className="relative group overflow-hidden rounded-full px-4 py-5 font-bold tracking-widest uppercase text-sm border border-[var(--color-border-subtle)] bg-[var(--color-background-base)] text-[var(--color-text-secondary)] hover:text-[var(--color-status-error)] hover:border-[var(--color-status-error)]/30 transition-all shadow-xl hover:shadow-[0_0_30px_-5px_rgba(239,68,68,0.3)] hover:-translate-y-1"
-                onClick={handleLogout}
-              >
-                <div className="absolute inset-0 bg-gradient-to-r from-[var(--color-status-error)]/0 via-[var(--color-status-error)]/10 to-[var(--color-status-error)]/0 opacity-0 group-hover:opacity-100 transition-opacity" />
-                {tx("settings.logout", undefined, "Sign out securely")}
-              </Button>
+            
+            {/* Quick Stats */}
+            <div className="rounded-2xl border-2 p-6 backdrop-blur-sm" style={{ borderColor: "color-mix(in srgb, var(--workspace-primary) 15%, var(--color-border-subtle))", background: "var(--color-background-elevated)" }}>
+              <h4 className="text-xs font-bold uppercase tracking-wider mb-4 bg-gradient-to-r from-[var(--workspace-primary)] to-[var(--workspace-accent)] bg-clip-text text-transparent">
+                Account Overview
+              </h4>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm" style={{ color: "var(--color-text-secondary)" }}>Profile completion</span>
+                  <span className="text-sm font-bold" style={{ color: "var(--workspace-primary)" }}>85%</span>
+                </div>
+                <div className="h-2 rounded-full overflow-hidden" style={{ background: "var(--color-background-subtle)" }}>
+                  <div className="h-full rounded-full transition-all duration-500" style={{ width: "85%", background: "linear-gradient(90deg, var(--workspace-primary), var(--workspace-accent))" }} />
+                </div>
+              </div>
             </div>
-          </section>
+          </div>
+        </div>
+
+        {/* Logout */}
+        <div className="mt-8 pt-6 border-t" style={{ borderColor: "var(--color-border-subtle)" }}>
+          <button
+            className="text-sm font-medium transition-colors"
+            style={{ color: "var(--color-text-tertiary)" }}
+            onMouseEnter={e => { e.currentTarget.style.color = "var(--color-status-error)"; }}
+            onMouseLeave={e => { e.currentTarget.style.color = "var(--color-text-tertiary)"; }}
+            onClick={handleLogout}
+          >
+            {tx("settings.logout", undefined, "Sign out")}
+          </button>
         </div>
       </main>
 
@@ -917,6 +751,16 @@ function Settings() {
           </div>
         </div>
       </Modal>
+
+      <style>{`
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+        .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}</style>
     </div>
   );
 }

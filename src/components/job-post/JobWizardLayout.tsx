@@ -36,18 +36,18 @@ export default function JobWizardLayout({
             <section
                 className="radius-shell overflow-hidden border p-6 transition-all duration-300 hover:-translate-y-0.5 sm:p-8 lg:p-9"
                 style={{
-                    borderColor: 'color-mix(in srgb, var(--brand-accent) 20%, var(--border))',
-                    background: 'radial-gradient(circle at top left, color-mix(in srgb, var(--brand-accent) 12%, transparent), transparent 28%), radial-gradient(circle at top right, color-mix(in srgb, #f59e0b 8%, transparent), transparent 24%), linear-gradient(145deg, color-mix(in srgb, var(--card-bg) 96%, white), color-mix(in srgb, var(--surface-bg) 94%, white))',
-                    boxShadow: '0 36px 90px -52px color-mix(in srgb, var(--brand-accent) 30%, transparent)',
+                    borderColor: 'color-mix(in srgb, var(--workspace-primary) 20%, var(--border))',
+                    background: 'radial-gradient(circle at top left, color-mix(in srgb, var(--workspace-primary) 12%, transparent), transparent 28%), radial-gradient(circle at top right, color-mix(in srgb, #f59e0b 8%, transparent), transparent 24%), linear-gradient(145deg, color-mix(in srgb, var(--card-bg) 96%, white), color-mix(in srgb, var(--surface-bg) 94%, white))',
+                    boxShadow: '0 36px 90px -52px color-mix(in srgb, var(--workspace-primary) 30%, transparent)',
                 }}
             >
                 <div className="grid gap-6 xl:grid-cols-[minmax(0,1.08fr)_320px]">
                     <div className="space-y-5">
                         <div className="inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] shadow-sm"
                             style={{
-                                borderColor: 'color-mix(in srgb, var(--brand-accent) 24%, transparent)',
-                                background: 'color-mix(in srgb, var(--brand-accent) 10%, var(--card-bg))',
-                                color: 'var(--brand-accent)',
+                                borderColor: 'color-mix(in srgb, var(--workspace-primary) 24%, transparent)',
+                                background: 'color-mix(in srgb, var(--workspace-primary) 10%, var(--card-bg))',
+                                color: 'var(--workspace-primary)',
                             }}>
                             <Sparkles className="h-3.5 w-3.5" />
                             {tx('jobs.new.wizard.badge', undefined, 'Project posting flow')}
@@ -69,11 +69,11 @@ export default function JobWizardLayout({
 
                     <div className="rounded-[1.9rem] border p-5 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_28px_60px_-44px_var(--workspace-primary-shadow,rgba(109,40,217,0.35))]"
                         style={{
-                            borderColor: 'color-mix(in srgb, var(--brand-accent) 18%, var(--border))',
+                            borderColor: 'color-mix(in srgb, var(--workspace-primary) 18%, var(--border))',
                             background: 'color-mix(in srgb, var(--card-bg) 88%, transparent)',
                             boxShadow: '0 20px 40px -32px rgba(15,23,42,0.45)',
                         }}>
-                        <p className="text-xs font-semibold uppercase tracking-[0.18em]" style={{ color: 'var(--brand-accent)' }}>
+                        <p className="text-xs font-semibold uppercase tracking-[0.18em]" style={{ color: 'var(--workspace-primary)' }}>
                             {tx('jobs.new.wizard.currentPhase', undefined, 'Current phase')}
                         </p>
                         <h2 className="mt-3 text-xl font-semibold" style={{ color: 'var(--text-primary)' }}>
@@ -89,7 +89,7 @@ export default function JobWizardLayout({
                                 <span>{completion}%</span>
                             </div>
                             <div className="h-2.5 overflow-hidden rounded-full bg-black/[0.06] dark:bg-white/10">
-                                <div className="h-full rounded-full bg-gradient-to-r from-[var(--workspace-accent)] to-[var(--workspace-primary)] transition-[width] duration-300" style={{ width: `${completion}%` }} />
+                                <div className="h-full rounded-full transition-[width] duration-300" style={{ width: `${completion}%`, background: 'linear-gradient(135deg, var(--workspace-primary) 0%, var(--workspace-primary-hover) 100%)' }} />
                             </div>
                             <div className="flex items-center justify-between text-xs" style={{ color: 'var(--text-muted)' }}>
                                 <span>{tx('jobs.new.stepCounter', { current: currentStep, total: steps.length }, `Step ${currentStep} of ${steps.length}`)}</span>
@@ -112,14 +112,14 @@ export default function JobWizardLayout({
                                 className="rounded-[1.5rem] border p-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_18px_36px_-26px_rgba(245,158,11,0.2)]"
                                 style={isCurrent
                                     ? {
-                                        borderColor: 'color-mix(in srgb, var(--brand-accent) 34%, transparent)',
-                                        background: 'color-mix(in srgb, var(--brand-accent) 12%, transparent)',
-                                        boxShadow: '0 24px 48px -34px color-mix(in srgb, var(--brand-accent) 44%, transparent)',
+                                        borderColor: 'color-mix(in srgb, var(--workspace-primary) 34%, transparent)',
+                                        background: 'color-mix(in srgb, var(--workspace-primary) 12%, transparent)',
+                                        boxShadow: '0 24px 48px -34px color-mix(in srgb, var(--workspace-primary) 44%, transparent)',
                                     }
                                     : isCompleted
                                         ? {
-                                            borderColor: 'color-mix(in srgb, var(--brand-accent) 30%, transparent)',
-                                            background: 'color-mix(in srgb, var(--brand-accent) 10%, transparent)',
+                                            borderColor: 'color-mix(in srgb, var(--workspace-primary) 30%, transparent)',
+                                            background: 'color-mix(in srgb, var(--workspace-primary) 10%, transparent)',
                                         }
                                         : {
                                             borderColor: 'var(--border)',
@@ -130,9 +130,9 @@ export default function JobWizardLayout({
                                     <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl text-sm font-semibold ${isCurrent
                                         ? 'text-white'
                                         : isCompleted
-                                            ? 'bg-[color:var(--brand-accent)]/15 text-[color:var(--brand-accent)] dark:bg-[color:var(--brand-accent)]/15 dark:text-[#fbbf24]'
+                                            ? 'bg-[color:var(--workspace-primary)]/15 text-[color:var(--workspace-primary)] dark:bg-[color:var(--workspace-primary)]/15 dark:text-[#fbbf24]'
                                         : 'bg-gray-100 text-gray-500 dark:text-gray-400 dark:bg-white/8 dark:text-[#8b8aa0]'}`}
-                                        style={isCurrent ? { background: 'linear-gradient(135deg, var(--brand-accent), #f59e0b)' } : undefined}
+                                        style={isCurrent ? { background: 'linear-gradient(135deg, var(--workspace-primary), #f59e0b)' } : undefined}
                                     >
                                         {isCompleted ? <Check className="h-4 w-4" /> : step.id}
                                     </div>
@@ -163,3 +163,4 @@ export default function JobWizardLayout({
         </div>
     );
 }
+

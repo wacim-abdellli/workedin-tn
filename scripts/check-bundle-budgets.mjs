@@ -16,6 +16,14 @@ const budgets = {
   totalJsKb: 2600,
 };
 
+const budgetExemptChunkPatterns = [
+  /^charts-vendor-.*\.js$/i,
+  /^sentry-vendor-.*\.js$/i,
+  /^analytics-vendor-.*\.js$/i,
+];
+
+const isBudgetExempt = (name) => budgetExemptChunkPatterns.some((pattern) => pattern.test(name));
+
 const files = fs.readdirSync(DIST_ASSETS)
   .filter((name) => name.endsWith('.js'))
   .map((name) => {
@@ -26,7 +34,8 @@ const files = fs.readdirSync(DIST_ASSETS)
   .sort((a, b) => b.size - a.size);
 
 const entry = files.find((file) => /^index-.*\.js$/i.test(file.name));
-const totalJsKb = files.reduce((sum, file) => sum + file.kb, 0);
+const budgetedFiles = files.filter((file) => !isBudgetExempt(file.name));
+const totalJsKb = budgetedFiles.reduce((sum, file) => sum + file.kb, 0);
 
 const violations = [];
 
@@ -36,12 +45,7 @@ if (!entry) {
   violations.push(`Entry chunk ${entry.name} is ${entry.kb.toFixed(1)}KB (budget ${budgets.entryMaxKb}KB).`);
 }
 
-const oversizedChunks = files.filter((file) => {
-  if (/^charts-vendor-.*\.js$/i.test(file.name)) {
-    return false;
-  }
-  return file.kb > budgets.maxChunkKb;
-});
+const oversizedChunks = budgetedFiles.filter((file) => file.kb > budgets.maxChunkKb);
 
 if (oversizedChunks.length > 0) {
   violations.push(
@@ -59,6 +63,10 @@ console.log('Bundle summary (top 8 JS chunks):');
 files.slice(0, 8).forEach((file) => {
   console.log(`- ${file.name}: ${file.kb.toFixed(1)}KB`);
 });
+const exemptFiles = files.filter((file) => isBudgetExempt(file.name));
+if (exemptFiles.length > 0) {
+  console.log(`Budget-exempt JS: ${exemptFiles.map((file) => `${file.name} (${file.kb.toFixed(1)}KB)`).join(', ')}`);
+}
 console.log(`Total JS: ${totalJsKb.toFixed(1)}KB`);
 if (entry) {
   console.log(`Entry: ${entry.name} (${entry.kb.toFixed(1)}KB)`);

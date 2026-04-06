@@ -69,7 +69,7 @@ const fr_translations = {
 };
 
 function formatKeys(obj) {
-  return Object.entries(obj).map(([k, v]) => \`                \${k}: "\${v}"\`).join(',\\n');
+  return Object.entries(obj).map(([k, v]) => `                ${k}: "${v}"`).join(',\n');
 }
 
 function injectVerificationQueue(filePath, formatKeysFn, translations) {
@@ -78,12 +78,12 @@ function injectVerificationQueue(filePath, formatKeysFn, translations) {
   // Let's find "admin: {" inside dashboard: {
   const adminRegex = /admin:\s*\{/;
   if (adminRegex.test(content) && !content.includes('verificationQueue:')) {
-    content = content.replace(adminRegex, \`admin: {
+    content = content.replace(adminRegex, `admin: {
             verificationQueue: {
-\${formatKeysFn(translations)}
-            },\`);
+${formatKeysFn(translations)}
+            },`);
     fs.writeFileSync(filePath, content, 'utf8');
-    console.log(\`Injected Verification Queue in \${filePath}\`);
+    console.log(`Injected Verification Queue in ${filePath}`);
   }
 }
 

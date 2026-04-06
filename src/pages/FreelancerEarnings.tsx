@@ -183,8 +183,8 @@ export default function FreelancerEarnings() {
       style={{ background: "var(--color-background-base)" }}
     >
       <SEO
-        title="Earnings | Khedma TN"
-        description="Your earnings and payment history on Khedma TN."
+        title={tx('pages.freelancerEarnings.seoTitle', undefined, 'Earnings | Khedma TN')}
+        description={tx('pages.freelancerEarnings.seoDescription', undefined, 'Your earnings and payment history on Khedma TN.')}
         url="/freelancer/earnings"
         noIndex
       />

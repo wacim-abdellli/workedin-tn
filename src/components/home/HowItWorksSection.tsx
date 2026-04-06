@@ -48,7 +48,7 @@ export function HowItWorksSection() {
                   <s.icon className="w-7 h-7" style={{ color: 'var(--workspace-primary)' }} />
                 </div>
                 <p
-                  className="font-display font-bold text-4xl mb-3 opacity-10"
+                  className="font-display font-bold text-4xl mb-3 opacity-[0.15]"
                   style={{ color: 'var(--workspace-primary)' }}
                 >
                   {s.step}

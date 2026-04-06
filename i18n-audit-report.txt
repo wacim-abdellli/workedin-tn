@@ -1,4 +1,4 @@
 # i18n audit report
-mode: report-only
+mode: strict
 findings: 0
 

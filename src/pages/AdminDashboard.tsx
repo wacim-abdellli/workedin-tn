@@ -93,7 +93,7 @@ export default function AdminDashboard() {
                 <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
                     <div className="w-full lg:w-[16.5rem] shrink-0">
                         <div className={`${adminPanelClass} sticky top-24 p-3`}>
-                            <div className="mb-3 px-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-400 dark:text-slate-500">Control Center</div>
+                            <div className="mb-3 px-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-400 dark:text-slate-500">{tx('dashboard.admin.controlCenter', undefined, 'Control Center')}</div>
                             <div className="flex gap-2 overflow-x-auto pb-1 sm:grid sm:grid-cols-2 sm:overflow-visible md:grid-cols-4 lg:grid-cols-1">
                                 {tabs.map(tab => (
                                     <button

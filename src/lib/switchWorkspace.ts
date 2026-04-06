@@ -82,6 +82,11 @@ export async function switchWorkspace({
     },
   });
 
+  // Delay scroll so it fires after navigation + re-render
+  window.setTimeout(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, 50);
+
   window.setTimeout(() => {
     useWorkspaceStore.getState().setSwitching(false);
   }, 300);

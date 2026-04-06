@@ -214,16 +214,16 @@ function ClientDashboardPage() {
                         ].map((stat) => (
                             <div
                                 key={stat.label}
-                                className="flex flex-col items-center px-[var(--spacing-4)] py-[var(--spacing-2)] rounded-[var(--radius-2xl)] border"
+                                className="flex flex-col items-center px-4 py-2 rounded-2xl border"
                                 style={{
-                                    background: stat.accent ? 'var(--color-brand-primary)' : 'var(--color-background-subtle)',
+                                    background: stat.accent ? 'var(--workspace-primary)' : 'var(--color-background-subtle)',
                                     borderColor: stat.accent ? 'transparent' : 'var(--color-border-subtle)',
                                 }}
                             >
-                                <span className="font-display font-[var(--font-fontWeight-bold)] text-[var(--font-fontSize-lg)] leading-tight" style={{ color: stat.accent ? '#fff' : 'var(--color-text-primary)' }}>
+                                <span className="font-display font-bold text-lg leading-tight" style={{ color: stat.accent ? '#fff' : 'var(--color-text-primary)' }}>
                                     {stat.value}
                                 </span>
-                                <span className="text-[11px] font-[var(--font-fontWeight-medium)] uppercase tracking-wider" style={{ color: stat.accent ? 'rgba(255,255,255,0.75)' : 'var(--color-text-tertiary)' }}>
+                                <span className="text-[11px] font-medium uppercase tracking-wider" style={{ color: stat.accent ? 'rgba(255,255,255,0.75)' : 'var(--color-text-tertiary)' }}>
                                     {stat.label}
                                 </span>
                             </div>
@@ -357,26 +357,27 @@ function ClientDashboardPage() {
                     <motion.div className="space-y-[var(--spacing-5)]" variants={containerVariants} initial="hidden" animate="show">
                         <motion.div variants={itemVariants}>
                             <div
-                                className="relative overflow-hidden rounded-[var(--radius-2xl)] p-[var(--spacing-6)] sm:p-[var(--spacing-8)] bg-[var(--color-brand-primary)]"
+                                className="relative overflow-hidden rounded-[var(--radius-2xl)] p-[var(--spacing-6)] sm:p-[var(--spacing-8)]"
+                                style={{ background: 'var(--workspace-primary)' }}
                             >
                                 {/* Decorative elements */}
-                                <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/30 to-transparent" />
-                                <div className="pointer-events-none absolute -right-12 -top-12 h-40 w-40 rounded-full bg-white dark:bg-gray-800/20 blur-3xl" />
+                                <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/20 to-transparent" />
+                                <div className="pointer-events-none absolute -right-12 -top-12 h-40 w-40 rounded-full bg-white/10 blur-3xl" />
                                 <div className="pointer-events-none absolute -bottom-12 -left-12 h-40 w-40 rounded-full bg-black/10 blur-3xl" />
                                 
                                 <div className="relative z-10">
-                                    <div className="mb-[var(--spacing-4)] inline-flex h-12 w-12 items-center justify-center rounded-full border border-white/30 dark:border-gray-800/30 bg-white dark:bg-gray-800/20 shadow-inner backdrop-blur-md">
-                                        <Plus className="h-6 w-6 text-dark-950" />
+                                    <div className="mb-[var(--spacing-4)] inline-flex h-12 w-12 items-center justify-center rounded-full border border-white/30 bg-white/20 shadow-inner backdrop-blur-md">
+                                        <Plus className="h-6 w-6 text-white" />
                                     </div>
-                                    <h3 className="mb-[var(--spacing-2)] font-display text-[1.75rem] font-[var(--font-fontWeight-bold)] tracking-tight text-dark-950 leading-tight">
+                                    <h3 className="mb-[var(--spacing-2)] font-display text-[1.75rem] font-bold tracking-tight text-white leading-tight">
                                         {tx('dashboard.client.needSomethingDone', undefined, 'Need something done?')}
                                     </h3>
-                                    <p className="mb-[var(--spacing-8)] text-[15px] font-[var(--font-fontWeight-medium)] leading-relaxed text-dark-950/80">
+                                    <p className="mb-[var(--spacing-8)] text-[15px] font-medium leading-relaxed text-white/80">
                                         {tx('dashboard.client.postProjectFree', undefined, 'Post a project free. Get proposals from verified Tunisian talent.')}
                                     </p>
                                     <button
                                         onClick={() => navigate('/jobs/new')}
-                                        className="group flex w-full items-center justify-center gap-[var(--spacing-2)] rounded-xl bg-dark-950 px-[var(--spacing-4)] py-[var(--spacing-3)] text-[var(--font-fontSize-sm)] font-[var(--font-fontWeight-bold)] text-white shadow-[var(--shadow-elevation-3)] transition-all duration-[var(--animation-hover-duration)] hover:-translate-y-0.5 hover:bg-dark-800 hover:shadow-[var(--shadow-elevation-4)] active:translate-y-0"
+                                        className="group flex w-full items-center justify-center gap-[var(--spacing-2)] rounded-xl bg-black/80 px-[var(--spacing-4)] py-[var(--spacing-3)] text-sm font-bold text-white shadow-lg transition-all duration-150 hover:-translate-y-0.5 hover:bg-black/90 active:translate-y-0"
                                     >
                                         {tx('dashboard.client.postProjectFreeCta', undefined, 'Post a project — it\'s free')}
                                         <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />

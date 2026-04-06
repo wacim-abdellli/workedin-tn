@@ -60,7 +60,7 @@ export default function ReviewsSection({ reviews, stats }: ReviewsSectionProps) 
                                 <span className="text-sm font-medium w-3 text-[var(--text-secondary)]">{stars}</span>
                                 <div className="flex-1 h-2 bg-black/[0.08] dark:white/[0.08] rounded-full overflow-hidden">
                                     <div
-                                        className="h-full bg-[linear-gradient(90deg,var(--workspace-primary),var(--brand-accent))] rounded-full"
+                                        className="h-full bg-[linear-gradient(90deg,var(--workspace-primary),var(--workspace-primary))] rounded-full"
                                         style={{ width: `${percentage}%` }}
                                     />
                                 </div>

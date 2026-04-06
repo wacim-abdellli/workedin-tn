@@ -33,7 +33,7 @@ export default function JobPostSuccess() {
                 <section
                     className="radius-shell overflow-hidden border p-6 sm:p-8"
                     style={{
-                        borderColor: 'color-mix(in srgb, var(--brand-accent) 16%, var(--border))',
+                        borderColor: 'color-mix(in srgb, var(--workspace-primary) 16%, var(--border))',
                         background: 'radial-gradient(circle at top left, color-mix(in srgb, #10b981 12%, transparent), transparent 28%), linear-gradient(145deg, color-mix(in srgb, var(--card-bg) 96%, transparent), color-mix(in srgb, var(--surface-bg) 92%, transparent))',
                         boxShadow: '0 32px 90px -48px rgba(16,185,129,0.2)',
                     }}
@@ -103,7 +103,7 @@ export default function JobPostSuccess() {
                         <div
                             className="rounded-[1.75rem] border p-5 shadow-sm"
                             style={{
-                                borderColor: 'color-mix(in srgb, var(--brand-accent) 18%, var(--border))',
+                                borderColor: 'color-mix(in srgb, var(--workspace-primary) 18%, var(--border))',
                                 background: 'color-mix(in srgb, var(--surface-bg) 88%, transparent)',
                             }}
                         >
@@ -117,8 +117,8 @@ export default function JobPostSuccess() {
                                         key={step.title}
                                         className="rounded-2xl border p-4"
                                         style={{
-                                            borderColor: 'color-mix(in srgb, var(--brand-accent) 16%, var(--border))',
-                                            background: 'color-mix(in srgb, var(--brand-accent) 8%, var(--card-bg))',
+                                            borderColor: 'color-mix(in srgb, var(--workspace-primary) 16%, var(--border))',
+                                            background: 'color-mix(in srgb, var(--workspace-primary) 8%, var(--card-bg))',
                                         }}
                                     >
                                         <div className="flex items-start gap-3">
@@ -157,7 +157,7 @@ export default function JobPostSuccess() {
                             <div
                                 className="rounded-[1.5rem] border p-5"
                                 style={{
-                                    borderColor: 'color-mix(in srgb, var(--brand-accent) 16%, var(--border))',
+                                    borderColor: 'color-mix(in srgb, var(--workspace-primary) 16%, var(--border))',
                                     background: 'color-mix(in srgb, var(--surface-bg) 90%, transparent)',
                                 }}
                             >
@@ -167,7 +167,7 @@ export default function JobPostSuccess() {
                             <div
                                 className="rounded-[1.5rem] border p-5"
                                 style={{
-                                    borderColor: 'color-mix(in srgb, var(--brand-accent) 16%, var(--border))',
+                                    borderColor: 'color-mix(in srgb, var(--workspace-primary) 16%, var(--border))',
                                     background: 'color-mix(in srgb, var(--surface-bg) 90%, transparent)',
                                 }}
                             >
@@ -177,7 +177,7 @@ export default function JobPostSuccess() {
                             <div
                                 className="rounded-[1.5rem] border p-5"
                                 style={{
-                                    borderColor: 'color-mix(in srgb, var(--brand-accent) 16%, var(--border))',
+                                    borderColor: 'color-mix(in srgb, var(--workspace-primary) 16%, var(--border))',
                                     background: 'color-mix(in srgb, var(--surface-bg) 90%, transparent)',
                                 }}
                             >

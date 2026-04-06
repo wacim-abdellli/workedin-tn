@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AlertTriangle, Eye, EyeOff, KeyRound, Loader2, ShieldCheck, Smartphone, Trash2 } from 'lucide-react';
+import { AlertTriangle, Eye, EyeOff, KeyRound, Loader2, Smartphone, Trash2 } from 'lucide-react';
 
 import { useTranslation } from '@/i18n';
 import { useAuth } from '@/contexts/AuthContext';
@@ -78,166 +78,143 @@ export default function SecuritySettings() {
 
     return (
         <>
-            <div className="space-y-4">
-                <div className="grid gap-4 lg:grid-cols-3">
-                    <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-gray-900/50 backdrop-blur-md transition-all hover:bg-gray-50 dark:hover:bg-gray-800/80">
-                        <p className="text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">
-                            {tx('settings.securityPosture', undefined, 'Security posture')}
-                        </p>
-                        <p className="mt-3 flex items-start sm:items-center gap-2.5 text-sm font-bold text-gray-900 dark:text-white">
-                            <ShieldCheck className="h-5 w-5 shrink-0 text-green-500" />
-                            {tx('settings.securityPostureValue', undefined, 'Protected by account session controls')}
-                        </p>
+            <div className="space-y-6">
+                {/* Password Change Section */}
+                <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                        <KeyRound className="h-4 w-4" style={{ color: "var(--color-text-tertiary)" }} />
+                        <h3 className="text-sm font-medium" style={{ color: "var(--color-text-primary)" }}>
+                            {tx('settings.changePasswordTitle', undefined, 'Change password')}
+                        </h3>
                     </div>
-                    <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-gray-900/50 backdrop-blur-md transition-all hover:bg-gray-50 dark:hover:bg-gray-800/80">
-                        <p className="text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">
-                            {tx('settings.passwordStatus', undefined, 'Password status')}
-                        </p>
-                        <p className="mt-3 text-sm font-bold text-gray-900 dark:text-white">
-                            {isEmailAuth
-                                ? tx('settings.passwordSet', undefined, 'Password is set')
-                                : tx('settings.noPasswordOAuth', { provider: providerLabel }, `Signed in via ${providerLabel} — no password needed`)}
-                        </p>
-                    </div>
-                    <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-gray-900/50 backdrop-blur-md transition-all hover:bg-gray-50 dark:hover:bg-gray-800/80">
-                        <p className="text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">
-                            {tx('settings.activeSessionsTitle', undefined, 'Active sessions')}
-                        </p>
-                        <p className="mt-3 text-sm font-bold text-gray-900 dark:text-white">
-                            {tx('settings.activeSessionsMessage', undefined, 'This device is your only active session')}
-                        </p>
-                    </div>
+                    {isEmailAuth ? (
+                        <div className="space-y-3 max-w-md">
+                            <div>
+                                <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--color-text-secondary)" }}>
+                                    {tx('settings.newPassword', undefined, 'New password')}
+                                </label>
+                                <div className="relative">
+                                    <input
+                                        type={showNewPassword ? 'text' : 'password'}
+                                        value={newPassword}
+                                        onChange={(e) => { setNewPassword(e.target.value); setPasswordError(null); }}
+                                        placeholder="••••••••"
+                                        className="input w-full pe-10"
+                                        minLength={8}
+                                        dir="ltr"
+                                        style={{ 
+                                            background: "var(--color-background-base)", 
+                                            borderColor: "var(--color-border-subtle)",
+                                            color: "var(--color-text-primary)",
+                                            fontSize: "0.875rem",
+                                            padding: "0.625rem 0.75rem"
+                                        }}
+                                    />
+                                    <button
+                                        type="button"
+                                        className="absolute end-2.5 top-1/2 -translate-y-1/2 p-1 transition-colors"
+                                        style={{ color: "var(--color-text-tertiary)" }}
+                                        onClick={() => setShowNewPassword(!showNewPassword)}
+                                        onMouseEnter={e => e.currentTarget.style.color = "var(--color-text-secondary)"}
+                                        onMouseLeave={e => e.currentTarget.style.color = "var(--color-text-tertiary)"}
+                                        aria-label={showNewPassword ? 'Hide password' : 'Show password'}
+                                    >
+                                        {showNewPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                                    </button>
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--color-text-secondary)" }}>
+                                    {tx('settings.confirmPassword', undefined, 'Confirm new password')}
+                                </label>
+                                <div className="relative">
+                                    <input
+                                        type={showConfirmPassword ? 'text' : 'password'}
+                                        value={confirmPassword}
+                                        onChange={(e) => { setConfirmPassword(e.target.value); setPasswordError(null); }}
+                                        placeholder="••••••••"
+                                        className="input w-full pe-10"
+                                        minLength={8}
+                                        dir="ltr"
+                                        style={{ 
+                                            background: "var(--color-background-base)", 
+                                            borderColor: "var(--color-border-subtle)",
+                                            color: "var(--color-text-primary)",
+                                            fontSize: "0.875rem",
+                                            padding: "0.625rem 0.75rem"
+                                        }}
+                                    />
+                                    <button
+                                        type="button"
+                                        className="absolute end-2.5 top-1/2 -translate-y-1/2 p-1 transition-colors"
+                                        style={{ color: "var(--color-text-tertiary)" }}
+                                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                        onMouseEnter={e => e.currentTarget.style.color = "var(--color-text-secondary)"}
+                                        onMouseLeave={e => e.currentTarget.style.color = "var(--color-text-tertiary)"}
+                                        aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+                                    >
+                                        {showConfirmPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                                    </button>
+                                </div>
+                            </div>
+                            {passwordError && (
+                                <p className="text-xs" style={{ color: "var(--color-status-error)" }}>{passwordError}</p>
+                            )}
+                            <Button
+                                variant="primary"
+                                size="sm"
+                                onClick={handleChangePassword}
+                                disabled={isChangingPassword || !newPassword || !confirmPassword}
+                                leftIcon={isChangingPassword ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : undefined}
+                            >
+                                {isChangingPassword
+                                    ? tx('settings.updatingPassword', undefined, 'Updating...')
+                                    : tx('settings.updatePassword', undefined, 'Update password')}
+                            </Button>
+                        </div>
+                    ) : (
+                        <div className="max-w-md">
+                            <p className="text-sm" style={{ color: "var(--color-text-secondary)" }}>
+                                {tx('settings.oauthPasswordMessage', undefined, `You signed in with ${providerLabel}. Password management is handled by your identity provider.`)}
+                            </p>
+                        </div>
+                    )}
                 </div>
 
-                <div className="space-y-4">
-                    {/* Password Change Section */}
-                    <div className="rounded-2xl border border-gray-200 bg-white dark:bg-gray-900/40 p-6 shadow-sm dark:border-white/10 backdrop-blur-sm">
-                        <div className="flex items-start gap-3">
-                            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary-50 text-primary-600 dark:bg-primary-500/20 dark:text-primary-300">
-                                <KeyRound className="h-5 w-5" />
-                            </div>
-                            <div className="flex-1">
-                                <h3 className="text-base font-semibold text-[#171420] dark:text-white">
-                                    {tx('settings.changePasswordTitle', undefined, 'Change password')}
-                                </h3>
-                                {isEmailAuth ? (
-                                    <div className="mt-4 space-y-4 max-w-md">
-                                        <div>
-                                            <label className="block text-sm font-medium text-foreground mb-1.5">
-                                                {tx('settings.newPassword', undefined, 'New password')}
-                                            </label>
-                                            <div className="relative">
-                                                <input
-                                                    type={showNewPassword ? 'text' : 'password'}
-                                                    value={newPassword}
-                                                    onChange={(e) => { setNewPassword(e.target.value); setPasswordError(null); }}
-                                                    placeholder="••••••••"
-                                                    className="input w-full pe-12"
-                                                    minLength={8}
-                                                    dir="ltr"
-                                                />
-                                                <button
-                                                    type="button"
-                                                    className="absolute end-3 top-1/2 -translate-y-1/2 p-1 text-muted hover:text-foreground transition-colors"
-                                                    onClick={() => setShowNewPassword(!showNewPassword)}
-                                                    aria-label={showNewPassword ? 'Hide password' : 'Show password'}
-                                                >
-                                                    {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                                                </button>
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-foreground mb-1.5">
-                                                {tx('settings.confirmPassword', undefined, 'Confirm new password')}
-                                            </label>
-                                            <div className="relative">
-                                                <input
-                                                    type={showConfirmPassword ? 'text' : 'password'}
-                                                    value={confirmPassword}
-                                                    onChange={(e) => { setConfirmPassword(e.target.value); setPasswordError(null); }}
-                                                    placeholder="••••••••"
-                                                    className="input w-full pe-12"
-                                                    minLength={8}
-                                                    dir="ltr"
-                                                />
-                                                <button
-                                                    type="button"
-                                                    className="absolute end-3 top-1/2 -translate-y-1/2 p-1 text-muted hover:text-foreground transition-colors"
-                                                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                                    aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
-                                                >
-                                                    {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                                                </button>
-                                            </div>
-                                        </div>
-                                        {passwordError && (
-                                            <p className="text-sm text-red-500 dark:text-red-400">{passwordError}</p>
-                                        )}
-                                        <Button
-                                            variant="primary"
-                                            className="rounded-xl"
-                                            onClick={handleChangePassword}
-                                            disabled={isChangingPassword || !newPassword || !confirmPassword}
-                                            leftIcon={isChangingPassword ? <Loader2 className="w-4 h-4 animate-spin" /> : undefined}
-                                        >
-                                            {isChangingPassword
-                                                ? tx('settings.updatingPassword', undefined, 'Updating...')
-                                                : tx('settings.updatePassword', undefined, 'Update password')}
-                                        </Button>
-                                    </div>
-                                ) : (
-                                    <>
-                                        <p className="mt-2 text-sm leading-6 text-[#6b6880] dark:text-[#8b8aa0]">
-                                            {tx('settings.oauthPasswordMessage', undefined, `You signed in with ${providerLabel}. Password management is handled by your identity provider.`)}
-                                        </p>
-                                        <Button variant="outline" disabled className="mt-4 rounded-xl">
-                                            {tx('settings.managedByProvider', undefined, `Managed by ${providerLabel}`)}
-                                        </Button>
-                                    </>
-                                )}
-                            </div>
-                        </div>
-                    </div>
+                <div className="border-t" style={{ borderColor: "var(--color-border-subtle)" }} />
 
-                    {/* Active Sessions */}
-                    <div className="rounded-[1.6rem] border border-primary-100/70 bg-white dark:bg-gray-800 p-5 dark:border-white/10 dark:border-gray-800 dark:white/[0.04]">
-                        <div className="flex items-start gap-3">
-                            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary-50 text-primary-600 dark:bg-primary-500/20 dark:text-primary-300">
-                                <Smartphone className="h-5 w-5" />
-                            </div>
-                            <div className="flex-1">
-                                <h3 className="text-base font-semibold text-[#171420] dark:text-white">
-                                    {tx('settings.activeSessionsTitle', undefined, 'Active sessions')}
-                                </h3>
-                                <p className="mt-2 text-sm leading-6 text-[#6b6880] dark:text-[#8b8aa0]">
-                                    {tx('settings.activeSessionsMessage', undefined, 'This device is your only active session')}
-                                </p>
-                                <Button variant="outline" className="mt-4 rounded-xl" onClick={handleLogout}>
-                                    {tx('settings.signOutAllDevices', undefined, 'Sign out from all devices')}
-                                </Button>
-                            </div>
-                        </div>
+                {/* Active Sessions */}
+                <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                        <Smartphone className="h-4 w-4" style={{ color: "var(--color-text-tertiary)" }} />
+                        <h3 className="text-sm font-medium" style={{ color: "var(--color-text-primary)" }}>
+                            {tx('settings.activeSessionsTitle', undefined, 'Active sessions')}
+                        </h3>
                     </div>
+                    <p className="text-sm max-w-md" style={{ color: "var(--color-text-secondary)" }}>
+                        {tx('settings.activeSessionsMessage', undefined, 'This device is your only active session')}
+                    </p>
+                    <Button variant="outline" size="sm" onClick={handleLogout}>
+                        {tx('settings.signOutAllDevices', undefined, 'Sign out from all devices')}
+                    </Button>
+                </div>
 
-                    {/* Delete Account */}
-                    <div className="rounded-[1.6rem] border border-red-500/15 bg-red-500/[0.06] p-5 dark:border-red-500/20 dark:bg-red-500/[0.08]">
-                        <div className="flex items-start gap-3">
-                            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-red-500/12 text-red-500">
-                                <AlertTriangle className="h-5 w-5" />
-                            </div>
-                            <div className="flex-1">
-                                <h3 className="text-base font-semibold text-red-700 dark:text-red-300">
-                                    {tx('settings.deleteAccountTitle', undefined, 'Delete account')}
-                                </h3>
-                                <p className="mt-2 text-sm leading-6 text-red-700/80 dark:text-red-200/80">
-                                    {tx('settings.deleteAccountDescription', undefined, 'Your account and all data will be permanently deleted. This action cannot be undone.')}
-                                </p>
-                                <Button variant="danger" className="mt-4 rounded-xl" onClick={() => setIsDeleteModalOpen(true)} leftIcon={<Trash2 className="w-4 h-4" />}>
-                                    {tx('settings.deleteMyAccount', undefined, 'Delete my account')}
-                                </Button>
-                            </div>
-                        </div>
+                <div className="border-t" style={{ borderColor: "var(--color-border-subtle)" }} />
+
+                {/* Delete Account */}
+                <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                        <AlertTriangle className="h-4 w-4" style={{ color: "var(--color-status-error)" }} />
+                        <h3 className="text-sm font-medium" style={{ color: "var(--color-status-error)" }}>
+                            {tx('settings.deleteAccountTitle', undefined, 'Delete account')}
+                        </h3>
                     </div>
+                    <p className="text-sm max-w-md" style={{ color: "var(--color-text-secondary)" }}>
+                        {tx('settings.deleteAccountDescription', undefined, 'Your account and all data will be permanently deleted. This action cannot be undone.')}
+                    </p>
+                    <Button variant="danger" size="sm" onClick={() => setIsDeleteModalOpen(true)} leftIcon={<Trash2 className="w-3.5 h-3.5" />}>
+                        {tx('settings.deleteMyAccount', undefined, 'Delete my account')}
+                    </Button>
                 </div>
             </div>
 

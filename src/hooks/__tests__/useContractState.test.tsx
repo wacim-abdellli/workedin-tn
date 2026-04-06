@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const hookState = vi.hoisted(() => ({
     tableResults: {} as Record<string, unknown>,
     updateCalls: [] as unknown[],
+    rpcCalls: [] as Array<{ fn: string; params: unknown }>,
     sendMessage: vi.fn(),
 }));
 
@@ -39,11 +40,15 @@ vi.mock('@/lib/supabase', () => {
         return builder;
     };
 
-    return {
-        supabase: {
-            from: vi.fn((table: string) => createBuilder(table)),
-        },
-    };
+        return {
+            supabase: {
+                from: vi.fn((table: string) => createBuilder(table)),
+                rpc: vi.fn(async (fn: string, params: unknown) => {
+                    hookState.rpcCalls.push({ fn, params });
+                    return { error: null };
+                }),
+            },
+        };
 });
 
 import { logger } from '@/lib/logger';
@@ -67,6 +72,7 @@ describe('useContractState', () => {
             },
         };
         hookState.updateCalls = [];
+        hookState.rpcCalls = [];
         hookState.sendMessage.mockResolvedValue({ error: null });
     });
 
@@ -137,14 +143,15 @@ describe('useContractState', () => {
             await result.current.acceptWork();
         });
 
-        expect(hookState.updateCalls).toContainEqual({
-            table: 'contracts',
-            value: expect.objectContaining({
-                status: 'completed',
-                payment_status: 'released',
-                completed_at: expect.any(String),
-            }),
+        expect(hookState.rpcCalls).toContainEqual({
+            fn: 'release_contract_payment_atomic',
+            params: { p_contract_id: 'contract-1' },
         });
+        expect(result.current.contract).toEqual(expect.objectContaining({
+            status: 'completed',
+            payment_status: 'released',
+            completed_at: expect.any(String),
+        }));
 
         const disputeHook = renderHook(() =>
             useContractState({
@@ -166,13 +173,17 @@ describe('useContractState', () => {
             await disputeHook.result.current.openDispute('Milestone disagreement');
         });
 
-        expect(hookState.updateCalls).toContainEqual({
-            table: 'contracts',
-            value: expect.objectContaining({
-                status: 'disputed',
-                dispute_reason: 'Milestone disagreement',
-            }),
+        expect(hookState.rpcCalls).toContainEqual({
+            fn: 'open_dispute_atomic',
+            params: {
+                p_contract_id: 'contract-1',
+                p_reason: 'Milestone disagreement',
+            },
         });
+        expect(disputeHook.result.current.contract).toEqual(expect.objectContaining({
+            status: 'disputed',
+            dispute_reason: 'Milestone disagreement',
+        }));
         expect(disputeHook.result.current.isDisputing).toBe(false);
     });
 

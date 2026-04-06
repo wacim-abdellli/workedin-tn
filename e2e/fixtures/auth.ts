@@ -1,6 +1,8 @@
 import { test as base, expect } from '@playwright/test';
 import type { Page } from '@playwright/test';
 
+const AUTHENTICATED_PATH_RE = /^(?:\/|\/dashboard(?:\/.*)?|\/onboarding(?:\/.*)?|\/freelancer(?:\/.*)?|\/client(?:\/.*)?)$/;
+
 // Test user credentials
 export const TEST_USERS = {
   freelancer: {
@@ -37,8 +39,8 @@ export async function login(page: Page, email: string, password: string) {
   await page.fill('input[type="password"]', password);
   await page.click('button[type="submit"]');
   
-  // Wait for successful login redirect with extended timeout
-  await page.waitForURL(/\/(dashboard|onboarding)/, { timeout: 15000 });
+  // Authenticated users now commonly land on home first, then navigate deeper as needed.
+  await page.waitForURL((url) => AUTHENTICATED_PATH_RE.test(url.pathname), { timeout: 15000 });
 }
 
 // Helper to log out

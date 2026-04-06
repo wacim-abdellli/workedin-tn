@@ -112,7 +112,7 @@ export function useRealtimeNotifications(userId: string | undefined) {
         return () => {
             if (channel) supabase.removeChannel(channel);
         };
-    }, [userId, queryClient, showToast]);
+    }, [userId, queryClient, showToast, tx]);
 
     const unreadCount = notifications.filter(n => !n.is_read).length;
 
@@ -172,7 +172,7 @@ export function useRealtimeNotifications(userId: string | undefined) {
             }
             showToast(tx('notifications.errors.deleteFailed', undefined, 'Failed to delete notification'), 'error');
         }
-    }, [userId, queryClient, showToast]);
+    }, [userId, queryClient, showToast, tx]);
 
     return { notifications, unreadCount, isLoading, markAsRead, markAllRead, deleteNotification };
 }

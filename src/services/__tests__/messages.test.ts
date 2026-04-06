@@ -104,20 +104,27 @@ describe('messages service coverage', () => {
         await getConversations('user-1');
         await getMessages('conversation-1');
 
-        // After N+1 optimization, conversations are fetched separately from profiles
         expect(state.selectCalls).toEqual(expect.arrayContaining([
-            expect.objectContaining({ table: 'conversations', columns: expect.stringContaining('messages(count)') }),
-            expect.objectContaining({ table: 'messages', columns: expect.stringContaining('sender:profiles!sender_id') }),
+            expect.objectContaining({ table: 'conversations', columns: expect.stringContaining('participant_1, participant_2') }),
+            expect.objectContaining({ table: 'messages', columns: '*' }),
         ]));
-        expect(state.orCalls).toContainEqual({
-            table: 'conversations',
-            value: 'participant_1.eq.user-1,participant_2.eq.user-1',
-        });
-        expect(state.eqCalls).toContainEqual({
-            table: 'messages',
-            column: 'conversation_id',
-            value: 'conversation-1',
-        });
+        expect(state.eqCalls).toEqual(expect.arrayContaining([
+            {
+                table: 'conversations',
+                column: 'participant_1',
+                value: 'user-1',
+            },
+            {
+                table: 'conversations',
+                column: 'participant_2',
+                value: 'user-1',
+            },
+            {
+                table: 'messages',
+                column: 'conversation_id',
+                value: 'conversation-1',
+            },
+        ]));
         expect(state.orderCalls).toEqual(expect.arrayContaining([
             { table: 'conversations', column: 'last_message_at', options: { ascending: false } },
             { table: 'messages', column: 'created_at', options: { ascending: false } },
@@ -141,7 +148,17 @@ describe('messages service coverage', () => {
         await markMessageRead('message-1');
         const subscription = subscribeToMessages('contract-1', vi.fn());
 
-        expect(result).toEqual({ data: { id: 'message-1' }, error: null });
+        expect(result).toEqual({
+            data: expect.objectContaining({
+                id: 'message-1',
+                sender: {
+                    id: 'sender-1',
+                    full_name: 'You',
+                    avatar_url: null,
+                },
+            }),
+            error: null,
+        });
         expect(state.insertCalls).toContainEqual({
             table: 'messages',
             value: expect.objectContaining({

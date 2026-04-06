@@ -8,6 +8,8 @@ const strictMode = process.argv.includes('--strict');
 
 const IGNORE_DIRS = new Set(['i18n', 'test', '__tests__', 'types', 'admin']);
 const SCAN_EXTENSIONS = new Set(['.tsx', '.ts']);
+const IGNORE_FILE_PATTERNS = [/\.example\.(?:ts|tsx)$/i];
+const BLOCK_COMMENT_RE = /\/\*[\s\S]*?\*\//g;
 
 const ATTRIBUTE_RE = /\b(?:placeholder|title|aria-label|label|alt)\s*=\s*"([^"{][^"]*)"/g;
 const JSX_TEXT_RE = />\s*([A-Za-z\u0600-\u06FF][^<>{\n]{1,})\s*</g;
@@ -38,7 +40,13 @@ const ALLOW_PATTERNS = [
   /item\.earnings/,
 ];
 
-const CODELIKE_FRAGMENT_RE = /(=>|\?\.|&&\s*\(|\)\.length\}?|\{[^}]*\}|\$\{[^}]*\})/;
+const CODELIKE_FRAGMENT_RE = /(=>|===|!==|\?\.|&&\s*\(|\)\.length\}?|\{[^}]*\}|\$\{[^}]*\})/;
+
+const shouldIgnoreFile = (filePath) =>
+  IGNORE_FILE_PATTERNS.some((pattern) => pattern.test(filePath));
+
+const stripBlockCommentsPreserveLines = (content) =>
+  content.replace(BLOCK_COMMENT_RE, (comment) => comment.replace(/[^\n]/g, ' '));
 
 const isAllowedText = (text) => {
   const cleaned = text.trim();
@@ -62,7 +70,7 @@ const walkFiles = (dir) => {
     }
 
     const ext = path.extname(entry.name);
-    if (SCAN_EXTENSIONS.has(ext)) {
+    if (SCAN_EXTENSIONS.has(ext) && !shouldIgnoreFile(fullPath)) {
       files.push(fullPath);
     }
   }
@@ -74,6 +82,7 @@ const findings = [];
 
 for (const filePath of walkFiles(SRC_DIR)) {
   const content = fs.readFileSync(filePath, 'utf8');
+  const scanContent = stripBlockCommentsPreserveLines(content);
   const extension = path.extname(filePath);
 
   const checks = [[DIRECT_STRING_RE, 'direct-string']];
@@ -85,7 +94,7 @@ for (const filePath of walkFiles(SRC_DIR)) {
   for (const [regex, category] of checks) {
     regex.lastIndex = 0;
     let match;
-    while ((match = regex.exec(content)) !== null) {
+    while ((match = regex.exec(scanContent)) !== null) {
       const rawText = (category === 'direct-string' ? match[2] : match[1])?.trim();
       if (!rawText || isAllowedText(rawText)) continue;
       if (CODELIKE_FRAGMENT_RE.test(rawText)) continue;
@@ -96,7 +105,7 @@ for (const filePath of walkFiles(SRC_DIR)) {
 
       findings.push({
         file: path.relative(ROOT, filePath).replaceAll('\\', '/'),
-        line: toLine(content, match.index),
+        line: toLine(scanContent, match.index),
         category,
         text: rawText.slice(0, 120),
       });

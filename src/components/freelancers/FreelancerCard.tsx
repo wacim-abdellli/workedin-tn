@@ -173,8 +173,8 @@ function FreelancerCard({
               <div className="text-lg font-bold" style={{ color: 'var(--workspace-accent)' }}>{freelancer.hourly_rate} TND</div>
               <div className="text-[10px] text-muted">{tx('pages.freelancerCard.hourlyRate', undefined, 'Hourly rate')}</div>
             </div>
-            <div className="rounded-2xl p-3 text-center" style={{ background: 'color-mix(in srgb, var(--brand-accent) 8%, var(--card-bg))' }}>
-              <div className="text-lg font-bold" style={{ color: 'var(--brand-accent)' }}>{freelancer.success_rate}%</div>
+            <div className="rounded-2xl p-3 text-center" style={{ background: 'color-mix(in srgb, var(--workspace-primary) 8%, var(--card-bg))' }}>
+              <div className="text-lg font-bold" style={{ color: 'var(--workspace-primary)' }}>{freelancer.success_rate}%</div>
               <div className="text-[10px] text-muted">{tx('pages.freelancerCard.successScore', undefined, 'Success score')}</div>
             </div>
           </div>

@@ -98,7 +98,7 @@ export function HeroSection({ stats }: HeroSectionProps) {
         className="pointer-events-none absolute inset-0"
         style={{
           background:
-            'radial-gradient(ellipse 60% 50% at 20% 30%, color-mix(in srgb, var(--workspace-primary) 18%, transparent) 0%, transparent 70%), radial-gradient(ellipse 50% 40% at 80% 80%, color-mix(in srgb, var(--brand-accent) 10%, transparent) 0%, transparent 70%)',
+            'radial-gradient(ellipse 60% 50% at 20% 30%, color-mix(in srgb, var(--workspace-primary) 18%, transparent) 0%, transparent 70%), radial-gradient(ellipse 50% 40% at 80% 80%, color-mix(in srgb, var(--workspace-accent) 10%, transparent) 0%, transparent 70%)',
         }}
       />
 
@@ -126,7 +126,7 @@ export function HeroSection({ stats }: HeroSectionProps) {
                 color: 'var(--workspace-primary-mid)',
               }}
             >
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="w-2 h-2 rounded-full animate-pulse" style={{ background: 'var(--color-status-success)' }} />
               {heroContent.eyebrow}
             </motion.div>
 
@@ -179,7 +179,7 @@ export function HeroSection({ stats }: HeroSectionProps) {
                 onClick={() => navigate(isFreelancer ? '/signup' : '/jobs/new')}
                 className="inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl font-semibold text-white transition-all duration-200 hover:opacity-90 hover:-translate-y-0.5"
                 style={{
-                  background: 'var(--gradient-primary)',
+                  background: 'linear-gradient(135deg, var(--workspace-primary) 0%, var(--workspace-primary-hover) 100%)',
                   fontSize: '1rem',
                   boxShadow: 'var(--shadow-md)',
                 }}

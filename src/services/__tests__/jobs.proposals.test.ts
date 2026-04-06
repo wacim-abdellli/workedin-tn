@@ -14,7 +14,8 @@ const queryState = vi.hoisted(() => {
         insertCalls: [] as unknown[],
         rpcCalls: [] as Array<{ fn: string; params: unknown }>,
         singleCalls: 0,
-        builderResult: { data: { id: 'proposal-1' }, error: null as unknown, count: 1 },
+        tableResults: {} as Record<string, unknown>,
+        builderResult: { data: { id: 'proposal-1' }, error: null as unknown, count: 1 } as { data: unknown; error: unknown; count: number },
         rpcResult: { data: 'proposal-1', error: null as unknown },
         uploadUrl: 'https://files.example/proposal.pdf',
     };
@@ -32,6 +33,35 @@ const queryState = vi.hoisted(() => {
         state.insertCalls = [];
         state.rpcCalls = [];
         state.singleCalls = 0;
+        state.tableResults = {
+            profiles: {
+                data: {
+                    id: 'free-1',
+                    user_type: 'freelancer',
+                    freelancer_onboarding_completed: true,
+                    full_name: 'Freelancer One',
+                    avatar_url: 'https://avatar.example/freelancer.png',
+                    bio: 'Experienced frontend engineer focused on reliable product delivery.',
+                    phone: '+21655123456',
+                    location: 'Tunis',
+                },
+                error: null,
+                count: 1,
+            },
+            freelancer_profiles: {
+                data: {
+                    id: 'free-1',
+                    title: 'Frontend Engineer',
+                    skills: ['React', 'TypeScript', 'Testing'],
+                    hourly_rate: 75,
+                    languages: ['Arabic', 'French'],
+                    education: ['ESPRIT'],
+                    work_samples: ['https://portfolio.example/work-sample'],
+                },
+                error: null,
+                count: 1,
+            },
+        };
         state.builderResult = { data: { id: 'proposal-1' }, error: null, count: 1 };
         state.rpcResult = { data: 'proposal-1', error: null };
         state.uploadUrl = 'https://files.example/proposal.pdf';
@@ -41,56 +71,66 @@ const queryState = vi.hoisted(() => {
 });
 
 vi.mock('@/lib/supabase', () => {
-    const builder = {
-        select: vi.fn((columns: string, options?: unknown) => {
-            queryState.state.selectCalls.push({ columns, options });
-            return builder;
-        }),
-        eq: vi.fn((column: string, value: unknown) => {
-            queryState.state.eqCalls.push({ column, value });
-            return builder;
-        }),
-        in: vi.fn((column: string, values: unknown[]) => {
-            queryState.state.inCalls.push({ column, values });
-            return builder;
-        }),
-        or: vi.fn((value: string) => {
-            queryState.state.orCalls.push(value);
-            return builder;
-        }),
-        gte: vi.fn((column: string, value: unknown) => {
-            queryState.state.gteCalls.push({ column, value });
-            return builder;
-        }),
-        lte: vi.fn((column: string, value: unknown) => {
-            queryState.state.lteCalls.push({ column, value });
-            return builder;
-        }),
-        order: vi.fn((column: string, options?: unknown) => {
-            queryState.state.orderCalls.push({ column, options });
-            return builder;
-        }),
-        range: vi.fn((from: number, to: number) => {
-            queryState.state.rangeCalls.push({ from, to });
-            return builder;
-        }),
-        insert: vi.fn((value: unknown) => {
-            queryState.state.insertCalls.push(value);
-            return builder;
-        }),
-        single: vi.fn(async () => {
-            queryState.state.singleCalls += 1;
-            return queryState.state.builderResult;
-        }),
-        maybeSingle: vi.fn(async () => ({ data: { id: 'free-1' }, error: null })),
-        then: (resolve: (value: unknown) => unknown) => Promise.resolve(resolve(queryState.state.builderResult)),
-    };
+    const builders = new Map<string, ReturnType<typeof createBuilder>>();
+
+    const getTableResult = (table: string) =>
+        queryState.state.tableResults[table] ?? queryState.state.builderResult;
+
+    function createBuilder(table: string) {
+        const builder = {
+            select: vi.fn((columns: string, options?: unknown) => {
+                queryState.state.selectCalls.push({ columns, options });
+                return builder;
+            }),
+            eq: vi.fn((column: string, value: unknown) => {
+                queryState.state.eqCalls.push({ column, value });
+                return builder;
+            }),
+            in: vi.fn((column: string, values: unknown[]) => {
+                queryState.state.inCalls.push({ column, values });
+                return builder;
+            }),
+            or: vi.fn((value: string) => {
+                queryState.state.orCalls.push(value);
+                return builder;
+            }),
+            gte: vi.fn((column: string, value: unknown) => {
+                queryState.state.gteCalls.push({ column, value });
+                return builder;
+            }),
+            lte: vi.fn((column: string, value: unknown) => {
+                queryState.state.lteCalls.push({ column, value });
+                return builder;
+            }),
+            order: vi.fn((column: string, options?: unknown) => {
+                queryState.state.orderCalls.push({ column, options });
+                return builder;
+            }),
+            range: vi.fn((from: number, to: number) => {
+                queryState.state.rangeCalls.push({ from, to });
+                return builder;
+            }),
+            insert: vi.fn((value: unknown) => {
+                queryState.state.insertCalls.push(value);
+                return builder;
+            }),
+            single: vi.fn(async () => {
+                queryState.state.singleCalls += 1;
+                return getTableResult(table);
+            }),
+            maybeSingle: vi.fn(async () => getTableResult(table)),
+            then: (resolve: (value: unknown) => unknown) => Promise.resolve(resolve(getTableResult(table))),
+        };
+
+        builders.set(table, builder);
+        return builder;
+    }
 
     return {
         supabase: {
             from: vi.fn((table: string) => {
                 queryState.state.fromCalls.push(table);
-                return builder;
+                return builders.get(table) ?? createBuilder(table);
             }),
             rpc: vi.fn(async (fn: string, params: unknown) => {
                 queryState.state.rpcCalls.push({ fn, params });
@@ -100,7 +140,7 @@ vi.mock('@/lib/supabase', () => {
         supabaseAnon: {
             from: vi.fn((table: string) => {
                 queryState.state.fromCalls.push(table);
-                return builder;
+                return builders.get(table) ?? createBuilder(table);
             }),
         },
         uploadFile: vi.fn(async () => queryState.state.uploadUrl),
@@ -191,7 +231,7 @@ describe('jobs service targeted coverage', () => {
             title: 'Launch backend',
             status: 'open',
         }));
-        expect(queryState.state.selectCalls.at(-1)).toEqual({ columns: 'id', options: undefined });
+        expect(queryState.state.selectCalls[queryState.state.selectCalls.length - 1]).toEqual({ columns: 'id', options: undefined });
         expect(queryState.state.singleCalls).toBe(1);
     });
 });
@@ -213,7 +253,7 @@ describe('proposals service targeted coverage', () => {
         }, [file]);
 
         expect(result).toEqual({ data: 'proposal-1', error: null });
-        expect(queryState.state.fromCalls).toEqual(expect.arrayContaining(['freelancer_profiles', 'proposals']));
+        expect(queryState.state.fromCalls).toEqual(expect.arrayContaining(['profiles', 'freelancer_profiles', 'proposals']));
         expect(queryState.state.insertCalls).toContainEqual(expect.objectContaining({
             job_id: 'job-1',
             freelancer_id: 'free-1',

@@ -58,10 +58,16 @@ export default function CategoriesSection() {
             <div className="container-custom">
                 <div className="text-center mb-12">
                     <span className="badge-accent mb-4">{t.home.sections.categories.badge}</span>
-                    <h2 className="heading-lg mb-4 text-gray-900 dark:text-white">
+                    <h2
+                        className="heading-lg mb-4"
+                        style={{ color: 'var(--color-text-primary)' }}
+                    >
                         {t.categories.title}
                     </h2>
-                    <p className="text-gray-500 dark:text-zinc-400 max-w-2xl mx-auto">
+                    <p
+                        className="max-w-2xl mx-auto"
+                        style={{ color: 'var(--color-text-secondary)' }}
+                    >
                         {t.home.sections.categories.subtitle}
                     </p>
                 </div>
@@ -71,32 +77,40 @@ export default function CategoriesSection() {
                         <Link
                             key={category.id}
                             to={`/jobs?cat=${category.id}`}
-                            className="p-6 text-center group rounded-[1.6rem] border bg-white dark:bg-zinc-900 border-gray-200 dark:border-white/5 transition-all duration-300 shadow-sm hover:shadow-md"
+                            className="p-6 text-center group rounded-[1.6rem] border transition-all duration-300 shadow-sm hover:shadow-md"
+                            style={{
+                                background: 'var(--color-background-elevated)',
+                                borderColor: 'var(--color-border-subtle)',
+                                animationDelay: `${index * 50}ms`,
+                            }}
                             onMouseEnter={(e) => {
-                                e.currentTarget.style.borderColor = 'var(--workspace-accent)';
+                                e.currentTarget.style.borderColor = 'var(--workspace-primary)';
                                 e.currentTarget.style.transform = 'translateY(-4px)';
                             }}
                             onMouseLeave={(e) => {
-                                e.currentTarget.style.borderColor = '';
+                                e.currentTarget.style.borderColor = 'var(--color-border-subtle)';
                                 e.currentTarget.style.transform = 'translateY(0)';
-                            }}
-                            style={{
-                                animationDelay: `${index * 50}ms`
                             }}
                         >
                             <div
                                 className="w-16 h-16 mx-auto mb-4 rounded-2xl flex items-center justify-center transition-all duration-300 shadow-sm group-hover:shadow-md"
                                 style={{
-                                    background: 'color-mix(in srgb, var(--workspace-accent) 15%, transparent)',
-                                    color: 'var(--workspace-accent)'
+                                    background: 'color-mix(in srgb, var(--workspace-primary) 15%, transparent)',
+                                    color: 'var(--workspace-primary)',
                                 }}
                             >
                                 {iconMap[category.id]}
                             </div>
-                            <h3 className="font-semibold text-sm mb-1 text-gray-900 dark:text-white">
+                            <h3
+                                className="font-semibold text-sm mb-1"
+                                style={{ color: 'var(--color-text-primary)' }}
+                            >
                                 {category.name}
                             </h3>
-                            <p className="text-xs text-gray-600 dark:text-zinc-400">
+                            <p
+                                className="text-xs"
+                                style={{ color: 'var(--color-text-secondary)' }}
+                            >
                                 {categoryCounts[category.id] ?? 0} {t.categories.availableJobs}
                             </p>
                         </Link>

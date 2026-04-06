@@ -368,63 +368,121 @@ function JobBoard() {
                     <div className="flex-1 min-w-0">
                         {/* Results Bar */}
                         <div className={cn(
-                            'flex items-center justify-between mb-4 px-4 py-3 rounded-xl',
+                            'flex flex-col gap-3 mb-4 px-4 py-3 rounded-xl',
                             'bg-[var(--card-bg)]',
                             'border border-[var(--border)]/50'
                         )}>
-                            <p className="text-sm text-[var(--text-muted)]">
-                                {tx('jobBoard.showing', undefined, 'Showing')} <span className="font-semibold text-[var(--text-primary)]">{totalCount}</span> {tx('jobBoard.jobs', undefined, 'jobs')}
-                            </p>
-                            <div className="hidden lg:flex items-center gap-3">
-                                <select
-                                    value={filters.sortBy}
-                                    onChange={(e) => updateFilter('sortBy', e.target.value)}
-                                    className={cn(
-                                        'rounded-lg border px-3 py-2 text-sm',
-                                        'bg-[var(--input-bg)] text-[var(--input-text)]',
-                                        'border-[var(--input-border)]',
-                                        'focus:outline-none focus:border-[var(--input-border-focus)]'
-                                    )}
-                                >
-                                    {sortOptions.map(opt => (
-                                        <option key={opt.value} value={opt.value}>{opt.label}</option>
-                                    ))}
-                                </select>
-                                <div className={cn(
-                                    'flex overflow-hidden rounded-lg border',
-                                    'border-[var(--border)]',
-                                    'bg-[var(--card-bg)]'
-                                )}>
-                                    <button
-                                        type="button"
-                                        onClick={() => setViewMode('list')}
-                                        aria-label={tx('jobBoard.listView', undefined, 'List view')}
-                                        aria-pressed={viewMode === 'list'}
+                            <div className="flex items-center justify-between">
+                                <p className="text-sm text-[var(--text-muted)]">
+                                    {tx('jobBoard.showing', undefined, 'Showing')} <span className="font-semibold text-[var(--text-primary)]">{totalCount}</span> {tx('jobBoard.jobs', undefined, 'jobs')}
+                                </p>
+                                <div className="hidden lg:flex items-center gap-3">
+                                    <select
+                                        value={filters.sortBy}
+                                        onChange={(e) => updateFilter('sortBy', e.target.value)}
                                         className={cn(
-                                            'p-2 min-w-[44px] min-h-[44px] transition-colors',
-                                            viewMode === 'list'
-                                                ? 'bg-[var(--workspace-primary)]/10 text-[var(--workspace-primary)]'
-                                                : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
+                                            'rounded-lg border px-3 py-2 text-sm',
+                                            'bg-[var(--input-bg)] text-[var(--input-text)]',
+                                            'border-[var(--input-border)]',
+                                            'focus:outline-none focus:border-[var(--input-border-focus)]'
                                         )}
                                     >
-                                        <List className="w-6 h-6" />
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => setViewMode('grid')}
-                                        aria-label={tx('jobBoard.gridView', undefined, 'Grid view')}
-                                        aria-pressed={viewMode === 'grid'}
-                                        className={cn(
-                                            'p-2 min-w-[44px] min-h-[44px] transition-colors',
-                                            viewMode === 'grid'
-                                                ? 'bg-[var(--workspace-primary)]/10 text-[var(--workspace-primary)]'
-                                                : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
-                                        )}
-                                    >
-                                        <Grid3X3 className="w-6 h-6" />
-                                    </button>
+                                        {sortOptions.map(opt => (
+                                            <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                        ))}
+                                    </select>
+                                    <div className={cn(
+                                        'flex overflow-hidden rounded-lg border',
+                                        'border-[var(--border)]',
+                                        'bg-[var(--card-bg)]'
+                                    )}>
+                                        <button
+                                            type="button"
+                                            onClick={() => setViewMode('list')}
+                                            aria-label={tx('jobBoard.listView', undefined, 'List view')}
+                                            aria-pressed={viewMode === 'list'}
+                                            className={cn(
+                                                'p-2 min-w-[44px] min-h-[44px] transition-colors',
+                                                viewMode === 'list'
+                                                    ? 'bg-[var(--workspace-primary)]/10 text-[var(--workspace-primary)]'
+                                                    : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
+                                            )}
+                                        >
+                                            <List className="w-6 h-6" />
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setViewMode('grid')}
+                                            aria-label={tx('jobBoard.gridView', undefined, 'Grid view')}
+                                            aria-pressed={viewMode === 'grid'}
+                                            className={cn(
+                                                'p-2 min-w-[44px] min-h-[44px] transition-colors',
+                                                viewMode === 'grid'
+                                                    ? 'bg-[var(--workspace-primary)]/10 text-[var(--workspace-primary)]'
+                                                    : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
+                                            )}
+                                        >
+                                            <Grid3X3 className="w-6 h-6" />
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
+                            {/* Active filter chips */}
+                            {(filters.categories.length > 0 || filters.jobType || filters.budgetRange || filters.experienceLevels.length > 0 || filters.search) && (
+                                <div className="flex flex-wrap gap-2">
+                                    {filters.search && (
+                                        <button
+                                            onClick={() => updateFilter('search', '')}
+                                            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-colors border"
+                                            style={{
+                                                background: 'color-mix(in srgb, var(--workspace-primary) 10%, transparent)',
+                                                borderColor: 'color-mix(in srgb, var(--workspace-primary) 25%, transparent)',
+                                                color: 'var(--workspace-primary)',
+                                            }}
+                                        >
+                                            "{filters.search}" <span aria-hidden>×</span>
+                                        </button>
+                                    )}
+                                    {filters.categories.map(cat => (
+                                        <button
+                                            key={cat}
+                                            onClick={() => updateFilter('categories', filters.categories.filter(c => c !== cat))}
+                                            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-colors border"
+                                            style={{
+                                                background: 'color-mix(in srgb, var(--workspace-primary) 10%, transparent)',
+                                                borderColor: 'color-mix(in srgb, var(--workspace-primary) 25%, transparent)',
+                                                color: 'var(--workspace-primary)',
+                                            }}
+                                        >
+                                            {cat} <span aria-hidden>×</span>
+                                        </button>
+                                    ))}
+                                    {filters.jobType && (
+                                        <button
+                                            onClick={() => updateFilter('jobType', null)}
+                                            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-colors border"
+                                            style={{
+                                                background: 'color-mix(in srgb, var(--workspace-primary) 10%, transparent)',
+                                                borderColor: 'color-mix(in srgb, var(--workspace-primary) 25%, transparent)',
+                                                color: 'var(--workspace-primary)',
+                                            }}
+                                        >
+                                            {filters.jobType} <span aria-hidden>×</span>
+                                        </button>
+                                    )}
+                                    <button
+                                        onClick={clearAllFilters}
+                                        className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-colors border"
+                                        style={{
+                                            background: 'var(--color-background-muted)',
+                                            borderColor: 'var(--color-border-subtle)',
+                                            color: 'var(--color-text-secondary)',
+                                        }}
+                                    >
+                                        {tx('jobBoard.clearAll', undefined, 'Clear all')}
+                                    </button>
+                                </div>
+                            )}
                         </div>
 
                         {/* Jobs List */}
@@ -447,13 +505,13 @@ function JobBoard() {
                                         <rect x="52" y="26" width="102" height="76" rx="18" fill="url(#empty-card)" />
                                         <rect x="68" y="48" width="70" height="8" rx="4" fill="rgba(255,255,255,0.72)" />
                                         <rect x="68" y="64" width="52" height="8" rx="4" fill="rgba(255,255,255,0.48)" />
-                                        <path d="M149 95L174 120" stroke="#8B5CF6" strokeWidth="10" strokeLinecap="round" />
-                                        <circle cx="132" cy="79" r="30" fill="rgba(139,92,246,0.12)" stroke="#8B5CF6" strokeWidth="8" />
-                                        <path d="M120 79L128 87L145 70" stroke="#8B5CF6" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" />
+                                        <path d="M149 95L174 120" stroke="var(--workspace-primary)" strokeWidth="10" strokeLinecap="round" />
+                                        <circle cx="132" cy="79" r="30" fill="color-mix(in srgb, var(--workspace-primary) 12%, transparent)" stroke="var(--workspace-primary)" strokeWidth="8" />
+                                        <path d="M120 79L128 87L145 70" stroke="var(--workspace-primary)" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" />
                                         <defs>
                                             <linearGradient id="empty-card" x1="52" y1="26" x2="154" y2="102" gradientUnits="userSpaceOnUse">
-                                                <stop stopColor="#8B5CF6" />
-                                                <stop offset="1" stopColor="#F59E0B" />
+                                                <stop stopColor="var(--workspace-primary)" />
+                                                <stop offset="1" stopColor="var(--workspace-accent)" />
                                             </linearGradient>
                                         </defs>
                                     </svg>
@@ -471,7 +529,7 @@ function JobBoard() {
                         ) : (
                             <>
                                 <ErrorBoundary FallbackComponent={ErrorFallback} onReset={() => window.location.reload()}>
-                                  <div className={`${viewMode === 'grid' ? 'grid md:grid-cols-2 gap-4' : 'space-y-4'} cv-auto`}>
+                                  <div className={`${viewMode === 'grid' ? 'grid md:grid-cols-2 gap-4' : 'space-y-4'}`}>
                                     {jobCards.map(job => (
                                         <JobCard
                                             key={job.id}

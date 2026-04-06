@@ -69,7 +69,7 @@ export default function OnboardingShell({
                                     <span>{completion}%</span>
                                 </div>
                                 <div className="h-2.5 overflow-hidden rounded-full bg-gray-100 dark:bg-white/10">
-                                    <div className="h-full rounded-full transition-[width] duration-300" style={{ width: `${completion}%`, backgroundColor: 'var(--workspace-accent)' }} />
+                                    <div className="h-full rounded-full transition-[width] duration-300" style={{ width: `${completion}%`, backgroundColor: 'var(--workspace-primary)' }} />
                                 </div>
                             </div>
                         </div>
@@ -86,7 +86,7 @@ export default function OnboardingShell({
                                 <div
                                     key={step.id}
                                     className={`rounded-[1.4rem] border p-4 transition-all duration-200 ${isCurrent
-                                        ? 'border-[color-mix(in_srgb,var(--workspace-accent)_25%,transparent)] bg-[color-mix(in_srgb,var(--workspace-accent)_4%,transparent)] shadow-[0_22px_44px_-30px_rgba(0,0,0,0.1)]'
+                                        ? 'border-[color-mix(in_srgb,var(--workspace-primary)_25%,transparent)] bg-[color-mix(in_srgb,var(--workspace-primary)_4%,transparent)] shadow-[0_22px_44px_-30px_rgba(0,0,0,0.1)]'
                                         : isCompleted
                                             ? 'border-gray-200 bg-gray-50/60 dark:border-white/10 dark:bg-zinc-900/40'
                                             : 'border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50'}`}
@@ -97,7 +97,7 @@ export default function OnboardingShell({
                                             : isCompleted
                                                 ? 'bg-gray-100 text-gray-700 dark:bg-white/10 dark:text-zinc-300'
                                                 : 'bg-gray-100 text-gray-500 dark:bg-white/5 dark:text-zinc-600'}`}
-                                            style={isCurrent ? { backgroundColor: 'var(--workspace-accent)' } : undefined}
+                                            style={isCurrent ? { backgroundColor: 'var(--workspace-primary)' } : undefined}
                                         >
                                             {isCompleted ? <Sparkles className="h-5 w-5" /> : step.id}
                                         </div>

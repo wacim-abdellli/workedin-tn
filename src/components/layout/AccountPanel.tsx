@@ -396,18 +396,19 @@ export default function AccountPanel({
                       {activeWorkspace === 'freelancer' ? copy.freelancerHint : copy.clientHint}
                     </p>
 
-                    <div className="mt-4 h-2 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700 dark:bg-white dark:bg-gray-900/10">
+                    <div
+                        className="mt-4 h-2 overflow-hidden rounded-full"
+                        style={{ background: 'var(--color-border-subtle)' }}
+                    >
                       <div
-                        className={cn(
-                          'h-full rounded-full transition-all duration-300',
-                          activeWorkspace === 'freelancer'
-                            ? 'bg-gradient-to-r from-purple-500 to-purple-400'
-                            : 'bg-gradient-to-r from-amber-500 to-emerald-400'
-                        )}
-                        style={{ width: `${setupProgress}%` }}
+                        className="h-full rounded-full transition-all duration-300"
+                        style={{ width: `${setupProgress}%`, background: 'linear-gradient(135deg, var(--workspace-primary) 0%, var(--workspace-primary-hover) 100%)' }}
                       />
                     </div>
-                    <div className="mt-2 flex items-center justify-between text-xs text-gray-500 dark:text-gray-500 dark:text-gray-400">
+                    <div
+                        className="mt-2 flex items-center justify-between text-xs"
+                        style={{ color: 'var(--color-text-tertiary)' }}
+                    >
                       <span>{copy.progressLabel}</span>
                       <span>{setupProgress}%</span>
                     </div>
@@ -606,3 +607,4 @@ function formatMemberSince(value: string | undefined, language: string): string 
   const locale = language === 'fr' ? 'fr-FR' : language === 'en' ? 'en-US' : 'ar-TN';
   return new Intl.DateTimeFormat(locale, { month: 'short', year: 'numeric' }).format(parsed);
 }
+

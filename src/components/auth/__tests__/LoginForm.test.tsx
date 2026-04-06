@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 import { MemoryRouter } from 'react-router-dom';
 
@@ -44,20 +45,29 @@ import { ToastProvider } from '@/components/ui/Toast';
 import { I18nProvider } from '@/i18n';
 import { supabase } from '@/lib/supabase';
 
+const queryClient = new QueryClient({
+    defaultOptions: {
+        queries: { retry: false },
+        mutations: { retry: false },
+    },
+});
+
 // Test wrapper with all needed providers
 function TestWrapper({ children }: { children: ReactNode }) {
     return (
-        <I18nProvider>
-            <ThemeProvider>
-                <ToastProvider>
-                    <MemoryRouter>
-                        <AuthProvider>
-                            {children}
-                        </AuthProvider>
-                    </MemoryRouter>
-                </ToastProvider>
-            </ThemeProvider>
-        </I18nProvider>
+        <QueryClientProvider client={queryClient}>
+            <I18nProvider>
+                <ThemeProvider>
+                    <ToastProvider>
+                        <MemoryRouter>
+                            <AuthProvider>
+                                {children}
+                            </AuthProvider>
+                        </MemoryRouter>
+                    </ToastProvider>
+                </ThemeProvider>
+            </I18nProvider>
+        </QueryClientProvider>
     );
 }
 
@@ -68,6 +78,7 @@ const getPasswordInput = () => document.querySelector('input[name="password"]') 
 describe('LoginForm', () => {
     beforeEach(() => {
         vi.clearAllMocks();
+        queryClient.clear();
     });
 
     describe('Rendering', () => {

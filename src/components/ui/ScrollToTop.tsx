@@ -4,14 +4,14 @@ import { ArrowUp } from 'lucide-react';
 import { useTranslation } from '@/i18n';
 
 export default function ScrollToTop() {
-    const { pathname } = useLocation();
+    const { pathname, state } = useLocation();
     const { tx } = useTranslation();
     const [isVisible, setIsVisible] = useState(false);
 
-    // Scroll resets on route change
+    // Scroll to top on route change OR workspace switch (state.switching)
     useEffect(() => {
-        window.scrollTo(0, 0);
-    }, [pathname]);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, [pathname, (state as any)?.switching, (state as any)?.workspace]);
 
     // specific toggle for button visibility
     useEffect(() => {
@@ -37,8 +37,11 @@ export default function ScrollToTop() {
     return (
         <button
             onClick={scrollToTop}
-            className={`fixed bottom-8 right-8 z-50 p-3 rounded-full bg-brand text-white shadow-lg shadow-brand/30 transition-all duration-300 hover:bg-brand-hover hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 dark:focus:ring-offset-dark-900 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'
-                }`}
+            className={`fixed bottom-8 right-8 z-50 p-3 rounded-full text-white shadow-lg transition-all duration-300 hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-offset-2 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'}`}
+            style={{
+                background: 'var(--workspace-primary)',
+                boxShadow: '0 4px 16px color-mix(in srgb, var(--workspace-primary) 40%, transparent)',
+            }}
             aria-label={tx('common.scrollToTop', undefined, 'Scroll to top')}
         >
             <ArrowUp className="w-6 h-6" />

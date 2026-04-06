@@ -64,14 +64,13 @@
   /* ===== GRADIENTS - Updated to use new colors ===== */
   --gradient-primary: linear-gradient(
     135deg,
-    var(--purple-600) 0%,
-    var(--purple-700) 55%,
-    var(--amber-600) 100%
+    var(--workspace-primary) 0%,
+    var(--workspace-primary-hover) 100%
   );
   --gradient-accent: linear-gradient(
     135deg,
-    var(--amber-600) 0%,
-    var(--amber-700) 100%
+    var(--workspace-accent) 0%,
+    var(--workspace-accent-hover) 100%
   );
   --gradient-glass: linear-gradient(
     180deg,
@@ -119,14 +118,13 @@
   /* Gradients - Updated for dark mode */
   --gradient-primary: linear-gradient(
     135deg,
-    var(--purple-600) 0%,
-    var(--purple-700) 60%,
-    var(--amber-600) 100%
+    var(--workspace-primary) 0%,
+    var(--workspace-primary-hover) 100%
   );
   --gradient-accent: linear-gradient(
     135deg,
-    var(--amber-500) 0%,
-    var(--amber-600) 100%
+    var(--workspace-accent) 0%,
+    var(--workspace-accent-hover) 100%
   );
   --gradient-glass: linear-gradient(
     180deg,
@@ -752,23 +750,23 @@ h6 {
   .header-nav-link-active::after {
     content: "";
     @apply absolute -bottom-1 left-2.5 right-2.5 h-[2px] rounded-t-lg transition-all duration-300;
-    background: var(--workspace-accent);
+    background: var(--workspace-primary);
     box-shadow: 0 -2px 12px
-      color-mix(in srgb, var(--workspace-accent) 60%, transparent);
+      color-mix(in srgb, var(--workspace-primary) 60%, transparent);
   }
   .dark .header-nav-link-active {
     background: color-mix(
       in srgb,
-      var(--workspace-accent) 8%,
+      var(--workspace-primary) 8%,
       transparent
     ) !important;
     border-color: color-mix(
       in srgb,
-      var(--workspace-accent) 20%,
+      var(--workspace-primary) 20%,
       transparent
     ) !important;
     text-shadow: 0 0 16px
-      color-mix(in srgb, var(--workspace-accent) 40%, transparent);
+      color-mix(in srgb, var(--workspace-primary) 40%, transparent);
   }
 
   .header-profile-trigger {
@@ -782,12 +780,12 @@ h6 {
     @apply shadow-sm scale-[1.03];
     border-color: color-mix(
       in srgb,
-      var(--workspace-accent) 28%,
+      var(--workspace-primary) 28%,
       transparent
     ) !important;
     background: color-mix(
       in srgb,
-      var(--workspace-accent) 4%,
+      var(--workspace-primary) 4%,
       white
     ) !important;
   }
@@ -796,12 +794,12 @@ h6 {
     @apply shadow-lg shadow-black/40;
     border-color: color-mix(
       in srgb,
-      var(--workspace-accent) 34%,
+      var(--workspace-primary) 34%,
       transparent
     ) !important;
     background: color-mix(
       in srgb,
-      var(--workspace-accent) 12%,
+      var(--workspace-primary) 12%,
       transparent
     ) !important;
   }
@@ -911,7 +909,10 @@ h6 {
   }
 
   .badge-accent {
-    @apply badge bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300;
+    @apply badge;
+    background: color-mix(in srgb, var(--workspace-primary) 15%, transparent);
+    color: var(--workspace-primary);
+    border: 1px solid color-mix(in srgb, var(--workspace-primary) 25%, transparent);
   }
 
   .badge-success {

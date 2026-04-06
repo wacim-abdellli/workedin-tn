@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 
 // Mock modules BEFORE importing the component
@@ -42,18 +43,31 @@ vi.mock('@/lib/logger', () => ({
 import { AuthProvider, useAuth } from '../AuthContext';
 import { supabase } from '@/lib/supabase';
 
+const queryClient = new QueryClient({
+    defaultOptions: {
+        queries: { retry: false },
+        mutations: { retry: false },
+    },
+});
+
 // Wrapper component for testing hooks
 function AuthWrapper({ children }: { children: ReactNode }) {
-    return <AuthProvider>{children}</AuthProvider>;
+    return (
+        <QueryClientProvider client={queryClient}>
+            <AuthProvider>{children}</AuthProvider>
+        </QueryClientProvider>
+    );
 }
 
 describe('AuthContext', () => {
     beforeEach(() => {
         vi.clearAllMocks();
+        queryClient.clear();
     });
 
     afterEach(() => {
         vi.clearAllMocks();
+        queryClient.clear();
     });
 
     describe('Initial State', () => {

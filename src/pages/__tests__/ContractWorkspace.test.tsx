@@ -56,13 +56,20 @@ vi.mock('react-router-dom', async () => {
 vi.mock('@/i18n', () => ({
     useTranslation: () => ({
         t: {
+            common: {
+                back: 'الرجوع للخلف',
+                viewJob: 'عرض المهمة',
+            },
             contract: {
+                workspaceTitle: 'مساحة العمل',
+                seoDescription: 'Track conversation, files, and payment status for your contract from the workspace.',
                 status: 'Status',
                 inProgress: 'In progress',
                 deliverWork: 'Deliver work',
                 openDispute: 'Open dispute',
             },
         },
+        tx: (_key: string, _params?: Record<string, string>, fallback?: string) => fallback ?? _key,
     }),
 }));
 
@@ -208,8 +215,23 @@ describe('ContractWorkspace', () => {
         queryMocks.useQueryClient.mockReturnValue({
             invalidateQueries: queryMocks.invalidateQueries,
         });
-        queryMocks.useMutation.mockImplementation(({ onSuccess }: { onSuccess?: () => void }) => ({
-            mutate: vi.fn(() => onSuccess?.()),
+        queryMocks.useMutation.mockImplementation(({
+            mutationFn,
+            onSuccess,
+            onError,
+        }: {
+            mutationFn?: (value?: unknown) => Promise<unknown> | unknown;
+            onSuccess?: () => void;
+            onError?: () => void;
+        }) => ({
+            mutate: vi.fn(async (value?: unknown) => {
+                try {
+                    await mutationFn?.(value);
+                    onSuccess?.();
+                } catch {
+                    onError?.();
+                }
+            }),
             isPending: false,
         }));
         queryMocks.useQuery.mockImplementation(({ queryKey }: { queryKey: unknown[] }) => {

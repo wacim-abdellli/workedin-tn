@@ -107,7 +107,7 @@ export default function StepJobBasics() {
             <section
                 className="space-y-6 rounded-[1.8rem] border p-6 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_28px_64px_-48px_var(--workspace-primary-shadow,rgba(109,40,217,0.28))]"
                 style={{
-                    borderColor: 'color-mix(in srgb, var(--brand-accent) 18%, var(--border))',
+                    borderColor: 'color-mix(in srgb, var(--workspace-primary) 18%, var(--border))',
                     background: 'linear-gradient(145deg, color-mix(in srgb, var(--card-bg) 94%, var(--page-bg)), color-mix(in srgb, var(--surface-bg) 90%, var(--page-bg)))',
                     boxShadow: '0 24px 60px -48px rgba(15,23,42,0.46)',
                 }}
@@ -128,7 +128,7 @@ export default function StepJobBasics() {
                             onClick={() => setOpenDropdown((current) => current === 'category' ? null : 'category')}
                             className="flex w-full items-center justify-between gap-3 rounded-2xl border px-4 py-3 text-left transition-all duration-200 hover:-translate-y-0.5 hover:bg-[color:var(--workspace-primary)]/6 hover:shadow-[0_18px_34px_-26px_var(--workspace-primary-shadow,rgba(109,40,217,0.24))]"
                             style={{
-                                borderColor: 'color-mix(in srgb, var(--brand-accent) 16%, var(--border))',
+                                borderColor: 'color-mix(in srgb, var(--workspace-primary) 16%, var(--border))',
                                 background: 'var(--card-bg)',
                                 color: selectedCategory ? 'var(--text-primary)' : 'var(--text-muted)',
                                 boxShadow: openDropdown === 'category' ? '0 16px 36px -26px rgba(15,23,42,0.42)' : 'none',
@@ -142,8 +142,8 @@ export default function StepJobBasics() {
                         </button>
                         <input type="hidden" {...register('category')} value={selectedCategory} />
                         {openDropdown === 'category' && (
-                            <div className="absolute z-30 mt-2 w-full overflow-hidden rounded-2xl border shadow-[0_24px_60px_-40px_rgba(15,23,42,0.46)]" style={{ borderColor: 'color-mix(in srgb, var(--brand-accent) 16%, var(--border))', background: 'var(--card-bg)' }}>
-                                <button type="button" onClick={() => { setValue('category', ''); setValue('subcategory', ''); setOpenDropdown(null); }} className="flex w-full items-center justify-between px-4 py-3 text-left text-sm transition-all duration-200 hover:bg-[color:var(--brand-accent)]/12 hover:ps-5" style={{ color: selectedCategory ? 'var(--text-secondary)' : 'var(--brand-accent)' }}>
+                            <div className="absolute z-30 mt-2 w-full overflow-hidden rounded-2xl border shadow-[0_24px_60px_-40px_rgba(15,23,42,0.46)]" style={{ borderColor: 'color-mix(in srgb, var(--workspace-primary) 16%, var(--border))', background: 'var(--card-bg)' }}>
+                                <button type="button" onClick={() => { setValue('category', ''); setValue('subcategory', ''); setOpenDropdown(null); }} className="flex w-full items-center justify-between px-4 py-3 text-left text-sm transition-all duration-200 hover:bg-[color:var(--workspace-primary)]/12 hover:ps-5" style={{ color: selectedCategory ? 'var(--text-secondary)' : 'var(--workspace-primary)' }}>
                                     <span>{tx('jobs.new.stepBasics.selectCategory', undefined, 'اختر التصنيف')}</span>
                                     {!selectedCategory && <Check className="h-4 w-4" />}
                                 </button>
@@ -158,8 +158,8 @@ export default function StepJobBasics() {
                                                 setValue('subcategory', '');
                                                 setOpenDropdown(null);
                                             }}
-                                            className="flex w-full items-center justify-between px-4 py-3 text-left text-sm transition-all duration-200 hover:bg-[color:var(--brand-accent)]/12 hover:ps-5"
-                                            style={{ color: isSelected ? 'var(--brand-accent)' : 'var(--text-primary)' }}
+                                            className="flex w-full items-center justify-between px-4 py-3 text-left text-sm transition-all duration-200 hover:bg-[color:var(--workspace-primary)]/12 hover:ps-5"
+                                            style={{ color: isSelected ? 'var(--workspace-primary)' : 'var(--text-primary)' }}
                                         >
                                             <span className="font-medium">{option.label}</span>
                                             {isSelected && <Check className="h-4 w-4" />}
@@ -181,7 +181,7 @@ export default function StepJobBasics() {
                             onClick={() => selectedCategory && setOpenDropdown((current) => current === 'subcategory' ? null : 'subcategory')}
                             className="flex w-full items-center justify-between gap-3 rounded-2xl border px-4 py-3 text-left transition-all duration-200 hover:-translate-y-0.5 hover:bg-[color:var(--workspace-primary)]/6 hover:shadow-[0_18px_34px_-26px_var(--workspace-primary-shadow,rgba(109,40,217,0.24))] disabled:cursor-not-allowed disabled:opacity-60"
                             style={{
-                                borderColor: 'color-mix(in srgb, var(--brand-accent) 16%, var(--border))',
+                                borderColor: 'color-mix(in srgb, var(--workspace-primary) 16%, var(--border))',
                                 background: 'var(--card-bg)',
                                 color: selectedSubcategory ? 'var(--text-primary)' : 'var(--text-muted)',
                                 boxShadow: openDropdown === 'subcategory' ? '0 16px 36px -26px rgba(15,23,42,0.42)' : 'none',
@@ -195,8 +195,8 @@ export default function StepJobBasics() {
                         </button>
                         <input type="hidden" {...register('subcategory')} value={selectedSubcategory} />
                         {openDropdown === 'subcategory' && selectedCategory && (
-                            <div className="absolute z-30 mt-2 w-full overflow-hidden rounded-2xl border shadow-[0_24px_60px_-40px_rgba(15,23,42,0.46)]" style={{ borderColor: 'color-mix(in srgb, var(--brand-accent) 16%, var(--border))', background: 'var(--card-bg)' }}>
-                                <button type="button" onClick={() => { setValue('subcategory', ''); setOpenDropdown(null); }} className="flex w-full items-center justify-between px-4 py-3 text-left text-sm transition-all duration-200 hover:bg-[color:var(--brand-accent)]/12 hover:ps-5" style={{ color: selectedSubcategory ? 'var(--text-secondary)' : 'var(--brand-accent)' }}>
+                            <div className="absolute z-30 mt-2 w-full overflow-hidden rounded-2xl border shadow-[0_24px_60px_-40px_rgba(15,23,42,0.46)]" style={{ borderColor: 'color-mix(in srgb, var(--workspace-primary) 16%, var(--border))', background: 'var(--card-bg)' }}>
+                                <button type="button" onClick={() => { setValue('subcategory', ''); setOpenDropdown(null); }} className="flex w-full items-center justify-between px-4 py-3 text-left text-sm transition-all duration-200 hover:bg-[color:var(--workspace-primary)]/12 hover:ps-5" style={{ color: selectedSubcategory ? 'var(--text-secondary)' : 'var(--workspace-primary)' }}>
                                     <span>{tx('jobs.new.stepBasics.selectSubcategory', undefined, 'اختر التخصص الفرعي')}</span>
                                     {!selectedSubcategory && <Check className="h-4 w-4" />}
                                 </button>
@@ -210,8 +210,8 @@ export default function StepJobBasics() {
                                                 setValue('subcategory', option.value, { shouldDirty: true, shouldValidate: true });
                                                 setOpenDropdown(null);
                                             }}
-                                            className="flex w-full items-center justify-between px-4 py-3 text-left text-sm transition-all duration-200 hover:bg-[color:var(--brand-accent)]/12 hover:ps-5"
-                                            style={{ color: isSelected ? 'var(--brand-accent)' : 'var(--text-primary)' }}
+                                            className="flex w-full items-center justify-between px-4 py-3 text-left text-sm transition-all duration-200 hover:bg-[color:var(--workspace-primary)]/12 hover:ps-5"
+                                            style={{ color: isSelected ? 'var(--workspace-primary)' : 'var(--text-primary)' }}
                                         >
                                             <span className="font-medium">{option.label}</span>
                                             {isSelected && <Check className="h-4 w-4" />}
@@ -238,9 +238,9 @@ export default function StepJobBasics() {
                         <span
                             className="inline-flex items-center rounded-full border px-3 py-1 font-semibold"
                             style={{
-                                borderColor: 'color-mix(in srgb, var(--brand-accent) 22%, transparent)',
-                                background: 'color-mix(in srgb, var(--brand-accent) 12%, var(--card-bg))',
-                                color: 'var(--brand-accent)',
+                                borderColor: 'color-mix(in srgb, var(--workspace-primary) 22%, transparent)',
+                                background: 'color-mix(in srgb, var(--workspace-primary) 12%, var(--card-bg))',
+                                color: 'var(--workspace-primary)',
                             }}
                         >
                             {tx('jobs.new.stepBasics.characterCount', { current: description.length, max: 2000 }, `${description.length} / 2000 characters`)}
@@ -253,8 +253,8 @@ export default function StepJobBasics() {
                     <div
                         className="mt-3 flex gap-3 rounded-[1.2rem] border p-4 text-sm"
                         style={{
-                            borderColor: 'color-mix(in srgb, var(--brand-accent) 18%, transparent)',
-                            background: 'color-mix(in srgb, var(--brand-accent) 10%, var(--card-bg))',
+                            borderColor: 'color-mix(in srgb, var(--workspace-primary) 18%, transparent)',
+                            background: 'color-mix(in srgb, var(--workspace-primary) 10%, var(--card-bg))',
                             color: 'var(--text-secondary)',
                         }}
                     >
@@ -272,7 +272,7 @@ export default function StepJobBasics() {
             <section
                 className="space-y-3 rounded-[1.8rem] border p-6 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_24px_60px_-48px_var(--workspace-primary-shadow,rgba(109,40,217,0.22))]"
                 style={{
-                    borderColor: 'color-mix(in srgb, var(--brand-accent) 18%, var(--border))',
+                    borderColor: 'color-mix(in srgb, var(--workspace-primary) 18%, var(--border))',
                     background: 'linear-gradient(145deg, color-mix(in srgb, var(--card-bg) 94%, var(--page-bg)), color-mix(in srgb, var(--surface-bg) 90%, var(--page-bg)))',
                     boxShadow: '0 24px 60px -48px rgba(15,23,42,0.42)',
                 }}
@@ -287,8 +287,8 @@ export default function StepJobBasics() {
                                 type="button"
                                 onClick={() => toggleSkill(skill)}
                                 className={`px-3 py-2 rounded-full text-sm font-medium border transition-all duration-200 hover:-translate-y-0.5 ${isSelected
-                                    ? 'border-[color:var(--brand-accent)]/35 bg-[color:var(--brand-accent)]/14 text-[color:var(--brand-accent)]'
-                                    : 'border-border bg-[var(--surface-bg)] text-[var(--text-secondary)] hover:border-[color:var(--brand-accent)]/28 hover:bg-[color:var(--brand-accent)]/10'
+                                    ? 'border-[color:var(--workspace-primary)]/35 bg-[color:var(--workspace-primary)]/14 text-[color:var(--workspace-primary)]'
+                                    : 'border-border bg-[var(--surface-bg)] text-[var(--text-secondary)] hover:border-[color:var(--workspace-primary)]/28 hover:bg-[color:var(--workspace-primary)]/10'
                                     }`}
                             >
                                 {language === 'ar' ? skill.name_ar : language === 'fr' ? skill.name_fr : skill.name_en}
@@ -304,7 +304,7 @@ export default function StepJobBasics() {
             <section
                 className="space-y-3 rounded-[1.8rem] border p-6 shadow-sm"
                 style={{
-                    borderColor: 'color-mix(in srgb, var(--brand-accent) 18%, var(--border))',
+                    borderColor: 'color-mix(in srgb, var(--workspace-primary) 18%, var(--border))',
                     background: 'linear-gradient(145deg, color-mix(in srgb, var(--card-bg) 94%, var(--page-bg)), color-mix(in srgb, var(--surface-bg) 90%, var(--page-bg)))',
                     boxShadow: '0 24px 60px -48px rgba(15,23,42,0.42)',
                 }}

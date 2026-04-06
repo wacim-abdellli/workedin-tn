@@ -21,6 +21,12 @@ export default defineConfig({
     video: 'retain-on-failure',
   },
   projects: [
+    {
+      name: 'chromium-public',
+      use: {
+        ...devices['Desktop Chrome'],
+      },
+    },
     // Setup project for authentication
     {
       name: 'setup',

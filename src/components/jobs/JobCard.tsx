@@ -84,8 +84,9 @@ function JobCard({ job, isSaved, onToggleSave, onClick }: JobCardProps) {
   return (
     <div
       onClick={() => onClick(job.id)}
-      className="group relative overflow-hidden rounded-2xl bg-white dark:bg-[var(--color-bg-elevated)] p-6 cursor-pointer transition-all duration-300 hover:-translate-y-1"
+      className="group relative overflow-hidden rounded-2xl p-6 cursor-pointer transition-all duration-300 hover:-translate-y-1"
       style={{
+        background: 'var(--color-background-elevated)',
         boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
         borderLeft: `4px solid ${categoryColor.border}`,
       }}
@@ -111,8 +112,9 @@ function JobCard({ job, isSaved, onToggleSave, onClick }: JobCardProps) {
           }
         }}
         disabled={isSaving}
-        className="absolute top-4 right-4 z-10 p-2 rounded-full bg-white dark:bg-[var(--color-bg-muted)] shadow-lg hover:scale-110 transition-transform duration-200"
+        className="absolute top-4 right-4 z-10 p-2 rounded-full shadow-lg hover:scale-110 transition-transform duration-200"
         style={{
+          background: 'var(--color-background-elevated)',
           boxShadow: isSaved ? `0 4px 12px ${categoryColor.border}40` : '0 2px 8px rgba(0,0,0,0.1)',
         }}
       >
@@ -138,8 +140,10 @@ function JobCard({ job, isSaved, onToggleSave, onClick }: JobCardProps) {
       )}
 
       {/* Title - Large and Bold */}
-      <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2 line-clamp-2 transition-colors pr-10"
-          style={{ color: 'var(--color-text-primary)' }}>
+      <h3
+        className="text-xl font-bold mb-2 line-clamp-2 transition-colors pe-10"
+        style={{ color: 'var(--color-text-primary)' }}
+      >
         {job.title}
       </h3>
 
@@ -151,46 +155,61 @@ function JobCard({ job, isSaved, onToggleSave, onClick }: JobCardProps) {
 
       {/* Budget - Large and Prominent */}
       <div className="mb-4">
-        <div 
+        <div
           className="inline-flex items-baseline gap-2 px-4 py-2 rounded-xl"
           style={{
             background: `linear-gradient(135deg, ${categoryColor.border}15, ${categoryColor.border}05)`,
           }}
         >
           <span className="text-2xl font-bold" style={{ color: categoryColor.border }}>
-            {job.job_type === 'fixed_price' 
-              ? `${job.budget_min}-${job.budget_max}`
-              : job.hourly_rate
+            {job.job_type === 'fixed_price'
+              ? `${job.budget_min ?? '?'}-${job.budget_max ?? '?'}`
+              : (job.hourly_rate ?? '?')
             }
           </span>
-          <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+          <span className="text-sm font-medium" style={{ color: 'var(--color-text-secondary)' }}>
             {job.job_type === 'fixed_price' ? 'TND' : 'TND/h'}
           </span>
         </div>
       </div>
 
-      {/* Skills - Colorful Pills */}
+      {/* Skills - Tokenized Pills */}
       <div className="flex flex-wrap gap-2 mb-4">
         {job.skills.slice(0, 4).map((skill, idx) => (
           <span
             key={idx}
-            className="px-3 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-purple-50 to-cyan-50 dark:from-purple-950/30 dark:to-cyan-950/30 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800"
+            className="px-3 py-1 rounded-full text-xs font-medium border"
+            style={{
+              background: 'color-mix(in srgb, var(--workspace-primary) 8%, transparent)',
+              borderColor: 'color-mix(in srgb, var(--workspace-primary) 20%, transparent)',
+              color: 'var(--workspace-primary)',
+            }}
           >
             {skill}
           </span>
         ))}
         {job.skills.length > 4 && (
-          <span className="px-3 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
+          <span
+            className="px-3 py-1 rounded-full text-xs font-medium border"
+            style={{
+              background: 'var(--color-background-muted)',
+              borderColor: 'var(--color-border-subtle)',
+              color: 'var(--color-text-tertiary)',
+            }}
+          >
             +{job.skills.length - 4}
           </span>
         )}
       </div>
 
       {/* Footer - Client & Stats */}
-      <div className="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-white/10">
+      <div
+        className="flex items-center justify-between pt-4 border-t"
+        style={{ borderColor: 'var(--color-border-subtle)' }}
+      >
         {/* Client Info */}
         <div className="flex items-center gap-2">
-          <div 
+          <div
             className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold text-white overflow-hidden"
             style={{
               background: job.client?.avatar_url ? `linear-gradient(135deg, ${from}, ${to})` : `linear-gradient(135deg, ${categoryColor.border}, ${categoryColor.text})`,
@@ -211,9 +230,18 @@ function JobCard({ job, isSaved, onToggleSave, onClick }: JobCardProps) {
             )}
           </div>
           <div>
-            <p className="text-sm font-medium text-gray-900 dark:text-white">{job.client?.full_name || 'Client'}</p>
+            <p className="text-sm font-medium flex items-center gap-1" style={{ color: 'var(--color-text-primary)' }}>
+              {job.client?.full_name || 'Client'}
+              {job.client?.is_verified && (
+                <span
+                  className="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full text-white"
+                  style={{ background: 'var(--color-status-success)', fontSize: '8px' }}
+                  title="Verified"
+                >✓</span>
+              )}
+            </p>
             {job.client?.location && (
-              <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+              <p className="text-xs flex items-center gap-1" style={{ color: 'var(--color-text-tertiary)' }}>
                 <MapPin className="w-3 h-3" />
                 {job.client.location}
               </p>
@@ -222,13 +250,13 @@ function JobCard({ job, isSaved, onToggleSave, onClick }: JobCardProps) {
         </div>
 
         {/* Stats */}
-        <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
+        <div className="flex items-center gap-4 text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
           <div className="flex items-center gap-1">
-            <TrendingUp className="w-4 h-4 text-green-500" />
+            <TrendingUp className="w-4 h-4" style={{ color: 'var(--color-status-success)' }} />
             <span>{job.proposals_count}</span>
           </div>
           <div className="flex items-center gap-1">
-            <Clock className="w-4 h-4 text-blue-500" />
+            <Clock className="w-4 h-4" style={{ color: 'var(--color-status-info)' }} />
             <span>{timeAgo(job.posted_at)}</span>
           </div>
         </div>

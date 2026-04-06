@@ -91,7 +91,7 @@ describe('profileCompletion', () => {
         expect(medium.strengthColor).toContain('text-amber-500');
 
         expect(strong.percentage).toBe(80);
-        expect(strong.strengthColor).toContain('text-blue-500');
+        expect(strong.strengthColor).toContain('text-primary-600');
     });
 });
 

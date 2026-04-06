@@ -19,7 +19,7 @@ export default function LiveCounterSection({ stats }: LiveCounterSectionProps) {
             <div className="absolute inset-0" style={{ background: 'linear-gradient(135deg, var(--dash-bg) 0%, color-mix(in srgb, var(--dash-bg) 82%, black) 100%)' }} />
             <div className="absolute inset-0">
                 <div className="absolute top-0 start-1/4 w-64 h-64 rounded-full blur-[80px]" style={{ background: 'color-mix(in srgb, var(--workspace-primary) 20%, transparent)' }} />
-                <div className="absolute bottom-0 end-1/4 w-64 h-64 rounded-full blur-[80px]" style={{ background: 'color-mix(in srgb, var(--brand-accent) 18%, transparent)' }} />
+                <div className="absolute bottom-0 end-1/4 w-64 h-64 rounded-full blur-[80px]" style={{ background: 'color-mix(in srgb, var(--workspace-primary) 18%, transparent)' }} />
             </div>
 
             <div className="container-custom relative text-center">
@@ -35,7 +35,7 @@ export default function LiveCounterSection({ stats }: LiveCounterSectionProps) {
 
                 <div className="text-6xl md:text-8xl font-bold text-white mb-4 font-cairo">
                     <span style={{
-                        background: 'linear-gradient(135deg, var(--workspace-primary) 0%, var(--workspace-primary-mid) 55%, var(--brand-accent) 100%)',
+                        background: 'linear-gradient(135deg, var(--workspace-primary) 0%, var(--workspace-primary-mid) 55%, var(--workspace-primary) 100%)',
                         WebkitBackgroundClip: 'text',
                         WebkitTextFillColor: 'transparent',
                         backgroundClip: 'text',
@@ -62,7 +62,7 @@ export default function LiveCounterSection({ stats }: LiveCounterSectionProps) {
                     <div className="text-center">
                         <div className="text-3xl font-bold text-white mb-1">4.9</div>
                         <div className="text-sm flex items-center justify-center gap-1" style={{ color: 'rgba(255,255,255,0.68)' }}>
-                            <Star className="w-3 h-3 fill-current" style={{ color: 'var(--brand-accent)' }} />
+                            <Star className="w-3 h-3 fill-current" style={{ color: 'var(--workspace-primary)' }} />
                             {t.home.stats.rating}
                         </div>
                     </div>

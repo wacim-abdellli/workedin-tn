@@ -105,17 +105,13 @@ export default function ContractsList() {
             </h1>
             {activeCount > 0 ? (
               <span
-                className={`rounded-full px-2 py-1 text-xs font-bold ${
-                  isFreelancer
-                    ? "bg-[var(--color-brand-accent)]/10 text-[var(--color-brand-accent)]"
-                    : "bg-[var(--color-brand-secondary)]/10 text-[var(--color-brand-secondary)]"
-                }`}
+                className="rounded-full px-2 py-1 text-xs font-bold"
+                style={{
+                  background: 'color-mix(in srgb, var(--workspace-primary) 12%, transparent)',
+                  color: 'var(--workspace-primary)',
+                }}
               >
-                {tx(
-                  "contracts.activeCount",
-                  { count: activeCount },
-                  `${activeCount} Active`,
-                )}
+                {tx('contracts.activeCount', { count: activeCount }, `${activeCount} Active`)}
               </span>
             ) : null}
           </div>
@@ -171,9 +167,7 @@ export default function ContractsList() {
               const roleLabel = isFreelancer
                 ? tx("contracts.role.client", undefined, "Client")
                 : tx("contracts.role.freelancer", undefined, "Freelancer");
-              const progressIndicatorColor = isFreelancer
-                ? "bg-[var(--color-brand-accent)]"
-                : "bg-[var(--color-brand-secondary)]";
+              const progressIndicatorColor = 'var(--workspace-primary)';
 
               const totalMilestones = contract.milestones?.length ?? 0;
               const completedMilestones =
@@ -272,8 +266,8 @@ export default function ContractsList() {
                       </div>
                       <div className="h-1.5 w-full overflow-hidden rounded-full bg-[var(--color-background-subtle)]">
                         <div
-                          className={`h-full ${progressIndicatorColor}`}
-                          style={{ width: `${progressPercentage}%` }}
+                          className="h-full rounded-full"
+                          style={{ width: `${progressPercentage}%`, background: progressIndicatorColor }}
                         />
                       </div>
                     </div>
@@ -282,17 +276,10 @@ export default function ContractsList() {
                   <div className="flex justify-end border-t border-[var(--color-border-default)] pt-4">
                     <button
                       onClick={() => navigate(`/contracts/${contract.id}`)}
-                      className={`text-sm font-medium transition-colors ${
-                        isFreelancer
-                          ? "text-[var(--color-brand-accent)] hover:text-[var(--color-brand-accent)]/80"
-                          : "text-[var(--color-brand-secondary)] hover:text-[var(--color-brand-secondary)]/80"
-                      }`}
+                      className="text-sm font-medium transition-colors"
+                      style={{ color: 'var(--workspace-primary)' }}
                     >
-                      {tx(
-                        "contracts.openWorkspace",
-                        undefined,
-                        "Open workspace ->",
-                      )}
+                      {tx('contracts.openWorkspace', undefined, 'Open workspace ->')}
                     </button>
                   </div>
                 </div>

@@ -103,7 +103,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
                 className={cn(
                     "rounded-[1.6rem] border-2 border-dashed p-8 text-center transition-colors",
                     isDragging
-                        ? "border-[color:var(--brand-accent)] bg-[color:var(--brand-accent)]/10"
+                        ? "border-[color:var(--workspace-primary)] bg-[color:var(--workspace-primary)]/10"
                         : "border-border bg-white/70 dark:border-white/10 dark:border-gray-800 dark:bg-white/[0.03]"
                 )}
             >
@@ -111,8 +111,8 @@ export const FileUpload: React.FC<FileUploadProps> = ({
                     <div
                         className="mb-4 rounded-2xl p-4"
                         style={{
-                            background: 'color-mix(in srgb, var(--brand-accent) 14%, var(--card-bg))',
-                            color: 'var(--brand-accent)',
+                            background: 'color-mix(in srgb, var(--workspace-primary) 14%, var(--card-bg))',
+                            color: 'var(--workspace-primary)',
                         }}
                     >
                         <Upload className="h-8 w-8" />
@@ -136,18 +136,18 @@ export const FileUpload: React.FC<FileUploadProps> = ({
                     htmlFor={inputId}
                     className="inline-block mt-4 rounded-xl border px-4 py-2 font-medium cursor-pointer transition-all duration-200 hover:-translate-y-0.5"
                     style={{
-                        borderColor: 'color-mix(in srgb, var(--brand-accent) 28%, transparent)',
-                        background: 'color-mix(in srgb, var(--brand-accent) 12%, var(--card-bg))',
-                        color: 'var(--brand-accent)',
+                        borderColor: 'color-mix(in srgb, var(--workspace-primary) 28%, transparent)',
+                        background: 'color-mix(in srgb, var(--workspace-primary) 12%, var(--card-bg))',
+                        color: 'var(--workspace-primary)',
                     }}
                     onMouseEnter={(e) => {
                         const target = e.currentTarget;
-                        target.style.background = 'color-mix(in srgb, var(--brand-accent) 20%, var(--card-bg))';
+                        target.style.background = 'color-mix(in srgb, var(--workspace-primary) 20%, var(--card-bg))';
                         target.style.boxShadow = '0 12px 24px -18px rgba(245,158,11,0.35)';
                     }}
                     onMouseLeave={(e) => {
                         const target = e.currentTarget;
-                        target.style.background = 'color-mix(in srgb, var(--brand-accent) 12%, var(--card-bg))';
+                        target.style.background = 'color-mix(in srgb, var(--workspace-primary) 12%, var(--card-bg))';
                         target.style.boxShadow = 'none';
                     }}
                 >
@@ -163,8 +163,8 @@ export const FileUpload: React.FC<FileUploadProps> = ({
                             key={index}
                             className="group flex items-center justify-between rounded-2xl border p-3.5 transition-all duration-200 hover:-translate-y-0.5"
                             style={{
-                                borderColor: 'color-mix(in srgb, var(--brand-accent) 20%, var(--border))',
-                                background: 'linear-gradient(120deg, color-mix(in srgb, var(--brand-accent) 8%, var(--surface-bg)), color-mix(in srgb, var(--card-bg) 96%, black))',
+                                borderColor: 'color-mix(in srgb, var(--workspace-primary) 20%, var(--border))',
+                                background: 'linear-gradient(120deg, color-mix(in srgb, var(--workspace-primary) 8%, var(--surface-bg)), color-mix(in srgb, var(--card-bg) 96%, black))',
                                 boxShadow: '0 14px 30px -24px rgba(245,158,11,0.28)',
                             }}
                         >
@@ -172,8 +172,8 @@ export const FileUpload: React.FC<FileUploadProps> = ({
                                 <div
                                     className="flex h-9 w-9 items-center justify-center rounded-xl"
                                     style={{
-                                        background: 'color-mix(in srgb, var(--brand-accent) 16%, var(--card-bg))',
-                                        color: 'var(--brand-accent)',
+                                        background: 'color-mix(in srgb, var(--workspace-primary) 16%, var(--card-bg))',
+                                        color: 'var(--workspace-primary)',
                                     }}
                                 >
                                     <FileText className="w-4.5 h-4.5" />

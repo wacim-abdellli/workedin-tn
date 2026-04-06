@@ -35,26 +35,25 @@ const Input = forwardRef<HTMLInputElement | HTMLTextAreaElement, CombinedInputPr
         // Base input styles using design tokens
         const inputStyles = `
             w-full
-            rounded-[var(--radius-md)]
+            rounded-xl
             border
             bg-[var(--color-background-base)]
             text-[var(--color-text-primary)]
-            text-[var(--font-fontSize-base)]
-            shadow-[var(--shadow-elevation-0)]
-            transition-all duration-[var(--animation-focus-duration)] ease-[var(--animation-focus-easing)]
+            text-sm
+            transition-all duration-150
             placeholder:text-[var(--color-text-disabled)]
             focus:outline-none 
             focus:ring-2 
             focus:ring-offset-0
             ${error
-                ? 'border-[var(--red-500)] focus:border-[var(--red-500)] focus:ring-[var(--red-500)]/20'
+                ? 'border-[var(--color-status-error)] focus:border-[var(--color-status-error)] focus:ring-[var(--color-status-error)]/20'
                 : success
-                    ? 'border-[var(--green-500)] focus:border-[var(--green-500)] focus:ring-[var(--green-500)]/20'
-                    : 'border-[var(--color-border-default)] hover:border-[var(--color-border-strong)] focus:border-[var(--color-brand-primary)] focus:ring-[var(--color-brand-primary)]/20'
+                    ? 'border-[var(--color-status-success)] focus:border-[var(--color-status-success)] focus:ring-[var(--color-status-success)]/20'
+                    : 'border-[var(--color-border-default)] hover:border-[var(--color-border-strong)] focus:border-[var(--workspace-primary)] focus:ring-[var(--workspace-primary)]/20'
             }
-            ${leftIcon ? 'ps-11' : 'px-[var(--input-padding-x)]'}
-            ${rightIcon ? 'pe-11' : 'px-[var(--input-padding-x)]'}
-            ${as === 'textarea' ? 'py-[var(--input-padding-y)]' : 'py-[var(--input-padding-y)]'}
+            ${leftIcon ? 'ps-11' : 'px-4'}
+            ${rightIcon ? 'pe-11' : 'px-4'}
+            py-2.5
             disabled:cursor-not-allowed 
             disabled:opacity-50 
             disabled:bg-[var(--color-background-muted)]
@@ -73,7 +72,7 @@ const Input = forwardRef<HTMLInputElement | HTMLTextAreaElement, CombinedInputPr
                 {label && (
                     <label
                         htmlFor={inputId}
-                        className="mb-2 block text-[var(--font-fontSize-sm)] font-[var(--font-fontWeight-medium)] text-[var(--color-text-secondary)] transition-colors"
+                        className="mb-2 block text-sm font-medium text-[var(--color-text-secondary)] transition-colors"
                     >
                         {label}
                     </label>
@@ -102,7 +101,7 @@ const Input = forwardRef<HTMLInputElement | HTMLTextAreaElement, CombinedInputPr
                     <p
                         id={errorId}
                         role="alert"
-                        className="mt-1.5 text-[var(--font-fontSize-sm)] text-[var(--red-500)] font-[var(--font-fontWeight-medium)] animate-slide-up"
+                        className="mt-1.5 text-sm text-[var(--color-status-error)] font-medium animate-slide-up"
                     >
                         {error}
                     </p>
@@ -110,7 +109,7 @@ const Input = forwardRef<HTMLInputElement | HTMLTextAreaElement, CombinedInputPr
                 {success && !error && (
                     <p
                         id={successId}
-                        className="mt-1.5 text-[var(--font-fontSize-sm)] text-[var(--green-600)] font-[var(--font-fontWeight-medium)]"
+                        className="mt-1.5 text-sm text-[var(--color-status-success)] font-medium"
                     >
                         {success}
                     </p>
@@ -118,7 +117,7 @@ const Input = forwardRef<HTMLInputElement | HTMLTextAreaElement, CombinedInputPr
                 {hint && !error && !success && (
                     <p
                         id={hintId}
-                        className="mt-1.5 text-[var(--font-fontSize-sm)] text-[var(--color-text-tertiary)]"
+                        className="mt-1.5 text-sm text-[var(--color-text-tertiary)]"
                     >
                         {hint}
                     </p>

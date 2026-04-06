@@ -837,6 +837,7 @@ export const en: Translations = {
             pageDescription: 'Review and manage submitted identity verification requests',
             adminDashboard: 'Admin Dashboard',
             operationsCenter: 'Operations Center',
+            controlCenter: 'Control Center',
             nightModeReady: 'Night mode ready',
             backToSite: 'Back to site',
         },
@@ -1188,6 +1189,7 @@ export const en: Translations = {
 
     common: {
         loading: 'Loading...',
+        loadingContent: 'Loading content',
         error: 'An error occurred',
         retry: 'Retry',
         next: 'Next',
@@ -1230,6 +1232,8 @@ export const en: Translations = {
         refresh: 'Refresh',
         save: 'Save',
         unsave: 'Unsave',
+        returnHome: 'Return home',
+        contactSupport: 'Contact support',
         verified: 'Verified',
         availableForWork: 'Available for work',
         replyToReview: 'Reply to review',
@@ -1281,6 +1285,17 @@ export const en: Translations = {
             unsupportedType: '{{name}} has an unsupported file type',
             maxFilesExceeded: 'Maximum {{count}} files allowed',
             removeFileAria: 'Remove {{name}}',
+        },
+    },
+
+    accountStatus: {
+        suspended: {
+            title: 'Account suspended',
+            body: 'Your account access is temporarily suspended. Contact support if you need help or think this is a mistake.',
+        },
+        archived: {
+            title: 'Account archived',
+            body: 'This account is archived and can no longer access protected platform features. Contact support for assistance.',
         },
     },
 
@@ -1406,6 +1421,8 @@ export const en: Translations = {
             viewContract: 'View contract',
         },
         freelancerEarnings: {
+            seoTitle: 'Earnings | Khedma TN',
+            seoDescription: 'Your earnings and payment history on Khedma TN.',
             availableBalance: 'Available balance',
             pendingClearance: '{{amount}} TND pending clearance',
             withdraw: 'Withdraw',

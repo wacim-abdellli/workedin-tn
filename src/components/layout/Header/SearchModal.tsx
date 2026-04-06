@@ -316,7 +316,7 @@ export default function SearchModal({ onClose }: SearchModalProps) {
 
               <div>
                 <div className="flex items-center gap-1.5 px-2 py-1.5">
-                  <TrendingUp className="h-3 w-3 text-[color:var(--brand-accent)]" />
+                  <TrendingUp className="h-3 w-3 text-[color:var(--workspace-primary)]" />
                   <span className="text-[10px] font-semibold uppercase tracking-widest text-[var(--text-muted)]">
                   {tx('pages.searchModal.trendingNow', undefined, 'Trending now')}
                   </span>

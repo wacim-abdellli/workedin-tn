@@ -264,7 +264,7 @@ export default function SearchResults() {
                                                     checked={categoryParam === c.value}
                                                     onChange={() => updateFilterParams({ category: c.value })}
                                                 />
-                                                <div className="w-full h-full bg-gradient-to-r from-[color:var(--workspace-primary)] to-[color:var(--brand-accent)] opacity-0 peer-checked:opacity-100 transition-opacity flex items-center justify-center rounded-lg">
+                                                <div className="w-full h-full bg-gradient-to-r from-[color:var(--workspace-primary)] to-[color:var(--workspace-primary)] opacity-0 peer-checked:opacity-100 transition-opacity flex items-center justify-center rounded-lg">
                                                     <div className="w-2.5 h-2.5 rounded-sm bg-white" />
                                                 </div>
                                             </div>
@@ -346,18 +346,18 @@ export default function SearchResults() {
                         {!query && (
                             <div className="relative">
                                 {/* Animated Background Gradient */}
-                                <div className="absolute inset-0 bg-gradient-to-br from-[color:var(--workspace-primary)]/5 via-transparent to-[color:var(--brand-accent)]/5 rounded-3xl blur-3xl -z-10" />
+                                <div className="absolute inset-0 bg-gradient-to-br from-[color:var(--workspace-primary)]/5 via-transparent to-[color:var(--workspace-primary)]/5 rounded-3xl blur-3xl -z-10" />
                                 
                                 <div className="flex flex-col items-center justify-center py-24 text-center">
                                     {/* Icon with Animation */}
-                                    <div className="relative w-32 h-32 rounded-full bg-gradient-to-br from-[color:var(--workspace-primary)]/20 to-[color:var(--brand-accent)]/20 flex items-center justify-center mb-8 animate-pulse">
+                                    <div className="relative w-32 h-32 rounded-full bg-gradient-to-br from-[color:var(--workspace-primary)]/20 to-[color:var(--workspace-primary)]/20 flex items-center justify-center mb-8 animate-pulse">
                                         <div className="absolute inset-4 bg-gradient-to-tr from-[color:var(--workspace-primary)]/10 to-transparent rounded-full animate-spin" style={{ animationDuration: '6s' }} />
                                         <Search className="w-14 h-14 text-[color:var(--workspace-primary)] relative z-10" />
                                     </div>
 
                                     {/* Main Message */}
                                     <h2 className="text-4xl md:text-5xl font-black text-foreground mb-4 max-w-xl leading-tight">
-                                        {tx('search.empty.titlePrefix', undefined, 'Find Your Perfect')} <span className="bg-gradient-to-r from-[color:var(--workspace-primary)] to-[color:var(--brand-accent)] bg-clip-text text-transparent">{tx('search.empty.titleHighlight', undefined, 'Match')}</span>
+                                        {tx('search.empty.titlePrefix', undefined, 'Find Your Perfect')} <span className="bg-gradient-to-r from-[color:var(--workspace-primary)] to-[color:var(--workspace-primary)] bg-clip-text text-transparent">{tx('search.empty.titleHighlight', undefined, 'Match')}</span>
                                     </h2>
                                     
                                     {/* Subtitle */}
@@ -574,16 +574,16 @@ export default function SearchResults() {
                                                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-0 group-hover:opacity-10 dark:group-hover:opacity-5 transition-opacity duration-300 -translate-x-full group-hover:translate-x-full" style={{ animation: 'shimmer 0.6s ease-in-out' }} />
                                                 
                                                 <div className="flex items-start gap-4 md:gap-6">
-                                                    <div className="w-14 h-14 md:w-16 md:h-16 rounded-2xl bg-gradient-to-br from-[color:var(--brand-accent)]/20 to-[color:var(--brand-accent)]/10 flex items-center justify-center shrink-0 group-hover:scale-110 group-hover:shadow-lg transition-all duration-300">
-                                                        <Briefcase className="w-6 h-6 md:w-7 md:h-7 text-[color:var(--brand-accent)]" />
+                                                    <div className="w-14 h-14 md:w-16 md:h-16 rounded-2xl bg-gradient-to-br from-[color:var(--workspace-primary)]/20 to-[color:var(--workspace-primary)]/10 flex items-center justify-center shrink-0 group-hover:scale-110 group-hover:shadow-lg transition-all duration-300">
+                                                        <Briefcase className="w-6 h-6 md:w-7 md:h-7 text-[color:var(--workspace-primary)]" />
                                                     </div>
                                                     <div className="flex-1 min-w-0">
                                                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 mb-3">
                                                             <div className="flex-1 min-w-0">
-                                                                <span className="text-[10px] md:text-xs font-black tracking-widest uppercase text-[color:var(--brand-accent)] mb-1 block group-hover:text-[color:var(--workspace-primary)] transition-colors">{job.category}</span>
+                                                                <span className="text-[10px] md:text-xs font-black tracking-widest uppercase text-[color:var(--workspace-primary)] mb-1 block group-hover:text-[color:var(--workspace-primary)] transition-colors">{job.category}</span>
                                                                 <h3 className="font-black text-base md:text-lg text-foreground group-hover:text-[color:var(--workspace-primary)] transition-colors line-clamp-2 leading-tight">{job.title}</h3>
                                                             </div>
-                                                            <span className="text-[color:var(--workspace-primary)] font-black whitespace-nowrap bg-gradient-to-r from-[color:var(--workspace-primary)]/15 to-[color:var(--brand-accent)]/10 border border-[color:var(--workspace-primary)]/30 px-3 py-1.5 rounded-xl text-sm md:text-base shrink-0 group-hover:border-[color:var(--workspace-primary)]/60 group-hover:shadow-md transition-all">
+                                                            <span className="text-[color:var(--workspace-primary)] font-black whitespace-nowrap bg-gradient-to-r from-[color:var(--workspace-primary)]/15 to-[color:var(--workspace-primary)]/10 border border-[color:var(--workspace-primary)]/30 px-3 py-1.5 rounded-xl text-sm md:text-base shrink-0 group-hover:border-[color:var(--workspace-primary)]/60 group-hover:shadow-md transition-all">
                                                                 {budgetStr}
                                                             </span>
                                                         </div>
@@ -621,7 +621,7 @@ export default function SearchResults() {
                                                     {freelancer.avatar_url ? (
                                                         <img src={freelancer.avatar_url} alt={freelancer.full_name} className="w-14 h-14 md:w-16 md:h-16 rounded-2xl object-cover shrink-0 ring-4 ring-transparent group-hover:ring-[color:var(--workspace-primary)]/30 transition-all duration-300 group-hover:scale-110" />
                                                     ) : (
-                                                        <div className="w-14 h-14 md:w-16 md:h-16 rounded-2xl bg-gradient-to-br from-[color:var(--workspace-primary)] to-[color:var(--brand-accent)] flex items-center justify-center text-white font-black text-xl shrink-0 group-hover:scale-110 group-hover:shadow-lg transition-all duration-300">
+                                                        <div className="w-14 h-14 md:w-16 md:h-16 rounded-2xl bg-gradient-to-br from-[color:var(--workspace-primary)] to-[color:var(--workspace-primary)] flex items-center justify-center text-white font-black text-xl shrink-0 group-hover:scale-110 group-hover:shadow-lg transition-all duration-300">
                                                             {initials}
                                                         </div>
                                                     )}
@@ -633,7 +633,7 @@ export default function SearchResults() {
                                                                 {fp?.title && <p className="text-secondary text-xs md:text-sm font-semibold mt-0.5 max-w-md line-clamp-1 group-hover:text-foreground transition-colors">{fp.title}</p>}
                                                             </div>
                                                             {fp?.hourly_rate && (
-                                                                <span className="text-[color:var(--workspace-primary)] font-black whitespace-nowrap bg-gradient-to-r from-[color:var(--workspace-primary)]/15 to-[color:var(--brand-accent)]/10 border border-[color:var(--workspace-primary)]/30 px-3 py-1.5 rounded-xl text-sm md:text-base shrink-0 group-hover:border-[color:var(--workspace-primary)]/60 group-hover:shadow-md transition-all">
+                                                                <span className="text-[color:var(--workspace-primary)] font-black whitespace-nowrap bg-gradient-to-r from-[color:var(--workspace-primary)]/15 to-[color:var(--workspace-primary)]/10 border border-[color:var(--workspace-primary)]/30 px-3 py-1.5 rounded-xl text-sm md:text-base shrink-0 group-hover:border-[color:var(--workspace-primary)]/60 group-hover:shadow-md transition-all">
                                                                     {fp.hourly_rate} {tx('common.tnd', undefined, 'TND')}/hr
                                                                 </span>
                                                             )}

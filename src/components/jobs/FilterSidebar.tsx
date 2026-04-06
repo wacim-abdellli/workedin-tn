@@ -175,11 +175,11 @@ export default function FilterSidebar({
                     {/* Categories */}
                     <FilterSection title={t.jobs.filters.categories.title} section="category">
                         {categories.map(cat => (
-                            <label key={cat.value} className="flex items-center gap-3 cursor-pointer group p-3 rounded-xl hover:bg-gradient-to-r hover:from-purple-50 hover:to-cyan-50 dark:hover:from-purple-950/30 dark:hover:to-cyan-950/30 transition-all">
+                            <label key={cat.value} className="flex items-center gap-3 cursor-pointer group p-3 rounded-xl transition-all hover:bg-[color-mix(in_srgb,var(--workspace-primary)_6%,transparent)]">
                                 <input
                                     type="checkbox"
-                                    className="w-5 h-5 rounded-lg border-2 border-purple-300 dark:border-purple-700 text-purple-600 focus:ring-2 focus:ring-purple-500/30 transition-all"
-                                    style={{ accentColor: '#9333ea' }}
+                                    className="w-5 h-5 rounded-lg border-2 transition-all"
+                                    style={{ accentColor: 'var(--workspace-primary)' }}
                                     checked={filters.categories.includes(cat.value)}
                                     onChange={(e) => {
                                         const newCategories = e.target.checked

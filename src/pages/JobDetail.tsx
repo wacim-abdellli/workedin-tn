@@ -890,9 +890,9 @@ function JobDetail() {
                       style={
                         isMatch
                           ? {
-                              background: "rgba(34,197,94,0.1)",
-                              color: "var(--color-status-success, #16a34a)",
-                              borderColor: "rgba(34,197,94,0.3)",
+                              background: "var(--color-status-success-bg)",
+                              color: "var(--color-status-success)",
+                              borderColor: "color-mix(in srgb, var(--color-status-success) 30%, transparent)",
                             }
                           : {
                               background: "var(--color-background-muted)",
@@ -1011,8 +1011,11 @@ function JobDetail() {
             >
               {myProposal ? (
                 <div className="text-center">
-                  <div className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-500/15 flex items-center justify-center mx-auto mb-3">
-                    <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400" />
+                  <div
+                    className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3"
+                    style={{ background: 'var(--color-status-success-bg)' }}
+                  >
+                    <CheckCircle className="w-6 h-6" style={{ color: 'var(--color-status-success)' }} />
                   </div>
                   <h3
                     className="font-semibold text-base mb-1"
@@ -1042,7 +1045,8 @@ function JobDetail() {
                     </Button>
                     <Button
                       variant="ghost"
-                      className="w-full text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10"
+                      className="w-full"
+                      style={{ color: 'var(--color-status-error)' }}
                       onClick={withdrawProposal}
                     >
                       {tx("jobDetail.withdrawProposal", undefined, "سحب العرض")}
@@ -1472,6 +1476,29 @@ function JobDetail() {
 
       {!user ? <Footer /> : null}
 
+      {/* Mobile sticky apply CTA */}
+      {!myProposal && user?.id !== job.client_id && applyDecision.allowed && (
+        <div
+          className="fixed bottom-0 left-0 right-0 z-40 lg:hidden px-4 pb-safe-area-inset-bottom"
+          style={{
+            background: 'color-mix(in srgb, var(--color-background-elevated) 92%, transparent)',
+            borderTop: '1px solid var(--color-border-subtle)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            paddingBottom: 'max(env(safe-area-inset-bottom), 1rem)',
+            paddingTop: '0.75rem',
+          }}
+        >
+          <button
+            onClick={openProposalFlow}
+            className="w-full rounded-2xl py-3.5 font-semibold text-white transition-all hover:opacity-90 active:scale-[0.98]"
+            style={{ background: 'linear-gradient(135deg, var(--workspace-primary) 0%, var(--workspace-primary-hover) 100%)' }}
+          >
+            {tx('jobDetail.sendProposal', undefined, 'أرسل عرض')}
+          </button>
+        </div>
+      )}
+
       {job && (
         <ProposalModal
           isOpen={showProposalModal}
@@ -1599,3 +1626,4 @@ function JobDetail() {
 }
 
 export default JobDetail;
+

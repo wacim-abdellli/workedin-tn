@@ -41,7 +41,11 @@ export default defineConfig(({ command, mode }) => ({
         manualChunks(id) {
           if (!id.includes('node_modules')) return;
 
-          if (id.includes('react') || id.includes('scheduler') || id.includes('react-router')) {
+          if (id.includes('react-router')) {
+            return 'router-vendor';
+          }
+
+          if (id.includes('react') || id.includes('scheduler')) {
             return 'react-vendor';
           }
 
@@ -65,8 +69,12 @@ export default defineConfig(({ command, mode }) => ({
             return 'ui-vendor';
           }
 
-          if (id.includes('@sentry') || id.includes('posthog-js')) {
-            return 'observability-vendor';
+          if (id.includes('@sentry')) {
+            return 'sentry-vendor';
+          }
+
+          if (id.includes('posthog-js')) {
+            return 'analytics-vendor';
           }
 
           if (id.includes('recharts') || id.includes('d3-')) {
@@ -94,6 +102,19 @@ export default defineConfig(({ command, mode }) => ({
       'react-router-dom',
       '@supabase/supabase-js',
       'lucide-react',
+    ],
+  },
+
+  test: {
+    include: [
+      'src/**/*.{test,spec}.{ts,tsx}',
+      'design-system/scripts/**/*.test.js',
+    ],
+    exclude: [
+      '**/node_modules/**',
+      'dist/**',
+      'coverage/**',
+      'design-system/docs/**',
     ],
   },
 }))

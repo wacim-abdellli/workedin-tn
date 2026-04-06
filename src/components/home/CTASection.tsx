@@ -12,7 +12,7 @@ export function CTASection() {
         <div
           className="rounded-3xl border p-16"
           style={{
-            background: 'linear-gradient(135deg, color-mix(in srgb, var(--workspace-primary) 15%, transparent) 0%, color-mix(in srgb, var(--brand-accent) 8%, transparent) 100%)',
+            background: 'linear-gradient(135deg, color-mix(in srgb, var(--workspace-primary) 15%, transparent) 0%, color-mix(in srgb, var(--workspace-primary) 8%, transparent) 100%)',
             borderColor: 'color-mix(in srgb, var(--workspace-primary) 20%, transparent)',
           }}
         >
@@ -27,7 +27,6 @@ export function CTASection() {
             style={{ color: 'var(--text-primary)' }}
           >
             {tx('ctaSection.title')}
-            <br />
           </h2>
           <p
             className="text-lg mb-10 max-w-xl mx-auto"

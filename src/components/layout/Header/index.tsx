@@ -285,16 +285,14 @@ export default function Header() {
   const switchTargetStyles =
     targetWorkspace === "client"
       ? {
-          color: "var(--workspace-client-primary)",
-          background: "var(--workspace-client-primary-light)",
-          borderColor:
-            "color-mix(in srgb, var(--workspace-client-primary) 25%, transparent)",
+          color: "var(--amber-600)",
+          background: "color-mix(in srgb, var(--amber-500) 12%, transparent)",
+          borderColor: "color-mix(in srgb, var(--amber-600) 25%, transparent)",
         }
       : {
-          color: "var(--workspace-freelancer-primary)",
-          background: "var(--workspace-freelancer-primary-light)",
-          borderColor:
-            "color-mix(in srgb, var(--workspace-freelancer-primary) 25%, transparent)",
+          color: "var(--purple-500)",
+          background: "color-mix(in srgb, var(--purple-500) 12%, transparent)",
+          borderColor: "color-mix(in srgb, var(--purple-500) 25%, transparent)",
         };
 
   const navActiveClass = "header-nav-link-active";
@@ -332,8 +330,13 @@ export default function Header() {
     }
   };
 
+  const handleGoHome = () => {
+    navigate("/");
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   if (isAuthPage) {
-    return <AuthHeader onHome={() => navigate("/")} dir={dir} />;
+    return <AuthHeader onHome={handleGoHome} dir={dir} />;
   }
 
   return (
@@ -354,7 +357,7 @@ export default function Header() {
           {/* Mobile header */}
           <div className="flex h-16 items-center justify-between lg:hidden">
             <button
-              onClick={() => navigate("/")}
+              onClick={handleGoHome}
               className="flex items-center"
               aria-label={homeLabel}
             >
@@ -383,7 +386,7 @@ export default function Header() {
           <div className="hidden h-16 items-center gap-4 2xl:gap-6 lg:flex">
             <div className="flex shrink-0 items-center">
               <button
-                onClick={() => navigate("/")}
+                onClick={handleGoHome}
                 className="flex items-center transition-all hover:opacity-80"
                 aria-label={homeLabel}
               >
@@ -508,8 +511,8 @@ export default function Header() {
                     border:
                       "1px solid color-mix(in srgb, var(--color-border-default) 50%, transparent)",
                     background: isDark
-                      ? "rgba(255,255,255,0.05)"
-                      : "rgba(255,255,255,0.5)",
+                      ? "color-mix(in srgb, var(--color-background-elevated) 60%, transparent)"
+                      : "color-mix(in srgb, var(--color-background-elevated) 80%, transparent)",
                   }}
                 >
                   <div className="relative" ref={langRef}>
@@ -696,7 +699,7 @@ export default function Header() {
                         ) : (
                           <div
                             className="flex h-7 w-7 items-center justify-center rounded-full text-[10px] font-bold text-white"
-                            style={{ background: "var(--gradient-primary)" }}
+                            style={{ background: "linear-gradient(135deg, var(--workspace-primary) 0%, var(--workspace-primary-hover) 100%)" }}
                           >
                             {avatarInitials}
                           </div>
@@ -736,276 +739,249 @@ export default function Header() {
 
                       {userMenuOpen ? (
                         <div
-                          className="absolute end-0 top-full z-[70] mt-3 w-[304px] overflow-hidden rounded-[1.45rem] p-2.5 ring-1 backdrop-blur-2xl"
+                          className="absolute end-0 top-full z-[70] mt-2 w-[280px] overflow-hidden rounded-[1.25rem] backdrop-blur-2xl animate-in fade-in slide-in-from-top-2 duration-200"
                           style={{
-                            border: "1px solid var(--color-border-default)",
-                            background:
-                              "color-mix(in srgb, var(--color-background-elevated) 95%, transparent)",
-                            boxShadow: "0 40px 120px -42px rgba(0,0,0,0.75)",
+                            border: "1px solid var(--color-border-subtle)",
+                            background: "var(--color-background-elevated)",
+                            boxShadow: "0 32px 80px -20px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.03), inset 0 1px 0 rgba(255,255,255,0.06)",
                           }}
                         >
+                          {/* Workspace accent glow strip */}
                           <div
-                            className="rounded-[1.2rem] px-4 py-3.5"
-                            style={{
-                              border:
-                                "1px solid color-mix(in srgb, var(--workspace-primary) 20%, transparent)",
-                              background:
-                                "linear-gradient(135deg, color-mix(in srgb, var(--workspace-primary) 10%, transparent), var(--color-background-muted))",
-                            }}
-                          >
-                            <div className="flex items-center justify-between gap-3">
-                              <div className="min-w-0">
-                                <p
-                                  className="truncate text-[15px] font-semibold"
-                                  style={{ color: "var(--color-text-primary)" }}
-                                >
+                            className="h-0.5 w-full"
+                            style={{ background: "linear-gradient(90deg, transparent, var(--workspace-primary), transparent)" }}
+                          />
+
+                          {/* User identity */}
+                          <div className="px-3.5 pt-3.5 pb-3">
+                            <div className="flex items-center gap-3">
+                              <div className="relative shrink-0">
+                                {avatarUrl ? (
+                                  <img
+                                    src={avatarUrl}
+                                    alt={firstName}
+                                    className="h-11 w-11 rounded-full object-cover"
+                                    style={{
+                                      boxShadow: "0 0 0 2px var(--workspace-primary), 0 0 0 4px var(--color-background-elevated)",
+                                    }}
+                                    onError={() => setAvatarFailed(true)}
+                                  />
+                                ) : (
+                                  <div
+                                    className="flex h-11 w-11 items-center justify-center rounded-full text-sm font-bold text-white"
+                                    style={{
+                                      background: "linear-gradient(135deg, var(--workspace-primary) 0%, var(--workspace-primary-hover) 100%)",
+                                      boxShadow: "0 0 0 2px var(--workspace-primary), 0 0 0 4px var(--color-background-elevated)",
+                                    }}
+                                  >
+                                    {avatarInitials}
+                                  </div>
+                                )}
+                                <span
+                                  className="absolute -bottom-0.5 -end-0.5 h-3 w-3 rounded-full border-[2.5px]"
+                                  style={{
+                                    background: "var(--color-status-success)",
+                                    borderColor: "var(--color-background-elevated)",
+                                  }}
+                                />
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <p className="truncate text-[13px] font-semibold leading-tight" style={{ color: "var(--color-text-primary)" }}>
                                   {displayName}
                                 </p>
-                                <p
-                                  className="truncate text-xs"
-                                  style={{
-                                    color: "var(--color-text-secondary)",
-                                  }}
-                                >
+                                <p className="truncate text-[11px] mt-0.5" style={{ color: "var(--color-text-tertiary)" }}>
                                   {user.email}
                                 </p>
                               </div>
                               <span
-                                className="inline-flex shrink-0 items-center rounded-full px-5 py-1 text-[11px] font-semibold shadow-sm"
+                                className="inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold tracking-wide"
                                 style={{
                                   background: triggerWorkspaceBadge.background,
                                   color: triggerWorkspaceBadge.color,
                                   border: `1px solid ${triggerWorkspaceBadge.border}`,
                                 }}
                               >
-                                <span
-                                  className={`h-1.5 w-1.5 rounded-full me-1.5 ${triggerWorkspaceBadge.dotClassName}`}
-                                />
-                                <span className="truncate">
-                                  {triggerWorkspaceBadge.label}
-                                </span>
+                                <span className={`h-1.5 w-1.5 rounded-full shrink-0 ${triggerWorkspaceBadge.dotClassName}`} />
+                                {triggerWorkspaceBadge.label}
                               </span>
                             </div>
                           </div>
 
-                          <div className="mt-2.5 space-y-2">
-                            <button
-                              onClick={() => {
-                                navigate("/dashboard");
-                                setUserMenuOpen(false);
-                              }}
-                              className="group flex w-full items-center gap-3 rounded-xl px-3.5 py-3 text-left text-sm font-medium transition-all duration-150 hover:-translate-y-[1px]"
-                              style={{
-                                color: "var(--color-text-primary)",
-                                border:
-                                  "1px solid color-mix(in srgb, var(--workspace-primary) 14%, transparent)",
-                                background: "var(--color-background-muted)",
-                              }}
-                            >
-                              <span
-                                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
-                                style={{
-                                  border:
-                                    "1px solid color-mix(in srgb, var(--workspace-primary) 22%, transparent)",
-                                  background:
-                                    "color-mix(in srgb, var(--workspace-primary) 10%, transparent)",
-                                  color: "var(--workspace-primary)",
-                                }}
-                              >
-                                <User className="h-4 w-4" />
-                              </span>
-                              <span className="truncate">
-                                {t.nav?.dashboard || "Dashboard"}
-                              </span>
-                            </button>
+                          {/* Divider */}
+                          <div className="mx-3.5 h-px" style={{ background: "var(--color-border-subtle)" }} />
 
-                            <button
-                              onClick={() => {
-                                navigate("/settings");
-                                setUserMenuOpen(false);
-                              }}
-                              className="group flex w-full items-center gap-3 rounded-xl px-3.5 py-3 text-left text-sm font-medium transition-all duration-150 hover:-translate-y-[1px]"
-                              style={{
-                                color: "var(--color-text-primary)",
-                                border:
-                                  "1px solid color-mix(in srgb, var(--workspace-primary) 14%, transparent)",
-                                background: "var(--color-background-muted)",
-                              }}
-                            >
-                              <span
-                                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
-                                style={{
-                                  border:
-                                    "1px solid color-mix(in srgb, var(--workspace-primary) 22%, transparent)",
-                                  background:
-                                    "color-mix(in srgb, var(--workspace-primary) 10%, transparent)",
-                                  color: "var(--workspace-primary)",
-                                }}
-                              >
-                                <Settings className="h-4 w-4" />
-                              </span>
-                              <span className="truncate">
-                                {t.nav?.settings || "Settings"}
-                              </span>
-                            </button>
-
-                            {freelancerVerified ? (
-                              <div
-                                className="flex w-full items-center justify-between gap-3 rounded-xl px-3.5 py-3 text-sm font-semibold cursor-not-allowed"
-                                style={{
-                                  color: "var(--color-status-success)",
-                                  border:
-                                    "1px solid color-mix(in srgb, var(--color-status-success) 40%, transparent)",
-                                  background: "var(--color-status-success-bg)",
-                                }}
-                              >
-                                <span className="flex items-center gap-3">
-                                  <span
-                                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
-                                    style={{
-                                      border:
-                                        "1px solid color-mix(in srgb, var(--color-status-success) 40%, transparent)",
-                                      background:
-                                        "color-mix(in srgb, var(--color-status-success) 20%, transparent)",
-                                    }}
-                                  >
-                                    <Shield className="h-4 w-4" />
-                                  </span>
-                                  <span className="truncate">
-                                    {t.settings?.cinVerification ||
-                                      "Verify identity"}
-                                  </span>
-                                </span>
-                                <CheckCircle2 className="h-4 w-4" />
-                              </div>
-                            ) : freelancerPending ? (
-                              <div
-                                className="flex w-full items-center justify-between gap-3 rounded-xl px-3.5 py-3 text-sm font-semibold cursor-not-allowed"
-                                style={{
-                                  color: "var(--color-status-warning-text)",
-                                  border:
-                                    "1px solid color-mix(in srgb, var(--color-status-warning) 40%, transparent)",
-                                  background: "var(--color-status-warning-bg)",
-                                }}
-                              >
-                                <span className="flex items-center gap-3">
-                                  <span
-                                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
-                                    style={{
-                                      border:
-                                        "1px solid color-mix(in srgb, var(--color-status-warning) 40%, transparent)",
-                                      background:
-                                        "color-mix(in srgb, var(--color-status-warning) 20%, transparent)",
-                                    }}
-                                  >
-                                    <Shield className="h-4 w-4" />
-                                  </span>
-                                  <span className="truncate">
-                                    {t.settings?.cinVerification ||
-                                      "Verify identity"}
-                                  </span>
-                                </span>
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                              </div>
-                            ) : (
+                          {/* Nav items */}
+                          <div className="p-1.5">
+                            {[
+                              { icon: User, label: t.nav?.dashboard || "Dashboard", path: "/dashboard", hint: null },
+                              { icon: Settings, label: t.nav?.settings || "Settings", path: "/settings", hint: null },
+                            ].map(({ icon: Icon, label, path }) => (
                               <button
-                                onClick={() => {
-                                  navigate("/verify-identity");
-                                  setUserMenuOpen(false);
+                                key={path}
+                                onClick={() => { navigate(path); setUserMenuOpen(false); }}
+                                className="group flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-left text-[13px] font-medium transition-colors duration-100"
+                                style={{ color: "var(--color-text-primary)" }}
+                                onMouseEnter={e => {
+                                  e.currentTarget.style.background = "color-mix(in srgb, var(--workspace-primary) 8%, var(--color-background-subtle))";
+                                  e.currentTarget.style.color = "var(--workspace-primary)";
                                 }}
-                                className="group flex w-full items-center gap-3 rounded-xl px-3.5 py-3 text-left text-sm font-medium transition-all duration-150 hover:-translate-y-[1px]"
-                                style={{
-                                  color: "var(--color-text-primary)",
-                                  border:
-                                    "1px solid color-mix(in srgb, var(--color-status-info) 35%, transparent)",
-                                  background: "var(--color-background-muted)",
+                                onMouseLeave={e => {
+                                  e.currentTarget.style.background = "transparent";
+                                  e.currentTarget.style.color = "var(--color-text-primary)";
                                 }}
                               >
                                 <span
-                                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
+                                  className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition-colors duration-100"
                                   style={{
-                                    border:
-                                      "1px solid color-mix(in srgb, var(--color-status-info) 35%, transparent)",
-                                    background:
-                                      "color-mix(in srgb, var(--color-status-info) 10%, transparent)",
+                                    background: "color-mix(in srgb, var(--workspace-primary) 10%, transparent)",
+                                    color: "var(--workspace-primary)",
+                                  }}
+                                >
+                                  <Icon className="h-3.5 w-3.5" />
+                                </span>
+                                <span className="flex-1">{label}</span>
+                              </button>
+                            ))}
+
+                            {/* ID Verification */}
+                            {freelancerVerified ? (
+                              <div
+                                className="flex w-full items-center justify-between gap-2.5 rounded-xl px-2.5 py-2 text-[13px] font-medium"
+                                style={{ color: "var(--color-status-success)" }}
+                              >
+                                <span className="flex items-center gap-2.5">
+                                  <span
+                                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg"
+                                    style={{
+                                      background: "color-mix(in srgb, var(--color-status-success) 12%, transparent)",
+                                      color: "var(--color-status-success)",
+                                    }}
+                                  >
+                                    <Shield className="h-3.5 w-3.5" />
+                                  </span>
+                                  {t.settings?.cinVerification || "ID Verified"}
+                                </span>
+                                <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
+                              </div>
+                            ) : freelancerPending ? (
+                              <div
+                                className="flex w-full items-center justify-between gap-2.5 rounded-xl px-2.5 py-2 text-[13px] font-medium"
+                                style={{ color: "var(--color-status-warning-text)" }}
+                              >
+                                <span className="flex items-center gap-2.5">
+                                  <span
+                                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg"
+                                    style={{
+                                      background: "color-mix(in srgb, var(--color-status-warning) 12%, transparent)",
+                                      color: "var(--color-status-warning)",
+                                    }}
+                                  >
+                                    <Shield className="h-3.5 w-3.5" />
+                                  </span>
+                                  {t.settings?.cinVerification || "Verify identity"}
+                                </span>
+                                <Loader2 className="h-3.5 w-3.5 animate-spin shrink-0" />
+                              </div>
+                            ) : (
+                              <button
+                                onClick={() => { navigate("/verify-identity"); setUserMenuOpen(false); }}
+                                className="flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-left text-[13px] font-medium transition-colors duration-100"
+                                style={{ color: "var(--color-text-primary)" }}
+                                onMouseEnter={e => {
+                                  e.currentTarget.style.background = "color-mix(in srgb, var(--color-status-info) 8%, var(--color-background-subtle))";
+                                  e.currentTarget.style.color = "var(--color-status-info)";
+                                }}
+                                onMouseLeave={e => {
+                                  e.currentTarget.style.background = "transparent";
+                                  e.currentTarget.style.color = "var(--color-text-primary)";
+                                }}
+                              >
+                                <span
+                                  className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg"
+                                  style={{
+                                    background: "color-mix(in srgb, var(--color-status-info) 10%, transparent)",
                                     color: "var(--color-status-info)",
                                   }}
                                 >
-                                  <Shield className="h-4 w-4" />
+                                  <Shield className="h-3.5 w-3.5" />
                                 </span>
-                                <span className="truncate">
-                                  {t.settings?.cinVerification ||
-                                    "Verify identity"}
+                                <span className="flex-1">{t.settings?.cinVerification || "Verify identity"}</span>
+                                <span
+                                  className="rounded-md px-1.5 py-0.5 text-[10px] font-semibold"
+                                  style={{
+                                    background: "color-mix(in srgb, var(--color-status-info) 12%, transparent)",
+                                    color: "var(--color-status-info)",
+                                  }}
+                                >
+                                  NEW
                                 </span>
                               </button>
                             )}
 
+                            {/* Admin */}
                             {canAccessAdmin ? (
                               <button
-                                onClick={() => {
-                                  navigate("/admin");
-                                  setUserMenuOpen(false);
+                                onClick={() => { navigate("/admin"); setUserMenuOpen(false); }}
+                                className="flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-left text-[13px] font-medium transition-colors duration-100"
+                                style={{ color: "var(--color-text-primary)" }}
+                                onMouseEnter={e => {
+                                  e.currentTarget.style.background = "color-mix(in srgb, var(--color-status-info) 8%, var(--color-background-subtle))";
+                                  e.currentTarget.style.color = "var(--color-status-info)";
                                 }}
-                                className="group flex w-full items-center gap-3 rounded-xl px-3.5 py-3 text-left text-sm font-medium transition-all duration-150 hover:-translate-y-[1px]"
-                                style={{
-                                  color: "var(--color-text-primary)",
-                                  border:
-                                    "1px solid color-mix(in srgb, var(--color-status-info) 35%, transparent)",
-                                  background: "var(--color-background-muted)",
+                                onMouseLeave={e => {
+                                  e.currentTarget.style.background = "transparent";
+                                  e.currentTarget.style.color = "var(--color-text-primary)";
                                 }}
                               >
                                 <span
-                                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
+                                  className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg"
                                   style={{
-                                    border:
-                                      "1px solid color-mix(in srgb, var(--color-status-info) 35%, transparent)",
-                                    background:
-                                      "color-mix(in srgb, var(--color-status-info) 10%, transparent)",
+                                    background: "color-mix(in srgb, var(--color-status-info) 10%, transparent)",
                                     color: "var(--color-status-info)",
                                   }}
                                 >
-                                  <Shield className="h-4 w-4" />
+                                  <Shield className="h-3.5 w-3.5" />
                                 </span>
-                                <span className="truncate">
-                                  {t.nav?.adminDashboard || "Admin Dashboard"}
+                                <span className="flex-1">{t.nav?.adminDashboard || "Admin Dashboard"}</span>
+                                <span
+                                  className="rounded-md px-1.5 py-0.5 text-[10px] font-bold"
+                                  style={{
+                                    background: "color-mix(in srgb, var(--color-status-info) 12%, transparent)",
+                                    color: "var(--color-status-info)",
+                                  }}
+                                >
+                                  ADMIN
                                 </span>
                               </button>
                             ) : null}
                           </div>
 
-                          <div
-                            className="mt-2.5 border-t pt-2.5"
-                            style={{
-                              borderColor:
-                                "color-mix(in srgb, var(--color-border-default) 80%, transparent)",
-                            }}
-                          >
+                          {/* Logout */}
+                          <div className="mx-3.5 h-px" style={{ background: "var(--color-border-subtle)" }} />
+                          <div className="p-1.5 pb-2">
                             <button
-                              onClick={async () => {
-                                await signOut();
-                                setUserMenuOpen(false);
+                              onClick={async () => { await signOut(); setUserMenuOpen(false); }}
+                              className="flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-left text-[13px] font-medium transition-colors duration-100"
+                              style={{ color: "var(--color-text-secondary)" }}
+                              onMouseEnter={e => {
+                                e.currentTarget.style.background = "color-mix(in srgb, var(--color-status-error) 8%, transparent)";
+                                e.currentTarget.style.color = "var(--color-status-error)";
                               }}
-                              className="group flex w-full items-center gap-3 rounded-xl px-3.5 py-3 text-left text-sm font-semibold transition-all duration-150 hover:-translate-y-[1px]"
-                              style={{
-                                color: "#fff",
-                                border:
-                                  "1px solid color-mix(in srgb, var(--color-status-error) 30%, transparent)",
-                                background:
-                                  "color-mix(in srgb, var(--color-status-error) 22%, transparent)",
+                              onMouseLeave={e => {
+                                e.currentTarget.style.background = "transparent";
+                                e.currentTarget.style.color = "var(--color-text-secondary)";
                               }}
                             >
                               <span
-                                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
+                                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg"
                                 style={{
-                                  border:
-                                    "1px solid color-mix(in srgb, var(--color-status-error) 40%, transparent)",
-                                  background:
-                                    "color-mix(in srgb, var(--color-status-error) 24%, transparent)",
+                                  background: "color-mix(in srgb, var(--color-status-error) 10%, transparent)",
+                                  color: "var(--color-status-error)",
                                 }}
                               >
-                                <LogOut className="h-4 w-4" />
+                                <LogOut className="h-3.5 w-3.5" />
                               </span>
-                              <span>{t.nav?.logout || "Sign out"}</span>
+                              {t.nav?.logout || "Sign out"}
                             </button>
                           </div>
                         </div>
@@ -1058,7 +1034,7 @@ export default function Header() {
               style={{ borderColor: "var(--color-border-subtle)" }}
             >
               <button
-                onClick={() => navigate("/")}
+                onClick={handleGoHome}
                 className="flex items-center"
                 aria-label={homeLabel}
               >
@@ -1109,7 +1085,7 @@ export default function Header() {
                     ) : (
                       <div
                         className="flex h-11 w-11 items-center justify-center rounded-full text-sm font-bold text-white"
-                        style={{ background: "var(--gradient-primary)" }}
+                        style={{ background: "linear-gradient(135deg, var(--workspace-primary) 0%, var(--workspace-primary-hover) 100%)" }}
                       >
                         {avatarInitials}
                       </div>
@@ -1168,8 +1144,8 @@ export default function Header() {
                     style={({ isActive }) =>
                       isActive
                         ? {
-                            color: "var(--workspace-accent)",
-                            borderColor: "var(--workspace-accent)",
+                            color: "var(--workspace-primary)",
+                            borderColor: "var(--workspace-primary)",
                           }
                         : { color: "var(--color-text-primary)" }
                     }
@@ -1205,7 +1181,7 @@ export default function Header() {
                       {unreadCount > 0 ? (
                         <span
                           className="ms-auto flex h-5 w-5 items-center justify-center rounded-full text-xs font-bold text-white"
-                          style={{ background: "var(--workspace-accent)" }}
+                          style={{ background: "var(--workspace-primary)" }}
                         >
                           {unreadCount > 99 ? "99+" : unreadCount}
                         </span>
@@ -1360,3 +1336,4 @@ export default function Header() {
     </>
   );
 }
+

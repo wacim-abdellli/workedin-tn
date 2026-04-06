@@ -1,4 +1,4 @@
-import React, { useEffect, useId, useRef } from 'react';
+import React, { useEffect, useId, useRef, useState } from 'react';
 import { X } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from '@/i18n';
@@ -8,6 +8,7 @@ interface ModalProps {
     onClose: () => void;
     title?: string;
     children: React.ReactNode;
+    footer?: React.ReactNode;
     size?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
     showCloseButton?: boolean;
     closeOnBackdropClick?: boolean;
@@ -17,19 +18,14 @@ interface ModalProps {
 /**
  * Modal component with design system tokens.
  * Supports multiple sizes, dismissal patterns (close button, ESC key, backdrop click),
- * and accessibility features (focus trap, ARIA attributes).
- * 
- * @component
- * @example
- * <Modal isOpen={isOpen} onClose={handleClose} title="Confirm Action" size="md">
- *   <p>Are you sure you want to proceed?</p>
- * </Modal>
+ * optional footer slot, smooth exit animation, and accessibility features.
  */
 function Modal({
     isOpen,
     onClose,
     title,
     children,
+    footer,
     size = 'md',
     showCloseButton = true,
     closeOnBackdropClick = true,
@@ -40,6 +36,20 @@ function Modal({
     const lastFocusedElementRef = useRef<HTMLElement | null>(null);
     const { t } = useTranslation();
     const titleId = useId();
+    const [visible, setVisible] = useState(false);
+    const [mounted, setMounted] = useState(false);
+
+    // Handle mount/unmount with animation
+    useEffect(() => {
+        if (isOpen) {
+            setMounted(true);
+            requestAnimationFrame(() => setVisible(true));
+        } else {
+            setVisible(false);
+            const timer = setTimeout(() => setMounted(false), 200);
+            return () => clearTimeout(timer);
+        }
+    }, [isOpen]);
 
     useEffect(() => {
         if (!isOpen) return;
@@ -60,20 +70,16 @@ function Modal({
                 onClose();
                 return;
             }
-
             if (e.key !== 'Tab') return;
-
             const focusableElements = getFocusableElements();
             if (focusableElements.length === 0) {
                 e.preventDefault();
                 dialogRef.current?.focus();
                 return;
             }
-
             const firstElement = focusableElements[0];
             const lastElement = focusableElements[focusableElements.length - 1];
             const activeElement = document.activeElement;
-
             if (e.shiftKey && activeElement === firstElement) {
                 e.preventDefault();
                 lastElement.focus();
@@ -94,12 +100,9 @@ function Modal({
         return () => {
             document.removeEventListener('keydown', handleKeyDown);
             document.body.style.overflow = 'unset';
-            if (!document.querySelector('[role="dialog"]')) {
-                document.body.style.overflow = 'unset';
-            }
             lastFocusedElementRef.current?.focus();
         };
-    }, [isOpen, onClose]);
+    }, [isOpen, onClose, closeOnEscape]);
 
     const handleOverlayClick = (e: React.MouseEvent) => {
         if (closeOnBackdropClick && e.target === overlayRef.current) {
@@ -115,38 +118,46 @@ function Modal({
         full: 'sm:max-w-[calc(100vw-4rem)]',
     };
 
-    if (!isOpen) return null;
+    if (!mounted) return null;
 
     return createPortal(
         <div
             ref={overlayRef}
             onClick={handleOverlayClick}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[var(--color-background-overlay)] backdrop-blur-sm animate-fade-in"
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm transition-opacity duration-200"
+            style={{
+                background: 'var(--color-background-overlay)',
+                opacity: visible ? 1 : 0,
+            }}
         >
             <div
                 ref={dialogRef}
-                className={`
-                    ${sizes[size]}
-                    w-full
-                    flex flex-col
-                    bg-[var(--color-background-elevated)]
-                    rounded-[var(--radius-xl)]
-                    shadow-[var(--shadow-elevation-4)]
-                    max-h-[85vh] sm:max-h-[calc(100vh-8rem)]
-                    overflow-hidden
-                    animate-scale-in
-                `}
+                className={`${sizes[size]} w-full flex flex-col rounded-2xl max-h-[85vh] sm:max-h-[calc(100vh-8rem)] overflow-hidden transition-all duration-200`}
+                style={{
+                    background: 'var(--color-background-elevated)',
+                    boxShadow: 'var(--shadow-xl)',
+                    border: '1px solid var(--color-border-subtle)',
+                    transform: visible ? 'scale(1) translateY(0)' : 'scale(0.96) translateY(8px)',
+                    opacity: visible ? 1 : 0,
+                }}
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby={title ? titleId : undefined}
                 tabIndex={-1}
             >
                 {(title || showCloseButton) && (
-                    <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--color-border-subtle)] sticky top-0 z-20 bg-[var(--color-background-elevated)]">
+                    <div
+                        className="flex items-center justify-between px-6 py-4 border-b sticky top-0 z-20"
+                        style={{
+                            borderColor: 'var(--color-border-subtle)',
+                            background: 'var(--color-background-elevated)',
+                        }}
+                    >
                         {title && (
-                            <h2 
-                                id={titleId} 
-                                className="text-[var(--font-fontSize-xl)] font-[var(--font-fontWeight-semibold)] text-[var(--color-text-primary)]"
+                            <h2
+                                id={titleId}
+                                className="text-lg font-semibold"
+                                style={{ color: 'var(--color-text-primary)' }}
                             >
                                 {title}
                             </h2>
@@ -154,20 +165,22 @@ function Modal({
                         {showCloseButton && (
                             <button
                                 onClick={onClose}
-                                className="
-                                    p-2 
-                                    rounded-[var(--radius-md)]
-                                    text-[var(--color-text-secondary)]
-                                    hover:text-[var(--color-text-primary)]
-                                    hover:bg-[var(--color-background-muted)]
-                                    transition-all duration-[var(--animation-hover-duration)]
-                                    focus:outline-none 
-                                    focus:ring-2 
-                                    focus:ring-[var(--color-brand-primary)]/30
-                                "
+                                className="p-2 rounded-xl transition-all duration-150 hover:rotate-90"
+                                style={{
+                                    color: 'var(--color-text-secondary)',
+                                    background: 'transparent',
+                                }}
+                                onMouseEnter={e => {
+                                    e.currentTarget.style.background = 'var(--color-background-muted)';
+                                    e.currentTarget.style.color = 'var(--color-text-primary)';
+                                }}
+                                onMouseLeave={e => {
+                                    e.currentTarget.style.background = 'transparent';
+                                    e.currentTarget.style.color = 'var(--color-text-secondary)';
+                                }}
                                 aria-label={t.common?.close || 'Close modal'}
                             >
-                                <X className="w-5 h-5 transition-transform group-hover:rotate-90" />
+                                <X className="w-5 h-5" />
                             </button>
                         )}
                     </div>
@@ -175,6 +188,17 @@ function Modal({
                 <div className="flex-1 overflow-y-auto px-6 py-4">
                     {children}
                 </div>
+                {footer && (
+                    <div
+                        className="px-6 py-4 border-t"
+                        style={{
+                            borderColor: 'var(--color-border-subtle)',
+                            background: 'var(--color-background-elevated)',
+                        }}
+                    >
+                        {footer}
+                    </div>
+                )}
             </div>
         </div>,
         document.body

@@ -9,8 +9,12 @@ export default defineConfig({
         globals: true,
         environment: 'jsdom',
         setupFiles: ['./src/test/setup.ts'],
-        include: ['src/**/*.{test,spec}.{ts,tsx}', 'design-system/**/*.{test,spec}.{js,ts}'],
-        exclude: ['node_modules', 'dist', '.git'],
+        include: [
+            'src/**/*.{test,spec}.{ts,tsx}',
+            'design-system/build/**/*.test.js',
+            'design-system/scripts/**/*.test.js',
+        ],
+        exclude: ['**/node_modules/**', 'dist', '.git', 'design-system/docs/**'],
         coverage: {
             provider: 'v8',
             reporter: ['text', 'json', 'html'],

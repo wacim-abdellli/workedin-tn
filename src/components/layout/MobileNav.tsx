@@ -167,15 +167,20 @@ export default function MobileNav() {
 
   return (
     <>
-      <nav className="fixed bottom-0 left-0 right-0 z-40 h-16 border-t border-gray-200 dark:border-gray-700 dark:border-gray-800 bg-white dark:bg-gray-800 dark:bg-gray-900 md:hidden dark:border-white/10 dark:bg-[var(--color-bg-base)]">
+      <nav
+        className="fixed bottom-0 left-0 right-0 z-40 h-16 border-t md:hidden"
+        style={{
+          background: 'var(--color-background-elevated)',
+          borderColor: 'var(--color-border-subtle)',
+        }}
+      >
         <div className="flex h-full items-center justify-around">
           {navItems.map((item) => (
             <button
               key={item.id}
               onClick={() => handleNavClick(item)}
-              className={`relative flex h-full flex-1 flex-col items-center justify-center ${
-                isActive(item.path) ? 'text-primary-600' : 'text-gray-500 dark:text-gray-400'
-              }`}
+              className="relative flex h-full flex-1 flex-col items-center justify-center transition-colors"
+              style={{ color: isActive(item.path) ? 'var(--workspace-primary)' : 'var(--color-text-tertiary)' }}
             >
               <div className="relative">
                 <item.icon className="h-5 w-5" />
@@ -191,28 +196,49 @@ export default function MobileNav() {
         </div>
       </nav>
 
-      <header className="fixed left-0 right-0 top-0 z-40 h-14 border-b border-gray-200 dark:border-gray-700 dark:border-gray-800 bg-white dark:bg-gray-800 dark:bg-gray-900 md:hidden dark:border-white/10 dark:bg-[var(--color-bg-base)]">
+      <header
+        className="fixed left-0 right-0 top-0 z-40 h-14 border-b md:hidden"
+        style={{
+          background: 'var(--color-background-elevated)',
+          borderColor: 'var(--color-border-subtle)',
+        }}
+      >
         <div className="flex h-full items-center justify-between px-4">
-          <button onClick={() => navigate('/')} className="text-lg font-bold text-primary-600">
+          <button
+            onClick={() => navigate('/')}
+            className="text-lg font-bold"
+            style={{ color: 'var(--workspace-primary)' }}
+          >
             {tx('pages.mobileNav.brandName', undefined, 'Khedma')}
           </button>
-          <button onClick={() => setShowSearch(true)} className="rounded-full p-2 hover:bg-gray-100 dark:hover:bg-white dark:bg-gray-800 dark:bg-gray-900/5">
-            <Search className="h-5 w-5 text-gray-600 dark:text-gray-300" />
+          <button
+            onClick={() => setShowSearch(true)}
+            className="rounded-full p-2 transition-colors"
+            style={{ color: 'var(--color-text-secondary)' }}
+          >
+            <Search className="h-5 w-5" />
           </button>
         </div>
       </header>
 
       {showSearch ? (
-        <div className="fixed inset-0 z-50 bg-white dark:bg-gray-800 dark:bg-gray-900 md:hidden dark:bg-[var(--color-bg-base)]">
-          <div className="flex items-center gap-3 border-b border-gray-200 dark:border-gray-700 dark:border-gray-800 p-4 dark:border-white/10">
+        <div
+          className="fixed inset-0 z-50 md:hidden"
+          style={{ background: 'var(--color-background-elevated)' }}
+        >
+          <div
+            className="flex items-center gap-3 border-b p-4"
+            style={{ borderColor: 'var(--color-border-subtle)' }}
+          >
             <button onClick={() => setShowSearch(false)}>
-              <X className="h-6 w-6 text-gray-600 dark:text-gray-300" />
+              <X className="h-6 w-6" style={{ color: 'var(--color-text-secondary)' }} />
             </button>
             <input
               type="text"
               autoFocus
               placeholder={tx('pages.mobileNav.searchPlaceholder', undefined, 'Search...')}
               className="flex-1 bg-transparent text-lg outline-none"
+              style={{ color: 'var(--color-text-primary)' }}
               onKeyDown={(event) => {
                 if (event.key !== 'Enter') return;
                 navigate(`/search?q=${(event.target as HTMLInputElement).value}`);
