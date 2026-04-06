@@ -1,3 +1,6 @@
+// Deprecated script: historical debug helper, not a canonical entrypoint.
+// Use package.json scripts and scripts/README.md instead.
+
 import dotenv from 'dotenv';
 import { createClient } from '@supabase/supabase-js';
 

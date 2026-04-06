@@ -1,3 +1,6 @@
+> Legacy note: historical implementation summary. Not canonical.
+> Use `design-system/README.md`, `scripts/README.md`, and `audit/DESIGN_TOKEN_COMPLIANCE_POLICY.md` instead.
+
 # Task 4 Implementation Summary
 
 ## Completed Tasks

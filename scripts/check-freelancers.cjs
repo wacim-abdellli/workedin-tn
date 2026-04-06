@@ -1,3 +1,6 @@
+// Deprecated script: historical debug helper, not a canonical entrypoint.
+// Use package.json scripts and scripts/README.md instead.
+
 require('dotenv').config({ path: '.env' });
 const { createClient } = require('@supabase/supabase-js');
 
@@ -45,3 +48,5 @@ async function checkFreelancers() {
 }
 
 checkFreelancers();
+// Deprecated script: historical debug helper, not a canonical entrypoint.
+// Use package.json scripts and scripts/README.md instead.

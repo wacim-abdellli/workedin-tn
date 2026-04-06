@@ -1,3 +1,6 @@
+// Deprecated script: historical audit generator, not a canonical entrypoint.
+// Use audit/STRICT_FULL_AUDIT_DOSSIER.md and current route/page sources instead.
+
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';

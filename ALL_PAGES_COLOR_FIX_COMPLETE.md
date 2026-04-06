@@ -1,3 +1,6 @@
+> Legacy note: historical color-fix summary. Not canonical.
+> Use `audit/DESIGN_TOKEN_COMPLIANCE_POLICY.md`, `audit/PERFORMANCE_PROFILE.md`, and current source files instead.
+
 # ✅ ALL PAGES COLOR FIX - COMPLETE
 
 ## Mission Accomplished

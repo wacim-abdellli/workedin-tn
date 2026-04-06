@@ -1,3 +1,6 @@
+// Deprecated script: historical ad hoc fixer, not a canonical entrypoint.
+// Use package.json scripts and scripts/README.md instead.
+
 const fs = require('fs');
 let file = fs.readFileSync('src/pages/JobBoard.tsx', 'utf8');
 if (!file.includes('const tr = (')) {

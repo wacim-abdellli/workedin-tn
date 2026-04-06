@@ -1,3 +1,6 @@
+> Legacy note: historical troubleshooting document. Not canonical.
+> Use `README.md`, `REPOSITORY_GOVERNANCE.md`, `audit/STRICT_FULL_AUDIT_DOSSIER.md`, and current `audit/*.md` policies instead.
+
 # 🚨 ADMIN DASHBOARD FIX - START HERE
 
 ## The Problem

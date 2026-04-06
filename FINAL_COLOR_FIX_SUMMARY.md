@@ -1,3 +1,6 @@
+> Legacy note: historical color-fix summary. Not canonical.
+> Use `audit/DESIGN_TOKEN_COMPLIANCE_POLICY.md` and current source files instead.
+
 # ✅ COMPLETE COLOR SYSTEM FIX - FINAL SUMMARY
 
 ## What I Did This Time (The Right Way)

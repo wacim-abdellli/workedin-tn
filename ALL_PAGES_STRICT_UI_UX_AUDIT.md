@@ -1,3 +1,6 @@
+> Legacy note: generated historical audit snapshot. Not canonical.
+> Use `audit/STRICT_FULL_AUDIT_DOSSIER.md`, `audit/ROUTE_ROLE_MATRIX.md`, and route-backed source files instead.
+
 # Strict UI/UX Audit for ALL APP PAGES
 
 This document contains a comprehensive, strict audit of **ALL APP PAGES**, detailing their current state regarding colors, design format, and components used. This is designed to be passed to an AI agent for a full-scale redesign to ensure premium UI/UX.
@@ -984,4 +987,3 @@ This document contains a comprehensive, strict audit of **ALL APP PAGES**, detai
 - `{ useToast }`
 
 ---
-

@@ -1,3 +1,6 @@
+> Legacy note: historical redesign summary. Not canonical.
+> Use `README.md`, `REPOSITORY_GOVERNANCE.md`, and route-backed page sources under `src/pages/` instead.
+
 # Settings Complete Redesign - Ultra-Minimal Approach
 
 ## Overview

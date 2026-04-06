@@ -1,3 +1,6 @@
+> Legacy note: historical migration-tool documentation. Not canonical.
+> The current enforced token gate is `npm run tokens:compliance`; see `scripts/README.md` and `audit/DESIGN_TOKEN_COMPLIANCE_POLICY.md`.
+
 # Design System Migration Tools
 
 This directory contains automated tools for migrating the codebase to use the design system tokens.

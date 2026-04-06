@@ -1,4 +1,7 @@
 #!/usr/bin/env pwsh
+# Deprecated script: historical ad hoc fixer, not a canonical entrypoint.
+# Use package.json scripts and scripts/README.md instead.
+
 # Logging Cleanup Script for Khedma.tn
 # Replaces console.log/error/warn with logger.log/error/warn
 

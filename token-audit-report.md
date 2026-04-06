@@ -1,3 +1,6 @@
+> Legacy note: generated token-audit report. Not canonical.
+> Use `audit/DESIGN_TOKEN_COMPLIANCE_POLICY.md` and `npm run tokens:compliance` output instead.
+
 # Token Audit Report
 
 Generated: 2026-04-05T19:54:40.902Z
@@ -794,4 +797,3 @@ Top 10 most used tokens:
 2. **Remove deprecated tokens**: Replace deprecated tokens with their modern equivalents
 3. **Define missing tokens**: Add undefined tokens to the design system or replace with existing tokens
 4. **Create migration script**: Consider creating automated migration scripts for high-frequency tokens
-

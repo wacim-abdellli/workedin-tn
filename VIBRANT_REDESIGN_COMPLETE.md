@@ -1,3 +1,6 @@
+> Legacy note: historical redesign summary. Not canonical.
+> Use `README.md`, `REPOSITORY_GOVERNANCE.md`, and `src/pages/JobBoard.tsx` for the current route-backed implementation.
+
 # ✨ VIBRANT JOBS PAGE REDESIGN - COMPLETE
 
 ## What I've Done - Complete 180° Transformation

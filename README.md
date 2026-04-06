@@ -1,75 +1,65 @@
-# React + TypeScript + Vite
+# Khedma.tn
 
-![CI](https://github.com/USERNAME/khedma-tn/workflows/CI/badge.svg)
+Khedma.tn is a Tunisian freelance marketplace built with React, TypeScript, Vite, Supabase, and Playwright.
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This is the canonical repository entrypoint.
 
-Currently, two official plugins are available:
+## Canonical Docs
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- `README.md`
+  - project overview and day-1 commands
+- `REPOSITORY_GOVERNANCE.md`
+  - canonical docs, scripts, pages, and deprecated artifacts
+- `audit/STRICT_FULL_AUDIT_DOSSIER.md`
+  - master audit backlog and phase definitions
+- `audit/*.md`
+  - current enforced policy and verification artifacts
+- `DEPLOYMENT_GUIDE_PRODUCTION.md`
+  - production deployment and verification
+- `scripts/README.md`
+  - canonical script registry
+- `e2e/README.md`
+  - end-to-end test architecture and operator guidance
 
-## React Compiler
+If a root markdown file is not listed above and carries a legacy banner, treat it as historical context only.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Canonical Commands
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
+npm run dev
+npm run test:run
+npm run audit:strict
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Additional enforced quality/security commands:
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm run deps:audit
+npm run headers:verify -- --base-url <url>
+npm run tokens:compliance -- --staged
+npm run test:e2e:a11y:strict
+npm run test:e2e:visual
 ```
+
+## Canonical App Structure
+
+- `src/routes/`
+  - canonical route graph and route ownership
+- `src/pages/`
+  - route-backed page entrypoints only
+- `src/components/`
+  - shared UI and feature components
+- `src/lib/`
+  - shared client utilities, policies, and query/cache setup
+- `supabase/`
+  - migrations, verification SQL, and Edge Functions
+
+## Current Governance Rule
+
+- Prefer canonical docs over historical summaries.
+- Prefer package/workflow-wired scripts over ad hoc fixer scripts.
+- Prefer route-backed page files referenced from `src/routes/`.
+- Do not add alternate page files like `*-NEW.tsx` or one-off root summary docs for ongoing work.
+
+See `REPOSITORY_GOVERNANCE.md` for the audited source-of-truth list.

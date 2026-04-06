@@ -1,3 +1,6 @@
+// Deprecated script: historical ad hoc fixer, not a canonical entrypoint.
+// Use package.json scripts and scripts/README.md instead.
+
 const fs = require('fs');
 const path = require('path');
 
@@ -89,3 +92,5 @@ targets.forEach(t => {
 });
 
 console.log('Total files updated:', count);
+// Deprecated script: historical ad hoc fixer, not a canonical entrypoint.
+// Use package.json scripts and scripts/README.md instead.

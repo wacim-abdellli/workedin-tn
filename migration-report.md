@@ -1,3 +1,6 @@
+> Legacy note: generated migration report. Not canonical.
+> Use `audit/DESIGN_TOKEN_COMPLIANCE_POLICY.md` and CI artifacts under `artifacts/design-token-compliance/` instead.
+
 # Color Migration Report
 
 Generated: 2026-04-05T19:54:40.468Z
@@ -21731,4 +21734,3 @@ node design-system/scripts/migrate-colors.js --apply
 - Complex color combinations
 
 Please review the issues above and update them manually.
-

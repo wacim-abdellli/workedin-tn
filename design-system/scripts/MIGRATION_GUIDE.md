@@ -1,3 +1,6 @@
+> Legacy note: historical migration guide. Not canonical.
+> Use `audit/DESIGN_TOKEN_COMPLIANCE_POLICY.md` and `scripts/README.md` for current enforcement and entrypoints.
+
 # Color System Migration Guide
 
 This guide provides step-by-step instructions for migrating from hardcoded Tailwind colors to design system tokens.
