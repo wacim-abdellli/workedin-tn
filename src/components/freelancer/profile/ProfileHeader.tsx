@@ -27,13 +27,182 @@ export default function ProfileHeader({
     const isOwnProfile = user?.id === freelancer.id || user?.id === (freelancer as any).profile?.id;
 
     return (
-        <div className="relative pb-8 pt-12 md:pt-20 overflow-hidden sm:overflow-visible">
-            {/* Vibrant Ambient Mesh Glows */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-6xl h-[500px] -z-10 opacity-50 dark:opacity-30 pointer-events-none">
-                <div className="absolute top-[-15%] left-[10%] w-[45%] h-[80%] rounded-full bg-[var(--workspace-primary)] blur-[120px] animate-pulse" style={{ animationDuration: '4s' }} />
-                <div className="absolute top-[15%] right-[10%] w-[40%] h-[70%] rounded-full bg-[var(--workspace-accent)] blur-[120px] animate-pulse" style={{ animationDuration: '5s', animationDelay: '1s' }} />
-                <div className="absolute bottom-[10%] left-[40%] w-[30%] h-[50%] rounded-full bg-[color-mix(in_srgb,var(--workspace-primary)_70%,var(--workspace-accent)_30%)] blur-[100px] animate-pulse" style={{ animationDuration: '6s', animationDelay: '2s' }} />
+        <div className="relative pb-8 pt-6 md:pt-10">
+            <div className="container-custom relative z-10">
+                {/* Main Profile Card */}
+                <div className="mb-6 rounded-2xl border p-6 sm:p-8 relative overflow-hidden"
+                    style={{
+                        background: 'var(--color-background-elevated)',
+                        borderColor: 'var(--color-border-subtle)',
+                        boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+                    }}
+                >
+                    {/* Subtle top accent line */}
+                    <div className="absolute inset-x-0 top-0 h-0.5 rounded-t-2xl"
+                        style={{ background: 'linear-gradient(90deg, var(--workspace-primary), var(--workspace-accent))' }} />
+
+                    <div className="flex flex-col lg:flex-row lg:items-start lg:gap-10">
+                        {/* Main Profile Info */}
+                        <div className="flex-1">
+                            <div className="flex flex-col items-start sm:flex-row sm:items-center gap-5 sm:gap-7">
+                                {/* Avatar */}
+                                <div className="relative shrink-0">
+                                    <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-2xl border-2 shadow-md"
+                                        style={{ borderColor: 'color-mix(in srgb, var(--workspace-primary) 25%, var(--color-border-subtle))' }}>
+                                        {freelancer.avatar_url ? (
+                                            <OptimizedImage src={freelancer.avatar_url} alt={freelancer.full_name}
+                                                className="h-full w-full" imgClassName="h-full w-full object-cover" priority />
+                                        ) : (
+                                            <div className="h-full w-full flex items-center justify-center"
+                                                style={{ background: 'color-mix(in srgb, var(--workspace-primary) 10%, var(--color-background-subtle))' }}>
+                                                <User className="h-10 w-10" style={{ color: 'var(--workspace-primary)' }} />
+                                            </div>
+                                        )}
+                                    </div>
+                                    {/* Availability dot */}
+                                    <span className={`absolute -bottom-1 -end-1 h-4 w-4 rounded-full border-2 border-[var(--color-background-elevated)] ${
+                                        freelancer.availability === 'available' ? 'bg-emerald-500' :
+                                        freelancer.availability === 'busy' ? 'bg-amber-500' : 'bg-neutral-400'
+                                    }`} />
+                                </div>
+
+                                <div className="flex-1 min-w-0">
+                                    {/* Freelancer badge */}
+                                    <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider text-white mb-2"
+                                        style={{ background: 'var(--workspace-primary)' }}>
+                                        <Sparkles className="h-3 w-3" />
+                                        {tx('auth.accountPanel.freelancerLabel', undefined, 'Freelancer')}
+                                    </span>
+                                    <h1 className="text-2xl sm:text-3xl font-bold tracking-tight" style={{ color: 'var(--color-text-primary)' }}>
+                                        {freelancer.full_name}
+                                    </h1>
+                                    <p className="mt-1 text-sm font-medium" style={{ color: 'var(--workspace-primary)' }}>
+                                        {freelancer.title || tx('auth.accountPanel.freelancerLabel', undefined, 'Freelancer')}
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* Tags */}
+                            <div className="mt-5 flex flex-wrap items-center gap-2">
+                                <span className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium"
+                                    style={{ borderColor: 'var(--color-border-subtle)', background: 'var(--color-background-subtle)', color: 'var(--color-text-secondary)' }}>
+                                    <MapPin className="h-3.5 w-3.5 text-amber-500" />
+                                    {freelancer.location}
+                                </span>
+                                <span className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium"
+                                    style={{ borderColor: 'var(--color-border-subtle)', background: 'var(--color-background-subtle)', color: 'var(--color-text-secondary)' }}>
+                                    <Star className="h-3.5 w-3.5 text-amber-500 fill-amber-500" />
+                                    {freelancer.stats.rating} · {freelancer.stats.reviews_count} {tx('pages.freelancerProfile.reviews', undefined, 'reviews')}
+                                </span>
+                                <span className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium"
+                                    style={{ borderColor: 'color-mix(in srgb, #10b981 25%, var(--color-border-subtle))', background: 'color-mix(in srgb, #10b981 8%, var(--color-background-subtle))', color: '#10b981' }}>
+                                    <CheckCircle className="h-3.5 w-3.5" />
+                                    {freelancer.stats.success_rate}% {tx('pages.freelancerProfile.successRate', undefined, 'success')}
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* Sidebar panel */}
+                        <aside className="mt-6 w-full lg:mt-0 lg:w-[280px] shrink-0">
+                            <div className="rounded-xl border p-5"
+                                style={{ background: 'var(--color-background-subtle)', borderColor: 'var(--color-border-subtle)' }}>
+
+                                {isOwnProfile ? (
+                                    <>
+                                        <p className="text-[10px] font-bold uppercase tracking-widest mb-4" style={{ color: 'var(--workspace-primary)' }}>
+                                            {tx('pages.freelancerProfile.manageProfile', undefined, 'Manage Profile')}
+                                        </p>
+                                        <div className="space-y-2">
+                                            <button onClick={() => navigate('/settings?tab=profile')}
+                                                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-white transition-all duration-200 hover:opacity-90 hover:shadow-md"
+                                                style={{ background: 'var(--workspace-primary)' }}>
+                                                <Pencil className="h-4 w-4 shrink-0" />
+                                                <span className="flex-1 text-left">{tx('settings.editProfile', undefined, 'Edit Profile')}</span>
+                                            </button>
+                                            <button onClick={() => navigate('/portfolio')}
+                                                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 hover:shadow-md border"
+                                                style={{ borderColor: 'var(--color-border-subtle)', background: 'var(--color-background-elevated)', color: 'var(--color-text-primary)' }}>
+                                                <Upload className="h-4 w-4 shrink-0" style={{ color: 'var(--workspace-primary)' }} />
+                                                <span className="flex-1 text-left">{tx('pages.freelancerProfile.addPortfolio', undefined, 'Add Portfolio Work')}</span>
+                                            </button>
+                                            <button onClick={() => navigate('/settings')}
+                                                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 hover:shadow-md border"
+                                                style={{ borderColor: 'var(--color-border-subtle)', background: 'var(--color-background-elevated)', color: 'var(--color-text-secondary)' }}>
+                                                <Settings className="h-4 w-4 shrink-0" />
+                                                <span className="flex-1 text-left">{tx('nav.settings', undefined, 'Settings')}</span>
+                                            </button>
+                                        </div>
+                                        <div className="mt-4 pt-4 border-t" style={{ borderColor: 'var(--color-border-subtle)' }}>
+                                            <div className="flex items-center justify-between mb-1.5">
+                                                <span className="text-xs font-medium" style={{ color: 'var(--color-text-tertiary)' }}>
+                                                    {tx('pages.freelancerProfile.profileStrength', undefined, 'Profile strength')}
+                                                </span>
+                                                <span className="text-xs font-bold" style={{ color: 'var(--workspace-primary)' }}>
+                                                    {freelancer.stats.success_rate || 0}%
+                                                </span>
+                                            </div>
+                                            <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--color-border-subtle)' }}>
+                                                <div className="h-full rounded-full" style={{ width: `${freelancer.stats.success_rate || 0}%`, background: 'var(--workspace-primary)' }} />
+                                            </div>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <>
+                                        <p className="text-[10px] font-bold uppercase tracking-widest mb-4" style={{ color: 'var(--workspace-primary)' }}>
+                                            {tx('pages.searchModal.quickActions', undefined, "Let's Connect")}
+                                        </p>
+                                        <div className="space-y-2">
+                                            <Button variant="primary" size="sm" onClick={onContact}
+                                                className="w-full justify-center font-semibold">
+                                                {tx('pages.freelancerProfile.hireNow', undefined, 'Hire Now')}
+                                            </Button>
+                                            <Button variant="outline" size="sm" onClick={onMessage}
+                                                leftIcon={<Send className="h-3.5 w-3.5" />}
+                                                className="w-full justify-center font-semibold">
+                                                {tx('pages.freelancerProfile.message', undefined, 'Send Message')}
+                                            </Button>
+                                            {freelancer.voice_intro_url && (
+                                                <button onClick={onPlayVoice}
+                                                    className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg border text-sm font-medium transition-colors"
+                                                    style={{
+                                                        borderColor: isPlayingVoice ? 'var(--workspace-primary)' : 'var(--color-border-subtle)',
+                                                        background: isPlayingVoice ? 'color-mix(in srgb, var(--workspace-primary) 10%, var(--color-background-elevated))' : 'var(--color-background-elevated)',
+                                                        color: isPlayingVoice ? 'var(--workspace-primary)' : 'var(--color-text-secondary)',
+                                                    }}>
+                                                    {isPlayingVoice ? <><Pause className="h-4 w-4" /> Playing...</> : <><Volume2 className="h-4 w-4" /> {tx('pages.freelancerProfile.hearVoice', undefined, 'Voice intro')}</>}
+                                                </button>
+                                            )}
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+                        </aside>
+                    </div>
+                </div>
+
+                {/* Stats row */}
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 mb-2">
+                    {[
+                        { icon: BriefcaseBusiness, value: freelancer.stats.jobs_completed, label: tx('pages.freelancerProfile.completedJobs', undefined, 'Completed'), color: '#3b82f6' },
+                        { icon: Wallet, value: freelancer.stats.total_earnings.toLocaleString(), label: tx('pages.freelancerProfile.totalEarnings', undefined, 'Earned TND'), color: '#10b981' },
+                        { icon: Clock3, value: `${freelancer.stats.response_time_hours}h`, label: tx('pages.freelancerProfile.responseSpeed', undefined, 'Response'), color: '#f59e0b' },
+                        { icon: Wallet, value: freelancer.hourly_rate, label: tx('findFreelancers.hourlyRate', undefined, 'Rate / Hr'), color: 'var(--workspace-primary)' },
+                    ].map(({ icon: Icon, value, label, color }) => (
+                        <div key={label} className="rounded-xl border p-4 transition-all duration-200 hover:shadow-md group"
+                            style={{ background: 'var(--color-background-elevated)', borderColor: 'var(--color-border-subtle)' }}>
+                            <div className="flex items-center gap-2 mb-2">
+                                <div className="p-1.5 rounded-lg" style={{ background: `color-mix(in srgb, ${color} 12%, transparent)` }}>
+                                    <Icon className="h-4 w-4" style={{ color }} />
+                                </div>
+                            </div>
+                            <p className="text-2xl font-bold" style={{ color: 'var(--color-text-primary)' }}>{value}</p>
+                            <p className="text-xs font-medium mt-0.5 uppercase tracking-wide" style={{ color }}>{label}</p>
+                        </div>
+                    ))}
+                </div>
             </div>
+        </div>
+    );
 
             <div className="container-custom relative z-10">
                 {/* Main Profile Card - Premium Glassmorphic Design */}

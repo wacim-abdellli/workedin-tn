@@ -9,7 +9,6 @@ import {
   CreditCard,
   Loader2,
   Plus,
-  Settings as SettingsIcon,
   Shield,
   Trash2,
   User,
@@ -309,104 +308,86 @@ function Settings() {
   const renderAccountTab = () => (
     <div className="space-y-6">
       {/* Stats Grid */}
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-3 sm:grid-cols-3">
         {[
           {
             label: tx("settings.currentWorkspace", undefined, "Workspace"),
             value: activeMode === "freelancer" ? t.auth.accountPanel.freelancerLabel : t.auth.accountPanel.clientLabel,
             icon: BriefcaseBusiness,
-            gradient: "from-purple-500 to-purple-600",
           },
           {
             label: tx("settings.accountType", undefined, "Account type"),
             value: accountTypeLabel,
             icon: User,
-            gradient: "from-blue-500 to-cyan-500",
           },
           {
             label: tx("settings.identityVerificationTitle", undefined, "Identity"),
             value: identityLabel,
             icon: profile?.cin_verified ? Check : Shield,
-            gradient: profile?.cin_verified ? "from-emerald-500 to-green-600" : "from-amber-500 to-orange-600",
           },
-        ].map(({ label, value, icon: Icon, gradient }) => (
-          <div
-            key={label}
-            className="group relative overflow-hidden rounded-xl border p-5 transition-all duration-300 hover:scale-[1.02] hover:shadow-xl cursor-pointer"
-            style={{ 
-              borderColor: "var(--color-border-subtle)", 
-              background: "var(--color-background-elevated)",
-            }}
-          >
-            <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-0 group-hover:opacity-5 transition-opacity duration-300`} />
-            <div className="relative">
-              <div className="flex items-center gap-3 mb-3">
-                <div className={`p-2.5 rounded-xl bg-gradient-to-br ${gradient} shadow-lg`}>
-                  <Icon className="h-4 w-4 text-white" />
-                </div>
-                <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--color-text-tertiary)" }}>
-                  {label}
-                </p>
+        ].map(({ label, value, icon: Icon }) => (
+          <div key={label} className="rounded-xl border p-4"
+            style={{ borderColor: "var(--color-border-subtle)", background: "var(--color-background-elevated)" }}>
+            <div className="flex items-center gap-2.5 mb-2">
+              <div className="p-1.5 rounded-lg" style={{ background: "color-mix(in srgb, var(--workspace-primary) 10%, transparent)" }}>
+                <Icon className="h-3.5 w-3.5" style={{ color: "var(--workspace-primary)" }} />
               </div>
-              <p className="text-base font-bold" style={{ color: "var(--color-text-primary)" }}>{value}</p>
+              <p className="text-xs font-medium" style={{ color: "var(--color-text-tertiary)" }}>{label}</p>
             </div>
+            <p className="text-sm font-bold" style={{ color: "var(--color-text-primary)" }}>{value}</p>
           </div>
         ))}
       </div>
 
       {/* Quick Actions */}
       <div>
-        <h3 className="text-sm font-semibold mb-4 flex items-center gap-2" style={{ color: "var(--color-text-primary)" }}>
-          <div className="h-1 w-1 rounded-full" style={{ background: "var(--workspace-primary)" }} />
+        <h3 className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: "var(--color-text-tertiary)" }}>
           {tx("settings.quickActions", undefined, "Quick actions")}
         </h3>
-        <div className="space-y-3">
+        <div className="space-y-2">
           {[
             {
               label: tx("settings.goToProfile", undefined, "Edit profile"),
               desc: tx("settings.accountTabHint", undefined, "Update your details and workspace"),
               onClick: () => setActiveTab("profile"),
               icon: User,
-              gradient: "from-purple-500 to-pink-500",
             },
             {
               label: tx("settings.goToDashboard", undefined, "Go to dashboard"),
               desc: tx("settings.goToDashboardDescription", undefined, "Return to your workspace"),
               onClick: () => navigate(dashboardPath),
               icon: BriefcaseBusiness,
-              gradient: "from-blue-500 to-cyan-500",
             },
             {
               label: tx("settings.reviewNotifications", undefined, "Manage notifications"),
               desc: tx("settings.reviewNotificationsDescription", undefined, "Control your alerts"),
               onClick: () => setActiveTab("notifications"),
               icon: Bell,
-              gradient: "from-amber-500 to-orange-500",
             },
-          ].map(({ label, desc, onClick, icon: Icon, gradient }) => (
-            <button
-              key={label}
-              type="button"
-              onClick={onClick}
-              className="group relative overflow-hidden w-full text-left px-5 py-4 rounded-xl border transition-all duration-300 hover:scale-[1.01] hover:shadow-lg"
+          ].map(({ label, desc, onClick, icon: Icon }) => (
+            <button key={label} type="button" onClick={onClick}
+              className="group w-full text-left px-4 py-3 rounded-xl border transition-all duration-200 hover:shadow-sm"
               style={{ borderColor: "var(--color-border-subtle)", background: "var(--color-background-elevated)" }}
+              onMouseEnter={e => {
+                e.currentTarget.style.borderColor = "color-mix(in srgb, var(--workspace-primary) 30%, var(--color-border-subtle))";
+                e.currentTarget.style.background = "color-mix(in srgb, var(--workspace-primary) 4%, var(--color-background-elevated))";
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.borderColor = "var(--color-border-subtle)";
+                e.currentTarget.style.background = "var(--color-background-elevated)";
+              }}
             >
-              <div className={`absolute inset-0 bg-gradient-to-r ${gradient} opacity-0 group-hover:opacity-5 transition-opacity duration-300`} />
-              <div className="relative flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className={`p-2.5 rounded-xl bg-gradient-to-br ${gradient} shadow-md group-hover:scale-110 transition-transform duration-300`}>
-                    <Icon className="h-4 w-4 text-white" />
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg" style={{ background: "color-mix(in srgb, var(--workspace-primary) 10%, transparent)" }}>
+                    <Icon className="h-4 w-4" style={{ color: "var(--workspace-primary)" }} />
                   </div>
                   <div>
-                    <p className="text-sm font-semibold mb-0.5" style={{ color: "var(--color-text-primary)" }}>
-                      {label}
-                    </p>
-                    <p className="text-xs" style={{ color: "var(--color-text-tertiary)" }}>
-                      {desc}
-                    </p>
+                    <p className="text-sm font-semibold" style={{ color: "var(--color-text-primary)" }}>{label}</p>
+                    <p className="text-xs mt-0.5" style={{ color: "var(--color-text-tertiary)" }}>{desc}</p>
                   </div>
                 </div>
-                <ChevronRight className="h-5 w-5 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300" style={{ color: "var(--workspace-primary)" }} />
+                <ChevronRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: "var(--workspace-primary)" }} />
               </div>
             </button>
           ))}
@@ -510,17 +491,12 @@ function Settings() {
       <Header />
 
       <main className="mx-auto max-w-[1400px] px-4 py-6 pb-24 sm:px-6 lg:px-8">
-        {/* Premium Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 rounded-xl shadow-lg" style={{ background: "linear-gradient(135deg, var(--workspace-primary), var(--workspace-accent))" }}>
-              <SettingsIcon className="h-6 w-6 text-white" />
-            </div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-[var(--color-text-primary)] to-[var(--workspace-primary)] bg-clip-text text-transparent">
-              {tx("settings.pageTitle", undefined, "Settings")}
-            </h1>
-          </div>
-          <p className="text-sm ml-14" style={{ color: "var(--color-text-tertiary)" }}>
+        {/* Header */}
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold mb-1" style={{ color: "var(--color-text-primary)" }}>
+            {tx("settings.pageTitle", undefined, "Settings")}
+          </h1>
+          <p className="text-sm" style={{ color: "var(--color-text-tertiary)" }}>
             {tx("settings.heroDescription", undefined, "Manage your account, profile, and preferences")}
           </p>
         </div>
@@ -563,42 +539,19 @@ function Settings() {
                       }}
                     />
                     
-                    {/* Icon with gradient background */}
-                    <div 
-                      className="relative z-10 p-2 rounded-lg transition-all duration-300 group-hover:scale-110"
-                      style={{
-                        background: isActive 
-                          ? "linear-gradient(135deg, var(--workspace-primary), var(--workspace-accent))"
-                          : "var(--color-background-subtle)",
-                      }}
-                    >
-                      <item.icon 
-                        className="h-4 w-4 transition-colors duration-300" 
-                        style={{ color: isActive ? "#ffffff" : "var(--color-text-tertiary)" }}
-                      />
+                    {/* Icon */}
+                    <div className="relative z-10 p-1.5 rounded-lg transition-all duration-200"
+                      style={{ background: isActive ? "color-mix(in srgb, var(--workspace-primary) 12%, transparent)" : "transparent" }}>
+                      <item.icon className="h-4 w-4 transition-colors duration-200"
+                        style={{ color: isActive ? "var(--workspace-primary)" : "var(--color-text-tertiary)" }} />
                     </div>
                     
                     {/* Label */}
-                    <span className="relative z-10 font-bold">{item.label}</span>
+                    <span className="relative z-10 font-semibold">{item.label}</span>
                     
                     {/* Active indicator bar */}
-                    <div 
-                      className="absolute bottom-0 left-0 right-0 h-1 rounded-t-full transition-all duration-300"
-                      style={{
-                        background: isActive 
-                          ? "linear-gradient(90deg, var(--workspace-primary), var(--workspace-accent))"
-                          : "transparent",
-                        transform: isActive ? "scaleX(1)" : "scaleX(0)",
-                        boxShadow: isActive ? "0 -2px 10px -2px var(--workspace-primary-shadow)" : "none",
-                      }}
-                    />
-                    
-                    {/* Notification badge (example for notifications tab) */}
-                    {item.id === "notifications" && (
-                      <div className="relative z-10 flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold text-white" style={{ background: "linear-gradient(135deg, #ef4444, #f97316)" }}>
-                        3
-                      </div>
-                    )}
+                    <div className="absolute bottom-0 left-0 right-0 h-0.5 transition-all duration-200"
+                      style={{ background: isActive ? "var(--workspace-primary)" : "transparent" }} />
                   </button>
                 );
               })}
@@ -643,17 +596,17 @@ function Settings() {
             </div>
             
             {/* Quick Stats */}
-            <div className="rounded-2xl border-2 p-6 backdrop-blur-sm" style={{ borderColor: "color-mix(in srgb, var(--workspace-primary) 15%, var(--color-border-subtle))", background: "var(--color-background-elevated)" }}>
-              <h4 className="text-xs font-bold uppercase tracking-wider mb-4 bg-gradient-to-r from-[var(--workspace-primary)] to-[var(--workspace-accent)] bg-clip-text text-transparent">
+            <div className="rounded-xl border p-4" style={{ borderColor: "var(--color-border-subtle)", background: "var(--color-background-elevated)" }}>
+              <h4 className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: "var(--color-text-tertiary)" }}>
                 Account Overview
               </h4>
-              <div className="space-y-3">
+              <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm" style={{ color: "var(--color-text-secondary)" }}>Profile completion</span>
-                  <span className="text-sm font-bold" style={{ color: "var(--workspace-primary)" }}>85%</span>
+                  <span className="text-xs" style={{ color: "var(--color-text-secondary)" }}>Profile completion</span>
+                  <span className="text-xs font-bold" style={{ color: "var(--workspace-primary)" }}>85%</span>
                 </div>
-                <div className="h-2 rounded-full overflow-hidden" style={{ background: "var(--color-background-subtle)" }}>
-                  <div className="h-full rounded-full transition-all duration-500" style={{ width: "85%", background: "linear-gradient(90deg, var(--workspace-primary), var(--workspace-accent))" }} />
+                <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "var(--color-border-subtle)" }}>
+                  <div className="h-full rounded-full" style={{ width: "85%", background: "var(--workspace-primary)" }} />
                 </div>
               </div>
             </div>

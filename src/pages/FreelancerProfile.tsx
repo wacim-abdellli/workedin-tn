@@ -294,7 +294,7 @@ export default function FreelancerProfile() {
     }
 
     return (
-        <div className="min-h-screen bg-[var(--color-bg-subtle)] pb-20 md:pb-0">
+        <div className="min-h-screen pb-20 md:pb-0" style={{ background: 'var(--color-background-base)' }}>
             <SEO
                 title={`${freelancer.full_name} — ${freelancer.title} | ${t.seo.freelancerProfile.titleSuffix}`}
                 description={freelancer.bio?.slice(0, 160) || `${freelancer.title} — ${t.seo.freelancerProfile.descriptionFallback}`}
