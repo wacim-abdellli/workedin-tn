@@ -4,6 +4,7 @@ import {
   Briefcase,
   ChevronDown,
   ClipboardList,
+  ExternalLink,
   FileText,
   FolderOpen,
   LogOut,
@@ -815,6 +816,9 @@ export default function Header() {
                             {[
                               { icon: User, label: t.nav?.dashboard || "Dashboard", path: "/dashboard", hint: null },
                               { icon: Settings, label: t.nav?.settings || "Settings", path: "/settings", hint: null },
+                              ...(profile?.user_type === "freelancer" || profile?.user_type === "both" ? [
+                                { icon: ExternalLink, label: t.nav?.myProfile || "My Profile", path: `/freelancer/${profile?.username || user?.id}`, hint: null },
+                              ] : []),
                             ].map(({ icon: Icon, label, path }) => (
                               <button
                                 key={path}
