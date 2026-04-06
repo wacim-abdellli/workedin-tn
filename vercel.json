@@ -11,6 +11,10 @@
                     "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://*.supabase.co https://app.posthog.com https://*.sentry.io; worker-src 'self' blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https: blob:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://*.supabase.co https://app.posthog.com https://*.sentry.io wss://*.supabase.co; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; media-src 'self' blob:; object-src 'none'; upgrade-insecure-requests;"
                 },
                 {
+                    "key": "Strict-Transport-Security",
+                    "value": "max-age=31536000; includeSubDomains; preload"
+                },
+                {
                     "key": "X-Content-Type-Options",
                     "value": "nosniff"
                 },

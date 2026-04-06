@@ -78,7 +78,7 @@ Deno.serve(async (req) => {
     // Get the transaction to find the contract
     const { data: transaction, error: txError } = await adminClient
       .from('transactions')
-      .select('reference_id, amount, user_id')
+      .select('contract_id, amount, user_id')
       .eq('id', transaction_id)
       .eq('status', 'pending')
       .single()
@@ -93,10 +93,19 @@ Deno.serve(async (req) => {
       })
     }
 
+    if (!transaction.contract_id) {
+      return new Response(JSON.stringify({
+        error: 'Transaction is missing a contract reference',
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
     const { data: contract, error: contractError } = await adminClient
       .from('contracts')
       .select('id, freelancer_id, amount')
-      .eq('id', transaction.reference_id)
+      .eq('id', transaction.contract_id)
       .single()
 
     if (contractError || !contract?.freelancer_id) {

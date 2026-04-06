@@ -4,6 +4,28 @@ import react from '@vitejs/plugin-react';
 import { visualizer } from 'rollup-plugin-visualizer';
 import * as path from 'path';
 
+const PRODUCTION_CSP = "default-src 'self'; script-src 'self' 'unsafe-inline' https://*.supabase.co https://app.posthog.com https://*.sentry.io; worker-src 'self' blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https: blob:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://*.supabase.co https://app.posthog.com https://*.sentry.io wss://*.supabase.co; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; media-src 'self' blob:; object-src 'none'; upgrade-insecure-requests;";
+const DEVELOPMENT_CSP = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.supabase.co https://app.posthog.com https://*.sentry.io; worker-src 'self' blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https: blob:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://*.supabase.co https://app.posthog.com https://*.sentry.io ws://localhost:* wss://localhost:* wss://*.supabase.co; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; media-src 'self' blob:; object-src 'none';";
+const BASE_SECURITY_HEADERS = {
+  'X-Content-Type-Options': 'nosniff',
+  'X-Frame-Options': 'DENY',
+  'X-XSS-Protection': '1; mode=block',
+  'Referrer-Policy': 'strict-origin-when-cross-origin',
+  'Permissions-Policy': 'camera=(), microphone=(self), geolocation=()',
+};
+
+function applySecurityHeaders(res: { setHeader: (name: string, value: string) => void }, csp: string, includeHsts: boolean) {
+  res.setHeader('Content-Security-Policy', csp);
+
+  for (const [headerName, headerValue] of Object.entries(BASE_SECURITY_HEADERS)) {
+    res.setHeader(headerName, headerValue);
+  }
+
+  if (includeHsts) {
+    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
+  }
+}
+
 // https://vite.dev/config/
 export default defineConfig(({ command, mode }) => ({
   plugins: [
@@ -12,12 +34,13 @@ export default defineConfig(({ command, mode }) => ({
       name: 'security-headers',
       configureServer(server) {
         server.middlewares.use((_req, res, next) => {
-          res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.supabase.co https://app.posthog.com https://*.sentry.io; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https: blob:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://*.supabase.co wss://*.supabase.co wss://localhost:* https://app.posthog.com https://*.sentry.io https://api.flouci.com; frame-ancestors 'none'; upgrade-insecure-requests;");
-          res.setHeader('X-Content-Type-Options', 'nosniff');
-          res.setHeader('X-Frame-Options', 'DENY');
-          res.setHeader('X-XSS-Protection', '1; mode=block');
-          res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
-          res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+          applySecurityHeaders(res, DEVELOPMENT_CSP, false);
+          next();
+        });
+      },
+      configurePreviewServer(server) {
+        server.middlewares.use((_req, res, next) => {
+          applySecurityHeaders(res, PRODUCTION_CSP, true);
           next();
         });
       }

@@ -42,6 +42,12 @@ jobs:
       - name: Build with Bundle Budgets
         run: npm run build:budget
 
+      - name: Start preview server for header verification
+        run: npm run preview -- --host 127.0.0.1 --port 4173 > preview.log 2>&1 &
+
+      - name: Verify preview security headers
+        run: npm run headers:verify -- --base-url http://127.0.0.1:4173 --paths /,/login --label ci-preview --output artifacts/security-headers/ci-preview.json --wait-ms 30000
+
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps chromium
         continue-on-error: true
@@ -57,3 +63,11 @@ jobs:
           name: dist
           path: dist
           retention-days: 1
+
+      - name: Upload Security Header Artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: security-headers-report
+          path: artifacts/security-headers/
+          retention-days: 7

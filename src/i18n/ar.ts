@@ -1012,6 +1012,8 @@ export const ar = {
         },
         pageTitle: 'الإعدادات',
         heroDescription: 'احتفظ بتفاصيل الحساب والأمان والمدفوعات وسلوك الإشعارات في مكان تحكم واحد وثابت. قم بتحديث ما يهمك دون أن تفقد مكانك في المنصة.',
+        accountOverview: 'نظرة عامة على الحساب',
+        profileCompletion: 'اكتمال الملف الشخصي',
         logout: 'تسجيل الخروج',
         notificationsSubtitle: 'اختر الإشعارات التي تريد استلامها',
         paymentSubtitle: 'طرق الدفع والاستلام',
@@ -2129,6 +2131,8 @@ export const ar = {
             description: 'أكثر من 2500 محترف تونسي موثق ومُقيَّم وجاهز للعمل عبر التصميم، التطوير، الترجمة والاستشارة.',
         },
         freelancerProfile: {
+            addSkillPlaceholder: 'أضف مهارة...',
+            typeSkillPlaceholder: 'اكتب مهارة ثم اضغط Enter...',
             titleSuffix: 'مستقل على خدمة',
             descriptionFallback: 'مستقل على منصة خدمة',
         },

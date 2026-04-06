@@ -20,6 +20,7 @@ parse_lint.js
 playwright-report/
 test-results/
 artifacts/visual-regression/
+artifacts/security-headers/
 e2e/.auth/
 
 # Editor directories and files

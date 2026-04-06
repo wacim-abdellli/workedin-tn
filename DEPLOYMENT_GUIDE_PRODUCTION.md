@@ -226,14 +226,17 @@ pm2 save
 
 3. **Security Verification**
    ```bash
-   # Check HTTPS
-   curl -I https://khedma.tn/ | grep -i "strict-transport-security"
-   
-   # Check CSP headers
-   curl -I https://khedma.tn/ | grep -i "content-security-policy"
-   
-   # Check CORS headers
-   curl -I https://khedma.tn/ | grep -i "access-control-allow"
+   # Verify the full response-header baseline and write an audit artifact
+   npm run headers:verify -- \
+     --base-url https://khedma.tn \
+     --label production \
+     --output artifacts/security-headers/production.json
+
+   # Repeat against staging before promoting the release
+   npm run headers:verify -- \
+     --base-url https://<current-vercel-preview-url> \
+     --label staging \
+     --output artifacts/security-headers/staging.json
    ```
 
 4. **Real-Time Features Test**

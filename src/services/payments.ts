@@ -99,7 +99,7 @@ export async function getEarningsStats(userId: string): Promise<WalletEarningsSt
 export async function getStuckTransactions(): Promise<StuckTransaction[]> {
     const { data, error } = await supabase
         .from('transactions')
-        .select('id, user_id, amount, type, status, reference_id, created_at')
+        .select('id, user_id, amount, type, status, contract_id, created_at')
         .eq('status', 'pending')
         .lt('created_at', new Date(Date.now() - 60 * 60 * 1000).toISOString())
         .order('created_at', { ascending: true });

@@ -24,6 +24,7 @@
     "test:e2e:report": "playwright show-report",
     "test:e2e:visual": "playwright test e2e/visual-regression.spec.ts",
     "test:e2e:a11y:strict": "playwright test e2e/auth-protection-a11y.spec.ts --project=chromium-public",
+    "headers:verify": "node scripts/verify-security-headers.mjs",
     "audit:strict": "npm run lint && npm run avatar:audit && npm run i18n:audit:strict && npm run test:run && npm run build:budget && npm run test:e2e:a11y:strict",
     "tokens:compile": "node design-system/build/token-compiler.js"
   },

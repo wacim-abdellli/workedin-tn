@@ -577,7 +577,7 @@ describe('payments service coverage', () => {
                     amount: 99,
                     type: 'payment',
                     status: 'pending',
-                    reference_id: 'ref-1',
+                    contract_id: 'contract-1',
                     created_at: '2026-03-22T00:00:00.000Z',
                 },
             ],

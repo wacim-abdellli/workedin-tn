@@ -112,7 +112,7 @@ export default function SkillsSection({ skills, language, isOwner, onUpdate }: P
                         <div className="flex items-center gap-1.5">
                             <input value={input} onChange={e => setInput(e.target.value)}
                                 onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addSkill())}
-                                placeholder="Add skill..."
+                                placeholder={tx('pages.freelancerProfile.addSkillPlaceholder', undefined, 'Add skill...')}
                                 className="px-3 py-1.5 rounded-lg border text-sm outline-none w-28"
                                 style={{ borderColor: 'var(--color-border-default)', background: 'var(--color-background-subtle)', color: 'var(--color-text-primary)' }}
                             />
@@ -131,7 +131,7 @@ export default function SkillsSection({ skills, language, isOwner, onUpdate }: P
                         <div className="flex items-center justify-center gap-1.5">
                             <input value={input} onChange={e => setInput(e.target.value)}
                                 onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addSkill())}
-                                placeholder="Type a skill and press Enter..."
+                                placeholder={tx('pages.freelancerProfile.typeSkillPlaceholder', undefined, 'Type a skill and press Enter...')}
                                 className="px-3 py-1.5 rounded-lg border text-sm outline-none w-48"
                                 style={{ borderColor: 'var(--color-border-default)', background: 'var(--color-background-elevated)', color: 'var(--color-text-primary)' }}
                                 autoFocus

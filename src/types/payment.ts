@@ -199,7 +199,8 @@ export interface StuckTransaction {
     amount: number;
     type: TransactionType;
     status: TransactionStatus;
-    reference_id: string | null;
+    contract_id: string | null;
+    reference_id?: string | null;
     created_at: string;
     user_name: string | null;
     email: string | null;

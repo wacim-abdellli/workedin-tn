@@ -1014,6 +1014,8 @@ export const fr: Translations = {
         },
         pageTitle: 'Paramètres',
         heroDescription: 'Gardez les détails du compte, la sécurité, les paiements et le comportement des notifications sur une surface de contrôle cohérente. Mettez à jour ce qui compte sans perdre votre place dans le produit.',
+        accountOverview: 'Vue du compte',
+        profileCompletion: 'Complétion du profil',
         logout: 'Se déconnecter',
         notificationsSubtitle: 'Choisissez les notifications que vous souhaitez recevoir',
         paymentSubtitle: 'Méthodes de paiement et de retrait',
@@ -2070,6 +2072,8 @@ export const fr: Translations = {
             description: 'Trouvez 2 500+ développeurs, designers, traducteurs et consultants tunisiens vérifiés, notés et disponibles.',
         },
         freelancerProfile: {
+            addSkillPlaceholder: 'Ajouter une compétence...',
+            typeSkillPlaceholder: 'Saisissez une compétence puis appuyez sur Entrée...',
             titleSuffix: 'Freelance sur Khedma',
             descriptionFallback: 'Freelance sur la plateforme Khedma',
         },

@@ -1,0 +1,50 @@
+name: Verify Security Headers
+
+on:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: Deployed base URL to verify
+        required: true
+        type: string
+      environment_name:
+        description: Environment label for the verification artifact
+        required: true
+        default: staging
+        type: string
+  workflow_call:
+    inputs:
+      base_url:
+        required: true
+        type: string
+      environment_name:
+        required: true
+        type: string
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify deployed security headers
+        run: npm run headers:verify -- --base-url "${{ inputs.base_url }}" --label "${{ inputs.environment_name }}" --output "artifacts/security-headers/${{ inputs.environment_name }}.json"
+
+      - name: Upload security header artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: security-headers-${{ inputs.environment_name }}
+          path: artifacts/security-headers/${{ inputs.environment_name }}.json
+          retention-days: 30
