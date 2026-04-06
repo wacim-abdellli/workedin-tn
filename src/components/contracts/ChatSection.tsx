@@ -1,8 +1,8 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { Send, Paperclip, Loader2, FileText, Download, Check, CheckCheck } from 'lucide-react';
 import Button from '../ui/Button';
+import SanitizedHtml from '../ui/SanitizedHtml';
 import { useTranslation } from '../../i18n';
-import DOMPurify from 'dompurify';
 import ErrorBoundary from '../ErrorBoundary';
 import type { Message } from '../../types';
 interface ChatMessage extends Omit<Message, 'sender'> {
@@ -111,7 +111,11 @@ export default function ChatSection({
                         if (message.type === 'system') {
                             return (
                                 <div key={message.id} className="flex justify-center my-4">
-                                    <span className="bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400 text-xs px-3 py-1 rounded-full" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(message.content) }} />
+                                    <SanitizedHtml
+                                        as="span"
+                                        html={message.content}
+                                        className="bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400 text-xs px-3 py-1 rounded-full"
+                                    />
                                 </div>
                             );
                         }
@@ -145,7 +149,12 @@ export default function ChatSection({
                                             : 'bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-800 text-gray-800 dark:text-gray-200 dark:text-gray-100 rounded-bl-sm'
                                             }`}>
                                             {/* Text Content */}
-                                            {message.content && <div className="leading-relaxed whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(message.content) }} />}
+                                            {message.content && (
+                                                <SanitizedHtml
+                                                    html={message.content}
+                                                    className="leading-relaxed whitespace-pre-wrap"
+                                                />
+                                            )}
 
                                             {/* Attachments */}
                                             {message.attachments && message.attachments.length > 0 && (

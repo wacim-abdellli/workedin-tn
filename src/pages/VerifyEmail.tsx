@@ -1,9 +1,9 @@
-import DOMPurify from 'dompurify';
 import { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { CheckCircle2, Mail, ShieldCheck, Sparkles } from 'lucide-react';
 import { useTranslation } from '../i18n';
 import { supabase } from '../lib/supabase';
+import { sanitizeText } from '../lib/sanitization';
 import { useToast } from '../components/ui/Toast';
 import Button from '../components/ui/Button';
 import { AuthShell } from '../components/auth';
@@ -13,7 +13,7 @@ function VerifyEmail() {
     const { showToast } = useToast();
     const [searchParams] = useSearchParams();
     const rawEmail = searchParams.get('email') || '';
-    const email = DOMPurify.sanitize(rawEmail);
+    const email = sanitizeText(rawEmail);
     const [isResending, setIsResending] = useState(false);
     const [cooldown, setCooldown] = useState(0);
 

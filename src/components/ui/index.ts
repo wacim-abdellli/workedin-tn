@@ -16,3 +16,4 @@ export { Spinner } from './Spinner';
 export { Skeleton, SkeletonGroup } from './Skeleton';
 export { ProgressBar, IndeterminateProgress } from './ProgressBar';
 export { EmptyState } from './EmptyState';
+export { default as SanitizedHtml } from './SanitizedHtml';
