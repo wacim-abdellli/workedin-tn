@@ -8,6 +8,8 @@ This document is the P3-1 source of truth for canonical docs, canonical scripts,
   - primary repository entrypoint
 - `REPOSITORY_GOVERNANCE.md`
   - governance source of truth
+- `RELEASE_POLICY.md`
+  - release checklist, sign-off roles, and release-control command
 - `audit/STRICT_FULL_AUDIT_DOSSIER.md`
   - phase/task backlog
 - `audit/*.md`
@@ -31,6 +33,7 @@ These are the maintained scripts currently wired to package scripts, CI, or acti
 - `scripts/dependency-audit.mjs`
 - `scripts/i18n-audit.mjs`
 - `scripts/verify-security-headers.mjs`
+- `scripts/release-control.mjs`
 - `scripts/setup-e2e-test-accounts.mjs`
 - `scripts/update-e2e-test-accounts.mjs`
 - `scripts/backup-database.sh`

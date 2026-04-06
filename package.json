@@ -28,6 +28,7 @@
     "tokens:compliance": "node scripts/check-design-token-compliance.mjs --output artifacts/design-token-compliance/report.json",
     "headers:verify": "node scripts/verify-security-headers.mjs",
     "deps:audit": "node scripts/dependency-audit.mjs --fail-on high --output artifacts/dependency-audit/report.json",
+    "release:control": "node scripts/release-control.mjs",
     "audit:strict": "npm run lint && npm run avatar:audit && npm run i18n:audit:strict && npm run test:run && npm run build:budget && npm run test:e2e:a11y:strict",
     "tokens:compile": "node design-system/build/token-compiler.js"
   },

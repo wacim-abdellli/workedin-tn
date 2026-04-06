@@ -11,6 +11,7 @@ Package or CI-wired scripts:
 - `check-design-token-compliance.mjs`
 - `dependency-audit.mjs`
 - `i18n-audit.mjs`
+- `release-control.mjs`
 - `verify-security-headers.mjs`
 - `setup-e2e-test-accounts.mjs`
 - `update-e2e-test-accounts.mjs`

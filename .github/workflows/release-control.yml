@@ -1,0 +1,51 @@
+name: Release Control
+
+on:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: Release candidate base URL to verify
+        required: true
+        type: string
+      release_label:
+        description: Release label for evidence artifacts
+        required: true
+        default: release-candidate
+        type: string
+
+jobs:
+  release-control:
+    runs-on: windows-latest
+    timeout-minutes: 90
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browser
+        run: npx playwright install chromium
+
+      - name: Run release control
+        run: npm run release:control -- --base-url "${{ inputs.base_url }}" --label "${{ inputs.release_label }}" --output artifacts/release-control/report.json
+
+      - name: Upload release control artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: release-control-${{ inputs.release_label }}
+          path: |
+            artifacts/release-control/
+            artifacts/dependency-audit/
+            artifacts/security-headers/
+            playwright-report/
+            test-results/
+          retention-days: 30

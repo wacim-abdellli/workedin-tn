@@ -10,6 +10,8 @@ This is the canonical repository entrypoint.
   - project overview and day-1 commands
 - `REPOSITORY_GOVERNANCE.md`
   - canonical docs, scripts, pages, and deprecated artifacts
+- `RELEASE_POLICY.md`
+  - mandatory release checklist, sign-off roles, and release-control command
 - `audit/STRICT_FULL_AUDIT_DOSSIER.md`
   - master audit backlog and phase definitions
 - `audit/*.md`
@@ -30,6 +32,7 @@ npm install
 npm run dev
 npm run test:run
 npm run audit:strict
+npm run release:control -- --base-url <release-candidate-url>
 ```
 
 Additional enforced quality/security commands:

@@ -1,0 +1,117 @@
+name: Release Checklist
+description: Mandatory release readiness checklist and sign-off record
+title: "Release: "
+labels:
+  - release
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Complete this checklist before any production-facing release.
+        If any mandatory item is unchecked, the release is NO-GO.
+
+  - type: input
+    id: release_label
+    attributes:
+      label: Release label / version
+      placeholder: rc-2026-04-07
+    validations:
+      required: true
+
+  - type: input
+    id: base_url
+    attributes:
+      label: Release candidate base URL
+      placeholder: https://khedma-tn.vercel.app
+    validations:
+      required: true
+
+  - type: textarea
+    id: release_control_evidence
+    attributes:
+      label: Release control evidence
+      description: Paste links to `artifacts/release-control/report.json`, header report, dependency audit, and any relevant workflow runs.
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: technical_gate
+    attributes:
+      label: Technical gate
+      options:
+        - label: Strict quality pipeline fully green
+        - label: No blocking lint/type/test/build failures
+        - label: No critical security vulnerabilities in dependencies
+        - label: Security headers verified on deployed endpoints
+        - label: DB policies validated by matrix and negative tests
+        - label: Route scenario matrix fully passing
+        - label: Auth/account/workspace guard behaviors verified
+        - label: Upload/input sanitization and validation proven
+        - label: Error capture and recovery paths validated
+        - label: 404/500/fallback behavior validated
+
+  - type: checkboxes
+    id: product_gate
+    attributes:
+      label: Product scenario gate
+      options:
+        - label: Guest cannot access protected resources
+        - label: Freelancer/client/admin role separations enforced
+        - label: Onboarding gate works for all role/state combinations
+        - label: Suspended/archived account behavior is correct
+        - label: Payment success/failure callbacks behave correctly
+        - label: Messaging/contracts ownership protections verified
+        - label: Critical journeys complete without flow breaks
+
+  - type: checkboxes
+    id: ux_gate
+    attributes:
+      label: UX and accessibility gate
+      options:
+        - label: Critical pages pass accessibility checks
+        - label: Color contrast and focus states pass minimum thresholds
+        - label: Responsive behavior validated on key breakpoints
+        - label: Design token compliance enforced in CI
+        - label: Visual regression baseline accepted for critical pages
+
+  - type: checkboxes
+    id: governance_gate
+    attributes:
+      label: Governance and evidence gate
+      options:
+        - label: Audit evidence pack updated and versioned
+        - label: Risk register updated with open and closed findings
+        - label: Rollback plan validated
+        - label: Post-release monitoring dashboard ready
+
+  - type: input
+    id: engineering_signoff
+    attributes:
+      label: Engineering owner sign-off
+      placeholder: "@name - approved on YYYY-MM-DD"
+    validations:
+      required: true
+
+  - type: input
+    id: qa_signoff
+    attributes:
+      label: QA owner sign-off
+      placeholder: "@name - approved on YYYY-MM-DD"
+    validations:
+      required: true
+
+  - type: input
+    id: security_signoff
+    attributes:
+      label: Security owner sign-off
+      placeholder: "@name - approved on YYYY-MM-DD"
+    validations:
+      required: true
+
+  - type: textarea
+    id: rollback_plan
+    attributes:
+      label: Rollback plan reference
+      description: Link the rollback plan or deployment procedure that will be used if the release must be reverted.
+    validations:
+      required: true

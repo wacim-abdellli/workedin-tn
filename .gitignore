@@ -23,6 +23,7 @@ artifacts/visual-regression/
 artifacts/security-headers/
 artifacts/dependency-audit/
 artifacts/design-token-compliance/
+artifacts/release-control/
 e2e/.auth/
 
 # Editor directories and files

@@ -18,6 +18,10 @@
 - [ ] `npm run build`
 - [ ] Targeted tests executed (list below)
 
+## Release Impact
+
+- [ ] If this change is part of a release candidate, I updated the `Release Checklist` issue and attached current release-control evidence.
+
 ## Evidence
 
 - Screenshots / recordings / notes:
