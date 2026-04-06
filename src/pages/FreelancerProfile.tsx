@@ -272,6 +272,8 @@ export default function FreelancerProfile() {
     const profileNotFoundTitle = tx('pages.freelancerProfile.notFoundTitle', undefined, 'Profile not found');
     const backHomeLabel = tx('pages.errorBoundary.backHome', undefined, 'Back to home');
 
+    const isOwner = !!user && (user.id === freelancer?.id || user.id === (freelancer as any)?.profile?.id);
+
     if (isLoading) {
         return <ProfileSkeleton />;
     }
@@ -311,8 +313,17 @@ export default function FreelancerProfile() {
             <div className="container-custom relative py-2 sm:py-4">
                 <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1.65fr)_360px] gap-8 items-start">
                     <div className="space-y-8">
-                        <AboutSection bio={freelancer.bio} />
-                        <SkillsSection skills={freelancer.skills} language={language} />
+                        <AboutSection
+                            bio={freelancer.bio}
+                            isOwner={isOwner}
+                            onUpdate={bio => setFreelancer(f => f ? { ...f, bio } : f)}
+                        />
+                        <SkillsSection
+                            skills={freelancer.skills}
+                            language={language}
+                            isOwner={isOwner}
+                            onUpdate={skills => setFreelancer(f => f ? { ...f, skills } : f)}
+                        />
                         <PortfolioSection
                             workSamples={freelancer.work_samples}
                             onSelectSample={setSelectedWorkSample}
