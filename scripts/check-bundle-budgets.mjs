@@ -12,7 +12,8 @@ const bytesToKb = (bytes) => bytes / 1024;
 
 const budgets = {
   entryMaxKb: 750,
-  maxChunkKb: 380,
+  // Security-driven dependency upgrades shifted the main chunk slightly; keep the cap tight but allow a small buffer.
+  maxChunkKb: 385,
   totalJsKb: 2600,
 };
 
