@@ -1,4 +1,5 @@
-import { Star, MapPin, CheckCircle, Pause, Volume2, User, Wallet, Clock3, BriefcaseBusiness, Sparkles, Send } from 'lucide-react';
+import { Star, MapPin, CheckCircle, Pause, Volume2, User, Wallet, Clock3, BriefcaseBusiness, Sparkles, Send, Pencil, Settings, Eye, Upload, TrendingUp } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { OptimizedImage } from '../../common';
 import Button from '../../ui/Button';
 import type { FreelancerData } from '@/types/freelancer';
@@ -22,6 +23,7 @@ export default function ProfileHeader({
 }: ProfileHeaderProps) {
     const { tx } = useTranslation();
     const { user } = useAuth();
+    const navigate = useNavigate();
     const isOwnProfile = user?.id === freelancer.id || user?.id === (freelancer as any).profile?.id;
 
     return (
@@ -112,16 +114,88 @@ export default function ProfileHeader({
                             </div>
                         </div>
 
-                        {/* Quick Actions Sidebar - Premium Design */}
+                        {/* Quick Actions Sidebar */}
                         <aside className="mt-8 w-full lg:mt-0 lg:w-[320px] shrink-0">
                             <div className="rounded-2xl p-6 border-2 backdrop-blur-sm transition-all duration-300 hover:shadow-xl" style={{ background: 'color-mix(in srgb, var(--color-background-elevated) 95%, var(--workspace-primary) 5%)', borderColor: 'color-mix(in srgb, var(--workspace-primary) 20%, var(--color-border-subtle))', boxShadow: '0 8px 30px -8px var(--workspace-primary-shadow)' }}>
-                                <h3 className="text-xs font-bold uppercase tracking-widest mb-5 bg-gradient-to-r from-[var(--workspace-primary)] to-[var(--workspace-accent)] bg-clip-text text-transparent">
-                                    {tx('pages.searchModal.quickActions', undefined, 'Let\'s Connect')}
-                               </h3>
-                                
-                                <div className="space-y-3">
-                                    {!isOwnProfile && (
-                                        <>
+
+                                {isOwnProfile ? (
+                                    /* ── OWNER VIEW ── */
+                                    <>
+                                        <div className="flex items-center gap-2 mb-5">
+                                            <div className="p-1.5 rounded-lg" style={{ background: 'linear-gradient(135deg, var(--workspace-primary), var(--workspace-accent))' }}>
+                                                <Pencil className="h-3.5 w-3.5 text-white" />
+                                            </div>
+                                            <h3 className="text-xs font-bold uppercase tracking-widest bg-gradient-to-r from-[var(--workspace-primary)] to-[var(--workspace-accent)] bg-clip-text text-transparent">
+                                                {tx('pages.freelancerProfile.manageProfile', undefined, 'Manage Profile')}
+                                            </h3>
+                                        </div>
+
+                                        <div className="space-y-2.5">
+                                            {/* Edit Profile */}
+                                            <button
+                                                onClick={() => navigate('/settings?tab=profile')}
+                                                className="group w-full flex items-center gap-3 px-4 py-3 rounded-xl border-2 text-sm font-bold transition-all duration-300 hover:scale-[1.02] hover:shadow-lg"
+                                                style={{ background: 'linear-gradient(135deg, var(--workspace-primary), var(--workspace-accent))', borderColor: 'transparent', color: '#fff', boxShadow: '0 4px 15px -4px var(--workspace-primary-shadow)' }}
+                                            >
+                                                <Pencil className="h-4 w-4 shrink-0" />
+                                                <span className="flex-1 text-left">{tx('settings.editProfile', undefined, 'Edit Profile')}</span>
+                                            </button>
+
+                                            {/* Upload Portfolio */}
+                                            <button
+                                                onClick={() => navigate('/portfolio')}
+                                                className="group w-full flex items-center gap-3 px-4 py-3 rounded-xl border-2 text-sm font-bold transition-all duration-300 hover:scale-[1.02] hover:shadow-lg"
+                                                style={{ borderColor: 'color-mix(in srgb, #10b981 30%, var(--color-border-subtle))', background: 'color-mix(in srgb, #10b981 8%, var(--color-background-elevated))', color: '#10b981' }}
+                                            >
+                                                <Upload className="h-4 w-4 shrink-0" />
+                                                <span className="flex-1 text-left">{tx('pages.freelancerProfile.addPortfolio', undefined, 'Add Portfolio Work')}</span>
+                                            </button>
+
+                                            {/* View as visitor */}
+                                            <button
+                                                onClick={() => window.open(window.location.href, '_blank')}
+                                                className="group w-full flex items-center gap-3 px-4 py-3 rounded-xl border-2 text-sm font-bold transition-all duration-300 hover:scale-[1.02] hover:shadow-lg"
+                                                style={{ borderColor: 'color-mix(in srgb, #3b82f6 30%, var(--color-border-subtle))', background: 'color-mix(in srgb, #3b82f6 8%, var(--color-background-elevated))', color: '#3b82f6' }}
+                                            >
+                                                <Eye className="h-4 w-4 shrink-0" />
+                                                <span className="flex-1 text-left">{tx('pages.freelancerProfile.previewProfile', undefined, 'Preview as Visitor')}</span>
+                                            </button>
+
+                                            {/* Settings */}
+                                            <button
+                                                onClick={() => navigate('/settings')}
+                                                className="group w-full flex items-center gap-3 px-4 py-3 rounded-xl border-2 text-sm font-bold transition-all duration-300 hover:scale-[1.02] hover:shadow-lg"
+                                                style={{ borderColor: 'color-mix(in srgb, var(--color-text-tertiary) 20%, var(--color-border-subtle))', background: 'var(--color-background-subtle)', color: 'var(--color-text-secondary)' }}
+                                            >
+                                                <Settings className="h-4 w-4 shrink-0" />
+                                                <span className="flex-1 text-left">{tx('nav.settings', undefined, 'Settings')}</span>
+                                            </button>
+                                        </div>
+
+                                        {/* Profile strength hint */}
+                                        <div className="mt-5 pt-4 border-t-2" style={{ borderColor: 'color-mix(in srgb, var(--workspace-primary) 15%, var(--color-border-subtle))' }}>
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <TrendingUp className="h-3.5 w-3.5" style={{ color: 'var(--workspace-primary)' }} />
+                                                <span className="text-xs font-bold" style={{ color: 'var(--color-text-secondary)' }}>
+                                                    {tx('pages.freelancerProfile.profileStrength', undefined, 'Profile strength')}
+                                                </span>
+                                                <span className="ms-auto text-xs font-bold" style={{ color: 'var(--workspace-primary)' }}>
+                                                    {freelancer.stats.success_rate || 0}%
+                                                </span>
+                                            </div>
+                                            <div className="h-2 rounded-full overflow-hidden" style={{ background: 'var(--color-background-muted)' }}>
+                                                <div className="h-full rounded-full transition-all duration-700"
+                                                    style={{ width: `${freelancer.stats.success_rate || 0}%`, background: 'linear-gradient(90deg, var(--workspace-primary), var(--workspace-accent))' }} />
+                                            </div>
+                                        </div>
+                                    </>
+                                ) : (
+                                    /* ── VISITOR VIEW ── */
+                                    <>
+                                        <h3 className="text-xs font-bold uppercase tracking-widest mb-5 bg-gradient-to-r from-[var(--workspace-primary)] to-[var(--workspace-accent)] bg-clip-text text-transparent">
+                                            {tx('pages.searchModal.quickActions', undefined, "Let's Connect")}
+                                        </h3>
+                                        <div className="space-y-3">
                                             <Button
                                                 variant="primary"
                                                 size="lg"
@@ -141,34 +215,26 @@ export default function ProfileHeader({
                                             >
                                                 {tx('pages.freelancerProfile.message', undefined, 'Send Message')}
                                             </Button>
-                                        </>
-                                    )}
-                                    
-                                    {freelancer.voice_intro_url ? (
-                                        <button
-                                            onClick={onPlayVoice}
-                                            className="group flex h-12 w-full items-center justify-center gap-2 rounded-xl border-2 text-sm font-bold transition-all duration-300 hover:scale-105 hover:shadow-lg"
-                                            style={{
-                                                borderColor: isPlayingVoice ? 'var(--workspace-primary)' : 'color-mix(in srgb, var(--workspace-primary) 20%, var(--color-border-subtle))',
-                                                background: isPlayingVoice ? 'color-mix(in srgb, var(--workspace-primary) 15%, var(--color-background-elevated))' : 'var(--color-background-elevated)',
-                                                color: isPlayingVoice ? 'var(--workspace-primary)' : 'var(--color-text-secondary)',
-                                                boxShadow: isPlayingVoice ? '0 4px 15px -3px var(--workspace-primary-shadow)' : 'none'
-                                            }}
-                                        >
-                                            {isPlayingVoice ? (
-                                                <span className="flex items-center gap-2">
-                                                    <Pause className="h-4 w-4 animate-pulse" /> 
-                                                    Playing...
-                                                </span>
-                                            ) : (
-                                                <span className="flex items-center gap-2">
-                                                    <Volume2 className="h-4 w-4" />
-                                                    {tx('pages.freelancerProfile.hearVoice', undefined, 'Hear my Voice')}
-                                                </span>
+
+                                            {freelancer.voice_intro_url && (
+                                                <button
+                                                    onClick={onPlayVoice}
+                                                    className="group flex h-12 w-full items-center justify-center gap-2 rounded-xl border-2 text-sm font-bold transition-all duration-300 hover:scale-105 hover:shadow-lg"
+                                                    style={{
+                                                        borderColor: isPlayingVoice ? 'var(--workspace-primary)' : 'color-mix(in srgb, var(--workspace-primary) 20%, var(--color-border-subtle))',
+                                                        background: isPlayingVoice ? 'color-mix(in srgb, var(--workspace-primary) 15%, var(--color-background-elevated))' : 'var(--color-background-elevated)',
+                                                        color: isPlayingVoice ? 'var(--workspace-primary)' : 'var(--color-text-secondary)',
+                                                    }}
+                                                >
+                                                    {isPlayingVoice
+                                                        ? <><Pause className="h-4 w-4 animate-pulse" /> Playing...</>
+                                                        : <><Volume2 className="h-4 w-4" /> {tx('pages.freelancerProfile.hearVoice', undefined, 'Hear my Voice')}</>
+                                                    }
+                                                </button>
                                             )}
-                                        </button>
-                                    ) : null}
-                                </div>
+                                        </div>
+                                    </>
+                                )}
                             </div>
                         </aside>
                     </div>
