@@ -38,7 +38,7 @@ export default function AuthShell({ badge, title, description, highlights, topAc
       <div className="pointer-events-none absolute inset-x-0 top-0 h-40 dark:bg-gradient-to-b dark:from-white/6 from-black/5 to-transparent" />
 
       <div className="relative mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 pb-8 pt-5 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between gap-4 pb-6 sm:pb-8">
+        <header className="flex items-center justify-between gap-4 pb-6 sm:pb-8">
           <Link
             to="/"
             className="inline-flex items-center transition-opacity hover:opacity-80"
@@ -47,9 +47,9 @@ export default function AuthShell({ badge, title, description, highlights, topAc
           </Link>
 
           {topAction}
-        </div>
+        </header>
 
-        <div className="grid flex-1 items-center gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(420px,520px)] lg:gap-12">
+        <main className="grid flex-1 items-center gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(420px,520px)] lg:gap-12">
           <section className="hidden lg:flex lg:flex-col lg:justify-center lg:gap-16 lg:self-stretch py-8">
             <div className="max-w-xl space-y-6">
               <div className="inline-flex items-center gap-2 rounded-full border border-gray-200 dark:border-white/5 bg-white/60 dark:bg-white/5 px-4 py-2 text-xs font-medium uppercase tracking-[0.22em] text-gray-600 dark:text-gray-300 backdrop-blur-sm shadow-sm transition-all hover:border-[var(--freelancer-accent)]">
@@ -90,15 +90,15 @@ export default function AuthShell({ badge, title, description, highlights, topAc
               </div>
             </div>
           </section>
-        </div>
+        </main>
 
-        <div className="mt-8 flex flex-col items-center justify-between gap-3 border-t border-white/8 pt-5 text-center text-xs text-white/45 sm:flex-row sm:text-start">
+        <footer className="mt-8 flex flex-col items-center justify-between gap-3 border-t border-white/8 pt-5 text-center text-xs text-white/45 sm:flex-row sm:text-start">
           <p>{tx('footer.description', undefined, 'Built for Tunisian professionals with trusted payments and verified identities.')}</p>
           <Link to="/" className="inline-flex items-center gap-2 font-medium text-white/70 transition-colors hover:text-white">
             {tx('common.backHome', undefined, 'Back to home')}
             <ArrowUpRight className="h-3.5 w-3.5" />
           </Link>
-        </div>
+        </footer>
       </div>
     </div>
   );

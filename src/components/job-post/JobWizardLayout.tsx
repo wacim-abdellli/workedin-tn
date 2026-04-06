@@ -47,7 +47,7 @@ export default function JobWizardLayout({
                             style={{
                                 borderColor: 'color-mix(in srgb, var(--workspace-primary) 24%, transparent)',
                                 background: 'color-mix(in srgb, var(--workspace-primary) 10%, var(--card-bg))',
-                                color: 'var(--workspace-primary)',
+                                color: 'var(--workspace-primary-active)',
                             }}>
                             <Sparkles className="h-3.5 w-3.5" />
                             {tx('jobs.new.wizard.badge', undefined, 'Project posting flow')}
@@ -73,7 +73,7 @@ export default function JobWizardLayout({
                             background: 'color-mix(in srgb, var(--card-bg) 88%, transparent)',
                             boxShadow: '0 20px 40px -32px rgba(15,23,42,0.45)',
                         }}>
-                        <p className="text-xs font-semibold uppercase tracking-[0.18em]" style={{ color: 'var(--workspace-primary)' }}>
+                        <p className="text-xs font-semibold uppercase tracking-[0.18em]" style={{ color: 'var(--workspace-primary-active)' }}>
                             {tx('jobs.new.wizard.currentPhase', undefined, 'Current phase')}
                         </p>
                         <h2 className="mt-3 text-xl font-semibold" style={{ color: 'var(--text-primary)' }}>

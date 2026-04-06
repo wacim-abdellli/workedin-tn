@@ -383,7 +383,7 @@ export default function JobPost() {
             />
             <Header />
 
-            <div className="page-shell-content">
+            <main className="page-shell-content">
                 <JobWizardLayout
                     currentStep={currentStep}
                     steps={steps}
@@ -448,7 +448,7 @@ export default function JobPost() {
                                             style={{
                                                 borderColor: 'color-mix(in srgb, var(--workspace-primary) 22%, transparent)',
                                                 background: 'color-mix(in srgb, var(--workspace-primary) 10%, var(--card-bg))',
-                                                color: 'var(--workspace-primary)',
+                                                color: 'var(--workspace-primary-active)',
                                             }}
                                         >
                                             <span>{tx('jobs.new.stepCounter', { current: currentStep, total: steps.length }, `Step ${currentStep} of ${steps.length}`)}</span>
@@ -518,7 +518,7 @@ export default function JobPost() {
                         </form>
                     </FormProvider>
                 </JobWizardLayout>
-            </div>
+            </main>
 
             {/* Restore Draft Modal */}
             <Modal

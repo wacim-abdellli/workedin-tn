@@ -54,12 +54,12 @@ export function DashWidget({ title, icon, action, children }: DashWidgetProps) {
           <button
             onClick={action.onClick}
             className="text-xs font-medium transition-colors"
-            style={{ color: 'var(--workspace-primary-mid)' }}
+            style={{ color: 'var(--workspace-primary-hover)' }}
             onMouseEnter={(e) => {
               e.currentTarget.style.color = 'var(--workspace-primary)';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.color = 'var(--workspace-primary-mid)';
+              e.currentTarget.style.color = 'var(--workspace-primary-hover)';
             }}
           >
             {action.label} →

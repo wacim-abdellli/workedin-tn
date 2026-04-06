@@ -10,8 +10,8 @@ type TranslationParams = Record<string, string | number>;
 
 const applyDocumentLanguage = (lang: Language) => {
     const dir = lang === 'ar' ? 'rtl' : 'ltr';
-    document.documentElement.lang = lang;
-    document.documentElement.dir = dir;
+    document.documentElement.setAttribute('lang', lang);
+    document.documentElement.setAttribute('dir', dir);
 
     if (document.body) {
         document.body.setAttribute('dir', dir);

@@ -716,7 +716,7 @@ h6 {
     @apply inline-flex items-center justify-center;
     @apply rounded-md border px-1.5 py-0.5;
     @apply text-[10px] font-mono font-semibold transition-colors;
-    @apply border-gray-200 bg-gray-50 text-gray-400 shadow-sm;
+    @apply border-gray-300 bg-gray-50 text-gray-700 shadow-sm;
     @apply dark:border-white/10 dark:bg-white/5 dark:text-zinc-400;
   }
 

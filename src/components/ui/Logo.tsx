@@ -59,7 +59,7 @@ export function Logo({ variant = 'full', size = 'md', className = '' }: LogoProp
   // Colors — using CSS variables for consistency with new color system
   const violet = '#9333ea';        // Updated to new primary purple
   const innerViolet = '#7e22ce';   // Darker violet inner
-  const amber = '#d97706';          // Accent color
+  const amber = '#92400e';          // Accent color with AA contrast on light surfaces
   const amberLight = '#fcd34d';     // Light theme accent
 
   if (variant === 'mark') {

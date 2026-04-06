@@ -30,7 +30,7 @@ export function AdminRoute({ children }: { children: React.ReactNode }) {
 
   if (!hasAdminAccess(user, profile)) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[var(--color-bg-subtle)] dark:bg-[var(--color-bg-base)] p-4">
+      <main className="min-h-screen flex items-center justify-center bg-[var(--color-bg-subtle)] dark:bg-[var(--color-bg-base)] p-4">
         <div className="rounded-[24px] border border-white/70 bg-white dark:border-white/8 dark:bg-[var(--color-bg-muted)] backdrop-blur shadow-xl text-center max-w-md p-8">
           <div className="w-16 h-16 mx-auto rounded-2xl bg-red-500/10 dark:bg-red-500/20 flex items-center justify-center mb-6 border border-red-500/20">
             <Lock className="w-8 h-8 text-red-600 dark:text-red-400" />
@@ -41,7 +41,7 @@ export function AdminRoute({ children }: { children: React.ReactNode }) {
             {tr('العودة للرئيسية', 'Return Home', 'Retour à l\'accueil')}
           </Link>
         </div>
-      </div>
+      </main>
     );
   }
 

@@ -414,7 +414,7 @@ function FreelancerDashboardPage() {
                 className="flex flex-col items-center px-[var(--spacing-4)] py-[var(--spacing-2)] rounded-[var(--radius-2xl)] border"
                 style={{
                   background: stat.accent
-                    ? "var(--color-brand-primary)"
+                    ? "var(--workspace-primary-hover)"
                     : "var(--color-background-subtle)",
                   borderColor: stat.accent
                     ? "transparent"
@@ -435,7 +435,7 @@ function FreelancerDashboardPage() {
                   className="text-[11px] font-[var(--font-fontWeight-medium)] uppercase tracking-wider"
                   style={{
                     color: stat.accent
-                      ? "rgba(255,255,255,0.75)"
+                      ? "rgba(255,255,255,0.96)"
                       : "var(--color-text-tertiary)",
                   }}
                 >

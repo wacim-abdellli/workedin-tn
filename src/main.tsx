@@ -16,6 +16,18 @@ try {
   // Ignore if localStorage is unavailable (e.g. private mode restrictions)
 }
 
+try {
+  const savedLanguage = localStorage.getItem('i18n-language') || localStorage.getItem('language') || navigator.language.split('-')[0] || 'ar'
+  const language = ['ar', 'fr', 'en'].includes(savedLanguage) ? savedLanguage : 'ar'
+  const direction = language === 'ar' ? 'rtl' : 'ltr'
+
+  document.documentElement.setAttribute('lang', language)
+  document.documentElement.setAttribute('dir', direction)
+  document.body?.setAttribute('dir', direction)
+} catch {
+  // Ignore if DOM or storage is unavailable during bootstrap.
+}
+
 // Defer observability tooling to separate chunks and load it only in production.
 if (import.meta.env.PROD) {
   void import('./lib/analytics').then(({ initAnalytics }) => {

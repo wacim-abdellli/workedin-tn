@@ -24,7 +24,7 @@
     "test:e2e:report": "playwright show-report",
     "test:e2e:visual": "playwright test e2e/visual-regression.spec.ts --project=chromium-public",
     "test:e2e:visual:update": "playwright test e2e/visual-regression.spec.ts --project=chromium-public --update-snapshots",
-    "test:e2e:a11y:strict": "playwright test e2e/auth-protection-a11y.spec.ts --project=chromium-public",
+    "test:e2e:a11y:strict": "playwright test e2e/auth-protection-a11y.spec.ts e2e/a11y-matrix.spec.ts --project=chromium-public",
     "tokens:compliance": "node scripts/check-design-token-compliance.mjs --output artifacts/design-token-compliance/report.json",
     "headers:verify": "node scripts/verify-security-headers.mjs",
     "deps:audit": "node scripts/dependency-audit.mjs --fail-on high --output artifacts/dependency-audit/report.json",
@@ -61,6 +61,7 @@
     "zustand": "^5.0.12"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.11.1",
     "@eslint/js": "^9.39.1",
     "@playwright/test": "^1.58.2",
     "@testing-library/dom": "^10.4.1",

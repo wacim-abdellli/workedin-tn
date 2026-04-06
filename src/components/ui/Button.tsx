@@ -38,12 +38,12 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 
     const variants: Record<string, string> = {
       primary: `
-                bg-[var(--workspace-primary)]
+                bg-[var(--workspace-primary-hover)]
                 text-[var(--workspace-primary-text,#fff)]
-                hover:bg-[var(--workspace-primary-hover)]
+                hover:bg-[var(--workspace-primary-active)]
                 active:bg-[var(--workspace-primary-active)]
-                shadow-[0_2px_8px_color-mix(in_srgb,var(--workspace-primary)_35%,transparent)]
-                hover:shadow-[0_6px_20px_color-mix(in_srgb,var(--workspace-primary)_40%,transparent)]
+                shadow-[0_2px_8px_color-mix(in_srgb,var(--workspace-primary-hover)_35%,transparent)]
+                hover:shadow-[0_6px_20px_color-mix(in_srgb,var(--workspace-primary-hover)_40%,transparent)]
                 hover:-translate-y-px
             `,
       accent: `
@@ -64,9 +64,9 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
             `,
       outline: `
                 bg-transparent
-                text-[var(--workspace-primary)]
-                border-2 border-[var(--workspace-primary)]
-                hover:bg-[var(--workspace-primary)]
+                text-[var(--workspace-primary-hover)]
+                border-2 border-[var(--workspace-primary-hover)]
+                hover:bg-[var(--workspace-primary-hover)]
                 hover:text-[var(--workspace-primary-text,#fff)]
                 hover:-translate-y-px
             `,

@@ -216,14 +216,14 @@ function ClientDashboardPage() {
                                 key={stat.label}
                                 className="flex flex-col items-center px-4 py-2 rounded-2xl border"
                                 style={{
-                                    background: stat.accent ? 'var(--workspace-primary)' : 'var(--color-background-subtle)',
+                                    background: stat.accent ? 'var(--workspace-primary-hover)' : 'var(--color-background-subtle)',
                                     borderColor: stat.accent ? 'transparent' : 'var(--color-border-subtle)',
                                 }}
                             >
                                 <span className="font-display font-bold text-lg leading-tight" style={{ color: stat.accent ? '#fff' : 'var(--color-text-primary)' }}>
                                     {stat.value}
                                 </span>
-                                <span className="text-[11px] font-medium uppercase tracking-wider" style={{ color: stat.accent ? 'rgba(255,255,255,0.75)' : 'var(--color-text-tertiary)' }}>
+                                <span className="text-[11px] font-medium uppercase tracking-wider" style={{ color: stat.accent ? 'rgba(255,255,255,0.96)' : 'var(--color-text-tertiary)' }}>
                                     {stat.label}
                                 </span>
                             </div>

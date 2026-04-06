@@ -112,7 +112,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
                         className="mb-4 rounded-2xl p-4"
                         style={{
                             background: 'color-mix(in srgb, var(--workspace-primary) 14%, var(--card-bg))',
-                            color: 'var(--workspace-primary)',
+                            color: 'var(--workspace-primary-active)',
                         }}
                     >
                         <Upload className="h-8 w-8" />
@@ -138,7 +138,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
                     style={{
                         borderColor: 'color-mix(in srgb, var(--workspace-primary) 28%, transparent)',
                         background: 'color-mix(in srgb, var(--workspace-primary) 12%, var(--card-bg))',
-                        color: 'var(--workspace-primary)',
+                        color: 'var(--workspace-primary-active)',
                     }}
                     onMouseEnter={(e) => {
                         const target = e.currentTarget;

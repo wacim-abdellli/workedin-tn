@@ -278,7 +278,7 @@ export default function Header() {
       ? t.auth?.accountPanel?.freelancerLabel || "Freelancer"
       : t.auth?.accountPanel?.clientLabel || "Client",
     background: "var(--workspace-primary-light)",
-    color: "var(--workspace-primary)",
+    color: "var(--workspace-primary-hover)",
     dotClassName: "bg-[var(--color-status-success)] animate-pulse",
     border: "color-mix(in srgb, var(--workspace-primary) 35%, transparent)",
   };
@@ -286,14 +286,14 @@ export default function Header() {
   const switchTargetStyles =
     targetWorkspace === "client"
       ? {
-          color: "var(--amber-600)",
-          background: "color-mix(in srgb, var(--amber-500) 12%, transparent)",
-          borderColor: "color-mix(in srgb, var(--amber-600) 25%, transparent)",
+          color: "var(--amber-800)",
+          background: "color-mix(in srgb, var(--amber-600) 16%, white)",
+          borderColor: "color-mix(in srgb, var(--amber-800) 28%, transparent)",
         }
       : {
-          color: "var(--purple-500)",
-          background: "color-mix(in srgb, var(--purple-500) 12%, transparent)",
-          borderColor: "color-mix(in srgb, var(--purple-500) 25%, transparent)",
+          color: "var(--purple-700)",
+          background: "color-mix(in srgb, var(--purple-600) 14%, white)",
+          borderColor: "color-mix(in srgb, var(--purple-700) 25%, transparent)",
         };
 
   const navActiveClass = "header-nav-link-active";
@@ -469,7 +469,7 @@ export default function Header() {
                                     "1px solid color-mix(in srgb, var(--workspace-primary) 16%, transparent)",
                                   background:
                                     "color-mix(in srgb, var(--workspace-primary) 8%, transparent)",
-                                  color: "var(--workspace-primary)",
+                                  color: "var(--workspace-primary-hover)",
                                 }}
                               >
                                 <Icon className="h-4 w-4" />
@@ -552,7 +552,7 @@ export default function Header() {
                                 ? {
                                     background:
                                       "var(--workspace-primary-light)",
-                                    color: "var(--workspace-primary)",
+                                    color: "var(--workspace-primary-hover)",
                                   }
                                 : {
                                     color: "var(--color-text-primary)",
@@ -1120,13 +1120,13 @@ export default function Header() {
                       setMobileMenuOpen(false);
                     }}
                     disabled={isSwitching}
-                    className={`flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-colors ${
-                      isSwitching ? "cursor-not-allowed opacity-70" : ""
-                    }`}
-                    style={{
-                      color: "var(--workspace-primary)",
-                      background: "var(--workspace-primary-light)",
-                    }}
+                      className={`flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-colors ${
+                        isSwitching ? "cursor-not-allowed opacity-70" : ""
+                      }`}
+                      style={{
+                        color: "var(--workspace-primary-hover)",
+                        background: "var(--workspace-primary-light)",
+                      }}
                   >
                     <Repeat2
                       className={`h-4 w-4 flex-shrink-0 ${isSwitching ? "animate-spin" : ""}`}
@@ -1239,9 +1239,9 @@ export default function Header() {
                       style={
                         currentLang === lang.code
                           ? {
-                              borderColor: "var(--workspace-primary-mid)",
+                              borderColor: "var(--workspace-primary-hover)",
                               background: "var(--workspace-primary-light)",
-                              color: "var(--workspace-primary)",
+                              color: "var(--workspace-primary-hover)",
                             }
                           : {
                               borderColor: "var(--color-border-default)",
