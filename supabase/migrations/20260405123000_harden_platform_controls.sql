@@ -1,4 +1,5 @@
-BEGIN;
+-- Start of atomic dispute creation
+
 
 ALTER TABLE public.profiles
     ADD COLUMN IF NOT EXISTS account_status text NOT NULL DEFAULT 'active';
@@ -62,7 +63,7 @@ RETURNS uuid
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public
-AS $$
+AS $function$
 DECLARE
     v_admin_id uuid := auth.uid();
     v_log_id uuid;
@@ -93,10 +94,7 @@ BEGIN
 
     RETURN v_log_id;
 END;
-$$;
-
-REVOKE ALL ON FUNCTION public.log_admin_action(text, uuid, text, uuid, text, jsonb) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION public.log_admin_action(text, uuid, text, uuid, text, jsonb) TO authenticated;
+$function$;
 
 CREATE OR REPLACE FUNCTION public.guard_profile_admin_fields()
 RETURNS trigger
@@ -135,7 +133,7 @@ RETURNS public.notifications
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public
-AS $$
+AS $function$
 DECLARE
     inserted_row public.notifications;
     v_caller uuid := auth.uid();
@@ -154,11 +152,7 @@ BEGIN
 
     RETURN inserted_row;
 END;
-$$;
-
-REVOKE ALL ON FUNCTION public.create_notification(uuid, text, text, text, text, uuid) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION public.create_notification(uuid, text, text, text, text, uuid) TO authenticated;
-GRANT EXECUTE ON FUNCTION public.create_notification(uuid, text, text, text, text, uuid) TO service_role;
+$function$;
 
 DROP FUNCTION IF EXISTS public.update_verification_status(uuid, text, timestamptz);
 CREATE OR REPLACE FUNCTION public.update_verification_status(
@@ -171,7 +165,7 @@ RETURNS jsonb
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public
-AS $$
+AS $function$
 DECLARE
     v_admin_id uuid := auth.uid();
     v_cin_verified boolean;
@@ -242,7 +236,7 @@ BEGIN
         'verification_rows_updated', v_affected_rows
     );
 END;
-$$;
+$function$;
 
 DROP FUNCTION IF EXISTS public.revoke_verification_status(uuid);
 CREATE OR REPLACE FUNCTION public.revoke_verification_status(
@@ -253,7 +247,7 @@ RETURNS jsonb
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public
-AS $$
+AS $function$
 DECLARE
     v_admin_id uuid := auth.uid();
     v_verification_id uuid;
@@ -305,12 +299,7 @@ BEGIN
         'verification_id', v_verification_id
     );
 END;
-$$;
-
-REVOKE ALL ON FUNCTION public.update_verification_status(uuid, text, timestamptz, text) FROM PUBLIC;
-REVOKE ALL ON FUNCTION public.revoke_verification_status(uuid, text) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION public.update_verification_status(uuid, text, timestamptz, text) TO authenticated;
-GRANT EXECUTE ON FUNCTION public.revoke_verification_status(uuid, text) TO authenticated;
+$function$;
 
 CREATE OR REPLACE FUNCTION public.set_user_account_status(
     p_user_id uuid,
@@ -396,12 +385,9 @@ BEGIN
 END;
 $$;
 
-REVOKE ALL ON FUNCTION public.set_user_account_status(uuid, text, text) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION public.set_user_account_status(uuid, text, text) TO authenticated;
-
 DROP POLICY IF EXISTS "disputes_insert" ON public.disputes;
 CREATE POLICY "disputes_insert" ON public.disputes
-    FOR INSERT WITH CHECK (
+    FOR INSERT TO authenticated WITH CHECK (
         auth.uid() = opened_by
         AND EXISTS (
             SELECT 1
@@ -431,7 +417,7 @@ BEGIN
         RAISE EXCEPTION 'Authentication required';
     END IF;
 
-    IF p_reason IS NULL OR btrim(p_reason) = '' THEN
+    IF p_reason IS NULL OR length(btrim(p_reason)) = 0 THEN
         RAISE EXCEPTION 'Dispute reason is required';
     END IF;
 
@@ -483,7 +469,4 @@ BEGIN
 END;
 $$;
 
-REVOKE ALL ON FUNCTION public.open_dispute_atomic(uuid, text) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION public.open_dispute_atomic(uuid, text) TO authenticated;
 
-COMMIT;
