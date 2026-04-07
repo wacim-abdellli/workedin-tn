@@ -16,7 +16,7 @@ const queryState = vi.hoisted(() => {
         singleCalls: 0,
         tableResults: {} as Record<string, unknown>,
         builderResult: { data: { id: 'proposal-1' }, error: null as unknown, count: 1 } as { data: unknown; error: unknown; count: number },
-        rpcResult: { data: 'proposal-1', error: null as unknown },
+        rpcResult: { data: 'proposal-1', error: null as unknown } as { data: unknown; error: unknown },
         uploadUrl: 'https://files.example/proposal.pdf',
     };
 
@@ -63,7 +63,7 @@ const queryState = vi.hoisted(() => {
             },
         };
         state.builderResult = { data: { id: 'proposal-1' }, error: null, count: 1 };
-        state.rpcResult = { data: 'proposal-1', error: null };
+        state.rpcResult = { data: 'proposal-1', error: null } as { data: unknown; error: unknown };
         state.uploadUrl = 'https://files.example/proposal.pdf';
     };
 
@@ -148,7 +148,7 @@ vi.mock('@/lib/supabase', () => {
 });
 
 import { createJob, getJobById, getJobs } from '@/services/jobs';
-import { createProposal } from '@/services/proposals';
+import { createProposal, getProposalsByJob } from '@/services/proposals';
 
 describe('jobs service targeted coverage', () => {
     beforeEach(() => {
@@ -208,7 +208,7 @@ describe('jobs service targeted coverage', () => {
             error: null,
             count: 1,
         });
-        expect(queryState.state.selectCalls[0]?.columns).toContain('client:profiles!jobs_client_id_fkey');
+        expect(queryState.state.selectCalls[0]?.columns).toContain('client:public_profiles!jobs_client_id_fkey');
         expect(queryState.state.eqCalls).toContainEqual({ column: 'id', value: 'job-99' });
         expect(queryState.state.singleCalls).toBe(1);
     });
@@ -241,7 +241,14 @@ describe('proposals service targeted coverage', () => {
         queryState.reset();
     });
 
-    it('creates a proposal and uploads attachments before inserting the proposal row', async () => {
+    it('calls submit_proposal_atomic rpc and uploads attachments before the call', async () => {
+        // The new flow: createProposal() uploads files, then calls the atomic RPC.
+        // It no longer uses .from('proposals').insert(...) directly.
+        queryState.state.rpcResult = {
+            data: { success: true, proposal_id: 'proposal-1', existing: false },
+            error: null,
+        };
+
         const file = new File(['hello'], 'brief.pdf', { type: 'application/pdf' });
 
         const result = await createProposal({
@@ -253,22 +260,37 @@ describe('proposals service targeted coverage', () => {
         }, [file]);
 
         expect(result).toEqual({ data: 'proposal-1', error: null });
-        expect(queryState.state.fromCalls).toEqual(expect.arrayContaining(['profiles', 'freelancer_profiles', 'proposals']));
-        expect(queryState.state.insertCalls).toContainEqual(expect.objectContaining({
-            job_id: 'job-1',
-            freelancer_id: 'free-1',
-            cover_letter: 'I can deliver this cleanly and quickly.',
-            bid_amount: 150,
-            delivery_time_days: 4,
-            attachments: ['https://files.example/proposal.pdf'],
-        }));
+
+        // Verify the RPC was called with the right function and params.
+        expect(queryState.state.rpcCalls).toContainEqual(
+            expect.objectContaining({
+                fn: 'submit_proposal_atomic',
+                params: expect.objectContaining({
+                    p_job_id: 'job-1',
+                    p_cover_letter: 'I can deliver this cleanly and quickly.',
+                    p_bid_amount: 150,
+                    p_delivery_time_days: 4,
+                    // Attachment URL uploaded by uploadFile mock before the RPC call.
+                    p_attachments: ['https://files.example/proposal.pdf'],
+                }),
+            })
+        );
+
+        // The profile/freelancer_profiles pre-flight reads still happen.
+        expect(queryState.state.fromCalls).toEqual(
+            expect.arrayContaining(['profiles', 'freelancer_profiles'])
+        );
+
+        // No direct insert on proposals table — atomicity is handled by the RPC.
+        expect(queryState.state.insertCalls).toHaveLength(0);
     });
 
     it('normalizes rate limit rpc failures into a user-facing error', async () => {
-        queryState.state.builderResult = {
+        // Simulate the access-check pre-flight succeeding but the atomic RPC failing
+        // with a rate_limit_exceeded error.
+        queryState.state.rpcResult = {
             data: null,
             error: new Error('rate_limit_exceeded'),
-            count: 0,
         };
 
         const result = await createProposal({
@@ -282,5 +304,35 @@ describe('proposals service targeted coverage', () => {
         expect(result.data).toBeNull();
         expect(result.error).toBeInstanceOf(Error);
         expect((result.error as Error).message).toBe("You've reached the proposal limit. Try again in an hour.");
+    });
+});
+
+describe('proposals public_profiles join regression', () => {
+    beforeEach(() => {
+        queryState.reset();
+    });
+
+    // Regression guard: getProposalsByJob must join freelancer data through public_profiles,
+    // NOT through the raw profiles base table (which exposes email, phone, etc.).
+    // This test would have FAILED before the Phase 5b fix that swapped:
+    //   profiles!proposals_freelancer_id_fkey  →  public_profiles!freelancer_id
+    // A regression back to the raw join would silently leak private columns to any
+    // authenticated client who can read proposals.
+    it('getProposalsByJob joins freelancer through public_profiles not profiles', async () => {
+        await getProposalsByJob('job-1');
+
+        expect(queryState.state.fromCalls).toContain('proposals');
+
+        // The select string must reference public_profiles for the freelancer join.
+        const proposalSelect = queryState.state.selectCalls.find((c) =>
+            c.columns.includes('freelancer')
+        );
+        expect(proposalSelect).toBeDefined();
+        expect(proposalSelect?.columns).toContain('public_profiles!freelancer_id');
+
+        // Ensure the raw profiles table is NOT referenced in the select join.
+        // If this fails, private columns (email, phone) are being exposed on a client-readable query.
+        expect(proposalSelect?.columns).not.toMatch(/profiles!proposals_freelancer_id_fkey/);
+        expect(proposalSelect?.columns).not.toMatch(/^.*freelancer:profiles[^_]/);
     });
 });

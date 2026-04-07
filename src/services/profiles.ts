@@ -6,7 +6,20 @@ import { sanitizeFreelancerProfileData } from '@/lib/schemaValidation';
 
 // --- READ ---
 
+// getProfileById: reads from the public_profiles VIEW (safe columns only).
+// Accessible to anon + authenticated via view-level GRANT.
+// Does NOT expose: email, phone, is_admin, account_status, cin_submitted.
 export async function getProfileById(userId: string) {
+    return supabase
+        .from('public_profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+}
+
+// Full own-profile read — only safe to call when userId === auth.uid().
+// Reads the base table (all columns). Protected by profiles_select_own RLS.
+export async function getOwnProfile(userId: string) {
     return supabase.from('profiles').select('*').eq('id', userId).single();
 }
 
@@ -30,10 +43,12 @@ export async function getFreelancers(filters: {
     minRate?: number;
     maxRate?: number;
     locations?: string[];
+    excludeId?: string;   // exclude the current user from their own search results
 } = {}, page = 1, pageSize = 20) {
     // Use authenticated client — ensures RLS policies allow reading freelancer_profiles
+    // Query the public_profiles view — safe columns only, anon-readable.
     let query = supabase
-        .from('profiles')
+        .from('public_profiles')
         .select(`
             id,
             full_name,
@@ -55,7 +70,7 @@ export async function getFreelancers(filters: {
 
     if (filters.search) {
         // Strip out characters that could break parsing
-        const safeSearch = filters.search.replace(/[,"_%]/g, ' ').trim();
+        const safeSearch = filters.search.replace(/[,\"_%]/g, ' ').trim();
         if (safeSearch) {
             query = query.or(`full_name.ilike.%${safeSearch}%,freelancer_profiles.title.ilike.%${safeSearch}%`);
         }
@@ -81,6 +96,11 @@ export async function getFreelancers(filters: {
 
     if (filters.locations && filters.locations.length > 0) {
         query = query.in('location', filters.locations);
+    }
+
+    // Exclude the current user so a freelancer does not see themselves in results.
+    if (filters.excludeId) {
+        query = query.neq('id', filters.excludeId);
     }
 
     const from = (page - 1) * pageSize;

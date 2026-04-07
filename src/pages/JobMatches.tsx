@@ -47,7 +47,7 @@ interface FreelancerWithSkills {
     id: string;
     completion_rate?: number;
     response_time_hours?: number;
-    phone?: string;
+    cin_verified?: boolean;
     skills?: ProfileSkill[];
     work_samples?: unknown[];
 }
@@ -89,7 +89,7 @@ function JobMatches() {
 
                 // 2. Get All Freelancers with their Skills
                 const { data: freelancers, error: flError } = await supabase
-                    .from('profiles')
+                    .from('public_profiles')
                     .select(`
                         *,
                         skills:profile_skills(
@@ -122,7 +122,7 @@ function JobMatches() {
 
                     const skillScore = (matchCount / totalRequired) * 70;
                     const perfScore = ((fl.completion_rate || 0) / 100) * 20;
-                    const verifiedScore = fl.phone ? 10 : 0;
+                    const verifiedScore = fl.cin_verified ? 10 : 0;
 
                     return {
                         id: fl.id,

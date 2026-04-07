@@ -173,7 +173,7 @@ export default function ClientProfile() {
     queryKey: ["client-profile", clientId],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("profiles")
+        .from("public_profiles")
         .select(
           "id, full_name, avatar_url, location, bio, created_at, cin_verified",
         )

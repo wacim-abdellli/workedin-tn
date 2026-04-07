@@ -4,6 +4,7 @@ import {
   defineRoute,
   withErrorBoundary,
   withProtected,
+  withWorkspace,
   type AppRouteDefinition,
 } from './routeDefinitions';
 
@@ -32,10 +33,11 @@ export const contractRoutes: AppRouteDefinition[] = [
       path: '/client/jobs/:jobId/proposals',
       page: 'JobProposals',
       section: 'contracts',
-      guard: 'protected',
+      guard: 'protected-workspace',
+      workspace: 'client',
       errorBoundary: false,
     },
-    withProtected(<JobProposals />),
+    withProtected(withWorkspace('client', <JobProposals />)),
   ),
   defineRoute(
     {
@@ -52,10 +54,11 @@ export const contractRoutes: AppRouteDefinition[] = [
       path: '/jobs/:jobId/matches',
       page: 'JobMatches',
       section: 'contracts',
-      guard: 'protected',
+      guard: 'protected-workspace',
+      workspace: 'client',
       errorBoundary: false,
     },
-    withProtected(<JobMatches />),
+    withProtected(withWorkspace('client', <JobMatches />)),
   ),
   defineRoute(
     {

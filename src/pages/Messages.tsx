@@ -5,7 +5,6 @@ import {
     Search,
     Send,
     Paperclip,
-    Archive,
     Trash2,
     ChevronLeft,
     Plus,
@@ -37,8 +36,6 @@ import {
     markConversationRead,
     subscribeToConversation,
     subscribeToConversations,
-    archiveConversation,
-    deleteConversation,
     type Conversation,
     type Message,
 } from '../services/messages';
@@ -161,8 +158,7 @@ function MessagesComponent() {
     const fileInputRef = useRef<HTMLInputElement>(null);
      const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const { isRecording, recordingTime, startRecording, stopRecording, cancelRecording, audioBlob } = useAudioRecorder();
-    const [isArchivingConversation, setIsArchivingConversation] = useState(false);
-    const [isDeletingConversation, setIsDeletingConversation] = useState(false);
+
     const [deletedForMeMessageIds, setDeletedForMeMessageIds] = useState<Set<string>>(new Set());
     const [messagePendingDelete, setMessagePendingDelete] = useState<ThreadMessage | null>(null);
 
@@ -486,55 +482,6 @@ function MessagesComponent() {
         setDeletingMessageId(null);
     };
 
-    const handleArchiveConversation = async () => {
-        if (!selectedConversation) return;
-
-        setIsArchivingConversation(true);
-        try {
-            const { error } = await archiveConversation(selectedConversation.id);
-            
-            if (error) {
-                showToast(error.message || tx('pages.messages.errors.archiveFailed', undefined, 'Failed to archive conversation'), 'error');
-                return;
-            }
-
-            // Remove from UI
-            setConversations(prev => prev.filter(c => c.id !== selectedConversation.id));
-            setSelectedConversation(null);
-            setShowMobileThread(false);
-            showToast(tx('pages.messages.success.archived', undefined, 'Conversation archived successfully'), 'success');
-        } catch (err) {
-            console.error('Archive conversation error:', err);
-            showToast(tx('pages.messages.errors.archiveFailed', undefined, 'Failed to archive conversation'), 'error');
-        } finally {
-            setIsArchivingConversation(false);
-        }
-    };
-
-    const handleDeleteConversation = async () => {
-        if (!selectedConversation) return;
-
-        setIsDeletingConversation(true);
-        try {
-            const { error } = await deleteConversation(selectedConversation.id);
-            
-            if (error) {
-                showToast(error.message || tx('pages.messages.errors.deleteFailed', undefined, 'Failed to delete conversation'), 'error');
-                return;
-            }
-
-            // Remove from UI
-            setConversations(prev => prev.filter(c => c.id !== selectedConversation.id));
-            setSelectedConversation(null);
-            setShowMobileThread(false);
-            showToast(tx('pages.messages.success.deleted', undefined, 'Conversation deleted successfully'), 'success');
-        } catch (err) {
-            console.error('Delete conversation error:', err);
-            showToast(tx('pages.messages.errors.deleteFailed', undefined, 'Failed to delete conversation'), 'error');
-        } finally {
-            setIsDeletingConversation(false);
-        }
-    };
 
     useEffect(() => {
         if (!user?.id) return;
@@ -1725,31 +1672,6 @@ function MessagesComponent() {
                         </Button>
                     </div>
 
-                    {/* Actions */}
-                    <div className="space-y-2 rounded-2xl border border-border bg-card p-3 shadow-sm">
-                        <button 
-                            onClick={handleArchiveConversation}
-                            disabled={isArchivingConversation}
-                            className="flex w-full items-center gap-3 rounded-lg p-3 text-muted-foreground transition-colors hover:bg-surface hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed">
-                            {isArchivingConversation ? (
-                                <Loader2 className="w-5 h-5 animate-spin" />
-                            ) : (
-                                <Archive className="w-5 h-5" />
-                            )}
-                            <span>{tx('pages.messages.archiveConversation', undefined, 'Archive conversation')}</span>
-                        </button>
-                        <button 
-                            onClick={handleDeleteConversation}
-                            disabled={isDeletingConversation}
-                            className="flex w-full items-center gap-3 rounded-lg p-3 text-destructive transition-colors hover:bg-destructive/10 disabled:opacity-50 disabled:cursor-not-allowed">
-                            {isDeletingConversation ? (
-                                <Loader2 className="w-5 h-5 animate-spin" />
-                            ) : (
-                                <Trash2 className="w-5 h-5" />
-                            )}
-                            <span>{tx('pages.messages.deleteConversation', undefined, 'Delete conversation')}</span>
-                        </button>
-                    </div>
                 </div>
             ) : (
                 <div className="h-full flex items-center justify-center">

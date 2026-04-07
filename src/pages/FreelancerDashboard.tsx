@@ -179,7 +179,7 @@ function FreelancerDashboardPage() {
         supabase
           .from("contracts")
           .select(
-            "id, title, status, total_amount, client:profiles!contracts_client_id_fkey(id, full_name, avatar_url)",
+            "id, title, status, total_amount, client:public_profiles!contracts_client_id_fkey(id, full_name, avatar_url)",
           )
           .eq("freelancer_id", userId)
           .eq("status", "active")

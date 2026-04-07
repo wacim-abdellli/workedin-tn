@@ -91,7 +91,7 @@ export default function FreelancerProfile() {
 
             if (!isUUID) {
                 const { data: userProfile, error: userError } = await supabase
-                    .from('profiles')
+                    .from('public_profiles')
                     .select('id')
                     .eq('username', usernameOrId)
                     .single();
@@ -112,14 +112,13 @@ export default function FreelancerProfile() {
                     .from('freelancer_profiles')
                     .select(`
                         *,
-                        profile:profiles!id (
+                        profile:public_profiles!id (
                             full_name,
                             username,
                             avatar_url,
                             bio,
                             location,
                             created_at,
-                            phone,
                             user_type
                         )
                     `)
@@ -138,7 +137,7 @@ export default function FreelancerProfile() {
                         comment,
                         created_at,
                         skills_rating,
-                        reviewer:profiles!reviewer_id (
+                        reviewer:public_profiles!reviewer_id (
                             full_name,
                             avatar_url
                         ),
@@ -208,7 +207,9 @@ export default function FreelancerProfile() {
                 stats,
                 verifications: {
                     cin: profileRow.cin_verified || false,
-                    phone: !!profileRow.profile.phone,
+                    // phone field removed from profiles join to avoid sensitive data exposure.
+                    // Use phone_verified flag from freelancer_profiles if it exists.
+                    phone: (profileRow as any).phone_verified || false,
                     email: true,
                     payment: false
                 },

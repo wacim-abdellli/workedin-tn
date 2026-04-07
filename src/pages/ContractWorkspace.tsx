@@ -165,7 +165,7 @@ function ContractWorkspaceComponent() {
         const receiverId = userRole === 'client' ? contractData.freelancer.id : contractData.client.id;
 
         try {
-            const uploaded = await upload(file, `${contractId}/${Date.now()}_${file.name}`);
+            const uploaded = await upload(file, `${user.id}/${contractId}`);
             await sendMessage(`📎 ${file.name}`, receiverId, [
                 { name: file.name, url: uploaded.url, type: file.type, size: (file.size / 1024).toFixed(1) + 'KB' }
             ]);
@@ -228,31 +228,7 @@ function ContractWorkspaceComponent() {
             
             // Notify both parties by email — fire-and-forget
             if (contractData) {
-                const { data: profiles } = await supabase
-                    .from('profiles')
-                    .select('id, email, full_name')
-                    .in('id', [contractData.client.id, contractData.freelancer.id]);
-
-                if (profiles) {
-                    const client = profiles.find(p => p.id === contractData.client.id);
-                    const freelancer = profiles.find(p => p.id === contractData.freelancer.id);
-                    const contractId = contractData.id;
-
-                    if (client?.email) {
-                        sendDisputeOpenedEmail(
-                            client.email, client.full_name,
-                            contractId, userRole === 'client' ? 'client' : 'freelancer',
-                            reason,
-                        );
-                    }
-                    if (freelancer?.email) {
-                        sendDisputeOpenedEmail(
-                            freelancer.email, freelancer.full_name,
-                            contractId, userRole === 'client' ? 'client' : 'freelancer',
-                            reason,
-                        );
-                    }
-                }
+                sendDisputeOpenedEmail(contractData.id);
             }
         },
         retry: 2,

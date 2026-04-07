@@ -120,7 +120,7 @@ describe('Profiles Service', () => {
 
     it('getProfileById fetches single profile', async () => {
         await profilesService.getProfileById('user-1');
-        expect(mockFrom).toHaveBeenCalledWith('profiles');
+        expect(mockFrom).toHaveBeenCalledWith('public_profiles');
     });
 
     it('updateProfile includes updated_at', async () => {

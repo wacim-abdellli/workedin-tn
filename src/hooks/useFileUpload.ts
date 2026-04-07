@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef } from 'react';
-import { getStorageConfigErrorMessage, isMissingStorageBucketError, supabase, withTimeout } from '../lib/supabase';
+import { uploadFileWithMetadata } from '../lib/supabase';
 
 interface UploadedFile {
     id: string;
@@ -52,26 +52,24 @@ export function useFileUpload({
     // Validate file before upload
     const validateFile = useCallback(
         (file: File) => {
-            // Check file size
             const maxSizeBytes = maxSizeMB * 1024 * 1024;
             if (file.size > maxSizeBytes) {
                 throw new Error(`الملف كبير جداً. الحد الأقصى ${maxSizeMB} ميجابايت`);
             }
-
-            // Check file type
             if (allowedTypes.length > 0 && !allowedTypes.includes(file.type)) {
                 throw new Error('نوع الملف غير مدعوم');
             }
-
             return true;
         },
         [maxSizeMB, allowedTypes]
     );
 
     // Upload single file
+    // `path` is treated as a base directory (e.g. `${user.id}/${contractId}`).
+    // The hook appends `/${timestamp}-${sanitizedName}` to form the final path.
+    // For buckets with requireUserPrefix: true, path MUST start with the user's UUID.
     const upload = useCallback(
         async (file: File, path: string): Promise<UploadedFile> => {
-            // Validate
             validateFile(file);
 
             setIsUploading(true);
@@ -81,45 +79,29 @@ export function useFileUpload({
             abortControllerRef.current = new AbortController();
 
             try {
-                // Generate unique filename
+                // Build the full desired storage path.
+                // `path` is the caller-supplied folder; we append timestamp + sanitized
+                // filename exactly once, so there is no double-nesting.
                 const timestamp = Date.now();
-                const filename = `${path}/${timestamp}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+                const sanitizedName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+                const desiredPath = `${path}/${timestamp}-${sanitizedName}`;
 
-                // Upload to Supabase Storage
-                const { data, error: uploadError } = await withTimeout(
-                    supabase.storage
-                        .from(bucket)
-                        .upload(filename, file, {
-                            cacheControl: '3600',
-                            upsert: false,
-                        }),
-                    15000,
-                    `Upload ${bucket}/${filename}`
-                );
+                // Route through the secure-upload Edge Function.
+                // This enforces: JWT auth, rate limit, magic-byte validation,
+                // path sanitization, and userId-prefix isolation — all server-side.
+                const result = await uploadFileWithMetadata(bucket, desiredPath, file);
 
-                if (uploadError) {
-                    if (isMissingStorageBucketError(uploadError)) {
-                        throw new Error(getStorageConfigErrorMessage(bucket));
-                    }
-
-                    throw uploadError;
-                }
-
-                // Simulate progress for now (Supabase doesn't support progress tracking natively)
                 setProgress(100);
                 onProgress?.(100);
 
-                // Get public URL
-                const { data: urlData } = supabase.storage
-                    .from(bucket)
-                    .getPublicUrl(data.path);
-
                 const uploadedFile: UploadedFile = {
-                    id: data.id || data.path,
+                    id: result.path,
                     name: file.name,
                     size: file.size,
                     type: file.type,
-                    url: urlData.publicUrl,
+                    // publicUrl is non-null for public buckets, null for private ones.
+                    // Fall back to storage path so callers always get a non-empty string.
+                    url: result.publicUrl ?? result.path,
                 };
 
                 return uploadedFile;

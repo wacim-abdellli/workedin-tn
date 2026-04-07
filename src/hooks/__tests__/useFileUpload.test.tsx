@@ -1,21 +1,14 @@
 import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const storageState = vi.hoisted(() => ({
-    upload: vi.fn(),
-    getPublicUrl: vi.fn(),
+// vi.mock is hoisted to the top of the file, so the factory runs before any
+// module-level code. Use vi.hoisted to safely declare the mock fn reference.
+const { uploadFileWithMetadataMock } = vi.hoisted(() => ({
+    uploadFileWithMetadataMock: vi.fn(),
 }));
 
 vi.mock('@/lib/supabase', () => ({
-    supabase: {
-        storage: {
-            from: vi.fn(() => ({
-                upload: storageState.upload,
-                getPublicUrl: storageState.getPublicUrl,
-            })),
-        },
-    },
-    withTimeout: vi.fn((promise: Promise<any>) => promise),
+    uploadFileWithMetadata: uploadFileWithMetadataMock,
 }));
 
 import { formatFileSize, getFileIcon, useFileUpload } from '@/hooks/useFileUpload';
@@ -23,16 +16,16 @@ import { formatFileSize, getFileIcon, useFileUpload } from '@/hooks/useFileUploa
 describe('useFileUpload', () => {
     beforeEach(() => {
         vi.clearAllMocks();
-        storageState.upload.mockResolvedValue({
-            data: { id: 'file-1', path: 'folder/123-brief.pdf' },
-            error: null,
-        });
-        storageState.getPublicUrl.mockReturnValue({
-            data: { publicUrl: 'https://files.example/brief.pdf' },
+        uploadFileWithMetadataMock.mockResolvedValue({
+            path: 'user-1/contract-1/123-brief.pdf',
+            publicUrl: 'https://files.example/brief.pdf',
+            bucket: 'attachments',
+            mimeType: 'application/pdf',
+            size: 5,
         });
     });
 
-    it('uploads a valid file and returns uploaded metadata', async () => {
+    it('uploads a valid file via secure-upload and returns compatible metadata', async () => {
         const onProgress = vi.fn();
         const file = new File(['hello'], 'brief.pdf', { type: 'application/pdf' });
 
@@ -40,23 +33,54 @@ describe('useFileUpload', () => {
 
         let uploaded: Awaited<ReturnType<typeof result.current.upload>> | undefined;
         await act(async () => {
-            uploaded = await result.current.upload(file, 'contract-1');
+            uploaded = await result.current.upload(file, 'user-1/contract-1');
         });
 
-        expect(storageState.upload).toHaveBeenCalledWith(
-            expect.stringContaining('contract-1/'),
-            file,
-            { cacheControl: '3600', upsert: false }
+        // Must call uploadFileWithMetadata with the correct bucket and a path
+        // that starts with the user-prefixed folder provided by the caller.
+        expect(uploadFileWithMetadataMock).toHaveBeenCalledWith(
+            'attachments',
+            expect.stringMatching(/^user-1\/contract-1\//),
+            file
         );
-        expect(storageState.getPublicUrl).toHaveBeenCalled();
+
+        // The hook appends exactly one `/${timestamp}-${sanitizedName}` suffix —
+        // no double-nesting. Final path is: user-1/contract-1/${ts}-brief.pdf
+        const calledPath: string = uploadFileWithMetadataMock.mock.calls[0][1];
+        const segments = calledPath.split('/');
+        expect(segments).toHaveLength(3);
+        expect(segments[0]).toBe('user-1');
+        expect(segments[1]).toBe('contract-1');
+        expect(segments[2]).toMatch(/^\d+-brief\.pdf$/);
+
         expect(onProgress).toHaveBeenCalledWith(100);
         expect(uploaded).toEqual({
-            id: 'file-1',
+            id: 'user-1/contract-1/123-brief.pdf',
             name: 'brief.pdf',
             size: file.size,
             type: 'application/pdf',
             url: 'https://files.example/brief.pdf',
         });
+    });
+
+    it('falls back to storage path when publicUrl is null (private bucket)', async () => {
+        uploadFileWithMetadataMock.mockResolvedValueOnce({
+            path: 'user-1/contract-1/123-brief.pdf',
+            publicUrl: null,
+            bucket: 'attachments',
+            mimeType: 'application/pdf',
+            size: 5,
+        });
+
+        const file = new File(['hello'], 'brief.pdf', { type: 'application/pdf' });
+        const { result } = renderHook(() => useFileUpload({ bucket: 'attachments' }));
+
+        let uploaded: Awaited<ReturnType<typeof result.current.upload>> | undefined;
+        await act(async () => {
+            uploaded = await result.current.upload(file, 'user-1/contract-1');
+        });
+
+        expect(uploaded?.url).toBe('user-1/contract-1/123-brief.pdf');
     });
 
     it('rejects oversized or unsupported files and exposes reset helpers', async () => {
@@ -68,13 +92,11 @@ describe('useFileUpload', () => {
         const hugeFile = new File(['x'.repeat(5)], 'video.mp4', { type: 'video/mp4' });
         Object.defineProperty(hugeFile, 'size', { value: 2 * 1024 * 1024 });
 
-        await expect(result.current.upload(hugeFile, 'contract-1')).rejects.toThrow(/الملف كبير|نوع الملف غير مدعوم/);
-        expect(result.current.error).toBeNull();
+        await expect(result.current.upload(hugeFile, 'user-1/contract-1')).rejects.toThrow(/الملف كبير|نوع الملف غير مدعوم/);
+        // Client-side rejection — secure-upload was never called
+        expect(uploadFileWithMetadataMock).not.toHaveBeenCalled();
 
-        act(() => {
-            result.current.reset();
-        });
-
+        act(() => { result.current.reset(); });
         expect(result.current.progress).toBe(0);
         expect(result.current.isUploading).toBe(false);
         expect(result.current.error).toBeNull();
@@ -90,10 +112,10 @@ describe('useFileUpload', () => {
         const { result } = renderHook(() => useFileUpload({ onProgress }));
 
         await act(async () => {
-            await result.current.uploadMultiple(files, 'contract-1');
+            await result.current.uploadMultiple(files, 'user-1/contract-1');
         });
 
-        expect(storageState.upload).toHaveBeenCalledTimes(2);
+        expect(uploadFileWithMetadataMock).toHaveBeenCalledTimes(2);
         expect(onProgress).toHaveBeenCalledWith(50);
         expect(onProgress).toHaveBeenCalledWith(100);
     });

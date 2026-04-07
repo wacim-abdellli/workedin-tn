@@ -188,7 +188,7 @@ export async function getConversations(userId: string, page: number = 0, limit: 
         const [profilesResult] = await Promise.all([
             otherUserIds.length > 0 
                 ? supabaseWithRetry(() => supabase
-                    .from('profiles')
+                    .from('public_profiles')
                     .select('id, full_name, avatar_url, username')
                     .in('id', otherUserIds), { timeoutMs: CONVERSATIONS_TIMEOUT_MS })
                 : Promise.resolve({ data: [], error: null })
@@ -323,12 +323,13 @@ export async function sendMessage(params: {
     }
 }
 
-export async function markConversationRead(conversationId: string, userId: string) {
+// userId is kept in the signature to avoid breaking existing call sites, but is
+// no longer forwarded to the RPC — the DB function derives the actor from auth.uid().
+export async function markConversationRead(conversationId: string, _userId?: string) {
     try {
         const { error } = await supabaseWithRetry(
             () => supabase.rpc('mark_conversation_read', {
                 p_conversation_id: conversationId,
-                p_user_id: userId,
             }),
             { throwOnError: false, timeoutMs: 10000 }
         );
@@ -487,30 +488,4 @@ export async function sendContractMessage(data: {
 
 export async function unsubscribeFromChannel(channel: RealtimeChannel) {
     if (channel) await supabase.removeChannel(channel);
-}
-
-// Archive a conversation (soft delete - hidden from user but data preserved)
-// NOTE: Archive functionality not implemented yet - archived_at column doesn't exist
-export async function archiveConversation(_conversationId: string) {
-    return { 
-        data: null, 
-        error: new Error('Archive functionality is not implemented yet. Coming in a future update.')
-    };
-}
-
-// Delete a conversation permanently (use with caution - data is not recoverable)
-export async function deleteConversation(conversationId: string) {
-    try {
-        const { data, error } = await supabase
-            .from('conversations')
-            .delete()
-            .eq('id', conversationId)
-            .select();
-
-        if (error) throw error;
-        return { data, error: null };
-    } catch (error) {
-        console.error('Failed to delete conversation:', error);
-        return { data: null, error: normalizeMessageError(error) };
-    }
 }

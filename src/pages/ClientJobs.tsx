@@ -188,7 +188,7 @@ export default function ClientJobs() {
                   <div className="list-actions">
                     {job.proposals && job.proposals[0]?.count > 0 && (
                       <button 
-                        onClick={() => navigate(`/jobs/${job.id}/proposals`)}
+                        onClick={() => navigate(`/client/jobs/${job.id}/proposals`)}
                         className="list-action-btn-primary"
                       >
                         {tx('pages.clientJobs.viewProposals', undefined, 'View proposals')}

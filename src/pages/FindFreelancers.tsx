@@ -88,7 +88,7 @@ export default function FindFreelancers() {
     const { data: freelancersData, isLoading } = useQuery({
         queryKey: ['freelancers', searchQuery],
         queryFn: async () => {
-            const { data, error } = await profilesService.getFreelancers({ search: searchQuery || undefined });
+            const { data, error } = await profilesService.getFreelancers({ search: searchQuery || undefined, excludeId: user?.id });
             if (error) { console.error('getFreelancers error:', error); return []; }
             return (data || []).map((p: ProfileWithFreelancer) => {
                 const fp = Array.isArray(p.freelancer_profiles) 

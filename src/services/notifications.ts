@@ -44,7 +44,14 @@ export async function insertNotification(data: {
     related_id?: string;
     link?: string;
 }) {
-    const { error } = await supabase.from('notifications').insert({ ...data, is_read: false });
+    const { error } = await supabase.rpc('create_notification', {
+        p_user_id: data.user_id,
+        p_type: data.type,
+        p_title: data.title,
+        p_body: data.body,
+        p_related_id: data.related_id,
+        p_link: data.link
+    });
     if (error) throw new Error(error.message);
 }
 

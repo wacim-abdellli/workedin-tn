@@ -54,18 +54,44 @@ export async function spendConnects(
 }
 
 /**
- * Refund connects when a proposal is withdrawn.
+ * Atomically withdraw a proposal and refund connects in a single DB transaction.
+ * Validates: proposal exists, caller owns it, status is pending, no prior refund.
+ * Replaces the old two-step (withdrawProposal + refundConnects) pattern.
+ * Returns { success, proposal_id, refunded } or throws on validation failure.
  */
-export async function refundConnects(
-    freelancerId: string,
+export async function withdrawProposalWithRefund(
     proposalId: string,
     refund = CONNECTS_COST,
-): Promise<void> {
-    await supabase.rpc('refund_connects_for_proposal', {
-        p_freelancer_id: freelancerId,
+): Promise<{ success: boolean; proposal_id: string; refunded: number }> {
+    const { data, error } = await supabase.rpc('withdraw_proposal_atomic', {
         p_proposal_id: proposalId,
         p_refund: refund,
     });
+
+    if (error) throw error;
+    return data as { success: boolean; proposal_id: string; refunded: number };
+}
+
+/**
+ * @deprecated Use withdrawProposalWithRefund() instead.
+ * Kept only for legacy call sites that should be migrated.
+ * The underlying DB function (refund_connects_for_proposal) now rejects
+ * all authenticated callers and is service-role only.
+ */
+export async function refundConnects(
+    _freelancerId: string,
+    _proposalId: string,
+    _refund = CONNECTS_COST,
+): Promise<void> {
+    // No-op: the DB function will raise an error if called by an authenticated user.
+    // This stub exists to prevent import errors during migration.
+    // Replace all call sites with withdrawProposalWithRefund().
+    if (process.env.NODE_ENV !== 'test') {
+        console.warn(
+            '[connects] refundConnects() is deprecated. ' +
+            'Use withdrawProposalWithRefund() for atomic, validated connects refunds.',
+        );
+    }
 }
 
 /**

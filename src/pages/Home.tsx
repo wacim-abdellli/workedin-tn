@@ -29,7 +29,7 @@ function Home() {
                     { count: contractCount },
                 ] = await Promise.all([
                     supabaseAnon.from('jobs').select('*', { count: 'exact', head: true }).eq('status', 'open').eq('visibility', 'public'),
-                    supabaseAnon.from('profiles').select('*', { count: 'exact', head: true }).in('user_type', ['freelancer', 'both']),
+                    supabaseAnon.from('public_profiles').select('*', { count: 'exact', head: true }).in('user_type', ['freelancer', 'both']),
                     supabaseAnon.from('contracts').select('*', { count: 'exact', head: true }),
                 ]);
 

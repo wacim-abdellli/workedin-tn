@@ -4,7 +4,8 @@ import { getNotifications, getUnreadCount, insertNotification, createNotificatio
 
 vi.mock("@/lib/supabase", () => ({
     supabase: {
-        from: vi.fn()
+        from: vi.fn(),
+        rpc: vi.fn()
     }
 }));
 
@@ -58,23 +59,31 @@ describe("notifications service", () => {
     });
 
     it("inserts notification", async () => {
-        const mockInsert = vi.fn().mockResolvedValue({ error: null });
-        const mockFn = vi.fn().mockReturnValue({ insert: mockInsert });
-        vi.mocked(supabase.from).mockImplementation(mockFn as any);
+        vi.mocked(supabase.rpc).mockResolvedValue({ error: null } as any);
 
         await insertNotification({ user_id: "user-1", type: "system" as any, title: "Hello", body: "World" });
-        expect(mockInsert).toHaveBeenCalledWith({ user_id: "user-1", type: "system", title: "Hello", body: "World", is_read: false });
-        expect(supabase.from).toHaveBeenCalledWith("notifications");
+        expect(supabase.rpc).toHaveBeenCalledWith('create_notification', {
+            p_user_id: "user-1",
+            p_type: "system",
+            p_title: "Hello",
+            p_body: "World",
+            p_related_id: undefined,
+            p_link: undefined
+        });
     });
 
     it("creates notification", async () => {
-        const mockInsert = vi.fn().mockResolvedValue({ error: null });
-        const mockFn = vi.fn().mockReturnValue({ insert: mockInsert });
-        vi.mocked(supabase.from).mockImplementation(mockFn as any);
+        vi.mocked(supabase.rpc).mockResolvedValue({ error: null } as any);
 
         await createNotification({ user_id: "user-1", type: "system" as any, title: "Hello", body: "World" });
-        expect(mockInsert).toHaveBeenCalledWith({ user_id: "user-1", type: "system", title: "Hello", body: "World", is_read: false });
-        expect(supabase.from).toHaveBeenCalledWith("notifications");
+        expect(supabase.rpc).toHaveBeenCalledWith('create_notification', {
+            p_user_id: "user-1",
+            p_type: "system",
+            p_title: "Hello",
+            p_body: "World",
+            p_related_id: undefined,
+            p_link: undefined
+        });
     });
 
     it("marks notification read", async () => {

@@ -150,7 +150,7 @@ export default function VerificationQueue() {
         }
     };
 
-    const resolveIdentityDocumentUrl = async (url?: string | null) => {
+    const resolveIdentityDocumentUrl = async (url?: string | null): Promise<string> => {
         const parsed = parseStorageReference(url);
         if (!parsed) return '';
         if (parsed.kind === 'external') return parsed.url;
@@ -168,8 +168,11 @@ export default function VerificationQueue() {
             }
         }
 
-        const fallbackBucket = parsed.bucket || IDENTITY_DOCS_BUCKET;
-        return `${SUPA_URL}/storage/v1/object/public/${fallbackBucket}/${parsed.path}`;
+        // All signed URL attempts failed. Do NOT fall back to a public URL —
+        // identity-documents is a private bucket. Return '' so the caller
+        // renders the loading placeholder (no CIN image is exposed publicly).
+        console.warn('[resolveIdentityDocumentUrl] Could not generate signed URL for identity document. Path:', parsed.path);
+        return '';
     };
 
     const [documentUrls, setDocumentUrls] = useState<{

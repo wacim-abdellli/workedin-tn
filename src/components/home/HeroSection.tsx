@@ -112,7 +112,7 @@ export function HeroSection({ stats }: HeroSectionProps) {
         }}
       />
 
-      <div className="relative z-10 container mx-auto px-6 lg:px-8 max-w-7xl pt-28 pb-20">
+      <div className="relative z-10 container mx-auto px-6 lg:px-8 max-w-7xl pt-6 pb-16">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           <div>
             <motion.div

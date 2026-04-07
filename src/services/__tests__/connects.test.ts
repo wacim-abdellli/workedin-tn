@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { supabase } from "@/lib/supabase";
-import { getConnectsBalance, spendConnects, refundConnects } from "../connects";
+import { getConnectsBalance, spendConnects, refundConnects, withdrawProposalWithRefund } from "../connects";
 
 vi.mock("@/lib/supabase", () => ({
     supabase: {
@@ -37,9 +37,26 @@ describe("connects service", () => {
         expect(supabase.rpc).toHaveBeenCalledWith("spend_connects_for_proposal", { p_freelancer_id: "f-1", p_proposal_id: "proposal-1", p_cost: 2 });
     });
 
-    it("refunds connects", async () => {
-        vi.mocked(supabase.rpc).mockResolvedValueOnce({ error: null, data: true } as never);
+    it("withdraws proposal and refunds connects atomically", async () => {
+        const mockResult = { success: true, proposal_id: "proposal-1", refunded: 2 };
+        vi.mocked(supabase.rpc).mockResolvedValueOnce({ error: null, data: mockResult } as never);
+
+        const result = await withdrawProposalWithRefund("proposal-1");
+        expect(result).toEqual(mockResult);
+        expect(supabase.rpc).toHaveBeenCalledWith("withdraw_proposal_atomic", {
+            p_proposal_id: "proposal-1",
+            p_refund: 2
+        });
+    });
+
+    it("withdrawProposalWithRefund throws on RPC error", async () => {
+        vi.mocked(supabase.rpc).mockResolvedValueOnce({ error: { message: "Proposal not found" }, data: null } as never);
+        await expect(withdrawProposalWithRefund("bad-id")).rejects.toMatchObject({ message: "Proposal not found" });
+    });
+
+    it("refundConnects is a no-op stub (deprecated)", async () => {
+        // refundConnects no longer calls any RPC — it is a deprecated no-op.
         await refundConnects("f-1", "proposal-1");
-        expect(supabase.rpc).toHaveBeenCalledWith("refund_connects_for_proposal", { p_freelancer_id: "f-1", p_proposal_id: "proposal-1", p_refund: 2 });
+        expect(supabase.rpc).not.toHaveBeenCalled();
     });
 });

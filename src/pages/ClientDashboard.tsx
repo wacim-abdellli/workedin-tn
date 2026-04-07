@@ -128,19 +128,19 @@ function ClientDashboardPage() {
                     .select(`
                         id, title, budget_min, budget_max, status, created_at,
                         proposals_count,
-                        contracts(id, status, freelancer:profiles!freelancer_id(full_name))
+                        contracts(id, status, freelancer:public_profiles!freelancer_id(full_name))
                     `)
                     .eq('client_id', userId)
                     .order('created_at', { ascending: false })
                     .limit(6),
                 supabase.from('contracts')
-                    .select('id, title, status, total_amount, created_at, freelancer:profiles!contracts_freelancer_id_fkey(id, full_name, avatar_url)')
+                    .select('id, title, status, total_amount, created_at, freelancer:public_profiles!contracts_freelancer_id_fkey(id, full_name, avatar_url)')
                     .eq('client_id', userId)
                     .eq('status', 'active')
                     .order('created_at', { ascending: false })
                     .limit(5),
                 supabase.from('proposals')
-                    .select('id, job_id, bid_amount, created_at, job:jobs!inner(title, client_id), freelancer:profiles!proposals_freelancer_id_fkey(full_name, avatar_url)')
+                    .select('id, job_id, bid_amount, created_at, job:jobs!inner(title, client_id), freelancer:public_profiles!proposals_freelancer_id_fkey(full_name, avatar_url)')
                     .eq('job.client_id', userId)
                     .eq('status', 'pending')
                     .order('created_at', { ascending: false })
@@ -290,7 +290,7 @@ function ClientDashboardPage() {
                                             <div
                                                 key={proposal.id}
                                                 className="flex items-center justify-between py-[var(--spacing-4)] px-[var(--spacing-1)] cursor-pointer group"
-                                                onClick={() => navigate(`/jobs/${proposal.job_id}/proposals`)}
+                                                onClick={() => navigate(`/client/jobs/${proposal.job_id}/proposals`)}
                                             >
                                                 <div className="flex items-center gap-[var(--spacing-3)] min-w-0 flex-1">
                                                     <div className="w-8 h-8 rounded-full overflow-hidden shrink-0 bg-[var(--color-background-elevated)]">

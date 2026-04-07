@@ -86,8 +86,12 @@ async function resolveIdentityDocumentUrl(url?: string | null): Promise<string |
         } catch { /* try next */ }
     }
 
-    const fallbackBucket = parsed.bucket || IDENTITY_DOCS_BUCKET;
-    return `${SUPA_URL}/storage/v1/object/public/${fallbackBucket}/${parsed.path}`;
+    // All signed URL attempts failed. Do NOT fall back to a public URL —
+    // identity-documents is a private bucket and public URLs must never be
+    // constructed for CIN/selfie documents. Return null so the caller renders
+    // the "No image" placeholder instead.
+    console.warn('[resolveIdentityDocumentUrl] Could not generate signed URL for identity document. Path:', parsed.path);
+    return null;
 }
 
 async function mapPrimaryVerificationRow(item: IdentityVerificationPrimaryRow): Promise<IdentityVerification> {

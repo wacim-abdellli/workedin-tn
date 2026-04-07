@@ -82,7 +82,7 @@ export default function JobProposals() {
                         .from('proposals')
                         .select(`
                             *,
-                            freelancer:profiles!freelancer_id(
+                            freelancer:public_profiles!freelancer_id(
                                 id,
                                 full_name,
                                 avatar_url,
@@ -239,29 +239,16 @@ export default function JobProposals() {
             }
 
             // Non-critical follow-up effects stay outside the transaction.
-            await supabase
-                .from('notifications')
-                .insert({
-                    user_id: proposal.freelancer_id,
-                    type: 'proposal_accepted',
-                    title: t.jobProposals.proposalAccepted,
-                    message: `تم قبول عرضك على المشروع: ${job.title}`,
-                    data: { contract_id: contractId, job_id: jobId }
-                });
+            await supabase.rpc('notify_proposal_accepted', {
+                p_contract_id: contractId
+            });
 
-            // Fire-and-forget email.
-            supabase
-                .from('profiles')
-                .select('email, full_name')
-                .eq('id', proposal.freelancer_id)
-                .single()
-                .then(({ data: fp }) => {
-                    if (fp?.email) {
-                        import('../lib/email').then(({ sendProposalAcceptedEmail }) => {
-                            sendProposalAcceptedEmail(fp.email, fp.full_name || t.jobProposals.defaultFreelancer, job.title, contractId);
-                        });
-                    }
+            // Fire-and-forget email safely via edge function
+            if (contractId) {
+                import('../lib/email').then(({ sendProposalAcceptedEmail }) => {
+                    sendProposalAcceptedEmail(contractId);
                 });
+            }
 
             return { id: contractId };
         },

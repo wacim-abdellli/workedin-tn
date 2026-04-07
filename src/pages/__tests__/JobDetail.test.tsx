@@ -83,6 +83,33 @@ vi.mock('@/services/proposals', () => ({
 
 import JobDetail from '@/pages/JobDetail';
 
+function buildSafeJob(clientName: string) {
+    return {
+        id: 'job-1',
+        client_id: 'client-1',
+        title: 'Build a polished marketplace',
+        description: 'We need a React expert to ship launch fixes.',
+        category: 'development',
+        job_type: 'fixed_price',
+        budget_min: 500,
+        budget_max: 900,
+        experience_level: 'expert',
+        required_skills: ['React'],
+        visibility: 'public',
+        status: 'open',
+        proposals_count: 7,
+        views_count: 21,
+        posted_at: '2026-03-22T00:00:00.000Z',
+        client: {
+            id: 'client-1',
+            full_name: clientName,
+            avatar_url: null,
+            location: 'Tunis',
+            created_at: '2026-01-01T00:00:00.000Z',
+        },
+    };
+}
+
 describe('JobDetail', () => {
     beforeEach(() => {
         vi.clearAllMocks();
@@ -101,28 +128,7 @@ describe('JobDetail', () => {
             switch (queryKey[0]) {
                 case 'job':
                     return {
-                        data: {
-                            id: 'job-1',
-                            client_id: 'client-1',
-                            title: 'Build a polished marketplace',
-                            description: 'We need a React expert to ship launch fixes.',
-                            category: 'development',
-                            job_type: 'fixed_price',
-                            budget_min: 500,
-                            budget_max: 900,
-                            experience_level: 'expert',
-                            required_skills: ['React'],
-                            visibility: 'public',
-                            status: 'open',
-                            proposals_count: 7,
-                            views_count: 21,
-                            posted_at: '2026-03-22T00:00:00.000Z',
-                            client: {
-                                id: 'client-1',
-                                full_name: 'Khedma Client',
-                                created_at: '2026-01-01T00:00:00.000Z',
-                            },
-                        },
+                        data: buildSafeJob('Khedma Client'),
                         isLoading: false,
                     };
                 case 'savedStatus':
@@ -154,6 +160,46 @@ describe('JobDetail', () => {
         expect(screen.getByText('We need a React expert to ship launch fixes.')).toBeInTheDocument();
         expect(screen.getByText('API cleanup')).toBeInTheDocument();
         expect(screen.getByText('Khedma Client')).toBeInTheDocument();
-        expect(screen.getByRole('button', { name: /أرسل عرض/ })).toBeInTheDocument();
+        expect(screen.getByText('Report This Job')).toBeInTheDocument();
+    });
+
+    it('renders the public client card from a safe client shape without email or phone', () => {
+        queryMocks.useQuery.mockImplementation(({ queryKey }: { queryKey: unknown[] }) => {
+            if (!queryKey || queryKey.length === 0) {
+                return { data: null, isLoading: false, error: null };
+            }
+            switch (queryKey[0]) {
+                case 'job':
+                    return {
+                        data: buildSafeJob('Safe Public Client'),
+                        isLoading: false,
+                    };
+                case 'savedStatus':
+                    return { data: false };
+                case 'myProposal':
+                    return { data: null };
+                case 'similarJobs':
+                    return { data: [{ id: 'job-2', title: 'API cleanup' }] };
+                case 'clientStats':
+                    return { data: { totalJobs: 5, totalSpent: 1200, rating: 4.8 } };
+                default:
+                    return { data: null };
+            }
+        });
+
+        render(
+            <HelmetProvider>
+                <I18nProvider>
+                    <MemoryRouter>
+                        <JobDetail />
+                    </MemoryRouter>
+                </I18nProvider>
+            </HelmetProvider>
+        );
+
+        expect(screen.getByText('Safe Public Client')).toBeInTheDocument();
+        expect(screen.getByText('Tunis')).toBeInTheDocument();
+        expect(screen.queryByText(/@/)).not.toBeInTheDocument();
+        expect(screen.queryByText(/\+216/)).not.toBeInTheDocument();
     });
 });

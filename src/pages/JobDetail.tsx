@@ -38,8 +38,7 @@ import ProposalModal from "../components/proposals/ProposalModal";
 import type { ProposalFormData } from "../components/proposals/ProposalModal";
 import { sendNewProposalEmail } from "../lib/email";
 import {
-  spendConnects,
-  refundConnects,
+  withdrawProposalWithRefund,
   getConnectsBalance,
   CONNECTS_COST,
 } from "../services/connects";
@@ -397,17 +396,6 @@ function JobDetail() {
       );
       if (error) throw error;
 
-      // Deduct connects atomically (fire-and-forget on failure is acceptable)
-      if (proposalId) {
-        const connectsResult = await spendConnects(user.id, proposalId);
-        if (!connectsResult.success) {
-          logger.warn(
-            "[Connects] Spend failed after proposal created:",
-            connectsResult.error,
-          );
-        }
-      }
-
       return proposalId;
     },
     onMutate: async ({ data }) => {
@@ -473,13 +461,8 @@ function JobDetail() {
       showToast(t.jobDetail.proposalSent, "success");
 
       // Notify client by email (fire-and-forget)
-      if (job?.client?.email && job.title && jobId) {
-        sendNewProposalEmail(
-          job.client.email,
-          job.client.full_name || t.jobDetail.defaultClient,
-          job.title,
-          jobId,
-        );
+      if (jobId) {
+        sendNewProposalEmail(jobId);
       }
     },
     onError: (err, _variables, context) => {
@@ -516,16 +499,13 @@ function JobDetail() {
   const withdrawProposalMutation = useMutation({
     mutationFn: async () => {
       if (!myProposal) throw new Error("No proposal to withdraw");
-      const { error } = await proposalsService.withdrawProposal(myProposal.id);
-      if (error) throw error;
+      // Atomic RPC: validates ownership + status + idempotency,
+      // deletes the proposal, and refunds connects in one transaction.
+      await withdrawProposalWithRefund(myProposal.id);
     },
     retry: 2,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 5000),
     onSuccess: () => {
-      // Refund connects
-      if (user?.id && myProposal?.id) {
-        refundConnects(user.id, myProposal.id);
-      }
       queryClient.invalidateQueries({
         queryKey: ["myProposal", jobId, user?.id],
       });

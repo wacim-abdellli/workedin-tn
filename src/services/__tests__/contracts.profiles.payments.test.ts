@@ -247,6 +247,11 @@ describe('contracts service coverage', () => {
             table: 'contracts',
             columns: expect.stringContaining('milestones(id'),
         }));
+        // Regression: both client and freelancer joins must use public_profiles, not the raw profiles table.
+        // If someone reverts to profiles!client_id the join string changes and this assertion fails.
+        const contractSelectCall = serviceState.state.selectCalls.find((c) => c.table === 'contracts');
+        expect(contractSelectCall?.columns).toContain('client:public_profiles!client_id');
+        expect(contractSelectCall?.columns).toContain('freelancer:public_profiles!freelancer_id');
         expect(serviceState.state.eqCalls).toContainEqual({ table: 'contracts', column: 'id', value: 'contract-1' });
         expect(serviceState.state.singleCalls).toContain('contracts');
     });
@@ -312,12 +317,16 @@ describe('profiles service coverage', () => {
             data: { id: 'user-1', full_name: 'Sam' },
             error: null,
         };
+        serviceState.state.tableResults.public_profiles = {
+            data: { id: 'user-1', full_name: 'Sam' },
+            error: null,
+        };
 
         const profile = await getProfileById('user-1');
         await updateProfile('user-1', { full_name: 'Updated Sam' });
 
         expect(profile).toEqual({ data: { id: 'user-1', full_name: 'Sam' }, error: null });
-        expect(serviceState.state.eqCalls).toContainEqual({ table: 'profiles', column: 'id', value: 'user-1' });
+        expect(serviceState.state.eqCalls).toContainEqual({ table: 'public_profiles', column: 'id', value: 'user-1' });
         expect(serviceState.state.updateCalls).toContainEqual({
             table: 'profiles',
             value: expect.objectContaining({
@@ -380,11 +389,11 @@ describe('profiles service coverage', () => {
             expect.objectContaining({ table: 'profiles' }),
         ]));
         expect(serviceState.state.orCalls).toContainEqual({
-            table: 'profiles',
+            table: 'public_profiles',
             value: 'full_name.ilike.%amine%,freelancer_profiles.title.ilike.%amine%',
         });
         expect(serviceState.state.rangeCalls).toContainEqual({
-            table: 'profiles',
+            table: 'public_profiles',
             from: 10,
             to: 19,
         });
@@ -408,6 +417,38 @@ describe('profiles service coverage', () => {
             totalSpent: 350,
             rating: 4.5,
         });
+    });
+
+    // Regression: getFreelancers must query public_profiles (safe view), NOT the raw profiles base table.
+    // If this regresses, guests and unauthenticated users would hit RLS blocks on the base table,
+    // and authenticated users would receive columns not in the safe projection.
+    it('getFreelancers roots its query on public_profiles, not profiles', async () => {
+        await getFreelancers({ search: 'ali' }, 1, 5);
+
+        // The FROM call must be public_profiles, not profiles.
+        expect(serviceState.state.fromCalls).toContain('public_profiles');
+        expect(serviceState.state.fromCalls).not.toContain('profiles');
+
+        // The or filter is scoped to public_profiles (redundant for safety).
+        expect(serviceState.state.orCalls).toContainEqual({
+            table: 'public_profiles',
+            value: 'full_name.ilike.%ali%,freelancer_profiles.title.ilike.%ali%',
+        });
+    });
+
+    // NOTE — known gap: getFreelancerWithProfile still queries the raw profiles base table
+    // (src/services/profiles.ts:32). No external page or component currently calls it
+    // (confirmed by grep: zero callers outside tests). It is flagged here as a documented
+    // gap requiring review if any new caller is added. It is NOT tested for public_profiles
+    // because it intentionally reads full profile data for an authenticated self-read context,
+    // but callers must ensure they only call it with auth.uid() as the argument.
+    it('getFreelancerWithProfile uses raw profiles — documented caller gap', async () => {
+        await getFreelancerWithProfile('user-1');
+
+        // Confirm this uses profiles (base), not public_profiles.
+        // This test is intentionally descriptive, not an assertion of correctness —
+        // it will fail if the function is ever moved to public_profiles so the change is noticed.
+        expect(serviceState.state.fromCalls).toContain('profiles');
     });
 });
 
@@ -451,15 +492,15 @@ describe('notifications service coverage', () => {
         await markAllRead('user-1');
         const subscription = subscribeToNotifications('user-1', vi.fn());
 
-        expect(serviceState.state.insertCalls).toContainEqual({
-            table: 'notifications',
-            value: {
-                user_id: 'user-1',
-                type: 'message',
-                title: 'New message',
-                body: 'Message body',
-                link: '/messages',
-                is_read: false,
+        expect(serviceState.state.rpcCalls).toContainEqual({
+            fn: 'create_notification',
+            params: {
+                p_user_id: 'user-1',
+                p_type: 'message',
+                p_title: 'New message',
+                p_body: 'Message body',
+                p_link: '/messages',
+                p_related_id: undefined,
             },
         });
         expect(serviceState.state.updateCalls).toEqual(expect.arrayContaining([

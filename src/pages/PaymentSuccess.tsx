@@ -167,21 +167,9 @@ const PaymentSuccess = () => {
                 setAmount(contract.amount || 0);
 
                 // Fire payment received email — non-blocking
-                supabase
-                    .from('profiles')
-                    .select('email, full_name')
-                    .eq('id', contract.freelancer_id)
-                    .single()
-                    .then(({ data: fp }) => {
-                        if (fp?.email) {
-                            sendPaymentReceivedEmail(
-                                fp.email,
-                                fp.full_name || 'مستقل',
-                                contract.amount,
-                                contract_id,
-                            );
-                        }
-                    });
+                if (contract_id) {
+                    sendPaymentReceivedEmail(contract_id);
+                }
 
                 // ================================================
                 // SUCCESS!
