@@ -39,6 +39,11 @@ const corsHeaders = {
 const FLOUCI_API_URL = Deno.env.get('FLOUCI_API_URL') || 'https://developers.flouci.com/api'
 const APP_TOKEN = Deno.env.get('FLOUCI_APP_TOKEN')!
 const APP_SECRET = Deno.env.get('FLOUCI_APP_SECRET')! // SECRET - Server-side only
+const PLATFORM_FEE_PERCENTAGE = 0.10
+
+function roundTnd(value: number): number {
+    return Number(value.toFixed(3))
+}
 
 serve(async (req) => {
     // Handle CORS preflight
@@ -68,7 +73,15 @@ serve(async (req) => {
             )
         }
 
-        const { amount, success_link, fail_link, developer_tracking_id, session_timeout_secs } = await req.json()
+        const {
+            amount,
+            success_link,
+            fail_link,
+            developer_tracking_id,
+            session_timeout_secs,
+            contract_id,
+            transaction_amount,
+        } = await req.json()
 
         // Validate required fields
         if (!amount || !success_link || !fail_link) {
@@ -103,6 +116,82 @@ serve(async (req) => {
         console.log('[Flouci Edge] API response:', JSON.stringify(data))
 
         if (data.result?.success) {
+            if (contract_id) {
+                const supabaseAdmin = createClient(
+                    Deno.env.get('SUPABASE_URL')!,
+                    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+                )
+
+                const { data: contract, error: contractError } = await supabaseAdmin
+                    .from('contracts')
+                    .select('id, client_id, amount')
+                    .eq('id', contract_id)
+                    .single()
+
+                if (contractError || !contract) {
+                    return new Response(
+                        JSON.stringify({ error: 'Contract not found' }),
+                        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+                    )
+                }
+
+                if (contract.client_id !== user.id) {
+                    return new Response(
+                        JSON.stringify({ error: 'Only the contract client can initiate escrow funding' }),
+                        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+                    )
+                }
+
+                const contractAmount = Number(contract.amount)
+                if (!Number.isFinite(contractAmount) || contractAmount <= 0) {
+                    return new Response(
+                        JSON.stringify({ error: 'Contract amount is invalid for escrow funding' }),
+                        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+                    )
+                }
+
+                const expectedTransactionAmount = roundTnd(contractAmount * (1 + PLATFORM_FEE_PERCENTAGE))
+                const expectedAmountInMillimes = Math.round(expectedTransactionAmount * 1000)
+
+                if (Math.round(amount) !== expectedAmountInMillimes) {
+                    return new Response(
+                        JSON.stringify({ error: 'Escrow funding amount does not match the contract total' }),
+                        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+                    )
+                }
+
+                if (
+                    transaction_amount !== undefined
+                    && transaction_amount !== null
+                    && roundTnd(Number(transaction_amount)) !== expectedTransactionAmount
+                ) {
+                    return new Response(
+                        JSON.stringify({ error: 'Client transaction amount does not match the contract total' }),
+                        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+                    )
+                }
+
+                const { error: transactionError } = await supabaseAdmin
+                    .from('transactions')
+                    .insert({
+                        user_id: user.id,
+                        contract_id: contract.id,
+                        type: 'escrow_fund',
+                        amount: expectedTransactionAmount,
+                        status: 'pending',
+                        payment_gateway_id: data.result.payment_id,
+                        description: `Escrow funding initiated for contract ${contract.id}`,
+                    })
+
+                if (transactionError) {
+                    console.error('[Flouci Edge] Failed to create pending transaction:', transactionError)
+                    return new Response(
+                        JSON.stringify({ error: 'Failed to create pending payment transaction' }),
+                        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+                    )
+                }
+            }
+
             // Log successful payment initiation
             await logPaymentEvent(supabase, {
                 user_id: user.id,

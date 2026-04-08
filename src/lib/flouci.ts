@@ -60,6 +60,8 @@ export async function initiatePayment(
                 fail_link: payment.fail_link,
                 developer_tracking_id: payment.developer_tracking_id,
                 session_timeout_secs: payment.session_timeout_secs,
+                contract_id: payment.contract_id,
+                transaction_amount: payment.transaction_amount,
             }
         });
 

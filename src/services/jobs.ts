@@ -239,6 +239,8 @@ export async function updateJob(jobId: string, data: Partial<CreateJobInput>) {
     return supabase.from('jobs').update(data).eq('id', jobId);
 }
 
-export async function incrementJobViews(jobId: string, currentViews: number) {
-    return supabase.from('jobs').update({ views_count: currentViews + 1 }).eq('id', jobId);
+export async function incrementJobViews(jobId: string) {
+    return supabase.rpc('increment_job_views', {
+        p_job_id: jobId,
+    });
 }

@@ -120,6 +120,23 @@ export function getInitialWorkspace(
   return 'client';
 }
 
+export function resolveActiveWorkspace(
+  profile: ProfileLike,
+  freelancerProfile: FreelancerProfile | null | undefined,
+  requestedWorkspace?: Workspace | null
+): Workspace {
+  if (!profile) {
+    return requestedWorkspace ?? 'client';
+  }
+
+  const capabilities = getWorkspaceCapabilities(profile.user_type);
+  if (requestedWorkspace && capabilities.includes(requestedWorkspace)) {
+    return requestedWorkspace;
+  }
+
+  return getInitialWorkspace(profile, freelancerProfile);
+}
+
 export function getWorkspaceDashboardPath(workspace: Workspace): string {
   return workspace === 'freelancer' ? '/freelancer/dashboard' : '/client/dashboard';
 }

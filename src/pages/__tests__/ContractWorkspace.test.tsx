@@ -119,6 +119,7 @@ vi.mock('@/hooks/useContractState', () => ({
 vi.mock('@/lib/supabase', () => ({
     supabase: {
         from: supabaseInsert,
+        rpc: vi.fn().mockResolvedValue({ error: null, data: null }),
     },
 }));
 

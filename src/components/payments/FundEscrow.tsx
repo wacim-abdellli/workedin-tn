@@ -31,7 +31,7 @@ const FundEscrow = ({ contract, onSuccess, onError }: FundEscrowProps) => {
             // Get current user
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) {
-                throw new Error('يجب تسجيل الدخول أولاً');
+                throw new Error('Ã™Å Ã˜Â¬Ã˜Â¨ Ã˜ÂªÃ˜Â³Ã˜Â¬Ã™Å Ã™â€ž Ã˜Â§Ã™â€žÃ˜Â¯Ã˜Â®Ã™Ë†Ã™â€ž Ã˜Â£Ã™Ë†Ã™â€žÃ˜Â§Ã™â€¹');
             }
 
             // Convert to millimes for Flouci
@@ -42,42 +42,20 @@ const FundEscrow = ({ contract, onSuccess, onError }: FundEscrowProps) => {
             const successUrl = `${baseUrl}/payment/success?contract_id=${contract.id}`;
             const failUrl = `${baseUrl}/payment/failed?contract_id=${contract.id}`;
 
-            // Initiate Flouci payment
+            // Initiate Flouci payment and create the pending transaction server-side.
             const payment = await initiatePayment({
                 amount: amountInMillimes,
                 success_link: successUrl,
                 fail_link: failUrl,
-                session_timeout_secs: 1200, // 20 minutes
+                session_timeout_secs: 1200,
                 developer_tracking_id: `contract_${contract.id}_${Date.now()}`,
+                contract_id: contract.id,
+                transaction_amount: totalAmount,
             });
 
             logger.log('[FundEscrow] Payment initiated:', payment.payment_id);
 
-            // Create pending transaction record
-            const { error: txError } = await supabase.from('transactions').insert({
-                user_id: user.id,
-                contract_id: contract.id,
-                type: 'escrow',
-                amount: totalAmount,
-                fee_amount: feeAmount,
-                net_amount: originalAmount,
-                status: 'pending',
-                payment_method: 'flouci',
-                payment_gateway_id: payment.payment_id,
-                description: `تمويل ضمان للعقد ${contract.id}`,
-                metadata: {
-                    budget: contract.budget,
-                    fee_percentage: PLATFORM_FEE_PERCENTAGE,
-                    freelancer_id: contract.freelancer_id,
-                },
-            });
-
-            if (txError) {
-                logger.error('[FundEscrow] Transaction record error:', txError);
-                // Continue anyway - payment can still work
-            }
-
-            showToast('جاري تحويلك لصفحة الدفع...', 'success');
+            showToast('Ã˜Â¬Ã˜Â§Ã˜Â±Ã™Å  Ã˜ÂªÃ˜Â­Ã™Ë†Ã™Å Ã™â€žÃ™Æ’ Ã™â€žÃ˜ÂµÃ™ÂÃ˜Â­Ã˜Â© Ã˜Â§Ã™â€žÃ˜Â¯Ã™ÂÃ˜Â¹...', 'success');
 
             // Redirect to Flouci payment page
             window.location.href = payment.link;
@@ -85,7 +63,7 @@ const FundEscrow = ({ contract, onSuccess, onError }: FundEscrowProps) => {
             onSuccess?.();
         } catch (error) {
             logger.error('[FundEscrow] Error:', error);
-            const message = error instanceof Error ? error.message : 'فشل في بدء عملية الدفع';
+            const message = error instanceof Error ? error.message : 'Ã™ÂÃ˜Â´Ã™â€ž Ã™ÂÃ™Å  Ã˜Â¨Ã˜Â¯Ã˜Â¡ Ã˜Â¹Ã™â€¦Ã™â€žÃ™Å Ã˜Â© Ã˜Â§Ã™â€žÃ˜Â¯Ã™ÂÃ˜Â¹';
             showToast(message, 'error');
             onError?.(message);
         } finally {
@@ -93,14 +71,13 @@ const FundEscrow = ({ contract, onSuccess, onError }: FundEscrowProps) => {
         }
     };
 
-    // Don't show if already funded
     if (contract.escrow_funded) {
         return (
             <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl">
                 <div className="flex items-center gap-3">
-                    <Shield className="w-5 h-5 text-green-600" />
+                        <Shield className="w-5 h-5 text-green-600" />
                     <span className="text-green-700 dark:text-green-300 font-medium">
-                        تم تمويل الضمان بنجاح
+                        Ã˜ÂªÃ™â€¦ Ã˜ÂªÃ™â€¦Ã™Ë†Ã™Å Ã™â€ž Ã˜Â§Ã™â€žÃ˜Â¶Ã™â€¦Ã˜Â§Ã™â€  Ã˜Â¨Ã™â€ Ã˜Â¬Ã˜Â§Ã˜Â­
                     </span>
                 </div>
             </div>
@@ -109,50 +86,47 @@ const FundEscrow = ({ contract, onSuccess, onError }: FundEscrowProps) => {
 
     return (
         <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6">
-            {/* Header */}
             <div className="flex items-center gap-3 mb-4">
                 <div className="w-12 h-12 rounded-xl bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
                     <CreditCard className="w-6 h-6 text-primary-600" />
                 </div>
                 <div>
-                    <h3 className="font-bold text-gray-900 dark:text-gray-100 dark:text-white">تمويل الضمان</h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">أموالك محفوظة حتى اكتمال العمل</p>
+                    <h3 className="font-bold text-gray-900 dark:text-gray-100 dark:text-white">Ã˜ÂªÃ™â€¦Ã™Ë†Ã™Å Ã™â€ž Ã˜Â§Ã™â€žÃ˜Â¶Ã™â€¦Ã˜Â§Ã™â€ </h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Ã˜Â£Ã™â€¦Ã™Ë†Ã˜Â§Ã™â€žÃ™Æ’ Ã™â€¦Ã˜Â­Ã™ÂÃ™Ë†Ã˜Â¸Ã˜Â© Ã˜Â­Ã˜ÂªÃ™â€° Ã˜Â§Ã™Æ’Ã˜ÂªÃ™â€¦Ã˜Â§Ã™â€ž Ã˜Â§Ã™â€žÃ˜Â¹Ã™â€¦Ã™â€ž</p>
                 </div>
             </div>
 
-            {/* Warning */}
             <div className="mb-4 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
                 <div className="flex gap-2">
                     <AlertCircle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
                     <p className="text-sm text-amber-700 dark:text-amber-300">
-                        يجب تمويل الضمان قبل أن يبدأ المستقل بالعمل. الأموال محمية حتى توافق على تسليم العمل.
+                        Ã™Å Ã˜Â¬Ã˜Â¨ Ã˜ÂªÃ™â€¦Ã™Ë†Ã™Å Ã™â€ž Ã˜Â§Ã™â€žÃ˜Â¶Ã™â€¦Ã˜Â§Ã™â€  Ã™â€šÃ˜Â¨Ã™â€ž Ã˜Â£Ã™â€  Ã™Å Ã˜Â¨Ã˜Â¯Ã˜Â£ Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â³Ã˜ÂªÃ™â€šÃ™â€ž Ã˜Â¨Ã˜Â§Ã™â€žÃ˜Â¹Ã™â€¦Ã™â€ž. Ã˜Â§Ã™â€žÃ˜Â£Ã™â€¦Ã™Ë†Ã˜Â§Ã™â€ž Ã™â€¦Ã˜Â­Ã™â€¦Ã™Å Ã˜Â© Ã˜Â­Ã˜ÂªÃ™â€° Ã˜ÂªÃ™Ë†Ã˜Â§Ã™ÂÃ™â€š Ã˜Â¹Ã™â€žÃ™â€° Ã˜ÂªÃ˜Â³Ã™â€žÃ™Å Ã™â€¦ Ã˜Â§Ã™â€žÃ˜Â¹Ã™â€¦Ã™â€ž.
                     </p>
                 </div>
             </div>
 
-            {/* Amount Breakdown */}
             <div className="mb-6">
                 <button
                     type="button"
                     onClick={() => setShowBreakdown(!showBreakdown)}
                     className="text-sm text-primary-600 hover:text-primary-700 mb-2"
                 >
-                    {showBreakdown ? 'إخفاء التفاصيل' : 'عرض التفاصيل'}
+                    {showBreakdown ? 'Ã˜Â¥Ã˜Â®Ã™ÂÃ˜Â§Ã˜Â¡ Ã˜Â§Ã™â€žÃ˜ÂªÃ™ÂÃ˜Â§Ã˜ÂµÃ™Å Ã™â€ž' : 'Ã˜Â¹Ã˜Â±Ã˜Â¶ Ã˜Â§Ã™â€žÃ˜ÂªÃ™ÂÃ˜Â§Ã˜ÂµÃ™Å Ã™â€ž'}
                 </button>
 
                 {showBreakdown && (
                     <div className="space-y-2 p-3 bg-gray-50 dark:bg-gray-900 dark:bg-gray-700/50 rounded-lg text-sm">
                         <div className="flex justify-between">
-                            <span className="text-gray-600 dark:text-gray-400">ميزانية المشروع</span>
+                            <span className="text-gray-600 dark:text-gray-400">Ã™â€¦Ã™Å Ã˜Â²Ã˜Â§Ã™â€ Ã™Å Ã˜Â© Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â´Ã˜Â±Ã™Ë†Ã˜Â¹</span>
                             <span className="font-medium">{formatCurrency(originalAmount)}</span>
                         </div>
                         <div className="flex justify-between">
-                            <span className="text-gray-600 dark:text-gray-400">رسوم المنصة (10%)</span>
+                            <span className="text-gray-600 dark:text-gray-400">Ã˜Â±Ã˜Â³Ã™Ë†Ã™â€¦ Ã˜Â§Ã™â€žÃ™â€¦Ã™â€ Ã˜ÂµÃ˜Â© (10%)</span>
                             <span className="font-medium">{formatCurrency(feeAmount)}</span>
                         </div>
                         <div className="h-px bg-gray-200 dark:bg-gray-700 dark:bg-gray-600 my-2" />
                         <div className="flex justify-between font-bold">
-                            <span>المجموع</span>
+                            <span>Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â¬Ã™â€¦Ã™Ë†Ã˜Â¹</span>
                             <span className="text-primary-600">{formatCurrency(totalAmount)}</span>
                         </div>
                     </div>
@@ -165,7 +139,6 @@ const FundEscrow = ({ contract, onSuccess, onError }: FundEscrowProps) => {
                 )}
             </div>
 
-            {/* Payment Button */}
             <button
                 onClick={handleFundEscrow}
                 disabled={loading}
@@ -174,19 +147,18 @@ const FundEscrow = ({ contract, onSuccess, onError }: FundEscrowProps) => {
                 {loading ? (
                     <>
                         <Loader2 className="w-5 h-5 animate-spin" />
-                        <span>جاري المعالجة...</span>
+                        <span>Ã˜Â¬Ã˜Â§Ã˜Â±Ã™Å  Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â¹Ã˜Â§Ã™â€žÃ˜Â¬Ã˜Â©...</span>
                     </>
                 ) : (
                     <>
                         <Shield className="w-5 h-5" />
-                        <span>تمويل الضمان الآن</span>
+                        <span>Ã˜ÂªÃ™â€¦Ã™Ë†Ã™Å Ã™â€ž Ã˜Â§Ã™â€žÃ˜Â¶Ã™â€¦Ã˜Â§Ã™â€  Ã˜Â§Ã™â€žÃ˜Â¢Ã™â€ </span>
                     </>
                 )}
             </button>
 
-            {/* Payment Methods Info */}
             <p className="text-center text-xs text-gray-500 dark:text-gray-400 mt-4">
-                الدفع عبر Flouci - بطاقات بنكية ومحافظ إلكترونية
+                Ã˜Â§Ã™â€žÃ˜Â¯Ã™ÂÃ˜Â¹ Ã˜Â¹Ã˜Â¨Ã˜Â± Flouci - Ã˜Â¨Ã˜Â·Ã˜Â§Ã™â€šÃ˜Â§Ã˜Âª Ã˜Â¨Ã™â€ Ã™Æ’Ã™Å Ã˜Â© Ã™Ë†Ã™â€¦Ã˜Â­Ã˜Â§Ã™ÂÃ˜Â¸ Ã˜Â¥Ã™â€žÃ™Æ’Ã˜ÂªÃ˜Â±Ã™Ë†Ã™â€ Ã™Å Ã˜Â©
             </p>
         </div>
     );

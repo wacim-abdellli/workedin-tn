@@ -9,6 +9,7 @@ const supabaseMock = vi.hoisted(() => ({
 
 const captured = vi.hoisted(() => ({
     profileSelect: '',
+    reviewFilterColumn: '',
 }));
 
 vi.mock('@/lib/supabase', () => ({
@@ -54,6 +55,7 @@ describe('ClientProfile', () => {
     beforeEach(() => {
         vi.clearAllMocks();
         captured.profileSelect = '';
+        captured.reviewFilterColumn = '';
 
         supabaseMock.from.mockImplementation((table: string) => {
             if (table === 'public_profiles') {
@@ -122,9 +124,12 @@ describe('ClientProfile', () => {
             if (table === 'reviews') {
                 return {
                     select: vi.fn().mockReturnValue({
-                        eq: vi.fn().mockResolvedValue({
-                            data: [{ rating: 5 }],
-                            error: null,
+                        eq: vi.fn((column: string) => {
+                            captured.reviewFilterColumn = column;
+                            return Promise.resolve({
+                                data: [{ rating: 5 }],
+                                error: null,
+                            });
                         }),
                     }),
                 };
@@ -159,5 +164,6 @@ describe('ClientProfile', () => {
         expect(captured.profileSelect).toContain('cin_verified');
         expect(captured.profileSelect).not.toContain('email');
         expect(captured.profileSelect).not.toContain('phone');
+        expect(captured.reviewFilterColumn).toBe('reviewee_id');
     });
 });

@@ -3,7 +3,6 @@ import { useState, useCallback } from 'react';
 import { QueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { sendContractMessage } from '../services/messages';
-import { verifyPaymentProcessorStatus } from '../services/payments';
 import type { ContractStatus } from '../types';
 
 interface ContractData {
@@ -105,7 +104,7 @@ export function useContractState({
             additionalData: Partial<ContractData> = {}
         ) => {
             if (!contract || !canTransition(newStatus)) {
-                throw new Error('انتقال الحالة غير صالح');
+                throw new Error('Ø§Ù†ØªÙ‚Ø§Ù„ Ø§Ù„Ø­Ø§Ù„Ø© ØºÙŠØ± ØµØ§Ù„Ø­');
             }
 
             const { data, error: updateError } = await supabase
@@ -121,7 +120,7 @@ export function useContractState({
 
             if (updateError) throw updateError;
             if (!data || data.length === 0) {
-                throw new Error('تغيرت حالة العقد أثناء العملية، يرجى تحديث الصفحة');
+                throw new Error('ØªØºÙŠØ±Øª Ø­Ø§Ù„Ø© Ø§Ù„Ø¹Ù‚Ø¯ Ø£Ø«Ù†Ø§Ø¡ Ø§Ù„Ø¹Ù…Ù„ÙŠØ©ØŒ ÙŠØ±Ø¬Ù‰ ØªØ­Ø¯ÙŠØ« Ø§Ù„ØµÙØ­Ø©');
             }
 
             setContract({
@@ -129,8 +128,7 @@ export function useContractState({
                 status: newStatus,
                 ...additionalData,
             });
-            
-            // Invalidate contract cache so UI updates immediately
+
             if (queryClient) {
                 await queryClient.invalidateQueries({ queryKey: ['contract', contractId] });
             }
@@ -141,7 +139,7 @@ export function useContractState({
     const deliverWork = useCallback(
         async (note: string) => {
             if (userRole !== 'freelancer') {
-                throw new Error('فقط الموظف يمكنه تسليم العمل');
+                throw new Error('ÙÙ‚Ø· Ø§Ù„Ù…ÙˆØ¸Ù ÙŠÙ…ÙƒÙ†Ù‡ ØªØ³Ù„ÙŠÙ… Ø§Ù„Ø¹Ù…Ù„');
             }
 
             setIsDelivering(true);
@@ -158,7 +156,7 @@ export function useContractState({
                     contract_id: contractId,
                     sender_id: userId,
                     receiver_id: receiverId,
-                    content: `📦 تم تسليم العمل: ${note}`,
+                    content: `ðŸ“¦ ØªÙ… ØªØ³Ù„ÙŠÙ… Ø§Ù„Ø¹Ù…Ù„: ${note}`,
                     message_type: 'delivery',
                 });
 
@@ -173,19 +171,13 @@ export function useContractState({
     const acceptWork = useCallback(
         async () => {
             if (userRole !== 'client') {
-                throw new Error('فقط العميل يمكنه قبول العمل');
+                throw new Error('ÙÙ‚Ø· Ø§Ù„Ø¹Ù…ÙŠÙ„ ÙŠÙ…ÙƒÙ†Ù‡ Ù‚Ø¨ÙˆÙ„ Ø§Ù„Ø¹Ù…Ù„');
             }
 
             setIsAccepting(true);
             try {
                 const receiverId = getCounterpartyId(contract, userRole);
                 if (!receiverId) throw new Error('Unable to determine message recipient');
-
-                // CRITICAL PHASE 5 FIX: Verify with payment processor before releasing
-                const isVerified = await verifyPaymentProcessorStatus(contractId);
-                if (!isVerified && process.env.NODE_ENV === 'production') {
-                    throw new Error('لم نستطع التحقق من حالة الدفع من البنك. يرجى المحاولة لاحقاً أو مراسلة الدعم.');
-                }
 
                 const { error: releaseError } = await supabase.rpc('release_contract_payment_atomic', {
                     p_contract_id: contractId,
@@ -208,7 +200,7 @@ export function useContractState({
                     contract_id: contractId,
                     sender_id: userId,
                     receiver_id: receiverId,
-                    content: '✅ تم قبول العمل وإتمام الدفع',
+                    content: 'âœ… ØªÙ… Ù‚Ø¨ÙˆÙ„ Ø§Ù„Ø¹Ù…Ù„ ÙˆØ¥ØªÙ…Ø§Ù… Ø§Ù„Ø¯ÙØ¹',
                     message_type: 'system',
                 });
 
@@ -223,7 +215,7 @@ export function useContractState({
     const requestChanges = useCallback(
         async (feedback: string) => {
             if (userRole !== 'client') {
-                throw new Error('فقط العميل يمكنه طلب تعديلات');
+                throw new Error('ÙÙ‚Ø· Ø§Ù„Ø¹Ù…ÙŠÙ„ ÙŠÙ…ÙƒÙ†Ù‡ Ø·Ù„Ø¨ ØªØ¹Ø¯ÙŠÙ„Ø§Øª');
             }
 
             const receiverId = getCounterpartyId(contract, userRole);
@@ -233,7 +225,7 @@ export function useContractState({
                 contract_id: contractId,
                 sender_id: userId,
                 receiver_id: receiverId,
-                content: `🔄 طلب تعديلات: ${feedback}`,
+                content: `ðŸ”„ Ø·Ù„Ø¨ ØªØ¹Ø¯ÙŠÙ„Ø§Øª: ${feedback}`,
                 message_type: 'feedback',
             });
 
@@ -270,7 +262,7 @@ export function useContractState({
                     contract_id: contractId,
                     sender_id: userId,
                     receiver_id: receiverId,
-                    content: `⚠️ تم فتح نزاع: ${reason}`,
+                    content: `âš ï¸ ØªÙ… ÙØªØ­ Ù†Ø²Ø§Ø¹: ${reason}`,
                     message_type: 'dispute',
                 });
 

@@ -11,6 +11,7 @@ const state = vi.hoisted(() => ({
     channelCalls: [] as string[],
     onCalls: [] as Array<{ channel: string; event: string; config: unknown }>,
     tableResults: {} as Record<string, unknown>,
+    uploadFile: vi.fn(async () => 'https://mock-url.com/file.jpg'),
 }));
 
 vi.mock('@/lib/supabase', () => {
@@ -70,7 +71,7 @@ vi.mock('@/lib/supabase', () => {
             }),
         },
         withTimeout: vi.fn(async <T>(promise: PromiseLike<T>) => promise),
-        uploadFile: vi.fn(async () => 'https://mock-url.com/file.jpg'),
+        uploadFile: state.uploadFile,
     };
 });
 
@@ -80,6 +81,7 @@ import {
     markMessageRead,
     sendMessage,
     subscribeToMessages,
+    uploadMessageAttachment,
 } from '@/services/messages';
 
 describe('messages service coverage', () => {
@@ -94,6 +96,7 @@ describe('messages service coverage', () => {
         state.insertCalls = [];
         state.channelCalls = [];
         state.onCalls = [];
+        state.uploadFile.mockClear();
         state.tableResults = {
             conversations: { data: [], error: null },
             messages: { data: [], error: null },
@@ -211,5 +214,20 @@ describe('messages service coverage', () => {
         expect(generic.data).toBeNull();
         expect(generic.error).toBeInstanceOf(Error);
         expect((generic.error as Error).message).toBe('plain failure');
+    });
+
+    it('uploads message attachments inside the conversation-scoped prefix', async () => {
+        const nowSpy = vi.spyOn(Date, 'now').mockReturnValue(1712345678901);
+
+        const file = new File(['hi'], 'brief @!.pdf', { type: 'application/pdf' });
+        const result = await uploadMessageAttachment(file, 'conversation-1');
+
+        expect(state.uploadFile).toHaveBeenCalledWith(
+            'message_attachments',
+            'conversation-1/1712345678901-brief___.pdf',
+            file,
+        );
+        expect(result).toEqual({ url: 'https://mock-url.com/file.jpg', error: null });
+        nowSpy.mockRestore();
     });
 });

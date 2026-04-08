@@ -20,6 +20,7 @@ import { useFileUpload } from '../hooks/useFileUpload';
 import { useContractState } from '../hooks/useContractState';
 import { supabase } from '../lib/supabase';
 import { getContractById } from '../services/contracts';
+import { submitReview as submitReviewRequest } from '../services/reviews';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import SEO from '../components/common/SEO';
 import { sendDisputeOpenedEmail } from '../lib/email';
@@ -272,17 +273,7 @@ function ContractWorkspaceComponent() {
     const submitReviewMutation = useMutation({
         mutationFn: async ({ rating, comment }: { rating: number; comment: string }) => {
             if (!contractId || !user?.id || !contractData) throw new Error('Missing data');
-            const revieweeId = userRole === 'client' ? contractData.freelancer.id : contractData.client.id;
-
-            const { error } = await supabase
-                .from('reviews')
-                .insert({
-                    contract_id: contractId,
-                    reviewer_id: user.id,
-                    reviewee_id: revieweeId,
-                    rating,
-                    comment,
-                });
+            const { error } = await submitReviewRequest(contractId, rating, comment);
 
             if (error) throw error;
         },

@@ -8,15 +8,17 @@
 // ============================================
 
 export type TransactionType =
-    | 'deposit'      // Client adds funds
-    | 'escrow'       // Funds held for contract
-    | 'release'      // Payment released to freelancer
-    | 'earning'      // Legacy earning entry
-    | 'escrow_release' // Legacy escrow release entry
-    | 'refund'       // Refund to client
-    | 'withdrawal'   // Freelancer withdraws to bank
-    | 'fee'          // Platform fee deduction
-    | 'payment';     // Generic payment entry
+    | 'deposit'          // Wallet deposit / top-up
+    | 'escrow_fund'      // Client funds escrow for a contract
+    | 'escrow_release'   // Escrow released after completion
+    | 'withdrawal'       // Freelancer withdraws to bank/mobile wallet
+    | 'refund'           // Refund to client
+    | 'platform_fee'     // Platform fee deduction
+    | 'escrow'           // Legacy alias for escrow_fund
+    | 'release'          // Legacy alias for escrow_release
+    | 'earning'          // Legacy earning entry
+    | 'fee'              // Legacy alias for platform_fee
+    | 'payment';         // Legacy generic payment entry
 
 export type TransactionStatus =
     | 'pending'      // Awaiting payment
@@ -133,17 +135,19 @@ export interface PaymentMethod {
     user_id: string;
     type: PaymentMethodType;
     is_default: boolean;
-    label?: string;
-    details?: PaymentDetails | null;
+    label?: string | null;
+    details?: PaymentDetails | null; // Legacy UI convenience field, not a persisted DB column
     // Card details
     card_last_four?: string | null;
     card_brand?: string | null;
     card_expiry?: string | null;
     // Bank details
     bank_name?: string | null;
+    iban?: string | null;
     bank_iban?: string | null;
     bank_account_name?: string | null;
     // Mobile details
+    d17_phone?: string | null;
     phone_number?: string | null;
     gateway_payment_method_id?: string | null;
     metadata?: Record<string, unknown> | null;
@@ -251,6 +255,8 @@ export interface FlouciPaymentRequest {
     fail_link: string;          // Redirect URL on failure
     session_timeout_secs?: number;
     developer_tracking_id?: string;
+    contract_id?: string;
+    transaction_amount?: number;
 }
 
 /**

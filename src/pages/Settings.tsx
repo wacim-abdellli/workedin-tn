@@ -595,23 +595,7 @@ function Settings() {
               </div>
             </div>
             
-            {/* Quick Stats */}
-            <div className="rounded-xl border p-4" style={{ borderColor: "var(--color-border-subtle)", background: "var(--color-background-elevated)" }}>
-              <h4 className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: "var(--color-text-tertiary)" }}>
-                {tx("settings.accountOverview", undefined, "Account overview")}
-              </h4>
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs" style={{ color: "var(--color-text-secondary)" }}>
-                    {tx("settings.profileCompletion", undefined, "Profile completion")}
-                  </span>
-                  <span className="text-xs font-bold" style={{ color: "var(--workspace-primary)" }}>85%</span>
-                </div>
-                <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "var(--color-border-subtle)" }}>
-                  <div className="h-full rounded-full" style={{ width: "85%", background: "var(--workspace-primary)" }} />
-                </div>
-              </div>
-            </div>
+
           </div>
         </div>
 

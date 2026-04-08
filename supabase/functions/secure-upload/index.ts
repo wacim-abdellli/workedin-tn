@@ -2,6 +2,7 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 import {
+  getRawStoragePathSegments,
   getUploadPolicy,
   isUploadRateLimited,
   sanitizeStoragePath,
@@ -21,6 +22,32 @@ async function logUploadEvent(adminClient: any, payload: Record<string, unknown>
   } catch (error) {
     console.error('[upload_audit_log] failed to write:', error)
   }
+}
+
+async function validateMessageAttachmentScope(adminClient: any, userId: string, desiredPath: string) {
+  const conversationId = getRawStoragePathSegments(desiredPath)[0]
+
+  if (!conversationId) {
+    return { ok: false, reason: 'Upload path is required.' }
+  }
+
+  const { data, error } = await adminClient
+    .from('conversations')
+    .select('id')
+    .eq('id', conversationId)
+    .or(`participant_1.eq.${userId},participant_2.eq.${userId}`)
+    .maybeSingle()
+
+  if (error) {
+    console.error('[secure-upload] message attachment scope check failed:', error)
+    return { ok: false, reason: 'Could not validate message attachment scope.' }
+  }
+
+  if (!data) {
+    return { ok: false, reason: 'Message attachments must stay inside one of your conversations.' }
+  }
+
+  return { ok: true }
 }
 
 serve(async (req) => {
@@ -104,6 +131,10 @@ serve(async (req) => {
       bytes,
     })
 
+    const messageAttachmentScope = bucket === 'message_attachments'
+      ? await validateMessageAttachmentScope(adminClient, user.id, desiredPath)
+      : { ok: true as const }
+
     const sanitizedPath = sanitizeStoragePath({
       bucket,
       userId: user.id,
@@ -111,8 +142,8 @@ serve(async (req) => {
       fileName: file.name,
     })
 
-    if (!validation.ok || !sanitizedPath.ok) {
-      const reason = validation.reason || sanitizedPath.reason || 'upload_validation_failed'
+    if (!validation.ok || !messageAttachmentScope.ok || !sanitizedPath.ok) {
+      const reason = validation.reason || messageAttachmentScope.reason || sanitizedPath.reason || 'upload_validation_failed'
       await logUploadEvent(adminClient, {
         user_id: user.id,
         bucket,

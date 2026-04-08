@@ -54,6 +54,7 @@ vi.mock('@/lib/supabase', () => ({
 import * as jobsService from '@/services/jobs';
 import * as proposalsService from '@/services/proposals';
 import * as profilesService from '@/services/profiles';
+import * as reviewsService from '@/services/reviews';
 import * as notificationsService from '@/services/notifications';
 
 function resetMocks() {
@@ -79,6 +80,13 @@ describe('Jobs Service', () => {
     it('getJobById fetches single job with client join', async () => {
         await jobsService.getJobById('test-id');
         expect(mockFrom).toHaveBeenCalledWith('jobs');
+    });
+
+    it('incrementJobViews uses the atomic rpc instead of client-side updates', async () => {
+        await jobsService.incrementJobViews('job-1');
+        expect(mockRpc).toHaveBeenCalledWith('increment_job_views', {
+            p_job_id: 'job-1',
+        });
     });
 
     it('createJob inserts with open status', async () => {
@@ -107,9 +115,11 @@ describe('Proposals Service', () => {
         expect(mockFrom).toHaveBeenCalledWith('proposals');
     });
 
-    it('withdrawProposal deletes by id', async () => {
-        await proposalsService.withdrawProposal('proposal-1');
-        expect(mockFrom).toHaveBeenCalledWith('proposals');
+    it('withdrawProposal throws to prevent non-atomic legacy deletes', async () => {
+        await expect(proposalsService.withdrawProposal('proposal-1')).rejects.toThrow(
+            'withdrawProposal() is deprecated. Use withdrawProposalWithRefund() for the atomic refund-safe path.',
+        );
+        expect(mockFrom).not.toHaveBeenCalledWith('proposals');
     });
 });
 
@@ -152,5 +162,21 @@ describe('Notifications Service', () => {
     it('markAllRead updates unread notifications', async () => {
         await notificationsService.markAllRead('user-1');
         expect(mockFrom).toHaveBeenCalledWith('notifications');
+    });
+});
+
+describe('Reviews Service', () => {
+    beforeEach(() => {
+        resetMocks();
+    });
+
+    it('submitReview uses the atomic review RPC', async () => {
+        await reviewsService.submitReview('contract-1', 5, 'Great work');
+
+        expect(mockRpc).toHaveBeenCalledWith('submit_review_atomic', {
+            p_contract_id: 'contract-1',
+            p_rating: 5,
+            p_comment: 'Great work',
+        });
     });
 });

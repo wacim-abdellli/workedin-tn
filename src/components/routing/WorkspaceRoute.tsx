@@ -2,6 +2,7 @@ import { Navigate } from 'react-router-dom';
 import type { ReactNode } from 'react';
 import { useWorkspaceStore } from '../../lib/workspaceState';
 import { useAuth } from '../../contexts/AuthContext';
+import { getWorkspaceDashboardPath, resolveActiveWorkspace } from '@/lib/workspaceRoutes';
 
 interface WorkspaceRouteProps {
   workspace: 'freelancer' | 'client';
@@ -10,22 +11,20 @@ interface WorkspaceRouteProps {
 
 export function WorkspaceRoute({ workspace, children }: WorkspaceRouteProps) {
   const { activeWorkspace } = useWorkspaceStore();
-  const { isFullyReady } = useAuth();
+  const { isFullyReady, profile, freelancerProfile } = useAuth();
 
-  // CRITICAL: Do NOT redirect based on persisted workspace state until auth
-  // has fully loaded the user's profile and synced the correct workspace.
-  // The localStorage-persisted workspace can be stale (e.g. left over from a
-  // different user's session in another tab), which was causing automatic
-  // cross-session redirects before the real user's profile was loaded.
+  // Wait until auth/profile state is fully loaded, then validate the requested
+  // workspace against the current user's actual capabilities before redirecting.
   if (!isFullyReady) {
     return null; // ProtectedRoute (parent) already shows a loading spinner
   }
 
-  if (activeWorkspace !== workspace) {
-    // Redirect to correct workspace dashboard
+  const resolvedWorkspace = resolveActiveWorkspace(profile, freelancerProfile, activeWorkspace);
+
+  if (resolvedWorkspace !== workspace) {
     return (
       <Navigate
-        to={activeWorkspace === 'freelancer' ? '/freelancer/dashboard' : '/client/dashboard'}
+        to={getWorkspaceDashboardPath(resolvedWorkspace)}
         replace
       />
     );

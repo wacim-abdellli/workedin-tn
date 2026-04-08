@@ -6,8 +6,12 @@ interface RequiredEnv {
     VITE_SUPABASE_ANON_KEY: string;
 }
 
+// Optional VITE_ vars that are safe to expose in the client bundle.
+// Payment (Flouci) and email (Resend) secrets are server-side only —
+// they must be configured as Supabase Edge Function secrets via:
+//   supabase secrets set FLOUCI_APP_TOKEN=... FLOUCI_APP_SECRET=... RESEND_API_KEY=...
+// Never add client-side VITE_FLOUCI_* or VITE_RESEND_* variables.
 interface OptionalEnv {
-    VITE_FLOUCI_APP_TOKEN?: string;
     VITE_GOOGLE_ANALYTICS_ID?: string;
     VITE_SENTRY_DSN?: string;
 }
@@ -31,7 +35,7 @@ export function validateEnv(): RequiredEnv {
     if (missing.length > 0) {
         const errorMessage =
             `Missing required environment variables:\n${missing.join('\n')}\n\n` +
-            `Please create a .env file with these variables.`;
+            `Please create a .env.local file with these variables.`;
 
         // In production, throw error to prevent app from starting
         if (import.meta.env.MODE === 'production') {
@@ -45,10 +49,9 @@ export function validateEnv(): RequiredEnv {
     return required;
 }
 
-// Get optional env vars safely
+// Get optional client-safe env vars safely.
 export function getOptionalEnv(): OptionalEnv {
     return {
-        VITE_FLOUCI_APP_TOKEN: import.meta.env.VITE_FLOUCI_APP_TOKEN,
         VITE_GOOGLE_ANALYTICS_ID: import.meta.env.VITE_GOOGLE_ANALYTICS_ID,
         VITE_SENTRY_DSN: import.meta.env.VITE_SENTRY_DSN,
     };

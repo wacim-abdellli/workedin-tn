@@ -5,21 +5,19 @@ const hookState = vi.hoisted(() => ({
     tableResults: {} as Record<string, unknown>,
     updateCalls: [] as unknown[],
     rpcCalls: [] as Array<{ fn: string; params: unknown }>,
+    rpcErrors: {} as Record<string, Error | null>,
     sendMessage: vi.fn(),
 }));
 
 vi.mock('@/lib/logger', () => ({
     logger: {
         error: vi.fn(),
+        warn: vi.fn(),
     },
 }));
 
 vi.mock('@/services/messages', () => ({
     sendContractMessage: hookState.sendMessage,
-}));
-
-vi.mock('@/services/payments', () => ({
-    verifyPaymentProcessorStatus: vi.fn(async () => true),
 }));
 
 vi.mock('@/lib/supabase', () => {
@@ -40,15 +38,15 @@ vi.mock('@/lib/supabase', () => {
         return builder;
     };
 
-        return {
-            supabase: {
-                from: vi.fn((table: string) => createBuilder(table)),
-                rpc: vi.fn(async (fn: string, params: unknown) => {
-                    hookState.rpcCalls.push({ fn, params });
-                    return { error: null };
-                }),
-            },
-        };
+    return {
+        supabase: {
+            from: vi.fn((table: string) => createBuilder(table)),
+            rpc: vi.fn(async (fn: string, params: unknown) => {
+                hookState.rpcCalls.push({ fn, params });
+                return { error: hookState.rpcErrors[fn] ?? null };
+            }),
+        },
+    };
 });
 
 import { logger } from '@/lib/logger';
@@ -73,6 +71,7 @@ describe('useContractState', () => {
         };
         hookState.updateCalls = [];
         hookState.rpcCalls = [];
+        hookState.rpcErrors = {};
         hookState.sendMessage.mockResolvedValue({ error: null });
     });
 
@@ -211,6 +210,38 @@ describe('useContractState', () => {
             expect(result.current.isLoading).toBe(false);
         });
 
-        await expect(result.current.deliverWork('Nope')).rejects.toThrow(/فقط الموظف/);
+        await expect(result.current.deliverWork('Nope')).rejects.toThrow(/ÙÙ‚Ø· Ø§Ù„Ù…ÙˆØ¸Ù/);
+    });
+
+    it('surfaces release RPC failures during client acceptance', async () => {
+        hookState.rpcErrors.release_contract_payment_atomic = new Error('release failed');
+
+        const { result } = renderHook(() =>
+            useContractState({
+                contractId: 'contract-1',
+                userId: 'client-1',
+                userRole: 'client',
+            })
+        );
+
+        await act(async () => {
+            await result.current.refresh();
+        });
+
+        await expect(result.current.acceptWork()).rejects.toThrow('release failed');
+
+        expect(hookState.rpcCalls).toContainEqual({
+            fn: 'release_contract_payment_atomic',
+            params: { p_contract_id: 'contract-1' },
+        });
+        expect(hookState.sendMessage).not.toHaveBeenCalledWith(expect.objectContaining({
+            contract_id: 'contract-1',
+            message_type: 'system',
+        }));
+        expect(result.current.contract).toEqual(expect.objectContaining({
+            status: 'active',
+            payment_status: 'pending',
+        }));
+        expect(result.current.isAccepting).toBe(false);
     });
 });

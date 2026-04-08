@@ -5,12 +5,13 @@ import SEO from '@/components/common/SEO';
 import Button from '@/components/ui/Button';
 import ErrorBoundary from '@/components/common/ErrorBoundary';
 import { useAuth } from '@/contexts/AuthContext';
+import { initiatePayment } from '@/lib/flouci';
 import { supabase } from '@/lib/supabase';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from '@/i18n';
 import { useToast } from '@/components/ui/Toast';
 import { getWallet, getTransactions, getWithdrawals } from '@/services/payments';
-import { formatCurrency, formatTransactionType, formatTransactionStatus, formatWithdrawalMethod, getStatusColor, validateWithdrawalAmount } from '@/lib/currencyUtils';
+import { formatCurrency, formatTransactionType, formatTransactionStatus, formatWithdrawalMethod, getStatusColor, isCreditTransaction, isDebitTransaction, validateWithdrawalAmount } from '@/lib/currencyUtils';
 import { MIN_WITHDRAWAL_AMOUNT } from '@/types/payment';
 import type {
   Transaction,
@@ -112,19 +113,13 @@ export default function Wallet() {
     setIsDepositing(true);
     setDepositError(null);
     try {
-      const { data, error } = await supabase.functions.invoke('create-flouci-payment', {
-        body: {
-          amount: Math.round(amount * 1000),
-          user_id: user.id,
-          success_link: `${window.location.origin}/payment/success`,
-          fail_link: `${window.location.origin}/payment/failed`,
-          note: tx('wallet.depositNote', undefined, 'Khedma TN Wallet Deposit'),
-        },
+      const payment = await initiatePayment({
+        amount: Math.round(amount * 1000),
+        success_link: `${window.location.origin}/payment/success`,
+        fail_link: `${window.location.origin}/payment/failed`,
       });
-      if (error) throw new Error(error.message);
-      const payUrl = data?.result?.link || data?.link;
-      if (payUrl) {
-        window.location.href = payUrl;
+      if (payment.link) {
+        window.location.href = payment.link;
       } else {
         throw new Error(tx('wallet.noPaymentLink', undefined, 'Payment link was not generated'));
       }
@@ -284,8 +279,8 @@ export default function Wallet() {
                     </thead>
                     <tbody>
                       {transactions.map((tx: Transaction) => {
-                        const isCredit = tx.type === 'deposit' || tx.type === 'release' || tx.type === 'escrow_release';
-                        const isDebit = tx.type === 'withdrawal' || tx.type === 'fee' || tx.type === 'escrow';
+                        const isCredit = isCreditTransaction(tx.type);
+                        const isDebit = isDebitTransaction(tx.type);
                         
                         return (
                           <tr key={tx.id} className="data-table-row">
@@ -324,8 +319,8 @@ export default function Wallet() {
                 {/* Mobile card layout */}
                 <div className="md:hidden space-y-3 p-4">
                   {transactions.map((tx: Transaction) => {
-                    const isCredit = tx.type === 'deposit' || tx.type === 'release' || tx.type === 'escrow_release';
-                    const isDebit = tx.type === 'withdrawal' || tx.type === 'fee' || tx.type === 'escrow';
+                    const isCredit = isCreditTransaction(tx.type);
+                    const isDebit = isDebitTransaction(tx.type);
                     
                     return (
                       <div key={tx.id} className="bg-card border border-border rounded-xl p-4 space-y-3">

@@ -6,6 +6,8 @@ import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import {
     formatCurrency,
+    isCreditTransaction,
+    isDebitTransaction,
     formatTransactionType,
     formatTransactionStatus,
     getStatusColor
@@ -213,13 +215,13 @@ const WalletCard = ({ className = '', showWithdrawal = true }: WalletCardProps) 
                                     </div>
                                 </div>
                                 <div className="text-left">
-                                    <div className={`font-bold text-sm ${tx.type === 'release' || tx.type === 'deposit'
+                                    <div className={`font-bold text-sm ${isCreditTransaction(tx.type)
                                             ? 'text-green-600'
-                                            : tx.type === 'withdrawal' || tx.type === 'fee'
+                                            : isDebitTransaction(tx.type)
                                                 ? 'text-red-600'
                                                 : 'text-gray-900 dark:text-gray-100 dark:text-white'
                                         }`}>
-                                        {tx.type === 'release' || tx.type === 'deposit' ? '+' : '-'}
+                                        {isCreditTransaction(tx.type) ? '+' : isDebitTransaction(tx.type) ? '-' : ''}
                                         {formatCurrency(tx.amount)}
                                     </div>
                                     <span className={`text-xs px-2 py-0.5 rounded-full ${getStatusColor(tx.status)}`}>

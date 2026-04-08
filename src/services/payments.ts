@@ -5,11 +5,102 @@ import { supabase } from '@/lib/supabase';
 import type {
     AddPaymentMethodInput,
     EarningsTransactionSummary,
+    PaymentMethodType,
     ReconcilePaymentResult,
     StuckTransaction,
     WalletEarningsStats,
     WithdrawalRequestInput,
 } from '@/types/payment';
+
+export interface PaymentMethodRow {
+    id: string;
+    user_id: string;
+    type: PaymentMethodType | string;
+    is_default: boolean;
+    label?: string | null;
+    bank_name?: string | null;
+    iban?: string | null;
+    card_last_four?: string | null;
+    card_brand?: string | null;
+    d17_phone?: string | null;
+    verified?: boolean | null;
+    created_at?: string;
+    updated_at?: string;
+}
+
+function readPaymentDetailValue(details: AddPaymentMethodInput['details']): string {
+    if (typeof details === 'string') {
+        return details.trim();
+    }
+
+    const candidates = [
+        details.phone_number,
+        details.d17_phone,
+        details.bank_iban,
+        details.iban,
+        details.card_last_four,
+        details.label,
+    ];
+
+    return (candidates.find((value) => typeof value === 'string' && value.trim().length > 0) ?? '').trim();
+}
+
+export function getPaymentMethodLabel(type: PaymentMethodType | string, fallbackLabel?: string | null): string {
+    if (fallbackLabel?.trim()) return fallbackLabel.trim();
+
+    if (type === 'd17') return 'D17';
+    if (type === 'flouci') return 'Flouci';
+    if (type === 'bank_transfer' || type === 'bank') return 'Bank transfer';
+    if (type === 'card') return 'Card';
+
+    return String(type);
+}
+
+export function getPaymentMethodDetails(paymentMethod: Partial<PaymentMethodRow>): string {
+    const type = paymentMethod.type ?? '';
+
+    if (type === 'd17' || type === 'flouci') {
+        return paymentMethod.d17_phone ?? '';
+    }
+
+    if (type === 'bank_transfer' || type === 'bank') {
+        return paymentMethod.iban ?? paymentMethod.bank_name ?? '';
+    }
+
+    if (type === 'card') {
+        const lastFour = paymentMethod.card_last_four?.trim();
+        return lastFour ? `**** ${lastFour}` : '';
+    }
+
+    return paymentMethod.iban ?? paymentMethod.d17_phone ?? paymentMethod.bank_name ?? '';
+}
+
+export function buildPaymentMethodInsert(userId: string, data: AddPaymentMethodInput) {
+    const detailValue = readPaymentDetailValue(data.details);
+    const insertPayload: Record<string, string | boolean> = {
+        user_id: userId,
+        type: data.type,
+        is_default: data.is_default ?? false,
+        label: getPaymentMethodLabel(data.type),
+    };
+
+    if (data.type === 'd17' || data.type === 'flouci') {
+        insertPayload.d17_phone = detailValue;
+        return insertPayload;
+    }
+
+    if (data.type === 'bank_transfer' || data.type === 'bank') {
+        insertPayload.iban = detailValue;
+        return insertPayload;
+    }
+
+    if (data.type === 'card') {
+        insertPayload.card_last_four = detailValue.slice(-4);
+        return insertPayload;
+    }
+
+    return insertPayload;
+}
 
 // --- WALLETS ---
 
@@ -54,12 +145,12 @@ export async function requestWithdrawal(data: WithdrawalRequestInput) {
 
 // --- PAYMENT METHODS ---
 
-export async function getPaymentMethods(userId: string) {
+export function getPaymentMethods(userId: string) {
     return supabase.from('payment_methods').select('*').eq('user_id', userId);
 }
 
-export async function addPaymentMethod(userId: string, data: AddPaymentMethodInput) {
-    return supabase.from('payment_methods').insert({ user_id: userId, ...data });
+export function addPaymentMethod(userId: string, data: AddPaymentMethodInput) {
+    return supabase.from('payment_methods').insert(buildPaymentMethodInsert(userId, data));
 }
 
 // --- ESCROW ---
@@ -86,7 +177,7 @@ export async function getEarningsStats(userId: string): Promise<WalletEarningsSt
 
     const transactions: EarningsTransactionSummary[] = transactionsResult.data || [];
     const totalEarnings = transactions
-        .filter(t => t.type === 'earning' || t.type === 'escrow_release')
+        .filter(t => t.type === 'earning' || t.type === 'escrow_release' || t.type === 'release')
         .reduce((sum, t) => sum + (t.amount || 0), 0);
 
     return {
@@ -123,24 +214,4 @@ export async function reconcilePayment(transactionId: string): Promise<Reconcile
 
     const result = (data ?? {}) as { message?: string };
     return { success: true, message: result.message || 'Reconciliation succeeded' };
-}
-
-
-export async function verifyPaymentProcessorStatus(contractId: string): Promise<boolean> {
-    try {
-        const { data, error } = await supabase.functions.invoke('flouci-verify-payment', {
-            body: { contract_id: contractId },
-        });
-        
-        if (error) {
-            console.error('Payment verification edge function error:', error);
-            return false;
-        }
-        
-        // Ensure successful response from Flouci (or handle mock gracefully in dev)
-        return data?.status === 'SUCCESS' || data?.success === true;
-    } catch (err) {
-        console.error('Payment verification failed:', err);
-        return false;
-    }
 }

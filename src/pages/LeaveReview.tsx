@@ -1,17 +1,17 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Star, Send, ChevronLeft, CheckCircle } from "lucide-react";
-import { Header } from "@/components/layout";
-import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/lib/supabase";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useTranslation } from "@/i18n";
-import Button from "@/components/ui/Button";
-import { useToast } from "@/components/ui/Toast";
+import { CheckCircle, ChevronLeft, Send, Star } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+
 import SEO, { SEO_CONFIG } from "@/components/common/SEO";
 import OptimizedImage from "@/components/common/OptimizedImage";
-
-// ─── Types ────────────────────────────────────────────────────────────────────
+import { Header } from "@/components/layout";
+import Button from "@/components/ui/Button";
+import { useToast } from "@/components/ui/Toast";
+import { useAuth } from "@/contexts/AuthContext";
+import { useTranslation } from "@/i18n";
+import { supabase } from "@/lib/supabase";
+import { submitReview as submitReviewRequest } from "@/services/reviews";
 
 interface ContractForReview {
   id: string;
@@ -24,7 +24,11 @@ interface ContractForReview {
     full_name: string;
     avatar_url: string | null;
   } | null;
-  client: { id: string; full_name: string; avatar_url: string | null } | null;
+  client: {
+    id: string;
+    full_name: string;
+    avatar_url: string | null;
+  } | null;
 }
 
 interface ExistingReview {
@@ -34,7 +38,22 @@ interface ExistingReview {
   created_at: string;
 }
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+interface StarRatingProps {
+  rating: number;
+  hoveredRating: number;
+  onRate: (rating: number) => void;
+  onHover: (rating: number) => void;
+  onLeave: () => void;
+  readonly?: boolean;
+}
+
+const RATING_LABELS: Record<number, string> = {
+  1: "Poor",
+  2: "Fair",
+  3: "Good",
+  4: "Very Good",
+  5: "Excellent",
+};
 
 function getJobTitle(jobs: ContractForReview["jobs"]): string {
   if (!jobs) return "";
@@ -47,27 +66,8 @@ function getInitials(name: string): string {
     .split(" ")
     .filter(Boolean)
     .slice(0, 2)
-    .map((n) => n[0].toUpperCase())
+    .map((part) => part[0].toUpperCase())
     .join("");
-}
-
-const RATING_LABELS: Record<number, string> = {
-  1: "Poor",
-  2: "Fair",
-  3: "Good",
-  4: "Very Good",
-  5: "Excellent",
-};
-
-// ─── Star Component ───────────────────────────────────────────────────────────
-
-interface StarRatingProps {
-  rating: number;
-  hoveredRating: number;
-  onRate: (r: number) => void;
-  onHover: (r: number) => void;
-  onLeave: () => void;
-  readonly?: boolean;
 }
 
 function StarRating({
@@ -79,6 +79,7 @@ function StarRating({
   readonly = false,
 }: StarRatingProps) {
   const active = hoveredRating || rating;
+
   return (
     <div
       className="flex items-center gap-2"
@@ -119,7 +120,54 @@ function StarRating({
   );
 }
 
-// ─── Page ────────────────────────────────────────────────────────────────────
+function GateCard({
+  title,
+  body,
+  onBack,
+  buttonLabel,
+}: {
+  title: string;
+  body: string;
+  onBack: () => void;
+  buttonLabel: string;
+}) {
+  return (
+    <>
+      <SEO {...SEO_CONFIG.dashboard} noIndex />
+      <div
+        className="min-h-screen"
+        style={{ background: "var(--color-background-base, #f9fafb)" }}
+      >
+        <Header />
+        <main className="max-w-xl mx-auto px-4 py-12">
+          <div
+            className="rounded-2xl border p-6 space-y-4"
+            style={{
+              background: "var(--color-background-elevated)",
+              borderColor: "var(--color-border-subtle)",
+            }}
+          >
+            <h1
+              className="text-xl font-bold"
+              style={{ color: "var(--color-text-primary)" }}
+            >
+              {title}
+            </h1>
+            <p
+              className="text-sm leading-relaxed"
+              style={{ color: "var(--color-text-secondary)" }}
+            >
+              {body}
+            </p>
+            <Button variant="secondary" size="sm" onClick={onBack}>
+              {buttonLabel}
+            </Button>
+          </div>
+        </main>
+      </div>
+    </>
+  );
+}
 
 export default function LeaveReview() {
   const { contractId } = useParams<{ contractId: string }>();
@@ -133,30 +181,32 @@ export default function LeaveReview() {
   const [hoveredRating, setHoveredRating] = useState(0);
   const [comment, setComment] = useState("");
 
-  // ── Fetch contract ──────────────────────────────────────────────────────
-  const { data: contract, isLoading: contractLoading } =
-    useQuery<ContractForReview>({
-      queryKey: ["contract-for-review", contractId],
-      queryFn: async () => {
-        const { data, error } = await supabase
-          .from("contracts")
-          .select(
-            `
-                    id, status, freelancer_id, client_id,
-                    jobs(title),
-                    freelancer:public_profiles!contracts_freelancer_id_fkey(id, full_name, avatar_url),
-                    client:public_profiles!contracts_client_id_fkey(id, full_name, avatar_url)
-                `,
-          )
-          .eq("id", contractId!)
-          .single();
-        if (error) throw error;
-        return data as unknown as ContractForReview;
-      },
-      enabled: !!contractId,
-    });
+  const {
+    data: contract,
+    isLoading: contractLoading,
+    error: contractError,
+  } = useQuery<ContractForReview>({
+    queryKey: ["contract-for-review", contractId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("contracts")
+        .select(
+          `
+            id, status, freelancer_id, client_id,
+            jobs(title),
+            freelancer:public_profiles!contracts_freelancer_id_fkey(id, full_name, avatar_url),
+            client:public_profiles!contracts_client_id_fkey(id, full_name, avatar_url)
+          `,
+        )
+        .eq("id", contractId!)
+        .single();
 
-  // ── Check for existing review ────────────────────────────────────────────
+      if (error) throw error;
+      return data as unknown as ContractForReview;
+    },
+    enabled: !!contractId && !!user?.id,
+  });
+
   const { data: existingReview, isLoading: reviewLoading } =
     useQuery<ExistingReview | null>({
       queryKey: ["existing-review", contractId, user?.id],
@@ -167,27 +217,17 @@ export default function LeaveReview() {
           .eq("contract_id", contractId!)
           .eq("reviewer_id", user!.id)
           .maybeSingle();
+
         return data as ExistingReview | null;
       },
       enabled: !!contractId && !!user?.id,
     });
 
-  // ── Submit mutation ──────────────────────────────────────────────────────
-  const submitReview = useMutation({
+  const submitReviewMutation = useMutation({
     mutationFn: async () => {
-      if (!user?.id || !contractId || rating === 0) return;
-      const reviewedId =
-        user.id === contract?.client_id
-          ? contract.freelancer_id
-          : contract?.client_id;
+      if (!contractId || !user?.id || rating === 0) return;
 
-      const { error } = await supabase.from("reviews").insert({
-        contract_id: contractId,
-        reviewer_id: user.id,
-        reviewed_id: reviewedId,
-        rating,
-        comment: comment.trim() || null,
-      });
+      const { error } = await submitReviewRequest(contractId, rating, comment);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -208,19 +248,21 @@ export default function LeaveReview() {
     },
   });
 
-  // ── Derived data ─────────────────────────────────────────────────────────
   const isLoading = contractLoading || reviewLoading;
+  const isParticipant =
+    !!contract &&
+    !!user &&
+    (user.id === contract.client_id || user.id === contract.freelancer_id);
+  const canReviewContract = isParticipant && contract?.status === "completed";
 
-  const reviewedPerson =
+  const reviewTarget =
     contract && user
       ? user.id === contract.client_id
         ? contract.freelancer
         : contract.client
       : null;
-
   const jobTitle = contract ? getJobTitle(contract.jobs) : "";
 
-  // ── Loading state ────────────────────────────────────────────────────────
   if (isLoading) {
     return (
       <>
@@ -251,7 +293,42 @@ export default function LeaveReview() {
     );
   }
 
-  // ── Main render ──────────────────────────────────────────────────────────
+  if (!user || contractError || !contract || !isParticipant) {
+    return (
+      <GateCard
+        title={tx("review.unavailableTitle", undefined, "Review unavailable")}
+        body={tx(
+          "review.unavailableBody",
+          undefined,
+          "This contract is not available for review from your account.",
+        )}
+        buttonLabel={tx("common.goBack", undefined, "Go Back")}
+        onBack={() =>
+          navigate(contractId ? `/contracts/${contractId}` : "/contracts")
+        }
+      />
+    );
+  }
+
+  if (!canReviewContract) {
+    return (
+      <GateCard
+        title={tx(
+          "review.completedOnlyTitle",
+          undefined,
+          "Reviews open after completion",
+        )}
+        body={tx(
+          "review.completedOnlyBody",
+          undefined,
+          "You can only review a contract after it has been completed.",
+        )}
+        buttonLabel={tx("common.goBack", undefined, "Go Back")}
+        onBack={() => navigate(`/contracts/${contractId}`)}
+      />
+    );
+  }
+
   return (
     <>
       <SEO {...SEO_CONFIG.dashboard} noIndex />
@@ -261,7 +338,6 @@ export default function LeaveReview() {
       >
         <Header />
         <main className="max-w-xl mx-auto px-4 py-8 pb-16">
-          {/* Back button */}
           <button
             type="button"
             onClick={() => navigate(`/contracts/${contractId}`)}
@@ -272,7 +348,6 @@ export default function LeaveReview() {
             {tx("common.back", undefined, "Back to contract")}
           </button>
 
-          {/* Page heading */}
           <h1
             className="text-2xl font-bold mb-6"
             style={{ color: "var(--color-text-primary)" }}
@@ -280,8 +355,7 @@ export default function LeaveReview() {
             {tx("review.pageTitle", undefined, "Leave a Review")}
           </h1>
 
-          {/* Person being reviewed */}
-          {reviewedPerson && (
+          {reviewTarget && (
             <div
               className="rounded-2xl border p-5 mb-5 flex items-center gap-4"
               style={{
@@ -289,12 +363,11 @@ export default function LeaveReview() {
                 borderColor: "var(--color-border-subtle)",
               }}
             >
-              {/* Avatar */}
               <div className="relative w-14 h-14 flex-shrink-0 rounded-full overflow-hidden">
-                {reviewedPerson.avatar_url ? (
+                {reviewTarget.avatar_url ? (
                   <OptimizedImage
-                    src={reviewedPerson.avatar_url}
-                    alt={reviewedPerson.full_name}
+                    src={reviewTarget.avatar_url}
+                    alt={reviewTarget.full_name}
                     className="w-full h-full rounded-full"
                   />
                 ) : (
@@ -302,18 +375,17 @@ export default function LeaveReview() {
                     className="w-14 h-14 rounded-full flex items-center justify-center text-white text-lg font-bold select-none"
                     style={{ background: "var(--workspace-primary)" }}
                   >
-                    {getInitials(reviewedPerson.full_name)}
+                    {getInitials(reviewTarget.full_name)}
                   </div>
                 )}
               </div>
 
-              {/* Info */}
               <div className="min-w-0">
                 <p
                   className="text-base font-semibold truncate"
                   style={{ color: "var(--color-text-primary)" }}
                 >
-                  {reviewedPerson.full_name}
+                  {reviewTarget.full_name}
                 </p>
                 {jobTitle && (
                   <p
@@ -327,7 +399,6 @@ export default function LeaveReview() {
             </div>
           )}
 
-          {/* ── Existing review view ─────────────────────────────── */}
           {existingReview ? (
             <div
               className="rounded-2xl border p-6 space-y-4"
@@ -336,7 +407,6 @@ export default function LeaveReview() {
                 borderColor: "var(--color-border-subtle)",
               }}
             >
-              {/* Badge */}
               <div className="flex items-center gap-2">
                 <CheckCircle
                   className="w-5 h-5"
@@ -350,7 +420,6 @@ export default function LeaveReview() {
                 </span>
               </div>
 
-              {/* Stars (readonly) */}
               <div className="space-y-1">
                 <StarRating
                   rating={existingReview.rating}
@@ -368,7 +437,6 @@ export default function LeaveReview() {
                 </p>
               </div>
 
-              {/* Comment */}
               {existingReview.comment && (
                 <p
                   className="text-sm leading-relaxed"
@@ -378,7 +446,6 @@ export default function LeaveReview() {
                 </p>
               )}
 
-              {/* Date */}
               <p
                 className="text-xs"
                 style={{ color: "var(--color-text-secondary)" }}
@@ -387,7 +454,6 @@ export default function LeaveReview() {
               </p>
             </div>
           ) : (
-            /* ── Review form ──────────────────────────────────── */
             <div
               className="rounded-2xl border p-6 space-y-6"
               style={{
@@ -395,7 +461,6 @@ export default function LeaveReview() {
                 borderColor: "var(--color-border-subtle)",
               }}
             >
-              {/* Star rating */}
               <div className="space-y-2">
                 <label
                   className="text-sm font-semibold block"
@@ -418,7 +483,6 @@ export default function LeaveReview() {
                   onLeave={() => setHoveredRating(0)}
                 />
 
-                {/* Label below stars */}
                 <p
                   className="text-sm font-medium h-5 transition-opacity"
                   style={{
@@ -430,7 +494,6 @@ export default function LeaveReview() {
                 </p>
               </div>
 
-              {/* Comment textarea */}
               <div className="space-y-1.5">
                 <label
                   htmlFor="review-comment"
@@ -445,16 +508,19 @@ export default function LeaveReview() {
                     ({tx("common.optional", undefined, "optional")})
                   </span>
                 </label>
+
                 <div className="relative">
                   <textarea
                     id="review-comment"
                     value={comment}
-                    onChange={(e) => setComment(e.target.value.slice(0, 500))}
+                    onChange={(event) =>
+                      setComment(event.target.value.slice(0, 500))
+                    }
                     rows={4}
                     placeholder={tx(
                       "review.commentPlaceholder",
                       undefined,
-                      "Share your experience working with this person…",
+                      "Share your experience working with this person...",
                     )}
                     className="w-full resize-none rounded-xl px-4 py-3 text-sm outline-none transition-[box-shadow] focus:ring-2"
                     style={{
@@ -463,19 +529,18 @@ export default function LeaveReview() {
                       color: "var(--color-text-primary)",
                       boxShadow: "none",
                     }}
-                    onFocus={(e) => {
-                      e.currentTarget.style.borderColor =
+                    onFocus={(event) => {
+                      event.currentTarget.style.borderColor =
                         "var(--workspace-primary)";
-                      e.currentTarget.style.boxShadow =
+                      event.currentTarget.style.boxShadow =
                         "0 0 0 3px color-mix(in srgb, var(--workspace-primary) 15%, transparent)";
                     }}
-                    onBlur={(e) => {
-                      e.currentTarget.style.borderColor =
+                    onBlur={(event) => {
+                      event.currentTarget.style.borderColor =
                         "var(--color-border-default)";
-                      e.currentTarget.style.boxShadow = "none";
+                      event.currentTarget.style.boxShadow = "none";
                     }}
                   />
-                  {/* Char counter */}
                   <span
                     className="absolute bottom-2.5 right-3 text-xs select-none pointer-events-none tabular-nums"
                     style={{
@@ -490,15 +555,14 @@ export default function LeaveReview() {
                 </div>
               </div>
 
-              {/* Submit */}
               <Button
                 variant="primary"
                 size="lg"
                 className="w-full"
                 disabled={rating === 0}
-                isLoading={submitReview.isPending}
+                isLoading={submitReviewMutation.isPending}
                 leftIcon={<Send className="w-4 h-4" />}
-                onClick={() => submitReview.mutate()}
+                onClick={() => submitReviewMutation.mutate()}
               >
                 {tx("review.submitButton", undefined, "Submit Review")}
               </Button>

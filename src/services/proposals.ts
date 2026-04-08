@@ -123,8 +123,10 @@ export async function createProposal(data: CreateProposalInput, files: File[] = 
     }
 }
 
-export async function withdrawProposal(proposalId: string) {
-    return supabase.from('proposals').delete().eq('id', proposalId);
+export async function withdrawProposal(_proposalId: string) {
+    throw new Error(
+        'withdrawProposal() is deprecated. Use withdrawProposalWithRefund() for the atomic refund-safe path.',
+    );
 }
 
 export async function updateProposalStatus(proposalId: string, status: string) {

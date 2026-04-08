@@ -1,2 +1,8 @@
 [functions.secure-upload]
 verify_jwt = false
+
+[functions.flouci-initiate-payment]
+verify_jwt = false
+
+[functions.flouci-verify-payment]
+verify_jwt = false

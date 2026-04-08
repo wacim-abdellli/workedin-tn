@@ -11,6 +11,8 @@ import {
     formatWithdrawalMethod,
     formatWithdrawalStatus,
     getStatusColor,
+    isCreditTransaction,
+    isDebitTransaction,
     millimesToTnd,
     tndToMillimes,
     validateWithdrawalAmount,
@@ -67,6 +69,11 @@ describe('currencyUtils', () => {
 
     it('formats transaction labels, withdrawal labels, and colors with fallbacks', () => {
         expect(formatTransactionType('deposit')).not.toBe('deposit');
+        expect(formatTransactionType('escrow_fund', 'en')).toBe('Escrow funding');
+        expect(formatTransactionType('escrow_release', 'en')).toBe('Escrow release');
+        expect(formatTransactionType('platform_fee', 'en')).toBe('Platform fee');
+        expect(formatTransactionType('release', 'en')).toBe('Escrow release');
+        expect(formatTransactionType('fee', 'en')).toBe('Platform fee');
         expect(formatTransactionType('custom-type')).toBe('custom-type');
 
         expect(formatTransactionStatus('completed')).not.toBe('completed');
@@ -77,6 +84,14 @@ describe('currencyUtils', () => {
 
         expect(formatWithdrawalMethod('bank_transfer')).not.toBe('bank_transfer');
         expect(formatWithdrawalMethod('crypto')).toBe('crypto');
+
+        expect(isCreditTransaction('deposit')).toBe(true);
+        expect(isCreditTransaction('escrow_release')).toBe(true);
+        expect(isCreditTransaction('release')).toBe(true);
+        expect(isDebitTransaction('escrow_fund')).toBe(true);
+        expect(isDebitTransaction('platform_fee')).toBe(true);
+        expect(isDebitTransaction('fee')).toBe(true);
+        expect(isDebitTransaction('refund')).toBe(false);
 
         expect(getStatusColor('completed')).toContain('text-green-600');
         expect(getStatusColor('unknown')).toBe('text-gray-600 bg-gray-100');

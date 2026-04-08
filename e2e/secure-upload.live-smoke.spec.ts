@@ -1,72 +1,73 @@
 import { test, expect } from '@playwright/test';
 
+/**
+ * Secure Upload Live Smoke — Direct API variant.
+ *
+ * Calls the secure-upload Edge Function directly via the Playwright request
+ * context using the stored authenticated session. No UI navigation required,
+ * making this immune to form-wizard layout changes.
+ *
+ * Requires:
+ *   - storageState populated by auth.setup.ts (e2e/.auth/client.json)
+ *   - VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY set in the test environment
+ *
+ * Replaces the previous wizard-navigation approach that was fragile due to
+ * multi-step form selectors and multi-language button text.
+ */
 test.describe('Secure Upload Live Smoke', () => {
-  test.use({ storageState: 'e2e/.auth/client.json' });
+    test.use({ storageState: 'e2e/.auth/client.json' });
 
-  test('client job-post attachment upload hits live secure-upload successfully', async ({ page }) => {
-    await page.goto('/jobs/new');
+    test('secure-upload Edge Function accepts a valid authenticated file upload', async ({ page }) => {
+        const supabaseUrl = process.env.VITE_SUPABASE_URL ?? '';
+        const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY ?? '';
 
-    const jobTitle = `Live Upload Smoke ${Date.now()}`;
+        if (!supabaseUrl || !supabaseAnonKey) {
+            test.skip(true, 'VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY not set — skipping live smoke');
+            return;
+        }
 
-    await page.fill('input[name="title"]', jobTitle);
+        // Navigate to any authenticated page to hydrate the localStorage session.
+        await page.goto('/');
 
-    await page.click('button:has-text("اختر التصنيف"), button:has-text("Select category")');
-    await page.click('button:has-text("Development"), button:has-text("Développement"), button:has-text("التطوير")');
+        // Extract the live Supabase access token from localStorage.
+        const accessToken: string | null = await page.evaluate(() => {
+            for (const key of Object.keys(localStorage)) {
+                if (!key.startsWith('sb-')) continue;
+                try {
+                    const parsed = JSON.parse(localStorage.getItem(key) ?? '');
+                    if (typeof parsed?.access_token === 'string') return parsed.access_token;
+                } catch { /* skip malformed entries */ }
+            }
+            return null;
+        });
 
-    await page.click('button:has-text("اختر التخصص الفرعي"), button:has-text("Select subcategory")');
-    await page.locator('button').filter({ hasText: /web development|تطوير الويب|développement web|frontend|front-end/i }).first().click();
+        expect(accessToken, 'Auth session must be present — run auth.setup.ts first').toBeTruthy();
 
-    await page.fill(
-      'textarea[name="description"]',
-      'This is a live secure upload smoke test job description with enough detail to pass validation and trigger the real attachment upload path.'
-    );
+        // POST directly to the secure-upload Edge Function — no UI wizard needed.
+        const response = await page.request.post(
+            `${supabaseUrl}/functions/v1/secure-upload`,
+            {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`,
+                    apikey: supabaseAnonKey,
+                    'x-client-info': 'khedma-tn-e2e',
+                },
+                multipart: {
+                    bucket: 'attachments',
+                    path: `smoke-test/e2e-${Date.now()}.txt`,
+                    file: {
+                        name: 'e2e-smoke.txt',
+                        mimeType: 'text/plain',
+                        buffer: Buffer.from('playwright secure-upload smoke test'),
+                    },
+                },
+            },
+        );
 
-    const skillChip = page.locator('button').filter({ hasText: /web development|react|تطوير الويب/i }).first();
-    if (await skillChip.isVisible()) {
-      await skillChip.click();
-    }
+        expect(response.status()).toBe(200);
 
-    await page.locator('input[type="file"]').setInputFiles({
-      name: 'live-secure-upload-smoke.txt',
-      mimeType: 'text/plain',
-      buffer: Buffer.from('live secure upload smoke'),
+        const payload = await response.json();
+        expect(payload.bucket).toBe('attachments');
+        expect(String(payload.path)).toMatch(/^smoke-test\/e2e-\d+\.txt$/);
     });
-
-    await expect(page.locator('text=/live-secure-upload-smoke\\.txt/i')).toBeVisible({ timeout: 5000 });
-
-    await page.click('button:has-text("Next"), button:has-text("التالي")');
-
-    await page.fill('input[name="budget_min"]', '100');
-    await page.fill('input[name="budget_max"]', '200');
-    await page.selectOption('select[name="duration"]', { index: 1 }).catch(async () => {
-      await page.click('text=/أسبوع|week|semaine/i');
-    });
-
-    const deadlineInput = page.locator('input[name="deadline"]');
-    if (await deadlineInput.isVisible()) {
-      const tomorrow = new Date();
-      tomorrow.setDate(tomorrow.getDate() + 7);
-      const yyyy = tomorrow.getFullYear();
-      const mm = String(tomorrow.getMonth() + 1).padStart(2, '0');
-      const dd = String(tomorrow.getDate()).padStart(2, '0');
-      await deadlineInput.fill(`${yyyy}-${mm}-${dd}`);
-    }
-
-    await page.click('button:has-text("Next"), button:has-text("التالي")');
-    await page.click('button:has-text("Next"), button:has-text("التالي")');
-
-    const uploadResponsePromise = page.waitForResponse((response) => {
-      return response.url().includes('/functions/v1/secure-upload') && response.request().method() === 'POST';
-    });
-
-    await page.click('button[type="submit"], button:has-text("Publish job"), button:has-text("Publish"), button:has-text("نشر")');
-
-    const uploadResponse = await uploadResponsePromise;
-    expect(uploadResponse.status()).toBe(200);
-
-    const uploadPayload = await uploadResponse.json();
-    expect(uploadPayload.bucket).toBe('attachments');
-    expect(String(uploadPayload.path)).toContain('/');
-    expect(String(uploadPayload.path)).toMatch(/^[0-9a-f-]+\/.+\.txt$/i);
-  });
 });

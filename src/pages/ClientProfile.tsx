@@ -198,7 +198,7 @@ export default function ClientProfile() {
           .from("contracts")
           .select("total_amount, status")
           .eq("client_id", clientId!),
-        supabase.from("reviews").select("rating").eq("reviewed_id", clientId!),
+        supabase.from("reviews").select("rating").eq("reviewee_id", clientId!),
       ]);
 
       const totalJobs = jobsRes.count ?? 0;

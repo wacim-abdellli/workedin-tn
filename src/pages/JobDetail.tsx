@@ -220,10 +220,11 @@ function JobDetail() {
       const { data, error } = await jobsService.getJobById(jobId);
       if (error) throw error;
 
-      // Increment view count in background
-      jobsService
-        .incrementJobViews(jobId, data.views_count || 0)
-        .catch(console.error);
+      // Count only public/non-owner views. The backend RPC handles the atomic
+      // increment; the page skips obvious owner self-views to avoid noise.
+      if (data?.client_id && user?.id !== data.client_id) {
+        jobsService.incrementJobViews(jobId).catch(console.error);
+      }
 
       return data as Job;
     },

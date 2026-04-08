@@ -46,7 +46,7 @@ if (typeof window !== 'undefined') {
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     auth: {
         persistSession: true,
-        autoRefreshToken: false,
+        autoRefreshToken: true,
         detectSessionInUrl: false,
         flowType: 'pkce',
         storage: typeof window !== 'undefined' ? window.localStorage : undefined,
@@ -66,11 +66,6 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
         heartbeatIntervalMs: 30000,
     },
 });
-
-// Expose supabase client to window for debugging
-if (typeof window !== 'undefined' && import.meta.env.DEV) {
-    (window as any).supabase = supabase;
-}
 
 /**
  * Wraps a promise with a timeout
@@ -250,123 +245,3 @@ export const uploadFile = async (
     return uploaded.publicUrl || uploaded.path;
 };
 
-// ====================
-// Contract Helpers
-// ====================
-
-// Get contract with related data
-export const getContract = async (contractId: string) => {
-    const { data, error } = await supabase
-        .from('contracts')
-        .select(`
-            *,
-            job:jobs (*),
-            freelancer:profiles!freelancer_id (id, full_name, avatar_url),
-            client:profiles!client_id (id, full_name, avatar_url)
-        `)
-        .eq('id', contractId)
-        .single();
-
-    if (error) throw error;
-    return data;
-};
-
-// Get contract messages
-export const getContractMessages = async (contractId: string) => {
-    const { data, error } = await supabase
-        .from('messages')
-        .select(`
-            *,
-            sender:profiles!sender_id (id, full_name, avatar_url, user_type)
-        `)
-        .eq('contract_id', contractId)
-        .order('created_at', { ascending: true });
-
-    if (error) throw error;
-    return data;
-};
-
-// Send message
-// FIX: Added receiver_id (required), changed attachment_url to attachments JSONB array
-export const sendMessage = async (
-    contractId: string,
-    senderId: string,
-    receiverId: string, // ✅ Required field
-    content: string,
-    attachments?: MessageAttachment[] // ✅ Proper type instead of any[]
-) => {
-    const { data, error } = await supabase
-        .from('messages')
-        .insert({
-            contract_id: contractId,
-            sender_id: senderId,
-            receiver_id: receiverId, // ✅ Required by schema
-            content,
-            attachments: attachments || [], // ✅ Correct column name (JSONB array)
-        })
-        .select()
-        .single();
-
-    if (error) throw error;
-    return data;
-};
-
-// Create notification
-// FIX: Changed 'message' to 'content', 'read' to 'is_read'
-export const createNotification = async (
-    userId: string,
-    title: string,
-    content: string, // ✅ Renamed from 'message' to 'content'
-    type: 'message' | 'match' | 'payment' | 'delivery' | 'dispute' | 'system',
-    link?: string,
-    data?: Record<string, unknown> // ✅ Proper type instead of any
-) => {
-    const { error } = await supabase
-        .from('notifications')
-        .insert({
-            user_id: userId,
-            title,
-            content, // ✅ Correct column name
-            type,
-            link,
-            is_read: false, // ✅ Correct column name
-            data: data || null,
-        });
-
-    if (error) throw error;
-};
-
-// Subscribe to realtime changes
-export const subscribeToContract = (
-    contractId: string,
-    onMessage: (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => void,
-    onStatusChange: (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => void
-) => {
-    const channel = supabase
-        .channel(`contract:${contractId}`)
-        .on(
-            'postgres_changes',
-            {
-                event: 'INSERT',
-                schema: 'public',
-                table: 'messages',
-                filter: `contract_id=eq.${contractId}`,
-            },
-            onMessage
-        )
-        .on(
-            'postgres_changes',
-            {
-                event: 'UPDATE',
-                schema: 'public',
-                table: 'contracts',
-                filter: `id=eq.${contractId}`,
-            },
-            onStatusChange
-        )
-        .subscribe();
-
-    return () => {
-        supabase.removeChannel(channel);
-    };
-};

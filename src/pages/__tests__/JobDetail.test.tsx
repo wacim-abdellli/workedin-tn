@@ -16,11 +16,13 @@ vi.mock('@tanstack/react-query', () => ({
     useQueryClient: queryMocks.useQueryClient,
 }));
 
+const authState = vi.hoisted(() => ({
+    user: { id: 'freelancer-1' } as { id: string } | null,
+    freelancerProfile: { skills: [{ name: 'React' }] },
+}));
+
 vi.mock('@/contexts/AuthContext', () => ({
-    useAuth: () => ({
-        user: { id: 'freelancer-1' },
-        freelancerProfile: { skills: [{ name: 'React' }] },
-    }),
+    useAuth: () => authState,
 }));
 
 vi.mock('@/components/ui/Toast', () => ({
@@ -82,6 +84,7 @@ vi.mock('@/services/proposals', () => ({
 }));
 
 import JobDetail from '@/pages/JobDetail';
+import * as jobsService from '@/services/jobs';
 
 function buildSafeJob(clientName: string) {
     return {
@@ -113,6 +116,8 @@ function buildSafeJob(clientName: string) {
 describe('JobDetail', () => {
     beforeEach(() => {
         vi.clearAllMocks();
+        authState.user = { id: 'freelancer-1' };
+        authState.freelancerProfile = { skills: [{ name: 'React' }] };
         queryMocks.useQueryClient.mockReturnValue({
             invalidateQueries: vi.fn(),
             setQueryData: vi.fn(),
@@ -201,5 +206,22 @@ describe('JobDetail', () => {
         expect(screen.getByText('Tunis')).toBeInTheDocument();
         expect(screen.queryByText(/@/)).not.toBeInTheDocument();
         expect(screen.queryByText(/\+216/)).not.toBeInTheDocument();
+    });
+
+    it('does not increment views for the job owner self-view', () => {
+        authState.user = { id: 'client-1' };
+        authState.freelancerProfile = null;
+
+        render(
+            <HelmetProvider>
+                <I18nProvider>
+                    <MemoryRouter>
+                        <JobDetail />
+                    </MemoryRouter>
+                </I18nProvider>
+            </HelmetProvider>
+        );
+
+        expect(jobsService.incrementJobViews).not.toHaveBeenCalled();
     });
 });

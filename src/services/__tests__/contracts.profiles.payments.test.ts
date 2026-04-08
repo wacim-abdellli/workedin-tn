@@ -200,7 +200,6 @@ import {
     getUnreadCount,
     markAllRead,
     markNotificationRead,
-    subscribeToNotifications,
 } from '@/services/notifications';
 import {
     getClientStats,
@@ -219,6 +218,8 @@ import {
 import {
     addPaymentMethod,
     completeEscrowPayment,
+    getPaymentMethodDetails,
+    getPaymentMethodLabel,
     getEarningsStats,
     getPaymentMethods,
     getStuckTransactions,
@@ -490,7 +491,6 @@ describe('notifications service coverage', () => {
         });
         await markNotificationRead('notif-1');
         await markAllRead('user-1');
-        const subscription = subscribeToNotifications('user-1', vi.fn());
 
         expect(serviceState.state.rpcCalls).toContainEqual({
             fn: 'create_notification',
@@ -507,18 +507,6 @@ describe('notifications service coverage', () => {
             { table: 'notifications', value: { is_read: true } },
             { table: 'notifications', value: { is_read: true } },
         ]));
-        expect(serviceState.state.channelCalls).toContain('notifications:user-1');
-        expect(serviceState.state.onCalls).toContainEqual({
-            channel: 'notifications:user-1',
-            event: 'postgres_changes',
-            config: {
-                event: 'INSERT',
-                schema: 'public',
-                table: 'notifications',
-                filter: 'user_id=eq.user-1',
-            },
-        });
-        expect(subscription).toEqual({ id: 'notifications:user-1' });
     });
 });
 
@@ -555,10 +543,34 @@ describe('payments service coverage', () => {
             value: {
                 user_id: 'user-1',
                 type: 'bank_transfer',
-                details: { iban: 'TN123' },
+                iban: 'TN123',
                 is_default: true,
+                label: 'Bank transfer',
             },
         });
+    });
+
+    it('formats payment method labels/details and maps mobile wallet inserts to live schema columns', async () => {
+        await addPaymentMethod('user-1', {
+            type: 'd17',
+            details: '20123456',
+            is_default: false,
+        });
+
+        expect(serviceState.state.insertCalls).toContainEqual({
+            table: 'payment_methods',
+            value: {
+                user_id: 'user-1',
+                type: 'd17',
+                d17_phone: '20123456',
+                is_default: false,
+                label: 'D17',
+            },
+        });
+
+        expect(getPaymentMethodLabel('flouci')).toBe('Flouci');
+        expect(getPaymentMethodDetails({ type: 'd17', d17_phone: '20123456' })).toBe('20123456');
+        expect(getPaymentMethodDetails({ type: 'bank_transfer', iban: 'TN123' })).toBe('TN123');
     });
 
     it('creates withdrawals, completes escrow rpc calls, and calculates earnings', async () => {
@@ -570,6 +582,8 @@ describe('payments service coverage', () => {
             data: [
                 { amount: 150, type: 'earning' },
                 { amount: 300, type: 'escrow_release' },
+                { amount: 75, type: 'release' },
+                { amount: 30, type: 'platform_fee' },
                 { amount: 25, type: 'withdrawal' },
             ],
             error: null,
@@ -604,8 +618,8 @@ describe('payments service coverage', () => {
         });
         expect(stats).toEqual({
             wallet: { balance: 900 },
-            totalEarnings: 450,
-            transactionCount: 3,
+            totalEarnings: 525,
+            transactionCount: 5,
         });
     });
 

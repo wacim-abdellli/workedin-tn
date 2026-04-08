@@ -24,7 +24,6 @@ const currencySymbolByLanguage: Record<Language, string> = {
  * @returns Formatted string like "125.500 د.ت"
  */
 export function formatCurrency(amount: number, showSymbol = true, language: Language = 'ar'): string {
-    // TND uses 3 decimal places (millimes)
     const formatted = new Intl.NumberFormat(numberLocaleByLanguage[language], {
         minimumFractionDigits: 3,
         maximumFractionDigits: 3,
@@ -35,8 +34,6 @@ export function formatCurrency(amount: number, showSymbol = true, language: Lang
 
 /**
  * Format amount for compact display (no decimals for whole numbers)
- * @param amount - Amount in TND
- * @returns Formatted string like "125 د.ت" or "125.500 د.ت"
  */
 export function formatCurrencyCompact(amount: number, language: Language = 'ar'): string {
     const isWholeNumber = amount % 1 === 0;
@@ -49,40 +46,18 @@ export function formatCurrencyCompact(amount: number, language: Language = 'ar')
     return `${formatted} ${currencySymbolByLanguage[language]}`;
 }
 
-/**
- * Convert TND to millimes (for Flouci API)
- * @param tnd - Amount in TND
- * @returns Amount in millimes (integer)
- */
 export function tndToMillimes(tnd: number): number {
     return Math.round(tnd * 1000);
 }
 
-/**
- * Convert millimes to TND
- * @param millimes - Amount in millimes
- * @returns Amount in TND
- */
 export function millimesToTnd(millimes: number): number {
     return millimes / 1000;
 }
 
-/**
- * Calculate platform fee for a given amount
- * @param amount - Original amount in TND
- * @param feePercentage - Fee percentage (default: 0.10 = 10%)
- * @returns Fee amount in TND
- */
 export function calculatePlatformFee(amount: number, feePercentage = 0.10): number {
     return Number((amount * feePercentage).toFixed(3));
 }
 
-/**
- * Calculate total with platform fee
- * @param amount - Original amount in TND
- * @param feePercentage - Fee percentage (default: 0.10 = 10%)
- * @returns Object with fee and total amounts
- */
 export function calculateTotalWithFee(amount: number, feePercentage = 0.10): {
     originalAmount: number;
     feeAmount: number;
@@ -96,24 +71,11 @@ export function calculateTotalWithFee(amount: number, feePercentage = 0.10): {
     };
 }
 
-/**
- * Calculate net amount after fee deduction (for freelancer)
- * @param amount - Gross amount in TND
- * @param feePercentage - Fee percentage (default: 0.10 = 10%)
- * @returns Net amount after fee
- */
 export function calculateNetAfterFee(amount: number, feePercentage = 0.10): number {
     const fee = calculatePlatformFee(amount, feePercentage);
     return Number((amount - fee).toFixed(3));
 }
 
-/**
- * Validate withdrawal amount
- * @param amount - Requested withdrawal amount
- * @param balance - Available wallet balance
- * @param minAmount - Minimum withdrawal (default: 20 TND)
- * @returns Validation result
- */
 export function validateWithdrawalAmount(
     amount: number,
     balance: number,
@@ -135,46 +97,68 @@ export function validateWithdrawalAmount(
 }
 
 /**
- * Format transaction type for display
+ * Format transaction type for display.
+ * Keep legacy aliases mapped so older rows still render correctly.
  */
 export function formatTransactionType(type: string, language: Language = 'ar'): string {
     const typeLabels: Record<Language, Record<string, string>> = {
         ar: {
             deposit: 'إيداع',
-            escrow: 'ضمان',
-            release: 'تحويل',
+            escrow_fund: 'تمويل الضمان',
+            escrow: 'تمويل الضمان',
+            escrow_release: 'إطلاق الضمان',
+            release: 'إطلاق الضمان',
+            earning: 'ربح',
             refund: 'استرداد',
             withdrawal: 'سحب',
-            fee: 'رسوم',
+            platform_fee: 'رسوم المنصة',
+            fee: 'رسوم المنصة',
+            payment: 'دفع',
         },
         en: {
             deposit: 'Deposit',
-            escrow: 'Escrow',
-            release: 'Release',
+            escrow_fund: 'Escrow funding',
+            escrow: 'Escrow funding',
+            escrow_release: 'Escrow release',
+            release: 'Escrow release',
+            earning: 'Earning',
             refund: 'Refund',
             withdrawal: 'Withdrawal',
-            fee: 'Fee',
+            platform_fee: 'Platform fee',
+            fee: 'Platform fee',
+            payment: 'Payment',
         },
         fr: {
             deposit: 'Depot',
-            escrow: 'Escrow',
-            release: 'Transfert',
+            escrow_fund: 'Financement escrow',
+            escrow: 'Financement escrow',
+            escrow_release: 'Liberation escrow',
+            release: 'Liberation escrow',
+            earning: 'Gain',
             refund: 'Remboursement',
             withdrawal: 'Retrait',
-            fee: 'Frais',
+            platform_fee: 'Frais de plateforme',
+            fee: 'Frais de plateforme',
+            payment: 'Paiement',
         },
     };
+
     return typeLabels[language][type] || type;
 }
 
-/**
- * Format transaction status for display
- */
+export function isCreditTransaction(type: string): boolean {
+    return ['deposit', 'escrow_release', 'release', 'refund', 'earning'].includes(type);
+}
+
+export function isDebitTransaction(type: string): boolean {
+    return ['withdrawal', 'platform_fee', 'fee', 'escrow_fund', 'escrow', 'payment'].includes(type);
+}
+
 export function formatTransactionStatus(status: string, language: Language = 'ar'): string {
     const statusLabels: Record<Language, Record<string, string>> = {
         ar: {
             pending: 'قيد الانتظار',
-            processing: 'جاري المعالجة',
+            processing: 'جار المعالجة',
             completed: 'مكتمل',
             failed: 'فشل',
             refunded: 'تم الاسترداد',
@@ -200,15 +184,12 @@ export function formatTransactionStatus(status: string, language: Language = 'ar
     return statusLabels[language][status] || status;
 }
 
-/**
- * Format withdrawal status for display
- */
 export function formatWithdrawalStatus(status: string, language: Language = 'ar'): string {
     const statusLabels: Record<Language, Record<string, string>> = {
         ar: {
             pending: 'قيد المراجعة',
             approved: 'تمت الموافقة',
-            processing: 'جاري التحويل',
+            processing: 'جار التحويل',
             completed: 'مكتمل',
             rejected: 'مرفوض',
         },
@@ -230,9 +211,6 @@ export function formatWithdrawalStatus(status: string, language: Language = 'ar'
     return statusLabels[language][status] || status;
 }
 
-/**
- * Format withdrawal method for display
- */
 export function formatWithdrawalMethod(method: string, language: Language = 'ar'): string {
     const methodLabels: Record<Language, Record<string, string>> = {
         ar: {
@@ -254,9 +232,6 @@ export function formatWithdrawalMethod(method: string, language: Language = 'ar'
     return methodLabels[language][method] || method;
 }
 
-/**
- * Get status color class for transactions/withdrawals
- */
 export function getStatusColor(status: string): string {
     const colors: Record<string, string> = {
         pending: 'text-amber-600 bg-amber-100 dark:bg-amber-900/30',

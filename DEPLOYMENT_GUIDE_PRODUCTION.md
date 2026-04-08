@@ -21,7 +21,7 @@ Before ANY production deployment:
 - [ ] Production environment variables verified
 - [ ] SSL/TLS certificates valid and renewed
 - [ ] CDN and caching configured
-- [ ] Email service configured (SendGrid, etc.)
+- [ ] Email service secrets set in Supabase Edge Function secrets (Resend)
 - [ ] Payment processor production credentials in place
 - [ ] All team members aware of deployment window
 - [ ] Incident response team on standby
@@ -44,32 +44,30 @@ Before ANY production deployment:
 
 ### 1. **Production Environment Variables**
 
-Create `.env.production`:
+Create `.env.production` (or set via Vercel dashboard → Environment Variables):
 
 ```env
-# Supabase Production (separate project)
+# Supabase Production
 VITE_SUPABASE_URL=https://your-production-project.supabase.co
 VITE_SUPABASE_ANON_KEY=your-production-anon-key
 
-# Application
-VITE_APP_ENV=production
-VITE_ENABLE_LOGGING=false  # Disable verbose logging in production
+# Analytics (optional)
+VITE_POSTHOG_KEY=your-posthog-key
+VITE_POSTHOG_HOST=https://app.posthog.com
+VITE_GOOGLE_ANALYTICS_ID=G-XXXXXXXXXX
 
-# Email (production SendGrid)
-VITE_SENDGRID_API_KEY=your-production-sendgrid-key
-VITE_FROM_EMAIL=noreply@khedma.tn
-
-# Flouci Payment (production)
-VITE_FLOUCI_MERCHANT_ID=your-flouci-production-id
-VITE_FLOUCI_TEST_MODE=false
-
-# Analytics (production)
-VITE_ANALYTICS_ID=your-production-ga-id
-
-# Sentry Error Tracking
+# Sentry Error Tracking (optional)
 VITE_SENTRY_DSN=your-sentry-dsn
-VITE_SENTRY_ENVIRONMENT=production
 ```
+
+> ⚠️ **Email and payment credentials are server-side secrets only.**
+> Do NOT add `VITE_SENDGRID_*`, `VITE_FLOUCI_*`, or `VITE_RESEND_*` variables.
+> Set these via Supabase CLI against the production project ref:
+> ```bash
+> supabase secrets set RESEND_API_KEY=your-resend-key --project-ref <ref>
+> supabase secrets set FLOUCI_APP_TOKEN=your-flouci-token --project-ref <ref>
+> supabase secrets set FLOUCI_APP_SECRET=your-flouci-secret --project-ref <ref>
+> ```
 
 ### 2. **Database Preparation**
 
@@ -88,11 +86,11 @@ psql -U postgres \
   -d postgres \
   -c "SELECT tablename, rowsecurity FROM pg_tables WHERE schemaname='public';"
 
-# Verify admin user exists
+# Verify admin users exist (is_admin set in profiles table by service role)
 psql -U postgres \
   -h your-production-db.supabase.co \
   -d postgres \
-  -c "SELECT id, email, raw_user_meta_data->>'role' FROM auth.users WHERE raw_user_meta_data->>'role'='admin';"
+  -c "SELECT id, email FROM auth.users WHERE id IN (SELECT id FROM public.profiles WHERE is_admin = true);"
 ```
 
 ### 3. **CDN & Cache Configuration**

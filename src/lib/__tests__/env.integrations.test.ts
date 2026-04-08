@@ -48,7 +48,6 @@ describe('env and integrations', () => {
             VITE_POSTHOG_HOST: '',
             VITE_SUPABASE_URL: '',
             VITE_SUPABASE_ANON_KEY: '',
-            VITE_FLOUCI_APP_TOKEN: '',
             VITE_GOOGLE_ANALYTICS_ID: '',
             VITE_SENTRY_DSN: '',
         });
@@ -129,9 +128,23 @@ describe('env and integrations', () => {
             fail_link: 'https://app.test/fail',
             developer_tracking_id: 'track-1',
             session_timeout_secs: 300,
+            contract_id: 'contract-1',
+            transaction_amount: 50,
         })).toEqual({
             payment_id: 'payment-1',
             link: 'https://flouci.test/pay/1',
+        });
+
+        expect(integrationState.invoke).toHaveBeenNthCalledWith(1, 'flouci-initiate-payment', {
+            body: {
+                amount: 5000,
+                success_link: 'https://app.test/success',
+                fail_link: 'https://app.test/fail',
+                developer_tracking_id: 'track-1',
+                session_timeout_secs: 300,
+                contract_id: 'contract-1',
+                transaction_amount: 50,
+            },
         });
 
         expect(await prodFlouci.verifyPayment('payment-1', {
@@ -230,7 +243,6 @@ describe('env and integrations', () => {
             MODE: 'production',
             VITE_SUPABASE_URL: 'https://supabase.test',
             VITE_SUPABASE_ANON_KEY: 'anon-key',
-            VITE_FLOUCI_APP_TOKEN: 'token',
             VITE_GOOGLE_ANALYTICS_ID: 'ga-id',
             VITE_SENTRY_DSN: 'dsn',
         });
@@ -239,8 +251,8 @@ describe('env and integrations', () => {
             VITE_SUPABASE_URL: 'https://supabase.test',
             VITE_SUPABASE_ANON_KEY: 'anon-key',
         });
+        // Flouci/Resend secrets are Edge Function secrets — not VITE_ vars.
         expect(validateEnvModule.getOptionalEnv()).toEqual({
-            VITE_FLOUCI_APP_TOKEN: 'token',
             VITE_GOOGLE_ANALYTICS_ID: 'ga-id',
             VITE_SENTRY_DSN: 'dsn',
         });

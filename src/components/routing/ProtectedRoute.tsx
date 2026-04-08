@@ -7,9 +7,9 @@ import { FullScreenLoader } from '@/components/ui';
 import AccountStatusGate from '@/components/routing/AccountStatusGate';
 import { useWorkspaceStore } from '@/lib/workspaceState';
 import {
-  getInitialWorkspace,
   getWorkspaceOnboardingPath,
   isWorkspaceReady,
+  resolveActiveWorkspace,
 } from '@/lib/workspaceRoutes';
 
 export function ProtectedRoute({ children }: { children: ReactNode }) {
@@ -33,7 +33,7 @@ export function ProtectedRoute({ children }: { children: ReactNode }) {
   const isOnOnboardingPage = location.pathname.startsWith('/onboarding/');
 
   if (isFullyReady && profile && !isOnOnboardingPage) {
-    const workspace = activeWorkspace || getInitialWorkspace(profile, freelancerProfile);
+    const workspace = resolveActiveWorkspace(profile, freelancerProfile, activeWorkspace);
     const onboardingComplete = isWorkspaceReady(profile, freelancerProfile, workspace);
 
     if (!onboardingComplete) {

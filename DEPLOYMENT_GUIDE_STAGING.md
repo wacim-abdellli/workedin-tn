@@ -27,25 +27,26 @@ Before deploying to staging, ensure:
 Create `.env.staging` or update your deployment platform (Vercel/Netlify):
 
 ```env
-# Supabase Staging (separate from production)
+# Supabase Staging
 VITE_SUPABASE_URL=https://your-staging-project.supabase.co
 VITE_SUPABASE_ANON_KEY=your-staging-anon-key
 
-# Application
-VITE_APP_ENV=staging
-VITE_ENABLE_LOGGING=true
+# Analytics (optional)
+VITE_GOOGLE_ANALYTICS_ID=G-XXXXXXXXXX
 
-# Email (use staging provider or sandbox)
-VITE_SENDGRID_API_KEY=your-staging-sendgrid-key
-VITE_FROM_EMAIL=noreply-staging@khedma.tn
-
-# Flouci Payment (use test mode)
-VITE_FLOUCI_MERCHANT_ID=your-flouci-test-id
-VITE_FLOUCI_TEST_MODE=true
-
-# Analytics (staging)
-VITE_ANALYTICS_ID=your-staging-ga-id
+# Sentry (optional)
+VITE_SENTRY_DSN=your-sentry-dsn
 ```
+
+> ⚠️ **Email and payment credentials are server-side secrets only.**
+> Do NOT add `VITE_SENDGRID_*`, `VITE_FLOUCI_*`, or `VITE_RESEND_*` variables.
+> Set these via Supabase CLI against the staging project ref:
+> ```bash
+> supabase secrets set RESEND_API_KEY=your-staging-resend-key --project-ref <staging-ref>
+> supabase secrets set FLOUCI_APP_TOKEN=your-flouci-test-token --project-ref <staging-ref>
+> supabase secrets set FLOUCI_APP_SECRET=your-flouci-test-secret --project-ref <staging-ref>
+> ```
+> The Flouci Edge Function uses its own test/production mode internally — no `VITE_FLOUCI_TEST_MODE` is needed.
 
 ### 2. **Database Migration**
 

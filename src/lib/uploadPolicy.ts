@@ -121,6 +121,13 @@ export function sanitizePathSegment(segment: string): string {
     .slice(0, 80);
 }
 
+export function getRawStoragePathSegments(desiredPath: string): string[] {
+  return desiredPath
+    .split('/')
+    .map((segment) => segment.trim())
+    .filter((segment) => segment && segment !== '.' && segment !== '..');
+}
+
 function hasSignature(bytes: Uint8Array, signature: number[], offset = 0) {
   if (bytes.length < offset + signature.length) return false;
   return signature.every((value, index) => bytes[offset + index] === value);
@@ -226,10 +233,7 @@ export function sanitizeStoragePath(input: {
     return { ok: false, reason: 'Uploads are not allowed for this bucket.' };
   }
 
-  const rawSegments = input.desiredPath
-    .split('/')
-    .map((segment) => segment.trim())
-    .filter((segment) => segment && segment !== '.' && segment !== '..');
+  const rawSegments = getRawStoragePathSegments(input.desiredPath);
 
   if (rawSegments.length === 0) {
     return { ok: false, reason: 'Upload path is required.' };

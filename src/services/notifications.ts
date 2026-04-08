@@ -74,8 +74,9 @@ export async function markAllRead(userId: string) {
     if (error) throw new Error(error.message);
 }
 
-// --- REALTIME (legacy — prefer useRealtimeNotifications hook) ---
-
+// --- REALTIME ---
+// @deprecated Prefer the useRealtimeNotifications hook for new code.
+// Kept as a thin export so legacy call sites and existing tests compile.
 export function subscribeToNotifications(userId: string, callback: (payload: unknown) => void) {
     return supabase
         .channel(`notifications:${userId}`)
