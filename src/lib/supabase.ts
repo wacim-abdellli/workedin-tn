@@ -1,6 +1,4 @@
 import { createClient } from '@supabase/supabase-js';
-import type { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
-import type { MessageAttachment } from '../types';
 import { validateUploadSelection } from './uploadPolicy';
 
 // Environment variables for Supabase
