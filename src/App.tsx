@@ -8,12 +8,12 @@ if (
 }
 
 import { Suspense } from "react";
-import { BrowserRouter, Routes } from "react-router-dom";
+import { BrowserRouter, Routes, useLocation } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { QueryClientProvider } from "@tanstack/react-query";
+import { LazyMotion, domAnimation } from "framer-motion";
 import { queryClient } from "./lib/queryClient";
 import { I18nProvider, useTranslation } from "./i18n";
-import { useLocation } from "react-router-dom";
 import { ToastProvider } from "./components/ui/Toast";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
@@ -21,22 +21,18 @@ import ErrorBoundary from "./components/ui/ErrorBoundary";
 import ScrollToTop from "./components/ui/ScrollToTop";
 import RouteProgress from "./components/ui/RouteProgress";
 import { FullScreenLoader } from "./components/ui";
-
 import { WorkspaceProvider } from "./contexts/WorkspaceContext";
 import { NotificationsProvider } from "./contexts/NotificationsContext";
 import { useWorkspaceStore } from "./lib/workspaceState";
 import { appRoutes, renderRouteDefinitions } from "./routes";
-
-// Lazy Load Pages
 import SkipLinks from "./components/layout/SkipLinks";
 import { useRouteFocus } from "./hooks/useRouteFocus";
 
 const PageLoader = () => (
-  <FullScreenLoader label={tx('ui.loading')} hint="Opening the next page" />
+  <FullScreenLoader label="Loading..." hint="Opening the next page" />
 );
 
 function AppRoutes() {
-    const { tx } = useTranslation();
   return <Routes>{renderRouteDefinitions(appRoutes)}</Routes>;
 }
 
@@ -77,10 +73,7 @@ function AppContent() {
   );
 }
 
-import { LazyMotion, domAnimation } from "framer-motion";
-
 function App() {
-    const { tx } = useTranslation();
   return (
     <HelmetProvider>
       <LazyMotion features={domAnimation}>
