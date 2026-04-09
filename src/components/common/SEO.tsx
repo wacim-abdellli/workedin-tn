@@ -33,7 +33,7 @@ const OG_LOCALE: Record<Language, string> = {
 };
 
 const DEFAULT_IMAGE = '/logos/logo-og.svg';
-const SITE_URL = import.meta.env.VITE_APP_URL || 'https://Khedmetna.tn';
+const SITE_URL = import.meta.env.VITE_APP_URL || 'https://khedmetna.tn';
 
 const resolveLocalizedText = (value: LocalizedText | undefined, language: Language): string => {
     if (!value) return '';

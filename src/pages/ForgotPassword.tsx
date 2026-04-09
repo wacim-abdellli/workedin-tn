@@ -181,7 +181,7 @@ const ForgotPassword = () => {
                     )}
                 <p className="text-center text-sm text-[var(--color-text-tertiary)] mt-6">
                     {tx('pages.forgotPassword.needHelp', undefined, 'Need help?')} {' '}
-                    <a href="mailto:support@Khedmetna.tn" className="text-[var(--color-brand-primary)] hover:underline">
+                    <a href="mailto:support@khedmetna.tn" className="text-[var(--color-brand-primary)] hover:underline">
                         {tx('pages.forgotPassword.contactUs', undefined, 'Contact us')}
                     </a>
                 </p>

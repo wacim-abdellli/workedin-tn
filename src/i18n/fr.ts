@@ -2509,6 +2509,22 @@ export const fr: Translations = {
                         q: 'Y a-t-il des frais cachÃƒÂ©s?',
                         a: 'Non. Nos frais sont transparents et clairement affichÃƒÂ©s. Nous prÃƒÂ©levons uniquement une petite commission sur les projets rÃƒÂ©alisÃƒÂ©s.',
                     },
+                    {
+                        q: 'Quels modes de paiement sont disponibles?',
+                        a: "Nous supportons actuellement Dhmad escrow pour les transactions sécurisées. Flouci wallet et D17 (La Poste) arrivent bientôt. Dhmad conserve vos fonds en sécurité jusqu'à l'approbation du travail — le même système utilisé par Tunisie Freelance.",
+                    },
+                    {
+                        q: 'Dhmad est-il fiable?',
+                        a: "Oui. Dhmad est une plateforme d'escrow tunisienne autorisée à détenir des fonds en tant que tiers de confiance. Votre argent est protégé jusqu'à ce que vous approuviez le travail.",
+                    },
+                    {
+                        q: 'Quand Flouci et D17 seront-ils disponibles?',
+                        a: "Nous travaillons activement à l'ajout de Flouci et D17. Ils seront disponibles prochainement. Nous informerons tous les utilisateurs lors de leur lancement.",
+                    },
+                    {
+                        q: "Que se passe-t-il en cas de litige?",
+                        a: "En cas de désaccord, Dhmad conserve les fonds pendant la résolution du litige. Aucune partie ne peut accéder à l'argent avant que le problème soit réglé.",
+                    },
                 ],
             },
             security: {

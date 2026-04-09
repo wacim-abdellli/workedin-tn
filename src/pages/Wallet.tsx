@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Wallet as WalletIcon, TrendingUp, Clock, ArrowUpRight, ArrowDownLeft, Building, Phone, X, Info, CheckCircle, Plus, CreditCard, AlertCircle, Loader2 } from 'lucide-react';
+import { Wallet as WalletIcon, TrendingUp, Clock, ArrowUpRight, ArrowDownLeft, Building, Phone, X, Info, CheckCircle, Plus, AlertCircle, Loader2 } from 'lucide-react';
 import { Header } from '@/components/layout';
 import SEO from '@/components/common/SEO';
 import Button from '@/components/ui/Button';
@@ -13,6 +13,7 @@ import { useToast } from '@/components/ui/Toast';
 import { getWallet, getTransactions, getWithdrawals } from '@/services/payments';
 import { formatCurrency, formatTransactionType, formatTransactionStatus, formatWithdrawalMethod, getStatusColor, isCreditTransaction, isDebitTransaction, validateWithdrawalAmount } from '@/lib/currencyUtils';
 import { MIN_WITHDRAWAL_AMOUNT } from '@/types/payment';
+import PaymentMethodSelector from '@/components/payment/PaymentMethodSelector';
 import type {
   Transaction,
   TransactionsPage,
@@ -29,6 +30,7 @@ export default function Wallet() {
   const [isWithdrawalModalOpen, setIsWithdrawalModalOpen] = useState(false);
   const [isDepositModalOpen, setIsDepositModalOpen] = useState(false);
   const [depositAmount, setDepositAmount] = useState('');
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('dhmad');
   const [isDepositing, setIsDepositing] = useState(false);
   const [depositError, setDepositError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
@@ -110,6 +112,7 @@ export default function Wallet() {
       return;
     }
     if (!user?.id) return;
+    if (selectedPaymentMethod !== 'dhmad') return;
     setIsDepositing(true);
     setDepositError(null);
     try {
@@ -513,8 +516,8 @@ export default function Wallet() {
       {/* DEPOSIT MODAL */}
       {isDepositModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <button type="button" aria-label={tx('common.close', undefined, 'Close')} className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => { setIsDepositModalOpen(false); setDepositError(null); setDepositAmount(''); }} />
-          <div className="relative w-full max-w-md rounded-2xl bg-[var(--surface-bg)] border border-border p-6 shadow-2xl">
+          <button type="button" aria-label={tx('common.close', undefined, 'Close')} className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => { setIsDepositModalOpen(false); setDepositError(null); setDepositAmount(''); setSelectedPaymentMethod('dhmad'); }} />
+          <div className="relative w-full max-w-md rounded-2xl bg-[var(--surface-bg)] border border-border p-6 shadow-2xl overflow-y-auto max-h-[90vh]">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center">
@@ -522,14 +525,20 @@ export default function Wallet() {
                 </div>
                 <h3 className="text-xl font-bold text-foreground">{tx('wallet.deposit', undefined, 'Deposit Funds')}</h3>
               </div>
-              <button type="button" aria-label={tx('common.close', undefined, 'Close')} onClick={() => { setIsDepositModalOpen(false); setDepositError(null); setDepositAmount(''); }} className="p-2 rounded-full hover:bg-secondary transition-colors">
+              <button type="button" aria-label={tx('common.close', undefined, 'Close')} onClick={() => { setIsDepositModalOpen(false); setDepositError(null); setDepositAmount(''); setSelectedPaymentMethod('dhmad'); }} className="p-2 rounded-full hover:bg-secondary transition-colors">
                 <X className="w-5 h-5 text-muted" />
               </button>
             </div>
 
-            <div className="mb-4 p-3 rounded-xl border flex items-start gap-2" style={{ background: 'color-mix(in srgb, var(--workspace-primary) 10%, transparent)', borderColor: 'color-mix(in srgb, var(--workspace-primary) 18%, transparent)' }}>
-              <CreditCard className="w-4 h-4 mt-0.5 shrink-0" style={{ color: 'var(--workspace-primary)' }} />
-              <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>{tx('wallet.flouciRedirectMsg', undefined, 'You will be redirected to the secure Flouci gateway to complete payment with your card or bank account.')}</p>
+            {/* Payment method selector */}
+            <div className="mb-5">
+              <p className="text-sm font-medium text-foreground mb-3">
+                {tx('wallet.paymentMethod', undefined, 'Payment Method')}
+              </p>
+              <PaymentMethodSelector
+                selectedMethod={selectedPaymentMethod}
+                onSelect={setSelectedPaymentMethod}
+              />
             </div>
 
             <div className="mb-5">
@@ -573,7 +582,7 @@ export default function Wallet() {
               <button
                 type="button"
                 onClick={handleDeposit}
-                disabled={isDepositing || !depositAmount}
+                disabled={isDepositing || !depositAmount || selectedPaymentMethod !== 'dhmad'}
                 className="flex-1 py-3 rounded-xl bg-green-600 hover:bg-green-700 text-white font-semibold transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isDepositing ? <Loader2 className="w-4 h-4 animate-spin" /> : <ArrowDownLeft className="w-4 h-4" />}

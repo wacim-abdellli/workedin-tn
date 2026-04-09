@@ -1,4 +1,4 @@
-# Khedma-TN Staging Deployment Guide
+# Khedmetna Staging Deployment Guide
 
 **Last Updated:** March 31, 2026  
 **Status:** Ready for Implementation  
@@ -131,7 +131,7 @@ psql -U postgres \
 
 1. **SSH into Staging Server**
    ```bash
-   ssh deploy@staging.khedma.tn
+   ssh deploy@staging.khedmetna.tn
    cd /var/www/khedma-staging
    ```
 
@@ -156,10 +156,10 @@ psql -U postgres \
 
 ```bash
 # Check if app is responding
-curl https://staging.khedma.tn/
+curl https://staging.khedmetna.tn/
 
 # Check API connectivity
-curl https://staging.khedma.tn/api/health
+curl https://staging.khedmetna.tn/api/health
 
 # Verify Supabase connection
 # (Log in to app and check browser console for errors)
@@ -192,7 +192,7 @@ Use Chrome DevTools or Lighthouse:
 
 ```bash
 npm run build
-lighthouse https://staging.khedma.tn --view
+lighthouse https://staging.khedmetna.tn --view
 
 # Should show:
 # - Performance: > 80
@@ -233,13 +233,13 @@ Run daily for first 7 days:
 
 ```bash
 # Check application status
-curl -I https://staging.khedma.tn/
+curl -I https://staging.khedmetna.tn/
 
 # Check error logs
 grep "ERROR\|FATAL" /var/log/khedma/staging.log | wc -l
 
 # Check performance metrics
-curl https://staging.khedma.tn/metrics | jq '.http_requests_total'
+curl https://staging.khedmetna.tn/metrics | jq '.http_requests_total'
 ```
 
 ### 3. **Weekly Health Report**
@@ -299,7 +299,7 @@ npm run deploy
 
 ```bash
 # SSH into server
-ssh deploy@staging.khedma.tn
+ssh deploy@staging.khedmetna.tn
 
 # Stop current version
 pm2 stop khedma-staging
@@ -313,7 +313,7 @@ npm run build
 pm2 start "npm run preview" --name "khedma-staging"
 
 # Verify health
-curl https://staging.khedma.tn/
+curl https://staging.khedmetna.tn/
 ```
 
 ### **Database Rollback**

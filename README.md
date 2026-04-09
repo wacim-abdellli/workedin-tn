@@ -1,6 +1,6 @@
-# Khedma.tn
+# Khedmetna.tn
 
-Khedma.tn is a Tunisian freelance marketplace built with React, TypeScript, Vite, Supabase, and Playwright.
+Khedmetna.tn is a Tunisian freelance marketplace built with React, TypeScript, Vite, Supabase, and Playwright.
 
 This is the canonical repository entrypoint.
 

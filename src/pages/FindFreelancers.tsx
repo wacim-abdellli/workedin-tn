@@ -328,7 +328,7 @@ export default function FindFreelancers() {
 
     return (
         <div className="min-h-screen transition-colors duration-300" style={{ background: 'var(--page-bg)', color: 'var(--text-primary)' }}>
-            <SEO {...SEO_CONFIG.findFreelancers} url="/find-freelancers" canonical="https://Khedmetna.tn/find-freelancers" />
+            <SEO {...SEO_CONFIG.findFreelancers} url="/find-freelancers" canonical="https://khedmetna.tn/find-freelancers" />
             <Header />
 
             <section className="relative overflow-hidden border-b pt-10 pb-16 backdrop-blur-xl" style={{ borderColor: 'var(--border)', background: 'var(--page-bg)' }}>

@@ -62,7 +62,7 @@ export default function AccountStatusGate({ status }: { status: AccountStatus })
               {tx('common.returnHome', undefined, 'Return home')}
             </Link>
             <a
-              href="mailto:support@Khedmetna.tn"
+              href="mailto:support@khedmetna.tn"
               className="inline-flex h-11 items-center justify-center rounded-xl bg-primary-600 px-5 text-sm font-semibold text-white transition-colors hover:bg-primary-700"
             >
               {tx('common.contactSupport', undefined, 'Contact support')}

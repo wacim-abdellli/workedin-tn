@@ -64,7 +64,7 @@ export default function Terms() {
                             <p className="text-gray-700 dark:text-gray-300 dark:text-gray-200">
                                 {tx('legalPages.terms.sections.contact.intro')}
                                 <br />
-                                {tx('legalPages.terms.sections.contact.emailLabel')} legal@Khedmetna.tn
+                                {tx('legalPages.terms.sections.contact.emailLabel')} legal@khedmetna.tn
                             </p>
                         </section>
                     </div>

@@ -156,7 +156,7 @@ export default function FAQ() {
                         <h3 className="text-xl font-bold mb-2">{tx('faqPage.page.noAnswer')}</h3>
                         <p className="opacity-90 mb-4">{tx('faqPage.page.supportReady')}</p>
                         <a
-                            href="mailto:support@Khedmetna.tn"
+                            href="mailto:support@khedmetna.tn"
                             className="inline-block px-6 py-3 rounded-xl font-medium transition-colors"
                             style={{
                                 background: 'var(--color-bg-elevated)',

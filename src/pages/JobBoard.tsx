@@ -294,7 +294,7 @@ function JobBoard() {
 
     return (
         <div className="page-enter page-shell transition-colors duration-300">
-            <SEO {...SEO_CONFIG.jobs} url="/jobs" canonical="https://Khedmetna.tn/jobs" />
+            <SEO {...SEO_CONFIG.jobs} url="/jobs" canonical="https://khedmetna.tn/jobs" />
             <Header />
 
             <div className="page-shell-content">

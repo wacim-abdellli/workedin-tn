@@ -1,4 +1,4 @@
-﻿import type { Translations } from './ar';
+import type { Translations } from './ar';
 
 export const en: Translations = {
     nav: {
@@ -2508,6 +2508,22 @@ export const en: Translations = {
                     {
                         q: 'Are there any hidden fees?',
                         a: 'No. Our fees are transparent and clearly displayed. We charge a small commission only on completed projects.',
+                    },
+                    {
+                        q: 'What payment methods are available?',
+                        a: 'Currently we support Dhmad escrow for secure transactions. Flouci wallet and D17 (La Poste) are coming soon. Dhmad holds your funds securely until work is approved — the same system used by Tunisie Freelance.',
+                    },
+                    {
+                        q: 'Is Dhmad safe?',
+                        a: 'Yes. Dhmad is a Tunisian escrow platform authorized to hold funds as a trusted third party. Your money is protected until you approve the work.',
+                    },
+                    {
+                        q: 'When will Flouci and D17 be available?',
+                        a: "We're actively working on adding Flouci and D17. They will be available soon. We'll notify all users when they launch.",
+                    },
+                    {
+                        q: 'What happens if there\'s a dispute?',
+                        a: "If there's a disagreement, Dhmad holds the funds while the dispute is resolved. Neither party can access the money until the issue is settled.",
                     },
                 ],
             },

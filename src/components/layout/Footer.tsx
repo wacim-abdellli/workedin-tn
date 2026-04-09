@@ -117,7 +117,7 @@ function Footer() {
                     style={{ color: "var(--workspace-primary)" }}
                   />
                 </div>
-                <span>contact@Khedmetna.tn</span>
+                <span>contact@khedmetna.tn</span>
               </div>
 
               <div

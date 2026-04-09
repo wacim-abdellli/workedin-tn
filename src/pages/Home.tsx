@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Header, Footer } from '../components/layout';
 import { supabaseAnon } from '../lib/supabase';
 import SEO, { SEO_CONFIG } from '../components/common/SEO';
+import ComingSoonBanner from '../components/common/ComingSoonBanner';
 
 // Subcomponents
 import HeroSection from '../components/home/HeroSection';
@@ -49,6 +50,7 @@ function Home() {
 
 return (
         <div className="min-h-screen" style={{ background: 'var(--page-bg)' }}>
+            <ComingSoonBanner />
             <SEO {...SEO_CONFIG.home} url="/" />
             <Header />
 

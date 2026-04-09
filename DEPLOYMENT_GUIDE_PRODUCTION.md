@@ -1,4 +1,4 @@
-# Khedma-TN Production Deployment Guide
+# Khedmetna Production Deployment Guide
 
 **Last Updated:** March 31, 2026  
 **Status:** Ready for Production  
@@ -173,7 +173,7 @@ kubectl rollout status deployment/khedma
 
 ```bash
 # SSH into production server
-ssh deploy@khedma.tn
+ssh deploy@khedmetna.tn
 
 # Navigate to app directory
 cd /var/www/khedma
@@ -213,10 +213,10 @@ pm2 save
 2. **Smoke Tests**
    ```bash
    # Test homepage
-   curl -I https://khedma.tn/
+   curl -I https://khedmetna.tn/
    
    # Test API
-   curl https://khedma.tn/api/health
+   curl https://khedmetna.tn/api/health
    
    # Test Supabase connection (in browser console)
    # Sign in and verify chat works
@@ -226,7 +226,7 @@ pm2 save
    ```bash
    # Verify the full response-header baseline and write an audit artifact
    npm run headers:verify -- \
-     --base-url https://khedma.tn \
+     --base-url https://khedmetna.tn \
      --label production \
      --output artifacts/security-headers/production.json
 
@@ -253,13 +253,13 @@ Every 5 minutes check:
 
 ```bash
 # Application health
-curl -s https://khedma.tn/api/health | jq '.status'
+curl -s https://khedmetna.tn/api/health | jq '.status'
 
 # Error rate (check monitoring dashboard)
 # Should be < 0.1% error rate
 
 # Response time (should be < 500ms)
-curl -w "@curl-format.txt" -o /dev/null -s https://khedma.tn/
+curl -w "@curl-format.txt" -o /dev/null -s https://khedmetna.tn/
 
 # Real-time sync (WebSocket)
 # Test in browser: console should show successful connection
@@ -387,7 +387,7 @@ Canonical incident taxonomy, alert routes, and rollback checklist now live in `I
 
 3. **Verify rollback succeeded**
    ```bash
-   curl -I https://khedma.tn/
+   curl -I https://khedmetna.tn/
    # Should respond with 200 OK
    ```
 
@@ -471,6 +471,6 @@ When all criteria met:
 - [RLS_AUDIT_SUMMARY.txt](RLS_AUDIT_SUMMARY.txt) - Security audit results
 - [PHASE5_MASTERY_GUIDE.md](PHASE5_MASTERY_GUIDE.md) - Feature implementation details
 
-**Contact:** deployment-team@khedma.tn  
+**Contact:** deployment-team@khedmetna.tn  
 **Last Tested:** [date]  
 **Next Review:** [date + 30 days]

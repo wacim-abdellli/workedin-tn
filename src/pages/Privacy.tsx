@@ -79,7 +79,7 @@ export default function Privacy() {
                             <p className="text-gray-700 dark:text-gray-300 dark:text-gray-200">
                                 {tx('legalPages.privacy.sections.contact.intro')}
                                 <br />
-                                {tx('legalPages.privacy.sections.contact.emailLabel')} privacy@Khedmetna.tn
+                                {tx('legalPages.privacy.sections.contact.emailLabel')} privacy@khedmetna.tn
                             </p>
                         </section>
                     </div>
