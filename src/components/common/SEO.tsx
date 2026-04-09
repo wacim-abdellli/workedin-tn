@@ -1,5 +1,4 @@
-﻿ import { Helmet } from 'react-helmet-async';
-
+﻿import { Helmet } from 'react-helmet-async';
 import { useTranslation } from '../../i18n';
 import type { Language } from '../../types';
 
@@ -38,7 +37,6 @@ const SITE_URL = import.meta.env.VITE_APP_URL || 'https://workedin.tn';
 const resolveLocalizedText = (value: LocalizedText | undefined, language: Language): string => {
     if (!value) return '';
     if (typeof value === 'string') return value;
-
     return value[language] || value.en || value.fr || value.ar || '';
 };
 
@@ -83,9 +81,7 @@ export default function SEO({
             <meta name="description" content={resolvedDescription} />
             {resolvedKeywords && <meta name="keywords" content={resolvedKeywords} />}
             {noIndex && <meta name="robots" content="noindex, nofollow" />}
-
             <link rel="canonical" href={canonicalUrl} />
-
             <meta property="og:type" content={type} />
             <meta property="og:site_name" content={siteName} />
             <meta property="og:title" content={fullTitle} />
@@ -95,12 +91,10 @@ export default function SEO({
             <meta property="og:image:height" content="630" />
             <meta property="og:locale" content={resolvedLocale} />
             <meta property="og:url" content={ogUrl} />
-
             <meta name="twitter:card" content={twitterCard} />
             <meta name="twitter:title" content={fullTitle} />
             <meta name="twitter:description" content={resolvedDescription} />
             <meta name="twitter:image" content={fullImageUrl} />
-
             <meta name="theme-color" content="#8b5cf6" />
         </Helmet>
     );
@@ -114,63 +108,63 @@ export const SEO_CONFIG: Record<string, SEOConfigEntry> = {
             fr: 'WorkedIn',
         },
         description: {
-            ar: 'تبحث ع�  �&حترف�`�  ت��� س�`�`�  �&��ث��`�  ��&شار�`عْ�x ا� شر �&شر��عْ �&جا� ا�9 ع��0 WorkedIn ��اب/أ ا�ع�&� ا��`���&.',
+            ar: 'تواصل مع محترفين تونسيين موثقين لمشاريعك. مدفوعات آمنة بالدينار التونسي مع حماية الضمان.',
             en: 'Connect with verified Tunisian professionals for your projects. Secure payments in TND and escrow protection.',
             fr: 'Connectez-vous avec des professionnels tunisiens vérifiés pour vos projets. Paiements sécurisés en TND et protection escrow.',
         },
         keywords: {
-            ar: 'ع�&� حر, ت��� س, �&ست����� , �&شار�`ع, ��ظائف, /�`� ار ت��� س�`, ض�&ا� ',
+            ar: 'عمل حر، تونس، مستقلون، مشاريع، وظائف، دينار تونسي، ضمان',
             en: 'freelance Tunisia, Tunisian freelancers, TND payments, escrow, projects, talent marketplace',
             fr: 'freelance Tunisie, freelances tunisiens, paiements TND, escrow, projets, talents',
         },
     },
     jobs: {
         title: {
-            ar: '��ظائف ���&شار�`ع �&ست��ة',
+            ar: 'وظائف ومشاريع مستقلة',
             en: 'Freelance Jobs',
             fr: 'Missions freelance',
         },
         description: {
-            ar: 'استْشف �&شار�`ع ج/�`/ة ف�` ت��� س ��ابحث ع�  فرص ت� اسب �&�!اراتْ ��سعرْ ��خبرتْ.',
+            ar: 'اكتشف مشاريع جديدة في تونس وابحث عن فرص تناسب مهاراتك وسعرك وخبرتك.',
             en: 'Browse freelance jobs in Tunisia and find projects that match your skills, rate, and availability.',
-            fr: 'Parcourez les missions freelance en Tunisie et trouvez des projets adaptés à vos compétences, votre tarif et votre disponibilité.',
+            fr: 'Parcourez les missions freelance en Tunisie et trouvez des projets adaptés à vos compétences.',
         },
         keywords: {
-            ar: '��ظائف, �&شار�`ع, ع�&� حر, ت��� س',
+            ar: 'وظائف، مشاريع، عمل حر، تونس',
             en: 'freelance jobs, Tunisia jobs, projects, remote work',
             fr: 'missions freelance, projets, Tunisie, travail indépendant',
         },
     },
     findFreelancers: {
         title: {
-            ar: 'اعثر ع��0 �&حترف�`�  ت��� س�`�`�  �&��ث����`� ',
+            ar: 'ابحث عن محترفين تونسيين موثقين',
             en: 'Find Verified Tunisian Professionals',
             fr: 'Trouvez des professionnels tunisiens vérifiés',
         },
         description: {
-            ar: 'أْثر �&�  2500 �&حترف ت��� س�` �&��ث� ���&ُ��`�}��& ��جا�!ز ��ع�&� عبر ا�تص�&�`�&�R ا�تط���`ر�R ا�ترج�&ة ��ا�استشارة.',
+            ar: 'أكثر من 2500 محترف تونسي موثق في التصميم والتطوير والترجمة والاستشارة.',
             en: 'Find 2,500+ verified Tunisian developers, designers, translators, and consultants ready to start.',
-            fr: 'Trouvez 2 500+ développeurs, designers, traducteurs et consultants tunisiens vérifiés, notés et disponibles.',
+            fr: 'Trouvez 2 500+ développeurs, designers, traducteurs et consultants tunisiens vérifiés.',
         },
         keywords: {
-            ar: '�&ست����� , ت��ظ�`ف, ت��� س, �&حترف��� , �&��ث������ ',
+            ar: 'مستقلون، توظيف، تونس، محترفون، موثقون',
             en: 'hire freelancers Tunisia, verified professionals, Tunisian talent',
             fr: 'recruter freelances Tunisie, talents vérifiés, professionnels tunisiens',
         },
     },
     howItWorks: {
         title: {
-            ar: 'ْ�`ف تع�&� WorkedIn',
+            ar: 'كيف تعمل WorkedIn',
             en: 'How WorkedIn Works',
             fr: 'Comment fonctionne WorkedIn',
         },
         description: {
-            ar: 'أربع خط��ات �&�  فْرة ا��&شر��ع إ��0 است�ا�& ا�/فع�R �&ع ض�&ا� �R تح�� �!���`ة�R ��تتبع ��اضح �ْ� /�`� ار.',
+            ar: 'أربع خطوات من فكرة المشروع إلى استلام الدفع، مع ضمان وحماية هوية وتتبع واضح لكل دينار.',
             en: 'See how WorkedIn takes you from project idea to approved payment in four protected steps.',
             fr: 'Découvrez comment WorkedIn vous fait passer de l\'idée au paiement validé en quatre étapes protégées.',
         },
         keywords: {
-            ar: 'ْ�`ف �`ع�&�, �&� صة ع�&� حر, ض�&ا� , تح�� �!���`ة',
+            ar: 'كيف يعمل، منصة عمل حر، ضمان، حماية هوية',
             en: 'how it works, escrow, verified freelancers, talent marketplace',
             fr: 'fonctionnement, escrow, freelances vérifiés, plateforme freelance',
         },
@@ -182,12 +176,12 @@ export const SEO_CONFIG: Record<string, SEOConfigEntry> = {
             fr: 'Recrutez des talents tunisiens vérifiés',
         },
         description: {
-            ar: 'ا� شر �&شر��عْ �&جا� ا�9�R است�ب� عر��ضا�9 �&�  �&حترف�`�  �&��ث��`� �R ��ا/فع ف�ط ع� / ا��&��اف�ة �&ع ح�&ا�`ة ْا�&�ة با�ض�&ا� .',
+            ar: 'انشر مشروعك مجاناً، استقبل عروضاً من محترفين موثقين، وادفع فقط عند الموافقة مع حماية كاملة بالضمان.',
             en: 'Post your project for free, receive proposals from verified professionals, and pay only when work is approved.',
             fr: 'Publiez gratuitement, recevez des propositions de professionnels vérifiés et payez uniquement à la validation.',
         },
         keywords: {
-            ar: 'ع�&�اء, �&شار�`ع, ت��ظ�`ف, ت��� س, ض�&ا� ',
+            ar: 'عملاء، مشاريع، توظيف، تونس، ضمان',
             en: 'hire Tunisian freelancers, client marketplace, escrow payments, post a project',
             fr: 'recruter freelances tunisiens, publier un projet, escrow, clients',
         },
@@ -199,12 +193,12 @@ export const SEO_CONFIG: Record<string, SEOConfigEntry> = {
             fr: 'Questions fréquentes',
         },
         description: {
-            ar: 'إجابات ��اضحة ح��� طر�`�ة ا�ع�&��R ا�/فع�R ا�ض�&ا� �R ��ا��!���`ة ع��0 WorkedIn.',
+            ar: 'إجابات واضحة حول طريقة العمل والدفع والضمان والهوية على WorkedIn.',
             en: 'Find answers about payments, escrow, identity verification, and how WorkedIn works.',
             fr: 'Retrouvez des réponses sur les paiements, l\'escrow, la vérification d\'identité et le fonctionnement de WorkedIn.',
         },
         keywords: {
-            ar: 'أسئلة شائعة, دعم, مساعدة',
+            ar: 'أسئلة شائعة، دعم، مساعدة',
             en: 'faq, help, support',
             fr: 'faq, aide, support',
         },
@@ -233,29 +227,29 @@ export const SEO_CONFIG: Record<string, SEOConfigEntry> = {
             fr: 'Politique de confidentialité',
         },
         description: {
-            ar: 'تعر�ف ع��0 ْ�`ف�`ة ح�&ا�`ة ب�`ا� اتْ ��خص��ص�`تْ ع��0 WorkedIn.',
+            ar: 'تعرف على كيفية حماية بياناتك وخصوصيتك على WorkedIn.',
             en: 'Learn how WorkedIn protects your data and privacy.',
             fr: 'Découvrez comment WorkedIn protège vos données et votre vie privée.',
         },
         keywords: {
-            ar: 'خصوصية, حماية البيانات, أمان',
+            ar: 'خصوصية، حماية البيانات، أمان',
             en: 'privacy, data protection, security',
             fr: 'confidentialité, protection des données, sécurité',
         },
     },
     login: {
         title: {
-            ar: 'سجّل الدخول إلى WorkedIn',
+            ar: 'تسجيل الدخول إلى WorkedIn',
             en: 'Sign in to WorkedIn',
             fr: 'Connectez-vous à WorkedIn',
         },
         description: {
-            ar: 'ع/ إ��0 حسابْ ع��0 WorkedIn ��تابع �&شار�`عْ ��رسائ�ْ ���&/ف��عاتْ.',
+            ar: 'سجل دخولك إلى حسابك على WorkedIn وتابع مشاريعك ورسائلك ومدفوعاتك.',
             en: 'Sign in to your WorkedIn account to manage projects, messages, and payments.',
             fr: 'Connectez-vous à votre compte WorkedIn pour gérer vos projets, messages et paiements.',
         },
         keywords: {
-            ar: 'تسجيل الدخول, حساب, WorkedIn',
+            ar: 'تسجيل الدخول، حساب، WorkedIn',
             en: 'sign in, account, WorkedIn login',
             fr: 'connexion, compte, WorkedIn',
         },
@@ -267,12 +261,12 @@ export const SEO_CONFIG: Record<string, SEOConfigEntry> = {
             fr: 'Créez votre compte WorkedIn',
         },
         description: {
-            ar: 'ا� ض�& إ��0 أْثر �&�  2500 �&حترف �`ب� ���  �&س�`رت�!�& ���`ُ/�`ر���  �&شار�`ع�!�& ع��0 WorkedIn.',
+            ar: 'انضم إلى أكثر من 2500 محترف يبنون مسيرتهم ويديرون مشاريعهم على WorkedIn.',
             en: 'Create your account and join 2,500+ professionals building their career on WorkedIn.',
             fr: 'Créez votre compte et rejoignez 2 500+ professionnels qui développent leur carrière sur WorkedIn.',
         },
         keywords: {
-            ar: 'إنشاء حساب, تسجيل, مستقل, عميل',
+            ar: 'إنشاء حساب، تسجيل، مستقل، عميل',
             en: 'create account, signup, freelance marketplace, client account',
             fr: 'créer un compte, inscription, freelance, client',
         },
@@ -284,12 +278,12 @@ export const SEO_CONFIG: Record<string, SEOConfigEntry> = {
             fr: 'Tableau de bord',
         },
         description: {
-            ar: 'تابع �&شار�`عْ ��رسائ�ْ ��أرباحْ �&�  DH-) 'D*-CE ا�خاصة بْ ع��0 WorkedIn.',
+            ar: 'تابع مشاريعك ورسائلك وأرباحك من لوحة التحكم الخاصة بك على WorkedIn.',
             en: 'Track projects, messages, and earnings from your WorkedIn dashboard.',
             fr: 'Suivez vos projets, messages et revenus depuis votre tableau de bord WorkedIn.',
         },
         keywords: {
-            ar: 'لوحة تحكم, مشاريع, أرباح',
+            ar: 'لوحة تحكم، مشاريع، أرباح',
             en: 'dashboard, earnings, projects',
             fr: 'tableau de bord, revenus, projets',
         },
@@ -303,10 +297,10 @@ export const SEO_CONFIG: Record<string, SEOConfigEntry> = {
         description: {
             ar: 'تواصل بأمان مع العملاء والمستقلين عبر رسائل WorkedIn.',
             en: 'Chat securely with clients and freelancers through WorkedIn messaging.',
-            fr: 'Ã‰changez en toute sécurité avec clients et freelances via la messagerie WorkedIn.',
+            fr: 'Échangez en toute sécurité avec clients et freelances via la messagerie WorkedIn.',
         },
         keywords: {
-            ar: 'رسائل, تواصل, محادثات',
+            ar: 'رسائل، تواصل، محادثات',
             en: 'messages, chat, communication',
             fr: 'messages, chat, communication',
         },
@@ -323,7 +317,7 @@ export const SEO_CONFIG: Record<string, SEOConfigEntry> = {
             fr: 'Gérez vos paramètres de compte, notifications et préférences de confidentialité depuis un seul endroit.',
         },
         keywords: {
-            ar: 'إع/ا/ات, حساب, تفض�`�ات',
+            ar: 'إعدادات، حساب، تفضيلات',
             en: 'settings, account, preferences',
             fr: 'paramètres, compte, préférences',
         },
@@ -335,12 +329,12 @@ export const SEO_CONFIG: Record<string, SEOConfigEntry> = {
             fr: 'Résultats de recherche',
         },
         description: {
-            ar: 'استعرض F*'&, 'D(-+ عبر ا���ظائف ��ا��&ست���`�  ��ا��&حت���0 ع��0 WorkedIn.',
+            ar: 'استعرض نتائج البحث عبر الوظائف والمستقلين والمحتوى على WorkedIn.',
             en: 'Browse search results across jobs, freelancers, and content on WorkedIn.',
             fr: 'Parcourez les résultats de recherche parmi les missions, freelances et contenus sur WorkedIn.',
         },
         keywords: {
-            ar: 'بحث, نتائج',
+            ar: 'بحث، نتائج',
             en: 'search, results',
             fr: 'recherche, résultats',
         },
@@ -352,12 +346,12 @@ export const SEO_CONFIG: Record<string, SEOConfigEntry> = {
             fr: 'Finaliser le profil freelance',
         },
         description: {
-            ar: 'أْ�&� �&�فْ ْ�&ست�� ��اب/أ است�با� فرص ا�ع�&� ع��0 WorkedIn.',
+            ar: 'أكمل ملفك كمستقل وابدأ استقبال فرص العمل على WorkedIn.',
             en: 'Complete your freelancer profile and start getting matched to real work on WorkedIn.',
             fr: 'Finalisez votre profil freelance et commencez à recevoir de vraies opportunités sur WorkedIn.',
         },
         keywords: {
-            ar: '�&ست��, �&�ف شخص�`, إع/ا/',
+            ar: 'مستقل، ملف شخصي، إعداد',
             en: 'freelancer onboarding, profile setup',
             fr: 'onboarding freelance, configuration du profil',
         },
@@ -374,11 +368,9 @@ export const SEO_CONFIG: Record<string, SEOConfigEntry> = {
             fr: 'Finalisez votre compte client et commencez à publier vos projets sur WorkedIn.',
         },
         keywords: {
-            ar: 'عميل, مشروع, إعداد حساب',
+            ar: 'عميل، مشروع، إعداد حساب',
             en: 'client onboarding, project setup',
             fr: 'onboarding client, configuration projet',
         },
     },
 };
-
-
