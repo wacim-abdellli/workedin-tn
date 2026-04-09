@@ -1,11 +1,11 @@
-import { test, expect } from '@playwright/test';
+﻿import { test, expect } from '@playwright/test';
 
 /**
  * E2E: Payment Flow
  *
  * Tests the critical payment path:
- * 1. Login → 2. Navigate to contract → 3. Fund escrow → 4. Verify Flouci redirect
- * 5. Simulate payment success → 6. Verify success page → 7. Redirect to contract
+ * 1. Login â†’ 2. Navigate to contract â†’ 3. Fund escrow â†’ 4. Verify Flouci redirect
+ * 5. Simulate payment success â†’ 6. Verify success page â†’ 7. Redirect to contract
  *
  * NOTE: This test mocks the Flouci redirect since we can't hit the live payment gateway
  * in automated tests. We verify the redirect URL is constructed correctly and that
@@ -23,7 +23,7 @@ test.describe('Payment Flow', () => {
     const url = page.url();
 
     if (url.includes('/login')) {
-      // Not authenticated — expected behavior for ProtectedRoute
+      // Not authenticated â€” expected behavior for ProtectedRoute
       await expect(page.locator('body')).toBeVisible();
       return;
     }
@@ -38,7 +38,7 @@ test.describe('Payment Flow', () => {
     const url = page.url();
 
     if (url.includes('/login')) {
-      // Protected route redirected to login — correct behavior
+      // Protected route redirected to login â€” correct behavior
       await expect(page.locator('body')).toBeVisible();
       return;
     }
@@ -49,7 +49,7 @@ test.describe('Payment Flow', () => {
 
   test('job board loads without errors', async ({ page }) => {
     await page.goto('/jobs');
-    await expect(page).toHaveTitle(/خدمة|Khedma/i);
+    await expect(page).toHaveTitle(/Khedmetna/i);
 
     // Page should not have any uncaught exceptions
     const errors: string[] = [];
@@ -86,3 +86,4 @@ test.describe('Payment Flow', () => {
     // the Fund Escrow button
   });
 });
+

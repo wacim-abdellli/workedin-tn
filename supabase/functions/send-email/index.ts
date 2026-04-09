@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Supabase Edge Function: Send Email via Resend
  *
  * SECURITY:
@@ -13,8 +13,8 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { Resend } from 'npm:resend@2.0.0'
 
-const ALLOWED_ORIGIN = Deno.env.get('ALLOWED_ORIGIN') || 'https://khedma.tn'
-const APP_URL = Deno.env.get('APP_URL') || 'https://khedma-tn.vercel.app'
+const ALLOWED_ORIGIN = Deno.env.get('ALLOWED_ORIGIN') || 'https://khedmetna.tn'
+const APP_URL = Deno.env.get('APP_URL') || 'https://Khedmetna-tn.vercel.app'
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
@@ -136,17 +136,17 @@ async function buildNewProposalEmail(
 
     return [{
         to: recipient.email,
-        subject: `عرض جديد على مهمتك "${job.title}" — خدمة`,
+        subject: `Ø¹Ø±Ø¶ Ø¬Ø¯ÙŠØ¯ Ø¹Ù„Ù‰ Ù…Ù‡Ù…ØªÙƒ "${job.title}" â€” Ø®Ø¯Ù…Ø©`,
         html: `
             <div dir="rtl" style="font-family:sans-serif;max-width:600px;margin:auto;padding:24px">
-                <h2 style="color:#7c3aed">لديك عرض جديد!</h2>
-                <p>مرحباً ${escapeHtml(recipient.full_name || 'عميل')}،</p>
-                <p>تلقيت عرضاً جديداً على مهمتك: <strong>${escapeHtml(job.title)}</strong></p>
+                <h2 style="color:#7c3aed">Ù„Ø¯ÙŠÙƒ Ø¹Ø±Ø¶ Ø¬Ø¯ÙŠØ¯!</h2>
+                <p>Ù…Ø±Ø­Ø¨Ø§Ù‹ ${escapeHtml(recipient.full_name || 'Ø¹Ù…ÙŠÙ„')}ØŒ</p>
+                <p>ØªÙ„Ù‚ÙŠØª Ø¹Ø±Ø¶Ø§Ù‹ Ø¬Ø¯ÙŠØ¯Ø§Ù‹ Ø¹Ù„Ù‰ Ù…Ù‡Ù…ØªÙƒ: <strong>${escapeHtml(job.title)}</strong></p>
                 <a href="${APP_URL}/jobs/${jobId}"
                    style="display:inline-block;background:#7c3aed;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;margin-top:16px">
-                    عرض العروض
+                    Ø¹Ø±Ø¶ Ø§Ù„Ø¹Ø±ÙˆØ¶
                 </a>
-                <p style="color:#888;margin-top:24px;font-size:12px">فريق خدمة</p>
+                <p style="color:#888;margin-top:24px;font-size:12px">ÙØ±ÙŠÙ‚ Ø®Ø¯Ù…Ø©</p>
             </div>`,
         logAction: 'new_proposal',
         logEntityType: 'proposal',
@@ -171,21 +171,21 @@ async function buildProposalAcceptedEmail(
     }
 
     const recipient = await getProfileEmail(adminClient, contract.freelancer_id);
-    const jobTitle = contract.job?.title || 'مهمتك';
+    const jobTitle = contract.job?.title || 'Ù…Ù‡Ù…ØªÙƒ';
 
     return [{
         to: recipient.email,
-        subject: `تم قبول عرضك على "${jobTitle}" — خدمة`,
+        subject: `ØªÙ… Ù‚Ø¨ÙˆÙ„ Ø¹Ø±Ø¶Ùƒ Ø¹Ù„Ù‰ "${jobTitle}" â€” Ø®Ø¯Ù…Ø©`,
         html: `
             <div dir="rtl" style="font-family:sans-serif;max-width:600px;margin:auto;padding:24px">
-                <h2 style="color:#7c3aed">مبروك ${escapeHtml(recipient.full_name || 'مستقل')}! 🎉</h2>
-                <p>تم قبول عرضك على المهمة: <strong>${escapeHtml(jobTitle)}</strong></p>
-                <p>يمكنك الآن الاطلاع على تفاصيل العقد والبدء في العمل.</p>
+                <h2 style="color:#7c3aed">Ù…Ø¨Ø±ÙˆÙƒ ${escapeHtml(recipient.full_name || 'Ù…Ø³ØªÙ‚Ù„')}! ðŸŽ‰</h2>
+                <p>ØªÙ… Ù‚Ø¨ÙˆÙ„ Ø¹Ø±Ø¶Ùƒ Ø¹Ù„Ù‰ Ø§Ù„Ù…Ù‡Ù…Ø©: <strong>${escapeHtml(jobTitle)}</strong></p>
+                <p>ÙŠÙ…ÙƒÙ†Ùƒ Ø§Ù„Ø¢Ù† Ø§Ù„Ø§Ø·Ù„Ø§Ø¹ Ø¹Ù„Ù‰ ØªÙØ§ØµÙŠÙ„ Ø§Ù„Ø¹Ù‚Ø¯ ÙˆØ§Ù„Ø¨Ø¯Ø¡ ÙÙŠ Ø§Ù„Ø¹Ù…Ù„.</p>
                 <a href="${APP_URL}/contracts/${contractId}"
                    style="display:inline-block;background:#7c3aed;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;margin-top:16px">
-                    عرض العقد
+                    Ø¹Ø±Ø¶ Ø§Ù„Ø¹Ù‚Ø¯
                 </a>
-                <p style="color:#888;margin-top:24px;font-size:12px">فريق خدمة</p>
+                <p style="color:#888;margin-top:24px;font-size:12px">ÙØ±ÙŠÙ‚ Ø®Ø¯Ù…Ø©</p>
             </div>`,
         logAction: 'proposal_accepted',
         logEntityType: 'contract',
@@ -218,21 +218,21 @@ async function buildPaymentReceivedEmail(
 
     return [{
         to: recipient.email,
-        subject: `تم استلام دفعة ${amount} د.ت — خدمة`,
+        subject: `ØªÙ… Ø§Ø³ØªÙ„Ø§Ù… Ø¯ÙØ¹Ø© ${amount} Ø¯.Øª â€” Ø®Ø¯Ù…Ø©`,
         html: `
             <div dir="rtl" style="font-family:sans-serif;max-width:600px;margin:auto;padding:24px">
-                <h2 style="color:#059669">تم استلام دفعتك 💰</h2>
-                <p>مرحباً ${escapeHtml(recipient.full_name || 'مستقل')}،</p>
-                <p>تم إضافة <strong>${amount} د.ت</strong> إلى محفظتك.</p>
+                <h2 style="color:#059669">ØªÙ… Ø§Ø³ØªÙ„Ø§Ù… Ø¯ÙØ¹ØªÙƒ ðŸ’°</h2>
+                <p>Ù…Ø±Ø­Ø¨Ø§Ù‹ ${escapeHtml(recipient.full_name || 'Ù…Ø³ØªÙ‚Ù„')}ØŒ</p>
+                <p>ØªÙ… Ø¥Ø¶Ø§ÙØ© <strong>${amount} Ø¯.Øª</strong> Ø¥Ù„Ù‰ Ù…Ø­ÙØ¸ØªÙƒ.</p>
                 <a href="${APP_URL}/contracts/${contractId}"
                    style="display:inline-block;background:#059669;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;margin-top:16px">
-                    عرض العقد
+                    Ø¹Ø±Ø¶ Ø§Ù„Ø¹Ù‚Ø¯
                 </a>
                 <a href="${APP_URL}/wallet"
                    style="display:inline-block;background:#7c3aed;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;margin-top:16px;margin-right:8px">
-                    عرض المحفظة
+                    Ø¹Ø±Ø¶ Ø§Ù„Ù…Ø­ÙØ¸Ø©
                 </a>
-                <p style="color:#888;margin-top:24px;font-size:12px">فريق خدمة</p>
+                <p style="color:#888;margin-top:24px;font-size:12px">ÙØ±ÙŠÙ‚ Ø®Ø¯Ù…Ø©</p>
             </div>`,
         logAction: 'payment_received',
         logEntityType: 'contract',
@@ -274,7 +274,7 @@ async function buildDisputeOpenedEmails(
         throw new Error('Dispute reason missing in db');
     }
 
-    const openedByRole = userId === contract.client_id ? 'العميل' : 'المستقل';
+    const openedByRole = userId === contract.client_id ? 'Ø§Ù„Ø¹Ù…ÙŠÙ„' : 'Ø§Ù„Ù…Ø³ØªÙ‚Ù„';
     const recipients = await Promise.all([
         getProfileEmail(adminClient, contract.client_id),
         getProfileEmail(adminClient, contract.freelancer_id),
@@ -282,18 +282,18 @@ async function buildDisputeOpenedEmails(
 
     return recipients.map((recipient) => ({
         to: recipient.email,
-        subject: 'تم فتح نزاع على عقدك — خدمة',
+        subject: 'ØªÙ… ÙØªØ­ Ù†Ø²Ø§Ø¹ Ø¹Ù„Ù‰ Ø¹Ù‚Ø¯Ùƒ â€” Ø®Ø¯Ù…Ø©',
         html: `
             <div dir="rtl" style="font-family:sans-serif;max-width:600px;margin:auto;padding:24px">
-                <h2 style="color:#d97706">تنبيه: تم فتح نزاع ⚠️</h2>
-                <p>مرحباً ${escapeHtml(recipient.full_name || 'مستخدم')}،</p>
-                <p>قام <strong>${openedByRole}</strong> بفتح نزاع على العقد. سيقوم فريق خدمة بمراجعة الحالة خلال 48 ساعة.</p>
-                <p><strong>سبب النزاع:</strong> ${escapeHtml(reason)}</p>
+                <h2 style="color:#d97706">ØªÙ†Ø¨ÙŠÙ‡: ØªÙ… ÙØªØ­ Ù†Ø²Ø§Ø¹ âš ï¸</h2>
+                <p>Ù…Ø±Ø­Ø¨Ø§Ù‹ ${escapeHtml(recipient.full_name || 'Ù…Ø³ØªØ®Ø¯Ù…')}ØŒ</p>
+                <p>Ù‚Ø§Ù… <strong>${openedByRole}</strong> Ø¨ÙØªØ­ Ù†Ø²Ø§Ø¹ Ø¹Ù„Ù‰ Ø§Ù„Ø¹Ù‚Ø¯. Ø³ÙŠÙ‚ÙˆÙ… ÙØ±ÙŠÙ‚ Ø®Ø¯Ù…Ø© Ø¨Ù…Ø±Ø§Ø¬Ø¹Ø© Ø§Ù„Ø­Ø§Ù„Ø© Ø®Ù„Ø§Ù„ 48 Ø³Ø§Ø¹Ø©.</p>
+                <p><strong>Ø³Ø¨Ø¨ Ø§Ù„Ù†Ø²Ø§Ø¹:</strong> ${escapeHtml(reason)}</p>
                 <a href="${APP_URL}/contracts/${contractId}"
                    style="display:inline-block;background:#d97706;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;margin-top:16px">
-                    عرض العقد
+                    Ø¹Ø±Ø¶ Ø§Ù„Ø¹Ù‚Ø¯
                 </a>
-                <p style="color:#888;margin-top:24px;font-size:12px">فريق خدمة — disputes@khedma.tn</p>
+                <p style="color:#888;margin-top:24px;font-size:12px">ÙØ±ÙŠÙ‚ Ø®Ø¯Ù…Ø© â€” disputes@khedmetna.tn</p>
             </div>`,
         logAction: 'dispute_opened',
         logEntityType: 'dispute',
@@ -525,7 +525,7 @@ serve(async (req: Request) => {
             console.log('[SendEmail] Sending action email from user:', user.id, 'to:', payload.to, 'action:', action)
             try {
                 const providerResult = await resend.emails.send({
-                    from: 'Khedma <noreply@khedma.tn>',
+                    from: 'Khedmetna <noreply@khedmetna.tn>',
                     to: [payload.to],
                     subject: payload.subject,
                     html: payload.html,
@@ -552,3 +552,4 @@ serve(async (req: Request) => {
         return jsonResponse({ error: message }, 500)
     }
 })
+

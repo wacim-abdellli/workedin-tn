@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Supabase Edge Function: Flouci Payment Initiation
  * 
  * This function securely handles payment initiation with Flouci.
@@ -29,7 +29,7 @@ async function logPaymentEvent(supabaseClient: any, payload: {
     }
 }
 
-const ALLOWED_ORIGIN = Deno.env.get('ALLOWED_ORIGIN') || 'https://khedma.tn'
+const ALLOWED_ORIGIN = Deno.env.get('ALLOWED_ORIGIN') || 'https://khedmetna.tn'
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
@@ -235,3 +235,4 @@ serve(async (req) => {
         )
     }
 })
+
