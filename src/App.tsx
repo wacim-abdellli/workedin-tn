@@ -12,8 +12,7 @@ import { BrowserRouter, Routes } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "./lib/queryClient";
-import { I18nProvider } from "./i18n";
-import { useTranslation } from "./i18n";
+import { I18nProvider, useTranslation } from "./i18n";
 import { useLocation } from "react-router-dom";
 import { ToastProvider } from "./components/ui/Toast";
 import { AuthProvider } from "./contexts/AuthContext";
@@ -33,10 +32,11 @@ import SkipLinks from "./components/layout/SkipLinks";
 import { useRouteFocus } from "./hooks/useRouteFocus";
 
 const PageLoader = () => (
-  <FullScreenLoader label="Loading..." hint="Opening the next page" />
+  <FullScreenLoader label={tx('ui.loading')} hint="Opening the next page" />
 );
 
 function AppRoutes() {
+    const { tx } = useTranslation();
   return <Routes>{renderRouteDefinitions(appRoutes)}</Routes>;
 }
 
@@ -80,6 +80,7 @@ function AppContent() {
 import { LazyMotion, domAnimation } from "framer-motion";
 
 function App() {
+    const { tx } = useTranslation();
   return (
     <HelmetProvider>
       <LazyMotion features={domAnimation}>
