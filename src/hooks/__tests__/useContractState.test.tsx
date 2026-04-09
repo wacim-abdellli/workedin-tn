@@ -210,7 +210,7 @@ describe('useContractState', () => {
             expect(result.current.isLoading).toBe(false);
         });
 
-        await expect(result.current.deliverWork('Nope')).rejects.toThrow(/ÙÙ‚Ø· Ø§Ù„Ù…ÙˆØ¸Ù/);
+        await expect(result.current.deliverWork('Nope')).rejects.toThrow(/ف�ط ا��&��ظف/);
     });
 
     it('surfaces release RPC failures during client acceptance', async () => {

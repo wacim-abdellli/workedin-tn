@@ -104,7 +104,7 @@ export function useContractState({
             additionalData: Partial<ContractData> = {}
         ) => {
             if (!contract || !canTransition(newStatus)) {
-                throw new Error('Ø§Ù†ØªÙ‚Ø§Ù„ Ø§Ù„Ø­Ø§Ù„Ø© ØºÙŠØ± ØµØ§Ù„Ø­');
+                throw new Error('ا� ت�ا� ا�حا�ة غ�`ر صا�ح');
             }
 
             const { data, error: updateError } = await supabase
@@ -120,7 +120,7 @@ export function useContractState({
 
             if (updateError) throw updateError;
             if (!data || data.length === 0) {
-                throw new Error('ØªØºÙŠØ±Øª Ø­Ø§Ù„Ø© Ø§Ù„Ø¹Ù‚Ø¯ Ø£Ø«Ù†Ø§Ø¡ Ø§Ù„Ø¹Ù…Ù„ÙŠØ©ØŒ ÙŠØ±Ø¬Ù‰ ØªØ­Ø¯ÙŠØ« Ø§Ù„ØµÙØ­Ø©');
+                throw new Error('تغ�`رت حا�ة ا�ع�د أث� اء ا�ع�&��`ة�R �`رج�0 تحد�`ث ا�صفحة');
             }
 
             setContract({
@@ -139,7 +139,7 @@ export function useContractState({
     const deliverWork = useCallback(
         async (note: string) => {
             if (userRole !== 'freelancer') {
-                throw new Error('ÙÙ‚Ø· Ø§Ù„Ù…ÙˆØ¸Ù ÙŠÙ…ÙƒÙ†Ù‡ ØªØ³Ù„ÙŠÙ… Ø§Ù„Ø¹Ù…Ù„');
+                throw new Error('ف�ط ا��&��ظف �`�&ْ� �! تس��`�& ا�ع�&�');
             }
 
             setIsDelivering(true);
@@ -156,7 +156,7 @@ export function useContractState({
                     contract_id: contractId,
                     sender_id: userId,
                     receiver_id: receiverId,
-                    content: `ðŸ“¦ ØªÙ… ØªØ³Ù„ÙŠÙ… Ø§Ù„Ø¹Ù…Ù„: ${note}`,
+                    content: `�x� ت�& تس��`�& ا�ع�&�: ${note}`,
                     message_type: 'delivery',
                 });
 
@@ -171,7 +171,7 @@ export function useContractState({
     const acceptWork = useCallback(
         async () => {
             if (userRole !== 'client') {
-                throw new Error('ÙÙ‚Ø· Ø§Ù„Ø¹Ù…ÙŠÙ„ ÙŠÙ…ÙƒÙ†Ù‡ Ù‚Ø¨ÙˆÙ„ Ø§Ù„Ø¹Ù…Ù„');
+                throw new Error('ف�ط ا�ع�&�`� �`�&ْ� �! �ب��� ا�ع�&�');
             }
 
             setIsAccepting(true);
@@ -200,7 +200,7 @@ export function useContractState({
                     contract_id: contractId,
                     sender_id: userId,
                     receiver_id: receiverId,
-                    content: 'âœ… ØªÙ… Ù‚Ø¨ÙˆÙ„ Ø§Ù„Ø¹Ù…Ù„ ÙˆØ¥ØªÙ…Ø§Ù… Ø§Ù„Ø¯ÙØ¹',
+                    content: '�S& ت�& �ب��� ا�ع�&� ��إت�&ا�& ا�دفع',
                     message_type: 'system',
                 });
 
@@ -215,7 +215,7 @@ export function useContractState({
     const requestChanges = useCallback(
         async (feedback: string) => {
             if (userRole !== 'client') {
-                throw new Error('ÙÙ‚Ø· Ø§Ù„Ø¹Ù…ÙŠÙ„ ÙŠÙ…ÙƒÙ†Ù‡ Ø·Ù„Ø¨ ØªØ¹Ø¯ÙŠÙ„Ø§Øª');
+                throw new Error('ف�ط ا�ع�&�`� �`�&ْ� �! ط�ب تعد�`�ات');
             }
 
             const receiverId = getCounterpartyId(contract, userRole);
@@ -225,7 +225,7 @@ export function useContractState({
                 contract_id: contractId,
                 sender_id: userId,
                 receiver_id: receiverId,
-                content: `ðŸ”„ Ø·Ù„Ø¨ ØªØ¹Ø¯ÙŠÙ„Ø§Øª: ${feedback}`,
+                content: `�x ط�ب تعد�`�ات: ${feedback}`,
                 message_type: 'feedback',
             });
 
@@ -262,7 +262,7 @@ export function useContractState({
                     contract_id: contractId,
                     sender_id: userId,
                     receiver_id: receiverId,
-                    content: `âš ï¸ ØªÙ… ÙØªØ­ Ù†Ø²Ø§Ø¹: ${reason}`,
+                    content: `�a ️ ت�& فتح � زاع: ${reason}`,
                     message_type: 'dispute',
                 });
 

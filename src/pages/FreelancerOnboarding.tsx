@@ -378,7 +378,7 @@ function FreelancerOnboarding() {
     if (isAuthLoading) {
         return (
             <FullScreenLoader
-                label={t.common?.loading || 'Ø¬Ø§Ø±ÙŠ Ø§Ù„ØªØ­Ù…ÙŠÙ„...'}
+                label={t.common?.loading || 'جاري التحميل...'}
                 hint={tx('onboarding.freelancer.loadingHint', undefined, 'Preparing your freelancer onboarding workspace')}
             />
         );

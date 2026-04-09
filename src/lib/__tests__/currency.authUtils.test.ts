@@ -23,7 +23,7 @@ describe('currencyUtils', () => {
     it('formats Tunisian dinar values and converts millimes', () => {
         expect(formatCurrency(125.5)).toContain('125');
         expect(formatCurrency(125.5)).toContain('500');
-        expect(formatCurrency(125.5, false)).not.toContain('Ø¯');
+        expect(formatCurrency(125.5, false)).not.toContain('د');
 
         expect(formatCurrencyCompact(125)).toContain('125');
         expect(formatCurrencyCompact(125.5)).toContain('500');

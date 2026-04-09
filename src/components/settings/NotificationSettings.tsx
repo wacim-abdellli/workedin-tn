@@ -15,11 +15,11 @@ interface NotificationSetting {
 }
 
 const DEFAULTS: NotificationSetting[] = [
-    { id: '1', key: 'new_job', label: 'ÙˆØ¸Ø§Ø¦Ù Ø¬Ø¯ÙŠØ¯Ø© Ù…Ø·Ø§Ø¨Ù‚Ø©', description: 'Ø¥Ø´Ø¹Ø§Ø± Ø¹Ù†Ø¯ ÙˆØ¬ÙˆØ¯ ÙØ±Øµ Ø¹Ù…Ù„ ØªÙ†Ø§Ø³Ø¨ Ù…Ù‡Ø§Ø±Ø§ØªÙƒ', enabled: true },
-    { id: '2', key: 'messages', label: 'Ø§Ù„Ø±Ø³Ø§Ø¦Ù„', description: 'Ø¥Ø´Ø¹Ø§Ø± Ø¹Ù†Ø¯ Ø§Ø³ØªÙ„Ø§Ù… Ø±Ø³Ø§Ø¦Ù„ Ø¬Ø¯ÙŠØ¯Ø©', enabled: true },
-    { id: '3', key: 'payments', label: 'Ø§Ù„Ù…Ø¯ÙÙˆØ¹Ø§Øª', description: 'Ø¥Ø´Ø¹Ø§Ø± Ø¹Ù†Ø¯ Ø§Ø³ØªÙ„Ø§Ù… Ø£Ùˆ Ø¥Ø±Ø³Ø§Ù„ Ù…Ø¯ÙÙˆØ¹Ø§Øª', enabled: true },
-    { id: '4', key: 'reviews', label: 'Ø§Ù„ØªÙ‚ÙŠÙŠÙ…Ø§Øª', description: 'Ø¥Ø´Ø¹Ø§Ø± Ø¹Ù†Ø¯ Ø§Ø³ØªÙ„Ø§Ù… ØªÙ‚ÙŠÙŠÙ… Ø¬Ø¯ÙŠØ¯', enabled: true },
-    { id: '5', key: 'marketing', label: 'Ø§Ù„Ø¹Ø±ÙˆØ¶ ÙˆØ§Ù„ØªØ­Ø¯ÙŠØ«Ø§Øª', description: 'Ù†ØµØ§Ø¦Ø­ ÙˆØ¹Ø±ÙˆØ¶ Ù…Ù† Ø®Ø¯Ù…Ø©.ØªÙ†', enabled: false },
+    { id: '1', key: 'new_job', label: '��ظائف ج/�`/ة �&طاب�ة', description: 'إشعار ع� / ��ج��/ فرص ع�&� ت� اسب �&�!اراتْ', enabled: true },
+    { id: '2', key: 'messages', label: 'الرسائل', description: 'إشعار ع� / است�ا�& رسائ� ج/�`/ة', enabled: true },
+    { id: '3', key: 'payments', label: 'ا��&/ف��عات', description: 'إشعار ع� / است�ا�& أ�� إرسا� �&/ف��عات', enabled: true },
+    { id: '4', key: 'reviews', label: 'التقييمات', description: 'إشعار عند استلام تقييم جديد', enabled: true },
+    { id: '5', key: 'marketing', label: 'العروض والتحديثات', description: 'نصائح وعروض من خدمة.تن', enabled: false },
 ];
 
 export default function NotificationSettings() {

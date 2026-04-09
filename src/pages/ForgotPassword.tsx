@@ -14,7 +14,7 @@ import { AuthShell } from '../components/auth';
 
 // Validation schema
 const getForgotPasswordSchema = (tx: any) => z.object({
-    email: z.string().email(tx('auth.validation.invalidEmail', undefined, 'Ø£Ø¯Ø®Ù„ Ø¨Ø±ÙŠØ¯ Ø¥Ù„ÙƒØªØ±ÙˆÙ†ÙŠ ØµØ­ÙŠØ­')),
+    email: z.string().email(tx('auth.validation.invalidEmail', undefined, 'أدخ� بر�`د إ�ْتر��� �` صح�`ح')),
 });
 
 type ForgotPasswordFormData = z.infer<ReturnType<typeof getForgotPasswordSchema>>;

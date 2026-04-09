@@ -2552,7 +2552,7 @@ export const en: Translations = {
 
     languages: {
         ar: {
-            name: 'Ø§Ù„Ø¹Ø±Ø¨ÙŠØ©',
+            name: 'العربية',
             code: 'AR',
             country: 'TN',
         },

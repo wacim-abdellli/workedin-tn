@@ -67,7 +67,7 @@ export async function initiatePayment(
 
         if (error) {
             logger.error('[Flouci] Edge Function error:', error);
-            throw new Error(error.message || 'ÙØ´Ù„ ÙÙŠ Ø¨Ø¯Ø¡ Ø¹Ù…Ù„ÙŠØ© Ø§Ù„Ø¯ÙØ¹');
+            throw new Error(error.message || 'فش� ف�` بدء ع�&��`ة ا�دفع');
         }
 
         if (data.error) {
@@ -86,7 +86,7 @@ export async function initiatePayment(
         if (error instanceof Error) {
             throw error;
         }
-        throw new Error('Ø®Ø·Ø£ ØºÙŠØ± Ù…ØªÙˆÙ‚Ø¹ ÙÙŠ Ø®Ø¯Ù…Ø© Ø§Ù„Ø¯ÙØ¹');
+        throw new Error('خطأ غ�`ر �&ت���ع ف�` خد�&ة ا�دفع');
     }
 }
 
@@ -145,7 +145,7 @@ export async function verifyPayment(
 
         if (error) {
             logger.error('[Flouci] Verification Edge Function error:', error);
-            throw new Error('ÙØ´Ù„ ÙÙŠ Ø§Ù„ØªØ­Ù‚Ù‚ Ù…Ù† Ø¹Ù…Ù„ÙŠØ© Ø§Ù„Ø¯ÙØ¹');
+            throw new Error('فش� ف�` ا�تح�� �&�  ع�&��`ة ا�دفع');
         }
 
         logger.log('[Flouci] Verification result:', data);
@@ -171,7 +171,7 @@ export async function verifyPayment(
         if (error instanceof Error) {
             throw error;
         }
-        throw new Error('Ø®Ø·Ø£ ÙÙŠ Ø§Ù„ØªØ­Ù‚Ù‚ Ù…Ù† Ø¹Ù…Ù„ÙŠØ© Ø§Ù„Ø¯ÙØ¹');
+        throw new Error('خطأ ف�` ا�تح�� �&�  ع�&��`ة ا�دفع');
     }
 }
 

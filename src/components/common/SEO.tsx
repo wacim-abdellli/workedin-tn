@@ -1,4 +1,4 @@
- import { Helmet } from 'react-helmet-async';
+﻿ import { Helmet } from 'react-helmet-async';
 
 import { useTranslation } from '../../i18n';
 import type { Language } from '../../types';
@@ -114,270 +114,271 @@ export const SEO_CONFIG: Record<string, SEOConfigEntry> = {
             fr: 'WorkedIn',
         },
         description: {
-            ar: 'ØªØ¨Ø­Ø« Ø¹Ù† Ù…Ø­ØªØ±ÙÙŠÙ† ØªÙˆÙ†Ø³ÙŠÙŠÙ† Ù…ÙˆØ«Ù‚ÙŠÙ† Ù„Ù…Ø´Ø§Ø±ÙŠØ¹ÙƒØŸ Ø§Ù†Ø´Ø± Ù…Ø´Ø±ÙˆØ¹Ùƒ Ù…Ø¬Ø§Ù†Ø§Ù‹ Ø¹Ù„Ù‰ WorkedIn ÙˆØ§Ø¨Ø¯Ø£ Ø§Ù„Ø¹Ù…Ù„ Ø§Ù„ÙŠÙˆÙ….',
+            ar: 'تبحث ع�  �&حترف�`�  ت��� س�`�`�  �&��ث��`�  ��&شار�`عْ�x ا� شر �&شر��عْ �&جا� ا�9 ع��0 WorkedIn ��اب/أ ا�ع�&� ا��`���&.',
             en: 'Connect with verified Tunisian professionals for your projects. Secure payments in TND and escrow protection.',
             fr: 'Connectez-vous avec des professionnels tunisiens vérifiés pour vos projets. Paiements sécurisés en TND et protection escrow.',
         },
         keywords: {
-            ar: 'Ø¹Ù…Ù„ Ø­Ø±, ØªÙˆÙ†Ø³, Ù…Ø³ØªÙ‚Ù„ÙˆÙ†, Ù…Ø´Ø§Ø±ÙŠØ¹, ÙˆØ¸Ø§Ø¦Ù, Ø¯ÙŠÙ†Ø§Ø± ØªÙˆÙ†Ø³ÙŠ, Ø¶Ù…Ø§Ù†',
+            ar: 'ع�&� حر, ت��� س, �&ست����� , �&شار�`ع, ��ظائف, /�`� ار ت��� س�`, ض�&ا� ',
             en: 'freelance Tunisia, Tunisian freelancers, TND payments, escrow, projects, talent marketplace',
             fr: 'freelance Tunisie, freelances tunisiens, paiements TND, escrow, projets, talents',
         },
     },
     jobs: {
         title: {
-            ar: 'ÙˆØ¸Ø§Ø¦Ù ÙˆÙ…Ø´Ø§Ø±ÙŠØ¹ Ù…Ø³ØªÙ‚Ù„Ø©',
+            ar: '��ظائف ���&شار�`ع �&ست��ة',
             en: 'Freelance Jobs',
             fr: 'Missions freelance',
         },
         description: {
-            ar: 'Ø§Ø³ØªÙƒØ´Ù Ù…Ø´Ø§Ø±ÙŠØ¹ Ø¬Ø¯ÙŠØ¯Ø© ÙÙŠ ØªÙˆÙ†Ø³ ÙˆØ§Ø¨Ø­Ø« Ø¹Ù† ÙØ±Øµ ØªÙ†Ø§Ø³Ø¨ Ù…Ù‡Ø§Ø±Ø§ØªÙƒ ÙˆØ³Ø¹Ø±Ùƒ ÙˆØ®Ø¨Ø±ØªÙƒ.',
+            ar: 'استْشف �&شار�`ع ج/�`/ة ف�` ت��� س ��ابحث ع�  فرص ت� اسب �&�!اراتْ ��سعرْ ��خبرتْ.',
             en: 'Browse freelance jobs in Tunisia and find projects that match your skills, rate, and availability.',
             fr: 'Parcourez les missions freelance en Tunisie et trouvez des projets adaptés à vos compétences, votre tarif et votre disponibilité.',
         },
         keywords: {
-            ar: 'ÙˆØ¸Ø§Ø¦Ù, Ù…Ø´Ø§Ø±ÙŠØ¹, Ø¹Ù…Ù„ Ø­Ø±, ØªÙˆÙ†Ø³',
+            ar: '��ظائف, �&شار�`ع, ع�&� حر, ت��� س',
             en: 'freelance jobs, Tunisia jobs, projects, remote work',
             fr: 'missions freelance, projets, Tunisie, travail indépendant',
         },
     },
     findFreelancers: {
         title: {
-            ar: 'Ø§Ø¹Ø«Ø± Ø¹Ù„Ù‰ Ù…Ø­ØªØ±ÙÙŠÙ† ØªÙˆÙ†Ø³ÙŠÙŠÙ† Ù…ÙˆØ«ÙˆÙ‚ÙŠÙ†',
+            ar: 'اعثر ع��0 �&حترف�`�  ت��� س�`�`�  �&��ث����`� ',
             en: 'Find Verified Tunisian Professionals',
             fr: 'Trouvez des professionnels tunisiens vérifiés',
         },
         description: {
-            ar: 'Ø£ÙƒØ«Ø± Ù…Ù† 2500 Ù…Ø­ØªØ±Ù ØªÙˆÙ†Ø³ÙŠ Ù…ÙˆØ«Ù‚ ÙˆÙ…ÙÙ‚ÙŠÙŽÙ‘Ù… ÙˆØ¬Ø§Ù‡Ø² Ù„Ù„Ø¹Ù…Ù„ Ø¹Ø¨Ø± Ø§Ù„ØªØµÙ…ÙŠÙ…ØŒ Ø§Ù„ØªØ·ÙˆÙŠØ±ØŒ Ø§Ù„ØªØ±Ø¬Ù…Ø© ÙˆØ§Ù„Ø§Ø³ØªØ´Ø§Ø±Ø©.',
+            ar: 'أْثر �&�  2500 �&حترف ت��� س�` �&��ث� ���&ُ��`�}��& ��جا�!ز ��ع�&� عبر ا�تص�&�`�&�R ا�تط���`ر�R ا�ترج�&ة ��ا�استشارة.',
             en: 'Find 2,500+ verified Tunisian developers, designers, translators, and consultants ready to start.',
             fr: 'Trouvez 2 500+ développeurs, designers, traducteurs et consultants tunisiens vérifiés, notés et disponibles.',
         },
         keywords: {
-            ar: 'Ù…Ø³ØªÙ‚Ù„ÙˆÙ†, ØªÙˆØ¸ÙŠÙ, ØªÙˆÙ†Ø³, Ù…Ø­ØªØ±ÙÙˆÙ†, Ù…ÙˆØ«ÙˆÙ‚ÙˆÙ†',
+            ar: '�&ست����� , ت��ظ�`ف, ت��� س, �&حترف��� , �&��ث������ ',
             en: 'hire freelancers Tunisia, verified professionals, Tunisian talent',
             fr: 'recruter freelances Tunisie, talents vérifiés, professionnels tunisiens',
         },
     },
     howItWorks: {
         title: {
-            ar: 'ÙƒÙŠÙ ØªØ¹Ù…Ù„ WorkedIn',
+            ar: 'ْ�`ف تع�&� WorkedIn',
             en: 'How WorkedIn Works',
             fr: 'Comment fonctionne WorkedIn',
         },
         description: {
-            ar: 'Ø£Ø±Ø¨Ø¹ Ø®Ø·ÙˆØ§Øª Ù…Ù† ÙÙƒØ±Ø© Ø§Ù„Ù…Ø´Ø±ÙˆØ¹ Ø¥Ù„Ù‰ Ø§Ø³ØªÙ„Ø§Ù… Ø§Ù„Ø¯ÙØ¹ØŒ Ù…Ø¹ Ø¶Ù…Ø§Ù†ØŒ ØªØ­Ù‚Ù‚ Ù‡ÙˆÙŠØ©ØŒ ÙˆØªØªØ¨Ø¹ ÙˆØ§Ø¶Ø­ Ù„ÙƒÙ„ Ø¯ÙŠÙ†Ø§Ø±.',
+            ar: 'أربع خط��ات �&�  فْرة ا��&شر��ع إ��0 است�ا�& ا�/فع�R �&ع ض�&ا� �R تح�� �!���`ة�R ��تتبع ��اضح �ْ� /�`� ار.',
             en: 'See how WorkedIn takes you from project idea to approved payment in four protected steps.',
             fr: 'Découvrez comment WorkedIn vous fait passer de l\'idée au paiement validé en quatre étapes protégées.',
         },
         keywords: {
-            ar: 'ÙƒÙŠÙ ÙŠØ¹Ù…Ù„, Ù…Ù†ØµØ© Ø¹Ù…Ù„ Ø­Ø±, Ø¶Ù…Ø§Ù†, ØªØ­Ù‚Ù‚ Ù‡ÙˆÙŠØ©',
+            ar: 'ْ�`ف �`ع�&�, �&� صة ع�&� حر, ض�&ا� , تح�� �!���`ة',
             en: 'how it works, escrow, verified freelancers, talent marketplace',
             fr: 'fonctionnement, escrow, freelances vérifiés, plateforme freelance',
         },
     },
     forClients: {
         title: {
-            ar: 'Ù„Ù„Ø¹Ù…Ù„Ø§Ø¡ ÙˆØ£ØµØ­Ø§Ø¨ Ø§Ù„Ù…Ø´Ø§Ø±ÙŠØ¹',
+            ar: 'للعملاء وأصحاب المشاريع',
             en: 'Hire Verified Tunisian Talent',
             fr: 'Recrutez des talents tunisiens vérifiés',
         },
         description: {
-            ar: 'Ø§Ù†Ø´Ø± Ù…Ø´Ø±ÙˆØ¹Ùƒ Ù…Ø¬Ø§Ù†Ø§Ù‹ØŒ Ø§Ø³ØªÙ‚Ø¨Ù„ Ø¹Ø±ÙˆØ¶Ø§Ù‹ Ù…Ù† Ù…Ø­ØªØ±ÙÙŠÙ† Ù…ÙˆØ«Ù‚ÙŠÙ†ØŒ ÙˆØ§Ø¯ÙØ¹ ÙÙ‚Ø· Ø¹Ù†Ø¯ Ø§Ù„Ù…ÙˆØ§ÙÙ‚Ø© Ù…Ø¹ Ø­Ù…Ø§ÙŠØ© ÙƒØ§Ù…Ù„Ø© Ø¨Ø§Ù„Ø¶Ù…Ø§Ù†.',
+            ar: 'ا� شر �&شر��عْ �&جا� ا�9�R است�ب� عر��ضا�9 �&�  �&حترف�`�  �&��ث��`� �R ��ا/فع ف�ط ع� / ا��&��اف�ة �&ع ح�&ا�`ة ْا�&�ة با�ض�&ا� .',
             en: 'Post your project for free, receive proposals from verified professionals, and pay only when work is approved.',
             fr: 'Publiez gratuitement, recevez des propositions de professionnels vérifiés et payez uniquement à la validation.',
         },
         keywords: {
-            ar: 'Ø¹Ù…Ù„Ø§Ø¡, Ù…Ø´Ø§Ø±ÙŠØ¹, ØªÙˆØ¸ÙŠÙ, ØªÙˆÙ†Ø³, Ø¶Ù…Ø§Ù†',
+            ar: 'ع�&�اء, �&شار�`ع, ت��ظ�`ف, ت��� س, ض�&ا� ',
             en: 'hire Tunisian freelancers, client marketplace, escrow payments, post a project',
             fr: 'recruter freelances tunisiens, publier un projet, escrow, clients',
         },
     },
     faq: {
         title: {
-            ar: 'Ø§Ù„Ø£Ø³Ø¦Ù„Ø© Ø§Ù„Ø´Ø§Ø¦Ø¹Ø©',
+            ar: 'الأسئلة الشائعة',
             en: 'Frequently Asked Questions',
             fr: 'Questions fréquentes',
         },
         description: {
-            ar: 'Ø¥Ø¬Ø§Ø¨Ø§Øª ÙˆØ§Ø¶Ø­Ø© Ø­ÙˆÙ„ Ø·Ø±ÙŠÙ‚Ø© Ø§Ù„Ø¹Ù…Ù„ØŒ Ø§Ù„Ø¯ÙØ¹ØŒ Ø§Ù„Ø¶Ù…Ø§Ù†ØŒ ÙˆØ§Ù„Ù‡ÙˆÙŠØ© Ø¹Ù„Ù‰ WorkedIn.',
+            ar: 'إجابات ��اضحة ح��� طر�`�ة ا�ع�&��R ا�/فع�R ا�ض�&ا� �R ��ا��!���`ة ع��0 WorkedIn.',
             en: 'Find answers about payments, escrow, identity verification, and how WorkedIn works.',
             fr: 'Retrouvez des réponses sur les paiements, l\'escrow, la vérification d\'identité et le fonctionnement de WorkedIn.',
         },
         keywords: {
-            ar: 'Ø£Ø³Ø¦Ù„Ø© Ø´Ø§Ø¦Ø¹Ø©, Ø¯Ø¹Ù…, Ù…Ø³Ø§Ø¹Ø¯Ø©',
+            ar: 'أسئلة شائعة, دعم, مساعدة',
             en: 'faq, help, support',
             fr: 'faq, aide, support',
         },
     },
     terms: {
         title: {
-            ar: 'Ø´Ø±ÙˆØ· Ø§Ù„Ø§Ø³ØªØ®Ø¯Ø§Ù…',
+            ar: 'شروط الاستخدام',
             en: 'Terms of Use',
             fr: 'Conditions d\'utilisation',
         },
         description: {
-            ar: 'Ø§Ø·Ù„Ø¹ Ø¹Ù„Ù‰ Ø´Ø±ÙˆØ· ÙˆØ£Ø­ÙƒØ§Ù… Ø§Ø³ØªØ®Ø¯Ø§Ù… Ù…Ù†ØµØ© WorkedIn.',
+            ar: 'اطلع على شروط وأحكام استخدام منصة WorkedIn.',
             en: 'Read the terms and conditions for using the WorkedIn platform.',
             fr: 'Consultez les conditions d\'utilisation de la plateforme WorkedIn.',
         },
         keywords: {
-            ar: 'Ø´Ø±ÙˆØ· Ø§Ù„Ø§Ø³ØªØ®Ø¯Ø§Ù…, Ø£Ø­ÙƒØ§Ù…, Ù‚Ø§Ù†ÙˆÙ†',
+            ar: 'شروط الاستخدام، أحكام، قانوني',
             en: 'terms, conditions, legal',
             fr: 'conditions, utilisation, légal',
         },
     },
     privacy: {
         title: {
-            ar: 'Ø³ÙŠØ§Ø³Ø© Ø§Ù„Ø®ØµÙˆØµÙŠØ©',
+            ar: 'سياسة الخصوصية',
             en: 'Privacy Policy',
             fr: 'Politique de confidentialité',
         },
         description: {
-            ar: 'ØªØ¹Ø±Ù‘Ù Ø¹Ù„Ù‰ ÙƒÙŠÙÙŠØ© Ø­Ù…Ø§ÙŠØ© Ø¨ÙŠØ§Ù†Ø§ØªÙƒ ÙˆØ®ØµÙˆØµÙŠØªÙƒ Ø¹Ù„Ù‰ WorkedIn.',
+            ar: 'تعر�ف ع��0 ْ�`ف�`ة ح�&ا�`ة ب�`ا� اتْ ��خص��ص�`تْ ع��0 WorkedIn.',
             en: 'Learn how WorkedIn protects your data and privacy.',
             fr: 'Découvrez comment WorkedIn protège vos données et votre vie privée.',
         },
         keywords: {
-            ar: 'Ø®ØµÙˆØµÙŠØ©, Ø­Ù…Ø§ÙŠØ© Ø§Ù„Ø¨ÙŠØ§Ù†Ø§Øª, Ø£Ù…Ø§Ù†',
+            ar: 'خصوصية, حماية البيانات, أمان',
             en: 'privacy, data protection, security',
             fr: 'confidentialité, protection des données, sécurité',
         },
     },
     login: {
         title: {
-            ar: 'Ø³Ø¬Ù‘Ù„ Ø§Ù„Ø¯Ø®ÙˆÙ„ Ø¥Ù„Ù‰ WorkedIn',
+            ar: 'سجّل الدخول إلى WorkedIn',
             en: 'Sign in to WorkedIn',
             fr: 'Connectez-vous à WorkedIn',
         },
         description: {
-            ar: 'Ø¹Ø¯ Ø¥Ù„Ù‰ Ø­Ø³Ø§Ø¨Ùƒ Ø¹Ù„Ù‰ WorkedIn ÙˆØªØ§Ø¨Ø¹ Ù…Ø´Ø§Ø±ÙŠØ¹Ùƒ ÙˆØ±Ø³Ø§Ø¦Ù„Ùƒ ÙˆÙ…Ø¯ÙÙˆØ¹Ø§ØªÙƒ.',
+            ar: 'ع/ إ��0 حسابْ ع��0 WorkedIn ��تابع �&شار�`عْ ��رسائ�ْ ���&/ف��عاتْ.',
             en: 'Sign in to your WorkedIn account to manage projects, messages, and payments.',
             fr: 'Connectez-vous à votre compte WorkedIn pour gérer vos projets, messages et paiements.',
         },
         keywords: {
-            ar: 'ØªØ³Ø¬ÙŠÙ„ Ø§Ù„Ø¯Ø®ÙˆÙ„, Ø­Ø³Ø§Ø¨, WorkedIn',
+            ar: 'تسجيل الدخول, حساب, WorkedIn',
             en: 'sign in, account, WorkedIn login',
             fr: 'connexion, compte, WorkedIn',
         },
     },
     signup: {
         title: {
-            ar: 'Ø£Ù†Ø´Ø¦ Ø­Ø³Ø§Ø¨Ùƒ Ø¹Ù„Ù‰ WorkedIn',
+            ar: 'أنشئ حسابك على WorkedIn',
             en: 'Create your WorkedIn account',
             fr: 'Créez votre compte WorkedIn',
         },
         description: {
-            ar: 'Ø§Ù†Ø¶Ù… Ø¥Ù„Ù‰ Ø£ÙƒØ«Ø± Ù…Ù† 2500 Ù…Ø­ØªØ±Ù ÙŠØ¨Ù†ÙˆÙ† Ù…Ø³ÙŠØ±ØªÙ‡Ù… ÙˆÙŠÙØ¯ÙŠØ±ÙˆÙ† Ù…Ø´Ø§Ø±ÙŠØ¹Ù‡Ù… Ø¹Ù„Ù‰ WorkedIn.',
+            ar: 'ا� ض�& إ��0 أْثر �&�  2500 �&حترف �`ب� ���  �&س�`رت�!�& ���`ُ/�`ر���  �&شار�`ع�!�& ع��0 WorkedIn.',
             en: 'Create your account and join 2,500+ professionals building their career on WorkedIn.',
             fr: 'Créez votre compte et rejoignez 2 500+ professionnels qui développent leur carrière sur WorkedIn.',
         },
         keywords: {
-            ar: 'Ø¥Ù†Ø´Ø§Ø¡ Ø­Ø³Ø§Ø¨, ØªØ³Ø¬ÙŠÙ„, Ù…Ø³ØªÙ‚Ù„, Ø¹Ù…ÙŠÙ„',
+            ar: 'إنشاء حساب, تسجيل, مستقل, عميل',
             en: 'create account, signup, freelance marketplace, client account',
             fr: 'créer un compte, inscription, freelance, client',
         },
     },
     dashboard: {
         title: {
-            ar: 'Ù„ÙˆØ­Ø© Ø§Ù„ØªØ­ÙƒÙ…',
+            ar: 'لوحة التحكم',
             en: 'Dashboard',
             fr: 'Tableau de bord',
         },
         description: {
-            ar: 'ØªØ§Ø¨Ø¹ Ù…Ø´Ø§Ø±ÙŠØ¹Ùƒ ÙˆØ±Ø³Ø§Ø¦Ù„Ùƒ ÙˆØ£Ø±Ø¨Ø§Ø­Ùƒ Ù…Ù† Ù„ÙˆØ­Ø© Ø§Ù„ØªØ­ÙƒÙ… Ø§Ù„Ø®Ø§ØµØ© Ø¨Ùƒ Ø¹Ù„Ù‰ WorkedIn.',
+            ar: 'تابع �&شار�`عْ ��رسائ�ْ ��أرباحْ �&�  DH-) 'D*-CE ا�خاصة بْ ع��0 WorkedIn.',
             en: 'Track projects, messages, and earnings from your WorkedIn dashboard.',
             fr: 'Suivez vos projets, messages et revenus depuis votre tableau de bord WorkedIn.',
         },
         keywords: {
-            ar: 'Ù„ÙˆØ­Ø© ØªØ­ÙƒÙ…, Ù…Ø´Ø§Ø±ÙŠØ¹, Ø£Ø±Ø¨Ø§Ø­',
+            ar: 'لوحة تحكم, مشاريع, أرباح',
             en: 'dashboard, earnings, projects',
             fr: 'tableau de bord, revenus, projets',
         },
     },
     messages: {
         title: {
-            ar: 'Ø§Ù„Ø±Ø³Ø§Ø¦Ù„',
+            ar: 'الرسائل',
             en: 'Messages',
             fr: 'Messages',
         },
         description: {
-            ar: 'ØªÙˆØ§ØµÙ„ Ø¨Ø£Ù…Ø§Ù† Ù…Ø¹ Ø§Ù„Ø¹Ù…Ù„Ø§Ø¡ ÙˆØ§Ù„Ù…Ø³ØªÙ‚Ù„ÙŠÙ† Ø¹Ø¨Ø± Ø±Ø³Ø§Ø¦Ù„ WorkedIn.',
+            ar: 'تواصل بأمان مع العملاء والمستقلين عبر رسائل WorkedIn.',
             en: 'Chat securely with clients and freelancers through WorkedIn messaging.',
             fr: 'Ã‰changez en toute sécurité avec clients et freelances via la messagerie WorkedIn.',
         },
         keywords: {
-            ar: 'Ø±Ø³Ø§Ø¦Ù„, ØªÙˆØ§ØµÙ„, Ù…Ø­Ø§Ø¯Ø«Ø§Øª',
+            ar: 'رسائل, تواصل, محادثات',
             en: 'messages, chat, communication',
             fr: 'messages, chat, communication',
         },
     },
     settings: {
         title: {
-            ar: 'Ø§Ù„Ø¥Ø¹Ø¯Ø§Ø¯Ø§Øª',
+            ar: 'الإعدادات',
             en: 'Settings',
             fr: 'Paramètres',
         },
         description: {
-            ar: 'Ø£Ø¯Ø± Ø¥Ø¹Ø¯Ø§Ø¯Ø§Øª Ø§Ù„Ø­Ø³Ø§Ø¨ ÙˆØ§Ù„Ø¥Ø´Ø¹Ø§Ø±Ø§Øª ÙˆØ§Ù„Ø®ØµÙˆØµÙŠØ© Ù…Ù† Ù…ÙƒØ§Ù† ÙˆØ§Ø­Ø¯.',
+            ar: 'أدر إعدادات الحساب والإشعارات والخصوصية من مكان واحد.',
             en: 'Manage your account settings, notifications, and privacy from one place.',
             fr: 'Gérez vos paramètres de compte, notifications et préférences de confidentialité depuis un seul endroit.',
         },
         keywords: {
-            ar: 'Ø¥Ø¹Ø¯Ø§Ø¯Ø§Øª, Ø­Ø³Ø§Ø¨, ØªÙØ¶ÙŠÙ„Ø§Øª',
+            ar: 'إع/ا/ات, حساب, تفض�`�ات',
             en: 'settings, account, preferences',
             fr: 'paramètres, compte, préférences',
         },
     },
     search: {
         title: {
-            ar: 'Ù†ØªØ§Ø¦Ø¬ Ø§Ù„Ø¨Ø­Ø«',
+            ar: 'نتائج البحث',
             en: 'Search Results',
             fr: 'Résultats de recherche',
         },
         description: {
-            ar: 'Ø§Ø³ØªØ¹Ø±Ø¶ Ù†ØªØ§Ø¦Ø¬ Ø§Ù„Ø¨Ø­Ø« Ø¹Ø¨Ø± Ø§Ù„ÙˆØ¸Ø§Ø¦Ù ÙˆØ§Ù„Ù…Ø³ØªÙ‚Ù„ÙŠÙ† ÙˆØ§Ù„Ù…Ø­ØªÙˆÙ‰ Ø¹Ù„Ù‰ WorkedIn.',
+            ar: 'استعرض F*'&, 'D(-+ عبر ا���ظائف ��ا��&ست���`�  ��ا��&حت���0 ع��0 WorkedIn.',
             en: 'Browse search results across jobs, freelancers, and content on WorkedIn.',
             fr: 'Parcourez les résultats de recherche parmi les missions, freelances et contenus sur WorkedIn.',
         },
         keywords: {
-            ar: 'Ø¨Ø­Ø«, Ù†ØªØ§Ø¦Ø¬',
+            ar: 'بحث, نتائج',
             en: 'search, results',
             fr: 'recherche, résultats',
         },
     },
     freelancerOnboarding: {
         title: {
-            ar: 'Ø¥ÙƒÙ…Ø§Ù„ Ø­Ø³Ø§Ø¨ Ø§Ù„Ù…Ø³ØªÙ‚Ù„',
+            ar: 'إكمال حساب المستقل',
             en: 'Complete Freelancer Setup',
             fr: 'Finaliser le profil freelance',
         },
         description: {
-            ar: 'Ø£ÙƒÙ…Ù„ Ù…Ù„ÙÙƒ ÙƒÙ…Ø³ØªÙ‚Ù„ ÙˆØ§Ø¨Ø¯Ø£ Ø§Ø³ØªÙ‚Ø¨Ø§Ù„ ÙØ±Øµ Ø§Ù„Ø¹Ù…Ù„ Ø¹Ù„Ù‰ WorkedIn.',
+            ar: 'أْ�&� �&�فْ ْ�&ست�� ��اب/أ است�با� فرص ا�ع�&� ع��0 WorkedIn.',
             en: 'Complete your freelancer profile and start getting matched to real work on WorkedIn.',
             fr: 'Finalisez votre profil freelance et commencez à recevoir de vraies opportunités sur WorkedIn.',
         },
         keywords: {
-            ar: 'Ù…Ø³ØªÙ‚Ù„, Ù…Ù„Ù Ø´Ø®ØµÙŠ, Ø¥Ø¹Ø¯Ø§Ø¯',
+            ar: '�&ست��, �&�ف شخص�`, إع/ا/',
             en: 'freelancer onboarding, profile setup',
             fr: 'onboarding freelance, configuration du profil',
         },
     },
     clientOnboarding: {
         title: {
-            ar: 'Ø¥ÙƒÙ…Ø§Ù„ Ø­Ø³Ø§Ø¨ Ø§Ù„Ø¹Ù…ÙŠÙ„',
+            ar: 'إكمال حساب العميل',
             en: 'Complete Client Setup',
             fr: 'Finaliser le profil client',
         },
         description: {
-            ar: 'Ø£ÙƒÙ…Ù„ Ø­Ø³Ø§Ø¨Ùƒ ÙƒØ¹Ù…ÙŠÙ„ ÙˆØ§Ø¨Ø¯Ø£ Ù†Ø´Ø± Ù…Ø´Ø§Ø±ÙŠØ¹Ùƒ Ø¹Ù„Ù‰ WorkedIn.',
+            ar: 'أكمل حسابك كعميل وابدأ نشر مشاريعك على WorkedIn.',
             en: 'Complete your client account and start posting projects on WorkedIn.',
             fr: 'Finalisez votre compte client et commencez à publier vos projets sur WorkedIn.',
         },
         keywords: {
-            ar: 'Ø¹Ù…ÙŠÙ„, Ù…Ø´Ø±ÙˆØ¹, Ø¥Ø¹Ø¯Ø§Ø¯ Ø­Ø³Ø§Ø¨',
+            ar: 'عميل, مشروع, إعداد حساب',
             en: 'client onboarding, project setup',
             fr: 'onboarding client, configuration projet',
         },
     },
 };
+
 
