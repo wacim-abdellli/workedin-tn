@@ -16,7 +16,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 // ─── CORS ─────────────────────────────────────────────────────────────────────
 
-const ALLOWED_ORIGIN = Deno.env.get('ALLOWED_ORIGIN') || 'https://khedmetna.tn';
+const ALLOWED_ORIGIN = Deno.env.get('ALLOWED_ORIGIN') || 'https://workedin.tn';
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
@@ -104,9 +104,8 @@ serve(async (req: Request): Promise<Response> => {
             };
             console.log('[dhmad-refund-escrow][DEV] returning mock refund');
         } else {
-            // PROD — real Dhmad API call
-            // TODO: Verify exact Dhmad refund endpoint schema from docs.dhmad.tn before going live
-            const dhmadRes = await fetch(`${DHMAD_BASE_URL}/escrows/${escrow_id}/refund`, {
+            // PROD — real Dhmad API call (cancel escrow)
+            const dhmadRes = await fetch(`${DHMAD_BASE_URL}/escrows/${escrow_id}/cancel`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -121,7 +120,13 @@ serve(async (req: Request): Promise<Response> => {
                 return jsonResponse({ error: 'فشل استرجاع الضمان عبر بوابة دحماد.' }, 502);
             }
 
-            dhmadData = await dhmadRes.json();
+            const raw = await dhmadRes.json();
+            dhmadData = {
+                success: true,
+                escrow_id,
+                status: 'refunded',
+                refunded_at: raw.updatedAt ?? raw.refunded_at ?? new Date().toISOString(),
+            };
         }
 
         // ── Update contracts: payment_status = refunded, status = cancelled ───

@@ -16,7 +16,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 // ─── CORS ─────────────────────────────────────────────────────────────────────
 
-const ALLOWED_ORIGIN = Deno.env.get('ALLOWED_ORIGIN') || 'https://khedmetna.tn';
+const ALLOWED_ORIGIN = Deno.env.get('ALLOWED_ORIGIN') || 'https://workedin.tn';
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
@@ -103,9 +103,8 @@ serve(async (req: Request): Promise<Response> => {
             };
             console.log('[dhmad-release-escrow][DEV] returning mock release');
         } else {
-            // PROD — real Dhmad API call
-            // TODO: Verify exact Dhmad release endpoint path from docs.dhmad.tn before going live
-            const dhmadRes = await fetch(`${DHMAD_BASE_URL}/escrows/${escrow_id}/release`, {
+            // PROD — real Dhmad API call (deliver = release funds to seller)
+            const dhmadRes = await fetch(`${DHMAD_BASE_URL}/escrows/${escrow_id}/deliver`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -119,7 +118,13 @@ serve(async (req: Request): Promise<Response> => {
                 return jsonResponse({ error: 'فشل تحرير الضمان عبر بوابة دحماد.' }, 502);
             }
 
-            dhmadData = await dhmadRes.json();
+            const raw = await dhmadRes.json();
+            dhmadData = {
+                success: true,
+                escrow_id,
+                status: 'released',
+                released_at: raw.updatedAt ?? raw.released_at ?? new Date().toISOString(),
+            };
         }
 
         // ── Update contracts: payment_status = released, status = completed ───

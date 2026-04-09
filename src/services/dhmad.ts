@@ -192,3 +192,45 @@ export async function getEscrowStatus(
         throw new Error('فشل الحصول على حالة الضمان. يرجى المحاولة مرة أخرى.');
     }
 }
+
+// ─── createCheckoutSession ────────────────────────────────────────────────────
+
+export type DhmadCheckoutAction = 'sign_contract' | 'accept_pay' | 'complete' | 'dispute';
+
+export interface DhmadCheckoutSession {
+    session_id: string;
+    url: string; // Redirect user to this URL
+}
+
+/**
+ * Creates a DHMAD checkout session so the user can be redirected to dhmad.tn
+ * to perform a critical action (sign contract, pay, complete, dispute).
+ */
+export async function createCheckoutSession(
+    escrow_id: string,
+    action: DhmadCheckoutAction,
+    user_email: string,
+    redirect_url: string,
+): Promise<DhmadCheckoutSession> {
+    if (import.meta.env.DEV) {
+        logger.info('[Dhmad][DEV] createCheckoutSession mock', { escrow_id, action });
+        const mockSessionId = `mock_session_${crypto.randomUUID().slice(0, 8)}`;
+        return {
+            session_id: mockSessionId,
+            url: `${redirect_url}?session_id=${mockSessionId}&status=completed`,
+        };
+    }
+
+    try {
+        const { data, error } = await supabase.functions.invoke<DhmadCheckoutSession>(
+            'dhmad-checkout-session',
+            { body: { escrow_id, action, user_email, redirect_url } },
+        );
+        if (error) throw error;
+        if (!data) throw new Error('لم يتم استلام رابط الدفع');
+        return data;
+    } catch (err) {
+        logger.error('[Dhmad] createCheckoutSession failed', err);
+        throw new Error('فشل إنشاء جلسة الدفع. يرجى المحاولة مرة أخرى.');
+    }
+}

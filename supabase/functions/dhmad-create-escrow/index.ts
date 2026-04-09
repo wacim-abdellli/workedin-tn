@@ -19,7 +19,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 // ─── CORS ─────────────────────────────────────────────────────────────────────
 
-const ALLOWED_ORIGIN = Deno.env.get('ALLOWED_ORIGIN') || 'https://khedmetna.tn';
+const ALLOWED_ORIGIN = Deno.env.get('ALLOWED_ORIGIN') || 'https://workedin.tn';
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
@@ -103,7 +103,6 @@ serve(async (req: Request): Promise<Response> => {
             console.log('[dhmad-create-escrow][DEV] returning mock escrow:', dhmadData.escrow_id);
         } else {
             // PROD — real Dhmad API call
-            // TODO: Verify exact Dhmad request schema from docs.dhmad.tn before going live
             const dhmadRes = await fetch(`${DHMAD_BASE_URL}/escrows`, {
                 method: 'POST',
                 headers: {
@@ -111,11 +110,13 @@ serve(async (req: Request): Promise<Response> => {
                     'Authorization': `Bearer ${DHMAD_API_KEY}`,
                 },
                 body: JSON.stringify({
+                    title: description,
                     amount,
-                    buyer_id,
-                    seller_id,
-                    reference: contract_id,
+                    currency: 'TND',
+                    buyerEmail: body.buyer_email,   // caller must pass buyer_email
+                    sellerEmail: body.seller_email, // caller must pass seller_email
                     description,
+                    metadata: { contract_id, buyer_id, seller_id },
                 }),
             });
 
@@ -125,7 +126,14 @@ serve(async (req: Request): Promise<Response> => {
                 return jsonResponse({ error: 'فشل إنشاء الضمان عبر بوابة دحماد.' }, 502);
             }
 
-            dhmadData = await dhmadRes.json();
+            const raw = await dhmadRes.json();
+            dhmadData = {
+                escrow_id: raw.id ?? raw.escrow_id,
+                status: raw.status ?? 'pending',
+                amount: raw.amount ?? amount,
+                payment_url: raw.checkoutUrl ?? raw.payment_url,
+                created_at: raw.createdAt ?? raw.created_at ?? new Date().toISOString(),
+            };
         }
 
         // ── Persist escrow_id + payment_url back to contracts table ──────────
