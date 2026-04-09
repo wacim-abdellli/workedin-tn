@@ -90,8 +90,8 @@ export function HeroSection({ stats }: HeroSectionProps) {
 
   return (
     <section
-      className="relative min-h-screen flex items-center overflow-hidden"
-      style={{ background: 'var(--page-bg)' }}
+      className="relative flex items-center overflow-hidden"
+      style={{ background: 'var(--page-bg)', minHeight: 'calc(100vh - 64px)' }}
     >
       <div
         aria-hidden
@@ -112,7 +112,7 @@ export function HeroSection({ stats }: HeroSectionProps) {
         }}
       />
 
-      <div className="relative z-10 container mx-auto px-6 lg:px-8 max-w-7xl pt-6 pb-16">
+      <div className="relative z-10 container mx-auto px-6 lg:px-8 max-w-7xl pt-8 pb-12 lg:pt-12 lg:pb-16">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           <div>
             <m.div
@@ -136,9 +136,9 @@ export function HeroSection({ stats }: HeroSectionProps) {
               transition={{ duration: 0.6, delay: 0.08, ease: [0.16, 1, 0.3, 1] }}
               className="font-display font-bold leading-[1.05] tracking-tight mb-6"
               style={{
-                fontSize: 'clamp(3rem, 6vw, 5rem)',
+                fontSize: 'clamp(2.5rem, 5vw, 4.2rem)',
                 color: 'var(--text-primary)',
-                minHeight: 'clamp(6rem, 12vw, 10rem)',
+                minHeight: 'unset',
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'flex-start',

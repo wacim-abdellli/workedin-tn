@@ -150,12 +150,17 @@ export default function Header() {
     <>
       <header
         dir={dir}
-        className="fixed top-0 left-0 right-0 z-50 border-b shadow-sm transition-all duration-300"
+        className="fixed top-0 left-0 right-0 z-50 transition-all duration-300"
         style={{
-          borderColor: "color-mix(in srgb, var(--color-border-default) 65%, transparent)",
-          background: "color-mix(in srgb, var(--color-background-elevated) 74%, transparent)",
-          backdropFilter: "blur(16px)",
-          WebkitBackdropFilter: "blur(16px)",
+          borderBottom: `1px solid color-mix(in srgb, var(--workspace-primary) 20%, color-mix(in srgb, var(--color-border-default) 40%, transparent))`,
+          background: isDark
+            ? "color-mix(in srgb, #0a0a0f 85%, transparent)"
+            : "color-mix(in srgb, var(--color-background-elevated) 88%, transparent)",
+          backdropFilter: "blur(20px)",
+          WebkitBackdropFilter: "blur(20px)",
+          boxShadow: isDark
+            ? "0 1px 0 0 color-mix(in srgb, var(--workspace-primary) 15%, transparent), 0 4px 24px -4px rgba(0,0,0,0.4)"
+            : "0 1px 0 0 color-mix(in srgb, var(--workspace-primary) 10%, transparent), 0 4px 16px -4px rgba(0,0,0,0.08)",
         }}
       >
         <ComingSoonBanner />

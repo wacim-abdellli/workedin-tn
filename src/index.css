@@ -721,22 +721,22 @@ h6 {
   }
 
   .header-nav-link {
-    @apply relative flex shrink-0 max-w-[200px] items-center gap-2 rounded-xl px-2 lg:px-3 py-2;
+    @apply relative flex shrink-0 max-w-[200px] items-center gap-1.5 rounded-xl px-2.5 lg:px-3 py-2;
     @apply text-sm font-medium whitespace-nowrap z-10;
-    @apply transition-all duration-300;
-    @apply text-gray-600 hover:text-gray-900;
-    @apply dark:text-zinc-400 dark:hover:text-white;
+    @apply transition-all duration-200;
+    @apply text-zinc-500 hover:text-zinc-900;
+    @apply dark:text-zinc-400 dark:hover:text-zinc-100;
   }
 
   .header-nav-link::before {
     content: "";
-    @apply absolute inset-0 rounded-[0.85rem] opacity-0 transition-all duration-300 scale-95;
-    background: rgba(0, 0, 0, 0.04);
+    @apply absolute inset-0 rounded-xl opacity-0 transition-all duration-200 scale-95;
+    background: rgba(0, 0, 0, 0.05);
     z-index: -1;
   }
 
   .dark .header-nav-link::before {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.06);
   }
 
   .header-nav-link:hover::before {
@@ -744,29 +744,21 @@ h6 {
   }
 
   .header-nav-link-active {
-    @apply header-nav-link text-gray-900 dark:text-zinc-100;
+    @apply header-nav-link;
+    color: var(--workspace-primary) !important;
+  }
+
+  .header-nav-link-active::before {
+    opacity: 1 !important;
+    scale: 1 !important;
+    background: color-mix(in srgb, var(--workspace-primary) 10%, transparent) !important;
   }
 
   .header-nav-link-active::after {
     content: "";
-    @apply absolute -bottom-1 left-2.5 right-2.5 h-[2px] rounded-t-lg transition-all duration-300;
+    @apply absolute -bottom-[17px] left-2 right-2 h-[2px] rounded-t-full;
     background: var(--workspace-primary);
-    box-shadow: 0 -2px 12px
-      color-mix(in srgb, var(--workspace-primary) 60%, transparent);
-  }
-  .dark .header-nav-link-active {
-    background: color-mix(
-      in srgb,
-      var(--workspace-primary) 8%,
-      transparent
-    ) !important;
-    border-color: color-mix(
-      in srgb,
-      var(--workspace-primary) 20%,
-      transparent
-    ) !important;
-    text-shadow: 0 0 16px
-      color-mix(in srgb, var(--workspace-primary) 40%, transparent);
+    box-shadow: 0 0 8px color-mix(in srgb, var(--workspace-primary) 70%, transparent);
   }
 
   .header-profile-trigger {
