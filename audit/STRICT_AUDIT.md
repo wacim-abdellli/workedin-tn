@@ -22,6 +22,51 @@
 
 ---
 
+## Rating tables
+
+Scores use **1–5** (5 = excellent). Letter grades are **overall readiness**, not process vanity.
+
+### Summary (1–5)
+
+| Dimension | Score | Grade | Notes |
+|-----------|-------|-------|--------|
+| Engineering / DX | 4.5 | A− | Tooling, scripts, TypeScript, bundle budgets |
+| CI & quality gates | 4.0 | B+ | Strong gates; E2E vs server wiring uncertain |
+| Frontend architecture | 4.0 | B+ | React 19, Query, routing matrix, workspace model |
+| Client-side security | 4.0 | B+ | No service role in app; sanitization; admin model |
+| Edge / server security patterns | 3.5 | B | Auth + service split OK; CORS defaults drift |
+| Payments & money paths | 2.5 | C+ | Flouci solid; DhMad mock path is a prod risk |
+| Database / RLS (evidence only) | 3.5 | B | Many harden migrations; full policy review not done |
+| Testing (unit + e2e) | 3.5 | B | Broad tests; possible CI gap + flaky cases |
+| Accessibility | 3.0 | B− | Axe E2E; viewport meta hurts zoom |
+| i18n | 4.0 | B+ | Strict audit in CI |
+| Performance / bundles | 3.5 | B | Budgets enforced; heavy routes need profiling |
+| Ops / branding consistency | 2.5 | C+ | workedin vs khedmetna / asset paths |
+| **Weighted overall (product readiness)** | **3.4** | **B−** | Strong engineering; payments + CI + a11y block “A” |
+
+### Letter-grade mapping (reference)
+
+| Grade | Typical meaning |
+|-------|-----------------|
+| A | Production-grade with minor follow-ups |
+| B | Solid; address listed gaps before scaling users/money |
+| C | Material risk or incomplete critical path |
+| D | Unsafe or unreliable for stated purpose |
+
+### Risk heatmap (qualitative)
+
+| | Low risk | Medium | High |
+|--|----------|--------|------|
+| **Code quality & maintainability** | ● | | |
+| **Secrets in client bundle** | ● | | |
+| **CI unit tests + build** | ● | | |
+| **E2E in main CI job** | | ● | |
+| **Escrow / DhMad in prod** | | | ● |
+| **CORS / origin misconfig** | | ● | |
+| **RLS misconfiguration (unknown)** | | ● | |
+
+---
+
 ## 1. Repository scale (quantified)
 
 | Metric | Approximate count |
