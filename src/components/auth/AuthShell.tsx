@@ -21,7 +21,7 @@ interface AuthShellProps {
 }
 
 export default function AuthShell({ title, description, highlights, topAction, children }: AuthShellProps) {
-  const { dir } = useTranslation();
+  const { dir, tx } = useTranslation();
 
   return (
     <div dir={dir} className="min-h-screen bg-zinc-950 text-white flex flex-col">
@@ -80,8 +80,7 @@ export default function AuthShell({ title, description, highlights, topAction, c
                 ))}
               </div>
               <p className="text-sm text-white/40">
-                <span className="text-white/70 font-semibold">500+</span> professionals already on WorkedIn
-              </p>
+                <span className="text-white/70 font-semibold">500+</span> {tx('auth.socialProof', undefined, 'professionals already on WorkedIn')}</p>
             </div>
           </div>
         </div>
