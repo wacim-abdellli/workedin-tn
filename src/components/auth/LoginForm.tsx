@@ -73,21 +73,21 @@ function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
     }; 
     return (
         <div className="w-full max-w-md mx-auto">
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
                 {/* Header */}
-                <div className="text-center mb-5">
+                <div className="text-center mb-3">
                     <div className="relative inline-block">
-                        <div className="mx-auto mb-4 flex h-[64px] w-[64px] items-center justify-center rounded-[20px] bg-[var(--workspace-primary)] shadow-[0_16px_40px_-18px_var(--workspace-primary-shadow)]">
-                            <Mail className="h-8 w-8 text-white" />
+                        <div className="mx-auto mb-3 flex h-[56px] w-[56px] items-center justify-center rounded-[18px] bg-[var(--workspace-primary)] shadow-[0_12px_32px_-14px_var(--workspace-primary-shadow)]">
+                            <Mail className="h-7 w-7 text-white" />
                         </div>
-                        <div className="absolute -top-1 -end-1 flex h-7 w-7 items-center justify-center rounded-xl bg-gradient-to-r from-[var(--amber-400)] to-[var(--amber-600)] shadow-lg shadow-[var(--amber-500)]/30">
-                            <Sparkles className="h-3.5 w-3.5 text-white" />
+                        <div className="absolute -top-0.5 -end-0.5 flex h-6 w-6 items-center justify-center rounded-lg bg-gradient-to-r from-[var(--amber-400)] to-[var(--amber-600)] shadow-md shadow-[var(--amber-500)]/30">
+                            <Sparkles className="h-3 w-3 text-white" />
                         </div>
                     </div>
-                    <h2 className="text-center text-2xl font-bold text-[var(--color-text-primary)] mb-1.5">
+                    <h2 className="text-center text-xl font-bold text-[var(--color-text-primary)] mb-1">
                         {t.auth.loginTitle}
                     </h2>
-                    <p className="mt-1 text-center text-sm text-[var(--color-text-secondary)]">
+                    <p className="text-center text-sm text-[var(--color-text-secondary)]">
                         {t.auth.loginSubtitle}
                     </p>
                 </div>
@@ -115,7 +115,7 @@ function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
                             showToast(t.auth.googleLoginError, 'error');
                         }
                     }}
-                    className="w-full flex items-center justify-center gap-3 rounded-2xl border border-[var(--color-border-default)] bg-[var(--color-background-base)] px-4 py-3.5 font-medium text-[var(--color-text-primary)] shadow-[var(--shadow-elevation-1)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-[var(--color-background-muted)] hover:shadow-[var(--shadow-elevation-2)]"
+                    className="w-full flex items-center justify-center gap-3 rounded-2xl border border-[var(--color-border-default)] bg-[var(--color-background-base)] px-4 py-3 font-medium text-[var(--color-text-primary)] shadow-[var(--shadow-elevation-1)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-[var(--color-background-muted)] hover:shadow-[var(--shadow-elevation-2)]"
                 >
                     <svg className="w-5 h-5" viewBox="0 0 24 24">
                         <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -127,7 +127,7 @@ function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
                 </button>
 
                 {/* Divider */}
-                <div className="relative my-4">
+                <div className="relative my-3">
                     <div className="absolute inset-0 flex items-center">
                         <div className="w-full border-t border-[var(--color-border-default)]" />
                     </div>
@@ -137,7 +137,7 @@ function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
                 </div>
 
                 {/* Form Fields */}
-                <div className="form-stack space-y-3.5">
+                <div className="form-stack space-y-3">
                     <div>
                         <label className="label flex items-center gap-2">
                             <Mail className="w-4 h-4 text-[var(--color-brand-primary)]" />
@@ -176,7 +176,7 @@ function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
                             }
                             {...register('password')}
                         />
-                        <div className="mt-2 text-end">
+                        <div className="mt-1.5 text-end">
                             <Link
                                 to="/forgot-password"
                                 className="text-sm text-[var(--color-brand-primary)] hover:underline font-medium"
