@@ -1,5 +1,5 @@
 /**
- * Payment-related TypeScript types for Khedmetna.tn
+ * Payment-related TypeScript types for WorkedIn.tn
  * Phase 1: Payment Gateway Integration
  */
 

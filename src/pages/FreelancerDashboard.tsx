@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import {
   ArrowRight,
   Bell,
@@ -359,7 +359,7 @@ function FreelancerDashboardPage() {
       <Header />
 
       <main className="container mx-auto px-[var(--spacing-4)] sm:px-[var(--spacing-6)] lg:px-[var(--spacing-8)] pt-[var(--spacing-20)] pb-[var(--spacing-12)] max-w-7xl">
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: -12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: motionEase }}
@@ -445,16 +445,16 @@ function FreelancerDashboardPage() {
               </div>
             ))}
           </div>
-        </motion.div>
+        </m.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-[var(--spacing-5)]">
-          <motion.div
+          <m.div
             className="lg:col-span-2 space-y-[var(--spacing-5)]"
             variants={containerVariants}
             initial="hidden"
             animate="show"
           >
-            <motion.div variants={itemVariants}>
+            <m.div variants={itemVariants}>
               <DashWidget
                 title={tx(
                   "dashboard.freelancer.activeContracts",
@@ -542,9 +542,9 @@ function FreelancerDashboardPage() {
                   </div>
                 )}
               </DashWidget>
-            </motion.div>
+            </m.div>
 
-            <motion.div variants={itemVariants}>
+            <m.div variants={itemVariants}>
               <DashWidget
                 title={tx(
                   "dashboard.freelancer.recentProposals",
@@ -635,9 +635,9 @@ function FreelancerDashboardPage() {
                   </div>
                 )}
               </DashWidget>
-            </motion.div>
+            </m.div>
 
-            <motion.div variants={itemVariants}>
+            <m.div variants={itemVariants}>
               <DashWidget
                 title={tx(
                   "dashboard.freelancer.earningsChart",
@@ -745,9 +745,9 @@ function FreelancerDashboardPage() {
                   </div>
                 )}
               </DashWidget>
-            </motion.div>
+            </m.div>
 
-            <motion.div variants={itemVariants}>
+            <m.div variants={itemVariants}>
               <DashWidget
                 title={tx(
                   "dashboard.freelancer.matchedForYou",
@@ -824,10 +824,10 @@ function FreelancerDashboardPage() {
                   </div>
                 )}
               </DashWidget>
-            </motion.div>
+            </m.div>
 
             {(stats?.milestones?.length ?? 0) > 0 && (
-              <motion.div variants={itemVariants}>
+              <m.div variants={itemVariants}>
                 <DashWidget
                   title={tx(
                     "dashboard.freelancer.upcomingMilestones",
@@ -872,17 +872,17 @@ function FreelancerDashboardPage() {
                     ))}
                   </div>
                 </DashWidget>
-              </motion.div>
+              </m.div>
             )}
-          </motion.div>
+          </m.div>
 
-          <motion.div
+          <m.div
             className="space-y-5"
             variants={containerVariants}
             initial="hidden"
             animate="show"
           >
-            <motion.div variants={itemVariants}>
+            <m.div variants={itemVariants}>
               <DashWidget
                 title={tx(
                   "dashboard.freelancer.profileStrength",
@@ -926,9 +926,9 @@ function FreelancerDashboardPage() {
                   </div>
                 </div>
               </DashWidget>
-            </motion.div>
+            </m.div>
 
-            <motion.div variants={itemVariants}>
+            <m.div variants={itemVariants}>
               <DashWidget
                 title={tx(
                   "dashboard.freelancer.thisMonth",
@@ -1024,10 +1024,10 @@ function FreelancerDashboardPage() {
                   </Button>
                 </div>
               </DashWidget>
-            </motion.div>
+            </m.div>
 
             {(stats?.notifications?.length ?? 0) > 0 && (
-              <motion.div variants={itemVariants}>
+              <m.div variants={itemVariants}>
                 <DashWidget
                   title={tx(
                     "dashboard.freelancer.notifications",
@@ -1061,10 +1061,10 @@ function FreelancerDashboardPage() {
                     ))}
                   </div>
                 </DashWidget>
-              </motion.div>
+              </m.div>
             )}
 
-            <motion.div variants={itemVariants}>
+            <m.div variants={itemVariants}>
               <DashWidget
                 title={tx(
                   "dashboard.freelancer.quickActions",
@@ -1111,8 +1111,8 @@ function FreelancerDashboardPage() {
                   ))}
                 </div>
               </DashWidget>
-            </motion.div>
-          </motion.div>
+            </m.div>
+          </m.div>
         </div>
       </main>
     </div>

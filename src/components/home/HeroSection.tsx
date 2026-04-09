@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, Shield, Zap, Star } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { useWorkspaceStore } from '@/lib/workspaceState';
 import { useTranslation } from '@/i18n';
 
@@ -115,7 +115,7 @@ export function HeroSection({ stats }: HeroSectionProps) {
       <div className="relative z-10 container mx-auto px-6 lg:px-8 max-w-7xl pt-6 pb-16">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           <div>
-            <motion.div
+            <m.div
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
@@ -128,9 +128,9 @@ export function HeroSection({ stats }: HeroSectionProps) {
             >
               <span className="w-2 h-2 rounded-full animate-pulse" style={{ background: 'var(--color-status-success)' }} />
               {heroContent.eyebrow}
-            </motion.div>
+            </m.div>
 
-            <motion.h1
+            <m.h1
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.08, ease: [0.16, 1, 0.3, 1] }}
@@ -157,9 +157,9 @@ export function HeroSection({ stats }: HeroSectionProps) {
               >
                 {heroContent.titleAccent}
               </span>
-            </motion.h1>
+            </m.h1>
 
-            <motion.p
+            <m.p
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.16, ease: [0.16, 1, 0.3, 1] }}
@@ -167,9 +167,9 @@ export function HeroSection({ stats }: HeroSectionProps) {
               style={{ color: 'var(--text-secondary)' }}
             >
               {heroContent.subtitle}
-            </motion.p>
+            </m.p>
 
-            <motion.div
+            <m.div
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.24, ease: [0.16, 1, 0.3, 1] }}
@@ -198,9 +198,9 @@ export function HeroSection({ stats }: HeroSectionProps) {
               >
                 {heroContent.secondaryCta}
               </button>
-            </motion.div>
+            </m.div>
 
-            <motion.div
+            <m.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5, delay: 0.36 }}
@@ -214,10 +214,10 @@ export function HeroSection({ stats }: HeroSectionProps) {
                   </span>
                 </div>
               ))}
-            </motion.div>
+            </m.div>
           </div>
 
-          <motion.div
+          <m.div
             initial={{ opacity: 0, x: 24 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.7, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
@@ -293,7 +293,7 @@ export function HeroSection({ stats }: HeroSectionProps) {
                 </p>
               </div>
             </div>
-          </motion.div>
+          </m.div>
         </div>
       </div>
     </section>

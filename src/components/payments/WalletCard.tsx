@@ -78,11 +78,11 @@ const WalletCard = ({ className = '', showWithdrawal = true }: WalletCardProps) 
 
     if (loading) {
         return (
-            <div className={`bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 ${className}`}>
+            <div className={`bg-card rounded-2xl border border-border p-6 ${className}`}>
                 <div className="animate-pulse space-y-4">
-                    <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-1/3" />
-                    <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded w-1/2" />
-                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-2/3" />
+                    <div className="h-6 bg-secondary rounded w-1/3" />
+                    <div className="h-10 bg-secondary rounded w-1/2" />
+                    <div className="h-4 bg-secondary rounded w-2/3" />
                 </div>
             </div>
         );
@@ -90,7 +90,7 @@ const WalletCard = ({ className = '', showWithdrawal = true }: WalletCardProps) 
 
     if (error) {
         return (
-            <div className={`bg-white dark:bg-gray-800 rounded-2xl border border-red-200 dark:border-red-800 p-6 ${className}`}>
+            <div className={`bg-card rounded-2xl border border-red-200 dark:border-red-800 p-6 ${className}`}>
                 <div className="text-center">
                     <p className="text-red-600 dark:text-red-400 mb-2">{error}</p>
                     <button
@@ -107,10 +107,10 @@ const WalletCard = ({ className = '', showWithdrawal = true }: WalletCardProps) 
 
     if (!wallet) {
         return (
-            <div className={`bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 ${className}`}>
+            <div className={`bg-card rounded-2xl border border-border p-6 ${className}`}>
                 <div className="text-center py-4">
-                    <Wallet className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                    <p className="text-gray-500 dark:text-gray-400">لم يتم إنشاء محفظتك بعد</p>
+                    <Wallet className="w-12 h-12 text-muted mx-auto mb-3" />
+                    <p className="text-muted">لم يتم إنشاء محفظتك بعد</p>
                     <button
                         onClick={fetchWalletData}
                         className="mt-2 text-sm text-primary-600 hover:text-primary-700"
@@ -123,19 +123,19 @@ const WalletCard = ({ className = '', showWithdrawal = true }: WalletCardProps) 
     }
 
     return (
-        <div className={`bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden ${className}`}>
+        <div className={`bg-card rounded-2xl border border-border overflow-hidden ${className}`}>
             {/* Header with Balance */}
             <div className="p-6 bg-gradient-to-br from-primary-500 to-primary-700 text-white">
                 <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-white dark:bg-gray-800 flex items-center justify-center">
+                        <div className="w-10 h-10 rounded-xl bg-card flex items-center justify-center">
                             <Wallet className="w-5 h-5" />
                         </div>
                         <h3 className="font-bold text-lg">محفظتي</h3>
                     </div>
                     <button
                         onClick={fetchWalletData}
-                        className="p-2 rounded-lg hover:bg-white dark:bg-gray-800 transition-colors"
+                        className="p-2 rounded-lg hover:bg-card transition-colors"
                         title="تحديث"
                     >
                         <RefreshCw className="w-4 h-4" />
@@ -151,14 +151,14 @@ const WalletCard = ({ className = '', showWithdrawal = true }: WalletCardProps) 
 
                 {/* Stats Row */}
                 <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-white dark:bg-gray-800 rounded-xl p-3">
+                    <div className="bg-card rounded-xl p-3">
                         <div className="flex items-center gap-2 text-primary-100 text-xs mb-1">
                             <Clock className="w-3 h-3" />
                             <span>قيد الانتظار</span>
                         </div>
                         <div className="font-bold">{formatCurrency(wallet.pending_balance)}</div>
                     </div>
-                    <div className="bg-white dark:bg-gray-800 rounded-xl p-3">
+                    <div className="bg-card rounded-xl p-3">
                         <div className="flex items-center gap-2 text-primary-100 text-xs mb-1">
                             <TrendingUp className="w-3 h-3" />
                             <span>إجمالي الأرباح</span>
@@ -170,7 +170,7 @@ const WalletCard = ({ className = '', showWithdrawal = true }: WalletCardProps) 
 
             {/* Actions */}
             {showWithdrawal && wallet.balance > 0 && (
-                <div className="p-4 border-b border-gray-100 dark:border-gray-800 dark:border-gray-700">
+                <div className="p-4 border-b border-border border-border">
                     <Link
                         to="/freelancer/earnings?action=withdraw"
                         className="btn-primary btn-md w-full justify-center"
@@ -184,7 +184,7 @@ const WalletCard = ({ className = '', showWithdrawal = true }: WalletCardProps) 
             {/* Recent Transactions */}
             <div className="p-4">
                 <div className="flex items-center justify-between mb-3">
-                    <h4 className="font-semibold text-gray-900 dark:text-gray-100 dark:text-white text-sm">
+                    <h4 className="font-semibold text-foreground dark:text-white text-sm">
                         آخر المعاملات
                     </h4>
                     <Link
@@ -197,20 +197,20 @@ const WalletCard = ({ className = '', showWithdrawal = true }: WalletCardProps) 
 
                 {transactions.length === 0 ? (
                     <div className="text-center py-4">
-                        <p className="text-sm text-gray-500 dark:text-gray-400">لا توجد معاملات بعد</p>
+                        <p className="text-sm text-muted">لا توجد معاملات بعد</p>
                     </div>
                 ) : (
                     <div className="space-y-3">
                         {transactions.map((tx) => (
                             <div
                                 key={tx.id}
-                                className="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-800 dark:border-gray-700 last:border-0"
+                                className="flex items-center justify-between py-2 border-b border-border border-border last:border-0"
                             >
                                 <div>
-                                    <div className="font-medium text-sm text-gray-900 dark:text-gray-100 dark:text-white">
+                                    <div className="font-medium text-sm text-foreground dark:text-white">
                                         {formatTransactionType(tx.type)}
                                     </div>
-                                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                                    <div className="text-xs text-muted">
                                         {new Date(tx.created_at).toLocaleDateString('ar-TN')}
                                     </div>
                                 </div>
@@ -219,7 +219,7 @@ const WalletCard = ({ className = '', showWithdrawal = true }: WalletCardProps) 
                                             ? 'text-green-600'
                                             : isDebitTransaction(tx.type)
                                                 ? 'text-red-600'
-                                                : 'text-gray-900 dark:text-gray-100 dark:text-white'
+                                                : 'text-foreground dark:text-white'
                                         }`}>
                                         {isCreditTransaction(tx.type) ? '+' : isDebitTransaction(tx.type) ? '-' : ''}
                                         {formatCurrency(tx.amount)}

@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+ import React, { useState } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import { JobCardErrorFallback } from '../ErrorFallback';
 import { Clock, Heart, TrendingUp, MapPin, Sparkles } from 'lucide-react';
@@ -55,7 +55,7 @@ const CATEGORY_COLORS: Record<string, { border: string; bg: string; text: string
 function JobCard({ job, isSaved, onToggleSave, onClick }: JobCardProps) {
   const [isSaving, setIsSaving] = useState(false);
   const { t, language } = useTranslation();
-  const [from, to] = getAvatarGradient(job.client?.full_name || 'Khedmetna');
+  const [from, to] = getAvatarGradient(job.client?.full_name || 'WorkedIn');
   
   const categoryColor = CATEGORY_COLORS[job.category || 'other'] || CATEGORY_COLORS.other;
 
@@ -148,7 +148,7 @@ function JobCard({ job, isSaved, onToggleSave, onClick }: JobCardProps) {
       </h3>
 
       {/* Description */}
-      <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mb-4"
+      <p className="text-sm text-muted-foreground line-clamp-2 mb-4"
          style={{ color: 'var(--color-text-secondary)' }}>
         {job.description}
       </p>

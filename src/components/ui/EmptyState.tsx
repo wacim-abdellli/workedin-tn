@@ -1,6 +1,6 @@
 import React from 'react';
 import type { LucideIcon } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import Button from './Button';
 
 interface EmptyStateProps {
@@ -37,7 +37,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
     const bgColor = isError ? 'var(--color-status-error-bg)' : 'var(--workspace-primary-light)';
 
     return (
-        <motion.div
+        <m.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
@@ -50,7 +50,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
             {illustration ? (
                 <div className="mb-8">{illustration}</div>
             ) : (
-                <motion.div
+                <m.div
                     animate={{ y: [0, -6, 0] }}
                     transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
                     className="relative mb-8"
@@ -69,7 +69,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
                     >
                         <Icon className="w-10 h-10" style={{ color: primaryColor }} />
                     </div>
-                </motion.div>
+                </m.div>
             )}
 
             <h3
@@ -106,7 +106,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
                     )}
                 </div>
             )}
-        </motion.div>
+        </m.div>
     );
 };
 

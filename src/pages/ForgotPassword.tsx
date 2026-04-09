@@ -1,4 +1,4 @@
-﻿import { logger } from '@/lib/logger';
+ import { logger } from '@/lib/logger';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -181,7 +181,7 @@ const ForgotPassword = () => {
                     )}
                 <p className="text-center text-sm text-[var(--color-text-tertiary)] mt-6">
                     {tx('pages.forgotPassword.needHelp', undefined, 'Need help?')} {' '}
-                    <a href="mailto:support@khedmetna.tn" className="text-[var(--color-brand-primary)] hover:underline">
+                    <a href="mailto:support@workedin.tn" className="text-[var(--color-brand-primary)] hover:underline">
                         {tx('pages.forgotPassword.contactUs', undefined, 'Contact us')}
                     </a>
                 </p>

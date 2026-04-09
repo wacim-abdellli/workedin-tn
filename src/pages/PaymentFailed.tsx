@@ -45,28 +45,28 @@ const PaymentFailed = () => {
             dir={dir}
         >
             <div className="max-w-md w-full">
-                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 text-center">
+                <div className="bg-card rounded-2xl shadow-xl p-8 text-center">
                     {/* Error Icon */}
                     <div className="w-20 h-20 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
                         <XCircle className="w-10 h-10 text-red-600" />
                     </div>
 
                     {/* Title */}
-                    <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 dark:text-white mb-2">
+                    <h2 className="text-2xl font-bold text-foreground dark:text-white mb-2">
                         فشلت عملية الدفع
                     </h2>
 
                     {/* Error Message */}
-                    <p className="text-gray-600 dark:text-gray-400 mb-6">
+                    <p className="text-muted-foreground mb-6">
                         {getErrorMessage(errorCode)}
                     </p>
 
                     {/* Tips */}
-                    <div className="bg-gray-50 dark:bg-gray-900 dark:bg-gray-700/50 rounded-xl p-4 mb-6 text-right">
-                        <h4 className="font-semibold text-gray-900 dark:text-gray-100 dark:text-white mb-2">
+                    <div className="bg-surface rounded-xl p-4 mb-6 text-right">
+                        <h4 className="font-semibold text-foreground dark:text-white mb-2">
                             نصائح لحل المشكلة:
                         </h4>
-                        <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                        <ul className="text-sm text-muted-foreground space-y-1">
                             <li>• تأكد من صحة بيانات البطاقة</li>
                             <li>• تحقق من توفر رصيد كافي</li>
                             <li>• جرب استخدام بطاقة أخرى</li>
@@ -96,7 +96,7 @@ const PaymentFailed = () => {
 
                         <Link
                             to="/"
-                            className="flex items-center justify-center gap-2 text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-gray-300 mt-4"
+                            className="flex items-center justify-center gap-2 text-muted hover:text-muted-foreground mt-4"
                         >
                             <Home className="w-4 h-4" />
                             <span>الصفحة الرئيسية</span>
@@ -104,7 +104,7 @@ const PaymentFailed = () => {
                     </div>
 
                     {/* Support */}
-                    <p className="text-xs text-gray-500 mt-6">
+                    <p className="text-xs text-muted mt-6">
                         إذا استمرت المشكلة، تواصل مع الدعم الفني
                     </p>
                 </div>

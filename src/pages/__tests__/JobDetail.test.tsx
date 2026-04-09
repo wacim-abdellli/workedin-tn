@@ -1,4 +1,4 @@
-﻿import { render, screen } from '@testing-library/react';
+ import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import { beforeEach, describe, expect, it, vi } from 'vitest';

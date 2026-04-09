@@ -1,11 +1,11 @@
-﻿import { useState, useCallback } from 'react';
+ import { useState, useCallback } from 'react';
 
 const MAX_ATTEMPTS = 5;
 const LOCKOUT_DURATION_MS = 15 * 60 * 1000; // 15 minutes
 
 export function useAuthRateLimit(actionName: string) {
-    const storageKey = `khedma_auth_lockout_${actionName}`;
-    const attemptsKey = `khedma_auth_attempts_${actionName}`;
+    const storageKey = `workedin_auth_lockout_${actionName}`;
+    const attemptsKey = `workedin_auth_attempts_${actionName}`;
 
     const [lockoutUntil, setLockoutUntil] = useState<number | null>(() => {
         const item = localStorage.getItem(storageKey);

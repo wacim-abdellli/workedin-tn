@@ -4,7 +4,7 @@ import { supabase } from '@/lib/supabase';
 import { supabaseWithRetry } from '@/lib/supabaseWithRetry';
 import type { FreelancerProfile, Profile, UserType } from '@/types';
 import { getWorkspaceTargetRoute, promoteUserTypeForWorkspace } from '@/lib/workspaceRoutes';
-import { useWorkspaceStore, type Workspace } from '@/lib/workspaceState';
+import { useWorkspaceStore, saveWorkspaceForUser, type Workspace } from '@/lib/workspaceState';
 
 interface SwitchWorkspaceArgs {
   userId: string;
@@ -60,6 +60,9 @@ export async function switchWorkspace({
 
   store.setSwitching(true);
   store.setWorkspace(targetWorkspace);
+
+  // Persist immediately so reload restores the correct workspace before DB responds
+  saveWorkspaceForUser(userId, targetWorkspace);
 
   if (targetWorkspace === 'freelancer' && !freelancerProfile) {
     void ensureFreelancerShell(userId);

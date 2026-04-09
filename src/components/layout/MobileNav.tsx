@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+  import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
   Bell,
@@ -209,7 +209,7 @@ export default function MobileNav() {
             className="text-lg font-bold"
             style={{ color: 'var(--workspace-primary)' }}
           >
-            {tx('pages.mobileNav.brandName', undefined, 'Khedmetna')}
+            {tx('pages.mobileNav.brandName', undefined, 'WorkedIn')}
           </button>
           <button
             onClick={() => setShowSearch(true)}
@@ -252,17 +252,17 @@ export default function MobileNav() {
       {showMenu ? (
         <div className="fixed inset-0 z-50 md:hidden">
           <div className="absolute inset-0 bg-black/50" onClick={() => setShowMenu(false)} />
-          <div className="absolute bottom-0 left-0 right-0 rounded-t-3xl bg-white dark:bg-gray-800 dark:bg-gray-900 p-2 dark:bg-[var(--color-bg-muted)]">
-            <div className="mx-auto mt-3 h-1 w-12 rounded-full bg-gray-300 dark:bg-white dark:bg-gray-900/10" />
+          <div className="absolute bottom-0 left-0 right-0 rounded-t-3xl p-2 shadow-2xl" style={{ background: 'var(--color-background-elevated)', borderTop: '1px solid var(--color-border-subtle)' }}>
+            <div className="mx-auto mt-3 h-1 w-12 rounded-full" style={{ background: 'var(--color-border-strong)' }} />
 
-            <div className="border-b border-gray-100 dark:border-gray-800 p-4 dark:border-white/10">
+            <div className="border-b p-4" style={{ borderColor: 'var(--color-border-default)' }}>
               <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-primary-400 to-secondary-500 text-white">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-primary-400 to-secondary-500 text-white shadow-sm">
                   {profile?.full_name?.charAt(0) || 'U'}
                 </div>
                 <div>
-                  <p className="font-semibold text-gray-900 dark:text-gray-100 dark:text-white">{profile?.full_name || tx('pages.mobileNav.userFallback', undefined, 'User')}</p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">{workspaceLabel}</p>
+                  <p className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>{profile?.full_name || tx('pages.mobileNav.userFallback', undefined, 'User')}</p>
+                  <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>{workspaceLabel}</p>
                 </div>
               </div>
             </div>
@@ -275,15 +275,15 @@ export default function MobileNav() {
                     navigate(item.path);
                     setShowMenu(false);
                   }}
-                  className="flex w-full items-center gap-4 rounded-xl p-4 text-left hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-white dark:bg-gray-800 dark:bg-gray-900/5"
+                  className="group flex w-full items-center gap-4 rounded-xl p-4 text-left transition-colors hover:bg-[color-mix(in_srgb,var(--workspace-primary)_10%,transparent)]"
                 >
-                  <item.icon className="h-5 w-5 text-gray-500 dark:text-gray-400" />
-                  <span className="font-medium text-gray-900 dark:text-gray-100 dark:text-white">{item.label}</span>
+                  <item.icon className="h-5 w-5 group-hover:text-[var(--workspace-primary)]" style={{ color: 'var(--color-text-secondary)' }} />
+                  <span className="font-medium group-hover:text-[var(--workspace-primary)]" style={{ color: 'var(--color-text-primary)' }}>{item.label}</span>
                 </button>
               ))}
             </div>
 
-            <div className="border-t border-gray-100 dark:border-gray-800 p-2 dark:border-white/10">
+            <div className="border-t p-2" style={{ borderColor: 'var(--color-border-default)' }}>
               <button
                 onClick={async () => {
                   await signOut();

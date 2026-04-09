@@ -1,5 +1,5 @@
-﻿/**
- * Currency formatting utilities for Khedmetna.tn
+ /**
+ * Currency formatting utilities for WorkedIn.tn
  * Handles TND (Tunisian Dinar) formatting
  */
 
@@ -12,7 +12,7 @@ const numberLocaleByLanguage: Record<Language, string> = {
 };
 
 const currencySymbolByLanguage: Record<Language, string> = {
-    ar: 'Ø¯.Øª',
+    ar: 'د.ت',
     en: 'TND',
     fr: 'TND',
 };
@@ -21,7 +21,7 @@ const currencySymbolByLanguage: Record<Language, string> = {
  * Format amount in TND with proper Arabic formatting
  * @param amount - Amount in TND
  * @param showSymbol - Whether to show the currency symbol (default: true)
- * @returns Formatted string like "125.500 Ø¯.Øª"
+ * @returns Formatted string like "125.500 د.ت"
  */
 export function formatCurrency(amount: number, showSymbol = true, language: Language = 'ar'): string {
     const formatted = new Intl.NumberFormat(numberLocaleByLanguage[language], {
@@ -86,7 +86,7 @@ export function validateWithdrawalAmount(
     }
 
     if (amount < minAmount) {
-        return { valid: false, error: `Ø§Ù„Ø­Ø¯ Ø§Ù„Ø£Ø¯Ù†Ù‰ Ù„Ù„Ø³Ø­Ø¨ Ù‡Ùˆ ${minAmount} Ø¯.Øª` };
+        return { valid: false, error: `الحد الأدنى للسحب هو ${minAmount} د.ت` };
     }
 
     if (amount > balance) {

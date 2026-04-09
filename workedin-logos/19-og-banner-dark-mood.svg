@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <rect width="1200" height="630" fill="#080808"/>
+  <!-- grid -->
+  <line x1="0" y1="157" x2="1200" y2="157" stroke="#111" stroke-width="1"/>
+  <line x1="0" y1="315" x2="1200" y2="315" stroke="#111" stroke-width="1"/>
+  <line x1="0" y1="472" x2="1200" y2="472" stroke="#111" stroke-width="1"/>
+  <line x1="300" y1="0" x2="300" y2="630" stroke="#111" stroke-width="1"/>
+  <line x1="600" y1="0" x2="600" y2="630" stroke="#111" stroke-width="1"/>
+  <line x1="900" y1="0" x2="900" y2="630" stroke="#111" stroke-width="1"/>
+  <!-- amber side bar left -->
+  <rect x="0" y="0" width="8" height="630" fill="#E08A00"/>
+  <!-- big icon -->
+  <rect x="80" y="160" width="220" height="220" fill="#E08A00"/>
+  <rect x="80" y="160" width="220" height="18" fill="#c97a00"/>
+  <polyline points="104,196 136,288 168,244 200,288 232,196" fill="none" stroke="#080808" stroke-width="22" stroke-linejoin="round" stroke-linecap="round"/>
+  <line x1="264" y1="192" x2="264" y2="348" stroke="#080808" stroke-width="22" stroke-linecap="round"/>
+  <line x1="250" y1="192" x2="278" y2="192" stroke="#080808" stroke-width="20" stroke-linecap="round"/>
+  <line x1="250" y1="348" x2="278" y2="348" stroke="#080808" stroke-width="20" stroke-linecap="round"/>
+  <!-- wordmark large -->
+  <text x="80" y="450" font-family="Arial Black, sans-serif" font-weight="900" font-size="96" letter-spacing="-5" fill="#e8e8e8">WORKED</text>
+  <text x="80" y="548" font-family="Arial Black, sans-serif" font-weight="900" font-size="96" letter-spacing="-5" fill="#E08A00">IN</text>
+  <!-- right side tagline -->
+  <line x1="700" y1="160" x2="700" y2="540" stroke="#1a1a1a" stroke-width="1"/>
+  <text x="740" y="280" font-family="system-ui, sans-serif" font-size="22" fill="#333" letter-spacing="3">BUILT IN TUNISIA</text>
+  <text x="740" y="320" font-family="system-ui, sans-serif" font-size="22" fill="#333" letter-spacing="3">READY FOR SERIOUS</text>
+  <text x="740" y="360" font-family="system-ui, sans-serif" font-size="22" fill="#E08A00" letter-spacing="3">HIRING.</text>
+  <!-- bottom amber line -->
+  <rect x="0" y="620" width="1200" height="4" fill="#E08A00" opacity="0.3"/>
+  <rect x="0" y="626" width="1200" height="4" fill="#E08A00" opacity="0.15"/>
+</svg>

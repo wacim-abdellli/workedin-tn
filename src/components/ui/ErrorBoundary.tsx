@@ -51,21 +51,21 @@ class ErrorBoundaryInner extends Component<Props & { tx: (key: string, params?: 
             }
 
             return (
-                <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gray-50 px-4 dark:bg-zinc-950">
+                <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#050507] px-4">
                     <div className="pointer-events-none absolute left-1/2 top-1/2 h-[350px] w-[350px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[color-mix(in_srgb,var(--workspace-accent)_6%,transparent)] blur-[100px]" />
-                    <div className="relative z-10 w-full max-w-xl rounded-[32px] border border-gray-200 bg-white/80 dark:bg-zinc-900/60 p-8 text-center shadow-[0_8px_30px_rgb(0,0,0,0.04)] backdrop-blur-xl dark:border-white/5 dark:shadow-none animate-[fade-in_0.5s_ease-out]">
+                    <div className="relative z-10 w-full max-w-xl rounded-[32px] border border-white/10 bg-zinc-950/80 p-8 text-center shadow-[0_8px_30px_rgb(0,0,0,0.35)] backdrop-blur-xl animate-[fade-in_0.5s_ease-out]">
                         <div className="flex justify-center mb-6">
-                            <div className="relative flex h-[88px] w-[88px] items-center justify-center rounded-[24px] border border-gray-200 bg-white shadow-sm dark:border-white/5 dark:bg-zinc-900/60">
-                                <Logo variant="mark" size="lg" />
+                            <div className="relative flex h-[88px] w-[88px] items-center justify-center">
+                                <Logo variant="mark" size="lg" mode="black" />
                             </div>
                         </div>
                         <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-100 dark:bg-red-500/10">
                             <AlertTriangle className="h-8 w-8 text-red-600 dark:text-red-300" />
                         </div>
-                        <h1 className="mb-3 text-3xl font-bold tracking-[-0.02em] text-[#171420] dark:text-white">
+                        <h1 className="mb-3 text-3xl font-bold tracking-[-0.02em] text-white">
                             {this.props.tx('pages.errorBoundary.title', undefined, 'Something went wrong')}
                         </h1>
-                        <p className="mx-auto mb-6 max-w-md text-base leading-7 text-[#625c78] dark:text-[#a7a2ba]">
+                        <p className="mx-auto mb-6 max-w-md text-base leading-7 text-zinc-300">
                             {this.props.tx('pages.errorBoundary.description', undefined, 'An unexpected error interrupted this page. Refresh and try again, or head back to the homepage.')}
                         </p>
                         <div className="flex flex-col justify-center gap-3 sm:flex-row">

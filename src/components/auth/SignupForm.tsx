@@ -1,4 +1,4 @@
-﻿
+
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -32,11 +32,11 @@ function SignupForm({ onComplete }: SignupFormProps) {
 
     const [attempts, setAttempts] = useState(0);
     const [lockoutUntil, setLockoutTime] = useState<number | null>(() => {
-        const item = localStorage.getItem('khedma_signup_lockout');
+        const item = localStorage.getItem('workedin_signup_lockout');
         if (item) {
             const parsed = parseInt(item, 10);
             if (parsed > Date.now()) return parsed;
-            localStorage.removeItem('khedma_signup_lockout');
+            localStorage.removeItem('workedin_signup_lockout');
         }
         return null;
     });
@@ -119,7 +119,7 @@ function SignupForm({ onComplete }: SignupFormProps) {
             await signUpWithEmail(data.email, data.password);
             
             setAttempts(0);
-            localStorage.removeItem('khedma_signup_lockout');
+            localStorage.removeItem('workedin_signup_lockout');
 
             // Redirect to email verification page
             navigate(`/verify-email?email=${encodeURIComponent(data.email)}`);
@@ -129,7 +129,7 @@ function SignupForm({ onComplete }: SignupFormProps) {
              if (newAttempts >= 5) {
                  const lockout = Date.now() + 15 * 60 * 1000;
                  setLockoutTime(lockout);
-                 localStorage.setItem('khedma_signup_lockout', lockout.toString());
+                 localStorage.setItem('workedin_signup_lockout', lockout.toString());
                  const msg = tx('authPages.signup.rateLimitError15Min', undefined, 'Too many attempts. Please try again in 15 minutes.');
                  setError(msg);
                  showToast(msg, 'error');
@@ -249,6 +249,7 @@ function SignupForm({ onComplete }: SignupFormProps) {
                                 placeholder={t.auth.emailPlaceholder}
                                 error={errors.email?.message}
                                 dir="ltr"
+                                autoComplete="email"
                                 {...register('email')}
                             />
                         </div>
@@ -263,6 +264,7 @@ function SignupForm({ onComplete }: SignupFormProps) {
                                 placeholder={t.auth.passwordPlaceholder}
                                 error={errors.password?.message}
                                 dir="ltr"
+                                autoComplete="new-password"
                                 rightIcon={
                                     <button
                                         type="button"
@@ -286,6 +288,7 @@ function SignupForm({ onComplete }: SignupFormProps) {
                                 placeholder={t.auth.confirmPasswordPlaceholder}
                                 error={errors.confirmPassword?.message}
                                 dir="ltr"
+                                autoComplete="new-password"
                                 {...register('confirmPassword')}
                             />
                         </div>

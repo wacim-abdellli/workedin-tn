@@ -148,6 +148,7 @@ function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
                             placeholder={t.auth.emailPlaceholder}
                             error={errors.email?.message}
                             dir="ltr"
+                            autoComplete="email"
                             {...register('email')}
                         />
                     </div>
@@ -162,6 +163,7 @@ function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
                             placeholder={t.auth.passwordPlaceholder}
                             error={errors.password?.message}
                             dir="ltr"
+                            autoComplete="current-password"
                             rightIcon={
                                 <button
                                     type="button"

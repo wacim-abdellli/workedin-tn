@@ -81,7 +81,7 @@ export function NotificationBell({ className = '' }: { className?: string }) {
 
             {isOpen && (
                 <div className="header-dropdown-surface absolute ltr:-right-2 ltr:sm:right-0 rtl:-left-2 rtl:sm:left-0 top-full z-50 mt-3 w-[calc(100vw-2rem)] max-w-sm sm:w-96 origin-top">
-                    <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-800/80 px-4 py-4 dark:border-white/8">
+                    <div className="flex items-center justify-between border-b border-border/80 px-4 py-4 dark:border-white/8">
                         <h3 className="font-bold text-dark-900 dark:text-white">{t.notifications?.title || 'Notifications'}</h3>
                         {unreadCount > 0 && (
                             <button
@@ -102,7 +102,7 @@ export function NotificationBell({ className = '' }: { className?: string }) {
                             </div>
                         ) : notifications.length === 0 ? (
                             <div className="p-12 text-center">
-                                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-brand-light text-brand dark:bg-gray-800 dark:text-brand-mid">
+                                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-brand-light text-brand bg-card dark:text-brand-mid">
                                     <Bell className="h-7 w-7" />
                                 </div>
                                 <p className="font-semibold text-dark-900 dark:text-white">{t.notifications?.empty || 'No notifications'}</p>
@@ -120,11 +120,11 @@ export function NotificationBell({ className = '' }: { className?: string }) {
                                     className={`cursor-pointer rounded-2xl border p-3 transition-all duration-300 hover:shadow-sm ${
                                         !n.is_read
                                             ? 'border-brand/30 bg-brand-light/70 dark:border-brand/30 dark:bg-brand/10'
-                                            : 'border-transparent hover:border-gray-100 dark:border-gray-800 hover:bg-brand-light/40 dark:hover:border-white/10 dark:hover:bg-white/5 dark:bg-gray-800/50'
+                                            : 'border-transparent hover:border-border hover:bg-brand-light/40 dark:hover:border-white/10 dark:hover:bg-white/5 bg-card/50'
                                     }`}
                                 >
                                         <div className="flex gap-3">
-                                            <div className="mt-0.5 flex h-9 w-9 items-center justify-center rounded-2xl bg-brand-light text-brand dark:bg-gray-800 dark:text-brand-mid">
+                                            <div className="mt-0.5 flex h-9 w-9 items-center justify-center rounded-2xl bg-brand-light text-brand bg-card dark:text-brand-mid">
                                             {iconForType(n.type)}
                                         </div>
                                         <div className="flex-1">
@@ -143,7 +143,7 @@ export function NotificationBell({ className = '' }: { className?: string }) {
                     </div>
 
                     {notifications.length > 0 && (
-                        <div className="border-t border-gray-100 dark:border-gray-800 dark:border-white/8 px-4 py-3">
+                        <div className="border-t border-border dark:border-white/8 px-4 py-3">
                             <button
                                 onClick={() => { navigate('/notifications'); setIsOpen(false); }}
                                 className="w-full text-center text-xs font-medium text-brand hover:text-brand-hover dark:text-brand-mid"

@@ -82,7 +82,7 @@ const ProfileCompletionCard = ({ className = '', maxStepsToShow = 4 }: ProfileCo
             <div className="rounded-[1.6rem] bg-[radial-gradient(circle_at_top_left,rgba(168,85,247,0.28),transparent_40%)] p-6 text-white shadow-[0_28px_70px_-38px_var(--workspace-primary-shadow)]" style={{ background: 'linear-gradient(145deg, var(--purple-600) 0%, var(--purple-500) 52%, var(--purple-700) 100%)' }}>
                 <div className="flex items-start justify-between gap-4">
                     <div className="flex items-center gap-4">
-                        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white dark:bg-gray-800/14 backdrop-blur-sm">
+                        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-card/14 backdrop-blur-sm">
                             <Target className="h-7 w-7" />
                         </div>
                         <div>
@@ -109,7 +109,7 @@ const ProfileCompletionCard = ({ className = '', maxStepsToShow = 4 }: ProfileCo
                     </div>
                     <div className="h-2.5 overflow-hidden rounded-full bg-black/20">
                         <div
-                            className="h-full rounded-full bg-white dark:bg-gray-800 shadow-[0_0_24px_rgba(255,255,255,0.55)] transition-all duration-700"
+                            className="h-full rounded-full bg-card shadow-[0_0_24px_rgba(255,255,255,0.55)] transition-all duration-700"
                             style={{ width: `${completion.percentage}%` }}
                         />
                     </div>
@@ -144,9 +144,9 @@ const ProfileCompletionCard = ({ className = '', maxStepsToShow = 4 }: ProfileCo
                         <Link
                             key={step.id}
                             to={step.link || '/settings?tab=profile'}
-                            className="group flex items-center gap-4 rounded-2xl border border-primary-100/80 bg-white dark:bg-gray-800/75 p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-primary-200 hover:bg-primary-50/60 dark:border-white/10 dark:border-gray-800 dark:bg-white/[0.04] dark:hover:border-primary-400/20 dark:hover:bg-white dark:bg-gray-800/[0.06]"
+                            className="group flex items-center gap-4 rounded-2xl border border-primary-100/80 bg-card/75 p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-primary-200 hover:bg-primary-50/60 dark:border-white/10 border-border dark:bg-white/[0.04] dark:hover:border-primary-400/20 dark:hover:bg-card/[0.06]"
                         >
-                            <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl text-sm font-bold ${index === 0 ? 'bg-primary-600 text-white shadow-[0_16px_30px_-16px_rgba(109,40,217,0.9)]' : 'bg-gray-100 dark:bg-gray-800 text-[#57536a] dark:bg-white/10 dark:text-[#c6c2d6]'}`}>
+                            <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl text-sm font-bold ${index === 0 ? 'bg-primary-600 text-white shadow-[0_16px_30px_-16px_rgba(109,40,217,0.9)]' : 'bg-muted text-[#57536a] dark:bg-white/10 dark:text-[#c6c2d6]'}`}>
                                 {index + 1}
                             </div>
                             <div className="min-w-0 flex-1">
@@ -159,7 +159,7 @@ const ProfileCompletionCard = ({ className = '', maxStepsToShow = 4 }: ProfileCo
                                         : tx('components.profileCompletion.nextPriority', undefined, 'Helpful next improvement')}
                                 </p>
                             </div>
-                            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-[#57536a] transition-all group-hover:bg-primary-600 group-hover:text-white dark:bg-white/10 dark:text-[#c6c2d6]">
+                            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-muted text-[#57536a] transition-all group-hover:bg-primary-600 group-hover:text-white dark:bg-white/10 dark:text-[#c6c2d6]">
                                 <ArrowLeft className={`h-4 w-4 ${dir === 'rtl' ? 'rotate-180' : ''}`} />
                             </div>
                         </Link>

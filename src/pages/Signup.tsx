@@ -1,4 +1,4 @@
-﻿import { Link, useLocation } from 'react-router-dom';
+ import { Link, useLocation } from 'react-router-dom';
 import { Briefcase, ShieldCheck, Sparkles } from 'lucide-react';
 
 import { AuthShell, SignupForm } from '../components/auth';
@@ -13,7 +13,7 @@ function Signup() {
         <>
             <SEO {...SEO_CONFIG.signup} url="/signup" />
             <AuthShell
-                badge={tx('authPages.signup.badge', undefined, 'Join Khedmetna')}
+                badge={tx('authPages.signup.badge', undefined, 'Join WorkedIn')}
                 title={tx('authPages.signup.heroTitle', undefined, 'Ready for your next big project?')}
                 description={tx('authPages.signup.heroDescription', undefined, 'Join thousands of professionals across Tunisia. Set up your workspace and start working in minutes.')}
                 highlights={[

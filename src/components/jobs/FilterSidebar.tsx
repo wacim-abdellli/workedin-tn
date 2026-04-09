@@ -101,14 +101,14 @@ export default function FilterSidebar({
             >
                 <div className="flex items-center gap-3">
                     <div className="w-1 h-6 rounded-full bg-gradient-to-b from-purple-500 to-cyan-500" />
-                    <span className="text-sm font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300">
+                    <span className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
                         {title}
                     </span>
                 </div>
                 {expandedSections[section] ? (
                     <ChevronUp className="w-5 h-5 text-purple-500 transition-transform" />
                 ) : (
-                    <ChevronDown className="w-5 h-5 text-gray-400 group-hover:text-purple-500 transition-colors" />
+                    <ChevronDown className="w-5 h-5 text-muted group-hover:text-purple-500 transition-colors" />
                 )}
             </button>
             <div className={`space-y-3 overflow-hidden transition-all duration-300 ${expandedSections[section] ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'
@@ -144,7 +144,7 @@ export default function FilterSidebar({
                         <Filter className="w-6 h-6 text-primary-500" />
                         <span>{t.jobs.filters.title}</span>
                     </h2>
-                    <button onClick={onClose} aria-label={tx('jobs.filters.closeAria', undefined, 'Close filters')} className="p-2 min-w-[44px] min-h-[44px] hover:bg-gray-100 dark:hover:bg-[var(--color-bg-elevated)] rounded-full transition-colors"
+                    <button onClick={onClose} aria-label={tx('jobs.filters.closeAria', undefined, 'Close filters')} className="p-2 min-w-[44px] min-h-[44px] hover:bg-secondary dark:hover:bg-[var(--color-bg-elevated)] rounded-full transition-colors"
                     >
                         <X className="w-6 h-6" />
                     </button>
@@ -188,7 +188,7 @@ export default function FilterSidebar({
                                         onFilterChange('categories', newCategories);
                                     }}
                                 />
-                                <span className="flex-1 text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
+                                <span className="flex-1 text-sm font-medium text-muted-foreground group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
                                     {cat.label}
                                 </span>
                                 {categoryCounts[cat.value] > 0 && (
@@ -213,7 +213,7 @@ export default function FilterSidebar({
                                         onFilterChange('jobType', e.target.checked ? type.value : null);
                                     }}
                                 />
-                                <span className="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
+                                <span className="text-sm font-medium text-muted-foreground group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
                                     {type.label}
                                 </span>
                             </label>
@@ -222,7 +222,7 @@ export default function FilterSidebar({
 
                     <FilterSection title={t.jobs.filters.budget.title} section="budget">
                         <div className="space-y-1">
-                            <label className="flex items-center gap-2 cursor-pointer group p-2 hover:bg-gray-50 dark:hover:bg-[var(--color-bg-elevated)] rounded-lg transition-colors">
+                            <label className="flex items-center gap-2 cursor-pointer group p-2 hover:bg-secondary dark:hover:bg-[var(--color-bg-elevated)] rounded-lg transition-colors">
                                 <div className="relative flex items-center">
                                     <input
                                         type="radio"
@@ -231,9 +231,9 @@ export default function FilterSidebar({
                                         checked={!filters.budgetRange}
                                         onChange={() => onFilterChange('budgetRange', null)}
                                     />
-                                    <div className="w-4 h-4 rounded-full border-2 border-gray-300 dark:border-gray-600 peer-checked:border-primary-500 peer-checked:bg-primary-500 transition-colors" />
+                                    <div className="w-4 h-4 rounded-full border-2 border-border peer-checked:border-primary-500 peer-checked:bg-primary-500 transition-colors" />
                                 </div>
-                                <span className={`text-sm group-hover:text-primary-600 transition-colors ${!filters.budgetRange ? 'text-primary-600 font-medium' : 'text-gray-600 dark:text-gray-300'}`}>
+                                <span className={`text-sm group-hover:text-primary-600 transition-colors ${!filters.budgetRange ? 'text-primary-600 font-medium' : 'text-muted-foreground'}`}>
                                     {t.jobs.filters.budget.all || 'الكل'}
                                 </span>
                             </label>
@@ -245,7 +245,7 @@ export default function FilterSidebar({
                                 { value: '250-500', label: t.jobs.filters.budget.ranges?.r250_500 || '250-500 د.ت' },
                                 { value: '500+', label: t.jobs.filters.budget.ranges?.r500_plus || 'أكثر من 500 د.ت' },
                             ].map(range => (
-                                <label key={range.value} className="flex items-center gap-2 cursor-pointer group p-2 hover:bg-gray-50 dark:hover:bg-[var(--color-bg-elevated)] rounded-lg transition-colors">
+                                <label key={range.value} className="flex items-center gap-2 cursor-pointer group p-2 hover:bg-secondary dark:hover:bg-[var(--color-bg-elevated)] rounded-lg transition-colors">
                                     <div className="relative flex items-center">
                                         <input
                                             type="radio"
@@ -254,9 +254,9 @@ export default function FilterSidebar({
                                             checked={filters.budgetRange === range.value}
                                             onChange={() => onFilterChange('budgetRange', range.value)}
                                         />
-                                        <div className="w-4 h-4 rounded-full border-2 border-gray-300 dark:border-gray-600 peer-checked:border-primary-500 peer-checked:bg-primary-500 transition-colors" />
+                                        <div className="w-4 h-4 rounded-full border-2 border-border peer-checked:border-primary-500 peer-checked:bg-primary-500 transition-colors" />
                                     </div>
-                                    <span className={`text-sm group-hover:text-primary-600 transition-colors ${filters.budgetRange === range.value ? 'text-primary-600 font-medium' : 'text-gray-600 dark:text-gray-300'}`}>
+                                    <span className={`text-sm group-hover:text-primary-600 transition-colors ${filters.budgetRange === range.value ? 'text-primary-600 font-medium' : 'text-muted-foreground'}`}>
                                         {range.label}
                                     </span>
                                 </label>
@@ -300,16 +300,16 @@ export default function FilterSidebar({
                                         checked={filters.postedWithin === option.value} // Fix: JobBoard uses `postedWithin`
                                         onChange={() => onFilterChange('postedWithin', option.value)}
                                     />
-                                    <div className="w-4 h-4 rounded-full border-2 border-gray-300 dark:border-gray-600 peer-checked:border-primary-500 peer-checked:bg-primary-500 transition-colors" />
+                                    <div className="w-4 h-4 rounded-full border-2 border-border peer-checked:border-primary-500 peer-checked:bg-primary-500 transition-colors" />
                                 </div>
-                                <span className="text-sm text-gray-600 dark:text-gray-300 group-hover:text-primary-600 transition-colors">
+                                <span className="text-sm text-muted-foreground group-hover:text-primary-600 transition-colors">
                                     {option.label}
                                 </span>
                             </label>
                         ))}
                     </FilterSection>
 
-                    <div className="pt-4 mt-4 border-t border-gray-100 dark:border-[var(--color-border-subtle)] lg:hidden">
+                    <div className="pt-4 mt-4 border-t border-border dark:border-[var(--color-border-subtle)] lg:hidden">
                         <Button onClick={onClose} className="w-full">
                             {t.jobs.filters.viewResults}
                         </Button>

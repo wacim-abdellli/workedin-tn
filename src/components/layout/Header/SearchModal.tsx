@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useRef, useState } from 'react'
+ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Briefcase,
@@ -35,7 +35,7 @@ type SearchItem = {
   section?: string
 }
 
-const RECENT_SEARCHES_KEY = 'Khedmetna-recent-searches'
+const RECENT_SEARCHES_KEY = 'WorkedIn-recent-searches'
 
 export default function SearchModal({ onClose }: SearchModalProps) {
   const { user } = useAuth()
@@ -247,7 +247,7 @@ export default function SearchModal({ onClose }: SearchModalProps) {
                 {tx('pages.searchModal.headerHint', undefined, 'Jump to pages, search live jobs, and open common actions faster.')}
               </p>
             </div>
-            <kbd className="header-kbd text-[11px] dark:bg-white dark:bg-gray-900/8">
+            <kbd className="header-kbd text-[11px] dark:bg-card/8">
               ESC
             </kbd>
           </div>
@@ -276,7 +276,7 @@ export default function SearchModal({ onClose }: SearchModalProps) {
               <div className="min-w-0 text-[var(--text-secondary)]">
                 {tx('pages.searchModal.enterHint', { query: trimmedQuery }, `Press Enter to view all results for "${trimmedQuery}"`)}
               </div>
-              <kbd className="header-kbd text-[11px] dark:bg-white dark:bg-gray-900/8">Enter</kbd>
+              <kbd className="header-kbd text-[11px] dark:bg-card/8">Enter</kbd>
             </div>
           ) : null}
         </div>
@@ -436,7 +436,7 @@ export default function SearchModal({ onClose }: SearchModalProps) {
                       {item.meta ? <p className="mt-1 text-xs text-[var(--text-muted)]">{item.meta}</p> : null}
                     </div>
                     {item.shortcut ? (
-                      <kbd className="header-kbd flex-shrink-0 dark:bg-white dark:bg-gray-900/8">
+                      <kbd className="header-kbd flex-shrink-0 dark:bg-card/8">
                         {item.shortcut}
                       </kbd>
                     ) : (
@@ -458,10 +458,10 @@ export default function SearchModal({ onClose }: SearchModalProps) {
             { key: 'ESC', label: tx('common.close', undefined, 'Close') },
           ].map(({ key, label }) => (
             <div key={key} className="flex items-center gap-1.5">
-              <kbd className="header-kbd dark:bg-white dark:bg-gray-900/5">
+              <kbd className="header-kbd dark:bg-card/5">
                 {key}
               </kbd>
-              <span className="text-[11px] text-gray-500 dark:text-gray-400">{label}</span>
+              <span className="text-[11px] text-muted">{label}</span>
             </div>
           ))}
         </div>

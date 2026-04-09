@@ -240,7 +240,7 @@ export default function UsersTab() {
                 return `${Math.floor(diffDays / 7)}${tx('dashboard.admin.users.weeksAbbr', undefined, 'w')}`;
             
             return `${Math.floor(diffDays / 30)}${tx('dashboard.admin.users.monthsAbbr', undefined, 'mo')}`;
-        } catch (error) {
+        } catch (_error) {
             return value;
         }
     };

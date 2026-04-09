@@ -1,4 +1,4 @@
-﻿import { useState, useMemo, useEffect, useCallback } from 'react';
+ import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
     Search,
@@ -294,7 +294,7 @@ function JobBoard() {
 
     return (
         <div className="page-enter page-shell transition-colors duration-300">
-            <SEO {...SEO_CONFIG.jobs} url="/jobs" canonical="https://khedmetna.tn/jobs" />
+            <SEO {...SEO_CONFIG.jobs} url="/jobs" canonical="https://workedin.tn/jobs" />
             <Header />
 
             <div className="page-shell-content">

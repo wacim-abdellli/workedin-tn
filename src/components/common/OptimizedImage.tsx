@@ -47,16 +47,16 @@ export default function OptimizedImage({
     return (
         <div
             ref={containerRef}
-            className={`relative overflow-hidden bg-gray-100 dark:bg-gray-800 ${className}`}
+            className={`relative overflow-hidden bg-muted ${className}`}
         >
             {/* Loading Skeleton */}
             {isLoading && !hasError && (
-                <div className="absolute inset-0 bg-gray-200 dark:bg-gray-700 animate-pulse z-10" />
+                <div className="absolute inset-0 bg-secondary animate-pulse z-10" />
             )}
 
             {/* Error Placeholder */}
             {hasError && (
-                <div className="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-800 text-gray-400 z-20">
+                <div className="absolute inset-0 flex items-center justify-center bg-muted text-muted z-20">
                     <ImageIcon className="w-6 h-6" />
                 </div>
             )}

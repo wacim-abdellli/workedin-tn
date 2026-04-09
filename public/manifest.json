@@ -1,19 +1,14 @@
-﻿{
-  "name": "Khedmetna",
-  "short_name": "Khedmetna",
+{
+  "name": "WorkedIn",
+  "short_name": "WorkedIn",
   "icons": [
     {
-      "src": "/logos/logo-favicon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml"
-    },
-    {
-      "src": "/logos/logo-social.svg",
-      "sizes": "400x400",
+      "src": "/workedin-logos/17-icon-256-dark-mood.svg",
+      "sizes": "256x256",
       "type": "image/svg+xml"
     }
   ],
-  "theme_color": "#8b5cf6",
+  "theme_color": "#111111",
   "background_color": "#0f0e17",
   "display": "standalone"
 }

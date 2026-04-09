@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import {
     ArrowRight,
     Briefcase,
@@ -191,7 +191,7 @@ function ClientDashboardPage() {
             <Header />
 
             <main className="container mx-auto px-[var(--spacing-4)] sm:px-[var(--spacing-6)] lg:px-[var(--spacing-8)] pt-[var(--spacing-20)] pb-[var(--spacing-12)] max-w-7xl">
-                <motion.div
+                <m.div
                     initial={{ opacity: 0, y: -12 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4, ease: motionEase }}
@@ -230,11 +230,11 @@ function ClientDashboardPage() {
                             </div>
                         ))}
                     </div>
-                </motion.div>
+                </m.div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-[var(--spacing-5)]">
-                    <motion.div className="lg:col-span-2 space-y-[var(--spacing-5)]" variants={containerVariants} initial="hidden" animate="show">
-                        <motion.div variants={itemVariants}>
+                    <m.div className="lg:col-span-2 space-y-[var(--spacing-5)]" variants={containerVariants} initial="hidden" animate="show">
+                        <m.div variants={itemVariants}>
                             <DashWidget title={tx('dashboard.client.activeProjects', undefined, 'Active Projects')} icon={<FolderOpen className="w-4 h-4" />} action={{ label: tx('dashboard.client.viewAll', undefined, 'View all'), onClick: () => navigate('/client/jobs') }}>
                                 {isStatsLoading ? (
                                     <SkeletonCard />
@@ -271,9 +271,9 @@ function ClientDashboardPage() {
                                     </div>
                                 )}
                             </DashWidget>
-                        </motion.div>
+                        </m.div>
 
-                        <motion.div variants={itemVariants}>
+                        <m.div variants={itemVariants}>
                             <DashWidget title={tx('dashboard.client.recentProposals', undefined, 'Recent Proposals')} icon={<FileText className="w-4 h-4" />}>
                                 {isStatsLoading ? (
                                     <SkeletonCard />
@@ -317,9 +317,9 @@ function ClientDashboardPage() {
                                     </div>
                                 )}
                             </DashWidget>
-                        </motion.div>
+                        </m.div>
 
-                        <motion.div variants={itemVariants}>
+                        <m.div variants={itemVariants}>
                             <DashWidget title={tx('dashboard.client.activeContracts', undefined, 'Active Contracts')} icon={<Briefcase className="w-4 h-4" />} action={{ label: tx('dashboard.client.viewAll', undefined, 'View all'), onClick: () => navigate('/contracts') }}>
                                 {isStatsLoading ? (
                                     <SkeletonCard />
@@ -352,11 +352,11 @@ function ClientDashboardPage() {
                                     </div>
                                 )}
                             </DashWidget>
-                        </motion.div>
-                    </motion.div>
+                        </m.div>
+                    </m.div>
 
-                    <motion.div className="space-y-[var(--spacing-5)]" variants={containerVariants} initial="hidden" animate="show">
-                        <motion.div variants={itemVariants}>
+                    <m.div className="space-y-[var(--spacing-5)]" variants={containerVariants} initial="hidden" animate="show">
+                        <m.div variants={itemVariants}>
                             <div
                                 className="relative overflow-hidden rounded-[var(--radius-2xl)] p-[var(--spacing-6)] sm:p-[var(--spacing-8)]"
                                 style={{ background: 'var(--workspace-primary)' }}
@@ -385,9 +385,9 @@ function ClientDashboardPage() {
                                     </button>
                                 </div>
                             </div>
-                        </motion.div>
+                        </m.div>
 
-                        <motion.div variants={itemVariants}>
+                        <m.div variants={itemVariants}>
                             <DashWidget title={tx('dashboard.client.thisMonth', undefined, 'This Month')} icon={<DollarSign className="w-4 h-4" />}>
                                 <div>
                                     <p className="font-display font-[var(--font-fontWeight-bold)] text-[var(--font-fontSize-3xl)] text-[var(--color-text-primary)]">
@@ -401,9 +401,9 @@ function ClientDashboardPage() {
                                     </Button>
                                 </div>
                             </DashWidget>
-                        </motion.div>
+                        </m.div>
 
-                        <motion.div variants={itemVariants}>
+                        <m.div variants={itemVariants}>
                             <DashWidget title={tx('dashboard.client.quickActions', undefined, 'Quick Actions')} icon={<Settings className="w-4 h-4" />}>
                                 <div className="space-y-[var(--spacing-2)]">
                                     {[
@@ -423,8 +423,8 @@ function ClientDashboardPage() {
                                     ))}
                                 </div>
                             </DashWidget>
-                        </motion.div>
-                    </motion.div>
+                        </m.div>
+                    </m.div>
                 </div>
             </main>
         </div>

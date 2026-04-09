@@ -200,14 +200,14 @@ export default function Wallet() {
               <button
                 onClick={() => setIsWithdrawalModalOpen(true)}
                 disabled={!wallet || wallet.balance < MIN_WITHDRAWAL_AMOUNT}
-                className="bg-white dark:bg-gray-800 text-purple-600 font-semibold px-6 py-3 rounded-xl hover:bg-purple-50 transition-colors shrink-0 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                className="bg-white text-[var(--workspace-primary)] font-semibold px-6 py-3 rounded-xl hover:bg-white/90 shadow-sm transition-colors shrink-0 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >
                 <ArrowUpRight className="w-5 h-5" />
                 {t.wallet?.requestWithdrawal || 'Request Withdrawal'}
               </button>
               <button
                 onClick={() => setIsDepositModalOpen(true)}
-                className="bg-white dark:bg-gray-800/20 hover:bg-white dark:bg-gray-800/30 text-white font-semibold px-6 py-3 rounded-xl transition-colors shrink-0 flex items-center gap-2 border border-white/30 dark:border-gray-800/30"
+                className="bg-white/20 hover:bg-white/30 text-white font-semibold px-6 py-3 rounded-xl transition-colors shrink-0 flex items-center gap-2 border border-white/30 backdrop-blur-sm"
               >
                 <Plus className="w-5 h-5" />
                 {tx('wallet.deposit', undefined, 'Deposit Funds')}
@@ -291,7 +291,7 @@ export default function Wallet() {
                               {formatDate(tx.created_at)}
                             </td>
                             <td className="data-table-td whitespace-nowrap">
-                              <span className="status-pill bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200">
+                              <span className="status-pill bg-muted text-muted-foreground">
                                 {formatTransactionType(tx.type, language)}
                               </span>
                             </td>
@@ -329,7 +329,7 @@ export default function Wallet() {
                       <div key={tx.id} className="bg-card border border-border rounded-xl p-4 space-y-3">
                         <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                           <div className="min-w-0">
-                            <span className="status-pill bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200 text-xs">
+                            <span className="status-pill bg-muted text-muted-foreground text-xs">
                               {formatTransactionType(tx.type, language)}
                             </span>
                             <p className="text-sm text-muted-foreground mt-1">{formatDate(tx.created_at)}</p>
@@ -345,7 +345,7 @@ export default function Wallet() {
                         <p className="text-sm break-words text-foreground">
                           {tx.description || t.wallet?.transactionLabel || 'Transaction'}
                         </p>
-                        <div className="flex flex-col gap-2 border-t border-gray-100 dark:border-gray-800 pt-2 dark:border-gray-700 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="flex flex-col gap-2 border-t border-border pt-2 border-border sm:flex-row sm:items-center sm:justify-between">
                           <span className="text-xs text-muted-foreground">{t.wallet?.statusLabel || 'Status'}</span>
                           <span className={`status-pill text-xs ${getStatusColor(tx.status)}`}>
                             {formatTransactionStatus(tx.status, language)}
@@ -358,11 +358,11 @@ export default function Wallet() {
                 
                 {/* Pagination */}
                 {totalPages > 1 && (
-                  <div className="flex flex-col gap-3 border-t border-gray-100 dark:border-gray-800 px-4 py-4 dark:border-white/5 sm:flex-row sm:items-center sm:justify-between md:px-6">
+                  <div className="flex flex-col gap-3 border-t border-border px-4 py-4 dark:border-white/5 sm:flex-row sm:items-center sm:justify-between md:px-6">
                     <button
                       onClick={() => setPage(p => Math.max(1, p - 1))}
                       disabled={page === 1}
-                      className="min-h-[44px] px-3 md:px-4 py-2 text-sm font-medium text-foreground bg-card border border-border rounded-lg hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="min-h-[44px] px-3 md:px-4 py-2 text-sm font-medium text-foreground bg-card border border-border rounded-lg hover:bg-surface disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {t.wallet?.previous || 'Previous'}
                     </button>
@@ -372,7 +372,7 @@ export default function Wallet() {
                     <button
                       onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                       disabled={page === totalPages}
-                      className="min-h-[44px] px-3 md:px-4 py-2 text-sm font-medium text-foreground bg-card border border-border rounded-lg hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="min-h-[44px] px-3 md:px-4 py-2 text-sm font-medium text-foreground bg-card border border-border rounded-lg hover:bg-surface disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {t.wallet?.next || 'Next'}
                     </button>
@@ -434,7 +434,7 @@ export default function Wallet() {
                               {formatCurrency(withdrawal.net_amount || (withdrawal.amount - (withdrawal.fee || 0)), true, language)}
                             </td>
                             <td className="data-table-td whitespace-nowrap text-center">
-                              <span className="status-pill bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200">
+                              <span className="status-pill bg-muted text-muted-foreground">
                                 {formatWithdrawalMethod(withdrawal.method, language)}
                               </span>
                             </td>
@@ -466,7 +466,7 @@ export default function Wallet() {
                         <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                           <div className="min-w-0">
                             <p className="text-sm font-medium text-foreground">{formatDate(withdrawal.created_at)}</p>
-                            <span className="status-pill bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200 text-xs mt-1 inline-block">
+                            <span className="status-pill bg-muted text-muted-foreground text-xs mt-1 inline-block">
                               {formatWithdrawalMethod(withdrawal.method, language)}
                             </span>
                           </div>
@@ -687,7 +687,7 @@ function WithdrawalModal({ wallet, onClose, onSuccess }: { wallet: WalletType; o
           <h3 className="text-xl font-bold text-foreground mb-2">
             {t.wallet?.withdrawalSubmittedTitle || 'Withdrawal Request Submitted'}
           </h3>
-          <p className="text-gray-600 dark:text-gray-400 mb-4">
+          <p className="text-muted-foreground mb-4">
             {t.wallet?.withdrawalSubmittedDesc || 'Your request will be reviewed within 2-5 business days'}
           </p>
           <p className="text-2xl font-bold text-purple-600">
@@ -705,13 +705,13 @@ function WithdrawalModal({ wallet, onClose, onSuccess }: { wallet: WalletType; o
           <h3 className="text-base sm:text-lg font-bold text-foreground">
             {t.wallet?.requestWithdrawal || 'Request Withdrawal'}
           </h3>
-          <button type="button" aria-label={t.common?.close || 'Close'} onClick={onClose} className="p-2 rounded-lg hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 min-h-[44px] min-w-[44px] flex items-center justify-center">
-            <X className="w-5 h-5 text-gray-500" />
+          <button type="button" aria-label={t.common?.close || 'Close'} onClick={onClose} className="p-2 rounded-lg hover:bg-secondary min-h-[44px] min-w-[44px] flex items-center justify-center">
+            <X className="w-5 h-5 text-muted" />
           </button>
         </div>
 
-        <div className="mb-4 sm:mb-6 p-4 bg-gray-50 dark:bg-gray-900 dark:bg-gray-700/50 rounded-xl">
-          <div className="text-sm text-gray-500 mb-1">{t.wallet?.availableBalance || 'Available Balance'}</div>
+        <div className="mb-4 sm:mb-6 p-4 bg-surface rounded-xl">
+          <div className="text-sm text-muted mb-1">{t.wallet?.availableBalance || 'Available Balance'}</div>
           <div className="text-xl sm:text-2xl font-bold text-foreground">
             {formatCurrency(wallet.balance, true, language)}
           </div>
@@ -731,7 +731,7 @@ function WithdrawalModal({ wallet, onClose, onSuccess }: { wallet: WalletType; o
               min={MIN_WITHDRAWAL_AMOUNT}
               max={wallet.balance}
               step="0.001"
-              className={`w-full px-4 py-3 min-h-[48px] border rounded-lg bg-white dark:bg-gray-800 dark:bg-gray-700 text-foreground focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
+              className={`w-full px-4 py-3 min-h-[48px] border rounded-lg bg-card bg-opacity-100 text-foreground focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
                 amount && !validation.valid ? 'border-red-400 dark:border-red-500' : 'border-border'
               }`}
               dir="ltr"
@@ -755,7 +755,7 @@ function WithdrawalModal({ wallet, onClose, onSuccess }: { wallet: WalletType; o
                   className={`p-3 min-h-[72px] rounded-xl border-2 text-center transition-colors ${
                     method === m
                       ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300'
-                      : 'border-gray-200 dark:border-gray-700 dark:border-gray-600 hover:border-gray-300'
+                      : 'border-border hover:border-border'
                   }`}
                 >
                   {m === 'bank_transfer' && <Building className="w-5 h-5 mx-auto mb-1" />}
@@ -776,7 +776,7 @@ function WithdrawalModal({ wallet, onClose, onSuccess }: { wallet: WalletType; o
                   value={bankName}
                   onChange={(e) => setBankName(e.target.value)}
                   placeholder={t.wallet?.bankName || 'Bank Name'}
-                  className={`w-full px-4 py-3 min-h-[48px] border rounded-lg bg-white dark:bg-gray-800 dark:bg-gray-700 text-foreground ${bankNameError ? 'border-red-400 dark:border-red-500' : 'border-border'}`}
+                  className={`w-full px-4 py-3 min-h-[48px] border rounded-lg bg-card bg-opacity-100 text-foreground ${bankNameError ? 'border-red-400 dark:border-red-500' : 'border-border'}`}
                 />
                 {bankNameError && <p className="text-red-500 text-sm mt-1" role="alert">{bankNameError}</p>}
               </div>
@@ -786,7 +786,7 @@ function WithdrawalModal({ wallet, onClose, onSuccess }: { wallet: WalletType; o
                   value={bankAccountName}
                   onChange={(e) => setBankAccountName(e.target.value)}
                   placeholder={t.wallet?.accountHolder || 'Account Holder Name'}
-                  className={`w-full px-4 py-3 min-h-[48px] border rounded-lg bg-white dark:bg-gray-800 dark:bg-gray-700 text-foreground ${bankAccountNameError ? 'border-red-400 dark:border-red-500' : 'border-border'}`}
+                  className={`w-full px-4 py-3 min-h-[48px] border rounded-lg bg-card bg-opacity-100 text-foreground ${bankAccountNameError ? 'border-red-400 dark:border-red-500' : 'border-border'}`}
                 />
                 {bankAccountNameError && <p className="text-red-500 text-sm mt-1" role="alert">{bankAccountNameError}</p>}
               </div>
@@ -797,7 +797,7 @@ function WithdrawalModal({ wallet, onClose, onSuccess }: { wallet: WalletType; o
                   onChange={(e) => setBankIban(e.target.value)}
                   placeholder="TN59 ..."
                   aria-label={t.wallet?.iban || 'IBAN'}
-                  className={`w-full px-4 py-3 min-h-[48px] border rounded-lg bg-white dark:bg-gray-800 dark:bg-gray-700 text-foreground ${bankIbanError ? 'border-red-400 dark:border-red-500' : 'border-border'}`}
+                  className={`w-full px-4 py-3 min-h-[48px] border rounded-lg bg-card bg-opacity-100 text-foreground ${bankIbanError ? 'border-red-400 dark:border-red-500' : 'border-border'}`}
                   dir="ltr"
                 />
                 {bankIbanError && <p className="text-red-500 text-sm mt-1" role="alert">{bankIbanError}</p>}
@@ -807,21 +807,21 @@ function WithdrawalModal({ wallet, onClose, onSuccess }: { wallet: WalletType; o
 
           {/* D17 / Flouci phone field */}
           {(method === 'd17' || method === 'flouci') && (
-            <div>
-              <div className="relative" dir="ltr">
-                <Phone className="absolute start-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input
-                  type="tel"
-                  value={phoneNumber}
-                  onChange={(e) => setPhoneNumber(e.target.value)}
-                  placeholder="+216 00 000 000"
-                  className={`w-full ps-10 pe-4 py-3 min-h-[48px] border rounded-lg bg-white dark:bg-gray-800 dark:bg-gray-700 text-foreground ${phoneError ? 'border-red-400 dark:border-red-500' : 'border-border'}`}
-                  dir="ltr"
-                />
-              </div>
-              {phoneError && <p className="text-red-500 text-sm mt-1" role="alert">{phoneError}</p>}
+          <div>
+            <div className="relative" dir="ltr">
+              <Phone className="absolute start-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted" />
+              <input
+                type="tel"
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
+                placeholder="+216 00 000 000"
+                className={`w-full ps-10 pe-4 py-3 min-h-[48px] border rounded-lg bg-card bg-opacity-100 text-foreground ${phoneError ? 'border-red-400 dark:border-red-500' : 'border-border'}`}
+                dir="ltr"
+              />
             </div>
-          )}
+            {phoneError && <p className="text-red-500 text-sm mt-1" role="alert">{phoneError}</p>}
+          </div>
+        )}
 
           <div className="p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg flex items-start gap-2">
             <Info className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />

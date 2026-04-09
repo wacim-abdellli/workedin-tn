@@ -17,9 +17,9 @@ import { logger } from '@/lib/logger';
 
 export interface DhmadEscrowRequest {
     amount: number;       // TND — Dhmad uses TND directly (not millimes)
-    buyer_id: string;     // Khedmetna user ID (client)
-    seller_id: string;    // Khedmetna user ID (freelancer)
-    contract_id: string;  // Khedmetna contract ID
+    buyer_id: string;     // WorkedIn user ID (client)
+    seller_id: string;    // WorkedIn user ID (freelancer)
+    contract_id: string;  // WorkedIn contract ID
     description: string;  // Human-readable description
 }
 

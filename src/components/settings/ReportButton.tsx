@@ -102,7 +102,7 @@ export default function ReportButton({ reportedType, reportedId, className }: Re
                 }}
                 title={isReportedThisSession ? tx('common.alreadyReportedSession', undefined, 'Already reported in this session') : (t.common.reportTitle || tx('common.reportContent', undefined, "Report this content"))}
                 disabled={isReportedThisSession}
-                className={className ?? 'inline-flex items-center gap-1.5 text-xs text-gray-400 transition-colors hover:text-red-500 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:text-gray-400'}
+                className={className ?? 'inline-flex items-center gap-1.5 text-xs text-muted transition-colors hover:text-red-500 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:text-muted'}
             >
                 <Flag className="w-3.5 h-3.5" />
                 <span>{isReportedThisSession ? tx('common.reported', undefined, 'Reported') : t.common.report}</span>
@@ -114,7 +114,7 @@ export default function ReportButton({ reportedType, reportedId, className }: Re
 
                     <div className="space-y-2">
                         {REASONS.map(r => (
-                            <label key={r.value} className="flex items-center gap-3 p-3 rounded-xl border border-gray-200 dark:border-gray-700 dark:border-white/10 dark:border-gray-800 hover:bg-gray-50 dark:bg-gray-900 dark:bg-gray-800 dark:hover:bg-white cursor-pointer transition-colors">
+                            <label key={r.value} className="flex items-center gap-3 p-3 rounded-xl border border-border dark:border-white/10 border-border hover:bg-surface bg-card dark:hover:bg-white cursor-pointer transition-colors">
                                 <input
                                     type="radio"
                                     name="report-reason"
@@ -143,7 +143,7 @@ export default function ReportButton({ reportedType, reportedId, className }: Re
                         </div>
                     )}
 
-                    <div className="flex justify-end gap-3 pt-2 border-t border-gray-100 dark:border-gray-800 dark:border-white/10">
+                    <div className="flex justify-end gap-3 pt-2 border-t border-border dark:border-white/10">
                         <Button variant="ghost" onClick={() => setIsOpen(false)} disabled={mutation.isPending}>
                             {tx('common.cancel', undefined, 'Cancel')}
                         </Button>

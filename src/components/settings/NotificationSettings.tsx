@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from 'react';
+ import { useEffect, useMemo, useState } from 'react';
 import { Bell, BriefcaseBusiness, CreditCard, Loader2, MessageSquare, Megaphone, Star } from 'lucide-react';
 
 import { useTranslation } from '@/i18n';
@@ -70,7 +70,7 @@ export default function NotificationSettings() {
 
         return map[key] ?? {
             label: tx('settings.notificationSettings.marketing', undefined, 'Offers and updates'),
-            description: tx('settings.notificationSettings.marketingDesc', undefined, 'Tips and updates from Khedmetna'),
+            description: tx('settings.notificationSettings.marketingDesc', undefined, 'Tips and updates from WorkedIn'),
         };
     };
 

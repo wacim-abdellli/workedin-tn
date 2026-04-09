@@ -131,7 +131,7 @@ export default function JobWizardLayout({
                                         ? 'text-white'
                                         : isCompleted
                                             ? 'bg-[color:var(--workspace-primary)]/15 text-[color:var(--workspace-primary)] dark:bg-[color:var(--workspace-primary)]/15 dark:text-[#fbbf24]'
-                                        : 'bg-gray-100 text-gray-500 dark:text-gray-400 dark:bg-white/8 dark:text-[#8b8aa0]'}`}
+                                        : 'bg-muted text-muted dark:bg-white/8 dark:text-[#8b8aa0]'}`}
                                         style={isCurrent ? { background: 'linear-gradient(135deg, var(--workspace-primary), #f59e0b)' } : undefined}
                                     >
                                         {isCompleted ? <Check className="h-4 w-4" /> : step.id}

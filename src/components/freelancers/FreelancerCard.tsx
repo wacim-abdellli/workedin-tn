@@ -66,7 +66,7 @@ function FreelancerCard({
     >
       <div className={cn(
         viewMode === 'list'
-          ? 'shrink-0 border-b border-gray-100 dark:border-gray-800 pb-4 md:w-48 md:border-b-0 md:border-s md:border-gray-100 dark:border-gray-800 md:pb-0 md:ps-6 dark:border-dark-700'
+          ? 'shrink-0 border-b border-border pb-4 md:w-48 md:border-b-0 md:border-s md:border-border md:pb-0 md:ps-6 dark:border-dark-700'
           : 'mb-6 text-center'
       )}>
         <div className="relative inline-block">
@@ -155,7 +155,7 @@ function FreelancerCard({
           ) : null}
         </div>
 
-        <div className={cn('mb-4 flex items-center gap-4 text-sm', viewMode === 'list' ? '' : 'justify-center border-b border-gray-50 pb-4 dark:border-dark-800')}>
+        <div className={cn('mb-4 flex items-center gap-4 text-sm', viewMode === 'list' ? '' : 'justify-center border-b border-border pb-4 dark:border-dark-800')}>
           <RatingStars
             rating={freelancer.rating}
             reviews={freelancer.reviews}
@@ -184,7 +184,7 @@ function FreelancerCard({
           {freelancer.skills.slice(0, 3).map((skill) => (
             <span
               key={skill}
-              className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-2.5 py-1 text-xs text-gray-600 dark:text-gray-300 transition-colors dark:border-dark-700 dark:bg-dark-800 dark:text-gray-300 hover:border-[var(--workspace-accent)]"
+              className="rounded-xl border border-border bg-card px-2.5 py-1 text-xs text-muted-foreground transition-colors dark:border-dark-700 dark:bg-dark-800 hover:border-[var(--workspace-accent)]"
             >
               {skill}
             </span>
@@ -193,7 +193,7 @@ function FreelancerCard({
         </div>
 
         {viewMode === 'list' ? (
-          <div className="mt-auto flex items-center justify-between border-t border-gray-100 dark:border-gray-800 pt-4 dark:border-dark-700">
+          <div className="mt-auto flex items-center justify-between border-t border-border pt-4 dark:border-dark-700">
             <div className="flex items-center gap-6 text-sm text-muted">
               <span className="flex items-center gap-1">
                 <Briefcase className="h-4 w-4" />
@@ -216,7 +216,7 @@ function FreelancerCard({
                   isActive={isSaved}
                   variant={isSaved ? 'danger' : 'outline'}
                   size="md"
-                  className={cn('rounded-xl', !isSaved && 'border-gray-200 dark:border-gray-700 dark:border-dark-600')}
+                  className={cn('rounded-xl', !isSaved && 'border-border dark:border-dark-600')}
                 />
               ) : null}
               <Button

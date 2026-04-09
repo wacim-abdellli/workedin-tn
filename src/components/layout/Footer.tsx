@@ -1,4 +1,4 @@
-﻿import { Link } from "react-router-dom";
+ import { Link } from "react-router-dom";
 import {
   Facebook,
   Twitter,
@@ -12,9 +12,11 @@ import {
 
 import { useTranslation } from "../../i18n";
 import { Logo } from "../ui/Logo";
+import { useAuth } from "@/contexts/AuthContext";
 
 function Footer() {
   const { t } = useTranslation();
+  const { profile, activeMode } = useAuth();
 
   const footerLinks = [
     { href: "/about", label: t.footer.about },
@@ -71,7 +73,12 @@ function Footer() {
               to="/"
               className="group mb-8 inline-flex items-center transition-opacity hover:opacity-80"
             >
-              <Logo variant="full" size="lg" />
+              <Logo 
+                variant="full" 
+                size="lg" 
+                titleStyle="default" 
+                mode={activeMode === 'freelancer' || profile?.user_type === 'freelancer' ? 'freelancer' : 'client'}
+              />
             </Link>
 
             <p
@@ -117,7 +124,7 @@ function Footer() {
                     style={{ color: "var(--workspace-primary)" }}
                   />
                 </div>
-                <span>contact@khedmetna.tn</span>
+                <span>contact@workedin.tn</span>
               </div>
 
               <div

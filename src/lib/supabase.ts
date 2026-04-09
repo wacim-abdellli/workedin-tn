@@ -1,4 +1,4 @@
-﻿import { createClient } from '@supabase/supabase-js';
+ import { createClient } from '@supabase/supabase-js';
 import { validateUploadSelection } from './uploadPolicy';
 
 // Environment variables for Supabase
@@ -6,7 +6,7 @@ import { validateUploadSelection } from './uploadPolicy';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://your-project.supabase.co';
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'your-anon-key';
 
-// Anon-only client for public queries (jobs, freelancers) â€” isolated from user session churn.
+// Anon-only client for public queries (jobs, freelancers) — isolated from user session churn.
 export const supabaseAnon = createClient(supabaseUrl, supabaseAnonKey, {
     auth: {
         persistSession: false,
@@ -51,14 +51,14 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     },
     global: {
         headers: {
-            'x-client-info': 'Khedmetna-tn',
+            'x-client-info': 'WorkedIn-tn',
         },
     },
     // Configure Realtime to prevent 5-second polling fallback
     // Ensures instant message deletion sync and real-time updates
     realtime: {
         headers: {
-            'x-client-info': 'Khedmetna-tn',
+            'x-client-info': 'WorkedIn-tn',
         },
         // Keep WebSocket connection alive with 30-second heartbeat
         heartbeatIntervalMs: 30000,
@@ -211,7 +211,7 @@ export const uploadFileWithMetadata = async (
             headers: {
                 Authorization: `Bearer ${session.access_token}`,
                 apikey: supabaseAnonKey,
-                'x-client-info': 'Khedmetna-tn',
+                'x-client-info': 'WorkedIn-tn',
             },
             body: formData,
         }),

@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+ import { useState } from 'react';
 import { ChevronDown, ChevronUp, Search, HelpCircle, MessageCircle, FileText, CreditCard, Shield, User } from 'lucide-react';
 import { Header, Footer } from '../components/layout';
 import SEO, { SEO_CONFIG } from '../components/common/SEO';
@@ -156,7 +156,7 @@ export default function FAQ() {
                         <h3 className="text-xl font-bold mb-2">{tx('faqPage.page.noAnswer')}</h3>
                         <p className="opacity-90 mb-4">{tx('faqPage.page.supportReady')}</p>
                         <a
-                            href="mailto:support@khedmetna.tn"
+                            href="mailto:support@workedin.tn"
                             className="inline-block px-6 py-3 rounded-xl font-medium transition-colors"
                             style={{
                                 background: 'var(--color-bg-elevated)',

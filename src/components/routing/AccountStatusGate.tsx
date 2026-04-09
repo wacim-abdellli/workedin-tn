@@ -1,4 +1,4 @@
-﻿import { AlertTriangle, ShieldAlert } from 'lucide-react';
+ import { AlertTriangle, ShieldAlert } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from '@/i18n';
 
@@ -62,7 +62,7 @@ export default function AccountStatusGate({ status }: { status: AccountStatus })
               {tx('common.returnHome', undefined, 'Return home')}
             </Link>
             <a
-              href="mailto:support@khedmetna.tn"
+              href="mailto:support@workedin.tn"
               className="inline-flex h-11 items-center justify-center rounded-xl bg-primary-600 px-5 text-sm font-semibold text-white transition-colors hover:bg-primary-700"
             >
               {tx('common.contactSupport', undefined, 'Contact support')}

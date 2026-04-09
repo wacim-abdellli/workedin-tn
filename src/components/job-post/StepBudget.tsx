@@ -142,7 +142,7 @@ export default function StepBudget() {
                     </label>
                     <select
                         {...register('duration')}
-                        className="w-full appearance-none rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-3 text-gray-900 dark:text-gray-100 dark:text-white transition-all duration-200 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:border-white/10 dark:border-gray-800 dark:bg-[var(--color-bg-muted)] dark:text-white"
+                        className="w-full appearance-none rounded-2xl border border-border bg-card px-4 py-3 text-foreground dark:text-white transition-all duration-200 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:border-white/10 border-border dark:bg-[var(--color-bg-muted)] dark:text-white"
                     >
                         <option value="">{tx('jobs.new.stepBudget.selectDuration', undefined, 'اختر المدة')}</option>
                         <option value="less_than_1_month">{tx('jobs.new.stepBudget.durationLessThan1Month', undefined, 'أقل من شهر')}</option>

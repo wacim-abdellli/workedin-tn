@@ -1,4 +1,4 @@
-﻿import { logger } from '@/lib/logger';
+ import { logger } from '@/lib/logger';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -370,7 +370,7 @@ function FreelancerOnboarding() {
         }
 
         if (shouldNavigate) {
-            showToast(t.onboarding.freelancer.welcomeToast || 'Welcome to Khedmetna!', 'success');
+            showToast(t.onboarding.freelancer.welcomeToast || 'Welcome to WorkedIn!', 'success');
             navigate('/freelancer/dashboard');
         }
     };

@@ -79,7 +79,7 @@ export default function OnboardingStep3({
 
             <div className="space-y-10">
                 {/* Languages */}
-                <div className="bg-gray-50 dark:bg-gray-900 dark:bg-dark-800/50 rounded-2xl p-6 border border-gray-100 dark:border-gray-800 dark:border-dark-700">
+                <div className="bg-surface dark:bg-dark-800/50 rounded-2xl p-6 border border-border dark:border-dark-700">
                     <div className="flex items-center justify-between mb-4">
                         <label className="label mb-0 text-lg">{t.profile.languages.title}</label>
                         {languages.length < 5 && (
@@ -124,7 +124,7 @@ export default function OnboardingStep3({
                 </div>
 
                 {/* Education */}
-                <div className="bg-gray-50 dark:bg-gray-900 dark:bg-dark-800/50 rounded-2xl p-6 border border-gray-100 dark:border-gray-800 dark:border-dark-700">
+                <div className="bg-surface dark:bg-dark-800/50 rounded-2xl p-6 border border-border dark:border-dark-700">
                     <div className="flex items-center justify-between mb-4">
                         <label className="label mb-0 flex items-center gap-2 text-lg">
                             <GraduationCap className="w-5 h-5 text-dark-400" />
@@ -142,8 +142,8 @@ export default function OnboardingStep3({
                         )}
                     </div>
                     {education.length === 0 ? (
-                        <div className="text-center py-8 bg-white dark:bg-gray-800 dark:bg-dark-800 rounded-xl border border-dashed border-gray-200 dark:border-gray-700 dark:border-dark-600">
-                            <GraduationCap className="w-10 h-10 text-gray-300 dark:text-dark-600 mx-auto mb-2" />
+                        <div className="text-center py-8 bg-card dark:bg-dark-800 rounded-xl border border-dashed border-border dark:border-dark-600">
+                            <GraduationCap className="w-10 h-10 text-muted dark:text-dark-600 mx-auto mb-2" />
                             <p className="text-muted text-sm px-4">{t.profile.education.noEducation}</p>
                             <button
                                 type="button"
@@ -156,7 +156,7 @@ export default function OnboardingStep3({
                     ) : (
                         <div className="space-y-4">
                             {education.map((edu, index) => (
-                                <div key={index} className="p-4 bg-white dark:bg-gray-800 dark:bg-dark-800 rounded-xl border border-gray-100 dark:border-gray-800 dark:border-dark-700 relative animate-fade-in group">
+                                <div key={index} className="p-4 bg-card dark:bg-dark-800 rounded-xl border border-border dark:border-dark-700 relative animate-fade-in group">
                                     <button
                                         type="button"
                                         onClick={() => removeEducation(index)}

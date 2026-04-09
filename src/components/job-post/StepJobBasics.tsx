@@ -117,7 +117,7 @@ export default function StepJobBasics() {
                     placeholder={tx('jobs.new.stepBasics.projectTitlePlaceholder', undefined, 'مثال: تصميم شعار لشركة مواد غذائية')}
                     error={errors.title?.message as string}
                     {...register('title')}
-                    leftIcon={<FileText className="w-5 h-5 text-gray-400" />}
+                    leftIcon={<FileText className="w-5 h-5 text-muted" />}
                 />
 
                 <div ref={dropdownRef} className="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -231,7 +231,7 @@ export default function StepJobBasics() {
                     <textarea
                         {...register('description')}
                         rows={8}
-                        className="w-full resize-none rounded-[1.4rem] border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-3 text-gray-900 dark:text-gray-100 dark:text-white placeholder:text-gray-400 transition-all duration-200 hover:border-[color:var(--workspace-primary)]/30 hover:bg-[color:var(--workspace-primary)]/5 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:border-white/10 dark:border-gray-800 dark:bg-[var(--color-bg-muted)] dark:text-white dark:placeholder:text-gray-600 dark:text-gray-300"
+                        className="w-full resize-none rounded-[1.4rem] border border-border bg-card px-4 py-3 text-foreground dark:text-white placeholder:text-muted transition-all duration-200 hover:border-[color:var(--workspace-primary)]/30 hover:bg-[color:var(--workspace-primary)]/5 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:border-white/10 border-border dark:bg-[var(--color-bg-muted)] dark:text-white dark:placeholder:text-muted-foreground"
                         placeholder={tx('jobs.new.stepBasics.projectDescriptionPlaceholder', undefined, 'اشرح تفاصيل المشروع، المخرجات المتوقعة، وأي متطلبات خاصة...')}
                     />
                     <div className="flex justify-between px-1 text-xs">

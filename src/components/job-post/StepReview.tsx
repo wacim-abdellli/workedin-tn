@@ -45,7 +45,7 @@ export default function StepReview() {
     return (
         <div className="space-y-8">
             <div className="space-y-4">
-                <div className="inline-flex items-center gap-2 rounded-full border border-primary-100 bg-primary-50/70 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-primary-700 dark:border-white/10 dark:border-gray-800 dark:white/[0.04] dark:text-primary-200">
+                <div className="inline-flex items-center gap-2 rounded-full border border-primary-100 bg-primary-50/70 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-primary-700 dark:border-white/10 border-border dark:white/[0.04] dark:text-primary-200">
                     <FileText className="w-3.5 h-3.5" />
                     {tx('jobs.new.stepReview.badge', undefined, 'Final check')}
                 </div>
@@ -64,18 +64,18 @@ export default function StepReview() {
 
             <div className="space-y-6">
                 {/* Header Preview */}
-                <div className="rounded-[1.85rem] border border-primary-100/70 bg-white dark:bg-gray-800/80 p-6 shadow-sm dark:border-white/10 dark:border-gray-800 dark:white/[0.04]">
-                    <h2 className="mb-2 text-2xl font-bold text-gray-900 dark:text-gray-100 dark:text-white">{values.title}</h2>
-                    <div className="flex flex-wrap gap-4 text-sm text-gray-500 dark:text-gray-400">
-                        <span className="flex items-center gap-1 rounded-full bg-gray-100 px-3 py-1 dark:bg-white/10">
+                <div className="rounded-[1.85rem] border border-primary-100/70 bg-card/80 p-6 shadow-sm dark:border-white/10 border-border dark:white/[0.04]">
+                    <h2 className="mb-2 text-2xl font-bold text-foreground dark:text-white">{values.title}</h2>
+                    <div className="flex flex-wrap gap-4 text-sm text-muted">
+                        <span className="flex items-center gap-1 rounded-full bg-muted px-3 py-1 dark:bg-white/10">
                             <Briefcase className="w-4 h-4" />
                             {getCategoryName(values.category, language)}
                         </span>
-                        <span className="flex items-center gap-1 rounded-full bg-gray-100 px-3 py-1 dark:bg-white/10">
+                        <span className="flex items-center gap-1 rounded-full bg-muted px-3 py-1 dark:bg-white/10">
                             <MapPin className="w-4 h-4" />
                             {getSubcategoryName(values.category, values.subcategory, language)}
                         </span>
-                        <span className="flex items-center gap-1 rounded-full bg-gray-100 px-3 py-1 dark:bg-white/10">
+                        <span className="flex items-center gap-1 rounded-full bg-muted px-3 py-1 dark:bg-white/10">
                             <Clock className="w-4 h-4" />
                             {values.posted_at ? new Date(values.posted_at).toLocaleDateString(language === 'ar' ? 'ar-TN' : language === 'fr' ? 'fr-FR' : 'en-US') : tx('jobs.new.stepReview.now', undefined, 'الآن')}
                         </span>
@@ -84,20 +84,20 @@ export default function StepReview() {
 
                 {/* Description */}
                 <div>
-                    <h3 className="mb-3 font-bold text-gray-900 dark:text-gray-100 dark:text-white">{tx('jobs.new.stepReview.projectDescription', undefined, 'وصف المشروع')}</h3>
-                    <p className="whitespace-pre-line leading-relaxed text-gray-600 dark:text-gray-300">
+                    <h3 className="mb-3 font-bold text-foreground dark:text-white">{tx('jobs.new.stepReview.projectDescription', undefined, 'وصف المشروع')}</h3>
+                    <p className="whitespace-pre-line leading-relaxed text-muted-foreground">
                         {values.description}
                     </p>
                 </div>
 
                 {/* Details Grid */}
-                <div className="grid grid-cols-1 gap-6 rounded-[1.85rem] border border-primary-100/70 bg-white dark:bg-gray-800/80 p-6 shadow-sm dark:border-white/10 dark:border-gray-800 dark:white/[0.04] md:grid-cols-2">
+                <div className="grid grid-cols-1 gap-6 rounded-[1.85rem] border border-primary-100/70 bg-card/80 p-6 shadow-sm dark:border-white/10 border-border dark:white/[0.04] md:grid-cols-2">
                     <div className="space-y-4">
                         <div className="flex gap-4">
-                            <DollarSign className="mt-1 h-5 w-5 text-gray-400 dark:text-gray-500 dark:text-gray-400" />
+                            <DollarSign className="mt-1 h-5 w-5 text-muted" />
                             <div>
-                                <h4 className="font-bold text-gray-900 dark:text-gray-100 dark:text-white">{tx('jobs.new.stepReview.budget', undefined, 'الميزانية')}</h4>
-                                <p className="text-gray-600 dark:text-gray-400">
+                                <h4 className="font-bold text-foreground dark:text-white">{tx('jobs.new.stepReview.budget', undefined, 'الميزانية')}</h4>
+                                <p className="text-muted-foreground">
                                     {values.job_type === 'fixed_price'
                                         ? tx('jobs.new.stepReview.budgetRange', { min: values.budget_min ?? 0, max: values.budget_max ?? 0 }, `${values.budget_min ?? 0} - ${values.budget_max ?? 0} د.ت`)
                                         : tx('jobs.new.stepReview.hourlyBudget', { rate: values.hourly_rate ?? 0 }, `${values.hourly_rate ?? 0} د.ت / ساعة`)
@@ -107,56 +107,56 @@ export default function StepReview() {
                         </div>
 
                         <div className="flex gap-4">
-                            <Briefcase className="mt-1 h-5 w-5 text-gray-400 dark:text-gray-500 dark:text-gray-400" />
+                            <Briefcase className="mt-1 h-5 w-5 text-muted" />
                             <div>
-                                <h4 className="font-bold text-gray-900 dark:text-gray-100 dark:text-white">{tx('jobs.new.stepReview.experienceLevel', undefined, 'المستوى المطلوب')}</h4>
-                                <p className="text-gray-600 dark:text-gray-400">{values.experience_level ? experienceMap[values.experience_level] : '—'}</p>
+                                <h4 className="font-bold text-foreground dark:text-white">{tx('jobs.new.stepReview.experienceLevel', undefined, 'المستوى المطلوب')}</h4>
+                                <p className="text-muted-foreground">{values.experience_level ? experienceMap[values.experience_level] : '—'}</p>
                             </div>
                         </div>
                     </div>
 
                     <div className="space-y-4">
                         <div className="flex gap-4">
-                            <Calendar className="mt-1 h-5 w-5 text-gray-400 dark:text-gray-500 dark:text-gray-400" />
+                            <Calendar className="mt-1 h-5 w-5 text-muted" />
                             <div>
-                                <h4 className="font-bold text-gray-900 dark:text-gray-100 dark:text-white">{tx('jobs.new.stepReview.projectDuration', undefined, 'مدة المشروع')}</h4>
-                                <p className="text-gray-600 dark:text-gray-400">{values.duration ? durationMap[values.duration] : '—'}</p>
+                                <h4 className="font-bold text-foreground dark:text-white">{tx('jobs.new.stepReview.projectDuration', undefined, 'مدة المشروع')}</h4>
+                                <p className="text-muted-foreground">{values.duration ? durationMap[values.duration] : '—'}</p>
                             </div>
                         </div>
 
                         <div className="flex gap-4">
-                            <Calendar className="mt-1 h-5 w-5 text-gray-400 dark:text-gray-500 dark:text-gray-400" />
+                            <Calendar className="mt-1 h-5 w-5 text-muted" />
                             <div>
-                                <h4 className="font-bold text-gray-900 dark:text-gray-100 dark:text-white">{tx('jobs.new.stepReview.deadline', undefined, 'الموعد النهائي')}</h4>
-                                <p className="text-gray-600 dark:text-gray-400">{values.deadline ? new Date(values.deadline).toLocaleDateString(language === 'ar' ? 'ar-TN' : language === 'fr' ? 'fr-FR' : 'en-US') : '—'}</p>
+                                <h4 className="font-bold text-foreground dark:text-white">{tx('jobs.new.stepReview.deadline', undefined, 'الموعد النهائي')}</h4>
+                                <p className="text-muted-foreground">{values.deadline ? new Date(values.deadline).toLocaleDateString(language === 'ar' ? 'ar-TN' : language === 'fr' ? 'fr-FR' : 'en-US') : '—'}</p>
                             </div>
                         </div>
 
                         <div className="flex gap-4">
-                            <MapPin className="mt-1 h-5 w-5 text-gray-400 dark:text-gray-500 dark:text-gray-400" />
+                            <MapPin className="mt-1 h-5 w-5 text-muted" />
                             <div>
-                                <h4 className="font-bold text-gray-900 dark:text-gray-100 dark:text-white">{tx('jobs.new.stepReview.visibility', undefined, 'الموقع')}</h4>
-                                <p className="text-gray-600 dark:text-gray-400">{values.visibility === 'invite_only' ? tx('jobs.new.stepReview.inviteOnlyVisibility', undefined, 'خاص (دعوة فقط)') : tx('jobs.new.stepReview.publicVisibility', undefined, 'عام (الجميع)')}</p>
+                                <h4 className="font-bold text-foreground dark:text-white">{tx('jobs.new.stepReview.visibility', undefined, 'الموقع')}</h4>
+                                <p className="text-muted-foreground">{values.visibility === 'invite_only' ? tx('jobs.new.stepReview.inviteOnlyVisibility', undefined, 'خاص (دعوة فقط)') : tx('jobs.new.stepReview.publicVisibility', undefined, 'عام (الجميع)')}</p>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 {values.job_type === 'hourly' && values.estimated_hours ? (
-                    <div className="rounded-[1.5rem] border border-primary-100/70 bg-primary-50/60 px-4 py-3 text-sm text-primary-700 dark:border-white/10 dark:border-gray-800 dark:white/[0.04] dark:text-primary-200">
+                    <div className="rounded-[1.5rem] border border-primary-100/70 bg-primary-50/60 px-4 py-3 text-sm text-primary-700 dark:border-white/10 border-border dark:white/[0.04] dark:text-primary-200">
                         {tx('jobs.new.stepReview.estimatedHours', { hours: values.estimated_hours }, `${values.estimated_hours} estimated hours per week`)}
                     </div>
                 ) : null}
 
                 {/* Visibility */}
-                <div className="rounded-[1.85rem] border border-primary-100/70 bg-white dark:bg-gray-800/80 p-6 shadow-sm dark:border-white/10 dark:border-gray-800 dark:white/[0.04]">
+                <div className="rounded-[1.85rem] border border-primary-100/70 bg-card/80 p-6 shadow-sm dark:border-white/10 border-border dark:white/[0.04]">
                     <div className="flex items-center gap-3">
                         <div className="rounded-lg bg-primary-50 p-2 text-primary-600 dark:bg-primary-900/20 dark:text-primary-300">
                             {values.visibility === 'public' ? <Globe className="w-5 h-5" /> : <Lock className="w-5 h-5" />}
                         </div>
                         <div>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">{tx('jobs.new.stepReview.privacyLevel', undefined, 'مستوى الخصوصية')}</p>
-                            <p className="font-medium text-gray-900 dark:text-gray-100 dark:text-white">
+                            <p className="text-sm text-muted">{tx('jobs.new.stepReview.privacyLevel', undefined, 'مستوى الخصوصية')}</p>
+                            <p className="font-medium text-foreground dark:text-white">
                                 {values.visibility === 'public'
                                     ? tx('jobs.new.stepVisibility.publicTitle', undefined, 'عام للجميع')
                                     : tx('jobs.new.stepVisibility.inviteOnlyTitle', undefined, 'دعوة فقط')}
@@ -167,17 +167,17 @@ export default function StepReview() {
 
                 {/* Attachments */}
                 {values.attachments_files && values.attachments_files.length > 0 && (
-                    <div className="rounded-[1.85rem] border border-primary-100/70 bg-white dark:bg-gray-800/80 p-6 shadow-sm dark:border-white/10 dark:border-gray-800 dark:white/[0.04]">
+                    <div className="rounded-[1.85rem] border border-primary-100/70 bg-card/80 p-6 shadow-sm dark:border-white/10 border-border dark:white/[0.04]">
                         <div className="flex items-start gap-3">
-                            <div className="rounded-lg bg-gray-50 dark:bg-gray-900 p-2 text-gray-500 dark:text-gray-400 dark:bg-white/10 dark:text-gray-400">
+                            <div className="rounded-lg bg-surface p-2 text-muted dark:bg-white/10">
                                 <File className="w-5 h-5" />
                             </div>
                             <div className="w-full">
-                                <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">{tx('jobs.new.stepReview.attachments', undefined, 'الملفات المرفقة')}</p>
+                                <p className="mb-2 text-sm text-muted">{tx('jobs.new.stepReview.attachments', undefined, 'الملفات المرفقة')}</p>
                                 <div className="space-y-2">
                                     {values.attachments_files.map((file: File, index: number) => (
-                                        <div key={index} className="flex items-center gap-2 rounded-lg border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 p-2 text-sm dark:border-white/10 dark:white/[0.03]">
-                                            <span className="truncate font-medium text-gray-700 dark:text-gray-300">{file.name}</span>
+                                        <div key={index} className="flex items-center gap-2 rounded-lg border border-border bg-surface p-2 text-sm dark:border-white/10 dark:white/[0.03]">
+                                            <span className="truncate font-medium text-muted-foreground">{file.name}</span>
                                             <span className="text-muted text-xs">{tx('jobs.new.stepReview.fileSize', { size: (file.size / 1024 / 1024).toFixed(2) }, `(${(file.size / 1024 / 1024).toFixed(2)} MB)`)}</span>
                                         </div>
                                     ))}
@@ -188,8 +188,8 @@ export default function StepReview() {
                 )}
 
                 {/* Skills */}
-                <div className="rounded-[1.85rem] border border-primary-100/70 bg-white dark:bg-gray-800/80 p-6 shadow-sm dark:border-white/10 dark:border-gray-800 dark:white/[0.04]">
-                    <h3 className="mb-3 font-bold text-gray-900 dark:text-gray-100 dark:text-white">{tx('jobs.new.stepReview.requiredSkills', undefined, 'المهارات المطلوبة')}</h3>
+                <div className="rounded-[1.85rem] border border-primary-100/70 bg-card/80 p-6 shadow-sm dark:border-white/10 border-border dark:white/[0.04]">
+                    <h3 className="mb-3 font-bold text-foreground dark:text-white">{tx('jobs.new.stepReview.requiredSkills', undefined, 'المهارات المطلوبة')}</h3>
                     <div className="flex flex-wrap gap-2">
                         {values.required_skills?.map((skill) => (
                             <span key={skill.id} className="rounded-full bg-primary-50 px-3 py-1 text-sm font-medium text-primary-700 dark:bg-primary-900/20 dark:text-primary-300">

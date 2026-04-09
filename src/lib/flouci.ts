@@ -1,6 +1,6 @@
-﻿// PCI-DSS Compliance Status: Verified via Flouci direct redirection. No plaintext CC exists in local memory.
+ // PCI-DSS Compliance Status: Verified via Flouci direct redirection. No plaintext CC exists in local memory.
 /**
- * Flouci Payment Gateway Service for Khedmetna.tn
+ * Flouci Payment Gateway Service for WorkedIn.tn
  * Documentation: https://flouci.com/developers
  * 
  * SECURITY: All payment operations handled via Supabase Edge Functions.

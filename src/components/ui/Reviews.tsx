@@ -54,7 +54,7 @@ export function ReviewCard({ review, onMarkHelpful, onRespond, canRespond }: Rev
     };
 
     return (
-        <div className="border border-gray-100 dark:border-gray-800 rounded-xl p-6 hover:shadow-md transition-shadow">
+        <div className="border border-border rounded-xl p-6 hover:shadow-md transition-shadow">
             {/* Header */}
             <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3">
@@ -84,7 +84,7 @@ export function ReviewCard({ review, onMarkHelpful, onRespond, canRespond }: Rev
                             key={i}
                             className={`w-5 h-5 ${i < review.rating
                                 ? 'text-yellow-500 fill-yellow-500'
-                                : 'text-gray-300'
+                                : 'text-muted'
                                 }`}
                         />
                     ))}
@@ -101,7 +101,7 @@ export function ReviewCard({ review, onMarkHelpful, onRespond, canRespond }: Rev
 
             {/* Response if exists */}
             {review.response && (
-                <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 mb-4">
+                <div className="bg-surface rounded-lg p-4 mb-4">
                     <p className="text-sm font-medium text-muted mb-1">رد الموظف:</p>
                     <p className="text-sm text-foreground">{review.response}</p>
                 </div>
@@ -200,7 +200,7 @@ export function StarRatingInput({ value, onChange, size = 'md' }: StarRatingInpu
                             ${sizeClasses[size]}
                             ${(hovered || value) >= star
                                 ? 'text-yellow-500 fill-yellow-500'
-                                : 'text-gray-300'
+                                : 'text-muted'
                             }
                         `}
                     />
@@ -296,7 +296,7 @@ interface ReviewsSummaryProps {
 
 export function ReviewsSummary({ totalReviews, averageRating, ratingDistribution }: ReviewsSummaryProps) {
     return (
-        <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-6">
+        <div className="bg-surface rounded-xl p-6">
             <div className="flex items-center gap-8">
                 {/* Overall Rating */}
                 <div className="text-center">
@@ -307,7 +307,7 @@ export function ReviewsSummary({ totalReviews, averageRating, ratingDistribution
                                 key={i}
                                 className={`w-5 h-5 ${i < Math.round(averageRating)
                                     ? 'text-yellow-500 fill-yellow-500'
-                                    : 'text-gray-300'
+                                    : 'text-muted'
                                     }`}
                             />
                         ))}
@@ -324,7 +324,7 @@ export function ReviewsSummary({ totalReviews, averageRating, ratingDistribution
                         return (
                             <div key={star} className="flex items-center gap-2">
                                 <span className="text-sm w-8">{star} ⭐</span>
-                                <div className="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                                <div className="flex-1 h-2 bg-secondary rounded-full overflow-hidden">
                                     <div
                                         className="h-full bg-yellow-500 rounded-full"
                                         style={{ width: `${percentage}%` }}

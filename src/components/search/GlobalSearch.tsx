@@ -130,7 +130,7 @@ export default function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
             {/* Modal Content - Command Palette Style */}
             <div
                 ref={modalRef}
-                className="relative w-full max-w-xl bg-white dark:bg-gray-800 dark:bg-dark-900 rounded-2xl shadow-2xl border border-dark-100 dark:border-dark-700 overflow-hidden flex flex-col max-h-[70vh] animate-scale-in duration-200"
+                className="relative w-full max-w-xl bg-card dark:bg-dark-900 rounded-2xl shadow-2xl border border-dark-100 dark:border-dark-700 overflow-hidden flex flex-col max-h-[70vh] animate-scale-in duration-200"
                 style={{ boxShadow: '0 0 0 1px rgba(0,0,0,0.05), 0 20px 50px -12px rgba(0,0,0,0.5)' }}
             >
                 {/* Search Header */}
@@ -234,7 +234,7 @@ export default function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
                                                     <div className="text-xs text-dark-500 truncate">{job.subtitle}</div>
                                                 </div>
                                             </div>
-                                            <div className="px-2 py-1 rounded text-xs font-medium bg-white dark:bg-gray-800 dark:bg-dark-700 shadow-sm border border-dark-100 dark:border-dark-600 shrink-0">
+                                            <div className="px-2 py-1 rounded text-xs font-medium bg-card dark:bg-dark-700 shadow-sm border border-dark-100 dark:border-dark-600 shrink-0">
                                                 {job.budget}
                                             </div>
                                         </button>
@@ -288,11 +288,11 @@ export default function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
                 <div className="bg-dark-50 dark:bg-dark-800/50 px-4 py-2 text-[10px] text-dark-400 border-t border-dark-100 dark:border-dark-800 flex items-center justify-between shrink-0">
                     <div className="flex gap-4">
                         <span className="flex items-center gap-1">
-                            <kbd className="px-1 bg-white dark:bg-gray-800 dark:bg-dark-700 rounded border border-dark-200 dark:border-dark-600">↵</kbd>
+                            <kbd className="px-1 bg-card dark:bg-dark-700 rounded border border-dark-200 dark:border-dark-600">↵</kbd>
                             <span>{tx('globalSearch.toSelect', undefined, 'to select')}</span>
                         </span>
                         <span className="flex items-center gap-1">
-                            <kbd className="px-1 bg-white dark:bg-gray-800 dark:bg-dark-700 rounded border border-dark-200 dark:border-dark-600">↑↓</kbd>
+                            <kbd className="px-1 bg-card dark:bg-dark-700 rounded border border-dark-200 dark:border-dark-600">↑↓</kbd>
                             <span>{tx('globalSearch.toNavigate', undefined, 'to navigate')}</span>
                         </span>
                     </div>

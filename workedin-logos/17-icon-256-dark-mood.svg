@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <rect width="256" height="256" rx="48" fill="#0f0f0f"/>
+  <!-- subtle grid -->
+  <line x1="0" y1="64" x2="256" y2="64" stroke="#181818" stroke-width="1"/>
+  <line x1="0" y1="128" x2="256" y2="128" stroke="#181818" stroke-width="1"/>
+  <line x1="0" y1="192" x2="256" y2="192" stroke="#181818" stroke-width="1"/>
+  <line x1="64" y1="0" x2="64" y2="256" stroke="#181818" stroke-width="1"/>
+  <line x1="128" y1="0" x2="128" y2="256" stroke="#181818" stroke-width="1"/>
+  <line x1="192" y1="0" x2="192" y2="256" stroke="#181818" stroke-width="1"/>
+  <!-- amber square mark -->
+  <rect x="28" y="28" width="200" height="200" rx="0" fill="#E08A00"/>
+  <rect x="28" y="28" width="200" height="12" fill="#c97a00"/>
+  <!-- W·I cutout dark -->
+  <polyline points="48,72 76,164 104,120 132,164 160,72" fill="none" stroke="#0f0f0f" stroke-width="20" stroke-linejoin="round" stroke-linecap="round"/>
+  <line x1="188" y1="68" x2="188" y2="188" stroke="#0f0f0f" stroke-width="20" stroke-linecap="round"/>
+  <line x1="175" y1="68" x2="201" y2="68" stroke="#0f0f0f" stroke-width="18" stroke-linecap="round"/>
+  <line x1="175" y1="188" x2="201" y2="188" stroke="#0f0f0f" stroke-width="18" stroke-linecap="round"/>
+</svg>

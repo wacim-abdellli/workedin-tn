@@ -262,7 +262,7 @@ export function useContractState({
                     contract_id: contractId,
                     sender_id: userId,
                     receiver_id: receiverId,
-                    content: `âš ï¸ ØªÙ… ÙØªØ­ Ù†Ø²Ø§Ø¹: ${reason}`,
+                    content: `âš ï¸ ØªÙ… ÙØªØ­ Ù†Ø²Ø§Ø¹: ${reason}`,
                     message_type: 'dispute',
                 });
 

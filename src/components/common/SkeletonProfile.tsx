@@ -2,7 +2,7 @@ import { Skeleton } from './SkeletonCard';
 
 export default function SkeletonProfile() {
     return (
-        <div className="bg-white dark:bg-gray-800 dark:bg-dark-800 rounded-2xl overflow-hidden shadow-sm border border-gray-100 dark:border-gray-800 dark:border-dark-700">
+        <div className="bg-card dark:bg-dark-800 rounded-2xl overflow-hidden shadow-sm border border-border dark:border-dark-700">
             <Skeleton className="h-32 w-full" /> {/* Cover */}
             <div className="px-6 pb-6">
                 <div className="relative -mt-10 mb-4 flex justify-between items-end">

@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useMemo, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { createPortal } from 'react-dom';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, m, useReducedMotion } from 'framer-motion';
 import { AlertCircle, AlertTriangle, CheckCircle, Info, X } from 'lucide-react';
 import { useTranslation } from '../../i18n';
 
@@ -126,7 +126,7 @@ function ToastViewport({
 }) {
   return (
     <div className={`pointer-events-none fixed z-[9999] flex max-w-[calc(100vw-2rem)] flex-col gap-3 ${positionClassMap[position]}`}>
-      <AnimatePresence>
+      <AnimatePresence mode="popLayout">
         {toasts.map((toast) => (
           <ToastCard key={toast.id} toast={toast} onClose={() => onClose(toast.id)} />
         ))}
@@ -138,6 +138,7 @@ function ToastViewport({
 function ToastCard({ toast, onClose }: { toast: Toast; onClose: () => void }) {
   const { tx } = useTranslation();
   const config = toastConfig[toast.type];
+  const shouldReduceMotion = useReducedMotion();
 
   useEffect(() => {
     if (toast.duration <= 0) return;
@@ -146,12 +147,14 @@ function ToastCard({ toast, onClose }: { toast: Toast; onClose: () => void }) {
   }, [toast.duration, onClose]);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: -12, scale: 0.98 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: -12, scale: 0.98 }}
+    <m.div
+      initial={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, y: -12, scale: 0.98 }}
+      animate={shouldReduceMotion ? { opacity: 1 } : { opacity: 1, y: 0, scale: 1 }}
+      exit={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, y: -12, scale: 0.98 }}
       transition={{ 
-        duration: parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--animation-toast-duration') || '250') / 1000 
+        duration: shouldReduceMotion
+          ? 0.14
+          : parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--animation-toast-duration') || '250') / 1000 
       }}
       className={`
         pointer-events-auto 
@@ -165,6 +168,7 @@ function ToastCard({ toast, onClose }: { toast: Toast; onClose: () => void }) {
       `}
       role="status"
       aria-live="polite"
+      style={{ willChange: 'transform, opacity' }}
     >
       <div className={`flex items-start gap-3 p-4 ${config.textClass}`}>
         <div className={`mt-0.5 shrink-0 ${config.iconClass}`}>{config.icon}</div>
@@ -189,7 +193,7 @@ function ToastCard({ toast, onClose }: { toast: Toast; onClose: () => void }) {
           <X className="h-4 w-4" />
         </button>
       </div>
-    </motion.div>
+    </m.div>
   );
 }
 

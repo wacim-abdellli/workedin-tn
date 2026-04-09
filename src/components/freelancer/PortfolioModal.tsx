@@ -97,11 +97,11 @@ export default function PortfolioModal({
                 />
 
                 <div className="space-y-1">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">وصف المشروع</label>
+                    <label className="block text-sm font-medium text-muted-foreground">وصف المشروع</label>
                     <textarea
                         {...register('description')}
                         rows={4}
-                        className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all resize-none"
+                        className="w-full px-4 py-2 rounded-xl border border-border focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all resize-none"
                         placeholder="اشرح تفاصيل المشروع وما قمت بإنجازه..."
                     />
                     {errors.description && (
@@ -140,7 +140,7 @@ export default function PortfolioModal({
                     {...register('media_url')}
                     dir="ltr"
                 />
-                <p className="text-xs text-gray-500 dark:text-gray-400 -mt-3">سنقوم بدعم رفع الملفات قريباً. يرجى استخدام رابط مباشر للصورة حالياً.</p>
+                <p className="text-xs text-muted -mt-3">سنقوم بدعم رفع الملفات قريباً. يرجى استخدام رابط مباشر للصورة حالياً.</p>
 
                 <div className="pt-4 flex justify-end gap-3">
                     <Button

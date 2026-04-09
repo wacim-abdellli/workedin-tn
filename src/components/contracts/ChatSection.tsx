@@ -79,16 +79,16 @@ export default function ChatSection({
     };
 
     return (
-        <div className="flex flex-col h-full bg-white dark:bg-gray-800">
+        <div className="flex flex-col h-full bg-card">
             {/* Messages List */}
             <ErrorBoundary fallback={
-                <div className="flex-1 flex items-center justify-center text-gray-500 dark:text-gray-400">
+                <div className="flex-1 flex items-center justify-center text-muted">
                     <div className="text-center">
                         <p>{t.common?.error || 'حدث خطأ في تحميل الرسائل'}</p>
                     </div>
                 </div>
             }>
-                <div className="flex-1 overflow-y-auto p-4 space-y-6 bg-gray-50 dark:bg-gray-900/50" role="log" aria-live="polite" aria-relevant="additions text">
+                <div className="flex-1 overflow-y-auto p-4 space-y-6 bg-surface/50" role="log" aria-live="polite" aria-relevant="additions text">
                 {isLoadingHistory && (
                     <div className="flex justify-center py-4">
                         <Loader2 className="w-6 h-6 animate-spin text-primary-600" />
@@ -96,8 +96,8 @@ export default function ChatSection({
                 )}
 
                 {messages.length === 0 && !isLoadingHistory ? (
-                    <div className="flex flex-col items-center justify-center h-full text-gray-400">
-                        <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4">
+                    <div className="flex flex-col items-center justify-center h-full text-muted">
+                        <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
                             <Send className="w-8 h-8 opacity-50" />
                         </div>
                         <p>{t.contract?.startConversation || 'ابدأ المحادثة الآن'}</p>
@@ -114,7 +114,7 @@ export default function ChatSection({
                                     <SanitizedHtml
                                         as="span"
                                         html={message.content}
-                                        className="bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400 text-xs px-3 py-1 rounded-full"
+                                        className="bg-secondary text-muted-foreground text-xs px-3 py-1 rounded-full"
                                     />
                                 </div>
                             );
@@ -124,7 +124,7 @@ export default function ChatSection({
                             <div key={message.id}>
                                 {showDateSeparator && (
                                     <div className="flex justify-center my-6">
-                                        <span className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 text-xs px-3 py-1 rounded-full shadow-sm">
+                                        <span className="bg-card border border-border text-muted text-xs px-3 py-1 rounded-full shadow-sm">
                                             {formatDateSeparator(message.created_at)}
                                         </span>
                                     </div>
@@ -146,7 +146,7 @@ export default function ChatSection({
                                     <div className={`flex flex-col max-w-[70%] ${isOwn ? 'items-end' : 'items-start'}`}>
                                         <div className={`pk-3 py-2 px-4 rounded-2xl shadow-sm text-sm ${isOwn
                                             ? 'bg-primary-600 text-white rounded-br-sm'
-                                            : 'bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-800 text-gray-800 dark:text-gray-200 dark:text-gray-100 rounded-bl-sm'
+                                            : 'bg-card border border-border text-foreground rounded-bl-sm'
                                             }`}>
                                             {/* Text Content */}
                                             {message.content && (
@@ -160,20 +160,20 @@ export default function ChatSection({
                                             {message.attachments && message.attachments.length > 0 && (
                                                 <div className="mt-2 space-y-2">
                                                     {message.attachments.map((file, idx) => (
-                                                        <div key={idx} className={`flex items-center gap-3 p-2 rounded-lg ${isOwn ? 'bg-primary-700/50' : 'bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700'
+                                                        <div key={idx} className={`flex items-center gap-3 p-2 rounded-lg ${isOwn ? 'bg-primary-700/50' : 'bg-surface border border-border'
                                                             }`}>
-                                                            <div className={`p-2 rounded-lg ${isOwn ? 'bg-white dark:bg-gray-800/10' : 'bg-white dark:bg-gray-800'}`}>
+                                                            <div className={`p-2 rounded-lg ${isOwn ? 'bg-card/10' : 'bg-card'}`}>
                                                                 <FileText className="w-5 h-5" />
                                                             </div>
                                                             <div className="flex-1 min-w-0">
                                                                 <p className="font-medium truncate text-xs">{file.name}</p>
-                                                                <p className={`text-[10px] ${isOwn ? 'text-white/70' : 'text-gray-500 dark:text-gray-400'}`}>{file.size}</p>
+                                                                <p className={`text-[10px] ${isOwn ? 'text-white/70' : 'text-muted'}`}>{file.size}</p>
                                                             </div>
                                                             <a
                                                                 href={file.url}
                                                                 target="_blank"
                                                                 rel="noopener noreferrer"
-                                                                className={`h-10 w-10 flex items-center justify-center rounded-full transition-colors ${isOwn ? 'hover:bg-white dark:bg-gray-800/20' : 'hover:bg-gray-100 dark:bg-gray-800'
+                                                                className={`h-10 w-10 flex items-center justify-center rounded-full transition-colors ${isOwn ? 'hover:bg-card/20' : 'hover:bg-muted'
                                                                     }`}
                                                                 aria-label={`تحميل المرفق: ${file.name}`}
                                                             >
@@ -187,13 +187,13 @@ export default function ChatSection({
 
                                         {/* Meta: Time & Read Receipt */}
                                         <div className="flex items-center gap-1 mt-1 px-1">
-                                            <span className="text-[10px] text-gray-400">
+                                            <span className="text-[10px] text-muted">
                                                 {formatTime(message.created_at)}
                                             </span>
                                             {isOwn && (
                                                 message.is_read
                                                     ? <CheckCheck className="w-3 h-3 text-blue-500" />
-                                                    : <Check className="w-3 h-3 text-gray-300" />
+                                                    : <Check className="w-3 h-3 text-muted" />
                                             )}
                                         </div>
                                     </div>
@@ -207,11 +207,11 @@ export default function ChatSection({
                 {otherUserTyping && (
                     <div className="flex justify-start gap-3" role="status" aria-live="polite">
                         <span className="sr-only">الطرف الآخر يكتب الآن</span>
-                        <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 animate-pulse" />
-                        <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-2xl rounded-bl-sm px-4 py-3 shadow-sm flex items-center gap-1">
-                            <div className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '0ms' }} />
-                            <div className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '150ms' }} />
-                            <div className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '300ms' }} />
+                        <div className="w-8 h-8 rounded-full bg-secondary animate-pulse" />
+                        <div className="bg-card border border-border rounded-2xl rounded-bl-sm px-4 py-3 shadow-sm flex items-center gap-1">
+                            <div className="w-1.5 h-1.5 rounded-full bg-muted animate-bounce" style={{ animationDelay: '0ms' }} />
+                            <div className="w-1.5 h-1.5 rounded-full bg-muted animate-bounce" style={{ animationDelay: '150ms' }} />
+                            <div className="w-1.5 h-1.5 rounded-full bg-muted animate-bounce" style={{ animationDelay: '300ms' }} />
                         </div>
                     </div>
                 )}
@@ -221,14 +221,14 @@ export default function ChatSection({
             </ErrorBoundary>
 
             {/* Input Area */}
-            <div className="p-4 bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-800 shrink-0">
+            <div className="p-4 bg-card border-t border-border shrink-0">
                 {isUploading && (
                     <div className="mb-3" role="status" aria-live="polite">
                         <div className="flex items-center justify-between text-xs text-primary-600 mb-1">
                             <span>جاري رفع الملف...</span>
                             <span>{Math.round(uploadProgress)}%</span>
                         </div>
-                        <div className="h-1 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                        <div className="h-1 bg-muted rounded-full overflow-hidden">
                             <div className="h-full bg-primary-600 transition-all duration-300" style={{ width: `${uploadProgress}%` }} />
                         </div>
                     </div>
@@ -246,14 +246,14 @@ export default function ChatSection({
                     <button
                         type="button"
                         onClick={() => fileInputRef.current?.click()}
-                        className="h-12 w-12 flex items-center justify-center text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-colors"
+                        className="h-12 w-12 flex items-center justify-center text-muted hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-colors"
                         disabled={isUploading}
                         aria-label={t.contract?.attachFile || 'إرفاق ملف'}
                     >
                         <Paperclip className="w-5 h-5" />
                     </button>
 
-                    <div className="flex-1 min-h-[48px] bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 focus-within:ring-2 focus-within:ring-primary-100 focus-within:border-primary-400 transition-all">
+                    <div className="flex-1 min-h-[48px] bg-surface border border-border rounded-xl px-4 py-3 focus-within:ring-2 focus-within:ring-primary-100 focus-within:border-primary-400 transition-all">
                         <textarea
                             value={newMessage}
                             onChange={(e) => {

@@ -1,4 +1,4 @@
-﻿import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import type { Session, User } from '@supabase/supabase-js';
 import { useQueryClient } from '@tanstack/react-query';
@@ -9,7 +9,7 @@ import { logger } from '@/lib/logger';
 import { sanitizeFreelancerProfileData } from '@/lib/schemaValidation';
 import { supabase, withTimeout } from '@/lib/supabase';
 import { supabaseWithRetry } from '@/lib/supabaseWithRetry';
-import { useWorkspaceStore, type Workspace } from '@/lib/workspaceState';
+import { useWorkspaceStore, saveWorkspaceForUser, clearWorkspaceForUser, loadWorkspaceForUser, type Workspace } from '@/lib/workspaceState';
 import {
   getInitialWorkspace,
   getWorkspaceCapabilities,
@@ -24,6 +24,40 @@ if (import.meta.env.PROD) {
     Sentry = module.Sentry;
   });
 }
+
+// ─── Profile session cache ────────────────────────────────────────────────────
+// Stores profile + freelancerProfile in sessionStorage so the header/avatar
+// renders instantly on page load instead of waiting 2-3s for the DB round-trip.
+const PROFILE_CACHE_KEY = 'wi_profile_cache';
+
+function readProfileCache(userId: string): { profile: Profile; freelancerProfile: FreelancerProfile | null } | null {
+  try {
+    const raw = sessionStorage.getItem(PROFILE_CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (parsed?.userId !== userId) return null;
+    return { profile: parsed.profile, freelancerProfile: parsed.freelancerProfile ?? null };
+  } catch {
+    return null;
+  }
+}
+
+function writeProfileCache(userId: string, profile: Profile, freelancerProfile: FreelancerProfile | null) {
+  try {
+    sessionStorage.setItem(PROFILE_CACHE_KEY, JSON.stringify({ userId, profile, freelancerProfile }));
+  } catch {
+    // sessionStorage unavailable — silently ignore
+  }
+}
+
+function clearProfileCache() {
+  try {
+    sessionStorage.removeItem(PROFILE_CACHE_KEY);
+  } catch {
+    // ignore
+  }
+}
+// ─────────────────────────────────────────────────────────────────────────────
 
 interface AuthContextType {
   user: User | null;
@@ -130,13 +164,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const currentIsValid = capabilities.includes(currentWorkspace);
       
       if (currentIsValid && loadedUserIdRef.current === nextProfile.id) {
-        // Workspace already set to a valid value for this user â€” don't flip it.
+        // Workspace already set to a valid value for this user — don't flip it.
         store.setSwitching(false);
         return;
       }
 
       store.setWorkspace(desiredWorkspace);
       store.setSwitching(false);
+      // Persist so reload restores the correct workspace
+      if (nextProfile?.id) saveWorkspaceForUser(nextProfile.id, desiredWorkspace);
     },
     []
   );
@@ -147,7 +183,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         authUser.user_metadata?.full_name ||
         authUser.user_metadata?.name ||
         authUser.email?.split('@')[0] ||
-        'Khedmetna User';
+        'WorkedIn User';
 
       await supabaseWithRetry(
         () =>
@@ -177,6 +213,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const previousProfile = profileRef.current?.id === userId ? profileRef.current : null;
       const previousFreelancerProfile = previousProfile ? freelancerProfileRef.current : null;
       const currentUser = forceUserObj || userRef.current;
+
+      // ── Hydrate from cache immediately so UI renders without waiting for DB ──
+      const cached = readProfileCache(userId);
+      if (cached && !profileRef.current) {
+        setProfile(cached.profile);
+        setFreelancerProfile(cached.freelancerProfile);
+        syncWorkspaceFromProfile(cached.profile, cached.freelancerProfile);
+      }
 
       try {
         const loadProfile = () =>
@@ -242,6 +286,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
         setFreelancerProfile(nextFreelancerProfile);
         syncWorkspaceFromProfile(nextProfile, nextFreelancerProfile);
 
+        // Write fresh data to cache for instant hydration on next page load
+        writeProfileCache(userId, nextProfile, nextFreelancerProfile);
         return { profile: nextProfile, freelancerProfile: nextFreelancerProfile };
       } catch (error) {
         const message = error instanceof Error ? error.message.toLowerCase() : '';
@@ -304,14 +350,30 @@ export function AuthProvider({ children }: AuthProviderProps) {
           setSession(currentSession);
           setUser(currentSession.user);
           loadedUserIdRef.current = currentSession.user.id;
-          
+
+          // ── Restore persisted workspace instantly (before DB fetch) ──
+          const savedWorkspace = loadWorkspaceForUser(currentSession.user.id);
+          if (savedWorkspace) {
+            useWorkspaceStore.getState().setWorkspace(savedWorkspace);
+          }
+
+          // ── Hydrate from cache instantly so avatar/profile shows right away ──
+          const cached = readProfileCache(currentSession.user.id);
+          if (cached) {
+            setProfile(cached.profile);
+            setFreelancerProfile(cached.freelancerProfile);
+            // Only sync workspace from profile if no saved workspace preference
+            if (!savedWorkspace) {
+              syncWorkspaceFromProfile(cached.profile, cached.freelancerProfile);
+            }
+          }
+
           // Set ready immediately so UI can render
           setIsProfileReady(true);
           setIsLoading(false);
           
-          // Fetch profile in background - don't block UI
+          // Fetch fresh profile from DB in background (updates cache too)
           fetchProfile(currentSession.user.id, currentSession.user).then(() => {
-            // Mark that initAuth has completed loading for this user.
             initAuthCompletedForRef.current = currentSession.user.id;
           }).catch((error) => {
             logger.error('Background profile fetch failed:', error);
@@ -549,6 +611,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
     syncWorkspaceFromProfile(null, null);
     setIsProfileReady(true);
 
+    // Clear profile cache so next user doesn't see stale data
+    clearProfileCache();
+    clearWorkspaceForUser();
+
     // Clear Sentry user context in production
     if (import.meta.env.PROD && Sentry) {
       Sentry.setUser(null);
@@ -588,6 +654,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
      const nextProfile = profile ? { ...profile, ...data } : ({ id: user.id, ...data } as Profile);
      setProfile(nextProfile);
      syncWorkspaceFromProfile(nextProfile, freelancerProfile);
+     // Keep cache in sync so next page load reflects the update immediately
+     writeProfileCache(user.id, nextProfile, freelancerProfile);
 
      if (
        nextProfile.onboarding_completed ||
@@ -624,6 +692,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     setFreelancerProfile(nextFreelancerProfile);
     syncWorkspaceFromProfile(profile, nextFreelancerProfile);
+    // Keep cache in sync
+    if (user && profile) writeProfileCache(user.id, profile, nextFreelancerProfile);
 
     await invalidateFreelancerDashboardQueries(queryClient, user.id);
   };

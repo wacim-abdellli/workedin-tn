@@ -76,18 +76,18 @@ export default function ProposalDetailModal({
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-0 md:p-4 bg-black/70 backdrop-blur-sm">
-            <div className="bg-white dark:bg-gray-800 w-full h-full md:h-[90vh] md:max-w-7xl md:rounded-2xl shadow-2xl flex flex-col md:flex-row overflow-hidden relative animate-in fade-in zoom-in-95 duration-200">
+            <div className="bg-card w-full h-full md:h-[90vh] md:max-w-7xl md:rounded-2xl shadow-2xl flex flex-col md:flex-row overflow-hidden relative animate-in fade-in zoom-in-95 duration-200">
 
                 {/* Close Button (Mobile & Desktop) */}
                 <button
                     onClick={onClose}
-                    className="absolute top-4 end-4 z-50 p-2 bg-white dark:bg-gray-800/90 rounded-full hover:bg-gray-100 md:hidden"
+                    className="absolute top-4 end-4 z-50 p-2 bg-card/90 rounded-full hover:bg-secondary md:hidden"
                 >
                     <X className="w-6 h-6" />
                 </button>
 
                 {/* LEFT SIDEBAR (Freelancer Info) */}
-                <div className="w-full md:w-80 bg-gray-50 dark:bg-gray-900 border-e border-gray-100 dark:border-gray-800 flex flex-col overflow-y-auto">
+                <div className="w-full md:w-80 bg-surface border-e border-border flex flex-col overflow-y-auto">
 
                     {/* Header (Mobile only) */}
                     <div className="md:hidden p-4 border-b flex items-center gap-3">
@@ -95,7 +95,7 @@ export default function ProposalDetailModal({
                         <h2 className="font-bold text-lg truncate">{freelancer.full_name}</h2>
                     </div>
 
-                    <div className="p-6 text-center border-b border-gray-200 dark:border-gray-700">
+                    <div className="p-6 text-center border-b border-border">
                         <div className="relative inline-block mb-4">
                             <img
                                 src={freelancer.avatar_url || 'https://via.placeholder.com/150'}
@@ -106,10 +106,10 @@ export default function ProposalDetailModal({
                                 <span className="absolute bottom-1 end-1 w-5 h-5 bg-green-500 border-4 border-white rounded-full"></span>
                             )}
                         </div>
-                        <h3 className="font-bold text-xl text-gray-900 dark:text-gray-100 dark:text-white mb-1">{freelancer.full_name}</h3>
-                        <p className="text-gray-500 dark:text-gray-400 text-sm mb-3">{freelancer.title || 'مستقل'}</p>
+                        <h3 className="font-bold text-xl text-foreground dark:text-white mb-1">{freelancer.full_name}</h3>
+                        <p className="text-muted text-sm mb-3">{freelancer.title || 'مستقل'}</p>
 
-                        <div className="flex items-center justify-center gap-2 text-sm text-gray-600 dark:text-gray-300 mb-4">
+                        <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground mb-4">
                             <MapPin className="w-4 h-4" />
                             <span>{freelancer.country || 'تونس'}</span>
                         </div>
@@ -119,24 +119,24 @@ export default function ProposalDetailModal({
                         </div>
                     </div>
 
-                    <div className="p-6 border-b border-gray-200 dark:border-gray-700 space-y-4">
+                    <div className="p-6 border-b border-border space-y-4">
                         <div className="flex justify-between items-center">
-                            <span className="text-gray-500 dark:text-gray-400 text-sm">التقييم</span>
+                            <span className="text-muted text-sm">التقييم</span>
                             <div className="flex items-center gap-1 font-bold">
                                 <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-                                {freelancer.rating} <span className="text-gray-400 text-xs font-normal">({freelancer.reviews_count})</span>
+                                {freelancer.rating} <span className="text-muted text-xs font-normal">({freelancer.reviews_count})</span>
                             </div>
                         </div>
                         <div className="flex justify-between items-center">
-                            <span className="text-gray-500 dark:text-gray-400 text-sm">مشاريع مكتملة</span>
+                            <span className="text-muted text-sm">مشاريع مكتملة</span>
                             <span className="font-bold">{freelancer.jobs_completed}</span>
                         </div>
                         <div className="flex justify-between items-center">
-                            <span className="text-gray-500 dark:text-gray-400 text-sm">نسبة النجاح</span>
+                            <span className="text-muted text-sm">نسبة النجاح</span>
                             <span className="font-bold text-green-600">{freelancer.success_rate || 95}%</span>
                         </div>
                         <div className="flex justify-between items-center">
-                            <span className="text-gray-500 dark:text-gray-400 text-sm">سرعة الرد</span>
+                            <span className="text-muted text-sm">سرعة الرد</span>
                             <span className="font-bold">ساعة تقريباً</span>
                         </div>
                     </div>
@@ -145,7 +145,7 @@ export default function ProposalDetailModal({
                         <h4 className="font-bold text-sm mb-3">المهارات</h4>
                         <div className="flex flex-wrap gap-2">
                             {['React', 'Node.js', 'UI Design', 'TypeScript'].map(skill => (
-                                <span key={skill} className="px-2.5 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-medium text-gray-700 dark:text-gray-300 dark:text-gray-200">
+                                <span key={skill} className="px-2.5 py-1 bg-card border border-border rounded-lg text-xs font-medium text-muted-foreground">
                                     {skill}
                                 </span>
                             ))}
@@ -154,20 +154,20 @@ export default function ProposalDetailModal({
                 </div>
 
                 {/* CENTER CONTENT */}
-                <div className="flex-1 flex flex-col min-w-0 bg-white dark:bg-gray-800">
+                <div className="flex-1 flex flex-col min-w-0 bg-card">
 
                     {/* Modal Header */}
-                    <div className="h-16 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between px-6 bg-white dark:bg-gray-800 sticky top-0 z-20">
+                    <div className="h-16 border-b border-border flex items-center justify-between px-6 bg-card sticky top-0 z-20">
                         <div className="flex items-center gap-4">
                             {/* Tabs */}
-                            <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-800/50 p-1 rounded-lg">
+                            <div className="flex items-center gap-1 bg-muted/50 p-1 rounded-lg">
                                 {tabs.map(tab => (
                                     <button
                                         key={tab.id}
                                         onClick={() => setActiveTab(tab.id)}
                                         className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${activeTab === tab.id
-                                            ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 dark:text-white shadow-sm'
-                                            : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:text-gray-100 dark:text-white hover:bg-gray-200 dark:bg-gray-700/50'
+                                            ? 'bg-card text-foreground dark:text-white shadow-sm'
+                                            : 'text-muted hover:text-foreground dark:text-white hover:bg-secondary'
                                             }`}
                                     >
                                         {tab.label}
@@ -178,8 +178,8 @@ export default function ProposalDetailModal({
 
                         {/* Desktop Actions */}
                         <div className="hidden md:flex items-center gap-2">
-                            <button onClick={onClose} className="p-2 hover:bg-gray-100 dark:bg-gray-800 rounded-full transition-colors">
-                                <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                            <button onClick={onClose} className="p-2 hover:bg-muted rounded-full transition-colors">
+                                <X className="w-5 h-5 text-muted" />
                             </button>
                         </div>
                     </div>
@@ -191,34 +191,34 @@ export default function ProposalDetailModal({
                         {activeTab === 'proposal' && (
                             <div className="animate-in fade-in duration-300 space-y-8">
                                 <div>
-                                    <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-4">
+                                    <div className="flex items-center gap-2 text-sm text-muted mb-4">
                                         <Clock className="w-4 h-4" />
                                         <span>تم التقديم منذ {new Date(proposal.created_at).toLocaleDateString('ar-TN')}</span>
-                                        <span className="text-gray-300">|</span>
-                                        <span className={proposal.status === 'viewed' ? 'text-green-600' : 'text-gray-500 dark:text-gray-400'}>
+                                        <span className="text-muted">|</span>
+                                        <span className={proposal.status === 'viewed' ? 'text-green-600' : 'text-muted'}>
                                             {proposal.status === 'viewed' ? 'تمت المشاهدة' : 'جديد'}
                                         </span>
                                     </div>
                                     <h3 className="text-xl font-bold mb-4">خطاب التقديم</h3>
-                                    <div className="prose prose-lg max-w-none text-gray-700 dark:text-gray-300 dark:text-gray-200 leading-relaxed whitespace-pre-wrap">
+                                    <div className="prose prose-lg max-w-none text-muted-foreground leading-relaxed whitespace-pre-wrap">
                                         {proposal.cover_letter}
                                     </div>
                                 </div>
 
                                 {proposal.attachments && proposal.attachments.length > 0 && (
-                                    <div className="pt-6 border-t border-gray-100 dark:border-gray-800">
+                                    <div className="pt-6 border-t border-border">
                                         <h3 className="font-bold mb-4">المرفقات</h3>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             {proposal.attachments.map((file, idx: number) => (
-                                                <div key={idx} className="flex items-center gap-3 p-3 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:bg-gray-900 transition-colors cursor-pointer group">
+                                                <div key={idx} className="flex items-center gap-3 p-3 border border-border rounded-xl hover:bg-surface transition-colors cursor-pointer group">
                                                     <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
                                                         <FileText className="w-5 h-5" />
                                                     </div>
                                                     <div className="flex-1 min-w-0">
                                                         <p className="font-medium text-sm truncate">{file.name}</p>
-                                                        <p className="text-xs text-gray-500 dark:text-gray-400">{file.size}</p>
+                                                        <p className="text-xs text-muted">{file.size}</p>
                                                     </div>
-                                                    <Download className="w-4 h-4 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                    <Download className="w-4 h-4 text-muted opacity-0 group-hover:opacity-100 transition-opacity" />
                                                 </div>
                                             ))}
                                         </div>
@@ -232,7 +232,7 @@ export default function ProposalDetailModal({
                             <div className="animate-in fade-in duration-300 space-y-8">
                                 <section>
                                     <h3 className="font-bold text-lg mb-3">نبذة عني</h3>
-                                    <p className="text-gray-700 dark:text-gray-300 dark:text-gray-200 leading-relaxed">
+                                    <p className="text-muted-foreground leading-relaxed">
                                         {freelancer.bio || 'لا توجد نبذة شخصية.'}
                                     </p>
                                 </section>
@@ -240,13 +240,13 @@ export default function ProposalDetailModal({
                                 <section>
                                     <h3 className="font-bold text-lg mb-3">اللغات</h3>
                                     <div className="space-y-2">
-                                        <div className="flex justify-between p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                                        <div className="flex justify-between p-3 bg-surface rounded-lg">
                                             <span>العربية</span>
-                                            <span className="text-gray-500 dark:text-gray-400">اللغة الأم</span>
+                                            <span className="text-muted">اللغة الأم</span>
                                         </div>
-                                        <div className="flex justify-between p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                                        <div className="flex justify-between p-3 bg-surface rounded-lg">
                                             <span>الفرنسية</span>
-                                            <span className="text-gray-500 dark:text-gray-400">متقدم</span>
+                                            <span className="text-muted">متقدم</span>
                                         </div>
                                     </div>
                                 </section>
@@ -257,10 +257,10 @@ export default function ProposalDetailModal({
                         {activeTab === 'portfolio' && (
                             <div className="animate-in fade-in duration-300">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div className="aspect-video bg-gray-100 dark:bg-gray-800 rounded-xl flex items-center justify-center text-gray-400">
+                                    <div className="aspect-video bg-muted rounded-xl flex items-center justify-center text-muted">
                                         مثال عمل 1 (صورة)
                                     </div>
-                                    <div className="aspect-video bg-gray-100 dark:bg-gray-800 rounded-xl flex items-center justify-center text-gray-400">
+                                    <div className="aspect-video bg-muted rounded-xl flex items-center justify-center text-muted">
                                         مثال عمل 2 (صورة)
                                     </div>
                                 </div>
@@ -269,7 +269,7 @@ export default function ProposalDetailModal({
 
                         {/* TAB: WORK HISTORY */}
                         {activeTab === 'work-history' && (
-                            <div className="animate-in fade-in duration-300 text-center py-10 text-gray-500 dark:text-gray-400">
+                            <div className="animate-in fade-in duration-300 text-center py-10 text-muted">
                                 <Briefcase className="w-12 h-12 mx-auto mb-3 opacity-20" />
                                 <p>سجل العمل غير متوفر في هذه المعاينة</p>
                             </div>
@@ -277,7 +277,7 @@ export default function ProposalDetailModal({
 
                         {/* TAB: REVIEWS */}
                         {activeTab === 'reviews' && (
-                            <div className="animate-in fade-in duration-300 text-center py-10 text-gray-500 dark:text-gray-400">
+                            <div className="animate-in fade-in duration-300 text-center py-10 text-muted">
                                 <Star className="w-12 h-12 mx-auto mb-3 opacity-20" />
                                 <p>التقييمات غير متوفرة في هذه المعاينة</p>
                             </div>
@@ -286,24 +286,24 @@ export default function ProposalDetailModal({
                 </div>
 
                 {/* RIGHT SIDEBAR (Bid Stats & Actions) */}
-                <div className="w-full md:w-80 bg-gray-50 dark:bg-gray-900 border-s border-gray-100 dark:border-gray-800 p-6 flex flex-col gap-6">
+                <div className="w-full md:w-80 bg-surface border-s border-border p-6 flex flex-col gap-6">
 
                     {/* Bid Card */}
-                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                        <h4 className="font-bold text-gray-900 dark:text-gray-100 dark:text-white mb-4">تفاصيل العرض</h4>
+                    <div className="bg-card rounded-xl shadow-sm border border-border p-6">
+                        <h4 className="font-bold text-foreground dark:text-white mb-4">تفاصيل العرض</h4>
                         <div className="mb-4 text-center">
-                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">قيمة العرض</p>
-                            <p className="text-3xl font-bold text-primary-600">{proposal.bid_amount} <span className="text-lg text-gray-500 dark:text-gray-400 font-normal">د.ت</span></p>
+                            <p className="text-sm text-muted mb-1">قيمة العرض</p>
+                            <p className="text-3xl font-bold text-primary-600">{proposal.bid_amount} <span className="text-lg text-muted font-normal">د.ت</span></p>
                         </div>
 
-                        <div className="space-y-3 py-4 border-t border-gray-100 dark:border-gray-800">
+                        <div className="space-y-3 py-4 border-t border-border">
                             <div className="flex justify-between text-sm">
-                                <span className="text-gray-600 dark:text-gray-300">مدة التنفيذ</span>
+                                <span className="text-muted-foreground">مدة التنفيذ</span>
                                 <span className="font-medium">{proposal.duration} يوم</span>
                             </div>
                             <div className="flex justify-between text-sm">
-                                <span className="text-gray-600 dark:text-gray-300">رسوم الخدمة</span>
-                                <span className="font-medium text-gray-400">{(proposal.bid_amount * 0.1).toFixed(0)} د.ت</span>
+                                <span className="text-muted-foreground">رسوم الخدمة</span>
+                                <span className="font-medium text-muted">{(proposal.bid_amount * 0.1).toFixed(0)} د.ت</span>
                             </div>
                             <div className="flex justify-between text-base font-bold pt-2 border-t border-dashed">
                                 <span>الإجمالي للدفع</span>
@@ -348,7 +348,7 @@ export default function ProposalDetailModal({
 
                         <button
                             onClick={onArchive}
-                            className="w-full flex items-center justify-center gap-2 text-gray-400 hover:text-red-500 text-sm py-2 transition-colors"
+                            className="w-full flex items-center justify-center gap-2 text-muted hover:text-red-500 text-sm py-2 transition-colors"
                         >
                             <Archive className="w-4 h-4" />
                             أرشفة العرض

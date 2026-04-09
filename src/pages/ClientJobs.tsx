@@ -99,8 +99,8 @@ export default function ClientJobs() {
         {/* Header section */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 dark:text-white">{tx('pages.clientJobs.title', undefined, 'My Projects')}</h1>
-            <p className="text-gray-500 dark:text-gray-400 mt-1">{tx('pages.clientJobs.subtitle', undefined, 'Manage your posted projects and proposals')}</p>
+            <h1 className="text-2xl font-bold text-foreground dark:text-white">{tx('pages.clientJobs.title', undefined, 'My Projects')}</h1>
+            <p className="text-muted mt-1">{tx('pages.clientJobs.subtitle', undefined, 'Manage your posted projects and proposals')}</p>
           </div>
           <button
             onClick={() => navigate('/jobs/new')}
@@ -113,16 +113,16 @@ export default function ClientJobs() {
         {/* Stats row */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
           <div className="stat-card">
-            <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">{tx('pages.clientJobs.active', undefined, 'Active')}</p>
+            <p className="text-sm text-muted font-medium">{tx('pages.clientJobs.active', undefined, 'Active')}</p>
             <p className="text-2xl font-bold text-amber-600 dark:text-amber-400 mt-1">{stats.active}</p>
           </div>
           <div className="stat-card">
-            <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">{tx('pages.clientJobs.proposalsReceived', undefined, 'Total proposals received')}</p>
-            <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 dark:text-white mt-1">{stats.proposals}</p>
+            <p className="text-sm text-muted font-medium">{tx('pages.clientJobs.proposalsReceived', undefined, 'Total proposals received')}</p>
+            <p className="text-2xl font-bold text-foreground dark:text-white mt-1">{stats.proposals}</p>
           </div>
           <div className="stat-card">
-            <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">{tx('pages.clientJobs.completed', undefined, 'Completed')}</p>
-            <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 dark:text-white mt-1">{stats.completed}</p>
+            <p className="text-sm text-muted font-medium">{tx('pages.clientJobs.completed', undefined, 'Completed')}</p>
+            <p className="text-2xl font-bold text-foreground dark:text-white mt-1">{stats.completed}</p>
           </div>
         </div>
 
@@ -135,7 +135,7 @@ export default function ClientJobs() {
               className={`tab-pill whitespace-nowrap
                 ${activeTab === tab 
                   ? 'tab-pill-active bg-accent-100 text-accent-700 dark:bg-accent-900/30 dark:text-accent-300' 
-                  : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+                  : 'text-muted hover:text-foreground'
                 }`}
             >
               {tabLabel(tab)}
@@ -204,18 +204,18 @@ export default function ClientJobs() {
                 </div>
                 
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mb-3">
-                  <p className="text-gray-900 dark:text-gray-100 dark:text-white font-semibold flex items-center gap-1">
+                  <p className="text-foreground dark:text-white font-semibold flex items-center gap-1">
                     {job.budget_min}-{job.budget_max} {tx('common.currency', undefined, 'TND')}
                   </p>
                   <p className="status-pill-neutral px-2 py-0.5">
                     {job.job_type === 'fixed' ? tx('pages.clientJobs.fixedPrice', undefined, 'Fixed Price') : tx('pages.clientJobs.hourlyRate', undefined, 'Hourly Rate')}
                   </p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                  <p className="text-sm text-muted">
                     {tx('pages.clientJobs.proposalsCount', { count: job.proposals?.[0]?.count || 0 }, `${job.proposals?.[0]?.count || 0} proposals`)}
                   </p>
                 </div>
                 
-                <p className="text-sm text-gray-400">
+                <p className="text-sm text-muted">
                   {tx('pages.clientJobs.postedAgo', { time: formatDaysAgo(job.created_at) }, `Posted ${formatDaysAgo(job.created_at)}`)}
                 </p>
               </div>

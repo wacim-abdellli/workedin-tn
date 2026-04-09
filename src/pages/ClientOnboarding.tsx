@@ -1,4 +1,4 @@
-﻿import { logger } from '@/lib/logger';
+ import { logger } from '@/lib/logger';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -186,7 +186,7 @@ function ClientOnboarding() {
         }
 
         if (shouldNavigate) {
-            showToast(tx('onboarding.client.welcomeToast', undefined, 'Welcome to Khedmetna!'), 'success');
+            showToast(tx('onboarding.client.welcomeToast', undefined, 'Welcome to WorkedIn!'), 'success');
             navigate('/client/dashboard');
         }
     };
@@ -223,7 +223,7 @@ function ClientOnboarding() {
                 main={
                     <div className="space-y-8">
                         <div className="space-y-3">
-                            <div className="inline-flex items-center gap-2 rounded-full border border-brand-light bg-brand-light/20 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-brand-text dark:border-white/10 dark:border-gray-800 dark:white/[0.04] dark:text-brand-light">
+                            <div className="inline-flex items-center gap-2 rounded-full border border-brand-light bg-brand-light/20 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-brand-text dark:border-white/10 border-border dark:white/[0.04] dark:text-brand-light">
                                 <User className="w-3.5 h-3.5" />
                                 {tx('onboarding.client.profileTitle', undefined, 'Client profile')}
                             </div>

@@ -77,28 +77,32 @@ function AppContent() {
   );
 }
 
+import { LazyMotion, domAnimation } from "framer-motion";
+
 function App() {
   return (
     <HelmetProvider>
-      <QueryClientProvider client={queryClient}>
-        <BrowserRouter>
-          <ThemeProvider>
-            <I18nProvider defaultLanguage="ar">
-              <WorkspaceProvider>
-                <ErrorBoundary>
-                  <AuthProvider>
-                    <ToastProvider>
-                      <NotificationsProvider>
-                        <AppContent />
-                      </NotificationsProvider>
-                    </ToastProvider>
-                  </AuthProvider>
-                </ErrorBoundary>
-              </WorkspaceProvider>
-            </I18nProvider>
-          </ThemeProvider>
-        </BrowserRouter>
-      </QueryClientProvider>
+      <LazyMotion features={domAnimation}>
+        <QueryClientProvider client={queryClient}>
+          <BrowserRouter>
+            <ThemeProvider>
+              <I18nProvider defaultLanguage="ar">
+                <WorkspaceProvider>
+                  <ErrorBoundary>
+                    <AuthProvider>
+                      <ToastProvider>
+                        <NotificationsProvider>
+                          <AppContent />
+                        </NotificationsProvider>
+                      </ToastProvider>
+                    </AuthProvider>
+                  </ErrorBoundary>
+                </WorkspaceProvider>
+              </I18nProvider>
+            </ThemeProvider>
+          </BrowserRouter>
+        </QueryClientProvider>
+      </LazyMotion>
     </HelmetProvider>
   );
 }

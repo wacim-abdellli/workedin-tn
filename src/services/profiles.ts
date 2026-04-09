@@ -70,7 +70,7 @@ export async function getFreelancers(filters: {
 
     if (filters.search) {
         // Strip out characters that could break parsing
-        const safeSearch = filters.search.replace(/[,\"_%]/g, ' ').trim();
+        const safeSearch = filters.search.replace(/[,"_%]/g, ' ').trim();
         if (safeSearch) {
             query = query.or(`full_name.ilike.%${safeSearch}%,freelancer_profiles.title.ilike.%${safeSearch}%`);
         }

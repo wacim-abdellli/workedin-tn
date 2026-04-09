@@ -55,7 +55,7 @@ export default function LiveCounterSection({ stats }: LiveCounterSectionProps) {
                         <div className="text-3xl font-bold text-white mb-1">+{stats.jobs}</div>
                         <div className="text-sm" style={{ color: 'rgba(255,255,255,0.68)' }}>{t.home.stats.activeJobs}</div>
                     </div>
-                    <div className="text-center border-x border-white/10 dark:border-gray-800">
+                    <div className="text-center border-x border-white/10 border-border">
                         <div className="text-3xl font-bold text-white mb-1">+{stats.freelancers.toLocaleString()}</div>
                         <div className="text-sm" style={{ color: 'rgba(255,255,255,0.68)' }}>{t.home.stats.users}</div>
                     </div>

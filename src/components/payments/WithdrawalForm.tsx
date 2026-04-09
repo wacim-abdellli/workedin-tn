@@ -103,14 +103,14 @@ const WithdrawalForm = ({ wallet, onSuccess, onCancel }: WithdrawalFormProps) =>
 
     if (submitted) {
         return (
-            <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 text-center">
+            <div className="bg-card rounded-2xl p-8 text-center">
                 <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
                     <CheckCircle className="w-8 h-8 text-green-600" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 dark:text-white mb-2">
+                <h3 className="text-xl font-bold text-foreground dark:text-white mb-2">
                     تم إرسال طلب السحب
                 </h3>
-                <p className="text-gray-600 dark:text-gray-400 mb-4">
+                <p className="text-muted-foreground mb-4">
                     سيتم مراجعة طلبك وتحويل المبلغ خلال 2-5 أيام عمل
                 </p>
                 <p className="text-2xl font-bold text-primary-600">
@@ -121,34 +121,34 @@ const WithdrawalForm = ({ wallet, onSuccess, onCancel }: WithdrawalFormProps) =>
     }
 
     return (
-        <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 rounded-2xl p-6">
+        <form onSubmit={handleSubmit} className="bg-card rounded-2xl p-6">
             {/* Header */}
             <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 dark:text-white">
+                <h3 className="text-lg font-bold text-foreground dark:text-white">
                     طلب سحب
                 </h3>
                 {onCancel && (
                     <button
                         type="button"
                         onClick={onCancel}
-                        className="p-2 rounded-lg hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700"
+                        className="p-2 rounded-lg hover:bg-muted"
                     >
-                        <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                        <X className="w-5 h-5 text-muted" />
                     </button>
                 )}
             </div>
 
             {/* Available Balance */}
-            <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-900 dark:bg-gray-700/50 rounded-xl">
-                <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">الرصيد المتاح</div>
-                <div className="text-2xl font-bold text-gray-900 dark:text-gray-100 dark:text-white">
+            <div className="mb-6 p-4 bg-surface rounded-xl">
+                <div className="text-sm text-muted mb-1">الرصيد المتاح</div>
+                <div className="text-2xl font-bold text-foreground dark:text-white">
                     {formatCurrency(wallet.balance)}
                 </div>
             </div>
 
             {/* Amount Input */}
             <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-muted-foreground mb-2">
                     المبلغ المطلوب
                 </label>
                 <div className="relative" dir="ltr">
@@ -163,7 +163,7 @@ const WithdrawalForm = ({ wallet, onSuccess, onCancel }: WithdrawalFormProps) =>
                         className="input w-full ps-16"
                         dir="ltr"
                     />
-                    <span className="absolute start-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">
+                    <span className="absolute start-3 top-1/2 -translate-y-1/2 text-muted">
                         د.ت
                     </span>
                 </div>
@@ -174,7 +174,7 @@ const WithdrawalForm = ({ wallet, onSuccess, onCancel }: WithdrawalFormProps) =>
 
             {/* Withdrawal Method */}
             <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-muted-foreground mb-2">
                     طريقة السحب
                 </label>
                 <div className="grid grid-cols-3 gap-2">
@@ -185,7 +185,7 @@ const WithdrawalForm = ({ wallet, onSuccess, onCancel }: WithdrawalFormProps) =>
                             onClick={() => setMethod(m)}
                             className={`p-3 rounded-xl border-2 text-center transition-colors ${method === m
                                 ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300'
-                                : 'border-gray-200 dark:border-gray-700 dark:border-gray-600 hover:border-gray-300'
+                                : 'border-border hover:border-border'
                                 }`}
                         >
                             {m === 'bank_transfer' && <Building className="w-5 h-5 mx-auto mb-1" />}
@@ -201,7 +201,7 @@ const WithdrawalForm = ({ wallet, onSuccess, onCancel }: WithdrawalFormProps) =>
             {method === 'bank_transfer' && (
                 <div className="space-y-4 mb-4">
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        <label className="block text-sm font-medium text-muted-foreground mb-1">
                             اسم البنك
                         </label>
                         <input
@@ -213,7 +213,7 @@ const WithdrawalForm = ({ wallet, onSuccess, onCancel }: WithdrawalFormProps) =>
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        <label className="block text-sm font-medium text-muted-foreground mb-1">
                             اسم صاحب الحساب
                         </label>
                         <input
@@ -225,7 +225,7 @@ const WithdrawalForm = ({ wallet, onSuccess, onCancel }: WithdrawalFormProps) =>
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        <label className="block text-sm font-medium text-muted-foreground mb-1">
                             رقم IBAN
                         </label>
                         <input
@@ -243,11 +243,11 @@ const WithdrawalForm = ({ wallet, onSuccess, onCancel }: WithdrawalFormProps) =>
             {/* Mobile Payment Fields */}
             {(method === 'd17' || method === 'flouci') && (
                 <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    <label className="block text-sm font-medium text-muted-foreground mb-1">
                         رقم الهاتف
                     </label>
                     <div className="relative" dir="ltr">
-                        <Phone className="absolute start-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <Phone className="absolute start-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted" />
                         <input
                             type="tel"
                             value={phoneNumber}

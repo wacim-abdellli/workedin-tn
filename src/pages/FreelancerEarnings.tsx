@@ -1,4 +1,4 @@
-﻿import { useMemo } from "react";
+ import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ArrowUpRight,
@@ -183,8 +183,8 @@ export default function FreelancerEarnings() {
       style={{ background: "var(--color-background-base)" }}
     >
       <SEO
-        title={tx('pages.freelancerEarnings.seoTitle', undefined, 'Earnings | Khedmetna')}
-        description={tx('pages.freelancerEarnings.seoDescription', undefined, 'Your earnings and payment history on Khedmetna.')}
+        title={tx('pages.freelancerEarnings.seoTitle', undefined, 'Earnings | WorkedIn')}
+        description={tx('pages.freelancerEarnings.seoDescription', undefined, 'Your earnings and payment history on WorkedIn.')}
         url="/freelancer/earnings"
         noIndex
       />

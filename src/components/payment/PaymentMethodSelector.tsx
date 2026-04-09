@@ -59,7 +59,7 @@ function AvailableCard({ method, selected, onSelect, lang }: AvailableCardProps)
       aria-pressed={selected}
       className={[
         'w-full text-start rounded-2xl border-2 p-4 transition-all duration-200',
-        'bg-white dark:bg-gray-900 hover:shadow-md',
+        'bg-card hover:shadow-md',
         selected
           ? 'border-[color:var(--workspace-primary)] shadow-sm ring-1 ring-[color:var(--workspace-primary)]/20'
           : 'border-border hover:border-[color:var(--workspace-primary)]/50',
@@ -71,8 +71,8 @@ function AvailableCard({ method, selected, onSelect, lang }: AvailableCardProps)
           className={[
             'flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center',
             selected
-              ? 'bg-[color:var(--workspace-primary)]/10 text-[color:var(--workspace-primary)]'
-              : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400',
+              ? 'bg-[color-mix(in_srgb,var(--workspace-primary)_10%,transparent)] text-[var(--workspace-primary)]'
+              : 'bg-surface text-muted-foreground',
           ].join(' ')}
         >
           <MethodIcon name={method.icon} className="w-5 h-5" />
@@ -91,7 +91,7 @@ function AvailableCard({ method, selected, onSelect, lang }: AvailableCardProps)
           </div>
 
           {/* Description */}
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
+          <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
             {description}
           </p>
 
@@ -100,7 +100,7 @@ function AvailableCard({ method, selected, onSelect, lang }: AvailableCardProps)
             {features.map((feat) => (
               <span
                 key={feat}
-                className="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400"
+                className="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] rounded-full bg-surface text-muted-foreground/80"
               >
                 <Check className="w-2.5 h-2.5 text-emerald-500 flex-shrink-0" />
                 {feat}
@@ -115,7 +115,7 @@ function AvailableCard({ method, selected, onSelect, lang }: AvailableCardProps)
             'flex-shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors',
             selected
               ? 'border-[color:var(--workspace-primary)] bg-[color:var(--workspace-primary)]'
-              : 'border-gray-300 dark:border-gray-600',
+              : 'border-border',
           ].join(' ')}
         >
           {selected && <Check className="w-3 h-3 text-white" />}
@@ -138,11 +138,11 @@ function ComingSoonCard({ method, lang }: ComingSoonCardProps) {
   return (
     <div
       aria-disabled="true"
-      className="w-full text-start rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-700 p-4 bg-gray-50/60 dark:bg-gray-900/40 opacity-60 cursor-not-allowed"
+      className="w-full text-start rounded-2xl border-2 border-dashed border-border p-4 bg-muted/30 opacity-60 cursor-not-allowed"
     >
       <div className="flex items-start gap-3">
         {/* Icon circle — muted */}
-        <div className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center bg-gray-200 dark:bg-gray-800 text-gray-400">
+        <div className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center bg-surface text-muted-foreground">
           <MethodIcon name={method.icon} className="w-5 h-5" />
         </div>
 
@@ -150,15 +150,15 @@ function ComingSoonCard({ method, lang }: ComingSoonCardProps) {
         <div className="flex-1 min-w-0">
           {/* Name row */}
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-sm font-semibold text-gray-500 dark:text-gray-400">{name}</span>
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+            <span className="text-sm font-semibold text-muted-foreground">{name}</span>
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide rounded-full bg-amber-500/10 text-amber-600">
               <Clock className="w-2.5 h-2.5" />
               Coming Soon
             </span>
           </div>
 
           {/* Description */}
-          <p className="text-xs text-gray-400 dark:text-gray-500 mt-1 leading-relaxed">
+          <p className="text-xs text-muted-foreground/70 mt-1 leading-relaxed">
             {description}
           </p>
 
@@ -167,9 +167,9 @@ function ComingSoonCard({ method, lang }: ComingSoonCardProps) {
             {features.map((feat) => (
               <span
                 key={feat}
-                className="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] rounded-full bg-gray-200 dark:bg-gray-800 text-gray-400"
+                className="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] rounded-full bg-surface text-muted-foreground/60"
               >
-                <Check className="w-2.5 h-2.5 text-gray-300 dark:text-gray-600 flex-shrink-0" />
+                <Check className="w-2.5 h-2.5 text-muted-foreground/40 flex-shrink-0" />
                 {feat}
               </span>
             ))}
@@ -219,11 +219,11 @@ export default function PaymentMethodSelector({
       {showComingSoon && comingSoon.length > 0 && (
         <>
           <div className="flex items-center gap-3 py-1">
-            <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
-            <span className="text-[11px] font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wider whitespace-nowrap">
+            <div className="flex-1 h-px bg-border" />
+            <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider whitespace-nowrap">
               {language === 'ar' ? 'قريباً' : language === 'fr' ? 'Bientôt disponible' : 'Coming soon'}
             </span>
-            <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
+            <div className="flex-1 h-px bg-border" />
           </div>
 
           <div className="space-y-2">

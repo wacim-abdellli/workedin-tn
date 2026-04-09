@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { renderHook, act, waitFor } from '@testing-library/react';
+import { renderHook, act } from '@testing-library/react';
 import { ThemeProvider, useTheme } from '../ThemeContext';
 
 describe('ThemeContext', () => {
@@ -149,11 +149,8 @@ describe('ThemeContext', () => {
             matchMediaMock.matches = false;
 
             // Create a new mock that tracks if localStorage was checked
-            let localStorageChecked = false;
-            const originalGetItem = window.localStorage.getItem;
             window.localStorage.getItem = vi.fn((key: string) => {
                 if (key === 'theme') {
-                    localStorageChecked = true;
                     // Return null only on the first check (during initialization)
                     // After that, return the value that was set
                     return localStorageData[key] || null;

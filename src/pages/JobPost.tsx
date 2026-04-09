@@ -1,4 +1,4 @@
-﻿import { logger } from '@/lib/logger';
+ import { logger } from '@/lib/logger';
 import { useState, useEffect } from 'react';
 import { useForm, FormProvider, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -118,7 +118,7 @@ export default function JobPost() {
 
     const { status, lastSaved, loadFromStorage, clearStorage } = useAutosave<JobFormData>({
         data: formData,
-        storageKey: 'khedma_job_draft',
+        storageKey: 'workedin_job_draft',
         // Optional: onSave callback if needed
     });
 
@@ -244,7 +244,7 @@ export default function JobPost() {
                 attachments_files: [],
             };
 
-            localStorage.setItem('khedma_job_draft', JSON.stringify({
+            localStorage.setItem('workedin_job_draft', JSON.stringify({
                 data: draftData,
                 timestamp: new Date().toISOString(),
             }));
@@ -527,7 +527,7 @@ export default function JobPost() {
                 title={tx('jobs.new.restoreDraft.title', undefined, 'Restore draft')}
             >
                 <div className="space-y-4">
-                    <p className="text-gray-600 dark:text-gray-300">
+                    <p className="text-muted-foreground">
                         {tx('jobs.new.restoreDraft.description', { time: draftToRestore ? timeAgo(draftToRestore.timestamp) : '' }, `We found a saved draft from ${draftToRestore ? timeAgo(draftToRestore.timestamp) : ''}. Do you want to restore and continue?`)}
                     </p>
                     <div

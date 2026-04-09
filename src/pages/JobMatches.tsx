@@ -226,7 +226,7 @@ function JobMatches() {
 
     if (isLoading) {
         return (
-            <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+            <div className="min-h-screen bg-surface">
                 <Header />
                 <div className="container-custom py-12 text-center">
                     <div className="animate-spin w-12 h-12 border-4 border-primary-600 border-t-transparent rounded-full mx-auto" />
@@ -236,7 +236,7 @@ function JobMatches() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <div className="min-h-screen bg-surface">
             <Header />
 
             <div className="container-custom py-12">
@@ -328,7 +328,7 @@ function JobMatches() {
                                                 {(freelancer.skills as Skill[]).map((skill) => (
                                                     <span
                                                         key={skill.id}
-                                                        className="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded-full text-gray-700 dark:text-gray-300 dark:text-gray-200"
+                                                        className="text-xs px-2 py-1 bg-muted rounded-full text-muted-foreground"
                                                     >
                                                         {getSkillName(skill)}
                                                     </span>
@@ -345,7 +345,7 @@ function JobMatches() {
                         mt-4 w-full flex items-center justify-center gap-2 py-3 rounded-xl transition-all
                         ${playingVoice === freelancer.id
                                                     ? 'bg-primary-100 text-primary-700'
-                                                    : 'bg-gray-100 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:bg-gray-700'
+                                                    : 'bg-muted text-foreground hover:bg-secondary'
                                                 }
                       `}
                                         >
@@ -381,7 +381,7 @@ function JobMatches() {
                                                     />
                                                 ))}
                                                 {freelancer.work_samples.length > 3 && (
-                                                    <div className="w-20 h-16 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center text-sm text-muted flex-shrink-0">
+                                                    <div className="w-20 h-16 bg-muted rounded-lg flex items-center justify-center text-sm text-muted flex-shrink-0">
                                                         +{freelancer.work_samples.length - 3}
                                                     </div>
                                                 )}
@@ -409,7 +409,7 @@ function JobMatches() {
                                         </button>
 
                                         {isExpanded && (
-                                            <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-900 rounded-xl">
+                                            <div className="mt-4 p-4 bg-surface rounded-xl">
                                                 <p className="text-foreground">{freelancer.bio}</p>
                                                 <div className="mt-4 flex items-center gap-4 text-sm text-muted">
                                                     <span>

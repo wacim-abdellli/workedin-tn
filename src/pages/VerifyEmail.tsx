@@ -76,7 +76,7 @@ function VerifyEmail() {
             topAction={
                 <Link
                     to="/signup"
-                    className="inline-flex items-center rounded-full border border-white/12 bg-white dark:bg-gray-800/6 px-4 py-2 text-sm font-medium text-white/80 backdrop-blur-sm transition-colors hover:border-white/20 hover:bg-white dark:bg-gray-800/10 hover:text-white"
+                    className="inline-flex items-center rounded-full border border-white/12 bg-card/6 px-4 py-2 text-sm font-medium text-white/80 backdrop-blur-sm transition-colors hover:border-white/20 hover:bg-card/10 hover:text-white"
                 >
                     {t.verifyEmail.wrongEmail}
                 </Link>

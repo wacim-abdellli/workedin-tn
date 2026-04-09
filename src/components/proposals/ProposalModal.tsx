@@ -113,7 +113,7 @@ export default function ProposalModal({
                 <div className="grid md:grid-cols-2 gap-6">
                     {/* Amount */}
                     <div className="space-y-2">
-                        <label className="text-sm font-medium text-dark-900 dark:text-gray-100">
+                        <label className="text-sm font-medium text-dark-900">
                             قيمة العرض (د.ت)
                         </label>
                         <div className="relative">
@@ -123,18 +123,18 @@ export default function ProposalModal({
                                 className={`input w-full ps-10 ${errors.bid_amount ? 'border-red-500 focus:ring-red-500' : ''}`}
                                 placeholder="0.00"
                             />
-                            <span className="absolute start-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold">د.ت</span>
+                            <span className="absolute start-3 top-1/2 -translate-y-1/2 text-muted font-bold">د.ت</span>
                         </div>
                         {errors.bid_amount && (
                             <p className="text-red-500 text-xs mt-1">{errors.bid_amount.message}</p>
                         )}
 
-                        <div className="bg-gray-50 dark:bg-gray-900 dark:bg-dark-800 rounded-lg p-3 space-y-2 text-sm">
-                            <div className="flex justify-between text-gray-500 dark:text-gray-400">
+                        <div className="bg-surface dark:bg-dark-800 rounded-lg p-3 space-y-2 text-sm">
+                            <div className="flex justify-between text-muted">
                                 <span>رسوم المنصة ({PLATFORM_FEE_PERCENT}%)</span>
                                 <span>-{platformFee.toFixed(2)} د.ت</span>
                             </div>
-                            <div className="flex justify-between font-bold text-dark-900 dark:text-white pt-2 border-t border-gray-200 dark:border-gray-700 dark:border-dark-700">
+                            <div className="flex justify-between font-bold text-dark-900 dark:text-white pt-2 border-t border-border dark:border-dark-700">
                                 <span>ستحصل على</span>
                                 <span className="text-green-600">{netAmount.toFixed(2)} د.ت</span>
                             </div>
@@ -143,7 +143,7 @@ export default function ProposalModal({
 
                     {/* Delivery Time */}
                     <div className="space-y-2">
-                        <label className="text-sm font-medium text-dark-900 dark:text-gray-100">
+                        <label className="text-sm font-medium text-dark-900">
                             مدة التسليم
                         </label>
                         <div className="relative">
@@ -155,7 +155,7 @@ export default function ProposalModal({
                                     <option key={opt.value} value={opt.value}>{opt.label}</option>
                                 ))}
                             </select>
-                            <ChevronDown className="absolute end-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                            <ChevronDown className="absolute end-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted pointer-events-none" />
                         </div>
                         {errors.delivery_days && (
                             <p className="text-red-500 text-xs mt-1">{errors.delivery_days.message}</p>
@@ -165,7 +165,7 @@ export default function ProposalModal({
 
                 {/* Cover Letter */}
                 <div className="space-y-2">
-                    <label className="text-sm font-medium text-dark-900 dark:text-gray-100">
+                    <label className="text-sm font-medium text-dark-900">
                         رسالة العرض
                     </label>
                     <textarea
@@ -174,7 +174,7 @@ export default function ProposalModal({
                         className={`input w-full resize-none ${errors.cover_letter ? 'border-red-500 focus:ring-red-500' : ''}`}
                         placeholder="اشرح لماذا أنت الشخص المناسب لهذا المشروع..."
                     />
-                    <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
+                    <div className="flex justify-between text-xs text-muted">
                         {errors.cover_letter ? (
                             <span className="text-red-500">{errors.cover_letter.message}</span>
                         ) : (
@@ -186,13 +186,13 @@ export default function ProposalModal({
 
                 {/* Attachments */}
                 <div className="space-y-3">
-                    <label className="text-sm font-medium text-dark-900 dark:text-gray-100">
+                    <label className="text-sm font-medium text-dark-900">
                         مرفقات (اختياري)
                     </label>
 
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         {attachments.map((file, index) => (
-                            <div key={index} className="relative group p-2 border border-gray-200 dark:border-gray-700 dark:border-dark-700 rounded-lg">
+                            <div key={index} className="relative group p-2 border border-border dark:border-dark-700 rounded-lg">
                                 <button
                                     type="button"
                                     onClick={() => removeAttachment(index)}
@@ -203,7 +203,7 @@ export default function ProposalModal({
                                 </button>
                                 <div className="flex flex-col items-center text-center gap-2">
                                     <FileText className="w-8 h-8 text-primary-500" />
-                                    <span className="text-xs text-gray-600 dark:text-gray-300 truncate w-full">
+                                    <span className="text-xs text-muted-foreground truncate w-full">
                                         {file.name}
                                     </span>
                                 </div>
@@ -214,7 +214,7 @@ export default function ProposalModal({
                             <button
                                 type="button"
                                 onClick={() => fileInputRef.current?.click()}
-                                className="flex flex-col items-center justify-center p-4 border-2 border-dashed border-gray-300 dark:border-dark-600 rounded-lg hover:border-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/10 transition-colors gap-2 text-gray-400 hover:text-primary-600"
+                                className="flex flex-col items-center justify-center p-4 border-2 border-dashed border-border dark:border-dark-600 rounded-lg hover:border-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/10 transition-colors gap-2 text-muted hover:text-primary-600"
                                 aria-label="رفع ملف"
                             >
                                 <Upload className="w-6 h-6" />
@@ -230,7 +230,7 @@ export default function ProposalModal({
                         className="hidden"
                         accept=".pdf,.doc,.docx,.jpg,.png"
                     />
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                    <p className="text-xs text-muted">
                         يمكنك رفع ملفات بصيغة PDF أو صور حتى 10MB
                     </p>
                 </div>
@@ -238,7 +238,7 @@ export default function ProposalModal({
                 {/* Actions */}
                 </fieldset>
 
-                    <div className="flex gap-3 pt-4 border-t border-gray-100 dark:border-gray-800 dark:border-dark-700">
+                    <div className="flex gap-3 pt-4 border-t border-border dark:border-dark-700">
                     <Button
                         type="button"
                         variant="ghost"

@@ -67,14 +67,14 @@ class ErrorBoundaryInner extends Component<
       const reloadBtn = isAr ? "إعادة تحميل" : isFr ? "Recharger" : "Reload";
 
       return (
-        <div className="flex flex-col items-center justify-center p-8 bg-white dark:bg-gray-800 rounded-2xl border border-red-100 dark:border-red-900/30 text-center shadow-lg my-4">
+        <div className="flex flex-col items-center justify-center p-8 bg-card rounded-2xl border border-red-100 dark:border-red-900/30 text-center shadow-lg my-4">
           <div className="w-16 h-16 bg-red-100 dark:bg-red-500/10 rounded-full flex items-center justify-center mb-4">
             <AlertTriangle className="h-8 w-8 text-red-600 dark:text-red-400" />
           </div>
-          <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 dark:text-white mb-2">
+          <h2 className="text-xl font-bold text-foreground dark:text-white mb-2">
             {title}
           </h2>
-          <p className="text-gray-500 dark:text-gray-400 max-w-sm mb-6 mx-auto">
+          <p className="text-muted max-w-sm mb-6 mx-auto">
             {description}
           </p>
           <Button variant="primary" onClick={() => window.location.reload()}>

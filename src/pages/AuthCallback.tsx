@@ -3,7 +3,6 @@ import { Loader2, RefreshCw } from 'lucide-react';
 
 import { logger } from '@/lib/logger';
 import Button from '@/components/ui/Button';
-import { Logo } from '@/components/ui';
 import { supabase, withTimeout } from '../lib/supabase';
 import { useTranslation } from '../i18n';
 
@@ -184,14 +183,16 @@ const AuthCallback = () => {
         >
             <div className="w-full max-w-md rounded-[28px] border border-white/70 bg-white dark:bg-zinc-900/60 p-8 text-center shadow-lg backdrop-blur-xl dark:border-white/5 dark:shadow-none">
                 <div className="flex justify-center mb-6">
-                    <Logo variant="mark" size="lg" className="shadow-sm h-16 w-16" />
+                    <div className="flex h-16 w-16 items-center justify-center rounded-2xl overflow-hidden shadow-lg">
+                        <img src="/workedin-logos/22-icon-square-dark.svg" alt="WorkedIn" className="h-full w-full object-cover" />
+                    </div>
                 </div>
 
                 {status === 'loading' ? (
                     <>
                         <Loader2 className="mx-auto mb-4 h-12 w-12 animate-spin text-[var(--workspace-accent)]" />
-                        <h1 className="mb-3 text-2xl font-bold text-gray-900 dark:text-white">{tx('pages.authCallback.signingIn', undefined, 'Signing you in')}</h1>
-                        <p className="text-gray-500 dark:text-zinc-400">
+                        <h1 className="mb-3 text-2xl font-bold text-foreground">{tx('pages.authCallback.signingIn', undefined, 'Signing you in')}</h1>
+                        <p className="text-muted dark:text-zinc-400">
                             {tx('pages.authCallback.signingInDescription', undefined, 'We are finishing your secure login. This should only take a moment.')}
                         </p>
                     </>

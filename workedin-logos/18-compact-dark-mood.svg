@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 60" width="320" height="60">
+  <rect width="320" height="60" fill="#0a0a0a"/>
+  <!-- grid lines -->
+  <line x1="0" y1="30" x2="320" y2="30" stroke="#141414" stroke-width="1"/>
+  <line x1="80" y1="0" x2="80" y2="60" stroke="#141414" stroke-width="1"/>
+  <line x1="160" y1="0" x2="160" y2="60" stroke="#141414" stroke-width="1"/>
+  <line x1="240" y1="0" x2="240" y2="60" stroke="#141414" stroke-width="1"/>
+  <!-- icon -->
+  <rect x="8" y="10" width="40" height="40" fill="#E08A00"/>
+  <rect x="8" y="10" width="40" height="5" fill="#c97a00"/>
+  <polyline points="13,18 19,36 25,26 31,36 37,18" fill="none" stroke="#0a0a0a" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>
+  <line x1="41" y1="17" x2="41" y2="43" stroke="#0a0a0a" stroke-width="3.5" stroke-linecap="round"/>
+  <line x1="38" y1="17" x2="44" y2="17" stroke="#0a0a0a" stroke-width="3" stroke-linecap="round"/>
+  <line x1="38" y1="43" x2="44" y2="43" stroke="#0a0a0a" stroke-width="3" stroke-linecap="round"/>
+  <!-- wordmark -->
+  <text x="58" y="28" font-family="Arial Black, sans-serif" font-weight="900" font-size="14" letter-spacing="-0.5" fill="#e0e0e0">WORKED</text>
+  <text x="58" y="46" font-family="Arial Black, sans-serif" font-weight="900" font-size="14" letter-spacing="-0.5" fill="#E08A00">IN</text>
+</svg>

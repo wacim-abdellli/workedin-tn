@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, m, useReducedMotion } from 'framer-motion';
 import {
   BadgeCheck,
   Bell,
@@ -71,6 +71,7 @@ export default function AccountPanel({
   signOut,
   onClose,
 }: AccountPanelProps) {
+  const shouldReduceMotion = useReducedMotion();
   const navigate = useNavigate();
   const { freelancerProfile, refreshProfile } = useAuth();
   const { t, language } = useTranslation();
@@ -244,25 +245,25 @@ export default function AccountPanel({
   };
 
   return (
-    <AnimatePresence initial={false}>
+    <AnimatePresence mode="wait" initial={false}>
       {isOpen ? (
         <>
-          <motion.button
+          <m.button
             type="button"
             aria-label={t.common.close}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.16 }}
+            transition={{ duration: shouldReduceMotion ? 0.08 : 0.16 }}
             className="fixed inset-0 z-30 bg-black/50 md:hidden"
             onClick={onClose}
           />
 
-          <motion.div
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.18, ease: 'easeOut' }}
+          <m.div
+            initial={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, y: -8 }}
+            animate={shouldReduceMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
+            exit={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, y: -8 }}
+            transition={{ duration: shouldReduceMotion ? 0.12 : 0.18, ease: 'easeOut' }}
             style={{
               position: 'fixed',
               top: `${headerHeight}px`,
@@ -271,9 +272,10 @@ export default function AccountPanel({
               zIndex: 40,
               maxHeight: `calc(100vh - ${headerHeight}px)`,
               overflowY: 'auto',
+              willChange: 'transform, opacity',
             }}
             id="header-account-panel"
-            className="w-full border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-800 dark:bg-gray-900 shadow-lg shadow-gray-200/50 dark:border-white/5 dark:bg-[var(--color-bg-base)] dark:shadow-2xl dark:shadow-black/40"
+            className="w-full border-b border-border bg-card bg-card shadow-lg shadow-border/50 dark:border-white/5 dark:bg-[var(--color-bg-base)] dark:shadow-2xl dark:shadow-black/40"
             data-account-panel
           >
             <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8 lg:py-6">
@@ -282,19 +284,19 @@ export default function AccountPanel({
                   <p className="text-xs font-semibold uppercase tracking-[0.22em] text-purple-500 dark:text-purple-300">
                     {copy.sectionLabel}
                   </p>
-                  <h2 className="mt-1 text-lg font-semibold text-gray-900 dark:text-gray-100 dark:text-white">{displayName}</h2>
+                  <h2 className="mt-1 text-lg font-semibold text-foreground dark:text-white">{displayName}</h2>
                 </div>
                 <button
                   type="button"
                   onClick={onClose}
-                  className="rounded-full border border-gray-200 dark:border-gray-700 dark:border-gray-800 bg-white dark:bg-gray-800 dark:bg-gray-900 p-2 text-gray-500 dark:text-gray-400 transition-colors hover:bg-gray-50 dark:bg-gray-900 dark:border-white/10 dark:bg-white dark:bg-gray-900/5 dark:text-gray-400 dark:hover:bg-white dark:bg-gray-800 dark:bg-gray-900/10"
+                  className="rounded-full border border-border border-border bg-card bg-card p-2 text-muted transition-colors hover:bg-surface dark:border-white/10 dark:bg-card/5 dark:hover:bg-card bg-card/10"
                 >
                   <X className="h-4 w-4" />
                 </button>
               </div>
 
               <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-[minmax(280px,0.92fr)_minmax(340px,1.1fr)_minmax(260px,0.88fr)] lg:gap-5">
-                <section className="rounded-[28px] border border-gray-100 dark:border-gray-800 bg-[var(--color-bg-elevated)] p-5 shadow-sm dark:border-white/8 dark:bg-[var(--color-bg-muted)]">
+                <section className="rounded-[28px] border border-border bg-[var(--color-bg-elevated)] p-5 shadow-sm dark:border-white/8 dark:bg-[var(--color-bg-muted)]">
                   <div className="flex items-start gap-4">
                     {avatarUrl ? (
                       <img
@@ -316,12 +318,12 @@ export default function AccountPanel({
                       <div className="text-xs font-semibold uppercase tracking-[0.22em] text-purple-500/90 dark:text-purple-300">
                         {t.nav.profile}
                       </div>
-                      <h2 className="mt-2 truncate text-lg font-semibold text-gray-900 dark:text-gray-100 dark:text-white">{displayName}</h2>
-                      <p className="mt-1 truncate text-sm text-gray-500 dark:text-gray-400">
+                      <h2 className="mt-2 truncate text-lg font-semibold text-foreground dark:text-white">{displayName}</h2>
+                      <p className="mt-1 truncate text-sm text-muted">
                         {profile?.username ? `@${profile.username}` : user.email}
                       </p>
                       {identityLine ? (
-                        <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-sm text-gray-500 dark:text-gray-400">
+                        <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-sm text-muted">
                           {profile?.location ? (
                             <span className="inline-flex items-center gap-1.5">
                               <MapPin className="h-4 w-4" />
@@ -345,11 +347,11 @@ export default function AccountPanel({
                     </div>
                   </div>
 
-                  <div className="mt-5 rounded-2xl border border-gray-200 dark:border-gray-700 dark:border-gray-800/80 bg-white dark:bg-gray-800 dark:bg-gray-900/70 p-3 dark:border-white/8 dark:bg-white dark:bg-gray-900/[0.03]">
-                    <div className="text-xs font-medium text-gray-500 dark:text-gray-500 dark:text-gray-400">
+                  <div className="mt-5 rounded-2xl border border-border border-border/80 bg-card bg-card/70 p-3 dark:border-white/8 dark:bg-card/[0.03]">
+                    <div className="text-xs font-medium text-muted">
                       {isVerified ? t.common.identityVerified : copy.needsSetup}
                     </div>
-                    <div className="mt-1 text-sm text-gray-700 dark:text-gray-300">
+                    <div className="mt-1 text-sm text-muted-foreground">
                       {profile?.bio && profile.bio.length > 0
                         ? profile.bio.slice(0, 96)
                         : activeWorkspace === 'freelancer'
@@ -361,25 +363,25 @@ export default function AccountPanel({
                   <Link
                     to={profilePath}
                     onClick={onClose}
-                    className="mt-4 inline-flex min-h-[44px] w-full items-center justify-between rounded-2xl border border-gray-200 dark:border-gray-700 dark:border-gray-800 bg-white dark:bg-gray-800 dark:bg-gray-900 px-4 py-3 text-sm font-semibold text-gray-800 dark:text-gray-200 dark:text-gray-100 transition-all hover:border-purple-200 hover:bg-purple-50 dark:border-white/10 dark:bg-white dark:bg-gray-900/5 dark:text-white dark:hover:border-purple-500/30 dark:hover:bg-white dark:bg-gray-800 dark:bg-gray-900/10"
+                    className="mt-4 inline-flex min-h-[44px] w-full items-center justify-between rounded-2xl border border-border border-border bg-card bg-card px-4 py-3 text-sm font-semibold text-foreground transition-all hover:border-purple-200 hover:bg-purple-50 dark:border-white/10 dark:bg-card/5 dark:text-white dark:hover:border-purple-500/30 dark:hover:bg-card bg-card/10"
                   >
                     <span>{t.publicProfile.editProfile}</span>
-                    <ChevronRight className="h-4 w-4 text-gray-400 dark:text-gray-500 dark:text-gray-400 rtl:rotate-180" />
+                    <ChevronRight className="h-4 w-4 text-muted rtl:rotate-180" />
                   </Link>
                 </section>
 
-                <section className="rounded-[28px] border border-gray-100 dark:border-gray-800 bg-[var(--color-bg-elevated)] p-5 shadow-sm dark:border-white/8 dark:bg-[var(--color-bg-muted)]">
-                  <div className="text-xs font-semibold uppercase tracking-[0.22em] text-gray-500 dark:text-gray-500 dark:text-gray-400">
+                <section className="rounded-[28px] border border-border bg-[var(--color-bg-elevated)] p-5 shadow-sm dark:border-white/8 dark:bg-[var(--color-bg-muted)]">
+                  <div className="text-xs font-semibold uppercase tracking-[0.22em] text-muted">
                     {copy.sectionLabel}
                   </div>
 
-                  <div className="mt-4 rounded-[24px] border border-gray-200 dark:border-gray-700 dark:border-gray-800 bg-white dark:bg-gray-800 dark:bg-gray-900 p-4 dark:border-white/10 dark:bg-white dark:bg-gray-900/5">
+                  <div className="mt-4 rounded-[24px] border border-border border-border bg-card bg-card p-4 dark:border-white/10 dark:bg-card/5">
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <div className="flex flex-wrap items-center gap-2">
                         <span className={cn('rounded-full px-2.5 py-1 text-xs font-semibold', activeWorkspacePill)}>
                           {activeWorkspace === 'freelancer' ? copy.freelancerLabel : copy.clientLabel}
                         </span>
-                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300 dark:text-gray-200">
+                        <span className="text-sm font-medium text-muted-foreground">
                           {currentTarget.isOnboarded ? copy.ready : copy.needsSetup}
                         </span>
                       </div>
@@ -392,7 +394,7 @@ export default function AccountPanel({
                       </Link>
                     </div>
 
-                    <p className="mt-4 text-sm leading-relaxed text-gray-600 dark:text-gray-400">
+                    <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
                       {activeWorkspace === 'freelancer' ? copy.freelancerHint : copy.clientHint}
                     </p>
 
@@ -414,7 +416,7 @@ export default function AccountPanel({
                     </div>
                   </div>
 
-                  <div className="mt-5 text-sm font-semibold text-gray-900 dark:text-gray-100 dark:text-white">{copy.switchWorkspace}</div>
+                  <div className="mt-5 text-sm font-semibold text-foreground dark:text-white">{copy.switchWorkspace}</div>
                   <div className="mt-4 grid gap-4 2xl:grid-cols-2">
                     {workspaceCards.map((item) => {
                       const Icon = item.icon;
@@ -439,7 +441,7 @@ export default function AccountPanel({
                           disabled={isSwitching || isActive}
                           className={cn(
                             'rounded-[24px] border p-4 text-start transition-all duration-200',
-                            'border-gray-200 dark:border-gray-700 dark:border-gray-800 bg-white dark:bg-gray-800 dark:bg-gray-900 hover:border-purple-300 dark:border-white/10 dark:bg-white dark:bg-gray-900/5 dark:hover:border-purple-500/40',
+                            'border-border border-border bg-card bg-card hover:border-purple-300 dark:border-white/10 dark:bg-card/5 dark:hover:border-purple-500/40',
                             isActive && accentClasses,
                             isActive && 'cursor-default'
                           )}
@@ -447,19 +449,19 @@ export default function AccountPanel({
                           <div className="flex items-start gap-3">
                             <div className={cn('flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-2xl relative', iconClasses)}>
                               {isActive && (
-                                <div className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-white dark:border-gray-900 shadow-lg animate-pulse" />
+                                <div className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-white border-border shadow-lg animate-pulse" />
                               )}
                               {isSwitchingThis ? <Loader2 className="h-5 w-5 animate-spin" /> : <Icon className="h-5 w-5" />}
                             </div>
                             <div className="min-w-0 flex-1">
                               <div className="flex flex-wrap items-center justify-between gap-2">
-                                <div className="text-base font-semibold text-gray-900 dark:text-gray-100 dark:text-white">{item.title}</div>
+                                <div className="text-base font-semibold text-foreground dark:text-white">{item.title}</div>
                                 <span
                                   className={cn(
                                     'inline-flex shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold',
                                     isActive
                                       ? activeWorkspacePill
-                                      : 'bg-gray-100 text-gray-600 dark:text-gray-300 dark:bg-white dark:bg-gray-900/10 dark:text-gray-300'
+                                      : 'bg-muted text-muted-foreground dark:bg-card/10'
                                   )}
                                 >
                                   {isSwitchingThis ? copy.switching : actionLabel}
@@ -467,13 +469,13 @@ export default function AccountPanel({
                               </div>
                               <ul className="mt-2 space-y-1.5 min-w-0">
                                 {item.features.map(f => (
-                                  <li key={f} className="flex items-start gap-1.5 text-sm leading-tight text-gray-600 dark:text-gray-400">
+                                  <li key={f} className="flex items-start gap-1.5 text-sm leading-tight text-muted-foreground">
                                     <BadgeCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-500" />
                                     <span>{f}</span>
                                   </li>
                                 ))}
                               </ul>
-                              <p className="mt-3 text-xs font-medium text-gray-500 dark:text-gray-500 dark:text-gray-400">{item.meta}</p>
+                              <p className="mt-3 text-xs font-medium text-muted">{item.meta}</p>
                             </div>
                           </div>
                         </button>
@@ -481,13 +483,13 @@ export default function AccountPanel({
                     })}
                   </div>
 
-                  <p className="mt-3 text-center text-xs text-gray-500 dark:text-gray-500 dark:text-gray-400">
+                  <p className="mt-3 text-center text-xs text-muted">
                     {hasDualCapability ? copy.switchWorkspaceBoth : copy.switchWorkspaceSingle}
                   </p>
                 </section>
 
-                <section className="rounded-[28px] border border-gray-100 dark:border-gray-800 bg-[var(--color-bg-elevated)] p-5 shadow-sm dark:border-white/8 dark:bg-[var(--color-bg-muted)] lg:col-span-2 xl:col-span-1">
-                  <div className="text-xs font-semibold uppercase tracking-[0.22em] text-gray-500 dark:text-gray-500 dark:text-gray-400">
+                <section className="rounded-[28px] border border-border bg-[var(--color-bg-elevated)] p-5 shadow-sm dark:border-white/8 dark:bg-[var(--color-bg-muted)] lg:col-span-2 xl:col-span-1">
+                  <div className="text-xs font-semibold uppercase tracking-[0.22em] text-muted">
                     {copy.tools}
                   </div>
 
@@ -548,7 +550,7 @@ export default function AccountPanel({
                     )}
                   </div>
 
-                  <div className="my-4 h-px bg-gray-200 dark:bg-gray-700 dark:bg-white dark:bg-gray-900/10" />
+                  <div className="my-4 h-px bg-border dark:bg-card/10" />
 
                   <button
                     type="button"
@@ -559,11 +561,11 @@ export default function AccountPanel({
                     {isLoggingOut ? <Loader2 className="h-4 w-4 animate-spin" /> : <LogOut className="h-4 w-4" />}
                     {copy.logoutAction}
                   </button>
-                  <p className="mt-3 text-sm leading-relaxed text-gray-500 dark:text-gray-500 dark:text-gray-400">{copy.logoutDesc}</p>
+                  <p className="mt-3 text-sm leading-relaxed text-muted">{copy.logoutDesc}</p>
                 </section>
               </div>
             </div>
-          </motion.div>
+          </m.div>
         </>
       ) : null}
     </AnimatePresence>
@@ -585,15 +587,15 @@ function ActionLink({
     <Link
       to={to}
       onClick={onClick}
-      className="inline-flex min-h-[44px] items-center justify-between gap-3 rounded-2xl border border-gray-200 dark:border-gray-700 dark:border-gray-800 bg-white dark:bg-gray-800 dark:bg-gray-900 px-4 py-3 text-sm font-semibold text-gray-800 dark:text-gray-200 dark:text-gray-100 transition-all hover:border-purple-200 hover:bg-purple-50 dark:border-white/10 dark:bg-white dark:bg-gray-900/5 dark:text-white dark:hover:border-purple-500/30 dark:hover:bg-white dark:bg-gray-800 dark:bg-gray-900/10"
+      className="inline-flex min-h-[44px] items-center justify-between gap-3 rounded-2xl border border-border border-border bg-card bg-card px-4 py-3 text-sm font-semibold text-foreground transition-all hover:border-purple-200 hover:bg-purple-50 dark:border-white/10 dark:bg-card/5 dark:text-white dark:hover:border-purple-500/30 dark:hover:bg-card bg-card/10"
     >
       <span className="flex items-center gap-3">
-        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gray-100 text-gray-500 dark:text-gray-400 dark:bg-white dark:bg-gray-900/10 dark:text-gray-400">
+        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-muted text-muted dark:bg-card/10">
           {icon}
         </span>
         <span>{label}</span>
       </span>
-      <ChevronRight className="h-4 w-4 text-gray-400 dark:text-gray-500 dark:text-gray-400 rtl:rotate-180" />
+      <ChevronRight className="h-4 w-4 text-muted rtl:rotate-180" />
     </Link>
   );
 }

@@ -34,10 +34,10 @@ export default function OnboardingShell({
 
     return (
         <main className="page-shell-content space-y-6">
-            <section className="radius-shell overflow-hidden border border-gray-200/40 bg-[radial-gradient(circle_at_top_left,rgba(139,92,246,0.1),transparent_30%),linear-gradient(135deg,rgba(255,255,255,0.98),rgba(250,250,250,0.94))] p-6 shadow-[0_32px_90px_-48px_rgba(0,0,0,0.1)] dark:border-white/10 dark:border-zinc-800 dark:bg-[radial-gradient(circle_at_top_left,rgba(139,92,246,0.1),transparent_28%),linear-gradient(145deg,rgba(9,9,11,0.98),rgba(15,15,18,0.98))] sm:p-8">
+            <section className="radius-shell overflow-hidden border border-border/40 bg-[radial-gradient(circle_at_top_left,rgba(139,92,246,0.1),transparent_30%),linear-gradient(135deg,rgba(255,255,255,0.98),rgba(250,250,250,0.94))] p-6 shadow-[0_32px_90px_-48px_rgba(0,0,0,0.1)] dark:border-white/10 dark:border-zinc-800 dark:bg-[radial-gradient(circle_at_top_left,rgba(139,92,246,0.1),transparent_28%),linear-gradient(145deg,rgba(9,9,11,0.98),rgba(15,15,18,0.98))] sm:p-8">
                     <div className="grid gap-6 xl:grid-cols-[minmax(0,1.08fr)_320px]">
                         <div className="space-y-5">
-                            <div className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white dark:bg-zinc-800/80 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-gray-700 shadow-sm dark:border-white/10 dark:bg-white/5 dark:text-zinc-300">
+                            <div className="inline-flex items-center gap-2 rounded-full border border-border bg-white dark:bg-zinc-800/80 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-foreground shadow-sm dark:border-white/10 dark:bg-white/5 dark:text-zinc-300">
                                 <Sparkles className="h-3.5 w-3.5" style={{ color: 'var(--workspace-accent)' }} />
                                 {badge}
                             </div>
@@ -52,23 +52,23 @@ export default function OnboardingShell({
                             </div>
                         </div>
 
-                        <div className="rounded-[1.75rem] border border-gray-200 bg-white dark:bg-zinc-900/70 p-5 shadow-sm dark:border-white/10 dark:white/[0.04]">
-                            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-500 dark:text-zinc-400">
+                        <div className="rounded-[1.75rem] border border-border bg-white dark:bg-zinc-900/70 p-5 shadow-sm dark:border-white/10 dark:white/[0.04]">
+                            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted dark:text-zinc-400">
                                 {tx('onboarding.currentStep', undefined, 'Current step')}
                             </p>
-                            <h2 className="mt-3 text-xl font-semibold text-gray-900 dark:text-white">
+                            <h2 className="mt-3 text-xl font-semibold text-foreground">
                                 {steps[currentStep - 1]?.title}
                             </h2>
-                            <p className="mt-2 text-sm leading-6 text-gray-600 dark:text-zinc-400">
+                            <p className="mt-2 text-sm leading-6 text-muted-foreground dark:text-zinc-400">
                                 {steps[currentStep - 1]?.description || `Step ${currentStep} of ${totalSteps}`}
                             </p>
 
                             <div className="mt-5 space-y-3">
-                                <div className="flex items-center justify-between text-sm font-medium text-gray-700 dark:text-zinc-300">
+                                <div className="flex items-center justify-between text-sm font-medium text-foreground dark:text-zinc-300">
                                     <span>Progress</span>
                                     <span>{completion}%</span>
                                 </div>
-                                <div className="h-2.5 overflow-hidden rounded-full bg-gray-100 dark:bg-white/10">
+                                <div className="h-2.5 overflow-hidden rounded-full bg-muted dark:bg-white/10">
                                     <div className="h-full rounded-full transition-[width] duration-300" style={{ width: `${completion}%`, backgroundColor: 'var(--workspace-primary)' }} />
                                 </div>
                             </div>
@@ -88,21 +88,21 @@ export default function OnboardingShell({
                                     className={`rounded-[1.4rem] border p-4 transition-all duration-200 ${isCurrent
                                         ? 'border-[color-mix(in_srgb,var(--workspace-primary)_25%,transparent)] bg-[color-mix(in_srgb,var(--workspace-primary)_4%,transparent)] shadow-[0_22px_44px_-30px_rgba(0,0,0,0.1)]'
                                         : isCompleted
-                                            ? 'border-gray-200 bg-gray-50/60 dark:border-white/10 dark:bg-zinc-900/40'
-                                            : 'border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50'}`}
+                                            ? 'border-border bg-surface/60 dark:border-white/10 dark:bg-zinc-900/40'
+                                            : 'border-border dark:border-zinc-800 bg-white dark:bg-zinc-900/50'}`}
                                 >
                                     <div className="flex items-start gap-3">
                                         <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl text-sm font-semibold ${isCurrent
                                             ? 'text-white'
                                             : isCompleted
-                                                ? 'bg-gray-100 text-gray-700 dark:bg-white/10 dark:text-zinc-300'
-                                                : 'bg-gray-100 text-gray-500 dark:bg-white/5 dark:text-zinc-600'}`}
+                                                ? 'bg-muted text-foreground dark:bg-white/10 dark:text-zinc-300'
+                                                : 'bg-muted text-muted dark:bg-white/5 dark:text-zinc-600'}`}
                                             style={isCurrent ? { backgroundColor: 'var(--workspace-primary)' } : undefined}
                                         >
                                             {isCompleted ? <Sparkles className="h-5 w-5" /> : step.id}
                                         </div>
                                         <div>
-                                            <p className={`text-sm font-semibold ${isCurrent || isCompleted ? 'text-gray-900 dark:text-white' : 'text-gray-500 dark:text-zinc-400'}`}>
+                                            <p className={`text-sm font-semibold ${isCurrent || isCompleted ? 'text-foreground' : 'text-muted dark:text-zinc-400'}`}>
                                                 {step.title}
                                             </p>
                                             {step.description ? (

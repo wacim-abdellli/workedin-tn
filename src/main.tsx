@@ -1,4 +1,4 @@
-﻿import { StrictMode } from 'react'
+ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
@@ -11,7 +11,7 @@ validateEnv()
 // cross-user session bleed (user A's workspace overwriting user B's on reload).
 // The workspace is now always derived from the authenticated user's DB profile.
 try {
-  localStorage.removeItem('Khedmetna-workspace');
+  localStorage.removeItem('WorkedIn-workspace');
 } catch {
   // Ignore if localStorage is unavailable (e.g. private mode restrictions)
 }
