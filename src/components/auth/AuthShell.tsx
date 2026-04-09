@@ -38,7 +38,7 @@ export default function AuthShell({ badge, title, description, highlights, topAc
       <div className="pointer-events-none absolute inset-x-0 top-0 h-40 dark:bg-gradient-to-b dark:from-white/6 from-black/5 to-transparent" />
 
       <div className="relative mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 pb-8 pt-5 sm:px-6 lg:px-8">
-        <header className="flex items-center justify-between gap-4 pb-6 sm:pb-8">
+        <header className="flex items-center justify-between gap-4 pb-3 sm:pb-4">
           <Link
             to="/"
             className="inline-flex items-center transition-opacity hover:opacity-80"
@@ -50,7 +50,7 @@ export default function AuthShell({ badge, title, description, highlights, topAc
         </header>
 
         <main className="grid flex-1 items-center gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(420px,520px)] lg:gap-12">
-          <section className="hidden lg:flex lg:flex-col lg:justify-center lg:gap-8 lg:self-stretch py-8">
+          <section className="hidden lg:flex lg:flex-col lg:justify-center lg:gap-8 lg:self-stretch py-2">
             <div className="max-w-xl space-y-5">
               <div className="space-y-3">
                 <h1 className="max-w-2xl text-4xl font-semibold leading-tight text-foreground xl:text-5xl">
