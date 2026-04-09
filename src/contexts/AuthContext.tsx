@@ -162,10 +162,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
       // from the DB active_mode, causing redirects.
       const capabilities = getWorkspaceCapabilities(nextProfile.user_type);
       const currentIsValid = capabilities.includes(currentWorkspace);
-      
-      if (currentIsValid && loadedUserIdRef.current === nextProfile.id) {
-        // Workspace already set to a valid value for this user — don't flip it.
+
+      // Never replace a workspace the profile already allows — avoids gold→purple flashes when
+      // fetchProfile runs twice (HMR, StrictMode, cache+network) or before refs catch up.
+      if (currentIsValid) {
         store.setSwitching(false);
+        if (nextProfile?.id) {
+          saveWorkspaceForUser(nextProfile.id, currentWorkspace);
+        }
         return;
       }
 
@@ -208,18 +212,24 @@ export function AuthProvider({ children }: AuthProviderProps) {
   );
 
   const fetchProfile = useCallback(
-    async (userId: string, forceUserObj?: User) => {
+    async (
+      userId: string,
+      forceUserObj?: User,
+      opts?: { suppressInitialCacheHydration?: boolean }
+    ) => {
       lastProfileAttemptRef.current = { userId, timestamp: Date.now() };
       const previousProfile = profileRef.current?.id === userId ? profileRef.current : null;
       const previousFreelancerProfile = previousProfile ? freelancerProfileRef.current : null;
       const currentUser = forceUserObj || userRef.current;
 
       // ── Hydrate from cache immediately so UI renders without waiting for DB ──
-      const cached = readProfileCache(userId);
-      if (cached && !profileRef.current) {
-        setProfile(cached.profile);
-        setFreelancerProfile(cached.freelancerProfile);
-        syncWorkspaceFromProfile(cached.profile, cached.freelancerProfile);
+      if (!opts?.suppressInitialCacheHydration) {
+        const cached = readProfileCache(userId);
+        if (cached && !profileRef.current) {
+          setProfile(cached.profile);
+          setFreelancerProfile(cached.freelancerProfile);
+          syncWorkspaceFromProfile(cached.profile, cached.freelancerProfile);
+        }
       }
 
       try {
@@ -366,18 +376,29 @@ export function AuthProvider({ children }: AuthProviderProps) {
             if (!savedWorkspace) {
               syncWorkspaceFromProfile(cached.profile, cached.freelancerProfile);
             }
+            setIsProfileReady(true);
+            setIsLoading(false);
+            // Fetch fresh profile from DB in background (updates cache too)
+            void fetchProfile(currentSession.user.id, currentSession.user, {
+              suppressInitialCacheHydration: true,
+            })
+              .then(() => {
+                initAuthCompletedForRef.current = currentSession.user.id;
+              })
+              .catch((error) => {
+                logger.error('Background profile fetch failed:', error);
+              });
+          } else {
+            // No cache: wait for first profile fetch before marking ready. Otherwise
+            // isFullyReady becomes true while profile is still null and workspace routes
+            // resolve to the default store ('client'), causing wrong dashboard redirects on reload.
+            await fetchProfile(currentSession.user.id, currentSession.user);
+            if (mounted) {
+              initAuthCompletedForRef.current = currentSession.user.id;
+              setIsProfileReady(true);
+              setIsLoading(false);
+            }
           }
-
-          // Set ready immediately so UI can render
-          setIsProfileReady(true);
-          setIsLoading(false);
-          
-          // Fetch fresh profile from DB in background (updates cache too)
-          fetchProfile(currentSession.user.id, currentSession.user).then(() => {
-            initAuthCompletedForRef.current = currentSession.user.id;
-          }).catch((error) => {
-            logger.error('Background profile fetch failed:', error);
-          });
         }
       } catch (error) {
         logger.error('Error initializing auth:', error);

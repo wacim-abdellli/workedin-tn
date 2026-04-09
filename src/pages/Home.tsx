@@ -1,16 +1,16 @@
-import { useState, useEffect } from 'react';
+import { lazy, Suspense, useState, useEffect } from 'react';
 import { Header, Footer } from '../components/layout';
 import { supabaseAnon } from '../lib/supabase';
 import SEO, { SEO_CONFIG } from '../components/common/SEO';
 
-// Subcomponents
 import HeroSection from '../components/home/HeroSection';
-import ValuePropositions from '../components/home/ValuePropositions';
-import HowItWorksSection from '../components/home/HowItWorksSection';
-import CategoriesSection from '../components/home/CategoriesSection';
-import LiveCounterSection from '../components/home/LiveCounterSection';
-import TestimonialsSection from '../components/home/TestimonialsSection';
-import CTASection from '../components/home/CTASection';
+
+const ValuePropositions = lazy(() => import('../components/home/ValuePropositions'));
+const HowItWorksSection = lazy(() => import('../components/home/HowItWorksSection'));
+const CategoriesSection = lazy(() => import('../components/home/CategoriesSection'));
+const LiveCounterSection = lazy(() => import('../components/home/LiveCounterSection'));
+const TestimonialsSection = lazy(() => import('../components/home/TestimonialsSection'));
+const CTASection = lazy(() => import('../components/home/CTASection'));
 
 function Home() {
     const [stats, setStats] = useState({
@@ -53,12 +53,14 @@ return (
             <Header />
 
             <HeroSection stats={stats} />
-            <ValuePropositions />
-            <HowItWorksSection />
-            <CategoriesSection />
-            <LiveCounterSection stats={stats} />
-            <TestimonialsSection />
-            <CTASection />
+            <Suspense fallback={null}>
+                <ValuePropositions />
+                <HowItWorksSection />
+                <CategoriesSection />
+                <LiveCounterSection stats={stats} />
+                <TestimonialsSection />
+                <CTASection />
+            </Suspense>
 
             <Footer />
         </div>

@@ -1,4 +1,6 @@
- import { StrictMode } from 'react'
+// Run before App/workspace store init: purges stale Supabase sessions from localStorage.
+import './lib/supabase'
+import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'

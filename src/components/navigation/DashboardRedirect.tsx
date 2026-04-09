@@ -2,12 +2,16 @@ import { useEffect, useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 
 import { useAuth } from '@/contexts/AuthContext';
-import { shouldRequireUserTypeSelection } from '@/lib/workspaceRoutes';
+import {
+  getWorkspaceDashboardPath,
+  resolveActiveWorkspace,
+  shouldRequireUserTypeSelection,
+} from '@/lib/workspaceRoutes';
 import { useWorkspaceStore } from '@/lib/workspaceState';
 
 export const DashboardRedirect = () => {
   const location = useLocation();
-  const { user, profile, isFullyReady, refreshProfile } = useAuth();
+  const { user, profile, freelancerProfile, isFullyReady, refreshProfile } = useAuth();
   const activeWorkspace = useWorkspaceStore((state) => state.activeWorkspace);
   const [retryState, setRetryState] = useState<'idle' | 'retrying' | 'failed'>('idle');
 
@@ -42,7 +46,6 @@ export const DashboardRedirect = () => {
     return <Navigate to="/signup?step=select-type" replace state={location.state} />;
   }
 
-  return activeWorkspace === 'freelancer'
-    ? <Navigate to="/freelancer/dashboard" replace state={location.state} />
-    : <Navigate to="/client/dashboard" replace state={location.state} />;
+  const workspace = resolveActiveWorkspace(profile, freelancerProfile, activeWorkspace);
+  return <Navigate to={getWorkspaceDashboardPath(workspace)} replace state={location.state} />;
 };

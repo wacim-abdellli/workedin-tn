@@ -3,6 +3,9 @@ interface FullScreenLoaderProps {
   hint?: string;
 }
 
+// Bundled like Logo.tsx — /workedin-logos/* is not served from public/ in this repo.
+const LOADER_LOGO = new URL('../../../workedin-logos/22-icon-square-dark.svg', import.meta.url).href;
+
 export default function FullScreenLoader({
   label = 'Loading...',
   hint,
@@ -21,9 +24,9 @@ export default function FullScreenLoader({
 
       {/* Ambient glow blobs */}
       <div className="pointer-events-none absolute left-1/2 top-1/3 h-[500px] w-[500px] -translate-x-1/2 -translate-y-1/2 rounded-full blur-[120px]"
-        style={{ background: 'color-mix(in srgb, var(--workspace-accent) 12%, transparent)' }} />
+        style={{ background: 'color-mix(in srgb, var(--workspace-accent, #d97706) 12%, transparent)' }} />
       <div className="pointer-events-none absolute right-1/4 bottom-1/4 h-[300px] w-[300px] rounded-full blur-[100px]"
-        style={{ background: 'color-mix(in srgb, var(--workspace-primary) 8%, transparent)' }} />
+        style={{ background: 'color-mix(in srgb, var(--workspace-primary, #b45309) 8%, transparent)' }} />
 
       {/* Content */}
       <div className="relative z-10 flex flex-col items-center gap-8 animate-[fade-in_0.6s_ease-out]">
@@ -40,7 +43,7 @@ export default function FullScreenLoader({
           <div
             className="absolute inset-[-2px] rounded-[24px] animate-[spin_3s_linear_infinite]"
             style={{
-              background: 'conic-gradient(from 0deg, transparent 0%, transparent 70%, color-mix(in srgb, var(--workspace-accent) 80%, transparent) 100%)',
+              background: 'conic-gradient(from 0deg, transparent 0%, transparent 70%, color-mix(in srgb, var(--workspace-accent, #d97706) 80%, transparent) 100%)',
               borderRadius: '24px',
               WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
               WebkitMaskComposite: 'xor',
@@ -49,9 +52,12 @@ export default function FullScreenLoader({
             }}
           />
           <img
-            src="/workedin-logos/22-icon-square-dark.svg"
+            src={LOADER_LOGO}
             alt="WorkedIn"
             className="h-14 w-14 object-contain rounded-[10px]"
+            width={56}
+            height={56}
+            decoding="async"
           />
         </div>
 
@@ -71,7 +77,7 @@ export default function FullScreenLoader({
         <div className="w-40 h-[2px] rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.08)' }}>
           <div
             className="h-full rounded-full animate-[progress-slide_1.8s_ease-in-out_infinite]"
-            style={{ background: 'linear-gradient(90deg, transparent, var(--workspace-accent), transparent)', width: '60%' }}
+            style={{ background: 'linear-gradient(90deg, transparent, var(--workspace-accent, #d97706), transparent)', width: '60%' }}
           />
         </div>
       </div>
