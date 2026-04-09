@@ -1,18 +1,14 @@
 import type { ReactNode } from 'react';
 import type { LucideIcon } from 'lucide-react';
-import { ArrowUpRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Logo } from '@/components/ui';
-
 import { useTranslation } from '@/i18n';
-
-type HighlightTone = 'primary' | 'accent' | 'cyan';
 
 interface AuthShellHighlight {
   icon: LucideIcon;
   title: string;
   description: string;
-  tone?: HighlightTone;
+  tone?: 'primary' | 'accent' | 'cyan';
 }
 
 interface AuthShellProps {
@@ -24,77 +20,80 @@ interface AuthShellProps {
   children: ReactNode;
 }
 
-
-
-export default function AuthShell({ badge, title, description, highlights, topAction, children }: AuthShellProps) {
-  const { dir, tx } = useTranslation();
+export default function AuthShell({ title, description, highlights, topAction, children }: AuthShellProps) {
+  const { dir } = useTranslation();
 
   return (
-    <div
-      dir={dir}
-      className="relative min-h-screen overflow-hidden dark:bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] dark:from-zinc-900 dark:via-zinc-950 dark:to-zinc-950 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-gray-50 via-gray-100 to-gray-50 text-foreground"
-    >
-      <div className="pointer-events-none absolute inset-0 dark:bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[linear-gradient(rgba(0,0,0,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,0.03)_1px,transparent_1px)] bg-[size:72px_72px] opacity-30 dark:opacity-30 opacity-60" />
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-40 dark:bg-gradient-to-b dark:from-white/6 from-black/5 to-transparent" />
+    <div dir={dir} className="min-h-screen bg-zinc-950 text-white flex flex-col">
 
-      <div className="relative mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 pb-8 pt-5 sm:px-6 lg:px-8">
-        <header className="flex items-center justify-between gap-4 pb-3 sm:pb-4">
-          <Link
-            to="/"
-            className="inline-flex items-center transition-opacity hover:opacity-80"
-          >
-            <Logo variant="full" size="lg" titleStyle="capsule" mode="client" />
-          </Link>
+      {/* Ambient background blobs */}
+      <div className="pointer-events-none fixed inset-0 overflow-hidden">
+        <div className="absolute -top-40 -left-40 w-[600px] h-[600px] rounded-full bg-[var(--workspace-primary)] opacity-[0.07] blur-[120px]" />
+        <div className="absolute -bottom-40 -right-40 w-[500px] h-[500px] rounded-full bg-amber-500 opacity-[0.05] blur-[120px]" />
+        <div className="absolute top-1/2 left-1/3 w-[300px] h-[300px] rounded-full bg-purple-600 opacity-[0.04] blur-[100px]" />
+      </div>
 
-          {topAction}
-        </header>
+      {/* Nav */}
+      <header className="relative z-10 flex items-center justify-between px-6 py-4 lg:px-10">
+        <Link to="/" className="transition-opacity hover:opacity-80">
+          <Logo variant="full" size="lg" titleStyle="capsule" mode="client" />
+        </Link>
+        {topAction}
+      </header>
 
-        <main className="grid flex-1 items-center gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(420px,520px)] lg:gap-12">
-          <section className="hidden lg:flex lg:flex-col lg:justify-center lg:gap-8 lg:self-stretch py-2">
-            <div className="max-w-xl space-y-5">
-              <div className="space-y-3">
-                <h1 className="max-w-2xl text-4xl font-semibold leading-tight text-foreground xl:text-5xl">
-                  {title}
-                </h1>
-                <p className="max-w-xl text-base leading-7 text-muted-foreground dark:text-white/68 xl:text-lg">
-                  {description}
-                </p>
-              </div>
-            </div>
+      {/* Main split layout */}
+      <main className="relative z-10 flex flex-1 items-stretch">
 
-            <div className="grid gap-3 xl:grid-cols-3">
-              {highlights.map(({ icon: Icon, title: itemTitle, description: itemDescription }) => (
+        {/* Left panel — hero */}
+        <div className="hidden lg:flex flex-col justify-center px-10 xl:px-16 w-[52%] border-r border-white/5">
+          <div className="max-w-lg">
+            <h1 className="text-5xl xl:text-6xl font-bold leading-[1.1] tracking-tight text-white mb-4">
+              {title}
+            </h1>
+            <p className="text-lg text-white/50 leading-relaxed mb-10">
+              {description}
+            </p>
+
+            {/* Feature cards */}
+            <div className="grid grid-cols-3 gap-3">
+              {highlights.map(({ icon: Icon, title: t, description: d }) => (
                 <div
-                  key={itemTitle}
-                  className="group rounded-3xl border p-5 backdrop-blur-md dark:border-white/5 border-border bg-white/40 dark:bg-zinc-900/50 shadow-sm transition-all hover:border-[var(--freelancer-accent)]"
+                  key={t}
+                  className="group relative overflow-hidden rounded-2xl border border-white/5 bg-white/[0.03] p-4 hover:border-white/10 hover:bg-white/[0.06] transition-all duration-300"
                 >
-                  <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-2xl dark:bg-white/5 bg-muted transition-colors group-hover:bg-[color-mix(in_srgb,var(--freelancer-accent)_15%,transparent)]">
-                    <Icon className="h-5 w-5 dark:text-white text-foreground transition-colors" />
+                  <div className="mb-3 w-9 h-9 rounded-xl bg-white/5 flex items-center justify-center group-hover:bg-[var(--workspace-primary)]/20 transition-colors">
+                    <Icon className="w-4 h-4 text-white/60 group-hover:text-[var(--workspace-primary)] transition-colors" />
                   </div>
-                  <h2 className="text-base font-semibold text-foreground">{itemTitle}</h2>
-                  <p className="mt-1.5 text-sm leading-6 text-muted-foreground dark:text-white/65">{itemDescription}</p>
+                  <p className="text-sm font-semibold text-white/80 mb-1">{t}</p>
+                  <p className="text-xs text-white/35 leading-relaxed">{d}</p>
                 </div>
               ))}
             </div>
-          </section>
 
-          <section className="mx-auto flex w-full max-w-xl items-center justify-center lg:max-w-none">
-            <div className="w-full rounded-[32px] border border-border dark:border-white/5 bg-white/80 dark:bg-zinc-900/40 p-2 shadow-2xl dark:shadow-none backdrop-blur-2xl">
-              <div className="rounded-[28px] border border-border dark:border-white/5 bg-white dark:bg-zinc-900/60 backdrop-blur-xl p-6 shadow-sm sm:p-8">
-                {children}
+            {/* Social proof */}
+            <div className="mt-10 flex items-center gap-4">
+              <div className="flex -space-x-2">
+                {['#f59e0b','#8b5cf6','#06b6d4','#10b981'].map((c, i) => (
+                  <div key={i} className="w-8 h-8 rounded-full border-2 border-zinc-950 flex items-center justify-center text-xs font-bold text-white" style={{ backgroundColor: c }}>
+                    {['A','B','C','D'][i]}
+                  </div>
+                ))}
               </div>
+              <p className="text-sm text-white/40">
+                <span className="text-white/70 font-semibold">500+</span> professionals already on WorkedIn
+              </p>
             </div>
-          </section>
-        </main>
+          </div>
+        </div>
 
-        <footer className="mt-8 flex flex-col items-center justify-between gap-3 border-t border-white/8 pt-5 text-center text-xs text-white/45 sm:flex-row sm:text-start">
-          <p>{tx('footer.description', undefined, 'Built for Tunisian professionals with trusted payments and verified identities.')}</p>
-          <Link to="/" className="inline-flex items-center gap-2 font-medium text-white/70 transition-colors hover:text-white">
-            {tx('common.backHome', undefined, 'Back to home')}
-            <ArrowUpRight className="h-3.5 w-3.5" />
-          </Link>
-        </footer>
-      </div>
+        {/* Right panel — form */}
+        <div className="flex flex-1 items-center justify-center px-6 py-8 lg:px-12">
+          <div className="w-full max-w-[420px]">
+            {children}
+          </div>
+        </div>
+
+      </main>
     </div>
   );
 }

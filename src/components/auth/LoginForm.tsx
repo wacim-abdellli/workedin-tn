@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Link } from 'react-router-dom';
-import { Mail, ArrowRight, ArrowLeft, Eye, EyeOff, Sparkles, Lock } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import { useTranslation } from '../../i18n';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../ui/Toast';
@@ -15,6 +15,7 @@ interface LoginFormProps {
     onSuccess?: () => void;
     onSwitchToSignup?: () => void;
 }
+
 function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
     const { t, tx, dir } = useTranslation();
     const { signInWithEmail } = useAuth();
@@ -22,31 +23,25 @@ function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [showPassword, setShowPassword] = useState(false);
-
     const { recordAttempt, isLockedOut } = useAuthRateLimit('login');
-
     const ArrowIcon = dir === 'rtl' ? ArrowLeft : ArrowRight;
 
     const emailSchema = z.object({
         email: z.string().email(t.auth.invalidEmail),
         password: z.string().min(6, t.auth.passwordMinLength),
     });
-
     type EmailFormData = z.infer<typeof emailSchema>;
-    const {
-        register,
-        handleSubmit,
-        formState: { errors },
-    } = useForm<EmailFormData>({
+
+    const { register, handleSubmit, formState: { errors } } = useForm<EmailFormData>({
         resolver: zodResolver(emailSchema),
         mode: 'onChange',
     });
+
     const onSubmit = async (data: EmailFormData) => {
         if (isLockedOut) {
             setError(tx('authPages.login.rateLimitError', undefined, 'Too many attempts. Please try again later.'));
             return;
         }
-
         setIsLoading(true);
         setError(null);
         try {
@@ -55,172 +50,151 @@ function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
         } catch (err) {
             const message = (err as Error).message;
             if (message.includes('Too many') || message.includes('Rate limit')) {
-                setError(message);
-                showToast(message, 'error');
+                setError(message); showToast(message, 'error');
             } else if (message.includes('Invalid login credentials')) {
-                setError(t.auth.invalidCredentials);
-                showToast(t.auth.invalidCredentials, 'error');
+                setError(t.auth.invalidCredentials); showToast(t.auth.invalidCredentials, 'error');
             } else if (message.includes('Email not confirmed')) {
-                setError(t.auth.emailNotConfirmed);
-                showToast(t.auth.emailNotConfirmed, 'warning');
+                setError(t.auth.emailNotConfirmed); showToast(t.auth.emailNotConfirmed, 'warning');
             } else {
-                setError(message || t.common.error);
-                showToast(message || t.common.error, 'error');
+                setError(message || t.common.error); showToast(message || t.common.error, 'error');
             }
         } finally {
             setIsLoading(false);
         }
-    }; 
+    };
+
+    const handleGoogle = async () => {
+        setIsLoading(true);
+        try {
+            const { error } = await (await import('../../lib/supabase')).supabase.auth.signInWithOAuth({
+                provider: 'google',
+                options: {
+                    redirectTo: `${window.location.origin}/auth/callback`,
+                    queryParams: { access_type: 'offline', prompt: 'select_account' },
+                },
+            });
+            if (error) throw error;
+        } catch {
+            setIsLoading(false);
+            showToast(t.auth.googleLoginError, 'error');
+        }
+    };
+
     return (
-        <div className="w-full max-w-md mx-auto">
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
-                {/* Header */}
-                <div className="text-center mb-3">
-                    <div className="relative inline-block">
-                        <div className="mx-auto mb-3 flex h-[56px] w-[56px] items-center justify-center rounded-[18px] bg-[var(--workspace-primary)] shadow-[0_12px_32px_-14px_var(--workspace-primary-shadow)]">
-                            <Mail className="h-7 w-7 text-white" />
-                        </div>
-                        <div className="absolute -top-0.5 -end-0.5 flex h-6 w-6 items-center justify-center rounded-lg bg-gradient-to-r from-[var(--amber-400)] to-[var(--amber-600)] shadow-md shadow-[var(--amber-500)]/30">
-                            <Sparkles className="h-3 w-3 text-white" />
-                        </div>
-                    </div>
-                    <h2 className="text-center text-xl font-bold text-[var(--color-text-primary)] mb-1">
-                        {t.auth.loginTitle}
-                    </h2>
-                    <p className="text-center text-sm text-[var(--color-text-secondary)]">
-                        {t.auth.loginSubtitle}
-                    </p>
+        <div className="w-full">
+            {/* Header */}
+            <div className="mb-8">
+                <h2 className="text-2xl font-bold text-white tracking-tight">
+                    {t.auth.loginTitle}
+                </h2>
+                <p className="mt-1 text-sm text-white/40">
+                    {t.auth.loginSubtitle}
+                </p>
+            </div>
+
+            {/* Google Button */}
+            <button
+                type="button"
+                onClick={handleGoogle}
+                disabled={isLoading}
+                className="w-full flex items-center justify-center gap-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-white transition-all hover:bg-white/10 hover:border-white/20 active:scale-[0.98] disabled:opacity-50"
+            >
+                <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+                </svg>
+                {t.auth.googleLogin}
+            </button>
+
+            {/* Divider */}
+            <div className="relative my-5">
+                <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-white/8" />
+                </div>
+                <div className="relative flex justify-center">
+                    <span className="px-3 bg-zinc-950 text-xs text-white/25 uppercase tracking-widest">{t.auth.or}</span>
+                </div>
+            </div>
+
+            {/* Form */}
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-white/50 uppercase tracking-wider">
+                        {t.auth.email}
+                    </label>
+                    <Input
+                        type="email"
+                        placeholder={t.auth.emailPlaceholder}
+                        error={errors.email?.message}
+                        dir="ltr"
+                        autoComplete="email"
+                        {...register('email')}
+                    />
                 </div>
 
-                {/* Google OAuth Button */}
-                <button
-                    type="button"
-                    onClick={async () => {
-                        setIsLoading(true);
-                        try {
-                            const { error } = await (await import('../../lib/supabase')).supabase.auth.signInWithOAuth({
-                                provider: 'google',
-                                options: {
-                                    redirectTo: `${window.location.origin}/auth/callback`,
-                                    queryParams: {
-                                        access_type: 'offline',
-                                        prompt: 'select_account',
-                                        hl: dir === 'rtl' ? 'ar' : 'fr',
-                                    },
-                                },
-                            });
-                            if (error) throw error;
-                        } catch {
-                            setIsLoading(false);
-                            showToast(t.auth.googleLoginError, 'error');
-                        }
-                    }}
-                    className="w-full flex items-center justify-center gap-3 rounded-2xl border border-[var(--color-border-default)] bg-[var(--color-background-base)] px-4 py-3 font-medium text-[var(--color-text-primary)] shadow-[var(--shadow-elevation-1)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-[var(--color-background-muted)] hover:shadow-[var(--shadow-elevation-2)]"
-                >
-                    <svg className="w-5 h-5" viewBox="0 0 24 24">
-                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-                    </svg>
-                    {isLoading ? <span>{tx('common.loading', undefined, 'Loading...')}</span> : <span>{t.auth.googleLogin}</span>}
-                </button>
-
-                {/* Divider */}
-                <div className="relative my-3">
-                    <div className="absolute inset-0 flex items-center">
-                        <div className="w-full border-t border-[var(--color-border-default)]" />
-                    </div>
-                    <div className="relative flex justify-center text-sm">
-                        <span className="px-3 bg-[var(--color-background-base)] text-[var(--color-text-tertiary)]">{t.auth.or}</span>
-                    </div>
-                </div>
-
-                {/* Form Fields */}
-                <div className="form-stack space-y-3">
-                    <div>
-                        <label className="label flex items-center gap-2">
-                            <Mail className="w-4 h-4 text-[var(--color-brand-primary)]" />
-                            {t.auth.email}
-                        </label>
-                        <Input
-                            type="email"
-                            placeholder={t.auth.emailPlaceholder}
-                            error={errors.email?.message}
-                            dir="ltr"
-                            autoComplete="email"
-                            {...register('email')}
-                        />
-                    </div>
-
-                    <div className="relative">
-                        <label className="label flex items-center gap-2">
-                            <Lock className="w-4 h-4 text-[var(--color-brand-primary)]" />
+                <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                        <label className="text-xs font-medium text-white/50 uppercase tracking-wider">
                             {t.auth.password.label}
                         </label>
-                        <Input
-                            type={showPassword ? 'text' : 'password'}
-                            placeholder={t.auth.passwordPlaceholder}
-                            error={errors.password?.message}
-                            dir="ltr"
-                            autoComplete="current-password"
-                            rightIcon={
-                                <button
-                                    type="button"
-                                    onClick={() => setShowPassword(!showPassword)}
-                                    className="w-8 h-8 rounded-lg flex items-center justify-center text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)] hover:bg-[var(--color-background-muted)] transition-colors"
-                                    aria-label={showPassword ? t.auth.password.hide : t.auth.password.show}
-                                >
-                                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                                </button>
-                            }
-                            {...register('password')}
-                        />
-                        <div className="mt-1.5 text-end">
-                            <Link
-                                to="/forgot-password"
-                                className="text-sm text-[var(--color-brand-primary)] hover:underline font-medium"
-                            >
-                                {t.auth.forgotPassword}
-                            </Link>
-                        </div>
+                        <Link to="/forgot-password" className="text-xs text-[var(--workspace-primary)] hover:underline">
+                            {t.auth.forgotPassword}
+                        </Link>
                     </div>
+                    <Input
+                        type={showPassword ? 'text' : 'password'}
+                        placeholder={t.auth.passwordPlaceholder}
+                        error={errors.password?.message}
+                        dir="ltr"
+                        autoComplete="current-password"
+                        rightIcon={
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="w-8 h-8 rounded-lg flex items-center justify-center text-white/30 hover:text-white/60 transition-colors"
+                                aria-label={showPassword ? t.auth.password.hide : t.auth.password.show}
+                            >
+                                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                            </button>
+                        }
+                        {...register('password')}
+                    />
                 </div>
 
-                {/* Error Message */}
                 {error && (
-                    <div className="p-4 rounded-xl bg-[var(--color-status-error)] border border-[var(--red-200)] dark:border-[var(--red-800)]">
-                        <p className="text-[var(--red-600)] dark:text-[var(--red-400)] text-sm text-center font-medium">{error}</p>
+                    <div className="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3">
+                        <p className="text-sm text-red-400 text-center">{error}</p>
                     </div>
                 )}
 
-                {/* Submit Button */}
                 <Button
                     type="submit"
                     variant="primary"
                     size="md"
-                    className="w-full group"
+                    className="w-full group mt-2"
                     isLoading={isLoading}
                     disabled={isLoading || isLockedOut}
-                    rightIcon={<ArrowIcon className="w-5 h-5 group-hover:translate-x-1 transition-transform" />}
+                    rightIcon={<ArrowIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform" />}
                 >
                     {t.nav.login}
                 </Button>
-
-                {/* Switch to Signup */}
-                {onSwitchToSignup && (
-                    <p className="text-center text-[var(--color-text-secondary)]">
-                        {t.auth.noAccount}{' '}
-                        <button
-                            type="button"
-                            onClick={onSwitchToSignup}
-                            className="text-[var(--color-brand-primary)] font-semibold hover:underline"
-                        >
-                            {t.nav.signup}
-                        </button>
-                    </p>
-                )}
             </form>
+
+            {/* Switch to signup */}
+            {onSwitchToSignup && (
+                <p className="mt-6 text-center text-sm text-white/30">
+                    {t.auth.noAccount}{' '}
+                    <button
+                        type="button"
+                        onClick={onSwitchToSignup}
+                        className="text-white/70 font-semibold hover:text-white transition-colors"
+                    >
+                        {t.nav.signup}
+                    </button>
+                </p>
+            )}
         </div>
     );
 }
