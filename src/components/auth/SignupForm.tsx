@@ -178,24 +178,18 @@ function SignupForm({ onComplete }: SignupFormProps) {
     return (
         <div className="mx-auto w-full max-w-md">
             {step === 'email' ? (
-                <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-                    <div className="mb-8 text-center">
-                        <div className="relative inline-block">
-                            <div className="mx-auto mb-5 flex h-[72px] w-[72px] items-center justify-center rounded-[22px] bg-[var(--workspace-primary)] shadow-[0_20px_48px_-22px_var(--workspace-primary-shadow)]">
-                                <Sparkles className="h-10 w-10 text-white" />
-                            </div>
-                            <div className="absolute -top-1 -end-1 flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-r from-[var(--color-brand-primary)] to-[var(--purple-600)] shadow-lg shadow-[var(--color-brand-primary)]/30">
-                                <User className="h-4 w-4 text-white" />
-                            </div>
-                        </div>
-                        <h2 className="mb-2 text-center text-2xl font-bold text-[var(--color-text-primary)]">
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                    {/* Header */}
+                    <div className="mb-7">
+                        <h2 className="text-2xl font-bold text-white tracking-tight">
                             {t.auth.signupTitle}
                         </h2>
-                        <p className="mt-1 text-center text-sm text-[var(--color-text-secondary)]">
+                        <p className="mt-1 text-sm text-white/40">
                             {t.auth.signupSubtitle}
                         </p>
                     </div>
 
+                    {/* Google Button */}
                     <button
                         type="button"
                         onClick={async () => {
@@ -205,11 +199,7 @@ function SignupForm({ onComplete }: SignupFormProps) {
                                     provider: 'google',
                                     options: {
                                         redirectTo: `${window.location.origin}/auth/callback`,
-                                        queryParams: {
-                                            access_type: 'offline',
-                                            prompt: 'select_account',
-                                            hl: dir === 'rtl' ? 'ar' : 'fr',
-                                        },
+                                        queryParams: { access_type: 'offline', prompt: 'select_account' },
                                     },
                                 });
                                 if (oauthError) throw oauthError;
@@ -218,9 +208,9 @@ function SignupForm({ onComplete }: SignupFormProps) {
                                 showToast(t.auth.googleLoginError, 'error');
                             }
                         }}
-                        className="w-full flex items-center justify-center gap-3 rounded-2xl border border-[var(--color-border-default)] bg-[var(--color-background-base)] px-4 py-3.5 font-medium text-[var(--color-text-primary)] shadow-[var(--shadow-elevation-1)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-[var(--color-background-muted)] hover:shadow-[var(--shadow-elevation-2)]"
+                        className="w-full flex items-center justify-center gap-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-white transition-all hover:bg-white/10 hover:border-white/20 active:scale-[0.98]"
                     >
-                        <svg className="h-5 w-5" viewBox="0 0 24 24">
+                        <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24">
                             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
                             <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
                             <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
@@ -229,96 +219,98 @@ function SignupForm({ onComplete }: SignupFormProps) {
                         <span>{t.auth.googleLogin}</span>
                     </button>
 
-                    <div className="relative my-6">
+                    {/* Divider */}
+                    <div className="relative my-5">
                         <div className="absolute inset-0 flex items-center">
-                            <div className="w-full border-t border-[var(--color-border-default)]" />
+                            <div className="w-full border-t border-white/8" />
                         </div>
-                        <div className="relative flex justify-center text-sm">
-                            <span className="bg-[var(--color-background-base)] px-3 text-[var(--color-text-tertiary)]">{t.auth.or}</span>
+                        <div className="relative flex justify-center">
+                            <span className="px-3 bg-zinc-950 text-xs text-white/25 uppercase tracking-widest">{t.auth.or}</span>
                         </div>
                     </div>
 
-                    <div className="form-stack">
-                        <div>
-                            <label className="label flex items-center gap-2">
-                                <Mail className="h-4 w-4 text-[var(--color-brand-primary)]" />
-                                {t.auth.email}
-                            </label>
-                            <Input
-                                type="email"
-                                placeholder={t.auth.emailPlaceholder}
-                                error={errors.email?.message}
-                                dir="ltr"
-                                autoComplete="email"
-                                {...register('email')}
-                            />
-                        </div>
+                    {/* Email */}
+                    <div className="space-y-1.5">
+                        <label className="flex items-center gap-2 text-sm font-medium text-white/60">
+                            <Mail className="w-3.5 h-3.5" />
+                            {t.auth.email}
+                        </label>
+                        <input
+                            type="email"
+                            placeholder={t.auth.emailPlaceholder}
+                            dir="ltr"
+                            autoComplete="email"
+                            className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-white/25 outline-none transition-all hover:border-white/20 focus:border-[var(--workspace-primary)] focus:ring-2 focus:ring-[var(--workspace-primary)]/20"
+                            {...register('email')}
+                        />
+                        {errors.email && <p className="mt-1 text-xs text-red-400">{errors.email.message}</p>}
+                    </div>
 
-                        <div>
-                            <label className="label flex items-center gap-2">
-                                <Lock className="h-4 w-4 text-[var(--color-brand-primary)]" />
-                                {t.auth.password.label}
-                            </label>
-                            <Input
+                    {/* Password */}
+                    <div className="space-y-1.5">
+                        <label className="flex items-center gap-2 text-sm font-medium text-white/60">
+                            <Lock className="w-3.5 h-3.5" />
+                            {t.auth.password.label}
+                        </label>
+                        <div className="relative">
+                            <input
                                 type={showPassword ? 'text' : 'password'}
                                 placeholder={t.auth.passwordPlaceholder}
-                                error={errors.password?.message}
                                 dir="ltr"
                                 autoComplete="new-password"
-                                rightIcon={
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowPassword(!showPassword)}
-                                        className="flex h-8 w-8 items-center justify-center rounded-lg text-[var(--color-text-tertiary)] transition-colors hover:bg-[var(--color-background-muted)] hover:text-[var(--color-text-secondary)]"
-                                    >
-                                        {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                                    </button>
-                                }
+                                className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 pr-12 text-sm text-white placeholder:text-white/25 outline-none transition-all hover:border-white/20 focus:border-[var(--workspace-primary)] focus:ring-2 focus:ring-[var(--workspace-primary)]/20"
                                 {...register('password')}
                             />
+                            <button type="button" onClick={() => setShowPassword(!showPassword)}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-white/30 hover:text-white/60 transition-colors">
+                                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                            </button>
                         </div>
-
-                        <div>
-                            <label className="label flex items-center gap-2">
-                                <CheckCircle2 className="h-4 w-4 text-[var(--color-brand-primary)]" />
-                                {t.auth.confirmPassword}
-                            </label>
-                            <Input
-                                type={showPassword ? 'text' : 'password'}
-                                placeholder={t.auth.confirmPasswordPlaceholder}
-                                error={errors.confirmPassword?.message}
-                                dir="ltr"
-                                autoComplete="new-password"
-                                {...register('confirmPassword')}
-                            />
-                        </div>
+                        {errors.password && <p className="mt-1 text-xs text-red-400">{errors.password.message}</p>}
                     </div>
 
-                    {error ? (
-                        <div className="rounded-xl border border-[var(--red-200)] dark:border-[var(--red-800)] bg-[var(--color-status-error)] p-4">
-                            <p className="text-center text-sm font-medium text-[var(--red-600)] dark:text-[var(--red-400)]">{error}</p>
+                    {/* Confirm Password */}
+                    <div className="space-y-1.5">
+                        <label className="flex items-center gap-2 text-sm font-medium text-white/60">
+                            <CheckCircle2 className="w-3.5 h-3.5" />
+                            {t.auth.confirmPassword}
+                        </label>
+                        <input
+                            type={showPassword ? 'text' : 'password'}
+                            placeholder={t.auth.confirmPasswordPlaceholder}
+                            dir="ltr"
+                            autoComplete="new-password"
+                            className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-white/25 outline-none transition-all hover:border-white/20 focus:border-[var(--workspace-primary)] focus:ring-2 focus:ring-[var(--workspace-primary)]/20"
+                            {...register('confirmPassword')}
+                        />
+                        {errors.confirmPassword && <p className="mt-1 text-xs text-red-400">{errors.confirmPassword.message}</p>}
+                    </div>
+
+                    {error && (
+                        <div className="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3">
+                            <p className="text-center text-sm text-red-400">{error}</p>
                         </div>
-                    ) : null}
+                    )}
 
-                    <Button
+                    <button
                         type="submit"
-                        variant="primary"
-                        size="md"
-                        className="w-full group"
-                        isLoading={isLoading}
                         disabled={isLoading || (lockoutUntil ? Date.now() < lockoutUntil : false)}
-                        rightIcon={<ArrowIcon className="h-5 w-5 transition-transform group-hover:translate-x-1 rtl:group-hover:-translate-x-1" />}
+                        className="w-full flex items-center justify-center gap-2 rounded-xl bg-[var(--workspace-primary)] px-4 py-3 text-sm font-semibold text-white transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-50 mt-1"
                     >
-                        {t.auth.createAccount}
-                    </Button>
+                        {isLoading ? (
+                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        ) : (
+                            <>
+                                {t.auth.createAccount}
+                                <ArrowIcon className="h-4 w-4" />
+                            </>
+                        )}
+                    </button>
 
-                    <p className="text-center text-[var(--color-text-secondary)]">
+                    <p className="text-center text-sm text-white/30">
                         {t.auth.hasAccount}{' '}
-                        <button
-                            type="button"
-                            onClick={() => navigate('/login')}
-                            className="font-semibold text-[var(--color-brand-primary)] hover:underline"
-                        >
+                        <button type="button" onClick={() => navigate('/login')}
+                            className="text-white/70 font-semibold hover:text-white transition-colors">
                             {t.nav.login}
                         </button>
                     </p>

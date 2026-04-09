@@ -83,7 +83,7 @@ function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
     return (
         <div className="w-full">
             {/* Header */}
-            <div className="mb-8">
+            <div className="mb-7">
                 <h2 className="text-2xl font-bold text-white tracking-tight">
                     {t.auth.loginTitle}
                 </h2>
@@ -120,51 +120,54 @@ function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
 
             {/* Form */}
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                {/* Email */}
                 <div className="space-y-1.5">
-                    <label className="text-xs font-medium text-white/50 uppercase tracking-wider">
+                    <label className="flex items-center gap-2 text-sm font-medium text-white/60">
+                        <Mail className="w-3.5 h-3.5" />
                         {t.auth.email}
                     </label>
-                    <Input
-                        type="email"
-                        placeholder={t.auth.emailPlaceholder}
-                        error={errors.email?.message}
-                        dir="ltr"
-                        autoComplete="email"
-                        className="!bg-white/5 !border-white/10 !text-white placeholder:!text-white/25 hover:!border-white/20 focus:!border-[var(--workspace-primary)] focus:!ring-[var(--workspace-primary)]/20 !rounded-xl"
-                        leftIcon={<Mail className="w-4 h-4 text-white/30" />}
-                        {...register('email')}
-                    />
+                    <div className="relative">
+                        <input
+                            type="email"
+                            placeholder={t.auth.emailPlaceholder}
+                            dir="ltr"
+                            autoComplete="email"
+                            className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-white/25 outline-none transition-all hover:border-white/20 focus:border-[var(--workspace-primary)] focus:ring-2 focus:ring-[var(--workspace-primary)]/20"
+                            {...register('email')}
+                        />
+                        {errors.email && <p className="mt-1.5 text-xs text-red-400">{errors.email.message}</p>}
+                    </div>
                 </div>
 
+                {/* Password */}
                 <div className="space-y-1.5">
                     <div className="flex items-center justify-between">
-                        <label className="text-xs font-medium text-white/50 uppercase tracking-wider">
+                        <label className="flex items-center gap-2 text-sm font-medium text-white/60">
+                            <Lock className="w-3.5 h-3.5" />
                             {t.auth.password.label}
                         </label>
                         <Link to="/forgot-password" className="text-xs text-[var(--workspace-primary)] hover:underline">
                             {t.auth.forgotPassword}
                         </Link>
                     </div>
-                    <Input
-                        type={showPassword ? 'text' : 'password'}
-                        placeholder={t.auth.passwordPlaceholder}
-                        error={errors.password?.message}
-                        dir="ltr"
-                        autoComplete="current-password"
-                        className="!bg-white/5 !border-white/10 !text-white placeholder:!text-white/25 hover:!border-white/20 focus:!border-[var(--workspace-primary)] focus:!ring-[var(--workspace-primary)]/20 !rounded-xl"
-                        leftIcon={<Lock className="w-4 h-4 text-white/30" />}
-                        rightIcon={
-                            <button
-                                type="button"
-                                onClick={() => setShowPassword(!showPassword)}
-                                className="w-8 h-8 rounded-lg flex items-center justify-center text-white/30 hover:text-white/60 transition-colors"
-                                aria-label={showPassword ? t.auth.password.hide : t.auth.password.show}
-                            >
-                                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                            </button>
-                        }
-                        {...register('password')}
-                    />
+                    <div className="relative">
+                        <input
+                            type={showPassword ? 'text' : 'password'}
+                            placeholder={t.auth.passwordPlaceholder}
+                            dir="ltr"
+                            autoComplete="current-password"
+                            className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 pr-12 text-sm text-white placeholder:text-white/25 outline-none transition-all hover:border-white/20 focus:border-[var(--workspace-primary)] focus:ring-2 focus:ring-[var(--workspace-primary)]/20"
+                            {...register('password')}
+                        />
+                        <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-white/30 hover:text-white/60 transition-colors"
+                        >
+                            {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
+                        {errors.password && <p className="mt-1.5 text-xs text-red-400">{errors.password.message}</p>}
+                    </div>
                 </div>
 
                 {error && (
@@ -173,17 +176,20 @@ function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
                     </div>
                 )}
 
-                <Button
+                <button
                     type="submit"
-                    variant="primary"
-                    size="md"
-                    className="w-full group mt-2"
-                    isLoading={isLoading}
                     disabled={isLoading || isLockedOut}
-                    rightIcon={<ArrowIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform" />}
+                    className="w-full flex items-center justify-center gap-2 rounded-xl bg-[var(--workspace-primary)] px-4 py-3 text-sm font-semibold text-white transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-50 mt-1"
                 >
-                    {t.nav.login}
-                </Button>
+                    {isLoading ? (
+                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    ) : (
+                        <>
+                            {t.nav.login}
+                            <ArrowIcon className="w-4 h-4" />
+                        </>
+                    )}
+                </button>
             </form>
 
             {/* Switch to signup */}
