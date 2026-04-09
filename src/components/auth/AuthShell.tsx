@@ -60,6 +60,7 @@ export default function AuthShell({ badge, title, description, highlights, topAc
                   {description}
                 </p>
               </div>
+            </div>
 
             <div className="grid gap-3 xl:grid-cols-3">
               {highlights.map(({ icon: Icon, title: itemTitle, description: itemDescription }) => (
