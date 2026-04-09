@@ -73,18 +73,18 @@ function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
     }; 
     return (
         <div className="w-full max-w-md mx-auto">
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                 {/* Header */}
-                <div className="text-center mb-8">
+                <div className="text-center mb-5">
                     <div className="relative inline-block">
-                        <div className="mx-auto mb-5 flex h-[72px] w-[72px] items-center justify-center rounded-[22px] bg-[var(--workspace-primary)] shadow-[0_20px_48px_-22px_var(--workspace-primary-shadow)]">
-                            <Mail className="h-9 w-9 text-white" />
+                        <div className="mx-auto mb-4 flex h-[64px] w-[64px] items-center justify-center rounded-[20px] bg-[var(--workspace-primary)] shadow-[0_16px_40px_-18px_var(--workspace-primary-shadow)]">
+                            <Mail className="h-8 w-8 text-white" />
                         </div>
-                        <div className="absolute -top-1 -end-1 flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-r from-[var(--amber-400)] to-[var(--amber-600)] shadow-lg shadow-[var(--amber-500)]/30">
-                            <Sparkles className="h-4 w-4 text-white" />
+                        <div className="absolute -top-1 -end-1 flex h-7 w-7 items-center justify-center rounded-xl bg-gradient-to-r from-[var(--amber-400)] to-[var(--amber-600)] shadow-lg shadow-[var(--amber-500)]/30">
+                            <Sparkles className="h-3.5 w-3.5 text-white" />
                         </div>
                     </div>
-                    <h2 className="text-center text-2xl font-bold text-[var(--color-text-primary)] mb-2">
+                    <h2 className="text-center text-2xl font-bold text-[var(--color-text-primary)] mb-1.5">
                         {t.auth.loginTitle}
                     </h2>
                     <p className="mt-1 text-center text-sm text-[var(--color-text-secondary)]">
@@ -127,7 +127,7 @@ function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
                 </button>
 
                 {/* Divider */}
-                <div className="relative my-6">
+                <div className="relative my-4">
                     <div className="absolute inset-0 flex items-center">
                         <div className="w-full border-t border-[var(--color-border-default)]" />
                     </div>
@@ -137,7 +137,7 @@ function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
                 </div>
 
                 {/* Form Fields */}
-                <div className="form-stack">
+                <div className="form-stack space-y-3.5">
                     <div>
                         <label className="label flex items-center gap-2">
                             <Mail className="w-4 h-4 text-[var(--color-brand-primary)]" />
