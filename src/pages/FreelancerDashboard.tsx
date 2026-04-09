@@ -496,46 +496,52 @@ function FreelancerDashboardPage() {
                     }}
                   />
                 ) : (
-                  <div className="divide-y divide-[var(--color-border-subtle)]">
+                  <div className="space-y-[var(--spacing-3)]">
                     {contracts.slice(0, 3).map((contract) => (
                       <div
                         key={contract.id}
-                        className="flex items-center justify-between py-[var(--spacing-4)] px-[var(--spacing-1)] cursor-pointer group"
+                        className="group relative overflow-hidden rounded-xl border border-[var(--color-border-subtle)] bg-[var(--color-background-elevated)] p-[var(--spacing-4)] cursor-pointer transition-all duration-200 hover:border-[var(--color-brand-primary)] hover:shadow-md hover:-translate-y-0.5"
                         onClick={() => navigate(`/contracts/${contract.id}`)}
                       >
-                        <div className="flex items-center gap-[var(--spacing-3)] min-w-0">
-                          <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 bg-[var(--color-background-elevated)]">
-                            <Briefcase className="w-4 h-4 text-[var(--color-brand-primary)]" />
+                        <div className="flex items-start justify-between gap-[var(--spacing-4)]">
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-[var(--spacing-2)] mb-[var(--spacing-2)]">
+                              <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 bg-gradient-to-br from-green-500 to-emerald-600">
+                                <Briefcase className="w-5 h-5 text-white" />
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <p className="font-[var(--font-fontWeight-bold)] text-[var(--font-fontSize-base)] truncate text-[var(--color-text-primary)] group-hover:text-[var(--color-brand-primary)] transition-colors">
+                                  {contract.title}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-[var(--spacing-3)] text-[var(--font-fontSize-xs)] ml-12">
+                              <span className="text-[var(--color-text-tertiary)]">
+                                {contract.client?.full_name ??
+                                  tx(
+                                    "dashboard.freelancer.clientFallback",
+                                    undefined,
+                                    "Client",
+                                  )}
+                              </span>
+                            </div>
                           </div>
-                          <div className="min-w-0">
-                            <p className="font-[var(--font-fontWeight-semibold)] truncate text-[var(--font-fontSize-sm)] text-[var(--color-text-primary)]">
-                              {contract.title}
-                            </p>
-                            <p className="text-[var(--font-fontSize-xs)] truncate text-[var(--color-text-tertiary)]">
-                              {contract.client?.full_name ??
-                                tx(
-                                  "dashboard.freelancer.clientFallback",
-                                  undefined,
-                                  "Client",
-                                )}
-                            </p>
+                          <div className="flex items-center gap-[var(--spacing-2)] shrink-0">
+                            <Badge
+                              variant={
+                                contract.status === "active"
+                                  ? "success"
+                                  : "warning"
+                              }
+                            >
+                              {tx(
+                                `status.${contract.status}`,
+                                undefined,
+                                contract.status,
+                              )}
+                            </Badge>
+                            <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-all duration-200 group-hover:translate-x-1 text-[var(--color-brand-primary)]" />
                           </div>
-                        </div>
-                        <div className="flex items-center gap-[var(--spacing-3)] shrink-0 ml-[var(--spacing-4)]">
-                          <Badge
-                            variant={
-                              contract.status === "active"
-                                ? "success"
-                                : "warning"
-                            }
-                          >
-                            {tx(
-                              `status.${contract.status}`,
-                              undefined,
-                              contract.status,
-                            )}
-                          </Badge>
-                          <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity text-[var(--color-brand-primary)]" />
                         </div>
                       </div>
                     ))}
@@ -586,50 +592,63 @@ function FreelancerDashboardPage() {
                     }}
                   />
                 ) : (
-                  <div className="divide-y divide-[var(--color-border-subtle)]">
+                  <div className="space-y-[var(--spacing-3)]">
                     {recentProposals.slice(0, 4).map((proposal) => (
                       <div
                         key={proposal.id}
-                        className="flex items-center justify-between py-[var(--spacing-4)] px-[var(--spacing-1)]"
+                        className="group relative overflow-hidden rounded-xl border border-[var(--color-border-subtle)] bg-[var(--color-background-elevated)] p-[var(--spacing-4)] transition-all duration-200 hover:border-[var(--color-brand-primary)] hover:shadow-md hover:-translate-y-0.5"
                       >
-                        <div className="min-w-0 flex-1">
-                          <p className="font-[var(--font-fontWeight-semibold)] text-[var(--font-fontSize-sm)] truncate text-[var(--color-text-primary)]">
-                            {proposal.job?.title ??
-                              tx(
-                                "dashboard.freelancer.untitledJob",
-                                undefined,
-                                "Untitled job",
-                              )}
-                          </p>
-                          <p className="text-[var(--font-fontSize-xs)] mt-[var(--spacing-1)] text-[var(--color-text-tertiary)]">
-                            {formatCurrency(
-                              proposal.bid_amount ?? 0,
-                              true,
-                              language,
-                            )}{" "}
-                            ·{" "}
-                            {new Date(proposal.created_at).toLocaleDateString(
-                              locale,
+                        <div className="flex items-start justify-between gap-[var(--spacing-4)]">
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-[var(--spacing-2)] mb-[var(--spacing-2)]">
+                              <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 bg-gradient-to-br from-blue-500 to-indigo-600">
+                                <FileText className="w-5 h-5 text-white" />
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <p className="font-[var(--font-fontWeight-bold)] text-[var(--font-fontSize-base)] truncate text-[var(--color-text-primary)] group-hover:text-[var(--color-brand-primary)] transition-colors">
+                                  {proposal.job?.title ??
+                                    tx(
+                                      "dashboard.freelancer.untitledJob",
+                                      undefined,
+                                      "Untitled job",
+                                    )}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-[var(--spacing-3)] text-[var(--font-fontSize-xs)] ml-12">
+                              <span className="font-[var(--font-fontWeight-semibold)] text-[var(--color-brand-primary)]">
+                                {formatCurrency(
+                                  proposal.bid_amount ?? 0,
+                                  true,
+                                  language,
+                                )}
+                              </span>
+                              <span className="w-1 h-1 rounded-full bg-[var(--color-text-tertiary)]" />
+                              <span className="text-[var(--color-text-tertiary)]">
+                                {new Date(proposal.created_at).toLocaleDateString(
+                                  locale,
+                                )}
+                              </span>
+                            </div>
+                          </div>
+                          <Badge
+                            variant={
+                              proposal.status === "accepted"
+                                ? "success"
+                                : proposal.status === "rejected"
+                                  ? "danger"
+                                  : proposal.status === "pending"
+                                    ? "warning"
+                                    : "default"
+                            }
+                          >
+                            {tx(
+                              `status.${proposal.status}`,
+                              undefined,
+                              proposal.status,
                             )}
-                          </p>
+                          </Badge>
                         </div>
-                        <Badge
-                          variant={
-                            proposal.status === "accepted"
-                              ? "success"
-                              : proposal.status === "rejected"
-                                ? "danger"
-                                : proposal.status === "pending"
-                                  ? "warning"
-                                  : "default"
-                          }
-                        >
-                          {tx(
-                            `status.${proposal.status}`,
-                            undefined,
-                            proposal.status,
-                          )}
-                        </Badge>
                       </div>
                     ))}
                   </div>
@@ -789,35 +808,49 @@ function FreelancerDashboardPage() {
                     }}
                   />
                 ) : (
-                  <div className="divide-y divide-[var(--color-border-subtle)]">
+                  <div className="space-y-[var(--spacing-3)]">
                     {jobs.slice(0, 3).map((job) => (
                       <div
                         key={job.id}
-                        className="flex items-center justify-between py-[var(--spacing-4)] px-[var(--spacing-1)] cursor-pointer group"
+                        className="group relative overflow-hidden rounded-xl border border-[var(--color-border-subtle)] bg-[var(--color-background-elevated)] p-[var(--spacing-4)] cursor-pointer transition-all duration-200 hover:border-[var(--color-brand-primary)] hover:shadow-md hover:-translate-y-0.5"
                         onClick={() => navigate(`/jobs/${job.id}`)}
                       >
-                        <div className="min-w-0 flex-1">
-                          <p className="font-[var(--font-fontWeight-semibold)] text-[var(--font-fontSize-sm)] truncate text-[var(--color-text-primary)]">
-                            {job.title}
-                          </p>
-                          <p className="text-[var(--font-fontSize-xs)] mt-[var(--spacing-1)] text-[var(--color-text-tertiary)]">
-                            {job.budget_min ?? 0}–{job.budget_max ?? 0} TND ·{" "}
-                            {tx(
-                              `categories.${job.category}`,
-                              undefined,
-                              job.category ?? "General",
-                            )}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-[var(--spacing-2)] shrink-0 ml-[var(--spacing-4)]">
-                          <span className="text-[var(--font-fontSize-xs)] font-[var(--font-fontWeight-medium)] px-[var(--spacing-2)] py-[var(--spacing-1)] rounded-lg bg-[var(--color-brand-primary)] text-white opacity-90">
-                            {tx(
-                              "dashboard.freelancer.apply",
-                              undefined,
-                              "Apply",
-                            )}
-                          </span>
-                          <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity text-[var(--color-brand-primary)]" />
+                        <div className="flex items-start justify-between gap-[var(--spacing-4)]">
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-[var(--spacing-2)] mb-[var(--spacing-2)]">
+                              <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 bg-gradient-to-br from-[var(--workspace-primary)] to-[var(--workspace-primary-hover)]">
+                                <Target className="w-5 h-5 text-white" />
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <p className="font-[var(--font-fontWeight-bold)] text-[var(--font-fontSize-base)] truncate text-[var(--color-text-primary)] group-hover:text-[var(--color-brand-primary)] transition-colors">
+                                  {job.title}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-[var(--spacing-3)] text-[var(--font-fontSize-xs)] ml-12">
+                              <span className="font-[var(--font-fontWeight-semibold)] text-[var(--color-brand-primary)]">
+                                {job.budget_min ?? 0}–{job.budget_max ?? 0} TND
+                              </span>
+                              <span className="w-1 h-1 rounded-full bg-[var(--color-text-tertiary)]" />
+                              <span className="text-[var(--color-text-tertiary)]">
+                                {tx(
+                                  `categories.${job.category}`,
+                                  undefined,
+                                  job.category ?? "General",
+                                )}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-[var(--spacing-2)] shrink-0">
+                            <span className="text-[var(--font-fontSize-xs)] font-[var(--font-fontWeight-semibold)] px-[var(--spacing-3)] py-[var(--spacing-1.5)] rounded-lg bg-gradient-to-r from-[var(--workspace-primary)] to-[var(--workspace-primary-hover)] text-white shadow-sm">
+                              {tx(
+                                "dashboard.freelancer.apply",
+                                undefined,
+                                "Apply",
+                              )}
+                            </span>
+                            <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-all duration-200 group-hover:translate-x-1 text-[var(--color-brand-primary)]" />
+                          </div>
                         </div>
                       </div>
                     ))}

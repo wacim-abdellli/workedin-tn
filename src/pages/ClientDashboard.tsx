@@ -247,24 +247,40 @@ function ClientDashboardPage() {
                                         action={{ label: tx('dashboard.client.postAProject', undefined, 'Post a Project'), onClick: () => navigate('/jobs/new') }}
                                     />
                                 ) : (
-                                    <div className="divide-y divide-[var(--color-border-subtle)]">
+                                    <div className="space-y-[var(--spacing-3)]">
                                         {(stats?.jobs ?? []).slice(0, 3).map((job) => (
                                             <div
                                                 key={job.id}
-                                                className="flex items-center justify-between py-[var(--spacing-4)] px-[var(--spacing-1)] cursor-pointer group"
+                                                className="group relative overflow-hidden rounded-xl border border-[var(--color-border-subtle)] bg-[var(--color-background-elevated)] p-[var(--spacing-4)] cursor-pointer transition-all duration-200 hover:border-[var(--color-brand-primary)] hover:shadow-md hover:-translate-y-0.5"
                                                 onClick={() => navigate(`/jobs/${job.id}`)}
                                             >
-                                                <div className="min-w-0 flex-1">
-                                                    <p className="font-[var(--font-fontWeight-semibold)] text-[var(--font-fontSize-sm)] truncate text-[var(--color-text-primary)]">
-                                                        {job.title}
-                                                    </p>
-                                                    <p className="text-[var(--font-fontSize-xs)] mt-[var(--spacing-1)] text-[var(--color-text-tertiary)]">
-                                                        {job.proposals_count ?? 0} {tx('dashboard.client.proposalsCountText', undefined, 'proposals')} · {tx(`status.${job.status}`, undefined, job.status)}
-                                                    </p>
-                                                </div>
-                                                <div className="flex items-center gap-[var(--spacing-2)] shrink-0 ml-[var(--spacing-4)]">
-                                                    <Badge variant={job.status === 'open' ? 'info' : job.status === 'in_progress' ? 'warning' : 'default'}>{tx(`status.${job.status}`, undefined, job.status)}</Badge>
-                                                    <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity text-[var(--color-brand-primary)]" />
+                                                <div className="flex items-start justify-between gap-[var(--spacing-4)]">
+                                                    <div className="min-w-0 flex-1">
+                                                        <div className="flex items-center gap-[var(--spacing-2)] mb-[var(--spacing-2)]">
+                                                            <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 bg-gradient-to-br from-[var(--workspace-primary)] to-[var(--workspace-primary-hover)]">
+                                                                <FolderOpen className="w-5 h-5 text-white" />
+                                                            </div>
+                                                            <div className="min-w-0 flex-1">
+                                                                <p className="font-[var(--font-fontWeight-bold)] text-[var(--font-fontSize-base)] truncate text-[var(--color-text-primary)] group-hover:text-[var(--color-brand-primary)] transition-colors">
+                                                                    {job.title}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex items-center gap-[var(--spacing-3)] text-[var(--font-fontSize-xs)] text-[var(--color-text-tertiary)] ml-12">
+                                                            <span className="flex items-center gap-1">
+                                                                <FileText className="w-3.5 h-3.5" />
+                                                                {job.proposals_count ?? 0} {tx('dashboard.client.proposalsCountText', undefined, 'proposals')}
+                                                            </span>
+                                                            <span className="w-1 h-1 rounded-full bg-[var(--color-text-tertiary)]" />
+                                                            <span>{new Date(job.created_at).toLocaleDateString()}</span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex items-center gap-[var(--spacing-2)] shrink-0">
+                                                        <Badge variant={job.status === 'open' ? 'info' : job.status === 'in_progress' ? 'warning' : 'default'}>
+                                                            {tx(`status.${job.status}`, undefined, job.status)}
+                                                        </Badge>
+                                                        <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-all duration-200 group-hover:translate-x-1 text-[var(--color-brand-primary)]" />
+                                                    </div>
                                                 </div>
                                             </div>
                                         ))}
@@ -285,33 +301,41 @@ function ClientDashboardPage() {
                                         className="rounded-[1.5rem] border"
                                     />
                                 ) : (
-                                    <div className="divide-y divide-[var(--color-border-subtle)]">
+                                    <div className="space-y-[var(--spacing-3)]">
                                         {(stats?.proposals ?? []).slice(0, 4).map((proposal) => (
                                             <div
                                                 key={proposal.id}
-                                                className="flex items-center justify-between py-[var(--spacing-4)] px-[var(--spacing-1)] cursor-pointer group"
+                                                className="group relative overflow-hidden rounded-xl border border-[var(--color-border-subtle)] bg-[var(--color-background-elevated)] p-[var(--spacing-4)] cursor-pointer transition-all duration-200 hover:border-[var(--color-brand-primary)] hover:shadow-md hover:-translate-y-0.5"
                                                 onClick={() => navigate(`/client/jobs/${proposal.job_id}/proposals`)}
                                             >
-                                                <div className="flex items-center gap-[var(--spacing-3)] min-w-0 flex-1">
-                                                    <div className="w-8 h-8 rounded-full overflow-hidden shrink-0 bg-[var(--color-background-elevated)]">
-                                                        {proposal.freelancer?.avatar_url ? (
-                                                            <img src={proposal.freelancer.avatar_url} className="w-full h-full object-cover" alt="" />
-                                                        ) : (
-                                                            <div className="w-full h-full flex items-center justify-center text-[var(--font-fontSize-xs)] font-[var(--font-fontWeight-bold)] bg-[var(--color-brand-primary)] text-white">
-                                                                {proposal.freelancer?.full_name?.[0] ?? 'F'}
-                                                            </div>
-                                                        )}
+                                                <div className="flex items-center justify-between gap-[var(--spacing-4)]">
+                                                    <div className="flex items-center gap-[var(--spacing-3)] min-w-0 flex-1">
+                                                        <div className="relative w-11 h-11 rounded-full overflow-hidden shrink-0 ring-2 ring-[var(--color-border-subtle)] group-hover:ring-[var(--color-brand-primary)] transition-all">
+                                                            {proposal.freelancer?.avatar_url ? (
+                                                                <img src={proposal.freelancer.avatar_url} className="w-full h-full object-cover" alt="" />
+                                                            ) : (
+                                                                <div className="w-full h-full flex items-center justify-center text-[var(--font-fontSize-sm)] font-[var(--font-fontWeight-bold)] bg-gradient-to-br from-[var(--workspace-primary)] to-[var(--workspace-primary-hover)] text-white">
+                                                                    {proposal.freelancer?.full_name?.[0] ?? 'F'}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                        <div className="min-w-0 flex-1">
+                                                            <p className="font-[var(--font-fontWeight-bold)] text-[var(--font-fontSize-sm)] truncate text-[var(--color-text-primary)] group-hover:text-[var(--color-brand-primary)] transition-colors">
+                                                                {proposal.freelancer?.full_name ?? tx('dashboard.client.freelancerFallback', undefined, 'Freelancer')}
+                                                            </p>
+                                                            <p className="text-[var(--font-fontSize-xs)] truncate text-[var(--color-text-tertiary)] mt-0.5">
+                                                                {proposal.job?.title ?? tx('dashboard.client.untitledJob', undefined, 'Untitled job')}
+                                                            </p>
+                                                            <p className="text-[var(--font-fontSize-xs)] font-[var(--font-fontWeight-semibold)] text-[var(--color-brand-primary)] mt-1">
+                                                                {formatCurrency(proposal.bid_amount ?? 0, true, language)}
+                                                            </p>
+                                                        </div>
                                                     </div>
-                                                    <div className="min-w-0">
-                                                        <p className="font-[var(--font-fontWeight-semibold)] text-[var(--font-fontSize-sm)] truncate text-[var(--color-text-primary)]">
-                                                            {proposal.freelancer?.full_name ?? tx('dashboard.client.freelancerFallback', undefined, 'Freelancer')}
-                                                        </p>
-                                                        <p className="text-[var(--font-fontSize-xs)] truncate text-[var(--color-text-tertiary)]">
-                                                            {proposal.job?.title ?? tx('dashboard.client.untitledJob', undefined, 'Untitled job')} · {formatCurrency(proposal.bid_amount ?? 0, true, language)}
-                                                        </p>
+                                                    <div className="flex items-center gap-[var(--spacing-2)] shrink-0">
+                                                        <Badge variant="warning">{tx('dashboard.client.reviewBadge', undefined, 'Review')}</Badge>
+                                                        <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-all duration-200 group-hover:translate-x-1 text-[var(--color-brand-primary)]" />
                                                     </div>
                                                 </div>
-                                                <Badge variant="warning">{tx('dashboard.client.reviewBadge', undefined, 'Review')}</Badge>
                                             </div>
                                         ))}
                                     </div>
@@ -331,22 +355,42 @@ function ClientDashboardPage() {
                                         className="rounded-[1.5rem] border"
                                     />
                                 ) : (
-                                    <div className="divide-y divide-[var(--color-border-subtle)]">
+                                    <div className="space-y-[var(--spacing-3)]">
                                         {(stats?.activeContracts ?? []).slice(0, 3).map((contract) => (
                                             <div
                                                 key={contract.id}
-                                                className="flex items-center justify-between py-[var(--spacing-4)] px-[var(--spacing-1)] cursor-pointer group"
+                                                className="group relative overflow-hidden rounded-xl border border-[var(--color-border-subtle)] bg-[var(--color-background-elevated)] p-[var(--spacing-4)] cursor-pointer transition-all duration-200 hover:border-[var(--color-brand-primary)] hover:shadow-md hover:-translate-y-0.5"
                                                 onClick={() => navigate(`/contracts/${contract.id}`)}
                                             >
-                                                <div className="min-w-0 flex-1">
-                                                    <p className="font-[var(--font-fontWeight-semibold)] text-[var(--font-fontSize-sm)] truncate text-[var(--color-text-primary)]">
-                                                        {contract.title}
-                                                    </p>
-                                                    <p className="text-[var(--font-fontSize-xs)] mt-[var(--spacing-1)] text-[var(--color-text-tertiary)]">
-                                                        {contract.freelancer?.full_name ?? tx('dashboard.client.freelancerFallback', undefined, 'Freelancer')} · {formatCurrency(contract.total_amount ?? 0, true, language)}
-                                                    </p>
+                                                <div className="flex items-start justify-between gap-[var(--spacing-4)]">
+                                                    <div className="min-w-0 flex-1">
+                                                        <div className="flex items-center gap-[var(--spacing-2)] mb-[var(--spacing-2)]">
+                                                            <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 bg-gradient-to-br from-green-500 to-emerald-600">
+                                                                <Briefcase className="w-5 h-5 text-white" />
+                                                            </div>
+                                                            <div className="min-w-0 flex-1">
+                                                                <p className="font-[var(--font-fontWeight-bold)] text-[var(--font-fontSize-base)] truncate text-[var(--color-text-primary)] group-hover:text-[var(--color-brand-primary)] transition-colors">
+                                                                    {contract.title}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex items-center gap-[var(--spacing-3)] text-[var(--font-fontSize-xs)] ml-12">
+                                                            <span className="text-[var(--color-text-tertiary)]">
+                                                                {contract.freelancer?.full_name ?? tx('dashboard.client.freelancerFallback', undefined, 'Freelancer')}
+                                                            </span>
+                                                            <span className="w-1 h-1 rounded-full bg-[var(--color-text-tertiary)]" />
+                                                            <span className="font-[var(--font-fontWeight-semibold)] text-[var(--color-brand-primary)]">
+                                                                {formatCurrency(contract.total_amount ?? 0, true, language)}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex items-center gap-[var(--spacing-2)] shrink-0">
+                                                        <Badge variant={contract.status === 'active' ? 'success' : 'warning'}>
+                                                            {tx(`status.${contract.status}`, undefined, contract.status)}
+                                                        </Badge>
+                                                        <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-all duration-200 group-hover:translate-x-1 text-[var(--color-brand-primary)]" />
+                                                    </div>
                                                 </div>
-                                                <Badge variant={contract.status === 'active' ? 'success' : 'warning'}>{tx(`status.${contract.status}`, undefined, contract.status)}</Badge>
                                             </div>
                                         ))}
                                     </div>
