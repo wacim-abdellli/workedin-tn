@@ -7,14 +7,14 @@
 
 ## 🤖 WHICH AI MODEL TO USE FOR EACH TASK
 
-| Task | Best Model | Why |
-|------|-----------|-----|
-| Agent A (Payment UI) | Claude Sonnet 3.5 / GPT-4o | Complex React + TypeScript + i18n |
-| Agent B (Dhmad Backend) | Claude Sonnet 3.5 / GPT-4o | Edge Functions + Supabase patterns |
-| Agent C (FAQ Update) | GPT-4o mini / Gemini Flash | Simple text + JSX, low complexity |
-| Agent D (Coming Soon Banner) | GPT-4o mini / Gemini Flash | Simple component, low complexity |
+| Task | Best Model | Fallback |
+|------|-----------|----------|
+| Agent A (Payment UI) | **Claude Sonnet 4.5** | GPT-5.4 |
+| Agent B (Dhmad Backend) | **Claude Sonnet 4.5** | GPT-5.4 |
+| Agent C (FAQ Update) | **Gemini 3.1 Pro** | GPT-5.4 mini |
+| Agent D (Coming Soon Banner) | **Gemini 3.1 Pro** | GPT-5.4 mini |
 
-**If you have limited credits**: Use Claude Sonnet for A+B, GPT-4o mini for C+D.
+**If you have limited credits**: Sonnet 4.5 for A+B (complex), Gemini 3.1 for C+D (simple).
 
 ---
 
@@ -486,3 +486,19 @@ I will then review, approve, and tell you what to commit.
 **Last Updated**: 2026-04-09  
 **Orchestrator**: Kiro  
 **Status**: Ready to dispatch agents
+
+---
+
+## 🤖 UPDATED MODEL LIST (2026)
+
+| Agent | Task | Best Model | Why |
+|-------|------|-----------|-----|
+| A | Payment UI | **Claude Sonnet 4.5** | Best at complex React + TypeScript + i18n |
+| B | Dhmad Backend | **Claude Sonnet 4.5** | Best at Supabase Edge Functions + Deno |
+| C | FAQ Update | **Gemini 3.1 Pro** | Fast, accurate for simple JSX edits |
+| D | Coming Soon Banner | **Gemini 3.1 Pro** | Fast, accurate for simple components |
+
+**Alternatives if limits hit**:
+- GPT-5.4 → works for all 4 tasks
+- GPT-5.4 mini → fine for C and D only
+- Gemini 3.1 Flash → fine for C and D only
