@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import { JobCardErrorFallback } from '../ErrorFallback';
 import { Clock, Heart, TrendingUp, MapPin, Sparkles } from 'lucide-react';
@@ -40,7 +40,7 @@ interface JobCardProps {
 
 type Awaitable<T> = T | Promise<T>;
 
-// 🎨 VIBRANT CATEGORY COLORS
+// ðŸŽ¨ VIBRANT CATEGORY COLORS
 const CATEGORY_COLORS: Record<string, { border: string; bg: string; text: string; gradient: string }> = {
   design: { border: '#EC4899', bg: '#FCE7F3', text: '#BE185D', gradient: 'from-pink-500 to-rose-500' },
   development: { border: '#8B5CF6', bg: '#EDE9FE', text: '#6D28D9', gradient: 'from-purple-500 to-indigo-500' },
@@ -55,7 +55,7 @@ const CATEGORY_COLORS: Record<string, { border: string; bg: string; text: string
 function JobCard({ job, isSaved, onToggleSave, onClick }: JobCardProps) {
   const [isSaving, setIsSaving] = useState(false);
   const { t, language } = useTranslation();
-  const [from, to] = getAvatarGradient(job.client?.full_name || 'Khedma');
+  const [from, to] = getAvatarGradient(job.client?.full_name || 'Khedmetna');
   
   const categoryColor = CATEGORY_COLORS[job.category || 'other'] || CATEGORY_COLORS.other;
 
@@ -237,7 +237,7 @@ function JobCard({ job, isSaved, onToggleSave, onClick }: JobCardProps) {
                   className="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full text-white"
                   style={{ background: 'var(--color-status-success)', fontSize: '8px' }}
                   title="Verified"
-                >✓</span>
+                >âœ“</span>
               )}
             </p>
             {job.client?.location && (
@@ -272,3 +272,4 @@ const JobCardErrorBoundary = (props: JobCardProps) => (
 );
 
 export default React.memo(JobCardErrorBoundary);
+

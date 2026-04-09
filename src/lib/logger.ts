@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Development-only logger utility
  *
  * This logger provides console-like logging that only outputs in development mode.
@@ -14,7 +14,7 @@ interface LoggerConfig {
 
 const config: LoggerConfig = {
     enabled: import.meta.env.DEV,
-    prefix: '[Khedma]',
+    prefix: '[Khedmetna]',
 };
 
 /**
@@ -104,3 +104,4 @@ export const logger = {
 };
 
 export default logger;
+

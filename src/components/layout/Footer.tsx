@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+﻿import { Link } from "react-router-dom";
 import {
   Facebook,
   Twitter,
@@ -117,7 +117,7 @@ function Footer() {
                     style={{ color: "var(--workspace-primary)" }}
                   />
                 </div>
-                <span>contact@khedma.tn</span>
+                <span>contact@Khedmetna.tn</span>
               </div>
 
               <div
@@ -378,3 +378,4 @@ function Footer() {
 }
 
 export default Footer;
+

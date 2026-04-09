@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useCallback } from 'react';
+﻿import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
     Search,
@@ -294,7 +294,7 @@ function JobBoard() {
 
     return (
         <div className="page-enter page-shell transition-colors duration-300">
-            <SEO {...SEO_CONFIG.jobs} url="/jobs" canonical="https://khedma.tn/jobs" />
+            <SEO {...SEO_CONFIG.jobs} url="/jobs" canonical="https://Khedmetna.tn/jobs" />
             <Header />
 
             <div className="page-shell-content">
@@ -440,7 +440,7 @@ function JobBoard() {
                                                 color: 'var(--workspace-primary)',
                                             }}
                                         >
-                                            "{filters.search}" <span aria-hidden>×</span>
+                                            "{filters.search}" <span aria-hidden>Ã—</span>
                                         </button>
                                     )}
                                     {filters.categories.map(cat => (
@@ -454,7 +454,7 @@ function JobBoard() {
                                                 color: 'var(--workspace-primary)',
                                             }}
                                         >
-                                            {cat} <span aria-hidden>×</span>
+                                            {cat} <span aria-hidden>Ã—</span>
                                         </button>
                                     ))}
                                     {filters.jobType && (
@@ -467,7 +467,7 @@ function JobBoard() {
                                                 color: 'var(--workspace-primary)',
                                             }}
                                         >
-                                            {filters.jobType} <span aria-hidden>×</span>
+                                            {filters.jobType} <span aria-hidden>Ã—</span>
                                         </button>
                                     )}
                                     <button
@@ -573,4 +573,5 @@ function JobBoard() {
 }
 
 export default JobBoard;
+
 

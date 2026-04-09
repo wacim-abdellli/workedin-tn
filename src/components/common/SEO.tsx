@@ -1,4 +1,4 @@
-import { Helmet } from 'react-helmet-async';
+﻿import { Helmet } from 'react-helmet-async';
 
 import { useTranslation } from '../../i18n';
 import type { Language } from '../../types';
@@ -21,9 +21,9 @@ interface SEOProps {
 type SEOConfigEntry = Pick<SEOProps, 'title' | 'description' | 'keywords' | 'image' | 'type'>;
 
 const SITE_NAME: Record<Language, string> = {
-    ar: 'خدمة TN',
-    en: 'Khedma TN',
-    fr: 'Khedma TN',
+    ar: 'Ø®Ø¯Ù…Ø© TN',
+    en: 'Khedmetna',
+    fr: 'Khedmetna',
 };
 
 const OG_LOCALE: Record<Language, string> = {
@@ -33,7 +33,7 @@ const OG_LOCALE: Record<Language, string> = {
 };
 
 const DEFAULT_IMAGE = '/logos/logo-og.svg';
-const SITE_URL = import.meta.env.VITE_APP_URL || 'https://khedma.tn';
+const SITE_URL = import.meta.env.VITE_APP_URL || 'https://Khedmetna.tn';
 
 const resolveLocalizedText = (value: LocalizedText | undefined, language: Language): string => {
     if (!value) return '';
@@ -63,8 +63,8 @@ export default function SEO({
     const resolvedLocale = locale || OG_LOCALE[language];
 
     const fullTitle =
-        resolvedTitle && resolvedTitle !== siteName && resolvedTitle !== 'Khedma TN'
-            ? `Khedma TN — ${resolvedTitle}`
+        resolvedTitle && resolvedTitle !== siteName && resolvedTitle !== 'Khedmetna'
+            ? `Khedmetna â€” ${resolvedTitle}`
             : siteName;
 
     const fullImageUrl = image.startsWith('http') ? image : `${SITE_URL}${image}`;
@@ -109,274 +109,275 @@ export default function SEO({
 export const SEO_CONFIG: Record<string, SEOConfigEntry> = {
     home: {
         title: {
-            ar: 'خدمة TN',
-            en: 'Khedma TN',
-            fr: 'Khedma TN',
+            ar: 'Ø®Ø¯Ù…Ø© TN',
+            en: 'Khedmetna',
+            fr: 'Khedmetna',
         },
         description: {
-            ar: 'تبحث عن محترفين تونسيين موثقين لمشاريعك؟ انشر مشروعك مجاناً على خدمة TN وابدأ العمل اليوم.',
+            ar: 'ØªØ¨Ø­Ø« Ø¹Ù† Ù…Ø­ØªØ±ÙÙŠÙ† ØªÙˆÙ†Ø³ÙŠÙŠÙ† Ù…ÙˆØ«Ù‚ÙŠÙ† Ù„Ù…Ø´Ø§Ø±ÙŠØ¹ÙƒØŸ Ø§Ù†Ø´Ø± Ù…Ø´Ø±ÙˆØ¹Ùƒ Ù…Ø¬Ø§Ù†Ø§Ù‹ Ø¹Ù„Ù‰ Ø®Ø¯Ù…Ø© TN ÙˆØ§Ø¨Ø¯Ø£ Ø§Ù„Ø¹Ù…Ù„ Ø§Ù„ÙŠÙˆÙ….',
             en: 'Connect with verified Tunisian professionals for your projects. Secure payments in TND and escrow protection.',
-            fr: 'Connectez-vous avec des professionnels tunisiens vérifiés pour vos projets. Paiements sécurisés en TND et protection escrow.',
+            fr: 'Connectez-vous avec des professionnels tunisiens vÃ©rifiÃ©s pour vos projets. Paiements sÃ©curisÃ©s en TND et protection escrow.',
         },
         keywords: {
-            ar: 'عمل حر, تونس, مستقلون, مشاريع, وظائف, دينار تونسي, ضمان',
+            ar: 'Ø¹Ù…Ù„ Ø­Ø±, ØªÙˆÙ†Ø³, Ù…Ø³ØªÙ‚Ù„ÙˆÙ†, Ù…Ø´Ø§Ø±ÙŠØ¹, ÙˆØ¸Ø§Ø¦Ù, Ø¯ÙŠÙ†Ø§Ø± ØªÙˆÙ†Ø³ÙŠ, Ø¶Ù…Ø§Ù†',
             en: 'freelance Tunisia, Tunisian freelancers, TND payments, escrow, projects, talent marketplace',
             fr: 'freelance Tunisie, freelances tunisiens, paiements TND, escrow, projets, talents',
         },
     },
     jobs: {
         title: {
-            ar: 'وظائف ومشاريع مستقلة',
+            ar: 'ÙˆØ¸Ø§Ø¦Ù ÙˆÙ…Ø´Ø§Ø±ÙŠØ¹ Ù…Ø³ØªÙ‚Ù„Ø©',
             en: 'Freelance Jobs',
             fr: 'Missions freelance',
         },
         description: {
-            ar: 'استكشف مشاريع جديدة في تونس وابحث عن فرص تناسب مهاراتك وسعرك وخبرتك.',
+            ar: 'Ø§Ø³ØªÙƒØ´Ù Ù…Ø´Ø§Ø±ÙŠØ¹ Ø¬Ø¯ÙŠØ¯Ø© ÙÙŠ ØªÙˆÙ†Ø³ ÙˆØ§Ø¨Ø­Ø« Ø¹Ù† ÙØ±Øµ ØªÙ†Ø§Ø³Ø¨ Ù…Ù‡Ø§Ø±Ø§ØªÙƒ ÙˆØ³Ø¹Ø±Ùƒ ÙˆØ®Ø¨Ø±ØªÙƒ.',
             en: 'Browse freelance jobs in Tunisia and find projects that match your skills, rate, and availability.',
-            fr: 'Parcourez les missions freelance en Tunisie et trouvez des projets adaptés à vos compétences, votre tarif et votre disponibilité.',
+            fr: 'Parcourez les missions freelance en Tunisie et trouvez des projets adaptÃ©s Ã  vos compÃ©tences, votre tarif et votre disponibilitÃ©.',
         },
         keywords: {
-            ar: 'وظائف, مشاريع, عمل حر, تونس',
+            ar: 'ÙˆØ¸Ø§Ø¦Ù, Ù…Ø´Ø§Ø±ÙŠØ¹, Ø¹Ù…Ù„ Ø­Ø±, ØªÙˆÙ†Ø³',
             en: 'freelance jobs, Tunisia jobs, projects, remote work',
-            fr: 'missions freelance, projets, Tunisie, travail indépendant',
+            fr: 'missions freelance, projets, Tunisie, travail indÃ©pendant',
         },
     },
     findFreelancers: {
         title: {
-            ar: 'اعثر على محترفين تونسيين موثوقين',
+            ar: 'Ø§Ø¹Ø«Ø± Ø¹Ù„Ù‰ Ù…Ø­ØªØ±ÙÙŠÙ† ØªÙˆÙ†Ø³ÙŠÙŠÙ† Ù…ÙˆØ«ÙˆÙ‚ÙŠÙ†',
             en: 'Find Verified Tunisian Professionals',
-            fr: 'Trouvez des professionnels tunisiens vérifiés',
+            fr: 'Trouvez des professionnels tunisiens vÃ©rifiÃ©s',
         },
         description: {
-            ar: 'أكثر من 2500 محترف تونسي موثق ومُقيَّم وجاهز للعمل عبر التصميم، التطوير، الترجمة والاستشارة.',
+            ar: 'Ø£ÙƒØ«Ø± Ù…Ù† 2500 Ù…Ø­ØªØ±Ù ØªÙˆÙ†Ø³ÙŠ Ù…ÙˆØ«Ù‚ ÙˆÙ…ÙÙ‚ÙŠÙŽÙ‘Ù… ÙˆØ¬Ø§Ù‡Ø² Ù„Ù„Ø¹Ù…Ù„ Ø¹Ø¨Ø± Ø§Ù„ØªØµÙ…ÙŠÙ…ØŒ Ø§Ù„ØªØ·ÙˆÙŠØ±ØŒ Ø§Ù„ØªØ±Ø¬Ù…Ø© ÙˆØ§Ù„Ø§Ø³ØªØ´Ø§Ø±Ø©.',
             en: 'Find 2,500+ verified Tunisian developers, designers, translators, and consultants ready to start.',
-            fr: 'Trouvez 2 500+ développeurs, designers, traducteurs et consultants tunisiens vérifiés, notés et disponibles.',
+            fr: 'Trouvez 2 500+ dÃ©veloppeurs, designers, traducteurs et consultants tunisiens vÃ©rifiÃ©s, notÃ©s et disponibles.',
         },
         keywords: {
-            ar: 'مستقلون, توظيف, تونس, محترفون, موثوقون',
+            ar: 'Ù…Ø³ØªÙ‚Ù„ÙˆÙ†, ØªÙˆØ¸ÙŠÙ, ØªÙˆÙ†Ø³, Ù…Ø­ØªØ±ÙÙˆÙ†, Ù…ÙˆØ«ÙˆÙ‚ÙˆÙ†',
             en: 'hire freelancers Tunisia, verified professionals, Tunisian talent',
-            fr: 'recruter freelances Tunisie, talents vérifiés, professionnels tunisiens',
+            fr: 'recruter freelances Tunisie, talents vÃ©rifiÃ©s, professionnels tunisiens',
         },
     },
     howItWorks: {
         title: {
-            ar: 'كيف تعمل خدمة',
-            en: 'How Khedma Works',
-            fr: 'Comment fonctionne Khedma',
+            ar: 'ÙƒÙŠÙ ØªØ¹Ù…Ù„ Ø®Ø¯Ù…Ø©',
+            en: 'How Khedmetna Works',
+            fr: 'Comment fonctionne Khedmetna',
         },
         description: {
-            ar: 'أربع خطوات من فكرة المشروع إلى استلام الدفع، مع ضمان، تحقق هوية، وتتبع واضح لكل دينار.',
-            en: 'See how Khedma takes you from project idea to approved payment in four protected steps.',
-            fr: 'Découvrez comment Khedma vous fait passer de l’idée au paiement validé en quatre étapes protégées.',
+            ar: 'Ø£Ø±Ø¨Ø¹ Ø®Ø·ÙˆØ§Øª Ù…Ù† ÙÙƒØ±Ø© Ø§Ù„Ù…Ø´Ø±ÙˆØ¹ Ø¥Ù„Ù‰ Ø§Ø³ØªÙ„Ø§Ù… Ø§Ù„Ø¯ÙØ¹ØŒ Ù…Ø¹ Ø¶Ù…Ø§Ù†ØŒ ØªØ­Ù‚Ù‚ Ù‡ÙˆÙŠØ©ØŒ ÙˆØªØªØ¨Ø¹ ÙˆØ§Ø¶Ø­ Ù„ÙƒÙ„ Ø¯ÙŠÙ†Ø§Ø±.',
+            en: 'See how Khedmetna takes you from project idea to approved payment in four protected steps.',
+            fr: 'DÃ©couvrez comment Khedmetna vous fait passer de lâ€™idÃ©e au paiement validÃ© en quatre Ã©tapes protÃ©gÃ©es.',
         },
         keywords: {
-            ar: 'كيف يعمل, منصة عمل حر, ضمان, تحقق هوية',
+            ar: 'ÙƒÙŠÙ ÙŠØ¹Ù…Ù„, Ù…Ù†ØµØ© Ø¹Ù…Ù„ Ø­Ø±, Ø¶Ù…Ø§Ù†, ØªØ­Ù‚Ù‚ Ù‡ÙˆÙŠØ©',
             en: 'how it works, escrow, verified freelancers, talent marketplace',
-            fr: 'fonctionnement, escrow, freelances vérifiés, plateforme freelance',
+            fr: 'fonctionnement, escrow, freelances vÃ©rifiÃ©s, plateforme freelance',
         },
     },
     forClients: {
         title: {
-            ar: 'للعملاء وأصحاب المشاريع',
+            ar: 'Ù„Ù„Ø¹Ù…Ù„Ø§Ø¡ ÙˆØ£ØµØ­Ø§Ø¨ Ø§Ù„Ù…Ø´Ø§Ø±ÙŠØ¹',
             en: 'Hire Verified Tunisian Talent',
-            fr: 'Recrutez des talents tunisiens vérifiés',
+            fr: 'Recrutez des talents tunisiens vÃ©rifiÃ©s',
         },
         description: {
-            ar: 'انشر مشروعك مجاناً، استقبل عروضاً من محترفين موثقين، وادفع فقط عند الموافقة مع حماية كاملة بالضمان.',
+            ar: 'Ø§Ù†Ø´Ø± Ù…Ø´Ø±ÙˆØ¹Ùƒ Ù…Ø¬Ø§Ù†Ø§Ù‹ØŒ Ø§Ø³ØªÙ‚Ø¨Ù„ Ø¹Ø±ÙˆØ¶Ø§Ù‹ Ù…Ù† Ù…Ø­ØªØ±ÙÙŠÙ† Ù…ÙˆØ«Ù‚ÙŠÙ†ØŒ ÙˆØ§Ø¯ÙØ¹ ÙÙ‚Ø· Ø¹Ù†Ø¯ Ø§Ù„Ù…ÙˆØ§ÙÙ‚Ø© Ù…Ø¹ Ø­Ù…Ø§ÙŠØ© ÙƒØ§Ù…Ù„Ø© Ø¨Ø§Ù„Ø¶Ù…Ø§Ù†.',
             en: 'Post your project for free, receive proposals from verified professionals, and pay only when work is approved.',
-            fr: 'Publiez gratuitement, recevez des propositions de professionnels vérifiés et payez uniquement à la validation.',
+            fr: 'Publiez gratuitement, recevez des propositions de professionnels vÃ©rifiÃ©s et payez uniquement Ã  la validation.',
         },
         keywords: {
-            ar: 'عملاء, مشاريع, توظيف, تونس, ضمان',
+            ar: 'Ø¹Ù…Ù„Ø§Ø¡, Ù…Ø´Ø§Ø±ÙŠØ¹, ØªÙˆØ¸ÙŠÙ, ØªÙˆÙ†Ø³, Ø¶Ù…Ø§Ù†',
             en: 'hire Tunisian freelancers, client marketplace, escrow payments, post a project',
             fr: 'recruter freelances tunisiens, publier un projet, escrow, clients',
         },
     },
     faq: {
         title: {
-            ar: 'الأسئلة الشائعة',
+            ar: 'Ø§Ù„Ø£Ø³Ø¦Ù„Ø© Ø§Ù„Ø´Ø§Ø¦Ø¹Ø©',
             en: 'Frequently Asked Questions',
-            fr: 'Questions fréquentes',
+            fr: 'Questions frÃ©quentes',
         },
         description: {
-            ar: 'إجابات واضحة حول طريقة العمل، الدفع، الضمان، والهوية على خدمة.',
-            en: 'Find answers about payments, escrow, identity verification, and how Khedma works.',
-            fr: 'Retrouvez des réponses sur les paiements, l’escrow, la vérification d’identité et le fonctionnement de Khedma.',
+            ar: 'Ø¥Ø¬Ø§Ø¨Ø§Øª ÙˆØ§Ø¶Ø­Ø© Ø­ÙˆÙ„ Ø·Ø±ÙŠÙ‚Ø© Ø§Ù„Ø¹Ù…Ù„ØŒ Ø§Ù„Ø¯ÙØ¹ØŒ Ø§Ù„Ø¶Ù…Ø§Ù†ØŒ ÙˆØ§Ù„Ù‡ÙˆÙŠØ© Ø¹Ù„Ù‰ Ø®Ø¯Ù…Ø©.',
+            en: 'Find answers about payments, escrow, identity verification, and how Khedmetna works.',
+            fr: 'Retrouvez des rÃ©ponses sur les paiements, lâ€™escrow, la vÃ©rification dâ€™identitÃ© et le fonctionnement de Khedmetna.',
         },
         keywords: {
-            ar: 'أسئلة شائعة, دعم, مساعدة',
+            ar: 'Ø£Ø³Ø¦Ù„Ø© Ø´Ø§Ø¦Ø¹Ø©, Ø¯Ø¹Ù…, Ù…Ø³Ø§Ø¹Ø¯Ø©',
             en: 'faq, help, support',
             fr: 'faq, aide, support',
         },
     },
     terms: {
         title: {
-            ar: 'شروط الاستخدام',
+            ar: 'Ø´Ø±ÙˆØ· Ø§Ù„Ø§Ø³ØªØ®Ø¯Ø§Ù…',
             en: 'Terms of Use',
-            fr: 'Conditions d’utilisation',
+            fr: 'Conditions dâ€™utilisation',
         },
         description: {
-            ar: 'اطلع على شروط وأحكام استخدام منصة خدمة.',
-            en: 'Read the terms and conditions for using the Khedma platform.',
-            fr: 'Consultez les conditions d’utilisation de la plateforme Khedma.',
+            ar: 'Ø§Ø·Ù„Ø¹ Ø¹Ù„Ù‰ Ø´Ø±ÙˆØ· ÙˆØ£Ø­ÙƒØ§Ù… Ø§Ø³ØªØ®Ø¯Ø§Ù… Ù…Ù†ØµØ© Ø®Ø¯Ù…Ø©.',
+            en: 'Read the terms and conditions for using the Khedmetna platform.',
+            fr: 'Consultez les conditions dâ€™utilisation de la plateforme Khedmetna.',
         },
         keywords: {
-            ar: 'شروط الاستخدام, أحكام, قانون',
+            ar: 'Ø´Ø±ÙˆØ· Ø§Ù„Ø§Ø³ØªØ®Ø¯Ø§Ù…, Ø£Ø­ÙƒØ§Ù…, Ù‚Ø§Ù†ÙˆÙ†',
             en: 'terms, conditions, legal',
-            fr: 'conditions, utilisation, légal',
+            fr: 'conditions, utilisation, lÃ©gal',
         },
     },
     privacy: {
         title: {
-            ar: 'سياسة الخصوصية',
+            ar: 'Ø³ÙŠØ§Ø³Ø© Ø§Ù„Ø®ØµÙˆØµÙŠØ©',
             en: 'Privacy Policy',
-            fr: 'Politique de confidentialité',
+            fr: 'Politique de confidentialitÃ©',
         },
         description: {
-            ar: 'تعرّف على كيفية حماية بياناتك وخصوصيتك على خدمة.',
-            en: 'Learn how Khedma protects your data and privacy.',
-            fr: 'Découvrez comment Khedma protège vos données et votre vie privée.',
+            ar: 'ØªØ¹Ø±Ù‘Ù Ø¹Ù„Ù‰ ÙƒÙŠÙÙŠØ© Ø­Ù…Ø§ÙŠØ© Ø¨ÙŠØ§Ù†Ø§ØªÙƒ ÙˆØ®ØµÙˆØµÙŠØªÙƒ Ø¹Ù„Ù‰ Ø®Ø¯Ù…Ø©.',
+            en: 'Learn how Khedmetna protects your data and privacy.',
+            fr: 'DÃ©couvrez comment Khedmetna protÃ¨ge vos donnÃ©es et votre vie privÃ©e.',
         },
         keywords: {
-            ar: 'خصوصية, حماية البيانات, أمان',
+            ar: 'Ø®ØµÙˆØµÙŠØ©, Ø­Ù…Ø§ÙŠØ© Ø§Ù„Ø¨ÙŠØ§Ù†Ø§Øª, Ø£Ù…Ø§Ù†',
             en: 'privacy, data protection, security',
-            fr: 'confidentialité, protection des données, sécurité',
+            fr: 'confidentialitÃ©, protection des donnÃ©es, sÃ©curitÃ©',
         },
     },
     login: {
         title: {
-            ar: 'سجّل الدخول إلى خدمة',
-            en: 'Sign in to Khedma',
-            fr: 'Connectez-vous à Khedma',
+            ar: 'Ø³Ø¬Ù‘Ù„ Ø§Ù„Ø¯Ø®ÙˆÙ„ Ø¥Ù„Ù‰ Ø®Ø¯Ù…Ø©',
+            en: 'Sign in to Khedmetna',
+            fr: 'Connectez-vous Ã  Khedmetna',
         },
         description: {
-            ar: 'عد إلى حسابك على خدمة وتابع مشاريعك ورسائلك ومدفوعاتك.',
-            en: 'Sign in to your Khedma account to manage projects, messages, and payments.',
-            fr: 'Connectez-vous à votre compte Khedma pour gérer vos projets, messages et paiements.',
+            ar: 'Ø¹Ø¯ Ø¥Ù„Ù‰ Ø­Ø³Ø§Ø¨Ùƒ Ø¹Ù„Ù‰ Ø®Ø¯Ù…Ø© ÙˆØªØ§Ø¨Ø¹ Ù…Ø´Ø§Ø±ÙŠØ¹Ùƒ ÙˆØ±Ø³Ø§Ø¦Ù„Ùƒ ÙˆÙ…Ø¯ÙÙˆØ¹Ø§ØªÙƒ.',
+            en: 'Sign in to your Khedmetna account to manage projects, messages, and payments.',
+            fr: 'Connectez-vous Ã  votre compte Khedmetna pour gÃ©rer vos projets, messages et paiements.',
         },
         keywords: {
-            ar: 'تسجيل الدخول, حساب, خدمة',
-            en: 'sign in, account, Khedma login',
-            fr: 'connexion, compte, Khedma',
+            ar: 'ØªØ³Ø¬ÙŠÙ„ Ø§Ù„Ø¯Ø®ÙˆÙ„, Ø­Ø³Ø§Ø¨, Ø®Ø¯Ù…Ø©',
+            en: 'sign in, account, Khedmetna login',
+            fr: 'connexion, compte, Khedmetna',
         },
     },
     signup: {
         title: {
-            ar: 'أنشئ حسابك على خدمة',
-            en: 'Create your Khedma account',
-            fr: 'Créez votre compte Khedma',
+            ar: 'Ø£Ù†Ø´Ø¦ Ø­Ø³Ø§Ø¨Ùƒ Ø¹Ù„Ù‰ Ø®Ø¯Ù…Ø©',
+            en: 'Create your Khedmetna account',
+            fr: 'CrÃ©ez votre compte Khedmetna',
         },
         description: {
-            ar: 'انضم إلى أكثر من 2500 محترف يبنون مسيرتهم ويُديرون مشاريعهم على خدمة.',
-            en: 'Create your account and join 2,500+ professionals building their career on Khedma.',
-            fr: 'Créez votre compte et rejoignez 2 500+ professionnels qui développent leur carrière sur Khedma.',
+            ar: 'Ø§Ù†Ø¶Ù… Ø¥Ù„Ù‰ Ø£ÙƒØ«Ø± Ù…Ù† 2500 Ù…Ø­ØªØ±Ù ÙŠØ¨Ù†ÙˆÙ† Ù…Ø³ÙŠØ±ØªÙ‡Ù… ÙˆÙŠÙØ¯ÙŠØ±ÙˆÙ† Ù…Ø´Ø§Ø±ÙŠØ¹Ù‡Ù… Ø¹Ù„Ù‰ Ø®Ø¯Ù…Ø©.',
+            en: 'Create your account and join 2,500+ professionals building their career on Khedmetna.',
+            fr: 'CrÃ©ez votre compte et rejoignez 2 500+ professionnels qui dÃ©veloppent leur carriÃ¨re sur Khedmetna.',
         },
         keywords: {
-            ar: 'إنشاء حساب, تسجيل, مستقل, عميل',
+            ar: 'Ø¥Ù†Ø´Ø§Ø¡ Ø­Ø³Ø§Ø¨, ØªØ³Ø¬ÙŠÙ„, Ù…Ø³ØªÙ‚Ù„, Ø¹Ù…ÙŠÙ„',
             en: 'create account, signup, freelance marketplace, client account',
-            fr: 'créer un compte, inscription, freelance, client',
+            fr: 'crÃ©er un compte, inscription, freelance, client',
         },
     },
     dashboard: {
         title: {
-            ar: 'لوحة التحكم',
+            ar: 'Ù„ÙˆØ­Ø© Ø§Ù„ØªØ­ÙƒÙ…',
             en: 'Dashboard',
             fr: 'Tableau de bord',
         },
         description: {
-            ar: 'تابع مشاريعك ورسائلك وأرباحك من لوحة التحكم الخاصة بك على خدمة.',
-            en: 'Track projects, messages, and earnings from your Khedma dashboard.',
-            fr: 'Suivez vos projets, messages et revenus depuis votre tableau de bord Khedma.',
+            ar: 'ØªØ§Ø¨Ø¹ Ù…Ø´Ø§Ø±ÙŠØ¹Ùƒ ÙˆØ±Ø³Ø§Ø¦Ù„Ùƒ ÙˆØ£Ø±Ø¨Ø§Ø­Ùƒ Ù…Ù† Ù„ÙˆØ­Ø© Ø§Ù„ØªØ­ÙƒÙ… Ø§Ù„Ø®Ø§ØµØ© Ø¨Ùƒ Ø¹Ù„Ù‰ Ø®Ø¯Ù…Ø©.',
+            en: 'Track projects, messages, and earnings from your Khedmetna dashboard.',
+            fr: 'Suivez vos projets, messages et revenus depuis votre tableau de bord Khedmetna.',
         },
         keywords: {
-            ar: 'لوحة تحكم, مشاريع, أرباح',
+            ar: 'Ù„ÙˆØ­Ø© ØªØ­ÙƒÙ…, Ù…Ø´Ø§Ø±ÙŠØ¹, Ø£Ø±Ø¨Ø§Ø­',
             en: 'dashboard, earnings, projects',
             fr: 'tableau de bord, revenus, projets',
         },
     },
     messages: {
         title: {
-            ar: 'الرسائل',
+            ar: 'Ø§Ù„Ø±Ø³Ø§Ø¦Ù„',
             en: 'Messages',
             fr: 'Messages',
         },
         description: {
-            ar: 'تواصل بأمان مع العملاء والمستقلين عبر رسائل خدمة.',
-            en: 'Chat securely with clients and freelancers through Khedma messaging.',
-            fr: 'Échangez en toute sécurité avec clients et freelances via la messagerie Khedma.',
+            ar: 'ØªÙˆØ§ØµÙ„ Ø¨Ø£Ù…Ø§Ù† Ù…Ø¹ Ø§Ù„Ø¹Ù…Ù„Ø§Ø¡ ÙˆØ§Ù„Ù…Ø³ØªÙ‚Ù„ÙŠÙ† Ø¹Ø¨Ø± Ø±Ø³Ø§Ø¦Ù„ Ø®Ø¯Ù…Ø©.',
+            en: 'Chat securely with clients and freelancers through Khedmetna messaging.',
+            fr: 'Ã‰changez en toute sÃ©curitÃ© avec clients et freelances via la messagerie Khedmetna.',
         },
         keywords: {
-            ar: 'رسائل, تواصل, محادثات',
+            ar: 'Ø±Ø³Ø§Ø¦Ù„, ØªÙˆØ§ØµÙ„, Ù…Ø­Ø§Ø¯Ø«Ø§Øª',
             en: 'messages, chat, communication',
             fr: 'messages, chat, communication',
         },
     },
     settings: {
         title: {
-            ar: 'الإعدادات',
+            ar: 'Ø§Ù„Ø¥Ø¹Ø¯Ø§Ø¯Ø§Øª',
             en: 'Settings',
-            fr: 'Paramètres',
+            fr: 'ParamÃ¨tres',
         },
         description: {
-            ar: 'أدر إعدادات الحساب والإشعارات والخصوصية من مكان واحد.',
+            ar: 'Ø£Ø¯Ø± Ø¥Ø¹Ø¯Ø§Ø¯Ø§Øª Ø§Ù„Ø­Ø³Ø§Ø¨ ÙˆØ§Ù„Ø¥Ø´Ø¹Ø§Ø±Ø§Øª ÙˆØ§Ù„Ø®ØµÙˆØµÙŠØ© Ù…Ù† Ù…ÙƒØ§Ù† ÙˆØ§Ø­Ø¯.',
             en: 'Manage your account settings, notifications, and privacy from one place.',
-            fr: 'Gérez vos paramètres de compte, notifications et préférences de confidentialité depuis un seul endroit.',
+            fr: 'GÃ©rez vos paramÃ¨tres de compte, notifications et prÃ©fÃ©rences de confidentialitÃ© depuis un seul endroit.',
         },
         keywords: {
-            ar: 'إعدادات, حساب, تفضيلات',
+            ar: 'Ø¥Ø¹Ø¯Ø§Ø¯Ø§Øª, Ø­Ø³Ø§Ø¨, ØªÙØ¶ÙŠÙ„Ø§Øª',
             en: 'settings, account, preferences',
-            fr: 'paramètres, compte, préférences',
+            fr: 'paramÃ¨tres, compte, prÃ©fÃ©rences',
         },
     },
     search: {
         title: {
-            ar: 'نتائج البحث',
+            ar: 'Ù†ØªØ§Ø¦Ø¬ Ø§Ù„Ø¨Ø­Ø«',
             en: 'Search Results',
-            fr: 'Résultats de recherche',
+            fr: 'RÃ©sultats de recherche',
         },
         description: {
-            ar: 'استعرض نتائج البحث عبر الوظائف والمستقلين والمحتوى على خدمة.',
-            en: 'Browse search results across jobs, freelancers, and content on Khedma.',
-            fr: 'Parcourez les résultats de recherche parmi les missions, freelances et contenus sur Khedma.',
+            ar: 'Ø§Ø³ØªØ¹Ø±Ø¶ Ù†ØªØ§Ø¦Ø¬ Ø§Ù„Ø¨Ø­Ø« Ø¹Ø¨Ø± Ø§Ù„ÙˆØ¸Ø§Ø¦Ù ÙˆØ§Ù„Ù…Ø³ØªÙ‚Ù„ÙŠÙ† ÙˆØ§Ù„Ù…Ø­ØªÙˆÙ‰ Ø¹Ù„Ù‰ Ø®Ø¯Ù…Ø©.',
+            en: 'Browse search results across jobs, freelancers, and content on Khedmetna.',
+            fr: 'Parcourez les rÃ©sultats de recherche parmi les missions, freelances et contenus sur Khedmetna.',
         },
         keywords: {
-            ar: 'بحث, نتائج',
+            ar: 'Ø¨Ø­Ø«, Ù†ØªØ§Ø¦Ø¬',
             en: 'search, results',
-            fr: 'recherche, résultats',
+            fr: 'recherche, rÃ©sultats',
         },
     },
     freelancerOnboarding: {
         title: {
-            ar: 'إكمال حساب المستقل',
+            ar: 'Ø¥ÙƒÙ…Ø§Ù„ Ø­Ø³Ø§Ø¨ Ø§Ù„Ù…Ø³ØªÙ‚Ù„',
             en: 'Complete Freelancer Setup',
             fr: 'Finaliser le profil freelance',
         },
         description: {
-            ar: 'أكمل ملفك كمستقل وابدأ استقبال فرص العمل على خدمة.',
-            en: 'Complete your freelancer profile and start getting matched to real work on Khedma.',
-            fr: 'Finalisez votre profil freelance et commencez à recevoir de vraies opportunités sur Khedma.',
+            ar: 'Ø£ÙƒÙ…Ù„ Ù…Ù„ÙÙƒ ÙƒÙ…Ø³ØªÙ‚Ù„ ÙˆØ§Ø¨Ø¯Ø£ Ø§Ø³ØªÙ‚Ø¨Ø§Ù„ ÙØ±Øµ Ø§Ù„Ø¹Ù…Ù„ Ø¹Ù„Ù‰ Ø®Ø¯Ù…Ø©.',
+            en: 'Complete your freelancer profile and start getting matched to real work on Khedmetna.',
+            fr: 'Finalisez votre profil freelance et commencez Ã  recevoir de vraies opportunitÃ©s sur Khedmetna.',
         },
         keywords: {
-            ar: 'مستقل, ملف شخصي, إعداد',
+            ar: 'Ù…Ø³ØªÙ‚Ù„, Ù…Ù„Ù Ø´Ø®ØµÙŠ, Ø¥Ø¹Ø¯Ø§Ø¯',
             en: 'freelancer onboarding, profile setup',
             fr: 'onboarding freelance, configuration du profil',
         },
     },
     clientOnboarding: {
         title: {
-            ar: 'إكمال حساب العميل',
+            ar: 'Ø¥ÙƒÙ…Ø§Ù„ Ø­Ø³Ø§Ø¨ Ø§Ù„Ø¹Ù…ÙŠÙ„',
             en: 'Complete Client Setup',
             fr: 'Finaliser le profil client',
         },
         description: {
-            ar: 'أكمل حسابك كعميل وابدأ نشر مشاريعك على خدمة.',
-            en: 'Complete your client account and start posting projects on Khedma.',
-            fr: 'Finalisez votre compte client et commencez à publier vos projets sur Khedma.',
+            ar: 'Ø£ÙƒÙ…Ù„ Ø­Ø³Ø§Ø¨Ùƒ ÙƒØ¹Ù…ÙŠÙ„ ÙˆØ§Ø¨Ø¯Ø£ Ù†Ø´Ø± Ù…Ø´Ø§Ø±ÙŠØ¹Ùƒ Ø¹Ù„Ù‰ Ø®Ø¯Ù…Ø©.',
+            en: 'Complete your client account and start posting projects on Khedmetna.',
+            fr: 'Finalisez votre compte client et commencez Ã  publier vos projets sur Khedmetna.',
         },
         keywords: {
-            ar: 'عميل, مشروع, إعداد حساب',
+            ar: 'Ø¹Ù…ÙŠÙ„, Ù…Ø´Ø±ÙˆØ¹, Ø¥Ø¹Ø¯Ø§Ø¯ Ø­Ø³Ø§Ø¨',
             en: 'client onboarding, project setup',
             fr: 'onboarding client, configuration projet',
         },
     },
 };
+

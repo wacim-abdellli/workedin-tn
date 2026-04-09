@@ -1,6 +1,6 @@
-// src/components/ui/Logo.tsx
-// Concept C — Trust Shield with K letterform
-// Uses inline SVG — no external files needed, works everywhere
+﻿// src/components/ui/Logo.tsx
+// Concept C â€” Trust Shield with K letterform
+// Uses inline SVG â€” no external files needed, works everywhere
 
 interface LogoProps {
   variant?: 'full' | 'mark' | 'pill';
@@ -8,7 +8,7 @@ interface LogoProps {
   className?: string;
 }
 
-// Shield mark with K letterform (Concept C — Trust)
+// Shield mark with K letterform (Concept C â€” Trust)
 function LogoMark({ violet, amber, innerViolet, size }: { violet: string; amber: string; innerViolet: string; size: number }) {
   const h = size;
   const w = Math.round(size * 0.93);
@@ -22,25 +22,25 @@ function LogoMark({ violet, amber, innerViolet, size }: { violet: string; amber:
       xmlns="http://www.w3.org/2000/svg"
       aria-hidden="true"
     >
-      {/* Shield outer — violet */}
+      {/* Shield outer â€” violet */}
       <path d="M50 4 L88 18 L88 56 Q88 84 50 104 Q12 84 12 56 L12 18 Z" fill={violet} />
       
-      {/* Shield inner — darker violet */}
+      {/* Shield inner â€” darker violet */}
       <path d="M50 13 L80 25 L80 56 Q80 77 50 94 Q20 77 20 56 L20 25 Z" fill={innerViolet} />
       
-      {/* Amber accent band — symbolizes trust earned */}
+      {/* Amber accent band â€” symbolizes trust earned */}
       <path d="M25 74 Q37 86 50 94 Q63 86 75 74 Z" fill={amber} opacity="0.9" />
       
-      {/* K letterform stem — white/primary */}
+      {/* K letterform stem â€” white/primary */}
       <rect x="37" y="30" width="10" height="44" rx="5" fill="rgba(255,255,255,0.95)" />
       
-      {/* K upper arm — freelancer reaches up (white) */}
+      {/* K upper arm â€” freelancer reaches up (white) */}
       <path d="M47 52 L73 30" stroke="rgba(255,255,255,0.95)" strokeWidth="10" strokeLinecap="round" fill="none" />
       
-      {/* K lower arm — client reaches down (amber) */}
+      {/* K lower arm â€” client reaches down (amber) */}
       <path d="M47 52 L73 74" stroke={amber} strokeWidth="10" strokeLinecap="round" fill="none" />
       
-      {/* Connection dot at K joint — trust point */}
+      {/* Connection dot at K joint â€” trust point */}
       <circle cx="47" cy="52" r="6" fill={amber} />
     </svg>
   );
@@ -56,7 +56,7 @@ const SIZE_CONFIG = {
 export function Logo({ variant = 'full', size = 'md', className = '' }: LogoProps) {
   const cfg = SIZE_CONFIG[size];
 
-  // Colors — using CSS variables for consistency with new color system
+  // Colors â€” using CSS variables for consistency with new color system
   const violet = '#9333ea';        // Updated to new primary purple
   const innerViolet = '#7e22ce';   // Darker violet inner
   const amber = '#92400e';          // Accent color with AA contrast on light surfaces
@@ -64,7 +64,7 @@ export function Logo({ variant = 'full', size = 'md', className = '' }: LogoProp
 
   if (variant === 'mark') {
     return (
-      <span className={`inline-flex items-center justify-center ${className}`} aria-label="Khedma TN">
+      <span className={`inline-flex items-center justify-center ${className}`} aria-label="Khedmetna">
         <LogoMark violet={violet} amber={amber} innerViolet={innerViolet} size={cfg.markH} />
       </span>
     );
@@ -78,7 +78,7 @@ export function Logo({ variant = 'full', size = 'md', className = '' }: LogoProp
           background: 'var(--workspace-primary)',
           height: cfg.pillH,
         }}
-        aria-label="Khedma TN"
+        aria-label="Khedmetna"
       >
         <LogoMark 
           violet="rgba(255,255,255,0.15)" 
@@ -96,7 +96,7 @@ export function Logo({ variant = 'full', size = 'md', className = '' }: LogoProp
             lineHeight: 1,
           }}
         >
-          khedma
+          Khedmetna
         </span>
         <span
           style={{
@@ -114,12 +114,12 @@ export function Logo({ variant = 'full', size = 'md', className = '' }: LogoProp
     );
   }
 
-  // variant === 'full' — horizontal lockup
+  // variant === 'full' â€” horizontal lockup
   return (
     <span
       className={`inline-flex items-center ${className}`}
       style={{ gap: cfg.gap }}
-      aria-label="Khedma TN"
+      aria-label="Khedmetna"
     >
       <LogoMark violet={violet} amber={amber} innerViolet={innerViolet} size={cfg.markH} />
       <span style={{ display: 'inline-flex', alignItems: 'baseline', gap: 2 }}>
@@ -133,7 +133,7 @@ export function Logo({ variant = 'full', size = 'md', className = '' }: LogoProp
             lineHeight: 1,
           }}
         >
-          khedma
+          Khedmetna
         </span>
         <span
           style={{
@@ -151,3 +151,4 @@ export function Logo({ variant = 'full', size = 'md', className = '' }: LogoProp
     </span>
   );
 }
+

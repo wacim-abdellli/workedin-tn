@@ -1,7 +1,7 @@
-import type { AccountMode, FreelancerProfile, Profile, UserType } from '@/types';
+﻿import type { AccountMode, FreelancerProfile, Profile, UserType } from '@/types';
 
 export type Workspace = AccountMode;
-const ACCOUNT_TYPE_SELECTION_KEY = 'khedma-account-type-selected-v1';
+const ACCOUNT_TYPE_SELECTION_KEY = 'Khedmetna-account-type-selected-v1';
 
 type ProfileLike =
   | Partial<
@@ -273,3 +273,4 @@ export function getPostAuthWorkspacePath(
   const workspace = getInitialWorkspace(profile, freelancerProfile);
   return getWorkspaceTargetRoute(profile, freelancerProfile, workspace).path;
 }
+

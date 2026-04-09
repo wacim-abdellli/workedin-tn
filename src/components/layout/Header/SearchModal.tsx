@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+﻿import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Briefcase,
@@ -35,7 +35,7 @@ type SearchItem = {
   section?: string
 }
 
-const RECENT_SEARCHES_KEY = 'khedma-recent-searches'
+const RECENT_SEARCHES_KEY = 'Khedmetna-recent-searches'
 
 export default function SearchModal({ onClose }: SearchModalProps) {
   const { user } = useAuth()
@@ -469,3 +469,4 @@ export default function SearchModal({ onClose }: SearchModalProps) {
     </div>
   )
 }
+

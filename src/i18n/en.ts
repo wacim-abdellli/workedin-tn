@@ -1,4 +1,4 @@
-import type { Translations } from './ar';
+﻿import type { Translations } from './ar';
 
 export const en: Translations = {
     nav: {
@@ -304,12 +304,12 @@ export const en: Translations = {
         title: 'Where Tunisian Talent Gets Paid Fairly',
         headlineStart: 'Where Tunisian Talent',
         headlineHighlight: 'Gets Paid Fairly',
-        subtitle: 'No auctions. No middlemen. Post a project, agree on terms, get paid in TND — secured by escrow.',
+        subtitle: 'No auctions. No middlemen. Post a project, agree on terms, get paid in TND â€” secured by escrow.',
         ctaFreelancer: 'Start earning today',
         ctaClient: 'Post a project free',
         badge: 'Built in Tunisia. Built for Tunisia.',
-        socialProof: '2,500+ professionals already working on Khedma',
-        rating: '4.9/5 — rated by verified freelancers and clients',
+        socialProof: '2,500+ professionals already working on Khedmetna',
+        rating: '4.9/5 â€” rated by verified freelancers and clients',
         activity: {
             eyebrow: 'Live platform activity',
             title: 'Real work. Real payments.',
@@ -382,11 +382,11 @@ export const en: Translations = {
     },
     // How It Works
     howItWorks: {
-        title: 'How Khedma Works',
+        title: 'How Khedmetna Works',
         heroTitle: 'Simple by design.',
         heroTitleHighlight: 'Secure by default.',
-        brandName: 'Khedma',
-        subtitle: 'Four steps from project idea to payment received — every step protected, every TND accounted for.',
+        brandName: 'Khedmetna',
+        subtitle: 'Four steps from project idea to payment received â€” every step protected, every TND accounted for.',
         tabs: {
             freelancer: 'For Freelancers',
             client: 'For Clients',
@@ -398,7 +398,7 @@ export const en: Translations = {
         freelancerSteps: [
             {
                 title: "Build your profile once",
-                description: "Add skills, portfolio, and rate. Clients find you — no bidding required."
+                description: "Add skills, portfolio, and rate. Clients find you â€” no bidding required."
             },
             {
                 title: "Get matched to real projects",
@@ -410,7 +410,7 @@ export const en: Translations = {
             },
             {
                 title: "Get paid on approval",
-                description: "Funds are in escrow from day one. Approve the milestone — receive your TND."
+                description: "Funds are in escrow from day one. Approve the milestone â€” receive your TND."
             }
         ],
         clientSteps: [
@@ -424,7 +424,7 @@ export const en: Translations = {
             },
             {
                 title: "Track milestones, not guesses",
-                description: "Clear deliverables, deadlines, and progress — all in one workspace."
+                description: "Clear deliverables, deadlines, and progress â€” all in one workspace."
             },
             {
                 title: "Release payment, leave a review",
@@ -433,14 +433,14 @@ export const en: Translations = {
         ],
         trust: {
             money: { title: 'Full refund if unsatisfied', desc: "If work doesn't meet agreed terms, you get your TND back. No questions." },
-            verified: { title: 'Every professional is ID-verified', desc: 'We check national ID before any freelancer goes live on Khedma.' },
+            verified: { title: 'Every professional is ID-verified', desc: 'We check national ID before any freelancer goes live on Khedmetna.' },
             support: { title: 'Support in Arabic, French & English', desc: 'Real humans, local timezone, three languages.' },
         },
         faq: {
             title: 'Common Questions',
             items: [
                 { q: "Is registration free?", a: "Yes, registration is completely free for both freelancers and clients. We only charge a small commission on successful projects." },
-                { q: "How is my money secured?", a: "Khedma acts as a trusted intermediary. Clients pay us, we hold funds until delivery is approved, then release to the freelancer." },
+                { q: "How is my money secured?", a: "Khedmetna acts as a trusted intermediary. Clients pay us, we hold funds until delivery is approved, then release to the freelancer." },
                 { q: "What payment methods?", a: "We support all local Tunisian methods: local/int'l cards, D17, bank transfer, and even cash for small amounts." },
                 { q: "Can I register as a company?", a: "Yes, you can register a company account to hire staff or offer services as a team." }
             ]
@@ -453,8 +453,8 @@ export const en: Translations = {
             badge: "Hire verified Tunisian talent",
             title: "Your project, delivered.",
             titleHighlight: "On time. On budget.",
-            subtitle: "Post for free. Receive proposals from verified professionals. Pay only when you approve the work — every payment protected by escrow.",
-            cta: "Post a project — it's free",
+            subtitle: "Post for free. Receive proposals from verified professionals. Pay only when you approve the work â€” every payment protected by escrow.",
+            cta: "Post a project â€” it's free",
             secondary: "See how it works"
         },
         benefits: {
@@ -471,7 +471,7 @@ export const en: Translations = {
         },
         cta: {
             title: "Your next project starts here.",
-            text: "2,500+ verified professionals are ready to work. Post your project free — no subscription, no commitment.",
+            text: "2,500+ verified professionals are ready to work. Post your project free â€” no subscription, no commitment.",
             button: "Create a free client account",
         }
     },
@@ -501,7 +501,7 @@ export const en: Translations = {
             {
                 name: 'Mohamed Ali',
                 role: 'Graphic Designer',
-                quote: 'Thanks to Khedma.tn, I earned over 5000 TND in just 2 months. The platform is easy to use and payment is fast.',
+                quote: 'Thanks to Khedmetna.tn, I earned over 5000 TND in just 2 months. The platform is easy to use and payment is fast.',
                 earned: '5,200',
                 image: 'https://i.pravatar.cc/150?img=11'
             },
@@ -541,17 +541,17 @@ export const en: Translations = {
         resendCode: 'Resend Code',
         resendIn: 'Resend in',
         seconds: 'seconds',
-        selectUserType: 'How will you use Khedma?',
+        selectUserType: 'How will you use Khedmetna?',
         selectUserTypeSubtitle: 'You can always add the other role later from settings.',
         freelancer: 'Freelancer',
         client: 'Client',
         both: 'Both',
         completeProfile: 'Complete Registration',
         createAccount: 'Create Account',
-        loginTitle: 'Sign in to Khedma',
+        loginTitle: 'Sign in to Khedmetna',
         loginSubtitle: 'Welcome back. Your work is waiting.',
         signupTitle: 'Create your account',
-        signupSubtitle: 'Join 2,500+ professionals building their career on Khedma.',
+        signupSubtitle: 'Join 2,500+ professionals building their career on Khedmetna.',
         noAccount: "Don't have an account?",
         hasAccount: 'Already have an account?',
         invalidCredentials: 'Invalid email or password',
@@ -593,7 +593,7 @@ export const en: Translations = {
         loggingOut: 'Logging out...',
         userTypeFreelancerDesc: 'I offer skills and want to get paid for my work',
         userTypeClientDesc: 'I have projects and need reliable professionals',
-        userTypeBothDesc: 'I do both — I work and I hire',
+        userTypeBothDesc: 'I do both â€” I work and I hire',
         accountPanel: {
             sectionLabel: 'Workspace',
             switchWorkspace: 'Switch workspace',
@@ -622,7 +622,7 @@ export const en: Translations = {
             settingsAction: 'Settings',
             logoutAction: 'Sign out',
             logoutDesc: 'End this session safely on this device.',
-            defaultUser: 'Khedma User',
+            defaultUser: 'Khedmetna User',
             statusPro: 'Pro',
             statusPending: 'Pending',
             workspaceActive: 'Active Workspace',
@@ -749,7 +749,7 @@ export const en: Translations = {
             viewWallet: 'View Wallet',
             needSomethingDone: 'Need something done?',
             postProjectFree: 'Post a project free. Get proposals from verified Tunisian talent.',
-            postProjectFreeCta: 'Post a project — it\'s free',
+            postProjectFreeCta: 'Post a project â€” it\'s free',
             thisMonth: 'This Month',
             proposalsCountText: 'proposals',
             status: {
@@ -1034,7 +1034,7 @@ export const en: Translations = {
         securityPostureValue: 'Protected by account session controls',
         passwordStatus: 'Password status',
         passwordSet: 'Password is set',
-        noPasswordOAuth: 'Signed in via {{provider}} — no password needed',
+        noPasswordOAuth: 'Signed in via {{provider}} â€” no password needed',
         noPasswordMessage: 'No password set - you are using phone sign in',
         addPassword: 'Add password',
         activeSessionsTitle: 'Active sessions',
@@ -1423,8 +1423,8 @@ export const en: Translations = {
             viewContract: 'View contract',
         },
         freelancerEarnings: {
-            seoTitle: 'Earnings | Khedma TN',
-            seoDescription: 'Your earnings and payment history on Khedma TN.',
+            seoTitle: 'Earnings | Khedmetna',
+            seoDescription: 'Your earnings and payment history on Khedmetna.',
             availableBalance: 'Available balance',
             pendingClearance: '{{amount}} TND pending clearance',
             withdraw: 'Withdraw',
@@ -1558,7 +1558,7 @@ export const en: Translations = {
                 sectionLabel: 'Direct message',
                 title: 'Message {{name}}',
                 body: 'A direct conversation with {{name}} will open in your messages workspace.',
-                trustNote: 'Use Khedma messages to keep project communication organized.',
+                trustNote: 'Use Khedmetna messages to keep project communication organized.',
                 loginRequired: 'You need to sign in to send a message',
                 loginPrompt: 'You need to sign in before contacting freelancers.',
                 cannotMessageSelf: 'You cannot message yourself',
@@ -1612,7 +1612,7 @@ export const en: Translations = {
             client: 'Client',
             userFallback: 'User',
             searchPlaceholder: 'Search...',
-            brandName: 'Khedma',
+            brandName: 'Khedmetna',
         },
         login: {
             finishingSignIn: 'Securing session...',
@@ -1663,7 +1663,7 @@ export const en: Translations = {
             connectionFailed: 'Connection failed. Check your internet connection and try again.',
             skillsSaveFailed: 'Failed to save skills',
             completionFailed: 'Failed to complete onboarding. Please try again.',
-            welcomeToast: 'Welcome to Khedma!',
+            welcomeToast: 'Welcome to Khedmetna!',
             stepCounter: 'Step {{step}} of {{total}}',
             stepBasicInfo: 'Basic information',
             stepSkillsExperience: 'Skills and experience',
@@ -1864,7 +1864,7 @@ export const en: Translations = {
             sections: {
                 intro: {
                     title: '1. Introduction',
-                    text: 'Welcome to Khedma.tn, Tunisia\'s leading freelance platform. By using this platform, you agree to comply with these terms and conditions.',
+                    text: 'Welcome to Khedmetna.tn, Tunisia\'s leading freelance platform. By using this platform, you agree to comply with these terms and conditions.',
                 },
                 registration: {
                     title: '2. Registration and Accounts',
@@ -1888,7 +1888,7 @@ export const en: Translations = {
                 },
                 contractsPayments: {
                     title: '4. Contracts and Payments',
-                    intro: 'Khedma.tn acts as an intermediary between freelancers and clients. We are not a party to the contracts between them.',
+                    intro: 'Khedmetna.tn acts as an intermediary between freelancers and clients. We are not a party to the contracts between them.',
                     items: {
                         fee: 'Platform fee: 10% of each contract value',
                         secureMethods: 'Payments are processed via secure approved methods',
@@ -1919,11 +1919,11 @@ export const en: Translations = {
         description: 'Built for Tunisian professionals, with verified identities, escrow-protected payments, and projects paid in TND.',
         city: 'Tunis, Tunisia',
         newsletterTitle: 'Product updates',
-        newsletterDescription: 'Get product notes, launch updates, and important trust-and-payment changes from Khedma.',
+        newsletterDescription: 'Get product notes, launch updates, and important trust-and-payment changes from Khedmetna.',
         newsletterPlaceholder: 'Your e-mail address',
         newsletterAction: 'Subscribe',
         madeInTunisia: 'Built in Tunisia.',
-        copyright: '(c) 2026 Khedma.tn - All rights reserved',
+        copyright: '(c) 2026 Khedmetna.tn - All rights reserved',
         socialFacebook: 'Facebook',
         socialTwitter: 'Twitter',
         socialInstagram: 'Instagram',
@@ -1944,7 +1944,7 @@ export const en: Translations = {
             badge: 'Verified Tunisian professionals',
             title: 'Find the right person,',
             titleHighlight: 'not just any person.',
-            subtitle: '2,500+ Tunisian developers, designers, translators and consultants — verified, rated, and ready to work.',
+            subtitle: '2,500+ Tunisian developers, designers, translators and consultants â€” verified, rated, and ready to work.',
             subtitleDesktop: '',
         },
         heroStats: {
@@ -2044,12 +2044,12 @@ export const en: Translations = {
     },
     seo: {
         home: {
-            title: 'Khedma TN',
+            title: 'Khedmetna',
             description: 'Connect with verified Tunisian professionals for your projects. Secure payments in TND and escrow protection.',
         },
         howItWorks: {
-            title: 'How Khedma Works',
-            description: 'See how Khedma takes you from project idea to approved payment in four protected steps.',
+            title: 'How Khedmetna Works',
+            description: 'See how Khedmetna takes you from project idea to approved payment in four protected steps.',
         },
         forClients: {
             title: 'Hire Verified Tunisian Talent',
@@ -2057,7 +2057,7 @@ export const en: Translations = {
         },
         faq: {
             title: 'Frequently Asked Questions',
-            description: 'Find answers about payments, escrow, identity verification, and how Khedma works.',
+            description: 'Find answers about payments, escrow, identity verification, and how Khedmetna works.',
         },
         jobBoard: {
             title: 'Freelance Jobs',
@@ -2074,19 +2074,19 @@ export const en: Translations = {
         freelancerProfile: {
             addSkillPlaceholder: 'Add skill...',
             typeSkillPlaceholder: 'Type a skill and press Enter...',
-            titleSuffix: 'Freelancer on Khedma',
-            descriptionFallback: 'Freelancer on the Khedma platform',
+            titleSuffix: 'Freelancer on Khedmetna',
+            descriptionFallback: 'Freelancer on the Khedmetna platform',
         },
         login: {
-            title: 'Sign in to Khedma',
-            description: 'Sign in to your Khedma account to manage projects, messages, and payments.',
+            title: 'Sign in to Khedmetna',
+            description: 'Sign in to your Khedmetna account to manage projects, messages, and payments.',
         },
         signup: {
-            title: 'Create your Khedma account',
-            description: 'Create your account and join 2,500+ professionals building their career on Khedma.',
+            title: 'Create your Khedmetna account',
+            description: 'Create your account and join 2,500+ professionals building their career on Khedmetna.',
         },
         notifications: {
-            title: 'Notifications | Khedma TN',
+            title: 'Notifications | Khedmetna',
             description: 'Your notifications',
         },
     },
@@ -2177,7 +2177,7 @@ export const en: Translations = {
         removedFromShortlist: 'Removed from shortlist',
         addedToShortlist: 'Added to shortlist',
         shortlistError: 'Error updating shortlist',
-        hireSuccess: 'Freelancer hired successfully! 🎉',
+        hireSuccess: 'Freelancer hired successfully! ðŸŽ‰',
         hireError: 'Failed to hire freelancer. Try again',
         proposalArchived: 'Proposal archived',
         archiveError: 'Failed to archive proposal',
@@ -2377,7 +2377,7 @@ export const en: Translations = {
             promise: 'Better presentation helps serious clients trust the platform before they post a project.',
         },
         promise: {
-            label: 'Khedma Promise',
+            label: 'Khedmetna Promise',
         },
     },
 
@@ -2394,7 +2394,7 @@ export const en: Translations = {
             title: 'Build reputation',
             description: 'Show your verified status, portfolio, and reviews. Win trust before you say a word.',
         },
-        badge: 'Why Khedma TN',
+        badge: 'Why Khedmetna',
         heading: 'Built different. For Tunisia.',
     },
 
@@ -2428,7 +2428,7 @@ export const en: Translations = {
     ctaSection: {
         badge: 'Ready?',
         title: 'Tunisia\'s freelance economy starts here.',
-        subtitle: 'Join thousands of professionals already earning fairly on Khedma TN.',
+        subtitle: 'Join thousands of professionals already earning fairly on Khedmetna.',
         primary: 'Get started free',
         secondary: 'Post a project',
     },
@@ -2436,7 +2436,7 @@ export const en: Translations = {
     faqPage: {
         page: {
             title: 'Frequently Asked Questions',
-            subtitle: 'Answers to the most common questions about using Khedma.TN',
+            subtitle: 'Answers to the most common questions about using Khedmetna.tn',
             searchPlaceholder: 'Search questions...',
             noAnswer: 'Didn\'t find your answer?',
             supportReady: 'Our support team is ready to help you 24/7',
@@ -2447,8 +2447,8 @@ export const en: Translations = {
                 title: 'General',
                 items: [
                     {
-                        q: 'What is Khedma.TN?',
-                        a: 'Khedma.TN is a Tunisian freelance marketplace connecting businesses with talented professionals. We believe in fair payment, verified profiles, and secure escrow-protected transactions.',
+                        q: 'What is Khedmetna.tn?',
+                        a: 'Khedmetna.tn is a Tunisian freelance marketplace connecting businesses with talented professionals. We believe in fair payment, verified profiles, and secure escrow-protected transactions.',
                     },
                     {
                         q: 'Is registration free?',
@@ -2520,7 +2520,7 @@ export const en: Translations = {
                     },
                     {
                         q: 'Why do you need ID verification?',
-                        a: 'ID verification ensures trust and safety for both freelancers and clients. Every professional on Khedma is ID-checked.',
+                        a: 'ID verification ensures trust and safety for both freelancers and clients. Every professional on Khedmetna is ID-checked.',
                     },
                     {
                         q: 'Can I remain anonymous?',
@@ -2533,12 +2533,12 @@ export const en: Translations = {
 
     languages: {
         ar: {
-            name: 'العربية',
+            name: 'Ø§Ù„Ø¹Ø±Ø¨ÙŠØ©',
             code: 'AR',
             country: 'TN',
         },
         fr: {
-            name: 'Français',
+            name: 'FranÃ§ais',
             code: 'FR',
             country: 'FR',
         },
@@ -2558,7 +2558,7 @@ export const en: Translations = {
 
     authPages: {
         login: {
-            badge: 'Khedma TN',
+            badge: 'Khedmetna',
             heroTitle: 'Welcome back. Let\'s get to work.',
             heroDescription: 'Access your workspace, manage projects securely, and connect with top talent across Tunisia.',
             highlightTrustTitle: 'Verified Profiles',
@@ -2573,7 +2573,7 @@ export const en: Translations = {
             rateLimitError: 'Too many attempts. Please try again later.',
         },
         signup: {
-            badge: 'Join Khedma TN',
+            badge: 'Join Khedmetna',
             heroTitle: 'Ready for your next big project?',
             heroDescription: 'Join thousands of professionals across Tunisia. Set up your workspace and start working in minutes.',
             highlightRoleTitle: 'Choose Your Path',
@@ -2617,7 +2617,7 @@ export const en: Translations = {
             cta: {
                 needSomethingDone: 'Need something done?',
                 needSomethingDoneDesc: 'Post a project free. Get proposals from verified Tunisian talent.',
-                postProjectFree: 'Post a project — it\'s free',
+                postProjectFree: 'Post a project â€” it\'s free',
             },
             actions: {
                 viewAll: 'View all',
@@ -2716,3 +2716,4 @@ export const en: Translations = {
         },
     },
 };
+

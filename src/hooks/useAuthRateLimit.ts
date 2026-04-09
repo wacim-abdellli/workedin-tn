@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+﻿import { useState, useCallback } from 'react';
 
 const MAX_ATTEMPTS = 5;
 const LOCKOUT_DURATION_MS = 15 * 60 * 1000; // 15 minutes
@@ -59,3 +59,4 @@ export function useAuthRateLimit(actionName: string) {
 
     return { recordAttempt, isLockedOut: !!(lockoutUntil && Date.now() < lockoutUntil) };
 }
+

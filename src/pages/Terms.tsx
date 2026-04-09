@@ -1,4 +1,4 @@
-import { Header, Footer } from '../components/layout';
+﻿import { Header, Footer } from '../components/layout';
 import SEO, { SEO_CONFIG } from '../components/common/SEO';
 import { useTranslation } from '../i18n';
 
@@ -64,7 +64,7 @@ export default function Terms() {
                             <p className="text-gray-700 dark:text-gray-300 dark:text-gray-200">
                                 {tx('legalPages.terms.sections.contact.intro')}
                                 <br />
-                                {tx('legalPages.terms.sections.contact.emailLabel')} legal@khedma.tn
+                                {tx('legalPages.terms.sections.contact.emailLabel')} legal@Khedmetna.tn
                             </p>
                         </section>
                     </div>
@@ -75,3 +75,4 @@ export default function Terms() {
         </div>
     );
 }
+

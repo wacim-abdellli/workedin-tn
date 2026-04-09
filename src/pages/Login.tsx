@@ -1,4 +1,4 @@
-import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+﻿import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { BadgeCheck, Globe2, ShieldCheck } from 'lucide-react';
 
 import { AuthShell, LoginForm } from '../components/auth';
@@ -31,7 +31,7 @@ function Login() {
     );
     const postLoginPath = isAuthOrOnboardingPath ? null : rawPostLoginPath;
 
-    // Redirect authenticated users — go to home page which waits
+    // Redirect authenticated users â€” go to home page which waits
     // for full auth state before deciding where to go. This prevents routing to
     // /onboarding when the profile hasn't loaded yet.
     useEffect(() => {
@@ -51,7 +51,7 @@ function Login() {
         <>
             <SEO {...SEO_CONFIG.login} url="/login" noIndex />
             <AuthShell
-                badge={tx('authPages.login.badge', undefined, 'Khedma TN')}
+                badge={tx('authPages.login.badge', undefined, 'Khedmetna')}
                 title={tx('authPages.login.heroTitle', undefined, 'Welcome back. Let\'s get to work.')}
                 description={tx('authPages.login.heroDescription', undefined, 'Access your workspace, manage projects securely, and connect with top talent across Tunisia.')}
                 highlights={[
@@ -108,3 +108,4 @@ function Login() {
 }
 
 export default Login;
+

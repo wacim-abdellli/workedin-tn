@@ -1,4 +1,4 @@
-import { renderHook, act } from '@testing-library/react';
+﻿import { renderHook, act } from '@testing-library/react';
 import { useAuthRateLimit } from '../useAuthRateLimit';
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 
@@ -71,3 +71,4 @@ describe('useAuthRateLimit', () => {
         expect(localStorage.getItem('khedma_auth_attempts_login')).toBeNull();
     });
 });
+

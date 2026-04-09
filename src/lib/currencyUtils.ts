@@ -1,5 +1,5 @@
-/**
- * Currency formatting utilities for Khedma.tn
+﻿/**
+ * Currency formatting utilities for Khedmetna.tn
  * Handles TND (Tunisian Dinar) formatting
  */
 
@@ -12,7 +12,7 @@ const numberLocaleByLanguage: Record<Language, string> = {
 };
 
 const currencySymbolByLanguage: Record<Language, string> = {
-    ar: 'د.ت',
+    ar: 'Ø¯.Øª',
     en: 'TND',
     fr: 'TND',
 };
@@ -21,7 +21,7 @@ const currencySymbolByLanguage: Record<Language, string> = {
  * Format amount in TND with proper Arabic formatting
  * @param amount - Amount in TND
  * @param showSymbol - Whether to show the currency symbol (default: true)
- * @returns Formatted string like "125.500 د.ت"
+ * @returns Formatted string like "125.500 Ø¯.Øª"
  */
 export function formatCurrency(amount: number, showSymbol = true, language: Language = 'ar'): string {
     const formatted = new Intl.NumberFormat(numberLocaleByLanguage[language], {
@@ -82,15 +82,15 @@ export function validateWithdrawalAmount(
     minAmount = 20
 ): { valid: boolean; error?: string } {
     if (amount <= 0) {
-        return { valid: false, error: 'المبلغ يجب أن يكون أكبر من صفر' };
+        return { valid: false, error: 'Ø§Ù„Ù…Ø¨Ù„Øº ÙŠØ¬Ø¨ Ø£Ù† ÙŠÙƒÙˆÙ† Ø£ÙƒØ¨Ø± Ù…Ù† ØµÙØ±' };
     }
 
     if (amount < minAmount) {
-        return { valid: false, error: `الحد الأدنى للسحب هو ${minAmount} د.ت` };
+        return { valid: false, error: `Ø§Ù„Ø­Ø¯ Ø§Ù„Ø£Ø¯Ù†Ù‰ Ù„Ù„Ø³Ø­Ø¨ Ù‡Ùˆ ${minAmount} Ø¯.Øª` };
     }
 
     if (amount > balance) {
-        return { valid: false, error: 'المبلغ المطلوب أكبر من الرصيد المتاح' };
+        return { valid: false, error: 'Ø§Ù„Ù…Ø¨Ù„Øº Ø§Ù„Ù…Ø·Ù„ÙˆØ¨ Ø£ÙƒØ¨Ø± Ù…Ù† Ø§Ù„Ø±ØµÙŠØ¯ Ø§Ù„Ù…ØªØ§Ø­' };
     }
 
     return { valid: true };
@@ -103,17 +103,17 @@ export function validateWithdrawalAmount(
 export function formatTransactionType(type: string, language: Language = 'ar'): string {
     const typeLabels: Record<Language, Record<string, string>> = {
         ar: {
-            deposit: 'إيداع',
-            escrow_fund: 'تمويل الضمان',
-            escrow: 'تمويل الضمان',
-            escrow_release: 'إطلاق الضمان',
-            release: 'إطلاق الضمان',
-            earning: 'ربح',
-            refund: 'استرداد',
-            withdrawal: 'سحب',
-            platform_fee: 'رسوم المنصة',
-            fee: 'رسوم المنصة',
-            payment: 'دفع',
+            deposit: 'Ø¥ÙŠØ¯Ø§Ø¹',
+            escrow_fund: 'ØªÙ…ÙˆÙŠÙ„ Ø§Ù„Ø¶Ù…Ø§Ù†',
+            escrow: 'ØªÙ…ÙˆÙŠÙ„ Ø§Ù„Ø¶Ù…Ø§Ù†',
+            escrow_release: 'Ø¥Ø·Ù„Ø§Ù‚ Ø§Ù„Ø¶Ù…Ø§Ù†',
+            release: 'Ø¥Ø·Ù„Ø§Ù‚ Ø§Ù„Ø¶Ù…Ø§Ù†',
+            earning: 'Ø±Ø¨Ø­',
+            refund: 'Ø§Ø³ØªØ±Ø¯Ø§Ø¯',
+            withdrawal: 'Ø³Ø­Ø¨',
+            platform_fee: 'Ø±Ø³ÙˆÙ… Ø§Ù„Ù…Ù†ØµØ©',
+            fee: 'Ø±Ø³ÙˆÙ… Ø§Ù„Ù…Ù†ØµØ©',
+            payment: 'Ø¯ÙØ¹',
         },
         en: {
             deposit: 'Deposit',
@@ -157,12 +157,12 @@ export function isDebitTransaction(type: string): boolean {
 export function formatTransactionStatus(status: string, language: Language = 'ar'): string {
     const statusLabels: Record<Language, Record<string, string>> = {
         ar: {
-            pending: 'قيد الانتظار',
-            processing: 'جار المعالجة',
-            completed: 'مكتمل',
-            failed: 'فشل',
-            refunded: 'تم الاسترداد',
-            cancelled: 'ملغي',
+            pending: 'Ù‚ÙŠØ¯ Ø§Ù„Ø§Ù†ØªØ¸Ø§Ø±',
+            processing: 'Ø¬Ø§Ø± Ø§Ù„Ù…Ø¹Ø§Ù„Ø¬Ø©',
+            completed: 'Ù…ÙƒØªÙ…Ù„',
+            failed: 'ÙØ´Ù„',
+            refunded: 'ØªÙ… Ø§Ù„Ø§Ø³ØªØ±Ø¯Ø§Ø¯',
+            cancelled: 'Ù…Ù„ØºÙŠ',
         },
         en: {
             pending: 'Pending',
@@ -187,11 +187,11 @@ export function formatTransactionStatus(status: string, language: Language = 'ar
 export function formatWithdrawalStatus(status: string, language: Language = 'ar'): string {
     const statusLabels: Record<Language, Record<string, string>> = {
         ar: {
-            pending: 'قيد المراجعة',
-            approved: 'تمت الموافقة',
-            processing: 'جار التحويل',
-            completed: 'مكتمل',
-            rejected: 'مرفوض',
+            pending: 'Ù‚ÙŠØ¯ Ø§Ù„Ù…Ø±Ø§Ø¬Ø¹Ø©',
+            approved: 'ØªÙ…Øª Ø§Ù„Ù…ÙˆØ§ÙÙ‚Ø©',
+            processing: 'Ø¬Ø§Ø± Ø§Ù„ØªØ­ÙˆÙŠÙ„',
+            completed: 'Ù…ÙƒØªÙ…Ù„',
+            rejected: 'Ù…Ø±ÙÙˆØ¶',
         },
         en: {
             pending: 'Under review',
@@ -214,7 +214,7 @@ export function formatWithdrawalStatus(status: string, language: Language = 'ar'
 export function formatWithdrawalMethod(method: string, language: Language = 'ar'): string {
     const methodLabels: Record<Language, Record<string, string>> = {
         ar: {
-            bank_transfer: 'تحويل بنكي',
+            bank_transfer: 'ØªØ­ÙˆÙŠÙ„ Ø¨Ù†ÙƒÙŠ',
             d17: 'D17',
             flouci: 'Flouci',
         },
@@ -245,3 +245,4 @@ export function getStatusColor(status: string): string {
     };
     return colors[status] || 'text-gray-600 bg-gray-100';
 }
+

@@ -1,6 +1,6 @@
-// PCI-DSS Compliance Status: Verified via Flouci direct redirection. No plaintext CC exists in local memory.
+﻿// PCI-DSS Compliance Status: Verified via Flouci direct redirection. No plaintext CC exists in local memory.
 /**
- * Flouci Payment Gateway Service for Khedma.tn
+ * Flouci Payment Gateway Service for Khedmetna.tn
  * Documentation: https://flouci.com/developers
  * 
  * SECURITY: All payment operations handled via Supabase Edge Functions.
@@ -67,7 +67,7 @@ export async function initiatePayment(
 
         if (error) {
             logger.error('[Flouci] Edge Function error:', error);
-            throw new Error(error.message || 'فشل في بدء عملية الدفع');
+            throw new Error(error.message || 'ÙØ´Ù„ ÙÙŠ Ø¨Ø¯Ø¡ Ø¹Ù…Ù„ÙŠØ© Ø§Ù„Ø¯ÙØ¹');
         }
 
         if (data.error) {
@@ -86,7 +86,7 @@ export async function initiatePayment(
         if (error instanceof Error) {
             throw error;
         }
-        throw new Error('خطأ غير متوقع في خدمة الدفع');
+        throw new Error('Ø®Ø·Ø£ ØºÙŠØ± Ù…ØªÙˆÙ‚Ø¹ ÙÙŠ Ø®Ø¯Ù…Ø© Ø§Ù„Ø¯ÙØ¹');
     }
 }
 
@@ -145,7 +145,7 @@ export async function verifyPayment(
 
         if (error) {
             logger.error('[Flouci] Verification Edge Function error:', error);
-            throw new Error('فشل في التحقق من عملية الدفع');
+            throw new Error('ÙØ´Ù„ ÙÙŠ Ø§Ù„ØªØ­Ù‚Ù‚ Ù…Ù† Ø¹Ù…Ù„ÙŠØ© Ø§Ù„Ø¯ÙØ¹');
         }
 
         logger.log('[Flouci] Verification result:', data);
@@ -171,7 +171,7 @@ export async function verifyPayment(
         if (error instanceof Error) {
             throw error;
         }
-        throw new Error('خطأ في التحقق من عملية الدفع');
+        throw new Error('Ø®Ø·Ø£ ÙÙŠ Ø§Ù„ØªØ­Ù‚Ù‚ Ù…Ù† Ø¹Ù…Ù„ÙŠØ© Ø§Ù„Ø¯ÙØ¹');
     }
 }
 
@@ -200,3 +200,4 @@ export function getFlouciStatus(): {
         usingEdgeFunctions: !IS_DEV_MODE,
     };
 }
+

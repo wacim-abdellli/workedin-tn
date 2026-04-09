@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+﻿import { useCallback, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Award, Briefcase, Filter, Grid, List, Search, SlidersHorizontal, Sparkles, X } from 'lucide-react';
@@ -328,7 +328,7 @@ export default function FindFreelancers() {
 
     return (
         <div className="min-h-screen transition-colors duration-300" style={{ background: 'var(--page-bg)', color: 'var(--text-primary)' }}>
-            <SEO {...SEO_CONFIG.findFreelancers} url="/find-freelancers" canonical="https://khedma.tn/find-freelancers" />
+            <SEO {...SEO_CONFIG.findFreelancers} url="/find-freelancers" canonical="https://Khedmetna.tn/find-freelancers" />
             <Header />
 
             <section className="relative overflow-hidden border-b pt-10 pb-16 backdrop-blur-xl" style={{ borderColor: 'var(--border)', background: 'var(--page-bg)' }}>
@@ -370,7 +370,7 @@ export default function FindFreelancers() {
                             <button
                                 type="button"
                                 onClick={() => setViewMode('grid')}
-                                aria-label="عرض شبكي"
+                                aria-label="Ø¹Ø±Ø¶ Ø´Ø¨ÙƒÙŠ"
                                 aria-pressed={viewMode === 'grid'}
                                 className="rounded-xl p-2.5 transition-colors"
                                 style={viewMode === 'grid' ? { background: 'color-mix(in srgb, var(--workspace-primary) 12%, transparent)', color: 'var(--workspace-primary)' } : { color: 'var(--text-muted)' }}
@@ -381,7 +381,7 @@ export default function FindFreelancers() {
                             <button
                                 type="button"
                                 onClick={() => setViewMode('list')}
-                                aria-label="عرض قائمة"
+                                aria-label="Ø¹Ø±Ø¶ Ù‚Ø§Ø¦Ù…Ø©"
                                 aria-pressed={viewMode === 'list'}
                                 className="rounded-xl p-2.5 transition-colors"
                                 style={viewMode === 'list' ? { background: 'color-mix(in srgb, var(--workspace-primary) 12%, transparent)', color: 'var(--workspace-primary)' } : { color: 'var(--text-muted)' }}
@@ -534,3 +534,4 @@ export default function FindFreelancers() {
         </div>
     );
 }
+

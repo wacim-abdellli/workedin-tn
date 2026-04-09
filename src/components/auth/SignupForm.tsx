@@ -1,4 +1,4 @@
-
+﻿
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -157,9 +157,9 @@ function SignupForm({ onComplete }: SignupFormProps) {
             await setUserType(userType);
             await refreshProfile();
 
-            // 'both' → start with freelancer onboarding first
-            // 'client' → go to client onboarding
-            // 'freelancer' → go to freelancer onboarding
+            // 'both' â†’ start with freelancer onboarding first
+            // 'client' â†’ go to client onboarding
+            // 'freelancer' â†’ go to freelancer onboarding
             const startWorkspace = userType === 'client' ? 'client' : 'freelancer';
             navigate(getWorkspaceOnboardingPath(startWorkspace), { replace: true });
             onComplete?.();
@@ -382,3 +382,4 @@ function SignupForm({ onComplete }: SignupFormProps) {
 }
 
 export default SignupForm;
+

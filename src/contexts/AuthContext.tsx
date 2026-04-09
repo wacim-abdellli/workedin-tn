@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+﻿import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import type { Session, User } from '@supabase/supabase-js';
 import { useQueryClient } from '@tanstack/react-query';
@@ -130,7 +130,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const currentIsValid = capabilities.includes(currentWorkspace);
       
       if (currentIsValid && loadedUserIdRef.current === nextProfile.id) {
-        // Workspace already set to a valid value for this user — don't flip it.
+        // Workspace already set to a valid value for this user â€” don't flip it.
         store.setSwitching(false);
         return;
       }
@@ -147,7 +147,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         authUser.user_metadata?.full_name ||
         authUser.user_metadata?.name ||
         authUser.email?.split('@')[0] ||
-        'Khedma User';
+        'Khedmetna User';
 
       await supabaseWithRetry(
         () =>
@@ -360,7 +360,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         // If initAuth already fully loaded the profile for this exact user,
         // skip the SIGNED_IN handler entirely. This is the primary fix for
         // the workspace flip-flop bug: initAuth and SIGNED_IN were both
-        // calling fetchProfile → syncWorkspaceFromProfile, causing the
+        // calling fetchProfile â†’ syncWorkspaceFromProfile, causing the
         // workspace (and therefore the dashboard) to change multiple times.
         if (
           event === 'SIGNED_IN' &&
@@ -723,3 +723,4 @@ export function useAuth() {
 export function useActiveWorkspace() {
   return useWorkspaceStore((state) => state.activeWorkspace);
 }
+

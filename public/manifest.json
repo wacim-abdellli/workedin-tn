@@ -1,6 +1,6 @@
-{
-  "name": "Khedma TN",
-  "short_name": "Khedma",
+﻿{
+  "name": "Khedmetna",
+  "short_name": "Khedmetna",
   "icons": [
     {
       "src": "/logos/logo-favicon.svg",
@@ -17,3 +17,4 @@
   "background_color": "#0f0e17",
   "display": "standalone"
 }
+

@@ -1,4 +1,4 @@
-import { logger } from '@/lib/logger';
+﻿import { logger } from '@/lib/logger';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { X, MessageSquare, Loader2, ArrowUpRight, ShieldCheck } from 'lucide-react';
@@ -91,7 +91,7 @@ export default function ContactModal({ isOpen, onClose, freelancerId, freelancer
                                     </p>
                                     <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-white/8 bg-[var(--color-bg-muted)] px-3 py-1.5 text-xs font-medium text-white/60">
                                         <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" />
-                                        {tx('pages.freelancerProfile.contactModal.trustNote', undefined, 'Use Khedma messages to keep project communication organized.')}
+                                        {tx('pages.freelancerProfile.contactModal.trustNote', undefined, 'Use Khedmetna messages to keep project communication organized.')}
                                     </div>
                                 </div>
                             </div>
@@ -121,3 +121,4 @@ export default function ContactModal({ isOpen, onClose, freelancerId, freelancer
         </div>
     );
 }
+

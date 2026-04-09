@@ -1,4 +1,4 @@
-import { logger } from '@/lib/logger';
+﻿import { logger } from '@/lib/logger';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -370,7 +370,7 @@ function FreelancerOnboarding() {
         }
 
         if (shouldNavigate) {
-            showToast(t.onboarding.freelancer.welcomeToast || 'Welcome to Khedma!', 'success');
+            showToast(t.onboarding.freelancer.welcomeToast || 'Welcome to Khedmetna!', 'success');
             navigate('/freelancer/dashboard');
         }
     };
@@ -378,7 +378,7 @@ function FreelancerOnboarding() {
     if (isAuthLoading) {
         return (
             <FullScreenLoader
-                label={t.common?.loading || 'جاري التحميل...'}
+                label={t.common?.loading || 'Ø¬Ø§Ø±ÙŠ Ø§Ù„ØªØ­Ù…ÙŠÙ„...'}
                 hint={tx('onboarding.freelancer.loadingHint', undefined, 'Preparing your freelancer onboarding workspace')}
             />
         );
@@ -573,3 +573,4 @@ async function ensureFreelancerProfileExists(
 }
 
 export default FreelancerOnboarding;
+

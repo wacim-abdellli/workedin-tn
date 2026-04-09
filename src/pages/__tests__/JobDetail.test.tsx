@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+﻿import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -133,7 +133,7 @@ describe('JobDetail', () => {
             switch (queryKey[0]) {
                 case 'job':
                     return {
-                        data: buildSafeJob('Khedma Client'),
+                        data: buildSafeJob('Khedmetna Client'),
                         isLoading: false,
                     };
                 case 'savedStatus':
@@ -164,7 +164,7 @@ describe('JobDetail', () => {
         expect(screen.getByRole('heading', { name: 'Build a polished marketplace' })).toBeInTheDocument();
         expect(screen.getByText('We need a React expert to ship launch fixes.')).toBeInTheDocument();
         expect(screen.getByText('API cleanup')).toBeInTheDocument();
-        expect(screen.getByText('Khedma Client')).toBeInTheDocument();
+        expect(screen.getByText('Khedmetna Client')).toBeInTheDocument();
         expect(screen.getByText('Report This Job')).toBeInTheDocument();
     });
 
@@ -225,3 +225,4 @@ describe('JobDetail', () => {
         expect(jobsService.incrementJobViews).not.toHaveBeenCalled();
     });
 });
+

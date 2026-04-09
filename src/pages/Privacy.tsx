@@ -1,4 +1,4 @@
-import { Header, Footer } from '../components/layout';
+﻿import { Header, Footer } from '../components/layout';
 import SEO, { SEO_CONFIG } from '../components/common/SEO';
 import { useTranslation } from '../i18n';
 
@@ -79,7 +79,7 @@ export default function Privacy() {
                             <p className="text-gray-700 dark:text-gray-300 dark:text-gray-200">
                                 {tx('legalPages.privacy.sections.contact.intro')}
                                 <br />
-                                {tx('legalPages.privacy.sections.contact.emailLabel')} privacy@khedma.tn
+                                {tx('legalPages.privacy.sections.contact.emailLabel')} privacy@Khedmetna.tn
                             </p>
                         </section>
                     </div>
@@ -90,3 +90,4 @@ export default function Privacy() {
         </div>
     );
 }
+

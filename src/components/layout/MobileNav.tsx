@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
   Bell,
@@ -209,7 +209,7 @@ export default function MobileNav() {
             className="text-lg font-bold"
             style={{ color: 'var(--workspace-primary)' }}
           >
-            {tx('pages.mobileNav.brandName', undefined, 'Khedma')}
+            {tx('pages.mobileNav.brandName', undefined, 'Khedmetna')}
           </button>
           <button
             onClick={() => setShowSearch(true)}
@@ -302,3 +302,4 @@ export default function MobileNav() {
     </>
   );
 }
+

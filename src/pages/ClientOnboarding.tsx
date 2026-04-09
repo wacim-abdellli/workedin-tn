@@ -1,4 +1,4 @@
-import { logger } from '@/lib/logger';
+﻿import { logger } from '@/lib/logger';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -186,7 +186,7 @@ function ClientOnboarding() {
         }
 
         if (shouldNavigate) {
-            showToast(tx('onboarding.client.welcomeToast', undefined, 'Welcome to Khedma!'), 'success');
+            showToast(tx('onboarding.client.welcomeToast', undefined, 'Welcome to Khedmetna!'), 'success');
             navigate('/client/dashboard');
         }
     };
@@ -395,3 +395,4 @@ function ClientOnboarding() {
 }
 
 export default ClientOnboarding;
+

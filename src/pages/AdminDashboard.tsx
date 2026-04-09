@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     Users, Briefcase, CreditCard, AlertTriangle, Flag,
@@ -73,7 +73,7 @@ export default function AdminDashboard() {
                         </div>
                         <div>
                             <h1 className="text-xl font-extrabold text-foreground">{tx('dashboard.admin.adminDashboard', undefined, 'Admin Dashboard')}</h1>
-                            <p className="text-sm text-muted">Khedma TN • {tx('dashboard.admin.operationsCenter', undefined, 'Operations Center')}</p>
+                            <p className="text-sm text-muted">Khedmetna â€¢ {tx('dashboard.admin.operationsCenter', undefined, 'Operations Center')}</p>
                         </div>
                     </div>
                     <div className="flex w-full flex-wrap items-center justify-between gap-3 sm:w-auto sm:justify-end">
@@ -125,3 +125,4 @@ export default function AdminDashboard() {
         </div>
     );
 }
+

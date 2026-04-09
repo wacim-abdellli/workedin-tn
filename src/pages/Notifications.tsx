@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react';
+﻿import type { CSSProperties } from 'react';
 import { Bell, CheckCheck, MessageSquare, ShieldAlert, Sparkles, Wallet, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Header } from '@/components/layout';
@@ -53,7 +53,7 @@ export default function Notifications() {
 
     return (
         <div className="flex min-h-screen flex-col bg-[var(--color-background-base)]">
-            <SEO title={tx('seo.notifications.title', undefined, 'Notifications | Khedma TN')} description={tx('seo.notifications.description', undefined, 'Your notifications')} noIndex />
+            <SEO title={tx('seo.notifications.title', undefined, 'Notifications | Khedmetna')} description={tx('seo.notifications.description', undefined, 'Your notifications')} noIndex />
             <Header />
 
             <main className="container-custom flex-1 w-full max-w-3xl py-8 sm:py-12">
@@ -139,3 +139,4 @@ export default function Notifications() {
         </div>
     );
 }
+
