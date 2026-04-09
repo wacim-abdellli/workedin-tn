@@ -6,3 +6,18 @@ verify_jwt = false
 
 [functions.flouci-verify-payment]
 verify_jwt = false
+
+[functions.dhmad-create-escrow]
+verify_jwt = true
+
+[functions.dhmad-release-escrow]
+verify_jwt = true
+
+[functions.dhmad-refund-escrow]
+verify_jwt = true
+
+[functions.dhmad-get-escrow-status]
+verify_jwt = true
+
+[functions.dhmad-checkout-session]
+verify_jwt = true
