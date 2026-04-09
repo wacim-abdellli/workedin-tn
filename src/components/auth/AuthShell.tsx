@@ -51,12 +51,7 @@ export default function AuthShell({ badge, title, description, highlights, topAc
 
         <main className="grid flex-1 items-center gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(420px,520px)] lg:gap-12">
           <section className="hidden lg:flex lg:flex-col lg:justify-center lg:gap-8 lg:self-stretch py-8">
-            <div className="max-w-xl space-y-4">
-              <div className="inline-flex items-center gap-2 rounded-full border border-border dark:border-white/5 bg-white/60 dark:bg-white/5 px-4 py-2 text-xs font-medium uppercase tracking-[0.22em] text-muted-foreground backdrop-blur-sm shadow-sm transition-all hover:border-[var(--freelancer-accent)]">
-                <span className="h-2 w-2 rounded-full" style={{ backgroundColor: 'var(--freelancer-accent, #7c3aed)' }} />
-                {badge}
-              </div>
-
+            <div className="max-w-xl space-y-5">
               <div className="space-y-3">
                 <h1 className="max-w-2xl text-4xl font-semibold leading-tight text-foreground xl:text-5xl">
                   {title}
@@ -65,7 +60,6 @@ export default function AuthShell({ badge, title, description, highlights, topAc
                   {description}
                 </p>
               </div>
-            </div>
 
             <div className="grid gap-3 xl:grid-cols-3">
               {highlights.map(({ icon: Icon, title: itemTitle, description: itemDescription }) => (
