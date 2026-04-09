@@ -112,9 +112,10 @@ export function HeroSection({ stats }: HeroSectionProps) {
         }}
       />
 
-      <div className="relative z-10 container mx-auto px-6 lg:px-8 max-w-7xl pt-8 pb-12 lg:pt-12 lg:pb-16">
-        <div className="grid lg:grid-cols-2 gap-16 items-center">
-          <div>
+      <div className="relative z-10 container mx-auto px-6 lg:px-8 max-w-7xl pt-8 pb-12 lg:pt-16 lg:pb-20">
+        <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-start">
+          {/* ── Left: text + CTAs ── */}
+          <div className="pt-4">
             <m.div
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
@@ -138,7 +139,6 @@ export function HeroSection({ stats }: HeroSectionProps) {
               style={{
                 fontSize: 'clamp(2.5rem, 5vw, 4.2rem)',
                 color: 'var(--text-primary)',
-                minHeight: 'unset',
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'flex-start',
@@ -152,7 +152,6 @@ export function HeroSection({ stats }: HeroSectionProps) {
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
                   backgroundClip: 'text',
-                  fontStyle: 'normal',
                 }}
               >
                 {heroContent.titleAccent}
@@ -181,7 +180,7 @@ export function HeroSection({ stats }: HeroSectionProps) {
                 style={{
                   background: 'linear-gradient(135deg, var(--workspace-primary) 0%, var(--workspace-primary-hover) 100%)',
                   fontSize: '1rem',
-                  boxShadow: 'var(--shadow-md)',
+                  boxShadow: '0 8px 32px -8px color-mix(in srgb, var(--workspace-primary) 60%, transparent)',
                 }}
               >
                 {heroContent.primaryCta} <ArrowRight className="w-4 h-4" />
@@ -217,81 +216,103 @@ export function HeroSection({ stats }: HeroSectionProps) {
             </m.div>
           </div>
 
+          {/* ── Right: stats card ── */}
           <m.div
-            initial={{ opacity: 0, x: 24 }}
-            animate={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            className="hidden lg:block"
+            className="hidden lg:flex flex-col gap-4"
           >
+            {/* Stats row — 3 equal cards */}
+            <div className="grid grid-cols-3 gap-3">
+              {heroContent.statsCards.map((s, i) => (
+                <div
+                  key={s.label}
+                  className="relative rounded-2xl p-5 text-center overflow-hidden"
+                  style={{
+                    background: i === 0
+                      ? 'color-mix(in srgb, var(--workspace-primary) 14%, var(--card-bg))'
+                      : 'var(--card-bg)',
+                    border: `1px solid ${i === 0
+                      ? 'color-mix(in srgb, var(--workspace-primary) 30%, transparent)'
+                      : 'color-mix(in srgb, var(--color-text-primary) 8%, transparent)'}`,
+                    boxShadow: i === 0
+                      ? '0 0 40px -10px color-mix(in srgb, var(--workspace-primary) 30%, transparent)'
+                      : 'none',
+                  }}
+                >
+                  {i === 0 && (
+                    <div
+                      className="absolute inset-x-0 top-0 h-px"
+                      style={{ background: 'linear-gradient(90deg, transparent, color-mix(in srgb, var(--workspace-primary) 70%, transparent), transparent)' }}
+                    />
+                  )}
+                  <p
+                    className="font-display font-black text-3xl mb-1 tabular-nums"
+                    style={{ color: i === 0 ? 'var(--workspace-primary-mid)' : 'var(--text-primary)' }}
+                  >
+                    {s.value}
+                  </p>
+                  <p className="text-xs font-medium uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>
+                    {s.label}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            {/* Features card */}
             <div
-              className="rounded-3xl border p-8"
+              className="relative rounded-2xl overflow-hidden"
               style={{
                 background: 'var(--card-bg)',
-                borderColor: 'var(--border)',
-                boxShadow: 'var(--shadow-xl)',
+                border: '1px solid color-mix(in srgb, var(--color-text-primary) 8%, transparent)',
               }}
             >
-              <div className="grid grid-cols-3 gap-4 mb-8">
-                {heroContent.statsCards.map((s) => (
-                  <div
-                    key={s.label}
-                    className="rounded-2xl p-4 text-center border"
-                    style={{
-                      background: 'var(--surface-bg)',
-                      borderColor: 'var(--border)',
-                    }}
-                  >
-                    <p
-                      className="font-display font-bold text-xl mb-0.5"
-                      style={{ color: 'var(--text-primary)' }}
-                    >
-                      {s.value}
-                    </p>
-                    <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                      {s.label}
-                    </p>
-                  </div>
-                ))}
-              </div>
-
-              <div className="space-y-4">
+              <div className="p-5 space-y-0 divide-y" style={{ borderColor: 'color-mix(in srgb, var(--color-text-primary) 6%, transparent)' }}>
                 {heroContent.features.map((item) => (
-                  <div key={item.title} className="flex items-start gap-3">
+                  <div key={item.title} className="flex items-center gap-4 py-4 first:pt-0 last:pb-0">
                     <div
-                      className="w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5"
-                      style={{ background: 'var(--workspace-primary)' }}
+                      className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
+                      style={{
+                        background: 'color-mix(in srgb, var(--workspace-primary) 12%, transparent)',
+                        border: '1px solid color-mix(in srgb, var(--workspace-primary) 25%, transparent)',
+                      }}
                     >
-                      <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
-                        <path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                      <svg width="11" height="9" viewBox="0 0 10 8" fill="none">
+                        <path d="M1 4L3.5 6.5L9 1" stroke="var(--workspace-primary-mid)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
                     </div>
-                    <div>
+                    <div className="min-w-0">
                       <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
                         {item.title}
                       </p>
-                      <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                      <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
                         {item.sub}
                       </p>
                     </div>
                   </div>
                 ))}
               </div>
+            </div>
 
+            {/* Promise banner */}
+            <div
+              className="relative rounded-2xl p-4 overflow-hidden"
+              style={{
+                background: 'color-mix(in srgb, var(--workspace-primary) 8%, var(--card-bg))',
+                border: '1px solid color-mix(in srgb, var(--workspace-primary) 22%, transparent)',
+              }}
+            >
               <div
-                className="mt-8 rounded-2xl p-4 border-l-4"
-                style={{
-                  background: 'color-mix(in srgb, var(--workspace-primary) 6%, transparent)',
-                  borderLeftColor: 'var(--workspace-primary)',
-                }}
-              >
-                 <p className="text-xs font-semibold uppercase tracking-wider mb-1"
-                   style={{ color: 'var(--workspace-primary-mid)' }}>
-                   {tx('heroSection.promise.label')}
-                 </p>
-                <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
-                  {heroContent.promise}
-                </p>
-              </div>
+                className="absolute left-0 inset-y-0 w-[3px] rounded-r-full"
+                style={{ background: 'linear-gradient(180deg, var(--workspace-primary), color-mix(in srgb, var(--workspace-primary) 40%, transparent))' }}
+              />
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] mb-1 ps-3" style={{ color: 'var(--workspace-primary-mid)' }}>
+                {tx('heroSection.promise.label')}
+              </p>
+              <p className="text-sm font-medium leading-relaxed ps-3" style={{ color: 'var(--text-primary)' }}>
+                {heroContent.promise}
+              </p>
             </div>
           </m.div>
         </div>
