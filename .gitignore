@@ -42,3 +42,14 @@ supabase/.temp/
 .env
 .env*.local
 *.tmp
+
+# Chrome automation profiles
+.chrome-profile/
+.tmp/
+
+# UI audit screenshots
+ui-audit-run/
+
+# Duplicate/archive logo folders
+workedin-logosv2/
+workedin-logos/*.zip
