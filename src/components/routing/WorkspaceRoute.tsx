@@ -1,8 +1,9 @@
 import { Navigate } from 'react-router-dom';
 import type { ReactNode } from 'react';
-import { useWorkspaceStore } from '../../lib/workspaceState';
+import { useWorkspaceStore, loadWorkspaceForUser } from '../../lib/workspaceState';
 import { useAuth } from '../../contexts/AuthContext';
 import { getWorkspaceDashboardPath, resolveActiveWorkspace } from '@/lib/workspaceRoutes';
+import { FullScreenLoader } from '@/components/ui';
 
 interface WorkspaceRouteProps {
   workspace: 'freelancer' | 'client';
@@ -11,12 +12,22 @@ interface WorkspaceRouteProps {
 
 export function WorkspaceRoute({ workspace, children }: WorkspaceRouteProps) {
   const { activeWorkspace } = useWorkspaceStore();
-  const { isFullyReady, profile, freelancerProfile } = useAuth();
+  const { isFullyReady, profile, freelancerProfile, user } = useAuth();
 
-  // Wait until auth/profile state is fully loaded, then validate the requested
-  // workspace against the current user's actual capabilities before redirecting.
+  // Show loader while auth is resolving — prevents black screen on direct URL load
   if (!isFullyReady) {
-    return null; // ProtectedRoute (parent) already shows a loading spinner
+    // Peek at the saved workspace to avoid a flash redirect:
+    // if the user saved 'freelancer' and is visiting /freelancer/dashboard, just show loader
+    const savedWorkspace = user ? loadWorkspaceForUser(user.id) : null;
+    if (!savedWorkspace || savedWorkspace === workspace) {
+      return (
+        <div className="fixed inset-0 z-50">
+          <FullScreenLoader label="Loading..." hint="Checking your workspace access" />
+        </div>
+      );
+    }
+    // Saved workspace doesn't match — redirect immediately without waiting
+    return <Navigate to={getWorkspaceDashboardPath(savedWorkspace)} replace />;
   }
 
   const resolvedWorkspace = resolveActiveWorkspace(profile, freelancerProfile, activeWorkspace);
