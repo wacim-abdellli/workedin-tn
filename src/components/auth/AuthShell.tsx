@@ -34,9 +34,9 @@ export default function AuthShell({ title, description, highlights, topAction, c
       </div>
 
       {/* Nav */}
-      <header className="relative z-10 flex items-center justify-between px-6 py-4 lg:px-10">
-        <Link to="/" className="transition-opacity hover:opacity-80">
-          <Logo variant="full" size="lg" titleStyle="capsule" mode="client" />
+      <header className="relative z-10 flex items-center justify-between px-6 py-5 lg:px-10">
+        <Link to="/" className="transition-opacity hover:opacity-80 flex items-center gap-3">
+          <Logo variant="full" size="lg" mode="client" />
         </Link>
         {topAction}
       </header>

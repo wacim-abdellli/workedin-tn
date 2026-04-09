@@ -74,18 +74,14 @@ export function Logo({
           style={{ height: cfg.iconSize, width: 'auto' }}
         />
         <span className="inline-flex items-baseline gap-0.5 font-sans whitespace-nowrap">
-          <span 
+          <span
             className="font-semibold text-foreground"
             style={{ fontSize: cfg.fontSize * 0.9, letterSpacing: '0.02em' }}
-          >
-            WORKED
-          </span>
-          <span 
+          >Worked</span>
+          <span
             className={`font-black ${textColor}`}
             style={{ fontSize: cfg.fontSize * 1.1, letterSpacing: '0.05em' }}
-          >
-            IN
-          </span>
+          >In</span>
         </span>
       </span>
     );
@@ -106,18 +102,14 @@ export function Logo({
         style={{ height: cfg.iconSize, width: 'auto' }}
       />
       <span className="inline-flex items-baseline gap-0.5 font-sans whitespace-nowrap">
-        <span 
+        <span
           className="font-semibold text-foreground"
           style={{ fontSize: cfg.fontSize * 0.9, letterSpacing: '0.02em' }}
-        >
-          WORKED
-        </span>
-        <span 
+        >Worked</span>
+        <span
           className={`font-black ${textColor}`}
           style={{ fontSize: cfg.fontSize * 1.1, letterSpacing: '0.05em' }}
-        >
-          IN
-        </span>
+        >In</span>
       </span>
     </span>
   );
