@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Link } from 'react-router-dom';
-import { ArrowRight, ArrowLeft, Eye, EyeOff } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Eye, EyeOff, Mail, Lock } from 'lucide-react';
 import { useTranslation } from '../../i18n';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../ui/Toast';
@@ -130,6 +130,8 @@ function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
                         error={errors.email?.message}
                         dir="ltr"
                         autoComplete="email"
+                        className="!bg-white/5 !border-white/10 !text-white placeholder:!text-white/25 hover:!border-white/20 focus:!border-[var(--workspace-primary)] focus:!ring-[var(--workspace-primary)]/20 !rounded-xl"
+                        leftIcon={<Mail className="w-4 h-4 text-white/30" />}
                         {...register('email')}
                     />
                 </div>
@@ -149,6 +151,8 @@ function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
                         error={errors.password?.message}
                         dir="ltr"
                         autoComplete="current-password"
+                        className="!bg-white/5 !border-white/10 !text-white placeholder:!text-white/25 hover:!border-white/20 focus:!border-[var(--workspace-primary)] focus:!ring-[var(--workspace-primary)]/20 !rounded-xl"
+                        leftIcon={<Lock className="w-4 h-4 text-white/30" />}
                         rightIcon={
                             <button
                                 type="button"
