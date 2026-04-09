@@ -1,4 +1,4 @@
-User-agent: *
+﻿User-agent: *
 Disallow: /admin
 Disallow: /admin/
 Disallow: /dashboard
@@ -19,4 +19,5 @@ Allow: /how-it-works
 Allow: /for-clients
 Allow: /faq
 
-Sitemap: https://khedma.tn/sitemap.xml
+Sitemap: https://khedmetna.tn/sitemap.xml
+
