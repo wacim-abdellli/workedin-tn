@@ -206,12 +206,13 @@ export function MobileHeader({
                   setMobileMenuOpen(false);
                 }}
                 disabled={isSwitching}
-                className={`flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-colors ${
-                  isSwitching ? "cursor-not-allowed opacity-70" : ""
+                className={`flex w-full items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-medium transition-colors ${
+                  isSwitching ? "cursor-not-allowed opacity-70" : "hover:border-[color-mix(in_srgb,var(--workspace-primary)_35%,transparent)] hover:bg-[color-mix(in_srgb,var(--workspace-primary)_8%,transparent)]"
                 }`}
                 style={{
-                  color: "var(--workspace-primary-hover)",
-                  background: "var(--workspace-primary-light)",
+                  color: "var(--color-text-secondary)",
+                  borderColor: "var(--color-border-default)",
+                  background: "color-mix(in srgb, var(--color-text-primary) 4%, transparent)",
                 }}
               >
                 <Repeat2 className={`h-4 w-4 flex-shrink-0 ${isSwitching ? "animate-spin" : ""}`} />

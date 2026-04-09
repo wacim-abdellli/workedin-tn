@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, Shield, Zap, Star } from 'lucide-react';
+import { ArrowRight, ChevronRight, Shield, Zap, Star } from 'lucide-react';
 import { m, useReducedMotion } from 'framer-motion';
 import { useWorkspaceStore } from '@/lib/workspaceState';
 import { useTranslation } from '@/i18n';
@@ -94,70 +94,98 @@ function HeroSection({ stats }: HeroSectionProps) {
         promise: tx('heroSection.client.promise'),
       };
 
+  const panelTitle = isFreelancer
+    ? tx('heroSection.freelancer.panelTitle')
+    : tx('heroSection.client.panelTitle');
+  const liveBadge = tx('heroSection.liveBadge');
+
   return (
     <section
-      className="relative flex items-center overflow-hidden"
-      style={{ background: 'var(--page-bg)', minHeight: 'calc(100vh - 64px)' }}
+      className="relative flex min-h-[calc(100vh-4rem)] items-center overflow-hidden"
+      style={{ background: 'var(--page-bg)' }}
     >
+      {/* Ambient depth — single-hue wash so client/freelancer modes feel intentional, not noisy */}
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0"
         style={{
-          background:
-            'radial-gradient(ellipse 60% 50% at 20% 30%, color-mix(in srgb, var(--workspace-primary) 18%, transparent) 0%, transparent 70%), radial-gradient(ellipse 50% 40% at 80% 80%, color-mix(in srgb, var(--workspace-accent) 10%, transparent) 0%, transparent 70%)',
+          background: `
+            radial-gradient(ellipse 90% 70% at 0% -10%, color-mix(in srgb, var(--workspace-primary) 14%, transparent), transparent 55%),
+            radial-gradient(ellipse 70% 50% at 100% 100%, color-mix(in srgb, var(--workspace-primary) 8%, transparent), transparent 50%)
+          `,
         }}
       />
-
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 opacity-[0.03]"
+        className="pointer-events-none absolute inset-0 opacity-[0.35] dark:opacity-[0.2]"
         style={{
           backgroundImage:
-            'linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px)',
-          backgroundSize: '60px 60px',
+            'linear-gradient(color-mix(in srgb, var(--border) 50%, transparent) 1px, transparent 1px), linear-gradient(90deg, color-mix(in srgb, var(--border) 50%, transparent) 1px, transparent 1px)',
+          backgroundSize: '72px 72px',
+          maskImage: 'radial-gradient(ellipse 80% 70% at 50% 40%, black 20%, transparent 75%)',
         }}
       />
 
-      <div className="relative z-10 container mx-auto px-6 lg:px-8 max-w-7xl pt-8 pb-12 lg:pt-16 lg:pb-20">
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-start">
-          {/* ── Left: text + CTAs ── */}
-          <div className="pt-4">
+      <div className="relative z-10 mx-auto w-full max-w-7xl px-4 pb-16 pt-10 sm:px-6 lg:px-8 lg:pb-24 lg:pt-14">
+        <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,1.22fr)_minmax(0,0.78fr)] lg:gap-12 xl:gap-14">
+          {/* Copy + CTAs */}
+          <div className="max-w-xl lg:max-w-none">
             <m.div
-              initial={reduceMotion ? false : { opacity: 0, y: 12 }}
+              initial={reduceMotion ? false : { opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={enter(0.5)}
-              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm font-medium mb-8"
+              transition={enter(0.45)}
+              className="mb-5 inline-flex items-center gap-2 rounded-full border px-3.5 py-2 text-sm font-medium shadow-sm backdrop-blur-md sm:px-4"
               style={{
-                background: 'color-mix(in srgb, var(--workspace-primary) 8%, transparent)',
-                borderColor: 'color-mix(in srgb, var(--workspace-primary) 20%, transparent)',
+                background: 'color-mix(in srgb, var(--workspace-primary) 7%, var(--card-bg))',
+                borderColor: 'color-mix(in srgb, var(--workspace-primary) 18%, transparent)',
                 color: 'var(--workspace-primary-mid)',
               }}
             >
-              <span className="w-2 h-2 rounded-full animate-pulse" style={{ background: 'var(--color-status-success)' }} />
-              {heroContent.eyebrow}
+              <span
+                className="h-2 w-2 shrink-0 rounded-full ring-2 ring-[color-mix(in_srgb,var(--color-status-success)_40%,transparent)]"
+                style={{ background: 'var(--color-status-success)' }}
+              />
+              <span className="text-balance">{heroContent.eyebrow}</span>
+            </m.div>
+
+            {/* Trust highlights — same prominent placement for client & freelancer (under eyebrow) */}
+            <m.div
+              initial={reduceMotion ? false : { opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={enter(0.4, 0.04)}
+              className="mb-8 flex flex-wrap gap-x-6 gap-y-2.5 sm:gap-x-8"
+            >
+              {heroContent.trustItems.map(({ icon: Icon, label }, idx) => (
+                <div key={`hero-trust-${idx}-${label}`} className="flex items-center gap-2.5">
+                  <span
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl"
+                    style={{
+                      background: 'color-mix(in srgb, var(--workspace-primary) 12%, transparent)',
+                      color: 'var(--workspace-primary-mid)',
+                    }}
+                  >
+                    <Icon className="h-4 w-4" strokeWidth={2} />
+                  </span>
+                  <span className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
+                    {label}
+                  </span>
+                </div>
+              ))}
             </m.div>
 
             <m.h1
-              initial={reduceMotion ? false : { opacity: 0, y: 20 }}
+              initial={reduceMotion ? false : { opacity: 0, y: 18 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={enter(0.6, 0.08)}
-              className="font-display font-bold leading-[1.05] tracking-tight mb-6"
-              style={{
-                fontSize: 'clamp(2.5rem, 5vw, 4.2rem)',
-                color: 'var(--text-primary)',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'flex-start',
-              }}
+              transition={enter(0.55, 0.06)}
+              className="font-display text-balance text-[clamp(2.25rem,5.5vw,3.75rem)] font-bold leading-[1.08] tracking-tight"
+              style={{ color: 'var(--text-primary)' }}
             >
-              {heroContent.titleTop}
-              <br />
+              {heroContent.titleTop}{' '}
               <span
+                className="bg-clip-text text-transparent"
                 style={{
-                  background: 'linear-gradient(135deg, var(--workspace-primary) 0%, var(--workspace-primary-mid) 100%)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text',
+                  backgroundImage:
+                    'linear-gradient(120deg, var(--workspace-primary) 0%, var(--workspace-primary-mid) 45%, color-mix(in srgb, var(--workspace-accent) 75%, var(--workspace-primary-mid)) 100%)',
                 }}
               >
                 {heroContent.titleAccent}
@@ -165,10 +193,10 @@ function HeroSection({ stats }: HeroSectionProps) {
             </m.h1>
 
             <m.p
-              initial={reduceMotion ? false : { opacity: 0, y: 16 }}
+              initial={reduceMotion ? false : { opacity: 0, y: 14 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={enter(0.5, 0.16)}
-              className="text-lg leading-relaxed mb-10 max-w-lg"
+              transition={enter(0.5, 0.12)}
+              className="mt-6 max-w-lg text-pretty text-base leading-relaxed sm:text-lg"
               style={{ color: 'var(--text-secondary)' }}
             >
               {heroContent.subtitle}
@@ -177,157 +205,191 @@ function HeroSection({ stats }: HeroSectionProps) {
             <m.div
               initial={reduceMotion ? false : { opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={enter(0.5, 0.24)}
-              className="flex flex-wrap gap-4 mb-12"
+              transition={enter(0.5, 0.18)}
+              className="mt-9 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center"
             >
               <button
+                type="button"
                 onClick={() => navigate(isFreelancer ? '/signup' : '/jobs/new')}
-                className="inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl font-semibold text-white transition-all duration-200 hover:opacity-90 hover:-translate-y-0.5"
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl px-7 text-[0.9375rem] font-semibold text-white shadow-lg transition hover:brightness-110 active:scale-[0.99] sm:min-w-[200px]"
                 style={{
                   background: 'linear-gradient(135deg, var(--workspace-primary) 0%, var(--workspace-primary-hover) 100%)',
-                  fontSize: '1rem',
-                  boxShadow: '0 8px 32px -8px color-mix(in srgb, var(--workspace-primary) 60%, transparent)',
+                  boxShadow: '0 12px 40px -12px color-mix(in srgb, var(--workspace-primary) 55%, transparent)',
                 }}
               >
-                {heroContent.primaryCta} <ArrowRight className="w-4 h-4" />
+                {heroContent.primaryCta}
+                <ArrowRight className="h-4 w-4 opacity-90" strokeWidth={2.25} />
               </button>
               <button
+                type="button"
                 onClick={() => navigate(heroContent.secondaryPath)}
-                className="inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl font-semibold transition-all duration-200 hover:-translate-y-0.5 border"
+                className="inline-flex h-12 items-center justify-center gap-1 rounded-2xl border px-7 text-[0.9375rem] font-semibold transition hover:bg-[color-mix(in_srgb,var(--color-text-primary)_4%,transparent)] active:scale-[0.99]"
                 style={{
                   color: 'var(--text-primary)',
-                  borderColor: 'var(--border-strong)',
-                  background: 'var(--card-bg)',
-                  fontSize: '1rem',
+                  borderColor: 'color-mix(in srgb, var(--color-border-default) 90%, transparent)',
+                  background: 'color-mix(in srgb, var(--card-bg) 88%, transparent)',
                 }}
               >
                 {heroContent.secondaryCta}
+                <ChevronRight className="h-4 w-4 opacity-70" strokeWidth={2} />
               </button>
             </m.div>
 
+            {/* Mobile / tablet: same stats as desktop panel */}
             <m.div
-              initial={reduceMotion ? false : { opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={enter(0.5, 0.36)}
-              className="flex flex-wrap items-center gap-6"
+              initial={reduceMotion ? false : { opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={enter(0.45, 0.32)}
+              className="mt-12 grid grid-cols-3 gap-2 sm:gap-3 lg:hidden"
             >
-              {heroContent.trustItems.map(({ icon: Icon, label }) => (
-                <div key={label} className="flex items-center gap-2">
-                  <Icon className="w-4 h-4" style={{ color: 'var(--workspace-primary-mid)' }} />
-                  <span className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>
-                    {label}
-                  </span>
+              {heroContent.statsCards.map((s) => (
+                <div
+                  key={s.label}
+                  className="rounded-2xl border px-2 py-4 text-center sm:px-3"
+                  style={{
+                    background: 'var(--card-bg)',
+                    borderColor: 'color-mix(in srgb, var(--color-text-primary) 8%, transparent)',
+                  }}
+                >
+                  <p className="text-lg font-bold tabular-nums sm:text-xl" style={{ color: 'var(--workspace-primary-mid)' }}>
+                    {s.value}
+                  </p>
+                  <p className="mt-1 text-[10px] font-medium leading-tight sm:text-[11px]" style={{ color: 'var(--text-muted)' }}>
+                    {s.label}
+                  </p>
                 </div>
               ))}
             </m.div>
           </div>
 
-          {/* ── Right: modern live panel ── */}
+          {/* Desktop: compact stats + steps (trust line lives under eyebrow — not duplicated here) */}
           <m.div
-            initial={reduceMotion ? false : { opacity: 0, y: 24 }}
+            initial={reduceMotion ? false : { opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={enter(0.7, 0.2)}
-            className="hidden lg:flex flex-col gap-3"
+            transition={enter(0.55, 0.1)}
+            className="hidden lg:block lg:max-w-md lg:justify-self-end xl:max-w-sm"
           >
-            {/* Stats row */}
-            <div className="grid grid-cols-3 gap-3">
-              {heroContent.statsCards.map((s, i) => (
-                <div
-                  key={s.label}
-                  className="flex flex-col items-center justify-center rounded-2xl py-5 px-3 text-center"
-                  style={{
-                    background: i === 0
-                      ? `linear-gradient(145deg, color-mix(in srgb, var(--workspace-primary) 18%, var(--card-bg)), color-mix(in srgb, var(--workspace-primary) 6%, var(--card-bg)))`
-                      : 'var(--card-bg)',
-                    border: `1px solid ${i === 0
-                      ? 'color-mix(in srgb, var(--workspace-primary) 32%, transparent)'
-                      : 'color-mix(in srgb, var(--color-text-primary) 7%, transparent)'}`,
-                    boxShadow: i === 0 ? '0 8px 28px -8px color-mix(in srgb, var(--workspace-primary) 30%, transparent)' : 'none',
-                  }}
-                >
-                  <span className="font-black text-2xl tabular-nums" style={{ color: i === 0 ? 'var(--workspace-primary-mid)' : 'var(--text-primary)' }}>
-                    {s.value}
-                  </span>
-                  <span className="text-[11px] font-medium mt-1" style={{ color: 'var(--text-muted)' }}>{s.label}</span>
-                </div>
-              ))}
-            </div>
-
-            {/* Live feed card */}
             <div
-              className="rounded-2xl overflow-hidden"
+              className="relative overflow-hidden rounded-2xl border p-3 shadow-lg"
               style={{
-                background: 'var(--card-bg)',
-                border: '1px solid color-mix(in srgb, var(--color-text-primary) 7%, transparent)',
+                borderColor: 'color-mix(in srgb, var(--workspace-primary) 12%, transparent)',
+                background: `
+                  linear-gradient(160deg,
+                    color-mix(in srgb, var(--workspace-primary) 5%, var(--card-bg)) 0%,
+                    var(--card-bg) 50%)
+                `,
+                boxShadow: '0 16px 48px -24px color-mix(in srgb, var(--workspace-primary) 28%, transparent), inset 0 1px 0 color-mix(in srgb, #fff 5%, transparent)',
               }}
             >
               <div
-                className="flex items-center justify-between px-4 py-3 border-b"
-                style={{ borderColor: 'color-mix(in srgb, var(--color-text-primary) 6%, transparent)' }}
-              >
-                <div className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: 'var(--color-status-success)' }} />
-                  <span className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
-                    {isFreelancer ? 'How it works' : 'Why WorkedIn'}
-                  </span>
-                </div>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: 'color-mix(in srgb, var(--color-status-success) 12%, transparent)', color: 'var(--color-status-success)' }}>
-                  LIVE
-                </span>
-              </div>
-              <div className="divide-y" style={{ borderColor: 'color-mix(in srgb, var(--color-text-primary) 5%, transparent)' }}>
-                {heroContent.features.map((item, i) => (
-                  <div key={item.title} className="flex items-center gap-3 px-4 py-3.5">
+                aria-hidden
+                className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full blur-3xl opacity-80"
+                style={{ background: 'color-mix(in srgb, var(--workspace-primary) 10%, transparent)' }}
+              />
+
+              <div className="relative flex flex-col gap-2.5">
+                <div className="grid grid-cols-3 gap-2">
+                  {heroContent.statsCards.map((s, i) => (
                     <div
-                      className="w-8 h-8 rounded-full shrink-0 flex items-center justify-center text-[11px] font-black"
+                      key={s.label}
+                      className="rounded-xl border px-1.5 py-3 text-center"
                       style={{
-                        background: `linear-gradient(135deg, color-mix(in srgb, var(--workspace-primary) ${25 + i * 12}%, transparent), color-mix(in srgb, var(--workspace-accent) ${15 + i * 8}%, transparent))`,
-                        border: '1.5px solid color-mix(in srgb, var(--workspace-primary) 22%, transparent)',
+                        background:
+                          i === 0
+                            ? 'linear-gradient(180deg, color-mix(in srgb, var(--workspace-primary) 10%, var(--card-bg)), var(--card-bg))'
+                            : 'color-mix(in srgb, var(--color-text-primary) 2.5%, var(--card-bg))',
+                        borderColor:
+                          i === 0
+                            ? 'color-mix(in srgb, var(--workspace-primary) 22%, transparent)'
+                            : 'color-mix(in srgb, var(--color-text-primary) 7%, transparent)',
+                      }}
+                    >
+                      <p
+                        className="text-lg font-bold tabular-nums leading-none tracking-tight xl:text-xl"
+                        style={{ color: i === 0 ? 'var(--workspace-primary-mid)' : 'var(--text-primary)' }}
+                      >
+                        {s.value}
+                      </p>
+                      <p className="mt-1 px-0.5 text-[9px] font-medium leading-tight xl:text-[10px]" style={{ color: 'var(--text-muted)' }}>
+                        {s.label}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+
+                <div
+                  className="overflow-hidden rounded-xl border"
+                  style={{
+                    borderColor: 'color-mix(in srgb, var(--color-text-primary) 7%, transparent)',
+                    background: 'color-mix(in srgb, var(--color-text-primary) 2%, var(--card-bg))',
+                  }}
+                >
+                  <div
+                    className="flex items-center justify-between border-b px-3 py-2"
+                    style={{ borderColor: 'color-mix(in srgb, var(--color-text-primary) 5%, transparent)' }}
+                  >
+                    <div className="flex min-w-0 items-center gap-2">
+                      <span className="relative flex h-1.5 w-1.5 shrink-0">
+                        <span
+                          className="absolute inline-flex h-full w-full animate-ping rounded-full opacity-35"
+                          style={{ background: 'var(--color-status-success)' }}
+                        />
+                        <span className="relative inline-flex h-1.5 w-1.5 rounded-full" style={{ background: 'var(--color-status-success)' }} />
+                      </span>
+                      <span className="truncate text-[10px] font-semibold uppercase tracking-[0.16em]" style={{ color: 'var(--text-muted)' }}>
+                        {panelTitle}
+                      </span>
+                    </div>
+                    <span
+                      className="shrink-0 rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide"
+                      style={{
+                        background: 'color-mix(in srgb, var(--workspace-primary) 12%, transparent)',
                         color: 'var(--workspace-primary-mid)',
                       }}
                     >
-                      {i + 1}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>{item.title}</p>
-                      <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>{item.sub}</p>
-                    </div>
-                    <div className="w-5 h-5 rounded-full shrink-0 flex items-center justify-center" style={{ background: 'color-mix(in srgb, var(--workspace-primary) 12%, transparent)' }}>
-                      <svg width="9" height="7" viewBox="0 0 10 8" fill="none">
-                        <path d="M1 4L3.5 6.5L9 1" stroke="var(--workspace-primary-mid)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    </div>
+                      {liveBadge}
+                    </span>
                   </div>
-                ))}
-              </div>
-            </div>
+                  <ul className="divide-y" style={{ borderColor: 'color-mix(in srgb, var(--color-text-primary) 4%, transparent)' }}>
+                    {heroContent.features.map((item, i) => (
+                      <li key={item.title} className="flex items-start gap-2.5 px-3 py-2.5">
+                        <span
+                          className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-[10px] font-bold"
+                          style={{
+                            background: 'color-mix(in srgb, var(--workspace-primary) 10%, transparent)',
+                            color: 'var(--workspace-primary-mid)',
+                          }}
+                        >
+                          {i + 1}
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs font-semibold leading-snug" style={{ color: 'var(--text-primary)' }}>
+                            {item.title}
+                          </p>
+                          <p className="mt-0.5 text-[11px] leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+                            {item.sub}
+                          </p>
+                        </div>
+                        <ChevronRight className="mt-0.5 h-3.5 w-3.5 shrink-0 opacity-35" style={{ color: 'var(--workspace-primary-mid)' }} />
+                      </li>
+                    ))}
+                  </ul>
+                </div>
 
-            {/* Bottom row: promise + trust */}
-            <div className="grid grid-cols-2 gap-3">
-              <div
-                className="rounded-2xl p-4"
-                style={{
-                  background: 'color-mix(in srgb, var(--workspace-primary) 9%, var(--card-bg))',
-                  border: '1px solid color-mix(in srgb, var(--workspace-primary) 20%, transparent)',
-                }}
-              >
-                <p className="text-[10px] font-bold uppercase tracking-[0.18em] mb-2" style={{ color: 'var(--workspace-primary-mid)' }}>
-                  {tx('heroSection.promise.label')}
-                </p>
-                <p className="text-xs font-medium leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-                  {heroContent.promise}
-                </p>
-              </div>
-              <div
-                className="rounded-2xl p-4 flex flex-col gap-2.5"
-                style={{ background: 'var(--card-bg)', border: '1px solid color-mix(in srgb, var(--color-text-primary) 7%, transparent)' }}
-              >
-                {heroContent.trustItems.map(({ icon: Icon, label }) => (
-                  <div key={label} className="flex items-center gap-2">
-                    <Icon className="w-3.5 h-3.5 shrink-0" style={{ color: 'var(--workspace-primary-mid)' }} />
-                    <span className="text-[11px] font-medium" style={{ color: 'var(--text-muted)' }}>{label}</span>
-                  </div>
-                ))}
+                <div
+                  className="rounded-xl border px-3 py-2.5"
+                  style={{
+                    background: 'color-mix(in srgb, var(--workspace-primary) 6%, var(--card-bg))',
+                    borderColor: 'color-mix(in srgb, var(--workspace-primary) 14%, transparent)',
+                  }}
+                >
+                  <p className="text-[9px] font-bold uppercase tracking-[0.18em]" style={{ color: 'var(--workspace-primary-mid)' }}>
+                    {tx('heroSection.promise.label')}
+                  </p>
+                  <p className="mt-1 text-[11px] font-medium leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                    {heroContent.promise}
+                  </p>
+                </div>
               </div>
             </div>
           </m.div>

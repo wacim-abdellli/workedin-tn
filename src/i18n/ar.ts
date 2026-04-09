@@ -2290,7 +2290,9 @@ export const ar = {
     },
 
     heroSection: {
+        liveBadge: 'مباشر',
         freelancer: {
+            panelTitle: 'كيف يعمل',
             eyebrow: 'مشروع تونسي. موجه للتونسيين.',
             titleTop: 'حيث يتقاضى الموهوبون التونسيون',
             titleAccent: 'رواتب عادلة.',
@@ -2333,6 +2335,7 @@ export const ar = {
             promise: 'عرض أفضل يساعد الموظفين المستقلين الرائعين على الظهور بمصداقية قبل أن يقولوا كلمة واحدة.',
         },
         client: {
+            panelTitle: 'لماذا WorkedIn',
             eyebrow: 'مشروع تونسي. جاهز للتوظيف الجاد.',
             titleTop: 'تجاوز الهواة.',
             titleAccent: 'واعمل مع النخبة.',

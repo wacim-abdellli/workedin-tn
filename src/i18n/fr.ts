@@ -2292,7 +2292,9 @@ export const fr: Translations = {
     },
 
     heroSection: {
+        liveBadge: 'En direct',
         freelancer: {
+            panelTitle: 'Comment ça marche',
             eyebrow: 'Construit en Tunisie. Construit pour la Tunisie.',
             titleTop: 'Où les talents tunisiens',
             titleAccent: 'sont rémunérés équitablement.',
@@ -2335,6 +2337,7 @@ export const fr: Translations = {
             promise: 'Une meilleure présentation aide les excellents indépendants à paraître crédibles avant de dire un mot.',
         },
         client: {
+            panelTitle: 'Pourquoi WorkedIn',
             eyebrow: 'Construit en Tunisie. Prêt pour l\'embauche sérieuse.',
             titleTop: 'Ignorez les amateurs.',
             titleAccent: 'Collaborez avec l\'élite.',

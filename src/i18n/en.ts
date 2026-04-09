@@ -2292,7 +2292,9 @@ export const en: Translations = {
     },
 
     heroSection: {
+        liveBadge: 'Live',
         freelancer: {
+            panelTitle: 'How it works',
             eyebrow: 'Built in Tunisia. Built for Tunisia.',
             titleTop: 'Where Tunisian talent',
             titleAccent: 'gets paid fairly.',
@@ -2335,6 +2337,7 @@ export const en: Translations = {
             promise: 'Better presentation helps great freelancers look credible before they say a word.',
         },
         client: {
+            panelTitle: 'Why WorkedIn',
             eyebrow: 'Built in Tunisia. Ready for serious hiring.',
             titleTop: 'Drop the amateurs.',
             titleAccent: 'Work with the elite.',

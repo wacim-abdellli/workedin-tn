@@ -136,18 +136,12 @@ export function UserMenu({ isDesktopCondensed = false }: UserMenuProps) {
     border: "color-mix(in srgb, var(--workspace-primary) 35%, transparent)",
   };
 
-  const switchTargetStyles =
-    targetWorkspace === "client"
-      ? {
-          color: "var(--amber-800)",
-          background: "color-mix(in srgb, var(--amber-600) 16%, white)",
-          borderColor: "color-mix(in srgb, var(--amber-800) 28%, transparent)",
-        }
-      : {
-          color: "var(--purple-700)",
-          background: "color-mix(in srgb, var(--purple-600) 14%, white)",
-          borderColor: "color-mix(in srgb, var(--purple-700) 25%, transparent)",
-        };
+  // Neutral chrome so the header does not show two competing workspace colors at once.
+  const switchTargetStyles = {
+    color: "var(--color-text-secondary)",
+    background: "color-mix(in srgb, var(--color-text-primary) 4%, transparent)",
+    borderColor: "color-mix(in srgb, var(--color-border-default) 85%, transparent)",
+  };
 
   const handleQuickWorkspaceSwitch = async () => {
     if (isSwitching) return;
@@ -175,10 +169,10 @@ export function UserMenu({ isDesktopCondensed = false }: UserMenuProps) {
       <button
         onClick={() => void handleQuickWorkspaceSwitch()}
         disabled={isSwitching}
-        className={`flex h-8 w-8 xl:w-auto items-center justify-center gap-1.5 rounded-full border px-0 xl:px-3 text-[10px] font-bold uppercase tracking-wider transition-all ${
+        className={`flex h-8 w-8 xl:w-auto items-center justify-center gap-1.5 rounded-full border px-0 xl:px-3 text-[10px] font-semibold uppercase tracking-wide transition-all ${
           isSwitching
             ? "cursor-not-allowed opacity-50"
-            : "hover:-translate-y-[1px] shadow-sm hover:shadow"
+            : "hover:border-[color-mix(in_srgb,var(--workspace-primary)_35%,transparent)] hover:bg-[color-mix(in_srgb,var(--workspace-primary)_8%,transparent)]"
         }`}
         style={{
           borderColor: switchTargetStyles.borderColor,
