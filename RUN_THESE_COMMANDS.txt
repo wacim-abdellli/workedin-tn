@@ -1,0 +1,27 @@
+Copy and paste these commands ONE BY ONE into PowerShell:
+
+Command 1:
+npx supabase secrets set DHMAD_API_KEY="sk_live_be6ae8b418a362ac465a25ad1f31bf05d635988f3e1374d5e40c9d2fa7d37f08" --project-ref wvgkezmboewtlpnyjnyd
+
+Command 2:
+npx supabase secrets set DHMAD_BASE_URL="https://dhmad.tn/api/v1" --project-ref wvgkezmboewtlpnyjnyd
+
+Command 3:
+npx supabase secrets set ALLOWED_ORIGIN="https://workedin.tn" --project-ref wvgkezmboewtlpnyjnyd
+
+Command 4:
+npx supabase functions deploy dhmad-create-escrow --project-ref wvgkezmboewtlpnyjnyd
+
+Command 5:
+npx supabase functions deploy dhmad-release-escrow --project-ref wvgkezmboewtlpnyjnyd
+
+Command 6:
+npx supabase functions deploy dhmad-refund-escrow --project-ref wvgkezmboewtlpnyjnyd
+
+Command 7:
+npx supabase functions deploy dhmad-get-escrow-status --project-ref wvgkezmboewtlpnyjnyd
+
+Command 8:
+npx supabase functions deploy dhmad-checkout-session --project-ref wvgkezmboewtlpnyjnyd
+
+Done! Your payment system is configured.
