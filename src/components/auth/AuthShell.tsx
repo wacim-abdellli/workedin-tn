@@ -50,34 +50,34 @@ export default function AuthShell({ badge, title, description, highlights, topAc
         </header>
 
         <main className="grid flex-1 items-center gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(420px,520px)] lg:gap-12">
-          <section className="hidden lg:flex lg:flex-col lg:justify-center lg:gap-16 lg:self-stretch py-8">
-            <div className="max-w-xl space-y-6">
+          <section className="hidden lg:flex lg:flex-col lg:justify-center lg:gap-8 lg:self-stretch py-8">
+            <div className="max-w-xl space-y-4">
               <div className="inline-flex items-center gap-2 rounded-full border border-border dark:border-white/5 bg-white/60 dark:bg-white/5 px-4 py-2 text-xs font-medium uppercase tracking-[0.22em] text-muted-foreground backdrop-blur-sm shadow-sm transition-all hover:border-[var(--freelancer-accent)]">
                 <span className="h-2 w-2 rounded-full" style={{ backgroundColor: 'var(--freelancer-accent, #7c3aed)' }} />
                 {badge}
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-3">
                 <h1 className="max-w-2xl text-4xl font-semibold leading-tight text-foreground xl:text-5xl">
                   {title}
                 </h1>
-                <p className="max-w-xl text-base leading-8 text-muted-foreground dark:text-white/68 xl:text-lg">
+                <p className="max-w-xl text-base leading-7 text-muted-foreground dark:text-white/68 xl:text-lg">
                   {description}
                 </p>
               </div>
             </div>
 
-            <div className="grid gap-4 xl:grid-cols-3">
+            <div className="grid gap-3 xl:grid-cols-3">
               {highlights.map(({ icon: Icon, title: itemTitle, description: itemDescription }) => (
                 <div
                   key={itemTitle}
                   className="group rounded-3xl border p-5 backdrop-blur-md dark:border-white/5 border-border bg-white/40 dark:bg-zinc-900/50 shadow-sm transition-all hover:border-[var(--freelancer-accent)]"
                 >
-                  <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-2xl dark:bg-white/5 bg-muted transition-colors group-hover:bg-[color-mix(in_srgb,var(--freelancer-accent)_15%,transparent)]">
+                  <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-2xl dark:bg-white/5 bg-muted transition-colors group-hover:bg-[color-mix(in_srgb,var(--freelancer-accent)_15%,transparent)]">
                     <Icon className="h-5 w-5 dark:text-white text-foreground transition-colors" />
                   </div>
                   <h2 className="text-base font-semibold text-foreground">{itemTitle}</h2>
-                  <p className="mt-2 text-sm leading-6 text-muted-foreground dark:text-white/65">{itemDescription}</p>
+                  <p className="mt-1.5 text-sm leading-6 text-muted-foreground dark:text-white/65">{itemDescription}</p>
                 </div>
               ))}
             </div>
