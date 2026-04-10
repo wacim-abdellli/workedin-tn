@@ -64,7 +64,14 @@ export default function ProfileSettings() {
         if (!file || !user?.id) return;
         try {
             const avatarUrl = await uploadAvatar(user.id, file);
-            await updateProfile({ avatar_url: avatarUrl });
+            // Update both the generic and mode-specific avatar fields
+            const avatarUpdate: Record<string, string> = { avatar_url: avatarUrl };
+            if (activeMode === 'freelancer') {
+                avatarUpdate.avatar_url_freelancer = avatarUrl;
+            } else if (activeMode === 'client') {
+                avatarUpdate.avatar_url_client = avatarUrl;
+            }
+            await updateProfile(avatarUpdate);
             showToast(tx('settings.toasts.avatarUpdated', undefined, 'Profile image updated'), 'success');
         } catch (error) {
             logger.error('Error uploading avatar:', error);
