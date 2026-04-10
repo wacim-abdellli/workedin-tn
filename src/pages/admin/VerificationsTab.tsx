@@ -200,7 +200,6 @@ export default function VerificationsTab() {
                     p_user_id: userId,
                     p_action: action,
                     p_reviewed_at: new Date().toISOString(),
-                    p_admin_note: null,
                 })
             , { timeoutMs: actionTimeoutMs });
 
