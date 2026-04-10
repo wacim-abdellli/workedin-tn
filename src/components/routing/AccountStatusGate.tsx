@@ -54,8 +54,6 @@ export default function AccountStatusGate({ status }: { status: AccountStatus })
     message: '',
   });
 
-  console.log('[AccountStatusGate] Render - showContactForm:', showContactForm, 'status:', status);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -109,9 +107,7 @@ export default function AccountStatusGate({ status }: { status: AccountStatus })
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  console.log('[AccountStatusGate] Button clicked, setting showContactForm to true');
                   setShowContactForm(true);
-                  console.log('[AccountStatusGate] After setState call');
                 }}
                 className="inline-flex h-11 items-center justify-center rounded-xl bg-violet-600 px-5 text-sm font-semibold text-white transition-colors hover:bg-violet-700 shadow-lg shadow-violet-600/30"
               >
@@ -129,11 +125,9 @@ export default function AccountStatusGate({ status }: { status: AccountStatus })
           style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}
           onClick={(e) => {
             e.stopPropagation();
-            console.log('[AccountStatusGate] Backdrop clicked, closing modal');
             setShowContactForm(false);
           }}
         >
-          {console.log('[AccountStatusGate] Rendering modal')}
           <div 
             className="relative w-full max-w-2xl bg-white dark:bg-[#0f172a] rounded-2xl shadow-2xl max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
