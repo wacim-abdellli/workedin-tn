@@ -35,36 +35,45 @@ export default function OnboardingStep1({
     return (
         <div className="space-y-8">
             <div className="space-y-3">
-                <div className="inline-flex items-center gap-2 rounded-full border border-primary-100 bg-primary-50/70 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-primary-700 dark:border-[var(--color-border-subtle)] dark:text-primary-200">
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-full text-xs font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400">
                     <User className="w-3.5 h-3.5" />
                     {t.settings.profile}
                 </div>
-                <h2 className="text-2xl font-semibold tracking-tight text-[#171420] dark:text-white">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
                     {t.onboarding.freelancer.stepBasicInfo || 'Basic information'}
                 </h2>
-                <p className="max-w-3xl text-sm leading-7 text-[#5c5971] dark:text-[#aca9bd] sm:text-base">
+                <p className="text-gray-600 dark:text-gray-400">
                     {tx('onboarding.freelancer.step1Description', undefined, 'Add the details clients will see first when deciding whether to trust your profile.')}
                 </p>
             </div>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                 {/* Avatar Upload */}
-                <div className="flex flex-col items-center rounded-[1.6rem] border border-primary-100/70 bg-primary-50/40 p-6 dark:border-[var(--color-border-subtle)]">
+                <div className="flex flex-col items-center bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl p-6">
                     <div className="relative group">
                         <div
-                            className="w-28 h-28 rounded-full bg-[var(--color-bg-muted)] flex items-center justify-center overflow-hidden cursor-pointer border-4 border-[var(--color-bg-elevated)] shadow-xl group-hover:shadow-2xl transition-all"
+                            className="w-28 h-28 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center overflow-hidden cursor-pointer border-4 border-white dark:border-gray-800 shadow-lg group-hover:shadow-xl transition-all"
                             onClick={() => fileInputRef.current?.click()}
+                            role="button"
+                            tabIndex={0}
+                            aria-label="Upload profile photo"
+                            onKeyDown={(event) => {
+                                if (event.key === 'Enter' || event.key === ' ') {
+                                    event.preventDefault();
+                                    fileInputRef.current?.click();
+                                }
+                            }}
                         >
                             {avatarPreview ? (
                                 <img src={avatarPreview} alt={tx('ui.avatar')} className="w-full h-full object-cover" />
                             ) : (
-                                <User className="w-10 h-10 text-[var(--color-text-disabled)]" />
+                                <User className="w-10 h-10 text-gray-400" />
                             )}
                         </div>
                         <button
                             type="button"
                             onClick={() => fileInputRef.current?.click()}
-                            className="absolute -bottom-1 -end-1 w-9 h-9 rounded-full bg-[var(--color-brand-primary)] text-white flex items-center justify-center shadow-lg hover:bg-[var(--color-brand-primary-hover)] hover:scale-110 transition-all border-2 border-[var(--color-bg-elevated)]"
+                            className="absolute -bottom-1 -right-1 w-9 h-9 rounded-full bg-violet-500 text-white flex items-center justify-center shadow-lg hover:bg-violet-600 hover:scale-110 transition-all border-2 border-white dark:border-gray-800"
                         >
                             <Camera className="w-4 h-4" />
                         </button>
@@ -80,12 +89,12 @@ export default function OnboardingStep1({
                         <button
                             type="button"
                             onClick={onRemoveAvatar}
-                            className="mt-2 p-3 min-w-[44px] min-h-[44px] flex items-center justify-center text-sm text-[var(--color-error)] hover:text-[var(--color-error-dark)]"
+                            className="mt-3 text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300"
                         >
                             {t.common.removeImage}
                         </button>
                     )}
-                    <p className="mt-2 text-xs text-muted">
+                    <p className="mt-3 text-xs text-gray-500 dark:text-gray-400">
                         {t.common.skipForNow}
                     </p>
                 </div>
@@ -132,21 +141,21 @@ export default function OnboardingStep1({
                     </div>
 
                     <div className="md:col-span-2">
-                        <label className="mb-2 block text-sm font-medium text-[var(--color-text-secondary)]">
+                        <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                             {t.profile.bio || 'Short bio'}
                         </label>
                         <div className="relative">
-                            <div className="pointer-events-none absolute start-0 top-0 flex items-center ps-4 pt-4 text-[var(--color-text-disabled)]">
+                            <div className="pointer-events-none absolute left-0 top-0 flex items-center pl-4 pt-4 text-gray-400">
                                 <FileText className="w-5 h-5" />
                             </div>
                             <textarea
                                 {...register('bio')}
                                 rows={5}
-                                className="w-full resize-none rounded-2xl border border-[var(--color-border-default)] bg-[var(--color-bg-base)] px-4 py-3 ps-11 text-[var(--color-text-primary)] shadow-sm transition-all duration-200 placeholder:text-[var(--color-text-disabled)] focus:border-[var(--color-brand-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-primary)]/20"
+                                className="w-full resize-none rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-3 pl-11 text-gray-900 dark:text-white shadow-sm transition-all placeholder:text-gray-400 focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500/20"
                                 placeholder={t.profile.bioPlaceholder || 'Tell clients what you do best, who you help, and how you usually work.'}
                             />
                         </div>
-                        <div className="mt-2 flex items-center justify-between text-xs text-[var(--color-text-tertiary)]">
+                        <div className="mt-2 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
                             <span>{tx('profile.bioHint', undefined, 'A short summary improves credibility and response quality.')}</span>
                             <span>{bio.length}/400</span>
                         </div>

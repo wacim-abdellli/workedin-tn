@@ -49,28 +49,30 @@ export default function OnboardingStep2({
 
     return (
         <div className="space-y-8">
-            <div className="text-center sm:text-start">
-                <div className="inline-flex items-center gap-3 mb-3 px-4 py-2 rounded-full bg-primary-50/70 border border-primary-100 dark:border-[var(--color-border-subtle)] shadow-sm">
-                    <Sparkles className="w-4 h-4 text-primary-600 dark:text-primary-400" />
-                    <span className="text-sm font-semibold text-primary-700 dark:text-primary-300">
-                        {t.profile.skills} & {t.job.budget}
-                    </span>
+            <div className="space-y-3">
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-800 rounded-full text-xs font-semibold uppercase tracking-wider text-violet-600 dark:text-violet-400">
+                    <Sparkles className="w-3.5 h-3.5" />
+                    {t.profile.skills} & {t.job.budget}
                 </div>
-                <h2 className="text-2xl font-semibold tracking-tight text-[#171420] dark:text-white mb-2">{t.onboarding.freelancer.stepSkillsExperience || 'Skills and experience'}</h2>
-                <p className="text-sm leading-7 text-[#5c5971] dark:text-[#aca9bd]">{tx('onboarding.freelancer.step2Description', undefined, 'Choose your strongest skills and define a believable starting rate and availability.')}</p>
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                    {t.onboarding.freelancer.stepSkillsExperience || 'Skills and experience'}
+                </h2>
+                <p className="text-gray-600 dark:text-gray-400">
+                    {tx('onboarding.freelancer.step2Description', undefined, 'Choose your strongest skills and define a believable starting rate and availability.')}
+                </p>
             </div>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
                 {/* Skills Selection */}
-                <div className="bg-[var(--color-bg-elevated)] rounded-2xl border border-[var(--color-border-subtle)] p-6 backdrop-blur-sm">
+                <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl p-6">
                     <div className="flex items-center justify-between mb-4">
-                        <label className="text-base font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
+                        <label className="text-base font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                             {t.profile.skills}
-                            <span className="text-xs font-normal text-muted">({t.profile.optional})</span>
+                            <span className="text-xs font-normal text-gray-500 dark:text-gray-400">({t.profile.optional})</span>
                         </label>
-                        <span className={`text-xs font-bold px-2.5 py-1 rounded-full border ${selectedSkills.length === 5
-                            ? 'bg-primary-50 text-primary-600 border-primary-100 dark:bg-primary-500/10 dark:border-primary-500/20 dark:text-primary-300'
-                            : 'bg-[var(--color-bg-muted)] text-[var(--color-text-secondary)] border-[var(--color-border-default)]'
+                        <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${selectedSkills.length === 5
+                            ? 'bg-violet-50 dark:bg-violet-900/20 text-violet-600 dark:text-violet-400 border border-violet-200 dark:border-violet-800'
+                            : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-600'
                             }`}>
                             {selectedSkills.length}/5
                         </span>
@@ -86,15 +88,15 @@ export default function OnboardingStep2({
                                     type="button"
                                     onClick={() => toggleSkill(skill)}
                                     className={`
-                                        relative group p-4 rounded-xl text-start transition-all duration-300
+                                        relative group p-4 rounded-xl text-start transition-all
                                         flex items-center justify-between
                                         ${isSelected
-                                            ? 'bg-gradient-to-br from-primary-500 to-primary-600 text-white shadow-lg shadow-primary-500/25 ring-2 ring-primary-500 ring-offset-2 dark:ring-offset-[var(--color-bg-base)]'
-                                            : 'bg-[var(--color-bg-elevated)] border border-[var(--color-border-default)] hover:border-primary-300 dark:hover:border-primary-700 hover:shadow-md'
+                                            ? 'bg-violet-500 text-white shadow-lg ring-2 ring-violet-500 ring-offset-2 dark:ring-offset-gray-900'
+                                            : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-violet-300 dark:hover:border-violet-700 hover:shadow-md'
                                         }
                                     `}
                                 >
-                                    <span className={`text-sm font-medium ${isSelected ? 'text-white' : 'text-[var(--color-text-primary)]'}`}>
+                                    <span className={`text-sm font-medium ${isSelected ? 'text-white' : 'text-gray-900 dark:text-white'}`}>
                                         {getSkillName(skill)}
                                     </span>
                                     {isSelected && (
@@ -109,32 +111,30 @@ export default function OnboardingStep2({
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="bg-[var(--color-bg-elevated)] rounded-2xl border border-[var(--color-border-subtle)] p-6 backdrop-blur-sm">
+                    <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl p-6">
                         <Input
                             {...register('hourly_rate')}
                             type="number"
                             label={`${t.job.budget} (${t.common.tnd})`}
                             placeholder={tx('ui.e_g')}
                             min="0"
-                            className="bg-[var(--color-bg-base)]"
-                            leftIcon={<DollarSign className="w-5 h-5 text-[var(--color-text-disabled)]" />}
+                            leftIcon={<DollarSign className="w-5 h-5 text-gray-400" />}
                             hint={t.profile.optional}
                             error={errors.hourly_rate?.message}
                         />
                     </div>
 
-                    <div className="bg-[var(--color-bg-elevated)] rounded-2xl border border-[var(--color-border-subtle)] p-6 backdrop-blur-sm">
+                    <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl p-6">
                         <Select
                             {...register('availability')}
                             label={t.publicProfile.available}
                             options={AVAILABILITY_OPTIONS}
-                            className="bg-[var(--color-bg-base)]"
                             error={errors.availability?.message}
                         />
                     </div>
                 </div>
 
-                <div className="flex gap-4 pt-4 border-t border-[var(--color-border-subtle)]">
+                <div className="flex gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
                     <Button
                         type="button"
                         variant="ghost"
@@ -149,7 +149,7 @@ export default function OnboardingStep2({
                         type="submit"
                         variant="primary"
                         size="lg"
-                        className="flex-1 shadow-xl shadow-primary-500/20 hover:shadow-primary-500/30"
+                        className="flex-1"
                         isLoading={isLoading}
                         rightIcon={<ArrowIcon className="w-5 h-5" />}
                     >

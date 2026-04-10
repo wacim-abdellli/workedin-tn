@@ -398,7 +398,7 @@ function FreelancerOnboarding() {
     ];
 
     return (
-        <div className="page-shell bg-[var(--color-bg-subtle)] dark:bg-[var(--color-bg-base)] overflow-hidden relative transition-colors duration-300">
+        <div className="min-h-screen bg-[#fafafa] dark:bg-[#0a0a0a]">
             <SEO {...SEO_CONFIG.freelancerOnboarding} url="/onboarding/freelancer" noIndex />
             <Header />
 
@@ -442,13 +442,13 @@ function FreelancerOnboarding() {
                 aside={
                     <div className="space-y-5">
                         <div>
-                            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand dark:text-brand-light">
+                            <p className="text-xs font-semibold uppercase tracking-wider text-violet-600 dark:text-violet-400">
                                 {tx('onboarding.freelancer.summaryBadge', undefined, 'Why this matters')}
                             </p>
-                            <h3 className="mt-3 text-xl font-semibold text-[#171420] dark:text-white">
+                            <h3 className="mt-3 text-xl font-semibold text-gray-900 dark:text-white">
                                 {tx('onboarding.freelancer.summaryTitle', undefined, 'Clients decide in seconds')}
                             </h3>
-                            <p className="mt-2 text-sm leading-6 text-[#6b6880] dark:text-[#8b8aa0]">
+                            <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
                                 {tx('onboarding.freelancer.summaryDescription', undefined, 'A stronger first profile creates better trust, better proposal odds, and cleaner matching before your portfolio is even explored.')}
                             </p>
                         </div>
@@ -468,14 +468,14 @@ function FreelancerOnboarding() {
                                     description: tx('onboarding.freelancer.summaryPoint3Desc', undefined, 'Your first rate should feel credible for your current profile depth and market position.'),
                                 },
                             ].map((item, index) => (
-                                <div key={item.title} className="rounded-2xl border border-brand-light/70 bg-brand-light/30 p-4 dark:border-[var(--color-border-subtle)]">
+                                <div key={item.title} className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
                                     <div className="flex items-start gap-3">
-                                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-brand text-sm font-semibold text-white">
+                                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-violet-500 text-sm font-semibold text-white">
                                             {index + 1}
                                         </div>
                                         <div>
-                                            <p className="text-sm font-semibold text-[#171420] dark:text-white">{item.title}</p>
-                                            <p className="mt-2 text-sm leading-6 text-[#6b6880] dark:text-[#8b8aa0]">{item.description}</p>
+                                            <p className="text-sm font-semibold text-gray-900 dark:text-white">{item.title}</p>
+                                            <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">{item.description}</p>
                                         </div>
                                     </div>
                                 </div>
