@@ -7,15 +7,15 @@ LANGUAGE sql
 STABLE
 SECURITY DEFINER
 SET search_path = public
-AS $
+AS $$
   SELECT COALESCE(
     (
       SELECT account_status IS NULL OR account_status = 'active'
       FROM public.profiles
       WHERE id = p_user_id
     ),
-    true  -- no profile row yet = allow (bootstrap case)
+    true
   );
-$;
+$$;
 
 NOTIFY pgrst, 'reload schema';
