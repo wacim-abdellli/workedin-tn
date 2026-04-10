@@ -257,7 +257,8 @@ export const uploadFile = async (
 };
 
 function shouldFallbackToDirectAvatarUpload(bucket: string, error: unknown): boolean {
-    if (bucket !== 'avatars') return false;
+    const fallbackBuckets = ['avatars', 'identity-documents', 'identity_documents', 'verification-documents'];
+    if (!fallbackBuckets.includes(bucket)) return false;
 
     if (!error || typeof error !== 'object') {
         const message = String(error || '').toLowerCase();
