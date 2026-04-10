@@ -43,7 +43,7 @@ export default function OnboardingStep4({
     onBack,
     isLoading,
 }: OnboardingStep4Props) {
-    const { t, dir } = useTranslation();
+    const { t, dir, tx } = useTranslation();
     const BackArrowIcon = dir === 'rtl' ? ArrowRight : ArrowLeft;
 
     const {

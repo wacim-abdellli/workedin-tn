@@ -54,7 +54,7 @@ const CATEGORY_COLORS: Record<string, { border: string; bg: string; text: string
 
 function JobCard({ job, isSaved, onToggleSave, onClick }: JobCardProps) {
   const [isSaving, setIsSaving] = useState(false);
-  const { t, language } = useTranslation();
+  const { t, language, tx } = useTranslation();
   const [from, to] = getAvatarGradient(job.client?.full_name || 'WorkedIn');
   
   const categoryColor = CATEGORY_COLORS[job.category || 'other'] || CATEGORY_COLORS.other;

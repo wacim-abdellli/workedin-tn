@@ -7,7 +7,7 @@ import { useTranslation } from '../i18n';
  * Displayed when Flouci payment fails or is cancelled
  */
 const PaymentFailed = () => {
-    const { dir } = useTranslation();
+    const { dir, tx } = useTranslation();
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
 

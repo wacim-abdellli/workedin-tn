@@ -53,6 +53,7 @@ export default function ReviewDisplay({
     detailedAverages,
     userType,
 }: ReviewDisplayProps) {
+    const { tx } = useTranslation();
     const [sortBy, setSortBy] = useState<'recent' | 'highest' | 'lowest' | 'helpful'>('recent');
     const [expandedReview, setExpandedReview] = useState<string | null>(null);
 
@@ -104,7 +105,6 @@ export default function ReviewDisplay({
                     {/* Rating Distribution */}
                     <div className="space-y-2">
                         {[5, 4, 3, 2, 1].map(stars => {
-                            const { tx } = useTranslation();
                             const count = ratingDistribution[stars] || 0;
                             const percentage = totalReviews > 0 ? (count / totalReviews) * 100 : 0;
                             return (
@@ -126,7 +126,6 @@ export default function ReviewDisplay({
                     {/* Detailed Averages */}
                     <div className="space-y-3">
                         {detailedCategories.map(cat => {
-                            const { tx } = useTranslation();
                             const value = detailedAverages[cat.key as keyof typeof detailedAverages] || 0;
                             return (
                                 <div key={cat.key} className="flex items-center justify-between">
@@ -211,7 +210,6 @@ export default function ReviewDisplay({
                         {expandedReview === review.id && (
                             <div className="grid grid-cols-2 gap-4 p-4 bg-surface rounded-xl mb-4">
                                 {detailedCategories.map(cat => {
-                                    const { tx } = useTranslation();
                                     const value = review.detailed_ratings[cat.key as keyof typeof review.detailed_ratings] || 0;
                                     return (
                                         <div key={cat.key} className="flex items-center justify-between">

@@ -293,6 +293,7 @@ interface ReviewsSummaryProps {
 }
 
 export function ReviewsSummary({ totalReviews, averageRating, ratingDistribution }: ReviewsSummaryProps) {
+    const { tx } = useTranslation();
     return (
         <div className="bg-surface rounded-xl p-6">
             <div className="flex items-center gap-8">
@@ -316,7 +317,6 @@ export function ReviewsSummary({ totalReviews, averageRating, ratingDistribution
                 {/* Distribution */}
                 <div className="flex-1 space-y-2">
                     {[5, 4, 3, 2, 1].map((star) => {
-                        const { tx } = useTranslation();
                         const count = ratingDistribution[star] || 0;
                         const percentage = totalReviews > 0 ? (count / totalReviews) * 100 : 0;
 

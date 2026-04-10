@@ -1,7 +1,14 @@
 import { logger } from '@/lib/logger';
 import { Component, type ReactNode } from 'react';
 import { AlertCircle, RefreshCw, Home } from 'lucide-react';
-import { useTranslation } from "../i18n";
+
+// tx is not available in class components, so we'll use direct translation keys
+const errorMessages = {
+    title: 'حدث خطأ ما',
+    description: 'عذراً، حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى.',
+    retry: 'إعادة المحاولة',
+    goHome: 'العودة للرئيسية'
+};
 
 interface Props {
     children: ReactNode;
@@ -50,10 +57,12 @@ export class ErrorBoundary extends Component<Props, State> {
                         </div>
 
                         <h2 className="text-2xl font-bold text-foreground dark:text-white mb-3">
-                            {tx('dynamic_key_218823582')}</h2>
+                            {errorMessages.title}
+                        </h2>
 
                         <p className="text-muted-foreground mb-6">
-                            {tx('dynamic_key_426109629')}</p>
+                            {errorMessages.description}
+                        </p>
 
                         {this.state.error && (
                             <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-3 mb-6 text-sm text-red-600 dark:text-red-400 text-start overflow-auto max-h-24">
@@ -67,13 +76,15 @@ export class ErrorBoundary extends Component<Props, State> {
                                 className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-medium transition-colors"
                             >
                                 <RefreshCw className="w-4 h-4" />
-                                {tx('dynamic_key_131381918')}</button>
+                                {errorMessages.retry}
+                            </button>
                             <button
                                 onClick={this.handleGoHome}
                                 className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-muted dark:bg-dark-700 hover:bg-secondary dark:hover:bg-dark-600 text-muted-foreground rounded-xl font-medium transition-colors"
                             >
                                 <Home className="w-4 h-4" />
-                                {tx('dynamic_key_1999631066')}</button>
+                                {errorMessages.goHome}
+                            </button>
                         </div>
                     </div>
                 </div>

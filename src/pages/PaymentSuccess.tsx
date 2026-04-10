@@ -20,7 +20,7 @@ type VerificationStatus = 'verifying' | 'success' | 'failed';
  * - Fixed field name: 'amount' instead of 'budget'
  */
 const PaymentSuccess = () => {
-    const { dir } = useTranslation();
+    const { dir, tx } = useTranslation();
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
 

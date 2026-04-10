@@ -37,6 +37,7 @@ export default function ReviewModal({
     revieweeName,
     projectTitle,
 }: ReviewModalProps) {
+    const { tx } = useTranslation();
     const [overallRating, setOverallRating] = useState(0);
     const [hoverRating, setHoverRating] = useState(0);
     const [detailedRatings, setDetailedRatings] = useState({

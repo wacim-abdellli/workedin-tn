@@ -54,7 +54,7 @@ interface FreelancerWithSkills {
 
 function JobMatches() {
     const { jobId } = useParams<{ jobId: string }>();
-    const { t, language } = useTranslation();
+    const { t, language, tx } = useTranslation();
     const { showToast } = useToast();
     const navigate = useNavigate();
 
@@ -262,7 +262,6 @@ function JobMatches() {
                     {/* Freelancer Cards */}
                     <div className="space-y-6">
                         {matches.map((match, index) => {
-                            const { tx } = useTranslation();
                             const isExpanded = expandedId === match.id;
                             const freelancer = match.freelancer;
 
