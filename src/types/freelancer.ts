@@ -30,6 +30,13 @@ export interface FreelancerProfilePublicRow {
     languages: FreelancerData['languages'] | null;
     education: FreelancerData['education'] | null;
     certifications: FreelancerData['certifications'] | null;
+    years_experience: number | null;
+    tools: string[] | null;
+    industries: string[] | null;
+    portfolio_links: string[] | null;
+    weekly_availability_hours: number | null;
+    revision_policy: string | null;
+    project_preferences: Record<string, unknown> | null;
     jobs_completed: number | null;
     response_time_hours: number | null;
     repeat_clients: number | null;
@@ -95,6 +102,13 @@ export interface FreelancerData {
     languages: Array<{ language: string; proficiency: string }>;
     education: Array<{ institution: string; degree: string; field: string; startYear: string; endYear: string }>;
     certifications: Array<{ name: string; issuer: string; year: string }>;
+    years_experience?: number;
+    tools?: string[];
+    industries?: string[];
+    portfolio_links?: string[];
+    weekly_availability_hours?: number;
+    revision_policy?: string;
+    project_preferences?: Record<string, unknown>;
     stats: {
         jobs_completed: number;
         rating: number;

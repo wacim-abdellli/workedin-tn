@@ -8,6 +8,7 @@ interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
     hint?: string;
     placeholder?: string;
     options: Array<{ value: string; label: string; disabled?: boolean }>;
+    variant?: 'freelancer' | 'client';
 }
 
 /**
@@ -24,30 +25,49 @@ interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
  * />
  */
 const Select = forwardRef<HTMLSelectElement, SelectProps>(
-    ({ label, error, hint, placeholder, options, className = '', ...props }, ref) => {
+    ({ label, error, hint, placeholder, options, className = '', variant = 'client', ...props }, ref) => {
+        // Role-specific colors
+        const colors = variant === 'freelancer'
+            ? {
+                focus: 'focus:border-purple-500 focus:ring-purple-500/20',
+                icon: 'text-purple-400',
+                optionSelected: '[&>option:checked]:bg-purple-500/20 [&>option:checked]:text-purple-300',
+                optionHover: '[&>option:hover]:bg-purple-500/10',
+            }
+            : {
+                focus: 'focus:border-[#E8820C] focus:ring-[#E8820C]/20',
+                icon: 'text-[#E8820C]',
+                optionSelected: '[&>option:checked]:bg-[#E8820C]/20 [&>option:checked]:text-amber-300',
+                optionHover: '[&>option:hover]:bg-[#E8820C]/10',
+            };
+
         const selectStyles = `
             w-full
             appearance-none
-            rounded-[var(--radius-md)]
+            rounded-xl
             border
-            bg-[var(--color-background-base)]
-            text-[var(--color-text-primary)]
-            text-[var(--font-fontSize-base)]
-            px-[var(--input-padding-x)]
-            py-[var(--input-padding-y)]
+            border-gray-800
+            bg-[#111111]
+            text-white
+            text-base
+            px-4
+            py-3
             pe-10
-            shadow-[var(--shadow-elevation-0)]
-            transition-all duration-[var(--animation-focus-duration)] ease-[var(--animation-focus-easing)]
+            shadow-sm
+            transition-all
+            duration-200
+            hover:border-gray-700
             focus:outline-none 
             focus:ring-2 
             focus:ring-offset-0
+            ${colors.focus}
             ${error
-                ? 'border-[var(--red-500)] focus:border-[var(--red-500)] focus:ring-[var(--red-500)]/20'
-                : 'border-[var(--color-border-default)] hover:border-[var(--color-border-strong)] focus:border-[var(--color-brand-primary)] focus:ring-[var(--color-brand-primary)]/20'
+                ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
+                : ''
             }
             disabled:cursor-not-allowed 
             disabled:opacity-50 
-            disabled:bg-[var(--color-background-muted)]
+            disabled:bg-[#0a0a0a]
         `;
 
         const selectId = props.id || props.name;
@@ -60,7 +80,7 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
                 {label && (
                     <label
                         htmlFor={selectId}
-                        className="mb-2 block text-[var(--font-fontSize-sm)] font-[var(--font-fontWeight-medium)] text-[var(--color-text-secondary)] transition-colors"
+                        className="mb-2 block text-sm font-medium text-gray-300 transition-colors"
                     >
                         {label}
                     </label>
@@ -72,6 +92,9 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
                         aria-invalid={!!error}
                         aria-describedby={descriptionIds || undefined}
                         className={`${selectStyles} ${className}`}
+                        style={{
+                            colorScheme: 'dark',
+                        }}
                         {...props}
                     >
                         {placeholder && (
@@ -89,7 +112,7 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
                             </option>
                         ))}
                     </select>
-                    <div className="pointer-events-none absolute inset-y-0 end-0 flex items-center pe-3 text-[var(--color-text-disabled)]">
+                    <div className={`pointer-events-none absolute inset-y-0 end-0 flex items-center pe-3 ${colors.icon}`}>
                         <ChevronDown className="w-5 h-5" />
                     </div>
                 </div>
@@ -97,7 +120,7 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
                     <p
                         id={errorId}
                         role="alert"
-                        className="mt-1.5 text-[var(--font-fontSize-sm)] text-[var(--red-500)] font-[var(--font-fontWeight-medium)]"
+                        className="mt-1.5 text-sm text-red-400 font-medium"
                     >
                         {error}
                     </p>
@@ -105,7 +128,7 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
                 {hint && !error && (
                     <p
                         id={hintId}
-                        className="mt-1.5 text-[var(--font-fontSize-sm)] text-[var(--color-text-tertiary)]"
+                        className="mt-1.5 text-sm text-gray-400"
                     >
                         {hint}
                     </p>

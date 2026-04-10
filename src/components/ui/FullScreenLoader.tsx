@@ -32,18 +32,16 @@ export default function FullScreenLoader({
       <div className="relative z-10 flex flex-col items-center gap-8 animate-[fade-in_0.6s_ease-out]">
 
         {/* Logo card */}
-        <div className="relative flex h-24 w-24 items-center justify-center rounded-[22px] shadow-2xl"
+        <div className="relative flex h-28 w-28 items-center justify-center rounded-3xl"
           style={{
-            background: 'linear-gradient(145deg, #1a1a1a, #111)',
-            border: '1px solid rgba(255,255,255,0.08)',
-            boxShadow: '0 0 0 1px rgba(255,255,255,0.04), 0 32px 64px -16px rgba(0,0,0,0.8), 0 0 80px -20px color-mix(in srgb, var(--workspace-accent) 40%, transparent)',
+            background: 'transparent',
           }}
         >
           {/* Spinning accent ring */}
           <div
-            className="absolute inset-[-2px] rounded-[24px] animate-[spin_3s_linear_infinite]"
+            className="absolute inset-0 rounded-3xl animate-[spin_3s_linear_infinite]"
             style={{
-              background: 'conic-gradient(from 0deg, transparent 0%, transparent 70%, color-mix(in srgb, var(--workspace-accent, #d97706) 80%, transparent) 100%)',
+              background: 'conic-gradient(from 0deg, transparent 0%, transparent 70%, color-mix(in srgb, var(--workspace-accent, #d97706) 60%, transparent) 100%)',
               borderRadius: '24px',
               WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
               WebkitMaskComposite: 'xor',
@@ -54,9 +52,10 @@ export default function FullScreenLoader({
           <img
             src={LOADER_LOGO}
             alt="WorkedIn"
-            className="h-14 w-14 object-contain rounded-[10px]"
-            width={56}
-            height={56}
+            className="h-16 w-16 object-contain relative z-10"
+            style={{ filter: 'drop-shadow(0 0 20px rgba(217, 119, 6, 0.3))' }}
+            width={64}
+            height={64}
             decoding="async"
           />
         </div>

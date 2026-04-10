@@ -17,6 +17,7 @@ interface OnboardingShellProps {
     steps: OnboardingStepItem[];
     main: ReactNode;
     aside?: ReactNode;
+    role?: 'freelancer' | 'client';
 }
 
 export default function OnboardingShell({
@@ -28,89 +29,125 @@ export default function OnboardingShell({
     steps,
     main,
     aside,
+    role = 'client',
 }: OnboardingShellProps) {
     const { tx } = useTranslation();
     const completion = Math.round((currentStep / totalSteps) * 100);
+    
+    // Role-specific colors
+    const colors = role === 'freelancer' 
+        ? {
+            badge: 'from-purple-500/10 to-violet-500/10 border-purple-500/30 text-purple-400',
+            progress: 'from-purple-500 to-violet-500 shadow-purple-500/30',
+            progressText: 'text-purple-400',
+            progressGlow: 'bg-purple-500/10',
+            currentStep: 'border-purple-500/50 bg-gradient-to-br from-purple-500/10 to-violet-500/10 shadow-lg shadow-purple-500/10',
+            completedStep: 'border-purple-500/30 bg-gradient-to-br from-purple-500/5 to-violet-500/5',
+            stepIcon: 'bg-gradient-to-r from-purple-500 to-violet-500 shadow-lg shadow-purple-500/30',
+            stepIconCompleted: 'bg-gradient-to-r from-purple-500 to-violet-500 shadow-lg shadow-purple-500/20',
+        }
+        : {
+            badge: 'from-[#E8820C]/10 to-amber-500/10 border-[#E8820C]/30 text-[#E8820C]',
+            progress: 'from-[#E8820C] to-amber-500 shadow-[#E8820C]/30',
+            progressText: 'text-[#E8820C]',
+            progressGlow: 'bg-[#E8820C]/10',
+            currentStep: 'border-[#E8820C]/50 bg-gradient-to-br from-[#E8820C]/10 to-amber-500/10 shadow-lg shadow-[#E8820C]/10',
+            completedStep: 'border-[#E8820C]/30 bg-gradient-to-br from-[#E8820C]/5 to-amber-500/5',
+            stepIcon: 'bg-gradient-to-r from-[#E8820C] to-amber-500 shadow-lg shadow-[#E8820C]/30',
+            stepIconCompleted: 'bg-gradient-to-r from-[#E8820C] to-amber-500 shadow-lg shadow-[#E8820C]/20',
+        };
 
     return (
-        <main className="page-shell-content space-y-6">
-            <section className="radius-shell overflow-hidden border border-border/40 bg-[radial-gradient(circle_at_top_left,rgba(139,92,246,0.1),transparent_30%),linear-gradient(135deg,rgba(255,255,255,0.98),rgba(250,250,250,0.94))] p-6 shadow-[0_32px_90px_-48px_rgba(0,0,0,0.1)] dark:border-white/10 dark:border-zinc-800 dark:bg-[radial-gradient(circle_at_top_left,rgba(139,92,246,0.1),transparent_28%),linear-gradient(145deg,rgba(9,9,11,0.98),rgba(15,15,18,0.98))] sm:p-8">
-                    <div className="grid gap-6 xl:grid-cols-[minmax(0,1.08fr)_320px]">
-                        <div className="space-y-5">
-                            <div className="inline-flex items-center gap-2 rounded-full border border-border bg-white dark:bg-zinc-800/80 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-foreground shadow-sm dark:border-white/10 dark:bg-white/5 dark:text-zinc-300">
-                                <Sparkles className="h-3.5 w-3.5" style={{ color: 'var(--workspace-accent)' }} />
+        <main className="min-h-screen bg-[#0c0c0c] px-6 py-8">
+            <div className="max-w-[1400px] mx-auto space-y-6">
+                {/* Hero Section */}
+                <section className="bg-[#111] border border-gray-800 rounded-2xl p-8 shadow-xl">
+                    <div className="grid gap-6 xl:grid-cols-[1fr_320px]">
+                        <div className="space-y-4">
+                            <div className={`inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r ${colors.badge} rounded-full text-xs font-semibold uppercase tracking-wider`}>
+                                <Sparkles className="w-3.5 h-3.5" />
                                 {badge}
                             </div>
 
                             <div>
-                                <h1 className="text-3xl font-semibold tracking-tight text-[#171420] dark:text-white sm:text-4xl">
+                                <h1 className="text-4xl font-bold text-white">
                                     {title}
                                 </h1>
-                                <p className="mt-3 max-w-2xl text-sm leading-7 text-[#5c5971] dark:text-[#aca9bd] sm:text-base">
+                                <p className="mt-3 text-gray-400 leading-relaxed text-lg">
                                     {description}
                                 </p>
                             </div>
                         </div>
 
-                        <div className="rounded-[1.75rem] border border-border bg-white dark:bg-zinc-900/70 p-5 shadow-sm dark:border-white/10 dark:white/[0.04]">
-                            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted dark:text-zinc-400">
+                        {/* Progress Card */}
+                        <div className="relative bg-gradient-to-br from-[#1a1a1a] to-[#0f0f0f] border border-gray-800 rounded-2xl p-6 shadow-lg">
+                            <div className={`absolute top-0 right-0 w-24 h-24 ${colors.progressGlow} rounded-full blur-2xl -z-10`} />
+                            
+                            <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">
                                 {tx('onboarding.currentStep', undefined, 'Current step')}
                             </p>
-                            <h2 className="mt-3 text-xl font-semibold text-foreground">
+                            <h2 className="mt-3 text-xl font-semibold text-white">
                                 {steps[currentStep - 1]?.title}
                             </h2>
-                            <p className="mt-2 text-sm leading-6 text-muted-foreground dark:text-zinc-400">
+                            <p className="mt-2 text-sm text-gray-400">
                                 {steps[currentStep - 1]?.description || `Step ${currentStep} of ${totalSteps}`}
                             </p>
 
-                            <div className="mt-5 space-y-3">
-                                <div className="flex items-center justify-between text-sm font-medium text-foreground dark:text-zinc-300">
-                                    <span>{tx('ui.progress')}</span>
-                                    <span>{completion}%</span>
+                            <div className="mt-6 space-y-2">
+                                <div className="flex items-center justify-between text-sm font-medium text-gray-300">
+                                    <span>Progress</span>
+                                    <span className={colors.progressText}>{completion}%</span>
                                 </div>
-                                <div className="h-2.5 overflow-hidden rounded-full bg-muted dark:bg-white/10">
-                                    <div className="h-full rounded-full transition-[width] duration-300" style={{ width: `${completion}%`, backgroundColor: 'var(--workspace-primary)' }} />
+                                <div className="h-2.5 bg-[#1a1a1a] rounded-full overflow-hidden border border-gray-800">
+                                    <div 
+                                        className={`h-full bg-gradient-to-r ${colors.progress} rounded-full transition-all duration-500`}
+                                        style={{ width: `${completion}%` }} 
+                                    />
                                 </div>
                             </div>
                         </div>
                     </div>
                 </section>
 
-                <section className="premium-panel radius-shell p-4 sm:p-5">
-                    <div className={`grid gap-3 ${steps.length > 1 ? 'md:grid-cols-2' : ''}`}>
-                        {steps.map((step) => {
-                            const { tx } = useTranslation();
+                {/* Steps Overview */}
+                {steps.length > 1 && (
+                <section className="bg-[#111] border border-gray-800 rounded-2xl p-6 shadow-xl">
+                    <div className="grid gap-3 md:grid-cols-2">
+                        {steps.map((step, index) => {
                             const isCompleted = step.id < currentStep;
                             const isCurrent = step.id === currentStep;
 
                             return (
                                 <div
                                     key={step.id}
-                                    className={`rounded-[1.4rem] border p-4 transition-all duration-200 ${isCurrent
-                                        ? 'border-[color-mix(in_srgb,var(--workspace-primary)_25%,transparent)] bg-[color-mix(in_srgb,var(--workspace-primary)_4%,transparent)] shadow-[0_22px_44px_-30px_rgba(0,0,0,0.1)]'
-                                        : isCompleted
-                                            ? 'border-border bg-surface/60 dark:border-white/10 dark:bg-zinc-900/40'
-                                            : 'border-border dark:border-zinc-800 bg-white dark:bg-zinc-900/50'}`}
-                                >
-                                    <div className="flex items-start gap-3">
-                                        <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl text-sm font-semibold ${isCurrent
-                                            ? 'text-white'
+                                    style={{ animationDelay: `${index * 50}ms` }}
+                                    className={`rounded-xl border p-5 transition-all duration-300 animate-in fade-in slide-in-from-bottom-2 ${
+                                        isCurrent
+                                            ? colors.currentStep
                                             : isCompleted
-                                                ? 'bg-muted text-foreground dark:bg-white/10 dark:text-zinc-300'
-                                                : 'bg-muted text-muted dark:bg-white/5 dark:text-zinc-600'}`}
-                                            style={isCurrent ? { backgroundColor: 'var(--workspace-primary)' } : undefined}
-                                        >
-                                            {isCompleted ? <Sparkles className="h-5 w-5" /> : step.id}
+                                            ? colors.completedStep
+                                            : 'border-gray-800 bg-[#0f0f0f]'
+                                    }`}
+                                >
+                                    <div className="flex items-start gap-4">
+                                        <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-sm font-semibold transition-all duration-300 ${
+                                            isCurrent
+                                                ? colors.stepIcon
+                                                : isCompleted
+                                                ? colors.stepIconCompleted
+                                                : 'bg-[#1a1a1a] text-gray-500 border border-gray-800'
+                                        }`}>
+                                            {isCompleted ? <Sparkles className="w-6 h-6" /> : step.id}
                                         </div>
-                                        <div>
-                                            <p className={`text-sm font-semibold ${isCurrent || isCompleted ? 'text-foreground' : 'text-muted dark:text-zinc-400'}`}>
+                                        <div className="flex-1">
+                                            <p className="text-base font-semibold text-white">
                                                 {step.title}
                                             </p>
-                                            {step.description ? (
-                                                <p className="mt-1 text-xs leading-5 text-[#8b8aa0]">
+                                            {step.description && (
+                                                <p className="mt-1 text-sm text-gray-400">
                                                     {step.description}
                                                 </p>
-                                            ) : null}
+                                            )}
                                         </div>
                                     </div>
                                 </div>
@@ -118,17 +155,20 @@ export default function OnboardingShell({
                         })}
                     </div>
                 </section>
+                )}
 
-            <div className={`grid gap-6 ${aside ? 'xl:grid-cols-[minmax(0,1fr)_320px]' : ''}`}>
-                <section className="premium-panel radius-shell overflow-hidden p-6 sm:p-8">
-                    {main}
-                </section>
+                {/* Main Content */}
+                <div className={`grid gap-6 ${aside ? 'xl:grid-cols-[1fr_320px]' : ''}`}>
+                    <section className="bg-[#111] border border-gray-800 rounded-2xl p-8 shadow-xl">
+                        {main}
+                    </section>
 
-                {aside ? (
-                    <aside className="premium-panel radius-shell p-6">
-                        {aside}
-                    </aside>
-                ) : null}
+                    {aside && (
+                        <aside className="bg-[#111] border border-gray-800 rounded-2xl p-6 shadow-xl">
+                            {aside}
+                        </aside>
+                    )}
+                </div>
             </div>
         </main>
     );

@@ -297,10 +297,12 @@ function FreelancerDashboardPage() {
         "Avatar uploaded",
       ),
       done: !!profile?.avatar_url,
+      path: "/settings?tab=profile",
     },
     {
       label: tx("dashboard.freelancer.checklist.bio", undefined, "Bio written"),
       done: (profile?.bio?.length ?? 0) > 20,
+      path: "/settings?tab=profile",
     },
     {
       label: tx(
@@ -309,6 +311,7 @@ function FreelancerDashboardPage() {
         "Skills added",
       ),
       done: (freelancerProfile?.skills?.length ?? 0) > 0,
+      path: "/settings?tab=profile",
     },
     {
       label: tx(
@@ -317,6 +320,7 @@ function FreelancerDashboardPage() {
         "Professional title",
       ),
       done: !!stats?.freelancerTitle,
+      path: "/settings?tab=profile",
     },
     {
       label: tx(
@@ -325,8 +329,35 @@ function FreelancerDashboardPage() {
         "Identity verified",
       ),
       done: !!profile?.cin_verified,
+      path: "/verify-identity",
+    },
+    {
+      label: tx(
+        "dashboard.freelancer.checklist.tools",
+        undefined,
+        "Tools listed",
+      ),
+      done: (freelancerProfile?.tools?.length ?? 0) > 0,
+      path: "/onboarding/freelancer",
+    },
+    {
+      label: tx(
+        "dashboard.freelancer.checklist.preferences",
+        undefined,
+        "Project preferences",
+      ),
+      done:
+        typeof freelancerProfile?.project_preferences === "object" &&
+        freelancerProfile?.project_preferences !== null &&
+        "summary" in freelancerProfile.project_preferences &&
+        typeof freelancerProfile.project_preferences.summary === "string" &&
+        freelancerProfile.project_preferences.summary.trim().length > 10,
+      path: "/onboarding/freelancer",
     },
   ];
+
+  const nextProfileFixPath =
+    checklist.find((item) => !item.done)?.path || "/settings?tab=profile";
 
   const profileCompletion = Math.round(
     (checklist.filter((item) => item.done).length / checklist.length) * 100,
@@ -957,6 +988,21 @@ function FreelancerDashboardPage() {
                       </div>
                     ))}
                   </div>
+                  {profileCompletion < 100 && (
+                    <Button
+                      type="button"
+                      size="sm"
+                      className="mt-[var(--spacing-4)] w-full"
+                      rightIcon={<ArrowRight className="w-4 h-4" />}
+                      onClick={() => navigate(nextProfileFixPath)}
+                    >
+                      {tx(
+                        "dashboard.freelancer.profileStrength.completeProfile",
+                        undefined,
+                        "Complete profile",
+                      )}
+                    </Button>
+                  )}
                 </div>
               </DashWidget>
             </m.div>

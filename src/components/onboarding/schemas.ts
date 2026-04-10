@@ -16,3 +16,31 @@ export const step2Schema = z.object({
 });
 
 export type Step2FormData = z.infer<typeof step2Schema>;
+
+export const freelancerStep3Schema = z.object({
+    years_experience: z.string().optional(),
+    tools: z.string().optional(),
+    industries: z.string().optional(),
+    portfolio_links: z.string().optional(),
+    weekly_availability_hours: z.string().optional(),
+    revision_policy: z.string().max(400, 'Maximum 400 characters').optional(),
+    project_preferences: z.string().max(600, 'Maximum 600 characters').optional(),
+});
+
+export type FreelancerStep3FormData = z.infer<typeof freelancerStep3Schema>;
+
+export const clientStep2Schema = z.object({
+    company_name: z.string().trim().min(2, 'Minimum 2 characters'),
+    company_website: z.string().trim().url('Invalid URL').optional().or(z.literal('')),
+    company_industry: z.string().trim().min(2, 'Minimum 2 characters'),
+    company_size: z.string().trim().min(1, 'Required'),
+    company_role: z.string().trim().min(2, 'Minimum 2 characters'),
+    hiring_needs: z.string().trim().min(2, 'Add at least one hiring need'),
+    project_budget_preference: z.string().trim().min(2, 'Required'),
+    project_timeline_preference: z.string().trim().min(2, 'Required'),
+    communication_preferences: z.string().trim().max(400, 'Maximum 400 characters').optional(),
+    screening_preferences: z.string().trim().max(400, 'Maximum 400 characters').optional(),
+    legal_preferences: z.string().trim().max(400, 'Maximum 400 characters').optional(),
+});
+
+export type ClientStep2FormData = z.infer<typeof clientStep2Schema>;

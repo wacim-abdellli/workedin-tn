@@ -363,10 +363,10 @@ export default function AccountPanel({
                   <Link
                     to={profilePath}
                     onClick={onClose}
-                    className="mt-4 inline-flex min-h-[44px] w-full items-center justify-between rounded-2xl border border-border border-border bg-card bg-card px-4 py-3 text-sm font-semibold text-foreground transition-all hover:border-purple-200 hover:bg-purple-50 dark:border-white/10 dark:bg-card/5 dark:text-white dark:hover:border-purple-500/30 dark:hover:bg-card bg-card/10"
+                    className="mt-4 inline-flex min-h-[44px] w-full items-center justify-between rounded-2xl bg-[#1a1a1a] hover:bg-[#222] px-4 py-3 text-sm font-semibold text-white transition-all duration-300"
                   >
                     <span>{t.publicProfile.editProfile}</span>
-                    <ChevronRight className="h-4 w-4 text-muted rtl:rotate-180" />
+                    <ChevronRight className="h-4 w-4 text-gray-400 rtl:rotate-180" />
                   </Link>
                 </section>
 
@@ -440,16 +440,19 @@ export default function AccountPanel({
                           onClick={() => void handleSwitchMode(item.mode)}
                           disabled={isSwitching || isActive}
                           className={cn(
-                            'rounded-[24px] border p-4 text-start transition-all duration-200',
-                            'border-border border-border bg-card bg-card hover:border-purple-300 dark:border-white/10 dark:bg-card/5 dark:hover:border-purple-500/40',
-                            isActive && accentClasses,
+                            'rounded-2xl p-4 text-start transition-all duration-300',
+                            isActive 
+                              ? item.accent === 'purple'
+                                ? 'bg-gradient-to-br from-purple-500/10 to-violet-500/10'
+                                : 'bg-gradient-to-br from-[#E8820C]/10 to-amber-500/10'
+                              : 'bg-[#1a1a1a] hover:bg-[#222]',
                             isActive && 'cursor-default'
                           )}
                         >
                           <div className="flex items-start gap-3">
                             <div className={cn('flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-2xl relative', iconClasses)}>
                               {isActive && (
-                                <div className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-white border-border shadow-lg animate-pulse" />
+                                <div className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-[#0c0c0c] shadow-lg animate-pulse" />
                               )}
                               {isSwitchingThis ? <Loader2 className="h-5 w-5 animate-spin" /> : <Icon className="h-5 w-5" />}
                             </div>
@@ -587,15 +590,15 @@ function ActionLink({
     <Link
       to={to}
       onClick={onClick}
-      className="inline-flex min-h-[44px] items-center justify-between gap-3 rounded-2xl border border-border border-border bg-card bg-card px-4 py-3 text-sm font-semibold text-foreground transition-all hover:border-purple-200 hover:bg-purple-50 dark:border-white/10 dark:bg-card/5 dark:text-white dark:hover:border-purple-500/30 dark:hover:bg-card bg-card/10"
+      className="inline-flex min-h-[44px] items-center justify-between gap-3 rounded-2xl bg-[#1a1a1a] hover:bg-[#222] px-4 py-3 text-sm font-semibold text-white transition-all duration-300"
     >
       <span className="flex items-center gap-3">
-        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-muted text-muted dark:bg-card/10">
+        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#0f0f0f]">
           {icon}
         </span>
         <span>{label}</span>
       </span>
-      <ChevronRight className="h-4 w-4 text-muted rtl:rotate-180" />
+      <ChevronRight className="h-4 w-4 text-gray-400 rtl:rotate-180" />
     </Link>
   );
 }

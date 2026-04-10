@@ -78,7 +78,8 @@ export async function switchWorkspace({
   const target = getWorkspaceTargetRoute(nextProfile, freelancerProfile, targetWorkspace);
   sessionStorage.setItem('workspace_switched', targetWorkspace);
 
-  navigate('/', {
+  // Navigate directly to the target dashboard instead of home page
+  navigate(target.path, {
     state: {
       switching: true,
       workspace: targetWorkspace,

@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { Briefcase, Zap, DollarSign } from 'lucide-react';
 
 import { useTranslation } from '../i18n';
 import { useAuth } from '../contexts/AuthContext';
@@ -16,12 +17,15 @@ import SEO, { SEO_CONFIG } from '../components/common/SEO';
 import OnboardingShell from '../components/onboarding/OnboardingShell';
 import OnboardingStep1 from '../components/onboarding/OnboardingStep1';
 import OnboardingStep2 from '../components/onboarding/OnboardingStep2';
+import OnboardingStep3 from '../components/onboarding/OnboardingStep3';
 import { FullScreenLoader } from '../components/ui';
 import {
     step1Schema,
     type Step1FormData,
     step2Schema,
     type Step2FormData,
+    freelancerStep3Schema,
+    type FreelancerStep3FormData,
 } from '../components/onboarding/schemas';
 
 function FreelancerOnboarding() {
@@ -56,6 +60,19 @@ function FreelancerOnboarding() {
         },
     });
 
+    const step3Form = useForm<FreelancerStep3FormData>({
+        resolver: zodResolver(freelancerStep3Schema),
+        defaultValues: {
+            years_experience: '',
+            tools: '',
+            industries: '',
+            portfolio_links: '',
+            weekly_availability_hours: '',
+            revision_policy: '',
+            project_preferences: '',
+        },
+    });
+
     useEffect(() => {
         let step1Values = {
             full_name: profile?.full_name || '',
@@ -70,14 +87,30 @@ function FreelancerOnboarding() {
             availability: freelancerProfile?.availability || 'available',
         };
 
+        let step3Values = {
+            years_experience: freelancerProfile?.years_experience ? String(freelancerProfile.years_experience) : '',
+            tools: toCsv(freelancerProfile?.tools),
+            industries: toCsv(freelancerProfile?.industries),
+            portfolio_links: toCsv(freelancerProfile?.portfolio_links),
+            weekly_availability_hours: freelancerProfile?.weekly_availability_hours ? String(freelancerProfile.weekly_availability_hours) : '',
+            revision_policy: freelancerProfile?.revision_policy || '',
+            project_preferences: typeof freelancerProfile?.project_preferences?.summary === 'string'
+                ? freelancerProfile.project_preferences.summary
+                : '',
+        };
+
         try {
             const draft1 = localStorage.getItem(`freelancer_draft_1_${user?.id}`);
             const draft2 = localStorage.getItem(`freelancer_draft_2_${user?.id}`);
+            const draft3 = localStorage.getItem(`freelancer_draft_3_${user?.id}`);
             if (draft1) {
                 step1Values = { ...step1Values, ...JSON.parse(draft1) };
             }
             if (draft2) {
                 step2Values = { ...step2Values, ...JSON.parse(draft2) };
+            }
+            if (draft3) {
+                step3Values = { ...step3Values, ...JSON.parse(draft3) };
             }
         } catch {
             // Ignore invalid JSON in localStorage draft
@@ -85,6 +118,7 @@ function FreelancerOnboarding() {
 
         step1Form.reset(step1Values);
         step2Form.reset(step2Values);
+        step3Form.reset(step3Values);
         const skillsMap = Object.fromEntries(PREDEFINED_SKILLS.map((skill) => [skill.id, skill]));
         const existingSkills = (freelancerProfile?.skills || [])
             .map((skill) => {
@@ -94,7 +128,7 @@ function FreelancerOnboarding() {
             .filter(Boolean) as Skill[];
 
         setSelectedSkills(existingSkills);
-    }, [freelancerProfile, profile, step1Form, step2Form]);
+    }, [freelancerProfile, profile, step1Form, step2Form, step3Form]);
 
     // Block navigation away from onboarding until complete
     useEffect(() => {
@@ -111,7 +145,7 @@ function FreelancerOnboarding() {
         };
     }, []);
 
-    const totalSteps = 2;
+    const totalSteps = 3;
 
     const getSkillName = (skill: Skill) => {
         switch (language) {
@@ -131,11 +165,15 @@ function FreelancerOnboarding() {
         const sub2 = step2Form.watch((value) => {
             if (user?.id) localStorage.setItem(`freelancer_draft_2_${user.id}`, JSON.stringify(value));
         });
+        const sub3 = step3Form.watch((value) => {
+            if (user?.id) localStorage.setItem(`freelancer_draft_3_${user.id}`, JSON.stringify(value));
+        });
         return () => {
             sub1.unsubscribe();
             sub2.unsubscribe();
+            sub3.unsubscribe();
         };
-    }, [step1Form.watch, step2Form.watch, user?.id]);
+    }, [step1Form.watch, step2Form.watch, step3Form.watch, user?.id]);
 
     const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -219,18 +257,38 @@ function FreelancerOnboarding() {
             }
 
             logger.log('[Onboarding] STEP 1: Updating profile via Supabase client...');
-            await updateProfileWithTimeout(
-                user.id,
-                {
-                    full_name: profileUpdate.full_name,
-                    phone: data.phone,
-                    location: profileUpdate.location,
-                    bio: data.bio,
-                    user_type: profileUpdate.user_type,
-                    avatar_url: profileUpdate.avatar_url,
-                    updated_at: new Date().toISOString(),
+            const normalizedPhone = normalizeOptionalPhone(data.phone);
+            const baseProfilePayload = {
+                full_name: profileUpdate.full_name,
+                location: profileUpdate.location,
+                bio: data.bio,
+                user_type: profileUpdate.user_type,
+                avatar_url: profileUpdate.avatar_url,
+                updated_at: new Date().toISOString(),
+            };
+
+            try {
+                await updateProfileWithTimeout(
+                    user.id,
+                    {
+                        ...baseProfilePayload,
+                        phone: normalizedPhone,
+                    }
+                );
+            } catch (profileUpdateError) {
+                if (!isPhoneUniqueViolation(profileUpdateError)) {
+                    throw profileUpdateError;
                 }
-            );
+
+                const phoneTakenMessage = tx(
+                    'onboarding.freelancer.phoneTaken',
+                    undefined,
+                    'This phone number is already in use by another account. Please use a different number.'
+                );
+                step1Form.setError('phone', { type: 'server', message: phoneTakenMessage });
+                showToast(phoneTakenMessage, 'error');
+                return;
+            }
             logger.log('[Onboarding] Profile saved to Supabase!');
 
             logger.log('[Onboarding] Saving freelancer profile via Supabase client upsert...');
@@ -291,9 +349,9 @@ function FreelancerOnboarding() {
         }
 
         setIsLoading(true);
-        let shouldNavigate = false;
+        let shouldAdvance = false;
         try {
-            logger.log('[Onboarding] Step 2: Saving skills and completing onboarding...');
+            logger.log('[Onboarding] Step 2: Saving core freelancer setup...');
 
             const skillsData = {
                 skills: selectedSkills.map((s) => skillToEntry(s)),
@@ -338,8 +396,60 @@ function FreelancerOnboarding() {
                 }
                 throw new Error(t.onboarding.freelancer.skillsSaveFailed || `Failed to save skills: ${msg}`);
             }
+            shouldAdvance = true;
+        } catch (error) {
+            logger.error('Step 2 error:', error);
+            const errorMessage = error instanceof Error ? error.message : t.common.error;
+            showToast(errorMessage, 'error');
+        } finally {
+            setIsLoading(false);
+        }
 
-            logger.log('[Onboarding] Marking onboarding as complete...');
+        if (shouldAdvance) {
+            setStep(3);
+            showToast(tx('onboarding.freelancer.step2Saved', undefined, 'Skills and rate saved'), 'success');
+        }
+    };
+
+    const onStep3Submit = async (data: FreelancerStep3FormData) => {
+        if (!user) {
+            showToast(t.common.error, 'error');
+            return;
+        }
+
+        setIsLoading(true);
+        let shouldNavigate = false;
+        try {
+            const detailsPayload = {
+                years_experience: parseOptionalNumber(data.years_experience),
+                tools: parseCsv(data.tools),
+                industries: parseCsv(data.industries),
+                portfolio_links: parseCsv(data.portfolio_links),
+                weekly_availability_hours: parseOptionalNumber(data.weekly_availability_hours),
+                revision_policy: normalizeOptionalText(data.revision_policy),
+                project_preferences: {
+                    summary: normalizeOptionalText(data.project_preferences),
+                },
+                updated_at: new Date().toISOString(),
+            };
+
+            try {
+                await upsertFreelancerProfileWithTimeout({
+                    id: user.id,
+                    ...detailsPayload,
+                });
+            } catch (freelancerUpsertErr) {
+                if (!isRlsInsertViolation(freelancerUpsertErr)) throw freelancerUpsertErr;
+
+                await ensureFreelancerProfileExists(
+                    profile?.user_type === 'both' ? 'both' : 'freelancer'
+                );
+                await updateFreelancerProfileWithTimeout(
+                    user.id,
+                    detailsPayload
+                );
+            }
+
             await updateProfileWithTimeout(
                 user.id,
                 {
@@ -348,7 +458,6 @@ function FreelancerOnboarding() {
                     updated_at: new Date().toISOString(),
                 }
             );
-            logger.log('[Onboarding] Onboarding marked complete!');
 
             void Promise.race([
                 refreshProfile(),
@@ -358,11 +467,12 @@ function FreelancerOnboarding() {
             if (user?.id) {
                 localStorage.removeItem(`freelancer_draft_1_${user.id}`);
                 localStorage.removeItem(`freelancer_draft_2_${user.id}`);
+                localStorage.removeItem(`freelancer_draft_3_${user.id}`);
             }
 
             shouldNavigate = true;
         } catch (error) {
-            logger.error('Step 2 error:', error);
+            logger.error('Step 3 error:', error);
             const errorMessage = error instanceof Error ? error.message : t.common.error;
             showToast(errorMessage, 'error');
         } finally {
@@ -395,6 +505,11 @@ function FreelancerOnboarding() {
             title: t.onboarding.freelancer.stepSkillsExperience || 'Skills and experience',
             description: tx('onboarding.freelancer.step2Description', undefined, 'Choose the skills and availability clients will use to evaluate your fit.'),
         },
+        {
+            id: 3,
+            title: tx('onboarding.freelancer.step3Title', undefined, 'Proof and delivery setup'),
+            description: tx('onboarding.freelancer.step3Description', undefined, 'Add your tools, portfolio links, and delivery expectations to make your profile hiring-ready.'),
+        },
     ];
 
     return (
@@ -403,6 +518,7 @@ function FreelancerOnboarding() {
             <Header />
 
             <OnboardingShell
+                role="freelancer"
                 badge={tx('onboarding.freelancer.badge', undefined, 'Freelancer onboarding')}
                 title={t.onboarding.freelancer.welcome}
                 description={tx('onboarding.freelancer.heroDescription', undefined, 'Build a profile clients can trust quickly: start with your visible identity, then define the skills and availability that shape your first opportunities.')}
@@ -432,23 +548,29 @@ function FreelancerOnboarding() {
                                     toggleSkill={toggleSkill}
                                     getSkillName={getSkillName}
                                 />
-                                <div className="mt-6 text-center text-sm text-muted">
-                                    <p>{t.onboarding.freelancer.completeLaterHint || 'You can add certificates, portfolio, and additional profile details later from Settings.'}</p>
-                                </div>
                             </>
+                        )}
+                        {step === 3 && (
+                            <OnboardingStep3
+                                form={step3Form}
+                                onSubmit={onStep3Submit}
+                                onBack={() => setStep(2)}
+                                isLoading={isLoading}
+                            />
                         )}
                     </div>
                 }
                 aside={
-                    <div className="space-y-5">
-                        <div>
-                            <p className="text-xs font-semibold uppercase tracking-wider text-violet-600 dark:text-violet-400">
+                    <div className="space-y-6">
+                        <div className="relative bg-gradient-to-br from-purple-500/10 to-violet-500/10 border border-purple-500/30 rounded-2xl p-6">
+                            <div className="absolute top-0 right-0 w-24 h-24 bg-purple-500/10 rounded-full blur-2xl -z-10" />
+                            <p className="text-xs font-semibold uppercase tracking-wider text-purple-400">
                                 {tx('onboarding.freelancer.summaryBadge', undefined, 'Why this matters')}
                             </p>
-                            <h3 className="mt-3 text-xl font-semibold text-gray-900 dark:text-white">
+                            <h3 className="mt-3 text-xl font-bold text-white">
                                 {tx('onboarding.freelancer.summaryTitle', undefined, 'Clients decide in seconds')}
                             </h3>
-                            <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                            <p className="mt-2 text-sm text-gray-300 leading-relaxed">
                                 {tx('onboarding.freelancer.summaryDescription', undefined, 'A stronger first profile creates better trust, better proposal odds, and cleaner matching before your portfolio is even explored.')}
                             </p>
                         </div>
@@ -456,30 +578,36 @@ function FreelancerOnboarding() {
                         <div className="space-y-3">
                             {[
                                 {
+                                    icon: 'Briefcase',
                                     title: tx('onboarding.freelancer.summaryPoint1', undefined, 'Use a clear professional title'),
                                     description: tx('onboarding.freelancer.summaryPoint1Desc', undefined, 'Your title is the fastest cue clients use to understand whether you fit the work.'),
                                 },
                                 {
+                                    icon: 'Zap',
                                     title: tx('onboarding.freelancer.summaryPoint2', undefined, 'Choose skills carefully'),
                                     description: tx('onboarding.freelancer.summaryPoint2Desc', undefined, 'A smaller, more relevant skill stack usually performs better than a noisy one.'),
                                 },
                                 {
+                                    icon: 'DollarSign',
                                     title: tx('onboarding.freelancer.summaryPoint3', undefined, 'Set a believable starting rate'),
                                     description: tx('onboarding.freelancer.summaryPoint3Desc', undefined, 'Your first rate should feel credible for your current profile depth and market position.'),
                                 },
-                            ].map((item, index) => (
-                                <div key={item.title} className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
-                                    <div className="flex items-start gap-3">
-                                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-violet-500 text-sm font-semibold text-white">
-                                            {index + 1}
-                                        </div>
-                                        <div>
-                                            <p className="text-sm font-semibold text-gray-900 dark:text-white">{item.title}</p>
-                                            <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">{item.description}</p>
+                            ].map((item) => {
+                                const IconComponent = item.icon === 'Briefcase' ? Briefcase : item.icon === 'Zap' ? Zap : DollarSign;
+                                return (
+                                    <div key={item.title} className="relative bg-gradient-to-br from-[#1a1a1a] to-[#0f0f0f] border border-gray-800 rounded-xl p-4 hover:border-purple-500/50 transition-all duration-300 group">
+                                        <div className="flex items-start gap-3">
+                                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-purple-500 to-violet-500 shadow-lg shadow-purple-500/30 group-hover:scale-110 transition-transform">
+                                                <IconComponent className="w-5 h-5 text-white" />
+                                            </div>
+                                            <div className="flex-1">
+                                                <p className="text-sm font-semibold text-white">{item.title}</p>
+                                                <p className="mt-1 text-sm text-gray-400">{item.description}</p>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     </div>
                 }
@@ -556,6 +684,43 @@ function isRlsInsertViolation(error: unknown): boolean {
     if (!(error instanceof Error)) return false;
     const code = 'code' in error && typeof error.code === 'string' ? error.code : '';
     return code === '42501' || error.message.includes('42501') || error.message.includes('row-level security policy');
+}
+
+function normalizeOptionalPhone(phone: string | undefined): string | undefined {
+    const trimmed = phone?.trim() || '';
+    return trimmed.length > 0 ? trimmed : undefined;
+}
+
+function normalizeOptionalText(value: string | undefined): string | undefined {
+    const trimmed = value?.trim() || '';
+    return trimmed.length > 0 ? trimmed : undefined;
+}
+
+function parseOptionalNumber(value: string | undefined): number | undefined {
+    if (!value || value.trim() === '') return undefined;
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : undefined;
+}
+
+function parseCsv(value: string | undefined): string[] {
+    if (!value) return [];
+    return value
+        .split(',')
+        .map((item) => item.trim())
+        .filter(Boolean);
+}
+
+function toCsv(value: unknown): string {
+    if (!Array.isArray(value)) return '';
+    return value.filter((item) => typeof item === 'string').join(', ');
+}
+
+function isPhoneUniqueViolation(error: unknown): boolean {
+    if (!error || typeof error !== 'object') return false;
+    const maybeCode = 'code' in error && typeof error.code === 'string' ? error.code : '';
+    const maybeMessage = 'message' in error && typeof error.message === 'string' ? error.message : '';
+    return maybeCode === '23505'
+        && (maybeMessage.includes('profiles_phone_key') || maybeMessage.includes('phone'));
 }
 
 async function ensureFreelancerProfileExists(
