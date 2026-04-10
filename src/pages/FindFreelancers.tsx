@@ -86,9 +86,9 @@ export default function FindFreelancers() {
 
     // Fetch real freelancers from DB
     const { data: freelancersData, isLoading } = useQuery({
-        queryKey: ['freelancers', searchQuery],
+        queryKey: ['freelancers'],
         queryFn: async () => {
-            const { data, error } = await profilesService.getFreelancers({ search: searchQuery || undefined, excludeId: user?.id });
+            const { data, error } = await profilesService.getFreelancers({ excludeId: user?.id });
             if (error) { console.error('getFreelancers error:', error); return []; }
             return (data || []).map((p: ProfileWithFreelancer) => {
                 const fp = Array.isArray(p.freelancer_profiles) 
@@ -146,6 +146,15 @@ export default function FindFreelancers() {
     const filteredFreelancers = useMemo(() => {
         return [...(freelancersData || [])]
             .filter((freelancer) => {
+                // Client-side search filter (searches in name, title, and skills)
+                if (searchQuery) {
+                    const query = searchQuery.toLowerCase();
+                    const matchesName = freelancer.name.toLowerCase().includes(query);
+                    const matchesTitle = freelancer.title.toLowerCase().includes(query);
+                    const matchesSkills = freelancer.skills.some(skill => skill.toLowerCase().includes(query));
+                    if (!matchesName && !matchesTitle && !matchesSkills) return false;
+                }
+                
                 if (selectedCategories.length > 0 && !selectedCategories.includes(freelancer.category)) return false;
                 if (selectedSkills.length > 0 && !selectedSkills.some((skill) => freelancer.skills.includes(skill))) return false;
                 if (minRating > 0 && freelancer.rating < minRating) return false;
@@ -161,7 +170,7 @@ export default function FindFreelancers() {
                     default: return right.success_rate - left.success_rate;
                 }
             });
-    }, [freelancersData, availableOnly, minRating, rateRange, selectedCategories, selectedSkills, sortBy, verifiedOnly]);
+    }, [freelancersData, searchQuery, availableOnly, minRating, rateRange, selectedCategories, selectedSkills, sortBy, verifiedOnly]);
 
     const activeFilterCount =
         selectedCategories.length +

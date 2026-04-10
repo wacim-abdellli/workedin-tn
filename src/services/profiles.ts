@@ -72,7 +72,9 @@ export async function getFreelancers(filters: {
         // Strip out characters that could break parsing
         const safeSearch = filters.search.replace(/[,"_%]/g, ' ').trim();
         if (safeSearch) {
-            query = query.or(`full_name.ilike.%${safeSearch}%,freelancer_profiles.title.ilike.%${safeSearch}%`);
+            // Search only in full_name since nested relation search doesn't work with .or()
+            // The title search will be done client-side in the component
+            query = query.ilike('full_name', `%${safeSearch}%`);
         }
     }
 
