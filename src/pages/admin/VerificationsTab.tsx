@@ -230,23 +230,33 @@ export default function VerificationsTab() {
             titleEn="Failed to load Verifications tab — try refreshing"
         >
             <div className="space-y-6">
-                <div className={panelClass}>
-                    <div className="flex items-center justify-between mb-6">
-                         <h3 className="font-bold text-foreground flex items-center gap-2">
-                             <Shield className="w-5 h-5 text-[var(--color-status-warning)]" />
-                             {tx('dashboard.admin.verification.title', undefined, 'Identity verification requests')}
-                             {verifications.length > 0 && (
-                                 <span className={`px-2 py-0.5 rounded-full text-sm ${adminPillClass('amber')}`}>
-                                      {verifications.length} {tx('dashboard.admin.verification.pending', undefined, 'pending')}
-                                  </span>
-                             )}
-                         </h3>
-                         <Button variant="outline" size="sm" onClick={load}>
-                             <RefreshCw className={`w-4 h-4 ml-1 ${loading ? 'animate-spin' : ''}`} />
-                             {tx('dashboard.admin.verification.refresh', undefined, 'Refresh')}
-                         </Button>
-                     </div>
+                <div className={`${panelClass} p-5`}>
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-500/15">
+                                <Shield className="w-4 h-4 text-amber-400" />
+                            </div>
+                            <h3 className="font-bold text-white text-base">
+                                {tx('dashboard.admin.verification.title', undefined, 'Identity verification requests')}
+                                {verifications.length > 0 && (
+                                    <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${adminPillClass('amber')}`}>
+                                        {verifications.length} {tx('dashboard.admin.verification.pending', undefined, 'pending')}
+                                    </span>
+                                )}
+                            </h3>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={load}
+                            className="inline-flex h-10 items-center gap-2 rounded-xl border border-[#2a2a2a] bg-[#111] px-4 text-sm font-semibold text-white transition-all hover:border-[#3a3a3a] hover:bg-[#1a1a1a]"
+                        >
+                            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                            {tx('dashboard.admin.verification.refresh', undefined, 'Refresh')}
+                        </button>
+                    </div>
+                </div>
 
+                <div className={panelClass}>
                     {loading ? (
                         <SkeletonList count={3} />
                     ) : verifications.length === 0 ? (

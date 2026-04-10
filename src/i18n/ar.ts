@@ -2724,6 +2724,14 @@ export const ar = {
                 "loading": "جاري التحميل...",
                 "noData": "لم يتم العثور على بيانات",
                 "error": "خطأ في تحميل البيانات"
+            },
+            "users": {
+                "switch": "تبديل",
+                "suspend": "تعليق",
+                "suspendUser": "تعليق المستخدم",
+                "suspendUserConfirm": "هل تريد تعليق المستخدم",
+                "suspensionKeepsHistory": "سيتم الاحتفاظ بالعقود والمدفوعات والنزاعات وسجل التدقيق.",
+                "unableToUpdateStatus": "تعذر تحديث حالة المستخدم"
             }
         }
     },
@@ -2801,7 +2809,10 @@ export const ar = {
         "popular": "Popular",
         "hr": "/hr",
         "legal_workedin_tn": "legal@workedin.tn",
-        "tn": "TN59 ..."
+        "tn": "TN59 ...",
+        "toast": {
+            "close": "إغلاق"
+        }
     },
     "dynamic_key_322511046": "professionals already on WorkedIn",
     "dynamic_key_229505028": "الطرف الآخر يكتب الآن",
@@ -2982,8 +2993,10 @@ export const ar = {
     "dynamic_key_480999927": "جاري تحويلك تلقائياً...",
     "dynamic_key_730815621": "الذهاب للعقد",
     "dynamic_key_1762109572": "فشل التحقق من الدفع",
-    "dynamic_key_764967864": "العودة للوحة التحكم"
+    "dynamic_key_764967864": "العودة للوحة التحكم",
+    "toast": {
+        "close": "إغلاق"
+    }
 };
 
 export type Translations = typeof ar;
-

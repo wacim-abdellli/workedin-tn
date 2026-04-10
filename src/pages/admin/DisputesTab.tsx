@@ -55,17 +55,28 @@ export default function DisputesTab() {
 
     return (
         <div className="space-y-6">
-            <div className={panelClass}>
-                <div className="flex items-center justify-between mb-6">
-                    <h3 className="font-bold text-foreground flex items-center gap-2">
-                        <AlertTriangle className="w-5 h-5 text-[var(--color-status-error)]" />
-                        {tr('نزاعات مفتوحة', 'Open disputes', 'Litiges ouverts')}
-                        {disputes.length > 0 && <span className={`px-2 py-0.5 rounded-full text-sm ${adminPillClass('red')}`}>{disputes.length}</span>}
-                    </h3>
-                    <Button variant="outline" size="sm" onClick={() => refetch()}>
-                        <RefreshCw className={`w-4 h-4 ml-1 ${isLoading ? 'animate-spin' : ''}`} />{tr('تحديث', 'Refresh', 'Actualiser')}
-                    </Button>
+            <div className={`${panelClass} p-5`}>
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-red-500/15">
+                            <AlertTriangle className="w-4 h-4 text-red-400" />
+                        </div>
+                        <h3 className="font-bold text-white text-base">
+                            {tr('نزاعات مفتوحة', 'Open disputes', 'Litiges ouverts')}
+                            {disputes.length > 0 && <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${adminPillClass('red')}`}>{disputes.length}</span>}
+                        </h3>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={() => refetch()}
+                        className="inline-flex h-10 items-center gap-2 rounded-xl border border-[#2a2a2a] bg-[#111] px-4 text-sm font-semibold text-white transition-all hover:border-[#3a3a3a] hover:bg-[#1a1a1a]"
+                    >
+                        <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+                        {tr('تحديث', 'Refresh', 'Actualiser')}
+                    </button>
                 </div>
+            </div>
+            <div className={panelClass}>
                 {isLoading ? (
                     <div className="text-center py-12"><Loader2 className="w-8 h-8 animate-spin text-[var(--color-brand-primary)] mx-auto mb-2" /><p className="text-muted">{tr('جاري التحميل...', 'Loading...', 'Chargement...')}</p></div>
                 ) : disputes.length === 0 ? (

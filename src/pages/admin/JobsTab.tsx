@@ -11,6 +11,7 @@ import { supabaseWithRetry } from '@/lib/supabaseWithRetry';
 import { useTranslation } from '@/i18n';
 import type { AdminJob, AdminJobRow } from '@/types/admin';
 import { adminActionButtonClass, adminInputClass, adminPanelClass, adminPillClass, adminSelectClass, adminTableHeadClass, adminTableRowClass, adminTableShellClass, adminToolbarClass } from './adminTheme';
+import AdminSelect from './AdminSelect';
 
 export const ADMIN_JOBS_QUERY_KEY = ['admin-jobs'] as const;
 
@@ -187,17 +188,18 @@ export default function JobsTab() {
                                  className={inputClass}
                              />
                         </div>
-                        <select
+                        <AdminSelect
                              value={jobFilter}
-                             onChange={(event) => setJobFilter(event.target.value as typeof jobFilter)}
-                             className={selectClass}
-                         >
-                             <option value="all">{tx('dashboard.admin.jobs.allStatuses', undefined, 'All statuses')}</option>
-                             <option value="open">{tx('dashboard.admin.jobs.statusOpen', undefined, 'Open')}</option>
-                             <option value="in_progress">{tx('dashboard.admin.jobs.statusInProgress', undefined, 'In progress')}</option>
-                             <option value="completed">{tx('dashboard.admin.jobs.statusCompleted', undefined, 'Completed')}</option>
-                             <option value="cancelled">{tx('dashboard.admin.jobs.statusCancelled', undefined, 'Cancelled')}</option>
-                         </select>
+                             onChange={(v) => setJobFilter(v as typeof jobFilter)}
+                             className="min-w-[180px]"
+                             options={[
+                                 { value: 'all', label: tx('dashboard.admin.jobs.allStatuses', undefined, 'All statuses') },
+                                 { value: 'open', label: tx('dashboard.admin.jobs.statusOpen', undefined, 'Open') },
+                                 { value: 'in_progress', label: tx('dashboard.admin.jobs.statusInProgress', undefined, 'In progress') },
+                                 { value: 'completed', label: tx('dashboard.admin.jobs.statusCompleted', undefined, 'Completed') },
+                                 { value: 'cancelled', label: tx('dashboard.admin.jobs.statusCancelled', undefined, 'Cancelled') },
+                             ]}
+                         />
                     </div>
                 </div>
 

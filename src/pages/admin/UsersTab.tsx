@@ -1,5 +1,5 @@
 import { useMemo, useState, useCallback } from 'react';
-import { Ban, Eye, Loader2, Repeat2, Search, ShieldOff, X, Users } from 'lucide-react';
+import { Ban, Eye, Loader2, Repeat2, Search, ShieldOff, Trash2, UserX, X, Users, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Button from '@/components/ui/Button';
 import Modal from '@/components/ui/Modal';
@@ -9,9 +9,14 @@ import { useToast } from '@/components/ui/Toast';
 import { supabase } from '@/lib/supabase';
 import { useTranslation } from '@/i18n';
 import type { AdminUser, AdminUserRow } from '@/types/admin';
+import { useAuth } from '@/contexts/AuthContext';
 import { adminActionButtonClass, adminIconButtonClass, adminInputClass, adminPanelClass, adminPillClass, adminSelectClass, adminTableHeadClass, adminTableRowClass, adminTableShellClass, adminToolbarClass } from './adminTheme';
+import AdminSelect from './AdminSelect';
 
 export const ADMIN_USERS_QUERY_KEY = ['admin-users'] as const;
+
+type SortField = 'name' | 'email' | 'created_at' | 'status' | 'type';
+type SortDirection = 'asc' | 'desc';
 
 interface ConfirmActionState {
     isOpen: boolean;
@@ -19,6 +24,19 @@ interface ConfirmActionState {
     message: string;
     actionType: 'danger' | 'warning' | 'primary';
     onConfirm: () => void;
+}
+
+interface AdminUserDetails {
+    profile: Record<string, unknown> | null;
+    freelancerProfile: Record<string, unknown> | null;
+    wallet: Record<string, unknown> | null;
+    counts: {
+        jobs: number;
+        proposals: number;
+        contracts: number;
+        messages: number;
+        reviews: number;
+    };
 }
 
 function getErrorText(error: unknown): string {
@@ -44,7 +62,7 @@ export async function fetchAdminUsers(): Promise<AdminUser[]> {
     try {
         let { data, error } = await supabase
             .from('profiles')
-            .select('id,full_name,email,user_type,active_mode,cin_verified,is_admin,account_status,created_at')
+            .select('id,full_name,email,user_type,active_mode,cin_verified,is_admin,is_super_admin,account_status,created_at')
             .order('created_at', { ascending: false })
             .limit(100);
 
@@ -52,7 +70,7 @@ export async function fetchAdminUsers(): Promise<AdminUser[]> {
         if (error?.message?.toLowerCase().includes('account_status')) {
             const fallback = await supabase
                 .from('profiles')
-                .select('id,full_name,email,user_type,active_mode,cin_verified,is_admin,created_at')
+                .select('id,full_name,email,user_type,active_mode,cin_verified,is_admin,is_super_admin,created_at')
                 .order('created_at', { ascending: false })
                 .limit(100);
 
@@ -77,6 +95,7 @@ export async function fetchAdminUsers(): Promise<AdminUser[]> {
             active_mode: user.active_mode ?? null,
             cin_verified: Boolean(user.cin_verified),
             is_admin: Boolean(user.is_admin),
+            is_super_admin: Boolean(user.is_super_admin),
         }));
     } catch (error) {
         // Ignore abort errors in development (React StrictMode)
@@ -91,10 +110,14 @@ export async function fetchAdminUsers(): Promise<AdminUser[]> {
 export default function UsersTab() {
     const { showToast } = useToast();
     const { tx } = useTranslation();
+    const { profile } = useAuth();
     const queryClient = useQueryClient();
+    const isCurrentUserSuperAdmin = Boolean(profile?.is_super_admin);
 
     const [searchQuery, setSearchQuery] = useState('');
     const [userFilter, setUserFilter] = useState<'all' | 'freelancer' | 'client'>('all');
+    const [sortField, setSortField] = useState<SortField>('created_at');
+    const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
     const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
     const [userActionLoadingId, setUserActionLoadingId] = useState<string | null>(null);
     const [confirmAction, setConfirmAction] = useState<ConfirmActionState>({
@@ -119,6 +142,100 @@ export default function UsersTab() {
     const selectClass = adminSelectClass;
 
     const closeConfirm = () => setConfirmAction((prev) => ({ ...prev, isOpen: false }));
+
+    const { data: selectedUserDetails, isLoading: isLoadingUserDetails } = useQuery({
+        queryKey: ['admin-user-details', selectedUser?.id],
+        enabled: Boolean(selectedUser?.id),
+        staleTime: 30000,
+        queryFn: async (): Promise<AdminUserDetails> => {
+            const userId = selectedUser?.id;
+            if (!userId) {
+                return {
+                    profile: null,
+                    freelancerProfile: null,
+                    wallet: null,
+                    counts: { jobs: 0, proposals: 0, contracts: 0, messages: 0, reviews: 0 },
+                };
+            }
+
+            const functionResult = await supabase.functions.invoke('admin-user-control', {
+                body: {
+                    action: 'get_user_details',
+                    userId,
+                },
+            });
+
+            if (!functionResult.error && functionResult.data && typeof functionResult.data === 'object' && 'data' in functionResult.data) {
+                const payload = functionResult.data.data as AdminUserDetails;
+                return {
+                    profile: payload?.profile ?? null,
+                    freelancerProfile: payload?.freelancerProfile ?? null,
+                    wallet: payload?.wallet ?? null,
+                    counts: {
+                        jobs: payload?.counts?.jobs ?? 0,
+                        proposals: payload?.counts?.proposals ?? 0,
+                        contracts: payload?.counts?.contracts ?? 0,
+                        messages: payload?.counts?.messages ?? 0,
+                        reviews: payload?.counts?.reviews ?? 0,
+                    },
+                };
+            }
+
+            const profileExtended = await supabase
+                .from('profiles')
+                .select('id,full_name,email,username,phone,location,bio,user_type,active_mode,is_admin,cin_verified,cin_submitted,account_status,onboarding_completed,client_onboarding_completed,freelancer_onboarding_completed,avatar_url,avatar_url_client,avatar_url_freelancer,company_name,company_website,company_industry,company_size,company_role,hiring_needs,project_budget_preference,project_timeline_preference,communication_preferences,screening_preferences,legal_preferences,created_at,updated_at')
+                .eq('id', userId)
+                .maybeSingle();
+
+            const profileBasic = await supabase
+                .from('profiles')
+                .select('id,full_name,email,username,phone,location,bio,user_type,active_mode,is_admin,cin_verified,cin_submitted,account_status,onboarding_completed,client_onboarding_completed,freelancer_onboarding_completed,avatar_url,created_at,updated_at')
+                .eq('id', userId)
+                .maybeSingle();
+
+            const freelancerExtended = await supabase
+                .from('freelancer_profiles')
+                .select('id,title,hourly_rate,availability,skills,languages,education,certifications,total_earnings,jobs_completed,success_rate,response_time_hours,profile_views,portfolio_items_count,cin_verified,voice_intro_url,years_experience,tools,industries,portfolio_links,weekly_availability_hours,revision_policy,project_preferences,created_at,updated_at')
+                .eq('id', userId)
+                .maybeSingle();
+
+            const freelancerBasic = await supabase
+                .from('freelancer_profiles')
+                .select('id,title,hourly_rate,availability,skills,languages,education,certifications,total_earnings,jobs_completed,success_rate,response_time_hours,profile_views,portfolio_items_count,cin_verified,voice_intro_url,created_at,updated_at')
+                .eq('id', userId)
+                .maybeSingle();
+
+            const walletData = await supabase
+                .from('wallets')
+                .select('id,user_id,available_balance,pending_balance,total_earned,total_withdrawn,updated_at')
+                .eq('user_id', userId)
+                .maybeSingle();
+
+            const [jobsCount, proposalsCount, contractsAsClientCount, contractsAsFreelancerCount, messagesSentCount, messagesReceivedCount, reviewsGivenCount, reviewsReceivedCount] = await Promise.all([
+                supabase.from('jobs').select('id', { count: 'exact', head: true }).eq('client_id', userId),
+                supabase.from('proposals').select('id', { count: 'exact', head: true }).eq('freelancer_id', userId),
+                supabase.from('contracts').select('id', { count: 'exact', head: true }).eq('client_id', userId),
+                supabase.from('contracts').select('id', { count: 'exact', head: true }).eq('freelancer_id', userId),
+                supabase.from('messages').select('id', { count: 'exact', head: true }).eq('sender_id', userId),
+                supabase.from('messages').select('id', { count: 'exact', head: true }).eq('receiver_id', userId),
+                supabase.from('reviews').select('id', { count: 'exact', head: true }).eq('reviewer_id', userId),
+                supabase.from('reviews').select('id', { count: 'exact', head: true }).eq('reviewee_id', userId),
+            ]);
+
+            return {
+                profile: (profileExtended.data ?? profileBasic.data) as Record<string, unknown> | null,
+                freelancerProfile: (freelancerExtended.data ?? freelancerBasic.data) as Record<string, unknown> | null,
+                wallet: (walletData.data ?? null) as Record<string, unknown> | null,
+                counts: {
+                    jobs: jobsCount.count ?? 0,
+                    proposals: proposalsCount.count ?? 0,
+                    contracts: (contractsAsClientCount.count ?? 0) + (contractsAsFreelancerCount.count ?? 0),
+                    messages: (messagesSentCount.count ?? 0) + (messagesReceivedCount.count ?? 0),
+                    reviews: (reviewsGivenCount.count ?? 0) + (reviewsReceivedCount.count ?? 0),
+                },
+            };
+        },
+    });
 
     const { data: users = [], isLoading, isError } = useQuery({
         queryKey: ADMIN_USERS_QUERY_KEY,
@@ -169,6 +286,62 @@ export default function UsersTab() {
 
     const setUserStatusMutation = useMutation({
         mutationFn: async ({ user, nextStatus, reason }: { user: AdminUser; nextStatus: AdminUser['status']; reason?: string }) => {
+            // If reactivating an archived user, use the new restore_user_account RPC function
+            if (nextStatus === 'active' && user.status === 'archived') {
+                const { data: restoreResult, error: restoreError } = await supabase.rpc('restore_user_account', {
+                    p_user_id: user.id,
+                    p_reason: reason ?? 'Restored by admin from admin dashboard',
+                });
+
+                if (restoreError) {
+                    // Fallback to manual restoration if RPC doesn't exist yet
+                    const { data: authUser } = await supabase.auth.admin.getUserById(user.id);
+                    
+                    const restoreData: Record<string, unknown> = {
+                        account_status: nextStatus,
+                        updated_at: new Date().toISOString(),
+                    };
+
+                    // Restore email from auth if available
+                    if (authUser?.user?.email && user.email.includes('deleted_')) {
+                        restoreData.email = authUser.user.email;
+                    }
+
+                    // Restore full_name from auth metadata if available
+                    if (authUser?.user?.user_metadata?.full_name) {
+                        restoreData.full_name = authUser.user.user_metadata.full_name;
+                    } else if (user.name === 'Deleted User') {
+                        restoreData.full_name = 'Restored User';
+                    }
+
+                    const { error: fallbackError } = await supabase
+                        .from('profiles')
+                        .update(restoreData)
+                        .eq('id', user.id);
+
+                    if (fallbackError) throw fallbackError;
+
+                    return { userId: user.id, nextStatus, restoredName: restoreData.full_name as string };
+                }
+
+                // Extract restored name from RPC result
+                const restoredName = restoreResult?.restored_name || user.name;
+                return { userId: user.id, nextStatus, restoredName };
+            }
+
+            const functionResult = await supabase.functions.invoke('admin-user-control', {
+                body: {
+                    action: 'set_user_status',
+                    userId: user.id,
+                    nextStatus,
+                    reason: reason ?? null,
+                },
+            });
+
+            if (!functionResult.error) {
+                return { userId: user.id, nextStatus };
+            }
+
             const rpcResult = await supabase.rpc('set_user_account_status', {
                 p_user_id: user.id,
                 p_next_status: nextStatus,
@@ -186,8 +359,13 @@ export default function UsersTab() {
                     rpcCode === '42725'
                     || rpcMessage.includes('is not unique')
                 ) && (rpcMessage.includes('create_notification') || rpcCode === '42725');
+                const isCreateNotificationEnumMismatch = (
+                    rpcCode === '42804'
+                    || rpcMessage.includes('notification_type_enum')
+                    || rpcMessage.includes('column "type" is of type')
+                ) && rpcMessage.includes('notification');
 
-                if (isMissingRpc || isRpcPermissionIssue || isCreateNotificationOverloadConflict) {
+                if (isMissingRpc || isRpcPermissionIssue || isCreateNotificationOverloadConflict || isCreateNotificationEnumMismatch) {
                     const fallback = await supabase
                         .from('profiles')
                         .update({
@@ -206,11 +384,23 @@ export default function UsersTab() {
 
             return { userId: user.id, nextStatus };
         },
-        onSuccess: ({ userId, nextStatus }) => {
+        onSuccess: ({ userId, nextStatus, restoredName }) => {
             updateUsersCache((prev) => prev.map((user) => (
-                user.id === userId ? { ...user, status: nextStatus } : user
+                user.id === userId ? { 
+                    ...user, 
+                    status: nextStatus,
+                    name: restoredName || user.name 
+                } : user
             )));
-            setSelectedUser((prev) => (prev?.id === userId ? { ...prev, status: nextStatus } : prev));
+            setSelectedUser((prev) => (prev?.id === userId ? { 
+                ...prev, 
+                status: nextStatus,
+                name: restoredName || prev.name 
+            } : prev));
+            
+            // Refresh the query to get updated data from server
+            queryClient.invalidateQueries({ queryKey: ADMIN_USERS_QUERY_KEY });
+            
             showToast(
                 nextStatus === 'active'
                     ? tx('dashboard.admin.users.userReactivated', undefined, 'User reactivated successfully')
@@ -248,6 +438,94 @@ export default function UsersTab() {
             }
 
             showToast(tx('dashboard.admin.users.unableToUpdateStatus', undefined, 'Unable to update user status'), 'error');
+            if (rawMessage) {
+                showToast(rawMessage.slice(0, 200), 'error');
+            }
+        },
+        onSettled: () => {
+            setUserActionLoadingId(null);
+        },
+    });
+
+    const deleteUserMutation = useMutation({
+        mutationFn: async ({
+            user,
+            mode,
+            reason,
+        }: {
+            user: AdminUser;
+            mode: 'soft' | 'hard';
+            reason?: string;
+        }) => {
+            // For soft delete (archive), use the new archive_user_account RPC function
+            if (mode === 'soft') {
+                const { data: archiveResult, error: archiveError } = await supabase.rpc('archive_user_account', {
+                    p_user_id: user.id,
+                    p_reason: reason ?? 'Archived by admin from admin dashboard',
+                });
+
+                if (archiveError) {
+                    // Fallback to manual archiving if RPC doesn't exist yet
+                    const fallback = await supabase
+                        .from('profiles')
+                        .update({
+                            account_status: 'archived',
+                            full_name: 'Deleted User',
+                            username: `deleted_${user.id.slice(0, 8)}`,
+                            phone: null,
+                            location: null,
+                            bio: null,
+                            avatar_url: null,
+                            avatar_url_client: null,
+                            avatar_url_freelancer: null,
+                            updated_at: new Date().toISOString(),
+                        })
+                        .eq('id', user.id);
+
+                    if (fallback.error) throw fallback.error;
+                }
+
+                return { userId: user.id, mode };
+            }
+
+            // For hard delete, use the edge function
+            const action = 'hard_delete_user';
+            const functionResult = await supabase.functions.invoke('admin-user-control', {
+                body: {
+                    action,
+                    userId: user.id,
+                    reason: reason ?? null,
+                },
+            });
+
+            if (functionResult.error) {
+                throw functionResult.error;
+            }
+
+            return { userId: user.id, mode };
+        },
+        onSuccess: ({ userId, mode }) => {
+            if (mode === 'soft') {
+                updateUsersCache((prev) => prev.map((user) => (
+                    user.id === userId ? { ...user, status: 'archived' } : user
+                )));
+                setSelectedUser((prev) => (prev?.id === userId ? { ...prev, status: 'archived' } : prev));
+                showToast(tx('dashboard.admin.users.userArchived', undefined, 'User archived successfully'), 'success');
+                return;
+            }
+
+            updateUsersCache((prev) => prev.filter((user) => user.id !== userId));
+            setSelectedUser((prev) => (prev?.id === userId ? null : prev));
+            showToast(tx('dashboard.admin.users.userDeletedPermanently', undefined, 'User deleted permanently'), 'success');
+        },
+        onError: (error) => {
+            const rawMessage = getErrorText(error);
+            showToast(tx('dashboard.admin.users.unableToDeleteUser', undefined, 'Unable to delete user'), 'error');
+            if (rawMessage) {
+                showToast(rawMessage.slice(0, 220), 'error');
+            } else {
+                showToast(tx('dashboard.admin.users.edgeFunctionDeployHint', undefined, 'If this is a hard delete, deploy admin-user-control edge function and verify ALLOWED_ORIGINS.'), 'warning');
+            }
         },
         onSettled: () => {
             setUserActionLoadingId(null);
@@ -285,11 +563,64 @@ export default function UsersTab() {
         },
     });
 
-    const filteredUsers = useMemo(() => users.filter((user) => {
-        if (userFilter !== 'all' && user.type !== userFilter) return false;
-        if (searchQuery && !user.name.includes(searchQuery) && !user.email.includes(searchQuery)) return false;
-        return true;
-    }), [searchQuery, userFilter, users]);
+    const filteredUsers = useMemo(() => {
+        let filtered = users.filter((user) => {
+            if (userFilter !== 'all' && user.type !== userFilter) return false;
+            if (searchQuery && !user.name.toLowerCase().includes(searchQuery.toLowerCase()) && !user.email.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+            return true;
+        });
+
+        // Sort users
+        filtered.sort((a, b) => {
+            let aValue: string | number;
+            let bValue: string | number;
+
+            switch (sortField) {
+                case 'name':
+                    aValue = a.name.toLowerCase();
+                    bValue = b.name.toLowerCase();
+                    break;
+                case 'email':
+                    aValue = a.email.toLowerCase();
+                    bValue = b.email.toLowerCase();
+                    break;
+                case 'created_at':
+                    aValue = new Date(a.last_active).getTime();
+                    bValue = new Date(b.last_active).getTime();
+                    break;
+                case 'status':
+                    aValue = a.status;
+                    bValue = b.status;
+                    break;
+                case 'type':
+                    aValue = a.type;
+                    bValue = b.type;
+                    break;
+                default:
+                    return 0;
+            }
+
+            if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+            if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+            return 0;
+        });
+
+        return filtered;
+    }, [searchQuery, userFilter, users, sortField, sortDirection]);
+
+    const handleToggleSort = (field: SortField) => {
+        if (sortField === field) {
+            setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+        } else {
+            setSortField(field);
+            setSortDirection('asc');
+        }
+    };
+
+    const getSortIcon = (field: SortField) => {
+        if (sortField !== field) return <ArrowUpDown className="w-3.5 h-3.5 opacity-40" />;
+        return sortDirection === 'asc' ? <ArrowUp className="w-3.5 h-3.5" /> : <ArrowDown className="w-3.5 h-3.5" />;
+    };
 
     const formatAdminDate = (value: string) => {
         try {
@@ -319,7 +650,16 @@ export default function UsersTab() {
         }
     };
 
-    const getDisplayName = (user: AdminUser) => user.name || tx('dashboard.admin.users.user', undefined, 'User');
+    const getDisplayName = (user: AdminUser) => {
+        // Fix: Show actual name for reactivated users instead of "Deleted User"
+        if (user.status === 'active' && user.name && user.name !== 'Deleted User') {
+            return user.name;
+        }
+        if (user.name && user.name !== 'Deleted User') {
+            return user.name;
+        }
+        return tx('dashboard.admin.users.user', undefined, 'User');
+    };
     const getAccountStatusTone = (status: AdminUser['status']): Parameters<typeof adminPillClass>[0] => status === 'active' ? 'emerald' : status === 'suspended' ? 'red' : 'amber';
     const getAccountStatusLabel = (status: AdminUser['status']) => {
         if (status === 'suspended') return tx('dashboard.admin.users.suspended', undefined, 'Suspended');
@@ -333,6 +673,11 @@ export default function UsersTab() {
     };
 
     const handleToggleUserStatus = (user: AdminUser) => {
+        if (user.is_super_admin) {
+            showToast(tx('dashboard.admin.users.superAdminProtected', undefined, 'Super admin accounts cannot be moderated from this control.'), 'warning');
+            return;
+        }
+
         const nextStatus: AdminUser['status'] = user.status === 'active' ? 'suspended' : 'active';
         setConfirmAction({
             isOpen: true,
@@ -351,6 +696,55 @@ export default function UsersTab() {
                     reason: nextStatus === 'active'
                         ? 'Access restored by admin'
                         : 'Suspended by admin from admin dashboard',
+                });
+            },
+        });
+    };
+
+    const handleArchiveUser = (user: AdminUser) => {
+        if (user.is_super_admin) {
+            showToast(tx('dashboard.admin.users.superAdminProtected', undefined, 'Super admin accounts cannot be moderated from this control.'), 'warning');
+            return;
+        }
+
+        setConfirmAction({
+            isOpen: true,
+            title: tx('dashboard.admin.users.archiveUser', undefined, 'Archive user'),
+            message: `${tx('dashboard.admin.users.archiveUserConfirm', undefined, 'Archive this user account and anonymize profile data while keeping legal and financial history?')} ${getDisplayName(user)}.`,
+            actionType: 'warning',
+            onConfirm: () => {
+                setUserActionLoadingId(user.id);
+                deleteUserMutation.mutate({
+                    user,
+                    mode: 'soft',
+                    reason: 'Archived by admin from admin dashboard',
+                });
+            },
+        });
+    };
+
+    const handleHardDeleteUser = (user: AdminUser) => {
+        if (!isCurrentUserSuperAdmin) {
+            showToast(tx('dashboard.admin.users.superAdminOnlyDelete', undefined, 'Permanent deletion requires super admin privileges.'), 'error');
+            return;
+        }
+
+        if (user.is_admin || user.is_super_admin) {
+            showToast(tx('dashboard.admin.users.cannotDeleteAdminAccount', undefined, 'Admin accounts cannot be permanently deleted from this action.'), 'error');
+            return;
+        }
+
+        setConfirmAction({
+            isOpen: true,
+            title: tx('dashboard.admin.users.deleteUserPermanently', undefined, 'Delete user permanently'),
+            message: `${tx('dashboard.admin.users.deleteUserPermanentWarning', undefined, 'This action is irreversible. User auth account and all cascading records will be removed if policy checks pass.')} ${getDisplayName(user)}.`,
+            actionType: 'danger',
+            onConfirm: () => {
+                setUserActionLoadingId(user.id);
+                deleteUserMutation.mutate({
+                    user,
+                    mode: 'hard',
+                    reason: 'Hard-deleted by super admin from admin dashboard',
                 });
             },
         });
@@ -396,15 +790,35 @@ export default function UsersTab() {
                                 className={inputClass}
                             />
                         </div>
-                        <select
+                        <AdminSelect
                             value={userFilter}
-                            onChange={(event) => setUserFilter(event.target.value as typeof userFilter)}
-                            className={`${selectClass} min-w-[180px]`}
-                        >
-                            <option value="all">{tx('dashboard.admin.users.allUsers', undefined, 'All users')}</option>
-                            <option value="freelancer">{tx('dashboard.admin.users.freelancers', undefined, 'Freelancers')}</option>
-                            <option value="client">{tx('dashboard.admin.users.clients', undefined, 'Clients')}</option>
-                        </select>
+                            onChange={(v) => setUserFilter(v as typeof userFilter)}
+                            className="min-w-[180px]"
+                            options={[
+                                { value: 'all', label: tx('dashboard.admin.users.allUsers', undefined, 'All users') },
+                                { value: 'freelancer', label: tx('dashboard.admin.users.freelancers', undefined, 'Freelancers') },
+                                { value: 'client', label: tx('dashboard.admin.users.clients', undefined, 'Clients') },
+                            ]}
+                        />
+                        <AdminSelect
+                            value={`${sortField}-${sortDirection}`}
+                            onChange={(v) => {
+                                const [field, direction] = v.split('-') as [SortField, SortDirection];
+                                setSortField(field);
+                                setSortDirection(direction);
+                            }}
+                            className="min-w-[200px]"
+                            options={[
+                                { value: 'created_at-desc', label: tx('dashboard.admin.users.sortNewest', undefined, 'Newest first') },
+                                { value: 'created_at-asc', label: tx('dashboard.admin.users.sortOldest', undefined, 'Oldest first') },
+                                { value: 'name-asc', label: tx('dashboard.admin.users.sortNameAZ', undefined, 'Name (A-Z)') },
+                                { value: 'name-desc', label: tx('dashboard.admin.users.sortNameZA', undefined, 'Name (Z-A)') },
+                                { value: 'email-asc', label: tx('dashboard.admin.users.sortEmailAZ', undefined, 'Email (A-Z)') },
+                                { value: 'email-desc', label: tx('dashboard.admin.users.sortEmailZA', undefined, 'Email (Z-A)') },
+                                { value: 'status-asc', label: tx('dashboard.admin.users.sortStatusAsc', undefined, 'Status (Active first)') },
+                                { value: 'status-desc', label: tx('dashboard.admin.users.sortStatusDesc', undefined, 'Status (Archived first)') },
+                            ]}
+                        />
                     </div>
                 </div>
 
@@ -425,10 +839,42 @@ export default function UsersTab() {
                                 <table className="w-full min-w-[980px]">
                                     <thead className={tableHeadClass}>
                                         <tr>
-                                            <th className="px-6 py-4 text-right text-xs font-semibold text-muted whitespace-nowrap tracking-wide">{tx('dashboard.admin.users.user', undefined, 'User')}</th>
-                                            <th className="px-6 py-4 text-right text-xs font-semibold text-muted whitespace-nowrap tracking-wide">{tx('dashboard.admin.users.type', undefined, 'Type')}</th>
-                                            <th className="px-6 py-4 text-right text-xs font-semibold text-muted whitespace-nowrap tracking-wide">{tx('dashboard.admin.users.status', undefined, 'Status')}</th>
-                                            <th className="px-6 py-4 text-right text-xs font-semibold text-muted whitespace-nowrap tracking-wide">{tx('dashboard.admin.users.lastActivity', undefined, 'Last activity')}</th>
+                                            <th className="px-6 py-4 text-right">
+                                                <button
+                                                    onClick={() => handleToggleSort('name')}
+                                                    className="flex items-center gap-2 text-xs font-semibold text-muted whitespace-nowrap tracking-wide hover:text-foreground transition-colors"
+                                                >
+                                                    {tx('dashboard.admin.users.user', undefined, 'User')}
+                                                    {getSortIcon('name')}
+                                                </button>
+                                            </th>
+                                            <th className="px-6 py-4 text-right">
+                                                <button
+                                                    onClick={() => handleToggleSort('type')}
+                                                    className="flex items-center gap-2 text-xs font-semibold text-muted whitespace-nowrap tracking-wide hover:text-foreground transition-colors"
+                                                >
+                                                    {tx('dashboard.admin.users.type', undefined, 'Type')}
+                                                    {getSortIcon('type')}
+                                                </button>
+                                            </th>
+                                            <th className="px-6 py-4 text-right">
+                                                <button
+                                                    onClick={() => handleToggleSort('status')}
+                                                    className="flex items-center gap-2 text-xs font-semibold text-muted whitespace-nowrap tracking-wide hover:text-foreground transition-colors"
+                                                >
+                                                    {tx('dashboard.admin.users.status', undefined, 'Status')}
+                                                    {getSortIcon('status')}
+                                                </button>
+                                            </th>
+                                            <th className="px-6 py-4 text-right">
+                                                <button
+                                                    onClick={() => handleToggleSort('created_at')}
+                                                    className="flex items-center gap-2 text-xs font-semibold text-muted whitespace-nowrap tracking-wide hover:text-foreground transition-colors"
+                                                >
+                                                    {tx('dashboard.admin.users.lastActivity', undefined, 'Last activity')}
+                                                    {getSortIcon('created_at')}
+                                                </button>
+                                            </th>
                                             <th className="px-6 py-4 text-right text-xs font-semibold text-muted whitespace-nowrap tracking-wide">{tx('dashboard.admin.users.actions', undefined, 'Actions')}</th>
                                         </tr>
                                     </thead>
@@ -619,8 +1065,14 @@ export default function UsersTab() {
             </div>
 
             {selectedUser && (
-                <div className="fixed inset-0 z-50 bg-black/55 backdrop-blur-sm flex items-center justify-center p-4">
-                <div className={`${adminPanelClass} w-full max-w-xl p-6 sm:p-7`}>
+                <div 
+                    className="fixed inset-0 z-50 bg-black/55 backdrop-blur-sm flex items-start justify-center overflow-y-auto p-4 sm:py-8"
+                    onClick={() => setSelectedUser(null)}
+                >
+                <div 
+                    className={`${adminPanelClass} w-full max-w-xl p-6 sm:p-7 max-h-[calc(100vh-2rem)] overflow-y-auto`}
+                    onClick={(e) => e.stopPropagation()}
+                >
                         <div className="flex items-start justify-between gap-3 mb-5">
                             <div>
                                 <h3 className="text-lg font-bold text-foreground">{tx('dashboard.admin.users.userDetails', undefined, 'User details')}</h3>
@@ -643,6 +1095,45 @@ export default function UsersTab() {
                             <p><strong>{tx('dashboard.admin.users.activeMode', undefined, 'Active mode')}:</strong> {selectedUser!.active_mode || tx('dashboard.admin.users.client', undefined, 'Client')}</p>
                             <p><strong>{tx('dashboard.admin.users.identityVerification', undefined, 'Identity verification')}:</strong> {selectedUser!.cin_verified ? tx('dashboard.admin.users.yes', undefined, 'Yes') : tx('dashboard.admin.users.no', undefined, 'No')}</p>
                             <p><strong>{tx('dashboard.admin.users.admin', undefined, 'Admin')}:</strong> {selectedUser!.is_admin ? tx('dashboard.admin.users.yes', undefined, 'Yes') : tx('dashboard.admin.users.no', undefined, 'No')}</p>
+                            <p><strong>{tx('dashboard.admin.users.superAdmin', undefined, 'Super admin')}:</strong> {selectedUser!.is_super_admin ? tx('dashboard.admin.users.yes', undefined, 'Yes') : tx('dashboard.admin.users.no', undefined, 'No')}</p>
+                        </div>
+
+                        <div className="mt-5 rounded-xl border border-border/70 bg-surface/40 p-4">
+                            <p className="mb-3 text-sm font-semibold text-foreground">{tx('dashboard.admin.users.fullAccessData', undefined, 'Full access data')}</p>
+                            {isLoadingUserDetails ? (
+                                <div className="flex items-center gap-2 text-sm text-muted">
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                    {tx('common.loading', undefined, 'Loading...')}
+                                </div>
+                            ) : (
+                                <div className="space-y-4">
+                                    <div>
+                                        <p className="text-xs font-semibold uppercase tracking-wide text-muted">{tx('dashboard.admin.users.activityCounts', undefined, 'Activity counts')}</p>
+                                        <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
+                                            <div className="rounded-lg border border-border/60 px-2 py-1">Jobs: {selectedUserDetails?.counts.jobs ?? 0}</div>
+                                            <div className="rounded-lg border border-border/60 px-2 py-1">Proposals: {selectedUserDetails?.counts.proposals ?? 0}</div>
+                                            <div className="rounded-lg border border-border/60 px-2 py-1">Contracts: {selectedUserDetails?.counts.contracts ?? 0}</div>
+                                            <div className="rounded-lg border border-border/60 px-2 py-1">Messages: {selectedUserDetails?.counts.messages ?? 0}</div>
+                                            <div className="rounded-lg border border-border/60 px-2 py-1">Reviews: {selectedUserDetails?.counts.reviews ?? 0}</div>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <p className="text-xs font-semibold uppercase tracking-wide text-muted">Profile JSON</p>
+                                        <pre className="mt-2 max-h-40 overflow-auto rounded-lg border border-border/60 bg-background/80 p-2 text-[11px] leading-5 text-foreground">{JSON.stringify(selectedUserDetails?.profile ?? {}, null, 2)}</pre>
+                                    </div>
+
+                                    <div>
+                                        <p className="text-xs font-semibold uppercase tracking-wide text-muted">Freelancer Profile JSON</p>
+                                        <pre className="mt-2 max-h-40 overflow-auto rounded-lg border border-border/60 bg-background/80 p-2 text-[11px] leading-5 text-foreground">{JSON.stringify(selectedUserDetails?.freelancerProfile ?? {}, null, 2)}</pre>
+                                    </div>
+
+                                    <div>
+                                        <p className="text-xs font-semibold uppercase tracking-wide text-muted">Wallet JSON</p>
+                                        <pre className="mt-2 max-h-32 overflow-auto rounded-lg border border-border/60 bg-background/80 p-2 text-[11px] leading-5 text-foreground">{JSON.stringify(selectedUserDetails?.wallet ?? {}, null, 2)}</pre>
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                         <div className="mt-6 flex flex-wrap gap-2">
@@ -664,6 +1155,29 @@ export default function UsersTab() {
                                     ? tx('dashboard.admin.users.suspendUser', undefined, 'Suspend user')
                                     : tx('dashboard.admin.users.reactivateUser', undefined, 'Reactivate user')}
                             </Button>
+                            <Button
+                                variant="ghost"
+                                className="text-[var(--color-status-warning)] hover:bg-[var(--color-status-warning-subtle)]"
+                                disabled={userActionLoadingId === selectedUser!.id || selectedUser!.is_super_admin}
+                                onClick={() => handleArchiveUser(selectedUser!)}
+                            >
+                                <UserX className="w-4 h-4 ml-1" />
+                                {tx('dashboard.admin.users.archiveUser', undefined, 'Archive user')}
+                            </Button>
+                            {isCurrentUserSuperAdmin && (
+                                <Button
+                                    variant="danger"
+                                    disabled={
+                                        userActionLoadingId === selectedUser!.id
+                                        || selectedUser!.is_admin
+                                        || selectedUser!.is_super_admin
+                                    }
+                                    onClick={() => handleHardDeleteUser(selectedUser!)}
+                                >
+                                    <Trash2 className="w-4 h-4 ml-1" />
+                                    {tx('dashboard.admin.users.deletePermanently', undefined, 'Delete permanently')}
+                                </Button>
+                            )}
                         </div>
                     </div>
                 </div>

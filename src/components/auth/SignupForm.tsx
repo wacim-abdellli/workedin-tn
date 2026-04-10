@@ -90,16 +90,20 @@ function SignupForm({ onComplete }: SignupFormProps) {
         mode: 'onChange',
     });
 
-    const userTypes: { type: UserType; icon: React.ReactNode; title: string; description: string }[] = [
+    const userTypes: { type: UserType; icon: React.ReactNode; title: string; description: string; color: string; bg: string }[] = [
         {
             type: 'freelancer',
             icon: <User className="h-7 w-7" />,
+            color: '#a78bfa',
+            bg: 'rgba(139, 92, 246, 0.2)',
             title: t.auth.freelancer,
             description: t.auth.userTypeFreelancerDesc,
         },
         {
             type: 'client',
             icon: <Briefcase className="h-7 w-7" />,
+            color: '#E8820C',
+            bg: 'rgba(232, 130, 12, 0.2)',
             title: t.auth.client,
             description: t.auth.userTypeClientDesc,
         },
@@ -336,25 +340,44 @@ function SignupForm({ onComplete }: SignupFormProps) {
                                 type="button"
                                 onClick={() => handleSelectUserType(item.type)}
                                 disabled={isLoading}
-                                className={`group relative w-full overflow-hidden rounded-[24px] border p-5 text-start transition-all duration-300 focus:outline-none focus:ring-2 ring-offset-2 hover:-translate-y-1 hover:shadow-xl ${
+                                className={`group relative w-full overflow-hidden rounded-[20px] border p-5 text-start transition-all duration-200 focus:outline-none ${
                                     isLoading ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
-                                } bg-[var(--color-background-base)] border-[var(--color-border-default)] hover:border-[var(--purple-200)] hover:bg-[var(--purple-50)]/40 dark:hover:border-[var(--purple-500)]/30 dark:hover:bg-[var(--color-background-base)]`}
+                                }`}
+                                style={{
+                                    background: '#111',
+                                    borderColor: '#2a2a2a',
+                                }}
+                                onMouseEnter={e => {
+                                    if (!isLoading) {
+                                        (e.currentTarget as HTMLElement).style.borderColor = item.color;
+                                        (e.currentTarget as HTMLElement).style.background = '#161616';
+                                    }
+                                }}
+                                onMouseLeave={e => {
+                                    (e.currentTarget as HTMLElement).style.borderColor = '#2a2a2a';
+                                    (e.currentTarget as HTMLElement).style.background = '#111';
+                                }}
                             >
-                                <div className="absolute inset-0 bg-gradient-to-br from-[var(--purple-500)]/0 to-[var(--amber-400)]/0 opacity-0 transition-opacity duration-300 group-hover:opacity-10" />
                                 <div className="relative z-10 flex items-center gap-4">
-                                    <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl bg-[var(--purple-100)] dark:bg-[var(--purple-900)]/40 p-3 text-[var(--purple-600)] dark:text-[var(--purple-300)] shadow-lg">
+                                    <div
+                                        className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl shadow-lg"
+                                        style={{ background: item.bg, color: item.color }}
+                                    >
                                         {item.icon}
                                     </div>
                                     <div className="flex-1">
-                                        <h3 className="mb-1 text-lg font-bold text-[var(--color-text-primary)]">
+                                        <h3 className="mb-1 text-lg font-bold text-white">
                                             {item.title}
                                         </h3>
-                                        <p className="text-sm text-[var(--color-text-secondary)]">
+                                        <p className="text-sm" style={{ color: '#888' }}>
                                             {item.description}
                                         </p>
                                     </div>
-                                    <div className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-[var(--color-border-default)] transition-colors">
-                                        <ArrowIcon className="h-4 w-4 text-[var(--color-brand-primary)]" />
+                                    <div
+                                        className="flex h-8 w-8 items-center justify-center rounded-full border-2 transition-colors"
+                                        style={{ borderColor: '#333' }}
+                                    >
+                                        <ArrowIcon className="h-4 w-4" style={{ color: item.color }} />
                                     </div>
                                 </div>
                             </button>

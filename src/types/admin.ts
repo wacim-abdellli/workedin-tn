@@ -9,6 +9,7 @@ export interface AdminUserRow {
     active_mode: AdminUserMode | null;
     cin_verified: boolean | null;
     is_admin: boolean | null;
+    is_super_admin: boolean | null;
     account_status: AdminAccountStatus | null;
     created_at: string;
 }
@@ -23,6 +24,7 @@ export interface AdminUser {
     active_mode: AdminUserMode | null;
     cin_verified: boolean;
     is_admin: boolean;
+    is_super_admin: boolean;
 }
 
 export interface AdminJobClientRow {

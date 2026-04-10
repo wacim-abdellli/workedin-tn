@@ -10,6 +10,7 @@ import { useTranslation } from '@/i18n';
 import { getReports, updateReportStatus } from '@/services/reports';
 import type { Report, ReportStatus } from '@/services/reports';
 import { adminPanelClass, adminPillClass, adminSelectClass, adminTableHeadClass, adminTableRowClass, adminTableShellClass } from './adminTheme';
+import AdminSelect from './AdminSelect';
 
 export const ADMIN_REPORTS_QUERY_KEY = ['admin-reports'] as const;
 
@@ -67,32 +68,39 @@ export default function ReportsTab() {
     return (
         <ErrorBoundary titleAr="فشل تحميل البلاغات" titleFr="Echec du chargement des signalements" titleEn="Failed to load Reports tab">
             <div className="space-y-6">
-                <div className={panelClass}>
+                <div className={`${panelClass} p-5`}>
                     <div className="flex flex-wrap items-center justify-between gap-4">
-                        <div className="flex items-center gap-2">
-                            <Flag className="w-5 h-5 text-[var(--color-status-error)]" />
-                            <h3 className="font-bold text-foreground">
+                        <div className="flex items-center gap-3">
+                            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-red-500/15">
+                                <Flag className="w-4 h-4 text-red-400" />
+                            </div>
+                            <h3 className="font-bold text-white text-base">
                                 {tr('البلاغات', 'Flagged Content', 'Signalements')}
                                 {reports.length > 0 && (
-                                    <span className="ml-2 px-2 py-0.5 bg-[var(--color-status-error-subtle)] text-[var(--color-status-error-hover)] dark:bg-[var(--color-status-error)]/15 dark:text-[var(--color-status-error)] rounded-full text-xs">{reports.length}</span>
+                                    <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${adminPillClass('red')}`}>{reports.length}</span>
                                 )}
                             </h3>
                         </div>
                         <div className="flex items-center gap-3">
-                            <select
+                            <AdminSelect
                                 value={statusFilter}
-                                onChange={e => setStatusFilter(e.target.value as ReportStatus | 'all')}
-                                className={`${adminSelectClass} h-9 px-3`}
+                                onChange={(v) => setStatusFilter(v as ReportStatus | 'all')}
+                                className="min-w-[140px]"
+                                options={[
+                                    { value: 'all', label: tr('الكل', 'All', 'Tous') },
+                                    { value: 'pending', label: tr('معلق', 'Pending', 'En attente') },
+                                    { value: 'reviewed', label: tr('تمت المراجعة', 'Reviewed', 'Examine') },
+                                    { value: 'dismissed', label: tr('مرفوض', 'Dismissed', 'Rejete') },
+                                ]}
+                            />
+                            <button
+                                type="button"
+                                onClick={() => refetch()}
+                                className="inline-flex h-10 items-center gap-2 rounded-xl border border-[#2a2a2a] bg-[#111] px-4 text-sm font-semibold text-white transition-all hover:border-[#3a3a3a] hover:bg-[#1a1a1a]"
                             >
-                                <option value="all">{tr('الكل', 'All', 'Tous')}</option>
-                                <option value="pending">{tr('معلق', 'Pending', 'En attente')}</option>
-                                <option value="reviewed">{tr('تمت المراجعة', 'Reviewed', 'Examine')}</option>
-                                <option value="dismissed">{tr('مرفوض', 'Dismissed', 'Rejete')}</option>
-                            </select>
-                            <Button variant="outline" size="sm" onClick={() => refetch()}>
-                                <RefreshCw className={`w-4 h-4 ml-1 ${isLoading ? 'animate-spin' : ''}`} />
+                                <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
                                 {tr('تحديث', 'Refresh', 'Actualiser')}
-                            </Button>
+                            </button>
                         </div>
                     </div>
                 </div>

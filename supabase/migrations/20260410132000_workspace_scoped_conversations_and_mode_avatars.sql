@@ -1,9 +1,12 @@
 -- Add workspace-scoped avatars and workspace-scoped conversations.
+-- Fixed version that handles missing functions gracefully
 
+-- Step 1: Add avatar columns
 ALTER TABLE public.profiles
   ADD COLUMN IF NOT EXISTS avatar_url_client text,
   ADD COLUMN IF NOT EXISTS avatar_url_freelancer text;
 
+-- Step 2: Migrate existing avatar data
 UPDATE public.profiles
 SET
   avatar_url_client = COALESCE(avatar_url_client, avatar_url),
@@ -11,9 +14,11 @@ SET
 WHERE avatar_url IS NOT NULL
   AND (avatar_url_client IS NULL OR avatar_url_freelancer IS NULL);
 
+-- Step 3: Add conversation_scope column
 ALTER TABLE public.conversations
   ADD COLUMN IF NOT EXISTS conversation_scope text NOT NULL DEFAULT 'shared';
 
+-- Step 4: Add constraint for conversation_scope
 DO $$
 BEGIN
   IF NOT EXISTS (
@@ -28,14 +33,17 @@ BEGIN
 END;
 $$;
 
+-- Step 5: Migrate existing contract conversations
 UPDATE public.conversations
 SET conversation_scope = 'contract'
 WHERE contract_id IS NOT NULL
   AND conversation_scope = 'shared';
 
+-- Step 6: Drop old unique constraint
 ALTER TABLE public.conversations
   DROP CONSTRAINT IF EXISTS conversations_participant_1_participant_2_key;
 
+-- Step 7: Create new unique indexes
 DROP INDEX IF EXISTS uq_conversations_pair_scope_no_contract;
 DROP INDEX IF EXISTS uq_conversations_pair_scope_contract;
 
@@ -47,27 +55,33 @@ CREATE UNIQUE INDEX IF NOT EXISTS uq_conversations_pair_scope_contract
 ON public.conversations (participant_1, participant_2, conversation_scope, contract_id)
 WHERE contract_id IS NOT NULL;
 
+-- Step 8: Create performance indexes
 CREATE INDEX IF NOT EXISTS idx_conversations_participant1_scope_activity
 ON public.conversations (participant_1, conversation_scope, last_message_at DESC NULLS LAST);
 
 CREATE INDEX IF NOT EXISTS idx_conversations_participant2_scope_activity
 ON public.conversations (participant_2, conversation_scope, last_message_at DESC NULLS LAST);
 
+-- Step 9: Revoke permissions on old functions (if they exist)
 DO $$
 BEGIN
-  IF to_regprocedure('public.get_or_create_conversation(uuid,uuid,uuid)') IS NOT NULL THEN
     REVOKE ALL ON FUNCTION public.get_or_create_conversation(UUID, UUID, UUID) FROM PUBLIC;
-  END IF;
+EXCEPTION
+    WHEN undefined_function THEN NULL;
+END $$;
 
-  IF to_regprocedure('public.get_or_create_conversation(uuid,uuid,uuid,text)') IS NOT NULL THEN
+DO $$
+BEGIN
     REVOKE ALL ON FUNCTION public.get_or_create_conversation(UUID, UUID, UUID, TEXT) FROM PUBLIC;
-  END IF;
-END;
-$$;
+EXCEPTION
+    WHEN undefined_function THEN NULL;
+END $$;
 
+-- Step 10: Drop old functions (if they exist)
 DROP FUNCTION IF EXISTS public.get_or_create_conversation(UUID, UUID, UUID);
 DROP FUNCTION IF EXISTS public.get_or_create_conversation(UUID, UUID, UUID, TEXT);
 
+-- Step 11: Create new get_or_create_conversation function with scope support
 CREATE OR REPLACE FUNCTION public.get_or_create_conversation(
     user1 UUID,
     user2 UUID,
@@ -95,6 +109,7 @@ BEGIN
         RAISE EXCEPTION 'Caller must be one of the conversation participants';
     END IF;
 
+    -- Normalize participant order
     IF user1 < user2 THEN
         v_participant_1 := user1;
         v_participant_2 := user2;
@@ -103,11 +118,13 @@ BEGIN
         v_participant_2 := user1;
     END IF;
 
+    -- Determine scope
     IF p_contract_id IS NOT NULL THEN
         v_scope := 'contract';
     ELSIF p_scope IN ('client', 'freelancer', 'shared') THEN
         v_scope := p_scope;
     ELSE
+        -- Get caller's active mode
         SELECT active_mode::text INTO v_profile_mode
         FROM public.profiles
         WHERE id = v_caller;
@@ -119,6 +136,7 @@ BEGIN
         END IF;
     END IF;
 
+    -- Find or create conversation
     IF p_contract_id IS NULL THEN
         SELECT id INTO v_conversation_id
         FROM public.conversations
@@ -137,6 +155,7 @@ BEGIN
         LIMIT 1;
     END IF;
 
+    -- Create if not found
     IF v_conversation_id IS NULL THEN
         INSERT INTO public.conversations (participant_1, participant_2, contract_id, conversation_scope)
         VALUES (v_participant_1, v_participant_2, p_contract_id, v_scope)
@@ -147,13 +166,20 @@ BEGIN
 END;
 $$;
 
-DO $$
-BEGIN
-  IF to_regprocedure('public.get_or_create_conversation(uuid,uuid,uuid)') IS NOT NULL THEN
-    REVOKE ALL ON FUNCTION public.get_or_create_conversation(UUID, UUID, UUID) FROM PUBLIC;
-    GRANT EXECUTE ON FUNCTION public.get_or_create_conversation(UUID, UUID, UUID) TO authenticated;
-  END IF;
-END;
+-- Step 12: Create legacy wrapper function (3 parameters)
+CREATE OR REPLACE FUNCTION public.get_or_create_conversation(
+    user1 UUID,
+    user2 UUID,
+    p_contract_id UUID DEFAULT NULL
+)
+RETURNS UUID
+LANGUAGE sql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT public.get_or_create_conversation(user1, user2, p_contract_id, NULL);
 $$;
 
+-- Step 13: Grant permissions
+GRANT EXECUTE ON FUNCTION public.get_or_create_conversation(UUID, UUID, UUID) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.get_or_create_conversation(UUID, UUID, UUID, TEXT) TO authenticated;

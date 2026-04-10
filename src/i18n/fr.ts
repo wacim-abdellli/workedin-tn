@@ -2726,6 +2726,14 @@ export const fr: Translations = {
                 "loading": "Chargement...",
                 "noData": "Aucune donnée trouvée",
                 "error": "Erreur lors du chargement des données"
+            },
+            "users": {
+                "switch": "Basculer",
+                "suspend": "Suspendre",
+                "suspendUser": "Suspendre l'utilisateur",
+                "suspendUserConfirm": "Voulez-vous suspendre l'utilisateur",
+                "suspensionKeepsHistory": "Les contrats, paiements, litiges et l'historique d'audit seront conservés.",
+                "unableToUpdateStatus": "Impossible de mettre à jour le statut de l'utilisateur"
             }
         }
     },
@@ -2803,7 +2811,10 @@ export const fr: Translations = {
         "popular": "Popular",
         "hr": "/hr",
         "legal_workedin_tn": "legal@workedin.tn",
-        "tn": "TN59 ..."
+        "tn": "TN59 ...",
+        "toast": {
+            "close": "Fermer"
+        }
     },
     "dynamic_key_322511046": "professionals already on WorkedIn",
     "dynamic_key_229505028": "الطرف الآخر يكتب الآن",
@@ -2984,6 +2995,8 @@ export const fr: Translations = {
     "dynamic_key_480999927": "جاري تحويلك تلقائياً...",
     "dynamic_key_730815621": "الذهاب للعقد",
     "dynamic_key_1762109572": "فشل التحقق من الدفع",
-    "dynamic_key_764967864": "العودة للوحة التحكم"
+    "dynamic_key_764967864": "العودة للوحة التحكم",
+    "toast": {
+        "close": "Fermer"
+    }
 };
-

@@ -554,6 +554,55 @@ export function AuthProvider({ children }: AuthProviderProps) {
     };
   }, [fetchProfile, syncWorkspaceFromProfile]);
 
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const channel = supabase
+      .channel(`profile-status-${user.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'profiles',
+          filter: `id=eq.${user.id}`,
+        },
+        (payload) => {
+          const updated = payload.new as Partial<Profile> | null;
+          if (!updated) return;
+
+          const nextStatus = updated.account_status;
+
+          if (nextStatus === 'suspended' || nextStatus === 'archived') {
+            logger.warn('[Auth] Account status changed to restricted state. Signing out immediately:', nextStatus);
+            setProfile((prev) => (prev ? withModeAwareAvatar({ ...prev, ...updated } as Profile) : prev));
+            setFreelancerProfile(null);
+            setSession(null);
+            setUser(null);
+            setIsProfileReady(true);
+            setIsLoading(false);
+            clearProfileCache();
+            clearWorkspaceForUser();
+            void supabase.auth.signOut({ scope: 'local' }).catch((error) => {
+              logger.warn('[Auth] Forced signout after suspension failed:', error);
+            });
+            return;
+          }
+
+          setProfile((prev) => {
+            if (!prev) return prev;
+            const next = withModeAwareAvatar({ ...prev, ...updated } as Profile);
+            return next;
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+  }, [user?.id]);
+
   // Absolute loading safety net - only runs once on mount to prevent reset loops
   useEffect(() => {
     const timer = window.setTimeout(() => {

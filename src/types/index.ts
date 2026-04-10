@@ -36,7 +36,11 @@ export interface Profile {
     user_type: UserType | null; // ✅ FIXED: Allow null (database allows NULL)
     email?: string; // ✅ ADDED: For Settings.tsx compatibility
     is_admin?: boolean;
+    is_super_admin?: boolean;
     account_status?: AccountStatus;
+    deleted_at?: string | null;
+    deleted_by?: string | null;
+    deletion_reason?: string | null;
     username?: string;
     full_name: string;
     phone?: string;

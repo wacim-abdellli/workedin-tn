@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Settings } from 'lucide-react';
 import { useTranslation } from '@/i18n';
 import { adminInsetClass, adminPanelClass, adminPillClass, adminSelectClass } from './adminTheme';
+import AdminSelect from './AdminSelect';
 
 export default function SettingsTab() {
     const { language } = useTranslation();
@@ -27,12 +28,17 @@ export default function SettingsTab() {
                     </label>
                     <label className={`flex items-center justify-between p-4 ${adminInsetClass}`}>
                         <span className="text-sm font-medium text-foreground">{tr('فاصل التحديث', 'Refresh interval', 'Intervalle d actualisation')}</span>
-                        <select value={refreshIntervalSec} onChange={e => setRefreshIntervalSec(Number(e.target.value))} className={selectClass}>
-                            <option value={20}>20 {tr('ثانية', 'seconds', 'secondes')}</option>
-                            <option value={30}>30 {tr('ثانية', 'seconds', 'secondes')}</option>
-                            <option value={45}>45 {tr('ثانية', 'seconds', 'secondes')}</option>
-                            <option value={60}>60 {tr('ثانية', 'seconds', 'secondes')}</option>
-                        </select>
+                        <AdminSelect
+                            value={String(refreshIntervalSec)}
+                            onChange={(v) => setRefreshIntervalSec(Number(v))}
+                            className="min-w-[140px]"
+                            options={[
+                                { value: '20', label: `20 ${tr('ثانية', 'seconds', 'secondes')}` },
+                                { value: '30', label: `30 ${tr('ثانية', 'seconds', 'secondes')}` },
+                                { value: '45', label: `45 ${tr('ثانية', 'seconds', 'secondes')}` },
+                                { value: '60', label: `60 ${tr('ثانية', 'seconds', 'secondes')}` },
+                            ]}
+                        />
                     </label>
                 </div>
             </div>

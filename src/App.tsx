@@ -8,7 +8,7 @@ if (
 }
 
 import { Suspense } from "react";
-import { BrowserRouter, Routes, useLocation } from "react-router-dom";
+import { BrowserRouter, Navigate, Routes, useLocation } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { LazyMotion, domAnimation } from "framer-motion";
@@ -27,6 +27,8 @@ import { useWorkspaceStore } from "./lib/workspaceState";
 import { appRoutes, renderRouteDefinitions } from "./routes";
 import SkipLinks from "./components/layout/SkipLinks";
 import { useRouteFocus } from "./hooks/useRouteFocus";
+import { useAuth } from "./contexts/AuthContext";
+import { shouldRequireUserTypeSelection } from "./lib/workspaceRoutes";
 
 const PageLoader = () => (
   <FullScreenLoader label="Loading..." hint="Opening the next page" />
@@ -39,9 +41,26 @@ function AppRoutes() {
 function AppContent() {
   useRouteFocus();
   const { tx } = useTranslation();
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
+  const { user, profile, isFullyReady } = useAuth();
   const activeWorkspace = useWorkspaceStore((state) => state.activeWorkspace);
   const isWorkspaceSwitching = useWorkspaceStore((state) => state.isSwitching);
+
+  const searchParams = new URLSearchParams(search);
+  const isUserTypeSelectionScreen =
+    pathname === "/signup" && searchParams.get("step") === "select-type";
+  const isAuthCallbackPath = pathname.startsWith("/auth/callback");
+
+  if (
+    isFullyReady &&
+    user &&
+    profile &&
+    shouldRequireUserTypeSelection(profile) &&
+    !isUserTypeSelectionScreen &&
+    !isAuthCallbackPath
+  ) {
+    return <Navigate to="/signup?step=select-type" replace state={{ from: { pathname, search } }} />;
+  }
 
   const workspaceClass = pathname.startsWith("/admin")
     ? "workspace-admin"

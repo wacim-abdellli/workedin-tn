@@ -28,16 +28,27 @@ export default function PaymentsTab() {
 
     return (
         <div className="space-y-6">
+            <div className={`${panelClass} p-5`}>
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-500/15">
+                            <CreditCard className="w-4 h-4 text-amber-400" />
+                        </div>
+                        <h3 className="font-bold text-white text-base">
+                            {tx('dashboard.admin.payments.title', undefined, 'Stuck payments (older than 1 hour)')}
+                        </h3>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={() => refetch()}
+                        className="inline-flex h-10 items-center gap-2 rounded-xl border border-[#2a2a2a] bg-[#111] px-4 text-sm font-semibold text-white transition-all hover:border-[#3a3a3a] hover:bg-[#1a1a1a]"
+                    >
+                        <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+                        {tx('dashboard.admin.payments.refresh', undefined, 'Refresh')}
+                    </button>
+                </div>
+            </div>
             <div className={panelClass}>
-                <div className="flex items-center justify-between mb-6">
-                     <h3 className="font-bold text-foreground flex items-center gap-2">
-                         <CreditCard className="w-5 h-5 text-[var(--color-status-warning)]" />
-                         {tx('dashboard.admin.payments.title', undefined, 'Stuck payments (older than 1 hour)')}
-                     </h3>
-                     <Button variant="outline" size="sm" onClick={() => refetch()}>
-                         <RefreshCw className={`w-4 h-4 ml-1 ${isLoading ? 'animate-spin' : ''}`} />{tx('dashboard.admin.payments.refresh', undefined, 'Refresh')}
-                     </Button>
-                 </div>
                 {isLoading ? (
                      <div className="text-center py-12"><Loader2 className="w-8 h-8 animate-spin text-[var(--color-brand-primary)] mx-auto mb-2" /><p className="text-muted">{tx('dashboard.admin.payments.loading', undefined, 'Loading...')}</p></div>
                  ) : stuckPayments.length === 0 ? (
