@@ -55,7 +55,7 @@ function FreelancerCard({
     <div
       className={cn(
         'group card card-hover card-hover-shine cursor-pointer rounded-[28px] relative',
-        viewMode === 'list' ? 'flex flex-col gap-6 p-6 md:flex-row' : 'flex flex-col p-6'
+        viewMode === 'list' ? 'flex flex-col gap-6 p-6 md:flex-row' : 'flex flex-col p-6 min-h-[480px]'
       )}
       onMouseMove={(event) => {
         const rect = event.currentTarget.getBoundingClientRect();
@@ -106,8 +106,8 @@ function FreelancerCard({
       </div>
 
       <div className="flex-1">
-        <div className="mb-2 flex items-start justify-between">
-          <div className={cn(viewMode === 'list' ? '' : 'w-full text-center')}>
+        <div className="mb-2 flex items-start justify-between gap-3">
+          <div className={cn(viewMode === 'list' ? 'flex-1' : 'w-full text-center')}>
             <h3 className="flex items-center justify-center gap-2 text-lg font-bold text-dark-900 transition-colors dark:text-white lg:justify-start" style={{ textDecorationColor: 'var(--workspace-accent)' }}>
               <span className="hover:text-[var(--workspace-accent)] transition-colors">{freelancer.name}</span>
               {freelancer.is_verified ? (
@@ -139,7 +139,7 @@ function FreelancerCard({
           </div>
 
           {viewMode !== 'list' && onToggleSave ? (
-            <div className="absolute left-4 top-4 z-10">
+            <div className="shrink-0">
               <IconButton
                 icon={<Heart className={cn('h-5 w-5 transition-all', isSaved && 'fill-current')} />}
                 label={isSaved ? tx('common.unsaveFreelancer', undefined, 'Unsave freelancer') : tx('common.saveFreelancer', undefined, 'Save freelancer')}
