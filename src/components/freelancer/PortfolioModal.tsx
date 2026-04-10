@@ -6,6 +6,8 @@ import Modal from '../ui/Modal';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
 import type { PortfolioItem } from '../../types';
+import { useTranslation } from "../../i18n";
+
 // import { useToast } from '../ui/Toast'; // Optional: Use parent's toast
 
 const portfolioSchema = z.object({
@@ -39,6 +41,7 @@ export default function PortfolioModal({
     initialData,
     isSubmitting = false
 }: PortfolioModalProps) {
+    const { tx } = useTranslation();
     const { register, handleSubmit, formState: { errors }, reset, setValue } = useForm<PortfolioFormData>({
         resolver: zodResolver(portfolioSchema),
         defaultValues: {
@@ -90,19 +93,19 @@ export default function PortfolioModal({
         >
             <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
                 <Input
-                    label="عنوان المشروع"
-                    placeholder="مثال: تصميم متجر إلكتروني"
+                    label={tx('dynamic_key_1080932848')}
+                    placeholder={tx('dynamic_key_1805513405')}
                     error={errors.title?.message}
                     {...register('title')}
                 />
 
                 <div className="space-y-1">
-                    <label className="block text-sm font-medium text-muted-foreground">وصف المشروع</label>
+                    <label className="block text-sm font-medium text-muted-foreground">{tx('dynamic_key_1163187178')}</label>
                     <textarea
                         {...register('description')}
                         rows={4}
                         className="w-full px-4 py-2 rounded-xl border border-border focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all resize-none"
-                        placeholder="اشرح تفاصيل المشروع وما قمت بإنجازه..."
+                        placeholder={tx('dynamic_key_1785209048')}
                     />
                     {errors.description && (
                         <p className="text-red-500 text-xs">{errors.description.message}</p>
@@ -111,15 +114,15 @@ export default function PortfolioModal({
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <Input
-                        label="رابط المشروع (اختياري)"
-                        placeholder="https://example.com"
+                        label={tx('dynamic_key_1347768947')}
+                        placeholder={tx('ui.https_example_com')}
                         error={errors.project_url?.message}
                         {...register('project_url')}
                         dir="ltr"
                     />
 
                     <Input
-                        label="تاريخ الإنجاز"
+                        label={tx('dynamic_key_1972795761')}
                         type="date"
                         error={errors.completion_date?.message}
                         {...register('completion_date')}
@@ -127,20 +130,20 @@ export default function PortfolioModal({
                 </div>
 
                 <Input
-                    label="المهارات المستخدمة"
-                    placeholder="مثال: تصميم واجهات، تطوير واجهات، تحرير صور (افصل بينها بفاصلة)"
+                    label={tx('dynamic_key_1333999920')}
+                    placeholder={tx('dynamic_key_454607345')}
                     error={errors.skills_used?.message}
                     {...register('skills_used')}
                 />
 
                 <Input
-                    label="رابط صورة العرض"
-                    placeholder="https://..."
+                    label={tx('dynamic_key_392258297')}
+                    placeholder={tx('ui.https')}
                     error={errors.media_url?.message}
                     {...register('media_url')}
                     dir="ltr"
                 />
-                <p className="text-xs text-muted -mt-3">سنقوم بدعم رفع الملفات قريباً. يرجى استخدام رابط مباشر للصورة حالياً.</p>
+                <p className="text-xs text-muted -mt-3">{tx('dynamic_key_1144928517')}</p>
 
                 <div className="pt-4 flex justify-end gap-3">
                     <Button
@@ -149,8 +152,7 @@ export default function PortfolioModal({
                         onClick={onClose}
                         disabled={isSubmitting}
                     >
-                        إلغاء
-                    </Button>
+                        {tx('dynamic_key_1502065525')}</Button>
                     <Button
                         type="submit"
                         variant="primary"

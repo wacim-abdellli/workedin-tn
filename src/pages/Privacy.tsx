@@ -79,8 +79,7 @@ export default function Privacy() {
                             <p className="text-foreground/80">
                                 {tx('legalPages.privacy.sections.contact.intro')}
                                 <br />
-                                {tx('legalPages.privacy.sections.contact.emailLabel')} privacy@workedin.tn
-                            </p>
+                                {tx('legalPages.privacy.sections.contact.emailLabel')} {tx('ui.privacy_workedin_tn')}</p>
                         </section>
                     </div>
                 </div>

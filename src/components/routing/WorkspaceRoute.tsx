@@ -4,6 +4,7 @@ import { useWorkspaceStore, loadWorkspaceForUser } from '../../lib/workspaceStat
 import { useAuth } from '../../contexts/AuthContext';
 import { getWorkspaceDashboardPath, resolveActiveWorkspace } from '@/lib/workspaceRoutes';
 import { FullScreenLoader } from '@/components/ui';
+import { useTranslation } from "../../i18n";
 
 interface WorkspaceRouteProps {
   workspace: 'freelancer' | 'client';
@@ -11,6 +12,7 @@ interface WorkspaceRouteProps {
 }
 
 export function WorkspaceRoute({ workspace, children }: WorkspaceRouteProps) {
+    const { tx } = useTranslation();
   const { activeWorkspace } = useWorkspaceStore();
   const { isFullyReady, profile, freelancerProfile, user } = useAuth();
 
@@ -22,7 +24,7 @@ export function WorkspaceRoute({ workspace, children }: WorkspaceRouteProps) {
     if (!savedWorkspace || savedWorkspace === workspace) {
       return (
         <div className="fixed inset-0 z-50">
-          <FullScreenLoader label="Loading..." hint="Checking your workspace access" />
+          <FullScreenLoader label={tx('ui.loading')} hint="Checking your workspace access" />
         </div>
       );
     }

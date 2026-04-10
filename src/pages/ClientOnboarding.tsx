@@ -252,7 +252,7 @@ function ClientOnboarding() {
                                         }}
                                     >
                                         {avatarPreview ? (
-                                            <img src={avatarPreview} alt="Avatar" className="w-full h-full object-cover" />
+                                            <img src={avatarPreview} alt={tx('ui.avatar')} className="w-full h-full object-cover" />
                                         ) : (
                                             <User className="w-10 h-10 text-[var(--color-text-disabled)]" />
                                         )}

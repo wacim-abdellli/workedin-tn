@@ -91,7 +91,7 @@ export default function ContractDetailsSidebar({
                 <div className="flex items-center gap-4 text-sm text-muted-foreground">
                     <div className="flex items-center gap-1">
                         <DollarSign className="w-4 h-4 text-muted" />
-                        <span className="font-medium">{contract.amount} د.ت</span>
+                        <span className="font-medium">{contract.amount} {tx('dynamic_key_1524267')}</span>
                     </div>
                     {currentStatus === 'active' && (
                         <div className="flex items-center gap-1">
@@ -189,7 +189,7 @@ export default function ContractDetailsSidebar({
                                 <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">{tx('contract.pending', undefined, 'Pending')}</span>
                             </div>
                             <div className="text-xs text-muted flex justify-between">
-                                <span>{contract.amount} د.ت</span>
+                                <span>{contract.amount} {tx('dynamic_key_1524267')}</span>
                                 <span>{contract.job?.deadline ? new Date(contract.job.deadline).toLocaleDateString() : '—'}</span>
                             </div>
                         </div>

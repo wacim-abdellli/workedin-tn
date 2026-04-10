@@ -27,7 +27,7 @@ interface UserMenuProps {
 export function UserMenu({ isDesktopCondensed = false }: UserMenuProps) {
   const { user, profile, freelancerProfile, signOut } = useAuth();
   const { activeWorkspace, isSwitching } = useWorkspaceStore();
-  const { t } = useTranslation();
+  const { t, tx } = useTranslation();
   const { showToast } = useToast();
   const navigate = useNavigate();
 
@@ -441,8 +441,7 @@ export function UserMenu({ isDesktopCondensed = false }: UserMenuProps) {
                       color: "var(--color-status-info)",
                     }}
                   >
-                    ADMIN
-                  </span>
+                    {tx('ui.admin')}</span>
                 </button>
               ) : null}
             </div>

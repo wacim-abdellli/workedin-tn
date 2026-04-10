@@ -1,4 +1,5 @@
-﻿import { Helmet } from 'react-helmet-async';
+﻿ import { Helmet } from 'react-helmet-async';
+
 import { useTranslation } from '../../i18n';
 import type { Language } from '../../types';
 
@@ -37,6 +38,7 @@ const SITE_URL = import.meta.env.VITE_APP_URL || 'https://workedin.tn';
 const resolveLocalizedText = (value: LocalizedText | undefined, language: Language): string => {
     if (!value) return '';
     if (typeof value === 'string') return value;
+
     return value[language] || value.en || value.fr || value.ar || '';
 };
 
@@ -81,7 +83,9 @@ export default function SEO({
             <meta name="description" content={resolvedDescription} />
             {resolvedKeywords && <meta name="keywords" content={resolvedKeywords} />}
             {noIndex && <meta name="robots" content="noindex, nofollow" />}
+
             <link rel="canonical" href={canonicalUrl} />
+
             <meta property="og:type" content={type} />
             <meta property="og:site_name" content={siteName} />
             <meta property="og:title" content={fullTitle} />
@@ -91,10 +95,12 @@ export default function SEO({
             <meta property="og:image:height" content="630" />
             <meta property="og:locale" content={resolvedLocale} />
             <meta property="og:url" content={ogUrl} />
+
             <meta name="twitter:card" content={twitterCard} />
             <meta name="twitter:title" content={fullTitle} />
             <meta name="twitter:description" content={resolvedDescription} />
             <meta name="twitter:image" content={fullImageUrl} />
+
             <meta name="theme-color" content="#8b5cf6" />
         </Helmet>
     );
@@ -102,11 +108,7 @@ export default function SEO({
 
 export const SEO_CONFIG: Record<string, SEOConfigEntry> = {
     home: {
-        title: {
-            ar: 'WorkedIn',
-            en: 'WorkedIn',
-            fr: 'WorkedIn',
-        },
+        title: { ar: 'WorkedIn', en: 'WorkedIn', fr: 'WorkedIn' },
         description: {
             ar: 'تواصل مع محترفين تونسيين موثقين لمشاريعك. مدفوعات آمنة بالدينار التونسي مع حماية الضمان.',
             en: 'Connect with verified Tunisian professionals for your projects. Secure payments in TND and escrow protection.',
@@ -119,11 +121,7 @@ export const SEO_CONFIG: Record<string, SEOConfigEntry> = {
         },
     },
     jobs: {
-        title: {
-            ar: 'وظائف ومشاريع مستقلة',
-            en: 'Freelance Jobs',
-            fr: 'Missions freelance',
-        },
+        title: { ar: 'وظائف ومشاريع مستقلة', en: 'Freelance Jobs', fr: 'Missions freelance' },
         description: {
             ar: 'اكتشف مشاريع جديدة في تونس وابحث عن فرص تناسب مهاراتك وسعرك وخبرتك.',
             en: 'Browse freelance jobs in Tunisia and find projects that match your skills, rate, and availability.',
@@ -136,11 +134,7 @@ export const SEO_CONFIG: Record<string, SEOConfigEntry> = {
         },
     },
     findFreelancers: {
-        title: {
-            ar: 'ابحث عن محترفين تونسيين موثقين',
-            en: 'Find Verified Tunisian Professionals',
-            fr: 'Trouvez des professionnels tunisiens vérifiés',
-        },
+        title: { ar: 'ابحث عن محترفين تونسيين موثقين', en: 'Find Verified Tunisian Professionals', fr: 'Trouvez des professionnels tunisiens vérifiés' },
         description: {
             ar: 'أكثر من 2500 محترف تونسي موثق في التصميم والتطوير والترجمة والاستشارة.',
             en: 'Find 2,500+ verified Tunisian developers, designers, translators, and consultants ready to start.',
@@ -153,11 +147,7 @@ export const SEO_CONFIG: Record<string, SEOConfigEntry> = {
         },
     },
     howItWorks: {
-        title: {
-            ar: 'كيف تعمل WorkedIn',
-            en: 'How WorkedIn Works',
-            fr: 'Comment fonctionne WorkedIn',
-        },
+        title: { ar: 'كيف تعمل WorkedIn', en: 'How WorkedIn Works', fr: 'Comment fonctionne WorkedIn' },
         description: {
             ar: 'أربع خطوات من فكرة المشروع إلى استلام الدفع، مع ضمان وحماية هوية وتتبع واضح لكل دينار.',
             en: 'See how WorkedIn takes you from project idea to approved payment in four protected steps.',
@@ -170,11 +160,7 @@ export const SEO_CONFIG: Record<string, SEOConfigEntry> = {
         },
     },
     forClients: {
-        title: {
-            ar: 'للعملاء وأصحاب المشاريع',
-            en: 'Hire Verified Tunisian Talent',
-            fr: 'Recrutez des talents tunisiens vérifiés',
-        },
+        title: { ar: 'للعملاء وأصحاب المشاريع', en: 'Hire Verified Tunisian Talent', fr: 'Recrutez des talents tunisiens vérifiés' },
         description: {
             ar: 'انشر مشروعك مجاناً، استقبل عروضاً من محترفين موثقين، وادفع فقط عند الموافقة مع حماية كاملة بالضمان.',
             en: 'Post your project for free, receive proposals from verified professionals, and pay only when work is approved.',
@@ -187,11 +173,7 @@ export const SEO_CONFIG: Record<string, SEOConfigEntry> = {
         },
     },
     faq: {
-        title: {
-            ar: 'الأسئلة الشائعة',
-            en: 'Frequently Asked Questions',
-            fr: 'Questions fréquentes',
-        },
+        title: { ar: 'الأسئلة الشائعة', en: 'Frequently Asked Questions', fr: 'Questions fréquentes' },
         description: {
             ar: 'إجابات واضحة حول طريقة العمل والدفع والضمان والهوية على WorkedIn.',
             en: 'Find answers about payments, escrow, identity verification, and how WorkedIn works.',
@@ -204,11 +186,7 @@ export const SEO_CONFIG: Record<string, SEOConfigEntry> = {
         },
     },
     terms: {
-        title: {
-            ar: 'شروط الاستخدام',
-            en: 'Terms of Use',
-            fr: 'Conditions d\'utilisation',
-        },
+        title: { ar: 'شروط الاستخدام', en: 'Terms of Use', fr: 'Conditions d\'utilisation' },
         description: {
             ar: 'اطلع على شروط وأحكام استخدام منصة WorkedIn.',
             en: 'Read the terms and conditions for using the WorkedIn platform.',
@@ -221,11 +199,7 @@ export const SEO_CONFIG: Record<string, SEOConfigEntry> = {
         },
     },
     privacy: {
-        title: {
-            ar: 'سياسة الخصوصية',
-            en: 'Privacy Policy',
-            fr: 'Politique de confidentialité',
-        },
+        title: { ar: 'سياسة الخصوصية', en: 'Privacy Policy', fr: 'Politique de confidentialité' },
         description: {
             ar: 'تعرف على كيفية حماية بياناتك وخصوصيتك على WorkedIn.',
             en: 'Learn how WorkedIn protects your data and privacy.',
@@ -238,13 +212,9 @@ export const SEO_CONFIG: Record<string, SEOConfigEntry> = {
         },
     },
     login: {
-        title: {
-            ar: 'تسجيل الدخول إلى WorkedIn',
-            en: 'Sign in to WorkedIn',
-            fr: 'Connectez-vous à WorkedIn',
-        },
+        title: { ar: 'سجّل الدخول إلى WorkedIn', en: 'Sign in to WorkedIn', fr: 'Connectez-vous à WorkedIn' },
         description: {
-            ar: 'سجل دخولك إلى حسابك على WorkedIn وتابع مشاريعك ورسائلك ومدفوعاتك.',
+            ar: 'عد إلى حسابك على WorkedIn وتابع مشاريعك ورسائلك ومدفوعاتك.',
             en: 'Sign in to your WorkedIn account to manage projects, messages, and payments.',
             fr: 'Connectez-vous à votre compte WorkedIn pour gérer vos projets, messages et paiements.',
         },
@@ -255,11 +225,7 @@ export const SEO_CONFIG: Record<string, SEOConfigEntry> = {
         },
     },
     signup: {
-        title: {
-            ar: 'أنشئ حسابك على WorkedIn',
-            en: 'Create your WorkedIn account',
-            fr: 'Créez votre compte WorkedIn',
-        },
+        title: { ar: 'أنشئ حسابك على WorkedIn', en: 'Create your WorkedIn account', fr: 'Créez votre compte WorkedIn' },
         description: {
             ar: 'انضم إلى أكثر من 2500 محترف يبنون مسيرتهم ويديرون مشاريعهم على WorkedIn.',
             en: 'Create your account and join 2,500+ professionals building their career on WorkedIn.',
@@ -272,11 +238,7 @@ export const SEO_CONFIG: Record<string, SEOConfigEntry> = {
         },
     },
     dashboard: {
-        title: {
-            ar: 'لوحة التحكم',
-            en: 'Dashboard',
-            fr: 'Tableau de bord',
-        },
+        title: { ar: 'لوحة التحكم', en: 'Dashboard', fr: 'Tableau de bord' },
         description: {
             ar: 'تابع مشاريعك ورسائلك وأرباحك من لوحة التحكم الخاصة بك على WorkedIn.',
             en: 'Track projects, messages, and earnings from your WorkedIn dashboard.',
@@ -289,11 +251,7 @@ export const SEO_CONFIG: Record<string, SEOConfigEntry> = {
         },
     },
     messages: {
-        title: {
-            ar: 'الرسائل',
-            en: 'Messages',
-            fr: 'Messages',
-        },
+        title: { ar: 'الرسائل', en: 'Messages', fr: 'Messages' },
         description: {
             ar: 'تواصل بأمان مع العملاء والمستقلين عبر رسائل WorkedIn.',
             en: 'Chat securely with clients and freelancers through WorkedIn messaging.',
@@ -306,15 +264,11 @@ export const SEO_CONFIG: Record<string, SEOConfigEntry> = {
         },
     },
     settings: {
-        title: {
-            ar: 'الإعدادات',
-            en: 'Settings',
-            fr: 'Paramètres',
-        },
+        title: { ar: 'الإعدادات', en: 'Settings', fr: 'Paramètres' },
         description: {
             ar: 'أدر إعدادات الحساب والإشعارات والخصوصية من مكان واحد.',
             en: 'Manage your account settings, notifications, and privacy from one place.',
-            fr: 'Gérez vos paramètres de compte, notifications et préférences de confidentialité depuis un seul endroit.',
+            fr: 'Gérez vos paramètres de compte, notifications et préférences depuis un seul endroit.',
         },
         keywords: {
             ar: 'إعدادات، حساب، تفضيلات',
@@ -323,11 +277,7 @@ export const SEO_CONFIG: Record<string, SEOConfigEntry> = {
         },
     },
     search: {
-        title: {
-            ar: 'نتائج البحث',
-            en: 'Search Results',
-            fr: 'Résultats de recherche',
-        },
+        title: { ar: 'نتائج البحث', en: 'Search Results', fr: 'Résultats de recherche' },
         description: {
             ar: 'استعرض نتائج البحث عبر الوظائف والمستقلين والمحتوى على WorkedIn.',
             en: 'Browse search results across jobs, freelancers, and content on WorkedIn.',
@@ -340,11 +290,7 @@ export const SEO_CONFIG: Record<string, SEOConfigEntry> = {
         },
     },
     freelancerOnboarding: {
-        title: {
-            ar: 'إكمال حساب المستقل',
-            en: 'Complete Freelancer Setup',
-            fr: 'Finaliser le profil freelance',
-        },
+        title: { ar: 'إكمال حساب المستقل', en: 'Complete Freelancer Setup', fr: 'Finaliser le profil freelance' },
         description: {
             ar: 'أكمل ملفك كمستقل وابدأ استقبال فرص العمل على WorkedIn.',
             en: 'Complete your freelancer profile and start getting matched to real work on WorkedIn.',
@@ -357,11 +303,7 @@ export const SEO_CONFIG: Record<string, SEOConfigEntry> = {
         },
     },
     clientOnboarding: {
-        title: {
-            ar: 'إكمال حساب العميل',
-            en: 'Complete Client Setup',
-            fr: 'Finaliser le profil client',
-        },
+        title: { ar: 'إكمال حساب العميل', en: 'Complete Client Setup', fr: 'Finaliser le profil client' },
         description: {
             ar: 'أكمل حسابك كعميل وابدأ نشر مشاريعك على WorkedIn.',
             en: 'Complete your client account and start posting projects on WorkedIn.',

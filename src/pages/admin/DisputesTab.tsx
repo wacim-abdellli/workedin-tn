@@ -17,7 +17,7 @@ interface DisputeRecord {
 }
 
 export default function DisputesTab() {
-    const { language } = useTranslation();
+    const { language, tx } = useTranslation();
     const tr = (ar: string, en: string, fr?: string) => language === 'ar' ? ar : language === 'fr' ? (fr || en) : en;
     const locale = language === 'ar' ? 'ar-TN' : language === 'fr' ? 'fr-FR' : 'en-US';
     const queryClient = useQueryClient();
@@ -87,7 +87,7 @@ export default function DisputesTab() {
                                             <div className={`mt-3 p-3 rounded-lg ${adminPillClass('red')}`}>
                                                 <p className="text-sm text-foreground"><strong>{tr('سبب النزاع', 'Dispute reason', 'Raison du litige')}:</strong> {d.reason}</p>
                                             </div>
-                                            {d.contract?.amount && <p className="text-sm font-medium text-muted mt-2">{tr('مبلغ العقد', 'Contract amount', 'Montant du contrat')}: {d.contract.amount} د.ت</p>}
+                                            {d.contract?.amount && <p className="text-sm font-medium text-muted mt-2">{tr('مبلغ العقد', 'Contract amount', 'Montant du contrat')}: {d.contract.amount} {tx('dynamic_key_1524267')}</p>}
                                         </div>
                                         <div className="flex flex-col gap-2 shrink-0">
                                             <Button size="sm" variant="outline" onClick={() => window.open(`/contracts/${d.contract_id}`, '_blank')}>

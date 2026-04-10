@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import Button from '../ui/Button';
 import type { Proposal } from '../../types/proposal';
+import { useTranslation } from "../../i18n";
 
 interface ProposalCardProps {
     proposal: Proposal;
@@ -15,6 +16,7 @@ interface ProposalCardProps {
 }
 
 function ProposalCard({ proposal, onMessage, onShortlist, onHire }: ProposalCardProps) {
+    const { tx } = useTranslation();
     const [expanded, setExpanded] = useState(false);
     const { freelancer, cover_letter, bid_amount, duration, created_at, status } = proposal;
 
@@ -51,14 +53,12 @@ function ProposalCard({ proposal, onMessage, onShortlist, onHire }: ProposalCard
                                 {freelancer.is_verified && (
                                     <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-700 text-[10px] font-medium border border-blue-100">
                                         <Shield className="w-3 h-3" />
-                                        موثق
-                                    </span>
+                                        {tx('dynamic_key_49410394')}</span>
                                 )}
                                 {freelancer.rating > 4.5 && (
                                     <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-yellow-50 text-yellow-700 text-[10px] font-medium border border-yellow-100">
                                         <Star className="w-3 h-3" />
-                                        متميز
-                                    </span>
+                                        {tx('dynamic_key_1530855304')}</span>
                                 )}
                             </div>
                         </div>
@@ -74,12 +74,10 @@ function ProposalCard({ proposal, onMessage, onShortlist, onHire }: ProposalCard
                             </div>
                             <span className="text-muted">|</span>
                             <span className="text-sm text-muted">
-                                <strong className="text-foreground dark:text-white">{freelancer.jobs_completed}</strong> وظيفة مكتملة
-                            </span>
+                                <strong className="text-foreground dark:text-white">{freelancer.jobs_completed}</strong> {tx('dynamic_key_1824767388')}</span>
                             <span className="text-muted">|</span>
                             <span className="text-sm text-muted">
-                                <strong className="text-foreground dark:text-white">{freelancer.success_rate}%</strong> نجاح
-                            </span>
+                                <strong className="text-foreground dark:text-white">{freelancer.success_rate}%</strong> {tx('dynamic_key_49413132')}</span>
                         </div>
 
                         <div className="relative">
@@ -91,8 +89,7 @@ function ProposalCard({ proposal, onMessage, onShortlist, onHire }: ProposalCard
                                     onClick={() => setExpanded(true)}
                                     className="text-primary-600 text-sm font-medium hover:underline mt-1"
                                 >
-                                    قراءة المزيد...
-                                </button>
+                                    {tx('dynamic_key_1337275137')}</button>
                             )}
                         </div>
 
@@ -115,7 +112,7 @@ function ProposalCard({ proposal, onMessage, onShortlist, onHire }: ProposalCard
 
                         <div className="mt-4 flex items-center gap-2 text-xs text-muted">
                             <Clock className="w-3 h-3" />
-                            <span>منذ {new Date(created_at).toLocaleDateString('ar-TN')}</span>
+                            <span>{tx('dynamic_key_1593775')}{new Date(created_at).toLocaleDateString('ar-TN')}</span>
                         </div>
                     </div>
 
@@ -124,27 +121,24 @@ function ProposalCard({ proposal, onMessage, onShortlist, onHire }: ProposalCard
                         <div>
                             <div className="flex items-baseline justify-between mb-1">
                                 <span className="text-2xl font-bold text-foreground dark:text-white">{bid_amount}</span>
-                                <span className="text-sm font-medium text-muted">د.ت</span>
+                                <span className="text-sm font-medium text-muted">{tx('dynamic_key_1524267')}</span>
                             </div>
                             <div className="text-xs text-green-600 mb-4 flex items-center gap-1">
                                 <CheckCircle className="w-3 h-3" />
-                                عرض مدروس
-                            </div>
+                                {tx('dynamic_key_422731376')}</div>
 
                             <div className="space-y-3 mb-6">
                                 <div className="flex items-center justify-between text-sm">
                                     <span className="text-muted flex items-center gap-1">
                                         <Clock className="w-4 h-4" />
-                                        مدة التنفيذ
-                                    </span>
-                                    <span className="font-medium text-foreground dark:text-white">{duration} يوم</span>
+                                        {tx('dynamic_key_451961555')}</span>
+                                    <span className="font-medium text-foreground dark:text-white">{duration} {tx('dynamic_key_1598663')}</span>
                                 </div>
                                 <div className="flex items-center justify-between text-sm">
                                     <span className="text-muted flex items-center gap-1">
                                         <DollarSign className="w-4 h-4" />
-                                        إجمالي التكلفة
-                                    </span>
-                                    <span className="font-medium text-foreground dark:text-white">{bid_amount} د.ت</span>
+                                        {tx('dynamic_key_1102070523')}</span>
+                                    <span className="font-medium text-foreground dark:text-white">{bid_amount} {tx('dynamic_key_1524267')}</span>
                                 </div>
                             </div>
                         </div>
@@ -155,8 +149,7 @@ function ProposalCard({ proposal, onMessage, onShortlist, onHire }: ProposalCard
                                 className="w-full justify-center"
                                 onClick={() => onHire(proposal.id)}
                             >
-                                توظيف
-                            </Button>
+                                {tx('dynamic_key_1506801489')}</Button>
                             <div className="grid grid-cols-2 gap-2">
                                 <Button
                                     variant="outline"

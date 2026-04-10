@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from "../../i18n";
 
 interface ProfileRingProps {
   value: number;
 }
 
 export function ProfileRing({ value }: ProfileRingProps) {
+    const { tx } = useTranslation();
   const [animated, setAnimated] = useState(0);
   const radius = 52;
   const circumference = 2 * Math.PI * radius;
@@ -38,8 +40,7 @@ export function ProfileRing({ value }: ProfileRingProps) {
           {value}%
         </span>
         <span className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
-          complete
-        </span>
+          {tx('ui.complete')}</span>
       </div>
     </div>
   );

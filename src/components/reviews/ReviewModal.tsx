@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Star, X, ThumbsUp, ThumbsDown, MessageSquare, Shield, Eye, EyeOff } from 'lucide-react';
 import Button from '../ui/Button';
+import { useTranslation } from "../../i18n";
 
 interface ReviewModalProps {
     isOpen: boolean;
@@ -82,6 +83,7 @@ export default function ReviewModal({
     };
 
     const StarRating = ({ value, onChange, size = 'md' }: { value: number; onChange: (v: number) => void; size?: 'sm' | 'md' | 'lg' }) => {
+        const { tx } = useTranslation();
         const [hover, setHover] = useState(0);
         const sizeClass = size === 'lg' ? 'w-10 h-10' : size === 'md' ? 'w-6 h-6' : 'w-5 h-5';
 
@@ -131,8 +133,8 @@ export default function ReviewModal({
                 {/* Header */}
                 <div className="sticky top-0 bg-card border-b border-border p-6 flex items-center justify-between z-10">
                     <div>
-                        <h2 className="text-xl font-bold text-foreground">تقييم {revieweeName}</h2>
-                        <p className="text-sm text-muted">مشروع: {projectTitle}</p>
+                        <h2 className="text-xl font-bold text-foreground">{tx('dynamic_key_1506640045')}{revieweeName}</h2>
+                        <p className="text-sm text-muted">{tx('dynamic_key_220511911')}{projectTitle}</p>
                     </div>
                     <button onClick={onClose} className="p-2 hover:bg-muted rounded-full">
                         <X className="w-5 h-5" />
@@ -142,7 +144,7 @@ export default function ReviewModal({
                 <div className="p-6 space-y-8">
                     {/* Overall Rating */}
                     <div className="text-center">
-                        <h3 className="font-semibold text-foreground mb-4">التقييم العام</h3>
+                        <h3 className="font-semibold text-foreground mb-4">{tx('dynamic_key_380610698')}</h3>
                         <div className="flex justify-center gap-2 mb-2">
                             {[1, 2, 3, 4, 5].map(star => (
                                 <button
@@ -171,7 +173,7 @@ export default function ReviewModal({
 
                     {/* Detailed Ratings */}
                     <div>
-                        <h3 className="font-semibold text-foreground mb-4">تقييمات تفصيلية</h3>
+                        <h3 className="font-semibold text-foreground mb-4">{tx('dynamic_key_685712071')}</h3>
                         <div className="space-y-4">
                             {categories.map(cat => (
                                 <div key={cat.key} className="flex items-center justify-between">
@@ -199,7 +201,7 @@ export default function ReviewModal({
                                     }`}
                             >
                                 <ThumbsUp className="w-6 h-6" />
-                                <span className="font-medium">نعم</span>
+                                <span className="font-medium">{tx('dynamic_key_1594354')}</span>
                             </button>
                             <button
                                 onClick={() => setWouldWorkAgain(false)}
@@ -209,19 +211,19 @@ export default function ReviewModal({
                                     }`}
                             >
                                 <ThumbsDown className="w-6 h-6" />
-                                <span className="font-medium">لا</span>
+                                <span className="font-medium">{tx('dynamic_key_51299')}</span>
                             </button>
                         </div>
                     </div>
 
                     {/* Written Review */}
                     <div>
-                        <h3 className="font-semibold text-foreground mb-2">مراجعة مكتوبة (اختياري)</h3>
-                        <p className="text-sm text-muted mb-3">شارك تجربتك مع الآخرين</p>
+                        <h3 className="font-semibold text-foreground mb-2">{tx('dynamic_key_1546829780')}</h3>
+                        <p className="text-sm text-muted mb-3">{tx('dynamic_key_1591556203')}</p>
                         <textarea
                             value={reviewText}
                             onChange={(e) => setReviewText(e.target.value)}
-                            placeholder="ما الذي أعجبك؟ ما الذي يمكن تحسينه؟ هل توصي به للآخرين؟"
+                            placeholder={tx('dynamic_key_829255241')}
                             className="w-full h-32 p-4 border border-border rounded-xl resize-none focus:ring-2 focus:ring-primary-100 focus:border-primary-500"
                             maxLength={1000}
                         />
@@ -230,7 +232,7 @@ export default function ReviewModal({
 
                     {/* Visibility */}
                     <div>
-                        <h3 className="font-semibold text-foreground mb-4">إعدادات الخصوصية</h3>
+                        <h3 className="font-semibold text-foreground mb-4">{tx('dynamic_key_1529240342')}</h3>
                         <div className="space-y-3">
                             {[
                                 { value: 'public', label: 'عام', desc: 'مرئي على البروفايل', icon: Eye },
@@ -267,8 +269,8 @@ export default function ReviewModal({
                         <div className="flex items-start gap-3">
                             <MessageSquare className="w-5 h-5 text-yellow-600 mt-0.5" />
                             <div className="text-sm">
-                                <p className="text-yellow-800 font-medium">ملاحظة</p>
-                                <p className="text-yellow-700">التقييمات دائمة ولا يمكن تعديلها. يمكن للطرف الآخر الرد على تقييمك.</p>
+                                <p className="text-yellow-800 font-medium">{tx('dynamic_key_234965878')}</p>
+                                <p className="text-yellow-700">{tx('dynamic_key_1087307158')}</p>
                             </div>
                         </div>
                     </div>
@@ -277,16 +279,14 @@ export default function ReviewModal({
                 {/* Footer */}
                 <div className="sticky bottom-0 bg-card border-t border-border p-6 flex gap-3">
                     <Button variant="ghost" onClick={onClose} className="flex-1">
-                        تخطي الآن
-                    </Button>
+                        {tx('dynamic_key_1647529322')}</Button>
                     <Button
                         variant="primary"
                         onClick={handleSubmit}
                         disabled={overallRating === 0}
                         className="flex-1"
                     >
-                        إرسال التقييم
-                    </Button>
+                        {tx('dynamic_key_1679990796')}</Button>
                 </div>
             </div>
         </div>

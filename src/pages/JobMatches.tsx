@@ -247,15 +247,14 @@ function JobMatches() {
                         className="flex items-center gap-2 text-muted hover:text-foreground mb-6 transition-colors"
                     >
                         <ArrowLeft className="w-5 h-5 rtl:rotate-180" />
-                        رجوع
-                    </button>
+                        {tx('dynamic_key_48788556')}</button>
 
                     <div className="card mb-8">
                         <h1 className="text-xl font-bold text-foreground mb-2">
                             {job?.title}
                         </h1>
                         <div className="flex items-center gap-4 text-sm text-muted">
-                            <span className="badge-primary">{job?.budget} د.ت</span>
+                            <span className="badge-primary">{job?.budget} {tx('dynamic_key_1524267')}</span>
                             <span>{t.selection.topMatches}</span>
                         </div>
                     </div>
@@ -263,6 +262,7 @@ function JobMatches() {
                     {/* Freelancer Cards */}
                     <div className="space-y-6">
                         {matches.map((match, index) => {
+                            const { tx } = useTranslation();
                             const isExpanded = expandedId === match.id;
                             const freelancer = match.freelancer;
 
@@ -277,8 +277,7 @@ function JobMatches() {
                                     {/* Match rank badge */}
                                     {index === 0 && (
                                         <div className="absolute -top-3 start-4 bg-primary-600 text-white text-xs font-bold px-3 py-1 rounded-full">
-                                            أفضل تطابق
-                                        </div>
+                                            {tx('dynamic_key_1842976832')}</div>
                                     )}
 
                                     {/* Main info row */}
@@ -352,8 +351,7 @@ function JobMatches() {
                                             {playingVoice === freelancer.id ? (
                                                 <>
                                                     <Pause className="w-5 h-5" />
-                                                    جاري التشغيل...
-                                                </>
+                                                    {tx('dynamic_key_1225650541')}</>
                                             ) : (
                                                 <>
                                                     <Volume2 className="w-5 h-5" />
@@ -375,7 +373,7 @@ function JobMatches() {
                                                     <OptimizedImage
                                                         key={sample.id}
                                                         src={sample.thumbnail_url || ''}
-                                                        alt="نموذج عمل"
+                                                        alt={tx('dynamic_key_1739654371')}
                                                         className="w-20 h-16 rounded-lg flex-shrink-0"
                                                         imgClassName="object-cover"
                                                     />
@@ -397,8 +395,7 @@ function JobMatches() {
                                         >
                                             {isExpanded ? (
                                                 <>
-                                                    إخفاء
-                                                    <ChevronUp className="w-4 h-4" />
+                                                    {tx('dynamic_key_1501416850')}<ChevronUp className="w-4 h-4" />
                                                 </>
                                             ) : (
                                                 <>
@@ -414,11 +411,9 @@ function JobMatches() {
                                                 <div className="mt-4 flex items-center gap-4 text-sm text-muted">
                                                     <span>
                                                         <Briefcase className="w-4 h-4 inline me-1" />
-                                                        {freelancer.repeat_clients} عميل متكرر
-                                                    </span>
+                                                        {freelancer.repeat_clients} {tx('dynamic_key_9853380')}</span>
                                                     <span>
-                                                        ربح {freelancer.total_earnings} د.ت
-                                                    </span>
+                                                        {tx('dynamic_key_1573622')}{freelancer.total_earnings} {tx('dynamic_key_1524267')}</span>
                                                 </div>
                                             </div>
                                         )}
@@ -464,8 +459,7 @@ function JobMatches() {
                         {selectedMatch?.freelancer.full_name}
                     </h3>
                     <p className="text-muted mb-6">
-                        سيتم إنشاء عقد بينك وبين هذا الموظف. هل أنت متأكد؟
-                    </p>
+                        {tx('dynamic_key_193923978')}</p>
                     <div className="flex gap-3">
                         <Button
                             variant="ghost"

@@ -11,8 +11,10 @@ import {
   isWorkspaceReady,
   resolveActiveWorkspace,
 } from '@/lib/workspaceRoutes';
+import { useTranslation } from "../../i18n";
 
 export function ProtectedRoute({ children }: { children: ReactNode }) {
+    const { tx } = useTranslation();
   const { isAuthenticated, isFullyReady, profile, freelancerProfile } = useAuth();
   const location = useLocation();
   const activeWorkspace = useWorkspaceStore((state) => state.activeWorkspace);
@@ -51,7 +53,7 @@ export function ProtectedRoute({ children }: { children: ReactNode }) {
     return (
       <div className="fixed inset-0 z-50">
         <FullScreenLoader
-          label="Loading..."
+          label={tx('ui.loading')}
           hint="Checking your account and workspace access"
         />
       </div>

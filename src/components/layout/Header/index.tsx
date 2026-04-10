@@ -204,7 +204,7 @@ export default function Header() {
                   <Search className="h-4 w-4 shrink-0" />
                   <span className="truncate text-xs flex-1 text-start hidden lg:block">{t.common?.search || "Search"}...</span>
                   <div className="hidden items-center gap-1 xl:flex shrink-0">
-                    <kbd className="header-kbd">Ctrl+K</kbd>
+                    <kbd className="header-kbd">{tx('ui.ctrl_k')}</kbd>
                   </div>
                 </button>
 

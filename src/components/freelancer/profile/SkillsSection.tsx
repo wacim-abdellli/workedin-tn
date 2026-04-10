@@ -69,22 +69,19 @@ export default function SkillsSection({ skills, language, isOwner, onUpdate }: P
                         style={{ borderColor: 'var(--color-border-default)', color: 'var(--color-text-secondary)' }}
                         onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--workspace-primary)'; e.currentTarget.style.color = 'var(--workspace-primary)'; }}
                         onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--color-border-default)'; e.currentTarget.style.color = 'var(--color-text-secondary)'; }}>
-                        <Pencil className="h-3 w-3" /> Edit
-                    </button>
+                        <Pencil className="h-3 w-3" /> {tx('ui.edit')}</button>
                 )}
                 {isOwner && editing && (
                     <div className="flex items-center gap-2">
                         <button onClick={cancel}
                             className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold border"
                             style={{ borderColor: 'var(--color-border-default)', color: 'var(--color-text-secondary)' }}>
-                            <X className="h-3 w-3" /> Cancel
-                        </button>
+                            <X className="h-3 w-3" /> {tx('ui.cancel')}</button>
                         <button onClick={save} disabled={saving}
                             className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-white disabled:opacity-60"
                             style={{ background: 'var(--workspace-primary)' }}>
                             {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3" />}
-                            Save
-                        </button>
+                            {tx('ui.save')}</button>
                     </div>
                 )}
             </div>

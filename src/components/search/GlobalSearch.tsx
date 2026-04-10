@@ -150,8 +150,7 @@ export default function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
                         </button>
                     )}
                     <kbd className="hidden sm:inline-flex items-center gap-1 px-2 py-1 bg-dark-50 dark:bg-dark-800 rounded text-[10px] font-bold text-dark-400 font-mono border border-dark-200 dark:border-dark-700">
-                        ESC
-                    </kbd>
+                        {tx('ui.esc')}</kbd>
                 </div>
 
                 {/* Results Area */}
@@ -184,6 +183,7 @@ export default function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
                                 <div className="px-3 py-2 text-xs font-semibold text-dark-400 uppercase tracking-wider">{tx('globalSearch.suggestions', undefined, 'Suggestions')}</div>
                                 <div className="flex flex-wrap gap-2 px-3 pb-2">
                                     {TRENDING_SEARCH_KEYS.map((termKey) => {
+                                        const { tx } = useTranslation();
                                         const term = tx(termKey, undefined, termKey)
                                         return (
                                         <button

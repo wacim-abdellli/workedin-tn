@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { Upload, FileText, Trash2, ChevronDown } from 'lucide-react';
 import Button from '../ui/Button';
 import Modal from '../ui/Modal';
+import { useTranslation } from "../../i18n";
 
 interface ProposalModalProps {
     isOpen: boolean;
@@ -60,6 +61,7 @@ export default function ProposalModal({
     onSubmit,
     isSubmitting,
 }: ProposalModalProps) {
+    const { tx } = useTranslation();
     const [attachments, setAttachments] = useState<File[]>([]);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -114,8 +116,7 @@ export default function ProposalModal({
                     {/* Amount */}
                     <div className="space-y-2">
                         <label className="text-sm font-medium text-dark-900">
-                            قيمة العرض (د.ت)
-                        </label>
+                            {tx('dynamic_key_928208723')}</label>
                         <div className="relative">
                             <input
                                 type="number"
@@ -123,7 +124,7 @@ export default function ProposalModal({
                                 className={`input w-full ps-10 ${errors.bid_amount ? 'border-red-500 focus:ring-red-500' : ''}`}
                                 placeholder="0.00"
                             />
-                            <span className="absolute start-3 top-1/2 -translate-y-1/2 text-muted font-bold">د.ت</span>
+                            <span className="absolute start-3 top-1/2 -translate-y-1/2 text-muted font-bold">{tx('dynamic_key_1524267')}</span>
                         </div>
                         {errors.bid_amount && (
                             <p className="text-red-500 text-xs mt-1">{errors.bid_amount.message}</p>
@@ -131,12 +132,12 @@ export default function ProposalModal({
 
                         <div className="bg-surface dark:bg-dark-800 rounded-lg p-3 space-y-2 text-sm">
                             <div className="flex justify-between text-muted">
-                                <span>رسوم المنصة ({PLATFORM_FEE_PERCENT}%)</span>
-                                <span>-{platformFee.toFixed(2)} د.ت</span>
+                                <span>{tx('dynamic_key_1544269147')}{PLATFORM_FEE_PERCENT}%)</span>
+                                <span>-{platformFee.toFixed(2)} {tx('dynamic_key_1524267')}</span>
                             </div>
                             <div className="flex justify-between font-bold text-dark-900 dark:text-white pt-2 border-t border-border dark:border-dark-700">
-                                <span>ستحصل على</span>
-                                <span className="text-green-600">{netAmount.toFixed(2)} د.ت</span>
+                                <span>{tx('dynamic_key_403517891')}</span>
+                                <span className="text-green-600">{netAmount.toFixed(2)} {tx('dynamic_key_1524267')}</span>
                             </div>
                         </div>
                     </div>
@@ -144,8 +145,7 @@ export default function ProposalModal({
                     {/* Delivery Time */}
                     <div className="space-y-2">
                         <label className="text-sm font-medium text-dark-900">
-                            مدة التسليم
-                        </label>
+                            {tx('dynamic_key_452524680')}</label>
                         <div className="relative">
                             <select
                                 {...register('delivery_days', { valueAsNumber: true })}
@@ -166,19 +166,18 @@ export default function ProposalModal({
                 {/* Cover Letter */}
                 <div className="space-y-2">
                     <label className="text-sm font-medium text-dark-900">
-                        رسالة العرض
-                    </label>
+                        {tx('dynamic_key_1113257013')}</label>
                     <textarea
                         {...register('cover_letter')}
                         rows={6}
                         className={`input w-full resize-none ${errors.cover_letter ? 'border-red-500 focus:ring-red-500' : ''}`}
-                        placeholder="اشرح لماذا أنت الشخص المناسب لهذا المشروع..."
+                        placeholder={tx('dynamic_key_1072185127')}
                     />
                     <div className="flex justify-between text-xs text-muted">
                         {errors.cover_letter ? (
                             <span className="text-red-500">{errors.cover_letter.message}</span>
                         ) : (
-                            <span>يجب كتابة 100 حرف على الأقل</span>
+                            <span>{tx('dynamic_key_1611325765')}</span>
                         )}
                         <span>{coverLetter.length}/1000</span>
                     </div>
@@ -187,8 +186,7 @@ export default function ProposalModal({
                 {/* Attachments */}
                 <div className="space-y-3">
                     <label className="text-sm font-medium text-dark-900">
-                        مرفقات (اختياري)
-                    </label>
+                        {tx('dynamic_key_1608485352')}</label>
 
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         {attachments.map((file, index) => (
@@ -218,7 +216,7 @@ export default function ProposalModal({
                                 aria-label="رفع ملف"
                             >
                                 <Upload className="w-6 h-6" />
-                                <span className="text-xs">رفع ملف</span>
+                                <span className="text-xs">{tx('dynamic_key_1991592213')}</span>
                             </button>
                         )}
                     </div>
@@ -231,8 +229,7 @@ export default function ProposalModal({
                         accept=".pdf,.doc,.docx,.jpg,.png"
                     />
                     <p className="text-xs text-muted">
-                        يمكنك رفع ملفات بصيغة PDF أو صور حتى 10MB
-                    </p>
+                        {tx('dynamic_key_545901654')}</p>
                 </div>
 
                 {/* Actions */}
@@ -246,16 +243,14 @@ export default function ProposalModal({
                         className="flex-1"
                         disabled={isSubmitting}
                     >
-                        إلغاء
-                    </Button>
+                        {tx('dynamic_key_1502065525')}</Button>
                     <Button
                         type="submit"
                         className="flex-1"
                         isLoading={isSubmitting}
                         disabled={isSubmitting}
                     >
-                        إرسال العرض
-                    </Button>
+                        {tx('dynamic_key_1655363803')}</Button>
                 </div>
             </form>
         </Modal>

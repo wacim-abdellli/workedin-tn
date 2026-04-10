@@ -350,11 +350,12 @@ export default function FreelancerProfile() {
                         onClick={() => setSelectedWorkSample(null)}
                         className="absolute top-4 end-4 text-white hover:text-[var(--color-text-secondary)] z-50 p-2"
                     >
-                        <span className="text-4xl">&times;</span>
+                        <span className="text-4xl">{tx('ui.times')}</span>
                     </button>
 
                     <div className="relative max-w-5xl w-full h-full max-h-[90vh] flex flex-col md:flex-row bg-[var(--color-bg-elevated)] rounded-2xl overflow-hidden border border-[var(--color-border-subtle)]">
                         {(() => {
+                            const { tx } = useTranslation();
                             const sample = freelancer.work_samples.find(s => s.id === selectedWorkSample);
                             if (!sample) return null;
                             return (

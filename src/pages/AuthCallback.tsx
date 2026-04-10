@@ -5,6 +5,7 @@ import { logger } from '@/lib/logger';
 import Button from '@/components/ui/Button';
 import { supabase, withTimeout } from '../lib/supabase';
 import { useTranslation } from '../i18n';
+import { Logo } from '../components/ui/Logo';
 
 type CallbackState = 'loading' | 'error';
 
@@ -178,44 +179,126 @@ const AuthCallback = () => {
 
     return (
         <div
-            className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-zinc-950 p-4"
+            style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                minHeight: '100vh',
+                background: '#0c0c0c',
+                fontFamily: "'Outfit', sans-serif",
+                padding: '20px',
+            }}
             dir={dir}
         >
-            <div className="w-full max-w-md rounded-[28px] border border-white/70 bg-white dark:bg-zinc-900/60 p-8 text-center shadow-lg backdrop-blur-xl dark:border-white/5 dark:shadow-none">
-                <div className="flex justify-center mb-6">
-                    <div className="flex h-16 w-16 items-center justify-center rounded-2xl overflow-hidden shadow-lg">
-                        <img src="/workedin-logos/22-icon-square-dark.svg" alt="WorkedIn" className="h-full w-full object-cover" />
-                    </div>
+            <style>{`
+                @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap');
+                @keyframes spin { to { transform: rotate(360deg); } }
+            `}</style>
+            
+            <div style={{
+                width: '100%',
+                maxWidth: 440,
+                background: '#111',
+                border: '1px solid #222',
+                borderRadius: 20,
+                padding: '48px 40px',
+                textAlign: 'center',
+            }}>
+                <div style={{ marginBottom: 32, display: 'flex', justifyContent: 'center' }}>
+                    <Logo variant="full" size="md" mode="client" />
                 </div>
 
                 {status === 'loading' ? (
                     <>
-                        <Loader2 className="mx-auto mb-4 h-12 w-12 animate-spin text-[var(--workspace-accent)]" />
-                        <h1 className="mb-3 text-2xl font-bold text-foreground">{tx('pages.authCallback.signingIn', undefined, 'Signing you in')}</h1>
-                        <p className="text-muted dark:text-zinc-400">
+                        <div style={{ 
+                            width: 56, 
+                            height: 56, 
+                            margin: '0 auto 24px',
+                            background: 'rgba(232, 130, 12, 0.1)',
+                            borderRadius: 16,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                        }}>
+                            <Loader2 style={{ 
+                                width: 28, 
+                                height: 28, 
+                                color: '#E8820C',
+                                animation: 'spin 1s linear infinite',
+                            }} />
+                        </div>
+                        <h1 style={{ 
+                            fontSize: 24, 
+                            fontWeight: 800, 
+                            color: '#fff', 
+                            marginBottom: 12,
+                            letterSpacing: '-0.5px',
+                        }}>
+                            {tx('pages.authCallback.signingIn', undefined, 'Signing you in')}
+                        </h1>
+                        <p style={{ 
+                            fontSize: 14, 
+                            color: '#888', 
+                            lineHeight: 1.6,
+                            maxWidth: 320,
+                            margin: '0 auto',
+                        }}>
                             {tx('pages.authCallback.signingInDescription', undefined, 'We are finishing your secure login. This should only take a moment.')}
                         </p>
                     </>
                 ) : (
                     <>
-                        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-amber-50 dark:bg-amber-500/10 text-amber-500 dark:text-amber-400">
-                            <RefreshCw className="h-7 w-7" />
+                        <div style={{
+                            width: 56,
+                            height: 56,
+                            margin: '0 auto 24px',
+                            background: 'rgba(239, 68, 68, 0.1)',
+                            borderRadius: 16,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                        }}>
+                            <RefreshCw style={{ width: 28, height: 28, color: '#ef4444' }} />
                         </div>
-                        <h1 className="mb-3 text-2xl font-bold text-[#171420] dark:text-white">{tx('pages.authCallback.loginIncomplete', undefined, 'Login did not complete')}</h1>
-                        <p className="mb-6 text-[#625c78] dark:text-[#a7a2ba]">
+                        <h1 style={{
+                            fontSize: 24,
+                            fontWeight: 800,
+                            color: '#fff',
+                            marginBottom: 12,
+                            letterSpacing: '-0.5px',
+                        }}>
+                            {tx('pages.authCallback.loginIncomplete', undefined, 'Login did not complete')}
+                        </h1>
+                        <p style={{
+                            fontSize: 14,
+                            color: '#888',
+                            lineHeight: 1.6,
+                            marginBottom: 24,
+                        }}>
                             {tx('pages.authCallback.loginIncompleteDescription', undefined, 'We could not confirm your session yet. Try again, or return to login and retry the provider sign-in.')}
                         </p>
                         {errorDetails ? (
-                            <div className="mb-6 rounded-2xl border border-amber-200/70 bg-amber-50 px-4 py-3 text-left text-sm text-amber-900 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-100">
+                            <div style={{
+                                marginBottom: 24,
+                                padding: '14px 16px',
+                                background: 'rgba(239, 68, 68, 0.1)',
+                                border: '1px solid rgba(239, 68, 68, 0.2)',
+                                borderRadius: 12,
+                                textAlign: 'left',
+                                fontSize: 13,
+                                color: '#fca5a5',
+                            }}>
                                 {errorDetails.code ? (
-                                    <p className="font-semibold">{tx('pages.authCallback.errorCode', { code: errorDetails.code }, `Error code: ${errorDetails.code}`)}</p>
+                                    <p style={{ fontWeight: 700, marginBottom: 4 }}>
+                                        {tx('pages.authCallback.errorCode', { code: errorDetails.code }, `Error code: ${errorDetails.code}`)}
+                                    </p>
                                 ) : null}
                                 {errorDetails.message ? (
-                                    <p className={errorDetails.code ? 'mt-1' : ''}>{errorDetails.message}</p>
+                                    <p>{errorDetails.message}</p>
                                 ) : null}
                             </div>
                         ) : null}
-                        <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                             <Button variant="outline" onClick={() => window.location.reload()}>
                                 {tx('pages.authCallback.tryAgain', undefined, 'Try again')}
                             </Button>

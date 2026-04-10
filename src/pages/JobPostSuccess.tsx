@@ -72,7 +72,7 @@ export default function JobPostSuccess() {
                                 </div>
                                 {jobId ? (
                                     <div className="summary-chip">
-                                        <span className="summary-chip-label">ID</span>
+                                        <span className="summary-chip-label">{tx('ui.id')}</span>
                                         <span className="summary-chip-value">{jobId.slice(0, 8)}</span>
                                     </div>
                                 ) : null}

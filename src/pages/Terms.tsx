@@ -64,8 +64,7 @@ export default function Terms() {
                             <p className="text-foreground/80">
                                 {tx('legalPages.terms.sections.contact.intro')}
                                 <br />
-                                {tx('legalPages.terms.sections.contact.emailLabel')} legal@workedin.tn
-                            </p>
+                                {tx('legalPages.terms.sections.contact.emailLabel')} {tx('ui.legal_workedin_tn')}</p>
                         </section>
                     </div>
                 </div>

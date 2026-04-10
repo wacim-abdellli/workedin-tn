@@ -53,8 +53,7 @@ const PaymentFailed = () => {
 
                     {/* Title */}
                     <h2 className="text-2xl font-bold text-foreground dark:text-white mb-2">
-                        فشلت عملية الدفع
-                    </h2>
+                        {tx('dynamic_key_1053149402')}</h2>
 
                     {/* Error Message */}
                     <p className="text-muted-foreground mb-6">
@@ -64,13 +63,12 @@ const PaymentFailed = () => {
                     {/* Tips */}
                     <div className="bg-surface rounded-xl p-4 mb-6 text-right">
                         <h4 className="font-semibold text-foreground dark:text-white mb-2">
-                            نصائح لحل المشكلة:
-                        </h4>
+                            {tx('dynamic_key_1348454276')}</h4>
                         <ul className="text-sm text-muted-foreground space-y-1">
-                            <li>• تأكد من صحة بيانات البطاقة</li>
-                            <li>• تحقق من توفر رصيد كافي</li>
-                            <li>• جرب استخدام بطاقة أخرى</li>
-                            <li>• تأكد من اتصال الإنترنت</li>
+                            <li>{tx('dynamic_key_1707230249')}</li>
+                            <li>{tx('dynamic_key_158612530')}</li>
+                            <li>{tx('dynamic_key_201330750')}</li>
+                            <li>{tx('dynamic_key_1659410812')}</li>
                         </ul>
                     </div>
 
@@ -81,7 +79,7 @@ const PaymentFailed = () => {
                             className="btn-primary btn-lg justify-center w-full"
                         >
                             <RefreshCw className="w-5 h-5" />
-                            <span>إعادة المحاولة</span>
+                            <span>{tx('dynamic_key_131381918')}</span>
                         </button>
 
                         {contractId && (
@@ -89,7 +87,7 @@ const PaymentFailed = () => {
                                 to={`/contracts/${contractId}`}
                                 className="btn-secondary btn-lg justify-center w-full"
                             >
-                                <span>العودة للعقد</span>
+                                <span>{tx('dynamic_key_1933160140')}</span>
                                 <ArrowRight className="w-5 h-5 rtl:rotate-180" />
                             </Link>
                         )}
@@ -99,14 +97,13 @@ const PaymentFailed = () => {
                             className="flex items-center justify-center gap-2 text-muted hover:text-muted-foreground mt-4"
                         >
                             <Home className="w-4 h-4" />
-                            <span>الصفحة الرئيسية</span>
+                            <span>{tx('dynamic_key_128175915')}</span>
                         </Link>
                     </div>
 
                     {/* Support */}
                     <p className="text-xs text-muted mt-6">
-                        إذا استمرت المشكلة، تواصل مع الدعم الفني
-                    </p>
+                        {tx('dynamic_key_331518742')}</p>
                 </div>
             </div>
         </div>

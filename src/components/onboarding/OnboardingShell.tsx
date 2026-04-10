@@ -65,7 +65,7 @@ export default function OnboardingShell({
 
                             <div className="mt-5 space-y-3">
                                 <div className="flex items-center justify-between text-sm font-medium text-foreground dark:text-zinc-300">
-                                    <span>Progress</span>
+                                    <span>{tx('ui.progress')}</span>
                                     <span>{completion}%</span>
                                 </div>
                                 <div className="h-2.5 overflow-hidden rounded-full bg-muted dark:bg-white/10">
@@ -79,6 +79,7 @@ export default function OnboardingShell({
                 <section className="premium-panel radius-shell p-4 sm:p-5">
                     <div className={`grid gap-3 ${steps.length > 1 ? 'md:grid-cols-2' : ''}`}>
                         {steps.map((step) => {
+                            const { tx } = useTranslation();
                             const isCompleted = step.id < currentStep;
                             const isCurrent = step.id === currentStep;
 

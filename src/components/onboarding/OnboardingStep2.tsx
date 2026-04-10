@@ -78,6 +78,7 @@ export default function OnboardingStep2({
 
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                         {allSkills.map((skill) => {
+                            const { tx } = useTranslation();
                             const isSelected = selectedSkills.find((s) => s.id === skill.id);
                             return (
                                 <button
@@ -113,7 +114,7 @@ export default function OnboardingStep2({
                             {...register('hourly_rate')}
                             type="number"
                             label={`${t.job.budget} (${t.common.tnd})`}
-                            placeholder="e.g. 50"
+                            placeholder={tx('ui.e_g')}
                             min="0"
                             className="bg-[var(--color-bg-base)]"
                             leftIcon={<DollarSign className="w-5 h-5 text-[var(--color-text-disabled)]" />}

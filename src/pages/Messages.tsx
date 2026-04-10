@@ -1197,6 +1197,7 @@ function MessagesComponent() {
                 ) : (
                     <div style={{ height: `${conversationsVirtualizer.getTotalSize()}px`, width: '100%', position: 'relative' }}>
                         {conversationsVirtualizer.getVirtualItems().map((virtualRow) => {
+                            const { tx } = useTranslation();
                             const conversation = filteredConversations[virtualRow.index];
                             return (
                         <div
@@ -1363,6 +1364,7 @@ function MessagesComponent() {
                         ) : (
                             <div style={{ height: `${messagesVirtualizer.getTotalSize()}px`, width: '100%', position: 'relative' }}>
                                 {messagesVirtualizer.getVirtualItems().map((virtualRow) => {
+                                    const { tx } = useTranslation();
                                     const message = displayMessages[virtualRow.index];
                                     return (
                                         <div
@@ -1411,6 +1413,7 @@ function MessagesComponent() {
                                             {!isDeletedMessage(message) && message.attachments && message.attachments.length > 0 && (
                                                 <div className="mt-2 space-y-2">
                                                     {message.attachments.map((att, i) => {
+                                                        const { tx } = useTranslation();
                                                         const isImage = att.type?.startsWith('image/');
                                                         if (isImage) {
                                                             return (
@@ -1452,9 +1455,9 @@ function MessagesComponent() {
                                             {message.sender_id === user?.id && !message.status && !message.is_deleted && (
                                                 <span className="flex items-center">
                                                     {message.is_read ? (
-                                                        <span style={{ color: 'var(--color-brand-secondary)' }} title="Read">✓✓</span>
+                                                        <span style={{ color: 'var(--color-brand-secondary)' }} title={tx('ui.read')}>✓✓</span>
                                                     ) : (
-                                                        <span className="text-[var(--color-text-secondary)]" title="Delivered">✓</span>
+                                                        <span className="text-[var(--color-text-secondary)]" title={tx('ui.delivered')}>✓</span>
                                                     )}
                                                 </span>
                                             )}
@@ -1515,7 +1518,7 @@ function MessagesComponent() {
                                 {isRecording ? (
                                     <div className="flex items-center gap-2 p-2 rounded-lg bg-[var(--color-status-error)]/10 border border-[var(--color-status-error)]/30">
                                         <div className="w-2 h-2 rounded-full bg-[var(--color-status-error)] animate-pulse" />
-                                        <span className="text-sm text-[var(--color-status-error)]">Recording: {Math.floor(recordingTime / 60).toString().padStart(2, '0')}:{(recordingTime % 60).toString().padStart(2, '0')}</span>
+                                        <span className="text-sm text-[var(--color-status-error)]">{tx('ui.recording')}{Math.floor(recordingTime / 60).toString().padStart(2, '0')}:{(recordingTime % 60).toString().padStart(2, '0')}</span>
                                         <button onClick={stopRecording} aria-label={tx('pages.messages.a11y.stopRecording', undefined, 'Stop recording')} className="ml-auto p-2 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-[var(--color-status-error)]/20 rounded-full transition-colors">
                                             <Square className="w-4 h-4 fill-[var(--color-status-error)]" />
                                         </button>
@@ -1763,6 +1766,7 @@ function MessagesComponent() {
 }
 
 export default function Messages() {
+    const { tx } = useTranslation();
     return (
         <ErrorBoundary>
             <MessagesComponent />

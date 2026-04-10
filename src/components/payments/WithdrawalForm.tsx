@@ -11,12 +11,14 @@ import {
 } from '../../lib/currencyUtils';
 import { MIN_WITHDRAWAL_AMOUNT } from '../../types/payment';
 import type { WithdrawalFormProps, WithdrawalMethod } from '../../types/payment';
+import { useTranslation } from "../../i18n";
 
 /**
  * WithdrawalForm Component
  * Allows freelancers to request withdrawal from their wallet
  */
 const WithdrawalForm = ({ wallet, onSuccess, onCancel }: WithdrawalFormProps) => {
+    const { tx } = useTranslation();
     const { showToast } = useToast();
     const [submitted, setSubmitted] = useState(false);
 
@@ -108,11 +110,9 @@ const WithdrawalForm = ({ wallet, onSuccess, onCancel }: WithdrawalFormProps) =>
                     <CheckCircle className="w-8 h-8 text-green-600" />
                 </div>
                 <h3 className="text-xl font-bold text-foreground dark:text-white mb-2">
-                    تم إرسال طلب السحب
-                </h3>
+                    {tx('dynamic_key_300689867')}</h3>
                 <p className="text-muted-foreground mb-4">
-                    سيتم مراجعة طلبك وتحويل المبلغ خلال 2-5 أيام عمل
-                </p>
+                    {tx('dynamic_key_71417736')}</p>
                 <p className="text-2xl font-bold text-primary-600">
                     {formatCurrency(amountValue)}
                 </p>
@@ -125,8 +125,7 @@ const WithdrawalForm = ({ wallet, onSuccess, onCancel }: WithdrawalFormProps) =>
             {/* Header */}
             <div className="flex items-center justify-between mb-6">
                 <h3 className="text-lg font-bold text-foreground dark:text-white">
-                    طلب سحب
-                </h3>
+                    {tx('dynamic_key_891367863')}</h3>
                 {onCancel && (
                     <button
                         type="button"
@@ -140,7 +139,7 @@ const WithdrawalForm = ({ wallet, onSuccess, onCancel }: WithdrawalFormProps) =>
 
             {/* Available Balance */}
             <div className="mb-6 p-4 bg-surface rounded-xl">
-                <div className="text-sm text-muted mb-1">الرصيد المتاح</div>
+                <div className="text-sm text-muted mb-1">{tx('dynamic_key_208308034')}</div>
                 <div className="text-2xl font-bold text-foreground dark:text-white">
                     {formatCurrency(wallet.balance)}
                 </div>
@@ -149,8 +148,7 @@ const WithdrawalForm = ({ wallet, onSuccess, onCancel }: WithdrawalFormProps) =>
             {/* Amount Input */}
             <div className="mb-4">
                 <label className="block text-sm font-medium text-muted-foreground mb-2">
-                    المبلغ المطلوب
-                </label>
+                    {tx('dynamic_key_812168715')}</label>
                 <div className="relative" dir="ltr">
                     <input
                         type="number"
@@ -164,8 +162,7 @@ const WithdrawalForm = ({ wallet, onSuccess, onCancel }: WithdrawalFormProps) =>
                         dir="ltr"
                     />
                     <span className="absolute start-3 top-1/2 -translate-y-1/2 text-muted">
-                        د.ت
-                    </span>
+                        {tx('dynamic_key_1524267')}</span>
                 </div>
                 {amount && !validation.valid && (
                     <p className="text-red-500 text-sm mt-1">{validation.error}</p>
@@ -175,8 +172,7 @@ const WithdrawalForm = ({ wallet, onSuccess, onCancel }: WithdrawalFormProps) =>
             {/* Withdrawal Method */}
             <div className="mb-4">
                 <label className="block text-sm font-medium text-muted-foreground mb-2">
-                    طريقة السحب
-                </label>
+                    {tx('dynamic_key_939059608')}</label>
                 <div className="grid grid-cols-3 gap-2">
                     {(['bank_transfer', 'd17', 'flouci'] as WithdrawalMethod[]).map((m) => (
                         <button
@@ -190,7 +186,7 @@ const WithdrawalForm = ({ wallet, onSuccess, onCancel }: WithdrawalFormProps) =>
                         >
                             {m === 'bank_transfer' && <Building className="w-5 h-5 mx-auto mb-1" />}
                             {m === 'd17' && <span className="font-bold text-lg">D17</span>}
-                            {m === 'flouci' && <span className="font-bold text-lg">F</span>}
+                            {m === 'flouci' && <span className="font-bold text-lg">{tx('ui.f')}</span>}
                             <div className="text-xs">{formatWithdrawalMethod(m)}</div>
                         </button>
                     ))}
@@ -202,37 +198,34 @@ const WithdrawalForm = ({ wallet, onSuccess, onCancel }: WithdrawalFormProps) =>
                 <div className="space-y-4 mb-4">
                     <div>
                         <label className="block text-sm font-medium text-muted-foreground mb-1">
-                            اسم البنك
-                        </label>
+                            {tx('dynamic_key_1637895873')}</label>
                         <input
                             type="text"
                             value={bankName}
                             onChange={(e) => setBankName(e.target.value)}
-                            placeholder="مثال: البنك الوطني الفلاحي"
+                            placeholder={tx('dynamic_key_76026069')}
                             className="input w-full"
                         />
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-muted-foreground mb-1">
-                            اسم صاحب الحساب
-                        </label>
+                            {tx('dynamic_key_475558032')}</label>
                         <input
                             type="text"
                             value={bankAccountName}
                             onChange={(e) => setBankAccountName(e.target.value)}
-                            placeholder="الاسم كما يظهر في الحساب البنكي"
+                            placeholder={tx('dynamic_key_215587664')}
                             className="input w-full"
                         />
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-muted-foreground mb-1">
-                            رقم IBAN
-                        </label>
+                            {tx('ui.iban')}</label>
                         <input
                             type="text"
                             value={bankIban}
                             onChange={(e) => setBankIban(e.target.value)}
-                            placeholder="TN59XXXXX..."
+                            placeholder={tx('ui.tn_xxxxx')}
                             className="input w-full"
                             dir="ltr"
                         />
@@ -244,15 +237,14 @@ const WithdrawalForm = ({ wallet, onSuccess, onCancel }: WithdrawalFormProps) =>
             {(method === 'd17' || method === 'flouci') && (
                 <div className="mb-4">
                     <label className="block text-sm font-medium text-muted-foreground mb-1">
-                        رقم الهاتف
-                    </label>
+                        {tx('dynamic_key_223878144')}</label>
                     <div className="relative" dir="ltr">
                         <Phone className="absolute start-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted" />
                         <input
                             type="tel"
                             value={phoneNumber}
                             onChange={(e) => setPhoneNumber(e.target.value)}
-                            placeholder="+216 XX XXX XXX"
+                            placeholder={tx('ui.xx_xxx_xxx')}
                             className="input w-full ps-10"
                             dir="ltr"
                         />
@@ -265,8 +257,7 @@ const WithdrawalForm = ({ wallet, onSuccess, onCancel }: WithdrawalFormProps) =>
                 <div className="flex gap-2">
                     <AlertCircle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
                     <p className="text-sm text-amber-700 dark:text-amber-300">
-                        سيتم مراجعة طلب السحب من قبل الإدارة وتحويل المبلغ خلال 2-5 أيام عمل.
-                    </p>
+                        {tx('dynamic_key_1004386723')}</p>
                 </div>
             </div>
 
@@ -279,10 +270,10 @@ const WithdrawalForm = ({ wallet, onSuccess, onCancel }: WithdrawalFormProps) =>
                 {withdrawalMutation.isPending ? (
                     <>
                         <Loader2 className="w-5 h-5 animate-spin" />
-                        <span>جاري الإرسال...</span>
+                        <span>{tx('dynamic_key_1793704877')}</span>
                     </>
                 ) : (
-                    <span>إرسال طلب السحب</span>
+                    <span>{tx('dynamic_key_2071445136')}</span>
                 )}
             </button>
         </form>

@@ -282,6 +282,7 @@ export default function Wallet() {
                     </thead>
                     <tbody>
                       {transactions.map((tx: Transaction) => {
+                          const { tx } = useTranslation();
                         const isCredit = isCreditTransaction(tx.type);
                         const isDebit = isDebitTransaction(tx.type);
                         
@@ -322,6 +323,7 @@ export default function Wallet() {
                 {/* Mobile card layout */}
                 <div className="md:hidden space-y-3 p-4">
                   {transactions.map((tx: Transaction) => {
+                      const { tx } = useTranslation();
                     const isCredit = isCreditTransaction(tx.type);
                     const isDebit = isDebitTransaction(tx.type);
                     
@@ -414,6 +416,7 @@ export default function Wallet() {
                     </thead>
                     <tbody>
                       {withdrawals.map((withdrawal: Withdrawal) => {
+                          const { tx } = useTranslation();
                         const statusColors: Record<WithdrawalStatus, string> = {
                           pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
                           approved: 'bg-primary-100 text-primary-800 dark:bg-primary-900/30 dark:text-primary-300',
@@ -453,6 +456,7 @@ export default function Wallet() {
                 {/* Mobile card layout */}
                 <div className="md:hidden space-y-3 p-4">
                   {withdrawals.map((withdrawal: Withdrawal) => {
+                      const { tx } = useTranslation();
                     const statusColors: Record<WithdrawalStatus, string> = {
                       pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
                       approved: 'bg-primary-100 text-primary-800 dark:bg-primary-900/30 dark:text-primary-300',
@@ -760,7 +764,7 @@ function WithdrawalModal({ wallet, onClose, onSuccess }: { wallet: WalletType; o
                 >
                   {m === 'bank_transfer' && <Building className="w-5 h-5 mx-auto mb-1" />}
                   {m === 'd17' && <span className="font-bold text-lg">D17</span>}
-                  {m === 'flouci' && <span className="font-bold text-lg">F</span>}
+                  {m === 'flouci' && <span className="font-bold text-lg">{tx('ui.f')}</span>}
                   <div className="text-xs">{formatWithdrawalMethod(m, language)}</div>
                 </button>
               ))}
@@ -795,7 +799,7 @@ function WithdrawalModal({ wallet, onClose, onSuccess }: { wallet: WalletType; o
                   type="text"
                   value={bankIban}
                   onChange={(e) => setBankIban(e.target.value)}
-                  placeholder="TN59 ..."
+                  placeholder={tx('ui.tn')}
                   aria-label={t.wallet?.iban || 'IBAN'}
                   className={`w-full px-4 py-3 min-h-[48px] border rounded-lg bg-card bg-opacity-100 text-foreground ${bankIbanError ? 'border-red-400 dark:border-red-500' : 'border-border'}`}
                   dir="ltr"

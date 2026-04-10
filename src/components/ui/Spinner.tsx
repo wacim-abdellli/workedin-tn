@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from "../../i18n";
 
 interface SpinnerProps {
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
@@ -14,6 +15,7 @@ const sizeMap = {
 };
 
 export const Spinner: React.FC<SpinnerProps> = ({ size = 'md', className = '' }) => {
+    const { tx } = useTranslation();
   return (
     <div
       className={`${sizeMap[size]} rounded-full border-t-transparent animate-spin ${className}`}
@@ -27,7 +29,7 @@ export const Spinner: React.FC<SpinnerProps> = ({ size = 'md', className = '' })
       role="status"
       aria-label="Loading"
     >
-      <span className="sr-only">Loading...</span>
+      <span className="sr-only">{tx('ui.loading')}</span>
     </div>
   );
 };

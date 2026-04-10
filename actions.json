@@ -1,0 +1,1522 @@
+[
+  {
+    "file": "src/App.tsx",
+    "line": 36,
+    "text": "label=\"Loading...\""
+  },
+  {
+    "file": "src/components/auth/AuthShell.tsx",
+    "line": 83,
+    "text": "professionals already on WorkedIn"
+  },
+  {
+    "file": "src/components/common/FileUpload.tsx",
+    "line": 186,
+    "text": "KB"
+  },
+  {
+    "file": "src/components/contracts/ChatSection.tsx",
+    "line": 209,
+    "text": "الطرف الآخر يكتب الآن"
+  },
+  {
+    "file": "src/components/contracts/ChatSection.tsx",
+    "line": 228,
+    "text": "جاري رفع الملف..."
+  },
+  {
+    "file": "src/components/contracts/ContractDetailsSidebar.tsx",
+    "line": 94,
+    "text": "د.ت"
+  },
+  {
+    "file": "src/components/contracts/ContractDetailsSidebar.tsx",
+    "line": 192,
+    "text": "د.ت"
+  },
+  {
+    "file": "src/components/dashboard/ProfileRing.tsx",
+    "line": 41,
+    "text": "complete"
+  },
+  {
+    "file": "src/components/ErrorBoundary.tsx",
+    "line": 52,
+    "text": "حدث خطأ غير متوقع"
+  },
+  {
+    "file": "src/components/ErrorBoundary.tsx",
+    "line": 56,
+    "text": "عذراً، حدث خطأ أثناء تحميل الصفحة. يرجى المحاولة مرة أخرى."
+  },
+  {
+    "file": "src/components/ErrorBoundary.tsx",
+    "line": 71,
+    "text": "إعادة المحاولة"
+  },
+  {
+    "file": "src/components/ErrorBoundary.tsx",
+    "line": 78,
+    "text": "الرئيسية"
+  },
+  {
+    "file": "src/components/freelancer/PortfolioModal.tsx",
+    "line": 93,
+    "text": "label=\"عنوان المشروع\""
+  },
+  {
+    "file": "src/components/freelancer/PortfolioModal.tsx",
+    "line": 94,
+    "text": "placeholder=\"مثال: تصميم متجر إلكتروني\""
+  },
+  {
+    "file": "src/components/freelancer/PortfolioModal.tsx",
+    "line": 100,
+    "text": "وصف المشروع"
+  },
+  {
+    "file": "src/components/freelancer/PortfolioModal.tsx",
+    "line": 105,
+    "text": "placeholder=\"اشرح تفاصيل المشروع وما قمت بإنجازه...\""
+  },
+  {
+    "file": "src/components/freelancer/PortfolioModal.tsx",
+    "line": 114,
+    "text": "label=\"رابط المشروع (اختياري)\""
+  },
+  {
+    "file": "src/components/freelancer/PortfolioModal.tsx",
+    "line": 115,
+    "text": "placeholder=\"https://example.com\""
+  },
+  {
+    "file": "src/components/freelancer/PortfolioModal.tsx",
+    "line": 122,
+    "text": "label=\"تاريخ الإنجاز\""
+  },
+  {
+    "file": "src/components/freelancer/PortfolioModal.tsx",
+    "line": 130,
+    "text": "label=\"المهارات المستخدمة\""
+  },
+  {
+    "file": "src/components/freelancer/PortfolioModal.tsx",
+    "line": 131,
+    "text": "placeholder=\"مثال: تصميم واجهات، تطوير واجهات، تحرير صور (افصل بينها بفاصلة)\""
+  },
+  {
+    "file": "src/components/freelancer/PortfolioModal.tsx",
+    "line": 137,
+    "text": "label=\"رابط صورة العرض\""
+  },
+  {
+    "file": "src/components/freelancer/PortfolioModal.tsx",
+    "line": 138,
+    "text": "placeholder=\"https://...\""
+  },
+  {
+    "file": "src/components/freelancer/PortfolioModal.tsx",
+    "line": 143,
+    "text": "سنقوم بدعم رفع الملفات قريباً. يرجى استخدام رابط مباشر للصورة حالياً."
+  },
+  {
+    "file": "src/components/freelancer/PortfolioModal.tsx",
+    "line": 152,
+    "text": "إلغاء"
+  },
+  {
+    "file": "src/components/freelancer/profile/AboutSection.tsx",
+    "line": 59,
+    "text": "Edit"
+  },
+  {
+    "file": "src/components/freelancer/profile/AboutSection.tsx",
+    "line": 67,
+    "text": "Cancel"
+  },
+  {
+    "file": "src/components/freelancer/profile/AboutSection.tsx",
+    "line": 73,
+    "text": "Save"
+  },
+  {
+    "file": "src/components/freelancer/profile/ProfileHeader.tsx",
+    "line": 180,
+    "text": "Playing..."
+  },
+  {
+    "file": "src/components/freelancer/profile/SkillsSection.tsx",
+    "line": 72,
+    "text": "Edit"
+  },
+  {
+    "file": "src/components/freelancer/profile/SkillsSection.tsx",
+    "line": 80,
+    "text": "Cancel"
+  },
+  {
+    "file": "src/components/freelancer/profile/SkillsSection.tsx",
+    "line": 86,
+    "text": "Save"
+  },
+  {
+    "file": "src/components/jobs/JobCard.tsx",
+    "line": 239,
+    "text": "title=\"Verified\""
+  },
+  {
+    "file": "src/components/layout/Footer.tsx",
+    "line": 127,
+    "text": "contact@workedin.tn"
+  },
+  {
+    "file": "src/components/layout/Footer.tsx",
+    "line": 146,
+    "text": "+216 XX XXX XXX"
+  },
+  {
+    "file": "src/components/layout/Header/index.tsx",
+    "line": 207,
+    "text": "Ctrl+K"
+  },
+  {
+    "file": "src/components/layout/Header/SearchModal.tsx",
+    "line": 251,
+    "text": "ESC"
+  },
+  {
+    "file": "src/components/layout/Header/SearchModal.tsx",
+    "line": 279,
+    "text": "Enter"
+  },
+  {
+    "file": "src/components/layout/Header/UserMenu.tsx",
+    "line": 444,
+    "text": "ADMIN"
+  },
+  {
+    "file": "src/components/onboarding/OnboardingShell.tsx",
+    "line": 68,
+    "text": "Progress"
+  },
+  {
+    "file": "src/components/onboarding/OnboardingStep1.tsx",
+    "line": 59,
+    "text": "alt=\"Avatar\""
+  },
+  {
+    "file": "src/components/onboarding/OnboardingStep2.tsx",
+    "line": 116,
+    "text": "placeholder=\"e.g. 50\""
+  },
+  {
+    "file": "src/components/onboarding/OnboardingStep4.tsx",
+    "line": 76,
+    "text": "(500 حرف كحد أقصى)"
+  },
+  {
+    "file": "src/components/onboarding/OnboardingStep4.tsx",
+    "line": 132,
+    "text": "s"
+  },
+  {
+    "file": "src/components/onboarding/OnboardingStep4.tsx",
+    "line": 148,
+    "text": "تم تسجيل مقدمتك الصوتية"
+  },
+  {
+    "file": "src/components/onboarding/OnboardingStep4.tsx",
+    "line": 165,
+    "text": "Max: 5 files"
+  },
+  {
+    "file": "src/components/onboarding/OnboardingStep4.tsx",
+    "line": 192,
+    "text": "alt=\"Preview\""
+  },
+  {
+    "file": "src/components/onboarding/OnboardingStep4.tsx",
+    "line": 205,
+    "text": "placeholder=\"Title\""
+  },
+  {
+    "file": "src/components/onboarding/OnboardingStep4.tsx",
+    "line": 209,
+    "text": "MB"
+  },
+  {
+    "file": "src/components/payment/PaymentMethodSelector.tsx",
+    "line": 88,
+    "text": "✓ Recommended"
+  },
+  {
+    "file": "src/components/payment/PaymentMethodSelector.tsx",
+    "line": 156,
+    "text": "Coming Soon"
+  },
+  {
+    "file": "src/components/payments/FundEscrow.tsx",
+    "line": 161,
+    "text": "Ã˜Â§Ã™â€žÃ˜Â¯Ã™ÂÃ˜Â¹ Ã˜Â¹Ã˜Â¨Ã˜Â± Flouci - Ã˜Â¨Ã˜Â·Ã˜Â§Ã™â€šÃ˜Â§Ã˜Âª Ã˜Â¨Ã™â€ Ã™Æ’Ã™Å Ã˜Â© Ã™Ë†Ã™â€¦Ã˜Â­Ã˜Â§Ã™ÂÃ˜Â¸ Ã˜Â¥Ã™â€žÃ™Æ’Ã˜ÂªÃ˜Â±Ã™Ë†Ã™â€ Ã™Å Ã˜Â©"
+  },
+  {
+    "file": "src/components/payments/WalletCard.tsx",
+    "line": 101,
+    "text": "إعادة المحاولة"
+  },
+  {
+    "file": "src/components/payments/WalletCard.tsx",
+    "line": 113,
+    "text": "لم يتم إنشاء محفظتك بعد"
+  },
+  {
+    "file": "src/components/payments/WalletCard.tsx",
+    "line": 118,
+    "text": "تحديث"
+  },
+  {
+    "file": "src/components/payments/WalletCard.tsx",
+    "line": 134,
+    "text": "محفظتي"
+  },
+  {
+    "file": "src/components/payments/WalletCard.tsx",
+    "line": 139,
+    "text": "title=\"تحديث\""
+  },
+  {
+    "file": "src/components/payments/WalletCard.tsx",
+    "line": 146,
+    "text": "الرصيد المتاح"
+  },
+  {
+    "file": "src/components/payments/WalletCard.tsx",
+    "line": 157,
+    "text": "قيد الانتظار"
+  },
+  {
+    "file": "src/components/payments/WalletCard.tsx",
+    "line": 164,
+    "text": "إجمالي الأرباح"
+  },
+  {
+    "file": "src/components/payments/WalletCard.tsx",
+    "line": 179,
+    "text": "طلب سحب"
+  },
+  {
+    "file": "src/components/payments/WalletCard.tsx",
+    "line": 188,
+    "text": "آخر المعاملات"
+  },
+  {
+    "file": "src/components/payments/WalletCard.tsx",
+    "line": 194,
+    "text": "عرض الكل"
+  },
+  {
+    "file": "src/components/payments/WalletCard.tsx",
+    "line": 200,
+    "text": "لا توجد معاملات بعد"
+  },
+  {
+    "file": "src/components/payments/WithdrawalForm.tsx",
+    "line": 111,
+    "text": "تم إرسال طلب السحب"
+  },
+  {
+    "file": "src/components/payments/WithdrawalForm.tsx",
+    "line": 114,
+    "text": "سيتم مراجعة طلبك وتحويل المبلغ خلال 2-5 أيام عمل"
+  },
+  {
+    "file": "src/components/payments/WithdrawalForm.tsx",
+    "line": 128,
+    "text": "طلب سحب"
+  },
+  {
+    "file": "src/components/payments/WithdrawalForm.tsx",
+    "line": 143,
+    "text": "الرصيد المتاح"
+  },
+  {
+    "file": "src/components/payments/WithdrawalForm.tsx",
+    "line": 152,
+    "text": "المبلغ المطلوب"
+  },
+  {
+    "file": "src/components/payments/WithdrawalForm.tsx",
+    "line": 167,
+    "text": "د.ت"
+  },
+  {
+    "file": "src/components/payments/WithdrawalForm.tsx",
+    "line": 178,
+    "text": "طريقة السحب"
+  },
+  {
+    "file": "src/components/payments/WithdrawalForm.tsx",
+    "line": 193,
+    "text": "F"
+  },
+  {
+    "file": "src/components/payments/WithdrawalForm.tsx",
+    "line": 205,
+    "text": "اسم البنك"
+  },
+  {
+    "file": "src/components/payments/WithdrawalForm.tsx",
+    "line": 211,
+    "text": "placeholder=\"مثال: البنك الوطني الفلاحي\""
+  },
+  {
+    "file": "src/components/payments/WithdrawalForm.tsx",
+    "line": 217,
+    "text": "اسم صاحب الحساب"
+  },
+  {
+    "file": "src/components/payments/WithdrawalForm.tsx",
+    "line": 223,
+    "text": "placeholder=\"الاسم كما يظهر في الحساب البنكي\""
+  },
+  {
+    "file": "src/components/payments/WithdrawalForm.tsx",
+    "line": 229,
+    "text": "رقم IBAN"
+  },
+  {
+    "file": "src/components/payments/WithdrawalForm.tsx",
+    "line": 235,
+    "text": "placeholder=\"TN59XXXXX...\""
+  },
+  {
+    "file": "src/components/payments/WithdrawalForm.tsx",
+    "line": 247,
+    "text": "رقم الهاتف"
+  },
+  {
+    "file": "src/components/payments/WithdrawalForm.tsx",
+    "line": 255,
+    "text": "placeholder=\"+216 XX XXX XXX\""
+  },
+  {
+    "file": "src/components/payments/WithdrawalForm.tsx",
+    "line": 268,
+    "text": "سيتم مراجعة طلب السحب من قبل الإدارة وتحويل المبلغ خلال 2-5 أيام عمل."
+  },
+  {
+    "file": "src/components/payments/WithdrawalForm.tsx",
+    "line": 282,
+    "text": "جاري الإرسال..."
+  },
+  {
+    "file": "src/components/payments/WithdrawalForm.tsx",
+    "line": 285,
+    "text": "إرسال طلب السحب"
+  },
+  {
+    "file": "src/components/proposals/JobSummaryCard.tsx",
+    "line": 28,
+    "text": "تفاصيل الوظيفة"
+  },
+  {
+    "file": "src/components/proposals/JobSummaryCard.tsx",
+    "line": 36,
+    "text": "الميزانية"
+  },
+  {
+    "file": "src/components/proposals/JobSummaryCard.tsx",
+    "line": 38,
+    "text": "د.ت"
+  },
+  {
+    "file": "src/components/proposals/JobSummaryCard.tsx",
+    "line": 49,
+    "text": "المدة المتوقعة"
+  },
+  {
+    "file": "src/components/proposals/JobSummaryCard.tsx",
+    "line": 59,
+    "text": "تاريخ النشر"
+  },
+  {
+    "file": "src/components/proposals/JobSummaryCard.tsx",
+    "line": 73,
+    "text": "مشاركة"
+  },
+  {
+    "file": "src/components/proposals/JobSummaryCard.tsx",
+    "line": 81,
+    "text": "عرض الوظيفة"
+  },
+  {
+    "file": "src/components/proposals/JobSummaryCard.tsx",
+    "line": 89,
+    "text": "توصيات الذكاء الاصطناعي"
+  },
+  {
+    "file": "src/components/proposals/JobSummaryCard.tsx",
+    "line": 91,
+    "text": "قمنا بتحليل متطلباتك ووجدنا 3 مستقلين يطابقون مشروعك بنسبة 95%."
+  },
+  {
+    "file": "src/components/proposals/JobSummaryCard.tsx",
+    "line": 94,
+    "text": "عرض التوصيات"
+  },
+  {
+    "file": "src/components/proposals/ProposalCard.tsx",
+    "line": 54,
+    "text": "موثق"
+  },
+  {
+    "file": "src/components/proposals/ProposalCard.tsx",
+    "line": 60,
+    "text": "متميز"
+  },
+  {
+    "file": "src/components/proposals/ProposalCard.tsx",
+    "line": 77,
+    "text": "وظيفة مكتملة"
+  },
+  {
+    "file": "src/components/proposals/ProposalCard.tsx",
+    "line": 81,
+    "text": "نجاح"
+  },
+  {
+    "file": "src/components/proposals/ProposalCard.tsx",
+    "line": 94,
+    "text": "قراءة المزيد..."
+  },
+  {
+    "file": "src/components/proposals/ProposalCard.tsx",
+    "line": 118,
+    "text": "منذ"
+  },
+  {
+    "file": "src/components/proposals/ProposalCard.tsx",
+    "line": 127,
+    "text": "د.ت"
+  },
+  {
+    "file": "src/components/proposals/ProposalCard.tsx",
+    "line": 131,
+    "text": "عرض مدروس"
+  },
+  {
+    "file": "src/components/proposals/ProposalCard.tsx",
+    "line": 138,
+    "text": "مدة التنفيذ"
+  },
+  {
+    "file": "src/components/proposals/ProposalCard.tsx",
+    "line": 140,
+    "text": "يوم"
+  },
+  {
+    "file": "src/components/proposals/ProposalCard.tsx",
+    "line": 145,
+    "text": "إجمالي التكلفة"
+  },
+  {
+    "file": "src/components/proposals/ProposalCard.tsx",
+    "line": 147,
+    "text": "د.ت"
+  },
+  {
+    "file": "src/components/proposals/ProposalCard.tsx",
+    "line": 158,
+    "text": "توظيف"
+  },
+  {
+    "file": "src/components/proposals/ProposalDetailModal.tsx",
+    "line": 124,
+    "text": "التقييم"
+  },
+  {
+    "file": "src/components/proposals/ProposalDetailModal.tsx",
+    "line": 131,
+    "text": "مشاريع مكتملة"
+  },
+  {
+    "file": "src/components/proposals/ProposalDetailModal.tsx",
+    "line": 135,
+    "text": "نسبة النجاح"
+  },
+  {
+    "file": "src/components/proposals/ProposalDetailModal.tsx",
+    "line": 139,
+    "text": "سرعة الرد"
+  },
+  {
+    "file": "src/components/proposals/ProposalDetailModal.tsx",
+    "line": 140,
+    "text": "ساعة تقريباً"
+  },
+  {
+    "file": "src/components/proposals/ProposalDetailModal.tsx",
+    "line": 145,
+    "text": "المهارات"
+  },
+  {
+    "file": "src/components/proposals/ProposalDetailModal.tsx",
+    "line": 196,
+    "text": "تم التقديم منذ"
+  },
+  {
+    "file": "src/components/proposals/ProposalDetailModal.tsx",
+    "line": 202,
+    "text": "خطاب التقديم"
+  },
+  {
+    "file": "src/components/proposals/ProposalDetailModal.tsx",
+    "line": 210,
+    "text": "المرفقات"
+  },
+  {
+    "file": "src/components/proposals/ProposalDetailModal.tsx",
+    "line": 234,
+    "text": "نبذة عني"
+  },
+  {
+    "file": "src/components/proposals/ProposalDetailModal.tsx",
+    "line": 241,
+    "text": "اللغات"
+  },
+  {
+    "file": "src/components/proposals/ProposalDetailModal.tsx",
+    "line": 244,
+    "text": "العربية"
+  },
+  {
+    "file": "src/components/proposals/ProposalDetailModal.tsx",
+    "line": 245,
+    "text": "اللغة الأم"
+  },
+  {
+    "file": "src/components/proposals/ProposalDetailModal.tsx",
+    "line": 248,
+    "text": "الفرنسية"
+  },
+  {
+    "file": "src/components/proposals/ProposalDetailModal.tsx",
+    "line": 249,
+    "text": "متقدم"
+  },
+  {
+    "file": "src/components/proposals/ProposalDetailModal.tsx",
+    "line": 261,
+    "text": "مثال عمل 1 (صورة)"
+  },
+  {
+    "file": "src/components/proposals/ProposalDetailModal.tsx",
+    "line": 264,
+    "text": "مثال عمل 2 (صورة)"
+  },
+  {
+    "file": "src/components/proposals/ProposalDetailModal.tsx",
+    "line": 274,
+    "text": "سجل العمل غير متوفر في هذه المعاينة"
+  },
+  {
+    "file": "src/components/proposals/ProposalDetailModal.tsx",
+    "line": 282,
+    "text": "التقييمات غير متوفرة في هذه المعاينة"
+  },
+  {
+    "file": "src/components/proposals/ProposalDetailModal.tsx",
+    "line": 293,
+    "text": "تفاصيل العرض"
+  },
+  {
+    "file": "src/components/proposals/ProposalDetailModal.tsx",
+    "line": 295,
+    "text": "قيمة العرض"
+  },
+  {
+    "file": "src/components/proposals/ProposalDetailModal.tsx",
+    "line": 296,
+    "text": "د.ت"
+  },
+  {
+    "file": "src/components/proposals/ProposalDetailModal.tsx",
+    "line": 301,
+    "text": "مدة التنفيذ"
+  },
+  {
+    "file": "src/components/proposals/ProposalDetailModal.tsx",
+    "line": 302,
+    "text": "يوم"
+  },
+  {
+    "file": "src/components/proposals/ProposalDetailModal.tsx",
+    "line": 305,
+    "text": "رسوم الخدمة"
+  },
+  {
+    "file": "src/components/proposals/ProposalDetailModal.tsx",
+    "line": 306,
+    "text": "د.ت"
+  },
+  {
+    "file": "src/components/proposals/ProposalDetailModal.tsx",
+    "line": 309,
+    "text": "الإجمالي للدفع"
+  },
+  {
+    "file": "src/components/proposals/ProposalDetailModal.tsx",
+    "line": 310,
+    "text": "د.ت"
+  },
+  {
+    "file": "src/components/proposals/ProposalDetailModal.tsx",
+    "line": 315,
+    "text": "💡 الدفع معلق بشكل آمن في حساب الضمان حتى يتم تسليم العمل والموافقة عليه."
+  },
+  {
+    "file": "src/components/proposals/ProposalDetailModal.tsx",
+    "line": 327,
+    "text": "توظيف الآن"
+  },
+  {
+    "file": "src/components/proposals/ProposalDetailModal.tsx",
+    "line": 337,
+    "text": "مراسلة"
+  },
+  {
+    "file": "src/components/proposals/ProposalDetailModal.tsx",
+    "line": 354,
+    "text": "أرشفة العرض"
+  },
+  {
+    "file": "src/components/proposals/ProposalFiltersSidebar.tsx",
+    "line": 17,
+    "text": "تصفية العروض"
+  },
+  {
+    "file": "src/components/proposals/ProposalFiltersSidebar.tsx",
+    "line": 20,
+    "text": "عرض"
+  },
+  {
+    "file": "src/components/proposals/ProposalFiltersSidebar.tsx",
+    "line": 29,
+    "text": "placeholder=\"بحث في العروض...\""
+  },
+  {
+    "file": "src/components/proposals/ProposalFiltersSidebar.tsx",
+    "line": 39,
+    "text": "الترتيب حسب"
+  },
+  {
+    "file": "src/components/proposals/ProposalFiltersSidebar.tsx",
+    "line": 42,
+    "text": "الموصى به (الأفضل تطابقاً)"
+  },
+  {
+    "file": "src/components/proposals/ProposalFiltersSidebar.tsx",
+    "line": 43,
+    "text": "الأقل سعراً"
+  },
+  {
+    "file": "src/components/proposals/ProposalFiltersSidebar.tsx",
+    "line": 44,
+    "text": "الأعلى سعراً"
+  },
+  {
+    "file": "src/components/proposals/ProposalFiltersSidebar.tsx",
+    "line": 45,
+    "text": "الأحدث"
+  },
+  {
+    "file": "src/components/proposals/ProposalFiltersSidebar.tsx",
+    "line": 46,
+    "text": "تقييم المستقل"
+  },
+  {
+    "file": "src/components/proposals/ProposalFiltersSidebar.tsx",
+    "line": 54,
+    "text": "مستوى المستقل"
+  },
+  {
+    "file": "src/components/proposals/ProposalFiltersSidebar.tsx",
+    "line": 58,
+    "text": "مبتدئ"
+  },
+  {
+    "file": "src/components/proposals/ProposalFiltersSidebar.tsx",
+    "line": 62,
+    "text": "متوسط الخبرة"
+  },
+  {
+    "file": "src/components/proposals/ProposalFiltersSidebar.tsx",
+    "line": 66,
+    "text": "خبير"
+  },
+  {
+    "file": "src/components/proposals/ProposalFiltersSidebar.tsx",
+    "line": 75,
+    "text": "خصائص أخرى"
+  },
+  {
+    "file": "src/components/proposals/ProposalFiltersSidebar.tsx",
+    "line": 79,
+    "text": "حساب موثق فقط"
+  },
+  {
+    "file": "src/components/proposals/ProposalFiltersSidebar.tsx",
+    "line": 83,
+    "text": "تقييم 4 نجوم وأكثر"
+  },
+  {
+    "file": "src/components/proposals/ProposalFiltersSidebar.tsx",
+    "line": 87,
+    "text": "لديه معرض أعمال"
+  },
+  {
+    "file": "src/components/proposals/ProposalModal.tsx",
+    "line": 117,
+    "text": "قيمة العرض (د.ت)"
+  },
+  {
+    "file": "src/components/proposals/ProposalModal.tsx",
+    "line": 126,
+    "text": "د.ت"
+  },
+  {
+    "file": "src/components/proposals/ProposalModal.tsx",
+    "line": 134,
+    "text": "رسوم المنصة ("
+  },
+  {
+    "file": "src/components/proposals/ProposalModal.tsx",
+    "line": 135,
+    "text": "د.ت"
+  },
+  {
+    "file": "src/components/proposals/ProposalModal.tsx",
+    "line": 138,
+    "text": "ستحصل على"
+  },
+  {
+    "file": "src/components/proposals/ProposalModal.tsx",
+    "line": 139,
+    "text": "د.ت"
+  },
+  {
+    "file": "src/components/proposals/ProposalModal.tsx",
+    "line": 147,
+    "text": "مدة التسليم"
+  },
+  {
+    "file": "src/components/proposals/ProposalModal.tsx",
+    "line": 169,
+    "text": "رسالة العرض"
+  },
+  {
+    "file": "src/components/proposals/ProposalModal.tsx",
+    "line": 175,
+    "text": "placeholder=\"اشرح لماذا أنت الشخص المناسب لهذا المشروع...\""
+  },
+  {
+    "file": "src/components/proposals/ProposalModal.tsx",
+    "line": 181,
+    "text": "يجب كتابة 100 حرف على الأقل"
+  },
+  {
+    "file": "src/components/proposals/ProposalModal.tsx",
+    "line": 190,
+    "text": "مرفقات (اختياري)"
+  },
+  {
+    "file": "src/components/proposals/ProposalModal.tsx",
+    "line": 221,
+    "text": "رفع ملف"
+  },
+  {
+    "file": "src/components/proposals/ProposalModal.tsx",
+    "line": 234,
+    "text": "يمكنك رفع ملفات بصيغة PDF أو صور حتى 10MB"
+  },
+  {
+    "file": "src/components/proposals/ProposalModal.tsx",
+    "line": 249,
+    "text": "إلغاء"
+  },
+  {
+    "file": "src/components/proposals/ProposalModal.tsx",
+    "line": 257,
+    "text": "إرسال العرض"
+  },
+  {
+    "file": "src/components/reviews/ReviewDisplay.tsx",
+    "line": 100,
+    "text": "تقييم"
+  },
+  {
+    "file": "src/components/reviews/ReviewDisplay.tsx",
+    "line": 149,
+    "text": "التقييمات ("
+  },
+  {
+    "file": "src/components/reviews/ReviewDisplay.tsx",
+    "line": 155,
+    "text": "الأحدث"
+  },
+  {
+    "file": "src/components/reviews/ReviewDisplay.tsx",
+    "line": 156,
+    "text": "الأعلى تقييماً"
+  },
+  {
+    "file": "src/components/reviews/ReviewDisplay.tsx",
+    "line": 157,
+    "text": "الأقل تقييماً"
+  },
+  {
+    "file": "src/components/reviews/ReviewDisplay.tsx",
+    "line": 158,
+    "text": "الأكثر فائدة"
+  },
+  {
+    "file": "src/components/reviews/ReviewDisplay.tsx",
+    "line": 206,
+    "text": "عرض التفاصيل"
+  },
+  {
+    "file": "src/components/reviews/ReviewDisplay.tsx",
+    "line": 238,
+    "text": "رد المالك"
+  },
+  {
+    "file": "src/components/reviews/ReviewDisplay.tsx",
+    "line": 249,
+    "text": "مفيد ("
+  },
+  {
+    "file": "src/components/reviews/ReviewDisplay.tsx",
+    "line": 253,
+    "text": "إبلاغ"
+  },
+  {
+    "file": "src/components/reviews/ReviewDisplay.tsx",
+    "line": 262,
+    "text": "لا توجد تقييمات بعد"
+  },
+  {
+    "file": "src/components/reviews/ReviewModal.tsx",
+    "line": 134,
+    "text": "تقييم"
+  },
+  {
+    "file": "src/components/reviews/ReviewModal.tsx",
+    "line": 135,
+    "text": "مشروع:"
+  },
+  {
+    "file": "src/components/reviews/ReviewModal.tsx",
+    "line": 145,
+    "text": "التقييم العام"
+  },
+  {
+    "file": "src/components/reviews/ReviewModal.tsx",
+    "line": 174,
+    "text": "تقييمات تفصيلية"
+  },
+  {
+    "file": "src/components/reviews/ReviewModal.tsx",
+    "line": 202,
+    "text": "نعم"
+  },
+  {
+    "file": "src/components/reviews/ReviewModal.tsx",
+    "line": 212,
+    "text": "لا"
+  },
+  {
+    "file": "src/components/reviews/ReviewModal.tsx",
+    "line": 219,
+    "text": "مراجعة مكتوبة (اختياري)"
+  },
+  {
+    "file": "src/components/reviews/ReviewModal.tsx",
+    "line": 220,
+    "text": "شارك تجربتك مع الآخرين"
+  },
+  {
+    "file": "src/components/reviews/ReviewModal.tsx",
+    "line": 224,
+    "text": "placeholder=\"ما الذي أعجبك؟ ما الذي يمكن تحسينه؟ هل توصي به للآخرين؟\""
+  },
+  {
+    "file": "src/components/reviews/ReviewModal.tsx",
+    "line": 233,
+    "text": "إعدادات الخصوصية"
+  },
+  {
+    "file": "src/components/reviews/ReviewModal.tsx",
+    "line": 270,
+    "text": "ملاحظة"
+  },
+  {
+    "file": "src/components/reviews/ReviewModal.tsx",
+    "line": 271,
+    "text": "التقييمات دائمة ولا يمكن تعديلها. يمكن للطرف الآخر الرد على تقييمك."
+  },
+  {
+    "file": "src/components/reviews/ReviewModal.tsx",
+    "line": 280,
+    "text": "تخطي الآن"
+  },
+  {
+    "file": "src/components/reviews/ReviewModal.tsx",
+    "line": 288,
+    "text": "إرسال التقييم"
+  },
+  {
+    "file": "src/components/routing/ProtectedRoute.tsx",
+    "line": 54,
+    "text": "label=\"Loading...\""
+  },
+  {
+    "file": "src/components/routing/WorkspaceRoute.tsx",
+    "line": 25,
+    "text": "label=\"Loading...\""
+  },
+  {
+    "file": "src/components/search/GlobalSearch.tsx",
+    "line": 153,
+    "text": "ESC"
+  },
+  {
+    "file": "src/components/ui/FileUpload.tsx",
+    "line": 101,
+    "text": "MB"
+  },
+  {
+    "file": "src/components/ui/LoadingStates.example.tsx",
+    "line": 19,
+    "text": "Spinner"
+  },
+  {
+    "file": "src/components/ui/LoadingStates.example.tsx",
+    "line": 22,
+    "text": "Sizes"
+  },
+  {
+    "file": "src/components/ui/LoadingStates.example.tsx",
+    "line": 36,
+    "text": "Skeleton"
+  },
+  {
+    "file": "src/components/ui/LoadingStates.example.tsx",
+    "line": 39,
+    "text": "Text Skeleton"
+  },
+  {
+    "file": "src/components/ui/LoadingStates.example.tsx",
+    "line": 44,
+    "text": "Circular Skeleton"
+  },
+  {
+    "file": "src/components/ui/LoadingStates.example.tsx",
+    "line": 49,
+    "text": "Rectangular Skeleton"
+  },
+  {
+    "file": "src/components/ui/LoadingStates.example.tsx",
+    "line": 54,
+    "text": "Skeleton Group"
+  },
+  {
+    "file": "src/components/ui/LoadingStates.example.tsx",
+    "line": 59,
+    "text": "Card Skeleton"
+  },
+  {
+    "file": "src/components/ui/LoadingStates.example.tsx",
+    "line": 80,
+    "text": "Progress Bar"
+  },
+  {
+    "file": "src/components/ui/LoadingStates.example.tsx",
+    "line": 83,
+    "text": "Basic Progress"
+  },
+  {
+    "file": "src/components/ui/LoadingStates.example.tsx",
+    "line": 88,
+    "text": "With Label"
+  },
+  {
+    "file": "src/components/ui/LoadingStates.example.tsx",
+    "line": 93,
+    "text": "Custom Label"
+  },
+  {
+    "file": "src/components/ui/LoadingStates.example.tsx",
+    "line": 94,
+    "text": "label=\"Uploading files...\""
+  },
+  {
+    "file": "src/components/ui/LoadingStates.example.tsx",
+    "line": 98,
+    "text": "Sizes"
+  },
+  {
+    "file": "src/components/ui/LoadingStates.example.tsx",
+    "line": 107,
+    "text": "Variants"
+  },
+  {
+    "file": "src/components/ui/LoadingStates.example.tsx",
+    "line": 109,
+    "text": "label=\"Default\""
+  },
+  {
+    "file": "src/components/ui/LoadingStates.example.tsx",
+    "line": 110,
+    "text": "label=\"Success\""
+  },
+  {
+    "file": "src/components/ui/LoadingStates.example.tsx",
+    "line": 111,
+    "text": "label=\"Warning\""
+  },
+  {
+    "file": "src/components/ui/LoadingStates.example.tsx",
+    "line": 112,
+    "text": "label=\"Error\""
+  },
+  {
+    "file": "src/components/ui/LoadingStates.example.tsx",
+    "line": 117,
+    "text": "Indeterminate Progress"
+  },
+  {
+    "file": "src/components/ui/LoadingStates.example.tsx",
+    "line": 125,
+    "text": "Empty State"
+  },
+  {
+    "file": "src/components/ui/LoadingStates.example.tsx",
+    "line": 128,
+    "text": "Basic Empty State"
+  },
+  {
+    "file": "src/components/ui/LoadingStates.example.tsx",
+    "line": 131,
+    "text": "title=\"No items found\""
+  },
+  {
+    "file": "src/components/ui/LoadingStates.example.tsx",
+    "line": 132,
+    "text": "description=\"There are no items to display at the moment.\""
+  },
+  {
+    "file": "src/components/ui/LoadingStates.example.tsx",
+    "line": 137,
+    "text": "With Action"
+  },
+  {
+    "file": "src/components/ui/LoadingStates.example.tsx",
+    "line": 140,
+    "text": "title=\"No projects yet\""
+  },
+  {
+    "file": "src/components/ui/LoadingStates.example.tsx",
+    "line": 141,
+    "text": "description=\"Get started by creating your first project.\""
+  },
+  {
+    "file": "src/components/ui/LoadingStates.example.tsx",
+    "line": 150,
+    "text": "With Secondary Action"
+  },
+  {
+    "file": "src/components/ui/LoadingStates.example.tsx",
+    "line": 153,
+    "text": "title=\"No results found\""
+  },
+  {
+    "file": "src/components/ui/LoadingStates.example.tsx",
+    "line": 154,
+    "text": "description=\"Try adjusting your search or filters to find what you're looking for.\""
+  },
+  {
+    "file": "src/components/ui/LoadingStates.example.tsx",
+    "line": 167,
+    "text": "Error State"
+  },
+  {
+    "file": "src/components/ui/LoadingStates.example.tsx",
+    "line": 170,
+    "text": "title=\"Something went wrong\""
+  },
+  {
+    "file": "src/components/ui/LoadingStates.example.tsx",
+    "line": 171,
+    "text": "description=\"We couldn't load your data. Please try again.\""
+  },
+  {
+    "file": "src/components/ui/Logo.tsx",
+    "line": 81,
+    "text": "WORKED"
+  },
+  {
+    "file": "src/components/ui/Logo.tsx",
+    "line": 87,
+    "text": "IN"
+  },
+  {
+    "file": "src/components/ui/Logo.tsx",
+    "line": 113,
+    "text": "WORKED"
+  },
+  {
+    "file": "src/components/ui/Logo.tsx",
+    "line": 119,
+    "text": "IN"
+  },
+  {
+    "file": "src/components/ui/Reviews.tsx",
+    "line": 105,
+    "text": "رد الموظف:"
+  },
+  {
+    "file": "src/components/ui/Reviews.tsx",
+    "line": 120,
+    "text": "مفيد ("
+  },
+  {
+    "file": "src/components/ui/Reviews.tsx",
+    "line": 129,
+    "text": "رد"
+  },
+  {
+    "file": "src/components/ui/Reviews.tsx",
+    "line": 139,
+    "text": "title=\"الرد على التقييم\""
+  },
+  {
+    "file": "src/components/ui/Reviews.tsx",
+    "line": 143,
+    "text": "اكتب ردك على تقييم"
+  },
+  {
+    "file": "src/components/ui/Reviews.tsx",
+    "line": 148,
+    "text": "placeholder=\"اكتب ردك هنا...\""
+  },
+  {
+    "file": "src/components/ui/Reviews.tsx",
+    "line": 154,
+    "text": "إلغاء"
+  },
+  {
+    "file": "src/components/ui/Reviews.tsx",
+    "line": 162,
+    "text": "إرسال الرد"
+  },
+  {
+    "file": "src/components/ui/Reviews.tsx",
+    "line": 241,
+    "text": "تقييمك لـ"
+  },
+  {
+    "file": "src/components/ui/Reviews.tsx",
+    "line": 242,
+    "text": "المهمة:"
+  },
+  {
+    "file": "src/components/ui/Reviews.tsx",
+    "line": 247,
+    "text": "التقييم"
+  },
+  {
+    "file": "src/components/ui/Reviews.tsx",
+    "line": 262,
+    "text": "تعليقك (اختياري)"
+  },
+  {
+    "file": "src/components/ui/Reviews.tsx",
+    "line": 266,
+    "text": "placeholder=\"شارك تجربتك مع هذا الشخص...\""
+  },
+  {
+    "file": "src/components/ui/Reviews.tsx",
+    "line": 275,
+    "text": "إلغاء"
+  },
+  {
+    "file": "src/components/ui/Reviews.tsx",
+    "line": 283,
+    "text": "إرسال التقييم"
+  },
+  {
+    "file": "src/components/ui/Reviews.tsx",
+    "line": 315,
+    "text": "تقييم"
+  },
+  {
+    "file": "src/components/ui/Spinner.tsx",
+    "line": 30,
+    "text": "Loading..."
+  },
+  {
+    "file": "src/components/verify/DocumentUpload.tsx",
+    "line": 109,
+    "text": "KB)"
+  },
+  {
+    "file": "src/pages/admin/DisputesTab.tsx",
+    "line": 90,
+    "text": "د.ت"
+  },
+  {
+    "file": "src/pages/admin/PaymentsTab.tsx",
+    "line": 56,
+    "text": "د.ت"
+  },
+  {
+    "file": "src/pages/admin/PaymentsTab.tsx",
+    "line": 58,
+    "text": "ID:"
+  },
+  {
+    "file": "src/pages/admin/VerificationsTab.tsx",
+    "line": 322,
+    "text": "alt=\"front\""
+  },
+  {
+    "file": "src/pages/admin/VerificationsTab.tsx",
+    "line": 332,
+    "text": "alt=\"back\""
+  },
+  {
+    "file": "src/pages/admin/VerificationsTab.tsx",
+    "line": 342,
+    "text": "alt=\"selfie\""
+  },
+  {
+    "file": "src/pages/AdminDashboard.tsx",
+    "line": 76,
+    "text": "WorkedIn â€¢"
+  },
+  {
+    "file": "src/pages/ClientOnboarding.tsx",
+    "line": 255,
+    "text": "alt=\"Avatar\""
+  },
+  {
+    "file": "src/pages/FreelancerProfile.tsx",
+    "line": 353,
+    "text": "&times;"
+  },
+  {
+    "file": "src/pages/JobDetail.tsx",
+    "line": 1324,
+    "text": "د.ت"
+  },
+  {
+    "file": "src/pages/JobMatches.tsx",
+    "line": 250,
+    "text": "رجوع"
+  },
+  {
+    "file": "src/pages/JobMatches.tsx",
+    "line": 258,
+    "text": "د.ت"
+  },
+  {
+    "file": "src/pages/JobMatches.tsx",
+    "line": 280,
+    "text": "أفضل تطابق"
+  },
+  {
+    "file": "src/pages/JobMatches.tsx",
+    "line": 355,
+    "text": "جاري التشغيل..."
+  },
+  {
+    "file": "src/pages/JobMatches.tsx",
+    "line": 378,
+    "text": "alt=\"نموذج عمل\""
+  },
+  {
+    "file": "src/pages/JobMatches.tsx",
+    "line": 400,
+    "text": "إخفاء"
+  },
+  {
+    "file": "src/pages/JobMatches.tsx",
+    "line": 417,
+    "text": "عميل متكرر"
+  },
+  {
+    "file": "src/pages/JobMatches.tsx",
+    "line": 420,
+    "text": "ربح"
+  },
+  {
+    "file": "src/pages/JobMatches.tsx",
+    "line": 420,
+    "text": "د.ت"
+  },
+  {
+    "file": "src/pages/JobMatches.tsx",
+    "line": 467,
+    "text": "سيتم إنشاء عقد بينك وبين هذا الموظف. هل أنت متأكد؟"
+  },
+  {
+    "file": "src/pages/JobPostSuccess.tsx",
+    "line": 75,
+    "text": "ID"
+  },
+  {
+    "file": "src/pages/Messages.tsx",
+    "line": 1455,
+    "text": "title=\"Read\""
+  },
+  {
+    "file": "src/pages/Messages.tsx",
+    "line": 1457,
+    "text": "title=\"Delivered\""
+  },
+  {
+    "file": "src/pages/Messages.tsx",
+    "line": 1518,
+    "text": "Recording:"
+  },
+  {
+    "file": "src/pages/PaymentFailed.tsx",
+    "line": 56,
+    "text": "فشلت عملية الدفع"
+  },
+  {
+    "file": "src/pages/PaymentFailed.tsx",
+    "line": 67,
+    "text": "نصائح لحل المشكلة:"
+  },
+  {
+    "file": "src/pages/PaymentFailed.tsx",
+    "line": 70,
+    "text": "• تأكد من صحة بيانات البطاقة"
+  },
+  {
+    "file": "src/pages/PaymentFailed.tsx",
+    "line": 71,
+    "text": "• تحقق من توفر رصيد كافي"
+  },
+  {
+    "file": "src/pages/PaymentFailed.tsx",
+    "line": 72,
+    "text": "• جرب استخدام بطاقة أخرى"
+  },
+  {
+    "file": "src/pages/PaymentFailed.tsx",
+    "line": 73,
+    "text": "• تأكد من اتصال الإنترنت"
+  },
+  {
+    "file": "src/pages/PaymentFailed.tsx",
+    "line": 84,
+    "text": "إعادة المحاولة"
+  },
+  {
+    "file": "src/pages/PaymentFailed.tsx",
+    "line": 92,
+    "text": "العودة للعقد"
+  },
+  {
+    "file": "src/pages/PaymentFailed.tsx",
+    "line": 102,
+    "text": "الصفحة الرئيسية"
+  },
+  {
+    "file": "src/pages/PaymentFailed.tsx",
+    "line": 108,
+    "text": "إذا استمرت المشكلة، تواصل مع الدعم الفني"
+  },
+  {
+    "file": "src/pages/PaymentSuccess.tsx",
+    "line": 206,
+    "text": "جاري التحقق من الدفع..."
+  },
+  {
+    "file": "src/pages/PaymentSuccess.tsx",
+    "line": 209,
+    "text": "يرجى الانتظار بينما نتحقق من عملية الدفع"
+  },
+  {
+    "file": "src/pages/PaymentSuccess.tsx",
+    "line": 221,
+    "text": "تم الدفع بنجاح! 🎉"
+  },
+  {
+    "file": "src/pages/PaymentSuccess.tsx",
+    "line": 224,
+    "text": "تم تمويل الضمان بنجاح. الأموال محفوظة حتى اكتمال العمل."
+  },
+  {
+    "file": "src/pages/PaymentSuccess.tsx",
+    "line": 234,
+    "text": "جاري تحويلك تلقائياً..."
+  },
+  {
+    "file": "src/pages/PaymentSuccess.tsx",
+    "line": 242,
+    "text": "الذهاب للعقد"
+  },
+  {
+    "file": "src/pages/PaymentSuccess.tsx",
+    "line": 258,
+    "text": "فشل التحقق من الدفع"
+  },
+  {
+    "file": "src/pages/PaymentSuccess.tsx",
+    "line": 269,
+    "text": "إعادة المحاولة"
+  },
+  {
+    "file": "src/pages/PaymentSuccess.tsx",
+    "line": 275,
+    "text": "العودة للوحة التحكم"
+  },
+  {
+    "file": "src/pages/Privacy.tsx",
+    "line": 82,
+    "text": "privacy@workedin.tn"
+  },
+  {
+    "file": "src/pages/SearchResults.tsx",
+    "line": 404,
+    "text": "Tip"
+  },
+  {
+    "file": "src/pages/SearchResults.tsx",
+    "line": 414,
+    "text": "Popular"
+  },
+  {
+    "file": "src/pages/SearchResults.tsx",
+    "line": 637,
+    "text": "/hr"
+  },
+  {
+    "file": "src/pages/Terms.tsx",
+    "line": 67,
+    "text": "legal@workedin.tn"
+  },
+  {
+    "file": "src/pages/Wallet.tsx",
+    "line": 763,
+    "text": "F"
+  },
+  {
+    "file": "src/pages/Wallet.tsx",
+    "line": 798,
+    "text": "placeholder=\"TN59 ...\""
+  }
+]

@@ -203,11 +203,9 @@ const PaymentSuccess = () => {
                     <div className="bg-card rounded-2xl shadow-xl p-8 text-center">
                         <Loader2 className="w-16 h-16 animate-spin text-primary-600 mx-auto mb-6" />
                         <h2 className="text-xl font-bold text-foreground dark:text-white mb-2">
-                            جاري التحقق من الدفع...
-                        </h2>
+                            {tx('dynamic_key_374761519')}</h2>
                         <p className="text-muted-foreground">
-                            يرجى الانتظار بينما نتحقق من عملية الدفع
-                        </p>
+                            {tx('dynamic_key_1821001923')}</p>
                     </div>
                 )}
 
@@ -218,11 +216,9 @@ const PaymentSuccess = () => {
                             <CheckCircle className="w-10 h-10 text-green-600" />
                         </div>
                         <h2 className="text-2xl font-bold text-foreground dark:text-white mb-2">
-                            تم الدفع بنجاح! 🎉
-                        </h2>
+                            {tx('dynamic_key_1798326885')}</h2>
                         <p className="text-muted-foreground mb-4">
-                            تم تمويل الضمان بنجاح. الأموال محفوظة حتى اكتمال العمل.
-                        </p>
+                            {tx('dynamic_key_831489996')}</p>
 
                         {amount > 0 && (
                             <div className="text-3xl font-bold text-green-600 mb-6">
@@ -231,15 +227,14 @@ const PaymentSuccess = () => {
                         )}
 
                         <div className="text-sm text-muted mb-6">
-                            جاري تحويلك تلقائياً...
-                        </div>
+                            {tx('dynamic_key_480999927')}</div>
 
                         {contractId && (
                             <Link
                                 to={`/contracts/${contractId}`}
                                 className="btn-primary btn-lg justify-center w-full"
                             >
-                                <span>الذهاب للعقد</span>
+                                <span>{tx('dynamic_key_730815621')}</span>
                                 <ArrowRight className="w-5 h-5 rtl:rotate-180" />
                             </Link>
                         )}
@@ -255,8 +250,7 @@ const PaymentSuccess = () => {
                             </svg>
                         </div>
                         <h2 className="text-2xl font-bold text-foreground dark:text-white mb-2">
-                            فشل التحقق من الدفع
-                        </h2>
+                            {tx('dynamic_key_1762109572')}</h2>
                         <p className="text-muted-foreground mb-4">
                             {error || 'حدث خطأ أثناء التحقق من عملية الدفع'}
                         </p>
@@ -266,14 +260,12 @@ const PaymentSuccess = () => {
                                 onClick={() => window.location.reload()}
                                 className="btn-primary btn-lg justify-center w-full"
                             >
-                                إعادة المحاولة
-                            </button>
+                                {tx('dynamic_key_131381918')}</button>
                             <Link
                                 to="/client/dashboard"
                                 className="btn-secondary btn-lg justify-center w-full"
                             >
-                                العودة للوحة التحكم
-                            </Link>
+                                {tx('dynamic_key_764967864')}</Link>
                         </div>
                     </div>
                 )}

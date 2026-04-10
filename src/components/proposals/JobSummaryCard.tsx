@@ -1,5 +1,6 @@
 import { Calendar, DollarSign, Clock, ExternalLink, Share2 } from 'lucide-react';
 import Button from '../ui/Button';
+import { useTranslation } from "../../i18n";
 
 interface ProposalJobSummary {
     budget_min: number;
@@ -19,13 +20,14 @@ interface JobSummaryProps {
 }
 
 export default function JobSummaryCard({ job }: JobSummaryProps) {
+    const { tx } = useTranslation();
     if (!job) return null;
 
     return (
         <div className="space-y-4">
             <div className="bg-card rounded-xl border border-border overflow-hidden">
                 <div className="p-4 border-b border-border bg-surface">
-                    <h3 className="font-bold text-foreground dark:text-white">تفاصيل الوظيفة</h3>
+                    <h3 className="font-bold text-foreground dark:text-white">{tx('dynamic_key_936673124')}</h3>
                 </div>
                 <div className="p-4 space-y-4">
                     <div className="flex items-start gap-3">
@@ -33,10 +35,9 @@ export default function JobSummaryCard({ job }: JobSummaryProps) {
                             <DollarSign className="w-4 h-4" />
                         </div>
                         <div>
-                            <p className="text-xs text-muted">الميزانية</p>
+                            <p className="text-xs text-muted">{tx('dynamic_key_857615762')}</p>
                             <p className="font-medium text-foreground dark:text-white">
-                                {job.budget_min} - {job.budget_max} د.ت
-                            </p>
+                                {job.budget_min} - {job.budget_max} {tx('dynamic_key_1524267')}</p>
                             <p className="text-xs text-muted mt-0.5">{job.job_type === 'fixed_price' ? 'سعر ثابت' : 'بالساعة'}</p>
                         </div>
                     </div>
@@ -46,7 +47,7 @@ export default function JobSummaryCard({ job }: JobSummaryProps) {
                             <Clock className="w-4 h-4" />
                         </div>
                         <div>
-                            <p className="text-xs text-muted">المدة المتوقعة</p>
+                            <p className="text-xs text-muted">{tx('dynamic_key_236480406')}</p>
                             <p className="font-medium text-foreground dark:text-white">{job.duration}</p>
                         </div>
                     </div>
@@ -56,7 +57,7 @@ export default function JobSummaryCard({ job }: JobSummaryProps) {
                             <Calendar className="w-4 h-4" />
                         </div>
                         <div>
-                            <p className="text-xs text-muted">تاريخ النشر</p>
+                            <p className="text-xs text-muted">{tx('dynamic_key_2053478334')}</p>
                             <p className="font-medium text-foreground dark:text-white">
                                 {new Date(job.created_at || Date.now()).toLocaleDateString('ar-TN')}
                             </p>
@@ -70,29 +71,25 @@ export default function JobSummaryCard({ job }: JobSummaryProps) {
                             className="w-full justify-center text-xs"
                             leftIcon={<Share2 className="w-3 h-3" />}
                         >
-                            مشاركة
-                        </Button>
+                            {tx('dynamic_key_220193727')}</Button>
                         <Button
                             variant="outline"
                             size="sm"
                             className="w-full justify-center text-xs"
                             leftIcon={<ExternalLink className="w-3 h-3" />}
                         >
-                            عرض الوظيفة
-                        </Button>
+                            {tx('dynamic_key_1543783939')}</Button>
                     </div>
                 </div>
             </div>
 
             {/* AI Recommendations Teaser */}
             <div className="bg-gradient-to-br from-primary-900 to-primary-800 rounded-xl p-5 text-white">
-                <h3 className="font-bold mb-2">توصيات الذكاء الاصطناعي</h3>
+                <h3 className="font-bold mb-2">{tx('dynamic_key_197805234')}</h3>
                 <p className="text-primary-100 text-sm mb-4">
-                    قمنا بتحليل متطلباتك ووجدنا 3 مستقلين يطابقون مشروعك بنسبة 95%.
-                </p>
+                    {tx('dynamic_key_1253092729')}</p>
                 <button className="w-full py-2 bg-card text-primary-900 rounded-lg font-bold text-sm hover:bg-primary-50 transition-colors">
-                    عرض التوصيات
-                </button>
+                    {tx('dynamic_key_232051787')}</button>
             </div>
         </div>
     );

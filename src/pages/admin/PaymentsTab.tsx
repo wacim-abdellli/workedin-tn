@@ -53,9 +53,9 @@ export default function PaymentsTab() {
                                   <div>
                                       <div className="flex items-center gap-2 mb-1">
                                           <span className={`px-2 py-0.5 text-xs rounded-full ${adminPillClass('amber')}`}>{transaction.type}</span>
-                                          <span className="font-medium text-foreground">{transaction.amount} د.ت</span>
+                                          <span className="font-medium text-foreground">{transaction.amount} {tx('dynamic_key_1524267')}</span>
                                       </div>
-                                     <p className="text-sm text-muted">ID: {transaction.id.slice(0, 8)}... • {new Date(transaction.created_at).toLocaleString(locale)}</p>
+                                     <p className="text-sm text-muted">{tx('ui.id')}{transaction.id.slice(0, 8)}... • {new Date(transaction.created_at).toLocaleString(locale)}</p>
                                  </div>
                                  <Button variant="primary" size="sm" disabled={retryingId === transaction.id} onClick={() => handleRetry(transaction.id)}>
                                       {retryingId === transaction.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <><RefreshCw className="w-4 h-4 ml-1" />{tx('dashboard.admin.payments.retry', undefined, 'Retry')}</>}

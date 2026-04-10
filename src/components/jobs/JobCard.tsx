@@ -236,7 +236,7 @@ function JobCard({ job, isSaved, onToggleSave, onClick }: JobCardProps) {
                 <span
                   className="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full text-white"
                   style={{ background: 'var(--color-status-success)', fontSize: '8px' }}
-                  title="Verified"
+                  title={tx('ui.verified')}
                 >âœ“</span>
               )}
             </p>

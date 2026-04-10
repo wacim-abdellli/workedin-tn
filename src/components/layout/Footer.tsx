@@ -15,7 +15,7 @@ import { Logo } from "../ui/Logo";
 import { useAuth } from "@/contexts/AuthContext";
 
 function Footer() {
-  const { t } = useTranslation();
+  const { t, tx } = useTranslation();
   const { profile, activeMode } = useAuth();
 
   const footerLinks = [
@@ -124,7 +124,7 @@ function Footer() {
                     style={{ color: "var(--workspace-primary)" }}
                   />
                 </div>
-                <span>contact@workedin.tn</span>
+                <span>{tx('ui.contact_workedin_tn')}</span>
               </div>
 
               <div
@@ -143,7 +143,7 @@ function Footer() {
                     style={{ color: "var(--workspace-primary)" }}
                   />
                 </div>
-                <span dir="ltr">+216 XX XXX XXX</span>
+                <span dir="ltr">{tx('ui.xx_xxx_xxx')}</span>
               </div>
             </div>
 

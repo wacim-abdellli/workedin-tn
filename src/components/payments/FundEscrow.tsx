@@ -7,12 +7,14 @@ import { useToast } from '../ui/Toast';
 import { formatCurrency, calculateTotalWithFee, tndToMillimes } from '../../lib/currencyUtils';
 import { PLATFORM_FEE_PERCENTAGE } from '../../types/payment';
 import type { FundEscrowProps } from '../../types/payment';
+import { useTranslation } from "../../i18n";
 
 /**
  * FundEscrow Component
  * Allows clients to fund escrow for a contract via Flouci payment
  */
 const FundEscrow = ({ contract, onSuccess, onError }: FundEscrowProps) => {
+    const { tx } = useTranslation();
     const { showToast } = useToast();
     const [loading, setLoading] = useState(false);
     const [showBreakdown, setShowBreakdown] = useState(false);
@@ -158,8 +160,7 @@ const FundEscrow = ({ contract, onSuccess, onError }: FundEscrowProps) => {
             </button>
 
             <p className="text-center text-xs text-muted mt-4">
-                Ã˜Â§Ã™â€žÃ˜Â¯Ã™ÂÃ˜Â¹ Ã˜Â¹Ã˜Â¨Ã˜Â± Flouci - Ã˜Â¨Ã˜Â·Ã˜Â§Ã™â€šÃ˜Â§Ã˜Âª Ã˜Â¨Ã™â€ Ã™Æ’Ã™Å Ã˜Â© Ã™Ë†Ã™â€¦Ã˜Â­Ã˜Â§Ã™ÂÃ˜Â¸ Ã˜Â¥Ã™â€žÃ™Æ’Ã˜ÂªÃ˜Â±Ã™Ë†Ã™â€ Ã™Å Ã˜Â©
-            </p>
+                {tx('payment.flouciDescription')}</p>
         </div>
     );
 };

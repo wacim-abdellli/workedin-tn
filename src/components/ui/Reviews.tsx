@@ -28,7 +28,7 @@ interface ReviewCardProps {
 }
 
 export function ReviewCard({ review, onMarkHelpful, onRespond, canRespond }: ReviewCardProps) {
-    const { t } = useTranslation();
+    const { t, tx } = useTranslation();
     const [showResponseModal, setShowResponseModal] = useState(false);
     const [responseText, setResponseText] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -102,7 +102,7 @@ export function ReviewCard({ review, onMarkHelpful, onRespond, canRespond }: Rev
             {/* Response if exists */}
             {review.response && (
                 <div className="bg-surface rounded-lg p-4 mb-4">
-                    <p className="text-sm font-medium text-muted mb-1">رد الموظف:</p>
+                    <p className="text-sm font-medium text-muted mb-1">{tx('dynamic_key_890920977')}</p>
                     <p className="text-sm text-foreground">{review.response}</p>
                 </div>
             )}
@@ -117,7 +117,7 @@ export function ReviewCard({ review, onMarkHelpful, onRespond, canRespond }: Rev
                         className="flex items-center gap-1 text-muted hover:text-primary-600 transition-colors"
                     >
                         <ThumbsUp className="w-4 h-4" />
-                        <span>مفيد ({review.helpful_count})</span>
+                        <span>{tx('dynamic_key_233190025')}{review.helpful_count})</span>
                     </button>
 
                     {canRespond && !review.response && (
@@ -126,7 +126,7 @@ export function ReviewCard({ review, onMarkHelpful, onRespond, canRespond }: Rev
                             className="flex items-center gap-1 text-primary-600 hover:text-primary-700 transition-colors"
                         >
                             <MessageSquare className="w-4 h-4" />
-                            <span>رد</span>
+                            <span>{tx('dynamic_key_50718')}</span>
                         </button>
                     )}
                 </div>
@@ -136,31 +136,29 @@ export function ReviewCard({ review, onMarkHelpful, onRespond, canRespond }: Rev
             <Modal
                 isOpen={showResponseModal}
                 onClose={() => setShowResponseModal(false)}
-                title="الرد على التقييم"
+                title={tx('dynamic_key_2001555607')}
             >
                 <div className="space-y-4">
                     <p className="text-muted text-sm">
-                        اكتب ردك على تقييم {review.reviewer.name}
+                        {tx('dynamic_key_18255446')}{review.reviewer.name}
                     </p>
                     <textarea
                         value={responseText}
                         onChange={(e) => setResponseText(e.target.value)}
-                        placeholder="اكتب ردك هنا..."
+                        placeholder={tx('dynamic_key_979253881')}
                         rows={4}
                         className="input-base w-full resize-none"
                     />
                     <div className="flex gap-3 justify-end">
                         <Button variant="outline" onClick={() => setShowResponseModal(false)}>
-                            إلغاء
-                        </Button>
+                            {tx('dynamic_key_1502065525')}</Button>
                         <Button
                             variant="primary"
                             onClick={handleSubmitResponse}
                             isLoading={isSubmitting}
                             disabled={!responseText.trim()}
                         >
-                            إرسال الرد
-                        </Button>
+                            {tx('dynamic_key_639337527')}</Button>
                     </div>
                 </div>
             </Modal>
@@ -176,6 +174,7 @@ interface StarRatingInputProps {
 }
 
 export function StarRatingInput({ value, onChange, size = 'md' }: StarRatingInputProps) {
+    const { tx } = useTranslation();
     const [hovered, setHovered] = useState(0);
 
     const sizeClasses = {
@@ -219,6 +218,7 @@ interface ReviewFormProps {
 }
 
 export function ReviewForm({ jobTitle, recipientName, onSubmit, onCancel }: ReviewFormProps) {
+    const { tx } = useTranslation();
     const [rating, setRating] = useState(0);
     const [comment, setComment] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -238,13 +238,13 @@ export function ReviewForm({ jobTitle, recipientName, onSubmit, onCancel }: Revi
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-                <p className="text-muted mb-2">تقييمك لـ {recipientName}</p>
-                <p className="text-sm text-muted mb-1">المهمة: {jobTitle}</p>
+                <p className="text-muted mb-2">{tx('dynamic_key_1016245850')}{recipientName}</p>
+                <p className="text-sm text-muted mb-1">{tx('dynamic_key_2132806281')}{jobTitle}</p>
             </div>
 
             {/* Star Rating */}
             <div>
-                <label className="block text-sm font-medium mb-3">التقييم</label>
+                <label className="block text-sm font-medium mb-3">{tx('dynamic_key_2137084368')}</label>
                 <StarRatingInput value={rating} onChange={setRating} size="lg" />
                 {rating > 0 && (
                     <p className="text-sm text-muted mt-2">
@@ -259,11 +259,11 @@ export function ReviewForm({ jobTitle, recipientName, onSubmit, onCancel }: Revi
 
             {/* Comment */}
             <div>
-                <label className="block text-sm font-medium mb-2">تعليقك (اختياري)</label>
+                <label className="block text-sm font-medium mb-2">{tx('dynamic_key_669258706')}</label>
                 <textarea
                     value={comment}
                     onChange={(e) => setComment(e.target.value)}
-                    placeholder="شارك تجربتك مع هذا الشخص..."
+                    placeholder={tx('dynamic_key_72742741')}
                     rows={4}
                     className="input-base w-full resize-none"
                 />
@@ -272,16 +272,14 @@ export function ReviewForm({ jobTitle, recipientName, onSubmit, onCancel }: Revi
             {/* Actions */}
             <div className="flex gap-3 justify-end">
                 <Button variant="outline" type="button" onClick={onCancel}>
-                    إلغاء
-                </Button>
+                    {tx('dynamic_key_1502065525')}</Button>
                 <Button
                     variant="primary"
                     type="submit"
                     isLoading={isSubmitting}
                     disabled={rating === 0}
                 >
-                    إرسال التقييم
-                </Button>
+                    {tx('dynamic_key_1679990796')}</Button>
             </div>
         </form>
     );
@@ -312,12 +310,13 @@ export function ReviewsSummary({ totalReviews, averageRating, ratingDistribution
                             />
                         ))}
                     </div>
-                    <p className="text-sm text-muted">{totalReviews} تقييم</p>
+                    <p className="text-sm text-muted">{totalReviews} {tx('dynamic_key_1506640045')}</p>
                 </div>
 
                 {/* Distribution */}
                 <div className="flex-1 space-y-2">
                     {[5, 4, 3, 2, 1].map((star) => {
+                        const { tx } = useTranslation();
                         const count = ratingDistribution[star] || 0;
                         const percentage = totalReviews > 0 ? (count / totalReviews) * 100 : 0;
 

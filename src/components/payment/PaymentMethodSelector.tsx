@@ -14,6 +14,7 @@ const ICON_MAP = {
 type IconName = keyof typeof ICON_MAP;
 
 function MethodIcon({ name, className }: { name: IconName; className?: string }) {
+    const { tx } = useTranslation();
   const Icon = ICON_MAP[name];
   return <Icon className={className} />;
 }
@@ -48,6 +49,7 @@ interface AvailableCardProps {
 }
 
 function AvailableCard({ method, selected, onSelect, lang }: AvailableCardProps) {
+    const { tx } = useTranslation();
   const name = localise(method.name, lang);
   const description = localise(method.description, lang);
   const features = localiseList(method.features, lang);
@@ -85,8 +87,7 @@ function AvailableCard({ method, selected, onSelect, lang }: AvailableCardProps)
             <span className="text-sm font-semibold text-foreground">{name}</span>
             {method.recommended && (
               <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
-                ✓ Recommended
-              </span>
+                {tx('ui.recommended')}</span>
             )}
           </div>
 
@@ -131,6 +132,7 @@ interface ComingSoonCardProps {
 }
 
 function ComingSoonCard({ method, lang }: ComingSoonCardProps) {
+    const { tx } = useTranslation();
   const name = localise(method.name, lang);
   const description = localise(method.description, lang);
   const features = localiseList(method.features, lang);
@@ -153,8 +155,7 @@ function ComingSoonCard({ method, lang }: ComingSoonCardProps) {
             <span className="text-sm font-semibold text-muted-foreground">{name}</span>
             <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide rounded-full bg-amber-500/10 text-amber-600">
               <Clock className="w-2.5 h-2.5" />
-              Coming Soon
-            </span>
+              {tx('ui.coming_soon')}</span>
           </div>
 
           {/* Description */}

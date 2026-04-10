@@ -106,7 +106,7 @@ export default function DocumentUpload({
                     <div className="mt-3 inline-flex items-center gap-2 rounded-lg bg-muted px-3 py-1.5 text-xs text-muted-foreground">
                         <FileCheck2 className="h-3.5 w-3.5 text-green-600 dark:text-green-300" />
                         <span>{fileMeta.name}</span>
-                        <span className="text-muted">({fileMeta.sizeKB}KB)</span>
+                        <span className="text-muted">({fileMeta.sizeKB}{tx('ui.kb')}</span>
                     </div>
                 )}
                 {errorMessage && <p className="mt-3 text-sm text-red-600 dark:text-red-300">{errorMessage}</p>}

@@ -1,0 +1,418 @@
+{
+  "src/App.tsx": [
+    "label=\"Loading...\""
+  ],
+  "src/components/auth/AuthShell.tsx": [
+    "professionals already on WorkedIn"
+  ],
+  "src/components/common/FileUpload.tsx": [
+    "KB"
+  ],
+  "src/components/contracts/ChatSection.tsx": [
+    "الطرف الآخر يكتب الآن",
+    "جاري رفع الملف..."
+  ],
+  "src/components/contracts/ContractDetailsSidebar.tsx": [
+    "د.ت",
+    "د.ت"
+  ],
+  "src/components/dashboard/ProfileRing.tsx": [
+    "complete"
+  ],
+  "src/components/ErrorBoundary.tsx": [
+    "حدث خطأ غير متوقع",
+    "عذراً، حدث خطأ أثناء تحميل الصفحة. يرجى المحاولة مرة أخرى.",
+    "إعادة المحاولة",
+    "الرئيسية"
+  ],
+  "src/components/freelancer/PortfolioModal.tsx": [
+    "label=\"عنوان المشروع\"",
+    "placeholder=\"مثال: تصميم متجر إلكتروني\"",
+    "وصف المشروع",
+    "placeholder=\"اشرح تفاصيل المشروع وما قمت بإنجازه...\"",
+    "label=\"رابط المشروع (اختياري)\"",
+    "placeholder=\"https://example.com\"",
+    "label=\"تاريخ الإنجاز\"",
+    "label=\"المهارات المستخدمة\"",
+    "placeholder=\"مثال: تصميم واجهات، تطوير واجهات، تحرير صور (افصل بينها بفاصلة)\"",
+    "label=\"رابط صورة العرض\"",
+    "placeholder=\"https://...\"",
+    "سنقوم بدعم رفع الملفات قريباً. يرجى استخدام رابط مباشر للصورة حالياً.",
+    "إلغاء"
+  ],
+  "src/components/freelancer/profile/AboutSection.tsx": [
+    "Edit",
+    "Cancel",
+    "Save"
+  ],
+  "src/components/freelancer/profile/ProfileHeader.tsx": [
+    "Playing..."
+  ],
+  "src/components/freelancer/profile/SkillsSection.tsx": [
+    "Edit",
+    "Cancel",
+    "Save"
+  ],
+  "src/components/jobs/JobCard.tsx": [
+    "title=\"Verified\""
+  ],
+  "src/components/layout/Footer.tsx": [
+    "contact@workedin.tn",
+    "+216 XX XXX XXX"
+  ],
+  "src/components/layout/Header/index.tsx": [
+    "Ctrl+K"
+  ],
+  "src/components/layout/Header/SearchModal.tsx": [
+    "ESC",
+    "Enter"
+  ],
+  "src/components/layout/Header/UserMenu.tsx": [
+    "ADMIN"
+  ],
+  "src/components/onboarding/OnboardingShell.tsx": [
+    "Progress"
+  ],
+  "src/components/onboarding/OnboardingStep1.tsx": [
+    "alt=\"Avatar\""
+  ],
+  "src/components/onboarding/OnboardingStep2.tsx": [
+    "placeholder=\"e.g. 50\""
+  ],
+  "src/components/onboarding/OnboardingStep4.tsx": [
+    "(500 حرف كحد أقصى)",
+    "s",
+    "تم تسجيل مقدمتك الصوتية",
+    "Max: 5 files",
+    "alt=\"Preview\"",
+    "placeholder=\"Title\"",
+    "MB"
+  ],
+  "src/components/payment/PaymentMethodSelector.tsx": [
+    "✓ Recommended",
+    "Coming Soon"
+  ],
+  "src/components/payments/FundEscrow.tsx": [
+    "Ã˜Â§Ã™â€žÃ˜Â¯Ã™ÂÃ˜Â¹ Ã˜Â¹Ã˜Â¨Ã˜Â± Flouci - Ã˜Â¨Ã˜Â·Ã˜Â§Ã™â€šÃ˜Â§Ã˜Âª Ã˜Â¨Ã™â€ Ã™Æ’Ã™Å Ã˜Â© Ã™Ë†Ã™â€¦Ã˜Â­Ã˜Â§Ã™ÂÃ˜Â¸ Ã˜Â¥Ã™â€žÃ™Æ’Ã˜ÂªÃ˜Â±Ã™Ë†Ã™â€ Ã™Å Ã˜Â©"
+  ],
+  "src/components/payments/WalletCard.tsx": [
+    "إعادة المحاولة",
+    "لم يتم إنشاء محفظتك بعد",
+    "تحديث",
+    "محفظتي",
+    "title=\"تحديث\"",
+    "الرصيد المتاح",
+    "قيد الانتظار",
+    "إجمالي الأرباح",
+    "طلب سحب",
+    "آخر المعاملات",
+    "عرض الكل",
+    "لا توجد معاملات بعد"
+  ],
+  "src/components/payments/WithdrawalForm.tsx": [
+    "تم إرسال طلب السحب",
+    "سيتم مراجعة طلبك وتحويل المبلغ خلال 2-5 أيام عمل",
+    "طلب سحب",
+    "الرصيد المتاح",
+    "المبلغ المطلوب",
+    "د.ت",
+    "طريقة السحب",
+    "F",
+    "اسم البنك",
+    "placeholder=\"مثال: البنك الوطني الفلاحي\"",
+    "اسم صاحب الحساب",
+    "placeholder=\"الاسم كما يظهر في الحساب البنكي\"",
+    "رقم IBAN",
+    "placeholder=\"TN59XXXXX...\"",
+    "رقم الهاتف",
+    "placeholder=\"+216 XX XXX XXX\"",
+    "سيتم مراجعة طلب السحب من قبل الإدارة وتحويل المبلغ خلال 2-5 أيام عمل.",
+    "جاري الإرسال...",
+    "إرسال طلب السحب"
+  ],
+  "src/components/proposals/JobSummaryCard.tsx": [
+    "تفاصيل الوظيفة",
+    "الميزانية",
+    "د.ت",
+    "المدة المتوقعة",
+    "تاريخ النشر",
+    "مشاركة",
+    "عرض الوظيفة",
+    "توصيات الذكاء الاصطناعي",
+    "قمنا بتحليل متطلباتك ووجدنا 3 مستقلين يطابقون مشروعك بنسبة 95%.",
+    "عرض التوصيات"
+  ],
+  "src/components/proposals/ProposalCard.tsx": [
+    "موثق",
+    "متميز",
+    "وظيفة مكتملة",
+    "نجاح",
+    "قراءة المزيد...",
+    "منذ",
+    "د.ت",
+    "عرض مدروس",
+    "مدة التنفيذ",
+    "يوم",
+    "إجمالي التكلفة",
+    "د.ت",
+    "توظيف"
+  ],
+  "src/components/proposals/ProposalDetailModal.tsx": [
+    "التقييم",
+    "مشاريع مكتملة",
+    "نسبة النجاح",
+    "سرعة الرد",
+    "ساعة تقريباً",
+    "المهارات",
+    "تم التقديم منذ",
+    "خطاب التقديم",
+    "المرفقات",
+    "نبذة عني",
+    "اللغات",
+    "العربية",
+    "اللغة الأم",
+    "الفرنسية",
+    "متقدم",
+    "مثال عمل 1 (صورة)",
+    "مثال عمل 2 (صورة)",
+    "سجل العمل غير متوفر في هذه المعاينة",
+    "التقييمات غير متوفرة في هذه المعاينة",
+    "تفاصيل العرض",
+    "قيمة العرض",
+    "د.ت",
+    "مدة التنفيذ",
+    "يوم",
+    "رسوم الخدمة",
+    "د.ت",
+    "الإجمالي للدفع",
+    "د.ت",
+    "💡 الدفع معلق بشكل آمن في حساب الضمان حتى يتم تسليم العمل والموافقة عليه.",
+    "توظيف الآن",
+    "مراسلة",
+    "أرشفة العرض"
+  ],
+  "src/components/proposals/ProposalFiltersSidebar.tsx": [
+    "تصفية العروض",
+    "عرض",
+    "placeholder=\"بحث في العروض...\"",
+    "الترتيب حسب",
+    "الموصى به (الأفضل تطابقاً)",
+    "الأقل سعراً",
+    "الأعلى سعراً",
+    "الأحدث",
+    "تقييم المستقل",
+    "مستوى المستقل",
+    "مبتدئ",
+    "متوسط الخبرة",
+    "خبير",
+    "خصائص أخرى",
+    "حساب موثق فقط",
+    "تقييم 4 نجوم وأكثر",
+    "لديه معرض أعمال"
+  ],
+  "src/components/proposals/ProposalModal.tsx": [
+    "قيمة العرض (د.ت)",
+    "د.ت",
+    "رسوم المنصة (",
+    "د.ت",
+    "ستحصل على",
+    "د.ت",
+    "مدة التسليم",
+    "رسالة العرض",
+    "placeholder=\"اشرح لماذا أنت الشخص المناسب لهذا المشروع...\"",
+    "يجب كتابة 100 حرف على الأقل",
+    "مرفقات (اختياري)",
+    "رفع ملف",
+    "يمكنك رفع ملفات بصيغة PDF أو صور حتى 10MB",
+    "إلغاء",
+    "إرسال العرض"
+  ],
+  "src/components/reviews/ReviewDisplay.tsx": [
+    "تقييم",
+    "التقييمات (",
+    "الأحدث",
+    "الأعلى تقييماً",
+    "الأقل تقييماً",
+    "الأكثر فائدة",
+    "عرض التفاصيل",
+    "رد المالك",
+    "مفيد (",
+    "إبلاغ",
+    "لا توجد تقييمات بعد"
+  ],
+  "src/components/reviews/ReviewModal.tsx": [
+    "تقييم",
+    "مشروع:",
+    "التقييم العام",
+    "تقييمات تفصيلية",
+    "نعم",
+    "لا",
+    "مراجعة مكتوبة (اختياري)",
+    "شارك تجربتك مع الآخرين",
+    "placeholder=\"ما الذي أعجبك؟ ما الذي يمكن تحسينه؟ هل توصي به للآخرين؟\"",
+    "إعدادات الخصوصية",
+    "ملاحظة",
+    "التقييمات دائمة ولا يمكن تعديلها. يمكن للطرف الآخر الرد على تقييمك.",
+    "تخطي الآن",
+    "إرسال التقييم"
+  ],
+  "src/components/routing/ProtectedRoute.tsx": [
+    "label=\"Loading...\""
+  ],
+  "src/components/routing/WorkspaceRoute.tsx": [
+    "label=\"Loading...\""
+  ],
+  "src/components/search/GlobalSearch.tsx": [
+    "ESC"
+  ],
+  "src/components/ui/FileUpload.tsx": [
+    "MB"
+  ],
+  "src/components/ui/LoadingStates.example.tsx": [
+    "Spinner",
+    "Sizes",
+    "Skeleton",
+    "Text Skeleton",
+    "Circular Skeleton",
+    "Rectangular Skeleton",
+    "Skeleton Group",
+    "Card Skeleton",
+    "Progress Bar",
+    "Basic Progress",
+    "With Label",
+    "Custom Label",
+    "label=\"Uploading files...\"",
+    "Sizes",
+    "Variants",
+    "label=\"Default\"",
+    "label=\"Success\"",
+    "label=\"Warning\"",
+    "label=\"Error\"",
+    "Indeterminate Progress",
+    "Empty State",
+    "Basic Empty State",
+    "title=\"No items found\"",
+    "description=\"There are no items to display at the moment.\"",
+    "With Action",
+    "title=\"No projects yet\"",
+    "description=\"Get started by creating your first project.\"",
+    "With Secondary Action",
+    "title=\"No results found\"",
+    "description=\"Try adjusting your search or filters to find what you're looking for.\"",
+    "Error State",
+    "title=\"Something went wrong\"",
+    "description=\"We couldn't load your data. Please try again.\""
+  ],
+  "src/components/ui/Logo.tsx": [
+    "WORKED",
+    "IN",
+    "WORKED",
+    "IN"
+  ],
+  "src/components/ui/Reviews.tsx": [
+    "رد الموظف:",
+    "مفيد (",
+    "رد",
+    "title=\"الرد على التقييم\"",
+    "اكتب ردك على تقييم",
+    "placeholder=\"اكتب ردك هنا...\"",
+    "إلغاء",
+    "إرسال الرد",
+    "تقييمك لـ",
+    "المهمة:",
+    "التقييم",
+    "تعليقك (اختياري)",
+    "placeholder=\"شارك تجربتك مع هذا الشخص...\"",
+    "إلغاء",
+    "إرسال التقييم",
+    "تقييم"
+  ],
+  "src/components/ui/Spinner.tsx": [
+    "Loading..."
+  ],
+  "src/components/verify/DocumentUpload.tsx": [
+    "KB)"
+  ],
+  "src/pages/admin/DisputesTab.tsx": [
+    "د.ت"
+  ],
+  "src/pages/admin/PaymentsTab.tsx": [
+    "د.ت",
+    "ID:"
+  ],
+  "src/pages/admin/VerificationsTab.tsx": [
+    "alt=\"front\"",
+    "alt=\"back\"",
+    "alt=\"selfie\""
+  ],
+  "src/pages/AdminDashboard.tsx": [
+    "WorkedIn â€¢"
+  ],
+  "src/pages/ClientOnboarding.tsx": [
+    "alt=\"Avatar\""
+  ],
+  "src/pages/FreelancerProfile.tsx": [
+    "&times;"
+  ],
+  "src/pages/JobDetail.tsx": [
+    "د.ت"
+  ],
+  "src/pages/JobMatches.tsx": [
+    "رجوع",
+    "د.ت",
+    "أفضل تطابق",
+    "جاري التشغيل...",
+    "alt=\"نموذج عمل\"",
+    "إخفاء",
+    "عميل متكرر",
+    "ربح",
+    "د.ت",
+    "سيتم إنشاء عقد بينك وبين هذا الموظف. هل أنت متأكد؟"
+  ],
+  "src/pages/JobPostSuccess.tsx": [
+    "ID"
+  ],
+  "src/pages/Messages.tsx": [
+    "title=\"Read\"",
+    "title=\"Delivered\"",
+    "Recording:"
+  ],
+  "src/pages/PaymentFailed.tsx": [
+    "فشلت عملية الدفع",
+    "نصائح لحل المشكلة:",
+    "• تأكد من صحة بيانات البطاقة",
+    "• تحقق من توفر رصيد كافي",
+    "• جرب استخدام بطاقة أخرى",
+    "• تأكد من اتصال الإنترنت",
+    "إعادة المحاولة",
+    "العودة للعقد",
+    "الصفحة الرئيسية",
+    "إذا استمرت المشكلة، تواصل مع الدعم الفني"
+  ],
+  "src/pages/PaymentSuccess.tsx": [
+    "جاري التحقق من الدفع...",
+    "يرجى الانتظار بينما نتحقق من عملية الدفع",
+    "تم الدفع بنجاح! 🎉",
+    "تم تمويل الضمان بنجاح. الأموال محفوظة حتى اكتمال العمل.",
+    "جاري تحويلك تلقائياً...",
+    "الذهاب للعقد",
+    "فشل التحقق من الدفع",
+    "إعادة المحاولة",
+    "العودة للوحة التحكم"
+  ],
+  "src/pages/Privacy.tsx": [
+    "privacy@workedin.tn"
+  ],
+  "src/pages/SearchResults.tsx": [
+    "Tip",
+    "Popular",
+    "/hr"
+  ],
+  "src/pages/Terms.tsx": [
+    "legal@workedin.tn"
+  ],
+  "src/pages/Wallet.tsx": [
+    "F",
+    "placeholder=\"TN59 ...\""
+  ]
+}

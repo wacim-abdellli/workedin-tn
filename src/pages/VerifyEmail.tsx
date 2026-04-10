@@ -1,16 +1,16 @@
 import { useState, useEffect } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
-import { CheckCircle2, Mail, ShieldCheck, Sparkles } from 'lucide-react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Mail, AlertCircle, RefreshCw } from 'lucide-react';
 import { useTranslation } from '../i18n';
 import { supabase } from '../lib/supabase';
 import { sanitizeText } from '../lib/sanitization';
 import { useToast } from '../components/ui/Toast';
-import Button from '../components/ui/Button';
-import { AuthShell } from '../components/auth';
+import { Logo } from '../components/ui/Logo';
 
 function VerifyEmail() {
     const { t } = useTranslation();
     const { showToast } = useToast();
+    const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const rawEmail = searchParams.get('email') || '';
     const email = sanitizeText(rawEmail);
@@ -50,84 +50,149 @@ function VerifyEmail() {
     };
 
     return (
-        <AuthShell
-            badge={t.verifyEmail.title}
-            title={t.verifyEmail.title}
-            description={t.verifyEmail.subtitle.replace('{{email}}', email)}
-            highlights={[
-                {
-                    icon: Mail,
-                    title: t.verifyEmail.resend,
-                    description: t.verifyEmail.subtitle.replace('{{email}}', email),
-                },
-                {
-                    icon: ShieldCheck,
-                    title: t.verifyEmail.checkSpam,
-                    description: t.verifyEmail.noEmail,
-                    tone: 'cyan',
-                },
-                {
-                    icon: Sparkles,
-                    title: t.verifyEmail.resendSuccess,
-                    description: t.verifyEmail.resendCooldown.replace('{{seconds}}', '60'),
-                    tone: 'accent',
-                },
-            ]}
-            topAction={
-                <Link
-                    to="/signup"
-                    className="inline-flex items-center rounded-full border border-white/12 bg-card/6 px-4 py-2 text-sm font-medium text-white/80 backdrop-blur-sm transition-colors hover:border-white/20 hover:bg-card/10 hover:text-white"
-                >
-                    {t.verifyEmail.wrongEmail}
-                </Link>
-            }
-        >
-            <div className="text-center">
-                <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-500 to-primary-600 shadow-lg shadow-primary-500/30">
-                    <Mail className="h-10 w-10 text-white" />
-                </div>
+        <>
+            <style>{`
+                @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap');
+            `}</style>
+            <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                minHeight: '100vh',
+                background: '#0c0c0c',
+                fontFamily: "'Outfit', sans-serif",
+                padding: '20px',
+            }}>
+                <div style={{
+                    width: '100%',
+                    maxWidth: 480,
+                    background: '#111',
+                    border: '1px solid #222',
+                    borderRadius: 20,
+                    padding: '48px 40px',
+                    textAlign: 'center',
+                }}>
+                    <div style={{ marginBottom: 32, display: 'flex', justifyContent: 'center' }}>
+                        <Logo variant="full" size="md" mode="client" />
+                    </div>
 
-                <h1 className="mb-3 text-2xl font-bold text-[#171420] dark:text-white">
-                    {t.verifyEmail.title}
-                </h1>
+                    <div style={{
+                        width: 64,
+                        height: 64,
+                        margin: '0 auto 24px',
+                        background: 'rgba(139, 92, 246, 0.1)',
+                        borderRadius: 16,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                    }}>
+                        <Mail style={{ width: 32, height: 32, color: '#8b5cf6' }} />
+                    </div>
 
-                <p className="mb-6 text-[#625c78] dark:text-[#a7a2ba]">
-                    {t.verifyEmail.subtitle.replace('{{email}}', email)}
-                </p>
+                    <h1 style={{
+                        fontSize: 28,
+                        fontWeight: 800,
+                        color: '#fff',
+                        marginBottom: 12,
+                        letterSpacing: '-0.5px',
+                    }}>
+                        Check your email
+                    </h1>
 
-                <div className="space-y-3">
-                    <Button
-                        variant="primary"
-                        size="lg"
-                        className="w-full"
+                    <p style={{
+                        fontSize: 15,
+                        color: '#888',
+                        lineHeight: 1.6,
+                        marginBottom: 32,
+                    }}>
+                        We sent a verification link to <strong style={{ color: '#aaa' }}>{email}</strong>. Click it to activate your account.
+                    </p>
+
+                    <button
                         onClick={handleResend}
-                        isLoading={isResending}
-                        disabled={cooldown > 0}
+                        disabled={isResending || cooldown > 0}
+                        style={{
+                            width: '100%',
+                            padding: 14,
+                            background: (isResending || cooldown > 0) ? '#9a5608' : '#E8820C',
+                            border: 'none',
+                            borderRadius: 10,
+                            fontSize: 15,
+                            fontWeight: 800,
+                            color: '#fff',
+                            cursor: (isResending || cooldown > 0) ? 'not-allowed' : 'pointer',
+                            fontFamily: "'Outfit', sans-serif",
+                            letterSpacing: '-0.3px',
+                            marginBottom: 12,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: 8,
+                        }}
+                        onMouseEnter={e => { if (!isResending && cooldown === 0) (e.target as HTMLElement).style.background = '#d4750a'; }}
+                        onMouseLeave={e => { if (!isResending && cooldown === 0) (e.target as HTMLElement).style.background = '#E8820C'; }}
                     >
-                        {cooldown > 0 ? (
-                            t.verifyEmail.resendCooldown.replace('{{seconds}}', String(cooldown))
+                        {isResending ? (
+                            <>
+                                <RefreshCw style={{ width: 16, height: 16, animation: 'spin 1s linear infinite' }} />
+                                Sending...
+                            </>
+                        ) : cooldown > 0 ? (
+                            `Resend in ${cooldown}s`
                         ) : (
-                            t.verifyEmail.resend
+                            <>
+                                <RefreshCw style={{ width: 16, height: 16 }} />
+                                Resend verification email
+                            </>
                         )}
-                    </Button>
+                    </button>
 
-                    <Link to="/signup">
-                        <Button variant="outline" size="lg" className="w-full">
-                            {t.verifyEmail.wrongEmail}
-                        </Button>
-                    </Link>
-                </div>
+                    <button
+                        onClick={() => navigate('/signup')}
+                        style={{
+                            width: '100%',
+                            padding: 14,
+                            background: 'transparent',
+                            border: '1px solid #2a2a2a',
+                            borderRadius: 10,
+                            fontSize: 15,
+                            fontWeight: 700,
+                            color: '#aaa',
+                            cursor: 'pointer',
+                            fontFamily: "'Outfit', sans-serif",
+                            letterSpacing: '-0.3px',
+                        }}
+                        onMouseEnter={e => {
+                            (e.target as HTMLElement).style.background = '#1a1a1a';
+                            (e.target as HTMLElement).style.borderColor = '#333';
+                        }}
+                        onMouseLeave={e => {
+                            (e.target as HTMLElement).style.background = 'transparent';
+                            (e.target as HTMLElement).style.borderColor = '#2a2a2a';
+                        }}
+                    >
+                        Wrong email? Go back to signup
+                    </button>
 
-                <div className="mt-6 rounded-xl border border-primary-200/50 bg-primary-50/50 p-4 dark:border-primary-800/30 dark:bg-primary-900/20">
-                    <div className="flex items-start gap-3 text-start">
-                        <CheckCircle2 className="mt-0.5 h-5 w-5 flex-shrink-0 text-primary-600 dark:text-primary-400" />
-                        <p className="text-sm text-primary-900 dark:text-primary-100">
-                            {t.verifyEmail.checkSpam}
+                    <div style={{
+                        marginTop: 24,
+                        padding: '14px 16px',
+                        background: 'rgba(59, 130, 246, 0.1)',
+                        border: '1px solid rgba(59, 130, 246, 0.2)',
+                        borderRadius: 12,
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        gap: 12,
+                        textAlign: 'left',
+                    }}>
+                        <AlertCircle style={{ width: 18, height: 18, color: '#60a5fa', flexShrink: 0, marginTop: 2 }} />
+                        <p style={{ fontSize: 13, color: '#93c5fd', lineHeight: 1.5 }}>
+                            If you don't see the email, check your spam folder. Email address is required.
                         </p>
                     </div>
                 </div>
             </div>
-        </AuthShell>
+        </>
     );
 }
 

@@ -401,7 +401,7 @@ export default function SearchResults() {
                                                 <div className="w-8 h-8 rounded-lg bg-[color:var(--workspace-primary)]/20 flex items-center justify-center">
                                                     <Lightbulb className="w-4 h-4 text-[color:var(--workspace-primary)]" />
                                                 </div>
-                                                <span className="text-xs font-bold text-[color:var(--workspace-primary)] uppercase">Tip</span>
+                                                <span className="text-xs font-bold text-[color:var(--workspace-primary)] uppercase">{tx('ui.tip')}</span>
                                             </div>
                                             <p className="text-sm text-secondary leading-relaxed">{tx('search.empty.tipSpecific', undefined, 'Be specific with keywords to find the best match faster')}</p>
                                         </div>
@@ -411,7 +411,7 @@ export default function SearchResults() {
                                                 <div className="w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center">
                                                     <TrendingUp className="w-4 h-4 text-amber-500" />
                                                 </div>
-                                                <span className="text-xs font-bold text-amber-500 uppercase">Popular</span>
+                                                <span className="text-xs font-bold text-amber-500 uppercase">{tx('ui.popular')}</span>
                                             </div>
                                             <p className="text-sm text-secondary leading-relaxed">{tx('search.empty.tipPopular', undefined, 'React and UI/UX design are trending this week')}</p>
                                         </div>
@@ -562,6 +562,7 @@ export default function SearchResults() {
                         {!isLoading && query && (
                             <div className="space-y-4">
                                 {(activeTab === 'all' || activeTab === 'jobs') && jobs.map(job => {
+                                    const { tx } = useTranslation();
                                     const postedAt = job.posted_at ? formatDistanceToNow(new Date(job.posted_at), { addSuffix: true, locale: dateLocale }) : '';
                                     const budgetStr = job.job_type === 'fixed_price' 
                                         ? `${job.budget_min ?? '?'} - ${job.budget_max ?? '?'} ${tx('common.tnd', undefined, 'TND')}`
@@ -608,6 +609,7 @@ export default function SearchResults() {
                                 })}
 
                                 {(activeTab === 'all' || activeTab === 'freelancers') && freelancers.map(freelancer => {
+                                    const { tx } = useTranslation();
                                     const fp = freelancer.freelancer_profiles;
                                     const initials = freelancer.full_name?.charAt(0)?.toUpperCase() ?? '?';
                                     
@@ -634,8 +636,7 @@ export default function SearchResults() {
                                                             </div>
                                                             {fp?.hourly_rate && (
                                                                 <span className="text-[color:var(--workspace-primary)] font-black whitespace-nowrap bg-gradient-to-r from-[color:var(--workspace-primary)]/15 to-[color:var(--workspace-primary)]/10 border border-[color:var(--workspace-primary)]/30 px-3 py-1.5 rounded-xl text-sm md:text-base shrink-0 group-hover:border-[color:var(--workspace-primary)]/60 group-hover:shadow-md transition-all">
-                                                                    {fp.hourly_rate} {tx('common.tnd', undefined, 'TND')}/hr
-                                                                </span>
+                                                                    {fp.hourly_rate} {tx('common.tnd', undefined, 'TND')}{tx('ui.hr')}</span>
                                                             )}
                                                         </div>
                                                         

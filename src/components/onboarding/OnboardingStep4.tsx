@@ -73,7 +73,7 @@ export default function OnboardingStep4({
                 <div className="bg-surface/50 dark:bg-dark-800/30 rounded-2xl p-5 border border-border dark:border-dark-700">
                     <label className="label text-base font-semibold">
                         {t.profile.bio}
-                        <span className="text-xs font-normal text-muted ms-2">(500 حرف كحد أقصى)</span>
+                        <span className="text-xs font-normal text-muted ms-2">{tx('dynamic_key_1115664379')}</span>
                     </label>
                     <div className="relative">
                         <textarea
@@ -129,7 +129,7 @@ export default function OnboardingStep4({
                             >
                                 <div className="w-3 h-3 bg-red-500 rounded-sm animate-pulse" />
                                 <span className="font-medium">{t.profile.stopRecording || 'إيقاف'}</span>
-                                <span className="bg-card/20 px-2 py-0.5 rounded-md text-sm">{Math.round(recordingTime)}s</span>
+                                <span className="bg-card/20 px-2 py-0.5 rounded-md text-sm">{Math.round(recordingTime)}{tx('ui.s')}</span>
                             </button>
                         )}
 
@@ -145,7 +145,7 @@ export default function OnboardingStep4({
                                     <div className="h-2 bg-muted dark:bg-dark-600 rounded-full overflow-hidden">
                                         <div className={`h-full bg-gradient-to-r from-primary-400 to-primary-500 ${isPlaying ? 'animate-progress origin-left w-full duration-[2000ms]' : 'w-full'}`} />
                                     </div>
-                                    <p className="text-xs text-muted mt-1">تم تسجيل مقدمتك الصوتية</p>
+                                    <p className="text-xs text-muted mt-1">{tx('dynamic_key_2009227315')}</p>
                                 </div>
                                 <button
                                     onClick={deleteRecording}
@@ -162,7 +162,7 @@ export default function OnboardingStep4({
                 <div>
                     <div className="flex justify-between items-center mb-2">
                         <label className="label mb-0">{t.profile.workSamples}</label>
-                        <span className="text-xs text-muted">Max: 5 files</span>
+                        <span className="text-xs text-muted">{tx('ui.max_files')}</span>
                     </div>
 
                     <label className="block mb-6 group">
@@ -189,7 +189,7 @@ export default function OnboardingStep4({
                                 <div key={index} className="p-3 bg-card dark:bg-dark-800 rounded-xl border border-border dark:border-dark-700 flex gap-3 animate-fade-in group hover:shadow-md transition-shadow">
                                     <div className="w-16 h-16 rounded-lg bg-muted dark:bg-dark-700 flex-shrink-0 overflow-hidden">
                                         {sample.preview ? (
-                                            <img src={sample.preview} alt="Preview" className="w-full h-full object-cover" />
+                                            <img src={sample.preview} alt={tx('ui.preview')} className="w-full h-full object-cover" />
                                         ) : (
                                             <div className="w-full h-full flex items-center justify-center">
                                                 <FileText className="w-8 h-8 text-muted" />
@@ -202,12 +202,11 @@ export default function OnboardingStep4({
                                             value={sample.title}
                                             onChange={(e) => updateWorkSample(index, 'title', e.target.value)}
                                             className="bg-transparent font-medium text-dark-900 dark:text-white outline-none placeholder-dark-400 mb-1 w-full"
-                                            placeholder="Title"
+                                            placeholder={tx('ui.title')}
                                         />
                                         <div className="flex items-center justify-between">
                                             <span className="text-xs text-muted truncate">
-                                                {(sample.file.size / 1024 / 1024).toFixed(2)} MB
-                                            </span>
+                                                {(sample.file.size / 1024 / 1024).toFixed(2)} {tx('ui.mb')}</span>
                                             <button
                                                 onClick={() => removeWorkSample(index)}
                                                 className="text-red-500 hover:text-red-600 p-1 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 opacity-0 group-hover:opacity-100 transition-opacity"

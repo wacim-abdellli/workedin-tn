@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import Button from '../ui/Button';
 import type { ProposalAttachment } from '../../types/proposal';
+import { useTranslation } from "../../i18n";
 
 interface ProposalDetailFreelancer {
     full_name: string;
@@ -51,6 +52,7 @@ export default function ProposalDetailModal({
     onHire,
     onArchive
 }: ProposalDetailModalProps) {
+    const { tx } = useTranslation();
     const [activeTab, setActiveTab] = useState('proposal');
 
     // Close on ESC
@@ -121,28 +123,28 @@ export default function ProposalDetailModal({
 
                     <div className="p-6 border-b border-border space-y-4">
                         <div className="flex justify-between items-center">
-                            <span className="text-muted text-sm">التقييم</span>
+                            <span className="text-muted text-sm">{tx('dynamic_key_2137084368')}</span>
                             <div className="flex items-center gap-1 font-bold">
                                 <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
                                 {freelancer.rating} <span className="text-muted text-xs font-normal">({freelancer.reviews_count})</span>
                             </div>
                         </div>
                         <div className="flex justify-between items-center">
-                            <span className="text-muted text-sm">مشاريع مكتملة</span>
+                            <span className="text-muted text-sm">{tx('dynamic_key_611934998')}</span>
                             <span className="font-bold">{freelancer.jobs_completed}</span>
                         </div>
                         <div className="flex justify-between items-center">
-                            <span className="text-muted text-sm">نسبة النجاح</span>
+                            <span className="text-muted text-sm">{tx('dynamic_key_1659906949')}</span>
                             <span className="font-bold text-green-600">{freelancer.success_rate || 95}%</span>
                         </div>
                         <div className="flex justify-between items-center">
-                            <span className="text-muted text-sm">سرعة الرد</span>
-                            <span className="font-bold">ساعة تقريباً</span>
+                            <span className="text-muted text-sm">{tx('dynamic_key_29050573')}</span>
+                            <span className="font-bold">{tx('dynamic_key_1259492927')}</span>
                         </div>
                     </div>
 
                     <div className="p-6">
-                        <h4 className="font-bold text-sm mb-3">المهارات</h4>
+                        <h4 className="font-bold text-sm mb-3">{tx('dynamic_key_1693322708')}</h4>
                         <div className="flex flex-wrap gap-2">
                             {['React', 'Node.js', 'UI Design', 'TypeScript'].map(skill => (
                                 <span key={skill} className="px-2.5 py-1 bg-card border border-border rounded-lg text-xs font-medium text-muted-foreground">
@@ -193,13 +195,13 @@ export default function ProposalDetailModal({
                                 <div>
                                     <div className="flex items-center gap-2 text-sm text-muted mb-4">
                                         <Clock className="w-4 h-4" />
-                                        <span>تم التقديم منذ {new Date(proposal.created_at).toLocaleDateString('ar-TN')}</span>
+                                        <span>{tx('dynamic_key_1718339647')}{new Date(proposal.created_at).toLocaleDateString('ar-TN')}</span>
                                         <span className="text-muted">|</span>
                                         <span className={proposal.status === 'viewed' ? 'text-green-600' : 'text-muted'}>
                                             {proposal.status === 'viewed' ? 'تمت المشاهدة' : 'جديد'}
                                         </span>
                                     </div>
-                                    <h3 className="text-xl font-bold mb-4">خطاب التقديم</h3>
+                                    <h3 className="text-xl font-bold mb-4">{tx('dynamic_key_365411007')}</h3>
                                     <div className="prose prose-lg max-w-none text-muted-foreground leading-relaxed whitespace-pre-wrap">
                                         {proposal.cover_letter}
                                     </div>
@@ -207,7 +209,7 @@ export default function ProposalDetailModal({
 
                                 {proposal.attachments && proposal.attachments.length > 0 && (
                                     <div className="pt-6 border-t border-border">
-                                        <h3 className="font-bold mb-4">المرفقات</h3>
+                                        <h3 className="font-bold mb-4">{tx('dynamic_key_1712849267')}</h3>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             {proposal.attachments.map((file, idx: number) => (
                                                 <div key={idx} className="flex items-center gap-3 p-3 border border-border rounded-xl hover:bg-surface transition-colors cursor-pointer group">
@@ -231,22 +233,22 @@ export default function ProposalDetailModal({
                         {activeTab === 'profile' && (
                             <div className="animate-in fade-in duration-300 space-y-8">
                                 <section>
-                                    <h3 className="font-bold text-lg mb-3">نبذة عني</h3>
+                                    <h3 className="font-bold text-lg mb-3">{tx('dynamic_key_1039014200')}</h3>
                                     <p className="text-muted-foreground leading-relaxed">
                                         {freelancer.bio || 'لا توجد نبذة شخصية.'}
                                     </p>
                                 </section>
 
                                 <section>
-                                    <h3 className="font-bold text-lg mb-3">اللغات</h3>
+                                    <h3 className="font-bold text-lg mb-3">{tx('dynamic_key_623032746')}</h3>
                                     <div className="space-y-2">
                                         <div className="flex justify-between p-3 bg-surface rounded-lg">
-                                            <span>العربية</span>
-                                            <span className="text-muted">اللغة الأم</span>
+                                            <span>{tx('dynamic_key_2144569262')}</span>
+                                            <span className="text-muted">{tx('dynamic_key_1262868023')}</span>
                                         </div>
                                         <div className="flex justify-between p-3 bg-surface rounded-lg">
-                                            <span>الفرنسية</span>
-                                            <span className="text-muted">متقدم</span>
+                                            <span>{tx('dynamic_key_1827230247')}</span>
+                                            <span className="text-muted">{tx('dynamic_key_1530851603')}</span>
                                         </div>
                                     </div>
                                 </section>
@@ -258,11 +260,9 @@ export default function ProposalDetailModal({
                             <div className="animate-in fade-in duration-300">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="aspect-video bg-muted rounded-xl flex items-center justify-center text-muted">
-                                        مثال عمل 1 (صورة)
-                                    </div>
+                                        {tx('dynamic_key_2133212330')}</div>
                                     <div className="aspect-video bg-muted rounded-xl flex items-center justify-center text-muted">
-                                        مثال عمل 2 (صورة)
-                                    </div>
+                                        {tx('dynamic_key_418944631')}</div>
                                 </div>
                             </div>
                         )}
@@ -271,7 +271,7 @@ export default function ProposalDetailModal({
                         {activeTab === 'work-history' && (
                             <div className="animate-in fade-in duration-300 text-center py-10 text-muted">
                                 <Briefcase className="w-12 h-12 mx-auto mb-3 opacity-20" />
-                                <p>سجل العمل غير متوفر في هذه المعاينة</p>
+                                <p>{tx('dynamic_key_1842506838')}</p>
                             </div>
                         )}
 
@@ -279,7 +279,7 @@ export default function ProposalDetailModal({
                         {activeTab === 'reviews' && (
                             <div className="animate-in fade-in duration-300 text-center py-10 text-muted">
                                 <Star className="w-12 h-12 mx-auto mb-3 opacity-20" />
-                                <p>التقييمات غير متوفرة في هذه المعاينة</p>
+                                <p>{tx('dynamic_key_41921266')}</p>
                             </div>
                         )}
                     </div>
@@ -290,30 +290,29 @@ export default function ProposalDetailModal({
 
                     {/* Bid Card */}
                     <div className="bg-card rounded-xl shadow-sm border border-border p-6">
-                        <h4 className="font-bold text-foreground dark:text-white mb-4">تفاصيل العرض</h4>
+                        <h4 className="font-bold text-foreground dark:text-white mb-4">{tx('dynamic_key_617719072')}</h4>
                         <div className="mb-4 text-center">
-                            <p className="text-sm text-muted mb-1">قيمة العرض</p>
-                            <p className="text-3xl font-bold text-primary-600">{proposal.bid_amount} <span className="text-lg text-muted font-normal">د.ت</span></p>
+                            <p className="text-sm text-muted mb-1">{tx('dynamic_key_549959251')}</p>
+                            <p className="text-3xl font-bold text-primary-600">{proposal.bid_amount} <span className="text-lg text-muted font-normal">{tx('dynamic_key_1524267')}</span></p>
                         </div>
 
                         <div className="space-y-3 py-4 border-t border-border">
                             <div className="flex justify-between text-sm">
-                                <span className="text-muted-foreground">مدة التنفيذ</span>
-                                <span className="font-medium">{proposal.duration} يوم</span>
+                                <span className="text-muted-foreground">{tx('dynamic_key_451961555')}</span>
+                                <span className="font-medium">{proposal.duration} {tx('dynamic_key_1598663')}</span>
                             </div>
                             <div className="flex justify-between text-sm">
-                                <span className="text-muted-foreground">رسوم الخدمة</span>
-                                <span className="font-medium text-muted">{(proposal.bid_amount * 0.1).toFixed(0)} د.ت</span>
+                                <span className="text-muted-foreground">{tx('dynamic_key_1265703203')}</span>
+                                <span className="font-medium text-muted">{(proposal.bid_amount * 0.1).toFixed(0)} {tx('dynamic_key_1524267')}</span>
                             </div>
                             <div className="flex justify-between text-base font-bold pt-2 border-t border-dashed">
-                                <span>الإجمالي للدفع</span>
-                                <span>{(proposal.bid_amount * 1.1).toFixed(0)} د.ت</span>
+                                <span>{tx('dynamic_key_614661587')}</span>
+                                <span>{(proposal.bid_amount * 1.1).toFixed(0)} {tx('dynamic_key_1524267')}</span>
                             </div>
                         </div>
 
                         <div className="bg-blue-50 text-blue-800 text-xs p-3 rounded-lg mt-4 leading-relaxed">
-                            💡 الدفع معلق بشكل آمن في حساب الضمان حتى يتم تسليم العمل والموافقة عليه.
-                        </div>
+                            {tx('dynamic_key_1111663922')}</div>
                     </div>
 
                     {/* Actions */}
@@ -324,8 +323,7 @@ export default function ProposalDetailModal({
                             className="w-full justify-center text-lg"
                             onClick={onHire}
                         >
-                            توظيف الآن
-                        </Button>
+                            {tx('dynamic_key_2071077264')}</Button>
 
                         <div className="grid grid-cols-2 gap-2">
                             <Button
@@ -334,8 +332,7 @@ export default function ProposalDetailModal({
                                 onClick={onMessage}
                             >
                                 <MessageSquare className="w-4 h-4 ms-2" />
-                                مراسلة
-                            </Button>
+                                {tx('dynamic_key_217425117')}</Button>
                             <Button
                                 variant={proposal.status === 'shortlisted' ? 'secondary' : 'outline'}
                                 className="w-full justify-center"
@@ -351,8 +348,7 @@ export default function ProposalDetailModal({
                             className="w-full flex items-center justify-center gap-2 text-muted hover:text-red-500 text-sm py-2 transition-colors"
                         >
                             <Archive className="w-4 h-4" />
-                            أرشفة العرض
-                        </button>
+                            {tx('dynamic_key_6717295')}</button>
                     </div>
                 </div>
 

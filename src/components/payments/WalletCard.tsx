@@ -13,12 +13,14 @@ import {
     getStatusColor
 } from '../../lib/currencyUtils';
 import type { Wallet as WalletType, Transaction, WalletCardProps } from '../../types/payment';
+import { useTranslation } from "../../i18n";
 
 /**
  * WalletCard Component
  * Displays user wallet balance and recent transactions
  */
 const WalletCard = ({ className = '', showWithdrawal = true }: WalletCardProps) => {
+    const { tx } = useTranslation();
     const { user } = useAuth();
     const [wallet, setWallet] = useState<WalletType | null>(null);
     const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -98,8 +100,7 @@ const WalletCard = ({ className = '', showWithdrawal = true }: WalletCardProps) 
                         className="text-sm text-primary-600 hover:text-primary-700 flex items-center gap-1 mx-auto"
                     >
                         <RefreshCw className="w-4 h-4" />
-                        إعادة المحاولة
-                    </button>
+                        {tx('dynamic_key_131381918')}</button>
                 </div>
             </div>
         );
@@ -110,13 +111,12 @@ const WalletCard = ({ className = '', showWithdrawal = true }: WalletCardProps) 
             <div className={`bg-card rounded-2xl border border-border p-6 ${className}`}>
                 <div className="text-center py-4">
                     <Wallet className="w-12 h-12 text-muted mx-auto mb-3" />
-                    <p className="text-muted">لم يتم إنشاء محفظتك بعد</p>
+                    <p className="text-muted">{tx('dynamic_key_2123673725')}</p>
                     <button
                         onClick={fetchWalletData}
                         className="mt-2 text-sm text-primary-600 hover:text-primary-700"
                     >
-                        تحديث
-                    </button>
+                        {tx('dynamic_key_1505988461')}</button>
                 </div>
             </div>
         );
@@ -131,19 +131,19 @@ const WalletCard = ({ className = '', showWithdrawal = true }: WalletCardProps) 
                         <div className="w-10 h-10 rounded-xl bg-card flex items-center justify-center">
                             <Wallet className="w-5 h-5" />
                         </div>
-                        <h3 className="font-bold text-lg">محفظتي</h3>
+                        <h3 className="font-bold text-lg">{tx('dynamic_key_214509631')}</h3>
                     </div>
                     <button
                         onClick={fetchWalletData}
                         className="p-2 rounded-lg hover:bg-card transition-colors"
-                        title="تحديث"
+                        title={tx('dynamic_key_1505988461')}
                     >
                         <RefreshCw className="w-4 h-4" />
                     </button>
                 </div>
 
                 <div className="mb-1">
-                    <span className="text-sm text-primary-100">الرصيد المتاح</span>
+                    <span className="text-sm text-primary-100">{tx('dynamic_key_208308034')}</span>
                 </div>
                 <div className="text-3xl font-bold mb-4">
                     {formatCurrency(wallet.balance)}
@@ -154,14 +154,14 @@ const WalletCard = ({ className = '', showWithdrawal = true }: WalletCardProps) 
                     <div className="bg-card rounded-xl p-3">
                         <div className="flex items-center gap-2 text-primary-100 text-xs mb-1">
                             <Clock className="w-3 h-3" />
-                            <span>قيد الانتظار</span>
+                            <span>{tx('dynamic_key_243096717')}</span>
                         </div>
                         <div className="font-bold">{formatCurrency(wallet.pending_balance)}</div>
                     </div>
                     <div className="bg-card rounded-xl p-3">
                         <div className="flex items-center gap-2 text-primary-100 text-xs mb-1">
                             <TrendingUp className="w-3 h-3" />
-                            <span>إجمالي الأرباح</span>
+                            <span>{tx('dynamic_key_1109099118')}</span>
                         </div>
                         <div className="font-bold">{formatCurrency(wallet.total_earned)}</div>
                     </div>
@@ -176,7 +176,7 @@ const WalletCard = ({ className = '', showWithdrawal = true }: WalletCardProps) 
                         className="btn-primary btn-md w-full justify-center"
                     >
                         <ArrowUpRight className="w-4 h-4" />
-                        <span>طلب سحب</span>
+                        <span>{tx('dynamic_key_891367863')}</span>
                     </Link>
                 </div>
             )}
@@ -185,19 +185,17 @@ const WalletCard = ({ className = '', showWithdrawal = true }: WalletCardProps) 
             <div className="p-4">
                 <div className="flex items-center justify-between mb-3">
                     <h4 className="font-semibold text-foreground dark:text-white text-sm">
-                        آخر المعاملات
-                    </h4>
+                        {tx('dynamic_key_1607514557')}</h4>
                     <Link
                         to="/freelancer/earnings"
                         className="text-xs text-primary-600 hover:text-primary-700"
                     >
-                        عرض الكل
-                    </Link>
+                        {tx('dynamic_key_1954172192')}</Link>
                 </div>
 
                 {transactions.length === 0 ? (
                     <div className="text-center py-4">
-                        <p className="text-sm text-muted">لا توجد معاملات بعد</p>
+                        <p className="text-sm text-muted">{tx('dynamic_key_481289425')}</p>
                     </div>
                 ) : (
                     <div className="space-y-3">

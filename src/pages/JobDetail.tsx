@@ -856,6 +856,7 @@ function JobDetail() {
               </h2>
               <div className="flex flex-wrap gap-2">
                 {job.required_skills?.map((skill, index) => {
+                    const { tx } = useTranslation();
                   const skillLabel = getSkillLabel(skill);
                   const isMatch = freelancerProfile?.skills?.some((s) =>
                     "name_ar" in s
@@ -909,6 +910,7 @@ function JobDetail() {
                 </h2>
                 <div className="space-y-2">
                   {job.attachments.map((url, index) => {
+                      const { tx } = useTranslation();
                     const filename =
                       url.split("/").pop() ||
                       t.jobDetail.file.replace("{{index}}", String(index + 1));
@@ -1321,8 +1323,7 @@ function JobDetail() {
                     className="font-medium"
                     style={{ color: "var(--color-text-primary)" }}
                   >
-                    {clientStats.totalSpent.toLocaleString()} د.ت
-                  </span>
+                    {clientStats.totalSpent.toLocaleString()} {tx('dynamic_key_1524267')}</span>
                 </div>
                 {clientStats.rating > 0 && (
                   <div

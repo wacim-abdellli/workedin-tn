@@ -38,7 +38,7 @@ export default function ChatSection({
     onTyping,
     isLoadingHistory
 }: ChatSectionProps) {
-    const { t } = useTranslation();
+    const { t, tx } = useTranslation();
     const [newMessage, setNewMessage] = useState('');
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -104,6 +104,7 @@ export default function ChatSection({
                     </div>
                 ) : (
                     messages.map((message, index) => {
+                        const { tx } = useTranslation();
                         const isOwn = message.sender_id === currentUser?.id;
                         const showDateSeparator = index === 0 ||
                             new Date(message.created_at).toDateString() !== new Date(messages[index - 1].created_at).toDateString();
@@ -206,7 +207,7 @@ export default function ChatSection({
                 {/* Typing Indicator */}
                 {otherUserTyping && (
                     <div className="flex justify-start gap-3" role="status" aria-live="polite">
-                        <span className="sr-only">الطرف الآخر يكتب الآن</span>
+                        <span className="sr-only">{tx('dynamic_key_229505028')}</span>
                         <div className="w-8 h-8 rounded-full bg-secondary animate-pulse" />
                         <div className="bg-card border border-border rounded-2xl rounded-bl-sm px-4 py-3 shadow-sm flex items-center gap-1">
                             <div className="w-1.5 h-1.5 rounded-full bg-muted animate-bounce" style={{ animationDelay: '0ms' }} />
@@ -225,7 +226,7 @@ export default function ChatSection({
                 {isUploading && (
                     <div className="mb-3" role="status" aria-live="polite">
                         <div className="flex items-center justify-between text-xs text-primary-600 mb-1">
-                            <span>جاري رفع الملف...</span>
+                            <span>{tx('dynamic_key_1393796300')}</span>
                             <span>{Math.round(uploadProgress)}%</span>
                         </div>
                         <div className="h-1 bg-muted rounded-full overflow-hidden">

@@ -1,0 +1,418 @@
+
+📄 src/App.tsx
+  Line 36: label="Loading..."
+
+📄 src/components/auth/AuthShell.tsx
+  Line 83: professionals already on WorkedIn
+
+📄 src/components/common/FileUpload.tsx
+  Line 186: KB
+
+📄 src/components/contracts/ChatSection.tsx
+  Line 209: الطرف الآخر يكتب الآن
+  Line 228: جاري رفع الملف...
+
+📄 src/components/contracts/ContractDetailsSidebar.tsx
+  Line 94: د.ت
+  Line 192: د.ت
+
+📄 src/components/dashboard/ProfileRing.tsx
+  Line 41: complete
+
+📄 src/components/ErrorBoundary.tsx
+  Line 52: حدث خطأ غير متوقع
+  Line 56: عذراً، حدث خطأ أثناء تحميل الصفحة. يرجى المحاولة مرة أخرى.
+  Line 71: إعادة المحاولة
+  Line 78: الرئيسية
+
+📄 src/components/freelancer/PortfolioModal.tsx
+  Line 93: label="عنوان المشروع"
+  Line 94: placeholder="مثال: تصميم متجر إلكتروني"
+  Line 100: وصف المشروع
+  Line 105: placeholder="اشرح تفاصيل المشروع وما قمت بإنجازه..."
+  Line 114: label="رابط المشروع (اختياري)"
+  Line 115: placeholder="https://example.com"
+  Line 122: label="تاريخ الإنجاز"
+  Line 130: label="المهارات المستخدمة"
+  Line 131: placeholder="مثال: تصميم واجهات، تطوير واجهات، تحرير صور (افصل بينها بفاصلة)"
+  Line 137: label="رابط صورة العرض"
+  Line 138: placeholder="https://..."
+  Line 143: سنقوم بدعم رفع الملفات قريباً. يرجى استخدام رابط مباشر للصورة حالياً.
+  Line 152: إلغاء
+
+📄 src/components/freelancer/profile/AboutSection.tsx
+  Line 59: Edit
+  Line 67: Cancel
+  Line 73: Save
+
+📄 src/components/freelancer/profile/ProfileHeader.tsx
+  Line 180: Playing...
+
+📄 src/components/freelancer/profile/SkillsSection.tsx
+  Line 72: Edit
+  Line 80: Cancel
+  Line 86: Save
+
+📄 src/components/jobs/JobCard.tsx
+  Line 239: title="Verified"
+
+📄 src/components/layout/Footer.tsx
+  Line 127: contact@workedin.tn
+  Line 146: +216 XX XXX XXX
+
+📄 src/components/layout/Header/index.tsx
+  Line 207: Ctrl+K
+
+📄 src/components/layout/Header/SearchModal.tsx
+  Line 251: ESC
+  Line 279: Enter
+
+📄 src/components/layout/Header/UserMenu.tsx
+  Line 444: ADMIN
+
+📄 src/components/onboarding/OnboardingShell.tsx
+  Line 68: Progress
+
+📄 src/components/onboarding/OnboardingStep1.tsx
+  Line 59: alt="Avatar"
+
+📄 src/components/onboarding/OnboardingStep2.tsx
+  Line 116: placeholder="e.g. 50"
+
+📄 src/components/onboarding/OnboardingStep4.tsx
+  Line 76: (500 حرف كحد أقصى)
+  Line 132: s
+  Line 148: تم تسجيل مقدمتك الصوتية
+  Line 165: Max: 5 files
+  Line 192: alt="Preview"
+  Line 205: placeholder="Title"
+  Line 209: MB
+
+📄 src/components/payment/PaymentMethodSelector.tsx
+  Line 88: ✓ Recommended
+  Line 156: Coming Soon
+
+📄 src/components/payments/FundEscrow.tsx
+  Line 161: Ã˜Â§Ã™â€žÃ˜Â¯Ã™ÂÃ˜Â¹ Ã˜Â¹Ã˜Â¨Ã˜Â± Flouci - Ã˜Â¨Ã˜Â·Ã˜Â§Ã™â€šÃ˜Â§Ã˜Âª Ã˜Â¨Ã™â€ Ã™Æ’Ã™Å Ã˜Â© Ã™Ë†Ã™â€¦Ã˜Â­Ã˜Â§Ã™ÂÃ˜Â¸ Ã˜Â¥Ã™â€žÃ™Æ’Ã˜ÂªÃ˜Â±Ã™Ë†Ã™â€ Ã™Å Ã˜Â©
+
+📄 src/components/payments/WalletCard.tsx
+  Line 101: إعادة المحاولة
+  Line 113: لم يتم إنشاء محفظتك بعد
+  Line 118: تحديث
+  Line 134: محفظتي
+  Line 139: title="تحديث"
+  Line 146: الرصيد المتاح
+  Line 157: قيد الانتظار
+  Line 164: إجمالي الأرباح
+  Line 179: طلب سحب
+  Line 188: آخر المعاملات
+  Line 194: عرض الكل
+  Line 200: لا توجد معاملات بعد
+
+📄 src/components/payments/WithdrawalForm.tsx
+  Line 111: تم إرسال طلب السحب
+  Line 114: سيتم مراجعة طلبك وتحويل المبلغ خلال 2-5 أيام عمل
+  Line 128: طلب سحب
+  Line 143: الرصيد المتاح
+  Line 152: المبلغ المطلوب
+  Line 167: د.ت
+  Line 178: طريقة السحب
+  Line 193: F
+  Line 205: اسم البنك
+  Line 211: placeholder="مثال: البنك الوطني الفلاحي"
+  Line 217: اسم صاحب الحساب
+  Line 223: placeholder="الاسم كما يظهر في الحساب البنكي"
+  Line 229: رقم IBAN
+  Line 235: placeholder="TN59XXXXX..."
+  Line 247: رقم الهاتف
+  Line 255: placeholder="+216 XX XXX XXX"
+  Line 268: سيتم مراجعة طلب السحب من قبل الإدارة وتحويل المبلغ خلال 2-5 أيام عمل.
+  Line 282: جاري الإرسال...
+  Line 285: إرسال طلب السحب
+
+📄 src/components/proposals/JobSummaryCard.tsx
+  Line 28: تفاصيل الوظيفة
+  Line 36: الميزانية
+  Line 38: د.ت
+  Line 49: المدة المتوقعة
+  Line 59: تاريخ النشر
+  Line 73: مشاركة
+  Line 81: عرض الوظيفة
+  Line 89: توصيات الذكاء الاصطناعي
+  Line 91: قمنا بتحليل متطلباتك ووجدنا 3 مستقلين يطابقون مشروعك بنسبة 95%.
+  Line 94: عرض التوصيات
+
+📄 src/components/proposals/ProposalCard.tsx
+  Line 54: موثق
+  Line 60: متميز
+  Line 77: وظيفة مكتملة
+  Line 81: نجاح
+  Line 94: قراءة المزيد...
+  Line 118: منذ
+  Line 127: د.ت
+  Line 131: عرض مدروس
+  Line 138: مدة التنفيذ
+  Line 140: يوم
+  Line 145: إجمالي التكلفة
+  Line 147: د.ت
+  Line 158: توظيف
+
+📄 src/components/proposals/ProposalDetailModal.tsx
+  Line 124: التقييم
+  Line 131: مشاريع مكتملة
+  Line 135: نسبة النجاح
+  Line 139: سرعة الرد
+  Line 140: ساعة تقريباً
+  Line 145: المهارات
+  Line 196: تم التقديم منذ
+  Line 202: خطاب التقديم
+  Line 210: المرفقات
+  Line 234: نبذة عني
+  Line 241: اللغات
+  Line 244: العربية
+  Line 245: اللغة الأم
+  Line 248: الفرنسية
+  Line 249: متقدم
+  Line 261: مثال عمل 1 (صورة)
+  Line 264: مثال عمل 2 (صورة)
+  Line 274: سجل العمل غير متوفر في هذه المعاينة
+  Line 282: التقييمات غير متوفرة في هذه المعاينة
+  Line 293: تفاصيل العرض
+  Line 295: قيمة العرض
+  Line 296: د.ت
+  Line 301: مدة التنفيذ
+  Line 302: يوم
+  Line 305: رسوم الخدمة
+  Line 306: د.ت
+  Line 309: الإجمالي للدفع
+  Line 310: د.ت
+  Line 315: 💡 الدفع معلق بشكل آمن في حساب الضمان حتى يتم تسليم العمل والموافقة عليه.
+  Line 327: توظيف الآن
+  Line 337: مراسلة
+  Line 354: أرشفة العرض
+
+📄 src/components/proposals/ProposalFiltersSidebar.tsx
+  Line 17: تصفية العروض
+  Line 20: عرض
+  Line 29: placeholder="بحث في العروض..."
+  Line 39: الترتيب حسب
+  Line 42: الموصى به (الأفضل تطابقاً)
+  Line 43: الأقل سعراً
+  Line 44: الأعلى سعراً
+  Line 45: الأحدث
+  Line 46: تقييم المستقل
+  Line 54: مستوى المستقل
+  Line 58: مبتدئ
+  Line 62: متوسط الخبرة
+  Line 66: خبير
+  Line 75: خصائص أخرى
+  Line 79: حساب موثق فقط
+  Line 83: تقييم 4 نجوم وأكثر
+  Line 87: لديه معرض أعمال
+
+📄 src/components/proposals/ProposalModal.tsx
+  Line 117: قيمة العرض (د.ت)
+  Line 126: د.ت
+  Line 134: رسوم المنصة (
+  Line 135: د.ت
+  Line 138: ستحصل على
+  Line 139: د.ت
+  Line 147: مدة التسليم
+  Line 169: رسالة العرض
+  Line 175: placeholder="اشرح لماذا أنت الشخص المناسب لهذا المشروع..."
+  Line 181: يجب كتابة 100 حرف على الأقل
+  Line 190: مرفقات (اختياري)
+  Line 221: رفع ملف
+  Line 234: يمكنك رفع ملفات بصيغة PDF أو صور حتى 10MB
+  Line 249: إلغاء
+  Line 257: إرسال العرض
+
+📄 src/components/reviews/ReviewDisplay.tsx
+  Line 100: تقييم
+  Line 149: التقييمات (
+  Line 155: الأحدث
+  Line 156: الأعلى تقييماً
+  Line 157: الأقل تقييماً
+  Line 158: الأكثر فائدة
+  Line 206: عرض التفاصيل
+  Line 238: رد المالك
+  Line 249: مفيد (
+  Line 253: إبلاغ
+  Line 262: لا توجد تقييمات بعد
+
+📄 src/components/reviews/ReviewModal.tsx
+  Line 134: تقييم
+  Line 135: مشروع:
+  Line 145: التقييم العام
+  Line 174: تقييمات تفصيلية
+  Line 202: نعم
+  Line 212: لا
+  Line 219: مراجعة مكتوبة (اختياري)
+  Line 220: شارك تجربتك مع الآخرين
+  Line 224: placeholder="ما الذي أعجبك؟ ما الذي يمكن تحسينه؟ هل توصي به للآخرين؟"
+  Line 233: إعدادات الخصوصية
+  Line 270: ملاحظة
+  Line 271: التقييمات دائمة ولا يمكن تعديلها. يمكن للطرف الآخر الرد على تقييمك.
+  Line 280: تخطي الآن
+  Line 288: إرسال التقييم
+
+📄 src/components/routing/ProtectedRoute.tsx
+  Line 54: label="Loading..."
+
+📄 src/components/routing/WorkspaceRoute.tsx
+  Line 25: label="Loading..."
+
+📄 src/components/search/GlobalSearch.tsx
+  Line 153: ESC
+
+📄 src/components/ui/FileUpload.tsx
+  Line 101: MB
+
+📄 src/components/ui/LoadingStates.example.tsx
+  Line 19: Spinner
+  Line 22: Sizes
+  Line 36: Skeleton
+  Line 39: Text Skeleton
+  Line 44: Circular Skeleton
+  Line 49: Rectangular Skeleton
+  Line 54: Skeleton Group
+  Line 59: Card Skeleton
+  Line 80: Progress Bar
+  Line 83: Basic Progress
+  Line 88: With Label
+  Line 93: Custom Label
+  Line 94: label="Uploading files..."
+  Line 98: Sizes
+  Line 107: Variants
+  Line 109: label="Default"
+  Line 110: label="Success"
+  Line 111: label="Warning"
+  Line 112: label="Error"
+  Line 117: Indeterminate Progress
+  Line 125: Empty State
+  Line 128: Basic Empty State
+  Line 131: title="No items found"
+  Line 132: description="There are no items to display at the moment."
+  Line 137: With Action
+  Line 140: title="No projects yet"
+  Line 141: description="Get started by creating your first project."
+  Line 150: With Secondary Action
+  Line 153: title="No results found"
+  Line 154: description="Try adjusting your search or filters to find what you're looking for."
+  Line 167: Error State
+  Line 170: title="Something went wrong"
+  Line 171: description="We couldn't load your data. Please try again."
+
+📄 src/components/ui/Logo.tsx
+  Line 81: WORKED
+  Line 87: IN
+  Line 113: WORKED
+  Line 119: IN
+
+📄 src/components/ui/Reviews.tsx
+  Line 105: رد الموظف:
+  Line 120: مفيد (
+  Line 129: رد
+  Line 139: title="الرد على التقييم"
+  Line 143: اكتب ردك على تقييم
+  Line 148: placeholder="اكتب ردك هنا..."
+  Line 154: إلغاء
+  Line 162: إرسال الرد
+  Line 241: تقييمك لـ
+  Line 242: المهمة:
+  Line 247: التقييم
+  Line 262: تعليقك (اختياري)
+  Line 266: placeholder="شارك تجربتك مع هذا الشخص..."
+  Line 275: إلغاء
+  Line 283: إرسال التقييم
+  Line 315: تقييم
+
+📄 src/components/ui/Spinner.tsx
+  Line 30: Loading...
+
+📄 src/components/verify/DocumentUpload.tsx
+  Line 109: KB)
+
+📄 src/pages/admin/DisputesTab.tsx
+  Line 90: د.ت
+
+📄 src/pages/admin/PaymentsTab.tsx
+  Line 56: د.ت
+  Line 58: ID:
+
+📄 src/pages/admin/VerificationsTab.tsx
+  Line 322: alt="front"
+  Line 332: alt="back"
+  Line 342: alt="selfie"
+
+📄 src/pages/AdminDashboard.tsx
+  Line 76: WorkedIn â€¢
+
+📄 src/pages/ClientOnboarding.tsx
+  Line 255: alt="Avatar"
+
+📄 src/pages/FreelancerProfile.tsx
+  Line 353: &times;
+
+📄 src/pages/JobDetail.tsx
+  Line 1324: د.ت
+
+📄 src/pages/JobMatches.tsx
+  Line 250: رجوع
+  Line 258: د.ت
+  Line 280: أفضل تطابق
+  Line 355: جاري التشغيل...
+  Line 378: alt="نموذج عمل"
+  Line 400: إخفاء
+  Line 417: عميل متكرر
+  Line 420: ربح
+  Line 420: د.ت
+  Line 467: سيتم إنشاء عقد بينك وبين هذا الموظف. هل أنت متأكد؟
+
+📄 src/pages/JobPostSuccess.tsx
+  Line 75: ID
+
+📄 src/pages/Messages.tsx
+  Line 1455: title="Read"
+  Line 1457: title="Delivered"
+  Line 1518: Recording:
+
+📄 src/pages/PaymentFailed.tsx
+  Line 56: فشلت عملية الدفع
+  Line 67: نصائح لحل المشكلة:
+  Line 70: • تأكد من صحة بيانات البطاقة
+  Line 71: • تحقق من توفر رصيد كافي
+  Line 72: • جرب استخدام بطاقة أخرى
+  Line 73: • تأكد من اتصال الإنترنت
+  Line 84: إعادة المحاولة
+  Line 92: العودة للعقد
+  Line 102: الصفحة الرئيسية
+  Line 108: إذا استمرت المشكلة، تواصل مع الدعم الفني
+
+📄 src/pages/PaymentSuccess.tsx
+  Line 206: جاري التحقق من الدفع...
+  Line 209: يرجى الانتظار بينما نتحقق من عملية الدفع
+  Line 221: تم الدفع بنجاح! 🎉
+  Line 224: تم تمويل الضمان بنجاح. الأموال محفوظة حتى اكتمال العمل.
+  Line 234: جاري تحويلك تلقائياً...
+  Line 242: الذهاب للعقد
+  Line 258: فشل التحقق من الدفع
+  Line 269: إعادة المحاولة
+  Line 275: العودة للوحة التحكم
+
+📄 src/pages/Privacy.tsx
+  Line 82: privacy@workedin.tn
+
+📄 src/pages/SearchResults.tsx
+  Line 404: Tip
+  Line 414: Popular
+  Line 637: /hr
+
+📄 src/pages/Terms.tsx
+  Line 67: legal@workedin.tn
+
+📄 src/pages/Wallet.tsx
+  Line 763: F
+  Line 798: placeholder="TN59 ..."
+
+Total hardcoded strings found: 304

@@ -319,7 +319,7 @@ export default function VerificationsTab() {
                                                  <p className="text-sm font-medium text-muted mb-2">{tx('dashboard.admin.verification.frontSide', undefined, 'Front side')}</p>
                                                  {v.front_image_url ? (
                                                      <a href={v.front_image_url} target="_blank" rel="noopener noreferrer">
-                                                         <img src={v.front_image_url} alt="front" className="w-full rounded-lg object-cover aspect-video border border-[var(--color-border-default)] dark:border-[var(--color-border-default)] dark:border-white/10 dark:border-[var(--color-border-strong)] hover:opacity-90 transition" />
+                                                         <img src={v.front_image_url} alt={tx('ui.front')} className="w-full rounded-lg object-cover aspect-video border border-[var(--color-border-default)] dark:border-[var(--color-border-default)] dark:border-white/10 dark:border-[var(--color-border-strong)] hover:opacity-90 transition" />
                                                      </a>
                                                  ) : (
                                                      <div className="w-full rounded-lg aspect-video bg-[var(--color-bg-subtle)] dark:bg-white/10 flex items-center justify-center text-muted text-sm">{tx('dashboard.admin.verification.noImage', undefined, 'No image')}</div>
@@ -329,7 +329,7 @@ export default function VerificationsTab() {
                                                  <p className="text-sm font-medium text-muted mb-2">{tx('dashboard.admin.verification.backSide', undefined, 'Back side')}</p>
                                                  {v.back_image_url ? (
                                                      <a href={v.back_image_url} target="_blank" rel="noopener noreferrer">
-                                                         <img src={v.back_image_url} alt="back" className="w-full rounded-lg object-cover aspect-video border border-[var(--color-border-default)] dark:border-[var(--color-border-default)] dark:border-white/10 dark:border-[var(--color-border-strong)] hover:opacity-90 transition" />
+                                                         <img src={v.back_image_url} alt={tx('ui.back')} className="w-full rounded-lg object-cover aspect-video border border-[var(--color-border-default)] dark:border-[var(--color-border-default)] dark:border-white/10 dark:border-[var(--color-border-strong)] hover:opacity-90 transition" />
                                                      </a>
                                                  ) : (
                                                      <div className="w-full rounded-lg aspect-video bg-[var(--color-bg-subtle)] dark:bg-white/10 flex items-center justify-center text-muted text-sm">{tx('dashboard.admin.verification.noImage', undefined, 'No image')}</div>
@@ -339,7 +339,7 @@ export default function VerificationsTab() {
                                                  <p className="text-sm font-medium text-muted mb-2">{tx('dashboard.admin.verification.selfie', undefined, 'Selfie')}</p>
                                                  {v.selfie_url ? (
                                                      <a href={v.selfie_url} target="_blank" rel="noopener noreferrer">
-                                                         <img src={v.selfie_url} alt="selfie" className="w-full rounded-lg object-cover aspect-video border border-[var(--color-border-default)] dark:border-[var(--color-border-default)] dark:border-white/10 dark:border-[var(--color-border-strong)] hover:opacity-90 transition" />
+                                                         <img src={v.selfie_url} alt={tx('ui.selfie')} className="w-full rounded-lg object-cover aspect-video border border-[var(--color-border-default)] dark:border-[var(--color-border-default)] dark:border-white/10 dark:border-[var(--color-border-strong)] hover:opacity-90 transition" />
                                                      </a>
                                                  ) : (
                                                      <div className="w-full rounded-lg aspect-video bg-[var(--color-bg-subtle)] dark:bg-white/10 flex items-center justify-center text-muted text-sm">{tx('dashboard.admin.verification.noImage', undefined, 'No image')}</div>

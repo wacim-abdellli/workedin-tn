@@ -177,7 +177,7 @@ export default function ProfileHeader({ freelancer, onContact, onMessage, onPlay
                                                 color: isPlayingVoice ? 'var(--workspace-primary)' : 'var(--color-text-secondary)',
                                             }}>
                                             {isPlayingVoice
-                                                ? <><Pause className="h-3.5 w-3.5" /> Playing...</>
+                                                ? <><Pause className="h-3.5 w-3.5" /> {tx('ui.playing')}</>
                                                 : <><Volume2 className="h-3.5 w-3.5" /> {tx('pages.freelancerProfile.hearVoice', undefined, 'Voice intro')}</>}
                                         </button>
                                     )}

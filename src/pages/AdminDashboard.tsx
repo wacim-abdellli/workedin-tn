@@ -47,6 +47,7 @@ export default function AdminDashboard() {
     ];
 
     const renderTab = () => {
+        const { tx } = useTranslation();
         switch (activeTab) {
             case 'overview': return <OverviewTab />;
             case 'users': return <UsersTab />;
@@ -73,7 +74,7 @@ export default function AdminDashboard() {
                         </div>
                         <div>
                             <h1 className="text-xl font-extrabold text-foreground">{tx('dashboard.admin.adminDashboard', undefined, 'Admin Dashboard')}</h1>
-                            <p className="text-sm text-muted">WorkedIn â€¢ {tx('dashboard.admin.operationsCenter', undefined, 'Operations Center')}</p>
+                            <p className="text-sm text-muted">{tx('ui.workedin')}{tx('dashboard.admin.operationsCenter', undefined, 'Operations Center')}</p>
                         </div>
                     </div>
                     <div className="flex w-full flex-wrap items-center justify-between gap-3 sm:w-auto sm:justify-end">

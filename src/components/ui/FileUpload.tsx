@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Upload, X, File, AlertCircle } from 'lucide-react';
+import { useTranslation } from "../../i18n";
 
 interface FileUploadProps {
     onDrop: (files: File[]) => void;
@@ -30,6 +31,7 @@ export default function FileUpload({
     label,
     hint
 }: FileUploadProps) {
+    const { tx } = useTranslation();
 
     const handleDrop = useCallback((acceptedFiles: File[]) => {
         if (files.length + acceptedFiles.length > maxFiles) {
@@ -98,8 +100,7 @@ export default function FileUpload({
                                         {file.name}
                                     </p>
                                     <p className="text-xs text-muted">
-                                        {(file.size / 1024 / 1024).toFixed(2)} MB
-                                    </p>
+                                        {(file.size / 1024 / 1024).toFixed(2)} {tx('ui.mb')}</p>
                                 </div>
                             </div>
                             <button

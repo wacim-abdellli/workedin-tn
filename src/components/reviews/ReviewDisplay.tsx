@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Star, ThumbsUp, ChevronDown, ChevronUp, Flag, MessageSquare } from 'lucide-react';
+import { useTranslation } from "../../i18n";
 
 interface Review {
     id: string;
@@ -97,12 +98,13 @@ export default function ReviewDisplay({
                                 />
                             ))}
                         </div>
-                        <p className="text-muted">{totalReviews} تقييم</p>
+                        <p className="text-muted">{totalReviews} {tx('dynamic_key_1506640045')}</p>
                     </div>
 
                     {/* Rating Distribution */}
                     <div className="space-y-2">
                         {[5, 4, 3, 2, 1].map(stars => {
+                            const { tx } = useTranslation();
                             const count = ratingDistribution[stars] || 0;
                             const percentage = totalReviews > 0 ? (count / totalReviews) * 100 : 0;
                             return (
@@ -124,6 +126,7 @@ export default function ReviewDisplay({
                     {/* Detailed Averages */}
                     <div className="space-y-3">
                         {detailedCategories.map(cat => {
+                            const { tx } = useTranslation();
                             const value = detailedAverages[cat.key as keyof typeof detailedAverages] || 0;
                             return (
                                 <div key={cat.key} className="flex items-center justify-between">
@@ -146,16 +149,16 @@ export default function ReviewDisplay({
 
             {/* Sort & Filter */}
             <div className="flex items-center justify-between">
-                <h3 className="font-bold text-foreground">التقييمات ({reviews.length})</h3>
+                <h3 className="font-bold text-foreground">{tx('dynamic_key_1789330939')}{reviews.length})</h3>
                 <select
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
                     className="px-4 py-2 border border-border rounded-xl text-sm bg-card"
                 >
-                    <option value="recent">الأحدث</option>
-                    <option value="highest">الأعلى تقييماً</option>
-                    <option value="lowest">الأقل تقييماً</option>
-                    <option value="helpful">الأكثر فائدة</option>
+                    <option value="recent">{tx('dynamic_key_624028093')}</option>
+                    <option value="highest">{tx('dynamic_key_1503344713')}</option>
+                    <option value="lowest">{tx('dynamic_key_496366041')}</option>
+                    <option value="helpful">{tx('dynamic_key_1761004867')}</option>
                 </select>
             </div>
 
@@ -203,12 +206,12 @@ export default function ReviewDisplay({
                             className="flex items-center gap-2 text-sm text-primary-600 hover:text-primary-700 mb-4"
                         >
                             {expandedReview === review.id ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                            عرض التفاصيل
-                        </button>
+                            {tx('dynamic_key_238952578')}</button>
 
                         {expandedReview === review.id && (
                             <div className="grid grid-cols-2 gap-4 p-4 bg-surface rounded-xl mb-4">
                                 {detailedCategories.map(cat => {
+                                    const { tx } = useTranslation();
                                     const value = review.detailed_ratings[cat.key as keyof typeof review.detailed_ratings] || 0;
                                     return (
                                         <div key={cat.key} className="flex items-center justify-between">
@@ -235,7 +238,7 @@ export default function ReviewDisplay({
                             <div className="bg-primary-50 border-r-4 border-primary-500 p-4 rounded-lg mb-4">
                                 <div className="flex items-center gap-2 mb-2">
                                     <MessageSquare className="w-4 h-4 text-primary-600" />
-                                    <span className="text-sm font-medium text-primary-700">رد المالك</span>
+                                    <span className="text-sm font-medium text-primary-700">{tx('dynamic_key_860054720')}</span>
                                 </div>
                                 <p className="text-sm text-muted-foreground">{review.response.text}</p>
                                 <p className="text-xs text-muted mt-2">{review.response.created_at}</p>
@@ -246,12 +249,11 @@ export default function ReviewDisplay({
                         <div className="flex items-center justify-between pt-4 border-t border-border">
                             <button className="flex items-center gap-2 text-sm text-muted hover:text-primary-600 transition-colors">
                                 <ThumbsUp className="w-4 h-4" />
-                                مفيد ({review.helpful_count})
+                                {tx('dynamic_key_233190025')}{review.helpful_count})
                             </button>
                             <button className="flex items-center gap-2 text-sm text-muted hover:text-red-600 transition-colors">
                                 <Flag className="w-4 h-4" />
-                                إبلاغ
-                            </button>
+                                {tx('dynamic_key_1501241012')}</button>
                         </div>
                     </div>
                 ))}
@@ -259,7 +261,7 @@ export default function ReviewDisplay({
                 {reviews.length === 0 && (
                     <div className="card text-center py-12">
                         <Star className="w-12 h-12 text-muted mx-auto mb-4" />
-                        <p className="text-muted">لا توجد تقييمات بعد</p>
+                        <p className="text-muted">{tx('dynamic_key_2134028980')}</p>
                     </div>
                 )}
             </div>

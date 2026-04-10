@@ -183,8 +183,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
                                         {file.name}
                                     </p>
                                     <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                                        {(file.size / 1024).toFixed(2)} KB
-                                    </p>
+                                        {(file.size / 1024).toFixed(2)} {tx('ui.kb')}</p>
                                 </div>
                             </div>
                             <button
