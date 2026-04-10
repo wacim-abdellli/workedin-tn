@@ -33,6 +33,7 @@ export default function OnboardingShell({
 }: OnboardingShellProps) {
     const { tx } = useTranslation();
     const completion = Math.round((currentStep / totalSteps) * 100);
+    const stepGridClass = steps.length >= 3 ? 'grid gap-3 md:grid-cols-3' : 'grid gap-3 md:grid-cols-2';
     
     // Role-specific colors
     const colors = role === 'freelancer' 
@@ -112,7 +113,7 @@ export default function OnboardingShell({
                 {/* Steps Overview */}
                 {steps.length > 1 && (
                 <section className="bg-[#111] border border-gray-800 rounded-2xl p-6 shadow-xl">
-                    <div className="grid gap-3 md:grid-cols-2">
+                    <div className={stepGridClass}>
                         {steps.map((step, index) => {
                             const isCompleted = step.id < currentStep;
                             const isCurrent = step.id === currentStep;
@@ -121,7 +122,7 @@ export default function OnboardingShell({
                                 <div
                                     key={step.id}
                                     style={{ animationDelay: `${index * 50}ms` }}
-                                    className={`rounded-xl border p-5 transition-all duration-300 animate-in fade-in slide-in-from-bottom-2 ${
+                                    className={`rounded-xl border p-5 transition-all duration-300 animate-in fade-in slide-in-from-bottom-2 min-h-[120px] ${
                                         isCurrent
                                             ? colors.currentStep
                                             : isCompleted
@@ -130,14 +131,14 @@ export default function OnboardingShell({
                                     }`}
                                 >
                                     <div className="flex items-start gap-4">
-                                        <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-sm font-semibold transition-all duration-300 ${
+                                        <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-base font-bold transition-all duration-300 ${
                                             isCurrent
                                                 ? colors.stepIcon
                                                 : isCompleted
                                                 ? colors.stepIconCompleted
                                                 : 'bg-[#1a1a1a] text-gray-500 border border-gray-800'
                                         }`}>
-                                            {isCompleted ? <Sparkles className="w-6 h-6" /> : step.id}
+                                            {step.id}
                                         </div>
                                         <div className="flex-1">
                                             <p className="text-base font-semibold text-white">

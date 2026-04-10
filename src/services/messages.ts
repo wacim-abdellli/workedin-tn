@@ -16,26 +16,64 @@ const MESSAGE_WRITE_TIMEOUT_MS = 12000;
 
 const conversationIdCache = new Map<string, string>();
 
-function getConversationCacheKey(user1: string, user2: string, contractId?: string | null) {
-    return [user1, user2].sort().join(':') + `:${contractId ?? 'none'}`;
+export type ConversationScope = 'client' | 'freelancer' | 'contract' | 'shared';
+
+interface ConversationQueryOptions {
+    scopes?: ConversationScope[];
 }
 
-async function getOrCreateConversationId(user1: string, user2: string, contractId?: string | null) {
-    const cacheKey = getConversationCacheKey(user1, user2, contractId);
+function getConversationCacheKey(
+    user1: string,
+    user2: string,
+    contractId?: string | null,
+    scope?: ConversationScope | null
+) {
+    return [user1, user2].sort().join(':') + `:${contractId ?? 'none'}:${scope ?? 'auto'}`;
+}
+
+async function getOrCreateConversationId(
+    user1: string,
+    user2: string,
+    contractId?: string | null,
+    scope?: ConversationScope | null
+) {
+    const cacheKey = getConversationCacheKey(user1, user2, contractId, scope);
     const cachedConversationId = conversationIdCache.get(cacheKey);
 
     if (cachedConversationId) {
         return { data: cachedConversationId, error: null };
     }
 
-    const { data, error } = await supabaseWithRetry(
+    let { data, error } = await supabaseWithRetry(
         () => supabase.rpc('get_or_create_conversation', {
             user1,
             user2,
             p_contract_id: contractId ?? null,
+            p_scope: scope ?? null,
         }),
         { throwOnError: false, timeoutMs: MESSAGE_WRITE_TIMEOUT_MS }
     );
+
+    if (error) {
+        const errorMessage = typeof error === 'object' && error && 'message' in error && typeof error.message === 'string'
+            ? error.message.toLowerCase()
+            : '';
+        const shouldRetryLegacy = errorMessage.includes('p_scope')
+            || errorMessage.includes('get_or_create_conversation') && errorMessage.includes('does not exist');
+
+        if (shouldRetryLegacy) {
+            const legacyResult = await supabaseWithRetry(
+                () => supabase.rpc('get_or_create_conversation', {
+                    user1,
+                    user2,
+                    p_contract_id: contractId ?? null,
+                }),
+                { throwOnError: false, timeoutMs: MESSAGE_WRITE_TIMEOUT_MS }
+            );
+            data = legacyResult.data;
+            error = legacyResult.error;
+        }
+    }
 
     if (!error && typeof data === 'string') {
         conversationIdCache.set(cacheKey, data);
@@ -60,6 +98,15 @@ function normalizeMessageError(error: unknown) {
     return error instanceof Error ? error : new Error(message);
 }
 
+function isMissingSchemaColumn(error: unknown, tableName: string, columnName: string): boolean {
+    if (!error || typeof error !== 'object') return false;
+    const message = 'message' in error && typeof error.message === 'string' ? error.message.toLowerCase() : '';
+    return message.includes('could not find')
+        && message.includes('schema cache')
+        && message.includes(tableName.toLowerCase())
+        && message.includes(columnName.toLowerCase());
+}
+
 // --- TYPES ---
 
 export interface Conversation {
@@ -73,6 +120,7 @@ export interface Conversation {
     unread_count_2: number;
     created_at: string;
     updated_at: string;
+    conversation_scope?: ConversationScope;
     otherUser: {
         id: string;
         full_name: string;
@@ -122,6 +170,7 @@ interface ConversationRow {
     unread_count_2: number | null;
     created_at: string;
     updated_at: string;
+    conversation_scope?: ConversationScope;
     messages?: { count: number }[];
     participant1?: ConversationParticipantRow | ConversationParticipantRow[] | null;
     participant2?: ConversationParticipantRow | ConversationParticipantRow[] | null;
@@ -129,28 +178,57 @@ interface ConversationRow {
 
 // --- READ ---
 
-export async function getConversations(userId: string, page: number = 0, limit: number = 20) {
+export async function getConversations(
+    userId: string,
+    page: number = 0,
+    limit: number = 20,
+    options?: ConversationQueryOptions
+) {
     try {
         const start = page * limit;
         const end = start + limit - 1;
+        const scopes = options?.scopes;
+
+        const buildQuery = (
+            participantColumn: 'participant_1' | 'participant_2',
+            includeScopeColumn: boolean
+        ) => {
+            let query = (supabase
+                .from('conversations') as any)
+                .select(
+                    includeScopeColumn
+                        ? 'id, participant_1, participant_2, contract_id, last_message_text, last_message_at, unread_count_1, unread_count_2, created_at, updated_at, conversation_scope'
+                        : 'id, participant_1, participant_2, contract_id, last_message_text, last_message_at, unread_count_1, unread_count_2, created_at, updated_at',
+                    { count: 'estimated' }
+                )
+                .eq(participantColumn, userId)
+                .order('last_message_at', { ascending: false });
+
+            if (includeScopeColumn && scopes && scopes.length > 0) {
+                query = query.in('conversation_scope', scopes);
+            }
+
+            return query;
+        };
+
+        const runQueries = async (includeScopeColumn: boolean) => Promise.all([
+            supabaseWithRetry(() => buildQuery('participant_1', includeScopeColumn),
+                { timeoutMs: CONVERSATIONS_TIMEOUT_MS }),
+            supabaseWithRetry(() => buildQuery('participant_2', includeScopeColumn),
+                { timeoutMs: CONVERSATIONS_TIMEOUT_MS }),
+        ]);
 
         // Step 1: Get conversations efficiently using UNION pattern (replaces .or() which defeats indexes)
         // Two separate indexed queries are faster than .or() with full table scan
         // Only select needed columns to reduce payload size and query time
-        const [result1, result2] = await Promise.all([
-            supabaseWithRetry(() => supabase
-                .from('conversations')
-                .select('id, participant_1, participant_2, contract_id, last_message_text, last_message_at, unread_count_1, unread_count_2, created_at, updated_at', { count: 'estimated' })
-                .eq('participant_1', userId)
-                .order('last_message_at', { ascending: false }), 
-                { timeoutMs: CONVERSATIONS_TIMEOUT_MS }),
-            supabaseWithRetry(() => supabase
-                .from('conversations')
-                .select('id, participant_1, participant_2, contract_id, last_message_text, last_message_at, unread_count_1, unread_count_2, created_at, updated_at', { count: 'estimated' })
-                .eq('participant_2', userId)
-                .order('last_message_at', { ascending: false }), 
-                { timeoutMs: CONVERSATIONS_TIMEOUT_MS })
-        ]);
+        let [result1, result2] = await runQueries(true);
+
+        if (
+            isMissingSchemaColumn(result1.error, 'conversations', 'conversation_scope')
+            || isMissingSchemaColumn(result2.error, 'conversations', 'conversation_scope')
+        ) {
+            [result1, result2] = await runQueries(false);
+        }
 
         if (result1.error) throw result1.error;
         if (result2.error) throw result2.error;
@@ -179,7 +257,7 @@ export async function getConversations(userId: string, page: number = 0, limit: 
 
         if (error) throw error;
 
-        const rows = (data ?? []) as ConversationRow[];
+        const rows = (data ?? []) as unknown as ConversationRow[];
         const otherUserIds = Array.from(new Set(rows.map((conv) => (
             conv.participant_1 === userId ? conv.participant_2 : conv.participant_1
         )).filter(Boolean)));
@@ -219,6 +297,7 @@ export async function getConversations(userId: string, page: number = 0, limit: 
                 unread_count_2: conv.unread_count_2 ?? 0,
                 created_at: conv.created_at,
                 updated_at: conv.updated_at,
+                conversation_scope: conv.conversation_scope ?? 'shared',
                 otherUser: {
                     id: otherUser?.id || '',
                     full_name: otherUser?.full_name || 'Unknown User',
@@ -236,8 +315,59 @@ export async function getConversations(userId: string, page: number = 0, limit: 
     }
 }
 
-export async function getTotalUnreadCount(userId: string) {
+export async function getTotalUnreadCount(userId: string, scopes?: ConversationScope[]) {
     try {
+        if (scopes && scopes.length > 0) {
+            let [participant1Result, participant2Result] = await Promise.all([
+                supabaseWithRetry(() => supabase
+                    .from('conversations')
+                    .select('unread_count_1')
+                    .eq('participant_1', userId)
+                    .in('conversation_scope', scopes),
+                    { timeoutMs: 12000 }
+                ),
+                supabaseWithRetry(() => supabase
+                    .from('conversations')
+                    .select('unread_count_2')
+                    .eq('participant_2', userId)
+                    .in('conversation_scope', scopes),
+                    { timeoutMs: 12000 }
+                ),
+            ]);
+
+            if (
+                isMissingSchemaColumn(participant1Result.error, 'conversations', 'conversation_scope')
+                || isMissingSchemaColumn(participant2Result.error, 'conversations', 'conversation_scope')
+            ) {
+                participant1Result = await supabaseWithRetry(() => supabase
+                    .from('conversations')
+                    .select('unread_count_1')
+                    .eq('participant_1', userId),
+                    { timeoutMs: 12000 }
+                );
+                participant2Result = await supabaseWithRetry(() => supabase
+                    .from('conversations')
+                    .select('unread_count_2')
+                    .eq('participant_2', userId),
+                    { timeoutMs: 12000 }
+                );
+            }
+
+            if (participant1Result.error) throw participant1Result.error;
+            if (participant2Result.error) throw participant2Result.error;
+
+            const participant1Unread = (participant1Result.data ?? []).reduce(
+                (sum, row) => sum + (typeof row.unread_count_1 === 'number' ? row.unread_count_1 : 0),
+                0
+            );
+            const participant2Unread = (participant2Result.data ?? []).reduce(
+                (sum, row) => sum + (typeof row.unread_count_2 === 'number' ? row.unread_count_2 : 0),
+                0
+            );
+
+            return { count: participant1Unread + participant2Unread, error: null };
+        }
+
         const { data, error } = await supabaseWithRetry(() => supabase
             .rpc('get_total_unread_count', { custom_user_id: userId })
         , { timeoutMs: 12000 });
@@ -393,6 +523,7 @@ export function subscribeToConversation(
 
 export function subscribeToConversations(
     userId: string,
+    scopes: ConversationScope[] | undefined,
     callback: (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => void
 ): RealtimeChannel {
     const channel = supabase.channel(`conversations:${userId}`);
@@ -410,8 +541,11 @@ export function subscribeToConversations(
             const isParticipant =
                 (newRecord && (newRecord.participant_1 === userId || newRecord.participant_2 === userId)) ||
                 (oldRecord && (oldRecord.participant_1 === userId || oldRecord.participant_2 === userId));
+
+            const scopeMatch = !scopes || scopes.length === 0 || [newRecord?.conversation_scope, oldRecord?.conversation_scope]
+                .some((scopeValue) => typeof scopeValue === 'string' && scopes.includes(scopeValue as ConversationScope));
                 
-            if (isParticipant) callback(payload);
+            if (isParticipant && scopeMatch) callback(payload);
         }
     );
 
@@ -456,7 +590,8 @@ export async function sendContractMessage(data: {
         const { data: conversationId, error: convError } = await getOrCreateConversationId(
             data.sender_id,
             data.receiver_id,
-            data.contract_id
+            data.contract_id,
+            'contract'
         );
 
         if (convError) throw convError;

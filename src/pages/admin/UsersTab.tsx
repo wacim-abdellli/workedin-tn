@@ -21,6 +21,25 @@ interface ConfirmActionState {
     onConfirm: () => void;
 }
 
+function getErrorText(error: unknown): string {
+    if (!error) return '';
+    if (error instanceof Error) return error.message || '';
+    if (typeof error === 'string') return error;
+    if (typeof error === 'object') {
+        const parts: string[] = [];
+        const maybeCode = 'code' in error && typeof error.code === 'string' ? error.code : '';
+        const maybeMessage = 'message' in error && typeof error.message === 'string' ? error.message : '';
+        const maybeDetails = 'details' in error && typeof error.details === 'string' ? error.details : '';
+        const maybeHint = 'hint' in error && typeof error.hint === 'string' ? error.hint : '';
+        if (maybeCode) parts.push(maybeCode);
+        if (maybeMessage) parts.push(maybeMessage);
+        if (maybeDetails) parts.push(maybeDetails);
+        if (maybeHint) parts.push(maybeHint);
+        return parts.join(' | ');
+    }
+    return String(error);
+}
+
 export async function fetchAdminUsers(): Promise<AdminUser[]> {
     try {
         let { data, error } = await supabase
@@ -150,12 +169,40 @@ export default function UsersTab() {
 
     const setUserStatusMutation = useMutation({
         mutationFn: async ({ user, nextStatus, reason }: { user: AdminUser; nextStatus: AdminUser['status']; reason?: string }) => {
-            const { error } = await supabase.rpc('set_user_account_status', {
+            const rpcResult = await supabase.rpc('set_user_account_status', {
                 p_user_id: user.id,
                 p_next_status: nextStatus,
                 p_reason: reason ?? null,
             });
-            if (error) throw error;
+
+            if (rpcResult.error) {
+                const rpcCode = rpcResult.error.code?.toLowerCase() || '';
+                const rpcMessage = rpcResult.error.message?.toLowerCase() || '';
+                const isMissingRpc = rpcMessage.includes('set_user_account_status')
+                    && (rpcMessage.includes('does not exist') || rpcMessage.includes('could not find'));
+                const isRpcPermissionIssue = rpcMessage.includes('permission denied')
+                    && rpcMessage.includes('set_user_account_status');
+                const isCreateNotificationOverloadConflict = (
+                    rpcCode === '42725'
+                    || rpcMessage.includes('is not unique')
+                ) && (rpcMessage.includes('create_notification') || rpcCode === '42725');
+
+                if (isMissingRpc || isRpcPermissionIssue || isCreateNotificationOverloadConflict) {
+                    const fallback = await supabase
+                        .from('profiles')
+                        .update({
+                            account_status: nextStatus,
+                            updated_at: new Date().toISOString(),
+                        })
+                        .eq('id', user.id);
+
+                    if (fallback.error) {
+                        throw fallback.error;
+                    }
+                } else {
+                    throw rpcResult.error;
+                }
+            }
 
             return { userId: user.id, nextStatus };
         },
@@ -173,6 +220,33 @@ export default function UsersTab() {
         },
         onError: (error) => {
             console.error('Set user status error:', error);
+            const rawMessage = getErrorText(error);
+            const normalized = rawMessage.toLowerCase();
+
+            if (normalized.includes('only admins can update account status')) {
+                showToast(tx('dashboard.admin.users.adminPrivilegesRequired', undefined, 'Action blocked: your account is not marked as admin in profiles.'), 'error');
+                return;
+            }
+
+            if (normalized.includes('account_status')) {
+                showToast(tx('dashboard.admin.users.accountStatusMigrationMissing', undefined, 'Action blocked: account_status is missing in database. Apply latest Supabase migrations.'), 'error');
+                return;
+            }
+
+            if (
+                normalized.includes('row-level security')
+                || normalized.includes('permission denied')
+                || normalized.includes('42501')
+            ) {
+                showToast(tx('dashboard.admin.users.adminPermissionsOutOfSync', undefined, 'Action blocked by database permissions. Confirm this user is admin in production DB and latest RLS migrations are applied.'), 'error');
+                return;
+            }
+
+            if (normalized.includes('create_notification') && normalized.includes('not unique')) {
+                showToast(tx('dashboard.admin.users.notificationFunctionConflict', undefined, 'Database function conflict detected for notifications. Apply latest Supabase SQL fixes.'), 'error');
+                return;
+            }
+
             showToast(tx('dashboard.admin.users.unableToUpdateStatus', undefined, 'Unable to update user status'), 'error');
         },
         onSettled: () => {

@@ -38,6 +38,13 @@ function Modal({
     const titleId = useId();
     const [visible, setVisible] = useState(false);
     const [mounted, setMounted] = useState(false);
+    const onCloseRef = useRef(onClose);
+    const closeOnEscapeRef = useRef(closeOnEscape);
+
+    useEffect(() => {
+        onCloseRef.current = onClose;
+        closeOnEscapeRef.current = closeOnEscape;
+    }, [onClose, closeOnEscape]);
 
     // Handle mount/unmount with animation
     useEffect(() => {
@@ -66,8 +73,8 @@ function Modal({
         };
 
         const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.key === 'Escape' && closeOnEscape) {
-                onClose();
+            if (e.key === 'Escape' && closeOnEscapeRef.current) {
+                onCloseRef.current();
                 return;
             }
             if (e.key !== 'Tab') return;
@@ -102,7 +109,7 @@ function Modal({
             document.body.style.overflow = 'unset';
             lastFocusedElementRef.current?.focus();
         };
-    }, [isOpen, onClose, closeOnEscape]);
+    }, [isOpen]);
 
     const handleOverlayClick = (e: React.MouseEvent) => {
         if (closeOnBackdropClick && e.target === overlayRef.current) {

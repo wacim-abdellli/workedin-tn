@@ -41,6 +41,8 @@ export interface Profile {
     full_name: string;
     phone?: string;
     avatar_url?: string;
+    avatar_url_client?: string;
+    avatar_url_freelancer?: string;
     bio?: string;
     location?: string;
     company_name?: string;

@@ -53,8 +53,17 @@ ON public.conversations (participant_1, conversation_scope, last_message_at DESC
 CREATE INDEX IF NOT EXISTS idx_conversations_participant2_scope_activity
 ON public.conversations (participant_2, conversation_scope, last_message_at DESC NULLS LAST);
 
-REVOKE ALL ON FUNCTION public.get_or_create_conversation(UUID, UUID, UUID) FROM PUBLIC;
-REVOKE ALL ON FUNCTION public.get_or_create_conversation(UUID, UUID, UUID, TEXT) FROM PUBLIC;
+DO $$
+BEGIN
+  IF to_regprocedure('public.get_or_create_conversation(uuid,uuid,uuid)') IS NOT NULL THEN
+    REVOKE ALL ON FUNCTION public.get_or_create_conversation(UUID, UUID, UUID) FROM PUBLIC;
+  END IF;
+
+  IF to_regprocedure('public.get_or_create_conversation(uuid,uuid,uuid,text)') IS NOT NULL THEN
+    REVOKE ALL ON FUNCTION public.get_or_create_conversation(UUID, UUID, UUID, TEXT) FROM PUBLIC;
+  END IF;
+END;
+$$;
 
 DROP FUNCTION IF EXISTS public.get_or_create_conversation(UUID, UUID, UUID);
 DROP FUNCTION IF EXISTS public.get_or_create_conversation(UUID, UUID, UUID, TEXT);
@@ -138,20 +147,13 @@ BEGIN
 END;
 $$;
 
-CREATE OR REPLACE FUNCTION public.get_or_create_conversation(
-    user1 UUID,
-    user2 UUID,
-    p_contract_id UUID DEFAULT NULL
-)
-RETURNS UUID
-LANGUAGE sql
-SECURITY DEFINER
-SET search_path = public
-AS $$
-  SELECT public.get_or_create_conversation(user1, user2, p_contract_id, NULL);
+DO $$
+BEGIN
+  IF to_regprocedure('public.get_or_create_conversation(uuid,uuid,uuid)') IS NOT NULL THEN
+    REVOKE ALL ON FUNCTION public.get_or_create_conversation(UUID, UUID, UUID) FROM PUBLIC;
+    GRANT EXECUTE ON FUNCTION public.get_or_create_conversation(UUID, UUID, UUID) TO authenticated;
+  END IF;
+END;
 $$;
 
-REVOKE ALL ON FUNCTION public.get_or_create_conversation(UUID, UUID, UUID) FROM PUBLIC;
-REVOKE ALL ON FUNCTION public.get_or_create_conversation(UUID, UUID, UUID, TEXT) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION public.get_or_create_conversation(UUID, UUID, UUID) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.get_or_create_conversation(UUID, UUID, UUID, TEXT) TO authenticated;

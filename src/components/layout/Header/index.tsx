@@ -20,7 +20,7 @@ import { useTranslation } from "@/i18n";
 import { useWorkspaceStore } from "@/lib/workspaceState";
 import { NotificationBell, Logo } from "@/components/ui";
 import ComingSoonBanner from "@/components/common/ComingSoonBanner";
-import { getTotalUnreadCount, subscribeToConversations } from "@/services/messages";
+import { getTotalUnreadCount, subscribeToConversations, type ConversationScope } from "@/services/messages";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 
 import SearchModal from "./SearchModal";
@@ -111,18 +111,22 @@ export default function Header() {
 
   useEffect(() => {
     if (!user) return;
+    const unreadScopes: ConversationScope[] = activeWorkspace === 'freelancer'
+      ? ['freelancer', 'contract', 'shared']
+      : ['client', 'contract', 'shared'];
+
     const loadUnreadCount = async () => {
-      const { count } = await getTotalUnreadCount(user.id);
+      const { count } = await getTotalUnreadCount(user.id, unreadScopes);
       setUnreadCount(count);
     };
     loadUnreadCount();
-    conversationsChannelRef.current = subscribeToConversations(user.id, () => {
+    conversationsChannelRef.current = subscribeToConversations(user.id, unreadScopes, () => {
       loadUnreadCount();
     });
     return () => {
       if (conversationsChannelRef.current) conversationsChannelRef.current.unsubscribe();
     };
-  }, [user?.id]);
+  }, [user?.id, activeWorkspace]);
 
   /** Toggle color theme and keep it persisted across visits. */
   const toggleTheme = () => {

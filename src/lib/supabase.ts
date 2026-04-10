@@ -1,5 +1,5 @@
  import { createClient } from '@supabase/supabase-js';
-import { validateUploadSelection } from './uploadPolicy';
+import { getUploadPolicy, sanitizeStoragePath, validateUploadSelection } from './uploadPolicy';
 
 // Environment variables for Supabase
 // You'll need to create a .env file with these values from your Supabase project
@@ -194,6 +194,8 @@ export const uploadFileWithMetadata = async (
         throw new Error('You must be logged in to upload files.');
     }
 
+    const userId = typeof session.user?.id === 'string' ? session.user.id : null;
+
     // Calculate timeout based on file size
     // Base time: 5 seconds + 5ms per KB for mobile 3G compatibility (100MB = 500s)
     // Minimum 15s for small files, maximum 600s (10 minutes) for large files
@@ -205,33 +207,44 @@ export const uploadFileWithMetadata = async (
     formData.append('path', path);
     formData.append('file', file, file.name);
 
-    const response = await withTimeout(
-        fetch(`${supabaseUrl}/functions/v1/secure-upload`, {
-            method: 'POST',
-            headers: {
-                Authorization: `Bearer ${session.access_token}`,
-                apikey: supabaseAnonKey,
-                'x-client-info': 'WorkedIn-tn',
-            },
-            body: formData,
-        }),
-        calculatedTimeout,
-        `Upload ${bucket}/${path}`
-    );
+    try {
+        const response = await withTimeout(
+            fetch(`${supabaseUrl}/functions/v1/secure-upload`, {
+                method: 'POST',
+                headers: {
+                    Authorization: `Bearer ${session.access_token}`,
+                    apikey: supabaseAnonKey,
+                    'x-client-info': 'WorkedIn-tn',
+                },
+                body: formData,
+            }),
+            calculatedTimeout,
+            `Upload ${bucket}/${path}`
+        );
 
-    const payload = await response.json().catch(() => ({})) as Partial<UploadedStorageFile> & { error?: string };
+        const payload = await response.json().catch(() => ({})) as Partial<UploadedStorageFile> & { error?: string };
 
-    if (!response.ok) {
-        throw new Error(payload.error || 'Upload failed');
+        if (!response.ok) {
+            const uploadError = new Error(payload.error || 'Upload failed');
+            (uploadError as Error & { status?: number; statusCode?: number }).status = response.status;
+            (uploadError as Error & { status?: number; statusCode?: number }).statusCode = response.status;
+            throw uploadError;
+        }
+
+        return {
+            path: payload.path || path,
+            publicUrl: payload.publicUrl || null,
+            bucket: payload.bucket || bucket,
+            mimeType: payload.mimeType || file.type,
+            size: payload.size || file.size,
+        };
+    } catch (error) {
+        if (!shouldFallbackToDirectAvatarUpload(bucket, error)) {
+            throw error;
+        }
+
+        return uploadFileDirectly(bucket, path, file, userId);
     }
-
-    return {
-        path: payload.path || path,
-        publicUrl: payload.publicUrl || null,
-        bucket: payload.bucket || bucket,
-        mimeType: payload.mimeType || file.type,
-        size: payload.size || file.size,
-    };
 };
 
 export const uploadFile = async (
@@ -242,5 +255,78 @@ export const uploadFile = async (
     const uploaded = await uploadFileWithMetadata(bucket, path, file);
     return uploaded.publicUrl || uploaded.path;
 };
+
+function shouldFallbackToDirectAvatarUpload(bucket: string, error: unknown): boolean {
+    if (bucket !== 'avatars') return false;
+
+    if (!error || typeof error !== 'object') {
+        const message = String(error || '').toLowerCase();
+        return message.includes('failed to fetch') || message.includes('timed out');
+    }
+
+    const errorRecord = error as Record<string, unknown>;
+    const message = typeof errorRecord.message === 'string' ? errorRecord.message.toLowerCase() : '';
+    const statusCode =
+        typeof errorRecord.statusCode === 'number'
+            ? errorRecord.statusCode
+            : typeof errorRecord.status === 'number'
+                ? errorRecord.status
+                : undefined;
+
+    return (
+        statusCode === 404
+        || statusCode === 500
+        || statusCode === 502
+        || statusCode === 503
+        || statusCode === 504
+        || message.includes('failed to fetch')
+        || message.includes('timed out')
+        || message.includes('networkerror')
+        || message.includes('cors')
+        || message.includes('secure-upload')
+    );
+}
+
+async function uploadFileDirectly(
+    bucket: string,
+    path: string,
+    file: File,
+    userId: string | null
+): Promise<UploadedStorageFile> {
+    const policy = getUploadPolicy(bucket);
+    const desiredPath = userId
+        ? sanitizeStoragePath({
+            bucket,
+            userId,
+            desiredPath: path,
+            fileName: file.name,
+        })
+        : { ok: true as const, path };
+
+    const resolvedPath = desiredPath.ok && desiredPath.path ? desiredPath.path : path;
+
+    const { data, error } = await supabase.storage
+        .from(bucket)
+        .upload(resolvedPath, file, {
+            upsert: policy?.upsert ?? true,
+            contentType: file.type || 'application/octet-stream',
+        });
+
+    if (error) {
+        throw error;
+    }
+
+    const publicUrl = policy?.publicUrl
+        ? supabase.storage.from(bucket).getPublicUrl(data.path).data.publicUrl
+        : null;
+
+    return {
+        path: data.path,
+        publicUrl,
+        bucket,
+        mimeType: file.type || 'application/octet-stream',
+        size: file.size,
+    };
+}
 
 

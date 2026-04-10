@@ -22,10 +22,28 @@ alter table public.freelancer_profiles
   add column if not exists revision_policy text,
   add column if not exists project_preferences jsonb default '{}'::jsonb;
 
-alter table public.freelancer_profiles
-  add constraint freelancer_profiles_years_experience_non_negative
-  check (years_experience is null or years_experience >= 0);
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_constraint
+    where conname = 'freelancer_profiles_years_experience_non_negative'
+      and conrelid = 'public.freelancer_profiles'::regclass
+  ) then
+    alter table public.freelancer_profiles
+      add constraint freelancer_profiles_years_experience_non_negative
+      check (years_experience is null or years_experience >= 0);
+  end if;
 
-alter table public.freelancer_profiles
-  add constraint freelancer_profiles_weekly_hours_range
-  check (weekly_availability_hours is null or (weekly_availability_hours >= 1 and weekly_availability_hours <= 168));
+  if not exists (
+    select 1
+    from pg_constraint
+    where conname = 'freelancer_profiles_weekly_hours_range'
+      and conrelid = 'public.freelancer_profiles'::regclass
+  ) then
+    alter table public.freelancer_profiles
+      add constraint freelancer_profiles_weekly_hours_range
+      check (weekly_availability_hours is null or (weekly_availability_hours >= 1 and weekly_availability_hours <= 168));
+  end if;
+end;
+$$;

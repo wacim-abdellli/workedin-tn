@@ -13,8 +13,14 @@ interface OnboardingStep2Props {
     onBack: () => void;
     isLoading: boolean;
     selectedSkills: Skill[];
+    selectedSkillCount: number;
     toggleSkill: (skill: Skill) => void;
     getSkillName: (skill: Skill) => string;
+    maxSkills: number;
+    customSkillEnabled: boolean;
+    customSkillName: string;
+    onToggleCustomSkill: () => void;
+    onCustomSkillNameChange: (value: string) => void;
 }
 
 export default function OnboardingStep2({
@@ -23,8 +29,14 @@ export default function OnboardingStep2({
     onBack,
     isLoading,
     selectedSkills,
+    selectedSkillCount,
     toggleSkill,
     getSkillName,
+    maxSkills,
+    customSkillEnabled,
+    customSkillName,
+    onToggleCustomSkill,
+    onCustomSkillNameChange,
 }: OnboardingStep2Props) {
     const { t, tx, dir } = useTranslation();
     const { register, formState: { errors }, handleSubmit, watch } = form;
@@ -38,27 +50,20 @@ export default function OnboardingStep2({
         { value: 'offline', label: t.publicProfile.offline },
     ];
 
-    const OTHER_SKILL: Skill = {
-        id: 'other',
-        name_en: 'Other',
-        name_fr: 'Autre',
-        name_ar: 'أخرى',
-    };
-
-    const allSkills = [...PREDEFINED_SKILLS, OTHER_SKILL];
+    const allSkills = PREDEFINED_SKILLS;
 
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="space-y-3">
                 <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500/10 to-violet-500/10 border border-purple-500/30 rounded-full text-xs font-semibold uppercase tracking-wider text-purple-400">
                     <Zap className="w-3.5 h-3.5" />
-                    {t.profile.skills} & {t.job.budget}
+                    {tx('onboarding.freelancer.skillsRateAndAvailability', undefined, 'Skills, rate, and availability')}
                 </div>
                 <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
-                    {t.onboarding.freelancer.stepSkillsExperience || 'Skills and experience'}
+                    {tx('onboarding.freelancer.step2TitleUpdated', undefined, 'Choose skills and set your hourly rate')}
                 </h2>
                 <p className="text-base text-gray-600 dark:text-gray-400 leading-relaxed">
-                    {tx('onboarding.freelancer.step2Description', undefined, 'Choose your strongest skills and define a believable starting rate and availability.')}
+                    {tx('onboarding.freelancer.step2Description', undefined, 'Use Upwork-style profile signals: clear services, realistic hourly rate, and current availability.')}
                 </p>
             </div>
 
@@ -73,17 +78,16 @@ export default function OnboardingStep2({
                             {t.profile.skills}
                             <span className="text-xs font-normal text-gray-500 dark:text-gray-400">({t.profile.optional})</span>
                         </label>
-                        <span className={`text-sm font-bold px-3 py-1.5 rounded-full transition-all duration-300 ${selectedSkills.length === 5
+                        <span className={`text-sm font-bold px-3 py-1.5 rounded-full transition-all duration-300 ${selectedSkillCount === maxSkills
                             ? 'bg-gradient-to-r from-purple-500 to-violet-500 text-white shadow-lg shadow-purple-500/20 scale-105'
                             : 'bg-[#1a1a1a] text-gray-400 border border-gray-800'
                             }`}>
-                            {selectedSkills.length}/5
+                            {selectedSkillCount}/{maxSkills}
                         </span>
                     </div>
 
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                         {allSkills.map((skill, index) => {
-                            const { tx } = useTranslation();
                             const isSelected = selectedSkills.find((s) => s.id === skill.id);
                             return (
                                 <button
@@ -117,6 +121,45 @@ export default function OnboardingStep2({
                             );
                         })}
                     </div>
+
+                    <div className="mt-4 rounded-xl border border-gray-800 bg-[#101216] p-4">
+                        <div className="flex flex-wrap items-center justify-between gap-3">
+                            <div>
+                                <p className="text-sm font-semibold text-white">
+                                    {tx('onboarding.freelancer.otherSkill', undefined, 'Other skill')}
+                                </p>
+                                <p className="text-xs text-gray-400">
+                                    {tx('onboarding.freelancer.otherSkillHint', undefined, 'If your exact skill is not listed, enable this and type it clearly.')}
+                                </p>
+                            </div>
+                            <Button
+                                type="button"
+                                variant={customSkillEnabled ? 'primary' : 'outline'}
+                                size="sm"
+                                onClick={onToggleCustomSkill}
+                                className={customSkillEnabled ? 'bg-gradient-to-r from-purple-500 to-violet-500 border-transparent' : ''}
+                            >
+                                {customSkillEnabled
+                                    ? tx('onboarding.freelancer.removeOtherSkill', undefined, 'Remove')
+                                    : tx('onboarding.freelancer.addOtherSkill', undefined, 'Add other skill')}
+                            </Button>
+                        </div>
+                        {customSkillEnabled && (
+                            <div className="mt-3">
+                                <Input
+                                    value={customSkillName}
+                                    onChange={(event) => onCustomSkillNameChange(event.target.value)}
+                                    label={tx('onboarding.freelancer.otherSkillLabel', undefined, 'Custom skill')}
+                                    placeholder={tx('onboarding.freelancer.otherSkillPlaceholder', undefined, 'Example: Shopify Liquid, Webflow CMS, Motion Graphics')}
+                                    error={errors.custom_skill_name?.message}
+                                />
+                            </div>
+                        )}
+                    </div>
+
+                    <p className="mt-3 text-xs text-gray-400">
+                        {tx('onboarding.freelancer.skillsClarification', undefined, 'These skills appear on your profile and in client search filters. Pick only what you can deliver now.')}
+                    </p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -125,11 +168,11 @@ export default function OnboardingStep2({
                         <Input
                             {...register('hourly_rate')}
                             type="number"
-                            label={`${t.job.budget} (${t.common.tnd})`}
-                            placeholder={tx('ui.e_g')}
+                            label={tx('onboarding.freelancer.hourlyRateLabel', undefined, `Hourly rate (${t.common.tnd}/hour)`)}
+                            placeholder={tx('onboarding.freelancer.hourlyRatePlaceholder', undefined, 'e.g. 35')}
                             min="0"
                             leftIcon={<DollarSign className="w-5 h-5 text-green-500" />}
-                            hint={t.profile.optional}
+                            hint={tx('onboarding.freelancer.hourlyRateHint', undefined, 'Shown to clients on your profile and used in search filters. You can update it later.')}
                             error={errors.hourly_rate?.message}
                         />
                     </div>

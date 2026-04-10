@@ -16,7 +16,7 @@ interface ContactModalProps {
 }
 
 export default function ContactModal({ isOpen, onClose, freelancerId, freelancerName }: ContactModalProps) {
-    const { user } = useAuth();
+    const { user, activeMode } = useAuth();
     const { showToast } = useToast();
     const { tx } = useTranslation();
     const navigate = useNavigate();
@@ -37,10 +37,23 @@ export default function ContactModal({ isOpen, onClose, freelancerId, freelancer
 
         setIsCreating(true);
         try {
-            const { data: conversationId, error } = await supabase.rpc('get_or_create_conversation', {
+            let { data: conversationId, error } = await supabase.rpc('get_or_create_conversation', {
                 user1: user.id,
-                user2: freelancerId
+                user2: freelancerId,
+                p_scope: activeMode === 'freelancer' ? 'freelancer' : 'client',
             });
+
+            if (error) {
+                const message = typeof error.message === 'string' ? error.message.toLowerCase() : '';
+                if (message.includes('p_scope') || (message.includes('get_or_create_conversation') && message.includes('does not exist'))) {
+                    const legacyResult = await supabase.rpc('get_or_create_conversation', {
+                        user1: user.id,
+                        user2: freelancerId,
+                    });
+                    conversationId = legacyResult.data;
+                    error = legacyResult.error;
+                }
+            }
 
             if (error || !conversationId) throw error || new Error(tx('pages.freelancerProfile.contactModal.createFailed', undefined, 'Failed to create conversation'));
 

@@ -212,15 +212,38 @@ function ClientOnboarding() {
                 full_name: data.full_name,
                 location: data.location,
                 bio: data.bio,
-                avatar_url: avatarUrl,
+                ...(avatarUrl ? {
+                    avatar_url: profile?.avatar_url || avatarUrl,
+                    avatar_url_client: avatarUrl,
+                } : {}),
             };
 
-            try {
-                await updateProfile({
-                    ...baseProfilePayload,
-                    phone: normalizedPhone,
+            const trySaveProfile = async (payload: Record<string, unknown>) => {
+                try {
+                    await updateProfile({
+                        ...payload,
+                        phone: normalizedPhone,
+                    });
+                    return null;
+                } catch (error) {
+                    return error;
+                }
+            };
+
+            let profileSaveError = await trySaveProfile(baseProfilePayload);
+
+            if (profileSaveError && isSchemaCacheMissingColumnError(profileSaveError, 'profiles') && avatarUrl) {
+                logger.warn('Client onboarding missing avatar mode columns, retrying with legacy avatar_url only.');
+                profileSaveError = await trySaveProfile({
+                    full_name: data.full_name,
+                    location: data.location,
+                    bio: data.bio,
+                    avatar_url: avatarUrl,
                 });
-            } catch (profileUpdateError) {
+            }
+
+            if (profileSaveError) {
+                const profileUpdateError = profileSaveError;
                 if (!isPhoneUniqueViolation(profileUpdateError)) {
                     throw profileUpdateError;
                 }
@@ -264,22 +287,50 @@ function ClientOnboarding() {
 
         setIsLoading(true);
         let shouldNavigate = false;
+        let skippedAdvancedFields = false;
         try {
-            await updateProfile({
-                company_name: normalizeOptionalText(data.company_name),
-                company_website: normalizeOptionalText(data.company_website),
-                company_industry: normalizeOptionalText(data.company_industry),
-                company_size: normalizeOptionalText(data.company_size),
-                company_role: normalizeOptionalText(data.company_role),
-                hiring_needs: parseCsv(data.hiring_needs),
-                project_budget_preference: normalizeOptionalText(data.project_budget_preference),
-                project_timeline_preference: normalizeOptionalText(data.project_timeline_preference),
-                communication_preferences: { summary: normalizeOptionalText(data.communication_preferences) },
-                screening_preferences: { summary: normalizeOptionalText(data.screening_preferences) },
-                legal_preferences: { summary: normalizeOptionalText(data.legal_preferences) },
-                client_onboarding_completed: true,
-                onboarding_completed: true,
-            });
+            const missingColumnsCacheKey = 'schema_missing:profiles:client_advanced_fields';
+            const skipAdvancedWrite = typeof window !== 'undefined' && sessionStorage.getItem(missingColumnsCacheKey) === '1';
+
+            if (!skipAdvancedWrite) {
+                try {
+                    await updateProfile({
+                        company_name: normalizeOptionalText(data.company_name),
+                        company_website: normalizeOptionalText(data.company_website),
+                        company_industry: normalizeOptionalText(data.company_industry),
+                        company_size: normalizeOptionalText(data.company_size),
+                        company_role: normalizeOptionalText(data.company_role),
+                        hiring_needs: parseCsv(data.hiring_needs),
+                        project_budget_preference: normalizeOptionalText(data.project_budget_preference),
+                        project_timeline_preference: normalizeOptionalText(data.project_timeline_preference),
+                        communication_preferences: { summary: normalizeOptionalText(data.communication_preferences) },
+                        screening_preferences: { summary: normalizeOptionalText(data.screening_preferences) },
+                        legal_preferences: { summary: normalizeOptionalText(data.legal_preferences) },
+                        client_onboarding_completed: true,
+                        onboarding_completed: true,
+                    });
+                    if (typeof window !== 'undefined') sessionStorage.removeItem(missingColumnsCacheKey);
+                } catch (advancedFieldsError) {
+                    if (!isSchemaCacheMissingColumnError(advancedFieldsError, 'profiles')) {
+                        throw advancedFieldsError;
+                    }
+
+                    skippedAdvancedFields = true;
+                    if (typeof window !== 'undefined') sessionStorage.setItem(missingColumnsCacheKey, '1');
+                    logger.warn('Client advanced profile fields skipped (missing DB columns):', advancedFieldsError);
+
+                    await updateProfile({
+                        client_onboarding_completed: true,
+                        onboarding_completed: true,
+                    });
+                }
+            } else {
+                skippedAdvancedFields = true;
+                await updateProfile({
+                    client_onboarding_completed: true,
+                    onboarding_completed: true,
+                });
+            }
 
             void Promise.race([
                 refreshProfile(),
@@ -302,6 +353,16 @@ function ClientOnboarding() {
         }
 
         if (shouldNavigate) {
+            if (skippedAdvancedFields) {
+                showToast(
+                    tx(
+                        'onboarding.client.advancedFieldsPendingMigration',
+                        undefined,
+                        'Profile completed, but advanced company fields will sync after the latest database migration is applied.'
+                    ),
+                    'warning'
+                );
+            }
             showToast(tx('onboarding.client.welcomeToast', undefined, 'Welcome to WorkedIn!'), 'success');
             navigate('/client/dashboard');
         }
@@ -597,5 +658,14 @@ function isPhoneUniqueViolation(error: unknown): boolean {
     const maybeMessage = 'message' in error && typeof error.message === 'string' ? error.message : '';
     return maybeCode === '23505'
         && (maybeMessage.includes('profiles_phone_key') || maybeMessage.includes('phone'));
+}
+
+function isSchemaCacheMissingColumnError(error: unknown, tableName: string): boolean {
+    if (!error || typeof error !== 'object') return false;
+    const maybeMessage = 'message' in error && typeof error.message === 'string' ? error.message.toLowerCase() : '';
+    return maybeMessage.includes('could not find')
+        && maybeMessage.includes('column')
+        && maybeMessage.includes('schema cache')
+        && maybeMessage.includes(tableName.toLowerCase());
 }
 

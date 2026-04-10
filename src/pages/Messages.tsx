@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import {
@@ -36,6 +36,7 @@ import {
     markConversationRead,
     subscribeToConversation,
     subscribeToConversations,
+    type ConversationScope,
     type Conversation,
     type Message,
 } from '../services/messages';
@@ -83,8 +84,19 @@ type ThreadMessage = Message & {
 const MAX_CACHED_CONVERSATIONS = 50;
 const MAX_CACHED_MESSAGES = 200;
 
-const getConversationsCacheKey = (userId: string) => `messages:conversations:${userId}`;
+const getConversationsCacheKey = (userId: string, modeKey: string) => `messages:conversations:${userId}:${modeKey}`;
 const getMessagesCacheKey = (conversationId: string) => `messages:thread:${conversationId}`;
+
+const resolveConversationScopes = (activeMode: string | null | undefined): ConversationScope[] => {
+    if (activeMode === 'freelancer') return ['freelancer', 'contract', 'shared'];
+    if (activeMode === 'client') return ['client', 'contract', 'shared'];
+    return ['client', 'freelancer', 'contract', 'shared'];
+};
+
+const resolveModeCacheKey = (activeMode: string | null | undefined) => {
+    if (activeMode === 'client' || activeMode === 'freelancer') return activeMode;
+    return 'all';
+};
 
 const readSessionCache = <T,>(key: string): T | null => {
     try {
@@ -128,7 +140,7 @@ const getThreadPreview = (threadMessages: ThreadMessage[], deletedLabel: string)
 function MessagesComponent() {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
-    const { user, profile } = useAuth();
+    const { user, profile, activeMode } = useAuth();
     const { showToast } = useToast();
     const { tx, language } = useTranslation();
     const deletedMessageLabel = tx('pages.messages.deletedMessage', undefined, 'Message deleted');
@@ -167,6 +179,9 @@ function MessagesComponent() {
     const messageRequestIdRef = useRef(0);
     const messageCacheRef = useRef<Record<string, ThreadMessage[]>>({});
     const prefetchedConversationIdsRef = useRef<Set<string>>(new Set());
+
+    const conversationScopes = resolveConversationScopes(activeMode ?? profile?.active_mode);
+    const conversationsModeCacheKey = resolveModeCacheKey(activeMode ?? profile?.active_mode);
 
     // Typing indicators
     const { typingUsers, startTyping, stopTyping } = useTypingIndicator(
@@ -486,24 +501,32 @@ function MessagesComponent() {
     useEffect(() => {
         if (!user?.id) return;
 
-        const cachedConversations = readSessionCache<Conversation[]>(getConversationsCacheKey(user.id));
+        const cachedConversations = readSessionCache<Conversation[]>(getConversationsCacheKey(user.id, conversationsModeCacheKey));
         if (cachedConversations && cachedConversations.length > 0) {
             setConversations(cachedConversations);
             setIsLoadingConversations(false);
         }
-    }, [user?.id]);
+    }, [user?.id, conversationsModeCacheKey]);
+
+    useEffect(() => {
+        setConversations([]);
+        setSelectedConversation(null);
+        setMessages([]);
+        setPage(0);
+        setHasMoreConversations(true);
+    }, [conversationsModeCacheKey]);
 
     useEffect(() => {
         if (!user?.id || conversations.length === 0) return;
         writeSessionCache(
-            getConversationsCacheKey(user.id),
+            getConversationsCacheKey(user.id, conversationsModeCacheKey),
             conversations.slice(0, MAX_CACHED_CONVERSATIONS)
         );
 
         conversations.slice(0, 4).forEach((conversation) => {
             void prefetchConversationMessages(conversation.id);
         });
-    }, [user?.id, conversations]);
+    }, [user?.id, conversations, conversationsModeCacheKey]);
 
     useEffect(() => {
         if (!selectedConversation?.id) return;
@@ -534,7 +557,9 @@ function MessagesComponent() {
             if (append) setIsLoadingMore(true);
 
             const limit = 20;
-            const { data, count, error } = await getConversations(user.id, currentPage, limit);
+            const { data, count, error } = await getConversations(user.id, currentPage, limit, {
+                scopes: conversationScopes,
+            });
 
             if (error) {
                 showToast(error.message, 'error');
@@ -565,7 +590,7 @@ function MessagesComponent() {
 
         // Only setup subscription on initial mount/page 0 to avoid duplicates
         if (page === 0) {
-            conversationsChannelRef.current = subscribeToConversations(user.id, (payload) => {
+            conversationsChannelRef.current = subscribeToConversations(user.id, conversationScopes, (payload) => {
                 const eventType = payload.eventType;
                 if (eventType === 'UPDATE') {
                     const changed = payload.new as any;
@@ -599,7 +624,7 @@ function MessagesComponent() {
                 conversationsChannelRef.current.unsubscribe();
             }
         };
-    }, [user?.id, page]);
+    }, [user?.id, page, conversationScopes.join('|')]);
 
     // Reset pagination when filter or search changes
     useEffect(() => {
@@ -1127,7 +1152,7 @@ function MessagesComponent() {
         return date.toLocaleTimeString(language === 'ar' ? 'ar-TN' : language === 'fr' ? 'fr-FR' : 'en-US', { hour: '2-digit', minute: '2-digit' });
     };
 
-    const renderConversationList = () => (
+    const renderConversationList = useMemo(() => (
         <div className="flex h-full flex-col border-e border-border bg-surface backdrop-blur-xl">
             {/* Header */}
             <div className="border-b border-[var(--color-border-default)] px-4 py-5">
@@ -1197,7 +1222,6 @@ function MessagesComponent() {
                 ) : (
                     <div style={{ height: `${conversationsVirtualizer.getTotalSize()}px`, width: '100%', position: 'relative' }}>
                         {conversationsVirtualizer.getVirtualItems().map((virtualRow) => {
-                            const { tx } = useTranslation();
                             const conversation = filteredConversations[virtualRow.index];
                             return (
                         <div
@@ -1303,7 +1327,7 @@ function MessagesComponent() {
                 )}
             </div>
         </div>
-    );
+    ), [searchQuery, filter, isLoadingConversations, isLoadingMore, selectedConversation, navigate, profile?.user_type, tx, language, deletedMessageLabel, filteredConversations, conversationsVirtualizer]);
 
     const renderMessageThread = () => (
         <div className="flex flex-col h-full bg-background">
@@ -1364,7 +1388,6 @@ function MessagesComponent() {
                         ) : (
                             <div style={{ height: `${messagesVirtualizer.getTotalSize()}px`, width: '100%', position: 'relative' }}>
                                 {messagesVirtualizer.getVirtualItems().map((virtualRow) => {
-                                    const { tx } = useTranslation();
                                     const message = displayMessages[virtualRow.index];
                                     return (
                                         <div
@@ -1413,7 +1436,6 @@ function MessagesComponent() {
                                             {!isDeletedMessage(message) && message.attachments && message.attachments.length > 0 && (
                                                 <div className="mt-2 space-y-2">
                                                     {message.attachments.map((att, i) => {
-                                                        const { tx } = useTranslation();
                                                         const isImage = att.type?.startsWith('image/');
                                                         if (isImage) {
                                                             return (
@@ -1691,7 +1713,7 @@ function MessagesComponent() {
                 <div className="h-[calc(100vh-64px)] flex overflow-hidden">
                     {/* Sidebar - Conversations List (Responsive) */}
                     <div className={`shrink-0 border-e border-border flex-col bg-background w-full lg:w-80 ${showMobileThread ? 'hidden lg:flex' : 'flex'}`}>
-                        {renderConversationList()}
+                        {renderConversationList}
                     </div>
 
                     {/* Main Message Area */}
@@ -1766,7 +1788,6 @@ function MessagesComponent() {
 }
 
 export default function Messages() {
-    const { tx } = useTranslation();
     return (
         <ErrorBoundary>
             <MessagesComponent />

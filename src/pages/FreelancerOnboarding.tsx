@@ -57,6 +57,8 @@ function FreelancerOnboarding() {
         defaultValues: {
             hourly_rate: '',
             availability: 'available',
+            custom_skill_enabled: false,
+            custom_skill_name: '',
         },
     });
 
@@ -85,6 +87,8 @@ function FreelancerOnboarding() {
         let step2Values = {
             hourly_rate: freelancerProfile?.hourly_rate ? String(freelancerProfile.hourly_rate) : '',
             availability: freelancerProfile?.availability || 'available',
+            custom_skill_enabled: false,
+            custom_skill_name: '',
         };
 
         let step3Values = {
@@ -99,10 +103,13 @@ function FreelancerOnboarding() {
                 : '',
         };
 
+        let draftStep2SkillIds: string[] = [];
+
         try {
             const draft1 = localStorage.getItem(`freelancer_draft_1_${user?.id}`);
             const draft2 = localStorage.getItem(`freelancer_draft_2_${user?.id}`);
             const draft3 = localStorage.getItem(`freelancer_draft_3_${user?.id}`);
+            const draft2Skills = localStorage.getItem(`freelancer_draft_2_skills_${user?.id}`);
             if (draft1) {
                 step1Values = { ...step1Values, ...JSON.parse(draft1) };
             }
@@ -112,23 +119,72 @@ function FreelancerOnboarding() {
             if (draft3) {
                 step3Values = { ...step3Values, ...JSON.parse(draft3) };
             }
+            if (draft2Skills) {
+                const parsed = JSON.parse(draft2Skills);
+                if (Array.isArray(parsed)) {
+                    draftStep2SkillIds = parsed.filter((item) => typeof item === 'string');
+                }
+            }
         } catch {
             // Ignore invalid JSON in localStorage draft
         }
 
         step1Form.reset(step1Values);
-        step2Form.reset(step2Values);
-        step3Form.reset(step3Values);
         const skillsMap = Object.fromEntries(PREDEFINED_SKILLS.map((skill) => [skill.id, skill]));
+        const predefinedSkillIds = new Set(PREDEFINED_SKILLS.map((skill) => skill.id));
         const existingSkills = (freelancerProfile?.skills || [])
             .map((skill) => {
                 if ('name_ar' in skill) return skill as Skill;
-                return entryToSkill(skill as SkillEntry, skillsMap);
+
+                const entry = skill as SkillEntry;
+                const mappedSkill = entryToSkill(entry, skillsMap);
+                if (mappedSkill) return mappedSkill;
+
+                if (typeof entry.name === 'string' && entry.name.trim().length > 0) {
+                    const customName = entry.name.trim();
+                    return createCustomSkill(customName);
+                }
+
+                return null;
             })
             .filter(Boolean) as Skill[];
 
-        setSelectedSkills(existingSkills);
-    }, [freelancerProfile, profile, step1Form, step2Form, step3Form]);
+        const restoredPredefinedSkills: Skill[] = [];
+        let restoredCustomSkillName = '';
+
+        for (const skill of existingSkills) {
+            if (predefinedSkillIds.has(skill.id)) {
+                restoredPredefinedSkills.push(skill);
+                continue;
+            }
+
+            if (!restoredCustomSkillName) {
+                restoredCustomSkillName = normalizeCustomSkillName(skill.name_en || skill.id);
+            }
+        }
+
+        if (!restoredCustomSkillName && typeof step2Values.custom_skill_name === 'string') {
+            restoredCustomSkillName = normalizeCustomSkillName(step2Values.custom_skill_name);
+        }
+
+        step2Values = {
+            ...step2Values,
+            custom_skill_enabled: restoredCustomSkillName.length > 0 || Boolean(step2Values.custom_skill_enabled),
+            custom_skill_name: restoredCustomSkillName,
+        };
+
+        const draftPredefinedSkills = draftStep2SkillIds
+            .map((skillId) => skillsMap[skillId])
+            .filter(Boolean) as Skill[];
+
+        const preferredSkills = draftPredefinedSkills.length > 0
+            ? draftPredefinedSkills
+            : restoredPredefinedSkills;
+
+        step2Form.reset(step2Values);
+        step3Form.reset(step3Values);
+        setSelectedSkills(uniqueSkills(preferredSkills));
+    }, [freelancerProfile, profile, step1Form, step2Form, step3Form, user?.id]);
 
     // Block navigation away from onboarding until complete
     useEffect(() => {
@@ -158,6 +214,10 @@ function FreelancerOnboarding() {
         }
     };
 
+    const customSkillEnabled = step2Form.watch('custom_skill_enabled') === true;
+    const customSkillName = step2Form.watch('custom_skill_name') || '';
+    const selectedSkillCount = selectedSkills.length + (customSkillEnabled ? 1 : 0);
+
     useEffect(() => {
         const sub1 = step1Form.watch((value) => {
             if (user?.id) localStorage.setItem(`freelancer_draft_1_${user.id}`, JSON.stringify(value));
@@ -174,6 +234,14 @@ function FreelancerOnboarding() {
             sub3.unsubscribe();
         };
     }, [step1Form.watch, step2Form.watch, step3Form.watch, user?.id]);
+
+    useEffect(() => {
+        if (!user?.id) return;
+        localStorage.setItem(
+            `freelancer_draft_2_skills_${user.id}`,
+            JSON.stringify(selectedSkills.map((skill) => skill.id))
+        );
+    }, [selectedSkills, user?.id]);
 
     const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -195,13 +263,33 @@ function FreelancerOnboarding() {
     };
 
     const toggleSkill = (skill: Skill) => {
+        const customSkillEnabled = step2Form.getValues('custom_skill_enabled') === true;
+        const totalSelectedCount = selectedSkills.length + (customSkillEnabled ? 1 : 0);
+
         if (selectedSkills.find((s) => s.id === skill.id)) {
             setSelectedSkills(selectedSkills.filter((s) => s.id !== skill.id));
-        } else if (selectedSkills.length < 5) {
+        } else if (totalSelectedCount < 5) {
             setSelectedSkills([...selectedSkills, skill]);
         } else {
             showToast(t.onboarding.freelancer.maxSkills || 'Max 5 skills', 'warning');
         }
+    };
+
+    const toggleCustomSkill = () => {
+        const customEnabled = step2Form.getValues('custom_skill_enabled') === true;
+
+        if (customEnabled) {
+            step2Form.setValue('custom_skill_enabled', false, { shouldDirty: true, shouldValidate: true });
+            step2Form.setValue('custom_skill_name', '', { shouldDirty: true, shouldValidate: true });
+            return;
+        }
+
+        if (selectedSkills.length >= 5) {
+            showToast(t.onboarding.freelancer.maxSkills || 'Max 5 skills', 'warning');
+            return;
+        }
+
+        step2Form.setValue('custom_skill_enabled', true, { shouldDirty: true, shouldValidate: true });
     };
 
     const removeAvatar = () => {
@@ -236,12 +324,7 @@ function FreelancerOnboarding() {
                     const fileExt = avatarFile.name.split('.').pop();
                     const filePath = `${user.id}/avatar-${Date.now()}.${fileExt}`;
 
-                    const avatarUrl = await Promise.race([
-                        uploadFile('avatars', filePath, avatarFile),
-                        new Promise<string>((_, reject) =>
-                            setTimeout(() => reject(new Error('Avatar upload timeout')), 10000)
-                        ),
-                    ]);
+                    const avatarUrl = await uploadFile('avatars', filePath, avatarFile);
 
                     profileUpdate.avatar_url = avatarUrl;
                     logger.log('[Onboarding] Avatar uploaded:', avatarUrl);
@@ -263,19 +346,48 @@ function FreelancerOnboarding() {
                 location: profileUpdate.location,
                 bio: data.bio,
                 user_type: profileUpdate.user_type,
-                avatar_url: profileUpdate.avatar_url,
+                ...(profileUpdate.avatar_url ? {
+                    avatar_url: profile?.avatar_url || profileUpdate.avatar_url,
+                    avatar_url_freelancer: profileUpdate.avatar_url,
+                } : {}),
                 updated_at: new Date().toISOString(),
             };
 
-            try {
-                await updateProfileWithTimeout(
-                    user.id,
-                    {
-                        ...baseProfilePayload,
-                        phone: normalizedPhone,
-                    }
-                );
-            } catch (profileUpdateError) {
+            const trySaveProfile = async (payload: Record<string, unknown>) => {
+                try {
+                    await updateProfileWithTimeout(
+                        user.id,
+                        {
+                            ...payload,
+                            phone: normalizedPhone,
+                        }
+                    );
+                    return null;
+                } catch (error) {
+                    return error;
+                }
+            };
+
+            let profileSaveError = await trySaveProfile(baseProfilePayload);
+
+            if (
+                profileSaveError
+                && isSchemaCacheMissingColumnError(profileSaveError, 'profiles')
+                && profileUpdate.avatar_url
+            ) {
+                logger.warn('[Onboarding] Missing avatar mode columns, retrying with legacy avatar_url only.');
+                profileSaveError = await trySaveProfile({
+                    full_name: profileUpdate.full_name,
+                    location: profileUpdate.location,
+                    bio: data.bio,
+                    user_type: profileUpdate.user_type,
+                    avatar_url: profileUpdate.avatar_url,
+                    updated_at: new Date().toISOString(),
+                });
+            }
+
+            if (profileSaveError) {
+                const profileUpdateError = profileSaveError;
                 if (!isPhoneUniqueViolation(profileUpdateError)) {
                     throw profileUpdateError;
                 }
@@ -338,7 +450,25 @@ function FreelancerOnboarding() {
     };
 
     const onStep2Submit = async (data: Step2FormData) => {
-        if (selectedSkills.length === 0) {
+        const includeCustomSkill = data.custom_skill_enabled === true;
+        const customSkillName = normalizeCustomSkillName(data.custom_skill_name);
+
+        if (includeCustomSkill && customSkillName.length === 0) {
+            const customSkillError = tx(
+                'onboarding.freelancer.customSkillRequired',
+                undefined,
+                'Please type your custom skill before continuing.'
+            );
+            step2Form.setError('custom_skill_name', { type: 'manual', message: customSkillError });
+            showToast(customSkillError, 'error');
+            return;
+        }
+
+        const finalizedSkills = includeCustomSkill
+            ? [...selectedSkills, createCustomSkill(customSkillName)]
+            : [...selectedSkills];
+
+        if (finalizedSkills.length === 0) {
             showToast(t.onboarding.freelancer.selectAtLeastOneSkill || 'Please select at least one skill', 'warning');
             return;
         }
@@ -354,7 +484,7 @@ function FreelancerOnboarding() {
             logger.log('[Onboarding] Step 2: Saving core freelancer setup...');
 
             const skillsData = {
-                skills: selectedSkills.map((s) => skillToEntry(s)),
+                skills: finalizedSkills.map((s) => skillToEntry(s)),
                 hourly_rate: data.hourly_rate ? parseFloat(data.hourly_rate) : undefined,
                 availability: data.availability as 'available' | 'busy' | 'offline',
             };
@@ -419,7 +549,11 @@ function FreelancerOnboarding() {
 
         setIsLoading(true);
         let shouldNavigate = false;
+        let skippedAdvancedFields = false;
         try {
+            const missingColumnsCacheKey = 'schema_missing:freelancer_profiles:advanced_fields';
+            const skipAdvancedWrite = typeof window !== 'undefined' && sessionStorage.getItem(missingColumnsCacheKey) === '1';
+
             const detailsPayload = {
                 years_experience: parseOptionalNumber(data.years_experience),
                 tools: parseCsv(data.tools),
@@ -433,21 +567,43 @@ function FreelancerOnboarding() {
                 updated_at: new Date().toISOString(),
             };
 
-            try {
-                await upsertFreelancerProfileWithTimeout({
-                    id: user.id,
-                    ...detailsPayload,
-                });
-            } catch (freelancerUpsertErr) {
-                if (!isRlsInsertViolation(freelancerUpsertErr)) throw freelancerUpsertErr;
-
-                await ensureFreelancerProfileExists(
-                    profile?.user_type === 'both' ? 'both' : 'freelancer'
-                );
-                await updateFreelancerProfileWithTimeout(
-                    user.id,
-                    detailsPayload
-                );
+            if (skipAdvancedWrite) {
+                skippedAdvancedFields = true;
+            } else {
+                try {
+                    await upsertFreelancerProfileWithTimeout({
+                        id: user.id,
+                        ...detailsPayload,
+                    });
+                    if (typeof window !== 'undefined') sessionStorage.removeItem(missingColumnsCacheKey);
+                } catch (freelancerUpsertErr) {
+                    if (isSchemaCacheMissingColumnError(freelancerUpsertErr, 'freelancer_profiles')) {
+                        logger.warn('[Onboarding] Step 3 advanced fields skipped (missing DB columns):', freelancerUpsertErr);
+                        skippedAdvancedFields = true;
+                        if (typeof window !== 'undefined') sessionStorage.setItem(missingColumnsCacheKey, '1');
+                    } else if (isRlsInsertViolation(freelancerUpsertErr)) {
+                        await ensureFreelancerProfileExists(
+                            profile?.user_type === 'both' ? 'both' : 'freelancer'
+                        );
+                        try {
+                            await updateFreelancerProfileWithTimeout(
+                                user.id,
+                                detailsPayload
+                            );
+                            if (typeof window !== 'undefined') sessionStorage.removeItem(missingColumnsCacheKey);
+                        } catch (freelancerUpdateErr) {
+                            if (isSchemaCacheMissingColumnError(freelancerUpdateErr, 'freelancer_profiles')) {
+                                logger.warn('[Onboarding] Step 3 advanced fields skipped after RLS fallback (missing DB columns):', freelancerUpdateErr);
+                                skippedAdvancedFields = true;
+                                if (typeof window !== 'undefined') sessionStorage.setItem(missingColumnsCacheKey, '1');
+                            } else {
+                                throw freelancerUpdateErr;
+                            }
+                        }
+                    } else {
+                        throw freelancerUpsertErr;
+                    }
+                }
             }
 
             await updateProfileWithTimeout(
@@ -468,6 +624,7 @@ function FreelancerOnboarding() {
                 localStorage.removeItem(`freelancer_draft_1_${user.id}`);
                 localStorage.removeItem(`freelancer_draft_2_${user.id}`);
                 localStorage.removeItem(`freelancer_draft_3_${user.id}`);
+                localStorage.removeItem(`freelancer_draft_2_skills_${user.id}`);
             }
 
             shouldNavigate = true;
@@ -480,6 +637,16 @@ function FreelancerOnboarding() {
         }
 
         if (shouldNavigate) {
+            if (skippedAdvancedFields) {
+                showToast(
+                    tx(
+                        'onboarding.freelancer.advancedFieldsPendingMigration',
+                        undefined,
+                        'Profile completed, but advanced fields will sync after the latest database migration is applied.'
+                    ),
+                    'warning'
+                );
+            }
             showToast(t.onboarding.freelancer.welcomeToast || 'Welcome to WorkedIn!', 'success');
             navigate('/freelancer/dashboard');
         }
@@ -502,13 +669,13 @@ function FreelancerOnboarding() {
         },
         {
             id: 2,
-            title: t.onboarding.freelancer.stepSkillsExperience || 'Skills and experience',
-            description: tx('onboarding.freelancer.step2Description', undefined, 'Choose the skills and availability clients will use to evaluate your fit.'),
+            title: tx('onboarding.freelancer.step2TitleUpdated', undefined, 'Skills, hourly rate, and availability'),
+            description: tx('onboarding.freelancer.step2Description', undefined, 'Choose clear services, set a realistic hourly rate, and define your current availability.'),
         },
         {
             id: 3,
-            title: tx('onboarding.freelancer.step3Title', undefined, 'Proof and delivery setup'),
-            description: tx('onboarding.freelancer.step3Description', undefined, 'Add your tools, portfolio links, and delivery expectations to make your profile hiring-ready.'),
+            title: tx('onboarding.freelancer.step3Title', undefined, 'Profile details and proof'),
+            description: tx('onboarding.freelancer.step3Description', undefined, 'Select tools and industries, then add portfolio links and delivery terms clients care about before hiring.'),
         },
     ];
 
@@ -545,8 +712,14 @@ function FreelancerOnboarding() {
                                     onBack={() => setStep(1)}
                                     isLoading={isLoading}
                                     selectedSkills={selectedSkills}
+                                    selectedSkillCount={selectedSkillCount}
                                     toggleSkill={toggleSkill}
                                     getSkillName={getSkillName}
+                                    maxSkills={5}
+                                    customSkillEnabled={customSkillEnabled}
+                                    customSkillName={customSkillName}
+                                    onToggleCustomSkill={toggleCustomSkill}
+                                    onCustomSkillNameChange={(value) => step2Form.setValue('custom_skill_name', value, { shouldDirty: true, shouldValidate: true })}
                                 />
                             </>
                         )}
@@ -702,6 +875,33 @@ function parseOptionalNumber(value: string | undefined): number | undefined {
     return Number.isFinite(parsed) ? parsed : undefined;
 }
 
+function normalizeCustomSkillName(value: string | undefined): string {
+    return (value || '').trim().replace(/\s+/g, ' ').slice(0, 60);
+}
+
+function createCustomSkill(skillName: string): Skill {
+    const normalized = normalizeCustomSkillName(skillName);
+    return {
+        id: normalized,
+        name_ar: normalized,
+        name_fr: normalized,
+        name_en: normalized,
+    };
+}
+
+function uniqueSkills(skills: Skill[]): Skill[] {
+    const seen = new Set<string>();
+    const unique: Skill[] = [];
+
+    for (const skill of skills) {
+        if (seen.has(skill.id)) continue;
+        seen.add(skill.id);
+        unique.push(skill);
+    }
+
+    return unique;
+}
+
 function parseCsv(value: string | undefined): string[] {
     if (!value) return [];
     return value
@@ -721,6 +921,15 @@ function isPhoneUniqueViolation(error: unknown): boolean {
     const maybeMessage = 'message' in error && typeof error.message === 'string' ? error.message : '';
     return maybeCode === '23505'
         && (maybeMessage.includes('profiles_phone_key') || maybeMessage.includes('phone'));
+}
+
+function isSchemaCacheMissingColumnError(error: unknown, tableName: string): boolean {
+    if (!error || typeof error !== 'object') return false;
+    const maybeMessage = 'message' in error && typeof error.message === 'string' ? error.message.toLowerCase() : '';
+    return maybeMessage.includes('could not find')
+        && maybeMessage.includes('column')
+        && maybeMessage.includes('schema cache')
+        && maybeMessage.includes(tableName.toLowerCase());
 }
 
 async function ensureFreelancerProfileExists(

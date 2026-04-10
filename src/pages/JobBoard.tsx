@@ -440,7 +440,7 @@ function JobBoard() {
                                                 color: 'var(--workspace-primary)',
                                             }}
                                         >
-                                            "{filters.search}" <span aria-hidden>Ã—</span>
+                                            "{filters.search}" <span aria-hidden>×</span>
                                         </button>
                                     )}
                                     {filters.categories.map(cat => (
@@ -454,7 +454,7 @@ function JobBoard() {
                                                 color: 'var(--workspace-primary)',
                                             }}
                                         >
-                                            {cat} <span aria-hidden>Ã—</span>
+                                            {cat} <span aria-hidden>×</span>
                                         </button>
                                     ))}
                                     {filters.jobType && (
@@ -467,7 +467,7 @@ function JobBoard() {
                                                 color: 'var(--workspace-primary)',
                                             }}
                                         >
-                                            {filters.jobType} <span aria-hidden>Ã—</span>
+                                            {filters.jobType} <span aria-hidden>×</span>
                                         </button>
                                     )}
                                     <button

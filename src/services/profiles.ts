@@ -4,6 +4,9 @@
 import { supabase, uploadFile } from '@/lib/supabase';
 import { sanitizeFreelancerProfileData } from '@/lib/schemaValidation';
 
+// Export supabase for direct queries when needed
+export { supabase };
+
 // --- READ ---
 
 // getProfileById: reads from the public_profiles VIEW (safe columns only).
@@ -168,6 +171,26 @@ export async function getReviewsByUser(userId: string) {
         .select('*')
         .eq('reviewee_id', userId)
         .order('created_at', { ascending: false });
+}
+
+export async function getFreelancerReviewStats(userId: string) {
+    const { data, error } = await supabase
+        .from('reviews')
+        .select('rating')
+        .eq('reviewee_id', userId)
+        .eq('is_public', true);
+    
+    if (error || !data || data.length === 0) {
+        return { averageRating: 0, reviewCount: 0 };
+    }
+    
+    const totalRating = data.reduce((sum, review) => sum + review.rating, 0);
+    const averageRating = totalRating / data.length;
+    
+    return {
+        averageRating: Math.round(averageRating * 10) / 10, // Round to 1 decimal
+        reviewCount: data.length
+    };
 }
 
 export async function getClientStats(clientId: string) {

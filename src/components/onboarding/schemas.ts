@@ -13,6 +13,8 @@ export type Step1FormData = z.infer<typeof step1Schema>;
 export const step2Schema = z.object({
     hourly_rate: z.string().optional(),
     availability: z.string().optional(),
+    custom_skill_enabled: z.boolean().optional(),
+    custom_skill_name: z.string().trim().max(60, 'Maximum 60 characters').optional(),
 });
 
 export type Step2FormData = z.infer<typeof step2Schema>;

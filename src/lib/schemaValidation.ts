@@ -12,6 +12,8 @@ const PROFILE_ALLOWED_FIELDS = [
     'full_name',
     'phone',
     'avatar_url',
+    'avatar_url_client',
+    'avatar_url_freelancer',
     'bio',
     'location',
     'company_name',

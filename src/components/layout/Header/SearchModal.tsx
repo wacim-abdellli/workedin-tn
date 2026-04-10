@@ -292,7 +292,6 @@ export default function SearchModal({ onClose }: SearchModalProps) {
                 </div>
                 <div className="grid gap-2 sm:grid-cols-2">
                   {shortcuts.map((item) => {
-                      const { tx } = useTranslation();
                     const Icon = item.Icon
                     return (
                       <button
@@ -343,7 +342,6 @@ export default function SearchModal({ onClose }: SearchModalProps) {
                 </div>
                 <div className="space-y-1">
                   {recent.map((item) => {
-                      const { tx } = useTranslation();
                     const Icon = item.Icon
                     return (
                       <button
@@ -414,7 +412,6 @@ export default function SearchModal({ onClose }: SearchModalProps) {
                 {section.title}
               </div>
               {section.items.map((item) => {
-                  const { tx } = useTranslation();
                 const flatIndex = commandItems.findIndex((entry) => entry.href === item.href && entry.label === item.label)
                 const Icon = item.Icon || Briefcase
                 const isSelected = flatIndex === selected

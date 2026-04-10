@@ -1,12 +1,13 @@
  import { useCallback, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Award, Briefcase, Filter, Grid, List, Search, SlidersHorizontal, Sparkles, X } from 'lucide-react';
+import { Filter, Grid, List, Search, SlidersHorizontal, Sparkles, X } from 'lucide-react';
 
 import SEO, { SEO_CONFIG } from '../components/common/SEO';
 import EmptyState from '../components/ui/EmptyState';
 import { SkeletonList, SkeletonProfile } from '../components/common';
 import FreelancerCard from '../components/freelancers/FreelancerCard';
+import FilterSidebar from '../components/freelancers/FilterSidebar';
 import { Header } from '../components/layout';
 import Button from '../components/ui/Button';
 import { useAuth } from '../contexts/AuthContext';
@@ -57,6 +58,13 @@ interface ProfileWithFreelancer {
     }[];
 }
 
+interface ReviewStats {
+    [userId: string]: {
+        averageRating: number;
+        reviewCount: number;
+    };
+}
+
 const CATEGORY_OPTIONS: FreelancerCategory[] = ['Design', 'Development', 'Writing', 'Marketing', 'Video', 'Consulting'];
 const SKILL_OPTIONS = ['React', 'Node.js', 'Logo Design', 'Translation', 'Content Writing', 'Figma', 'Motion', 'SEO'];
 
@@ -90,6 +98,36 @@ export default function FindFreelancers() {
         queryFn: async () => {
             const { data, error } = await profilesService.getFreelancers({ excludeId: user?.id });
             if (error) { console.error('getFreelancers error:', error); return []; }
+            
+            // Fetch review stats for all freelancers in bulk
+            const freelancerIds = (data || []).map((p: ProfileWithFreelancer) => p.id);
+            const reviewStatsMap: ReviewStats = {};
+            
+            if (freelancerIds.length > 0) {
+                const { data: reviewsData } = await profilesService.supabase
+                    .from('reviews')
+                    .select('reviewee_id, rating')
+                    .in('reviewee_id', freelancerIds)
+                    .eq('is_public', true);
+                
+                // Calculate stats for each freelancer
+                if (reviewsData) {
+                    reviewsData.forEach((review: any) => {
+                        if (!reviewStatsMap[review.reviewee_id]) {
+                            reviewStatsMap[review.reviewee_id] = { averageRating: 0, reviewCount: 0 };
+                        }
+                        reviewStatsMap[review.reviewee_id].reviewCount++;
+                    });
+                    
+                    // Calculate averages
+                    Object.keys(reviewStatsMap).forEach(userId => {
+                        const userReviews = reviewsData.filter((r: any) => r.reviewee_id === userId);
+                        const totalRating = userReviews.reduce((sum: number, r: any) => sum + r.rating, 0);
+                        reviewStatsMap[userId].averageRating = Math.round((totalRating / userReviews.length) * 10) / 10;
+                    });
+                }
+            }
+            
             return (data || []).map((p: ProfileWithFreelancer) => {
                 const fp = Array.isArray(p.freelancer_profiles) 
                     ? p.freelancer_profiles[0] 
@@ -97,20 +135,39 @@ export default function FindFreelancers() {
                 const skills: string[] = Array.isArray(fp?.skills)
                     ? fp.skills.map((s: any) => (typeof s === 'string' ? s : s?.name || '')).filter(Boolean)
                     : [];
+                
+                const reviewStats = reviewStatsMap[p.id] || { averageRating: 0, reviewCount: 0 };
+                
+                // Infer category from skills or title
+                const inferCategory = (): FreelancerCategory => {
+                    const skillsLower = skills.map(s => s.toLowerCase()).join(' ');
+                    const titleLower = (fp?.title || '').toLowerCase();
+                    const combined = `${skillsLower} ${titleLower}`;
+                    
+                    if (combined.match(/design|figma|photoshop|illustrator|ui|ux|graphic/)) return 'Design';
+                    if (combined.match(/develop|react|node|javascript|python|code|programming/)) return 'Development';
+                    if (combined.match(/writ|content|blog|article|copy/)) return 'Writing';
+                    if (combined.match(/market|seo|social|ads|campaign/)) return 'Marketing';
+                    if (combined.match(/video|edit|motion|animation/)) return 'Video';
+                    if (combined.match(/consult|strategy|business|advisor/)) return 'Consulting';
+                    
+                    return 'Development'; // Default fallback
+                };
+                
                 return {
                     id: p.id,
-                    category: 'Development' as FreelancerCategory,
+                    category: inferCategory(),
                     name: p.full_name || 'Freelancer',
                     title: fp?.title || '',
                     avatar: p.avatar_url || null,
-                    rating: 5.0,
-                    reviews: 0,
+                    rating: reviewStats.averageRating,
+                    reviews: reviewStats.reviewCount,
                     hourly_rate: fp?.hourly_rate || 0,
                     location: p.location || '',
                     skills,
-                    success_rate: fp?.success_rate || 100,
+                    success_rate: fp?.success_rate || 0,
                     jobs_completed: fp?.jobs_completed || 0,
-                    response_time: '< 1 hour',
+                    response_time: fp?.jobs_completed && fp.jobs_completed > 5 ? '< 2 hours' : '< 1 hour',
                     is_verified: fp?.cin_verified || false,
                     is_available: fp?.availability === 'available',
                 } as FreelancerRecord;
@@ -187,153 +244,6 @@ export default function FindFreelancers() {
     const topRating = filteredFreelancers.length
         ? Math.max(...filteredFreelancers.map((freelancer) => freelancer.rating)).toFixed(1)
         : '0.0';
-
-    const FilterSidebar = () => (
-        <div className="space-y-8">
-            <div className="relative group">
-                <div className="pointer-events-none absolute inset-y-0 end-0 flex items-center pe-3">
-                    <Search className="h-5 w-5 text-[#8a839f] transition-colors group-focus-within:text-brand" />
-                </div>
-                <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(event) => setSearchQuery(event.target.value)}
-                    placeholder={copy.searchPlaceholder}
-                    className="block w-full rounded-2xl border border-white/70 bg-card/85 p-4 pe-11 text-sm text-[#191627] shadow-sm backdrop-blur transition-colors focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/30 dark:border-white/8 dark:bg-white/5 dark:text-white dark:focus:ring-brand/20"
-                />
-            </div>
-
-            <div className="rounded-3xl border p-4 shadow-sm" style={{ borderColor: 'color-mix(in srgb, var(--workspace-primary) 18%, var(--border))', background: 'linear-gradient(135deg, color-mix(in srgb, var(--workspace-primary) 8%, transparent), color-mix(in srgb, var(--card-bg) 90%, transparent))' }}>
-                <label className="flex cursor-pointer items-center justify-between gap-4">
-                    <div>
-                        <div className="font-semibold text-[#191627] dark:text-white">{copy.availableNow}</div>
-                        <div className="mt-1 text-sm text-[#6e6884] dark:text-[#9a95ad]">{copy.availableNowDesc}</div>
-                    </div>
-                    <div className="flex h-7 w-12 items-center rounded-full p-1 transition-colors" style={{ background: availableOnly ? 'var(--workspace-primary)' : 'rgba(255,255,255,0.1)' }}>
-                        <div className={`h-5 w-5 rounded-full bg-card shadow transition-transform ${availableOnly ? 'translate-x-5' : ''}`} />
-                    </div>
-                    <input
-                        type="checkbox"
-                        checked={availableOnly}
-                        onChange={(event) => setAvailableOnly(event.target.checked)}
-                        className="hidden"
-                    />
-                </label>
-            </div>
-
-            <div>
-                <h3 className="mb-4 flex items-center gap-2 text-sm font-bold uppercase tracking-[0.18em] text-[#7a7590] dark:text-[#918ba8]">
-                    <Briefcase className="h-4 w-4 text-brand" />
-                    {copy.category}
-                </h3>
-                <div className="space-y-2">
-                    {CATEGORY_OPTIONS.map((category) => (
-                        <label key={category} className="flex cursor-pointer items-center gap-3 rounded-2xl px-3 py-2.5 transition-colors hover:bg-card/70 dark:hover:bg-card/5">
-                            <input
-                                type="checkbox"
-                                checked={selectedCategories.includes(category)}
-                                onChange={() =>
-                                    setSelectedCategories((prev) =>
-                                        prev.includes(category) ? prev.filter((item) => item !== category) : [...prev, category]
-                                    )
-                                }
-                                className="h-4 w-4 rounded border-border text-brand focus:ring-brand"
-                            />
-                            <span className="text-sm text-[#413c54] dark:text-[#cecadd]">{category}</span>
-                        </label>
-                    ))}
-                </div>
-            </div>
-
-            <div>
-                <h3 className="mb-4 flex items-center gap-2 text-sm font-bold uppercase tracking-[0.18em] text-[#7a7590] dark:text-[#918ba8]">
-                    <Award className="h-4 w-4 text-amber-500" />
-                    {copy.skills}
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                    {SKILL_OPTIONS.map((skill) => {
-                        const active = selectedSkills.includes(skill);
-                        return (
-                            <button
-                                key={skill}
-                                type="button"
-                                onClick={() =>
-                                    setSelectedSkills((prev) => (prev.includes(skill) ? prev.filter((item) => item !== skill) : [...prev, skill]))
-                                }
-                                className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
-                                    active
-                                        ? 'bg-brand text-brand-text shadow-lg shadow-brand/25'
-                                        : 'border border-white/70 bg-card/80 text-[#5f5974] hover:border-brand hover:text-brand dark:border-white/8 dark:bg-white/5 dark:text-[#b9b4c8] dark:hover:border-brand/30 dark:hover:text-brand-mid'
-                                }`}
-                            >
-                                {skill}
-                            </button>
-                        );
-                    })}
-                </div>
-            </div>
-
-            <div>
-                <h3 className="mb-4 text-sm font-bold uppercase tracking-[0.18em] text-[#7a7590] dark:text-[#918ba8]">{copy.hourlyRate}</h3>
-                <div className="grid grid-cols-2 gap-3">
-                    <input
-                        type="number"
-                        value={rateRange[0]}
-                        onChange={(event) => setRateRange([Number(event.target.value), rateRange[1]])}
-                        className="rounded-2xl border border-white/70 bg-card/80 px-3 py-3 text-center text-sm shadow-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/30 dark:border-white/8 dark:bg-white/5 dark:focus:ring-brand/20"
-                    />
-                    <input
-                        type="number"
-                        value={rateRange[1]}
-                        onChange={(event) => setRateRange([rateRange[0], Number(event.target.value)])}
-                        className="rounded-2xl border border-white/70 bg-card/80 px-3 py-3 text-center text-sm shadow-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/30 dark:border-white/8 dark:bg-white/5 dark:focus:ring-brand/20"
-                    />
-                </div>
-            </div>
-
-            <div>
-                <h3 className="mb-4 text-sm font-bold uppercase tracking-[0.18em] text-[#7a7590] dark:text-[#918ba8]">{tx('findFreelancers.rating', undefined, 'Rating')}</h3>
-                <div className="grid grid-cols-4 gap-2">
-                    {[0, 4, 4.5, 4.8].map((rating) => (
-                        <button
-                            key={rating}
-                            type="button"
-                            onClick={() => setMinRating(rating)}
-                            className={`rounded-2xl px-3 py-2 text-sm font-semibold transition-colors ${
-                                minRating === rating
-                                    ? 'bg-brand text-brand-text shadow-lg shadow-brand/20'
-                                    : 'border border-white/70 bg-card/80 text-[#5f5974] hover:border-brand hover:text-brand dark:border-white/8 dark:bg-white/5 dark:text-[#b9b4c8] dark:hover:border-brand/30 dark:hover:text-brand-mid'
-                            }`}
-                        >
-                            {rating === 0 ? tx('findFreelancers.all', undefined, 'All') : `${rating}+`}
-                        </button>
-                    ))}
-                </div>
-            </div>
-
-            <div className="rounded-3xl border p-4 shadow-sm" style={{ borderColor: 'color-mix(in srgb, var(--workspace-primary) 18%, var(--border))', background: 'linear-gradient(135deg, color-mix(in srgb, var(--workspace-primary) 8%, transparent), color-mix(in srgb, var(--card-bg) 90%, transparent))' }}>
-                <label className="flex cursor-pointer items-center justify-between gap-4">
-                    <div>
-                        <div className="font-semibold text-[#191627] dark:text-white">{copy.verifiedOnly}</div>
-                        <div className="mt-1 text-sm text-[#6e6884] dark:text-[#9a95ad]">{copy.verifiedOnlyDesc}</div>
-                    </div>
-                    <div className="flex h-7 w-12 items-center rounded-full p-1 transition-colors" style={{ background: verifiedOnly ? 'var(--workspace-primary)' : 'rgba(255,255,255,0.1)' }}>
-                        <div className={`h-5 w-5 rounded-full bg-card shadow transition-transform ${verifiedOnly ? 'translate-x-5' : ''}`} />
-                    </div>
-                    <input
-                        type="checkbox"
-                        checked={verifiedOnly}
-                        onChange={(event) => setVerifiedOnly(event.target.checked)}
-                        className="hidden"
-                    />
-                </label>
-            </div>
-
-            <Button variant="outline" className="w-full" onClick={clearFilters}>
-                {copy.clearFilters}
-            </Button>
-        </div>
-    );
 
     return (
         <div className="min-h-screen transition-colors duration-300" style={{ background: 'var(--page-bg)', color: 'var(--text-primary)' }}>
@@ -427,7 +337,27 @@ export default function FindFreelancers() {
                                     </button>
                                 ) : null}
                             </div>
-                            <FilterSidebar />
+                            <FilterSidebar
+                                searchQuery={searchQuery}
+                                setSearchQuery={setSearchQuery}
+                                availableOnly={availableOnly}
+                                setAvailableOnly={setAvailableOnly}
+                                selectedCategories={selectedCategories}
+                                setSelectedCategories={setSelectedCategories}
+                                selectedSkills={selectedSkills}
+                                setSelectedSkills={setSelectedSkills}
+                                rateRange={rateRange}
+                                setRateRange={setRateRange}
+                                minRating={minRating}
+                                setMinRating={setMinRating}
+                                verifiedOnly={verifiedOnly}
+                                setVerifiedOnly={setVerifiedOnly}
+                                clearFilters={clearFilters}
+                                copy={copy}
+                                tx={tx}
+                                categoryOptions={CATEGORY_OPTIONS}
+                                skillOptions={SKILL_OPTIONS}
+                            />
                         </div>
                     </aside>
 
@@ -530,7 +460,27 @@ export default function FindFreelancers() {
                             </button>
                         </div>
                         <div className="flex-1 overflow-y-auto px-6 py-6">
-                            <FilterSidebar />
+                            <FilterSidebar
+                                searchQuery={searchQuery}
+                                setSearchQuery={setSearchQuery}
+                                availableOnly={availableOnly}
+                                setAvailableOnly={setAvailableOnly}
+                                selectedCategories={selectedCategories}
+                                setSelectedCategories={setSelectedCategories}
+                                selectedSkills={selectedSkills}
+                                setSelectedSkills={setSelectedSkills}
+                                rateRange={rateRange}
+                                setRateRange={setRateRange}
+                                minRating={minRating}
+                                setMinRating={setMinRating}
+                                verifiedOnly={verifiedOnly}
+                                setVerifiedOnly={setVerifiedOnly}
+                                clearFilters={clearFilters}
+                                copy={copy}
+                                tx={tx}
+                                categoryOptions={CATEGORY_OPTIONS}
+                                skillOptions={SKILL_OPTIONS}
+                            />
                         </div>
                         <div className="border-t border-[var(--color-border-default)] p-6">
                             <Button className="w-full" onClick={() => setShowFilters(false)}>

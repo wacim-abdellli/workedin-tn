@@ -57,6 +57,25 @@ function clearProfileCache() {
     // ignore
   }
 }
+
+function resolveModeAvatarUrl(profile: Profile): string | undefined {
+  if (profile.active_mode === 'freelancer' && profile.avatar_url_freelancer) {
+    return profile.avatar_url_freelancer;
+  }
+
+  if (profile.active_mode === 'client' && profile.avatar_url_client) {
+    return profile.avatar_url_client;
+  }
+
+  return profile.avatar_url_freelancer || profile.avatar_url_client || profile.avatar_url;
+}
+
+function withModeAwareAvatar(profile: Profile): Profile {
+  return {
+    ...profile,
+    avatar_url: resolveModeAvatarUrl(profile),
+  };
+}
 // ─────────────────────────────────────────────────────────────────────────────
 
 interface AuthContextType {
@@ -226,7 +245,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       if (!opts?.suppressInitialCacheHydration) {
         const cached = readProfileCache(userId);
         if (cached && !profileRef.current) {
-          setProfile(cached.profile);
+          setProfile(withModeAwareAvatar(cached.profile));
           setFreelancerProfile(cached.freelancerProfile);
           syncWorkspaceFromProfile(cached.profile, cached.freelancerProfile);
         }
@@ -252,7 +271,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
           profileResult = await loadProfile();
         }
 
-        const nextProfile = profileResult.data;
+        const nextProfile = profileResult.data
+          ? withModeAwareAvatar(profileResult.data as Profile)
+          : null;
         if (!nextProfile) {
           setProfile(null);
           setFreelancerProfile(null);
@@ -370,7 +391,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           // ── Hydrate from cache instantly so avatar/profile shows right away ──
           const cached = readProfileCache(currentSession.user.id);
           if (cached) {
-            setProfile(cached.profile);
+            setProfile(withModeAwareAvatar(cached.profile));
             setFreelancerProfile(cached.freelancerProfile);
             // Only sync workspace from profile if no saved workspace preference
             if (!savedWorkspace) {
@@ -672,7 +693,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
        { timeoutMs: 3000 }
      );
 
-     const nextProfile = profile ? { ...profile, ...data } : ({ id: user.id, ...data } as Profile);
+     const nextProfileRaw = profile ? { ...profile, ...data } : ({ id: user.id, ...data } as Profile);
+     const nextProfile = withModeAwareAvatar(nextProfileRaw);
      setProfile(nextProfile);
      syncWorkspaceFromProfile(nextProfile, freelancerProfile);
      // Keep cache in sync so next page load reflects the update immediately
@@ -814,4 +836,3 @@ export function useAuth() {
 export function useActiveWorkspace() {
   return useWorkspaceStore((state) => state.activeWorkspace);
 }
-

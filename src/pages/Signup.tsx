@@ -1,4 +1,4 @@
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useState } from 'react';
 import SEO, { SEO_CONFIG } from '../components/common/SEO';
@@ -9,15 +9,34 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useToast } from '../components/ui/Toast';
 import { Logo } from '../components/ui/Logo';
+import SignupForm from '../components/auth/SignupForm';
 
 function Signup() {
     const navigate = useNavigate();
     const location = useLocation();
+    const [searchParams] = useSearchParams();
     const { signUpWithEmail } = useAuth();
     const { t, tx } = useTranslation();
     const { showToast } = useToast();
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const shouldShowTypeSelection = searchParams.get('step') === 'select-type';
+
+    if (shouldShowTypeSelection) {
+        return (
+            <>
+                <SEO {...SEO_CONFIG.signup} url="/signup?step=select-type" noIndex />
+                <div
+                    className="min-h-screen flex items-center justify-center px-4"
+                    style={{
+                        background: 'radial-gradient(circle at 20% 20%, rgba(232,130,12,0.08), transparent 45%), #0c0c0c',
+                    }}
+                >
+                    <SignupForm />
+                </div>
+            </>
+        );
+    }
     
     const [attempts, setAttempts] = useState(0);
     const [lockoutUntil, setLockoutTime] = useState<number | null>(() => {

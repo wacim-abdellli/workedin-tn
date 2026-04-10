@@ -1,5 +1,5 @@
 import { logger } from "@/lib/logger";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import {
   Bell,
@@ -304,6 +304,30 @@ function Settings() {
   const identityLabel = profile?.cin_verified
     ? tx("settings.identityVerified", undefined, "Verified")
     : tx("settings.verifyIdentity", undefined, "Not verified");
+
+  // Memoize the payment input placeholder to prevent re-renders
+  const paymentPlaceholder = useMemo(
+    () =>
+      newPaymentForm.type === "bank_transfer"
+        ? tx("settings.bankAccountNumber", undefined, "Bank account number")
+        : tx("settings.phoneNumber", undefined, "Phone number"),
+    [newPaymentForm.type, tx]
+  );
+
+  // Stable onChange handlers to prevent input re-renders
+  const handlePaymentTypeChange = useCallback((event: React.ChangeEvent<HTMLSelectElement>) => {
+    setNewPaymentForm((prev) => ({
+      ...prev,
+      type: event.target.value,
+    }));
+  }, []);
+
+  const handlePaymentDetailsChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    setNewPaymentForm((prev) => ({
+      ...prev,
+      details: event.target.value,
+    }));
+  }, []);
 
   const renderAccountTab = () => (
     <div className="space-y-6">
@@ -633,12 +657,7 @@ function Settings() {
             </label>
             <select
               value={newPaymentForm.type}
-              onChange={(event) =>
-                setNewPaymentForm({
-                  ...newPaymentForm,
-                  type: event.target.value,
-                })
-              }
+              onChange={handlePaymentTypeChange}
               className="form-control"
               disabled={isSavingPayment}
             >
@@ -653,22 +672,9 @@ function Settings() {
           <Input
             label={tx("settings.paymentDetails", undefined, "Payment details")}
             value={newPaymentForm.details}
-            onChange={(event) =>
-              setNewPaymentForm({
-                ...newPaymentForm,
-                details: event.target.value,
-              })
-            }
+            onChange={handlePaymentDetailsChange}
             disabled={isSavingPayment}
-            placeholder={
-              newPaymentForm.type === "bank_transfer"
-                ? tx(
-                    "settings.bankAccountNumber",
-                    undefined,
-                    "Bank account number",
-                  )
-                : tx("settings.phoneNumber", undefined, "Phone number")
-            }
+            placeholder={paymentPlaceholder}
           />
 
           <div className="flex justify-end gap-3">
