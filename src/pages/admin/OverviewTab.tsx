@@ -3,7 +3,6 @@ import { Users, Briefcase, DollarSign, FileText, Activity, UserPlus, Shield, Fla
 import { supabase } from '@/lib/supabase';
 import { supabaseWithRetry } from '@/lib/supabaseWithRetry';
 import { useTranslation } from '@/i18n';
-import { adminInsetClass, adminPanelClass, adminPillClass } from './adminTheme';
 
 async function countWithRetry(queryFn: () => PromiseLike<{ count: number | null; error: unknown }>) {
     const { count } = await Promise.race([
@@ -33,20 +32,23 @@ interface OverviewStats {
     }>;
 }
 
-function StatCard({ icon: Icon, label, value, tone }: { icon: React.ElementType; label: string; value: number | string; tone?: string }) {
+function StatCard({ icon: Icon, label, value, color }: { icon: React.ElementType; label: string; value: number | string; color?: string }) {
+    const bgColor = color || 'bg-violet-500';
     return (
-        <div className={`${adminPanelClass} p-6 transition-all duration-300 hover:-translate-y-0.5`}>
-            <div className="flex items-start justify-between">
-                <div className="flex h-14 w-14 items-center justify-center rounded-[1.35rem] shadow-md" style={{ background: tone || 'linear-gradient(135deg, #7c3aed 0%, #9333ea 100%)' }}><Icon className="w-6 h-6 text-white" /></div>
+        <div className="bg-white dark:bg-[#111] border border-gray-200 dark:border-gray-800 rounded-xl p-6 hover:shadow-lg transition-shadow">
+            <div className="flex items-center justify-between mb-4">
+                <div className={`w-12 h-12 rounded-lg ${bgColor} flex items-center justify-center`}>
+                    <Icon className="w-6 h-6 text-white" />
+                </div>
             </div>
-            <p className="mt-5 text-4xl font-bold tracking-[-0.04em] text-foreground">{value}</p>
-            <p className="mt-1 text-sm font-medium text-muted">{label}</p>
+            <p className="text-3xl font-bold text-gray-900 dark:text-white mb-1">{value}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">{label}</p>
         </div>
     );
 }
 
 export default function OverviewTab() {
-     const { language, tx } = useTranslation();
+    const { language } = useTranslation();
 
     const { data: stats, isLoading } = useQuery({
         queryKey: ['admin-overview-stats'],
@@ -101,68 +103,87 @@ export default function OverviewTab() {
         pendingVerifications: 0,
         recentVerificationRequests: [],
     };
-    const panelClass = adminPanelClass;
 
     if (isLoading) {
         return (
             <div className="flex h-64 items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin text-[var(--color-brand-primary)]" />
+                <Loader2 className="h-8 w-8 animate-spin text-violet-500" />
             </div>
         );
     }
 
     return (
-        <div className="space-y-8">
-            <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-                 <StatCard icon={Users} label={tx('dashboard.admin.overview.totalUsers', undefined, 'Total users')} value={s.totalUsers} />
-                 <StatCard icon={Briefcase} label={tx('dashboard.admin.overview.activeJobs', undefined, 'Active jobs')} value={s.activeJobs} tone="var(--workspace-primary-hover)" />
-                 <StatCard icon={FileText} label={tx('dashboard.admin.overview.activeContracts', undefined, 'Active contracts')} value={s.activeContracts} tone="var(--workspace-primary-mid)" />
-                 <StatCard icon={DollarSign} label={tx('dashboard.admin.overview.revenue', undefined, 'Revenue (TND)')} value={s.totalRevenue} tone="var(--workspace-primary)" />
-             </div>
-            <div className="grid lg:grid-cols-2 gap-6">
-                <div className={panelClass}>
-                     <h3 className="font-bold text-foreground mb-4 flex items-center gap-2">
-                         <Activity className="w-5 h-5 text-[var(--color-status-info)]" />{tx('dashboard.admin.overview.todayActivity', undefined, 'Today activity')}
-                     </h3>
-                     <div className="grid grid-cols-2 gap-4">
-                         <div className={`${adminInsetClass} p-4 ${adminPillClass('emerald')}`}>
-                              <div className="flex items-center gap-2 mb-2"><UserPlus className="w-5 h-5 text-[var(--color-status-success)] dark:text-[var(--color-status-success)]" /><span className="text-[var(--color-status-success)] dark:text-[var(--color-status-success)] font-medium">{tx('dashboard.admin.overview.newSignups', undefined, 'New signups')}</span></div>
-                              <p className="text-2xl font-bold text-[var(--color-status-success)] dark:text-[var(--color-status-success)]">{s.todaySignups}</p>
-                          </div>
-                          <div className={`${adminInsetClass} p-4 ${adminPillClass('cyan')}`}>
-                              <div className="flex items-center gap-2 mb-2"><FileText className="w-5 h-5 text-[var(--color-status-info)] dark:text-[var(--color-status-info)]" /><span className="text-[var(--color-status-info)] dark:text-[var(--color-status-info)] font-medium">{tx('dashboard.admin.overview.newContracts', undefined, 'New contracts')}</span></div>
-                              <p className="text-2xl font-bold text-[var(--color-status-info)] dark:text-[var(--color-status-info)]">{s.todayContracts}</p>
-                          </div>
-                     </div>
-                 </div>
-                <div className={panelClass}>
-                     <h3 className="font-bold text-foreground mb-4 flex items-center gap-2">
-                         <Shield className="w-5 h-5 text-[var(--color-status-warning)]" />
-                         {tx('dashboard.admin.overview.pendingVerifications', undefined, 'Pending verifications')}
-                     </h3>
-                     {s.pendingVerifications === 0 ? (
-                         <p className="text-sm text-muted text-center py-4">{tx('dashboard.admin.overview.noPendingRequests', undefined, 'No pending requests')}</p>
-                     ) : (
-                         <div className="space-y-3">
-                              <div className={`flex items-center justify-between rounded-xl px-4 py-3 ${adminPillClass('amber')}`}>
-                                  <span className="text-sm font-medium text-[var(--color-status-warning-hover)] dark:text-[var(--color-status-warning)]">{tx('dashboard.admin.overview.requestsCount', undefined, 'Pending requests count')}</span>
-                                  <span className="text-lg font-bold text-[var(--color-status-warning)] dark:text-[var(--color-status-warning)]">{s.pendingVerifications}</span>
-                              </div>
-                              {s.recentVerificationRequests.map((request) => (
-                                  <div key={request.id} className={`${adminInsetClass} px-4 py-3`}>
-                                      <p className="font-medium text-foreground">{request.profile?.full_name || tx('dashboard.admin.overview.user', undefined, 'User')}</p>
-                                      <p className="text-sm text-muted">{request.profile?.email || ''}</p>
-                                      <p className="mt-1 text-xs text-muted">{new Date(request.submitted_at).toLocaleString(language === 'ar' ? 'ar-TN' : language === 'fr' ? 'fr-FR' : 'en-US')}</p>
-                                 </div>
-                             ))}
-                         </div>
-                     )}
-                 </div>
+        <div className="space-y-6">
+            {/* Stats Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <StatCard icon={Users} label="Total users" value={s.totalUsers} color="bg-violet-500" />
+                <StatCard icon={Briefcase} label="Active jobs" value={s.activeJobs} color="bg-blue-500" />
+                <StatCard icon={FileText} label="Active contracts" value={s.activeContracts} color="bg-cyan-500" />
+                <StatCard icon={DollarSign} label="Revenue (TND)" value={s.totalRevenue} color="bg-green-500" />
             </div>
-            <div className={panelClass}>
-                 <h3 className="font-bold text-foreground mb-4 flex items-center gap-2"><Flag className="w-5 h-5 text-[var(--color-status-error)]" />{tx('dashboard.admin.overview.reports', undefined, 'Reports')}</h3>
-                 <p className="text-sm text-muted text-center py-6">{tx('dashboard.admin.overview.noReports', undefined, 'No reports for now')}</p>
-             </div>
+
+            {/* Today Activity & Verifications */}
+            <div className="grid lg:grid-cols-2 gap-6">
+                {/* Today Activity */}
+                <div className="bg-white dark:bg-[#111] border border-gray-200 dark:border-gray-800 rounded-xl p-6">
+                    <h3 className="font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                        <Activity className="w-5 h-5 text-blue-500" />
+                        Today's Activity
+                    </h3>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800 rounded-lg p-4">
+                            <div className="flex items-center gap-2 mb-2">
+                                <UserPlus className="w-5 h-5 text-green-600 dark:text-green-400" />
+                                <span className="text-sm font-medium text-green-600 dark:text-green-400">New signups</span>
+                            </div>
+                            <p className="text-2xl font-bold text-green-600 dark:text-green-400">{s.todaySignups}</p>
+                        </div>
+                        <div className="bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                            <div className="flex items-center gap-2 mb-2">
+                                <FileText className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                                <span className="text-sm font-medium text-blue-600 dark:text-blue-400">New contracts</span>
+                            </div>
+                            <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{s.todayContracts}</p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Pending Verifications */}
+                <div className="bg-white dark:bg-[#111] border border-gray-200 dark:border-gray-800 rounded-xl p-6">
+                    <h3 className="font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                        <Shield className="w-5 h-5 text-amber-500" />
+                        Pending Verifications
+                    </h3>
+                    {s.pendingVerifications === 0 ? (
+                        <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">No pending requests</p>
+                    ) : (
+                        <div className="space-y-3">
+                            <div className="bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 rounded-lg px-4 py-3 flex items-center justify-between">
+                                <span className="text-sm font-medium text-amber-600 dark:text-amber-400">Pending requests</span>
+                                <span className="text-lg font-bold text-amber-600 dark:text-amber-400">{s.pendingVerifications}</span>
+                            </div>
+                            {s.recentVerificationRequests.map((request) => (
+                                <div key={request.id} className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-3">
+                                    <p className="font-medium text-gray-900 dark:text-white">{request.profile?.full_name || 'User'}</p>
+                                    <p className="text-sm text-gray-500 dark:text-gray-400">{request.profile?.email || ''}</p>
+                                    <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">
+                                        {new Date(request.submitted_at).toLocaleString(language === 'ar' ? 'ar-TN' : language === 'fr' ? 'fr-FR' : 'en-US')}
+                                    </p>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* Reports */}
+            <div className="bg-white dark:bg-[#111] border border-gray-200 dark:border-gray-800 rounded-xl p-6">
+                <h3 className="font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                    <Flag className="w-5 h-5 text-red-500" />
+                    Reports
+                </h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-6">No reports for now</p>
+            </div>
         </div>
     );
 }
