@@ -281,23 +281,22 @@ export default function Wallet() {
                       </tr>
                     </thead>
                     <tbody>
-                      {transactions.map((tx: Transaction) => {
-                          const { tx } = useTranslation();
-                        const isCredit = isCreditTransaction(tx.type);
-                        const isDebit = isDebitTransaction(tx.type);
+                      {transactions.map((transaction: Transaction) => {
+                        const isCredit = isCreditTransaction(transaction.type);
+                        const isDebit = isDebitTransaction(transaction.type);
                         
                         return (
-                          <tr key={tx.id} className="data-table-row">
+                          <tr key={transaction.id} className="data-table-row">
                             <td className="data-table-td whitespace-nowrap text-muted-foreground">
-                              {formatDate(tx.created_at)}
+                              {formatDate(transaction.created_at)}
                             </td>
                             <td className="data-table-td whitespace-nowrap">
                               <span className="status-pill bg-muted text-muted-foreground">
-                                {formatTransactionType(tx.type, language)}
+                                {formatTransactionType(transaction.type, language)}
                               </span>
                             </td>
                             <td className="data-table-td text-foreground">
-                              {tx.description || t.wallet?.transactionLabel || 'Transaction'}
+                              {transaction.description || t.wallet?.transactionLabel || 'Transaction'}
                             </td>
                             <td className="data-table-td whitespace-nowrap text-end">
                               <span className={`text-sm font-semibold ${
@@ -305,12 +304,12 @@ export default function Wallet() {
                                 isDebit ? 'text-red-600 dark:text-red-400' : 
                                 'text-foreground'
                               }`}>
-                                {isCredit ? '+' : isDebit ? '-' : ''}{formatCurrency(tx.amount, true, language)}
+                                {isCredit ? '+' : isDebit ? '-' : ''}{formatCurrency(transaction.amount, true, language)}
                               </span>
                             </td>
                             <td className="data-table-td whitespace-nowrap text-center">
-                              <span className={`status-pill ${getStatusColor(tx.status)}`}>
-                                {formatTransactionStatus(tx.status, language)}
+                              <span className={`status-pill ${getStatusColor(transaction.status)}`}>
+                                {formatTransactionStatus(transaction.status, language)}
                               </span>
                             </td>
                           </tr>
@@ -322,35 +321,34 @@ export default function Wallet() {
 
                 {/* Mobile card layout */}
                 <div className="md:hidden space-y-3 p-4">
-                  {transactions.map((tx: Transaction) => {
-                      const { tx } = useTranslation();
-                    const isCredit = isCreditTransaction(tx.type);
-                    const isDebit = isDebitTransaction(tx.type);
+                  {transactions.map((transaction: Transaction) => {
+                    const isCredit = isCreditTransaction(transaction.type);
+                    const isDebit = isDebitTransaction(transaction.type);
                     
                     return (
-                      <div key={tx.id} className="bg-card border border-border rounded-xl p-4 space-y-3">
+                      <div key={transaction.id} className="bg-card border border-border rounded-xl p-4 space-y-3">
                         <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                           <div className="min-w-0">
                             <span className="status-pill bg-muted text-muted-foreground text-xs">
-                              {formatTransactionType(tx.type, language)}
+                              {formatTransactionType(transaction.type, language)}
                             </span>
-                            <p className="text-sm text-muted-foreground mt-1">{formatDate(tx.created_at)}</p>
+                            <p className="text-sm text-muted-foreground mt-1">{formatDate(transaction.created_at)}</p>
                           </div>
                           <span className={`text-lg font-bold break-words sm:text-end ${
                             isCredit ? 'text-green-600 dark:text-green-400' : 
                             isDebit ? 'text-red-600 dark:text-red-400' : 
                             'text-foreground'
                           }`}>
-                            {isCredit ? '+' : isDebit ? '-' : ''}{formatCurrency(tx.amount, true, language)}
+                            {isCredit ? '+' : isDebit ? '-' : ''}{formatCurrency(transaction.amount, true, language)}
                           </span>
                         </div>
                         <p className="text-sm break-words text-foreground">
-                          {tx.description || t.wallet?.transactionLabel || 'Transaction'}
+                          {transaction.description || t.wallet?.transactionLabel || 'Transaction'}
                         </p>
                         <div className="flex flex-col gap-2 border-t border-border pt-2 border-border sm:flex-row sm:items-center sm:justify-between">
                           <span className="text-xs text-muted-foreground">{t.wallet?.statusLabel || 'Status'}</span>
-                          <span className={`status-pill text-xs ${getStatusColor(tx.status)}`}>
-                            {formatTransactionStatus(tx.status, language)}
+                          <span className={`status-pill text-xs ${getStatusColor(transaction.status)}`}>
+                            {formatTransactionStatus(transaction.status, language)}
                           </span>
                         </div>
                       </div>
@@ -416,7 +414,6 @@ export default function Wallet() {
                     </thead>
                     <tbody>
                       {withdrawals.map((withdrawal: Withdrawal) => {
-                          const { tx } = useTranslation();
                         const statusColors: Record<WithdrawalStatus, string> = {
                           pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
                           approved: 'bg-primary-100 text-primary-800 dark:bg-primary-900/30 dark:text-primary-300',
@@ -456,7 +453,6 @@ export default function Wallet() {
                 {/* Mobile card layout */}
                 <div className="md:hidden space-y-3 p-4">
                   {withdrawals.map((withdrawal: Withdrawal) => {
-                      const { tx } = useTranslation();
                     const statusColors: Record<WithdrawalStatus, string> = {
                       pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
                       approved: 'bg-primary-100 text-primary-800 dark:bg-primary-900/30 dark:text-primary-300',

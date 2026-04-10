@@ -1,6 +1,6 @@
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import SEO, { SEO_CONFIG } from '../components/common/SEO';
 import { ShieldCheck, Lock, Globe2 } from 'lucide-react';
 import { useTranslation } from '../i18n';
@@ -13,8 +13,7 @@ import { Logo } from '../components/ui/Logo';
 function Signup() {
     const navigate = useNavigate();
     const location = useLocation();
-    const [searchParams] = useSearchParams();
-    const { profile, signUpWithEmail } = useAuth();
+    const { signUpWithEmail } = useAuth();
     const { t, tx } = useTranslation();
     const { showToast } = useToast();
     const [isLoading, setIsLoading] = useState(false);

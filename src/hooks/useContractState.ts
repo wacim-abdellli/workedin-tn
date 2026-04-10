@@ -104,7 +104,7 @@ export function useContractState({
             additionalData: Partial<ContractData> = {}
         ) => {
             if (!contract || !canTransition(newStatus)) {
-                throw new Error('ا� ت�ا� ا�حا�ة غ�`ر صا�ح');
+                throw new Error('Invalid status transition');
             }
 
             const { data, error: updateError } = await supabase
@@ -120,7 +120,7 @@ export function useContractState({
 
             if (updateError) throw updateError;
             if (!data || data.length === 0) {
-                throw new Error('تغ�`رت حا�ة ا�ع�د أث� اء ا�ع�&��`ة�R �`رج�0 تحد�`ث ا�صفحة');
+                throw new Error('Contract status changed during operation. Please refresh the page.');
             }
 
             setContract({
@@ -139,7 +139,7 @@ export function useContractState({
     const deliverWork = useCallback(
         async (note: string) => {
             if (userRole !== 'freelancer') {
-                throw new Error('ف�ط ا��&��ظف �`�&ْ� �! تس��`�& ا�ع�&�');
+                throw new Error('Only freelancers can deliver work');
             }
 
             setIsDelivering(true);
@@ -156,7 +156,7 @@ export function useContractState({
                     contract_id: contractId,
                     sender_id: userId,
                     receiver_id: receiverId,
-                    content: `�x� ت�& تس��`�& ا�ع�&�: ${note}`,
+                    content: `Work has been delivered: ${note}`,
                     message_type: 'delivery',
                 });
 
@@ -171,7 +171,7 @@ export function useContractState({
     const acceptWork = useCallback(
         async () => {
             if (userRole !== 'client') {
-                throw new Error('ف�ط ا�ع�&�`� �`�&ْ� �! �ب��� ا�ع�&�');
+                throw new Error('Only clients can accept work');
             }
 
             setIsAccepting(true);
@@ -200,7 +200,7 @@ export function useContractState({
                     contract_id: contractId,
                     sender_id: userId,
                     receiver_id: receiverId,
-                    content: '�S& ت�& �ب��� ا�ع�&� ��إت�&ا�& ا�دفع',
+                    content: 'Work has been accepted and payment released',
                     message_type: 'system',
                 });
 
@@ -215,7 +215,7 @@ export function useContractState({
     const requestChanges = useCallback(
         async (feedback: string) => {
             if (userRole !== 'client') {
-                throw new Error('ف�ط ا�ع�&�`� �`�&ْ� �! ط�ب تعد�`�ات');
+                throw new Error('Only clients can request changes');
             }
 
             const receiverId = getCounterpartyId(contract, userRole);
@@ -225,7 +225,7 @@ export function useContractState({
                 contract_id: contractId,
                 sender_id: userId,
                 receiver_id: receiverId,
-                content: `�x ط�ب تعد�`�ات: ${feedback}`,
+                content: `Changes requested: ${feedback}`,
                 message_type: 'feedback',
             });
 
@@ -262,7 +262,7 @@ export function useContractState({
                     contract_id: contractId,
                     sender_id: userId,
                     receiver_id: receiverId,
-                    content: `�a ️ ت�& فتح � زاع: ${reason}`,
+                    content: `Dispute opened: ${reason}`,
                     message_type: 'dispute',
                 });
 
