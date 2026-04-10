@@ -194,26 +194,46 @@ export default function VerificationsTab() {
                 throw new Error(tx('dashboard.admin.verification.notUpdated', undefined, 'Verification request was not updated.'));
             }
 
-            // Use atomic RPC function to prevent race conditions
-            const { data, error: rpcError } = await supabaseWithRetry(() =>
+            const cinVerified = action === 'approved';
+
+            // Try RPC first, fall back to direct updates if it fails
+            const { error: rpcError } = await supabaseWithRetry(() =>
                 client.rpc('update_verification_status', {
                     p_user_id: userId,
                     p_action: action,
                     p_reviewed_at: new Date().toISOString(),
                 })
-            , { timeoutMs: actionTimeoutMs });
+            , { timeoutMs: actionTimeoutMs, throwOnError: false });
 
             if (rpcError) {
-                throw rpcError;
+                console.warn('[VerificationsTab] RPC failed, falling back to direct updates:', rpcError);
+
+                // Fallback: direct table updates
+                const { error: ivError } = await supabase
+                    .from('identity_verifications')
+                    .update({ status: action, reviewed_at: new Date().toISOString() })
+                    .eq('user_id', userId)
+                    .eq('status', 'pending');
+                if (ivError) throw ivError;
+
+                const { error: profileError } = await supabase
+                    .from('profiles')
+                    .update({ cin_verified: cinVerified, updated_at: new Date().toISOString() })
+                    .eq('id', userId);
+                if (profileError) throw profileError;
+
+                // Best-effort update freelancer_profiles
+                await supabase
+                    .from('freelancer_profiles')
+                    .update({ cin_verified: cinVerified })
+                    .eq('id', userId);
             }
 
-            // Log success for debugging
-            console.log('[VerificationsTab] Verification status updated atomically:', data);
+            console.log('[VerificationsTab] Verification status updated:', action);
 
             await Promise.resolve(load()).catch((reloadError) => {
                 console.warn('Verification reload failed after action:', reloadError);
             });
-            // User will be notified via notification center - no toast needed
          } catch (err) {
              console.error('Verification action error:', err);
              showToast(tx('dashboard.admin.verification.actionFailed', undefined, 'Action failed'), 'error');
