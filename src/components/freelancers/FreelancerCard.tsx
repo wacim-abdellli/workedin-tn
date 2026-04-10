@@ -54,7 +54,7 @@ function FreelancerCard({
   return (
     <div
       className={cn(
-        'group card card-hover card-hover-shine cursor-pointer rounded-[28px]',
+        'group card card-hover card-hover-shine cursor-pointer rounded-[28px] relative',
         viewMode === 'list' ? 'flex flex-col gap-6 p-6 md:flex-row' : 'flex flex-col p-6'
       )}
       onMouseMove={(event) => {

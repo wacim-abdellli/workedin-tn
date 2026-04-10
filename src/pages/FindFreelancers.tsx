@@ -414,7 +414,7 @@ export default function FindFreelancers() {
                 </div>
 
                 <div className="flex items-start gap-8">
-                    <aside className="sticky top-28 hidden w-80 shrink-0 lg:block">
+                    <aside className="sticky top-28 hidden w-80 shrink-0 lg:block z-10">
                         <div className="rounded-[28px] p-6 border" style={{ background: 'color-mix(in srgb, var(--card-bg) 90%, transparent)', borderColor: 'var(--border)', boxShadow: '0 24px 60px -44px color-mix(in srgb, var(--workspace-primary) 28%, transparent)' }}>
                             <div className="mb-6 flex items-center justify-between">
                                 <div className="flex items-center gap-2">
@@ -431,7 +431,7 @@ export default function FindFreelancers() {
                         </div>
                     </aside>
 
-                    <main className="min-w-0 flex-1">
+                    <main className="min-w-0 flex-1 overflow-hidden">
                         <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                             <div className="flex flex-wrap items-center gap-3 text-sm" style={{ color: 'var(--text-muted)' }}>
                                 <span>{copy.resultsCount.replace('{{count}}', filteredFreelancers.length.toString())}</span>
