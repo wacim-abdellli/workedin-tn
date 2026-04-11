@@ -1,41 +1,22 @@
-<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- Background -->
-  <rect width="1200" height="630" fill="hsl(210, 20%, 98%)"/>
-  
-  <!-- Gradient overlay -->
-  <rect width="1200" height="630" fill="url(#bgGradient)" opacity="0.1"/>
-  
-  <!-- Decorative circles -->
-  <circle cx="200" cy="150" r="150" fill="hsl(174, 62%, 47%)" opacity="0.1"/>
-  <circle cx="1000" cy="480" r="200" fill="hsl(174, 62%, 47%)" opacity="0.05"/>
-  
-  <!-- Shield Icon (centered) -->
-  <g transform="translate(600, 200)">
-    <path d="M0 -80L-60 -50V30C-60 90 -20 140 30 140C80 140 120 90 120 30V-50L60 -80C55 -82 45 -82 40 -80L0 -80Z" fill="url(#shieldGradient)" stroke="url(#shieldGradient)" stroke-width="4"/>
-    <path d="M0 -60L-45 -35V22.5C-45 67.5 -15 105 22.5 105C60 105 90 67.5 90 22.5V-35L45 -60C42 -61.5 38 -61.5 35 -60L0 -60Z" fill="white"/>
-  </g>
-  
-  <!-- Text -->
-  <text x="600" y="380" font-family="system-ui, -apple-system, sans-serif" font-size="72" font-weight="bold" text-anchor="middle" fill="hsl(222, 47%, 11%)">
-    Dhmad<tspan fill="hsl(174, 62%, 47%)">.tn</tspan>
-  </text>
-  
-  <text x="600" y="450" font-family="system-ui, -apple-system, sans-serif" font-size="32" text-anchor="middle" fill="hsl(215, 16%, 47%)">
-    Tunisia's #1 Secure Payment Service
-  </text>
-  
-  <text x="600" y="500" font-family="system-ui, -apple-system, sans-serif" font-size="24" text-anchor="middle" fill="hsl(215, 16%, 47%)">
-    Secure escrow service for safe transactions
-  </text>
-  
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
   <defs>
-    <linearGradient id="shieldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:hsl(174, 62%, 47%);stop-opacity:1" />
-      <stop offset="100%" style="stop-color:hsl(174, 72%, 40%);stop-opacity:1" />
+    <linearGradient id="dhmad_bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#2DD4BF"/>
+      <stop offset="100%" style="stop-color:#0D9488"/>
     </linearGradient>
-    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:hsl(174, 62%, 47%);stop-opacity:1" />
-      <stop offset="100%" style="stop-color:hsl(217, 91%, 22%);stop-opacity:1" />
+    <linearGradient id="dhmad_shield" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0F766E"/>
+      <stop offset="100%" style="stop-color:#134E4A"/>
     </linearGradient>
   </defs>
+  <!-- Rounded square bg -->
+  <rect width="100" height="100" rx="20" fill="url(#dhmad_bg)"/>
+  <!-- Shield body -->
+  <path d="M50 12 L25 24 L25 52 C25 68 36 80 50 85 C64 80 75 68 75 52 L75 24 Z" fill="white" opacity="0.25"/>
+  <!-- Shield outline -->
+  <path d="M50 14 L27 26 L27 52 C27 67 37 78 50 83 C63 78 73 67 73 52 L73 26 Z" fill="none" stroke="white" stroke-width="2.5" opacity="0.8"/>
+  <!-- Inner shield / checkmark area -->
+  <path d="M50 22 L34 31 L34 51 C34 62 41 70 50 74 C59 70 66 62 66 51 L66 31 Z" fill="white" opacity="0.15"/>
+  <!-- Checkmark inside shield -->
+  <polyline points="38,51 46,60 62,42" fill="none" stroke="white" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>

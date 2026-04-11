@@ -2,24 +2,28 @@ import { useEffect, useState, useRef } from 'react';
 
 interface TypewriterTextProps {
   words: string[];
-  speed?: number;       // ms per char
-  deleteSpeed?: number; // ms per char delete
-  pauseMs?: number;     // pause between words
+  speed?: number;
+  deleteSpeed?: number;
+  pauseMs?: number;
   className?: string;
   cursorClassName?: string;
+  startIndex?: number; // which word to start from
 }
 
 export default function TypewriterText({
   words,
-  speed = 80,
-  deleteSpeed = 40,
-  pauseMs = 1800,
+  speed = 65,
+  deleteSpeed = 35,
+  pauseMs = 2200,
   className = '',
   cursorClassName = '',
+  startIndex = 0,
 }: TypewriterTextProps) {
-  const [displayed, setDisplayed] = useState('');
-  const [wordIndex, setWordIndex] = useState(0);
+  const firstWord = words[startIndex % words.length];
+  const [displayed, setDisplayed] = useState(firstWord);
+  const [wordIndex, setWordIndex] = useState(startIndex);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isPaused, setIsPaused] = useState(true); // start paused on first word
   const [showCursor, setShowCursor] = useState(true);
   const timeout = useRef<ReturnType<typeof setTimeout>>();
 
@@ -31,6 +35,15 @@ export default function TypewriterText({
 
   useEffect(() => {
     const current = words[wordIndex % words.length];
+
+    // Initial pause on first word before starting to delete
+    if (isPaused) {
+      timeout.current = setTimeout(() => {
+        setIsPaused(false);
+        setIsDeleting(true); // start by deleting the initial word
+      }, pauseMs);
+      return;
+    }
 
     if (!isDeleting && displayed === current) {
       timeout.current = setTimeout(() => setIsDeleting(true), pauseMs);
@@ -52,15 +65,23 @@ export default function TypewriterText({
     }, delay);
 
     return () => clearTimeout(timeout.current);
-  }, [displayed, isDeleting, wordIndex, words, speed, deleteSpeed, pauseMs]);
+  }, [displayed, isDeleting, wordIndex, words, speed, deleteSpeed, pauseMs, isPaused]);
+
+  // Reserve height based on longest word to prevent layout shift
+  const longestWord = words.reduce((a, b) => a.length > b.length ? a : b, '');
 
   return (
-    <span className={className}>
-      {displayed}
-      <span
-        className={cursorClassName}
-        style={{ opacity: showCursor ? 1 : 0, transition: 'opacity 0.1s' }}
-      >|</span>
+    <span className={className} style={{ display: 'inline-block', position: 'relative' }}>
+      {/* Invisible longest word to reserve space */}
+      <span aria-hidden style={{ visibility: 'hidden', pointerEvents: 'none' }}>{longestWord}</span>
+      {/* Actual typewriter text overlaid */}
+      <span style={{ position: 'absolute', left: 0, top: 0, whiteSpace: 'nowrap' }}>
+        {displayed}
+        <span
+          className={cursorClassName}
+          style={{ opacity: showCursor ? 1 : 0, transition: 'opacity 0.1s', marginLeft: 1 }}
+        >|</span>
+      </span>
     </span>
   );
 }

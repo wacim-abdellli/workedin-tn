@@ -196,6 +196,7 @@ function HeroSection({ stats }: HeroSectionProps) {
                   speed={65}
                   deleteSpeed={35}
                   pauseMs={2200}
+                  startIndex={1}
                   cursorClassName="text-[var(--workspace-primary)]"
                 />
               </span>

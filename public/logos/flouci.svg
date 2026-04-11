@@ -1,19 +1,26 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
   <defs>
     <linearGradient id="fg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#F5A623"/>
+      <stop offset="0%" style="stop-color:#F7A83A"/>
+      <stop offset="50%" style="stop-color:#F08030"/>
       <stop offset="100%" style="stop-color:#E8622A"/>
     </linearGradient>
+    <clipPath id="clip">
+      <rect width="100" height="100" rx="22"/>
+    </clipPath>
   </defs>
+  <!-- Background -->
   <rect width="100" height="100" rx="22" fill="url(#fg)"/>
-  <!-- Outer ring -->
-  <circle cx="50" cy="50" r="34" fill="none" stroke="white" stroke-width="6"/>
-  <!-- Gap at top -->
-  <rect x="44" y="14" width="12" height="8" fill="url(#fg)"/>
-  <!-- Inner spiral circle -->
-  <circle cx="50" cy="55" r="16" fill="none" stroke="white" stroke-width="6"/>
-  <!-- Teardrop cutout -->
-  <ellipse cx="50" cy="47" rx="5" ry="7" fill="url(#fg)"/>
-  <!-- Bottom tail -->
-  <path d="M34 68 Q28 80 38 82" fill="none" stroke="white" stroke-width="6" stroke-linecap="round"/>
+  <g clip-path="url(#clip)">
+    <!-- Outer ring (white) with gap at 12 o'clock -->
+    <circle cx="50" cy="50" r="31" fill="none" stroke="white" stroke-width="7" stroke-dasharray="175 20" stroke-dashoffset="-9"/>
+    <!-- Small semicircle gap fill at top (hides join) -->
+    <circle cx="50" cy="19" r="4.5" fill="url(#fg)"/>
+    <!-- Inner circle (offset downward) -->
+    <circle cx="50" cy="58" r="15" fill="none" stroke="white" stroke-width="7"/>
+    <!-- Teardrop cutout inside inner circle -->
+    <ellipse cx="50" cy="49" rx="4.5" ry="6.5" fill="url(#fg)"/>
+    <!-- Bottom-left curling tail -->
+    <path d="M35 70 Q24 75 28 84 Q32 90 40 87" fill="none" stroke="white" stroke-width="7" stroke-linecap="round"/>
+  </g>
 </svg>
