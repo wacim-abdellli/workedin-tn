@@ -3,48 +3,63 @@ import type { PaymentMethodConfig } from '@/config/paymentMethods';
 import { PAYMENT_METHODS } from '@/config/paymentMethods';
 import { useTranslation } from '@/i18n';
 
-// --- Real payment logos --------------------------------------------------
+// --- Real payment logos via img tags -------------------------------------
 
-function DhmadLogo({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect width="40" height="40" rx="10" fill="#6C3CE1"/>
-      <path d="M20 8C13.373 8 8 13.373 8 20s5.373 12 12 12 12-5.373 12-12S26.627 8 20 8zm0 4a8 8 0 110 16 8 8 0 010-16zm0 3a5 5 0 100 10 5 5 0 000-10z" fill="white" fillOpacity="0.9"/>
-      <circle cx="20" cy="20" r="2.5" fill="white"/>
-    </svg>
-  );
-}
+const LOGO_URLS: Record<string, string> = {
+  dhmad: 'https://dhmad.tn/favicon.ico',
+  flouci: 'https://flouci.com/favicon.ico',
+  d17: 'https://www.laposte.tn/sites/default/files/logo_0.png',
+};
 
-function FlouciLogo({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect width="40" height="40" rx="10" fill="#00B4D8"/>
-      <path d="M12 14h16v2H12zM12 19h10v2H12zM12 24h13v2H12z" fill="white"/>
-      <circle cx="29" cy="26" r="4" fill="#FFD700"/>
-      <path d="M27.5 26l1 1 2-2" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-    </svg>
-  );
-}
+const LOGO_FALLBACK_COLORS: Record<string, string> = {
+  dhmad: '#6C3CE1',
+  flouci: '#00B4D8',
+  d17: '#E63946',
+};
 
-function D17Logo({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect width="40" height="40" rx="10" fill="#E63946"/>
-      <text x="7" y="26" fontFamily="Arial" fontWeight="bold" fontSize="16" fill="white">D17</text>
-    </svg>
-  );
-}
-
-const LOGO_MAP = {
-  dhmad: DhmadLogo,
-  flouci: FlouciLogo,
-  d17: D17Logo,
-} as const;
+const LOGO_INITIALS: Record<string, string> = {
+  dhmad: 'D',
+  flouci: 'F',
+  d17: 'D17',
+};
 
 function MethodLogo({ id, className }: { id: string; className?: string }) {
-  const Logo = LOGO_MAP[id as keyof typeof LOGO_MAP];
-  if (!Logo) return null;
-  return <Logo className={className} />;
+  const url = LOGO_URLS[id];
+  const color = LOGO_FALLBACK_COLORS[id] || '#888';
+  const initials = LOGO_INITIALS[id] || id.toUpperCase();
+
+  if (!url) {
+    return (
+      <div
+        className={`flex items-center justify-center rounded-xl text-white text-xs font-bold ${className}`}
+        style={{ background: color }}
+      >
+        {initials}
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className={`flex items-center justify-center rounded-xl overflow-hidden ${className}`}
+      style={{ background: color }}
+    >
+      <img
+        src={url}
+        alt={id}
+        className="w-6 h-6 object-contain"
+        onError={(e) => {
+          // On error, show initials fallback
+          const target = e.currentTarget;
+          target.style.display = 'none';
+          const parent = target.parentElement;
+          if (parent) {
+            parent.innerHTML = `<span style="color:white;font-size:11px;font-weight:700">${initials}</span>`;
+          }
+        }}
+      />
+    </div>
+  );
 }
 
 // --- Helpers -------------------------------------------------------------
