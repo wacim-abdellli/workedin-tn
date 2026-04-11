@@ -119,18 +119,18 @@ export const publicRoutes: AppRouteDefinition[] = [
     withErrorBoundary(<VerifyEmail />),
   ),
   defineRoute(
-    { path: '/jobs', page: 'JobBoard', section: 'public', guard: 'public', errorBoundary: true },
-    withErrorBoundary(<JobBoard />),
+    { path: '/jobs', page: 'JobBoard', section: 'public', guard: 'protected', errorBoundary: true },
+    withErrorBoundary(withProtected(<JobBoard />)),
   ),
   defineRoute(
     {
       path: '/jobs/:jobId',
       page: 'JobDetail',
       section: 'public',
-      guard: 'public',
+      guard: 'protected',
       errorBoundary: true,
     },
-    withErrorBoundary(<JobDetail />),
+    withErrorBoundary(withProtected(<JobDetail />)),
   ),
   defineRoute(
     {
