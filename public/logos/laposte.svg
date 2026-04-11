@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <rect width="100" height="100" rx="22" fill="white"/>
+  <!-- Navy swoosh top -->
+  <path d="M15 25 Q30 15 55 22 Q75 28 85 20 Q80 35 60 32 Q35 28 20 38 Z" fill="#1B2A6B"/>
+  <!-- Navy swoosh bottom -->
+  <path d="M15 42 Q35 35 60 42 Q78 48 85 38 Q82 55 62 50 Q38 44 18 55 Z" fill="#1B2A6B"/>
+  <!-- Yellow diamond left -->
+  <rect x="22" y="30" width="10" height="10" rx="1" fill="#F5C518" transform="rotate(45 27 35)"/>
+  <!-- Yellow diamonds right -->
+  <rect x="60" y="22" width="8" height="8" rx="1" fill="#F5C518" transform="rotate(45 64 26)"/>
+  <rect x="72" y="22" width="8" height="8" rx="1" fill="#F5C518" transform="rotate(45 76 26)"/>
+</svg>

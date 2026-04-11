@@ -6,9 +6,9 @@ import { useTranslation } from '@/i18n';
 // --- Real payment logos via img tags -------------------------------------
 
 const LOGO_URLS: Record<string, string> = {
-  dhmad: 'https://dhmad.tn/favicon.ico',
-  flouci: 'https://flouci.com/favicon.ico',
-  d17: 'https://www.laposte.tn/sites/default/files/logo_0.png',
+  dhmad: '/logos/dhmad.svg',
+  flouci: '/logos/flouci.svg',
+  d17: '/logos/laposte.svg',
 };
 
 const LOGO_FALLBACK_COLORS: Record<string, string> = {
@@ -40,20 +40,17 @@ function MethodLogo({ id, className }: { id: string; className?: string }) {
   }
 
   return (
-    <div
-      className={`flex items-center justify-center rounded-xl overflow-hidden ${className}`}
-      style={{ background: color }}
-    >
+    <div className={`flex items-center justify-center rounded-xl overflow-hidden bg-white ${className}`}>
       <img
         src={url}
         alt={id}
-        className="w-6 h-6 object-contain"
+        className="w-full h-full object-contain p-1"
         onError={(e) => {
-          // On error, show initials fallback
           const target = e.currentTarget;
           target.style.display = 'none';
           const parent = target.parentElement;
           if (parent) {
+            parent.style.background = color;
             parent.innerHTML = `<span style="color:white;font-size:11px;font-weight:700">${initials}</span>`;
           }
         }}
