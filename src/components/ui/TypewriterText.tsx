@@ -7,7 +7,7 @@ interface TypewriterTextProps {
   pauseMs?: number;
   className?: string;
   cursorClassName?: string;
-  startIndex?: number; // which word to start from
+  startIndex?: number;
 }
 
 export default function TypewriterText({
@@ -19,11 +19,11 @@ export default function TypewriterText({
   cursorClassName = '',
   startIndex = 0,
 }: TypewriterTextProps) {
-  const firstWord = words[startIndex % words.length];
-  const [displayed, setDisplayed] = useState(firstWord);
-  const [wordIndex, setWordIndex] = useState(startIndex);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [isPaused, setIsPaused] = useState(true); // start paused on first word
+  const idx = startIndex % words.length;
+  const [displayed, setDisplayed] = useState(words[idx]);
+  const [wordIndex, setWordIndex] = useState(idx);
+  // 'idle' = fully typed, waiting; 'deleting' = removing chars; 'typing' = adding chars
+  const [phase, setPhase] = useState<'idle' | 'deleting' | 'typing'>('idle');
   const [showCursor, setShowCursor] = useState(true);
   const timeout = useRef<ReturnType<typeof setTimeout>>();
 
@@ -34,53 +34,51 @@ export default function TypewriterText({
   }, []);
 
   useEffect(() => {
+    clearTimeout(timeout.current);
     const current = words[wordIndex % words.length];
 
-    // Initial pause on first word before starting to delete
-    if (isPaused) {
+    if (phase === 'idle') {
+      // Pause then start deleting
+      timeout.current = setTimeout(() => setPhase('deleting'), pauseMs);
+      return;
+    }
+
+    if (phase === 'deleting') {
+      if (displayed.length === 0) {
+        // Move to next word and start typing
+        setWordIndex(i => (i + 1) % words.length);
+        setPhase('typing');
+        return;
+      }
       timeout.current = setTimeout(() => {
-        setIsPaused(false);
-        setIsDeleting(true); // start by deleting the initial word
-      }, pauseMs);
+        setDisplayed(d => d.slice(0, -1));
+      }, deleteSpeed);
       return;
     }
 
-    if (!isDeleting && displayed === current) {
-      timeout.current = setTimeout(() => setIsDeleting(true), pauseMs);
+    if (phase === 'typing') {
+      if (displayed === current) {
+        // Fully typed — go idle
+        setPhase('idle');
+        return;
+      }
+      timeout.current = setTimeout(() => {
+        setDisplayed(current.slice(0, displayed.length + 1));
+      }, speed);
       return;
     }
+  }, [displayed, phase, wordIndex, words, speed, deleteSpeed, pauseMs]);
 
-    if (isDeleting && displayed === '') {
-      setIsDeleting(false);
-      setWordIndex(i => i + 1);
-      return;
-    }
-
-    const delay = isDeleting ? deleteSpeed : speed;
-    timeout.current = setTimeout(() => {
-      setDisplayed(isDeleting
-        ? current.slice(0, displayed.length - 1)
-        : current.slice(0, displayed.length + 1)
-      );
-    }, delay);
-
-    return () => clearTimeout(timeout.current);
-  }, [displayed, isDeleting, wordIndex, words, speed, deleteSpeed, pauseMs, isPaused]);
-
-  // Reserve height based on longest word to prevent layout shift
   const longestWord = words.reduce((a, b) => a.length > b.length ? a : b, '');
 
   return (
     <span className={className} style={{ display: 'inline-block', position: 'relative' }}>
-      {/* Invisible longest word to reserve space */}
+      {/* Reserve space for longest word */}
       <span aria-hidden style={{ visibility: 'hidden', pointerEvents: 'none' }}>{longestWord}</span>
-      {/* Actual typewriter text overlaid */}
+      {/* Actual text */}
       <span style={{ position: 'absolute', left: 0, top: 0, whiteSpace: 'nowrap' }}>
         {displayed}
-        <span
-          className={cursorClassName}
-          style={{ opacity: showCursor ? 1 : 0, transition: 'opacity 0.1s', marginLeft: 1 }}
-        >|</span>
+        <span style={{ opacity: showCursor ? 1 : 0, transition: 'opacity 0.1s', marginLeft: 1 }} className={cursorClassName}>|</span>
       </span>
     </span>
   );
