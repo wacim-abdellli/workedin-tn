@@ -1575,3 +1575,82 @@ h6 {
     box-shadow: var(--shadow-md);
   }
 }
+
+
+/* ========================================
+   SCROLL REVEAL & ANIMATION UTILITIES
+   ======================================== */
+
+@keyframes gradient-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes shimmer-wave {
+  0% { transform: translateX(-140%); }
+  100% { transform: translateX(140%); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--workspace-primary) 40%, transparent); }
+  50% { box-shadow: 0 0 0 12px color-mix(in srgb, var(--workspace-primary) 0%, transparent); }
+}
+
+@keyframes count-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-in-bottom {
+  from { opacity: 0; transform: translateY(60px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-in-left {
+  from { opacity: 0; transform: translateX(-60px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slide-in-right {
+  from { opacity: 0; transform: translateX(60px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes zoom-in {
+  from { opacity: 0; transform: scale(0.8); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes blur-in {
+  from { opacity: 0; filter: blur(16px); transform: translateY(20px); }
+  to { opacity: 1; filter: blur(0); transform: translateY(0); }
+}
+
+.animate-float { animation: float 4s ease-in-out infinite; }
+.animate-pulse-glow { animation: pulse-glow 2.5s ease-in-out infinite; }
+.animate-gradient { 
+  background-size: 200% 200%;
+  animation: gradient-shift 4s ease infinite;
+}
+.animate-shimmer { animation: shimmer-wave 2s infinite; }
+.animate-count-up { animation: count-up 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+.animate-slide-up { animation: slide-in-bottom 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+.animate-slide-left { animation: slide-in-left 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+.animate-slide-right { animation: slide-in-right 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+.animate-zoom-in { animation: zoom-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+.animate-blur-in { animation: blur-in 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+
+/* Stagger delay helpers */
+.delay-100 { animation-delay: 100ms; }
+.delay-200 { animation-delay: 200ms; }
+.delay-300 { animation-delay: 300ms; }
+.delay-400 { animation-delay: 400ms; }
+.delay-500 { animation-delay: 500ms; }
+.delay-600 { animation-delay: 600ms; }
+.delay-700 { animation-delay: 700ms; }
+.delay-800 { animation-delay: 800ms; }

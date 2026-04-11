@@ -2,6 +2,7 @@ import { lazy, Suspense, useState, useEffect } from 'react';
 import { Header, Footer } from '../components/layout';
 import { supabaseAnon } from '../lib/supabase';
 import SEO, { SEO_CONFIG } from '../components/common/SEO';
+import RevealOnScroll from '../components/ui/RevealOnScroll';
 
 import HeroSection from '../components/home/HeroSection';
 
@@ -54,12 +55,24 @@ return (
 
             <HeroSection stats={stats} />
             <Suspense fallback={null}>
-                <ValuePropositions />
-                <HowItWorksSection />
-                <CategoriesSection />
-                <LiveCounterSection stats={stats} />
-                <TestimonialsSection />
-                <CTASection />
+                <RevealOnScroll variant="fade-up">
+                    <ValuePropositions />
+                </RevealOnScroll>
+                <RevealOnScroll variant="fade-up" delay={50}>
+                    <HowItWorksSection />
+                </RevealOnScroll>
+                <RevealOnScroll variant="fade-up" delay={50}>
+                    <CategoriesSection />
+                </RevealOnScroll>
+                <RevealOnScroll variant="blur" delay={50}>
+                    <LiveCounterSection stats={stats} />
+                </RevealOnScroll>
+                <RevealOnScroll variant="fade-up" delay={50}>
+                    <TestimonialsSection />
+                </RevealOnScroll>
+                <RevealOnScroll variant="zoom" delay={50}>
+                    <CTASection />
+                </RevealOnScroll>
             </Suspense>
 
             <Footer />

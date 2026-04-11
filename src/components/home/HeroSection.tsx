@@ -4,6 +4,7 @@ import { ArrowRight, ChevronRight, Shield, Zap, Star } from 'lucide-react';
 import { m, useReducedMotion } from 'framer-motion';
 import { useWorkspaceStore } from '@/lib/workspaceState';
 import { useTranslation } from '@/i18n';
+import TypewriterText from '@/components/ui/TypewriterText';
 
 interface HeroSectionProps {
   stats?: {
@@ -188,7 +189,15 @@ function HeroSection({ stats }: HeroSectionProps) {
                     'linear-gradient(120deg, var(--workspace-primary) 0%, var(--workspace-primary-mid) 45%, color-mix(in srgb, var(--workspace-accent) 75%, var(--workspace-primary-mid)) 100%)',
                 }}
               >
-                {heroContent.titleAccent}
+                <TypewriterText
+                  words={isFreelancer
+                    ? ['Work with the best.', 'Get paid on time.', 'Build your career.']
+                    : ['Work with the elite.', 'Hire verified talent.', 'Pay with escrow.']}
+                  speed={65}
+                  deleteSpeed={35}
+                  pauseMs={2200}
+                  cursorClassName="text-[var(--workspace-primary)]"
+                />
               </span>
             </m.h1>
 
