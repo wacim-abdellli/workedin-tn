@@ -1,15 +1,6 @@
- import { Link } from "react-router-dom";
-import {
-  Facebook,
-  Twitter,
-  Instagram,
-  Linkedin,
-  Mail,
-  MapPin,
-  Phone,
-  Heart,
-} from "lucide-react";
-
+import { Link } from "react-router-dom";
+import { Facebook, Twitter, Instagram, Linkedin, Mail, MapPin, Phone, ArrowRight } from "lucide-react";
+import { useState } from "react";
 import { useTranslation } from "../../i18n";
 import { Logo } from "../ui/Logo";
 import { useAuth } from "@/contexts/AuthContext";
@@ -17,164 +8,76 @@ import { useAuth } from "@/contexts/AuthContext";
 function Footer() {
   const { t, tx } = useTranslation();
   const { profile, activeMode } = useAuth();
+  const [email, setEmail] = useState('');
+  const [subscribed, setSubscribed] = useState(false);
 
-  const footerLinks = [
-    { href: "/about", label: t.footer.about },
-    { href: "/faq", label: t.footer.faq },
-    { href: "/terms", label: t.footer.terms },
-    { href: "/privacy", label: t.footer.privacy },
-    { href: "/contact", label: t.footer.contact },
-  ];
+  const mode = activeMode === 'freelancer' || profile?.user_type === 'freelancer' ? 'freelancer' : 'client';
 
-  const socialLinks = [
-    { icon: Facebook, href: "#", label: t.footer.socialFacebook },
-    { icon: Twitter, href: "#", label: t.footer.socialTwitter },
-    { icon: Instagram, href: "#", label: t.footer.socialInstagram },
-    { icon: Linkedin, href: "#", label: t.footer.socialLinkedin },
-  ];
+  const handleSubscribe = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (email) { setSubscribed(true); setEmail(''); }
+  };
 
   return (
-    <footer
-      className="relative overflow-hidden border-t"
-      style={{
-        borderColor: "var(--color-border-subtle)",
-        background: "var(--color-background-subtle)",
-        color: "var(--color-text-primary)",
-      }}
-    >
-      {/* Ambient backdrop */}
-      <div
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background:
-            "radial-gradient(circle at top left, color-mix(in srgb, var(--workspace-primary) 10%, transparent), transparent 34%), radial-gradient(circle at bottom right, color-mix(in srgb, var(--workspace-accent) 10%, transparent), transparent 28%), linear-gradient(180deg, transparent 0%, transparent 100%)",
-        }}
-      />
-      <div
-        className="pointer-events-none absolute start-1/4 top-0 h-96 w-96 rounded-full blur-[120px]"
-        style={{
-          background:
-            "color-mix(in srgb, var(--workspace-primary) 10%, transparent)",
-        }}
-      />
-      <div
-        className="pointer-events-none absolute bottom-0 end-1/4 h-96 w-96 rounded-full blur-[120px]"
-        style={{
-          background:
-            "color-mix(in srgb, var(--workspace-accent) 10%, transparent)",
-        }}
-      />
+    <footer style={{ background: '#0a0a0a', borderTop: '1px solid #1a1a1a', color: '#fff' }}>
+      <div className="max-w-7xl mx-auto px-6 py-16">
 
-      <div className="container-custom relative py-16 md:py-20">
-        <div className="grid grid-cols-1 gap-12 lg:grid-cols-[minmax(0,1.2fr)_220px_220px_minmax(0,1fr)]">
-          {/* Brand / Intro */}
-          <div className="max-w-xl">
-            <Link
-              to="/"
-              className="group mb-8 inline-flex items-center transition-opacity hover:opacity-80"
-            >
-              <Logo 
-                variant="full" 
-                size="lg" 
-                titleStyle="default" 
-                mode={activeMode === 'freelancer' || profile?.user_type === 'freelancer' ? 'freelancer' : 'client'}
-              />
+        {/* Top grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
+
+          {/* Brand */}
+          <div className="lg:col-span-1">
+            <Link to="/" className="inline-block mb-6">
+              <Logo variant="full" size="md" titleStyle="default" mode={mode} />
             </Link>
-
-            <p
-              className="mb-8 max-w-lg text-lg leading-relaxed"
-              style={{ color: "var(--color-text-secondary)" }}
-            >
+            <p style={{ color: '#888', fontSize: 14, lineHeight: 1.7, marginBottom: 24 }}>
               {t.footer.description}
             </p>
-
-            <div className="mb-8 space-y-3.5">
-              <div
-                className="flex items-center gap-3"
-                style={{ color: "var(--color-text-secondary)" }}
-              >
-                <div
-                  className="flex h-11 w-11 items-center justify-center rounded-xl border"
-                  style={{
-                    borderColor: "var(--color-border-subtle)",
-                    background: "var(--color-background-elevated)",
-                  }}
-                >
-                  <MapPin
-                    className="h-5 w-5"
-                    style={{ color: "var(--workspace-primary)" }}
-                  />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 24 }}>
+              {[
+                { icon: MapPin, text: t.footer.city },
+                { icon: Mail, text: tx('ui.contact_workedin_tn') },
+                { icon: Phone, text: tx('ui.xx_xxx_xxx') },
+              ].map(({ icon: Icon, text }) => (
+                <div key={text} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div style={{
+                    width: 36, height: 36, borderRadius: 10,
+                    background: '#161616', border: '1px solid #2a2a2a',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                  }}>
+                    <Icon style={{ width: 16, height: 16, color: '#E8820C' }} />
+                  </div>
+                  <span style={{ color: '#aaa', fontSize: 13 }}>{text}</span>
                 </div>
-                <span>{t.footer.city}</span>
-              </div>
-
-              <div
-                className="flex items-center gap-3"
-                style={{ color: "var(--color-text-secondary)" }}
-              >
-                <div
-                  className="flex h-11 w-11 items-center justify-center rounded-xl border"
-                  style={{
-                    borderColor: "var(--color-border-subtle)",
-                    background: "var(--color-background-elevated)",
-                  }}
-                >
-                  <Mail
-                    className="h-5 w-5"
-                    style={{ color: "var(--workspace-primary)" }}
-                  />
-                </div>
-                <span>{tx('ui.contact_workedin_tn')}</span>
-              </div>
-
-              <div
-                className="flex items-center gap-3"
-                style={{ color: "var(--color-text-secondary)" }}
-              >
-                <div
-                  className="flex h-11 w-11 items-center justify-center rounded-xl border"
-                  style={{
-                    borderColor: "var(--color-border-subtle)",
-                    background: "var(--color-background-elevated)",
-                  }}
-                >
-                  <Phone
-                    className="h-5 w-5"
-                    style={{ color: "var(--workspace-primary)" }}
-                  />
-                </div>
-                <span dir="ltr">{tx('ui.xx_xxx_xxx')}</span>
-              </div>
+              ))}
             </div>
-
-            <div className="flex items-center gap-3">
-              {socialLinks.map((social) => (
+            <div style={{ display: 'flex', gap: 8 }}>
+              {[
+                { icon: Facebook, label: 'Facebook' },
+                { icon: Twitter, label: 'Twitter' },
+                { icon: Instagram, label: 'Instagram' },
+                { icon: Linkedin, label: 'LinkedIn' },
+              ].map(({ icon: Icon, label }) => (
                 <a
-                  key={social.label}
-                  href={social.href}
-                  aria-label={social.label}
-                  className="flex h-11 w-11 items-center justify-center rounded-xl border transition-all duration-300 hover:-translate-y-0.5"
+                  key={label}
+                  href="#"
+                  aria-label={label}
                   style={{
-                    borderColor: "var(--color-border-subtle)",
-                    background: "var(--color-background-elevated)",
-                    color: "var(--color-text-secondary)",
+                    width: 38, height: 38, borderRadius: 10,
+                    background: '#161616', border: '1px solid #2a2a2a',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    color: '#666', transition: 'all 0.2s',
                   }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.borderColor =
-                      "var(--workspace-primary)";
-                    e.currentTarget.style.background =
-                      "var(--workspace-primary-light)";
-                    e.currentTarget.style.color = "var(--workspace-primary)";
+                  onMouseEnter={e => {
+                    (e.currentTarget as HTMLElement).style.borderColor = '#E8820C';
+                    (e.currentTarget as HTMLElement).style.color = '#E8820C';
                   }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.borderColor =
-                      "var(--color-border-subtle)";
-                    e.currentTarget.style.background =
-                      "var(--color-background-elevated)";
-                    e.currentTarget.style.color = "var(--color-text-secondary)";
+                  onMouseLeave={e => {
+                    (e.currentTarget as HTMLElement).style.borderColor = '#2a2a2a';
+                    (e.currentTarget as HTMLElement).style.color = '#666';
                   }}
                 >
-                  <social.icon className="h-5 w-5" />
+                  <Icon style={{ width: 16, height: 16 }} />
                 </a>
               ))}
             </div>
@@ -182,106 +85,52 @@ function Footer() {
 
           {/* Quick Links */}
           <div>
-            <h3
-              className="mb-6 text-lg font-bold"
-              style={{ color: "var(--color-text-primary)" }}
-            >
+            <h3 style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#555', marginBottom: 20 }}>
               {t.footer.quickLinks}
             </h3>
-            <ul className="space-y-4">
-              {footerLinks.slice(0, 3).map((link) => (
-                <li key={link.href}>
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {[
+                { to: '/about', label: t.footer.about },
+                { to: '/faq', label: t.footer.faq },
+                { to: '/how-it-works', label: t.nav.howItWorks },
+                { to: '/jobs', label: t.nav.jobs },
+                { to: '/find-freelancers', label: tx('nav.findFreelancers', undefined, 'Find Freelancers') },
+              ].map(({ to, label }) => (
+                <li key={to}>
                   <Link
-                    to={link.href}
-                    className="group flex items-center gap-2 transition-colors"
-                    style={{ color: "var(--color-text-secondary)" }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.color = "var(--color-text-primary)";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.color =
-                        "var(--color-text-secondary)";
-                    }}
+                    to={to}
+                    style={{ color: '#888', fontSize: 14, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 6, transition: 'color 0.2s' }}
+                    onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = '#fff'}
+                    onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = '#888'}
                   >
-                    <span
-                      className="h-1.5 w-1.5 rounded-full opacity-0 transition-opacity group-hover:opacity-100"
-                      style={{ background: "var(--workspace-primary)" }}
-                    />
-                    {link.label}
+                    <ArrowRight style={{ width: 12, height: 12, color: '#E8820C', flexShrink: 0 }} />
+                    {label}
                   </Link>
                 </li>
               ))}
-
-              <li>
-                <Link
-                  to="/how-it-works"
-                  className="group flex items-center gap-2 transition-colors"
-                  style={{ color: "var(--color-text-secondary)" }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.color = "var(--color-text-primary)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.color = "var(--color-text-secondary)";
-                  }}
-                >
-                  <span
-                    className="h-1.5 w-1.5 rounded-full opacity-0 transition-opacity group-hover:opacity-100"
-                    style={{ background: "var(--workspace-primary)" }}
-                  />
-                  {t.nav.howItWorks}
-                </Link>
-              </li>
-
-              <li>
-                <Link
-                  to="/jobs"
-                  className="group flex items-center gap-2 transition-colors"
-                  style={{ color: "var(--color-text-secondary)" }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.color = "var(--color-text-primary)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.color = "var(--color-text-secondary)";
-                  }}
-                >
-                  <span
-                    className="h-1.5 w-1.5 rounded-full opacity-0 transition-opacity group-hover:opacity-100"
-                    style={{ background: "var(--workspace-primary)" }}
-                  />
-                  {t.nav.jobs}
-                </Link>
-              </li>
             </ul>
           </div>
 
           {/* Legal */}
           <div>
-            <h3
-              className="mb-6 text-lg font-bold"
-              style={{ color: "var(--color-text-primary)" }}
-            >
+            <h3 style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#555', marginBottom: 20 }}>
               {t.footer.legal}
             </h3>
-            <ul className="space-y-4">
-              {footerLinks.slice(3).map((link) => (
-                <li key={link.href}>
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {[
+                { to: '/terms', label: t.footer.terms },
+                { to: '/privacy', label: t.footer.privacy },
+                { to: '/contact', label: t.footer.contact },
+              ].map(({ to, label }) => (
+                <li key={to}>
                   <Link
-                    to={link.href}
-                    className="group flex items-center gap-2 transition-colors"
-                    style={{ color: "var(--color-text-secondary)" }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.color = "var(--color-text-primary)";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.color =
-                        "var(--color-text-secondary)";
-                    }}
+                    to={to}
+                    style={{ color: '#888', fontSize: 14, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 6, transition: 'color 0.2s' }}
+                    onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = '#fff'}
+                    onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = '#888'}
                   >
-                    <span
-                      className="h-1.5 w-1.5 rounded-full opacity-0 transition-opacity group-hover:opacity-100"
-                      style={{ background: "var(--workspace-accent)" }}
-                    />
-                    {link.label}
+                    <ArrowRight style={{ width: 12, height: 12, color: '#E8820C', flexShrink: 0 }} />
+                    {label}
                   </Link>
                 </li>
               ))}
@@ -290,94 +139,56 @@ function Footer() {
 
           {/* Newsletter */}
           <div>
-            <h3
-              className="mb-6 text-lg font-bold"
-              style={{ color: "var(--color-text-primary)" }}
-            >
-              {t.footer.contact}
+            <h3 style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#555', marginBottom: 20 }}>
+              {t.footer.newsletterTitle}
             </h3>
-
-            <div
-              className="rounded-2xl border p-5 shadow-sm backdrop-blur-sm"
-              style={{
-                borderColor: "var(--color-border-subtle)",
-                background: "var(--color-background-elevated)",
-              }}
-            >
-              <h4
-                className="mb-2 text-xl font-bold"
-                style={{ color: "var(--color-text-primary)" }}
-              >
-                {t.footer.newsletterTitle}
-              </h4>
-              <p
-                className="mb-4 text-sm leading-relaxed"
-                style={{ color: "var(--color-text-secondary)" }}
-              >
-                {t.footer.newsletterDescription}
-              </p>
-
-              <div className="flex flex-col gap-3 sm:flex-row">
+            <p style={{ color: '#888', fontSize: 13, lineHeight: 1.6, marginBottom: 16 }}>
+              {t.footer.newsletterDescription}
+            </p>
+            {subscribed ? (
+              <div style={{
+                background: 'rgba(232,130,12,0.1)', border: '1px solid rgba(232,130,12,0.3)',
+                borderRadius: 12, padding: '14px 16px', color: '#E8820C', fontSize: 13, fontWeight: 600,
+              }}>
+                ✓ {tx('footer.subscribed', undefined, "You're subscribed!")}
+              </div>
+            ) : (
+              <form onSubmit={handleSubscribe} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 <input
                   type="email"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
                   placeholder={t.footer.newsletterPlaceholder}
-                  className="min-w-0 flex-1 rounded-xl border px-4 py-3 transition-colors focus:outline-none"
+                  required
                   style={{
-                    borderColor: "var(--color-border-subtle)",
-                    background: "var(--color-background-subtle)",
-                    color: "var(--color-text-primary)",
+                    width: '100%', padding: '12px 14px', borderRadius: 12,
+                    background: '#111', border: '1px solid #2a2a2a',
+                    color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box',
                   }}
-                  onFocus={(e) => {
-                    e.currentTarget.style.borderColor =
-                      "var(--workspace-primary)";
-                    e.currentTarget.style.boxShadow =
-                      "0 0 0 3px color-mix(in srgb, var(--workspace-primary) 15%, transparent)";
-                  }}
-                  onBlur={(e) => {
-                    e.currentTarget.style.borderColor =
-                      "var(--color-border-subtle)";
-                    e.currentTarget.style.boxShadow = "none";
-                  }}
+                  onFocus={e => (e.target as HTMLInputElement).style.borderColor = '#E8820C'}
+                  onBlur={e => (e.target as HTMLInputElement).style.borderColor = '#2a2a2a'}
                 />
                 <button
-                  className="rounded-xl px-5 py-3 font-semibold transition-transform hover:-translate-y-0.5"
+                  type="submit"
                   style={{
-                    background:
-                      "linear-gradient(135deg, var(--workspace-primary), var(--workspace-primary-hover))",
-                    color: "var(--workspace-primary-text, #fff)",
+                    width: '100%', padding: '12px', borderRadius: 12,
+                    background: '#E8820C', border: 'none', color: '#fff',
+                    fontSize: 13, fontWeight: 700, cursor: 'pointer', transition: 'background 0.2s',
                   }}
+                  onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = '#d4750a'}
+                  onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = '#E8820C'}
                 >
                   {t.footer.newsletterAction}
                 </button>
-              </div>
-            </div>
+              </form>
+            )}
           </div>
         </div>
 
         {/* Bottom bar */}
-        <div
-          className="mt-16 border-t pt-8"
-          style={{ borderColor: "var(--color-border-subtle)" }}
-        >
-          <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
-            <div
-              className="flex items-center gap-1 text-sm"
-              style={{ color: "var(--color-text-secondary)" }}
-            >
-              {t.footer.madeInTunisia}
-              <Heart
-                className="h-4 w-4 fill-current"
-                style={{ color: "var(--workspace-accent)" }}
-              />
-            </div>
-
-            <div
-              className="text-sm"
-              style={{ color: "var(--color-text-secondary)" }}
-            >
-              {t.footer.copyright}
-            </div>
-          </div>
+        <div style={{ borderTop: '1px solid #1a1a1a', paddingTop: 24, display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+          <span style={{ color: '#555', fontSize: 13 }}>{t.footer.madeInTunisia} 🇹🇳</span>
+          <span style={{ color: '#555', fontSize: 13 }}>{t.footer.copyright}</span>
         </div>
       </div>
     </footer>
@@ -385,4 +196,3 @@ function Footer() {
 }
 
 export default Footer;
-

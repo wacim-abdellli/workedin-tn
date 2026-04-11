@@ -1,80 +1,72 @@
+import { useState } from 'react';
 import { Check, Clock, Info } from 'lucide-react';
 import type { PaymentMethodConfig } from '@/config/paymentMethods';
 import { PAYMENT_METHODS } from '@/config/paymentMethods';
 import { useTranslation } from '@/i18n';
 
-// --- Inline SVG logos (no external files needed) -------------------------
+// --- Real-world logo URLs from official sources --------------------------
 
-function DhmadLogo({ size = 40 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect width="40" height="40" rx="10" fill="#6C3CE1" />
-      <rect width="40" height="40" rx="10" fill="url(#dhmad_grad)" />
-      {/* Shield shape */}
-      <path d="M20 8L10 12v9c0 5.5 4.3 10.6 10 12 5.7-1.4 10-6.5 10-12V12L20 8z" fill="white" fillOpacity="0.15" />
-      <path d="M20 9.5L11 13v8c0 4.8 3.8 9.3 9 10.6 5.2-1.3 9-5.8 9-10.6V13L20 9.5z" fill="none" stroke="white" strokeWidth="1.2" strokeOpacity="0.6" />
-      {/* D letter */}
-      <text x="20" y="26" textAnchor="middle" fill="white" fontSize="15" fontWeight="800" fontFamily="system-ui,sans-serif" letterSpacing="-0.5">D</text>
-      <defs>
-        <linearGradient id="dhmad_grad" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#8B5CF6" />
-          <stop offset="1" stopColor="#5B21B6" />
-        </linearGradient>
-      </defs>
-    </svg>
-  );
-}
+const REAL_LOGOS: Record<string, { src: string; bg: string; contain?: boolean }> = {
+  dhmad: {
+    src: 'https://dhmad.tn/og-image.svg',
+    bg: '#6C3CE1',
+    contain: true,
+  },
+  flouci: {
+    src: 'https://fr.flouci.com/hubfs/flouci_logo_new.png',
+    bg: '#ffffff',
+    contain: true,
+  },
+  d17: {
+    src: 'https://www.poste.tn/images/logo.png',
+    bg: '#ffffff',
+    contain: true,
+  },
+};
 
-function FlouciLogo({ size = 40 }: { size?: number }) {
+// Branded SVG fallback for when external image fails to load
+function BrandedFallback({ id }: { id: string }) {
+  const configs: Record<string, { color: string; label: string }> = {
+    dhmad:  { color: 'linear-gradient(135deg,#8B5CF6,#5B21B6)', label: 'D' },
+    flouci: { color: 'linear-gradient(135deg,#38BDF8,#0284C7)', label: 'F' },
+    d17:    { color: 'linear-gradient(135deg,#F97316,#C2410C)', label: 'D17' },
+  };
+  const cfg = configs[id] ?? { color: '#888', label: id.slice(0, 2).toUpperCase() };
   return (
-    <svg width={size} height={size} viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect width="40" height="40" rx="10" fill="url(#flouci_grad)" />
-      {/* Stylised F + wave */}
-      <rect x="12" y="11" width="3" height="18" rx="1.5" fill="white" />
-      <rect x="12" y="11" width="12" height="3" rx="1.5" fill="white" />
-      <rect x="12" y="18.5" width="9" height="3" rx="1.5" fill="white" />
-      {/* Accent dot */}
-      <circle cx="28" cy="28" r="3.5" fill="white" fillOpacity="0.9" />
-      <defs>
-        <linearGradient id="flouci_grad" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#38BDF8" />
-          <stop offset="1" stopColor="#0284C7" />
-        </linearGradient>
-      </defs>
-    </svg>
-  );
-}
-
-function LaPosteLogo({ size = 40 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect width="40" height="40" rx="10" fill="url(#laposte_grad)" />
-      {/* Envelope shape */}
-      <rect x="8" y="14" width="24" height="16" rx="2" fill="white" fillOpacity="0.2" stroke="white" strokeWidth="1.5" strokeOpacity="0.7" />
-      <path d="M8 16l12 9 12-9" stroke="white" strokeWidth="1.5" strokeOpacity="0.9" strokeLinecap="round" />
-      {/* D17 text */}
-      <text x="20" y="23" textAnchor="middle" fill="white" fontSize="8" fontWeight="800" fontFamily="system-ui,sans-serif" letterSpacing="0.5">D17</text>
-      <defs>
-        <linearGradient id="laposte_grad" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#F97316" />
-          <stop offset="1" stopColor="#C2410C" />
-        </linearGradient>
-      </defs>
-    </svg>
+    <div
+      className="w-10 h-10 rounded-xl flex items-center justify-center text-white text-[11px] font-bold flex-shrink-0"
+      style={{ background: cfg.color }}
+    >
+      {cfg.label}
+    </div>
   );
 }
 
 function MethodLogo({ id, className }: { id: string; className?: string }) {
+  const logo = REAL_LOGOS[id];
+  const [failed, setFailed] = useState(false);
+
+  if (!logo || failed) {
+    return (
+      <div className={`flex items-center justify-center rounded-xl overflow-hidden ${className}`}>
+        <BrandedFallback id={id} />
+      </div>
+    );
+  }
+
   return (
-    <div className={`flex items-center justify-center rounded-xl overflow-hidden ${className}`}>
-      {id === 'dhmad' && <DhmadLogo size={40} />}
-      {id === 'flouci' && <FlouciLogo size={40} />}
-      {id === 'd17' && <LaPosteLogo size={40} />}
-      {id !== 'dhmad' && id !== 'flouci' && id !== 'd17' && (
-        <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-gray-500 text-white text-xs font-bold">
-          {id.slice(0, 2).toUpperCase()}
-        </div>
-      )}
+    <div
+      className={`flex items-center justify-center rounded-xl overflow-hidden p-1 ${className}`}
+      style={{ background: logo.bg }}
+    >
+      <img
+        src={logo.src}
+        alt={id}
+        className={`w-full h-full ${logo.contain ? 'object-contain' : 'object-cover'}`}
+        onError={() => setFailed(true)}
+        referrerPolicy="no-referrer"
+        crossOrigin="anonymous"
+      />
     </div>
   );
 }

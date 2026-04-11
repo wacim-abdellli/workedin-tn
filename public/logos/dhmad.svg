@@ -1,13 +1,41 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="1200" height="630" fill="hsl(210, 20%, 98%)"/>
+  
+  <!-- Gradient overlay -->
+  <rect width="1200" height="630" fill="url(#bgGradient)" opacity="0.1"/>
+  
+  <!-- Decorative circles -->
+  <circle cx="200" cy="150" r="150" fill="hsl(174, 62%, 47%)" opacity="0.1"/>
+  <circle cx="1000" cy="480" r="200" fill="hsl(174, 62%, 47%)" opacity="0.05"/>
+  
+  <!-- Shield Icon (centered) -->
+  <g transform="translate(600, 200)">
+    <path d="M0 -80L-60 -50V30C-60 90 -20 140 30 140C80 140 120 90 120 30V-50L60 -80C55 -82 45 -82 40 -80L0 -80Z" fill="url(#shieldGradient)" stroke="url(#shieldGradient)" stroke-width="4"/>
+    <path d="M0 -60L-45 -35V22.5C-45 67.5 -15 105 22.5 105C60 105 90 67.5 90 22.5V-35L45 -60C42 -61.5 38 -61.5 35 -60L0 -60Z" fill="white"/>
+  </g>
+  
+  <!-- Text -->
+  <text x="600" y="380" font-family="system-ui, -apple-system, sans-serif" font-size="72" font-weight="bold" text-anchor="middle" fill="hsl(222, 47%, 11%)">
+    Dhmad<tspan fill="hsl(174, 62%, 47%)">.tn</tspan>
+  </text>
+  
+  <text x="600" y="450" font-family="system-ui, -apple-system, sans-serif" font-size="32" text-anchor="middle" fill="hsl(215, 16%, 47%)">
+    Tunisia's #1 Secure Payment Service
+  </text>
+  
+  <text x="600" y="500" font-family="system-ui, -apple-system, sans-serif" font-size="24" text-anchor="middle" fill="hsl(215, 16%, 47%)">
+    Secure escrow service for safe transactions
+  </text>
+  
   <defs>
-    <linearGradient id="dg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#7C3AED"/>
-      <stop offset="100%" style="stop-color:#4F46E5"/>
+    <linearGradient id="shieldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:hsl(174, 62%, 47%);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:hsl(174, 72%, 40%);stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:hsl(174, 62%, 47%);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:hsl(217, 91%, 22%);stop-opacity:1" />
     </linearGradient>
   </defs>
-  <rect width="100" height="100" rx="22" fill="url(#dg)"/>
-  <!-- D letter -->
-  <path d="M28 28 L28 72 L48 72 Q68 72 68 50 Q68 28 48 28 Z M38 38 L46 38 Q56 38 56 50 Q56 62 46 62 L38 62 Z" fill="white"/>
-  <!-- Checkmark accent -->
-  <path d="M58 44 L64 52 L76 36" fill="none" stroke="#A78BFA" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
