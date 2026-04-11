@@ -170,8 +170,8 @@ function ComingSoonCard({ method, lang }: ComingSoonCardProps) {
     >
       <div className="flex items-start gap-3">
         {/* Icon circle — muted */}
-        <div className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center bg-surface text-muted-foreground">
-          <MethodIcon name={method.icon} className="w-5 h-5" />
+        <div className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center overflow-hidden opacity-50">
+          <MethodLogo id={method.id} className="w-10 h-10" />
         </div>
 
         {/* Content */}
