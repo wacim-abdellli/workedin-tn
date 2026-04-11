@@ -1,4 +1,4 @@
- import { useEffect, useState } from 'react';
+ import { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { ArrowUp } from 'lucide-react';
 import { useTranslation } from '@/i18n';
@@ -8,8 +8,13 @@ export default function ScrollToTop() {
     const { tx } = useTranslation();
     const [isVisible, setIsVisible] = useState(false);
 
-    // Scroll to top on route change OR workspace switch (state.switching)
+    // Scroll to top on route change only — NOT on initial mount/reload
+    const isFirstRender = useRef(true);
     useEffect(() => {
+        if (isFirstRender.current) {
+            isFirstRender.current = false;
+            return;
+        }
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }, [pathname, (state as any)?.switching, (state as any)?.workspace]);
 
