@@ -301,7 +301,7 @@ function FreelancerDashboardPage() {
     },
     {
       label: tx("dashboard.freelancer.checklist.bio", undefined, "Bio written"),
-      done: (profile?.bio?.length ?? 0) > 20,
+      done: (profile?.bio?.trim()?.length ?? 0) > 0,
       path: "/settings?tab=profile",
     },
     {

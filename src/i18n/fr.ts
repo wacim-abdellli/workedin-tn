@@ -816,7 +816,9 @@ export const fr: Translations = {
                 "bio": "Biographie écrite",
                 "skills": "Compétences ajoutées",
                 "title": "Titre professionnel",
-                "identity": "Identité vérifiée"
+                "identity": "Identité vérifiée",
+                "tools": "Outils ajoutés",
+                "preferences": "Préférences de projet"
             },
             "clientFallback": "Client"
         },
