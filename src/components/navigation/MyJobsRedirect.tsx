@@ -1,6 +1,7 @@
 import { Navigate, useLocation } from 'react-router-dom';
 
 import { useAuth } from '@/contexts/AuthContext';
+import { ROUTES } from '@/lib/routes';
 import { useWorkspaceStore } from '@/lib/workspaceState';
 
 export const MyJobsRedirect = () => {
@@ -11,12 +12,12 @@ export const MyJobsRedirect = () => {
   if (isLoading) return null;
 
   if (!profile) {
-    return <Navigate to="/login" replace state={{ from: location }} />;
+    return <Navigate to={ROUTES.login} replace state={{ from: location }} />;
   }
 
   if (activeWorkspace === 'freelancer') {
-    return <Navigate to="/freelancer/proposals" replace />;
+    return <Navigate to={ROUTES.myProposals} replace />;
   }
 
-  return <Navigate to="/client/jobs" replace />;
+  return <Navigate to={ROUTES.clientJobs} replace />;
 };

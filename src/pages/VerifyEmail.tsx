@@ -8,7 +8,7 @@ import { useToast } from '../components/ui/Toast';
 import { Logo } from '../components/ui/Logo';
 
 function VerifyEmail() {
-    const { t } = useTranslation();
+    const { t, tx } = useTranslation();
     const { showToast } = useToast();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
@@ -96,7 +96,7 @@ function VerifyEmail() {
                         marginBottom: 12,
                         letterSpacing: '-0.5px',
                     }}>
-                        Check your email
+                        {t.verifyEmail.title}
                     </h1>
 
                     <p style={{
@@ -105,7 +105,7 @@ function VerifyEmail() {
                         lineHeight: 1.6,
                         marginBottom: 32,
                     }}>
-                        We sent a verification link to <strong style={{ color: '#aaa' }}>{email}</strong>. Click it to activate your account.
+                        {tx('verifyEmail.subtitle', { email }, `We sent a verification link to ${email}. Click it to activate your account.`)}
                     </p>
 
                     <button
@@ -135,14 +135,14 @@ function VerifyEmail() {
                         {isResending ? (
                             <>
                                 <RefreshCw style={{ width: 16, height: 16, animation: 'spin 1s linear infinite' }} />
-                                Sending...
+                                {tx('support.form.sending', undefined, 'Sending...')}
                             </>
                         ) : cooldown > 0 ? (
-                            `Resend in ${cooldown}s`
+                            tx('verifyEmail.resendCooldown', { seconds: String(cooldown) }, `Resend in ${cooldown} seconds`)
                         ) : (
                             <>
                                 <RefreshCw style={{ width: 16, height: 16 }} />
-                                Resend verification email
+                                {t.verifyEmail.resend}
                             </>
                         )}
                     </button>
@@ -171,7 +171,7 @@ function VerifyEmail() {
                             (e.target as HTMLElement).style.borderColor = '#2a2a2a';
                         }}
                     >
-                        Wrong email? Go back to signup
+                        {t.verifyEmail.wrongEmail}
                     </button>
 
                     <div style={{
@@ -187,7 +187,7 @@ function VerifyEmail() {
                     }}>
                         <AlertCircle style={{ width: 18, height: 18, color: '#60a5fa', flexShrink: 0, marginTop: 2 }} />
                         <p style={{ fontSize: 13, color: '#93c5fd', lineHeight: 1.5 }}>
-                            If you don't see the email, check your spam folder. Email address is required.
+                            {t.verifyEmail.checkSpam} {t.verifyEmail.noEmail}
                         </p>
                     </div>
                 </div>

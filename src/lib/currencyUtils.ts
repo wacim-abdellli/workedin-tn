@@ -82,7 +82,7 @@ export function validateWithdrawalAmount(
     minAmount = 20
 ): { valid: boolean; error?: string } {
     if (amount <= 0) {
-        return { valid: false, error: 'ا��&ب�غ �`جب أ�  �`ْ���  أْبر �&�  صفر' };
+        return { valid: false, error: 'المبلغ يجب أن يكون أكبر من صفر' };
     }
 
     if (amount < minAmount) {
@@ -90,7 +90,7 @@ export function validateWithdrawalAmount(
     }
 
     if (amount > balance) {
-        return { valid: false, error: 'ا��&ب�غ ا��&ط���ب أْبر �&�  ا�رص�`د ا��&تاح' };
+        return { valid: false, error: 'المبلغ المطلوب أكبر من الرصيد المتاح' };
     }
 
     return { valid: true };
@@ -103,16 +103,16 @@ export function validateWithdrawalAmount(
 export function formatTransactionType(type: string, language: Language = 'ar'): string {
     const typeLabels: Record<Language, Record<string, string>> = {
         ar: {
-            deposit: 'إ�`داع',
-            escrow_fund: 'ت�&���`� ا�ض�&ا� ',
-            escrow: 'ت�&���`� ا�ض�&ا� ',
-            escrow_release: 'إط�ا� ا�ض�&ا� ',
-            release: 'إط�ا� ا�ض�&ا� ',
+            deposit: 'إيداع',
+            escrow_fund: 'تمويل الضمان',
+            escrow: 'تمويل الضمان',
+            escrow_release: 'إطلاق الضمان',
+            release: 'إطلاق الضمان',
             earning: 'ربح',
             refund: 'استرداد',
             withdrawal: 'سحب',
-            platform_fee: 'رس���& ا��&� صة',
-            fee: 'رس���& ا��&� صة',
+            platform_fee: 'رسوم المنصة',
+            fee: 'رسوم المنصة',
             payment: 'دفع',
         },
         en: {
@@ -157,12 +157,12 @@ export function isDebitTransaction(type: string): boolean {
 export function formatTransactionStatus(status: string, language: Language = 'ar'): string {
     const statusLabels: Record<Language, Record<string, string>> = {
         ar: {
-            pending: '��`د ا�ا� تظار',
-            processing: 'جار ا��&عا�جة',
-            completed: '�&ْت�&�',
-            failed: 'فش�',
-            refunded: 'ت�& ا�استرداد',
-            cancelled: '�&�غ�`',
+            pending: 'قيد الانتظار',
+            processing: 'قيد المعالجة',
+            completed: 'مكتمل',
+            failed: 'فشل',
+            refunded: 'تم الاسترداد',
+            cancelled: 'ملغى',
         },
         en: {
             pending: 'Pending',
@@ -187,11 +187,11 @@ export function formatTransactionStatus(status: string, language: Language = 'ar
 export function formatWithdrawalStatus(status: string, language: Language = 'ar'): string {
     const statusLabels: Record<Language, Record<string, string>> = {
         ar: {
-            pending: '��`د ا��&راجعة',
-            approved: 'ت�&ت ا��&��اف�ة',
-            processing: 'جار ا�تح���`�',
-            completed: '�&ْت�&�',
-            rejected: '�&رف��ض',
+            pending: 'قيد المراجعة',
+            approved: 'تمت الموافقة',
+            processing: 'قيد التحويل',
+            completed: 'مكتمل',
+            rejected: 'مرفوض',
         },
         en: {
             pending: 'Under review',
@@ -214,7 +214,7 @@ export function formatWithdrawalStatus(status: string, language: Language = 'ar'
 export function formatWithdrawalMethod(method: string, language: Language = 'ar'): string {
     const methodLabels: Record<Language, Record<string, string>> = {
         ar: {
-            bank_transfer: 'تح���`� ب� ْ�`',
+            bank_transfer: 'تحويل بنكي',
             d17: 'D17',
             flouci: 'Flouci',
         },

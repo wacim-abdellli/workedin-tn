@@ -5,7 +5,7 @@ import { useTranslation } from '../../i18n';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
 import CustomSelect from '../ui/CustomSelect';
-import { GOVERNORATES } from '../../types';
+import { getLocalizedGovernorateOptions } from '../../lib/governorates';
 import type { Step1FormData } from './schemas';
 
 interface OnboardingStep1Props {
@@ -25,7 +25,7 @@ export default function OnboardingStep1({
     onAvatarChange,
     onRemoveAvatar,
 }: OnboardingStep1Props) {
-    const { t, tx, dir } = useTranslation();
+    const { t, tx, dir, language } = useTranslation();
     const fileInputRef = useRef<HTMLInputElement>(null);
     const { register, formState: { errors }, handleSubmit, watch } = form;
     const bio = watch('bio') || '';
@@ -58,7 +58,7 @@ export default function OnboardingStep1({
                             onClick={() => fileInputRef.current?.click()}
                             role="button"
                             tabIndex={0}
-                            aria-label="Upload profile photo"
+                            aria-label={tx('onboarding.freelancer.uploadAvatar', undefined, 'Upload profile photo')}
                             onKeyDown={(event) => {
                                 if (event.key === 'Enter' || event.key === ' ') {
                                     event.preventDefault();
@@ -138,7 +138,7 @@ export default function OnboardingStep1({
                             label={t.profile.location}
                             placeholder={t.profile.selectLocation}
                             error={errors.location?.message}
-                            options={GOVERNORATES.map((gov) => ({ value: gov, label: gov }))}
+                            options={getLocalizedGovernorateOptions(language)}
                             variant="freelancer"
                             value={watch('location')}
                             onChange={(value) => form.setValue('location', value)}

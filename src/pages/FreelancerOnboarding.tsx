@@ -57,8 +57,6 @@ function FreelancerOnboarding() {
         defaultValues: {
             hourly_rate: '',
             availability: 'available',
-            custom_skill_enabled: false,
-            custom_skill_name: '',
         },
     });
 
@@ -87,8 +85,6 @@ function FreelancerOnboarding() {
         let step2Values = {
             hourly_rate: freelancerProfile?.hourly_rate ? String(freelancerProfile.hourly_rate) : '',
             availability: freelancerProfile?.availability || 'available',
-            custom_skill_enabled: false,
-            custom_skill_name: '',
         };
 
         let step3Values = {
@@ -140,38 +136,14 @@ function FreelancerOnboarding() {
                 const mappedSkill = entryToSkill(entry, skillsMap);
                 if (mappedSkill) return mappedSkill;
 
-                if (typeof entry.name === 'string' && entry.name.trim().length > 0) {
-                    const customName = entry.name.trim();
-                    return createCustomSkill(customName);
-                }
-
+                // Ignore custom skills - only restore predefined ones
                 return null;
             })
             .filter(Boolean) as Skill[];
 
-        const restoredPredefinedSkills: Skill[] = [];
-        let restoredCustomSkillName = '';
-
-        for (const skill of existingSkills) {
-            if (predefinedSkillIds.has(skill.id)) {
-                restoredPredefinedSkills.push(skill);
-                continue;
-            }
-
-            if (!restoredCustomSkillName) {
-                restoredCustomSkillName = normalizeCustomSkillName(skill.name_en || skill.id);
-            }
-        }
-
-        if (!restoredCustomSkillName && typeof step2Values.custom_skill_name === 'string') {
-            restoredCustomSkillName = normalizeCustomSkillName(step2Values.custom_skill_name);
-        }
-
-        step2Values = {
-            ...step2Values,
-            custom_skill_enabled: restoredCustomSkillName.length > 0 || Boolean(step2Values.custom_skill_enabled),
-            custom_skill_name: restoredCustomSkillName,
-        };
+        const restoredPredefinedSkills: Skill[] = existingSkills.filter(skill => 
+            predefinedSkillIds.has(skill.id)
+        );
 
         const draftPredefinedSkills = draftStep2SkillIds
             .map((skillId) => skillsMap[skillId])
@@ -214,9 +186,7 @@ function FreelancerOnboarding() {
         }
     };
 
-    const customSkillEnabled = step2Form.watch('custom_skill_enabled') === true;
-    const customSkillName = step2Form.watch('custom_skill_name') || '';
-    const selectedSkillCount = selectedSkills.length + (customSkillEnabled ? 1 : 0);
+    const selectedSkillCount = selectedSkills.length;
 
     useEffect(() => {
         const sub1 = step1Form.watch((value) => {
@@ -263,33 +233,13 @@ function FreelancerOnboarding() {
     };
 
     const toggleSkill = (skill: Skill) => {
-        const customSkillEnabled = step2Form.getValues('custom_skill_enabled') === true;
-        const totalSelectedCount = selectedSkills.length + (customSkillEnabled ? 1 : 0);
-
         if (selectedSkills.find((s) => s.id === skill.id)) {
             setSelectedSkills(selectedSkills.filter((s) => s.id !== skill.id));
-        } else if (totalSelectedCount < 5) {
+        } else if (selectedSkills.length < 15) {
             setSelectedSkills([...selectedSkills, skill]);
         } else {
             showToast(t.onboarding.freelancer.maxSkills || 'Max 5 skills', 'warning');
         }
-    };
-
-    const toggleCustomSkill = () => {
-        const customEnabled = step2Form.getValues('custom_skill_enabled') === true;
-
-        if (customEnabled) {
-            step2Form.setValue('custom_skill_enabled', false, { shouldDirty: true, shouldValidate: true });
-            step2Form.setValue('custom_skill_name', '', { shouldDirty: true, shouldValidate: true });
-            return;
-        }
-
-        if (selectedSkills.length >= 5) {
-            showToast(t.onboarding.freelancer.maxSkills || 'Max 5 skills', 'warning');
-            return;
-        }
-
-        step2Form.setValue('custom_skill_enabled', true, { shouldDirty: true, shouldValidate: true });
     };
 
     const removeAvatar = () => {
@@ -450,25 +400,7 @@ function FreelancerOnboarding() {
     };
 
     const onStep2Submit = async (data: Step2FormData) => {
-        const includeCustomSkill = data.custom_skill_enabled === true;
-        const customSkillName = normalizeCustomSkillName(data.custom_skill_name);
-
-        if (includeCustomSkill && customSkillName.length === 0) {
-            const customSkillError = tx(
-                'onboarding.freelancer.customSkillRequired',
-                undefined,
-                'Please type your custom skill before continuing.'
-            );
-            step2Form.setError('custom_skill_name', { type: 'manual', message: customSkillError });
-            showToast(customSkillError, 'error');
-            return;
-        }
-
-        const finalizedSkills = includeCustomSkill
-            ? [...selectedSkills, createCustomSkill(customSkillName)]
-            : [...selectedSkills];
-
-        if (finalizedSkills.length === 0) {
+        if (selectedSkills.length === 0) {
             showToast(t.onboarding.freelancer.selectAtLeastOneSkill || 'Please select at least one skill', 'warning');
             return;
         }
@@ -484,7 +416,7 @@ function FreelancerOnboarding() {
             logger.log('[Onboarding] Step 2: Saving core freelancer setup...');
 
             const skillsData = {
-                skills: finalizedSkills.map((s) => skillToEntry(s)),
+                skills: selectedSkills.map((s) => skillToEntry(s)),
                 hourly_rate: data.hourly_rate ? parseFloat(data.hourly_rate) : undefined,
                 availability: data.availability as 'available' | 'busy' | 'offline',
             };
@@ -715,11 +647,7 @@ function FreelancerOnboarding() {
                                     selectedSkillCount={selectedSkillCount}
                                     toggleSkill={toggleSkill}
                                     getSkillName={getSkillName}
-                                    maxSkills={5}
-                                    customSkillEnabled={customSkillEnabled}
-                                    customSkillName={customSkillName}
-                                    onToggleCustomSkill={toggleCustomSkill}
-                                    onCustomSkillNameChange={(value) => step2Form.setValue('custom_skill_name', value, { shouldDirty: true, shouldValidate: true })}
+                                    maxSkills={15}
                                 />
                             </>
                         )}
@@ -873,20 +801,6 @@ function parseOptionalNumber(value: string | undefined): number | undefined {
     if (!value || value.trim() === '') return undefined;
     const parsed = Number(value);
     return Number.isFinite(parsed) ? parsed : undefined;
-}
-
-function normalizeCustomSkillName(value: string | undefined): string {
-    return (value || '').trim().replace(/\s+/g, ' ').slice(0, 60);
-}
-
-function createCustomSkill(skillName: string): Skill {
-    const normalized = normalizeCustomSkillName(skillName);
-    return {
-        id: normalized,
-        name_ar: normalized,
-        name_fr: normalized,
-        name_en: normalized,
-    };
 }
 
 function uniqueSkills(skills: Skill[]): Skill[] {

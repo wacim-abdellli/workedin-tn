@@ -1,5 +1,6 @@
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { ROUTES } from '@/lib/routes';
 
 export const SavedRedirect = () => {
     const { profile, isLoading } = useAuth();
@@ -8,10 +9,8 @@ export const SavedRedirect = () => {
     if (isLoading) return null;
 
     if (!profile) {
-        return <Navigate to="/login" replace state={{ from: location }} />;
+        return <Navigate to={ROUTES.login} replace state={{ from: location }} />;
     }
 
-    // Saved items in settings (or wherever saved jobs are)
-    // The requirement says /settings?tab=saved
-    return <Navigate to="/settings?tab=saved" replace />;
+    return <Navigate to={ROUTES.settingsAccount} replace />;
 };

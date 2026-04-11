@@ -49,6 +49,8 @@ import {
   canSaveJob,
   getAccessMessage,
 } from "../lib/marketplaceAccess";
+import { localizeGovernorate } from "../lib/governorates";
+import { ROUTES, getClientJobProposalsRoute } from "../lib/routes";
 
 // Types
 interface Job {
@@ -119,37 +121,40 @@ function timeAgo(date: string, tx: any): string {
 
   if (diffMins < 60)
     return tx(
-      "jobDetail.timeAgo.minutes",
+      "jobDetail.timeAgo.minute",
       { count: diffMins },
-      `منذ ${diffMins} دقيقة`,
+      `${diffMins} minute ago`,
     );
   if (diffHours < 24)
     return tx(
-      "jobDetail.timeAgo.hours",
+      "jobDetail.timeAgo.hour",
       { count: diffHours },
-      `منذ ${diffHours} ساعة`,
+      `${diffHours} hour ago`,
     );
   if (diffDays < 7)
     return tx(
-      "jobDetail.timeAgo.days",
+      "jobDetail.timeAgo.day",
       { count: diffDays },
-      `منذ ${diffDays} يوم`,
+      `${diffDays} day ago`,
     );
   if (diffDays < 30)
     return tx(
-      "jobDetail.timeAgo.weeks",
+      "jobDetail.timeAgo.week",
       { count: Math.floor(diffDays / 7) },
-      `منذ ${Math.floor(diffDays / 7)} أسبوع`,
+      `${Math.floor(diffDays / 7)} week ago`,
     );
   return tx(
-    "jobDetail.timeAgo.months",
+    "jobDetail.timeAgo.month",
     { count: Math.floor(diffDays / 30) },
-    `منذ ${Math.floor(diffDays / 30)} شهر`,
+    `${Math.floor(diffDays / 30)} month ago`,
   );
 }
 
-function formatDate(date: string): string {
-  return new Date(date).toLocaleDateString("ar-TN", {
+function formatDate(date: string, language: string): string {
+  const locale =
+    language === "ar" ? "ar-TN" : language === "fr" ? "fr-FR" : "en-GB";
+
+  return new Date(date).toLocaleDateString(locale, {
     year: "numeric",
     month: "long",
   });
@@ -684,18 +689,16 @@ function JobDetail() {
                   <div className="flex flex-wrap items-center gap-4 text-xs text-[var(--text-secondary)]">
                     <span className="flex items-center gap-1.5">
                       <Clock className="w-3.5 h-3.5" />
-                      {tx("jobDetail.postedLabel", undefined, "نُشرت")}{" "}
+                      {tx("jobDetail.postedLabel", undefined, "Posted")}{" "}
                       {timeAgo(job.posted_at, tx)}
                     </span>
                     <span className="flex items-center gap-1.5">
                       <Users className="w-3.5 h-3.5" />
-                      {job.proposals_count}{" "}
-                      {tx("jobDetail.proposalsCountLabel", undefined, "عرض")}
+                      {job.proposals_count} {t.jobDetail.proposals}
                     </span>
                     <span className="flex items-center gap-1.5">
                       <Eye className="w-3.5 h-3.5" />
-                      {job.views_count}{" "}
-                      {tx("jobDetail.viewsCountLabel", undefined, "مشاهدة")}
+                      {job.views_count} {t.jobDetail.views}
                     </span>
                   </div>
                 </div>
@@ -774,7 +777,16 @@ function JobDetail() {
                       color: "var(--workspace-primary)",
                     }}
                   >
-                    {job.duration}
+                    {(() => {
+                      const durationKeyMap: Record<string, string> = {
+                        less_than_1_month: 'jobs.new.stepBudget.durationLessThan1Month',
+                        '1_3_months': 'jobs.new.stepBudget.duration1To3Months',
+                        '3_6_months': 'jobs.new.stepBudget.duration3To6Months',
+                        more_than_6_months: 'jobs.new.stepBudget.durationMoreThan6Months',
+                      };
+                      const k = durationKeyMap[job.duration];
+                      return k ? tx(k, undefined, job.duration) : job.duration;
+                    })()}
                   </span>
                 )}
               </div>
@@ -856,7 +868,6 @@ function JobDetail() {
               </h2>
               <div className="flex flex-wrap gap-2">
                 {job.required_skills?.map((skill, index) => {
-                    const { tx } = useTranslation();
                   const skillLabel = getSkillLabel(skill);
                   const isMatch = freelancerProfile?.skills?.some((s) =>
                     "name_ar" in s
@@ -910,7 +921,6 @@ function JobDetail() {
                 </h2>
                 <div className="space-y-2">
                   {job.attachments.map((url, index) => {
-                      const { tx } = useTranslation();
                     const filename =
                       url.split("/").pop() ||
                       t.jobDetail.file.replace("{{index}}", String(index + 1));
@@ -967,7 +977,7 @@ function JobDetail() {
                   className="text-lg font-semibold mb-4"
                   style={{ color: "var(--color-text-primary)" }}
                 >
-                  {tx("jobDetail.similarJobs", undefined, "وظائف مشابهة")}
+                  {tx("jobDetail.similarJobs", undefined, "Similar jobs")}
                 </h2>
                 <div className="grid gap-3 md:grid-cols-2">
                   {similarJobs.map((j) => (
@@ -1007,14 +1017,14 @@ function JobDetail() {
                     {tx(
                       "jobDetail.proposalSubmitted",
                       undefined,
-                      "تم تقديم عرضك",
+                      "Your proposal was submitted",
                     )}
                   </h3>
                   <p
                     className="text-sm mb-4"
                     style={{ color: "var(--color-text-secondary)" }}
                   >
-                    {tx("jobDetail.yourBid", undefined, "عرضك:")}{" "}
+                    {tx("jobDetail.yourBid", undefined, "Your bid:")}{" "}
                     {myProposal.bid_amount}{" "}
                     {tx("common.currency", undefined, "د.ت")}
                   </p>
@@ -1022,9 +1032,9 @@ function JobDetail() {
                     <Button
                       variant="outline"
                       className="w-full"
-                      onClick={() => navigate("/my-proposals")}
+                      onClick={() => navigate(ROUTES.myProposals)}
                     >
-                      {tx("jobDetail.viewProposal", undefined, "عرض عرضي")}
+                      {tx("jobDetail.viewProposal", undefined, "View proposal")}
                     </Button>
                     <Button
                       variant="ghost"
@@ -1042,14 +1052,14 @@ function JobDetail() {
                     className="text-sm mb-3"
                     style={{ color: "var(--color-text-secondary)" }}
                   >
-                    {tx("jobDetail.yourJob", undefined, "هذه وظيفتك")}
+                    {tx("jobDetail.yourJob", undefined, "This is your job")}
                   </p>
                   <Button
                     variant="primary"
                     className="w-full"
-                    onClick={() => navigate(`/client/jobs/${job.id}`)}
+                    onClick={() => navigate(getClientJobProposalsRoute(job.id))}
                   >
-                    {tx("jobDetail.manageJob", undefined, "إدارة الوظيفة")}
+                    {tx("jobDetail.manageJob", undefined, "Manage job")}
                   </Button>
                 </div>
               ) : (
@@ -1061,7 +1071,7 @@ function JobDetail() {
                     onClick={openProposalFlow}
                     rightIcon={<Send className="w-5 h-5" />}
                   >
-                    {tx("jobDetail.sendProposal", undefined, "أرسل عرض")}
+                    {tx("jobDetail.submitProposal", undefined, "Submit Proposal")}
                   </Button>
 
                   {freelancerProfile && (
@@ -1275,7 +1285,7 @@ function JobDetail() {
                       style={{ color: "var(--color-text-secondary)" }}
                     >
                       <MapPin className="w-3 h-3" />
-                      {job.client.location}
+                      {localizeGovernorate(job.client.location, language)}
                     </p>
                   )}
                 </div>
@@ -1294,7 +1304,7 @@ function JobDetail() {
                     style={{ color: "var(--color-text-primary)" }}
                   >
                     {job.client?.created_at
-                      ? formatDate(job.client.created_at)
+                      ? formatDate(job.client.created_at, language)
                       : "-"}
                   </span>
                 </div>
@@ -1476,7 +1486,7 @@ function JobDetail() {
             className="w-full rounded-2xl py-3.5 font-semibold text-white transition-all hover:opacity-90 active:scale-[0.98]"
             style={{ background: 'linear-gradient(135deg, var(--workspace-primary) 0%, var(--workspace-primary-hover) 100%)' }}
           >
-            {tx('jobDetail.sendProposal', undefined, 'أرسل عرض')}
+            {tx('jobDetail.submitProposal', undefined, 'Submit Proposal')}
           </button>
         </div>
       )}

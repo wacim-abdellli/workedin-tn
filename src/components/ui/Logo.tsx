@@ -73,7 +73,7 @@ export function Logo({
           className="block object-contain"
           style={{ height: cfg.iconSize, width: 'auto' }}
         />
-        <span className="inline-flex items-baseline gap-0.5 font-sans whitespace-nowrap">
+        <span className="inline-flex items-baseline gap-0.5 font-sans whitespace-nowrap" dir="ltr">
           <span
             className="font-semibold text-foreground"
             style={{ fontSize: cfg.fontSize * 0.9, letterSpacing: '0.02em' }}
@@ -101,7 +101,7 @@ export function Logo({
         className="block object-contain"
         style={{ height: cfg.iconSize, width: 'auto' }}
       />
-      <span className="inline-flex items-baseline gap-0.5 font-sans whitespace-nowrap">
+      <span className="inline-flex items-baseline gap-0.5 font-sans whitespace-nowrap" dir="ltr">
         <span
           className="font-semibold text-foreground"
           style={{ fontSize: cfg.fontSize * 0.9, letterSpacing: '0.02em' }}

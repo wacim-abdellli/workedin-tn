@@ -1052,6 +1052,13 @@ export const ar = {
         "bioLabel": "نبذة عني",
         "bioPlaceholder": "اكتب نبذة مختصرة عن نفسك...",
         "changePasswordTitle": "تغيير كلمة المرور",
+        "passwordTooShort": "يجب أن تحتوي كلمة المرور على 8 أحرف على الأقل",
+        "passwordsDoNotMatch": "كلمتا المرور غير متطابقتين",
+        "passwordChanged": "تم تحديث كلمة المرور بنجاح",
+        "passwordUpdateFailed": "فشل تحديث كلمة المرور",
+        "updatingPassword": "جارٍ التحديث...",
+        "updatePassword": "تحديث كلمة المرور",
+        "oauthPasswordMessage": "لقد سجلت الدخول عبر {{provider}}. إدارة كلمة المرور تتم عبر مزود الهوية الخاص بك.",
         "securityPosture": "مستوى الأمان",
         "securityPostureValue": "محمي بواسطة ضوابط جلسة الحساب",
         "passwordStatus": "حالة كلمة المرور",
@@ -1084,6 +1091,15 @@ export const ar = {
         "accountTypeBothDesc": "الاثنين معاً",
         "accountTypeUnknown": "غير محدد",
         "currentWorkspace": "مساحة العمل الحالية",
+        "identityVerificationTitle": "توثيق الهوية",
+        "quickActions": "إجراءات سريعة",
+        "goToProfile": "تعديل الملف الشخصي",
+        "accountTabHint": "حدّث تفاصيلك وإعدادات مساحة العمل",
+        "goToDashboard": "الذهاب إلى لوحة التحكم",
+        "goToDashboardDescription": "العودة إلى مساحة عملك",
+        "reviewNotifications": "إدارة الإشعارات",
+        "reviewNotificationsDescription": "تحكم في التنبيهات",
+        "toggleNotification": "تبديل {{label}}",
         "onboardingStatus": "حالة الإعداد",
         "activeContext": "السياق النشط",
         "globalPermission": "الصلاحية العامة",
@@ -1155,11 +1171,19 @@ export const ar = {
         "deleteWarning": "هذا الإجراء لا يمكن التراجع عنه",
         "notificationSettings": {
             "newMatches": "وظائف جديدة",
+            "newMatchesDesc": "تلقي إشعار عند وجود وظائف تناسب مهاراتك",
             "newMessages": "رسائل جديدة",
+            "newMessagesDesc": "تلقي إشعار عند استلام رسائل جديدة",
             "payments": "مدفوعات",
+            "paymentsDesc": "تلقي إشعار عند إرسال أو استلام المدفوعات",
+            "reviews": "التقييمات",
+            "reviewsDesc": "تلقي إشعار عند استلام تقييم جديد",
+            "marketing": "العروض والتحديثات",
+            "marketingDesc": "نصائح وتحديثات من WorkedIn",
             "contractUpdates": "تحديثات العقود",
             "platformNews": "أخبار المنصة"
         },
+        "deletePaymentMethod": "حذف {{label}}",
         "deliveryMethod": {
             "email": "بريد إلكتروني",
             "sms": "رسالة نصية",
@@ -1995,6 +2019,17 @@ export const ar = {
         "totalEarned": "إجمالي الأرباح",
         "totalWithdrawn": "إجمالي المسحوبات",
         "requestWithdrawal": "طلب سحب",
+        "deposit": "إيداع رصيد",
+        "paymentMethod": "طريقة الدفع",
+        "depositAmountLabel": "مبلغ الإيداع (د.ت)",
+        "depositLimits": "الحد الأدنى: 10 د.ت - الحد الأقصى: 5,000 د.ت",
+        "continueToPayment": "متابعة إلى الدفع",
+        "processingDeposit": "جارٍ المعالجة...",
+        "depositAmountError": "يجب أن يكون المبلغ بين {{min}} و{{max}} د.ت",
+        "noPaymentLink": "لم يتم إنشاء رابط الدفع",
+        "genericError": "حدث خطأ. يرجى المحاولة مرة أخرى.",
+        "comingSoonLabel": "قريباً",
+        "moreMethodsSoon": "المزيد من طرق الدفع ستكون متاحة قريباً.",
         "transactionHistory": "سجل المعاملات",
         "withdrawalHistory": "سجل السحوبات",
         "amount": "المبلغ",
@@ -2033,6 +2068,14 @@ export const ar = {
         "submitting": "جاري الإرسال...",
         "submitWithdrawal": "تقديم طلب السحب",
         "minAmount": "الحد الأدنى {{min}} د.ت",
+        "errors": {
+            "bankNameRequired": "اسم البنك مطلوب",
+            "accountHolderRequired": "اسم صاحب الحساب مطلوب",
+            "ibanRequired": "رقم IBAN مطلوب",
+            "ibanInvalid": "يجب أن يبدأ رقم IBAN بـ TN",
+            "phoneRequired": "رقم الهاتف مطلوب",
+            "phoneInvalid": "يرجى إدخال رقم هاتف صالح"
+        },
         "status": {
             "pending": "قيد الانتظار",
             "approved": "تمت الموافقة",
@@ -2240,6 +2283,7 @@ export const ar = {
             "week": "منذ {{count}} أسبوع",
             "month": "منذ {{count}} شهر"
         },
+        "postedLabel": "نُشرت",
         "budget": "الميزانية",
         "perHour": "/ساعة",
         "approxHours": "({{count}} ساعة تقريباً)",
@@ -2272,7 +2316,13 @@ export const ar = {
         "deadline": "الموعد النهائي",
         "reportJob": "الإبلاغ عن هذه الوظيفة",
         "aboutClient": "عن العميل",
-        "jobStats": "إحصائيات الوظيفة"
+        "jobStats": "إحصائيات الوظيفة",
+        "similarJobs": "وظائف مشابهة",
+        "proposalSubmitted": "تم تقديم عرضك",
+        "yourBid": "عرضك:",
+        "viewProposal": "عرض العرض",
+        "yourJob": "هذه وظيفتك",
+        "manageJob": "إدارة الوظيفة"
     },
     "reviews": {
         "client": "عميل",
@@ -2296,6 +2346,18 @@ export const ar = {
     },
     "heroSection": {
         "liveBadge": "مباشر",
+        "typewriter": {
+            "freelancer": {
+                "workWithBest": "اعمل مع الأفضل.",
+                "getPaidOnTime": "احصل على مستحقاتك في وقتها.",
+                "buildYourCareer": "ابنِ مسيرتك."
+            },
+            "client": {
+                "trustedConnections": "علاقات موثوقة.",
+                "qualityCollaboration": "تعاون بجودة عالية.",
+                "securePayments": "مدفوعات آمنة."
+            }
+        },
         "freelancer": {
             "panelTitle": "كيف يعمل",
             "eyebrow": "مشروع تونسي. موجه للتونسيين.",
@@ -2590,7 +2652,23 @@ export const ar = {
         "signup": {
             "badge": "أطلق مساحة عملك",
             "heroTitle": "قم بإنشاء انطباع أول أقوى لكل مشروع تبدأه.",
+            "heroTitleTop": "جاهز لمشروعك",
+            "heroTitleAccent": "القادم الكبير؟",
             "heroDescription": "اختر دورك، قم بإعداد مساحة عملك، وانتقل إلى الإعداد باستخدام تجربة مصادقة أنظف وأكثر تركيزاً.",
+            "featureCards": {
+                "verified": {
+                    "title": "ملفات موثقة",
+                    "sub": "كل هوية مؤكدة"
+                },
+                "escrow": {
+                    "title": "مدفوعات بالضمان",
+                    "sub": "الأموال محفوظة حتى التسليم"
+                },
+                "local": {
+                    "title": "محلي وعالمي",
+                    "sub": "محسن لتونس"
+                }
+            },
             "highlightRoleTitle": "إعداد قائم على الدور",
             "highlightRoleDescription": "ابدأ كعميل أو موظف مستقل وصل إلى مساحة العمل الصحيحة من الخطوة الأولى.",
             "highlightTrustTitle": "إشارات الثقة جاهزة",
@@ -2762,8 +2840,8 @@ export const ar = {
         "preview": "Preview",
         "title": "Title",
         "mb": "MB",
-        "recommended": "✓ Recommended",
-        "coming_soon": "Coming Soon",
+        "recommended": "موصى به",
+        "coming_soon": "قريباً",
         "f": "F",
         "iban": "رقم IBAN",
         "tn_xxxxx": "TN59XXXXX...",

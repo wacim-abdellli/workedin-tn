@@ -20,11 +20,13 @@ import ContactModal from '../components/freelancer/ContactModal';
 import { OptimizedImage } from '../components/common';
 import SEO from '../components/common/SEO';
 import ReportButton from '../components/settings/ReportButton';
+import { localizeGovernorate } from '../lib/governorates';
 
 // Subcomponents
 import ProfileHeader from '../components/freelancer/profile/ProfileHeader';
 import AboutSection from '../components/freelancer/profile/AboutSection';
 import SkillsSection from '../components/freelancer/profile/SkillsSection';
+import ToolsSection from '../components/freelancer/profile/ToolsSection';
 import PortfolioSection from '../components/freelancer/profile/PortfolioSection';
 import ReviewsSection from '../components/freelancer/profile/ReviewsSection';
 import ProfileSidebar from '../components/freelancer/profile/ProfileSidebar';
@@ -67,7 +69,7 @@ export default function FreelancerProfile() {
 
     useEffect(() => {
         loadFreelancer();
-    }, [usernameOrId]);
+    }, [usernameOrId, language]);
 
     // Cleanup audio on unmount
     useEffect(() => {
@@ -195,12 +197,15 @@ export default function FreelancerProfile() {
                 title: profileRow.title,
                 avatar_url: profileRow.profile.avatar_url,
                 bio: profileRow.profile.bio || '',
-                location: profileRow.profile.location || t.footer?.city || 'Tunis, Tunisia',
+                location: profileRow.profile.location
+                    ? localizeGovernorate(profileRow.profile.location, language)
+                    : t.footer?.city || 'Tunis, Tunisia',
                 joined_at: profileRow.profile.created_at,
                 voice_intro_url: profileRow.voice_intro_url,
                 hourly_rate: profileRow.hourly_rate || 0,
                 availability: profileRow.availability || 'available',
                 skills,
+                tools: Array.isArray(profileRow.tools) ? profileRow.tools : [],
                 languages: Array.isArray(profileRow.languages) ? profileRow.languages : [],
                 education: Array.isArray(profileRow.education) ? profileRow.education : [],
                 certifications: Array.isArray(profileRow.certifications) ? profileRow.certifications : [],
@@ -325,6 +330,12 @@ export default function FreelancerProfile() {
                             isOwner={isOwner}
                             onUpdate={skills => setFreelancer(f => f ? { ...f, skills } : f)}
                         />
+                        <ToolsSection
+                            tools={freelancer.tools}
+                            language={language}
+                            isOwner={isOwner}
+                            onUpdate={tools => setFreelancer(f => f ? { ...f, tools } : f)}
+                        />
                         <PortfolioSection
                             workSamples={freelancer.work_samples}
                             onSelectSample={setSelectedWorkSample}
@@ -355,7 +366,6 @@ export default function FreelancerProfile() {
 
                     <div className="relative max-w-5xl w-full h-full max-h-[90vh] flex flex-col md:flex-row bg-[var(--color-bg-elevated)] rounded-2xl overflow-hidden border border-[var(--color-border-subtle)]">
                         {(() => {
-                            const { tx } = useTranslation();
                             const sample = freelancer.work_samples.find(s => s.id === selectedWorkSample);
                             if (!sample) return null;
                             return (

@@ -122,7 +122,7 @@ export function MobileHeader({
         }}
         role="dialog"
         aria-modal="true"
-        aria-label="Navigation menu"
+        aria-label={t.nav?.menu || "Navigation menu"}
       >
         <div
           className="flex h-16 items-center justify-between border-b px-4"

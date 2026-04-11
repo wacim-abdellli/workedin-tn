@@ -1,6 +1,7 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { render, screen } from '@testing-library/react';
+import { I18nProvider } from '@/i18n';
 
 import { ProtectedRoute } from '@/components/routing/ProtectedRoute';
 import { WorkspaceRoute } from '@/components/routing/WorkspaceRoute';
@@ -63,19 +64,21 @@ describe('workspace routing guards', () => {
         workspaceState.activeWorkspace = 'client';
 
         render(
-            <MemoryRouter initialEntries={['/my-proposals']}>
-                <Routes>
-                    <Route
-                        path="/my-proposals"
-                        element={
-                            <ProtectedRoute>
-                                <div>Protected content</div>
-                            </ProtectedRoute>
-                        }
-                    />
-                    <Route path="*" element={<LocationProbe />} />
-                </Routes>
-            </MemoryRouter>
+            <I18nProvider>
+                <MemoryRouter initialEntries={['/my-proposals']}>
+                    <Routes>
+                        <Route
+                            path="/my-proposals"
+                            element={
+                                <ProtectedRoute>
+                                    <div>Protected content</div>
+                                </ProtectedRoute>
+                            }
+                        />
+                        <Route path="*" element={<LocationProbe />} />
+                    </Routes>
+                </MemoryRouter>
+            </I18nProvider>
         );
 
         expect(screen.getByTestId('location')).toHaveTextContent('/onboarding/freelancer');
@@ -91,20 +94,22 @@ describe('workspace routing guards', () => {
         workspaceState.activeWorkspace = 'client';
 
         render(
-            <MemoryRouter initialEntries={['/client/jobs']}>
-                <Routes>
-                    <Route
-                        path="/client/jobs"
-                        element={
-                            <WorkspaceRoute workspace="client">
-                                <div>Wrong workspace</div>
-                            </WorkspaceRoute>
-                        }
-                    />
-                    <Route path="/freelancer/dashboard" element={<LocationProbe />} />
-                    <Route path="*" element={<LocationProbe />} />
-                </Routes>
-            </MemoryRouter>
+            <I18nProvider>
+                <MemoryRouter initialEntries={['/client/jobs']}>
+                    <Routes>
+                        <Route
+                            path="/client/jobs"
+                            element={
+                                <WorkspaceRoute workspace="client">
+                                    <div>Wrong workspace</div>
+                                </WorkspaceRoute>
+                            }
+                        />
+                        <Route path="/freelancer/dashboard" element={<LocationProbe />} />
+                        <Route path="*" element={<LocationProbe />} />
+                    </Routes>
+                </MemoryRouter>
+            </I18nProvider>
         );
 
         expect(screen.getByTestId('location')).toHaveTextContent('/freelancer/dashboard');

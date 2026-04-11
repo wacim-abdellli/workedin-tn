@@ -244,7 +244,7 @@ export default function PaymentMethodSelector({
   onSelect,
   showComingSoon = true,
 }: PaymentMethodSelectorProps) {
-  const { language } = useTranslation() as { t: unknown; tx: unknown; language: string };
+  const { language, tx } = useTranslation() as { t: unknown; tx: (key: string, vars?: Record<string, string>, fallback?: string) => string; language: string };
 
   const available = PAYMENT_METHODS.filter((m) => m.available);
   const comingSoon = PAYMENT_METHODS.filter((m) => m.comingSoon);
@@ -272,7 +272,7 @@ export default function PaymentMethodSelector({
           <div className="flex items-center gap-3 py-1">
             <div className="flex-1 h-px bg-border" />
             <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider whitespace-nowrap">
-              {language === 'ar' ? 'قريباً' : language === 'fr' ? 'Bientôt disponible' : 'Coming soon'}
+              {tx('wallet.comingSoonLabel', undefined, 'Coming soon')}
             </span>
             <div className="flex-1 h-px bg-border" />
           </div>
@@ -289,11 +289,7 @@ export default function PaymentMethodSelector({
       <div className="flex items-start gap-2 px-3 py-2.5 rounded-xl bg-blue-50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/40">
         <Info className="w-4 h-4 text-blue-500 dark:text-blue-400 flex-shrink-0 mt-0.5" />
         <p className="text-xs text-blue-700 dark:text-blue-300 leading-relaxed">
-          {language === 'ar'
-            ? 'المزيد من طرق الدفع ستكون متاحة قريباً.'
-            : language === 'fr'
-            ? "D'autres moyens de paiement seront bientôt disponibles."
-            : 'More payment methods coming soon.'}
+          {tx('wallet.moreMethodsSoon', undefined, 'More payment methods will be available soon.')}
         </p>
       </div>
     </div>

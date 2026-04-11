@@ -117,7 +117,7 @@ export default function SecuritySettings() {
                                         onClick={() => setShowNewPassword(!showNewPassword)}
                                         onMouseEnter={e => e.currentTarget.style.color = "var(--color-text-secondary)"}
                                         onMouseLeave={e => e.currentTarget.style.color = "var(--color-text-tertiary)"}
-                                        aria-label={showNewPassword ? 'Hide password' : 'Show password'}
+                                        aria-label={showNewPassword ? t.auth.password.hide : t.auth.password.show}
                                     >
                                         {showNewPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                                     </button>
@@ -151,7 +151,7 @@ export default function SecuritySettings() {
                                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                                         onMouseEnter={e => e.currentTarget.style.color = "var(--color-text-secondary)"}
                                         onMouseLeave={e => e.currentTarget.style.color = "var(--color-text-tertiary)"}
-                                        aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+                                        aria-label={showConfirmPassword ? t.auth.password.hide : t.auth.password.show}
                                     >
                                         {showConfirmPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                                     </button>

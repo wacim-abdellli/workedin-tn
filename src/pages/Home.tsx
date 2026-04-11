@@ -3,8 +3,6 @@ import { Header, Footer } from '../components/layout';
 import { supabaseAnon } from '../lib/supabase';
 import SEO, { SEO_CONFIG } from '../components/common/SEO';
 import RevealOnScroll from '../components/ui/RevealOnScroll';
-import { useAuth } from '../contexts/AuthContext';
-import SplitLanding from '../components/home/SplitLanding';
 
 import HeroSection from '../components/home/HeroSection';
 
@@ -16,7 +14,6 @@ const TestimonialsSection = lazy(() => import('../components/home/TestimonialsSe
 const CTASection = lazy(() => import('../components/home/CTASection'));
 
 function Home() {
-    const { user, isFullyReady } = useAuth();
     const [stats, setStats] = useState({
         earnings: 0,
         jobs: 0,
@@ -54,37 +51,31 @@ function Home() {
 return (
         <div className="min-h-screen" style={{ background: 'var(--page-bg)' }}>
             <SEO {...SEO_CONFIG.home} url="/" />
+            <Header />
 
-            {/* Show split landing for non-logged-in users */}
-            {isFullyReady && !user ? (
-                <SplitLanding />
-            ) : (
-                <>
-                    <Header />
-                    <HeroSection stats={stats} />
-                    <Suspense fallback={null}>
-                        <RevealOnScroll variant="fade-up">
-                            <ValuePropositions />
-                        </RevealOnScroll>
-                        <RevealOnScroll variant="fade-up" delay={50}>
-                            <HowItWorksSection />
-                        </RevealOnScroll>
-                        <RevealOnScroll variant="fade-up" delay={50}>
-                            <CategoriesSection />
-                        </RevealOnScroll>
-                        <RevealOnScroll variant="blur" delay={50}>
-                            <LiveCounterSection stats={stats} />
-                        </RevealOnScroll>
-                        <RevealOnScroll variant="fade-up" delay={50}>
-                            <TestimonialsSection />
-                        </RevealOnScroll>
-                        <RevealOnScroll variant="zoom" delay={50}>
-                            <CTASection />
-                        </RevealOnScroll>
-                    </Suspense>
-                    <Footer />
-                </>
-            )}
+            <HeroSection stats={stats} />
+            <Suspense fallback={null}>
+                <RevealOnScroll variant="fade-up">
+                    <ValuePropositions />
+                </RevealOnScroll>
+                <RevealOnScroll variant="fade-up" delay={50}>
+                    <HowItWorksSection />
+                </RevealOnScroll>
+                <RevealOnScroll variant="fade-up" delay={50}>
+                    <CategoriesSection />
+                </RevealOnScroll>
+                <RevealOnScroll variant="blur" delay={50}>
+                    <LiveCounterSection stats={stats} />
+                </RevealOnScroll>
+                <RevealOnScroll variant="fade-up" delay={50}>
+                    <TestimonialsSection />
+                </RevealOnScroll>
+                <RevealOnScroll variant="zoom" delay={50}>
+                    <CTASection />
+                </RevealOnScroll>
+            </Suspense>
+
+            <Footer />
         </div>
     );
 }

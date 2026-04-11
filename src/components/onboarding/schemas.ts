@@ -11,10 +11,17 @@ export const step1Schema = z.object({
 export type Step1FormData = z.infer<typeof step1Schema>;
 
 export const step2Schema = z.object({
-    hourly_rate: z.string().optional(),
+    hourly_rate: z.string()
+        .optional()
+        .refine(
+            (val) => {
+                if (!val || val.trim() === '') return true;
+                const num = parseFloat(val);
+                return !isNaN(num) && num >= 0 && num <= 999999;
+            },
+            { message: 'Hourly rate must be between 0 and 999,999' }
+        ),
     availability: z.string().optional(),
-    custom_skill_enabled: z.boolean().optional(),
-    custom_skill_name: z.string().trim().max(60, 'Maximum 60 characters').optional(),
 });
 
 export type Step2FormData = z.infer<typeof step2Schema>;

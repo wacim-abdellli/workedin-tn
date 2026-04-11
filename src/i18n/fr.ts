@@ -1054,6 +1054,13 @@ export const fr: Translations = {
         "bioLabel": "Biographie",
         "bioPlaceholder": "Écrivez une courte biographie...",
         "changePasswordTitle": "Changer le mot de passe",
+        "passwordTooShort": "Le mot de passe doit contenir au moins 8 caractères",
+        "passwordsDoNotMatch": "Les mots de passe ne correspondent pas",
+        "passwordChanged": "Mot de passe mis à jour avec succès",
+        "passwordUpdateFailed": "Échec de la mise à jour du mot de passe",
+        "updatingPassword": "Mise à jour...",
+        "updatePassword": "Mettre à jour le mot de passe",
+        "oauthPasswordMessage": "Vous vous êtes connecté avec {{provider}}. La gestion du mot de passe est assurée par votre fournisseur d'identité.",
         "securityPosture": "Position de sécurité",
         "securityPostureValue": "Protégé par les contrôles de session du compte",
         "passwordStatus": "État du mot de passe",
@@ -1087,6 +1094,15 @@ export const fr: Translations = {
         "accountTypeUnknown": "Non défini",
         "userFallback": "Utilisateur",
         "currentWorkspace": "Espace de travail actuel",
+        "identityVerificationTitle": "Vérification d'identité",
+        "quickActions": "Actions rapides",
+        "goToProfile": "Modifier le profil",
+        "accountTabHint": "Mettez à jour vos informations et votre espace de travail",
+        "goToDashboard": "Aller au tableau de bord",
+        "goToDashboardDescription": "Retournez à votre espace de travail",
+        "reviewNotifications": "Gérer les notifications",
+        "reviewNotificationsDescription": "Contrôlez vos alertes",
+        "toggleNotification": "Basculer {{label}}",
         "onboardingStatus": "Statut d'intégration",
         "activeContext": "Contexte actif",
         "globalPermission": "Autorisation globale",
@@ -1157,11 +1173,19 @@ export const fr: Translations = {
         "deleteWarning": "Cette action est irréversible",
         "notificationSettings": {
             "newMatches": "Nouvelles missions",
+            "newMatchesDesc": "Recevez une notification quand des missions correspondent à vos compétences",
             "newMessages": "Nouveaux messages",
+            "newMessagesDesc": "Recevez une notification lorsque vous recevez de nouveaux messages",
             "payments": "Paiements",
+            "paymentsDesc": "Recevez une notification lorsque vous envoyez ou recevez des paiements",
+            "reviews": "Avis",
+            "reviewsDesc": "Recevez une notification lorsque vous recevez un nouvel avis",
+            "marketing": "Offres et mises à jour",
+            "marketingDesc": "Conseils et mises à jour de WorkedIn",
             "contractUpdates": "Mises à jour des contrats",
             "platformNews": "Actualités de la plateforme"
         },
+        "deletePaymentMethod": "Supprimer {{label}}",
         "deliveryMethod": {
             "email": "Email",
             "sms": "SMS",
@@ -1997,6 +2021,17 @@ export const fr: Translations = {
         "totalEarned": "Total Gagné",
         "totalWithdrawn": "Total Retiré",
         "requestWithdrawal": "Demander un Retrait",
+        "deposit": "Ajouter des fonds",
+        "paymentMethod": "Methode de paiement",
+        "depositAmountLabel": "Montant du depot (TND)",
+        "depositLimits": "Min: 10 TND - Max: 5,000 TND",
+        "continueToPayment": "Continuer vers le paiement",
+        "processingDeposit": "Traitement...",
+        "depositAmountError": "Le montant doit etre entre {{min}} et {{max}} TND",
+        "noPaymentLink": "Le lien de paiement n'a pas ete genere",
+        "genericError": "Une erreur est survenue. Veuillez reessayer.",
+        "comingSoonLabel": "Bientot",
+        "moreMethodsSoon": "D'autres moyens de paiement seront bientot disponibles.",
         "transactionHistory": "Historique des Transactions",
         "withdrawalHistory": "Historique des Retraits",
         "amount": "Montant",
@@ -2035,6 +2070,14 @@ export const fr: Translations = {
         "submitting": "Envoi en cours...",
         "submitWithdrawal": "Soumettre la Demande de Retrait",
         "minAmount": "Min {{min}} TND",
+        "errors": {
+            "bankNameRequired": "Le nom de la banque est requis",
+            "accountHolderRequired": "Le nom du titulaire du compte est requis",
+            "ibanRequired": "L'IBAN est requis",
+            "ibanInvalid": "L'IBAN doit commencer par TN",
+            "phoneRequired": "Le numero de telephone est requis",
+            "phoneInvalid": "Entrez un numero de telephone valide"
+        },
         "status": {
             "pending": "En Attente",
             "approved": "Approuvé",
@@ -2242,6 +2285,7 @@ export const fr: Translations = {
             "week": "Il y a {{count}} semaine",
             "month": "Il y a {{count}} mois"
         },
+        "postedLabel": "Publié",
         "budget": "Budget",
         "perHour": "/heure",
         "approxHours": "(environ {{count}} heures)",
@@ -2274,7 +2318,13 @@ export const fr: Translations = {
         "deadline": "Deadline",
         "reportJob": "Signaler ce travail",
         "aboutClient": "À propos du client",
-        "jobStats": "Statistiques du travail"
+        "jobStats": "Statistiques du travail",
+        "similarJobs": "Missions similaires",
+        "proposalSubmitted": "Votre proposition a été envoyée",
+        "yourBid": "Votre offre:",
+        "viewProposal": "Voir la proposition",
+        "yourJob": "C'est votre mission",
+        "manageJob": "Gérer la mission"
     },
     "reviews": {
         "client": "Client",
@@ -2298,6 +2348,18 @@ export const fr: Translations = {
     },
     "heroSection": {
         "liveBadge": "En direct",
+        "typewriter": {
+            "freelancer": {
+                "workWithBest": "Travaillez avec les meilleurs.",
+                "getPaidOnTime": "Soyez payé à temps.",
+                "buildYourCareer": "Construisez votre carrière."
+            },
+            "client": {
+                "trustedConnections": "Connexions de confiance.",
+                "qualityCollaboration": "Collaboration de qualité.",
+                "securePayments": "Paiements sécurisés."
+            }
+        },
         "freelancer": {
             "panelTitle": "Comment ça marche",
             "eyebrow": "Construit en Tunisie. Construit pour la Tunisie.",
@@ -2592,7 +2654,23 @@ export const fr: Translations = {
         "signup": {
             "badge": "Rejoignez WorkedIn",
             "heroTitle": "Créez une première impression plus nette pour chaque projet que vous démarrez.",
+            "heroTitleTop": "Prêt pour votre",
+            "heroTitleAccent": "prochain grand projet ?",
             "heroDescription": "Choisissez votre rôle, configurez votre espace de travail et passez à l'intégration avec une expérience d'authentification plus propre et plus ciblée.",
+            "featureCards": {
+                "verified": {
+                    "title": "Profils vérifiés",
+                    "sub": "Chaque identité confirmée"
+                },
+                "escrow": {
+                    "title": "Paiements en séquestre",
+                    "sub": "Fonds bloqués jusqu'à la livraison"
+                },
+                "local": {
+                    "title": "Local et global",
+                    "sub": "Optimisé pour la Tunisie"
+                }
+            },
             "highlightRoleTitle": "Intégration basée sur le rôle",
             "highlightRoleDescription": "Commencez en tant que client ou indépendant et atterrissez dans le bon espace de travail dès la première étape.",
             "highlightTrustTitle": "Vérifié et Sécurisé",
@@ -2764,8 +2842,8 @@ export const fr: Translations = {
         "preview": "Preview",
         "title": "Title",
         "mb": "MB",
-        "recommended": "✓ Recommended",
-        "coming_soon": "Coming Soon",
+        "recommended": "Recommande",
+        "coming_soon": "Bientot",
         "f": "F",
         "iban": "رقم IBAN",
         "tn_xxxxx": "TN59XXXXX...",

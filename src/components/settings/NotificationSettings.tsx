@@ -144,7 +144,7 @@ export default function NotificationSettings() {
                             type="button"
                             onClick={() => handleToggle(item.key)}
                             className="shrink-0 flex items-center justify-center"
-                            aria-label={`Toggle ${content.label}`}
+                            aria-label={tx('settings.toggleNotification', { label: content.label }, `Toggle ${content.label}`)}
                         >
                             <div className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200" style={{ background: item.enabled ? "var(--workspace-primary)" : "var(--color-background-subtle)" }}>
                                 <span

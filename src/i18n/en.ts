@@ -976,6 +976,30 @@ export const en: Translations = {
         "selectLocation": "Select your governorate",
         "skills": "Skills",
         "optional": "Optional",
+        "skillCategories": {
+            "design": "Design",
+            "development": "Development",
+            "writing": "Writing & Translation",
+            "marketing": "Marketing",
+            "video": "Video & Audio",
+            "business": "Business",
+            "data": "Data",
+            "other": "Other"
+        },
+        "toolCategories": {
+            "design": "Design Tools",
+            "development": "Development Tools",
+            "productivity": "Productivity Tools",
+            "video": "Video & Audio Tools",
+            "marketing": "Marketing Tools",
+            "other": "Other Tools"
+        },
+        "primarySkills": "Primary Skills",
+        "secondarySkills": "More Skills",
+        "searchSkills": "Search skills...",
+        "searchTools": "Search tools...",
+        "tools": "Tools",
+        "toolsOptional": "Tools (Optional)",
         "voiceIntro": "Voice introduction",
         "recordVoice": "Record voice intro",
         "stopRecording": "Stop recording",
@@ -1054,6 +1078,13 @@ export const en: Translations = {
         "bioLabel": "Bio",
         "bioPlaceholder": "Write a short bio about yourself...",
         "changePasswordTitle": "Change password",
+        "passwordTooShort": "Password must be at least 8 characters",
+        "passwordsDoNotMatch": "Passwords do not match",
+        "passwordChanged": "Password updated successfully",
+        "passwordUpdateFailed": "Failed to update password",
+        "updatingPassword": "Updating...",
+        "updatePassword": "Update password",
+        "oauthPasswordMessage": "You signed in with {{provider}}. Password management is handled by your identity provider.",
         "securityPosture": "Security posture",
         "securityPostureValue": "Protected by account session controls",
         "passwordStatus": "Password status",
@@ -1087,6 +1118,15 @@ export const en: Translations = {
         "accountTypeUnknown": "Not set",
         "userFallback": "User",
         "currentWorkspace": "Current workspace",
+        "identityVerificationTitle": "Identity",
+        "quickActions": "Quick actions",
+        "goToProfile": "Edit profile",
+        "accountTabHint": "Update your details and workspace",
+        "goToDashboard": "Go to dashboard",
+        "goToDashboardDescription": "Return to your workspace",
+        "reviewNotifications": "Manage notifications",
+        "reviewNotificationsDescription": "Control your alerts",
+        "toggleNotification": "Toggle {{label}}",
         "onboardingStatus": "Onboarding",
         "activeContext": "Active context",
         "globalPermission": "Global permission",
@@ -1157,11 +1197,19 @@ export const en: Translations = {
         "deleteWarning": "This action cannot be undone",
         "notificationSettings": {
             "newMatches": "New job matches",
+            "newMatchesDesc": "Get notified when jobs match your skills",
             "newMessages": "New messages",
+            "newMessagesDesc": "Get notified when you receive new messages",
             "payments": "Payments",
+            "paymentsDesc": "Get notified when you send or receive payments",
+            "reviews": "Reviews",
+            "reviewsDesc": "Get notified when you receive a new review",
+            "marketing": "Offers and updates",
+            "marketingDesc": "Tips and updates from WorkedIn",
             "contractUpdates": "Contract updates",
             "platformNews": "Platform news"
         },
+        "deletePaymentMethod": "Delete {{label}}",
         "deliveryMethod": {
             "email": "Email",
             "sms": "SMS",
@@ -1678,6 +1726,7 @@ export const en: Translations = {
             "selectAtLeastOneSkill": "Please select at least one skill",
             "connectionFailed": "Connection failed. Check your internet connection and try again.",
             "skillsSaveFailed": "Failed to save skills",
+            "hourlyRateTooHigh": "Hourly rate must be between 0 and 999,999 TND",
             "completionFailed": "Failed to complete onboarding. Please try again.",
             "welcomeToast": "Welcome to WorkedIn!",
             "stepCounter": "Step {{step}} of {{total}}",
@@ -1997,6 +2046,17 @@ export const en: Translations = {
         "totalEarned": "Total Earned",
         "totalWithdrawn": "Total Withdrawn",
         "requestWithdrawal": "Request Withdrawal",
+        "deposit": "Deposit Funds",
+        "paymentMethod": "Payment Method",
+        "depositAmountLabel": "Deposit Amount (TND)",
+        "depositLimits": "Min: 10 TND - Max: 5,000 TND",
+        "continueToPayment": "Continue to payment",
+        "processingDeposit": "Processing...",
+        "depositAmountError": "Amount must be between {{min}} and {{max}} TND",
+        "noPaymentLink": "Payment link was not generated",
+        "genericError": "An error occurred. Please try again.",
+        "comingSoonLabel": "Coming soon",
+        "moreMethodsSoon": "More payment methods will be available soon.",
         "transactionHistory": "Transaction History",
         "withdrawalHistory": "Withdrawal History",
         "amount": "Amount",
@@ -2035,6 +2095,14 @@ export const en: Translations = {
         "submitting": "Submitting...",
         "submitWithdrawal": "Submit Withdrawal Request",
         "minAmount": "Min {{min}} TND",
+        "errors": {
+            "bankNameRequired": "Bank name is required",
+            "accountHolderRequired": "Account holder name is required",
+            "ibanRequired": "IBAN is required",
+            "ibanInvalid": "IBAN must start with TN",
+            "phoneRequired": "Phone number is required",
+            "phoneInvalid": "Enter a valid phone number"
+        },
         "status": {
             "pending": "Pending",
             "approved": "Approved",
@@ -2242,6 +2310,7 @@ export const en: Translations = {
             "week": "{{count}} week ago",
             "month": "{{count}} month ago"
         },
+        "postedLabel": "Posted",
         "budget": "Budget",
         "perHour": "/hour",
         "approxHours": "(approx {{count}} hours)",
@@ -2274,7 +2343,13 @@ export const en: Translations = {
         "deadline": "Deadline",
         "reportJob": "Report This Job",
         "aboutClient": "About Client",
-        "jobStats": "Job Stats"
+        "jobStats": "Job Stats",
+        "similarJobs": "Similar jobs",
+        "proposalSubmitted": "Your proposal was submitted",
+        "yourBid": "Your bid:",
+        "viewProposal": "View proposal",
+        "yourJob": "This is your job",
+        "manageJob": "Manage job"
     },
     "reviews": {
         "client": "Client",
@@ -2298,17 +2373,29 @@ export const en: Translations = {
     },
     "heroSection": {
         "liveBadge": "Live",
+        "typewriter": {
+            "freelancer": {
+                "workWithBest": "Work with the best.",
+                "getPaidOnTime": "Get paid on time.",
+                "buildYourCareer": "Build your career."
+            },
+            "client": {
+                "trustedConnections": "Trusted connections.",
+                "qualityCollaboration": "Quality collaboration.",
+                "securePayments": "Secure payments."
+            }
+        },
         "freelancer": {
             "panelTitle": "How it works",
             "eyebrow": "Built in Tunisia. Built for Tunisia.",
-            "titleTop": "Where Tunisian talent",
-            "titleAccent": "gets paid fairly.",
-            "subtitle": "No auctions. No middlemen. Post a project, agree on terms, get paid in TND - secured by escrow.",
-            "cta": "Start earning today",
-            "secondary": "Browse projects",
+            "titleTop": "Quality work.",
+            "titleAccent": "Fair opportunities.",
+            "subtitle": "Connect with quality projects or find skilled professionals. Transparent terms, secure payments in TND.",
+            "cta": "Get Started",
+            "secondary": "Explore Platform",
             "trust": {
-                "payouts": "Protected payouts",
-                "matched": "Matched work",
+                "payouts": "Protected payments",
+                "matched": "Quality matching",
                 "reputation": "Build reputation"
             },
             "stats": {
@@ -2318,7 +2405,7 @@ export const en: Translations = {
                 },
                 "contracts": {
                     "default": "120",
-                    "label": "Contracts done"
+                    "label": "Active projects"
                 },
                 "rating": {
                     "value": "4.9/5",
@@ -2327,32 +2414,32 @@ export const en: Translations = {
             },
             "features": {
                 "apply": {
-                    "title": "Apply to matched projects",
-                    "subtitle": "Jobs that fit your skill level and rate"
+                    "title": "Connect with the right people",
+                    "subtitle": "Quality matches for clients and freelancers"
                 },
                 "verify": {
-                    "title": "Show verification status",
-                    "subtitle": "Build trust before you say a word"
+                    "title": "Verified local profiles",
+                    "subtitle": "Build trust before the first message"
                 },
                 "track": {
-                    "title": "Track milestones and payouts",
-                    "subtitle": "Everything in one place, secured by escrow"
+                    "title": "Track milestones and payments",
+                    "subtitle": "Everything secured and transparent"
                 }
             },
-            "promise": "Better presentation helps great freelancers look credible before they say a word."
+            "promise": "Better presentation helps everyone build trust and successful collaborations."
         },
         "client": {
             "panelTitle": "Why WorkedIn",
-            "eyebrow": "Built in Tunisia. Ready for serious hiring.",
-            "titleTop": "Drop the amateurs.",
-            "titleAccent": "Work with the elite.",
-            "subtitle": "Post your project, skip the gambling, and hire exclusively verified talent.",
-            "cta": "Hire an Expert",
-            "secondary": "See Top Talent",
+            "eyebrow": "Built in Tunisia. Ready for serious work.",
+            "titleTop": "Quality work.",
+            "titleAccent": "Trusted connections.",
+            "subtitle": "Connect with verified professionals or find quality projects. Built for serious collaboration.",
+            "cta": "Get Started",
+            "secondary": "Explore Platform",
             "trust": {
                 "verified": "Verified profiles",
-                "faster": "Faster hiring",
-                "escrow": "Protected escrow"
+                "faster": "Quality matching",
+                "escrow": "Protected payments"
             },
             "stats": {
                 "professionals": {
@@ -2361,7 +2448,7 @@ export const en: Translations = {
                 },
                 "projects": {
                     "default": "120",
-                    "label": "Open projects"
+                    "label": "Active projects"
                 },
                 "trust": {
                     "value": "4.9/5",
@@ -2370,19 +2457,19 @@ export const en: Translations = {
             },
             "features": {
                 "post": {
-                    "title": "Post once and get relevant proposals",
-                    "subtitle": "No noisy bidding wars, just quality responses"
+                    "title": "Connect with the right people",
+                    "subtitle": "Quality matches for clients and freelancers"
                 },
                 "review": {
-                    "title": "Review verified local profiles",
+                    "title": "Verified local profiles",
                     "subtitle": "Trust signals appear before the first message"
                 },
                 "manage": {
-                    "title": "Manage milestones with escrow",
+                    "title": "Secure milestone payments",
                     "subtitle": "Payments stay protected until approval"
                 }
             },
-            "promise": "Better presentation helps serious clients trust the platform before they post a project."
+            "promise": "Better presentation helps everyone trust the platform and build successful collaborations."
         },
         "promise": {
             "label": "WorkedIn Promise"
@@ -2592,7 +2679,35 @@ export const en: Translations = {
         "signup": {
             "badge": "Join WorkedIn",
             "heroTitle": "Ready for your next big project?",
+            "heroTitleTop": "Ready for your",
+            "heroTitleAccent": "next big project?",
             "heroDescription": "Join thousands of professionals across Tunisia. Set up your workspace and start working in minutes.",
+            "featureCards": {
+                "verified": {
+                    "title": "Verified profiles",
+                    "sub": "Every identity confirmed"
+                },
+                "escrow": {
+                    "title": "Escrow payments",
+                    "sub": "Funds held until delivery"
+                },
+                "local": {
+                    "title": "Local & global",
+                    "sub": "Optimised for Tunisia"
+                }
+            },
+            "formTitle": "Create your account",
+            "formSubtitle": "Join 2,500+ professionals building their career on WorkedIn",
+            "continueWithGoogle": "Continue with Google",
+            "orSignUpWithEmail": "or sign up with email",
+            "emailLabel": "Email",
+            "emailPlaceholder": "you@example.com",
+            "passwordLabel": "Password",
+            "confirmPasswordLabel": "Confirm Password",
+            "creatingAccount": "Creating account…",
+            "createAccountButton": "Create account →",
+            "alreadyHaveAccount": "Already have an account?",
+            "signInLink": "Sign in",
             "highlightRoleTitle": "Choose Your Path",
             "highlightRoleDescription": "Sign up as a freelancer to find work, or a client to hire top talent.",
             "highlightTrustTitle": "Verified & Secure",

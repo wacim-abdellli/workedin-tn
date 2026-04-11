@@ -3,9 +3,6 @@ import { Link } from 'react-router-dom';
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from '@/i18n';
-import Modal from '@/components/ui/Modal';
-import Button from '@/components/ui/Button';
-import Input from '@/components/ui/Input';
 import { useToast } from '@/components/ui/Toast';
 
 type AccountStatus = 'suspended' | 'archived';
@@ -58,7 +55,7 @@ export default function AccountStatusGate({ status }: { status: AccountStatus })
     e.preventDefault();
     
     if (!formData.name || !formData.email || !formData.message) {
-      showToast('Please fill in all required fields', 'error');
+      showToast(tx('support.errors.requiredFields', undefined, 'Please fill in all required fields'), 'error');
       return;
     }
 
@@ -68,11 +65,11 @@ export default function AccountStatusGate({ status }: { status: AccountStatus })
       // Simulate API call - replace with actual API endpoint
       await new Promise(resolve => setTimeout(resolve, 1500));
       
-      showToast('Your message has been sent successfully. We will get back to you soon.', 'success');
+      showToast(tx('support.success.sent', undefined, 'Your message has been sent successfully. We will get back to you soon.'), 'success');
       setShowContactForm(false);
       setFormData({ name: '', email: '', subject: '', message: '' });
-    } catch (error) {
-      showToast('Failed to send message. Please try again or email us directly at support@workedin.tn', 'error');
+    } catch (_error) {
+      showToast(tx('support.errors.sendFailed', undefined, 'Failed to send message. Please try again or email us directly at support@workedin.tn'), 'error');
     } finally {
       setIsSubmitting(false);
     }
@@ -133,7 +130,7 @@ export default function AccountStatusGate({ status }: { status: AccountStatus })
             onClick={(e) => e.stopPropagation()}
           >
             <div className="sticky top-0 bg-white dark:bg-[#0f172a] border-b border-gray-200 dark:border-gray-800 px-6 py-4 flex items-center justify-between z-10">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white">Contact Support</h2>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">{tx('common.contactSupport', undefined, 'Contact Support')}</h2>
               <button
                 type="button"
                 onClick={(e) => {
@@ -141,7 +138,7 @@ export default function AccountStatusGate({ status }: { status: AccountStatus })
                   setShowContactForm(false);
                 }}
                 className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                aria-label="Close"
+                aria-label={tx('common.close', undefined, 'Close')}
               >
                 <svg className="w-5 h-5 text-gray-500 dark:text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -151,12 +148,12 @@ export default function AccountStatusGate({ status }: { status: AccountStatus })
 
             <form onSubmit={handleSubmit} className="p-6 space-y-5">
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Fill out the form below and our support team will get back to you as soon as possible.
+                {tx('support.form.description', undefined, 'Fill out the form below and our support team will get back to you as soon as possible.')}
               </p>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Full Name <span className="text-red-500">*</span>
+                  {tx('support.form.fullName', undefined, 'Full Name')} <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -164,7 +161,7 @@ export default function AccountStatusGate({ status }: { status: AccountStatus })
                     type="text"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    placeholder="Enter your full name"
+                    placeholder={tx('support.form.fullNamePlaceholder', undefined, 'Enter your full name')}
                     required
                     className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#1e293b] text-gray-900 dark:text-white placeholder:text-gray-400 focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500/20"
                   />
@@ -173,7 +170,7 @@ export default function AccountStatusGate({ status }: { status: AccountStatus })
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Email Address <span className="text-red-500">*</span>
+                  {tx('support.form.emailAddress', undefined, 'Email Address')} <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -190,7 +187,7 @@ export default function AccountStatusGate({ status }: { status: AccountStatus })
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Subject
+                  {tx('support.form.subject', undefined, 'Subject')}
                 </label>
                 <div className="relative">
                   <MessageSquare className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -198,7 +195,7 @@ export default function AccountStatusGate({ status }: { status: AccountStatus })
                     type="text"
                     value={formData.subject}
                     onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                    placeholder="Brief description of your issue"
+                    placeholder={tx('support.form.subjectPlaceholder', undefined, 'Brief description of your issue')}
                     className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#1e293b] text-gray-900 dark:text-white placeholder:text-gray-400 focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500/20"
                   />
                 </div>
@@ -206,12 +203,12 @@ export default function AccountStatusGate({ status }: { status: AccountStatus })
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Message <span className="text-red-500">*</span>
+                  {tx('support.form.message', undefined, 'Message')} <span className="text-red-500">*</span>
                 </label>
                 <textarea
                   value={formData.message}
                   onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                  placeholder="Please describe your issue in detail..."
+                  placeholder={tx('support.form.messagePlaceholder', undefined, 'Please describe your issue in detail...')}
                   rows={6}
                   required
                   className="w-full rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#1e293b] px-4 py-3 text-sm text-gray-900 dark:text-white placeholder:text-gray-400 focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500/20 resize-none"
@@ -228,7 +225,7 @@ export default function AccountStatusGate({ status }: { status: AccountStatus })
                   disabled={isSubmitting}
                   className="px-5 py-2.5 rounded-xl border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
                 >
-                  Cancel
+                  {tx('common.cancel', undefined, 'Cancel')}
                 </button>
                 <button
                   type="submit"
@@ -241,11 +238,11 @@ export default function AccountStatusGate({ status }: { status: AccountStatus })
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                       </svg>
-                      Sending...
+                      {tx('support.form.sending', undefined, 'Sending...')}
                     </>
                   ) : (
                     <>
-                      Send Message
+                      {tx('support.form.sendMessage', undefined, 'Send Message')}
                       <Send className="w-4 h-4" />
                     </>
                   )}
@@ -259,4 +256,3 @@ export default function AccountStatusGate({ status }: { status: AccountStatus })
     </div>
   );
 }
-

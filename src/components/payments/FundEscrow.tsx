@@ -33,7 +33,7 @@ const FundEscrow = ({ contract, onSuccess, onError }: FundEscrowProps) => {
             // Get current user
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) {
-                throw new Error('Ã™Å Ã˜Â¬Ã˜Â¨ Ã˜ÂªÃ˜Â³Ã˜Â¬Ã™Å Ã™â€ž Ã˜Â§Ã™â€žÃ˜Â¯Ã˜Â®Ã™Ë†Ã™â€ž Ã˜Â£Ã™Ë†Ã™â€žÃ˜Â§Ã™â€¹');
+                throw new Error(tx('auth.loginRequired', undefined, 'You must be signed in'));
             }
 
             // Convert to millimes for Flouci
@@ -57,7 +57,7 @@ const FundEscrow = ({ contract, onSuccess, onError }: FundEscrowProps) => {
 
             logger.log('[FundEscrow] Payment initiated:', payment.payment_id);
 
-            showToast('Ã˜Â¬Ã˜Â§Ã˜Â±Ã™Å  Ã˜ÂªÃ˜Â­Ã™Ë†Ã™Å Ã™â€žÃ™Æ’ Ã™â€žÃ˜ÂµÃ™ÂÃ˜Â­Ã˜Â© Ã˜Â§Ã™â€žÃ˜Â¯Ã™ÂÃ˜Â¹...', 'success');
+            showToast(tx('payment.redirectingToPayment', undefined, 'Redirecting to payment page...'), 'success');
 
             // Redirect to Flouci payment page
             window.location.href = payment.link;
@@ -65,7 +65,7 @@ const FundEscrow = ({ contract, onSuccess, onError }: FundEscrowProps) => {
             onSuccess?.();
         } catch (error) {
             logger.error('[FundEscrow] Error:', error);
-            const message = error instanceof Error ? error.message : 'Ã™ÂÃ˜Â´Ã™â€ž Ã™ÂÃ™Å  Ã˜Â¨Ã˜Â¯Ã˜Â¡ Ã˜Â¹Ã™â€¦Ã™â€žÃ™Å Ã˜Â© Ã˜Â§Ã™â€žÃ˜Â¯Ã™ÂÃ˜Â¹';
+            const message = error instanceof Error ? error.message : tx('payment.startFailed', undefined, 'Failed to start payment');
             showToast(message, 'error');
             onError?.(message);
         } finally {
@@ -79,7 +79,7 @@ const FundEscrow = ({ contract, onSuccess, onError }: FundEscrowProps) => {
                 <div className="flex items-center gap-3">
                         <Shield className="w-5 h-5 text-green-600" />
                     <span className="text-green-700 dark:text-green-300 font-medium">
-                        Ã˜ÂªÃ™â€¦ Ã˜ÂªÃ™â€¦Ã™Ë†Ã™Å Ã™â€ž Ã˜Â§Ã™â€žÃ˜Â¶Ã™â€¦Ã˜Â§Ã™â€  Ã˜Â¨Ã™â€ Ã˜Â¬Ã˜Â§Ã˜Â­
+                        {tx('payment.escrowFunded', undefined, 'Escrow funded successfully')}
                     </span>
                 </div>
             </div>
@@ -93,8 +93,8 @@ const FundEscrow = ({ contract, onSuccess, onError }: FundEscrowProps) => {
                     <CreditCard className="w-6 h-6 text-primary-600" />
                 </div>
                 <div>
-                    <h3 className="font-bold text-foreground dark:text-white">Ã˜ÂªÃ™â€¦Ã™Ë†Ã™Å Ã™â€ž Ã˜Â§Ã™â€žÃ˜Â¶Ã™â€¦Ã˜Â§Ã™â€ </h3>
-                    <p className="text-sm text-muted">Ã˜Â£Ã™â€¦Ã™Ë†Ã˜Â§Ã™â€žÃ™Æ’ Ã™â€¦Ã˜Â­Ã™ÂÃ™Ë†Ã˜Â¸Ã˜Â© Ã˜Â­Ã˜ÂªÃ™â€° Ã˜Â§Ã™Æ’Ã˜ÂªÃ™â€¦Ã˜Â§Ã™â€ž Ã˜Â§Ã™â€žÃ˜Â¹Ã™â€¦Ã™â€ž</p>
+                    <h3 className="font-bold text-foreground dark:text-white">{tx('payment.fundEscrowTitle', undefined, 'Fund escrow')}</h3>
+                    <p className="text-sm text-muted">{tx('payment.fundEscrowSubtitle', undefined, 'Funds are protected until the work is completed')}</p>
                 </div>
             </div>
 
@@ -102,7 +102,7 @@ const FundEscrow = ({ contract, onSuccess, onError }: FundEscrowProps) => {
                 <div className="flex gap-2">
                     <AlertCircle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
                     <p className="text-sm text-amber-700 dark:text-amber-300">
-                        Ã™Å Ã˜Â¬Ã˜Â¨ Ã˜ÂªÃ™â€¦Ã™Ë†Ã™Å Ã™â€ž Ã˜Â§Ã™â€žÃ˜Â¶Ã™â€¦Ã˜Â§Ã™â€  Ã™â€šÃ˜Â¨Ã™â€ž Ã˜Â£Ã™â€  Ã™Å Ã˜Â¨Ã˜Â¯Ã˜Â£ Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â³Ã˜ÂªÃ™â€šÃ™â€ž Ã˜Â¨Ã˜Â§Ã™â€žÃ˜Â¹Ã™â€¦Ã™â€ž. Ã˜Â§Ã™â€žÃ˜Â£Ã™â€¦Ã™Ë†Ã˜Â§Ã™â€ž Ã™â€¦Ã˜Â­Ã™â€¦Ã™Å Ã˜Â© Ã˜Â­Ã˜ÂªÃ™â€° Ã˜ÂªÃ™Ë†Ã˜Â§Ã™ÂÃ™â€š Ã˜Â¹Ã™â€žÃ™â€° Ã˜ÂªÃ˜Â³Ã™â€žÃ™Å Ã™â€¦ Ã˜Â§Ã™â€žÃ˜Â¹Ã™â€¦Ã™â€ž.
+                        {tx('payment.fundEscrowHint', undefined, 'You need to fund escrow before the freelancer starts. Funds remain protected until you approve the delivery.')}
                     </p>
                 </div>
             </div>
@@ -113,22 +113,22 @@ const FundEscrow = ({ contract, onSuccess, onError }: FundEscrowProps) => {
                     onClick={() => setShowBreakdown(!showBreakdown)}
                     className="text-sm text-primary-600 hover:text-primary-700 mb-2"
                 >
-                    {showBreakdown ? 'Ã˜Â¥Ã˜Â®Ã™ÂÃ˜Â§Ã˜Â¡ Ã˜Â§Ã™â€žÃ˜ÂªÃ™ÂÃ˜Â§Ã˜ÂµÃ™Å Ã™â€ž' : 'Ã˜Â¹Ã˜Â±Ã˜Â¶ Ã˜Â§Ã™â€žÃ˜ÂªÃ™ÂÃ˜Â§Ã˜ÂµÃ™Å Ã™â€ž'}
+                    {showBreakdown ? tx('common.hide', undefined, 'Hide details') : tx('common.show', undefined, 'Show details')}
                 </button>
 
                 {showBreakdown && (
                     <div className="space-y-2 p-3 bg-surface rounded-lg text-sm">
                         <div className="flex justify-between">
-                            <span className="text-muted-foreground">Ã™â€¦Ã™Å Ã˜Â²Ã˜Â§Ã™â€ Ã™Å Ã˜Â© Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â´Ã˜Â±Ã™Ë†Ã˜Â¹</span>
+                            <span className="text-muted-foreground">{tx('payment.projectBudget', undefined, 'Project budget')}</span>
                             <span className="font-medium">{formatCurrency(originalAmount)}</span>
                         </div>
                         <div className="flex justify-between">
-                            <span className="text-muted-foreground">Ã˜Â±Ã˜Â³Ã™Ë†Ã™â€¦ Ã˜Â§Ã™â€žÃ™â€¦Ã™â€ Ã˜ÂµÃ˜Â© (10%)</span>
+                            <span className="text-muted-foreground">{tx('payment.platformFee', undefined, 'Platform fee')} (10%)</span>
                             <span className="font-medium">{formatCurrency(feeAmount)}</span>
                         </div>
                         <div className="h-px bg-border my-2" />
                         <div className="flex justify-between font-bold">
-                            <span>Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â¬Ã™â€¦Ã™Ë†Ã˜Â¹</span>
+                            <span>{tx('payment.total', undefined, 'Total')}</span>
                             <span className="text-primary-600">{formatCurrency(totalAmount)}</span>
                         </div>
                     </div>
@@ -149,12 +149,12 @@ const FundEscrow = ({ contract, onSuccess, onError }: FundEscrowProps) => {
                 {loading ? (
                     <>
                         <Loader2 className="w-5 h-5 animate-spin" />
-                        <span>Ã˜Â¬Ã˜Â§Ã˜Â±Ã™Å  Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â¹Ã˜Â§Ã™â€žÃ˜Â¬Ã˜Â©...</span>
+                        <span>{tx('common.loading', undefined, 'Loading...')}</span>
                     </>
                 ) : (
                     <>
                         <Shield className="w-5 h-5" />
-                        <span>Ã˜ÂªÃ™â€¦Ã™Ë†Ã™Å Ã™â€ž Ã˜Â§Ã™â€žÃ˜Â¶Ã™â€¦Ã˜Â§Ã™â€  Ã˜Â§Ã™â€žÃ˜Â¢Ã™â€ </span>
+                        <span>{tx('payment.fundEscrowAction', undefined, 'Fund escrow now')}</span>
                     </>
                 )}
             </button>

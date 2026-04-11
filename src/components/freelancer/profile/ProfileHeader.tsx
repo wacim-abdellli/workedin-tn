@@ -5,6 +5,7 @@ import Button from '../../ui/Button';
 import type { FreelancerData } from '@/types/freelancer';
 import { useTranslation } from '../../../i18n';
 import { useAuth } from '@/contexts/AuthContext';
+import { ROUTES } from '@/lib/routes';
 
 interface ProfileHeaderProps {
     freelancer: FreelancerData;
@@ -116,13 +117,13 @@ export default function ProfileHeader({ freelancer, onContact, onMessage, onPlay
                                         style={{ color: 'var(--workspace-primary)' }}>
                                         {tx('pages.freelancerProfile.manageProfile', undefined, 'Manage Profile')}
                                     </p>
-                                    <button onClick={() => navigate('/settings?tab=profile')}
+                                    <button onClick={() => navigate(ROUTES.settingsProfile)}
                                         className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-semibold text-white transition-opacity hover:opacity-90"
                                         style={{ background: 'var(--workspace-primary)' }}>
                                         <Pencil className="h-3.5 w-3.5 shrink-0" />
                                         {tx('settings.editProfile', undefined, 'Edit Profile')}
                                     </button>
-                                    <button onClick={() => navigate('/portfolio')}
+                                    <button onClick={() => navigate(ROUTES.freelancerPortfolio)}
                                         className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-semibold border transition-colors"
                                         style={{ borderColor: 'var(--color-border-default)', background: 'var(--color-background-elevated)', color: 'var(--color-text-primary)' }}
                                         onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--workspace-primary)'; e.currentTarget.style.color = 'var(--workspace-primary)'; }}
@@ -130,7 +131,7 @@ export default function ProfileHeader({ freelancer, onContact, onMessage, onPlay
                                         <Upload className="h-3.5 w-3.5 shrink-0" />
                                         {tx('pages.freelancerProfile.addPortfolio', undefined, 'Add Portfolio')}
                                     </button>
-                                    <button onClick={() => navigate('/settings')}
+                                    <button onClick={() => navigate(ROUTES.settings)}
                                         className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium border transition-colors"
                                         style={{ borderColor: 'var(--color-border-subtle)', background: 'transparent', color: 'var(--color-text-tertiary)' }}
                                         onMouseEnter={e => { e.currentTarget.style.color = 'var(--color-text-primary)'; }}

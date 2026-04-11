@@ -22,7 +22,7 @@ type Tab = 'overview' | 'users' | 'jobs' | 'payments' | 'verifications' | 'dispu
 
 export default function AdminDashboard() {
     const navigate = useNavigate();
-    const { dir } = useTranslation();
+    const { tx } = useTranslation();
 
     const [activeTab, setActiveTab] = useState<Tab>(() => {
         const stored = sessionStorage.getItem(ACTIVE_TAB_KEY);
@@ -35,14 +35,14 @@ export default function AdminDashboard() {
     }, [activeTab]);
 
     const tabs: { id: Tab; label: string; icon: React.ElementType }[] = [
-        { id: 'overview', label: 'Overview', icon: BarChart3 },
-        { id: 'users', label: 'Users', icon: Users },
-        { id: 'jobs', label: 'Jobs', icon: Briefcase },
-        { id: 'payments', label: 'Payments', icon: CreditCard },
-        { id: 'verifications', label: 'Verification', icon: Shield },
-        { id: 'disputes', label: 'Disputes', icon: AlertTriangle },
-        { id: 'reports', label: 'Reports', icon: Flag },
-        { id: 'settings', label: 'Settings', icon: Settings },
+        { id: 'overview', label: tx('admin.tabs.overview', undefined, 'Overview'), icon: BarChart3 },
+        { id: 'users', label: tx('admin.tabs.users', undefined, 'Users'), icon: Users },
+        { id: 'jobs', label: tx('admin.tabs.jobs', undefined, 'Jobs'), icon: Briefcase },
+        { id: 'payments', label: tx('admin.tabs.payments', undefined, 'Payments'), icon: CreditCard },
+        { id: 'verifications', label: tx('admin.tabs.verifications', undefined, 'Verification'), icon: Shield },
+        { id: 'disputes', label: tx('admin.tabs.disputes', undefined, 'Disputes'), icon: AlertTriangle },
+        { id: 'reports', label: tx('admin.tabs.reports', undefined, 'Reports'), icon: Flag },
+        { id: 'settings', label: tx('admin.tabs.settings', undefined, 'Settings'), icon: Settings },
     ];
 
     const renderTab = () => {
@@ -70,8 +70,8 @@ export default function AdminDashboard() {
                                 <Shield className="w-5 h-5 text-white" />
                             </div>
                             <div>
-                                <h1 className="text-lg font-bold text-gray-900 dark:text-white">Admin Dashboard</h1>
-                                <p className="text-sm text-gray-500 dark:text-gray-400">System Control Center</p>
+                                <h1 className="text-lg font-bold text-gray-900 dark:text-white">{tx('admin.title', undefined, 'Admin Dashboard')}</h1>
+                                <p className="text-sm text-gray-500 dark:text-gray-400">{tx('admin.subtitle', undefined, 'System Control Center')}</p>
                             </div>
                         </div>
                         <div className="flex items-center gap-3">
@@ -83,7 +83,7 @@ export default function AdminDashboard() {
                                 className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
                             >
                                 <ChevronLeft className="w-4 h-4 rtl:rotate-180" />
-                                Back to site
+                                {tx('admin.backToSite', undefined, 'Back to site')}
                             </Button>
                         </div>
                     </div>
@@ -97,7 +97,7 @@ export default function AdminDashboard() {
                         <div className="w-64 shrink-0">
                             <div className="sticky top-0 space-y-1">
                                 <div className="px-3 mb-4">
-                                    <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Navigation</p>
+                                    <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">{tx('common.navigate', undefined, 'Navigation')}</p>
                                 </div>
                                 {tabs.map(tab => (
                                     <button
@@ -126,4 +126,3 @@ export default function AdminDashboard() {
         </div>
     );
 }
-

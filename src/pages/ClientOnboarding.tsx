@@ -4,14 +4,14 @@ import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Camera, CheckCircle, FileText, Mail, MapPin, Phone, ShieldCheck, User, UserCheck } from 'lucide-react';
+import { Camera, CheckCircle, FileText, Mail, MapPin, Phone, User, UserCheck } from 'lucide-react';
 
 import { useTranslation } from '../i18n';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../components/ui/Toast';
 import { getStorageConfigErrorMessage, isMissingStorageBucketError, uploadFile } from '../lib/supabase';
 import { GOVERNORATES } from '../types';
-import type { Governorate } from '../types';
+import { getLocalizedGovernorateOptions } from '../lib/governorates';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import CustomSelect from '../components/ui/CustomSelect';
@@ -22,7 +22,7 @@ import OnboardingShell from '../components/onboarding/OnboardingShell';
 import { clientStep2Schema, type ClientStep2FormData } from '../components/onboarding/schemas';
 
 function ClientOnboarding() {
-    const { t, tx } = useTranslation();
+    const { t, tx, language } = useTranslation();
     const { user, profile, refreshProfile, updateProfile, isLoading: isAuthLoading } = useAuth();
     const { showToast } = useToast();
     const navigate = useNavigate();
@@ -397,9 +397,9 @@ function ClientOnboarding() {
 
             <OnboardingShell
                 role="client"
-                badge="Client onboarding"
+                badge={tx('onboarding.client.badge', undefined, 'Client onboarding')}
                 title={t.onboarding.client.welcome}
-                description="Complete your client profile with the information freelancers need before they decide to trust your project and submit a proposal."
+                description={tx('onboarding.client.longDescription', undefined, 'Complete your client profile with the information freelancers need before they decide to trust your project and submit a proposal.')}
                 currentStep={step}
                 totalSteps={2}
                 steps={steps}
@@ -408,13 +408,13 @@ function ClientOnboarding() {
                         <div className="space-y-3">
                             <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#E8820C]/10 to-amber-500/10 border border-[#E8820C]/30 rounded-full text-xs font-semibold uppercase tracking-wider text-[#E8820C]">
                                 <User className="w-3.5 h-3.5" />
-                                Client profile
+                                {tx('onboarding.client.profileTitle', undefined, 'Client profile')}
                             </div>
                             <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
-                                Give freelancers enough context to trust the brief.
+                                {tx('onboarding.client.profileHeading', undefined, 'Give freelancers enough context to trust the brief.')}
                             </h2>
                             <p className="text-base text-gray-600 dark:text-gray-400 leading-relaxed">
-                                Use your real name, location, and a short intro so your profile feels credible before the first message is ever sent.
+                                {tx('onboarding.client.profileIntro', undefined, 'Use your real name, location, and a short intro so your profile feels credible before the first message is ever sent.')}
                             </p>
                         </div>
 
@@ -430,7 +430,7 @@ function ClientOnboarding() {
                                         onClick={() => fileInputRef.current?.click()}
                                         role="button"
                                         tabIndex={0}
-                                        aria-label="Upload profile photo"
+                                        aria-label={tx('onboarding.client.uploadAvatar', undefined, 'Upload profile photo')}
                                         onKeyDown={(event) => {
                                             if (event.key === 'Enter' || event.key === ' ') {
                                                 event.preventDefault();
@@ -460,7 +460,7 @@ function ClientOnboarding() {
                                     />
                                 </div>
                                 <p className="mt-4 text-xs text-gray-500 dark:text-gray-400">
-                                    A clear profile photo improves trust, but you can skip it for now.
+                                    {tx('onboarding.client.avatarHint', undefined, 'A clear profile photo improves trust, but you can skip it for now.')}
                                 </p>
                             </div>
 
@@ -479,7 +479,7 @@ function ClientOnboarding() {
                                 <div>
                                     <Input
                                         value={user?.email || ''}
-                                        label="Email"
+                                        label={tx('auth.email', undefined, 'Email')}
                                         leftIcon={<Mail className="w-5 h-5" />}
                                         disabled
                                     />
@@ -488,8 +488,8 @@ function ClientOnboarding() {
                                 <div>
                                     <Input
                                         {...register('phone')}
-                                        label="Phone number"
-                                        placeholder="Used for trust and follow-up"
+                                        label={tx('profile.phone', undefined, 'Phone number')}
+                                        placeholder={tx('onboarding.client.phoneHint', undefined, 'Used for trust and follow-up')}
                                         error={errors.phone?.message}
                                         leftIcon={<Phone className="w-5 h-5" />}
                                     />
@@ -501,7 +501,7 @@ function ClientOnboarding() {
                                         label={t.profile.location}
                                         placeholder={t.profile.selectLocation}
                                         error={errors.location?.message}
-                                        options={GOVERNORATES.map((gov: Governorate) => ({ value: gov, label: gov }))}
+                                        options={getLocalizedGovernorateOptions(language)}
                                         variant="client"
                                         value={watch('location')}
                                         onChange={(value) => setValue('location', value, { shouldValidate: true })}
@@ -510,7 +510,7 @@ function ClientOnboarding() {
 
                                 <div className="md:col-span-2">
                                     <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                        Short introduction
+                                        {tx('onboarding.client.shortIntro', undefined, 'Short introduction')}
                                     </label>
                                     <div className="relative">
                                         <div className="pointer-events-none absolute left-0 top-0 flex items-center pl-4 pt-4 text-gray-400">
@@ -520,11 +520,11 @@ function ClientOnboarding() {
                                             {...register('bio')}
                                             rows={5}
                                             className="w-full resize-none rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-3 pl-11 text-gray-900 dark:text-white shadow-sm transition-all placeholder:text-gray-400 focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500/20"
-                                            placeholder="Briefly explain what you build, your company context, or how you like to collaborate."
+                                            placeholder={tx('onboarding.client.shortIntroPlaceholder', undefined, 'Briefly explain what you build, your company context, or how you like to collaborate.')}
                                         />
                                     </div>
                                     <div className="mt-2 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
-                                        <span>A short introduction helps freelancers understand the person behind the project.</span>
+                                        <span>{tx('onboarding.client.shortIntroHint', undefined, 'A short introduction helps freelancers understand the person behind the project.')}</span>
                                         <span>{bio.length}/400</span>
                                     </div>
                                 </div>
@@ -553,9 +553,9 @@ function ClientOnboarding() {
                                     <Input {...registerStep2('company_industry')} label={tx('profile.companyIndustry', undefined, 'Industry')} error={step2Errors.company_industry?.message} />
                                     <Input {...registerStep2('company_size')} label={tx('profile.companySize', undefined, 'Company size')} placeholder="1-10, 11-50, 51-200..." error={step2Errors.company_size?.message} />
                                     <Input {...registerStep2('company_role')} label={tx('profile.companyRole', undefined, 'Your role')} error={step2Errors.company_role?.message} />
-                                    <Input {...registerStep2('hiring_needs')} label={tx('profile.hiringNeeds', undefined, 'Hiring needs (comma separated)')} placeholder="UI design, React development" error={step2Errors.hiring_needs?.message} />
-                                    <Input {...registerStep2('project_budget_preference')} label={tx('profile.budgetPreference', undefined, 'Budget preference')} placeholder="Small tests first, then monthly retainer" error={step2Errors.project_budget_preference?.message} />
-                                    <Input {...registerStep2('project_timeline_preference')} label={tx('profile.timelinePreference', undefined, 'Timeline preference')} placeholder="Need first draft in 7 days" error={step2Errors.project_timeline_preference?.message} />
+                                    <Input {...registerStep2('hiring_needs')} label={tx('profile.hiringNeeds', undefined, 'Hiring needs (comma separated)')} placeholder={tx('onboarding.client.hiringNeedsPlaceholder', undefined, 'UI design, React development')} error={step2Errors.hiring_needs?.message} />
+                                    <Input {...registerStep2('project_budget_preference')} label={tx('profile.budgetPreference', undefined, 'Budget preference')} placeholder={tx('onboarding.client.budgetPlaceholder', undefined, 'Small tests first, then monthly retainer')} error={step2Errors.project_budget_preference?.message} />
+                                    <Input {...registerStep2('project_timeline_preference')} label={tx('profile.timelinePreference', undefined, 'Timeline preference')} placeholder={tx('onboarding.client.timelinePlaceholder', undefined, 'Need first draft in 7 days')} error={step2Errors.project_timeline_preference?.message} />
                                     <div className="md:col-span-2">
                                         <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">{tx('profile.communicationPreferences', undefined, 'Communication preferences')}</label>
                                         <textarea {...registerStep2('communication_preferences')} rows={3} className="w-full resize-none rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-3 text-gray-900 dark:text-white shadow-sm transition-all placeholder:text-gray-400 focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500/20" />
@@ -585,21 +585,33 @@ function ClientOnboarding() {
                         <div className="relative bg-gradient-to-br from-[#E8820C]/10 to-amber-500/10 border border-[#E8820C]/30 rounded-2xl p-6">
                             <div className="absolute top-0 right-0 w-24 h-24 bg-[#E8820C]/10 rounded-full blur-2xl -z-10" />
                             <p className="text-xs font-semibold uppercase tracking-wider text-[#E8820C]">
-                                Why this matters
+                                {tx('onboarding.client.whyMatters', undefined, 'Why this matters')}
                             </p>
                             <h3 className="mt-3 text-xl font-bold text-white">
-                                Freelancers judge trust quickly
+                                {tx('onboarding.client.trustHeading', undefined, 'Freelancers judge trust quickly')}
                             </h3>
                             <p className="mt-2 text-sm text-gray-300 leading-relaxed">
-                                A complete first impression improves response quality before anyone even opens your full project brief.
+                                {tx('onboarding.client.trustDescription', undefined, 'A complete first impression improves response quality before anyone even opens your full project brief.')}
                             </p>
                         </div>
 
                         <div className="space-y-3">
                             {[
-                                { icon: UserCheck, title: 'Use a real visible name', description: 'A clear personal identity reduces hesitation from serious freelancers.' },
-                                { icon: MapPin, title: 'Set your location', description: 'Helps with context, timezone expectations, and local trust.' },
-                                { icon: FileText, title: 'Add a short intro', description: 'A brief note about your goals makes the brief feel more real and easier to answer.' },
+                                {
+                                    icon: UserCheck,
+                                    title: tx('onboarding.client.tips.realNameTitle', undefined, 'Use a real visible name'),
+                                    description: tx('onboarding.client.tips.realNameDesc', undefined, 'A clear personal identity reduces hesitation from serious freelancers.'),
+                                },
+                                {
+                                    icon: MapPin,
+                                    title: tx('onboarding.client.tips.locationTitle', undefined, 'Set your location'),
+                                    description: tx('onboarding.client.tips.locationDesc', undefined, 'Helps with context, timezone expectations, and local trust.'),
+                                },
+                                {
+                                    icon: FileText,
+                                    title: tx('onboarding.client.tips.introTitle', undefined, 'Add a short intro'),
+                                    description: tx('onboarding.client.tips.introDesc', undefined, 'A brief note about your goals makes the brief feel more real and easier to answer.'),
+                                },
                             ].map((item) => (
                                 <div key={item.title} className="relative bg-gradient-to-br from-[#1a1a1a] to-[#0f0f0f] border border-gray-800 rounded-xl p-4 hover:border-[#E8820C]/50 transition-all duration-300 group">
                                     <div className="flex items-start gap-3">

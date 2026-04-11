@@ -185,8 +185,16 @@ function HeroSection({ stats }: HeroSectionProps) {
               <br />
               <TypewriterText
                 words={isFreelancer
-                  ? ['Work with the best.', 'Get paid on time.', 'Build your career.']
-                  : ['Work with the elite.', 'Hire verified talent.', 'Pay with escrow.']}
+                  ? [
+                      tx('heroSection.typewriter.freelancer.workWithBest'),
+                      tx('heroSection.typewriter.freelancer.getPaidOnTime'),
+                      tx('heroSection.typewriter.freelancer.buildYourCareer'),
+                    ]
+                  : [
+                      tx('heroSection.typewriter.client.trustedConnections'),
+                      tx('heroSection.typewriter.client.qualityCollaboration'),
+                      tx('heroSection.typewriter.client.securePayments'),
+                    ]}
                 speed={65}
                 deleteSpeed={35}
                 pauseMs={2200}
@@ -218,7 +226,7 @@ function HeroSection({ stats }: HeroSectionProps) {
             >
               <button
                 type="button"
-                onClick={() => navigate(isFreelancer ? '/signup' : '/jobs/new')}
+                onClick={() => navigate('/signup')}
                 className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl px-7 text-[0.9375rem] font-semibold text-white shadow-lg transition hover:brightness-110 active:scale-[0.99] sm:min-w-[200px]"
                 style={{
                   background: 'linear-gradient(135deg, var(--workspace-primary) 0%, var(--workspace-primary-hover) 100%)',
@@ -230,7 +238,7 @@ function HeroSection({ stats }: HeroSectionProps) {
               </button>
               <button
                 type="button"
-                onClick={() => navigate(heroContent.secondaryPath)}
+                onClick={() => navigate(isFreelancer ? '/jobs' : '/find-freelancers')}
                 className="inline-flex h-12 items-center justify-center gap-1 rounded-2xl border px-7 text-[0.9375rem] font-semibold transition hover:bg-[color-mix(in_srgb,var(--color-text-primary)_4%,transparent)] active:scale-[0.99]"
                 style={{
                   color: 'var(--text-primary)',

@@ -1,11 +1,12 @@
 import type { UseFormReturn } from 'react-hook-form';
-import { Sparkles, CheckCircle, DollarSign, ArrowRight, ArrowLeft, Zap } from 'lucide-react';
+import { Sparkles, CheckCircle, DollarSign, ArrowRight, ArrowLeft, Zap, Search, ChevronDown, ChevronUp } from 'lucide-react';
 import { useTranslation } from '../../i18n';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
 import CustomSelect from '../ui/CustomSelect';
-import { PREDEFINED_SKILLS, type Skill } from '../../types';
+import { PREDEFINED_SKILLS, type Skill, type SkillCategory } from '../../types';
 import type { Step2FormData } from './schemas';
+import { useState, useMemo } from 'react';
 
 interface OnboardingStep2Props {
     form: UseFormReturn<Step2FormData>;
@@ -17,10 +18,6 @@ interface OnboardingStep2Props {
     toggleSkill: (skill: Skill) => void;
     getSkillName: (skill: Skill) => string;
     maxSkills: number;
-    customSkillEnabled: boolean;
-    customSkillName: string;
-    onToggleCustomSkill: () => void;
-    onCustomSkillNameChange: (value: string) => void;
 }
 
 export default function OnboardingStep2({
@@ -33,13 +30,11 @@ export default function OnboardingStep2({
     toggleSkill,
     getSkillName,
     maxSkills,
-    customSkillEnabled,
-    customSkillName,
-    onToggleCustomSkill,
-    onCustomSkillNameChange,
 }: OnboardingStep2Props) {
     const { t, tx, dir } = useTranslation();
     const { register, formState: { errors }, handleSubmit, watch } = form;
+    const [searchQuery, setSearchQuery] = useState('');
+    const [expandedCategories, setExpandedCategories] = useState<Set<SkillCategory>>(new Set(['design', 'development', 'writing', 'marketing']));
 
     const ArrowIcon = dir === 'rtl' ? ArrowLeft : ArrowRight;
     const BackArrowIcon = dir === 'rtl' ? ArrowRight : ArrowLeft;
@@ -50,7 +45,71 @@ export default function OnboardingStep2({
         { value: 'offline', label: t.publicProfile.offline },
     ];
 
-    const allSkills = PREDEFINED_SKILLS;
+    // Group skills by category
+    const skillsByCategory = useMemo(() => {
+        const grouped: Record<SkillCategory, typeof PREDEFINED_SKILLS> = {
+            design: [],
+            development: [],
+            writing: [],
+            marketing: [],
+            video: [],
+            business: [],
+            data: [],
+            other: [],
+        };
+
+        PREDEFINED_SKILLS.forEach(skill => {
+            if (skill.category) {
+                grouped[skill.category].push(skill);
+            }
+        });
+
+        return grouped;
+    }, []);
+
+    // Filter skills based on search
+    const filteredSkillsByCategory = useMemo(() => {
+        if (!searchQuery.trim()) return skillsByCategory;
+
+        const query = searchQuery.toLowerCase();
+        const filtered: Record<SkillCategory, typeof PREDEFINED_SKILLS> = {
+            design: [],
+            development: [],
+            writing: [],
+            marketing: [],
+            video: [],
+            business: [],
+            data: [],
+            other: [],
+        };
+
+        Object.entries(skillsByCategory).forEach(([category, skills]) => {
+            filtered[category as SkillCategory] = skills.filter(skill =>
+                getSkillName(skill).toLowerCase().includes(query) ||
+                skill.name_en.toLowerCase().includes(query) ||
+                skill.name_ar.includes(query) ||
+                skill.name_fr.toLowerCase().includes(query)
+            );
+        });
+
+        return filtered;
+    }, [skillsByCategory, searchQuery, getSkillName]);
+
+    const toggleCategory = (category: SkillCategory) => {
+        setExpandedCategories(prev => {
+            const next = new Set(prev);
+            if (next.has(category)) {
+                next.delete(category);
+            } else {
+                next.add(category);
+            }
+            return next;
+        });
+    };
+
+    const getCategoryLabel = (category: SkillCategory): string => {
+        return tx(`profile.skillCategories.${category}`, undefined, category);
+    };
 
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -86,75 +145,94 @@ export default function OnboardingStep2({
                         </span>
                     </div>
 
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                        {allSkills.map((skill, index) => {
-                            const isSelected = selectedSkills.find((s) => s.id === skill.id);
-                            return (
-                                <button
-                                    key={skill.id}
-                                    type="button"
-                                    onClick={() => toggleSkill(skill)}
-                                    style={{ animationDelay: `${index * 30}ms` }}
-                                    className={`
-                                        relative group p-4 rounded-xl text-start transition-all duration-300
-                                        flex items-center justify-between animate-in fade-in slide-in-from-bottom-2
-                                        ${isSelected
-                                            ? 'bg-gradient-to-br from-purple-500 to-violet-500 text-white shadow-lg shadow-purple-500/30 scale-105 ring-2 ring-purple-500/50 ring-offset-2 dark:ring-offset-[#0c0c0c]'
-                                            : 'bg-[#1a1a1a] border border-gray-800 hover:border-purple-500/50 dark:hover:border-purple-500/50 hover:shadow-md hover:scale-102'
-                                        }
-                                    `}
-                                >
-                                    <span className={`text-sm font-medium transition-all ${isSelected ? 'text-white' : 'text-gray-900 dark:text-white'}`}>
-                                        {getSkillName(skill)}
-                                    </span>
-                                    {isSelected && (
-                                        <div className="bg-white/20 rounded-full p-1 animate-in zoom-in duration-200">
-                                            <CheckCircle className="w-4 h-4 text-white" />
-                                        </div>
-                                    )}
-                                    {!isSelected && (
-                                        <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <div className="w-5 h-5 rounded-full border-2 border-gray-600" />
-                                        </div>
-                                    )}
-                                </button>
-                            );
-                        })}
+                    {/* Search Bar */}
+                    <div className="mb-4 relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+                        <input
+                            type="text"
+                            placeholder={tx('profile.searchSkills', undefined, 'Search skills...')}
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full pl-10 pr-4 py-2.5 bg-[#101216] border border-gray-800 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50 transition-colors"
+                        />
                     </div>
 
-                    <div className="mt-4 rounded-xl border border-gray-800 bg-[#101216] p-4">
-                        <div className="flex flex-wrap items-center justify-between gap-3">
-                            <div>
-                                <p className="text-sm font-semibold text-white">
-                                    {tx('onboarding.freelancer.otherSkill', undefined, 'Other skill')}
-                                </p>
-                                <p className="text-xs text-gray-400">
-                                    {tx('onboarding.freelancer.otherSkillHint', undefined, 'If your exact skill is not listed, enable this and type it clearly.')}
-                                </p>
-                            </div>
-                            <Button
-                                type="button"
-                                variant={customSkillEnabled ? 'primary' : 'outline'}
-                                size="sm"
-                                onClick={onToggleCustomSkill}
-                                className={customSkillEnabled ? 'bg-gradient-to-r from-purple-500 to-violet-500 border-transparent' : ''}
-                            >
-                                {customSkillEnabled
-                                    ? tx('onboarding.freelancer.removeOtherSkill', undefined, 'Remove')
-                                    : tx('onboarding.freelancer.addOtherSkill', undefined, 'Add other skill')}
-                            </Button>
-                        </div>
-                        {customSkillEnabled && (
-                            <div className="mt-3">
-                                <Input
-                                    value={customSkillName}
-                                    onChange={(event) => onCustomSkillNameChange(event.target.value)}
-                                    label={tx('onboarding.freelancer.otherSkillLabel', undefined, 'Custom skill')}
-                                    placeholder={tx('onboarding.freelancer.otherSkillPlaceholder', undefined, 'Example: Shopify Liquid, Webflow CMS, Motion Graphics')}
-                                    error={errors.custom_skill_name?.message}
-                                />
-                            </div>
-                        )}
+                    {/* Skills by Category */}
+                    <div className="space-y-3 max-h-[500px] overflow-y-auto pr-2">
+                        {(Object.entries(filteredSkillsByCategory) as [SkillCategory, typeof PREDEFINED_SKILLS][]).map(([category, skills]) => {
+                            if (skills.length === 0) return null;
+                            
+                            const isExpanded = expandedCategories.has(category);
+                            const primarySkills = skills.filter(s => s.isPrimary);
+                            const secondarySkills = skills.filter(s => !s.isPrimary);
+                            const displaySkills = isExpanded ? skills : primarySkills;
+
+                            return (
+                                <div key={category} className="border border-gray-800 rounded-xl overflow-hidden">
+                                    <button
+                                        type="button"
+                                        onClick={() => toggleCategory(category)}
+                                        className="w-full flex items-center justify-between px-4 py-2.5 bg-[#101216] hover:bg-[#151519] transition-colors"
+                                    >
+                                        <span className="text-sm font-semibold text-purple-400">
+                                            {getCategoryLabel(category)}
+                                        </span>
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-xs text-gray-500">
+                                                {skills.filter(s => selectedSkills.find(sel => sel.id === s.id)).length}/{skills.length}
+                                            </span>
+                                            {isExpanded ? (
+                                                <ChevronUp className="w-4 h-4 text-gray-500" />
+                                            ) : (
+                                                <ChevronDown className="w-4 h-4 text-gray-500" />
+                                            )}
+                                        </div>
+                                    </button>
+                                    
+                                    {displaySkills.length > 0 && (
+                                        <div className="p-3 grid grid-cols-2 sm:grid-cols-3 gap-2">
+                                            {displaySkills.map((skill) => {
+                                                const isSelected = selectedSkills.find((s) => s.id === skill.id);
+                                                return (
+                                                    <button
+                                                        key={skill.id}
+                                                        type="button"
+                                                        onClick={() => toggleSkill(skill)}
+                                                        className={`
+                                                            relative group p-3 rounded-lg text-start transition-all duration-300
+                                                            flex items-center justify-between
+                                                            ${isSelected
+                                                                ? 'bg-gradient-to-br from-purple-500 to-violet-500 text-white shadow-lg shadow-purple-500/30 scale-105 ring-2 ring-purple-500/50'
+                                                                : 'bg-[#1a1a1a] border border-gray-800 hover:border-purple-500/50 hover:shadow-md'
+                                                            }
+                                                        `}
+                                                    >
+                                                        <span className={`text-xs font-medium transition-all ${isSelected ? 'text-white' : 'text-gray-900 dark:text-white'}`}>
+                                                            {getSkillName(skill)}
+                                                        </span>
+                                                        {isSelected && (
+                                                            <div className="bg-white/20 rounded-full p-0.5">
+                                                                <CheckCircle className="w-3 h-3 text-white" />
+                                                            </div>
+                                                        )}
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
+                                    
+                                    {!isExpanded && secondarySkills.length > 0 && (
+                                        <button
+                                            type="button"
+                                            onClick={() => toggleCategory(category)}
+                                            className="w-full px-4 py-2 text-xs text-purple-400 hover:text-purple-300 bg-[#0a0a0a] hover:bg-[#0f0f0f] transition-colors"
+                                        >
+                                            + {secondarySkills.length} {tx('profile.secondarySkills', undefined, 'more skills')}
+                                        </button>
+                                    )}
+                                </div>
+                            );
+                        })}
                     </div>
 
                     <p className="mt-3 text-xs text-gray-400">
@@ -171,6 +249,8 @@ export default function OnboardingStep2({
                             label={tx('onboarding.freelancer.hourlyRateLabel', undefined, `Hourly rate (${t.common.tnd}/hour)`)}
                             placeholder={tx('onboarding.freelancer.hourlyRatePlaceholder', undefined, 'e.g. 35')}
                             min="0"
+                            max="999999"
+                            step="0.01"
                             leftIcon={<DollarSign className="w-5 h-5 text-green-500" />}
                             hint={tx('onboarding.freelancer.hourlyRateHint', undefined, 'Shown to clients on your profile and used in search filters. You can update it later.')}
                             error={errors.hourly_rate?.message}

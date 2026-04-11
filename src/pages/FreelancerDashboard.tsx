@@ -37,6 +37,7 @@ import { ProfileRing } from "../components/dashboard/ProfileRing";
 import { useAuth } from "../contexts/AuthContext";
 import { useTranslation } from "../i18n";
 import { dashboardQueryKeys } from "../lib/dashboardQueries";
+import { ROUTES } from "../lib/routes";
 import { supabase } from "../lib/supabase";
 import { formatCurrency } from "../lib/currencyUtils";
 
@@ -1161,22 +1162,22 @@ function FreelancerDashboardPage() {
                         "Browse Jobs",
                       ),
                       icon: Search,
-                      path: "/jobs",
+                      path: ROUTES.jobs,
                     },
                     {
                       label: tx("nav.myProposals", undefined, "My Proposals"),
                       icon: FileText,
-                      path: "/my-proposals",
+                      path: ROUTES.myProposals,
                     },
                     {
                       label: tx("nav.portfolio", undefined, "Portfolio"),
                       icon: Briefcase,
-                      path: "/portfolio",
+                      path: ROUTES.freelancerPortfolio,
                     },
                     {
                       label: tx("nav.messages", undefined, "Messages"),
                       icon: MessageSquare,
-                      path: "/messages",
+                      path: ROUTES.messages,
                     },
                   ].map((action) => (
                     <button

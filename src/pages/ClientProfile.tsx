@@ -19,6 +19,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "@/i18n";
 import { useAuth } from "@/contexts/AuthContext";
 import Button from "@/components/ui/Button";
+import { localizeGovernorate } from "@/lib/governorates";
 
 import OptimizedImage from "@/components/common/OptimizedImage";
 import { Skeleton } from "@/components/common/SkeletonCard";
@@ -165,7 +166,7 @@ function ProfileSkeleton() {
 export default function ClientProfile() {
   const { clientId } = useParams<{ clientId: string }>();
   const { user } = useAuth();
-  const { tx } = useTranslation() as any;
+  const { tx, language } = useTranslation() as any;
   const navigate = useNavigate();
 
   // ── Fetch client profile ────────────────────────────────────────────────
@@ -392,7 +393,7 @@ export default function ClientProfile() {
                     style={{ color: "var(--color-text-secondary)" }}
                   >
                     <MapPin className="w-4 h-4 flex-shrink-0" />
-                    <span>{client.location}</span>
+                    <span>{localizeGovernorate(client.location, language)}</span>
                   </div>
                 )}
 

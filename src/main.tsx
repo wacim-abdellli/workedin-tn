@@ -19,8 +19,8 @@ try {
 }
 
 try {
-  const savedLanguage = localStorage.getItem('i18n-language') || localStorage.getItem('language') || navigator.language.split('-')[0] || 'ar'
-  const language = ['ar', 'fr', 'en'].includes(savedLanguage) ? savedLanguage : 'ar'
+  const savedLanguage = localStorage.getItem('i18n-language') || localStorage.getItem('language')
+  const language = savedLanguage && ['ar', 'fr', 'en'].includes(savedLanguage) ? savedLanguage : 'ar'
   const direction = language === 'ar' ? 'rtl' : 'ltr'
 
   document.documentElement.setAttribute('lang', language)
@@ -58,4 +58,3 @@ createRoot(document.getElementById('root')!).render(
     <App />
   </StrictMode>,
 )
-

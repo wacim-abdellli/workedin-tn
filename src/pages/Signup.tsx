@@ -173,7 +173,7 @@ function Signup() {
                             fontSize: 11, fontWeight: 700, letterSpacing: '0.2em',
                             textTransform: 'uppercase', color: '#E8820C', marginBottom: 20,
                         }}>
-                            Join WorkedIn today
+                            {tx('authPages.signup.badge', undefined, 'Join WorkedIn')}
                         </p>
 
                         <h1 style={{
@@ -181,33 +181,40 @@ function Signup() {
                             fontWeight: 800, lineHeight: 1.05,
                             letterSpacing: '-1.5px', color: '#fff', marginBottom: 20,
                         }}>
-                            Ready for your<br />
-                            <span style={{ color: '#E8820C' }}>next big project?</span>
+                            {tx('authPages.signup.heroTitleTop', undefined, 'Ready for your')}
+                            <br />
+                            <span style={{ color: '#E8820C' }}>
+                                {tx('authPages.signup.heroTitleAccent', undefined, 'next big project?')}
+                            </span>
                         </h1>
 
                         <p style={{ fontSize: 15, color: '#888', lineHeight: 1.6, maxWidth: 340, marginBottom: 40 }}>
-                            Join thousands of professionals across Tunisia. Set up your workspace and start working in minutes.
+                            {tx(
+                                'authPages.signup.heroDescription',
+                                undefined,
+                                'Join thousands of professionals across Tunisia. Set up your workspace and start working in minutes.',
+                            )}
                         </p>
 
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
                             {[
                                 { 
-                                    title: 'Verified profiles', 
-                                    sub: 'Every identity confirmed',
+                                    title: tx('authPages.signup.featureCards.verified.title', undefined, 'Verified profiles'),
+                                    sub: tx('authPages.signup.featureCards.verified.sub', undefined, 'Every identity confirmed'),
                                     icon: ShieldCheck,
                                     color: '#10b981',
                                     bgColor: 'rgba(16, 185, 129, 0.1)'
                                 },
                                 { 
-                                    title: 'Escrow payments', 
-                                    sub: 'Funds held until delivery',
+                                    title: tx('authPages.signup.featureCards.escrow.title', undefined, 'Escrow payments'),
+                                    sub: tx('authPages.signup.featureCards.escrow.sub', undefined, 'Funds held until delivery'),
                                     icon: Lock,
                                     color: '#E8820C',
                                     bgColor: 'rgba(232, 130, 12, 0.1)'
                                 },
                                 { 
-                                    title: 'Local & global', 
-                                    sub: 'Optimised for Tunisia',
+                                    title: tx('authPages.signup.featureCards.local.title', undefined, 'Local & global'),
+                                    sub: tx('authPages.signup.featureCards.local.sub', undefined, 'Optimised for Tunisia'),
                                     icon: Globe2,
                                     color: '#3b82f6',
                                     bgColor: 'rgba(59, 130, 246, 0.1)'
@@ -263,9 +270,11 @@ function Signup() {
 
                         <div style={{ marginBottom: 28 }}>
                             <h2 style={{ fontSize: 26, fontWeight: 800, color: '#fff', letterSpacing: '-0.5px', marginBottom: 6 }}>
-                                Create your account.
+                                {tx('authPages.signup.formTitle', undefined, 'Create your account')}
                             </h2>
-                            <p style={{ fontSize: 14, color: '#666' }}>Join 2,500+ professionals building their career on WorkedIn.</p>
+                            <p style={{ fontSize: 14, color: '#666' }}>
+                                {tx('authPages.signup.formSubtitle', undefined, 'Join 2,500+ professionals building their career on WorkedIn')}
+                            </p>
                         </div>
 
                         <button
@@ -287,12 +296,16 @@ function Signup() {
                                 <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
                                 <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
                             </svg>
-                            <span style={{ fontSize: 14, fontWeight: 600, color: '#fff' }}>Continue with Google</span>
+                            <span style={{ fontSize: 14, fontWeight: 600, color: '#fff' }}>
+                                {tx('authPages.signup.continueWithGoogle', undefined, 'Continue with Google')}
+                            </span>
                         </button>
 
                         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
                             <div style={{ flex: 1, height: 1, background: '#1e1e1e' }} />
-                            <span style={{ fontSize: 11, color: '#444', fontWeight: 600 }}>or sign up with email</span>
+                            <span style={{ fontSize: 11, color: '#444', fontWeight: 600 }}>
+                                {tx('authPages.signup.orSignUpWithEmail', undefined, 'or sign up with email')}
+                            </span>
                             <div style={{ flex: 1, height: 1, background: '#1e1e1e' }} />
                         </div>
 
@@ -301,10 +314,10 @@ function Signup() {
                                 <label style={{
                                     fontSize: 11, fontWeight: 700, letterSpacing: '0.1em',
                                     textTransform: 'uppercase', color: '#555', marginBottom: 7, display: 'block',
-                                }}>Email</label>
+                                }}>{tx('authPages.signup.emailLabel', undefined, 'Email')}</label>
                                 <input
                                     type="email"
-                                    placeholder="you@example.com"
+                                    placeholder={tx('authPages.signup.emailPlaceholder', undefined, 'you@example.com')}
                                     autoComplete="email"
                                     {...register('email')}
                                     style={{
@@ -323,7 +336,7 @@ function Signup() {
                                 <label style={{
                                     fontSize: 11, fontWeight: 700, letterSpacing: '0.1em',
                                     textTransform: 'uppercase', color: '#555', marginBottom: 7, display: 'block',
-                                }}>Password</label>
+                                }}>{tx('authPages.signup.passwordLabel', undefined, 'Password')}</label>
                                 <input
                                     type="password"
                                     placeholder="••••••••"
@@ -345,7 +358,7 @@ function Signup() {
                                 <label style={{
                                     fontSize: 11, fontWeight: 700, letterSpacing: '0.1em',
                                     textTransform: 'uppercase', color: '#555', marginBottom: 7, display: 'block',
-                                }}>Confirm Password</label>
+                                }}>{tx('authPages.signup.confirmPasswordLabel', undefined, 'Confirm Password')}</label>
                                 <input
                                     type="password"
                                     placeholder="••••••••"
@@ -382,17 +395,20 @@ function Signup() {
                                 onMouseEnter={e => { if (!isLoading && !(lockoutUntil && Date.now() < lockoutUntil)) (e.target as HTMLElement).style.background = '#d4750a'; }}
                                 onMouseLeave={e => { if (!isLoading && !(lockoutUntil && Date.now() < lockoutUntil)) (e.target as HTMLElement).style.background = '#E8820C'; }}
                             >
-                                {isLoading ? 'Creating account…' : 'Create account →'}
+                                {isLoading 
+                                    ? tx('authPages.signup.creatingAccount', undefined, 'Creating account…')
+                                    : tx('authPages.signup.createAccountButton', undefined, 'Create account →')
+                                }
                             </button>
                         </form>
 
                         <p style={{ textAlign: 'center', marginTop: 16, fontSize: 13, color: '#555' }}>
-                            Already have an account?{' '}
+                            {tx('authPages.signup.alreadyHaveAccount', undefined, 'Already have an account?')}{' '}
                             <button
                                 onClick={() => navigate('/login', { state: location.state })}
                                 style={{ color: '#E8820C', fontWeight: 700, background: 'none', border: 'none', cursor: 'pointer', fontFamily: "'Outfit', sans-serif", fontSize: 13 }}
                             >
-                                Sign in
+                                {tx('authPages.signup.signInLink', undefined, 'Sign in')}
                             </button>
                         </p>
                     </div>

@@ -99,6 +99,7 @@ export interface FreelancerData {
     hourly_rate: number;
     availability: 'available' | 'busy' | 'offline';
     skills: Skill[];
+    tools: string[];
     languages: Array<{ language: string; proficiency: string }>;
     education: Array<{ institution: string; degree: string; field: string; startYear: string; endYear: string }>;
     certifications: Array<{ name: string; issuer: string; year: string }>;
