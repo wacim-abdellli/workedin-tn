@@ -8,6 +8,7 @@ interface TypewriterTextProps {
   className?: string;
   cursorClassName?: string;
   startIndex?: number;
+  style?: React.CSSProperties;
 }
 
 export default function TypewriterText({
@@ -18,6 +19,7 @@ export default function TypewriterText({
   className = '',
   cursorClassName = '',
   startIndex = 0,
+  style,
 }: TypewriterTextProps) {
   const idx = startIndex % words.length;
   const [displayed, setDisplayed] = useState(words[idx]);
@@ -72,11 +74,11 @@ export default function TypewriterText({
   const longestWord = words.reduce((a, b) => a.length > b.length ? a : b, '');
 
   return (
-    <span className={className} style={{ display: 'inline-block', position: 'relative' }}>
+    <span style={{ display: 'inline-block', position: 'relative' }}>
       {/* Reserve space for longest word */}
       <span aria-hidden style={{ visibility: 'hidden', pointerEvents: 'none' }}>{longestWord}</span>
-      {/* Actual text */}
-      <span style={{ position: 'absolute', left: 0, top: 0, whiteSpace: 'nowrap' }}>
+      {/* Actual text with gradient applied directly */}
+      <span className={className} style={{ ...style, position: 'absolute', left: 0, top: 0, whiteSpace: 'nowrap' }}>
         {displayed}
         <span style={{ opacity: showCursor ? 1 : 0, transition: 'opacity 0.1s', marginLeft: 1 }} className={cursorClassName}>|</span>
       </span>

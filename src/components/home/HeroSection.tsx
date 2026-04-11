@@ -182,24 +182,22 @@ function HeroSection({ stats }: HeroSectionProps) {
               style={{ color: 'var(--text-primary)' }}
             >
               {heroContent.titleTop}{' '}
-              <span
+              <br />
+              <TypewriterText
+                words={isFreelancer
+                  ? ['Work with the best.', 'Get paid on time.', 'Build your career.']
+                  : ['Work with the elite.', 'Hire verified talent.', 'Pay with escrow.']}
+                speed={65}
+                deleteSpeed={35}
+                pauseMs={2200}
+                startIndex={1}
                 className="bg-clip-text text-transparent"
                 style={{
                   backgroundImage:
                     'linear-gradient(120deg, var(--workspace-primary) 0%, var(--workspace-primary-mid) 45%, color-mix(in srgb, var(--workspace-accent) 75%, var(--workspace-primary-mid)) 100%)',
                 }}
-              >
-                <TypewriterText
-                  words={isFreelancer
-                    ? ['Work with the best.', 'Get paid on time.', 'Build your career.']
-                    : ['Work with the elite.', 'Hire verified talent.', 'Pay with escrow.']}
-                  speed={65}
-                  deleteSpeed={35}
-                  pauseMs={2200}
-                  startIndex={1}
-                  cursorClassName="text-[var(--workspace-primary)]"
-                />
-              </span>
+                cursorClassName="text-[var(--workspace-primary)]"
+              />
             </m.h1>
 
             <m.p
