@@ -1,22 +1,50 @@
-import { Shield, Wallet, Building2, Check, Clock, Info } from 'lucide-react';
+import { Check, Clock, Info } from 'lucide-react';
 import type { PaymentMethodConfig } from '@/config/paymentMethods';
 import { PAYMENT_METHODS } from '@/config/paymentMethods';
 import { useTranslation } from '@/i18n';
 
-// --- Icon resolver -------------------------------------------------------
+// --- Real payment logos --------------------------------------------------
 
-const ICON_MAP = {
-  Shield,
-  Wallet,
-  Building2,
+function DhmadLogo({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="40" height="40" rx="10" fill="#6C3CE1"/>
+      <path d="M20 8C13.373 8 8 13.373 8 20s5.373 12 12 12 12-5.373 12-12S26.627 8 20 8zm0 4a8 8 0 110 16 8 8 0 010-16zm0 3a5 5 0 100 10 5 5 0 000-10z" fill="white" fillOpacity="0.9"/>
+      <circle cx="20" cy="20" r="2.5" fill="white"/>
+    </svg>
+  );
+}
+
+function FlouciLogo({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="40" height="40" rx="10" fill="#00B4D8"/>
+      <path d="M12 14h16v2H12zM12 19h10v2H12zM12 24h13v2H12z" fill="white"/>
+      <circle cx="29" cy="26" r="4" fill="#FFD700"/>
+      <path d="M27.5 26l1 1 2-2" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+}
+
+function D17Logo({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="40" height="40" rx="10" fill="#E63946"/>
+      <text x="7" y="26" fontFamily="Arial" fontWeight="bold" fontSize="16" fill="white">D17</text>
+    </svg>
+  );
+}
+
+const LOGO_MAP = {
+  dhmad: DhmadLogo,
+  flouci: FlouciLogo,
+  d17: D17Logo,
 } as const;
 
-type IconName = keyof typeof ICON_MAP;
-
-function MethodIcon({ name, className }: { name: IconName; className?: string }) {
-    const { tx } = useTranslation();
-  const Icon = ICON_MAP[name];
-  return <Icon className={className} />;
+function MethodLogo({ id, className }: { id: string; className?: string }) {
+  const Logo = LOGO_MAP[id as keyof typeof LOGO_MAP];
+  if (!Logo) return null;
+  return <Logo className={className} />;
 }
 
 // --- Helpers -------------------------------------------------------------
@@ -71,13 +99,11 @@ function AvailableCard({ method, selected, onSelect, lang }: AvailableCardProps)
         {/* Icon circle */}
         <div
           className={[
-            'flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center',
-            selected
-              ? 'bg-[color-mix(in_srgb,var(--workspace-primary)_10%,transparent)] text-[var(--workspace-primary)]'
-              : 'bg-surface text-muted-foreground',
+            'flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center overflow-hidden',
+            selected ? '' : 'opacity-90',
           ].join(' ')}
         >
-          <MethodIcon name={method.icon} className="w-5 h-5" />
+          <MethodLogo id={method.id} className="w-10 h-10" />
         </div>
 
         {/* Content */}

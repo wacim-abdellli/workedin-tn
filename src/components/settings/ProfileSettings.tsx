@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Camera, Check, Eye, Loader2, Save, Shield, User, Zap } from 'lucide-react';
 import { useTranslation } from '@/i18n';
@@ -20,8 +20,29 @@ export default function ProfileSettings() {
     const navigate = useNavigate();
 
     const [isSaving, setIsSaving] = useState(false);
+    const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+    const [localAvatarPreview, setLocalAvatarPreview] = useState<string | null>(null);
+    const localAvatarPreviewRef = useRef<string | null>(null);
     const [isSwitchingWorkspace, setIsSwitchingWorkspace] = useState<'freelancer' | 'client' | null>(null);
     const [form, setForm] = useState({ full_name: '', phone: '', email: '', bio: '', location: '' });
+
+    // Revoke local object URLs to avoid memory leaks
+    useEffect(() => {
+        return () => {
+            if (localAvatarPreviewRef.current) {
+                URL.revokeObjectURL(localAvatarPreviewRef.current);
+            }
+        };
+    }, []);
+
+    // Clear preview once profile DB update reflects the real URL
+    useEffect(() => {
+        if (localAvatarPreview && profile?.avatar_url && !profile.avatar_url.startsWith('blob:')) {
+            URL.revokeObjectURL(localAvatarPreview);
+            localAvatarPreviewRef.current = null;
+            setLocalAvatarPreview(null);
+        }
+    }, [profile?.avatar_url, localAvatarPreview]);
 
     useEffect(() => {
         if (profile) {
@@ -62,20 +83,33 @@ export default function ProfileSettings() {
     const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file || !user?.id) return;
+
+        // Show instant local preview before upload finishes
+        if (localAvatarPreviewRef.current) URL.revokeObjectURL(localAvatarPreviewRef.current);
+        const preview = URL.createObjectURL(file);
+        localAvatarPreviewRef.current = preview;
+        setLocalAvatarPreview(preview);
+        setIsUploadingAvatar(true);
+
         try {
             const avatarUrl = await uploadAvatar(user.id, file);
-            // Update both the generic and mode-specific avatar fields
-            const avatarUpdate: Record<string, string> = { avatar_url: avatarUrl };
-            if (activeMode === 'freelancer') {
-                avatarUpdate.avatar_url_freelancer = avatarUrl;
-            } else if (activeMode === 'client') {
-                avatarUpdate.avatar_url_client = avatarUrl;
-            }
-            await updateProfile(avatarUpdate);
+            // Always update ALL three avatar fields so the new picture is consistent
+            // across every workspace and every component that reads these fields.
+            await updateProfile({
+                avatar_url: avatarUrl,
+                avatar_url_freelancer: avatarUrl,
+                avatar_url_client: avatarUrl,
+            });
             showToast(tx('settings.toasts.avatarUpdated', undefined, 'Profile image updated'), 'success');
         } catch (error) {
             logger.error('Error uploading avatar:', error);
+            // Revert local preview on error
+            URL.revokeObjectURL(preview);
+            localAvatarPreviewRef.current = null;
+            setLocalAvatarPreview(null);
             showToast(tx('settings.toasts.avatarUpdateError', undefined, 'Failed to upload profile image'), 'error');
+        } finally {
+            setIsUploadingAvatar(false);
         }
     };
 
@@ -116,12 +150,11 @@ export default function ProfileSettings() {
             {/* Premium Avatar Section */}
             <div className="flex items-start gap-4">
                 <div className="relative group">
-                    {profile?.avatar_url ? (
-                        <OptimizedImage
-                            src={profile.avatar_url}
+                    {(localAvatarPreview || profile?.avatar_url) ? (
+                        <img
+                            src={localAvatarPreview || profile?.avatar_url}
                             alt={form.full_name}
-                            className="w-24 h-24 rounded-2xl transition-transform duration-300 group-hover:scale-[1.02]"
-                            imgClassName="object-cover"
+                            className="w-24 h-24 rounded-2xl object-cover transition-transform duration-300 group-hover:scale-[1.02]"
                             style={{ boxShadow: '0 0 0 2px var(--workspace-primary), 0 0 0 4px var(--color-background-base)' }}
                         />
                     ) : (
@@ -136,8 +169,8 @@ export default function ProfileSettings() {
                         </div>
                     )}
                     <label className="absolute -bottom-2 -end-2 w-9 h-9 rounded-full flex items-center justify-center shadow-lg cursor-pointer transition-all duration-200 hover:scale-110 text-white" style={{ background: "var(--workspace-primary)" }}>
-                        <Camera className="w-4 h-4" />
-                        <input type="file" accept=".jpg,.jpeg,.png,.webp,.gif" className="hidden" onChange={handleAvatarUpload} />
+                        {isUploadingAvatar ? <Loader2 className="w-4 h-4 animate-spin" /> : <Camera className="w-4 h-4" />}
+                        <input type="file" accept=".jpg,.jpeg,.png,.webp,.gif" className="hidden" onChange={handleAvatarUpload} disabled={isUploadingAvatar} />
                     </label>
                 </div>
                 <div className="flex-1 min-w-0">
