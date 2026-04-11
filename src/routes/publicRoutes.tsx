@@ -3,6 +3,7 @@ import { lazy } from 'react';
 import {
   defineRoute,
   withErrorBoundary,
+  withProtected,
   type AppRouteDefinition,
 } from './routeDefinitions';
 
@@ -136,34 +137,34 @@ export const publicRoutes: AppRouteDefinition[] = [
       path: '/find-freelancers',
       page: 'FindFreelancers',
       section: 'public',
-      guard: 'public',
+      guard: 'protected',
       errorBoundary: true,
     },
-    withErrorBoundary(<FindFreelancers />),
+    withErrorBoundary(withProtected(<FindFreelancers />)),
   ),
   defineRoute(
-    { path: '/search', page: 'SearchResults', section: 'public', guard: 'public', errorBoundary: true },
-    withErrorBoundary(<SearchResults />),
+    { path: '/search', page: 'SearchResults', section: 'public', guard: 'protected', errorBoundary: true },
+    withErrorBoundary(withProtected(<SearchResults />)),
   ),
   defineRoute(
     {
       path: '/freelancer/:usernameOrId',
       page: 'FreelancerProfile',
       section: 'public',
-      guard: 'public',
+      guard: 'protected',
       errorBoundary: true,
     },
-    withErrorBoundary(<FreelancerProfile />),
+    withErrorBoundary(withProtected(<FreelancerProfile />)),
   ),
   defineRoute(
     {
       path: '/client/:clientId',
       page: 'ClientProfile',
       section: 'public',
-      guard: 'public',
+      guard: 'protected',
       errorBoundary: true,
     },
-    withErrorBoundary(<ClientProfile />),
+    withErrorBoundary(withProtected(<ClientProfile />)),
   ),
   defineRoute(
     { path: '*', page: 'NotFound', section: 'public', guard: 'public', errorBoundary: true },

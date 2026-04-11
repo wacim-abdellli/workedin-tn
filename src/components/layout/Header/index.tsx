@@ -80,7 +80,6 @@ export default function Header() {
   /** Routes shown to signed-out visitors. */
   const PUBLIC_NAV: NavItem[] = [
     { label: t.nav?.findWork || "Find Work", Icon: Briefcase, href: "/jobs" },
-    { label: t.nav?.findFreelancers || "Find Freelancers", Icon: Users, href: "/find-freelancers" },
     { label: t.nav?.howItWorks || "How It Works", Icon: FileText, href: "/how-it-works" },
   ];
 
