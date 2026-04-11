@@ -562,7 +562,6 @@ export default function SearchResults() {
                         {!isLoading && query && (
                             <div className="space-y-4">
                                 {(activeTab === 'all' || activeTab === 'jobs') && jobs.map(job => {
-                                    const { tx } = useTranslation();
                                     const postedAt = job.posted_at ? formatDistanceToNow(new Date(job.posted_at), { addSuffix: true, locale: dateLocale }) : '';
                                     const budgetStr = job.job_type === 'fixed_price' 
                                         ? `${job.budget_min ?? '?'} - ${job.budget_max ?? '?'} ${tx('common.tnd', undefined, 'TND')}`
@@ -609,7 +608,6 @@ export default function SearchResults() {
                                 })}
 
                                 {(activeTab === 'all' || activeTab === 'freelancers') && freelancers.map(freelancer => {
-                                    const { tx } = useTranslation();
                                     const fp = freelancer.freelancer_profiles;
                                     const initials = freelancer.full_name?.charAt(0)?.toUpperCase() ?? '?';
                                     

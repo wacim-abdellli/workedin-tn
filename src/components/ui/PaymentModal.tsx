@@ -4,34 +4,38 @@ import Modal from './Modal';
 import Button from './Button';
 import Input from './Input';
 import { useTranslation } from '../../i18n';
+import { initiatePayment } from '../../lib/flouci';
+import { logger } from '../../lib/logger';
 
 interface PaymentModalProps {
     isOpen: boolean;
     onClose: () => void;
     amount: number;
     recipientName: string;
-    onSuccess: () => Promise<void>;
+    onSuccess?: () => Promise<void>;
+    contractId?: string;
 }
 
 type PaymentMethod = 'd17' | 'flouci' | 'card';
 
-export default function PaymentModal({ isOpen, onClose, amount, recipientName, onSuccess }: PaymentModalProps) {
+export default function PaymentModal({ isOpen, onClose, amount, recipientName, onSuccess, contractId }: PaymentModalProps) {
     const { t } = useTranslation();
     const [method, setMethod] = useState<PaymentMethod>('d17');
     const [step, setStep] = useState<'select' | 'processing' | 'success'>('select');
     const [phoneNumber, setPhoneNumber] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const activePanelId = `payment-panel-${method}`;
+    const isContractPayment = Boolean(contractId);
 
     // Reset state on open
     useEffect(() => {
         if (isOpen) {
             setStep('select');
-            setMethod('d17');
+            setMethod(isContractPayment ? 'flouci' : 'd17');
             setPhoneNumber('');
             setIsLoading(false);
         }
-    }, [isOpen]);
+    }, [isOpen, isContractPayment]);
 
     const isPaymentPending = useRef(false);
 
@@ -42,19 +46,35 @@ export default function PaymentModal({ isOpen, onClose, amount, recipientName, o
         isPaymentPending.current = true;
         try {
             setIsLoading(true);
-            // Simulate API delay
-            await new Promise(resolve => setTimeout(resolve, 2000));
-
             setStep('processing');
-            // Simulate processing time
-            await new Promise(resolve => setTimeout(resolve, 2000));
 
-            setStep('success');
-            // Wait a bit before closing/calling success
-            await new Promise(resolve => setTimeout(resolve, 1500));
+            if (isContractPayment && contractId) {
+                const baseUrl = window.location.origin;
+                const successUrl = `${baseUrl}/payment/success?contract_id=${contractId}`;
+                const failUrl = `${baseUrl}/payment/failed?contract_id=${contractId}`;
 
-            await onSuccess();
-            onClose();
+                const payment = await initiatePayment({
+                    amount: Math.round(amount * 1000),
+                    success_link: successUrl,
+                    fail_link: failUrl,
+                    session_timeout_secs: 1200,
+                    developer_tracking_id: `contract_${contractId}_${Date.now()}`,
+                    contract_id: contractId,
+                    transaction_amount: amount,
+                });
+
+                window.location.href = payment.link;
+                return;
+            }
+
+            if (onSuccess) {
+                await onSuccess();
+                setStep('success');
+                onClose();
+                return;
+            }
+
+            logger.error('[PaymentModal] No payment handler configured');
         } finally {
             isPaymentPending.current = false;
             setIsLoading(false);
@@ -201,6 +221,31 @@ export default function PaymentModal({ isOpen, onClose, amount, recipientName, o
                     <p className="text-muted text-lg mb-8">{t.payment.transferred} <span className="font-bold text-dark-900 dark:text-white">{amount} {t.common.tnd}</span> {t.payment.to} {recipientName}</p>
                     <div className="p-4 bg-surface dark:bg-dark-800 rounded-xl border border-border dark:border-dark-700 text-sm text-dark-500">
                         {t.payment.transactionId}: #{Math.floor(Math.random() * 1000000)}
+                    </div>
+                </div>
+            );
+        }
+
+        if (isContractPayment) {
+            return (
+                <div className="space-y-6 animate-fade-in">
+                    <div className="bg-green-50 dark:bg-green-900/20 border border-green-100 dark:border-green-900/30 p-4 rounded-xl flex items-center gap-4 transition-all">
+                        <div className="w-12 h-12 bg-green-100 dark:bg-green-900/40 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm">
+                            <Building className="w-6 h-6 text-green-600 dark:text-green-400" />
+                        </div>
+                        <div>
+                            <h3 className="font-bold text-green-800 dark:text-green-400 text-lg">{t.payment.flouciTitle}</h3>
+                            <p className="text-sm text-green-600 dark:text-green-500/80">{t.payment.flouciDesc}</p>
+                        </div>
+                    </div>
+
+                    <div className="text-center py-10 bg-surface dark:bg-dark-800/50 rounded-2xl border border-border dark:border-dark-700">
+                        <p className="text-muted mb-4 font-medium">{t.payment.flouciRedirect}</p>
+                        <div className="inline-flex items-center gap-2 px-4 py-2 bg-card dark:bg-dark-700 rounded-full border border-border dark:border-dark-600 shadow-sm">
+                            <span className="text-sm font-bold text-dark-900 dark:text-white">{t.payment.amount}: {amount} {t.common.tnd}</span>
+                            <span className="w-1 h-1 bg-muted dark:bg-dark-500 rounded-full" />
+                            <span className="text-sm text-dark-600 dark:text-dark-300">{t.payment.to}: {recipientName}</span>
+                        </div>
                     </div>
                 </div>
             );

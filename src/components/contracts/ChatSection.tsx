@@ -104,7 +104,6 @@ export default function ChatSection({
                     </div>
                 ) : (
                     messages.map((message, index) => {
-                        const { tx } = useTranslation();
                         const isOwn = message.sender_id === currentUser?.id;
                         const showDateSeparator = index === 0 ||
                             new Date(message.created_at).toDateString() !== new Date(messages[index - 1].created_at).toDateString();

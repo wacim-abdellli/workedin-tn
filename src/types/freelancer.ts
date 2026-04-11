@@ -104,7 +104,6 @@ export interface FreelancerData {
     education: Array<{ institution: string; degree: string; field: string; startYear: string; endYear: string }>;
     certifications: Array<{ name: string; issuer: string; year: string }>;
     years_experience?: number;
-    tools?: string[];
     industries?: string[];
     portfolio_links?: string[];
     weekly_availability_hours?: number;

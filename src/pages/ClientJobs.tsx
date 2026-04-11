@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { getJobEditRoute } from '@/lib/routes'
 import { FolderOpen } from 'lucide-react'
 import { Header } from '@/components/layout'
 import { useAuth } from '@/contexts/AuthContext'
@@ -7,7 +8,6 @@ import { supabase } from '@/lib/supabase'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from '@/i18n'
 import EmptyState from '@/components/ui/EmptyState'
-
 interface JobProposalCountRow {
   count: number;
 }
@@ -194,8 +194,8 @@ export default function ClientJobs() {
                         {tx('pages.clientJobs.viewProposals', undefined, 'View proposals')}
                       </button>
                     )}
-                    <button 
-                      onClick={() => navigate(`/jobs/${job.id}`)}
+                    <button
+                      onClick={() => navigate(getJobEditRoute(job.id))}
                       className="list-action-btn-secondary"
                     >
                       {tx('pages.clientJobs.edit', undefined, 'Edit')}

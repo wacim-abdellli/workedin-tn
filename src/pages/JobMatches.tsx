@@ -52,6 +52,52 @@ interface FreelancerWithSkills {
     work_samples?: unknown[];
 }
 
+function clampToPercent(value: number | undefined): number {
+    if (typeof value !== 'number' || Number.isNaN(value)) return 0;
+    return Math.max(0, Math.min(100, value));
+}
+
+function normalizeResponseHours(value: number | undefined): number {
+    if (typeof value !== 'number' || Number.isNaN(value) || value <= 0) return 24;
+    return Math.round(value);
+}
+
+function normalizeSkillIds(skillIds: Array<string | undefined>): string[] {
+    return Array.from(new Set(skillIds.filter((id): id is string => typeof id === 'string' && id.length > 0)));
+}
+
+export function computeMatchScore(input: {
+    requiredSkillIds: string[];
+    freelancerSkillIds: Array<string | undefined>;
+    completionRate?: number;
+    cinVerified?: boolean;
+}): number {
+    const requiredIds = normalizeSkillIds(input.requiredSkillIds);
+    const freelancerIds = new Set(normalizeSkillIds(input.freelancerSkillIds));
+
+    const matchedSkillsCount = requiredIds.filter((skillId) => freelancerIds.has(skillId)).length;
+    const skillsWeight = requiredIds.length > 0 ? (matchedSkillsCount / requiredIds.length) * 70 : 0;
+    const completionRate = clampToPercent(input.completionRate);
+    const performanceWeight = (completionRate / 100) * 20;
+    const verifiedWeight = input.cinVerified ? 10 : 0;
+
+    return Math.round(Math.min(100, skillsWeight + performanceWeight + verifiedWeight));
+}
+
+function sortMatchesByRank(a: MatchResult, b: MatchResult): number {
+    if (b.match_score !== a.match_score) return b.match_score - a.match_score;
+
+    const aCompletion = a.freelancer.completion_rate ?? 0;
+    const bCompletion = b.freelancer.completion_rate ?? 0;
+    if (bCompletion !== aCompletion) return bCompletion - aCompletion;
+
+    const aResponse = a.freelancer.response_time_hours ?? Number.MAX_SAFE_INTEGER;
+    const bResponse = b.freelancer.response_time_hours ?? Number.MAX_SAFE_INTEGER;
+    if (aResponse !== bResponse) return aResponse - bResponse;
+
+    return a.id.localeCompare(b.id);
+}
+
 function JobMatches() {
     const { jobId } = useParams<{ jobId: string }>();
     const { t, language, tx } = useTranslation();
@@ -111,27 +157,23 @@ function JobMatches() {
                         name_en: s.skill?.name_en
                     })) || [];
 
-                    // Calculate overlap
-                    const matchCount = flSkills.filter((s) => requiredSkillIds.includes(s.id)).length;
-                    const totalRequired = requiredSkillIds.length || 1; // avoid division by zero
-
-                    // Score formula: 
-                    // Base score: % of required skills matched (weight 70%)
-                    // Bonus: Completion rate / 100 * 20 (weight 20%)
-                    // Bonus: Has verified phone ? 10 : 0 (weight 10%)
-
-                    const skillScore = (matchCount / totalRequired) * 70;
-                    const perfScore = ((fl.completion_rate || 0) / 100) * 20;
-                    const verifiedScore = fl.cin_verified ? 10 : 0;
+                    const completionRate = clampToPercent(fl.completion_rate);
+                    const responseTimeHours = normalizeResponseHours(fl.response_time_hours);
+                    const matchScore = computeMatchScore({
+                        requiredSkillIds,
+                        freelancerSkillIds: flSkills.map((s) => s.id),
+                        completionRate,
+                        cinVerified: fl.cin_verified,
+                    });
 
                     return {
                         id: fl.id,
-                        match_score: Math.round(skillScore + perfScore + verifiedScore),
+                        match_score: matchScore,
                         freelancer: {
                             ...fl,
                             skills: flSkills,
-                            completion_rate: fl.response_time_hours || 95,
-                            response_time_hours: fl.response_time_hours || 24,
+                            completion_rate: completionRate,
+                            response_time_hours: responseTimeHours,
                             repeat_clients: 0,
                             total_earnings: 0
                         }
@@ -141,7 +183,7 @@ function JobMatches() {
                 // Sort by score
                 const sortedMatches = results
                     .filter(m => m.match_score > 0)
-                    .sort((a, b) => b.match_score - a.match_score);
+                    .sort(sortMatchesByRank);
 
                 setMatches(sortedMatches);
             } catch (err) {

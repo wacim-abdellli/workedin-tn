@@ -5,6 +5,7 @@ export const ROUTES = {
   dashboard: '/dashboard',
   jobs: '/jobs',
   jobsNew: '/jobs/new',
+  saved: '/saved',
   myProposals: '/my-proposals',
   clientJobs: '/client/jobs',
   messages: '/messages',
@@ -20,4 +21,8 @@ export function getClientJobProposalsRoute(jobId: string) {
 
 export function getJobDetailRoute(jobId: string) {
   return `/jobs/${jobId}`;
+}
+
+export function getJobEditRoute(jobId: string) {
+  return `/jobs/${jobId}/edit`;
 }

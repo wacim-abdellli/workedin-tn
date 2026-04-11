@@ -512,6 +512,7 @@ function ContractWorkspaceComponent() {
                     onClose={() => setIsPaymentModalOpen(false)}
                     amount={contractData.amount}
                     recipientName={contractData.freelancer.full_name}
+                    contractId={contractData.id}
                     onSuccess={handleAcceptAndPay}
                 />
             )}

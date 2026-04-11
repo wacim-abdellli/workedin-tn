@@ -11,9 +11,23 @@ type EmailAction =
     | 'new_proposal'
     | 'dispute_opened';
 
+type SupabaseFunctionsClient = {
+    invoke: (functionName: string, options: { body: Record<string, unknown> }) => Promise<{ error?: { message?: string } | null }>;
+};
+
 async function invokeEmailAction(action: EmailAction, actionData: Record<string, unknown>): Promise<void> {
     try {
-        const { error } = await supabase.functions.invoke('send-email', {
+        // Keep product flows deterministic: email notifications are best-effort side effects.
+        if (!import.meta.env.PROD) {
+            return;
+        }
+
+        const functionsClient = (supabase as unknown as { functions?: SupabaseFunctionsClient }).functions;
+        if (!functionsClient || typeof functionsClient.invoke !== 'function') {
+            return;
+        }
+
+        const { error } = await functionsClient.invoke('send-email', {
             body: { action, actionData },
         });
         if (error) console.warn('[email] send failed:', error.message);

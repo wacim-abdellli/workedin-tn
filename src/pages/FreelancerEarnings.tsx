@@ -25,7 +25,6 @@ import EmptyState from "@/components/ui/EmptyState";
 import SkeletonList from "@/components/common/SkeletonList";
 import Button from "@/components/ui/Button";
 import SEO from "@/components/common/SEO";
-
 // Types
 interface WalletRow {
   balance: number;

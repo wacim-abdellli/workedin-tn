@@ -1,9 +1,12 @@
- import { AlertTriangle, ShieldAlert, Mail, User, MessageSquare, Send } from 'lucide-react';
+import { AlertTriangle, ShieldAlert, Mail, User, MessageSquare, Send } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from '@/i18n';
 import { useToast } from '@/components/ui/Toast';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/lib/supabase';
+import { supabaseWithRetry } from '@/lib/supabaseWithRetry';
 
 type AccountStatus = 'suspended' | 'archived';
 
@@ -38,37 +41,97 @@ const COPY: Record<
 export default function AccountStatusGate({ status }: { status: AccountStatus }) {
   const { tx } = useTranslation();
   const { showToast } = useToast();
+  const { user, profile } = useAuth();
   const copy = COPY[status];
   const Icon = copy.icon;
   const headingId = `account-status-${status}-title`;
+
+  const defaultName = useMemo(
+    () => (profile?.full_name || user?.user_metadata?.full_name || user?.user_metadata?.name || '').trim(),
+    [profile?.full_name, user?.user_metadata?.full_name, user?.user_metadata?.name]
+  );
+  const defaultEmail = useMemo(() => (profile?.email || user?.email || '').trim(), [profile?.email, user?.email]);
   
   const [showContactForm, setShowContactForm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
+    name: defaultName,
+    email: defaultEmail,
     subject: '',
     message: '',
   });
 
+  useEffect(() => {
+    if (!showContactForm) {
+      setFormData((prev) => ({
+        ...prev,
+        name: defaultName,
+        email: defaultEmail,
+      }));
+    }
+  }, [defaultEmail, defaultName, showContactForm]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!formData.name || !formData.email || !formData.message) {
+
+    const name = formData.name.trim();
+    const email = formData.email.trim();
+    const subject = formData.subject.trim();
+    const message = formData.message.trim();
+
+    if (!name || !email || !message) {
       showToast(tx('support.errors.requiredFields', undefined, 'Please fill in all required fields'), 'error');
       return;
     }
 
+    if (!user?.id) {
+      showToast(tx('auth.sessionExpired', undefined, 'Your session has expired. Please sign in again.'), 'error');
+      return;
+    }
+
     setIsSubmitting(true);
-    
+
     try {
-      // Simulate API call - replace with actual API endpoint
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      await supabaseWithRetry(
+        () =>
+          supabase.from('support_tickets').insert({
+            user_id: user.id,
+            account_status: status,
+            name,
+            email,
+            subject: subject || null,
+            message,
+            source: 'account_status_gate',
+            metadata: {
+              route: '/account-status-gate',
+            },
+          }),
+        { timeoutMs: 10000 }
+      );
       
       showToast(tx('support.success.sent', undefined, 'Your message has been sent successfully. We will get back to you soon.'), 'success');
       setShowContactForm(false);
-      setFormData({ name: '', email: '', subject: '', message: '' });
-    } catch (_error) {
+      setFormData({
+        name: defaultName,
+        email: defaultEmail,
+        subject: '',
+        message: '',
+      });
+    } catch (error) {
+      const messageText = error instanceof Error ? error.message.toLowerCase() : '';
+      const isPermissionError = messageText.includes('row-level security') || messageText.includes('permission denied');
+
+      if (isPermissionError) {
+        showToast(
+          tx(
+            'support.errors.permissions',
+            undefined,
+            'Support request could not be submitted due to account permissions. Please email us directly at support@workedin.tn'
+          ),
+          'error'
+        );
+      }
+
       showToast(tx('support.errors.sendFailed', undefined, 'Failed to send message. Please try again or email us directly at support@workedin.tn'), 'error');
     } finally {
       setIsSubmitting(false);

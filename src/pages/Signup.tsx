@@ -21,22 +21,6 @@ function Signup() {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const shouldShowTypeSelection = searchParams.get('step') === 'select-type';
-
-    if (shouldShowTypeSelection) {
-        return (
-            <>
-                <SEO {...SEO_CONFIG.signup} url="/signup?step=select-type" noIndex />
-                <div
-                    className="min-h-screen flex items-center justify-center px-4"
-                    style={{
-                        background: 'radial-gradient(circle at 20% 20%, rgba(232,130,12,0.08), transparent 45%), #0c0c0c',
-                    }}
-                >
-                    <SignupForm />
-                </div>
-            </>
-        );
-    }
     
     const [attempts, setAttempts] = useState(0);
     const [lockoutUntil, setLockoutTime] = useState<number | null>(() => {
@@ -129,6 +113,22 @@ function Signup() {
             showToast(t.auth.googleLoginError, 'error');
         }
     };
+
+    if (shouldShowTypeSelection) {
+        return (
+            <>
+                <SEO {...SEO_CONFIG.signup} url="/signup?step=select-type" noIndex />
+                <div
+                    className="min-h-screen flex items-center justify-center px-4"
+                    style={{
+                        background: 'radial-gradient(circle at 20% 20%, rgba(232,130,12,0.08), transparent 45%), #0c0c0c',
+                    }}
+                >
+                    <SignupForm />
+                </div>
+            </>
+        );
+    }
 
     return (
         <>

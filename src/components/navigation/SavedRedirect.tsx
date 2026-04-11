@@ -12,5 +12,5 @@ export const SavedRedirect = () => {
         return <Navigate to={ROUTES.login} replace state={{ from: location }} />;
     }
 
-    return <Navigate to={ROUTES.settingsAccount} replace />;
+    return <Navigate to={ROUTES.saved} replace />;
 };

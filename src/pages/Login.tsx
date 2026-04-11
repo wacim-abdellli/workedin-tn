@@ -23,6 +23,7 @@ function Login() {
     const { recordAttempt, isLockedOut } = useAuthRateLimit('login');
     
     const isOAuthResume = searchParams.get('oauth') === 'resume';
+    const isSessionTimeout = searchParams.get('reason') === 'timeout';
     const redirectTarget = typeof location.state === 'object' && location.state && 'from' in location.state
         ? (location.state.from as { pathname?: string; search?: string; hash?: string } | undefined)
         : undefined;
@@ -41,6 +42,12 @@ function Login() {
         if (!isFullyReady || !isAuthenticated) return;
         navigate(postLoginPath || '/', { replace: true });
     }, [isAuthenticated, isFullyReady, navigate, postLoginPath]);
+
+    useEffect(() => {
+        if (isSessionTimeout) {
+            showToast(tx('auth.sessionExpired', undefined, 'Your session has expired. Please sign in again.'), 'warning');
+        }
+    }, [isSessionTimeout, showToast, tx]);
 
     const emailSchema = z.object({
         email: z.string().email(t.auth.invalidEmail),

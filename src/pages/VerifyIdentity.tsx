@@ -375,7 +375,6 @@ export default function VerifyIdentity() {
             </div>
         );
     }
-
     // ── Main flow ───────────────────────────────────────────────────────────────
     return (
         <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_#13294f_0%,_#0b1328_40%,_#0b1020_100%)] py-10">

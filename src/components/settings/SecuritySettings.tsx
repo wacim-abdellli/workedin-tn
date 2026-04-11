@@ -6,6 +6,7 @@ import { useTranslation } from '@/i18n';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/components/ui/Toast';
 import { supabase } from '@/lib/supabase';
+import { supabaseWithRetry } from '@/lib/supabaseWithRetry';
 import Button from '@/components/ui/Button';
 import Modal from '@/components/ui/Modal';
 
@@ -15,6 +16,7 @@ export default function SecuritySettings() {
     const { showToast } = useToast();
     const navigate = useNavigate();
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [isSubmittingDeleteRequest, setIsSubmittingDeleteRequest] = useState(false);
 
     // Password change state
     const [newPassword, setNewPassword] = useState('');
@@ -70,8 +72,74 @@ export default function SecuritySettings() {
     };
 
     const handleDeleteAccount = async () => {
-        showToast(tx('settings.toasts.deleteRequestSent', undefined, 'Account deletion request sent'), 'info');
-        setIsDeleteModalOpen(false);
+        if (!user?.id) {
+            showToast(tx('auth.sessionExpired', undefined, 'Your session has expired. Please sign in again.'), 'error');
+            return;
+        }
+
+        setIsSubmittingDeleteRequest(true);
+
+        try {
+            const { data: openRequest } = await supabaseWithRetry(() =>
+                supabase
+                    .from('account_deletion_requests')
+                    .select('id, status')
+                    .eq('user_id', user.id)
+                    .in('status', ['pending', 'in_review'])
+                    .limit(1)
+                    .maybeSingle()
+            );
+
+            if (openRequest) {
+                showToast(
+                    tx(
+                        'settings.toasts.deleteRequestAlreadyOpen',
+                        undefined,
+                        'You already have an active account deletion request under review.'
+                    ),
+                    'info'
+                );
+                setIsDeleteModalOpen(false);
+                return;
+            }
+
+            await supabaseWithRetry(() =>
+                supabase.from('account_deletion_requests').insert({
+                    user_id: user.id,
+                    source: 'settings_security',
+                    metadata: {
+                        auth_provider: authProvider,
+                        email: user.email ?? null,
+                    },
+                })
+            );
+
+            showToast(tx('settings.toasts.deleteRequestSent', undefined, 'Your account deletion request was sent. It will be processed within 48 hours.'), 'info');
+            setIsDeleteModalOpen(false);
+        } catch (error) {
+            const errorCode =
+                error && typeof error === 'object' && 'code' in error
+                    ? String((error as { code?: string }).code)
+                    : '';
+            const errorMessage = error instanceof Error ? error.message.toLowerCase() : '';
+
+            if (errorCode === '23505' || errorMessage.includes('duplicate key')) {
+                showToast(
+                    tx(
+                        'settings.toasts.deleteRequestAlreadyOpen',
+                        undefined,
+                        'You already have an active account deletion request under review.'
+                    ),
+                    'info'
+                );
+                setIsDeleteModalOpen(false);
+                return;
+            }
+
+            showToast(tx('settings.toasts.genericError', undefined, 'Something went wrong'), 'error');
+        } finally {
+            setIsSubmittingDeleteRequest(false);
+        }
     };
 
     const providerLabel = isGoogleAuth ? 'Google' : isEmailAuth ? 'Email' : authProvider;
@@ -224,8 +292,17 @@ export default function SecuritySettings() {
                         {tx('settings.deleteAccountConfirmMessage', undefined, 'Are you sure you want to delete your account? All your data will be permanently removed.')}
                     </p>
                     <div className="flex justify-end gap-3">
-                        <Button variant="outline" onClick={() => setIsDeleteModalOpen(false)}>{t.common.cancel}</Button>
-                        <Button variant="danger" onClick={handleDeleteAccount}>{tx('settings.deleteAccountConfirmAction', undefined, 'Yes, delete my account')}</Button>
+                        <Button variant="outline" onClick={() => setIsDeleteModalOpen(false)} disabled={isSubmittingDeleteRequest}>{t.common.cancel}</Button>
+                        <Button
+                            variant="danger"
+                            onClick={handleDeleteAccount}
+                            disabled={isSubmittingDeleteRequest}
+                            leftIcon={isSubmittingDeleteRequest ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : undefined}
+                        >
+                            {isSubmittingDeleteRequest
+                                ? tx('settings.deletingRequestSubmitting', undefined, 'Submitting...')
+                                : tx('settings.deleteAccountConfirmAction', undefined, 'Yes, delete my account')}
+                        </Button>
                     </div>
                 </div>
             </Modal>

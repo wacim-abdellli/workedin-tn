@@ -17,6 +17,7 @@ const Messages = lazy(() => import('@/pages/Messages'));
 const Settings = lazy(() => import('@/pages/Settings'));
 const VerifyIdentity = lazy(() => import('@/pages/VerifyIdentity'));
 const Notifications = lazy(() => import('@/pages/Notifications'));
+const SavedJobs = lazy(() => import('@/pages/SavedJobs'));
 
 export const accountRoutes: AppRouteDefinition[] = [
   defineRoute(
@@ -104,5 +105,15 @@ export const accountRoutes: AppRouteDefinition[] = [
       errorBoundary: true,
     },
     withErrorBoundary(withProtected(<Notifications />)),
+  ),
+  defineRoute(
+    {
+      path: '/saved',
+      page: 'SavedJobs',
+      section: 'account',
+      guard: 'protected',
+      errorBoundary: false,
+    },
+    withProtected(<SavedJobs />),
   ),
 ];

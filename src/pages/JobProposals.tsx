@@ -15,7 +15,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { logger } from '../lib/logger';
 import { useTranslation } from '../i18n';
 import { useMutation } from '@tanstack/react-query';
-import { ROUTES, getJobDetailRoute } from '../lib/routes';
+import { ROUTES, getJobEditRoute } from '../lib/routes';
 
 interface JobData {
     id: string;
@@ -416,7 +416,7 @@ export default function JobProposals() {
                                 variant="outline"
                                 size="sm"
                                 leftIcon={<Edit className="w-4 h-4" />}
-                                onClick={() => navigate(jobId ? getJobDetailRoute(jobId) : ROUTES.jobs)}
+                                onClick={() => navigate(jobId ? getJobEditRoute(jobId) : ROUTES.jobs)}
                             >
                                 {t.jobProposals.edit}
                             </Button>

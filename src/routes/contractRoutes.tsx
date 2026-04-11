@@ -16,6 +16,7 @@ const ContractWorkspace = lazy(() => import('@/pages/ContractWorkspace'));
 const LeaveReview = lazy(() => import('@/pages/LeaveReview'));
 const PaymentSuccess = lazy(() => import('@/pages/PaymentSuccess'));
 const PaymentFailed = lazy(() => import('@/pages/PaymentFailed'));
+const EditJob = lazy(() => import('@/pages/EditJob'));
 
 export const contractRoutes: AppRouteDefinition[] = [
   defineRoute(
@@ -48,6 +49,17 @@ export const contractRoutes: AppRouteDefinition[] = [
       errorBoundary: false,
     },
     withProtected(<JobPostSuccess />),
+  ),
+  defineRoute(
+    {
+      path: '/jobs/:jobId/edit',
+      page: 'EditJob',
+      section: 'contracts',
+      guard: 'protected-workspace',
+      workspace: 'client',
+      errorBoundary: false,
+    },
+    withProtected(withWorkspace('client', <EditJob />)),
   ),
   defineRoute(
     {

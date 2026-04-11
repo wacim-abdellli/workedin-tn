@@ -11,7 +11,6 @@ import {
 
 import { DashboardRedirect } from '@/components/navigation/DashboardRedirect';
 import { MyJobsRedirect } from '@/components/navigation/MyJobsRedirect';
-import { SavedRedirect } from '@/components/navigation/SavedRedirect';
 
 const FreelancerDashboard = lazy(() => import('@/pages/FreelancerDashboard'));
 const PortfolioDashboard = lazy(() => import('@/pages/PortfolioDashboard'));
@@ -39,16 +38,6 @@ export const workspaceRoutes: AppRouteDefinition[] = [
       errorBoundary: false,
     },
     withProtected(<MyJobsRedirect />),
-  ),
-  defineRoute(
-    {
-      path: '/saved',
-      page: 'SavedRedirect',
-      section: 'workspace',
-      guard: 'protected-redirect',
-      errorBoundary: false,
-    },
-    withProtected(<SavedRedirect />),
   ),
   defineRoute(
     {

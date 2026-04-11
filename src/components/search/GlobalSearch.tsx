@@ -183,8 +183,7 @@ export default function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
                                 <div className="px-3 py-2 text-xs font-semibold text-dark-400 uppercase tracking-wider">{tx('globalSearch.suggestions', undefined, 'Suggestions')}</div>
                                 <div className="flex flex-wrap gap-2 px-3 pb-2">
                                     {TRENDING_SEARCH_KEYS.map((termKey) => {
-                                        const { tx } = useTranslation();
-                                        const term = tx(termKey, undefined, termKey)
+                                        const term = tx(termKey, undefined, termKey);
                                         return (
                                         <button
                                             key={termKey}

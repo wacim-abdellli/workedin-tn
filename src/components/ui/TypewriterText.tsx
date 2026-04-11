@@ -27,7 +27,7 @@ export default function TypewriterText({
   // 'idle' = fully typed, waiting; 'deleting' = removing chars; 'typing' = adding chars
   const [phase, setPhase] = useState<'idle' | 'deleting' | 'typing'>('idle');
   const [showCursor, setShowCursor] = useState(true);
-  const timeout = useRef<ReturnType<typeof setTimeout>>();
+  const timeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Cursor blink
   useEffect(() => {
@@ -36,7 +36,9 @@ export default function TypewriterText({
   }, []);
 
   useEffect(() => {
-    clearTimeout(timeout.current);
+    if (timeout.current) {
+      clearTimeout(timeout.current);
+    }
     const current = words[wordIndex % words.length];
 
     if (phase === 'idle') {
