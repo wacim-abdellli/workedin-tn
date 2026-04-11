@@ -362,7 +362,7 @@ function Login() {
                             onClick={() => navigate('/signup', { state: location.state })}
                             style={{ color: '#E8820C', fontWeight: 700, background: 'none', border: 'none', cursor: 'pointer', fontFamily: "'Outfit', sans-serif", fontSize: 13 }}
                         >
-                            Create one free
+                            Create one
                         </button>
                     </p>
                 </div>

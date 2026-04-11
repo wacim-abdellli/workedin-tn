@@ -11,6 +11,7 @@ import {
   CheckCircle2,
   Loader2,
 } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
 
 import { useAuth } from "@/contexts/AuthContext";
 import { useTranslation } from "@/i18n";
@@ -261,13 +262,19 @@ export function UserMenu({ isDesktopCondensed = false }: UserMenuProps) {
           />
         </button>
 
+        <AnimatePresence>
         {userMenuOpen && (
-          <div
-            className="absolute end-0 top-full z-[70] mt-2 w-[280px] overflow-hidden rounded-[1.25rem] backdrop-blur-2xl animate-in fade-in slide-in-from-top-2 duration-200"
+          <motion.div
+            initial={{ opacity: 0, y: -8, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -8, scale: 0.96 }}
+            transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+            className="absolute end-0 top-full z-[70] mt-2 w-[280px] overflow-hidden rounded-[1.25rem] backdrop-blur-2xl"
             style={{
               border: "1px solid var(--color-border-subtle)",
               background: "var(--color-background-elevated)",
               boxShadow: "0 32px 80px -20px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.03), inset 0 1px 0 rgba(255,255,255,0.06)",
+              transformOrigin: "top right",
             }}
             role="menu"
             ref={menuRef}
@@ -342,7 +349,7 @@ export function UserMenu({ isDesktopCondensed = false }: UserMenuProps) {
                 <button
                   key={path}
                   onClick={() => { navigate(path); setUserMenuOpen(false); }}
-                  className="group flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-left text-[13px] font-medium transition-colors duration-100 focus:outline-none focus:ring-2 focus:ring-[var(--workspace-primary)] hover:bg-[var(--color-background-subtle)]"
+                  className="group flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-left text-[13px] font-medium transition-colors duration-100 focus:outline-none hover:bg-[var(--color-background-subtle)]"
                   style={{ color: "var(--color-text-primary)" }}
                   role="menuitem"
                 >
@@ -466,8 +473,9 @@ export function UserMenu({ isDesktopCondensed = false }: UserMenuProps) {
                 {t.nav?.logout || "Sign out"}
               </button>
             </div>
-          </div>
+          </motion.div>
         )}
+        </AnimatePresence>
       </div>
     </div>
   );
