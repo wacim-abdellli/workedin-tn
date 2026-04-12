@@ -20,7 +20,11 @@ try {
 
 try {
   const savedLanguage = localStorage.getItem('i18n-language') || localStorage.getItem('language')
-  const language = savedLanguage && ['ar', 'fr', 'en'].includes(savedLanguage) ? savedLanguage : 'ar'
+  const browserLanguage = navigator.language?.split('-')[0]?.toLowerCase()
+  const fallbackLanguage = browserLanguage && ['ar', 'fr', 'en'].includes(browserLanguage)
+    ? browserLanguage
+    : 'ar'
+  const language = savedLanguage && ['ar', 'fr', 'en'].includes(savedLanguage) ? savedLanguage : fallbackLanguage
   const direction = language === 'ar' ? 'rtl' : 'ltr'
 
   document.documentElement.setAttribute('lang', language)

@@ -145,7 +145,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const getPreferredLanguage = useCallback((): Language => {
     if (typeof window === 'undefined') return 'ar';
 
-    const storedLanguage = window.localStorage.getItem('language');
+    const storedLanguage = window.localStorage.getItem('i18n-language') || window.localStorage.getItem('language');
     if (storedLanguage === 'ar' || storedLanguage === 'fr' || storedLanguage === 'en') {
       return storedLanguage;
     }
@@ -508,6 +508,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
                 if (shouldRetryProfile) {
                   loadedUserIdRef.current = newSession.user.id;
                   void fetchProfile(newSession.user.id, newSession.user);
+                } else {
+                  // Keep the app usable if profile retries are throttled after recent failures.
+                  setIsProfileReady(true);
                 }
             }
             return;
@@ -633,6 +636,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
     } finally {
       manualSignInInProgressRef.current = false;
+      setIsProfileReady(true);
     }
   };
 
@@ -664,6 +668,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
     } finally {
       manualSignInInProgressRef.current = false;
+      setIsProfileReady(true);
     }
   };
 

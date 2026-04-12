@@ -8,16 +8,48 @@ import type { Language } from '../types';
 
 type TranslationParams = Record<string, string | number>;
 
+const SUPPORTED_LANGUAGES: readonly Language[] = ['ar', 'fr', 'en'];
+
+const isSupportedLanguage = (value: unknown): value is Language =>
+    typeof value === 'string' && SUPPORTED_LANGUAGES.includes(value as Language);
+
+const getStoredLanguage = (): Language | null => {
+    if (typeof window === 'undefined') {
+        return null;
+    }
+
+    try {
+        const stored = window.localStorage.getItem('i18n-language') || window.localStorage.getItem('language');
+        return isSupportedLanguage(stored) ? stored : null;
+    } catch {
+        return null;
+    }
+};
+
+const getBrowserLanguage = (): Language | null => {
+    if (typeof navigator === 'undefined') {
+        return null;
+    }
+
+    const raw = navigator.language?.split('-')[0]?.toLowerCase();
+    return isSupportedLanguage(raw) ? raw : null;
+};
+
+const resolveInitialLanguage = (defaultLanguage: Language): Language =>
+    getStoredLanguage() ?? getBrowserLanguage() ?? defaultLanguage;
+
 const applyDocumentLanguage = (lang: Language) => {
+    if (typeof document === 'undefined') {
+        return;
+    }
+
     const dir = lang === 'ar' ? 'rtl' : 'ltr';
     document.documentElement.setAttribute('lang', lang);
     document.documentElement.setAttribute('dir', dir);
     if (document.body) document.body.setAttribute('dir', dir);
 };
 
-const savedLang = (localStorage.getItem('i18n-language') || localStorage.getItem('language') || navigator.language.split('-')[0] || 'ar') as Language;
-const validLang = ['ar', 'fr', 'en'].includes(savedLang) ? savedLang : 'ar';
-applyDocumentLanguage(validLang);
+applyDocumentLanguage(resolveInitialLanguage('ar'));
 
 const translations: Record<Language, Translations> = { ar, fr, en };
 const warnedMissingKeys = new Set<string>();
@@ -57,20 +89,50 @@ interface I18nProviderProps {
 
 export function I18nProvider({ children, defaultLanguage = 'ar' }: I18nProviderProps) {
     const [language, setLanguageState] = useState<Language>(() => {
-        const saved = (localStorage.getItem('i18n-language') || localStorage.getItem('language')) as Language;
-        if (saved && ['ar', 'fr', 'en'].includes(saved)) return saved;
-        return defaultLanguage;
+        return resolveInitialLanguage(defaultLanguage);
     });
 
     const setLanguage = useCallback((lang: Language) => {
-        setLanguageState(lang);
-        localStorage.setItem('i18n-language', lang);
-        localStorage.setItem('language', lang);
-        applyDocumentLanguage(lang);
+        if (!isSupportedLanguage(lang)) {
+            return;
+        }
+
+        setLanguageState((previousLanguage) => (previousLanguage === lang ? previousLanguage : lang));
     }, []);
 
     React.useEffect(() => {
         applyDocumentLanguage(language);
+
+        if (typeof window === 'undefined') {
+            return;
+        }
+
+        try {
+            window.localStorage.setItem('i18n-language', language);
+            window.localStorage.setItem('language', language);
+        } catch {
+            // Ignore storage restrictions (private mode, strict browser privacy settings).
+        }
+    }, [language]);
+
+    React.useEffect(() => {
+        if (typeof window === 'undefined') {
+            return;
+        }
+
+        const handleStorage = (event: StorageEvent) => {
+            if (event.key && event.key !== 'i18n-language' && event.key !== 'language') {
+                return;
+            }
+
+            const nextLanguage = getStoredLanguage();
+            if (nextLanguage && nextLanguage !== language) {
+                setLanguageState(nextLanguage);
+            }
+        };
+
+        window.addEventListener('storage', handleStorage);
+        return () => window.removeEventListener('storage', handleStorage);
     }, [language]);
 
     const tx = useCallback((key: string, params?: TranslationParams, fallback?: string) => {
