@@ -19,6 +19,7 @@ import OnboardingStep1 from '../components/onboarding/OnboardingStep1';
 import OnboardingStep2 from '../components/onboarding/OnboardingStep2';
 import OnboardingStep3 from '../components/onboarding/OnboardingStep3';
 import { FullScreenLoader } from '../components/ui';
+import { normalizeOptionalPhone } from '@/lib/phone';
 import {
     step1Schema,
     type Step1FormData,
@@ -785,11 +786,6 @@ function isRlsInsertViolation(error: unknown): boolean {
     if (!(error instanceof Error)) return false;
     const code = 'code' in error && typeof error.code === 'string' ? error.code : '';
     return code === '42501' || error.message.includes('42501') || error.message.includes('row-level security policy');
-}
-
-function normalizeOptionalPhone(phone: string | undefined): string | undefined {
-    const trimmed = phone?.trim() || '';
-    return trimmed.length > 0 ? trimmed : undefined;
 }
 
 function normalizeOptionalText(value: string | undefined): string | undefined {

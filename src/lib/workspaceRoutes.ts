@@ -154,7 +154,11 @@ export function getWorkspaceProfilePath(profile: ProfileLike, workspace: Workspa
     return `/freelancer/${profile.username || profile.id}`;
   }
 
-  return '/settings?tab=profile';
+  if (workspace === 'client' && profile?.id) {
+    return `/client/${profile.id}`;
+  }
+
+  return '/settings?tab=account';
 }
 
 export function getWorkspaceSettingsPath(): string {

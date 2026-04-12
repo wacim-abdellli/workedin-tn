@@ -10,12 +10,13 @@ import { z } from 'zod';
 import { useToast } from '../components/ui/Toast';
 import { useAuthRateLimit } from '../hooks/useAuthRateLimit';
 import { Logo } from '../components/ui/Logo';
+import { getPostAuthWorkspacePath, shouldRequireUserTypeSelection } from '../lib/workspaceRoutes';
 
 function Login() {
     const navigate = useNavigate();
     const location = useLocation();
     const [searchParams] = useSearchParams();
-    const { isAuthenticated, isLoading: authLoading, isFullyReady, signInWithEmail } = useAuth();
+    const { isAuthenticated, isLoading: authLoading, isFullyReady, signInWithEmail, profile, freelancerProfile } = useAuth();
     const { t, tx } = useTranslation();
     const { showToast } = useToast();
     const [isLoading, setIsLoading] = useState(false);
@@ -40,8 +41,15 @@ function Login() {
 
     useEffect(() => {
         if (!isFullyReady || !isAuthenticated) return;
-        navigate(postLoginPath || '/', { replace: true });
-    }, [isAuthenticated, isFullyReady, navigate, postLoginPath]);
+        // If user needs to select account type, go there directly — no home page flash
+        if (shouldRequireUserTypeSelection(profile)) {
+            navigate('/signup?step=select-type', { replace: true });
+            return;
+        }
+        // Otherwise go to the intended destination or the correct workspace
+        const destination = postLoginPath || getPostAuthWorkspacePath(profile, freelancerProfile);
+        navigate(destination, { replace: true });
+    }, [isAuthenticated, isFullyReady, navigate, postLoginPath, profile, freelancerProfile]);
 
     useEffect(() => {
         if (isSessionTimeout) {

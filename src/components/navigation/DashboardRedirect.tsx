@@ -20,10 +20,28 @@ export const DashboardRedirect = () => {
       return;
     }
 
-    setRetryState('retrying');
-    refreshProfile().then(() => {
+    let isCancelled = false;
+    const fallbackTimer = window.setTimeout(() => {
+      if (!isCancelled) {
         setRetryState('failed');
-    });
+      }
+    }, 8000);
+
+    setRetryState('retrying');
+    refreshProfile()
+      .catch(() => {
+        // Ignore the error here and let the route fallback handle navigation.
+      })
+      .finally(() => {
+        if (isCancelled) return;
+        window.clearTimeout(fallbackTimer);
+        setRetryState('failed');
+      });
+
+    return () => {
+      isCancelled = true;
+      window.clearTimeout(fallbackTimer);
+    };
   }, [retryState, isFullyReady, profile, refreshProfile, user]);
 
   if (!isFullyReady || (user && !profile && retryState !== 'failed')) {
@@ -39,7 +57,7 @@ export const DashboardRedirect = () => {
   }
 
   if (!profile) {
-    return <Navigate to="/settings?tab=profile" replace state={location.state} />;
+    return <Navigate to="/settings?tab=account" replace state={location.state} />;
   }
 
   if (shouldRequireUserTypeSelection(profile)) {

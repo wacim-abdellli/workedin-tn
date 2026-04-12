@@ -1,713 +1,799 @@
-import { logger } from "@/lib/logger";
-import { useEffect, useMemo, useState, useCallback } from "react";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
+  Settings as SettingsIcon,
   Bell,
-  BriefcaseBusiness,
-  Check,
-  ChevronRight,
   CreditCard,
-  Loader2,
-  Plus,
   Shield,
+  LogOut,
+  Check,
+  AlertTriangle,
+  ExternalLink,
+  Plus,
   Trash2,
-  User,
-} from "lucide-react";
+  Loader2,
+  RefreshCw,
+} from 'lucide-react';
 
-import { useTranslation } from "../i18n";
-import { useAuth } from "../contexts/AuthContext";
-import { useToast } from "../components/ui/Toast";
-import { Header } from "../components/layout";
-import Button from "../components/ui/Button";
-import Input from "../components/ui/Input";
-import Modal from "../components/ui/Modal";
-import { supabase } from "../lib/supabase";
-import SEO, { SEO_CONFIG } from "../components/common/SEO";
-import ProfileSettings from "../components/settings/ProfileSettings";
-import NotificationSettings from "../components/settings/NotificationSettings";
-import SecuritySettings from "../components/settings/SecuritySettings";
+import { Header } from '../components/layout';
+import { useAuth } from '../contexts/AuthContext';
+import { useToast } from '../components/ui/Toast';
+import { supabase } from '../lib/supabase';
+import { logger } from '../lib/logger';
 
-type SettingsTab =
-  | "account"
-  | "profile"
-  | "notifications"
-  | "payment"
-  | "security";
+type SettingsTab = 'account' | 'notifications' | 'payment' | 'privacy';
+type NotificationKey = 'new_job' | 'messages' | 'payments' | 'reviews' | 'marketing';
 
-interface PaymentMethod {
+type NotificationState = Record<NotificationKey, boolean>;
+
+interface PaymentMethodRow {
   id: string;
   type: string;
-  label: string;
   details: string;
   is_default: boolean;
 }
 
-function Settings() {
-  const { t, tx } = useTranslation();
-  const { user, profile, activeMode, signOut } = useAuth();
-  const { showToast } = useToast();
-  const navigate = useNavigate();
-  const { tab } = useParams<{ tab: string }>();
-  const [searchParams] = useSearchParams();
+const DEFAULT_NOTIFICATIONS: NotificationState = {
+  new_job: true,
+  messages: true,
+  payments: true,
+  reviews: true,
+  marketing: false,
+};
 
-  const [activeTab, setActiveTab] = useState<SettingsTab>("account");
-
-  const tabs = useMemo(
-    () => [
-      {
-        id: "account" as SettingsTab,
-        label: t.settings.account,
-        icon: BriefcaseBusiness,
-        description: tx(
-          "settings.tabDescriptions.account",
-          undefined,
-          "Workspace mode, account overview, and setup guidance.",
-        ),
-      },
-      {
-        id: "profile" as SettingsTab,
-        label: t.settings.profile,
-        icon: User,
-        description: tx(
-          "settings.tabDescriptions.profile",
-          undefined,
-          "Identity, bio, avatar, and workspace readiness.",
-        ),
-      },
-      {
-        id: "notifications" as SettingsTab,
-        label: t.settings.notifications,
-        icon: Bell,
-        description: tx(
-          "settings.tabDescriptions.notifications",
-          undefined,
-          "Choose what reaches you and how often.",
-        ),
-      },
-      {
-        id: "payment" as SettingsTab,
-        label: t.settings.payment,
-        icon: CreditCard,
-        description: tx(
-          "settings.tabDescriptions.payment",
-          undefined,
-          "Payout methods, defaults, and transaction-ready details.",
-        ),
-      },
-      {
-        id: "security" as SettingsTab,
-        label: t.settings.privacy,
-        icon: Shield,
-        description: tx(
-          "settings.tabDescriptions.security",
-          undefined,
-          "Session control, account safety, and destructive actions.",
-        ),
-      },
-    ],
-    [
-      t.settings.account,
-      t.settings.notifications,
-      t.settings.payment,
-      t.settings.privacy,
-      t.settings.profile,
-      tx,
-    ],
-  );
-
-  useEffect(() => {
-    const targetTab = tab || searchParams.get("tab");
-    if (targetTab && tabs.some((item) => item.id === targetTab)) {
-      setActiveTab(targetTab as SettingsTab);
-    }
-  }, [searchParams, tab, tabs]);
-
-  const [isSavingPayment, setIsSavingPayment] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isAddPaymentModalOpen, setIsAddPaymentModalOpen] = useState(false);
-  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
-  const [newPaymentForm, setNewPaymentForm] = useState({
-    type: "d17",
-    details: "",
-  });
-
-  useEffect(() => {
-    if (!user?.id) return;
-
-    setIsLoading(true);
-
-    void (async () => {
-      try {
-        const { data } = await supabase
-          .from("payment_methods")
-          .select("*")
-          .eq("user_id", user.id)
-          .order("created_at", { ascending: true });
-
-        if (data?.length) {
-          setPaymentMethods(
-            data.map((payment) => ({
-              id: payment.id,
-              type: payment.type,
-              label:
-                payment.type === "d17"
-                  ? "D17"
-                  : payment.type === "flouci"
-                    ? "Flouci"
-                    : tx("settings.bankTransfer", undefined, "Bank transfer"),
-              details: payment.details,
-              is_default: payment.is_default,
-            })),
-          );
-        }
-      } catch (error: unknown) {
-        logger.error("Error loading payment methods:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    })();
-  }, [tx, user?.id]);
-
-  const handleSetDefaultPayment = async (id: string) => {
-    if (!user?.id) return;
-
-    try {
-      await supabase
-        .from("payment_methods")
-        .update({ is_default: false })
-        .eq("user_id", user.id);
-      const { error } = await supabase
-        .from("payment_methods")
-        .update({ is_default: true })
-        .eq("id", id);
-      if (error) throw error;
-      setPaymentMethods((prev) =>
-        prev.map((payment) => ({ ...payment, is_default: payment.id === id })),
-      );
-      showToast(
-        tx(
-          "settings.toasts.defaultPaymentUpdated",
-          undefined,
-          "Default payment method updated",
-        ),
-        "success",
-      );
-    } catch (error) {
-      logger.error("Error setting default payment:", error);
-      showToast(
-        tx("settings.toasts.genericError", undefined, "Something went wrong"),
-        "error",
-      );
-    }
+function accentTokens(accentColor: string) {
+  return {
+    accentColor,
+    accentBg: `color-mix(in srgb, ${accentColor} 12%, transparent)`,
+    accentBorder: `color-mix(in srgb, ${accentColor} 35%, #262626)`,
+    accentSoft: `color-mix(in srgb, ${accentColor} 8%, transparent)`,
   };
+}
 
-  const handleDeletePayment = async (id: string) => {
-    try {
-      const { error } = await supabase
-        .from("payment_methods")
-        .delete()
-        .eq("id", id);
-      if (error) throw error;
-      setPaymentMethods((prev) => prev.filter((payment) => payment.id !== id));
-      showToast(
-        tx(
-          "settings.toasts.paymentDeleted",
-          undefined,
-          "Payment method deleted",
-        ),
-        "success",
-      );
-    } catch (error) {
-      logger.error("Error deleting payment method:", error);
-      showToast(
-        tx(
-          "settings.toasts.paymentDeleteError",
-          undefined,
-          "Failed to delete payment method",
-        ),
-        "error",
-      );
-    }
-  };
-
-  const handleAddPayment = async () => {
-    if (!user?.id || !newPaymentForm.details) return;
-
-    setIsSavingPayment(true);
-
-    try {
-      const { data, error } = await supabase
-        .from("payment_methods")
-        .insert({
-          user_id: user.id,
-          type: newPaymentForm.type,
-          details: newPaymentForm.details,
-          is_default: paymentMethods.length === 0,
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      setPaymentMethods((prev) => [
-        ...prev,
-        {
-          id: data.id,
-          type: data.type,
-          label:
-            data.type === "d17"
-              ? "D17"
-              : data.type === "flouci"
-                ? "Flouci"
-                : tx("settings.bankTransfer", undefined, "Bank transfer"),
-          details: data.details,
-          is_default: data.is_default,
-        },
-      ]);
-
-      setNewPaymentForm({ type: "d17", details: "" });
-      setIsAddPaymentModalOpen(false);
-      showToast(
-        tx("settings.toasts.paymentAdded", undefined, "Payment method added"),
-        "success",
-      );
-    } catch (error) {
-      logger.error("Error adding payment method:", error);
-      showToast(
-        tx(
-          "settings.toasts.paymentAddError",
-          undefined,
-          "Failed to add payment method",
-        ),
-        "error",
-      );
-    } finally {
-      setIsSavingPayment(false);
-    }
-  };
-
-  const handleLogout = async () => {
-    await signOut();
-    navigate("/login", { replace: true });
-  };
-
-  const currentTab = tabs.find((item) => item.id === activeTab) ?? tabs[0];
-  const dashboardPath =
-    activeMode === "freelancer" ? "/freelancer/dashboard" : "/client/dashboard";
-  const accountTypeLabel =
-    profile?.user_type === "both"
-      ? tx("settings.accountTypeBoth", undefined, "Both")
-      : profile?.user_type === "freelancer"
-        ? tx("settings.accountTypeFreelancer", undefined, "Freelancer")
-        : tx("settings.accountTypeClient", undefined, "Client");
-
-  const identityLabel = profile?.cin_verified
-    ? tx("settings.identityVerified", undefined, "Verified")
-    : tx("settings.verifyIdentity", undefined, "Not verified");
-
-  // Memoize the payment input placeholder to prevent re-renders
-  const paymentPlaceholder = useMemo(
-    () =>
-      newPaymentForm.type === "bank_transfer"
-        ? tx("settings.bankAccountNumber", undefined, "Bank account number")
-        : tx("settings.phoneNumber", undefined, "Phone number"),
-    [newPaymentForm.type, tx]
-  );
-
-  // Stable onChange handlers to prevent input re-renders
-  const handlePaymentTypeChange = useCallback((event: React.ChangeEvent<HTMLSelectElement>) => {
-    setNewPaymentForm((prev) => ({
-      ...prev,
-      type: event.target.value,
-    }));
-  }, []);
-
-  const handlePaymentDetailsChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    setNewPaymentForm((prev) => ({
-      ...prev,
-      details: event.target.value,
-    }));
-  }, []);
-
-  const renderAccountTab = () => (
-    <div className="space-y-6">
-      {/* Stats Grid */}
-      <div className="grid gap-3 sm:grid-cols-3">
-        {[
-          {
-            label: tx("settings.currentWorkspace", undefined, "Workspace"),
-            value: activeMode === "freelancer" ? t.auth.accountPanel.freelancerLabel : t.auth.accountPanel.clientLabel,
-            icon: BriefcaseBusiness,
-          },
-          {
-            label: tx("settings.accountType", undefined, "Account type"),
-            value: accountTypeLabel,
-            icon: User,
-          },
-          {
-            label: tx("settings.identityVerificationTitle", undefined, "Identity"),
-            value: identityLabel,
-            icon: profile?.cin_verified ? Check : Shield,
-          },
-        ].map(({ label, value, icon: Icon }) => (
-          <div key={label} className="rounded-xl border p-4"
-            style={{ borderColor: "var(--color-border-subtle)", background: "var(--color-background-elevated)" }}>
-            <div className="flex items-center gap-2.5 mb-2">
-              <div className="p-1.5 rounded-lg" style={{ background: "color-mix(in srgb, var(--workspace-primary) 10%, transparent)" }}>
-                <Icon className="h-3.5 w-3.5" style={{ color: "var(--workspace-primary)" }} />
-              </div>
-              <p className="text-xs font-medium" style={{ color: "var(--color-text-tertiary)" }}>{label}</p>
-            </div>
-            <p className="text-sm font-bold" style={{ color: "var(--color-text-primary)" }}>{value}</p>
-          </div>
-        ))}
-      </div>
-
-      {/* Quick Actions */}
-      <div>
-        <h3 className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: "var(--color-text-tertiary)" }}>
-          {tx("settings.quickActions", undefined, "Quick actions")}
-        </h3>
-        <div className="space-y-2">
-          {[
-            {
-              label: tx("settings.goToProfile", undefined, "Edit profile"),
-              desc: tx("settings.accountTabHint", undefined, "Update your details and workspace"),
-              onClick: () => setActiveTab("profile"),
-              icon: User,
-            },
-            {
-              label: tx("settings.goToDashboard", undefined, "Go to dashboard"),
-              desc: tx("settings.goToDashboardDescription", undefined, "Return to your workspace"),
-              onClick: () => navigate(dashboardPath),
-              icon: BriefcaseBusiness,
-            },
-            {
-              label: tx("settings.reviewNotifications", undefined, "Manage notifications"),
-              desc: tx("settings.reviewNotificationsDescription", undefined, "Control your alerts"),
-              onClick: () => setActiveTab("notifications"),
-              icon: Bell,
-            },
-          ].map(({ label, desc, onClick, icon: Icon }) => (
-            <button key={label} type="button" onClick={onClick}
-              className="group w-full text-left px-4 py-3 rounded-xl border transition-all duration-200 hover:shadow-sm"
-              style={{ borderColor: "var(--color-border-subtle)", background: "var(--color-background-elevated)" }}
-              onMouseEnter={e => {
-                e.currentTarget.style.borderColor = "color-mix(in srgb, var(--workspace-primary) 30%, var(--color-border-subtle))";
-                e.currentTarget.style.background = "color-mix(in srgb, var(--workspace-primary) 4%, var(--color-background-elevated))";
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.borderColor = "var(--color-border-subtle)";
-                e.currentTarget.style.background = "var(--color-background-elevated)";
-              }}
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg" style={{ background: "color-mix(in srgb, var(--workspace-primary) 10%, transparent)" }}>
-                    <Icon className="h-4 w-4" style={{ color: "var(--workspace-primary)" }} />
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold" style={{ color: "var(--color-text-primary)" }}>{label}</p>
-                    <p className="text-xs mt-0.5" style={{ color: "var(--color-text-tertiary)" }}>{desc}</p>
-                  </div>
-                </div>
-                <ChevronRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: "var(--workspace-primary)" }} />
-              </div>
-            </button>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderPaymentTab = () => (
-    <div className="space-y-6">
-      {isLoading ? (
-        <div className="flex justify-center py-12">
-          <Loader2 className="h-5 w-5 animate-spin" style={{ color: "var(--workspace-primary)" }} />
-        </div>
-      ) : paymentMethods.length === 0 ? (
-        <div className="text-center py-12">
-          <div className="inline-flex h-12 w-12 items-center justify-center rounded-full mb-4" style={{ background: "color-mix(in srgb, var(--workspace-primary) 10%, transparent)" }}>
-            <CreditCard className="h-6 w-6" style={{ color: "var(--workspace-primary)" }} />
-          </div>
-          <h3 className="text-sm font-medium mb-1" style={{ color: "var(--color-text-primary)" }}>
-            {tx("settings.noPaymentMethods", undefined, "No payment methods")}
-          </h3>
-          <p className="text-xs mb-4 max-w-sm mx-auto" style={{ color: "var(--color-text-tertiary)" }}>
-            {tx("settings.noPaymentMethodsDescription", undefined, "Add a payout method for transactions")}
-          </p>
-          <Button variant="primary" size="sm" leftIcon={<Plus className="w-3.5 h-3.5" />} onClick={() => setIsAddPaymentModalOpen(true)}>
-            {tx("settings.addMethod", undefined, "Add method")}
-          </Button>
-        </div>
-      ) : (
-        <>
-          <div className="flex items-center justify-between">
-            <p className="text-xs" style={{ color: "var(--color-text-tertiary)" }}>
-              {paymentMethods.length} {tx("settings.paymentMethodsCount", undefined, "payment methods")}
-            </p>
-            <Button variant="outline" size="xs" leftIcon={<Plus className="w-3 h-3" />} onClick={() => setIsAddPaymentModalOpen(true)}>
-              {tx("settings.addMethod", undefined, "Add")}
-            </Button>
-          </div>
-          <div className="space-y-2">
-            {paymentMethods.map((method) => (
-              <div
-                key={method.id}
-                className="flex items-center justify-between gap-4 p-4 rounded-lg border"
-                style={{
-                  borderColor: method.is_default ? "color-mix(in srgb, var(--workspace-primary) 25%, var(--color-border-subtle))" : "var(--color-border-subtle)",
-                  background: method.is_default ? "color-mix(in srgb, var(--workspace-primary) 3%, var(--color-background-elevated))" : "var(--color-background-elevated)",
-                }}
-              >
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg" style={{ background: method.is_default ? "color-mix(in srgb, var(--workspace-primary) 12%, transparent)" : "var(--color-background-subtle)" }}>
-                    <CreditCard className="h-4 w-4" style={{ color: method.is_default ? "var(--workspace-primary)" : "var(--color-text-secondary)" }} />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium" style={{ color: "var(--color-text-primary)" }}>{method.label}</p>
-                    <p className="text-xs" style={{ color: "var(--color-text-tertiary)" }}>{method.details}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  {method.is_default ? (
-                    <span className="flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium" style={{ background: "color-mix(in srgb, var(--workspace-primary) 12%, transparent)", color: "var(--workspace-primary)" }}>
-                      <Check className="h-3 w-3" />
-                      {tx("settings.default", undefined, "Default")}
-                    </span>
-                  ) : (
-                    <Button variant="outline" size="xs" onClick={() => handleSetDefaultPayment(method.id)}>
-                      {tx("settings.setDefault", undefined, "Set default")}
-                    </Button>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => handleDeletePayment(method.id)}
-                    aria-label={tx("settings.deletePaymentMethod", { label: method.label }, `Delete ${method.label}`)}
-                    className="flex h-7 w-7 items-center justify-center rounded transition-colors"
-                    style={{ color: "var(--color-text-tertiary)" }}
-                    onMouseEnter={e => { e.currentTarget.style.color = "var(--color-status-error)"; e.currentTarget.style.background = "color-mix(in srgb, var(--color-status-error) 8%, transparent)"; }}
-                    onMouseLeave={e => { e.currentTarget.style.color = "var(--color-text-tertiary)"; e.currentTarget.style.background = "transparent"; }}
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </>
-      )}
-    </div>
-  );
-
-  const renderActiveTab = () => {
-    if (activeTab === "account") return renderAccountTab();
-    if (activeTab === "profile") return <ProfileSettings />;
-    if (activeTab === "notifications") return <NotificationSettings />;
-    if (activeTab === "payment") return renderPaymentTab();
-    return <SecuritySettings />;
-  };
+function AccountSettings({
+  activeMode,
+  accountType,
+  identityVerified,
+  goToPublicProfile,
+  goToDashboard,
+  goToNotifications,
+  accentColor,
+}: {
+  activeMode: 'client' | 'freelancer';
+  accountType: string;
+  identityVerified: boolean;
+  goToPublicProfile: () => void;
+  goToDashboard: () => void;
+  goToNotifications: () => void;
+  accentColor: string;
+}) {
+  const tokens = accentTokens(accentColor);
 
   return (
-    <div className="min-h-screen" style={{ background: "var(--color-background-base)" }}>
-      <SEO {...SEO_CONFIG.settings} url="/settings" noIndex />
-      <Header />
+    <div className="bg-[#141414] border border-[#262626] rounded-2xl p-6 relative overflow-hidden">
+      <div className="absolute top-0 left-0 right-0 h-px" style={{ background: `linear-gradient(90deg, ${accentColor} 0%, transparent 80%)` }} />
+      <h2 className="text-xl font-bold mb-1">Account Overview</h2>
+      <p className="text-sm text-gray-400 mb-8">Manage your workspace and general account details.</p>
 
-      <main className="mx-auto max-w-[1400px] px-4 py-6 pb-24 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold mb-1" style={{ color: "var(--color-text-primary)" }}>
-            {tx("settings.pageTitle", undefined, "Settings")}
-          </h1>
-          <p className="text-sm" style={{ color: "var(--color-text-tertiary)" }}>
-            {tx("settings.heroDescription", undefined, "Manage your account, profile, and preferences")}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+        <div className="bg-[#0a0a0a] border border-[#262626] rounded-xl p-4 transition-colors" style={{ borderColor: tokens.accentBorder }}>
+          <p className="text-xs text-gray-500 mb-1">Current workspace</p>
+          <p className="text-sm font-semibold text-white">{activeMode === 'freelancer' ? 'Freelancer' : 'Client'}</p>
+        </div>
+        <div className="bg-[#0a0a0a] border border-[#262626] rounded-xl p-4 transition-colors" style={{ borderColor: tokens.accentBorder }}>
+          <p className="text-xs text-gray-500 mb-1">Account type</p>
+          <p className="text-sm font-semibold text-white">{accountType}</p>
+        </div>
+        <div className="bg-[#0a0a0a] border border-[#262626] rounded-xl p-4 transition-colors" style={{ borderColor: tokens.accentBorder }}>
+          <p className="text-xs text-gray-500 mb-1">Identity</p>
+          <p className={`text-sm font-semibold inline-flex items-center gap-2 ${identityVerified ? 'text-green-400' : 'text-amber-400'}`}>
+            <Check className="w-4 h-4" />
+            {identityVerified ? 'Identity Verified' : 'Verification Pending'}
           </p>
         </div>
+      </div>
 
-        {/* Premium Full-Width Tab Navigation */}
-        <div className="mb-8 -mx-4 sm:-mx-6 lg:-mx-8">
-          <div className="border-b-2" style={{ borderColor: "var(--color-border-subtle)" }}>
-            <nav className="flex gap-1 px-4 sm:px-6 lg:px-8 overflow-x-auto scrollbar-hide">
-              {tabs.map((item) => {
-                const isActive = activeTab === item.id;
-                return (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => setActiveTab(item.id)}
-                    className="group relative flex items-center gap-3 px-6 py-4 text-sm font-semibold transition-all duration-300 whitespace-nowrap"
-                    style={{
-                      color: isActive ? "var(--workspace-primary)" : "var(--color-text-secondary)",
-                    }}
-                  >
-                    {/* Animated background on hover/active */}
-                    <div 
-                      className="absolute inset-0 rounded-t-xl transition-all duration-300"
-                      style={{
-                        background: isActive 
-                          ? "color-mix(in srgb, var(--workspace-primary) 8%, transparent)" 
-                          : "transparent",
-                        opacity: isActive ? 1 : 0,
-                      }}
-                      onMouseEnter={(e) => {
-                        if (!isActive) {
-                          e.currentTarget.style.background = "color-mix(in srgb, var(--workspace-primary) 4%, transparent)";
-                          e.currentTarget.style.opacity = "1";
-                        }
-                      }}
-                      onMouseLeave={(e) => {
-                        if (!isActive) {
-                          e.currentTarget.style.opacity = "0";
-                        }
-                      }}
-                    />
-                    
-                    {/* Icon */}
-                    <div className="relative z-10 p-1.5 rounded-lg transition-all duration-200"
-                      style={{ background: isActive ? "color-mix(in srgb, var(--workspace-primary) 12%, transparent)" : "transparent" }}>
-                      <item.icon className="h-4 w-4 transition-colors duration-200"
-                        style={{ color: isActive ? "var(--workspace-primary)" : "var(--color-text-tertiary)" }} />
-                    </div>
-                    
-                    {/* Label */}
-                    <span className="relative z-10 font-semibold">{item.label}</span>
-                    
-                    {/* Active indicator bar */}
-                    <div className="absolute bottom-0 left-0 right-0 h-0.5 transition-all duration-200"
-                      style={{ background: isActive ? "var(--workspace-primary)" : "transparent" }} />
-                  </button>
-                );
-              })}
-            </nav>
-          </div>
-          
-          {/* Tab description bar */}
-          <div className="px-4 sm:px-6 lg:px-8 py-4" style={{ background: "color-mix(in srgb, var(--workspace-primary) 3%, var(--color-background-base))" }}>
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg" style={{ background: "color-mix(in srgb, var(--workspace-primary) 12%, transparent)" }}>
-                <currentTab.icon className="h-4 w-4" style={{ color: "var(--workspace-primary)" }} />
-              </div>
-              <p className="text-sm" style={{ color: "var(--color-text-secondary)" }}>
-                {currentTab.description}
-              </p>
-            </div>
-          </div>
-        </div>
+      <h3 className="text-sm font-semibold text-gray-200 mb-3">Quick Actions</h3>
 
-        {/* Content with Premium Layout */}
-        <div className="grid gap-8 lg:grid-cols-[2fr_1fr]">
-          <div className="space-y-6">{renderActiveTab()}</div>
-          
-          {/* Enhanced Sidebar Info */}
-          <div className="space-y-6">
-            {/* Current Tab Info Card */}
-            <div className="rounded-2xl border-2 p-6 backdrop-blur-sm relative overflow-hidden group transition-all duration-300 hover:shadow-xl" style={{ borderColor: "color-mix(in srgb, var(--workspace-primary) 20%, var(--color-border-subtle))", background: "color-mix(in srgb, var(--workspace-primary) 5%, var(--color-background-elevated))" }}>
-              <div className="absolute top-0 right-0 w-32 h-32 rounded-full blur-3xl opacity-20 group-hover:opacity-30 transition-opacity" style={{ background: "linear-gradient(135deg, var(--workspace-primary), var(--workspace-accent))" }} />
-              <div className="relative z-10">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="p-3 rounded-xl shadow-lg" style={{ background: "linear-gradient(135deg, var(--workspace-primary), var(--workspace-accent))" }}>
-                    <currentTab.icon className="h-5 w-5 text-white" />
-                  </div>
-                  <h3 className="text-lg font-bold" style={{ color: "var(--color-text-primary)" }}>
-                    {currentTab.label}
-                  </h3>
-                </div>
-                <p className="text-sm leading-relaxed" style={{ color: "var(--color-text-secondary)" }}>
-                  {currentTab.description}
-                </p>
-              </div>
-            </div>
-            
-
-          </div>
-        </div>
-
-        {/* Logout */}
-        <div className="mt-8 pt-6 border-t" style={{ borderColor: "var(--color-border-subtle)" }}>
-          <button
-            className="text-sm font-medium transition-colors"
-            style={{ color: "var(--color-text-tertiary)" }}
-            onMouseEnter={e => { e.currentTarget.style.color = "var(--color-status-error)"; }}
-            onMouseLeave={e => { e.currentTarget.style.color = "var(--color-text-tertiary)"; }}
-            onClick={handleLogout}
-          >
-            {tx("settings.logout", undefined, "Sign out")}
-          </button>
-        </div>
-      </main>
-
-      <Modal
-        isOpen={isAddPaymentModalOpen}
-        onClose={() => setIsAddPaymentModalOpen(false)}
-        title={tx(
-          "settings.addPaymentMethodModalTitle",
-          undefined,
-          "Add payment method",
-        )}
+      <button
+        type="button"
+        onClick={goToPublicProfile}
+        className="w-full flex justify-between items-center p-4 border border-[#262626] rounded-xl mb-3 hover:bg-[#1a1a1a] cursor-pointer transition-all"
+        style={{ borderColor: tokens.accentBorder }}
       >
-        <div className="space-y-4">
-          <div>
-            <label className="label">
-              {tx(
-                "settings.paymentMethodType",
-                undefined,
-                "Payment method type",
-              )}
-            </label>
-            <select
-              value={newPaymentForm.type}
-              onChange={handlePaymentTypeChange}
-              className="form-control"
-              disabled={isSavingPayment}
-            >
-              <option value="d17">D17</option>
-              <option value="flouci">Flouci</option>
-              <option value="bank_transfer">
-                {tx("settings.bankTransfer", undefined, "Bank transfer")}
-              </option>
-            </select>
-          </div>
+        <span className="text-sm text-white">Open public profile editor</span>
+        <ExternalLink className="w-4 h-4 text-gray-500" />
+      </button>
 
-          <Input
-            label={tx("settings.paymentDetails", undefined, "Payment details")}
-            value={newPaymentForm.details}
-            onChange={handlePaymentDetailsChange}
-            disabled={isSavingPayment}
-            placeholder={paymentPlaceholder}
-          />
+      <button
+        type="button"
+        onClick={goToDashboard}
+        className="w-full flex justify-between items-center p-4 border border-[#262626] rounded-xl mb-3 hover:bg-[#1a1a1a] cursor-pointer transition-all"
+        style={{ borderColor: tokens.accentBorder }}
+      >
+        <span className="text-sm text-white">Go to dashboard</span>
+        <ExternalLink className="w-4 h-4 text-gray-500" />
+      </button>
 
-          <div className="flex justify-end gap-3">
-            <Button
-              variant="outline"
-              onClick={() => setIsAddPaymentModalOpen(false)}
-              disabled={isSavingPayment}
-            >
-              {t.common.cancel}
-            </Button>
-            <Button
-              variant="primary"
-              onClick={handleAddPayment}
-              disabled={!newPaymentForm.details || isSavingPayment}
-              isLoading={isSavingPayment}
-            >
-              {tx("settings.add", undefined, "Add")}
-            </Button>
-          </div>
-        </div>
-      </Modal>
-
-      <style>{`
-        .scrollbar-hide::-webkit-scrollbar {
-          display: none;
-        }
-        .scrollbar-hide {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
-      `}</style>
+      <button
+        type="button"
+        onClick={goToNotifications}
+        className="w-full flex justify-between items-center p-4 border border-[#262626] rounded-xl hover:bg-[#1a1a1a] cursor-pointer transition-all"
+        style={{ borderColor: tokens.accentBorder }}
+      >
+        <span className="text-sm text-white">Manage notifications</span>
+        <ExternalLink className="w-4 h-4 text-gray-500" />
+      </button>
     </div>
   );
 }
 
-export default Settings;
+function NotificationSettingsTab({
+  userId,
+  accentColor,
+  showToast,
+}: {
+  userId?: string;
+  accentColor: string;
+  showToast: (message: string, variant?: 'success' | 'error' | 'info') => void;
+}) {
+  const [notifications, setNotifications] = useState<NotificationState>(DEFAULT_NOTIFICATIONS);
+  const [loading, setLoading] = useState(true);
+  const [savingKey, setSavingKey] = useState<NotificationKey | null>(null);
+
+  useEffect(() => {
+    if (!userId) {
+      setLoading(false);
+      return;
+    }
+
+    const cacheKey = `notif_settings_${userId}`;
+    const cached = (() => { try { const r = sessionStorage.getItem(cacheKey); return r ? JSON.parse(r) : null; } catch { return null; } })();
+    if (cached) {
+      setNotifications(cached);
+      setLoading(false);
+    }
+
+    const fetchSettings = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('notification_settings')
+          .select('new_job, messages, payments, reviews, marketing')
+          .eq('user_id', userId)
+          .single();
+
+        if (error && error.code !== 'PGRST116') throw error;
+
+        if (data) {
+          const next = {
+            new_job: data.new_job ?? true,
+            messages: data.messages ?? true,
+            payments: data.payments ?? true,
+            reviews: data.reviews ?? true,
+            marketing: data.marketing ?? false,
+          };
+          setNotifications(next);
+          try { sessionStorage.setItem(cacheKey, JSON.stringify(next)); } catch { /* ignore */ }
+        }
+      } catch (error) {
+        logger.error('Failed to load notification settings', error);
+        if (!cached) showToast('Failed to load notification settings', 'error');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    void fetchSettings();
+  }, [showToast, userId]);
+
+  const items: Array<{ key: NotificationKey; title: string; description: string }> = [
+    { key: 'new_job', title: 'New job matches', description: 'Get notified when jobs match your skills' },
+    { key: 'messages', title: 'New messages', description: 'Get notified when you receive new messages' },
+    { key: 'payments', title: 'Payments', description: 'Get notified when you send or receive payments' },
+    { key: 'reviews', title: 'Reviews', description: 'Get notified when you receive a new review' },
+    { key: 'marketing', title: 'Offers and updates', description: 'Tips and updates from WorkedIn' },
+  ];
+
+  const persistNotifications = async (nextState: NotificationState) => {
+    if (!userId) {
+      return;
+    }
+
+    const { error } = await supabase
+      .from('notification_settings')
+      .upsert({
+        user_id: userId,
+        ...nextState,
+        updated_at: new Date().toISOString(),
+      });
+
+    if (error) {
+      throw error;
+    }
+  };
+
+  const toggleNotification = async (key: NotificationKey) => {
+    const nextState: NotificationState = {
+      ...notifications,
+      [key]: !notifications[key],
+    };
+
+    setNotifications(nextState);
+    setSavingKey(key);
+
+    try {
+      await persistNotifications(nextState);
+    } catch (error) {
+      logger.error('Failed to save notification settings', error);
+      setNotifications(notifications);
+      showToast('Could not save notification settings', 'error');
+    } finally {
+      setSavingKey(null);
+    }
+  };
+
+  return (
+    <div className="bg-[#141414] border border-[#262626] rounded-2xl p-6 relative overflow-hidden">
+      <div className="absolute top-0 left-0 right-0 h-px" style={{ background: `linear-gradient(90deg, ${accentColor} 0%, transparent 80%)` }} />
+      <h2 className="text-xl font-bold mb-6">Notifications</h2>
+
+      {loading ? (
+        <div className="py-12 flex items-center justify-center">
+          <Loader2 className="w-5 h-5 animate-spin" style={{ color: accentColor }} />
+        </div>
+      ) : (
+        items.map((item) => (
+          <div
+            key={item.key}
+            className="flex items-center justify-between border-b border-[#262626] pb-4 mb-4 hover:bg-[#1a1a1a] rounded-lg px-2 transition-colors"
+          >
+            <div className="pe-4">
+              <p className="text-sm font-medium text-white">{item.title}</p>
+              <p className="text-sm text-gray-400 mt-1">{item.description}</p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => void toggleNotification(item.key)}
+              className="relative inline-flex h-7 w-12 items-center rounded-full transition-colors"
+              style={{ background: notifications[item.key] ? accentColor : '#262626' }}
+              disabled={savingKey === item.key}
+              aria-label={`Toggle ${item.title}`}
+            >
+              <span
+                className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${
+                  notifications[item.key] ? 'translate-x-6' : 'translate-x-1'
+                }`}
+              />
+            </button>
+          </div>
+        ))
+      )}
+    </div>
+  );
+}
+
+function PaymentSettingsTab({
+  userId,
+  accentColor,
+  showToast,
+}: {
+  userId?: string;
+  accentColor: string;
+  showToast: (message: string, variant?: 'success' | 'error' | 'info') => void;
+}) {
+  const [methods, setMethods] = useState<PaymentMethodRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [adding, setAdding] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState({ type: 'd17', details: '' });
+
+  const loadMethods = async () => {
+    if (!userId) {
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const { data, error } = await supabase
+        .from('payment_methods')
+        .select('id, type, details, is_default')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: true });
+
+      if (error) {
+        throw error;
+      }
+
+      setMethods((data ?? []) as PaymentMethodRow[]);
+    } catch (error) {
+      logger.error('Failed to load payment methods', error);
+      showToast('Failed to load payment methods', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    void loadMethods();
+  }, [userId]);
+
+  const addMethod = async () => {
+    if (!userId || !form.details.trim()) {
+      return;
+    }
+
+    setSaving(true);
+
+    try {
+      const { data, error } = await supabase
+        .from('payment_methods')
+        .insert({
+          user_id: userId,
+          type: form.type,
+          details: form.details.trim(),
+          is_default: methods.length === 0,
+        })
+        .select('id, type, details, is_default')
+        .single();
+
+      if (error) {
+        throw error;
+      }
+
+      setMethods((prev) => [...prev, data as PaymentMethodRow]);
+      setForm({ type: 'd17', details: '' });
+      setAdding(false);
+      showToast('Payment method added', 'success');
+    } catch (error) {
+      logger.error('Failed to add payment method', error);
+      showToast('Could not add payment method', 'error');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const setDefault = async (id: string) => {
+    if (!userId) {
+      return;
+    }
+
+    try {
+      await supabase
+        .from('payment_methods')
+        .update({ is_default: false })
+        .eq('user_id', userId);
+
+      const { error } = await supabase
+        .from('payment_methods')
+        .update({ is_default: true })
+        .eq('id', id);
+
+      if (error) {
+        throw error;
+      }
+
+      setMethods((prev) => prev.map((method) => ({ ...method, is_default: method.id === id })));
+      showToast('Default payment method updated', 'success');
+    } catch (error) {
+      logger.error('Failed to set default payment method', error);
+      showToast('Could not update default payment method', 'error');
+    }
+  };
+
+  const removeMethod = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('payment_methods')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        throw error;
+      }
+
+      setMethods((prev) => prev.filter((method) => method.id !== id));
+      showToast('Payment method removed', 'success');
+    } catch (error) {
+      logger.error('Failed to remove payment method', error);
+      showToast('Could not remove payment method', 'error');
+    }
+  };
+
+  return (
+    <div className="bg-[#141414] border border-[#262626] rounded-2xl p-6 relative overflow-hidden">
+      <div className="absolute top-0 left-0 right-0 h-px" style={{ background: `linear-gradient(90deg, ${accentColor} 0%, transparent 80%)` }} />
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-xl font-bold">Payment Methods</h2>
+        <button
+          type="button"
+          onClick={() => setAdding((prev) => !prev)}
+          className="inline-flex items-center gap-2 text-white px-4 py-2 rounded-lg transition-colors"
+          style={{ background: accentColor }}
+        >
+          <Plus className="w-4 h-4" />
+          Add method
+        </button>
+      </div>
+
+      {adding ? (
+        <div className="mb-6 border border-[#262626] rounded-xl p-4 bg-[#0a0a0a]">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <select
+              value={form.type}
+              onChange={(event) => setForm((prev) => ({ ...prev, type: event.target.value }))}
+              className="bg-[#0a0a0a] border border-[#262626] rounded-lg text-white p-3 outline-none"
+            >
+              <option value="d17">D17</option>
+              <option value="flouci">Flouci</option>
+              <option value="bank_transfer">Bank transfer</option>
+            </select>
+
+            <input
+              value={form.details}
+              onChange={(event) => setForm((prev) => ({ ...prev, details: event.target.value }))}
+              placeholder={form.type === 'bank_transfer' ? 'Bank account number' : 'Phone number'}
+              className="sm:col-span-2 bg-[#0a0a0a] border border-[#262626] rounded-lg text-white p-3 outline-none"
+            />
+          </div>
+
+          <div className="flex justify-end gap-2 mt-3">
+            <button
+              type="button"
+              onClick={() => setAdding(false)}
+              className="px-4 py-2 rounded-lg border border-[#262626] text-gray-300 hover:text-white"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={() => void addMethod()}
+              disabled={saving || !form.details.trim()}
+              className="px-4 py-2 rounded-lg text-white disabled:opacity-60"
+              style={{ background: accentColor }}
+            >
+              {saving ? 'Saving...' : 'Save method'}
+            </button>
+          </div>
+        </div>
+      ) : null}
+
+      {loading ? (
+        <div className="py-12 flex items-center justify-center">
+          <Loader2 className="w-5 h-5 animate-spin" style={{ color: accentColor }} />
+        </div>
+      ) : methods.length === 0 ? (
+        <div className="text-center py-16 border border-dashed border-[#262626] rounded-2xl bg-[#0a0a0a]">
+          <CreditCard className="w-12 h-12 text-gray-600 mx-auto" />
+          <p className="text-lg font-semibold text-white mt-4">No payment method added yet</p>
+          <p className="text-sm text-gray-400 mt-2">Add a payout method now so contracts are ready when you need them.</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {methods.map((method) => (
+            <div
+              key={method.id}
+              className="flex items-center justify-between gap-3 p-4 rounded-xl border bg-[#0a0a0a]"
+              style={{ borderColor: method.is_default ? `color-mix(in srgb, ${accentColor} 50%, #262626)` : '#262626' }}
+            >
+              <div>
+                <p className="text-sm text-white font-semibold uppercase">{method.type.replace('_', ' ')}</p>
+                <p className="text-xs text-gray-400 mt-1">{method.details}</p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                {method.is_default ? (
+                  <span
+                    className="text-xs px-2.5 py-1 rounded-full font-semibold"
+                    style={{ background: `color-mix(in srgb, ${accentColor} 14%, transparent)`, color: accentColor }}
+                  >
+                    Default
+                  </span>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => void setDefault(method.id)}
+                    className="text-xs px-3 py-1.5 rounded-lg border border-[#262626] text-gray-300 hover:text-white"
+                  >
+                    Set default
+                  </button>
+                )}
+
+                <button
+                  type="button"
+                  onClick={() => void removeMethod(method.id)}
+                  className="p-2 rounded-lg border border-[#262626] text-gray-400 hover:text-red-400"
+                  aria-label="Delete payment method"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function PrivacySettingsTab({
+  userId,
+  userEmail,
+  authProvider,
+  accentColor,
+  onSignOutAll,
+  showToast,
+}: {
+  userId?: string;
+  userEmail?: string;
+  authProvider: string;
+  accentColor: string;
+  onSignOutAll: () => Promise<void>;
+  showToast: (message: string, variant?: 'success' | 'error' | 'info') => void;
+}) {
+  const [submittingDeleteRequest, setSubmittingDeleteRequest] = useState(false);
+
+  const requestDeleteAccount = async () => {
+    if (!userId) {
+      return;
+    }
+
+    setSubmittingDeleteRequest(true);
+
+    try {
+      const { data: openRequest } = await supabase
+        .from('account_deletion_requests')
+        .select('id, status')
+        .eq('user_id', userId)
+        .in('status', ['pending', 'in_review'])
+        .limit(1)
+        .maybeSingle();
+
+      if (openRequest) {
+        showToast('A deletion request is already in progress', 'info');
+        return;
+      }
+
+      const { error } = await supabase
+        .from('account_deletion_requests')
+        .insert({
+          user_id: userId,
+          source: 'settings_privacy',
+          metadata: {
+            email: userEmail ?? null,
+            provider: authProvider,
+          },
+        });
+
+      if (error) {
+        throw error;
+      }
+
+      showToast('Account deletion request submitted', 'info');
+    } catch (error) {
+      logger.error('Failed to submit account deletion request', error);
+      showToast('Could not submit deletion request', 'error');
+    } finally {
+      setSubmittingDeleteRequest(false);
+    }
+  };
+
+  return (
+    <div className="bg-[#141414] border border-[#262626] rounded-2xl p-6 relative overflow-hidden">
+      <div className="absolute top-0 left-0 right-0 h-px" style={{ background: `linear-gradient(90deg, ${accentColor} 0%, transparent 80%)` }} />
+      <h2 className="text-xl font-bold mb-6">Security & Privacy</h2>
+
+      <div className="border border-[#262626] rounded-xl p-4 mb-4 bg-[#0a0a0a]">
+        <p className="text-sm font-semibold text-white mb-1">Change password</p>
+        <p className="text-sm text-gray-400">
+          You signed in with {authProvider}. Password management is handled by your identity provider.
+        </p>
+      </div>
+
+      <div className="border border-[#262626] rounded-xl p-4 bg-[#0a0a0a]">
+        <p className="text-sm font-semibold text-white mb-1">Active sessions</p>
+        <p className="text-sm text-gray-400">This device is your current session.</p>
+        <button
+          type="button"
+          onClick={() => void onSignOutAll()}
+          className="inline-flex items-center gap-2 border border-[#262626] text-white px-4 py-2 rounded-lg mt-3 transition-colors"
+          style={{ borderColor: `color-mix(in srgb, ${accentColor} 45%, #262626)` }}
+        >
+          <RefreshCw className="w-4 h-4" />
+          Sign out from all devices
+        </button>
+      </div>
+
+      <div className="border border-red-900/50 bg-red-500/5 rounded-xl p-6 mt-8">
+        <div className="flex items-center gap-2 text-red-500 font-semibold">
+          <AlertTriangle className="w-4 h-4" />
+          <span>Delete account</span>
+        </div>
+        <p className="text-red-200/70 text-sm mt-1">
+          Your account and all data will be permanently deleted. This action cannot be undone.
+        </p>
+        <button
+          type="button"
+          onClick={() => void requestDeleteAccount()}
+          disabled={submittingDeleteRequest}
+          className="bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500 hover:text-white px-4 py-2 rounded-lg mt-4 transition-all disabled:opacity-60"
+        >
+          {submittingDeleteRequest ? 'Submitting...' : 'Delete my account'}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+export default function Settings() {
+  const navigate = useNavigate();
+  const { user, profile, activeMode, signOut } = useAuth();
+  const { showToast } = useToast();
+
+  const [activeTab, setActiveTab] = useState<SettingsTab>('account');
+
+  const accentColor = activeMode === 'freelancer' ? '#8B5CF6' : '#F59E0B';
+
+  const navItems: Array<{ id: SettingsTab; label: string; icon: typeof SettingsIcon }> = [
+    { id: 'account', label: 'Account', icon: SettingsIcon },
+    { id: 'notifications', label: 'Notifications', icon: Bell },
+    { id: 'payment', label: 'Payment', icon: CreditCard },
+    { id: 'privacy', label: 'Privacy', icon: Shield },
+  ];
+
+  const accountType =
+    profile?.user_type === 'both'
+      ? 'Both'
+      : profile?.user_type === 'freelancer'
+      ? 'Freelancer'
+      : 'Client';
+
+  const dashboardPath = activeMode === 'freelancer' ? '/freelancer/dashboard' : '/client/dashboard';
+  const publicProfilePath = user?.id
+    ? activeMode === 'freelancer'
+      ? `/freelancer/${profile?.username || user.id}`
+      : `/client/${user.id}`
+    : dashboardPath;
+  const authProvider = user?.app_metadata?.provider || user?.app_metadata?.providers?.[0] || 'email';
+  const workspaceLabel = activeMode === 'freelancer' ? 'Freelancer Mode' : 'Client Mode';
+
+  const handleSignOutAll = async () => {
+    try {
+      await supabase.auth.signOut({ scope: 'global' });
+      await signOut();
+      navigate('/login', { replace: true });
+    } catch (error) {
+      logger.error('Failed to sign out all sessions', error);
+      showToast('Could not sign out all devices', 'error');
+    }
+  };
+
+  const renderTabContent = () => {
+    if (activeTab === 'account') {
+      return (
+        <AccountSettings
+          activeMode={activeMode === 'freelancer' ? 'freelancer' : 'client'}
+          accountType={accountType}
+          identityVerified={Boolean(profile?.cin_verified)}
+          goToPublicProfile={() => navigate(publicProfilePath)}
+          goToDashboard={() => navigate(dashboardPath)}
+          goToNotifications={() => setActiveTab('notifications')}
+          accentColor={accentColor}
+        />
+      );
+    }
+
+    if (activeTab === 'notifications') {
+      return <NotificationSettingsTab userId={user?.id} accentColor={accentColor} showToast={showToast} />;
+    }
+
+    if (activeTab === 'payment') {
+      return <PaymentSettingsTab userId={user?.id} accentColor={accentColor} showToast={showToast} />;
+    }
+
+    return (
+      <PrivacySettingsTab
+        userId={user?.id}
+        userEmail={user?.email}
+        authProvider={String(authProvider)}
+        accentColor={accentColor}
+        onSignOutAll={handleSignOutAll}
+        showToast={showToast}
+      />
+    );
+  };
+
+  return (
+    <div className="bg-[#0a0a0a]">
+      <Header />
+
+      <div className="min-h-screen w-full bg-[#0a0a0a] text-white p-4 md:p-8 flex justify-center">
+        <div className="max-w-6xl w-full flex flex-col md:flex-row gap-8">
+          <aside className="w-full md:w-64 shrink-0">
+            <div
+              className="bg-gradient-to-b from-[#131313] to-[#0d0d0d] border rounded-2xl p-4 relative overflow-hidden"
+              style={{ borderColor: `color-mix(in srgb, ${accentColor} 28%, #262626)` }}
+            >
+              <div className="absolute top-0 left-0 right-0 h-px" style={{ background: `linear-gradient(90deg, ${accentColor} 0%, transparent 80%)` }} />
+              <h1 className="text-2xl font-bold mb-2 text-white">Settings</h1>
+              <div className="mb-6">
+                <span
+                  className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full border"
+                  style={{
+                    color: accentColor,
+                    borderColor: `color-mix(in srgb, ${accentColor} 35%, #262626)`,
+                    background: `color-mix(in srgb, ${accentColor} 10%, transparent)`,
+                  }}
+                >
+                  <span
+                    className="w-1.5 h-1.5 rounded-full"
+                    style={{ background: accentColor }}
+                  />
+                  {workspaceLabel}
+                </span>
+              </div>
+
+              <nav className="space-y-2">
+                {navItems.map((item) => {
+                  const isActive = activeTab === item.id;
+                  const Icon = item.icon;
+
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => setActiveTab(item.id)}
+                      className={`group relative flex items-center gap-3 w-full p-3 rounded-xl text-sm font-medium border transition-all ${
+                        isActive
+                          ? ''
+                          : 'text-gray-400 border-[#262626] bg-[#101010] hover:bg-[#171717] hover:text-white hover:border-[#3a3a3a]'
+                      }`}
+                      style={
+                        isActive
+                          ? {
+                              background: `linear-gradient(90deg, color-mix(in srgb, ${accentColor} 14%, transparent) 0%, color-mix(in srgb, ${accentColor} 6%, transparent) 100%)`,
+                              color: accentColor,
+                              borderColor: `color-mix(in srgb, ${accentColor} 42%, #262626)`,
+                              boxShadow: `0 0 0 1px color-mix(in srgb, ${accentColor} 22%, transparent) inset`,
+                            }
+                          : undefined
+                      }
+                    >
+                      {isActive ? (
+                        <span
+                          className="absolute left-1 top-1/2 -translate-y-1/2 w-1 h-6 rounded-full"
+                          style={{ background: accentColor }}
+                        />
+                      ) : null}
+
+                      <Icon className="w-4 h-4 transition-colors" style={isActive ? { color: accentColor } : undefined} />
+                      <span>{item.label}</span>
+                    </button>
+                  );
+                })}
+              </nav>
+
+              <div className="border-t border-[#262626] mt-6 pt-4">
+                <button
+                  type="button"
+                  onClick={async () => {
+                    await signOut();
+                    navigate('/login', { replace: true });
+                  }}
+                  className="flex items-center gap-3 w-full p-3 rounded-xl text-sm font-medium text-gray-500 hover:text-red-400 transition-colors"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span>Sign Out</span>
+                </button>
+              </div>
+            </div>
+          </aside>
+
+          <section className="flex-1">{renderTabContent()}</section>
+        </div>
+      </div>
+    </div>
+  );
+}

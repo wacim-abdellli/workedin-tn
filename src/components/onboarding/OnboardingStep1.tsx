@@ -6,6 +6,7 @@ import Button from '../ui/Button';
 import Input from '../ui/Input';
 import CustomSelect from '../ui/CustomSelect';
 import { getLocalizedGovernorateOptions } from '../../lib/governorates';
+import { sanitizePhoneInput } from '../../lib/phone';
 import type { Step1FormData } from './schemas';
 
 interface OnboardingStep1Props {
@@ -29,6 +30,7 @@ export default function OnboardingStep1({
     const fileInputRef = useRef<HTMLInputElement>(null);
     const { register, formState: { errors }, handleSubmit, watch } = form;
     const bio = watch('bio') || '';
+    const phoneField = register('phone');
 
     const ArrowIcon = dir === 'rtl' ? ArrowLeft : ArrowRight;
 
@@ -124,7 +126,14 @@ export default function OnboardingStep1({
 
                     <div className="md:col-span-1">
                         <Input
-                            {...register('phone')}
+                            {...phoneField}
+                            type="tel"
+                            inputMode="tel"
+                            autoComplete="tel"
+                            onChange={(event) => {
+                                event.target.value = sanitizePhoneInput(event.target.value);
+                                phoneField.onChange(event);
+                            }}
                             label={tx('profile.phone', undefined, 'Phone number')}
                             placeholder={tx('profile.phonePlaceholder', undefined, 'Used for trust and contact follow-up')}
                             error={errors.phone?.message}

@@ -100,7 +100,7 @@ function getTimeGreeting(tx: any): string {
 
 function ClientDashboardPage() {
     const { language, tx } = useTranslation();
-    const { profile, isLoading: isAuthLoading } = useAuth();
+    const { profile, isLoading: isAuthLoading, isFullyReady } = useAuth();
     const navigate = useNavigate();
 
     const { data: stats, isLoading: isStatsLoading } = useQuery({
@@ -173,13 +173,33 @@ function ClientDashboardPage() {
         activeContracts: (stats?.activeContracts?.length ?? 0),
     };
 
-    if (isAuthLoading || !profile?.id) {
+    if (isAuthLoading || !isFullyReady) {
         return (
             <div className="min-h-screen bg-[var(--color-background-base)]">
                 <SEO {...SEO_CONFIG.dashboard} url="/client/dashboard" noIndex />
                 <Header />
                 <main className="container mx-auto px-[var(--spacing-4)] sm:px-[var(--spacing-6)] lg:px-[var(--spacing-8)] pt-[var(--spacing-20)] pb-[var(--spacing-12)] max-w-7xl">
                     <SkeletonCard />
+                </main>
+            </div>
+        );
+    }
+
+    if (!profile?.id) {
+        return (
+            <div className="min-h-screen bg-[var(--color-background-base)]">
+                <SEO {...SEO_CONFIG.dashboard} url="/client/dashboard" noIndex />
+                <Header />
+                <main className="container mx-auto px-[var(--spacing-4)] sm:px-[var(--spacing-6)] lg:px-[var(--spacing-8)] pt-[var(--spacing-20)] pb-[var(--spacing-12)] max-w-7xl">
+                    <EmptyState
+                        icon={Users}
+                        title={tx('dashboard.client.profileUnavailable', undefined, 'Profile unavailable')}
+                        description={tx('dashboard.client.profileUnavailableDesc', undefined, 'We could not load your account profile yet. Please try again.')}
+                        action={{
+                            label: tx('common.retry', undefined, 'Retry'),
+                            onClick: () => window.location.reload(),
+                        }}
+                    />
                 </main>
             </div>
         );

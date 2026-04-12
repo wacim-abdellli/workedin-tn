@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, lazy, Suspense } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   Briefcase,
@@ -23,7 +23,7 @@ import ComingSoonBanner from "@/components/common/ComingSoonBanner";
 import { getTotalUnreadCount, subscribeToConversations, type ConversationScope } from "@/services/messages";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 
-import SearchModal from "./SearchModal";
+const SearchModal = lazy(() => import("./SearchModal"));
 import { AuthHeader } from "./AuthHeader";
 import { UserMenu } from "./UserMenu";
 import { DesktopNav } from "./DesktopNav";
@@ -114,15 +114,21 @@ export default function Header() {
       ? ['freelancer', 'contract', 'shared']
       : ['client', 'contract', 'shared'];
 
+    let cancelled = false;
     const loadUnreadCount = async () => {
       const { count } = await getTotalUnreadCount(user.id, unreadScopes);
-      setUnreadCount(count);
+      if (!cancelled) setUnreadCount(count);
     };
-    loadUnreadCount();
+
+    // Debounce slightly to avoid double-fire on workspace switch
+    const timer = setTimeout(() => { void loadUnreadCount(); }, 100);
+
     conversationsChannelRef.current = subscribeToConversations(user.id, unreadScopes, () => {
-      loadUnreadCount();
+      void loadUnreadCount();
     });
     return () => {
+      cancelled = true;
+      clearTimeout(timer);
       if (conversationsChannelRef.current) conversationsChannelRef.current.unsubscribe();
     };
   }, [user?.id, activeWorkspace]);
@@ -299,7 +305,7 @@ export default function Header() {
       />
 
       <div className="h-16 md:h-16" />
-      {searchOpen && <SearchModal onClose={() => setSearchOpen(false)} />}
+      {searchOpen && <Suspense fallback={null}><SearchModal onClose={() => setSearchOpen(false)} /></Suspense>}
     </>
   );
 }

@@ -92,6 +92,10 @@ export default defineConfig(({ command, mode }) => ({
             return 'ui-vendor';
           }
 
+          if (id.includes('@tanstack/react-virtual')) {
+            return 'virtual-vendor';
+          }
+
           if (id.includes('@sentry')) {
             return 'sentry-vendor';
           }
@@ -125,6 +129,8 @@ export default defineConfig(({ command, mode }) => ({
       'react-router-dom',
       '@supabase/supabase-js',
       'lucide-react',
+      'framer-motion',
+      '@tanstack/react-query',
     ],
   },
 

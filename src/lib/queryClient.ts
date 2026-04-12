@@ -15,10 +15,10 @@ if (import.meta.env.PROD) {
 export const queryClient = new QueryClient({
     defaultOptions: {
         queries: {
-            staleTime: 30_000,      // Data is fresh for 30s
-            gcTime: 5 * 60_000,     // Cache for 5 minutes (was cacheTime)
-            retry: 2,               // Retry failed requests twice
-            refetchOnWindowFocus: false, // Avoid broad focus refetch churn; opt in only where needed
+            staleTime: 2 * 60_000,   // Data is fresh for 2 minutes
+            gcTime: 30 * 60_000,     // Cache for 30 minutes
+            retry: 2,
+            refetchOnWindowFocus: false,
         },
         mutations: {
             retry: 1,

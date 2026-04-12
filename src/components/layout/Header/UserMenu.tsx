@@ -340,9 +340,7 @@ export function UserMenu({ isDesktopCondensed = false }: UserMenuProps) {
 
             <div className="p-1.5">
               {[
-                ...(profile?.user_type === "freelancer" || profile?.user_type === "both"
-                  ? [{ icon: ExternalLink, label: t.nav?.profile || "My Profile", path: `/freelancer/${profile?.username || user?.id}` }]
-                  : []),
+                { icon: ExternalLink, label: t.nav?.profile || "My Profile", path: "/profile" },
                 { icon: User, label: t.nav?.dashboard || "Dashboard", path: "/dashboard" },
                 { icon: Settings, label: t.nav?.settings || "Settings", path: "/settings" },
               ].map(({ icon: Icon, label, path }) => (

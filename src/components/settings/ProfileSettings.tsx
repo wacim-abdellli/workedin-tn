@@ -12,6 +12,7 @@ import { logger } from '@/lib/logger';
 import { getAvatarGradient, getInitials } from '@/lib/avatar';
 import { switchWorkspace } from '@/lib/switchWorkspace';
 import { uploadAvatar } from '@/services/profiles';
+import { isValidOptionalPhone, normalizeOptionalPhone, sanitizePhoneInput } from '@/lib/phone';
 
 export default function ProfileSettings() {
     const { dir, t, tx } = useTranslation();
@@ -58,11 +59,20 @@ export default function ProfileSettings() {
 
      const handleSave = async () => {
          if (!user?.id) return;
+
+         if (!isValidOptionalPhone(form.phone)) {
+             showToast(
+                 tx('settings.toasts.invalidPhone', undefined, 'Please enter a valid phone number (8-15 digits, optional country code).'),
+                 'error'
+             );
+             return;
+         }
+
          setIsSaving(true);
          try {
               await updateProfile({
                   full_name: form.full_name,
-                  phone: form.phone,
+                  phone: normalizeOptionalPhone(form.phone),
                     email: form.email,
                     bio: form.bio,
                   location: form.location,
@@ -217,7 +227,7 @@ export default function ProfileSettings() {
             <div className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <Input label={tx('settings.fullName', undefined, 'Full name')} value={form.full_name} onChange={e => setForm({ ...form, full_name: e.target.value })} />
-                    <Input label={tx('settings.phoneNumberLabel', undefined, 'Phone number')} value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} placeholder={tx('common.phonePlaceholder', undefined, 'Enter your phone number')} />
+                    <Input label={tx('settings.phoneNumberLabel', undefined, 'Phone number')} type="tel" inputMode="tel" autoComplete="tel" value={form.phone} onChange={e => setForm({ ...form, phone: sanitizePhoneInput(e.target.value) })} placeholder={tx('common.phonePlaceholder', undefined, 'Enter your phone number')} />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <Input label={tx('settings.emailOptionalLabel', undefined, 'Email (optional)')} type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} placeholder={tx('settings.emailPlaceholder', undefined, 'email@example.com')} />

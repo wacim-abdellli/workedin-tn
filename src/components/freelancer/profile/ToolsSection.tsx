@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Wrench, X, Check, Search, ChevronDown, ChevronUp, CheckCircle } from 'lucide-react';
 import type { Tool, ToolCategory } from '@/types';
 import { PREDEFINED_TOOLS } from '@/types';
@@ -6,8 +6,26 @@ import { useTranslation } from '../../../i18n';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 
+// Pre-calculate tools by category once at module load (performance optimization)
+const TOOLS_BY_CATEGORY: Record<ToolCategory, Tool[]> = (() => {
+    const grouped: Record<ToolCategory, Tool[]> = {
+        design: [],
+        development: [],
+        productivity: [],
+        video: [],
+        marketing: [],
+        other: [],
+    };
+    PREDEFINED_TOOLS.forEach(tool => {
+        if (tool.category) {
+            grouped[tool.category].push(tool);
+        }
+    });
+    return grouped;
+})();
+
 interface Props {
-    tools: string[];  // Array of tool names
+    tools: string[];
     language: string;
     isOwner?: boolean;
     onUpdate?: (tools: string[]) => void;
@@ -17,46 +35,29 @@ export default function ToolsSection({ tools, language, isOwner, onUpdate }: Pro
     const { tx } = useTranslation();
     const { user } = useAuth();
     const [editing, setEditing] = useState(false);
-    
-    // Convert tool names to Tool objects
+
     const toolsAsObjects = useMemo(() => {
-        return tools.map(toolName => 
-            PREDEFINED_TOOLS.find(t => t.name_en === toolName) || 
-            { id: toolName, name_en: toolName, name_ar: toolName, name_fr: toolName, category: 'other' as ToolCategory }
+        return tools.map(toolName =>
+            PREDEFINED_TOOLS.find(t => t.name_en === toolName)
+            || { id: toolName, name_en: toolName, name_ar: toolName, name_fr: toolName, category: 'other' as ToolCategory }
         );
     }, [tools]);
-    
+
     const [selectedTools, setSelectedTools] = useState<Tool[]>(toolsAsObjects);
     const [searchQuery, setSearchQuery] = useState('');
     const [expandedCategories, setExpandedCategories] = useState<Set<ToolCategory>>(new Set(['design', 'development']));
     const [saving, setSaving] = useState(false);
 
-    // Group tools by category
-    const toolsByCategory = useMemo(() => {
-        const grouped: Record<ToolCategory, typeof PREDEFINED_TOOLS> = {
-            design: [],
-            development: [],
-            productivity: [],
-            video: [],
-            marketing: [],
-            other: [],
-        };
+    // Update selectedTools when tools prop changes
+    useEffect(() => {
+        setSelectedTools(toolsAsObjects);
+    }, [toolsAsObjects]);
 
-        PREDEFINED_TOOLS.forEach(tool => {
-            if (tool.category) {
-                grouped[tool.category].push(tool);
-            }
-        });
-
-        return grouped;
-    }, []);
-
-    // Filter tools based on search
     const filteredToolsByCategory = useMemo(() => {
-        if (!searchQuery.trim()) return toolsByCategory;
+        if (!searchQuery.trim()) return TOOLS_BY_CATEGORY;
 
         const query = searchQuery.toLowerCase();
-        const filtered: Record<ToolCategory, typeof PREDEFINED_TOOLS> = {
+        const filtered: Record<ToolCategory, Tool[]> = {
             design: [],
             development: [],
             productivity: [],
@@ -65,16 +66,16 @@ export default function ToolsSection({ tools, language, isOwner, onUpdate }: Pro
             other: [],
         };
 
-        Object.entries(toolsByCategory).forEach(([category, tools]) => {
-            filtered[category as ToolCategory] = tools.filter(tool =>
-                tool.name_en.toLowerCase().includes(query) ||
-                tool.name_ar.includes(query) ||
-                tool.name_fr.toLowerCase().includes(query)
+        Object.entries(TOOLS_BY_CATEGORY).forEach(([category, categoryTools]) => {
+            filtered[category as ToolCategory] = categoryTools.filter(tool =>
+                tool.name_en.toLowerCase().includes(query)
+                || tool.name_ar.includes(query)
+                || tool.name_fr.toLowerCase().includes(query)
             );
         });
 
         return filtered;
-    }, [toolsByCategory, searchQuery]);
+    }, [searchQuery]);
 
     const toggleCategory = (category: ToolCategory) => {
         setExpandedCategories(prev => {
@@ -106,7 +107,7 @@ export default function ToolsSection({ tools, language, isOwner, onUpdate }: Pro
     const toggleTool = (tool: Tool) => {
         if (selectedTools.find((t) => t.id === tool.id)) {
             setSelectedTools(selectedTools.filter((t) => t.id !== tool.id));
-        } else if (selectedTools.length < 15) {  // Max 15 tools
+        } else if (selectedTools.length < 15) {
             setSelectedTools([...selectedTools, tool]);
         }
     };
@@ -114,10 +115,10 @@ export default function ToolsSection({ tools, language, isOwner, onUpdate }: Pro
     const save = async () => {
         if (!user?.id) return;
         setSaving(true);
-        
+
         const toolNames = selectedTools.map(tool => tool.name_en);
-        
         await supabase.from('freelancer_profiles').update({ tools: toolNames }).eq('id', user.id);
+
         setSaving(false);
         setEditing(false);
         onUpdate?.(toolNames);
@@ -203,9 +204,9 @@ export default function ToolsSection({ tools, language, isOwner, onUpdate }: Pro
 
                     {/* Tools by Category */}
                     <div className="space-y-2 max-h-[400px] overflow-y-auto">
-                        {(Object.entries(filteredToolsByCategory) as [ToolCategory, typeof PREDEFINED_TOOLS][]).map(([category, categoryTools]) => {
+                        {(Object.entries(filteredToolsByCategory) as [ToolCategory, Tool[]][]).map(([category, categoryTools]) => {
                             if (categoryTools.length === 0) return null;
-                            
+
                             const isExpanded = expandedCategories.has(category);
                             const primaryTools = categoryTools.filter(t => t.isPrimary);
                             const secondaryTools = categoryTools.filter(t => !t.isPrimary);
@@ -239,7 +240,7 @@ export default function ToolsSection({ tools, language, isOwner, onUpdate }: Pro
                                             )}
                                         </div>
                                     </button>
-                                    
+
                                     {displayCategoryTools.length > 0 && (
                                         <div className="p-2 grid grid-cols-2 sm:grid-cols-3 gap-1.5">
                                             {displayCategoryTools.map((tool) => {
@@ -265,7 +266,7 @@ export default function ToolsSection({ tools, language, isOwner, onUpdate }: Pro
                                             })}
                                         </div>
                                     )}
-                                    
+
                                     {!isExpanded && secondaryTools.length > 0 && (
                                         <button
                                             type="button"

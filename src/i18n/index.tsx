@@ -12,13 +12,9 @@ const applyDocumentLanguage = (lang: Language) => {
     const dir = lang === 'ar' ? 'rtl' : 'ltr';
     document.documentElement.setAttribute('lang', lang);
     document.documentElement.setAttribute('dir', dir);
-
-    if (document.body) {
-        document.body.setAttribute('dir', dir);
-    }
+    if (document.body) document.body.setAttribute('dir', dir);
 };
 
-// Immediately set HTML attributes to prevent flash of wrong direction
 const savedLang = (localStorage.getItem('i18n-language') || localStorage.getItem('language') || navigator.language.split('-')[0] || 'ar') as Language;
 const validLang = ['ar', 'fr', 'en'].includes(savedLang) ? savedLang : 'ar';
 applyDocumentLanguage(validLang);
@@ -63,8 +59,6 @@ export function I18nProvider({ children, defaultLanguage = 'ar' }: I18nProviderP
     const [language, setLanguageState] = useState<Language>(() => {
         const saved = (localStorage.getItem('i18n-language') || localStorage.getItem('language')) as Language;
         if (saved && ['ar', 'fr', 'en'].includes(saved)) return saved;
-
-        // Default to the app's preferred language unless the user explicitly chose otherwise.
         return defaultLanguage;
     });
 
@@ -75,7 +69,6 @@ export function I18nProvider({ children, defaultLanguage = 'ar' }: I18nProviderP
         applyDocumentLanguage(lang);
     }, []);
 
-    // Set initial direction
     React.useEffect(() => {
         applyDocumentLanguage(language);
     }, [language]);

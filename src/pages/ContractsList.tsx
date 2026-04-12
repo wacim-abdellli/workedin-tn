@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { ClipboardList } from "lucide-react";
@@ -22,6 +22,15 @@ type ContractRow = {
   milestones?: Array<{ id: string; status: string }> | null;
 };
 
+// sessionStorage cache helpers
+const CACHE_KEY = (userId: string, isFreelancer: boolean) => `contracts_${userId}_${isFreelancer ? 'fl' : 'cl'}`;
+const readCache = (key: string): ContractRow[] | null => {
+  try { const r = sessionStorage.getItem(key); return r ? JSON.parse(r) : null; } catch { return null; }
+};
+const writeCache = (key: string, data: ContractRow[]) => {
+  try { sessionStorage.setItem(key, JSON.stringify(data)); } catch { /* ignore */ }
+};
+
 export default function ContractsList() {
   const { user } = useAuth();
   const { language, tx } = useTranslation();
@@ -30,36 +39,42 @@ export default function ContractsList() {
   const [activeTab, setActiveTab] = useState<ContractTab>("all");
 
   const isFreelancer = activeWorkspace === "freelancer";
+  const cacheKey = user?.id ? CACHE_KEY(user.id, isFreelancer) : null;
 
-  const { data: contracts, isLoading } = useQuery({
-    queryKey: ["contracts", user?.id, activeTab, isFreelancer],
+  // Fetch ALL contracts once — filter client-side per tab (no re-fetch on tab switch)
+  const { data: allContracts, isLoading } = useQuery({
+    queryKey: ["contracts", user?.id, isFreelancer],
     queryFn: async () => {
       let query = supabase.from("contracts").select(
-        `
-            *,
-            jobs(title),
-            freelancer:freelancer_id(full_name, avatar_url),
-            client:client_id(full_name, avatar_url),
-            milestones(id, status)
-          `,
+        `*,
+         jobs(title),
+         freelancer:freelancer_id(full_name, avatar_url),
+         client:client_id(full_name, avatar_url),
+         milestones(id, status)`,
       );
 
       query = isFreelancer
         ? query.eq("freelancer_id", user?.id)
         : query.eq("client_id", user?.id);
 
-      if (activeTab !== "all") {
-        query = query.eq("status", activeTab);
-      }
-
-      const { data, error } = await query.order("created_at", {
-        ascending: false,
-      });
+      const { data, error } = await query.order("created_at", { ascending: false });
       if (error && error.code !== "PGRST116") throw error;
-      return (data || []) as ContractRow[];
+      const result = (data || []) as ContractRow[];
+      if (cacheKey) writeCache(cacheKey, result);
+      return result;
     },
     enabled: !!user?.id,
+    // Seed from sessionStorage so first render is instant
+    initialData: () => (cacheKey ? readCache(cacheKey) ?? undefined : undefined),
+    staleTime: 60_000,
   });
+
+  // Filter client-side — zero network cost on tab switch
+  const contracts = useMemo(() => {
+    if (!allContracts) return [];
+    if (activeTab === "all") return allContracts;
+    return allContracts.filter((c) => c.status === activeTab);
+  }, [allContracts, activeTab]);
 
   const formatDate = (dateStr: string) =>
     new Date(dateStr).toLocaleDateString(
@@ -129,9 +144,27 @@ export default function ContractsList() {
           ))}
         </div>
 
-        {isLoading ? (
-          <div className="flex justify-center py-12">
-            <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-[var(--workspace-primary)]" />
+        {isLoading && !allContracts ? (
+          <div className="space-y-3">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="rounded-2xl border border-[var(--color-border-default)] bg-[var(--color-background-base)] p-5 animate-pulse">
+                <div className="mb-3 flex justify-between">
+                  <div className="space-y-2">
+                    <div className="h-5 w-48 rounded-lg bg-[var(--color-background-subtle)]" />
+                    <div className="h-4 w-20 rounded-full bg-[var(--color-background-subtle)]" />
+                  </div>
+                  <div className="space-y-2 text-right">
+                    <div className="h-5 w-24 rounded-lg bg-[var(--color-background-subtle)]" />
+                    <div className="h-4 w-32 rounded-lg bg-[var(--color-background-subtle)]" />
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="h-5 w-5 rounded-full bg-[var(--color-background-subtle)]" />
+                  <div className="h-4 w-32 rounded-lg bg-[var(--color-background-subtle)]" />
+                </div>
+                <div className="h-1.5 w-full rounded-full bg-[var(--color-background-subtle)]" />
+              </div>
+            ))}
           </div>
         ) : !contracts || contracts.length === 0 ? (
           <EmptyState

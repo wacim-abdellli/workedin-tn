@@ -107,8 +107,8 @@ interface AuthProviderProps {
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const queryClient = useQueryClient();
-  const MAX_LOADING_TIME = 4000;
-  const PROFILE_RETRY_COOLDOWN = 30000;
+  const MAX_LOADING_TIME = 12000;
+  const PROFILE_RETRY_COOLDOWN = 5000;
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -164,11 +164,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       if (!nextProfile) {
         store.setSwitching(false);
-        // Only reset to client default if the workspace was never explicitly set
-        // for a loaded user. This prevents flashing 'client' during sign-out transitions.
-        if (!loadedUserIdRef.current) {
-          store.setWorkspace('client');
-        }
+        // Do NOT reset workspace on null profile — avoids flash during HMR/sign-out transitions
         return;
       }
 

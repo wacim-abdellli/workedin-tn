@@ -36,78 +36,54 @@ export default function JobProposals() {
     const { user } = useAuth();
     const { t } = useTranslation();
 
+    // sessionStorage cache helpers
+    const cacheKey = jobId ? `jp_cache_${jobId}` : null;
+    const readCache = () => {
+        if (!cacheKey) return null;
+        try { const r = sessionStorage.getItem(cacheKey); return r ? JSON.parse(r) : null; } catch { return null; }
+    };
+    const writeCache = (job: JobData, proposals: Proposal[]) => {
+        if (!cacheKey) return;
+        try { sessionStorage.setItem(cacheKey, JSON.stringify({ job, proposals, ts: Date.now() })); } catch { /* ignore */ }
+    };
+
+    const cached = readCache();
+
     const [activeTab, setActiveTab] = useState('all');
     const [selectedProposal, setSelectedProposal] = useState<Proposal | null>(null);
-    const [proposals, setProposals] = useState<Proposal[]>([]);
-    const [filteredProposals, setFilteredProposals] = useState<Proposal[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [shortlistedIds, setShortlistedIds] = useState<string[]>([]);
-    const [job, setJob] = useState<JobData | null>(null);
+    const [proposals, setProposals] = useState<Proposal[]>(cached?.proposals ?? []);
+    const [filteredProposals, setFilteredProposals] = useState<Proposal[]>(cached?.proposals ?? []);
+    const [loading, setLoading] = useState(!cached);
+    const [shortlistedIds, setShortlistedIds] = useState<string[]>(
+        (cached?.proposals ?? []).filter((p: Proposal) => p.status === 'shortlisted').map((p: Proposal) => p.id)
+    );
+    const [job, setJob] = useState<JobData | null>(cached?.job ?? null);
     const [filters, setFilters] = useState<ProposalFilters>({});
 
-    // Fetch job data
+    // Fetch job + proposals in parallel, skip loader if cache hit
     useEffect(() => {
-        const fetchJob = async () => {
-            if (!jobId) return;
+        if (!jobId) return;
+        const hasCached = !!cached;
+        if (!hasCached) setLoading(true);
 
+        const fetchAll = async () => {
             try {
-                const { data, error } = await withTimeout(
-                    supabase
-                        .from('jobs')
-                        .select('*')
-                        .eq('id', jobId)
-                        .single(),
-                    15000
-                );
-
-                if (error) throw error;
-                setJob(data);
-            } catch (error) {
-                logger.error('Failed to fetch job', error);
-                showToast(t.jobProposals.loadJobError, 'error');
-            }
-        };
-
-        fetchJob();
-    }, [jobId, showToast]);
-
-    // Fetch proposals from database
-    useEffect(() => {
-        const fetchProposals = async () => {
-            if (!jobId) return;
-
-            try {
-                setLoading(true);
-                const { data, error } = await withTimeout(
-                    supabase
-                        .from('proposals')
-                        .select(`
+                const [jobRes, proposalsRes] = await Promise.all([
+                    withTimeout(supabase.from('jobs').select('*').eq('id', jobId).single(), 10000),
+                    withTimeout(
+                        supabase.from('proposals').select(`
                             *,
-                            freelancer:public_profiles!freelancer_id(
-                                id,
-                                full_name,
-                                avatar_url,
-                                location
-                            ),
-                            freelancer_profile:freelancer_profiles!freelancer_id(
-                                title,
-                                hourly_rate,
-                                skills,
-                                average_rating,
-                                total_reviews,
-                                completed_jobs,
-                                success_rate
-                            )
-                        `)
-                        .eq('job_id', jobId)
-                        .order('created_at', { ascending: false }),
-                    15000
-                );
+                            freelancer:public_profiles!freelancer_id(id, full_name, avatar_url, location),
+                            freelancer_profile:freelancer_profiles!freelancer_id(title, hourly_rate, skills, average_rating, total_reviews, completed_jobs, success_rate)
+                        `).eq('job_id', jobId).order('created_at', { ascending: false }),
+                        10000
+                    ),
+                ]);
 
-                if (error) throw error;
+                if (jobRes.error) throw jobRes.error;
+                setJob(jobRes.data);
 
-                // Transform data to match Proposal type
-                const transformedProposals: Proposal[] = (data || []).map((p: Record<string, unknown>) => ({
+                const transformedProposals: Proposal[] = (proposalsRes.data || []).map((p: Record<string, unknown>) => ({
                     id: p.id as string,
                     job_id: p.job_id as string,
                     freelancer_id: p.freelancer_id as string,
@@ -136,23 +112,18 @@ export default function JobProposals() {
 
                 setProposals(transformedProposals);
                 setFilteredProposals(transformedProposals);
-
-                // Extract shortlisted IDs
-                const shortlisted = transformedProposals
-                    .filter((p) => p.status === 'shortlisted')
-                    .map((p) => p.id);
-                setShortlistedIds(shortlisted);
-
+                setShortlistedIds(transformedProposals.filter(p => p.status === 'shortlisted').map(p => p.id));
+                writeCache(jobRes.data, transformedProposals);
             } catch (error) {
                 logger.error('Failed to fetch proposals', error);
-                showToast(t.jobProposals.loadProposalsError, 'error');
+                if (!hasCached) showToast(t.jobProposals.loadProposalsError, 'error');
             } finally {
                 setLoading(false);
             }
         };
 
-        fetchProposals();
-    }, [jobId, showToast]);
+        void fetchAll();
+    }, [jobId]);
 
     // Message freelancer handler
     const handleMessage = useCallback(async (proposalId: string) => {

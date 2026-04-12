@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import SEO, { SEO_CONFIG } from "@/components/common/SEO";
 import {
@@ -12,14 +13,20 @@ import {
   UserX,
   Users,
   FileText,
+  Edit2,
+  Save,
+  X,
 } from "lucide-react";
 import { Header } from "@/components/layout";
 import { supabase } from "@/lib/supabase";
-import { useQuery } from "@tanstack/react-query";
+import { supabaseWithRetry } from "@/lib/supabaseWithRetry";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "@/i18n";
 import { useAuth } from "@/contexts/AuthContext";
+import { logger } from "@/lib/logger";
 import Button from "@/components/ui/Button";
 import { localizeGovernorate } from "@/lib/governorates";
+import { useToast } from "@/components/ui/Toast";
 
 import OptimizedImage from "@/components/common/OptimizedImage";
 import { Skeleton } from "@/components/common/SkeletonCard";
@@ -32,6 +39,17 @@ interface ClientProfileData {
   avatar_url: string | null;
   location: string | null;
   bio: string | null;
+  company_name: string | null;
+  company_industry: string | null;
+  company_size: string | null;
+  company_role: string | null;
+  company_website: string | null;
+  hiring_needs: string[] | null;
+  project_budget_preference: string | null;
+  project_timeline_preference: string | null;
+  communication_preferences: Record<string, unknown> | null;
+  screening_preferences: Record<string, unknown> | null;
+  legal_preferences: Record<string, unknown> | null;
   created_at: string;
   cin_verified: boolean | null;
 }
@@ -75,6 +93,88 @@ function formatDate(dateStr: string): string {
 
 function formatCurrency(amount: number): string {
   return amount.toLocaleString("en-TN") + " TND";
+}
+
+function toRecord(value: unknown): Record<string, unknown> {
+  if (value && typeof value === "object" && !Array.isArray(value)) {
+    return value as Record<string, unknown>;
+  }
+
+  return {};
+}
+
+function getClientIntro(profile: ClientProfileData | null | undefined): string {
+  if (!profile) {
+    return "";
+  }
+
+  const communication = toRecord(profile.communication_preferences);
+  const intro = communication.profile_intro;
+
+  if (typeof intro === "string" && intro.trim().length > 0) {
+    return intro.trim();
+  }
+
+  return profile.bio?.trim() || "";
+}
+
+function getSummary(value: unknown): string {
+  const record = toRecord(value);
+  const summary = record.summary;
+  return typeof summary === "string" ? summary.trim() : "";
+}
+
+function normalizeClientProfileData(data: Record<string, unknown>): ClientProfileData {
+  const hiringNeeds = Array.isArray(data.hiring_needs)
+    ? (data.hiring_needs as string[])
+    : null;
+
+  return {
+    id: typeof data.id === "string" ? data.id : "",
+    full_name: typeof data.full_name === "string" ? data.full_name : "",
+    avatar_url: typeof data.avatar_url === "string" ? data.avatar_url : null,
+    location: typeof data.location === "string" ? data.location : null,
+    bio: typeof data.bio === "string" ? data.bio : null,
+    company_name: typeof data.company_name === "string" ? data.company_name : null,
+    company_industry:
+      typeof data.company_industry === "string" ? data.company_industry : null,
+    company_size: typeof data.company_size === "string" ? data.company_size : null,
+    company_role: typeof data.company_role === "string" ? data.company_role : null,
+    company_website: typeof data.company_website === "string" ? data.company_website : null,
+    hiring_needs: hiringNeeds,
+    project_budget_preference:
+      typeof data.project_budget_preference === "string"
+        ? data.project_budget_preference
+        : null,
+    project_timeline_preference:
+      typeof data.project_timeline_preference === "string"
+        ? data.project_timeline_preference
+        : null,
+    communication_preferences:
+      data.communication_preferences &&
+      typeof data.communication_preferences === "object" &&
+      !Array.isArray(data.communication_preferences)
+        ? (data.communication_preferences as Record<string, unknown>)
+        : null,
+    screening_preferences:
+      data.screening_preferences &&
+      typeof data.screening_preferences === "object" &&
+      !Array.isArray(data.screening_preferences)
+        ? (data.screening_preferences as Record<string, unknown>)
+        : null,
+    legal_preferences:
+      data.legal_preferences &&
+      typeof data.legal_preferences === "object" &&
+      !Array.isArray(data.legal_preferences)
+        ? (data.legal_preferences as Record<string, unknown>)
+        : null,
+    created_at:
+      typeof data.created_at === "string"
+        ? data.created_at
+        : new Date().toISOString(),
+    cin_verified:
+      typeof data.cin_verified === "boolean" ? data.cin_verified : null,
+  };
 }
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
@@ -165,25 +265,46 @@ function ProfileSkeleton() {
 
 export default function ClientProfile() {
   const { clientId } = useParams<{ clientId: string }>();
-  const { user } = useAuth();
+  const { user, updateProfile, profile } = useAuth();
   const { tx, language } = useTranslation() as any;
   const navigate = useNavigate();
+  const { showToast } = useToast();
+  const queryClient = useQueryClient();
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [bioDraft, setBioDraft] = useState("");
+  const [locationDraft, setLocationDraft] = useState("");
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
 
   // ── Fetch client profile ────────────────────────────────────────────────
-  const { data: client, isLoading } = useQuery<ClientProfileData>({
-    queryKey: ["client-profile", clientId],
+  const {
+    data: client,
+    isLoading,
+    isError,
+    error: clientError,
+    refetch: refetchClient,
+  } = useQuery<ClientProfileData | null>({
+    queryKey: ["client-profile", clientId, user?.id ?? null],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("public_profiles")
-        .select(
-          "id, full_name, avatar_url, location, bio, created_at, cin_verified",
-        )
-        .eq("id", clientId!)
-        .single();
-      if (error) throw error;
-      return data as ClientProfileData;
+      const isOwnRoute = Boolean(user?.id && clientId && user.id === clientId);
+
+      const { data } = await supabaseWithRetry(
+        () =>
+          supabase
+            .from(isOwnRoute ? "profiles" : "public_profiles")
+            .select("*")
+            .eq("id", clientId!)
+            .maybeSingle(),
+        { timeoutMs: 15000 },
+      );
+
+      if (!data) {
+        return null;
+      }
+
+      return normalizeClientProfileData(data as Record<string, unknown>);
     },
     enabled: !!clientId,
+    retry: 1,
   });
 
   // ── Fetch client stats ──────────────────────────────────────────────────
@@ -245,6 +366,96 @@ export default function ClientProfile() {
     enabled: !!clientId,
   });
 
+  const isOwnProfile = Boolean(user?.id && client?.id && user.id === client.id);
+
+  useEffect(() => {
+    if (isLoading || isError || client) {
+      return;
+    }
+
+    const isOwnRoute = Boolean(user?.id && clientId && user.id === clientId);
+    if (!isOwnRoute) {
+      return;
+    }
+
+    if (profile?.user_type === "freelancer" || profile?.user_type === "both") {
+      navigate(`/freelancer/${profile?.username || user?.id}`, { replace: true });
+      return;
+    }
+
+    navigate("/settings?tab=account", { replace: true });
+  }, [
+    client,
+    clientId,
+    isError,
+    isLoading,
+    navigate,
+    profile?.user_type,
+    profile?.username,
+    user?.id,
+  ]);
+
+  useEffect(() => {
+    if (!client) {
+      return;
+    }
+
+    setBioDraft(getClientIntro(client));
+    setLocationDraft(client.location ?? "");
+    setIsEditingProfile(false);
+  }, [client]);
+
+  const saveOwnProfile = async () => {
+    if (!isOwnProfile || !user?.id) {
+      return;
+    }
+
+    const nextBio = bioDraft.trim();
+    const nextLocation = locationDraft.trim();
+    const currentCommunicationPreferences = {
+      ...toRecord(profile?.communication_preferences),
+      ...toRecord(client?.communication_preferences),
+    };
+    const nextCommunicationPreferences: Record<string, unknown> = {
+      ...currentCommunicationPreferences,
+    };
+
+    if (nextBio) {
+      nextCommunicationPreferences.profile_intro = nextBio;
+    } else {
+      delete nextCommunicationPreferences.profile_intro;
+    }
+
+    setIsSavingProfile(true);
+
+    try {
+      await updateProfile({
+        location: nextLocation || undefined,
+        communication_preferences: nextCommunicationPreferences,
+      });
+
+      queryClient.setQueryData<ClientProfileData>(["client-profile", clientId, user?.id ?? null], (prev) => {
+        if (!prev) {
+          return prev;
+        }
+
+        return {
+          ...prev,
+          location: nextLocation || null,
+          communication_preferences: nextCommunicationPreferences,
+        };
+      });
+
+      setIsEditingProfile(false);
+      showToast("Client profile updated", "success");
+    } catch (error) {
+      logger.error("Failed to update client profile", error);
+      showToast("Failed to update client profile", "error");
+    } finally {
+      setIsSavingProfile(false);
+    }
+  };
+
   // ── Loading ─────────────────────────────────────────────────────────────
   if (isLoading) {
     return (
@@ -256,6 +467,51 @@ export default function ClientProfile() {
         >
           <Header />
           <ProfileSkeleton />
+        </div>
+      </>
+    );
+  }
+
+  // ── Error ───────────────────────────────────────────────────────────────
+  if (isError) {
+    const errorMessage =
+      clientError instanceof Error
+        ? clientError.message
+        : tx("common.genericError", undefined, "Something went wrong");
+
+    return (
+      <>
+        <SEO {...SEO_CONFIG.dashboard} noIndex />
+        <div
+          className="min-h-screen"
+          style={{ background: "var(--color-background-base, #f9fafb)" }}
+        >
+          <Header />
+          <div className="max-w-3xl mx-auto px-4 py-20 flex flex-col items-center gap-4 text-center">
+            <UserX
+              className="w-16 h-16"
+              style={{ color: "var(--color-text-secondary)" }}
+            />
+            <h2
+              className="text-xl font-semibold"
+              style={{ color: "var(--color-text-primary)" }}
+            >
+              {tx("common.loadFailed", undefined, "Failed to load profile")}
+            </h2>
+            <p
+              className="text-sm max-w-xl"
+              style={{ color: "var(--color-text-secondary)" }}
+            >
+              {errorMessage}
+            </p>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => void refetchClient()}
+            >
+              {tx("common.retry", undefined, "Retry")}
+            </Button>
+          </div>
         </div>
       </>
     );
@@ -306,8 +562,73 @@ export default function ClientProfile() {
     );
   }
 
-  const isOwnProfile = user?.id === client.id;
   const canContact = !!user && !isOwnProfile;
+  const clientIntro = getClientIntro(client);
+  const communicationSummary = getSummary(client.communication_preferences);
+  const screeningSummary = getSummary(client.screening_preferences);
+  const legalSummary = getSummary(client.legal_preferences);
+  const statsContent = stats ? (
+    <div className="grid grid-cols-2 gap-3">
+      <StatCard
+        icon={Briefcase}
+        label={tx(
+          "clientProfile.stats.jobsPosted",
+          undefined,
+          "Jobs Posted",
+        )}
+        value={stats.totalJobs.toString()}
+      />
+      <StatCard
+        icon={FileText}
+        label={tx(
+          "clientProfile.stats.completedContracts",
+          undefined,
+          "Completed",
+        )}
+        value={stats.completedContracts.toString()}
+      />
+      <StatCard
+        icon={DollarSign}
+        label={tx(
+          "clientProfile.stats.totalSpent",
+          undefined,
+          "Total Spent",
+        )}
+        value={
+          stats.totalSpent > 0 ? formatCurrency(stats.totalSpent) : "—"
+        }
+      />
+      <StatCard
+        icon={Star}
+        label={tx(
+          "clientProfile.stats.avgRating",
+          undefined,
+          "Avg Rating",
+        )}
+        value={
+          stats.reviewCount > 0 ? (
+            <span className="flex items-center justify-center gap-1">
+              <Star
+                className="w-4 h-4"
+                style={{
+                  color: "var(--color-status-warning)",
+                  fill: "var(--color-status-warning)",
+                }}
+              />
+              {stats.avgRating.toFixed(1)}
+            </span>
+          ) : (
+            <span
+              className="text-sm font-normal"
+              style={{ color: "var(--color-text-secondary)" }}
+            >
+              {tx("clientProfile.noReviews", undefined, "No reviews")}
+            </span>
+          )
+        }
+      />
+    </div>
+  ) : null;
 
   // ── Main render ─────────────────────────────────────────────────────────
   return (
@@ -319,7 +640,7 @@ export default function ClientProfile() {
       >
         <Header />
 
-        <main className="max-w-3xl mx-auto px-4 py-8 pb-20 space-y-5">
+        <main className="max-w-6xl mx-auto px-4 py-8 pb-20 space-y-5">
           {/* Back button */}
           <button
             type="button"
@@ -330,6 +651,9 @@ export default function ClientProfile() {
             <ArrowLeft className="w-4 h-4" />
             {tx("common.back", undefined, "Back")}
           </button>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 items-start">
+            <div className="lg:col-span-2 space-y-5">
 
           {/* ── Profile header card ──────────────────────────────── */}
           <div
@@ -367,6 +691,68 @@ export default function ClientProfile() {
                   {client.full_name}
                 </h1>
 
+                {isOwnProfile ? (
+                  <div className="flex flex-wrap items-center gap-2">
+                    {!isEditingProfile ? (
+                      <button
+                        type="button"
+                        onClick={() => setIsEditingProfile(true)}
+                        className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full border transition-colors"
+                        style={{
+                          color: "var(--workspace-primary)",
+                          borderColor:
+                            "color-mix(in srgb, var(--workspace-primary) 38%, var(--color-border-subtle))",
+                          background:
+                            "color-mix(in srgb, var(--workspace-primary) 10%, transparent)",
+                        }}
+                      >
+                        <Edit2 className="w-3.5 h-3.5" />
+                        {tx("clientProfile.editProfile", undefined, "Edit Profile")}
+                      </button>
+                    ) : (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setBioDraft(clientIntro);
+                            setLocationDraft(client.location ?? "");
+                            setIsEditingProfile(false);
+                          }}
+                          className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full border transition-colors"
+                          style={{
+                            color: "var(--color-text-secondary)",
+                            borderColor: "var(--color-border-subtle)",
+                            background: "transparent",
+                          }}
+                          disabled={isSavingProfile}
+                        >
+                          <X className="w-3.5 h-3.5" />
+                          {tx("common.cancel", undefined, "Cancel")}
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => void saveOwnProfile()}
+                          className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full border transition-colors"
+                          style={{
+                            color: "var(--workspace-primary)",
+                            borderColor:
+                              "color-mix(in srgb, var(--workspace-primary) 45%, var(--color-border-subtle))",
+                            background:
+                              "color-mix(in srgb, var(--workspace-primary) 12%, transparent)",
+                          }}
+                          disabled={isSavingProfile}
+                        >
+                          <Save className="w-3.5 h-3.5" />
+                          {isSavingProfile
+                            ? tx("common.saving", undefined, "Saving...")
+                            : tx("common.save", undefined, "Save")}
+                        </button>
+                      </>
+                    )}
+                  </div>
+                ) : null}
+
                 {/* Verified badge */}
                 {client.cin_verified && (
                   <span
@@ -387,7 +773,27 @@ export default function ClientProfile() {
                 )}
 
                 {/* Location */}
-                {client.location && (
+                {isEditingProfile ? (
+                  <div className="space-y-1">
+                    <label
+                      className="text-xs font-medium"
+                      style={{ color: "var(--color-text-secondary)" }}
+                    >
+                      {tx("clientProfile.location", undefined, "Location")}
+                    </label>
+                    <input
+                      value={locationDraft}
+                      onChange={(event) => setLocationDraft(event.target.value)}
+                      placeholder={tx("clientProfile.locationPlaceholder", undefined, "City or governorate")}
+                      className="w-full rounded-lg border px-3 py-2 text-sm outline-none"
+                      style={{
+                        borderColor: "var(--color-border-subtle)",
+                        background: "var(--color-background-base)",
+                        color: "var(--color-text-primary)",
+                      }}
+                    />
+                  </div>
+                ) : client.location ? (
                   <div
                     className="flex items-center gap-1.5 text-sm"
                     style={{ color: "var(--color-text-secondary)" }}
@@ -395,7 +801,7 @@ export default function ClientProfile() {
                     <MapPin className="w-4 h-4 flex-shrink-0" />
                     <span>{localizeGovernorate(client.location, language)}</span>
                   </div>
-                )}
+                ) : null}
 
                 {/* Member since */}
                 <div
@@ -412,79 +818,152 @@ export default function ClientProfile() {
             </div>
 
             {/* Bio */}
-            {client.bio && (
+            {isEditingProfile ? (
+              <div className="space-y-1">
+                <label
+                  className="text-xs font-medium"
+                  style={{ color: "var(--color-text-secondary)" }}
+                >
+                  {tx("clientProfile.about", undefined, "About")}
+                </label>
+                <textarea
+                  value={bioDraft}
+                  onChange={(event) => setBioDraft(event.target.value)}
+                  rows={4}
+                  placeholder={tx("clientProfile.bioPlaceholder", undefined, "Tell freelancers about your company or hiring needs")}
+                  className="w-full rounded-lg border px-3 py-2 text-sm outline-none resize-y"
+                  style={{
+                    borderColor: "var(--color-border-subtle)",
+                    background: "var(--color-background-base)",
+                    color: "var(--color-text-primary)",
+                  }}
+                />
+              </div>
+            ) : clientIntro ? (
               <p
                 className="text-sm leading-relaxed"
                 style={{ color: "var(--color-text-primary)" }}
               >
-                {client.bio}
+                {clientIntro}
               </p>
-            )}
+            ) : null}
           </div>
 
-          {/* ── Stats row ────────────────────────────────────────── */}
-          {stats && (
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <StatCard
-                icon={Briefcase}
-                label={tx(
-                  "clientProfile.stats.jobsPosted",
-                  undefined,
-                  "Jobs Posted",
-                )}
-                value={stats.totalJobs.toString()}
-              />
-              <StatCard
-                icon={FileText}
-                label={tx(
-                  "clientProfile.stats.completedContracts",
-                  undefined,
-                  "Completed",
-                )}
-                value={stats.completedContracts.toString()}
-              />
-              <StatCard
-                icon={DollarSign}
-                label={tx(
-                  "clientProfile.stats.totalSpent",
-                  undefined,
-                  "Total Spent",
-                )}
-                value={
-                  stats.totalSpent > 0 ? formatCurrency(stats.totalSpent) : "—"
-                }
-              />
-              <StatCard
-                icon={Star}
-                label={tx(
-                  "clientProfile.stats.avgRating",
-                  undefined,
-                  "Avg Rating",
-                )}
-                value={
-                  stats.reviewCount > 0 ? (
-                    <span className="flex items-center justify-center gap-1">
-                      <Star
-                        className="w-4 h-4"
-                        style={{
-                          color: "var(--color-status-warning)",
-                          fill: "var(--color-status-warning)",
-                        }}
-                      />
-                      {stats.avgRating.toFixed(1)}
-                    </span>
-                  ) : (
+          {(client.company_name || client.company_industry || client.company_size || client.company_role || (Array.isArray(client.hiring_needs) && client.hiring_needs.length > 0)) ? (
+            <div
+              className="rounded-2xl border p-5"
+              style={{
+                background: "var(--color-background-elevated)",
+                borderColor: "var(--color-border-subtle)",
+              }}
+            >
+              <h2
+                className="text-sm font-semibold mb-3"
+                style={{ color: "var(--color-text-primary)" }}
+              >
+                {tx("clientProfile.companyInfo", undefined, "Company Information")}
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+                {client.company_name ? (
+                  <p style={{ color: "var(--color-text-secondary)" }}>
+                    <span style={{ color: "var(--color-text-primary)" }}>{tx("profile.companyName", undefined, "Company name")}: </span>
+                    {client.company_name}
+                  </p>
+                ) : null}
+                {client.company_industry ? (
+                  <p style={{ color: "var(--color-text-secondary)" }}>
+                    <span style={{ color: "var(--color-text-primary)" }}>{tx("profile.companyIndustry", undefined, "Industry")}: </span>
+                    {client.company_industry}
+                  </p>
+                ) : null}
+                {client.company_size ? (
+                  <p style={{ color: "var(--color-text-secondary)" }}>
+                    <span style={{ color: "var(--color-text-primary)" }}>{tx("profile.companySize", undefined, "Company size")}: </span>
+                    {client.company_size}
+                  </p>
+                ) : null}
+                {client.company_role ? (
+                  <p style={{ color: "var(--color-text-secondary)" }}>
+                    <span style={{ color: "var(--color-text-primary)" }}>{tx("profile.companyRole", undefined, "Role")}: </span>
+                    {client.company_role}
+                  </p>
+                ) : null}
+                {client.company_website ? (
+                  <p style={{ color: "var(--color-text-secondary)" }}>
+                    <span style={{ color: "var(--color-text-primary)" }}>{tx("profile.companyWebsite", undefined, "Website")}: </span>
+                    {client.company_website}
+                  </p>
+                ) : null}
+              </div>
+              {Array.isArray(client.hiring_needs) && client.hiring_needs.length > 0 ? (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {client.hiring_needs.map((need) => (
                     <span
-                      className="text-sm font-normal"
-                      style={{ color: "var(--color-text-secondary)" }}
+                      key={need}
+                      className="text-xs font-medium px-2 py-0.5 rounded-full"
+                      style={{
+                        background:
+                          "color-mix(in srgb, var(--workspace-primary) 12%, transparent)",
+                        color: "var(--workspace-primary)",
+                      }}
                     >
-                      {tx("clientProfile.noReviews", undefined, "No reviews")}
+                      {need}
                     </span>
-                  )
-                }
-              />
+                  ))}
+                </div>
+              ) : null}
             </div>
-          )}
+          ) : null}
+
+          {(client.project_budget_preference || client.project_timeline_preference || communicationSummary || screeningSummary || legalSummary) ? (
+            <div
+              className="rounded-2xl border p-5"
+              style={{
+                background: "var(--color-background-elevated)",
+                borderColor: "var(--color-border-subtle)",
+              }}
+            >
+              <h2
+                className="text-sm font-semibold mb-3"
+                style={{ color: "var(--color-text-primary)" }}
+              >
+                {tx("clientProfile.hiringPreferences", undefined, "Hiring Preferences")}
+              </h2>
+
+              <div className="space-y-2 text-sm">
+                {client.project_budget_preference ? (
+                  <p style={{ color: "var(--color-text-secondary)" }}>
+                    <span style={{ color: "var(--color-text-primary)" }}>{tx("profile.budgetPreference", undefined, "Budget")}: </span>
+                    {client.project_budget_preference}
+                  </p>
+                ) : null}
+                {client.project_timeline_preference ? (
+                  <p style={{ color: "var(--color-text-secondary)" }}>
+                    <span style={{ color: "var(--color-text-primary)" }}>{tx("profile.timelinePreference", undefined, "Timeline")}: </span>
+                    {client.project_timeline_preference}
+                  </p>
+                ) : null}
+                {communicationSummary ? (
+                  <p style={{ color: "var(--color-text-secondary)" }}>
+                    <span style={{ color: "var(--color-text-primary)" }}>{tx("profile.communicationPreferences", undefined, "Communication")}: </span>
+                    {communicationSummary}
+                  </p>
+                ) : null}
+                {screeningSummary ? (
+                  <p style={{ color: "var(--color-text-secondary)" }}>
+                    <span style={{ color: "var(--color-text-primary)" }}>{tx("profile.screeningPreferences", undefined, "Screening")}: </span>
+                    {screeningSummary}
+                  </p>
+                ) : null}
+                {legalSummary ? (
+                  <p style={{ color: "var(--color-text-secondary)" }}>
+                    <span style={{ color: "var(--color-text-primary)" }}>{tx("profile.legalPreferences", undefined, "Legal")}: </span>
+                    {legalSummary}
+                  </p>
+                ) : null}
+              </div>
+            </div>
+          ) : null}
 
           {/* ── Recent job postings ──────────────────────────────── */}
           {recentJobs.length > 0 && (
@@ -601,6 +1080,30 @@ export default function ClientProfile() {
               </Button>
             </div>
           )}
+            </div>
+
+            <aside className="space-y-5">
+              {statsContent}
+
+              <div
+                className="rounded-2xl border p-5"
+                style={{
+                  background: "var(--color-background-elevated)",
+                  borderColor: "var(--color-border-subtle)",
+                }}
+              >
+                <h2
+                  className="text-sm font-semibold mb-3"
+                  style={{ color: "var(--color-text-primary)" }}
+                >
+                  {tx("clientProfile.workspaceSummary", undefined, "Client Workspace")}
+                </h2>
+                <p className="text-sm" style={{ color: "var(--color-text-secondary)" }}>
+                  {tx("clientProfile.workspaceSummaryDesc", undefined, "Public client profile is read-only for visitors. Only you can edit while viewing your own profile.")}
+                </p>
+              </div>
+            </aside>
+          </div>
         </main>
       </div>
     </>

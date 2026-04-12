@@ -1,6 +1,7 @@
-import { CheckCircle, XCircle, Calendar, Clock, Globe, GraduationCap, ShieldCheck } from 'lucide-react';
+import { CheckCircle, XCircle, Calendar, Clock, Globe, GraduationCap, ShieldCheck, Check } from 'lucide-react';
 import type { FreelancerData } from '@/types/freelancer';
 import { useTranslation } from '../../../i18n';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface SidebarProps {
     freelancer: FreelancerData;
@@ -8,14 +9,10 @@ interface SidebarProps {
 
 function SidebarCard({ title, icon: Icon, children }: { title: string; icon: React.ElementType; children: React.ReactNode }) {
     return (
-        <div className="rounded-xl border p-4"
-            style={{ background: 'var(--color-background-elevated)', borderColor: 'var(--color-border-subtle)' }}>
-            <div className="flex items-center gap-2 mb-4">
-                <div className="p-1.5 rounded-lg"
-                    style={{ background: 'color-mix(in srgb, var(--workspace-primary) 10%, transparent)' }}>
-                    <Icon className="h-3.5 w-3.5" style={{ color: 'var(--workspace-primary)' }} />
-                </div>
-                <h3 className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>{title}</h3>
+        <div className="bg-[var(--card-bg)] rounded-2xl border border-white/7 p-5 md:p-6 mb-4 shadow-[0_25px_60px_-48px_rgba(0,0,0,0.9)]">
+            <div className="flex items-center gap-2 mb-5">
+                <Icon className="w-5 h-5 text-[#F59E0B]" />
+                <h3 className="text-base font-semibold text-[var(--text-primary)]">{title}</h3>
             </div>
             {children}
         </div>
@@ -24,6 +21,9 @@ function SidebarCard({ title, icon: Icon, children }: { title: string; icon: Rea
 
 export default function ProfileSidebar({ freelancer }: SidebarProps) {
     const { tx, language } = useTranslation();
+    const { user } = useAuth();
+    const isOwner = user?.id === freelancer.id;
+    const accent = isOwner ? '#8B5CF6' : '#F59E0B';
 
     const formatDate = (dateString: string) =>
         new Date(dateString).toLocaleDateString(
@@ -32,10 +32,26 @@ export default function ProfileSidebar({ freelancer }: SidebarProps) {
         );
 
     const availConfig = {
-        available: { label: tx('pages.freelancerProfile.available', undefined, 'Available for work'), color: 'var(--color-status-success)', bg: 'color-mix(in srgb, var(--color-status-success) 10%, transparent)', border: 'color-mix(in srgb, var(--color-status-success) 25%, transparent)' },
-        busy: { label: tx('pages.freelancerProfile.busy', undefined, 'Busy right now'), color: 'var(--color-status-warning)', bg: 'color-mix(in srgb, var(--color-status-warning) 10%, transparent)', border: 'color-mix(in srgb, var(--color-status-warning) 25%, transparent)' },
-        offline: { label: tx('pages.freelancerProfile.offline', undefined, 'Offline'), color: 'var(--color-text-tertiary)', bg: 'var(--color-background-subtle)', border: 'var(--color-border-subtle)' },
+        available: {
+            label: tx('pages.freelancerProfile.available', undefined, 'Available for work'),
+            color: '#34d399',
+            bg: 'rgba(16,185,129,0.1)',
+            border: 'rgba(16,185,129,0.2)',
+        },
+        busy: {
+            label: tx('pages.freelancerProfile.busy', undefined, 'Busy right now'),
+            color: '#F59E0B',
+            bg: 'rgba(245,158,11,0.12)',
+            border: 'rgba(245,158,11,0.24)',
+        },
+        offline: {
+            label: tx('pages.freelancerProfile.offline', undefined, 'Offline'),
+            color: 'var(--text-muted)',
+            bg: 'rgba(255,255,255,0.05)',
+            border: 'rgba(255,255,255,0.1)',
+        },
     };
+
     const avail = availConfig[freelancer.availability as keyof typeof availConfig] ?? availConfig.offline;
 
     const verifications = [
@@ -47,94 +63,87 @@ export default function ProfileSidebar({ freelancer }: SidebarProps) {
 
     return (
         <div className="space-y-4">
-            {/* Work Info */}
             <SidebarCard title={tx('pages.freelancerProfile.workInfo', undefined, 'Work information')} icon={Clock}>
-                <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                        <span className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
+                <div>
+                    <div className="flex items-center justify-between py-2.5 border-b border-white/5 last:border-0">
+                        <span className="text-sm text-[var(--text-muted)]">
                             {tx('pages.freelancerProfile.status', undefined, 'Status')}
                         </span>
-                        <span className="px-2 py-0.5 rounded-full text-xs font-semibold border"
-                            style={{ background: avail.bg, borderColor: avail.border, color: avail.color }}>
+                        <span
+                            className="text-xs font-semibold px-2.5 py-1 rounded-full border"
+                            style={{ background: avail.bg, color: avail.color, borderColor: avail.border }}
+                        >
                             {avail.label}
                         </span>
                     </div>
-                    <div className="h-px" style={{ background: 'var(--color-border-subtle)' }} />
-                    <div className="flex items-center justify-between">
-                        <span className="text-xs flex items-center gap-1.5" style={{ color: 'var(--color-text-tertiary)' }}>
-                            <Calendar className="h-3 w-3" />
+                    <div className="flex items-center justify-between py-2.5 border-b border-white/5 last:border-0">
+                        <span className="text-sm text-[var(--text-muted)]">
                             {tx('pages.freelancerProfile.memberSince', undefined, 'Member since')}
                         </span>
-                        <span className="text-xs font-medium" style={{ color: 'var(--color-text-primary)' }}>
-                            {formatDate(freelancer.joined_at)}
-                        </span>
+                        <span className="text-sm font-medium text-[var(--text-primary)]">{formatDate(freelancer.joined_at)}</span>
                     </div>
-                    <div className="h-px" style={{ background: 'var(--color-border-subtle)' }} />
-                    <div className="flex items-center justify-between">
-                        <span className="text-xs flex items-center gap-1.5" style={{ color: 'var(--color-text-tertiary)' }}>
-                            <Clock className="h-3 w-3" />
+                    <div className="flex items-center justify-between py-2.5 border-b border-white/5 last:border-0">
+                        <span className="text-sm text-[var(--text-muted)]">
                             {tx('pages.freelancerProfile.lastSeen', undefined, 'Last seen')}
                         </span>
-                        <span className="text-xs font-medium" style={{ color: 'var(--color-status-success)' }}>
+                        <span className="text-sm font-medium text-emerald-400">
                             {tx('pages.freelancerProfile.lastSeenRecently', undefined, 'Recently')}
                         </span>
                     </div>
                 </div>
             </SidebarCard>
 
-            {/* Verifications */}
             <SidebarCard title={tx('pages.freelancerProfile.verifications', undefined, 'Verifications')} icon={ShieldCheck}>
-                <div className="space-y-2">
+                <div>
                     {verifications.map(({ key, label, done }) => (
-                        <div key={key} className="flex items-center gap-2.5 py-1">
-                            {done
-                                ? <CheckCircle className="h-4 w-4 shrink-0" style={{ color: 'var(--color-status-success)' }} />
-                                : <XCircle className="h-4 w-4 shrink-0" style={{ color: 'var(--color-text-disabled)' }} />
-                            }
-                            <span className="text-sm" style={{ color: done ? 'var(--color-text-primary)' : 'var(--color-text-tertiary)' }}>
-                                {label}
-                            </span>
-                            {done && (
-                                <span className="ms-auto text-[10px] font-bold px-1.5 py-0.5 rounded text-white"
-                                    style={{ background: 'var(--color-status-success)' }}>✓</span>
-                            )}
+                        <div key={key} className="flex items-center justify-between py-2.5 border-b border-white/5 last:border-0">
+                            <div className="flex items-center gap-2">
+                                {done ? <CheckCircle className="w-4 h-4 text-emerald-400" /> : <XCircle className="w-4 h-4 text-white/20" />}
+                                <span
+                                    className="text-sm"
+                                    style={{ color: done ? 'var(--text-primary)' : 'var(--text-muted)', fontWeight: done ? 500 : 400 }}
+                                >
+                                    {label}
+                                </span>
+                            </div>
+                            {done ? (
+                                <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                                    <Check className="w-3 h-3 text-emerald-400" />
+                                </div>
+                            ) : null}
                         </div>
                     ))}
                 </div>
             </SidebarCard>
 
-            {/* Languages */}
-            {freelancer.languages.length > 0 && (
+            {freelancer.languages.length > 0 ? (
                 <SidebarCard title={tx('pages.freelancerProfile.languages', undefined, 'Languages')} icon={Globe}>
                     <div className="space-y-2.5">
                         {freelancer.languages.map((lang, idx) => (
-                            <div key={idx} className="flex items-center justify-between">
-                                <span className="text-sm" style={{ color: 'var(--color-text-primary)' }}>{lang.language}</span>
-                                <span className="px-2 py-0.5 rounded text-xs font-medium border"
-                                    style={{ borderColor: 'var(--color-border-subtle)', background: 'var(--color-background-subtle)', color: 'var(--color-text-secondary)' }}>
+                            <div key={idx} className="flex items-center justify-between py-2.5 border-b border-white/5 last:border-0">
+                                <span className="text-sm text-[var(--text-primary)]">{lang.language}</span>
+                                <span className="text-xs font-medium px-2.5 py-1 rounded-full border" style={{ borderColor: `color-mix(in srgb, ${accent} 25%, transparent)`, color: accent }}>
                                     {lang.proficiency}
                                 </span>
                             </div>
                         ))}
                     </div>
                 </SidebarCard>
-            )}
+            ) : null}
 
-            {/* Education */}
-            {freelancer.education.length > 0 && (
+            {freelancer.education.length > 0 ? (
                 <SidebarCard title={tx('pages.freelancerProfile.education', undefined, 'Education')} icon={GraduationCap}>
                     <div className="space-y-4">
                         {freelancer.education.map((edu, idx) => (
-                            <div key={idx} className="ps-3 border-s-2"
-                                style={{ borderColor: 'color-mix(in srgb, var(--workspace-primary) 30%, var(--color-border-subtle))' }}>
-                                <p className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>{edu.institution}</p>
-                                <p className="text-xs mt-0.5" style={{ color: 'var(--workspace-primary)' }}>{edu.degree} — {edu.field}</p>
-                                <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-tertiary)' }}>{edu.startYear} – {edu.endYear}</p>
+                            <div key={idx} className="ps-3 border-s-2" style={{ borderColor: `color-mix(in srgb, ${accent} 35%, transparent)` }}>
+                                <p className="text-sm font-semibold text-[var(--text-primary)]">{edu.institution}</p>
+                                <p className="text-xs mt-0.5" style={{ color: accent }}>{edu.degree} - {edu.field}</p>
+                                <p className="text-xs mt-0.5 text-[var(--text-muted)]">{edu.startYear} - {edu.endYear}</p>
                             </div>
                         ))}
                     </div>
                 </SidebarCard>
-            )}
+            ) : null}
         </div>
     );
 }

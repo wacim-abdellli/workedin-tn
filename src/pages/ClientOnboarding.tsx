@@ -19,7 +19,8 @@ import { FullScreenLoader } from '../components/ui';
 import { Header } from '../components/layout';
 import SEO, { SEO_CONFIG } from '../components/common/SEO';
 import OnboardingShell from '../components/onboarding/OnboardingShell';
-import { clientStep2Schema, type ClientStep2FormData } from '../components/onboarding/schemas';
+import { clientStep2Schema, optionalPhoneSchema, type ClientStep2FormData } from '../components/onboarding/schemas';
+import { normalizeOptionalPhone, sanitizePhoneInput } from '@/lib/phone';
 
 function ClientOnboarding() {
     const { t, tx, language } = useTranslation();
@@ -34,7 +35,7 @@ function ClientOnboarding() {
 
     const clientSchema = z.object({
         full_name: z.string().trim().min(3, 'Minimum 3 characters'),
-        phone: z.string().trim().max(20, 'Maximum 20 characters').optional(),        
+        phone: optionalPhoneSchema,
         location: z.string().trim().min(1, 'Required').refine(
             (val) => (GOVERNORATES as readonly string[]).includes(val),
             { message: 'Invalid location' }
@@ -58,11 +59,12 @@ function ClientOnboarding() {
             full_name: profile?.full_name || '',
             phone: profile?.phone || '',
             location: profile?.location || '',
-            bio: profile?.bio || '',
+            bio: getClientIntroFromProfile(profile),
         },
     });
 
     const bio = watch('bio') || '';
+    const phoneField = register('phone');
 
     const {
         register: registerStep2,
@@ -92,7 +94,7 @@ function ClientOnboarding() {
             full_name: profile?.full_name || '',
             phone: profile?.phone || '',
             location: profile?.location || '',
-            bio: profile?.bio || '',
+            bio: getClientIntroFromProfile(profile),
         };
 
         let step2Values = {
@@ -208,10 +210,14 @@ function ClientOnboarding() {
             }
 
             const normalizedPhone = normalizeOptionalPhone(data.phone);
+            const currentCommunicationPreferences = toRecord(profile?.communication_preferences);
             const baseProfilePayload = {
                 full_name: data.full_name,
                 location: data.location,
-                bio: data.bio,
+                communication_preferences: {
+                    ...currentCommunicationPreferences,
+                    profile_intro: normalizeOptionalText(data.bio) || null,
+                },
                 ...(avatarUrl ? {
                     avatar_url: profile?.avatar_url || avatarUrl,
                     avatar_url_client: avatarUrl,
@@ -237,7 +243,10 @@ function ClientOnboarding() {
                 profileSaveError = await trySaveProfile({
                     full_name: data.full_name,
                     location: data.location,
-                    bio: data.bio,
+                    communication_preferences: {
+                        ...currentCommunicationPreferences,
+                        profile_intro: normalizeOptionalText(data.bio) || null,
+                    },
                     avatar_url: avatarUrl,
                 });
             }
@@ -294,6 +303,9 @@ function ClientOnboarding() {
 
             if (!skipAdvancedWrite) {
                 try {
+                    const existingCommunicationPreferences = toRecord(profile?.communication_preferences);
+                    const profileIntro = normalizeOptionalText(watch('bio'));
+
                     await updateProfile({
                         company_name: normalizeOptionalText(data.company_name),
                         company_website: normalizeOptionalText(data.company_website),
@@ -303,7 +315,11 @@ function ClientOnboarding() {
                         hiring_needs: parseCsv(data.hiring_needs),
                         project_budget_preference: normalizeOptionalText(data.project_budget_preference),
                         project_timeline_preference: normalizeOptionalText(data.project_timeline_preference),
-                        communication_preferences: { summary: normalizeOptionalText(data.communication_preferences) },
+                        communication_preferences: {
+                            ...existingCommunicationPreferences,
+                            summary: normalizeOptionalText(data.communication_preferences),
+                            profile_intro: profileIntro ?? existingCommunicationPreferences.profile_intro ?? null,
+                        },
                         screening_preferences: { summary: normalizeOptionalText(data.screening_preferences) },
                         legal_preferences: { summary: normalizeOptionalText(data.legal_preferences) },
                         client_onboarding_completed: true,
@@ -487,9 +503,16 @@ function ClientOnboarding() {
 
                                 <div>
                                     <Input
-                                        {...register('phone')}
+                                        {...phoneField}
+                                        type="tel"
+                                        inputMode="tel"
+                                        autoComplete="tel"
+                                        onChange={(event) => {
+                                            event.target.value = sanitizePhoneInput(event.target.value);
+                                            phoneField.onChange(event);
+                                        }}
                                         label={tx('profile.phone', undefined, 'Phone number')}
-                                        placeholder={tx('onboarding.client.phoneHint', undefined, 'Used for trust and follow-up')}
+                                        placeholder={tx('onboarding.client.phoneHint', undefined, 'Used for trust and follow-up (e.g. +21625777877)')}
                                         error={errors.phone?.message}
                                         leftIcon={<Phone className="w-5 h-5" />}
                                     />
@@ -635,11 +658,6 @@ function ClientOnboarding() {
 
 export default ClientOnboarding;
 
-function normalizeOptionalPhone(phone: string | undefined): string | undefined {
-    const trimmed = phone?.trim() || '';
-    return trimmed.length > 0 ? trimmed : undefined;
-}
-
 function normalizeOptionalText(value: string | undefined): string | undefined {
     const trimmed = value?.trim() || '';
     return trimmed.length > 0 ? trimmed : undefined;
@@ -662,6 +680,28 @@ function stringifyRecord(value: unknown): string {
     if (!value || typeof value !== 'object') return '';
     const summary = 'summary' in value && typeof value.summary === 'string' ? value.summary : '';
     return summary;
+}
+
+function toRecord(value: unknown): Record<string, unknown> {
+    if (value && typeof value === 'object' && !Array.isArray(value)) {
+        return value as Record<string, unknown>;
+    }
+
+    return {};
+}
+
+function getClientIntroFromProfile(currentProfile: {
+    communication_preferences?: Record<string, unknown> | null;
+    bio?: string;
+} | null | undefined): string {
+    const communicationPreferences = toRecord(currentProfile?.communication_preferences);
+    const profileIntro = communicationPreferences.profile_intro;
+
+    if (typeof profileIntro === 'string' && profileIntro.trim().length > 0) {
+        return profileIntro;
+    }
+
+    return currentProfile?.bio || '';
 }
 
 function isPhoneUniqueViolation(error: unknown): boolean {

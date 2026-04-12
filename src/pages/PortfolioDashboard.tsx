@@ -17,8 +17,20 @@ export default function PortfolioDashboard() {
     const { user } = useAuth();
     const { showToast } = useToast();
     const { t } = useTranslation();
-    const [items, setItems] = useState<PortfolioItem[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+
+    const cacheKey = user ? `portfolio_${user.id}` : null;
+    const readCache = (): PortfolioItem[] | null => {
+        if (!cacheKey) return null;
+        try { const r = sessionStorage.getItem(cacheKey); return r ? JSON.parse(r) : null; } catch { return null; }
+    };
+    const writeCache = (items: PortfolioItem[]) => {
+        if (!cacheKey) return;
+        try { sessionStorage.setItem(cacheKey, JSON.stringify(items)); } catch { /* ignore */ }
+    };
+
+    const cached = readCache();
+    const [items, setItems] = useState<PortfolioItem[]>(cached ?? []);
+    const [isLoading, setIsLoading] = useState(!cached);
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
     // Modal state
@@ -28,9 +40,11 @@ export default function PortfolioDashboard() {
 
     useEffect(() => {
         if (user) {
+            // If cache hit, fetch in background without showing loader
+            if (cached) setIsLoading(false);
             loadPortfolio();
         }
-    }, [user]);
+    }, [user?.id]);
 
     const loadPortfolio = async () => {
         try {
@@ -41,7 +55,9 @@ export default function PortfolioDashboard() {
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
-            setItems(data || []);
+            const result = data || [];
+            setItems(result);
+            writeCache(result);
         } catch (error) {
             logger.error('Error loading portfolio:', error);
             showToast(t.portfolio.loadError, 'error');

@@ -7,7 +7,7 @@ if (
   window.location.protocol = "https:";
 }
 
-import { Suspense } from "react";
+import { Suspense, useMemo } from "react";
 import { BrowserRouter, Navigate, Routes, useLocation } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -46,9 +46,9 @@ function AppContent() {
   const activeWorkspace = useWorkspaceStore((state) => state.activeWorkspace);
   const isWorkspaceSwitching = useWorkspaceStore((state) => state.isSwitching);
 
-  const searchParams = new URLSearchParams(search);
-  const isUserTypeSelectionScreen =
-    pathname === "/signup" && searchParams.get("step") === "select-type";
+  const isUserTypeSelectionScreen = useMemo(() =>
+    pathname === "/signup" && search.includes("step=select-type"),
+  [pathname, search]);
   const isAuthCallbackPath = pathname.startsWith("/auth/callback");
 
   if (

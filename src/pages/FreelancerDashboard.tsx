@@ -115,7 +115,7 @@ function getTimeGreeting(tx: any): string {
 }
 
 function FreelancerDashboardPage() {
-  const { profile, freelancerProfile, isLoading: isAuthLoading } = useAuth();
+  const { profile, freelancerProfile, isLoading: isAuthLoading, isFullyReady } = useAuth();
   const navigate = useNavigate();
   const { language, tx } = useTranslation();
 
@@ -373,13 +373,33 @@ function FreelancerDashboardPage() {
     lastMonthEarnings,
   };
 
-  if (isAuthLoading || !profile?.id) {
+  if (isAuthLoading || !isFullyReady) {
     return (
       <div className="min-h-screen bg-[var(--color-background-base)]">
         <SEO {...SEO_CONFIG.dashboard} url="/freelancer/dashboard" noIndex />
         <Header />
         <main className="container mx-auto px-[var(--spacing-4)] sm:px-[var(--spacing-6)] lg:px-[var(--spacing-8)] pt-[var(--spacing-20)] pb-[var(--spacing-12)] max-w-7xl">
           <SkeletonCard />
+        </main>
+      </div>
+    );
+  }
+
+  if (!profile?.id) {
+    return (
+      <div className="min-h-screen bg-[var(--color-background-base)]">
+        <SEO {...SEO_CONFIG.dashboard} url="/freelancer/dashboard" noIndex />
+        <Header />
+        <main className="container mx-auto px-[var(--spacing-4)] sm:px-[var(--spacing-6)] lg:px-[var(--spacing-8)] pt-[var(--spacing-20)] pb-[var(--spacing-12)] max-w-7xl">
+          <EmptyState
+            icon={User}
+            title={tx('dashboard.freelancer.profileUnavailable', undefined, 'Profile unavailable')}
+            description={tx('dashboard.freelancer.profileUnavailableDesc', undefined, 'We could not load your account profile yet. Please try again.')}
+            action={{
+              label: tx('common.retry', undefined, 'Retry'),
+              onClick: () => window.location.reload(),
+            }}
+          />
         </main>
       </div>
     );

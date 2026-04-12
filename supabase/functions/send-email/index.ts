@@ -285,7 +285,7 @@ async function buildDisputeOpenedEmails(
         subject: 'ØªÙ… ÙØªØ­ Ù†Ø²Ø§Ø¹ Ø¹Ù„Ù‰ Ø¹Ù‚Ø¯Ùƒ â€” Ø®Ø¯Ù…Ø©',
         html: `
             <div dir="rtl" style="font-family:sans-serif;max-width:600px;margin:auto;padding:24px">
-                <h2 style="color:#d97706">ØªÙ†Ø¨ÙŠÙ‡: ØªÙ… ÙØªØ­ Ù†Ø²Ø§Ø¹ âš ï¸</h2>
+                <h2 style="color:#d97706">Dispute opened</h2>
                 <p>Ù…Ø±Ø­Ø¨Ø§Ù‹ ${escapeHtml(recipient.full_name || 'Ù…Ø³ØªØ®Ø¯Ù…')}ØŒ</p>
                 <p>Ù‚Ø§Ù… <strong>${openedByRole}</strong> Ø¨ÙØªØ­ Ù†Ø²Ø§Ø¹ Ø¹Ù„Ù‰ Ø§Ù„Ø¹Ù‚Ø¯. Ø³ÙŠÙ‚ÙˆÙ… ÙØ±ÙŠÙ‚ Ø®Ø¯Ù…Ø© Ø¨Ù…Ø±Ø§Ø¬Ø¹Ø© Ø§Ù„Ø­Ø§Ù„Ø© Ø®Ù„Ø§Ù„ 48 Ø³Ø§Ø¹Ø©.</p>
                 <p><strong>Ø³Ø¨Ø¨ Ø§Ù„Ù†Ø²Ø§Ø¹:</strong> ${escapeHtml(reason)}</p>
