@@ -19,13 +19,22 @@ export default function OptimizedImage({
     fill = true, // Default to filling container
     ...props
 }: OptimizedImageProps) {
-    const [isLoading, setIsLoading] = useState(true);
+    const normalizedSrc = typeof src === 'string' ? src.trim() : '';
+    const hasSource = normalizedSrc.length > 0;
+
+    const [isLoading, setIsLoading] = useState(hasSource);
     const [isInView, setIsInView] = useState(priority);
-    const [hasError, setHasError] = useState(false);
+    const [hasError, setHasError] = useState(!hasSource);
     const containerRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        if (priority || isInView) return;
+        const nextHasSource = typeof src === 'string' && src.trim().length > 0;
+        setHasError(!nextHasSource);
+        setIsLoading(nextHasSource);
+    }, [src]);
+
+    useEffect(() => {
+        if (priority || isInView || !hasSource) return;
 
         const observer = new IntersectionObserver(
             ([entry]) => {
@@ -42,29 +51,29 @@ export default function OptimizedImage({
         }
 
         return () => observer.disconnect();
-    }, [priority, isInView]);
+    }, [priority, isInView, hasSource]);
 
     return (
         <div
             ref={containerRef}
-            className={`relative overflow-hidden bg-muted ${className}`}
+            className={`relative overflow-hidden bg-[#111111] ${className}`}
         >
             {/* Loading Skeleton */}
-            {isLoading && !hasError && (
-                <div className="absolute inset-0 bg-secondary animate-pulse z-10" />
+            {isLoading && !hasError && hasSource && (
+                <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-white/[0.02] animate-pulse z-10" />
             )}
 
             {/* Error Placeholder */}
             {hasError && (
-                <div className="absolute inset-0 flex items-center justify-center bg-muted text-muted z-20">
-                    <ImageIcon className="w-6 h-6" />
+                <div className="absolute inset-0 flex items-center justify-center bg-[#101010] text-white/30 z-20">
+                    <ImageIcon className="w-7 h-7" />
                 </div>
             )}
 
             {/* Image */}
-            {(isInView || priority) && (
+            {(isInView || priority) && hasSource && !hasError && (
                 <img
-                    src={src}
+                    src={normalizedSrc}
                     alt={alt}
                     loading={priority ? 'eager' : 'lazy'}
                     onLoad={() => setIsLoading(false)}

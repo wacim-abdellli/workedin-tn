@@ -26,34 +26,38 @@ interface ToastContextType {
 
 const ToastContext = createContext<ToastContextType | undefined>(undefined);
 
-const toastConfig: Record<ToastType, { icon: React.ReactNode; title: string; bgClass: string; textClass: string; iconClass: string }> = {
+const toastConfig: Record<ToastType, { icon: React.ReactNode; titleKey: string; titleFallback: string; bgClass: string; textClass: string; iconClass: string }> = {
   success: {
     icon: <CheckCircle className="h-5 w-5" />,
-    title: 'Success',
-    bgClass: 'bg-[var(--green-50)] dark:bg-[var(--green-900)]/20 border-[var(--green-200)] dark:border-[var(--green-800)]',
-    textClass: 'text-[var(--green-800)] dark:text-[var(--green-200)]',
-    iconClass: 'text-[var(--green-600)] dark:text-[var(--green-400)]',
+    titleKey: 'toast.success',
+    titleFallback: 'Success',
+    bgClass: 'bg-emerald-950/95 border-emerald-500/60',
+    textClass: 'text-emerald-100',
+    iconClass: 'text-emerald-300',
   },
   error: {
     icon: <AlertCircle className="h-5 w-5" />,
-    title: 'Error',
-    bgClass: 'bg-[var(--red-50)] dark:bg-[var(--red-900)]/20 border-[var(--red-200)] dark:border-[var(--red-800)]',
-    textClass: 'text-[var(--red-800)] dark:text-[var(--red-200)]',
-    iconClass: 'text-[var(--red-600)] dark:text-[var(--red-400)]',
+    titleKey: 'toast.error',
+    titleFallback: 'Error',
+    bgClass: 'bg-rose-950/95 border-rose-500/70',
+    textClass: 'text-rose-100',
+    iconClass: 'text-rose-300',
   },
   warning: {
     icon: <AlertTriangle className="h-5 w-5" />,
-    title: 'Warning',
-    bgClass: 'bg-[var(--amber-50)] dark:bg-[var(--amber-900)]/20 border-[var(--amber-200)] dark:border-[var(--amber-800)]',
-    textClass: 'text-[var(--amber-800)] dark:text-[var(--amber-200)]',
-    iconClass: 'text-[var(--amber-600)] dark:text-[var(--amber-400)]',
+    titleKey: 'toast.warning',
+    titleFallback: 'Warning',
+    bgClass: 'bg-amber-950/95 border-amber-500/70',
+    textClass: 'text-amber-100',
+    iconClass: 'text-amber-300',
   },
   info: {
     icon: <Info className="h-5 w-5" />,
-    title: 'Info',
-    bgClass: 'bg-[var(--blue-50)] dark:bg-[var(--blue-900)]/20 border-[var(--blue-200)] dark:border-[var(--blue-800)]',
-    textClass: 'text-[var(--blue-800)] dark:text-[var(--blue-200)]',
-    iconClass: 'text-[var(--blue-600)] dark:text-[var(--blue-400)]',
+    titleKey: 'toast.info',
+    titleFallback: 'Info',
+    bgClass: 'bg-sky-950/95 border-sky-500/65',
+    textClass: 'text-sky-100',
+    iconClass: 'text-sky-300',
   },
 };
 
@@ -77,7 +81,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     options?: ToastOptions
   ) => {
     const id = Math.random().toString(36).slice(2, 9);
-    const position = options?.position ?? 'top-right';
+    const position = options?.position ?? 'bottom-right';
 
     setToasts((prev) => [...prev, { id, message, type, duration, position }]);
   }, []);
@@ -158,11 +162,11 @@ function ToastCard({ toast, onClose }: { toast: Toast; onClose: () => void }) {
       }}
       className={`
         pointer-events-auto 
-        w-[min(420px,calc(100vw-2rem))] 
+        w-[min(380px,calc(100vw-2rem))] 
         overflow-hidden 
-        rounded-[var(--radius-lg)]
-        border-2
-        shadow-[var(--shadow-elevation-3)]
+        rounded-xl
+        border
+        shadow-2xl
         backdrop-blur-sm
         ${config.bgClass}
       `}
@@ -170,13 +174,13 @@ function ToastCard({ toast, onClose }: { toast: Toast; onClose: () => void }) {
       aria-live="polite"
       style={{ willChange: 'transform, opacity' }}
     >
-      <div className={`flex items-start gap-3 p-4 ${config.textClass}`}>
+      <div className={`flex items-start gap-3 p-3.5 ${config.textClass}`}>
         <div className={`mt-0.5 shrink-0 ${config.iconClass}`}>{config.icon}</div>
         <div className="min-w-0 flex-1">
-          <div className={`text-[var(--font-fontSize-sm)] font-[var(--font-fontWeight-semibold)] ${config.iconClass}`}>
-            {config.title}
+          <div className={`text-sm font-semibold ${config.iconClass}`}>
+            {tx(config.titleKey, undefined, config.titleFallback)}
           </div>
-          <p className="mt-1 text-[var(--font-fontSize-sm)]">{toast.message}</p>
+          <p className="mt-1 text-sm leading-5">{toast.message}</p>
         </div>
         <button
           onClick={onClose}
@@ -185,8 +189,7 @@ function ToastCard({ toast, onClose }: { toast: Toast; onClose: () => void }) {
             p-1 
             transition-colors
             duration-[var(--animation-hover-duration)]
-            hover:bg-black/10 
-            dark:hover:bg-white/10
+            hover:bg-white/10
           `}
           aria-label={tx('toast.close', undefined, 'Close notification')}
         >

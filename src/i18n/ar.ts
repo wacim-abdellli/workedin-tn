@@ -1714,6 +1714,202 @@ export const ar = {
             },
             "uploadAvatar": "الصورة الشخصية",
             "uploadAvatarDesc": "يُفضّل استخدام صورة مهنية واضحة"
+        },
+        "progressive": {
+            "common": {
+                "removeTagAria": "إزالة {{item}}",
+                "stepCounter": "الخطوة {{step}} من {{total}}",
+                "saveExit": "حفظ وخروج",
+                "back": "رجوع",
+                "proTip": "نصيحة احترافية",
+                "onboardingRequired": "يرجى إكمال ملف الإعداد قبل الوصول إلى الصفحات الأخرى.",
+                "fixBeforeContinue": "يرجى إصلاح هذا قبل المتابعة: {{error}}",
+                "completeRequiredFields": "يرجى إكمال الحقول المطلوبة قبل المتابعة.",
+                "completionFailed": "فشل إكمال الإعداد. يرجى المحاولة مرة أخرى.",
+                "conflictRetry": "تم اكتشاف تعارض في التحديث. يرجى المحاولة مرة أخرى.",
+                "phoneTaken": "رقم الهاتف هذا مستخدم بالفعل بواسطة حساب آخر.",
+                "invalidPhone": "يرجى إدخال رقم هاتف صالح.",
+                "accountInactive": "حسابك غير نشط. يرجى التواصل مع الدعم.",
+                "unsavedConfirm": "لديك تقدم غير محفوظ في الإعداد. هل تريد الخروج؟",
+                "exitOnboarding": "الخروج من الإعداد",
+                "completing": "جارٍ الإكمال...",
+                "completeProfile": "إكمال الملف",
+                "nextStep": "الخطوة التالية",
+                "fields": {
+                    "fullName": "الاسم الكامل",
+                    "location": "الولاية",
+                    "phoneNumber": "رقم الهاتف"
+                },
+                "placeholders": {
+                    "fullName": "اكتب اسمك الكامل",
+                    "selectLocation": "اختر الولاية"
+                }
+            },
+            "freelancer": {
+                "steps": {
+                    "identityPitch": "الهوية والعرض",
+                    "expertise": "الخبرة",
+                    "businessRates": "الأسعار وشروط العمل",
+                    "trustProof": "عناصر الثقة"
+                },
+                "stepSubtitles": {
+                    "identityPitch": "ابدأ بتوضيح هويتك وكيف تقدم قيمتك.",
+                    "expertise": "حدد نقاط قوتك لتحسين جودة المطابقة.",
+                    "businessRates": "ضع شروط عمل واضحة لتوحيد التوقعات.",
+                    "trustProof": "أضف إشارات ثقة تجعل العملاء أكثر استعداداً للتوظيف."
+                },
+                "tips": {
+                    "identityPitch": "العملاء يقررون بسرعة. عنوان واضح وملخص قوي يبني الثقة فوراً.",
+                    "expertise": "الوسوم الصحيحة تحسن المطابقة. أضف فقط أقوى مهاراتك وأدواتك.",
+                    "businessRates": "الأسعار الواضحة تقلل التفاوض وتسرع الوصول إلى العملاء الجادين.",
+                    "trustProof": "المعلومات الموثقة ورابط الأعمال يعززان مصداقيتك بشكل كبير."
+                },
+                "categories": {
+                    "development": "تطوير",
+                    "design": "تصميم",
+                    "marketing": "تسويق",
+                    "writing": "كتابة",
+                    "video": "فيديو",
+                    "data": "بيانات",
+                    "business": "أعمال"
+                },
+                "skillSuggestions": {
+                    "react": "React",
+                    "typescript": "TypeScript",
+                    "nodejs": "Node.js",
+                    "uiux": "تصميم UI/UX",
+                    "figma": "Figma",
+                    "contentWriting": "كتابة المحتوى",
+                    "seo": "SEO",
+                    "googleAds": "Google Ads",
+                    "motionDesign": "موشن ديزاين",
+                    "dataAnalysis": "تحليل البيانات",
+                    "python": "Python",
+                    "nextjs": "Next.js",
+                    "tailwind": "Tailwind CSS",
+                    "illustrator": "Illustrator",
+                    "projectManagement": "إدارة المشاريع"
+                },
+                "toolSuggestions": {
+                    "figma": "Figma",
+                    "vscode": "VS Code",
+                    "photoshop": "Photoshop",
+                    "illustrator": "Illustrator",
+                    "notion": "Notion",
+                    "jira": "Jira",
+                    "slack": "Slack",
+                    "github": "GitHub",
+                    "docker": "Docker",
+                    "canva": "Canva",
+                    "framer": "Framer",
+                    "webflow": "Webflow"
+                },
+                "experience": {
+                    "0to2": "0-2",
+                    "3to5": "3-5",
+                    "5plus": "5+"
+                },
+                "availability": {
+                    "partTime": "دوام جزئي",
+                    "fullTime": "دوام كامل",
+                    "asNeeded": "حسب الحاجة"
+                },
+                "errors": {
+                    "avatarRequired": "الصورة الشخصية مطلوبة.",
+                    "fullNameRequired": "الاسم الكامل مطلوب.",
+                    "locationRequired": "الولاية مطلوبة.",
+                    "professionalTitleRequired": "المسمى المهني مطلوب.",
+                    "summaryRequired": "النبذة مطلوبة.",
+                    "summaryTooLong": "يجب ألا تتجاوز النبذة 500 حرف.",
+                    "mainCategoryRequired": "الفئة الرئيسية مطلوبة.",
+                    "coreSkillRequired": "أضف مهارة أساسية واحدة على الأقل.",
+                    "toolRequired": "أضف أداة واحدة على الأقل.",
+                    "hourlyRateInvalid": "يجب أن يكون السعر بالساعة أكبر من 0.",
+                    "experienceRequired": "اختر سنوات الخبرة.",
+                    "availabilityRequired": "اختر التوفر.",
+                    "portfolioRequired": "رابط معرض الأعمال مطلوب.",
+                    "phoneRequired": "رقم الهاتف مطلوب."
+                },
+                "completedTitle": "تم إعداد الملف بنجاح",
+                "completedSubtitle": "بيانات إعداد ملفك كمستقل أصبحت جاهزة. يمكنك المتابعة إلى لوحة التحكم.",
+                "completedMessage": "شكراً لك. تم حفظ بيانات الإعداد بشكل تدريجي.",
+                "currency": "د.ت",
+                "fields": {
+                    "avatarUpload": "رفع الصورة الشخصية (إلزامي)",
+                    "avatarPreviewAlt": "معاينة الصورة الشخصية",
+                    "chooseAvatar": "اختر صورة",
+                    "avatarHint": "PNG, JPG, WEBP",
+                    "professionalTitle": "المسمى المهني",
+                    "bioSummary": "نبذة / ملخص",
+                    "mainCategory": "الفئة الرئيسية",
+                    "coreSkills": "المهارات الأساسية",
+                    "toolsUsed": "الأدوات المستخدمة",
+                    "hourlyRate": "السعر بالساعة",
+                    "yearsOfExperience": "سنوات الخبرة",
+                    "availability": "التوفر",
+                    "portfolioLink": "رابط معرض الأعمال"
+                },
+                "placeholders": {
+                    "professionalTitle": "مطور React أول",
+                    "bioSummary": "ما الذي تتقنه أكثر؟ وما نوع المشاريع التي تفضّلها؟",
+                    "selectCategory": "اختر الفئة",
+                    "coreSkills": "اكتب مهارة ثم اضغط Enter",
+                    "toolsUsed": "اكتب أداة ثم اضغط Enter",
+                    "hourlyRate": "80",
+                    "experienceRange": "اختر النطاق",
+                    "availability": "اختر التوفر",
+                    "portfolioLink": "https://your-portfolio.com",
+                    "phoneNumber": "للأمان والحصول على شارة التحقق"
+                },
+                "hints": {
+                    "coreSkills": "ابحث وأضف حتى 30 مهارة",
+                    "toolsUsed": "ابحث وأضف حتى 15 أداة",
+                    "phoneNumber": "للأمان والحصول على شارة التحقق."
+                }
+            },
+            "client": {
+                "steps": {
+                    "accountDetails": "بيانات الحساب",
+                    "hiringIntent": "هدف التوظيف"
+                },
+                "tips": {
+                    "accountDetails": "اكتمال بيانات الحساب يرفع معدل الردود ويقلل الانسحاب عند أول تواصل بين العميل والمستقل.",
+                    "hiringIntent": "توضيح هدف التوظيف يحسن التوصيات ويزيد جودة المرشحين المقترحين."
+                },
+                "accountTypes": {
+                    "individual": "فرد",
+                    "company": "شركة"
+                },
+                "primaryGoals": {
+                    "specificProject": "التوظيف لمشروع محدد",
+                    "buildTeam": "بناء فريق",
+                    "justBrowsing": "أتصفح فقط"
+                },
+                "errors": {
+                    "fullNameRequired": "الاسم الكامل مطلوب.",
+                    "locationRequired": "الولاية مطلوبة.",
+                    "phoneRequired": "رقم الهاتف مطلوب.",
+                    "accountTypeRequired": "نوع الحساب مطلوب.",
+                    "companyNameRequired": "اسم الشركة مطلوب لحسابات الشركات.",
+                    "primaryGoalRequired": "الهدف الأساسي مطلوب."
+                },
+                "stepSubtitles": {
+                    "accountDetails": "الأساسيات فقط ليكون حسابك موثوقاً ومكتملًا.",
+                    "hiringIntent": "أخبرنا بما تريد التوظيف له حتى نخصص المطابقة بشكل أفضل."
+                },
+                "completedTitle": "اكتمل الإعداد",
+                "completedSubtitle": "ملفك كعميل أصبح جاهزاً. يمكنك المتابعة إلى لوحة التحكم.",
+                "completedMessage": "تم إكمال بيانات إعداد العميل بنجاح.",
+                "fields": {
+                    "accountType": "نوع الحساب",
+                    "companyName": "اسم الشركة",
+                    "primaryGoal": "الهدف الأساسي"
+                },
+                "placeholders": {
+                    "phoneNumber": "+216 00 000 000",
+                    "companyName": "اسم شركتك"
+                }
+            }
         }
     },
     "verifyIdentity": {
@@ -2215,9 +2411,124 @@ export const ar = {
         "workUpdated": "تم تحديث العمل بنجاح",
         "workAdded": "تم إضافة العمل بنجاح",
         "workSaved": "تم حفظ العمل بنجاح",
+        "saveError": "حدث خطأ أثناء حفظ العمل",
         "workDeleted": "تم حذف العمل بنجاح",
         "deleteError": "حدث خطأ أثناء الحذف",
-        "deleteConfirm": "هل أنت متأكد من حذف هذا العمل؟"
+        "deleteConfirm": "هل أنت متأكد من حذف هذا العمل؟",
+        "view": {
+            "gridAria": "عرض الشبكة",
+            "listAria": "عرض القائمة"
+        },
+        "form": {
+            "addTitle": "إضافة عمل جديد",
+            "editTitle": "تعديل العمل",
+            "imageHint": "يمكنك رفع صورة المعاينة أو لصق رابط صورة مباشر.",
+            "fields": {
+                "title": {
+                    "label": "عنوان المشروع",
+                    "placeholder": "مثال: تصميم متجر إلكتروني"
+                },
+                "description": {
+                    "label": "وصف المشروع",
+                    "placeholder": "اشرح تفاصيل المشروع وما قمت بإنجازه..."
+                },
+                "projectUrl": {
+                    "label": "رابط المشروع (اختياري)",
+                    "placeholder": "https://example.com"
+                },
+                "clientName": {
+                    "label": "العميل / العلامة التجارية (اختياري)",
+                    "placeholder": "مثال: Acme Corp"
+                },
+                "completionDate": {
+                    "label": "تاريخ الإنجاز"
+                },
+                "skills": {
+                    "label": "المهارات المستخدمة",
+                    "placeholder": "مثال: تصميم واجهات، تطوير واجهات، تحرير صور (افصل بينها بفاصلة)",
+                    "searchPlaceholder": "ابحث واختر المهارات..."
+                },
+                "tools": {
+                    "label": "الأدوات المستخدمة (اختياري)",
+                    "searchPlaceholder": "ابحث واختر الأدوات..."
+                },
+                "imageUpload": {
+                    "label": "رفع صورة المعاينة"
+                },
+                "imageUrl": {
+                    "label": "أو ألصق رابط الصورة",
+                    "placeholder": "https://..."
+                }
+            },
+            "actions": {
+                "cancel": "إلغاء",
+                "add": "إضافة العمل",
+                "save": "حفظ التغييرات"
+            },
+            "upload": {
+                "action": "رفع الصورة",
+                "replace": "استبدال الصورة",
+                "remove": "إزالة",
+                "edit": "تعديل الصورة",
+                "delete": "حذف الصورة",
+                "addMore": "إضافة صورة",
+                "addUrl": "إضافة الرابط",
+                "extraUrlPlaceholder": "https://image-url.com/preview.jpg",
+                "galleryLabel": "صور إضافية",
+                "extraAdded": "تمت إضافة الصورة إلى المعرض",
+                "uploading": "جارٍ الرفع...",
+                "success": "تم رفع الصورة بنجاح",
+                "error": "فشل رفع الصورة",
+                "networkError": "خدمة رفع الصور غير متاحة حالياً. يمكنك إدخال رابط صورة مباشر.",
+                "permissionError": "ليس لديك صلاحية لرفع الملفات إلى التخزين.",
+                "loginRequired": "يرجى تسجيل الدخول لرفع الصور.",
+                "previewAlt": "صورة معاينة معرض الأعمال"
+            },
+            "skills": {
+                "remove": "إزالة المهارة",
+                "edit": "تعديل",
+                "clearAll": "حذف الكل",
+                "noneSelected": "لم يتم اختيار أي مهارة بعد.",
+                "noResults": "لا توجد مهارات مطابقة.",
+                "sections": {
+                    "design": "التصميم",
+                    "development": "التطوير",
+                    "writing": "الكتابة",
+                    "marketing": "التسويق",
+                    "video": "الفيديو",
+                    "business": "الأعمال",
+                    "data": "البيانات",
+                    "other": "أخرى"
+                }
+            },
+            "tools": {
+                "remove": "إزالة الأداة",
+                "edit": "تعديل",
+                "clearAll": "حذف الكل",
+                "noneSelected": "لم يتم اختيار أي أداة بعد.",
+                "noResults": "لا توجد أدوات مطابقة.",
+                "sections": {
+                    "design": "التصميم",
+                    "development": "التطوير",
+                    "productivity": "الإنتاجية",
+                    "video": "الفيديو",
+                    "marketing": "التسويق",
+                    "other": "أخرى"
+                }
+            },
+            "validation": {
+                "titleMin": "العنوان يجب أن يكون 3 أحرف على الأقل",
+                "descriptionMin": "الوصف يجب أن يكون 10 أحرف على الأقل",
+                "invalidUrl": "يرجى استخدام رابط صحيح يبدأ بـ http أو https",
+                "invalidImageUrl": "يرجى استخدام رابط صورة مباشر يبدأ بـ http أو https",
+                "imageRequired": "يرجى رفع صورة أو إضافة رابط صورة مباشر",
+                "skillsLimit": "يمكنك اختيار {{count}} مهارة كحد أقصى",
+                "toolsLimit": "يمكنك اختيار {{count}} أداة كحد أقصى"
+            }
+        },
+        "card": {
+            "clientPrefix": "العميل"
+        }
     },
     "jobProposals": {
         "loadJobError": "فشل تحميل بيانات المشروع",
@@ -3075,7 +3386,11 @@ export const ar = {
     "dynamic_key_1762109572": "فشل التحقق من الدفع",
     "dynamic_key_764967864": "العودة للوحة التحكم",
     "toast": {
-        "close": "إغلاق"
+        "close": "إغلاق",
+        "success": "نجاح",
+        "error": "خطأ",
+        "warning": "تنبيه",
+        "info": "معلومة"
     }
 };
 

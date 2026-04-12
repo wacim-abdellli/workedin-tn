@@ -5,6 +5,7 @@ import { I18nProvider } from '@/i18n';
 
 import { ProtectedRoute } from '@/components/routing/ProtectedRoute';
 import { WorkspaceRoute } from '@/components/routing/WorkspaceRoute';
+import { OnboardingRoute } from '@/components/routing/OnboardingRoute';
 
 const authState = vi.hoisted(() => ({
     isAuthenticated: true,
@@ -15,6 +16,9 @@ const authState = vi.hoisted(() => ({
 
 const workspaceState = vi.hoisted(() => ({
     activeWorkspace: 'client' as 'client' | 'freelancer',
+    setWorkspace: vi.fn((workspace: 'client' | 'freelancer') => {
+        workspaceState.activeWorkspace = workspace;
+    }),
 }));
 
 vi.mock('@/contexts/AuthContext', () => ({
@@ -50,6 +54,7 @@ describe('workspace routing guards', () => {
         authState.profile = null;
         authState.freelancerProfile = null;
         workspaceState.activeWorkspace = 'client';
+        workspaceState.setWorkspace.mockClear();
     });
 
     it('ProtectedRoute derives a valid workspace when the store is invalid for the user', () => {
@@ -57,7 +62,6 @@ describe('workspace routing guards', () => {
             id: 'user-1',
             user_type: 'freelancer',
             active_mode: 'freelancer',
-            onboarding_completed: false,
             freelancer_onboarding_completed: false,
         };
         authState.freelancerProfile = null;
@@ -113,5 +117,133 @@ describe('workspace routing guards', () => {
         );
 
         expect(screen.getByTestId('location')).toHaveTextContent('/freelancer/dashboard');
+    });
+
+    it('ProtectedRoute does not treat freelancer completion as client completion', () => {
+        authState.profile = {
+            id: 'user-3',
+            user_type: 'both',
+            active_mode: 'client',
+            freelancer_onboarding_completed: true,
+            client_onboarding_completed: false,
+        };
+        authState.freelancerProfile = { id: 'user-3', title: 'Designer', skills: ['figma'] };
+        workspaceState.activeWorkspace = 'client';
+
+        render(
+            <I18nProvider>
+                <MemoryRouter initialEntries={['/client/dashboard']}>
+                    <Routes>
+                        <Route
+                            path="/client/dashboard"
+                            element={
+                                <ProtectedRoute>
+                                    <div>Client dashboard</div>
+                                </ProtectedRoute>
+                            }
+                        />
+                        <Route path="*" element={<LocationProbe />} />
+                    </Routes>
+                </MemoryRouter>
+            </I18nProvider>
+        );
+
+        expect(screen.getByTestId('location')).toHaveTextContent('/onboarding/client');
+    });
+
+    it('ProtectedRoute does not treat client completion as freelancer completion', () => {
+        authState.profile = {
+            id: 'user-4',
+            user_type: 'both',
+            active_mode: 'freelancer',
+            client_onboarding_completed: true,
+            freelancer_onboarding_completed: false,
+        };
+        authState.freelancerProfile = null;
+        workspaceState.activeWorkspace = 'freelancer';
+
+        render(
+            <I18nProvider>
+                <MemoryRouter initialEntries={['/freelancer/dashboard']}>
+                    <Routes>
+                        <Route
+                            path="/freelancer/dashboard"
+                            element={
+                                <ProtectedRoute>
+                                    <div>Freelancer dashboard</div>
+                                </ProtectedRoute>
+                            }
+                        />
+                        <Route path="*" element={<LocationProbe />} />
+                    </Routes>
+                </MemoryRouter>
+            </I18nProvider>
+        );
+
+        expect(screen.getByTestId('location')).toHaveTextContent('/onboarding/freelancer');
+    });
+
+    it('OnboardingRoute keeps client onboarding open when only freelancer onboarding is complete', () => {
+        authState.profile = {
+            id: 'user-5',
+            user_type: 'both',
+            active_mode: 'client',
+            freelancer_onboarding_completed: true,
+            client_onboarding_completed: false,
+        };
+        authState.freelancerProfile = { id: 'user-5', title: 'Designer', skills: ['figma'] };
+        workspaceState.activeWorkspace = 'freelancer';
+
+        render(
+            <I18nProvider>
+                <MemoryRouter initialEntries={['/onboarding/client']}>
+                    <Routes>
+                        <Route
+                            path="/onboarding/client"
+                            element={
+                                <OnboardingRoute workspace="client">
+                                    <div data-testid="client-onboarding-content">Client onboarding form</div>
+                                </OnboardingRoute>
+                            }
+                        />
+                        <Route path="*" element={<LocationProbe />} />
+                    </Routes>
+                </MemoryRouter>
+            </I18nProvider>
+        );
+
+        expect(screen.getByTestId('client-onboarding-content')).toBeInTheDocument();
+    });
+
+    it('OnboardingRoute redirects to client dashboard only when client onboarding is complete', () => {
+        authState.profile = {
+            id: 'user-6',
+            user_type: 'both',
+            active_mode: 'client',
+            client_onboarding_completed: true,
+            freelancer_onboarding_completed: false,
+        };
+        authState.freelancerProfile = null;
+        workspaceState.activeWorkspace = 'freelancer';
+
+        render(
+            <I18nProvider>
+                <MemoryRouter initialEntries={['/onboarding/client']}>
+                    <Routes>
+                        <Route
+                            path="/onboarding/client"
+                            element={
+                                <OnboardingRoute workspace="client">
+                                    <div>Should not render</div>
+                                </OnboardingRoute>
+                            }
+                        />
+                        <Route path="*" element={<LocationProbe />} />
+                    </Routes>
+                </MemoryRouter>
+            </I18nProvider>
+        );
+
+        expect(screen.getByTestId('location')).toHaveTextContent('/client/dashboard');
     });
 });

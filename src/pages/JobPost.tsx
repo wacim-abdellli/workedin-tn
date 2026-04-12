@@ -55,6 +55,25 @@ const STEP_ITEMS = [
   },
 ] as const;
 
+const DRAFT_PROMPT_DISMISS_KEY = 'workedin_job_restore_dismissed_at';
+const DRAFT_PROMPT_COOLDOWN_MS = 2 * 60 * 1000;
+
+const TITLE_TEMPLATES = [
+  'Logo design for a food company',
+  'Landing page redesign for SaaS product',
+  'Short-form video editor for social ads',
+  'React dashboard with analytics widgets',
+] as const;
+
+const DESCRIPTION_SNIPPETS = [
+  'Scope: Build a responsive experience aligned with our brand guidelines.',
+  'Deliverables: Source files, deployment-ready build, and concise documentation.',
+  'Success criteria: Pixel-perfect UI, strong performance, and clean handoff.',
+] as const;
+
+const FIELD_CLASS =
+  'bg-[#0a0a0a] border border-[#262626] rounded-xl focus:border-orange-500 focus:ring-1 focus:ring-orange-500/70 text-white p-3.5 w-full outline-none transition-all placeholder-gray-600 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]';
+
 const JOB_POST_DEFAULT_VALUES: Partial<JobFormData> = {
   job_type: 'fixed_price',
   visibility: 'public',
@@ -189,6 +208,7 @@ export default function JobPost() {
 
   const [showRestoreDraftModal, setShowRestoreDraftModal] = useState(false);
   const [draftToRestore, setDraftToRestore] = useState<{ data: JobFormData; timestamp: Date } | null>(null);
+  const hasCheckedDraftRef = useRef(false);
 
   const methods = useForm<JobFormData>({
     resolver: zodResolver(jobSchema) as any,
@@ -211,14 +231,32 @@ export default function JobPost() {
   });
 
   useEffect(() => {
+    if (hasCheckedDraftRef.current) return;
+    hasCheckedDraftRef.current = true;
+
     const saved = loadFromStorage();
-    if (saved?.data && Object.keys(saved.data).length > 0) {
-      if (saved.data.title || saved.data.category) {
-        setDraftToRestore(saved);
-        setShowRestoreDraftModal(true);
-      }
+    if (!saved?.data || Object.keys(saved.data).length === 0) return;
+    if (!saved.data.title && !saved.data.category) return;
+
+    setDraftToRestore(saved);
+
+    const dismissedAtRaw = sessionStorage.getItem(DRAFT_PROMPT_DISMISS_KEY);
+    const dismissedAt = dismissedAtRaw ? Number(dismissedAtRaw) : 0;
+    const dismissedRecently = Number.isFinite(dismissedAt) && Date.now() - dismissedAt < DRAFT_PROMPT_COOLDOWN_MS;
+
+    const savedAt = saved.timestamp instanceof Date ? saved.timestamp.getTime() : new Date(saved.timestamp).getTime();
+    const savedJustNow = Number.isFinite(savedAt) && Date.now() - savedAt < DRAFT_PROMPT_COOLDOWN_MS;
+
+    if (dismissedRecently || savedJustNow) {
+      methods.reset({
+        ...saved.data,
+        attachments_files: [],
+      });
+      return;
     }
-  }, [loadFromStorage]);
+
+    setShowRestoreDraftModal(true);
+  }, [loadFromStorage, methods]);
 
   const categories = useMemo(() => getJobCategories(language), [language]);
   const selectedCategory = methods.watch('category') || '';
@@ -243,8 +281,27 @@ export default function JobPost() {
   }, [language, selectedSkills, skillQuery]);
 
   const currentStepMeta = STEP_ITEMS[currentStep - 1];
-  const isFinalStep = currentStep === STEP_ITEMS.length;
   const progress = `${Math.round((currentStep / STEP_ITEMS.length) * 100)}%`;
+
+  const qualityChecks = useMemo(
+    () => [
+      { id: 'title', label: 'Clear title', pass: title.trim().length >= 12 },
+      { id: 'category', label: 'Category selected', pass: Boolean(selectedCategory && selectedSubcategory) },
+      { id: 'description', label: 'Strong description', pass: description.trim().length >= 120 },
+      { id: 'skills', label: 'Relevant skills', pass: selectedSkills.length >= 3 },
+    ],
+    [title, selectedCategory, selectedSubcategory, description, selectedSkills.length]
+  );
+
+  const qualityScore = useMemo(() => {
+    const passCount = qualityChecks.filter((item) => item.pass).length;
+    return Math.round((passCount / qualityChecks.length) * 100);
+  }, [qualityChecks]);
+
+  const dismissRestorePrompt = () => {
+    setShowRestoreDraftModal(false);
+    sessionStorage.setItem(DRAFT_PROMPT_DISMISS_KEY, String(Date.now()));
+  };
 
   const handleRestoreDraft = () => {
     if (draftToRestore) {
@@ -254,12 +311,26 @@ export default function JobPost() {
       });
       showToast(tx('jobs.new.toasts.draftRestored', undefined, 'Draft restored successfully'), 'success');
     }
+    sessionStorage.removeItem(DRAFT_PROMPT_DISMISS_KEY);
     setShowRestoreDraftModal(false);
   };
 
   const handleDiscardDraft = () => {
     clearStorage();
+    setDraftToRestore(null);
     setShowRestoreDraftModal(false);
+    sessionStorage.setItem(DRAFT_PROMPT_DISMISS_KEY, String(Date.now()));
+  };
+
+  const applyTitleTemplate = (template: string) => {
+    methods.setValue('title', template, { shouldDirty: true, shouldValidate: true });
+    methods.clearErrors('title');
+  };
+
+  const addDescriptionSnippet = (snippet: string) => {
+    const current = methods.getValues('description') || '';
+    const next = current.trim().length === 0 ? snippet : `${current.trim()}\n${snippet}`;
+    methods.setValue('description', next.slice(0, 2000), { shouldDirty: true, shouldValidate: true });
   };
 
   const updateFiles = (files: File[]) => {
@@ -391,7 +462,15 @@ export default function JobPost() {
     }
 
     focusFirstInvalidField(fieldsToValidate);
-    showToast(tx('jobs.new.errors.stepIncomplete', undefined, 'Please complete required fields before continuing.'), 'warning');
+
+    const firstInvalidField = fieldsToValidate.find((fieldName) => Boolean(methods.formState.errors[fieldName]));
+    const firstInvalidError = firstInvalidField ? methods.formState.errors[firstInvalidField] : undefined;
+    const fieldSpecificMessage =
+      firstInvalidError && typeof firstInvalidError.message === 'string'
+        ? firstInvalidError.message
+        : tx('jobs.new.errors.stepIncomplete', undefined, 'Please complete required fields before continuing.');
+
+    showToast(`Step ${currentStep}: ${fieldSpecificMessage}`, 'warning');
   };
 
   const handleBack = () => {
@@ -445,6 +524,20 @@ export default function JobPost() {
       setSubmitIntent(null);
     }
   };
+
+  useEffect(() => {
+    const handleSaveShortcut = (event: KeyboardEvent) => {
+      const isMac = navigator.platform.toUpperCase().includes('MAC');
+      const withModifier = isMac ? event.metaKey : event.ctrlKey;
+      if (!withModifier || event.key.toLowerCase() !== 's') return;
+
+      event.preventDefault();
+      void handleSaveDraft();
+    };
+
+    window.addEventListener('keydown', handleSaveShortcut);
+    return () => window.removeEventListener('keydown', handleSaveShortcut);
+  }, [handleSaveDraft]);
 
   const submitJob = async (data: JobFormData, status: 'open' | 'draft') => {
     if (!user) {
@@ -688,11 +781,23 @@ export default function JobPost() {
                       undefined,
                       'Example: Logo design for a food company'
                     )}
-                    className="bg-[#0a0a0a] border border-[#262626] rounded-xl focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-white p-3.5 w-full outline-none transition-all placeholder-gray-600"
+                    className={FIELD_CLASS}
                   />
                   {methods.formState.errors.title ? (
                     <p className="text-red-400 text-xs">{methods.formState.errors.title.message as string}</p>
                   ) : null}
+                  <div className="flex flex-wrap gap-2 pt-1">
+                    {TITLE_TEMPLATES.map((template) => (
+                      <button
+                        key={template}
+                        type="button"
+                        onClick={() => applyTitleTemplate(template)}
+                        className="text-xs px-2.5 py-1 rounded-full border border-[#2b2b2b] text-gray-300 hover:text-white hover:border-orange-500/60 transition-colors"
+                      >
+                        {template}
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -713,7 +818,7 @@ export default function JobPost() {
                           shouldValidate: true,
                         });
                       }}
-                      className="bg-[#0a0a0a] border border-[#262626] rounded-xl focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-white p-3.5 w-full outline-none transition-all"
+                      className={FIELD_CLASS}
                     >
                       <option value="" className="bg-[#0a0a0a] text-gray-500">
                         {tx('jobs.new.fields.selectCategory', undefined, 'Select category')}
@@ -743,7 +848,7 @@ export default function JobPost() {
                         });
                       }}
                       disabled={!selectedCategory}
-                      className="bg-[#0a0a0a] border border-[#262626] rounded-xl focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-white p-3.5 w-full outline-none transition-all disabled:opacity-50"
+                      className={`${FIELD_CLASS} disabled:opacity-50`}
                     >
                       <option value="" className="bg-[#0a0a0a] text-gray-500">
                         {tx('jobs.new.fields.selectSubcategory', undefined, 'Select subcategory')}
@@ -780,7 +885,7 @@ export default function JobPost() {
                       undefined,
                       'Describe project details...'
                     )}
-                    className="bg-[#0a0a0a] border border-[#262626] rounded-xl focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-white p-3.5 w-full outline-none transition-all placeholder-gray-600 resize-y"
+                    className={`${FIELD_CLASS} resize-y`}
                   />
 
                   <div className="flex items-center justify-between">
@@ -790,6 +895,19 @@ export default function JobPost() {
                         {methods.formState.errors.description.message as string}
                       </span>
                     ) : null}
+                  </div>
+
+                  <div className="flex flex-wrap gap-2">
+                    {DESCRIPTION_SNIPPETS.map((snippet) => (
+                      <button
+                        key={snippet}
+                        type="button"
+                        onClick={() => addDescriptionSnippet(snippet)}
+                        className="text-xs px-2.5 py-1 rounded-full border border-[#2b2b2b] text-gray-300 hover:text-white hover:border-orange-500/60 transition-colors"
+                      >
+                        + template
+                      </button>
+                    ))}
                   </div>
 
                   <div className="bg-orange-500/5 text-orange-400 border border-orange-500/20 rounded-xl p-4 flex gap-3">
@@ -847,7 +965,7 @@ export default function JobPost() {
                         undefined,
                         'Search for skills...'
                       )}
-                      className="bg-[#0a0a0a] border border-[#262626] rounded-xl focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-white p-3.5 w-full outline-none transition-all placeholder-gray-600 pl-10"
+                      className={`${FIELD_CLASS} pl-10`}
                     />
                   </div>
 
@@ -899,6 +1017,32 @@ export default function JobPost() {
                         </button>
                       );
                     })}
+                  </div>
+
+                  <div className="rounded-xl border border-[#2b2b2b] bg-[#111111] p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-xs uppercase tracking-wide text-gray-400">Quality Score</p>
+                      <p className="text-sm font-semibold text-white">{qualityScore}%</p>
+                    </div>
+                    <div className="h-2 rounded-full bg-[#262626] overflow-hidden mb-3">
+                      <div
+                        className="h-full transition-all"
+                        style={{
+                          width: `${qualityScore}%`,
+                          background: qualityScore >= 75 ? '#22c55e' : qualityScore >= 50 ? '#f59e0b' : '#ef4444',
+                        }}
+                      />
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {qualityChecks.map((check) => (
+                        <div key={check.id} className="inline-flex items-center gap-2 text-xs">
+                          <span className={`inline-flex w-4 h-4 items-center justify-center rounded-full ${check.pass ? 'bg-emerald-500/20 text-emerald-400' : 'bg-[#262626] text-gray-500'}`}>
+                            {check.pass ? <Check className="w-3 h-3" /> : <span>•</span>}
+                          </span>
+                          <span className={check.pass ? 'text-gray-200' : 'text-gray-500'}>{check.label}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                   {methods.formState.errors.required_skills ? (
                     <p className="text-red-400 text-xs">
@@ -1077,7 +1221,7 @@ export default function JobPost() {
 
       <Modal
         isOpen={showRestoreDraftModal}
-        onClose={() => setShowRestoreDraftModal(false)}
+        onClose={dismissRestorePrompt}
         title={tx('jobs.new.restoreDraft.title', undefined, 'Restore draft')}
       >
         <div className="space-y-4">

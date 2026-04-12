@@ -16,6 +16,10 @@ vi.mock('@/lib/supabase', () => ({
     supabase: supabaseMock,
 }));
 
+vi.mock('@/lib/supabaseWithRetry', () => ({
+    supabaseWithRetry: async (queryFn: () => Promise<unknown> | unknown) => await queryFn(),
+}));
+
 vi.mock('@/contexts/AuthContext', () => ({
     useAuth: () => ({ user: null }),
 }));
@@ -49,6 +53,12 @@ vi.mock('@/components/common/SkeletonCard', () => ({
     Skeleton: () => <div>Loading...</div>,
 }));
 
+vi.mock('@/components/ui/Toast', () => ({
+    useToast: () => ({
+        showToast: vi.fn(),
+    }),
+}));
+
 import ClientProfile from '@/pages/ClientProfile';
 
 describe('ClientProfile', () => {
@@ -62,20 +72,23 @@ describe('ClientProfile', () => {
                 return {
                     select: vi.fn((selection: string) => {
                         captured.profileSelect = selection;
+                        const resolved = {
+                            data: {
+                                id: 'client-1',
+                                full_name: 'Safe Client',
+                                avatar_url: null,
+                                location: 'Sousse',
+                                bio: 'Public bio only',
+                                created_at: '2026-01-01T00:00:00.000Z',
+                                cin_verified: true,
+                            },
+                            error: null,
+                        };
+
                         return {
                             eq: vi.fn().mockReturnValue({
-                                single: vi.fn().mockResolvedValue({
-                                    data: {
-                                        id: 'client-1',
-                                        full_name: 'Safe Client',
-                                        avatar_url: null,
-                                        location: 'Sousse',
-                                        bio: 'Public bio only',
-                                        created_at: '2026-01-01T00:00:00.000Z',
-                                        cin_verified: true,
-                                    },
-                                    error: null,
-                                }),
+                                single: vi.fn().mockResolvedValue(resolved),
+                                maybeSingle: vi.fn().mockResolvedValue(resolved),
                             }),
                         };
                     }),
@@ -160,8 +173,7 @@ describe('ClientProfile', () => {
 
         expect(supabaseMock.from).toHaveBeenCalledWith('public_profiles');
         expect(supabaseMock.from).not.toHaveBeenCalledWith('profiles');
-        expect(captured.profileSelect).toContain('full_name');
-        expect(captured.profileSelect).toContain('cin_verified');
+        expect(captured.profileSelect).toBe('*');
         expect(captured.profileSelect).not.toContain('email');
         expect(captured.profileSelect).not.toContain('phone');
         expect(captured.reviewFilterColumn).toBe('reviewee_id');

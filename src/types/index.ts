@@ -139,11 +139,14 @@ export interface PortfolioItem {
     freelancer_id: string;
     title: string;
     description?: string;
+    client_name?: string;
     media_urls: string[];
     thumbnail_url?: string;
     project_url?: string;
     skills_used?: string[];
+    tools_used?: string[];
     completion_date?: string;
+    order_index?: number;
     category?: string;
     likes_count?: number;
     views_count?: number;

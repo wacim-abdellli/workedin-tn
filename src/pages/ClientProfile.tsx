@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { useNavigate, useParams, Link } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate, useParams, Link, useLocation } from "react-router-dom";
 import SEO, { SEO_CONFIG } from "@/components/common/SEO";
 import {
   MapPin,
@@ -15,7 +15,12 @@ import {
   FileText,
   Edit2,
   Save,
+  ShieldCheck,
   X,
+  Target,
+  Settings,
+  Plus,
+  Eye,
 } from "lucide-react";
 import { Header } from "@/components/layout";
 import { supabase } from "@/lib/supabase";
@@ -24,11 +29,21 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "@/i18n";
 import { useAuth } from "@/contexts/AuthContext";
 import { logger } from "@/lib/logger";
+import { ROUTES } from "@/lib/routes";
 import Button from "@/components/ui/Button";
-import { localizeGovernorate } from "@/lib/governorates";
+import CustomSelect from "@/components/ui/CustomSelect";
+import { localizeGovernorate, getLocalizedGovernorateOptions } from "@/lib/governorates";
 import { useToast } from "@/components/ui/Toast";
+import { GOVERNORATES } from "@/types";
+import {
+  ProfileAvatar,
+  ProfileInfoHeader,
+  ProfileInfoRow,
+  ProfileSectionCard,
+  ProfileSectionHeader,
+  ProfileStatCard,
+} from "@/components/profile/ProfilePrimitives";
 
-import OptimizedImage from "@/components/common/OptimizedImage";
 import { Skeleton } from "@/components/common/SkeletonCard";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -75,15 +90,6 @@ interface RecentJob {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function getInitials(name: string): string {
-  return name
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((n) => n[0]?.toUpperCase() ?? "")
-    .join("");
-}
-
 function formatDate(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString(undefined, {
     year: "numeric",
@@ -122,6 +128,29 @@ function getSummary(value: unknown): string {
   const record = toRecord(value);
   const summary = record.summary;
   return typeof summary === "string" ? summary.trim() : "";
+}
+
+function normalizeGovernorateValue(value: string | null | undefined): string {
+  if (!value) {
+    return "";
+  }
+
+  const normalized = value.trim().toLowerCase();
+
+  const directMatch = GOVERNORATES.find((gov) => gov.toLowerCase() === normalized);
+  if (directMatch) {
+    return directMatch;
+  }
+
+  const mappedMatch = GOVERNORATES.find((gov) => {
+    const ar = localizeGovernorate(gov, "ar").toLowerCase();
+    const en = localizeGovernorate(gov, "en").toLowerCase();
+    const fr = localizeGovernorate(gov, "fr").toLowerCase();
+
+    return normalized === ar || normalized === en || normalized === fr;
+  });
+
+  return mappedMatch ?? value.trim();
 }
 
 function normalizeClientProfileData(data: Record<string, unknown>): ClientProfileData {
@@ -179,54 +208,11 @@ function normalizeClientProfileData(data: Record<string, unknown>): ClientProfil
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
-function StatCard({
-  icon: Icon,
-  label,
-  value,
-}: {
-  icon: React.ElementType;
-  label: string;
-  value: string | React.ReactNode;
-}) {
-  return (
-    <div
-      className="flex flex-col items-center gap-1.5 px-4 py-4 rounded-xl border flex-1 min-w-0 text-center"
-      style={{
-        background: "var(--color-background-elevated)",
-        borderColor: "var(--color-border-subtle)",
-      }}
-    >
-      <Icon
-        className="w-5 h-5 flex-shrink-0"
-        style={{ color: "var(--workspace-primary)" }}
-      />
-      <span
-        className="text-lg font-bold leading-tight tabular-nums"
-        style={{ color: "var(--color-text-primary)" }}
-      >
-        {value}
-      </span>
-      <span
-        className="text-xs leading-snug"
-        style={{ color: "var(--color-text-secondary)" }}
-      >
-        {label}
-      </span>
-    </div>
-  );
-}
-
 function ProfileSkeleton() {
   return (
     <div className="max-w-3xl mx-auto px-4 py-10 space-y-5">
       {/* Header card */}
-      <div
-        className="rounded-2xl border p-6 space-y-4"
-        style={{
-          background: "var(--color-background-elevated)",
-          borderColor: "var(--color-border-subtle)",
-        }}
-      >
+      <div className="bg-[#141414] border border-[#262626] rounded-2xl p-6 space-y-4">
         <div className="flex items-start gap-4">
           <Skeleton className="w-20 h-20 rounded-full flex-shrink-0" />
           <div className="flex-1 space-y-2 pt-1">
@@ -245,13 +231,7 @@ function ProfileSkeleton() {
         ))}
       </div>
       {/* Jobs */}
-      <div
-        className="rounded-2xl border p-5 space-y-3"
-        style={{
-          background: "var(--color-background-elevated)",
-          borderColor: "var(--color-border-subtle)",
-        }}
-      >
+      <div className="bg-[#141414] border border-[#262626] rounded-2xl p-5 space-y-3">
         <Skeleton className="h-5 w-40" />
         {[0, 1, 2].map((i) => (
           <Skeleton key={i} className="h-16 rounded-xl" />
@@ -268,12 +248,23 @@ export default function ClientProfile() {
   const { user, updateProfile, profile } = useAuth();
   const { tx, language } = useTranslation() as any;
   const navigate = useNavigate();
+  const location = useLocation();
   const { showToast } = useToast();
   const queryClient = useQueryClient();
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [bioDraft, setBioDraft] = useState("");
   const [locationDraft, setLocationDraft] = useState("");
   const [isSavingProfile, setIsSavingProfile] = useState(false);
+
+  const isPublicPreview = useMemo(() => {
+    const params = new URLSearchParams(location.search);
+    return params.get("preview") === "public";
+  }, [location.search]);
+
+  const governorateOptions = useMemo(
+    () => getLocalizedGovernorateOptions(language),
+    [language],
+  );
 
   // ── Fetch client profile ────────────────────────────────────────────────
   const {
@@ -366,7 +357,8 @@ export default function ClientProfile() {
     enabled: !!clientId,
   });
 
-  const isOwnProfile = Boolean(user?.id && client?.id && user.id === client.id);
+  const isOwnerProfile = Boolean(user?.id && client?.id && user.id === client.id);
+  const isOwnProfile = isOwnerProfile && !isPublicPreview;
 
   useEffect(() => {
     if (isLoading || isError || client) {
@@ -401,9 +393,9 @@ export default function ClientProfile() {
     }
 
     setBioDraft(getClientIntro(client));
-    setLocationDraft(client.location ?? "");
+    setLocationDraft(normalizeGovernorateValue(client.location));
     setIsEditingProfile(false);
-  }, [client]);
+  }, [client, isPublicPreview]);
 
   const saveOwnProfile = async () => {
     if (!isOwnProfile || !user?.id) {
@@ -461,10 +453,7 @@ export default function ClientProfile() {
     return (
       <>
         <SEO {...SEO_CONFIG.dashboard} noIndex />
-        <div
-          className="min-h-screen"
-          style={{ background: "var(--color-background-base, #f9fafb)" }}
-        >
+        <div className="min-h-screen bg-[#0a0a0a] text-white">
           <Header />
           <ProfileSkeleton />
         </div>
@@ -482,26 +471,14 @@ export default function ClientProfile() {
     return (
       <>
         <SEO {...SEO_CONFIG.dashboard} noIndex />
-        <div
-          className="min-h-screen"
-          style={{ background: "var(--color-background-base, #f9fafb)" }}
-        >
+        <div className="min-h-screen bg-[#0a0a0a] text-white">
           <Header />
           <div className="max-w-3xl mx-auto px-4 py-20 flex flex-col items-center gap-4 text-center">
-            <UserX
-              className="w-16 h-16"
-              style={{ color: "var(--color-text-secondary)" }}
-            />
-            <h2
-              className="text-xl font-semibold"
-              style={{ color: "var(--color-text-primary)" }}
-            >
+            <UserX className="w-16 h-16 text-gray-500" />
+            <h2 className="text-xl font-semibold text-white">
               {tx("common.loadFailed", undefined, "Failed to load profile")}
             </h2>
-            <p
-              className="text-sm max-w-xl"
-              style={{ color: "var(--color-text-secondary)" }}
-            >
+            <p className="text-sm max-w-xl text-gray-400">
               {errorMessage}
             </p>
             <Button
@@ -522,26 +499,14 @@ export default function ClientProfile() {
     return (
       <>
         <SEO {...SEO_CONFIG.dashboard} noIndex />
-        <div
-          className="min-h-screen"
-          style={{ background: "var(--color-background-base, #f9fafb)" }}
-        >
+        <div className="min-h-screen bg-[#0a0a0a] text-white">
           <Header />
           <div className="max-w-3xl mx-auto px-4 py-20 flex flex-col items-center gap-4 text-center">
-            <UserX
-              className="w-16 h-16"
-              style={{ color: "var(--color-text-secondary)" }}
-            />
-            <h2
-              className="text-xl font-semibold"
-              style={{ color: "var(--color-text-primary)" }}
-            >
+            <UserX className="w-16 h-16 text-gray-500" />
+            <h2 className="text-xl font-semibold text-white">
               {tx("clientProfile.notFound", undefined, "Client not found")}
             </h2>
-            <p
-              className="text-sm"
-              style={{ color: "var(--color-text-secondary)" }}
-            >
+            <p className="text-sm text-gray-400">
               {tx(
                 "clientProfile.notFoundDesc",
                 undefined,
@@ -562,33 +527,36 @@ export default function ClientProfile() {
     );
   }
 
-  const canContact = !!user && !isOwnProfile;
+  const canContact = !!user && !isOwnerProfile;
   const clientIntro = getClientIntro(client);
   const communicationSummary = getSummary(client.communication_preferences);
   const screeningSummary = getSummary(client.screening_preferences);
   const legalSummary = getSummary(client.legal_preferences);
+  const accentColor = "#F59E0B";
   const statsContent = stats ? (
-    <div className="grid grid-cols-2 gap-3">
-      <StatCard
-        icon={Briefcase}
+    <section className="grid grid-cols-2 gap-3">
+      <ProfileStatCard
+        icon={<Briefcase className="w-4 h-4" />}
         label={tx(
           "clientProfile.stats.jobsPosted",
           undefined,
           "Jobs Posted",
         )}
-        value={stats.totalJobs.toString()}
+        value={stats.totalJobs}
+        accentColor={accentColor}
       />
-      <StatCard
-        icon={FileText}
+      <ProfileStatCard
+        icon={<FileText className="w-4 h-4" />}
         label={tx(
           "clientProfile.stats.completedContracts",
           undefined,
           "Completed",
         )}
-        value={stats.completedContracts.toString()}
+        value={stats.completedContracts}
+        accentColor={accentColor}
       />
-      <StatCard
-        icon={DollarSign}
+      <ProfileStatCard
+        icon={<DollarSign className="w-4 h-4" />}
         label={tx(
           "clientProfile.stats.totalSpent",
           undefined,
@@ -597,511 +565,512 @@ export default function ClientProfile() {
         value={
           stats.totalSpent > 0 ? formatCurrency(stats.totalSpent) : "—"
         }
+        accentColor={accentColor}
       />
-      <StatCard
-        icon={Star}
+      <ProfileStatCard
+        icon={<Star className="w-4 h-4" />}
         label={tx(
           "clientProfile.stats.avgRating",
           undefined,
           "Avg Rating",
         )}
         value={
-          stats.reviewCount > 0 ? (
-            <span className="flex items-center justify-center gap-1">
-              <Star
-                className="w-4 h-4"
-                style={{
-                  color: "var(--color-status-warning)",
-                  fill: "var(--color-status-warning)",
-                }}
-              />
-              {stats.avgRating.toFixed(1)}
-            </span>
-          ) : (
-            <span
-              className="text-sm font-normal"
-              style={{ color: "var(--color-text-secondary)" }}
-            >
-              {tx("clientProfile.noReviews", undefined, "No reviews")}
-            </span>
-          )
+          stats.reviewCount > 0 ? stats.avgRating.toFixed(1) : "—"
         }
+        accentColor={accentColor}
       />
-    </div>
+    </section>
   ) : null;
 
   // ── Main render ─────────────────────────────────────────────────────────
   return (
     <>
       <SEO {...SEO_CONFIG.dashboard} noIndex />
-      <div
-        className="min-h-screen"
-        style={{ background: "var(--color-background-base, #f9fafb)" }}
-      >
+      <div className="min-h-screen bg-[#0a0a0a] text-white">
         <Header />
 
-        <main className="max-w-6xl mx-auto px-4 py-8 pb-20 space-y-5">
-          {/* Back button */}
-          <button
-            type="button"
-            onClick={() => navigate(-1)}
-            className="inline-flex items-center gap-1.5 text-sm font-medium transition-colors"
-            style={{ color: "var(--color-text-secondary)" }}
-          >
-            <ArrowLeft className="w-4 h-4" />
-            {tx("common.back", undefined, "Back")}
-          </button>
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 items-start">
-            <div className="lg:col-span-2 space-y-5">
-
-          {/* ── Profile header card ──────────────────────────────── */}
-          <div
-            className="rounded-2xl border p-6 space-y-4"
-            style={{
-              background: "var(--color-background-elevated)",
-              borderColor: "var(--color-border-subtle)",
-            }}
-          >
-            <div className="flex items-start gap-4">
-              {/* Avatar */}
-              <div className="w-20 h-20 rounded-full overflow-hidden flex-shrink-0">
-                {client.avatar_url ? (
-                  <OptimizedImage
-                    src={client.avatar_url}
-                    alt={client.full_name}
-                    className="w-20 h-20 rounded-full"
-                  />
-                ) : (
-                  <div
-                    className="w-20 h-20 rounded-full flex items-center justify-center text-white text-2xl font-bold select-none"
-                    style={{ background: "var(--workspace-primary)" }}
-                  >
-                    {getInitials(client.full_name)}
-                  </div>
-                )}
-              </div>
-
-              {/* Name + badges */}
-              <div className="flex-1 min-w-0 space-y-1.5">
-                <h1
-                  className="text-2xl font-bold leading-tight"
-                  style={{ color: "var(--color-text-primary)" }}
+        <main className="w-full p-4 sm:p-6">
+          {isPublicPreview && isOwnerProfile ? (
+            <div className="max-w-6xl mx-auto mb-6">
+              <div className="bg-[linear-gradient(135deg,rgba(245,158,11,0.16),#141414_48%,#121212)] border border-[#493624] rounded-xl px-4 py-3 flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-sm font-semibold text-white">
+                    {tx("clientProfile.previewTitle", undefined, "Public Profile Preview")}
+                  </p>
+                  <p className="text-xs text-white/60">
+                    {tx("clientProfile.previewDesc", undefined, "You are viewing your profile as other users see it.")}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => navigate(`/client/${client.id}`)}
+                  className="inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm transition-colors"
+                  style={{
+                    color: accentColor,
+                    borderColor: "rgba(245,158,11,0.45)",
+                    background: "rgba(245,158,11,0.08)",
+                  }}
                 >
-                  {client.full_name}
-                </h1>
+                  <ArrowLeft className="w-4 h-4" />
+                  {tx("clientProfile.exitPreview", undefined, "Exit Preview")}
+                </button>
+              </div>
+            </div>
+          ) : null}
 
-                {isOwnProfile ? (
-                  <div className="flex flex-wrap items-center gap-2">
-                    {!isEditingProfile ? (
-                      <button
-                        type="button"
-                        onClick={() => setIsEditingProfile(true)}
-                        className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full border transition-colors"
+          <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2 flex flex-col gap-5">
+              <ProfileSectionCard className="relative overflow-hidden bg-[radial-gradient(circle_at_88%_6%,rgba(245,158,11,0.18),transparent_40%),#141414] border-white/10">
+                <div className="absolute -right-4 -top-8 h-24 w-24 rounded-full bg-[#F59E0B]/20 blur-2xl" />
+
+                <div className="relative z-10 flex flex-col sm:flex-row sm:items-start gap-5">
+                  <ProfileAvatar
+                    type="client"
+                    name={client.full_name}
+                    imageUrl={client.avatar_url}
+                    showOnlineDot={Boolean(client.cin_verified)}
+                  />
+
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-3 flex-wrap">
+                      <h1 className="text-2xl sm:text-[1.75rem] font-black leading-tight text-white">
+                        {client.full_name}
+                      </h1>
+
+                      {isOwnProfile ? (
+                        !isEditingProfile ? (
+                          <button
+                            type="button"
+                            onClick={() => setIsEditingProfile(true)}
+                            className="inline-flex items-center gap-1 text-white/60 hover:text-white transition-colors text-xs"
+                          >
+                            <Edit2 className="w-3.5 h-3.5" />
+                            {tx("clientProfile.editProfile", undefined, "Edit Profile")}
+                          </button>
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setBioDraft(clientIntro);
+                                setLocationDraft(normalizeGovernorateValue(client.location));
+                                setIsEditingProfile(false);
+                              }}
+                              className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full border text-white/75 border-white/15"
+                              disabled={isSavingProfile}
+                            >
+                              <X className="w-3.5 h-3.5" />
+                              {tx("common.cancel", undefined, "Cancel")}
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => void saveOwnProfile()}
+                              className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full border"
+                              style={{
+                                color: accentColor,
+                                borderColor: "rgba(245,158,11,0.45)",
+                                background: "rgba(245,158,11,0.12)",
+                              }}
+                              disabled={isSavingProfile}
+                            >
+                              <Save className="w-3.5 h-3.5" />
+                              {isSavingProfile
+                                ? tx("common.saving", undefined, "Saving...")
+                                : tx("common.save", undefined, "Save")}
+                            </button>
+                          </div>
+                        )
+                      ) : null}
+                    </div>
+
+                    <p className="text-white/55 mt-1">
+                      {client.company_role || client.company_industry || tx("clientProfile.client", undefined, "Client")}
+                    </p>
+
+                    <div className="flex flex-wrap gap-2 mt-3">
+                      <span
+                        className="px-3 py-1 rounded-full border text-xs font-semibold"
                         style={{
-                          color: "var(--workspace-primary)",
-                          borderColor:
-                            "color-mix(in srgb, var(--workspace-primary) 38%, var(--color-border-subtle))",
-                          background:
-                            "color-mix(in srgb, var(--workspace-primary) 10%, transparent)",
+                          background: "rgba(245,158,11,0.12)",
+                          color: accentColor,
+                          borderColor: "rgba(245,158,11,0.35)",
                         }}
                       >
-                        <Edit2 className="w-3.5 h-3.5" />
-                        {tx("clientProfile.editProfile", undefined, "Edit Profile")}
-                      </button>
-                    ) : (
-                      <>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setBioDraft(clientIntro);
-                            setLocationDraft(client.location ?? "");
-                            setIsEditingProfile(false);
-                          }}
-                          className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full border transition-colors"
-                          style={{
-                            color: "var(--color-text-secondary)",
-                            borderColor: "var(--color-border-subtle)",
-                            background: "transparent",
-                          }}
-                          disabled={isSavingProfile}
-                        >
-                          <X className="w-3.5 h-3.5" />
-                          {tx("common.cancel", undefined, "Cancel")}
-                        </button>
+                        {tx("clientProfile.client", undefined, "Client")}
+                      </span>
 
-                        <button
-                          type="button"
-                          onClick={() => void saveOwnProfile()}
-                          className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full border transition-colors"
-                          style={{
-                            color: "var(--workspace-primary)",
-                            borderColor:
-                              "color-mix(in srgb, var(--workspace-primary) 45%, var(--color-border-subtle))",
-                            background:
-                              "color-mix(in srgb, var(--workspace-primary) 12%, transparent)",
-                          }}
-                          disabled={isSavingProfile}
-                        >
-                          <Save className="w-3.5 h-3.5" />
-                          {isSavingProfile
-                            ? tx("common.saving", undefined, "Saving...")
-                            : tx("common.save", undefined, "Save")}
-                        </button>
-                      </>
-                    )}
-                  </div>
-                ) : null}
+                      {client.cin_verified ? (
+                        <span className="px-3 py-1 rounded-full border text-xs font-semibold bg-green-500/10 text-green-400 border-green-500/25 inline-flex items-center gap-1">
+                          <CheckCircle className="w-3.5 h-3.5" />
+                          {tx("clientProfile.verifiedClient", undefined, "Verified Client")}
+                        </span>
+                      ) : null}
+                    </div>
 
-                {/* Verified badge */}
-                {client.cin_verified && (
-                  <span
-                    className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full"
-                    style={{
-                      background:
-                        "color-mix(in srgb, var(--color-status-success) 12%, transparent)",
-                      color: "var(--color-status-success)",
-                    }}
-                  >
-                    <CheckCircle className="w-3.5 h-3.5" />
-                    {tx(
-                      "clientProfile.verifiedClient",
-                      undefined,
-                      "Verified Client",
-                    )}
-                  </span>
-                )}
+                    {!isEditingProfile ? (
+                      <div className="flex flex-wrap gap-4 text-sm text-white/55 mt-3">
+                        {client.location ? (
+                          <span className="inline-flex items-center gap-1.5">
+                            <MapPin className="w-4 h-4" />
+                            {localizeGovernorate(client.location, language)}
+                          </span>
+                        ) : null}
 
-                {/* Location */}
-                {isEditingProfile ? (
-                  <div className="space-y-1">
-                    <label
-                      className="text-xs font-medium"
-                      style={{ color: "var(--color-text-secondary)" }}
-                    >
-                      {tx("clientProfile.location", undefined, "Location")}
-                    </label>
-                    <input
-                      value={locationDraft}
-                      onChange={(event) => setLocationDraft(event.target.value)}
-                      placeholder={tx("clientProfile.locationPlaceholder", undefined, "City or governorate")}
-                      className="w-full rounded-lg border px-3 py-2 text-sm outline-none"
-                      style={{
-                        borderColor: "var(--color-border-subtle)",
-                        background: "var(--color-background-base)",
-                        color: "var(--color-text-primary)",
-                      }}
-                    />
-                  </div>
-                ) : client.location ? (
-                  <div
-                    className="flex items-center gap-1.5 text-sm"
-                    style={{ color: "var(--color-text-secondary)" }}
-                  >
-                    <MapPin className="w-4 h-4 flex-shrink-0" />
-                    <span>{localizeGovernorate(client.location, language)}</span>
-                  </div>
-                ) : null}
-
-                {/* Member since */}
-                <div
-                  className="flex items-center gap-1.5 text-sm"
-                  style={{ color: "var(--color-text-secondary)" }}
-                >
-                  <Calendar className="w-4 h-4 flex-shrink-0" />
-                  <span>
-                    {tx("clientProfile.memberSince", undefined, "Member since")}{" "}
-                    {formatDate(client.created_at)}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Bio */}
-            {isEditingProfile ? (
-              <div className="space-y-1">
-                <label
-                  className="text-xs font-medium"
-                  style={{ color: "var(--color-text-secondary)" }}
-                >
-                  {tx("clientProfile.about", undefined, "About")}
-                </label>
-                <textarea
-                  value={bioDraft}
-                  onChange={(event) => setBioDraft(event.target.value)}
-                  rows={4}
-                  placeholder={tx("clientProfile.bioPlaceholder", undefined, "Tell freelancers about your company or hiring needs")}
-                  className="w-full rounded-lg border px-3 py-2 text-sm outline-none resize-y"
-                  style={{
-                    borderColor: "var(--color-border-subtle)",
-                    background: "var(--color-background-base)",
-                    color: "var(--color-text-primary)",
-                  }}
-                />
-              </div>
-            ) : clientIntro ? (
-              <p
-                className="text-sm leading-relaxed"
-                style={{ color: "var(--color-text-primary)" }}
-              >
-                {clientIntro}
-              </p>
-            ) : null}
-          </div>
-
-          {(client.company_name || client.company_industry || client.company_size || client.company_role || (Array.isArray(client.hiring_needs) && client.hiring_needs.length > 0)) ? (
-            <div
-              className="rounded-2xl border p-5"
-              style={{
-                background: "var(--color-background-elevated)",
-                borderColor: "var(--color-border-subtle)",
-              }}
-            >
-              <h2
-                className="text-sm font-semibold mb-3"
-                style={{ color: "var(--color-text-primary)" }}
-              >
-                {tx("clientProfile.companyInfo", undefined, "Company Information")}
-              </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
-                {client.company_name ? (
-                  <p style={{ color: "var(--color-text-secondary)" }}>
-                    <span style={{ color: "var(--color-text-primary)" }}>{tx("profile.companyName", undefined, "Company name")}: </span>
-                    {client.company_name}
-                  </p>
-                ) : null}
-                {client.company_industry ? (
-                  <p style={{ color: "var(--color-text-secondary)" }}>
-                    <span style={{ color: "var(--color-text-primary)" }}>{tx("profile.companyIndustry", undefined, "Industry")}: </span>
-                    {client.company_industry}
-                  </p>
-                ) : null}
-                {client.company_size ? (
-                  <p style={{ color: "var(--color-text-secondary)" }}>
-                    <span style={{ color: "var(--color-text-primary)" }}>{tx("profile.companySize", undefined, "Company size")}: </span>
-                    {client.company_size}
-                  </p>
-                ) : null}
-                {client.company_role ? (
-                  <p style={{ color: "var(--color-text-secondary)" }}>
-                    <span style={{ color: "var(--color-text-primary)" }}>{tx("profile.companyRole", undefined, "Role")}: </span>
-                    {client.company_role}
-                  </p>
-                ) : null}
-                {client.company_website ? (
-                  <p style={{ color: "var(--color-text-secondary)" }}>
-                    <span style={{ color: "var(--color-text-primary)" }}>{tx("profile.companyWebsite", undefined, "Website")}: </span>
-                    {client.company_website}
-                  </p>
-                ) : null}
-              </div>
-              {Array.isArray(client.hiring_needs) && client.hiring_needs.length > 0 ? (
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {client.hiring_needs.map((need) => (
-                    <span
-                      key={need}
-                      className="text-xs font-medium px-2 py-0.5 rounded-full"
-                      style={{
-                        background:
-                          "color-mix(in srgb, var(--workspace-primary) 12%, transparent)",
-                        color: "var(--workspace-primary)",
-                      }}
-                    >
-                      {need}
-                    </span>
-                  ))}
-                </div>
-              ) : null}
-            </div>
-          ) : null}
-
-          {(client.project_budget_preference || client.project_timeline_preference || communicationSummary || screeningSummary || legalSummary) ? (
-            <div
-              className="rounded-2xl border p-5"
-              style={{
-                background: "var(--color-background-elevated)",
-                borderColor: "var(--color-border-subtle)",
-              }}
-            >
-              <h2
-                className="text-sm font-semibold mb-3"
-                style={{ color: "var(--color-text-primary)" }}
-              >
-                {tx("clientProfile.hiringPreferences", undefined, "Hiring Preferences")}
-              </h2>
-
-              <div className="space-y-2 text-sm">
-                {client.project_budget_preference ? (
-                  <p style={{ color: "var(--color-text-secondary)" }}>
-                    <span style={{ color: "var(--color-text-primary)" }}>{tx("profile.budgetPreference", undefined, "Budget")}: </span>
-                    {client.project_budget_preference}
-                  </p>
-                ) : null}
-                {client.project_timeline_preference ? (
-                  <p style={{ color: "var(--color-text-secondary)" }}>
-                    <span style={{ color: "var(--color-text-primary)" }}>{tx("profile.timelinePreference", undefined, "Timeline")}: </span>
-                    {client.project_timeline_preference}
-                  </p>
-                ) : null}
-                {communicationSummary ? (
-                  <p style={{ color: "var(--color-text-secondary)" }}>
-                    <span style={{ color: "var(--color-text-primary)" }}>{tx("profile.communicationPreferences", undefined, "Communication")}: </span>
-                    {communicationSummary}
-                  </p>
-                ) : null}
-                {screeningSummary ? (
-                  <p style={{ color: "var(--color-text-secondary)" }}>
-                    <span style={{ color: "var(--color-text-primary)" }}>{tx("profile.screeningPreferences", undefined, "Screening")}: </span>
-                    {screeningSummary}
-                  </p>
-                ) : null}
-                {legalSummary ? (
-                  <p style={{ color: "var(--color-text-secondary)" }}>
-                    <span style={{ color: "var(--color-text-primary)" }}>{tx("profile.legalPreferences", undefined, "Legal")}: </span>
-                    {legalSummary}
-                  </p>
-                ) : null}
-              </div>
-            </div>
-          ) : null}
-
-          {/* ── Recent job postings ──────────────────────────────── */}
-          {recentJobs.length > 0 && (
-            <div
-              className="rounded-2xl border overflow-hidden"
-              style={{
-                background: "var(--color-background-elevated)",
-                borderColor: "var(--color-border-subtle)",
-              }}
-            >
-              <div
-                className="px-5 py-4 border-b"
-                style={{ borderColor: "var(--color-border-subtle)" }}
-              >
-                <h2
-                  className="text-base font-semibold flex items-center gap-2"
-                  style={{ color: "var(--color-text-primary)" }}
-                >
-                  <Briefcase className="w-4 h-4" />
-                  {tx(
-                    "clientProfile.activeJobs",
-                    undefined,
-                    "Active Job Postings",
-                  )}
-                </h2>
-              </div>
-
-              <div
-                className="divide-y"
-                style={{ borderColor: "var(--color-border-subtle)" }}
-              >
-                {recentJobs.map((job) => (
-                  <div
-                    key={job.id}
-                    className="px-5 py-4 flex items-start justify-between gap-3"
-                  >
-                    {/* Left: title + meta */}
-                    <div className="flex-1 min-w-0 space-y-1.5">
-                      <Link
-                        to={`/jobs/${job.id}`}
-                        className="text-sm font-semibold hover:underline block truncate"
-                        style={{ color: "var(--color-text-primary)" }}
-                      >
-                        {job.title}
-                      </Link>
-
-                      <div className="flex flex-wrap items-center gap-2">
-                        {/* Category badge */}
-                        <span
-                          className="text-xs font-medium px-2 py-0.5 rounded-full"
-                          style={{
-                            background:
-                              "color-mix(in srgb, var(--workspace-primary) 12%, transparent)",
-                            color: "var(--workspace-primary)",
-                          }}
-                        >
-                          {job.category}
+                        <span className="inline-flex items-center gap-1.5">
+                          <Calendar className="w-4 h-4" />
+                          {tx("clientProfile.memberSince", undefined, "Member since")} {formatDate(client.created_at)}
                         </span>
 
-                        {/* Budget */}
-                        {(job.budget_min != null || job.budget_max != null) && (
-                          <span
-                            className="text-xs"
-                            style={{ color: "var(--color-text-secondary)" }}
-                          >
-                            {job.budget_min != null && job.budget_max != null
-                              ? `${job.budget_min.toLocaleString()} – ${job.budget_max.toLocaleString()} TND`
-                              : job.budget_min != null
-                                ? `From ${job.budget_min.toLocaleString()} TND`
-                                : `Up to ${job.budget_max!.toLocaleString()} TND`}
+                        {stats ? (
+                          <span className="inline-flex items-center gap-1.5">
+                            <Target className="w-4 h-4" style={{ color: accentColor }} />
+                            {stats.totalJobs} {tx("clientProfile.stats.jobsPosted", undefined, "Jobs Posted")}
                           </span>
-                        )}
+                        ) : null}
+                      </div>
+                    ) : null}
+                  </div>
+                </div>
 
-                        {/* Proposals count */}
-                        {job.proposals_count != null && (
-                          <span
-                            className="text-xs flex items-center gap-1"
-                            style={{ color: "var(--color-text-secondary)" }}
-                          >
-                            <Users className="w-3 h-3" />
-                            {job.proposals_count}{" "}
-                            {tx(
-                              "clientProfile.proposals",
-                              undefined,
-                              "proposals",
-                            )}
-                          </span>
-                        )}
+                {isEditingProfile ? (
+                  <div className="mt-4 grid grid-cols-1 gap-3 rounded-xl border border-white/10 bg-black/30 p-3.5">
+                    <div>
+                      <label className="text-xs text-white/50">
+                        {tx("clientProfile.location", undefined, "Location")}
+                      </label>
+                      <div className="mt-1">
+                        <CustomSelect
+                          id="client-profile-location"
+                          value={locationDraft}
+                          onChange={(value) => setLocationDraft(value)}
+                          options={governorateOptions}
+                          placeholder={tx("clientProfile.locationPlaceholder", undefined, "Select governorate")}
+                          variant="client"
+                        />
                       </div>
                     </div>
 
-                    {/* Right: Apply button */}
-                    <Link to={`/jobs/${job.id}`} className="flex-shrink-0">
-                      <Button variant="outline" size="sm">
-                        {tx("clientProfile.apply", undefined, "Apply")}
-                      </Button>
-                    </Link>
+                    <div>
+                      <label className="text-xs text-white/50">
+                        {tx("clientProfile.about", undefined, "About")}
+                      </label>
+                      <textarea
+                        value={bioDraft}
+                        onChange={(event) => setBioDraft(event.target.value)}
+                        rows={4}
+                        placeholder={tx("clientProfile.bioPlaceholder", undefined, "Tell freelancers about your company or hiring needs")}
+                        className="mt-1 w-full bg-[#0a0a0a] border border-white/10 rounded-lg text-white p-3 outline-none resize-y"
+                      />
+                    </div>
                   </div>
-                ))}
-              </div>
-            </div>
-          )}
+                ) : (
+                  <p className="text-white/75 mt-4 leading-relaxed">
+                    {clientIntro || tx("clientProfile.noIntro", undefined, "No introduction added yet")}
+                  </p>
+                )}
+              </ProfileSectionCard>
 
-          {/* ── Contact button ───────────────────────────────────── */}
-          {canContact && (
-            <div className="flex justify-center pt-2">
-              <Button
-                variant="primary"
-                size="lg"
-                leftIcon={<MessageSquare className="w-5 h-5" />}
-                onClick={() => navigate("/messages")}
-              >
-                {tx("clientProfile.sendMessage", undefined, "Send Message")}
-              </Button>
-            </div>
-          )}
+              {(client.company_name || client.company_industry || client.company_size || client.company_role || client.company_website || (Array.isArray(client.hiring_needs) && client.hiring_needs.length > 0)) ? (
+                <ProfileSectionCard>
+                  <ProfileSectionHeader
+                    title={tx("clientProfile.companyInfo", undefined, "Company Information")}
+                    accentColor={accentColor}
+                  />
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm text-white/75">
+                    {client.company_name ? (
+                      <p className="rounded-lg border border-white/10 bg-black/20 px-3 py-2">
+                        <span className="text-white font-semibold">{tx("profile.companyName", undefined, "Company name")}: </span>
+                        {client.company_name}
+                      </p>
+                    ) : null}
+                    {client.company_industry ? (
+                      <p className="rounded-lg border border-white/10 bg-black/20 px-3 py-2">
+                        <span className="text-white font-semibold">{tx("profile.companyIndustry", undefined, "Industry")}: </span>
+                        {client.company_industry}
+                      </p>
+                    ) : null}
+                    {client.company_size ? (
+                      <p className="rounded-lg border border-white/10 bg-black/20 px-3 py-2">
+                        <span className="text-white font-semibold">{tx("profile.companySize", undefined, "Company size")}: </span>
+                        {client.company_size}
+                      </p>
+                    ) : null}
+                    {client.company_role ? (
+                      <p className="rounded-lg border border-white/10 bg-black/20 px-3 py-2">
+                        <span className="text-white font-semibold">{tx("profile.companyRole", undefined, "Role")}: </span>
+                        {client.company_role}
+                      </p>
+                    ) : null}
+                    {client.company_website ? (
+                      <p className="rounded-lg border border-white/10 bg-black/20 px-3 py-2">
+                        <span className="text-white font-semibold">{tx("profile.companyWebsite", undefined, "Website")}: </span>
+                        <a
+                          href={client.company_website}
+                          target="_blank"
+                          rel="noreferrer"
+                          style={{ color: accentColor }}
+                          className="hover:underline break-all"
+                        >
+                          {client.company_website}
+                        </a>
+                      </p>
+                    ) : null}
+                  </div>
+
+                  {Array.isArray(client.hiring_needs) && client.hiring_needs.length > 0 ? (
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      {client.hiring_needs.map((need) => (
+                        <span
+                          key={need}
+                          className="px-4 py-1.5 rounded-full border text-sm"
+                          style={{
+                            background: "rgba(245,158,11,0.12)",
+                            color: accentColor,
+                            borderColor: "rgba(245,158,11,0.35)",
+                          }}
+                        >
+                          {need}
+                        </span>
+                      ))}
+                    </div>
+                  ) : null}
+                </ProfileSectionCard>
+              ) : null}
+
+              {(client.project_budget_preference || client.project_timeline_preference || communicationSummary || screeningSummary || legalSummary) ? (
+                <ProfileSectionCard>
+                  <ProfileSectionHeader
+                    title={tx("clientProfile.hiringPreferences", undefined, "Hiring Preferences")}
+                    accentColor={accentColor}
+                  />
+
+                  <div className="space-y-2 text-sm text-white/75">
+                    {client.project_budget_preference ? (
+                      <p>
+                        <span className="text-white font-semibold">{tx("profile.budgetPreference", undefined, "Budget")}: </span>
+                        {client.project_budget_preference}
+                      </p>
+                    ) : null}
+                    {client.project_timeline_preference ? (
+                      <p>
+                        <span className="text-white font-semibold">{tx("profile.timelinePreference", undefined, "Timeline")}: </span>
+                        {client.project_timeline_preference}
+                      </p>
+                    ) : null}
+                    {communicationSummary ? (
+                      <p>
+                        <span className="text-white font-semibold">{tx("profile.communicationPreferences", undefined, "Communication")}: </span>
+                        {communicationSummary}
+                      </p>
+                    ) : null}
+                    {screeningSummary ? (
+                      <p>
+                        <span className="text-white font-semibold">{tx("profile.screeningPreferences", undefined, "Screening")}: </span>
+                        {screeningSummary}
+                      </p>
+                    ) : null}
+                    {legalSummary ? (
+                      <p>
+                        <span className="text-white font-semibold">{tx("profile.legalPreferences", undefined, "Legal")}: </span>
+                        {legalSummary}
+                      </p>
+                    ) : null}
+                  </div>
+                </ProfileSectionCard>
+              ) : null}
+
+              {recentJobs.length > 0 ? (
+                <ProfileSectionCard>
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-1 h-5 rounded-full" style={{ backgroundColor: accentColor }} />
+                      <span className="text-xs font-bold uppercase tracking-[0.12em]" style={{ color: `${accentColor}CC` }}>
+                        {tx("clientProfile.activeJobs", undefined, "Active Job Postings")}
+                      </span>
+                    </div>
+                    <span className="border border-white/10 bg-white/[0.04] px-2 py-0.5 rounded text-xs text-white/70">
+                      {recentJobs.length}
+                    </span>
+                  </div>
+
+                  <div className="space-y-3">
+                    {recentJobs.map((job) => (
+                      <div
+                        key={job.id}
+                        className="rounded-xl border border-white/10 bg-[#0f0f0f] p-3.5 flex items-start justify-between gap-3"
+                      >
+                        <div className="flex-1 min-w-0 space-y-1.5">
+                          <Link
+                            to={`/jobs/${job.id}`}
+                            className="text-sm font-semibold hover:underline block truncate text-white"
+                          >
+                            {job.title}
+                          </Link>
+
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span
+                              className="text-xs font-medium px-2 py-0.5 rounded-full"
+                              style={{
+                                background: "rgba(245,158,11,0.15)",
+                                color: accentColor,
+                              }}
+                            >
+                              {job.category}
+                            </span>
+
+                            {(job.budget_min != null || job.budget_max != null) ? (
+                              <span className="text-xs text-white/50">
+                                {job.budget_min != null && job.budget_max != null
+                                  ? `${job.budget_min.toLocaleString()} – ${job.budget_max.toLocaleString()} TND`
+                                  : job.budget_min != null
+                                    ? `From ${job.budget_min.toLocaleString()} TND`
+                                    : `Up to ${job.budget_max!.toLocaleString()} TND`}
+                              </span>
+                            ) : null}
+
+                            {job.proposals_count != null ? (
+                              <span className="text-xs flex items-center gap-1 text-white/50">
+                                <Users className="w-3 h-3" />
+                                {job.proposals_count} {tx("clientProfile.proposals", undefined, "proposals")}
+                              </span>
+                            ) : null}
+                          </div>
+                        </div>
+
+                        <Link to={`/jobs/${job.id}`} className="flex-shrink-0">
+                          <Button variant="outline" size="sm">
+                            {isOwnProfile
+                              ? tx("jobDetail.manageJob", undefined, "Manage job")
+                              : tx("clientProfile.apply", undefined, "Apply")}
+                          </Button>
+                        </Link>
+                      </div>
+                    ))}
+                  </div>
+                </ProfileSectionCard>
+              ) : null}
             </div>
 
-            <aside className="space-y-5">
+            <aside className="lg:col-span-1 flex flex-col gap-5">
+              <ProfileSectionCard>
+                <div className="flex flex-col gap-3 w-full">
+                  {isOwnProfile ? (
+                    <button
+                      onClick={() => navigate(`/client/${client.id}?preview=public`)}
+                      className="group relative w-full overflow-hidden rounded-xl p-3.5 text-left border transition-all duration-200"
+                      style={{
+                        borderColor: "rgba(245,158,11,0.45)",
+                        background: "linear-gradient(135deg, rgba(245,158,11,0.24) 0%, #171717 58%, #141414 100%)",
+                        boxShadow: "0 14px 36px -26px rgba(245,158,11,0.62)",
+                      }}
+                    >
+                      <span className="pointer-events-none absolute -right-6 -top-8 h-20 w-20 rounded-full opacity-35 bg-orange-500/40" />
+                      <span className="inline-flex items-center gap-2 text-base font-semibold text-white relative z-10">
+                        <Eye className="w-4 h-4 text-white/90" />
+                        {tx("clientProfile.viewPublicProfile", undefined, "View Public Profile")}
+                      </span>
+                      <span className="mt-1 block text-xs text-white/75 relative z-10">
+                        {tx("clientProfile.viewPublicProfileDesc", undefined, "Preview exactly how freelancers and visitors see your profile.")}
+                      </span>
+                    </button>
+                  ) : null}
+
+                  {isOwnProfile ? (
+                    <button
+                      onClick={() => navigate(ROUTES.jobsNew)}
+                      className="group relative w-full overflow-hidden rounded-xl p-3.5 text-left border transition-all duration-200"
+                      style={{
+                        borderColor: "rgba(245,158,11,0.45)",
+                        background: "linear-gradient(135deg, rgba(245,158,11,0.24) 0%, #171717 58%, #141414 100%)",
+                        boxShadow: "0 14px 36px -26px rgba(245,158,11,0.62)",
+                      }}
+                    >
+                      <span className="pointer-events-none absolute -right-6 -top-8 h-20 w-20 rounded-full opacity-35 bg-orange-500/40" />
+                      <span className="inline-flex items-center gap-2 text-base font-semibold text-white relative z-10">
+                        <Plus className="w-4 h-4 text-white/90" />
+                        {tx("pages.clientJobs.postProject", undefined, "Post a project")}
+                      </span>
+                      <span className="mt-1 block text-xs text-white/75 relative z-10">
+                        {tx("clientProfile.actionPostDesc", undefined, "Create a new job and start receiving proposals.")}
+                      </span>
+                    </button>
+                  ) : null}
+
+                  {isOwnProfile ? (
+                    <button
+                      onClick={() => navigate(ROUTES.clientJobs)}
+                      className="w-full rounded-xl p-3.5 text-left border border-white/10 bg-[linear-gradient(180deg,#1a1a1a_0%,#171717_100%)] transition-all duration-200 hover:border-white/20 hover:bg-[#1f1f1f]"
+                    >
+                      <span className="inline-flex items-center gap-2 text-base font-semibold text-white">
+                        <Briefcase className="w-4 h-4" style={{ color: accentColor }} />
+                        {tx("nav.myProjects", undefined, "My Projects")}
+                      </span>
+                      <span className="mt-1 block text-xs text-white/50">
+                        {tx("clientProfile.actionProjectsDesc", undefined, "Track open jobs and incoming proposals.")}
+                      </span>
+                    </button>
+                  ) : null}
+
+                  {isOwnProfile ? (
+                    <button
+                      onClick={() => navigate(ROUTES.settings)}
+                      className="w-full rounded-xl p-3.5 text-left border border-white/10 transition-all duration-200 hover:bg-[#141414] hover:border-white/20"
+                    >
+                      <span className="inline-flex items-center gap-2 text-base font-semibold text-white/90">
+                        <Settings className="w-4 h-4 text-white/75" />
+                        {tx("clientProfile.actionSettings", undefined, "Workspace Settings")}
+                      </span>
+                      <span className="mt-1 block text-xs text-white/50">
+                        {tx("clientProfile.actionSettingsDesc", undefined, "Notifications, security, and account controls.")}
+                      </span>
+                    </button>
+                  ) : null}
+
+                  {canContact ? (
+                    <button
+                      onClick={() => navigate(ROUTES.messages)}
+                      className="w-full text-white rounded-xl py-3 font-semibold transition-colors inline-flex items-center justify-center gap-2"
+                      style={{ background: accentColor }}
+                    >
+                      <MessageSquare className="w-4 h-4" />
+                      {tx("clientProfile.sendMessage", undefined, "Send Message")}
+                    </button>
+                  ) : null}
+                </div>
+              </ProfileSectionCard>
+
               {statsContent}
 
-              <div
-                className="rounded-2xl border p-5"
-                style={{
-                  background: "var(--color-background-elevated)",
-                  borderColor: "var(--color-border-subtle)",
-                }}
-              >
-                <h2
-                  className="text-sm font-semibold mb-3"
-                  style={{ color: "var(--color-text-primary)" }}
-                >
-                  {tx("clientProfile.workspaceSummary", undefined, "Client Workspace")}
-                </h2>
-                <p className="text-sm" style={{ color: "var(--color-text-secondary)" }}>
-                  {tx("clientProfile.workspaceSummaryDesc", undefined, "Public client profile is read-only for visitors. Only you can edit while viewing your own profile.")}
-                </p>
-              </div>
+              <ProfileSectionCard>
+                <ProfileInfoHeader
+                  icon={<ShieldCheck className="w-4 h-4" />}
+                  title={tx("clientProfile.workspaceSummary", undefined, "Client Workspace")}
+                  accentColor={accentColor}
+                />
+
+                {client.location ? (
+                  <ProfileInfoRow
+                    label={tx("clientProfile.location", undefined, "Location")}
+                    value={localizeGovernorate(client.location, language)}
+                  />
+                ) : null}
+                <ProfileInfoRow
+                  label={tx("clientProfile.memberSince", undefined, "Member since")}
+                  value={formatDate(client.created_at)}
+                />
+                <ProfileInfoRow
+                  label={tx("clientProfile.verification", undefined, "Verification")}
+                  value={
+                    <span className={client.cin_verified ? "text-green-500" : "text-white/75"}>
+                      {client.cin_verified
+                        ? tx("clientProfile.verifiedClient", undefined, "Verified Client")
+                        : tx("clientProfile.unverified", undefined, "Pending")}
+                    </span>
+                  }
+                />
+              </ProfileSectionCard>
             </aside>
           </div>
         </main>

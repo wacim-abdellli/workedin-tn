@@ -68,8 +68,7 @@ export function getMarketplaceUserState({
 
   const hasAnyWorkspaceReady = Boolean(
     profile.client_onboarding_completed ||
-      profile.freelancer_onboarding_completed ||
-      profile.onboarding_completed
+      profile.freelancer_onboarding_completed
   );
 
   if (!hasAnyWorkspaceReady) {

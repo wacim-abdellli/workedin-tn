@@ -4,6 +4,7 @@ import { OptimizedImage } from '../../common';
 import type { FreelancerData } from '@/types/freelancer';
 import { useTranslation } from '../../../i18n';
 import { ROUTES } from '@/lib/routes';
+import { getPortfolioImageUrl } from '@/lib/portfolioMedia';
 
 interface PortfolioSectionProps {
     workSamples: FreelancerData['work_samples'];
@@ -34,14 +35,17 @@ export default function PortfolioSection({ workSamples, onSelectSample }: Portfo
 
             {workSamples.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {workSamples.map((sample) => (
+                    {workSamples.map((sample) => {
+                        const previewImage = getPortfolioImageUrl(sample.thumbnail_url, sample.media_urls);
+
+                        return (
                         <div
                             key={sample.id}
                             onClick={() => onSelectSample(sample.id)}
                             className="group relative aspect-video rounded-xl overflow-hidden cursor-pointer border border-white/10 hover:border-[#F59E0B]/35 transition-all"
                         >
                             <OptimizedImage
-                                src={sample.thumbnail_url}
+                                src={previewImage}
                                 alt={sample.title}
                                 className="w-full h-full"
                                 imgClassName="object-cover transition-transform duration-300 group-hover:scale-105"
@@ -57,7 +61,8 @@ export default function PortfolioSection({ workSamples, onSelectSample }: Portfo
                                 {sample.description ? <p className="text-white/70 text-xs line-clamp-1 mt-0.5">{sample.description}</p> : null}
                             </div>
                         </div>
-                    ))}
+                        );
+                    })}
                 </div>
             ) : (
                 <div className="relative overflow-hidden rounded-xl border-2 border-dashed border-white/10 bg-gradient-to-br from-white/3 to-transparent p-14 text-center">

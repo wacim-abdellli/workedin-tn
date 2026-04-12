@@ -166,56 +166,18 @@ export function getWorkspaceSettingsPath(): string {
 }
 
 export function isClientWorkspaceReady(profile: ProfileLike): boolean {
-  if (profile?.client_onboarding_completed === true) {
-    return true;
-  }
-
-  if (profile?.onboarding_completed === true) {
-    return true;
-  }
-
-  if (hasWorkspaceOnboardingFlags(profile) && profile?.client_onboarding_completed === false) {
-    return false;
-  }
-
-  // Fallback for legacy users who might not have onboarding_completed=true but have filled out profile details
-  if (profile?.bio || profile?.avatar_url || profile?.phone) {
-    return true;
-  }
-
-  // If the user already has a legit setup or name, bypass the strict location trap.
-  return Boolean(
-    profile?.onboarding_completed || 
-    (profile?.full_name && profile?.location)
-  );
+  // Strict separation: client workspace readiness is controlled only by
+  // the client-specific onboarding flag.
+  return profile?.client_onboarding_completed === true;
 }
 
 export function isFreelancerWorkspaceReady(
   profile: ProfileLike,
   freelancerProfile?: FreelancerProfile | null
 ): boolean {
-  if (profile?.freelancer_onboarding_completed === true) {
-    return true;
-  }
-
-  if (profile?.onboarding_completed === true) {
-    return true;
-  }
-
-  if (hasWorkspaceOnboardingFlags(profile) && profile?.freelancer_onboarding_completed === false) {
-    return false;
-  }
-
-  if (!freelancerProfile) {
-    return false;
-  }
-
-  const hasSkills = Array.isArray(freelancerProfile.skills) && freelancerProfile.skills.length > 0;
-
-  // Fallback for legacy users whose onboarding_completed got lost but have filled something
-  const hasProfileBasics = profile?.onboarding_completed || profile?.bio || profile?.avatar_url || profile?.phone || profile?.location || (profile?.full_name && profile?.user_type);
-
-  return Boolean(hasProfileBasics && (freelancerProfile?.title || hasSkills));
+  // Strict separation: freelancer workspace readiness is controlled only by
+  // the freelancer-specific onboarding flag.
+  return profile?.freelancer_onboarding_completed === true;
 }
 
 export function isWorkspaceReady(
@@ -244,7 +206,7 @@ export function getWorkspaceSetupProgress(
       : [
           Boolean(profile?.full_name),
           Boolean(profile?.location),
-          Boolean(profile?.client_onboarding_completed ?? profile?.onboarding_completed),
+          Boolean(profile?.client_onboarding_completed),
         ];
 
   const completed = checks.filter(Boolean).length;

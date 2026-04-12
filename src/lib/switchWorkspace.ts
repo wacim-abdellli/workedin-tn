@@ -13,7 +13,14 @@ interface SwitchWorkspaceArgs {
   profile: Partial<
     Pick<
       Profile,
-      'id' | 'user_type' | 'active_mode' | 'full_name' | 'location' | 'onboarding_completed' | 'username'
+      | 'id'
+      | 'user_type'
+      | 'active_mode'
+      | 'full_name'
+      | 'location'
+      | 'client_onboarding_completed'
+      | 'freelancer_onboarding_completed'
+      | 'username'
     >
   > | null;
   freelancerProfile: FreelancerProfile | null;

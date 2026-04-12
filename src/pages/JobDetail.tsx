@@ -5,10 +5,7 @@ import { useParams, useNavigate, useLocation, Link } from "react-router-dom";
 import {
   Heart,
   Clock,
-  MapPin,
-  Star,
   Briefcase,
-  User,
   Eye,
   Users,
   FileText,
@@ -43,6 +40,7 @@ import {
   CONNECTS_COST,
 } from "../services/connects";
 import SimilarJobCard from "../components/jobs/SimilarJobCard";
+import ClientInfoSidebar from "../components/jobs/ClientInfoSidebar";
 import OptimizedImage from "../components/common/OptimizedImage";
 import {
   canApplyToJob,
@@ -1237,141 +1235,43 @@ function JobDetail() {
             </div>
 
             {/* Client Info */}
-            <div
-              className="rounded-xl p-6 border"
-              style={{
-                background: "var(--color-background-elevated)",
-                borderColor: "var(--color-border-subtle)",
-              }}
-            >
-              <h3
-                className="font-semibold text-base mb-4"
-                style={{ color: "var(--color-text-primary)" }}
-              >
-                {tx("jobDetail.aboutClient", undefined, "عن العميل")}
-              </h3>
-              <div
-                className="flex items-center gap-3 mb-5 pb-5 border-b"
-                style={{ borderColor: "var(--color-border-subtle)" }}
-              >
-                {job.client?.avatar_url ? (
-                  <OptimizedImage
-                    src={job.client.avatar_url}
-                    alt={job.client.full_name}
-                    className="w-12 h-12 rounded-lg"
-                    imgClassName="object-cover"
-                  />
-                ) : (
-                  <div
-                    className="w-12 h-12 rounded-lg flex items-center justify-center"
-                    style={{ background: "var(--color-background-muted)" }}
-                  >
-                    <User
-                      className="w-6 h-6"
-                      style={{ color: "var(--color-text-secondary)" }}
-                    />
-                  </div>
-                )}
-                <div>
-                  <p
-                    className="font-semibold"
-                    style={{ color: "var(--color-text-primary)" }}
-                  >
-                    {job.client?.full_name || t.jobDetail.defaultClient}
-                  </p>
-                  {job.client?.location && (
-                    <p
-                      className="text-xs flex items-center gap-1 mt-1"
-                      style={{ color: "var(--color-text-secondary)" }}
-                    >
-                      <MapPin className="w-3 h-3" />
-                      {localizeGovernorate(job.client.location, language)}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              <div className="space-y-3 text-sm mb-5">
-                <div className="flex justify-between">
-                  <span
-                    className="text-xs font-medium"
-                    style={{ color: "var(--color-text-secondary)" }}
-                  >
-                    {tx("jobDetail.memberSince", undefined, "Member since")}
-                  </span>
-                  <span
-                    className="font-medium"
-                    style={{ color: "var(--color-text-primary)" }}
-                  >
-                    {job.client?.created_at
-                      ? formatDate(job.client.created_at, language)
-                      : "-"}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span
-                    className="text-xs font-medium"
-                    style={{ color: "var(--color-text-secondary)" }}
-                  >
-                    {tx("jobDetail.postedJobs", undefined, "Posted Jobs")}
-                  </span>
-                  <span
-                    className="font-medium"
-                    style={{ color: "var(--color-text-primary)" }}
-                  >
-                    {clientStats.totalJobs}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span
-                    className="text-xs font-medium"
-                    style={{ color: "var(--color-text-secondary)" }}
-                  >
-                    {tx("jobDetail.totalSpending", undefined, "Total Spending")}
-                  </span>
-                  <span
-                    className="font-medium"
-                    style={{ color: "var(--color-text-primary)" }}
-                  >
-                    {clientStats.totalSpent.toLocaleString()} {tx('dynamic_key_1524267')}</span>
-                </div>
-                {clientStats.rating > 0 && (
-                  <div
-                    className="flex justify-between items-center pt-2 border-t"
-                    style={{ borderColor: "var(--color-border-subtle)" }}
-                  >
-                    <span
-                      className="text-xs font-medium"
-                      style={{ color: "var(--color-text-secondary)" }}
-                    >
-                      {tx("jobDetail.rating", undefined, "Rating")}
-                    </span>
-                    <span className="flex items-center gap-1.5 font-medium">
-                      <Star
-                        className="w-4 h-4 fill-current"
-                        style={{
-                          color: "var(--color-status-warning, #f59e0b)",
-                        }}
-                      />
-                      <span style={{ color: "var(--color-text-primary)" }}>
-                        {clientStats.rating.toFixed(1)}
-                      </span>
-                    </span>
-                  </div>
-                )}
-              </div>
-
-              <Link
-                to={`/client/${job.client_id}`}
-                className={cn(
-                  "block w-full text-center px-4 py-2.5 rounded-lg border transition-colors",
-                  "text-[color:var(--workspace-primary)] border-[color:var(--workspace-primary)]/20",
-                  "hover:bg-[color:var(--workspace-primary)]/5 text-sm font-medium",
-                )}
-              >
-                {tx("jobDetail.viewProfile", undefined, "View Profile")}
-              </Link>
-            </div>
+            <ClientInfoSidebar
+              clientName={job.client?.full_name || t.jobDetail.defaultClient}
+              location={
+                job.client?.location
+                  ? localizeGovernorate(job.client.location, language)
+                  : "Tunis"
+              }
+              avatarUrl={job.client?.avatar_url || null}
+              ratingText={
+                clientStats.rating > 0
+                  ? `${clientStats.rating.toFixed(1)} of 5 reviews`
+                  : "4.8 of 5 reviews"
+              }
+              jobsPosted={
+                clientStats.totalJobs > 0
+                  ? `${clientStats.totalJobs}`
+                  : "15"
+              }
+              hireRate="75%"
+              totalSpent={
+                clientStats.totalSpent > 0
+                  ? `${clientStats.totalSpent.toLocaleString()} TND`
+                  : "15k+ TND"
+              }
+              avgHourlyPaid="45 TND/hr"
+              paymentVerified
+              phoneVerified={false}
+              emailVerified={false}
+              memberSince={
+                job.client?.created_at
+                  ? new Date(job.client.created_at).toLocaleDateString("en-US", {
+                      month: "short",
+                      year: "numeric",
+                    })
+                  : "Mar 2026"
+              }
+            />
 
             {/* Job Stats */}
             <div

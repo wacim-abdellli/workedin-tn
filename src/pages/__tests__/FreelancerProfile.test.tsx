@@ -57,6 +57,12 @@ vi.mock('@/components/freelancer/ContactModal', () => ({
     default: () => <div>Contact Modal</div>,
 }));
 
+vi.mock('@/components/ui/Toast', () => ({
+    useToast: () => ({
+        showToast: vi.fn(),
+    }),
+}));
+
 vi.mock('@/components/common', () => ({
     OptimizedImage: ({ alt }: { alt: string }) => <img alt={alt} />,
 }));

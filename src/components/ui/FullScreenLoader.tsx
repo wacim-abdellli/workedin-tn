@@ -3,92 +3,151 @@ interface FullScreenLoaderProps {
   hint?: string;
 }
 
-// Bundled like Logo.tsx — /workedin-logos/* is not served from public/ in this repo.
-const LOADER_LOGO = new URL('../../../workedin-logos/22-icon-square-dark.svg', import.meta.url).href;
+const LOGO_AMBER = new URL('../../../workedin-logos/13-icon-square-amber.svg', import.meta.url).href;
 
 export default function FullScreenLoader({
-  label = 'Loading...',
-  hint,
+  label = 'Preparing your workspace',
+  hint = 'Loading the latest dashboard state, activity, and shortcuts.',
 }: FullScreenLoaderProps) {
   return (
-    <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-[#050507] px-4">
-
-      {/* Background grid */}
+    <div
+      className="fixed inset-0 flex items-center justify-center"
+      style={{ background: '#0a0a0a' }}
+    >
+      {/* Subtle radial glow behind card */}
       <div
-        className="pointer-events-none absolute inset-0 opacity-[0.04]"
+        className="pointer-events-none absolute"
         style={{
-          backgroundImage: 'linear-gradient(rgba(255,255,255,0.8) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.8) 1px, transparent 1px)',
-          backgroundSize: '48px 48px',
+          width: 600,
+          height: 600,
+          borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(245,158,11,0.07) 0%, transparent 70%)',
+          transform: 'translate(-50%, -50%)',
+          left: '50%',
+          top: '50%',
         }}
       />
 
-      {/* Ambient glow blobs */}
-      <div className="pointer-events-none absolute left-1/2 top-1/3 h-[500px] w-[500px] -translate-x-1/2 -translate-y-1/2 rounded-full blur-[120px]"
-        style={{ background: 'color-mix(in srgb, var(--workspace-accent, #d97706) 12%, transparent)' }} />
-      <div className="pointer-events-none absolute right-1/4 bottom-1/4 h-[300px] w-[300px] rounded-full blur-[100px]"
-        style={{ background: 'color-mix(in srgb, var(--workspace-primary, #b45309) 8%, transparent)' }} />
-
-      {/* Content */}
-      <div className="relative z-10 flex flex-col items-center gap-8 animate-[fade-in_0.6s_ease-out]">
-
-        {/* Logo card */}
-        <div className="relative flex h-28 w-28 items-center justify-center rounded-3xl"
+      {/* Card */}
+      <div
+        className="relative z-10 flex flex-col items-center text-center"
+        style={{
+          background: '#111',
+          border: '1px solid #1f1f1f',
+          borderRadius: 28,
+          padding: '48px 40px 40px',
+          width: '100%',
+          maxWidth: 360,
+          boxShadow: '0 32px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04)',
+        }}
+      >
+        {/* Top accent line */}
+        <div
+          className="absolute top-0 left-1/2 -translate-x-1/2 rounded-full"
           style={{
-            background: 'transparent',
+            width: 80,
+            height: 2,
+            background: 'linear-gradient(90deg, transparent, #f59e0b, transparent)',
+            top: -1,
+          }}
+        />
+
+        {/* Logo */}
+        <div
+          className="mb-7 flex items-center justify-center"
+          style={{
+            width: 72,
+            height: 72,
+            borderRadius: 20,
+            background: '#1a1a1a',
+            border: '1px solid #2a2a2a',
+            boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
           }}
         >
-          {/* Spinning accent ring */}
-          <div
-            className="absolute inset-0 rounded-3xl animate-[spin_3s_linear_infinite]"
-            style={{
-              background: 'conic-gradient(from 0deg, transparent 0%, transparent 70%, color-mix(in srgb, var(--workspace-accent, #d97706) 60%, transparent) 100%)',
-              borderRadius: '24px',
-              WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
-              WebkitMaskComposite: 'xor',
-              maskComposite: 'exclude',
-              padding: '2px',
-            }}
-          />
           <img
-            src={LOADER_LOGO}
+            src={LOGO_AMBER}
             alt="WorkedIn"
-            className="h-16 w-16 object-contain relative z-10"
-            style={{ filter: 'drop-shadow(0 0 20px rgba(217, 119, 6, 0.3))' }}
-            width={64}
-            height={64}
+            width={44}
+            height={44}
             decoding="async"
+            style={{ objectFit: 'contain' }}
           />
         </div>
 
-        {/* Text */}
-        <div className="flex flex-col items-center gap-2 text-center">
-          <h1 className="text-xl font-semibold tracking-tight text-white">
-            {label}
-          </h1>
-          {hint && (
-            <p className="max-w-[260px] text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.45)' }}>
-              {hint}
-            </p>
-          )}
-        </div>
+        {/* Label */}
+        <h1
+          style={{
+            fontSize: 18,
+            fontWeight: 700,
+            color: '#fff',
+            letterSpacing: '-0.3px',
+            marginBottom: 10,
+            lineHeight: 1.3,
+          }}
+        >
+          {label}
+        </h1>
+
+        {/* Hint */}
+        <p
+          style={{
+            fontSize: 13,
+            color: '#555',
+            lineHeight: 1.65,
+            marginBottom: 36,
+            maxWidth: 260,
+          }}
+        >
+          {hint}
+        </p>
 
         {/* Progress bar */}
-        <div className="w-40 h-[2px] rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.08)' }}>
+        <div
+          style={{
+            width: '100%',
+            height: 2,
+            background: '#1e1e1e',
+            borderRadius: 99,
+            overflow: 'hidden',
+          }}
+        >
           <div
-            className="h-full rounded-full animate-[progress-slide_1.8s_ease-in-out_infinite]"
-            style={{ background: 'linear-gradient(90deg, transparent, var(--workspace-accent, #d97706), transparent)', width: '60%' }}
+            style={{
+              height: '100%',
+              width: '45%',
+              borderRadius: 99,
+              background: 'linear-gradient(90deg, transparent, #f59e0b, #fbbf24)',
+              animation: 'wi-slide 1.6s ease-in-out infinite',
+            }}
           />
+        </div>
+
+        {/* Dots */}
+        <div className="flex items-center gap-1.5 mt-5">
+          {[0, 1, 2].map((i) => (
+            <div
+              key={i}
+              style={{
+                width: 4,
+                height: 4,
+                borderRadius: '50%',
+                background: '#f59e0b',
+                opacity: 0.3,
+                animation: `wi-pulse 1.2s ease-in-out ${i * 0.2}s infinite`,
+              }}
+            />
+          ))}
         </div>
       </div>
 
       <style>{`
-        @keyframes progress-slide {
-          0% { transform: translateX(-100%); }
+        @keyframes wi-slide {
+          0%   { transform: translateX(-120%); }
           100% { transform: translateX(280%); }
         }
-        @keyframes fade-in {
-          from { opacity: 0; transform: translateY(12px); }
-          to { opacity: 1; transform: translateY(0); }
+        @keyframes wi-pulse {
+          0%, 100% { opacity: 0.2; transform: scale(1); }
+          50%       { opacity: 1;   transform: scale(1.4); }
         }
       `}</style>
     </div>

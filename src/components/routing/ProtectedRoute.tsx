@@ -43,7 +43,7 @@ export function ProtectedRoute({ children }: { children: ReactNode }) {
         <Navigate
           to={getWorkspaceOnboardingPath(workspace)}
           replace
-          state={{ from: location }}
+          state={{ from: location, onboardingRequired: true, requiredWorkspace: workspace }}
         />
       );
     }

@@ -1716,6 +1716,202 @@ export const en: Translations = {
             },
             "uploadAvatar": "Profile Picture",
             "uploadAvatarDesc": "A professional photo is recommended"
+        },
+        "progressive": {
+            "common": {
+                "removeTagAria": "Remove {{item}}",
+                "stepCounter": "Step {{step}} of {{total}}",
+                "saveExit": "Save & Exit",
+                "back": "Back",
+                "proTip": "Pro Tip",
+                "onboardingRequired": "Please complete your onboarding profile before accessing other pages.",
+                "fixBeforeContinue": "Please fix this before continuing: {{error}}",
+                "completeRequiredFields": "Please complete required fields before continuing.",
+                "completionFailed": "Failed to complete onboarding. Please try again.",
+                "conflictRetry": "A conflicting update was detected. Please try again.",
+                "phoneTaken": "This phone number is already in use by another account.",
+                "invalidPhone": "Please enter a valid phone number.",
+                "accountInactive": "Your account is not active. Please contact support.",
+                "unsavedConfirm": "You have unsaved onboarding progress. Exit anyway?",
+                "exitOnboarding": "Exit Onboarding",
+                "completing": "Completing...",
+                "completeProfile": "Complete Profile",
+                "nextStep": "Next Step",
+                "fields": {
+                    "fullName": "Full Name",
+                    "location": "Location",
+                    "phoneNumber": "Phone Number"
+                },
+                "placeholders": {
+                    "fullName": "Your full name",
+                    "selectLocation": "Select location"
+                }
+            },
+            "freelancer": {
+                "steps": {
+                    "identityPitch": "Identity & Pitch",
+                    "expertise": "Expertise",
+                    "businessRates": "Business & Rates",
+                    "trustProof": "Trust & Proof"
+                },
+                "stepSubtitles": {
+                    "identityPitch": "Start with who you are and how you present your value.",
+                    "expertise": "Define your strengths so matching quality improves.",
+                    "businessRates": "Set clear business terms to align expectations.",
+                    "trustProof": "Add trust signals that make clients confident to hire."
+                },
+                "tips": {
+                    "identityPitch": "Clients decide in seconds. A clear title and confident profile summary instantly builds trust.",
+                    "expertise": "The right tags make matching smarter. Add only your strongest skills and tools to attract best-fit projects.",
+                    "businessRates": "Transparent rates reduce negotiation friction and help serious clients shortlist you faster.",
+                    "trustProof": "Verified details and a portfolio link are your credibility boosters. They increase response rates significantly."
+                },
+                "categories": {
+                    "development": "Development",
+                    "design": "Design",
+                    "marketing": "Marketing",
+                    "writing": "Writing",
+                    "video": "Video",
+                    "data": "Data",
+                    "business": "Business"
+                },
+                "skillSuggestions": {
+                    "react": "React",
+                    "typescript": "TypeScript",
+                    "nodejs": "Node.js",
+                    "uiux": "UI/UX Design",
+                    "figma": "Figma",
+                    "contentWriting": "Content Writing",
+                    "seo": "SEO",
+                    "googleAds": "Google Ads",
+                    "motionDesign": "Motion Design",
+                    "dataAnalysis": "Data Analysis",
+                    "python": "Python",
+                    "nextjs": "Next.js",
+                    "tailwind": "Tailwind CSS",
+                    "illustrator": "Illustrator",
+                    "projectManagement": "Project Management"
+                },
+                "toolSuggestions": {
+                    "figma": "Figma",
+                    "vscode": "VS Code",
+                    "photoshop": "Photoshop",
+                    "illustrator": "Illustrator",
+                    "notion": "Notion",
+                    "jira": "Jira",
+                    "slack": "Slack",
+                    "github": "GitHub",
+                    "docker": "Docker",
+                    "canva": "Canva",
+                    "framer": "Framer",
+                    "webflow": "Webflow"
+                },
+                "experience": {
+                    "0to2": "0-2",
+                    "3to5": "3-5",
+                    "5plus": "5+"
+                },
+                "availability": {
+                    "partTime": "Part-time",
+                    "fullTime": "Full-time",
+                    "asNeeded": "As needed"
+                },
+                "errors": {
+                    "avatarRequired": "Avatar is required.",
+                    "fullNameRequired": "Full name is required.",
+                    "locationRequired": "Location is required.",
+                    "professionalTitleRequired": "Professional title is required.",
+                    "summaryRequired": "Summary is required.",
+                    "summaryTooLong": "Summary must be 500 characters or less.",
+                    "mainCategoryRequired": "Main category is required.",
+                    "coreSkillRequired": "Add at least one core skill.",
+                    "toolRequired": "Add at least one tool.",
+                    "hourlyRateInvalid": "Hourly rate must be greater than 0.",
+                    "experienceRequired": "Select years of experience.",
+                    "availabilityRequired": "Select availability.",
+                    "portfolioRequired": "Portfolio link is required.",
+                    "phoneRequired": "Phone number is required."
+                },
+                "completedTitle": "Profile setup completed",
+                "completedSubtitle": "Your freelancer onboarding data is ready. You can now move to your dashboard.",
+                "completedMessage": "Thanks. Your onboarding information has been captured with a progressive structure.",
+                "currency": "TND",
+                "fields": {
+                    "avatarUpload": "Avatar Upload (Required)",
+                    "avatarPreviewAlt": "Avatar preview",
+                    "chooseAvatar": "Choose avatar",
+                    "avatarHint": "PNG, JPG, WEBP",
+                    "professionalTitle": "Professional Title",
+                    "bioSummary": "Bio/Summary",
+                    "mainCategory": "Main Category",
+                    "coreSkills": "Core Skills",
+                    "toolsUsed": "Tools Used",
+                    "hourlyRate": "Hourly Rate",
+                    "yearsOfExperience": "Years of Experience",
+                    "availability": "Availability",
+                    "portfolioLink": "Portfolio Link"
+                },
+                "placeholders": {
+                    "professionalTitle": "Senior React Developer",
+                    "bioSummary": "What do you do best and what kind of projects excite you?",
+                    "selectCategory": "Select category",
+                    "coreSkills": "Type a skill and press Enter",
+                    "toolsUsed": "Type a tool and press Enter",
+                    "hourlyRate": "80",
+                    "experienceRange": "Select range",
+                    "availability": "Select availability",
+                    "portfolioLink": "https://your-portfolio.com",
+                    "phoneNumber": "For security and verified badge"
+                },
+                "hints": {
+                    "coreSkills": "Search and add up to 30 skills",
+                    "toolsUsed": "Search and add up to 15 tools",
+                    "phoneNumber": "For security and verified badge."
+                }
+            },
+            "client": {
+                "steps": {
+                    "accountDetails": "Account Details",
+                    "hiringIntent": "Hiring Intent"
+                },
+                "tips": {
+                    "accountDetails": "A complete account profile increases reply rates and reduces drop-off during first client-freelancer contact.",
+                    "hiringIntent": "Clear hiring intent improves recommendations and helps the platform suggest higher-quality candidates."
+                },
+                "accountTypes": {
+                    "individual": "Individual",
+                    "company": "Company"
+                },
+                "primaryGoals": {
+                    "specificProject": "Hire for a specific project",
+                    "buildTeam": "Build a team",
+                    "justBrowsing": "Just browsing"
+                },
+                "errors": {
+                    "fullNameRequired": "Full name is required.",
+                    "locationRequired": "Location is required.",
+                    "phoneRequired": "Phone number is required.",
+                    "accountTypeRequired": "Account type is required.",
+                    "companyNameRequired": "Company name is required for company accounts.",
+                    "primaryGoalRequired": "Primary goal is required."
+                },
+                "stepSubtitles": {
+                    "accountDetails": "Just the essentials so your account is trusted and complete.",
+                    "hiringIntent": "Tell us what you want to hire for so we can personalize matching."
+                },
+                "completedTitle": "Onboarding completed",
+                "completedSubtitle": "Your client profile is now ready. You can continue to your dashboard.",
+                "completedMessage": "Client onboarding data is complete and ready.",
+                "fields": {
+                    "accountType": "Account Type",
+                    "companyName": "Company Name",
+                    "primaryGoal": "Primary Goal"
+                },
+                "placeholders": {
+                    "phoneNumber": "+216 00 000 000",
+                    "companyName": "Your company name"
+                }
+            }
         }
     },
     "verifyIdentity": {
@@ -2217,9 +2413,124 @@ export const en: Translations = {
         "workUpdated": "Work updated successfully",
         "workAdded": "Work added successfully",
         "workSaved": "Work saved successfully",
+        "saveError": "Error saving work",
         "workDeleted": "Work deleted successfully",
         "deleteError": "Error during deletion",
-        "deleteConfirm": "Are you sure you want to delete this work?"
+        "deleteConfirm": "Are you sure you want to delete this work?",
+        "view": {
+            "gridAria": "Grid view",
+            "listAria": "List view"
+        },
+        "form": {
+            "addTitle": "Add New Work",
+            "editTitle": "Edit Work",
+            "imageHint": "Upload a preview image or paste a direct image URL.",
+            "fields": {
+                "title": {
+                    "label": "Project title",
+                    "placeholder": "Example: E-commerce storefront design"
+                },
+                "description": {
+                    "label": "Project description",
+                    "placeholder": "Describe the project details and what you delivered..."
+                },
+                "projectUrl": {
+                    "label": "Project URL (optional)",
+                    "placeholder": "https://example.com"
+                },
+                "clientName": {
+                    "label": "Client / Brand (optional)",
+                    "placeholder": "Example: Acme Corp"
+                },
+                "completionDate": {
+                    "label": "Completion date"
+                },
+                "skills": {
+                    "label": "Skills used",
+                    "placeholder": "Example: UI design, Frontend development, Image editing (comma-separated)",
+                    "searchPlaceholder": "Search and select skills..."
+                },
+                "tools": {
+                    "label": "Tools used (optional)",
+                    "searchPlaceholder": "Search and select tools..."
+                },
+                "imageUpload": {
+                    "label": "Upload preview image"
+                },
+                "imageUrl": {
+                    "label": "Or paste image URL",
+                    "placeholder": "https://..."
+                }
+            },
+            "actions": {
+                "cancel": "Cancel",
+                "add": "Add Work",
+                "save": "Save Changes"
+            },
+            "upload": {
+                "action": "Upload image",
+                "replace": "Replace image",
+                "remove": "Remove",
+                "edit": "Edit image",
+                "delete": "Delete image",
+                "addMore": "Add image",
+                "addUrl": "Add URL",
+                "extraUrlPlaceholder": "https://image-url.com/preview.jpg",
+                "galleryLabel": "Additional images",
+                "extraAdded": "Image added to gallery",
+                "uploading": "Uploading...",
+                "success": "Image uploaded successfully",
+                "error": "Failed to upload image",
+                "networkError": "Upload service is unreachable right now. You can still paste a direct image URL.",
+                "permissionError": "You do not have permission to upload files to storage.",
+                "loginRequired": "Please sign in to upload images.",
+                "previewAlt": "Portfolio preview image"
+            },
+            "skills": {
+                "remove": "Remove skill",
+                "edit": "Edit",
+                "clearAll": "Delete all",
+                "noneSelected": "No skills selected yet.",
+                "noResults": "No matching skills found.",
+                "sections": {
+                    "design": "Design",
+                    "development": "Development",
+                    "writing": "Writing",
+                    "marketing": "Marketing",
+                    "video": "Video",
+                    "business": "Business",
+                    "data": "Data",
+                    "other": "Other"
+                }
+            },
+            "tools": {
+                "remove": "Remove tool",
+                "edit": "Edit",
+                "clearAll": "Delete all",
+                "noneSelected": "No tools selected yet.",
+                "noResults": "No matching tools found.",
+                "sections": {
+                    "design": "Design",
+                    "development": "Development",
+                    "productivity": "Productivity",
+                    "video": "Video",
+                    "marketing": "Marketing",
+                    "other": "Other"
+                }
+            },
+            "validation": {
+                "titleMin": "Title must be at least 3 characters",
+                "descriptionMin": "Description must be at least 10 characters",
+                "invalidUrl": "Please use a valid http/https URL",
+                "invalidImageUrl": "Please use a direct http/https image URL",
+                "imageRequired": "Please upload an image or provide a direct image URL",
+                "skillsLimit": "You can select up to {{count}} skills",
+                "toolsLimit": "You can select up to {{count}} tools"
+            }
+        },
+        "card": {
+            "clientPrefix": "Client"
+        }
     },
     "jobProposals": {
         "loadJobError": "Failed to load job data",
@@ -2914,7 +3225,7 @@ export const en: Translations = {
     "dynamic_key_454607345": "مثال: تصميم واجهات، تطوير واجهات، تحرير صور (افصل بينها بفاصلة)",
     "dynamic_key_392258297": "رابط صورة العرض",
     "dynamic_key_1144928517": "سنقوم بدعم رفع الملفات قريباً. يرجى استخدام رابط مباشر للصورة حالياً.",
-    "dynamic_key_1502065525": "إلغاء",
+    "dynamic_key_1502065525": "Cancel",
     "dynamic_key_1115664379": "(500 حرف كحد أقصى)",
     "dynamic_key_2009227315": "تم تسجيل مقدمتك الصوتية",
     "dynamic_key_2123673725": "لم يتم إنشاء محفظتك بعد",
@@ -3077,6 +3388,10 @@ export const en: Translations = {
     "dynamic_key_1762109572": "فشل التحقق من الدفع",
     "dynamic_key_764967864": "العودة للوحة التحكم",
     "toast": {
-        "close": "Close"
+        "close": "Close",
+        "success": "Success",
+        "error": "Error",
+        "warning": "Warning",
+        "info": "Info"
     }
 };

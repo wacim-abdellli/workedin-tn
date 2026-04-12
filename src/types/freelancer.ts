@@ -52,8 +52,11 @@ export interface PortfolioItemRow {
     title: string | null;
     thumbnail_url: string | null;
     description: string | null;
+    client_name: string | null;
+    completion_date: string | null;
     project_url: string | null;
     skills_used: string[] | null;
+    tools_used: string[] | null;
     media_urls: string[] | null;
 }
 
@@ -131,7 +134,10 @@ export interface FreelancerData {
         title: string;
         thumbnail_url: string;
         description?: string;
+        client_name?: string;
+        completion_date?: string;
         skills_used?: string[];
+        tools_used?: string[];
         project_url?: string;
         media_urls?: string[];
     }>;
