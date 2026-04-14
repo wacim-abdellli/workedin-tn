@@ -41,6 +41,47 @@ describe('upload policy', () => {
     expect(result).toEqual({ ok: false, reason: 'File content does not match its declared type.' });
   });
 
+  it('accepts mp4-family and mp3 voice memo payloads for message attachments', () => {
+    const mp4Like = validateUploadPayload({
+      bucket: 'message_attachments',
+      fileName: 'voice_note.m4a',
+      mimeType: 'audio/mp4',
+      size: 32,
+      bytes: new Uint8Array([0x00, 0x00, 0x00, 0x20, 0x66, 0x74, 0x79, 0x70, 0x4d, 0x34, 0x41, 0x20]),
+    });
+
+    const mp3Like = validateUploadPayload({
+      bucket: 'message_attachments',
+      fileName: 'voice_note.mp3',
+      mimeType: 'audio/mpeg',
+      size: 32,
+      bytes: new Uint8Array([0x49, 0x44, 0x33, 0x04, 0x00, 0x00]),
+    });
+
+    expect(mp4Like).toEqual({ ok: true });
+    expect(mp3Like).toEqual({ ok: true });
+  });
+
+  it('accepts aliased and codec-suffixed MIME values for message attachments', () => {
+    expect(
+      validateUploadSelection({
+        bucket: 'message_attachments',
+        fileName: 'voice_note.m4a',
+        mimeType: 'audio/x-m4a',
+        size: 2048,
+      }),
+    ).toEqual({ ok: true });
+
+    expect(
+      validateUploadSelection({
+        bucket: 'message_attachments',
+        fileName: 'voice_note.webm',
+        mimeType: 'audio/webm;codecs=opus',
+        size: 2048,
+      }),
+    ).toEqual({ ok: true });
+  });
+
   it('limits uploads that exceed the bucket rate policy', () => {
     expect(isUploadRateLimited('identity-documents', 6)).toBe(true);
     expect(isUploadRateLimited('identity-documents', 5)).toBe(false);

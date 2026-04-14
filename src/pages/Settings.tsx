@@ -20,6 +20,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../components/ui/Toast';
 import { supabase } from '../lib/supabase';
 import { logger } from '../lib/logger';
+import { getVerificationStatus, subscribeToVerificationChanges, type VerificationStatus } from '@/lib/verificationStatus';
 
 type SettingsTab = 'account' | 'notifications' | 'payment' | 'privacy';
 type NotificationKey = 'new_job' | 'messages' | 'payments' | 'reviews' | 'marketing';
@@ -53,7 +54,7 @@ function accentTokens(accentColor: string) {
 function AccountSettings({
   activeMode,
   accountType,
-  identityVerified,
+  identityStatus,
   goToPublicProfile,
   goToDashboard,
   goToNotifications,
@@ -61,13 +62,15 @@ function AccountSettings({
 }: {
   activeMode: 'client' | 'freelancer';
   accountType: string;
-  identityVerified: boolean;
+  identityStatus: VerificationStatus;
   goToPublicProfile: () => void;
   goToDashboard: () => void;
   goToNotifications: () => void;
   accentColor: string;
 }) {
   const tokens = accentTokens(accentColor);
+  const identityVerified = identityStatus === 'verified';
+  const identityPending = identityStatus === 'pending';
 
   return (
     <div className="bg-[#141414] border border-[#262626] rounded-2xl p-6 relative overflow-hidden">
@@ -86,9 +89,9 @@ function AccountSettings({
         </div>
         <div className="bg-[#0a0a0a] border border-[#262626] rounded-xl p-4 transition-colors" style={{ borderColor: tokens.accentBorder }}>
           <p className="text-xs text-gray-500 mb-1">Identity</p>
-          <p className={`text-sm font-semibold inline-flex items-center gap-2 ${identityVerified ? 'text-green-400' : 'text-amber-400'}`}>
+          <p className={`text-sm font-semibold inline-flex items-center gap-2 ${identityVerified ? 'text-green-400' : identityPending ? 'text-amber-400' : 'text-gray-300'}`}>
             <Check className="w-4 h-4" />
-            {identityVerified ? 'Identity Verified' : 'Verification Pending'}
+            {identityVerified ? 'Identity Verified' : identityPending ? 'Verification Under Review' : 'Not Verified'}
           </p>
         </div>
       </div>
@@ -629,10 +632,45 @@ function PrivacySettingsTab({
 
 export default function Settings() {
   const navigate = useNavigate();
-  const { user, profile, activeMode, signOut } = useAuth();
+  const { user, profile, activeMode, signOut, refreshProfile } = useAuth();
   const { showToast } = useToast();
 
   const [activeTab, setActiveTab] = useState<SettingsTab>('account');
+  const [identityStatus, setIdentityStatus] = useState<VerificationStatus>(profile?.cin_verified ? 'verified' : 'missing');
+
+  useEffect(() => {
+    if (!user?.id) {
+      setIdentityStatus(profile?.cin_verified ? 'verified' : 'missing');
+      return;
+    }
+
+    let cancelled = false;
+
+    const fetchStatus = async () => {
+      try {
+        const state = await getVerificationStatus(user.id);
+        if (!cancelled) setIdentityStatus(state.status);
+
+        if (state.status === 'verified' && !profile?.cin_verified) {
+          await refreshProfile?.();
+        }
+      } catch (error) {
+        logger.error('Failed to load identity verification status in Settings', error);
+        if (!cancelled) setIdentityStatus(profile?.cin_verified ? 'verified' : 'missing');
+      }
+    };
+
+    void fetchStatus();
+
+    const unsubscribe = subscribeToVerificationChanges(user.id, (state) => {
+      if (!cancelled) setIdentityStatus(state.status);
+    });
+
+    return () => {
+      cancelled = true;
+      unsubscribe();
+    };
+  }, [user?.id, profile?.cin_verified, refreshProfile]);
 
   const accentColor = activeMode === 'freelancer' ? '#8B5CF6' : '#F59E0B';
 
@@ -676,7 +714,7 @@ export default function Settings() {
         <AccountSettings
           activeMode={activeMode === 'freelancer' ? 'freelancer' : 'client'}
           accountType={accountType}
-          identityVerified={Boolean(profile?.cin_verified)}
+          identityStatus={identityStatus}
           goToPublicProfile={() => navigate(publicProfilePath)}
           goToDashboard={() => navigate(dashboardPath)}
           goToNotifications={() => setActiveTab('notifications')}

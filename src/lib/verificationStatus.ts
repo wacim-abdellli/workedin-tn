@@ -15,6 +15,26 @@ export interface VerificationState {
   verificationId?: string;
 }
 
+function normalizeVerificationStatus(status: string | null | undefined): VerificationStatus {
+  const normalized = String(status ?? '').trim().toLowerCase();
+
+  if (!normalized) return 'missing';
+
+  if (['approved', 'accepted', 'verified', 'complete', 'completed', 'success'].includes(normalized)) {
+    return 'verified';
+  }
+
+  if (['pending', 'in_review', 'under_review', 'reviewing', 'submitted'].includes(normalized)) {
+    return 'pending';
+  }
+
+  if (['rejected', 'requires_resubmit', 'resubmit_required', 'failed', 'denied'].includes(normalized)) {
+    return 'rejected';
+  }
+
+  return 'missing';
+}
+
 /**
  * Single source of truth for identity verification status.
  * Used by both user and admin to prevent state divergence.
@@ -45,8 +65,8 @@ export async function getVerificationStatus(
 
     // 2. If verification row exists, it's the ground truth
     if (verification) {
-      const status = verification.status as VerificationStatus;
-      
+      const status = normalizeVerificationStatus(verification.status);
+
       return {
         status,
         verificationId: verification.id,
@@ -113,7 +133,7 @@ export async function getPendingVerifications() {
         avatar_url
       )
     `)
-    .eq('status', 'pending')
+    .in('status', ['pending', 'in_review'])
     .order('submitted_at', { ascending: true });
 
   if (error) {
@@ -174,7 +194,6 @@ export function subscribeToPendingQueue(
         event: '*',
         schema: 'public',
         table: 'identity_verifications',
-        filter: 'status=eq.pending'
       },
       onQueueChange
     )

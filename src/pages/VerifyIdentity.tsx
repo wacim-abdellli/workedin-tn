@@ -157,17 +157,16 @@ export default function VerifyIdentity() {
             navigate('/login');
             return;
         }
+        if (loading) return;
         setLoading(true);
 
         try {
             if (!/^\d{8}$/.test(cinNumber)) {
                 showToast(tx('verifyIdentity.errors.invalidCin', undefined, 'رقم البطاقة يجب أن يحتوي على 8 أرقام'), 'error');
-                setLoading(false);
                 return;
             }
             if (!uploads.front || !uploads.back || !uploads.selfie) {
                 showToast(tx('verifyIdentity.errors.missingImages', undefined, 'يرجى تحميل جميع الصور المطلوبة'), 'error');
-                setLoading(false);
                 return;
             }
 
@@ -183,6 +182,20 @@ export default function VerifyIdentity() {
             const sessionUser = liveSession.user;
             const authUserId = sessionUser?.id ?? user.id;
             const authUserMetadata = sessionUser?.user_metadata ?? user.user_metadata;
+
+            // Block duplicate submissions and keep status screen in sync without waiting for refresh.
+            const currentState = await getVerificationStatus(authUserId);
+            if (currentState.status === 'pending') {
+                setResolvedIdentityStatus('pending');
+                setStep('submitted');
+                showToast(tx('verifyIdentity.errors.alreadyUnderReview', undefined, 'Your verification request is already under review.'), 'info');
+                return;
+            }
+            if (currentState.status === 'verified') {
+                setResolvedIdentityStatus('verified');
+                showToast(tx('verifyIdentity.errors.alreadyVerified', undefined, 'Your identity is already verified.'), 'info');
+                return;
+            }
 
             const runWithTimeout = <T,>(op: Promise<T>, ms: number, name: string) => withTimeout(op, ms, name);
 
@@ -219,45 +232,75 @@ export default function VerifyIdentity() {
                 );
             }
 
-            // Delete any existing verification record
-            try {
-                await supabaseWithRetry(() => supabase.from('identity_verifications').delete().eq('user_id', authUserId));
-            } catch { /* no-op */ }
+            const verificationPayload = {
+                user_id: authUserId,
+                cin_number: cinNumber,
+                cin_front_url: frontPath,
+                cin_back_url: backPath,
+                selfie_url: selfiePath,
+                status: 'pending' as const,
+                submitted_at: new Date().toISOString(),
+            };
 
-            try {
-                await runWithTimeout(
-                    supabaseWithRetry(() =>
-                        supabase.from('identity_verifications').insert({
-                            user_id: authUserId, cin_number: cinNumber,
-                            cin_front_url: frontPath, cin_back_url: backPath, selfie_url: selfiePath,
-                            status: 'pending', submitted_at: new Date().toISOString(),
-                        }).select().single()
-                    ),
-                    30000, 'Verify identity insert'
-                );
-            } catch (fetchError) {
-                const fetchErrorMeta = typeof fetchError === 'object' && fetchError !== null
-                    ? (fetchError as { status?: number; code?: string })
-                    : {};
-                const { status, code } = fetchErrorMeta;
-                if (fetchError instanceof Error && fetchError.message.includes('timed out after'))
-                    throw new Error(tx('verifyIdentity.errors.insertTimeout', undefined, 'Database insert timed out after 30 seconds.'));
-                if (status === 409 || code === '23505')
-                    throw new Error(tx('verifyIdentity.errors.alreadySubmitted', undefined, 'You already have a verification request.'));
-                if (status === 403 || code === '42501')
+            const insertVerification = () => runWithTimeout(
+                supabaseWithRetry(
+                    () => supabase.from('identity_verifications').insert(verificationPayload).select('id').single(),
+                    { throwOnError: false }
+                ),
+                30000,
+                'Verify identity insert'
+            );
+
+            let insertResult = await insertVerification();
+            if (insertResult.error) {
+                const insertError = (insertResult.error ?? {}) as { status?: number; code?: string; message?: string };
+                const errorMessage = typeof insertError.message === 'string' ? insertError.message.toLowerCase() : '';
+
+                if (insertError.status === 409 || insertError.code === '23505' || errorMessage.includes('duplicate key')) {
+                    const latestState = await getVerificationStatus(authUserId);
+                    if (latestState.status === 'pending') {
+                        setResolvedIdentityStatus('pending');
+                        setStep('submitted');
+                        throw new Error(tx('verifyIdentity.errors.alreadyUnderReview', undefined, 'Your verification request is already under review.'));
+                    }
+                    if (latestState.status === 'verified') {
+                        setResolvedIdentityStatus('verified');
+                        throw new Error(tx('verifyIdentity.errors.alreadyVerified', undefined, 'Your identity is already verified.'));
+                    }
+
+                    // Recover from stale rejected rows by clearing the old request and inserting again once.
+                    const cleanupResult = await supabaseWithRetry(
+                        () => supabase.from('identity_verifications').delete().eq('user_id', authUserId),
+                        { throwOnError: false }
+                    );
+
+                    if (cleanupResult.error) {
+                        throw new Error(tx('verifyIdentity.errors.resubmitBlocked', undefined, 'Unable to reset your previous request. Please contact support.'));
+                    }
+
+                    insertResult = await insertVerification();
+                    if (insertResult.error) throw insertResult.error;
+                } else if (insertError.status === 403 || insertError.code === '42501') {
                     throw new Error(tx('verifyIdentity.errors.permissions', undefined, 'Permission denied. Please sign out and sign in again.'));
-                throw fetchError;
+                } else {
+                    throw insertResult.error;
+                }
             }
 
             // No need to update cin_submitted - verification table is source of truth
             await refreshProfile?.();
             void queryClient.invalidateQueries({ queryKey: NOTIFICATIONS_QUERY_KEY(authUserId) });
 
+            setResolvedIdentityStatus('pending');
             setStep('submitted');
             showToast(tx('verifyIdentity.success.submitted', undefined, 'تم تقديم طلب التحقق بنجاح'), 'success');
         } catch (error) {
             logger.error('Verification submission error:', error);
-            const msg = error instanceof Error ? error.message : tx('verifyIdentity.errors.unexpected', undefined, 'An unexpected error occurred');
+            const msg = error instanceof Error
+                ? error.message.includes('timed out after')
+                    ? tx('verifyIdentity.errors.insertTimeout', undefined, 'Database insert timed out after 30 seconds.')
+                    : error.message
+                : tx('verifyIdentity.errors.unexpected', undefined, 'An unexpected error occurred');
             showToast(tx('verifyIdentity.errors.withMessage', { message: msg }, `خطأ: ${msg}`), 'error');
         } finally {
             setLoading(false);

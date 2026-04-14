@@ -21,7 +21,28 @@ export function useAudioRecorder(): UseAudioRecorderReturn {
     const timerRef = useRef<number | null>(null);
     const streamRef = useRef<MediaStream | null>(null);
 
-    const cleanup = useCallback(() => {
+    const getSupportedRecorderMimeType = useCallback(() => {
+        const candidates = [
+            'audio/webm;codecs=opus',
+            'audio/webm',
+            'audio/mp4',
+            'audio/mpeg',
+            'audio/ogg;codecs=opus',
+            'audio/ogg',
+        ];
+
+        for (const candidate of candidates) {
+            if (MediaRecorder.isTypeSupported(candidate)) {
+                return candidate;
+            }
+        }
+
+        return '';
+    }, []);
+
+    const cleanup = useCallback((options?: { resetTime?: boolean }) => {
+        const resetTime = options?.resetTime ?? true;
+
         if (timerRef.current) {
             window.clearInterval(timerRef.current);
             timerRef.current = null;
@@ -30,8 +51,11 @@ export function useAudioRecorder(): UseAudioRecorderReturn {
             streamRef.current.getTracks().forEach((track) => track.stop());
             streamRef.current = null;
         }
+        mediaRecorderRef.current = null;
         setIsRecording(false);
-        setRecordingTime(0);
+        if (resetTime) {
+            setRecordingTime(0);
+        }
     }, []);
 
     const startRecording = useCallback(async () => {
@@ -44,11 +68,11 @@ export function useAudioRecorder(): UseAudioRecorderReturn {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
             streamRef.current = stream;
 
-            // Try to find a supported mime type for recording voice memos
-            const options = { mimeType: 'audio/webm;codecs=opus' };
-            const isSupported = MediaRecorder.isTypeSupported(options.mimeType);
-            
-            const mediaRecorder = new MediaRecorder(stream, isSupported ? options : undefined);
+            const preferredMimeType = getSupportedRecorderMimeType();
+            const mediaRecorder = preferredMimeType
+                ? new MediaRecorder(stream, { mimeType: preferredMimeType })
+                : new MediaRecorder(stream);
+            const resolvedMimeType = mediaRecorder.mimeType || preferredMimeType || 'audio/webm';
             mediaRecorderRef.current = mediaRecorder;
 
             mediaRecorder.ondataavailable = (event) => {
@@ -58,10 +82,12 @@ export function useAudioRecorder(): UseAudioRecorderReturn {
             };
 
             mediaRecorder.onstop = () => {
-                const mimeType = isSupported ? options.mimeType : 'audio/mp4';
-                const blob = new Blob(audioChunksRef.current, { type: mimeType });
+                const blobMimeType = resolvedMimeType
+                    || audioChunksRef.current[0]?.type
+                    || 'audio/webm';
+                const blob = new Blob(audioChunksRef.current, { type: blobMimeType });
                 setAudioBlob(blob);
-                cleanup();
+                cleanup({ resetTime: false });
             };
 
             mediaRecorder.start();
@@ -75,9 +101,9 @@ export function useAudioRecorder(): UseAudioRecorderReturn {
         } catch (err) {
             console.error('Failed to start recording:', err);
             setError(err instanceof Error ? err : new Error('Microphone access denied or error occurred'));
-            cleanup();
+            cleanup({ resetTime: true });
         }
-    }, [cleanup]);
+    }, [cleanup, getSupportedRecorderMimeType]);
 
     const stopRecording = useCallback(() => {
         if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
@@ -93,7 +119,7 @@ export function useAudioRecorder(): UseAudioRecorderReturn {
         // Force cleanup and clear blob
         setAudioBlob(null);
         audioChunksRef.current = [];
-        cleanup();
+        cleanup({ resetTime: true });
     }, [cleanup]);
 
     return {

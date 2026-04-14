@@ -24,6 +24,31 @@ const BLOCKED_EXTENSIONS = new Set([
 
 const RELAXED_MIME_TYPES = new Set(['', 'application/octet-stream']);
 
+function normalizeUploadMimeType(mimeType: string | null | undefined) {
+  const normalized = String(mimeType ?? '')
+    .split(';')[0]
+    .trim()
+    .toLowerCase();
+
+  if (!normalized) return '';
+
+  switch (normalized) {
+    case 'audio/x-wav':
+      return 'audio/wav';
+    case 'audio/mp3':
+    case 'audio/x-mp3':
+    case 'audio/x-mpeg':
+      return 'audio/mpeg';
+    case 'audio/x-m4a':
+    case 'audio/m4a':
+    case 'audio/mp4a-latm':
+    case 'audio/aac':
+      return 'audio/mp4';
+    default:
+      return normalized;
+  }
+}
+
 export const UPLOAD_POLICIES: Record<string, UploadPolicy> = {
   avatars: {
     bucket: 'avatars',
@@ -74,7 +99,23 @@ export const UPLOAD_POLICIES: Record<string, UploadPolicy> = {
   message_attachments: {
     bucket: 'message_attachments',
     maxSizeBytes: 15 * MB,
-    allowedExtensions: ['pdf', 'doc', 'docx', 'txt', 'png', 'jpg', 'jpeg', 'webp', 'gif', 'webm'],
+    allowedExtensions: [
+      'pdf',
+      'doc',
+      'docx',
+      'txt',
+      'png',
+      'jpg',
+      'jpeg',
+      'webp',
+      'gif',
+      'webm',
+      'mp3',
+      'wav',
+      'ogg',
+      'm4a',
+      'mp4',
+    ],
     allowedMimeTypes: [
       'application/pdf',
       'application/msword',
@@ -85,7 +126,13 @@ export const UPLOAD_POLICIES: Record<string, UploadPolicy> = {
       'image/webp',
       'image/gif',
       'audio/webm',
+      'audio/mpeg',
+      'audio/wav',
+      'audio/x-wav',
+      'audio/ogg',
+      'audio/mp4',
       'video/webm',
+      'video/mp4',
     ],
     publicUrl: true,
     upsert: false,
@@ -137,6 +184,20 @@ function isLikelyPlainText(bytes: Uint8Array) {
   return !bytes.some((value) => value === 0);
 }
 
+function isLikelyMp3(bytes: Uint8Array) {
+  if (bytes.length < 3) return false;
+
+  if (hasSignature(bytes, [0x49, 0x44, 0x33])) {
+    return true;
+  }
+
+  return bytes[0] === 0xff && (bytes[1] & 0xe0) === 0xe0;
+}
+
+function isLikelyMp4Family(bytes: Uint8Array) {
+  return hasSignature(bytes, [0x66, 0x74, 0x79, 0x70], 4);
+}
+
 function matchesContentSignature(extension: string, bytes: Uint8Array) {
   if (bytes.length === 0) return true;
 
@@ -160,6 +221,15 @@ function matchesContentSignature(extension: string, bytes: Uint8Array) {
       return isLikelyPlainText(bytes);
     case 'webm':
       return hasSignature(bytes, [0x1a, 0x45, 0xdf, 0xa3]);
+    case 'mp3':
+      return isLikelyMp3(bytes);
+    case 'wav':
+      return hasSignature(bytes, [0x52, 0x49, 0x46, 0x46]) && hasSignature(bytes, [0x57, 0x41, 0x56, 0x45], 8);
+    case 'ogg':
+      return hasSignature(bytes, [0x4f, 0x67, 0x67, 0x53]);
+    case 'm4a':
+    case 'mp4':
+      return isLikelyMp4Family(bytes);
     default:
       return false;
   }
@@ -197,7 +267,9 @@ export function validateUploadSelection(input: {
     return { ok: false, reason: 'Unsupported file type.' };
   }
 
-  if (!RELAXED_MIME_TYPES.has(input.mimeType) && !policy.allowedMimeTypes.includes(input.mimeType)) {
+  const normalizedMimeType = normalizeUploadMimeType(input.mimeType);
+
+  if (!RELAXED_MIME_TYPES.has(normalizedMimeType) && !policy.allowedMimeTypes.includes(normalizedMimeType)) {
     return { ok: false, reason: 'Unexpected MIME type for this file.' };
   }
 

@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import {
     Palette, Code, Languages, Video, PenTool, Database,
@@ -23,6 +23,7 @@ const categoryIcons: Record<string, React.ReactNode> = {
 
 export default function CategoriesSection() {
     const { t, language } = useTranslation();
+    const navigate = useNavigate();
     const categories = getJobCategories(language).slice(0, 6);
 
     const { data: categoryCounts = {} } = useQuery({
@@ -74,9 +75,10 @@ export default function CategoriesSection() {
 
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
                     {categories.map((category, index) => (
-                        <Link
+                        <button
                             key={category.id}
-                            to={`/jobs?cat=${category.id}`}
+                            type="button"
+                            onClick={() => navigate(`/jobs?cat=${category.id}`)}
                             className="p-6 text-center group rounded-[1.6rem] border transition-all duration-300 shadow-sm hover:shadow-md"
                             style={{
                                 background: 'var(--color-background-elevated)',
@@ -113,7 +115,7 @@ export default function CategoriesSection() {
                             >
                                 {categoryCounts[category.id] ?? 0} {t.categories.availableJobs}
                             </p>
-                        </Link>
+                        </button>
                     ))}
                 </div>
             </div>

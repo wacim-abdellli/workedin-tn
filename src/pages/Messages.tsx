@@ -46,6 +46,7 @@ import { useTypingIndicator } from '../hooks/useTypingIndicator';
 import { useReadReceipts } from '../hooks/useReadReceipts';
 import { useTranslation } from '../i18n';
 import ErrorBoundary from '../components/ErrorBoundary';
+import { validateUploadSelection } from '../lib/uploadPolicy';
 
 // Helper functions for offline file handling
 const fileToBase64 = (file: File): Promise<string> => {
@@ -75,6 +76,104 @@ const blobToBase64 = (blob: Blob): Promise<string> => {
         reader.onload = () => resolve(reader.result as string);
         reader.onerror = error => reject(error);
     });
+};
+
+const normalizeMimeType = (mimeType: string | null | undefined) => (
+    (mimeType || '').split(';')[0].trim().toLowerCase()
+);
+
+const canonicalizeVoiceMimeType = (mimeType: string | null | undefined) => {
+    const normalized = normalizeMimeType(mimeType);
+
+    if (!normalized) return 'audio/webm';
+
+    if (normalized === 'audio/x-wav' || normalized === 'audio/wav') return 'audio/wav';
+    if (['audio/mp3', 'audio/x-mp3', 'audio/x-mpeg', 'audio/mpeg'].includes(normalized)) return 'audio/mpeg';
+    if (['audio/x-m4a', 'audio/m4a', 'audio/mp4a-latm', 'audio/aac', 'audio/mp4', 'video/mp4'].includes(normalized)) return 'audio/mp4';
+    if (normalized === 'audio/ogg' || normalized === 'video/ogg') return 'audio/ogg';
+    if (normalized === 'audio/webm' || normalized === 'video/webm') return 'audio/webm';
+
+    return normalized.startsWith('audio/') ? normalized : 'audio/webm';
+};
+
+const getAudioExtensionFromMimeType = (mimeType: string) => {
+    switch (canonicalizeVoiceMimeType(mimeType)) {
+        case 'audio/mp4':
+            return 'm4a';
+        case 'audio/mpeg':
+            return 'mp3';
+        case 'audio/wav':
+        case 'audio/x-wav':
+            return 'wav';
+        case 'audio/ogg':
+            return 'ogg';
+        case 'audio/webm':
+        default:
+            return 'webm';
+    }
+};
+
+const buildVoiceMemoFile = (audio: Blob, timestamp: number = Date.now()) => {
+    const canonicalMimeType = canonicalizeVoiceMimeType(audio.type);
+    const extension = getAudioExtensionFromMimeType(canonicalMimeType);
+    const fileName = `voice_memo_${timestamp}.${extension}`;
+
+    return {
+        fileName,
+        mimeType: canonicalMimeType,
+        file: new File([audio], fileName, { type: canonicalMimeType }),
+    };
+};
+
+const MESSAGE_ATTACHMENT_ACCEPT = [
+    'image/*',
+    'application/pdf',
+    'audio/webm',
+    'audio/mp4',
+    'audio/mpeg',
+    'audio/wav',
+    'audio/ogg',
+    'video/webm',
+    'video/mp4',
+    '.doc',
+    '.docx',
+    '.txt',
+    '.gif',
+    '.m4a',
+    '.mp3',
+    '.wav',
+    '.ogg',
+    '.mp4',
+    '.webm',
+].join(',');
+
+const openBlobAsPreviewOrDownload = (blob: Blob, fileName: string, canPreviewInTab: boolean) => {
+    const objectUrl = URL.createObjectURL(blob);
+
+    if (canPreviewInTab) {
+        const openedWindow = window.open(objectUrl, '_blank', 'noopener,noreferrer');
+        if (!openedWindow) {
+            const link = document.createElement('a');
+            link.href = objectUrl;
+            link.download = fileName;
+            link.rel = 'noopener noreferrer';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    } else {
+        const link = document.createElement('a');
+        link.href = objectUrl;
+        link.download = fileName;
+        link.rel = 'noopener noreferrer';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    window.setTimeout(() => {
+        URL.revokeObjectURL(objectUrl);
+    }, 60_000);
 };
 
 type ThreadMessage = Message & {
@@ -123,6 +222,29 @@ const sortConversationsByActivity = (items: Conversation[]) => {
 
 const isDeletedMessage = (message: ThreadMessage | null | undefined) => Boolean(message?.is_deleted);
 
+const normalizeComparableUrl = (value: string) => (
+    value
+        .trim()
+        .replace(/[?#].*$/, '')
+        .replace(/\/+$/, '')
+);
+
+const shouldHideAttachmentUrlText = (message: ThreadMessage | null | undefined) => {
+    if (!message || isDeletedMessage(message)) return false;
+
+    const content = message.content?.trim();
+    if (!content || !/^https?:\/\/\S+$/i.test(content)) return false;
+
+    const attachments = message.attachments ?? [];
+    if (attachments.length === 0) return false;
+
+    const normalizedContent = normalizeComparableUrl(content);
+    return attachments.some((attachment) => {
+        if (!attachment.url) return false;
+        return normalizeComparableUrl(attachment.url) === normalizedContent;
+    });
+};
+
 const getMessageDisplayText = (message: ThreadMessage | null | undefined, deletedLabel: string) => {
     if (!message) return null;
     return isDeletedMessage(message) ? deletedLabel : message.content;
@@ -135,6 +257,19 @@ const getThreadPreview = (threadMessages: ThreadMessage[], deletedLabel: string)
         last_message_text: getMessageDisplayText(lastMessage, deletedLabel),
         last_message_at: lastMessage?.created_at ?? null,
     };
+};
+
+const getCounterpartyRoleFromScope = (
+    scope: Conversation['conversation_scope'] | undefined,
+    activeMode: string | null | undefined
+): 'client' | 'freelancer' | null => {
+    if (scope === 'client') return 'freelancer';
+    if (scope === 'freelancer') return 'client';
+    if (scope === 'contract') {
+        if (activeMode === 'client') return 'freelancer';
+        if (activeMode === 'freelancer') return 'client';
+    }
+    return null;
 };
 
 function MessagesComponent() {
@@ -169,7 +304,15 @@ function MessagesComponent() {
     const [isLoadingMore, setIsLoadingMore] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
      const [selectedFile, setSelectedFile] = useState<File | null>(null);
-    const { isRecording, recordingTime, startRecording, stopRecording, cancelRecording, audioBlob } = useAudioRecorder();
+    const {
+        isRecording,
+        recordingTime,
+        startRecording,
+        stopRecording,
+        cancelRecording,
+        audioBlob,
+        error: audioRecorderError,
+    } = useAudioRecorder();
 
     const [deletedForMeMessageIds, setDeletedForMeMessageIds] = useState<Set<string>>(new Set());
     const [messagePendingDelete, setMessagePendingDelete] = useState<ThreadMessage | null>(null);
@@ -182,6 +325,50 @@ function MessagesComponent() {
 
     const conversationScopes = resolveConversationScopes(activeMode ?? profile?.active_mode);
     const conversationsModeCacheKey = resolveModeCacheKey(activeMode ?? profile?.active_mode);
+
+    const getConversationIdentityLabel = useCallback((conversation: Conversation) => {
+        const username = conversation.otherUser.username?.trim();
+        const counterpartyRole = getCounterpartyRoleFromScope(
+            conversation.conversation_scope,
+            activeMode ?? profile?.active_mode
+        );
+
+        const roleLabel = counterpartyRole
+            ? tx(`mobileNav.${counterpartyRole}`, undefined, counterpartyRole === 'client' ? 'Client' : 'Freelancer')
+            : null;
+
+        if (roleLabel && username) return `${roleLabel} • @${username}`;
+        if (roleLabel) return roleLabel;
+
+        return `@${username || tx('pages.messages.userFallback', undefined, 'user')}`;
+    }, [activeMode, profile?.active_mode, tx]);
+
+    const handleOpenAttachment = useCallback(async (attachment: NonNullable<Message['attachments']>[number]) => {
+        const sourceUrl = attachment.url?.trim();
+        if (!sourceUrl) {
+            showToast(tx('pages.messages.errors.invalidAttachment', undefined, 'Attachment link is not available'), 'error');
+            return;
+        }
+
+        const normalizedType = normalizeMimeType(attachment.type);
+        const canPreviewInTab = normalizedType.startsWith('image/')
+            || normalizedType.startsWith('audio/')
+            || normalizedType.startsWith('video/')
+            || normalizedType === 'application/pdf';
+
+        try {
+            const response = await fetch(sourceUrl, { cache: 'no-store' });
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+
+            const blob = await response.blob();
+            openBlobAsPreviewOrDownload(blob, attachment.name || 'attachment', canPreviewInTab);
+        } catch (error) {
+            console.error('[Messages] Failed to open attachment via blob URL:', error);
+            showToast(tx('pages.messages.errors.openAttachment', undefined, 'Failed to open attachment right now'), 'error');
+        }
+    }, [showToast, tx]);
 
     // Typing indicators
     const { typingUsers, startTyping, stopTyping } = useTypingIndicator(
@@ -222,6 +409,11 @@ function MessagesComponent() {
             window.removeEventListener('offline', handleOffline);
         };
     }, []);
+
+    useEffect(() => {
+        if (!audioRecorderError) return;
+        showToast(audioRecorderError.message, 'error');
+    }, [audioRecorderError, showToast]);
 
     // Sync pending queue when back online
     useEffect(() => {
@@ -869,9 +1061,10 @@ function MessagesComponent() {
                 // Convert audio blob to base64
                 if (audioBlob) {
                     if (audioBlob.size <= MAX_FILE_SIZE) {
+                        const voiceMemo = buildVoiceMemoFile(audioBlob);
                         audioBase64 = await blobToBase64(audioBlob);
-                        audioFileName = `voice_memo_${Date.now()}.webm`;
-                        audioType = audioBlob.type || 'audio/webm';
+                        audioFileName = voiceMemo.fileName;
+                        audioType = voiceMemo.mimeType;
                     } else {
                         showToast(tx('pages.messages.offline.audioTooLarge', undefined, 'Audio too large for offline storage'), 'warning');
                         return;
@@ -927,6 +1120,7 @@ function MessagesComponent() {
             || (recordedAudio
                 ? tx('pages.messages.voiceMemo', undefined, 'Voice memo')
                 : fileToSend?.name || tx('pages.messages.attachmentLabel', undefined, 'Attachment'));
+        const optimisticContent = messageContent || previewText;
         const previousPreview = {
             last_message_text: activeConversation.last_message_text,
             last_message_at: activeConversation.last_message_at,
@@ -937,7 +1131,7 @@ function MessagesComponent() {
             conversation_id: activeConversation.id,
             sender_id: user.id,
             receiver_id: activeConversation.otherUser.id,
-            content: messageContent,
+            content: optimisticContent,
             attachments: [],
             is_read: false,
             created_at: optimisticCreatedAt,
@@ -991,8 +1185,8 @@ function MessagesComponent() {
             const uploadTasks: Promise<Message['attachments'][number]>[] = [];
 
             if (recordedAudio) {
-                const fileName = `voice_memo_${Date.now()}.webm`;
-                const audioFile = new File([recordedAudio], fileName, { type: recordedAudio.type || 'audio/webm' });
+                const voiceMemo = buildVoiceMemoFile(recordedAudio);
+                const audioFile = voiceMemo.file;
                 uploadTasks.push((async () => {
                     const { url, error } = await uploadMessageAttachment(audioFile, activeConversation.id);
                     if (error || !url) {
@@ -1095,8 +1289,14 @@ function MessagesComponent() {
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
-            if (file.size > 10 * 1024 * 1024) {
-                showToast(tx('pages.messages.errors.fileTooLarge', undefined, 'File size must be less than 10 MB'), 'error');
+            const validation = validateUploadSelection({
+                bucket: 'message_attachments',
+                fileName: file.name,
+                mimeType: normalizeMimeType(file.type),
+                size: file.size,
+            });
+            if (!validation.ok) {
+                showToast(validation.reason || tx('pages.messages.errors.fileUnsupported', undefined, 'Unsupported file type'), 'error');
                 e.target.value = '';
                 return;
             }
@@ -1124,9 +1324,11 @@ function MessagesComponent() {
 
      const messagesVirtualizer = useVirtualizer({
         count: displayMessages.length,
+          getItemKey: (index) => displayMessages[index]?.id ?? index,
         getScrollElement: () => messagesParentRef.current,
-        estimateSize: () => 60,
-        overscan: 10,
+          estimateSize: () => 120,
+          overscan: 12,
+          measureElement: (element) => element?.getBoundingClientRect().height ?? 0,
     });
 
     const formatTime = (timestamp: string | null) => {
@@ -1363,7 +1565,7 @@ function MessagesComponent() {
                                         </span>
                                     )}
                                 </div>
-                                <p className="text-sm text-muted-foreground">@{selectedConversation.otherUser.username || 'user'}</p>
+                                <p className="text-sm text-muted-foreground">{getConversationIdentityLabel(selectedConversation)}</p>
                             </div>
                         </div>
 
@@ -1389,15 +1591,33 @@ function MessagesComponent() {
                             <div style={{ height: `${messagesVirtualizer.getTotalSize()}px`, width: '100%', position: 'relative' }}>
                                 {messagesVirtualizer.getVirtualItems().map((virtualRow) => {
                                     const message = displayMessages[virtualRow.index];
+                                    const messageText = getMessageDisplayText(message, deletedMessageLabel);
+                                    const shouldRenderMessageText = Boolean(messageText) && !shouldHideAttachmentUrlText(message);
+                                    const attachments = message.attachments ?? [];
+                                    const hasAttachments = attachments.length > 0;
+                                    const imageAttachmentCount = attachments.filter((att) => att.type?.startsWith('image/')).length;
+                                    const audioAttachmentCount = attachments.filter((att) => (
+                                        att.type?.startsWith('audio/')
+                                        || /\.(mp3|wav|ogg|m4a|webm)$/i.test(att.name || '')
+                                    )).length;
+                                    const isImageOnlyMessage = !isDeletedMessage(message)
+                                        && !shouldRenderMessageText
+                                        && hasAttachments
+                                        && imageAttachmentCount === attachments.length;
+                                    const isAudioOnlyMessage = !isDeletedMessage(message)
+                                        && !shouldRenderMessageText
+                                        && hasAttachments
+                                        && audioAttachmentCount === attachments.length;
                                     return (
                                         <div
                                             key={message.id}
+                                            ref={messagesVirtualizer.measureElement}
+                                            data-index={virtualRow.index}
                                             style={{
                                                 position: 'absolute',
                                                 top: 0,
                                                 left: 0,
                                                 width: '100%',
-                                                height: `${virtualRow.size}px`,
                                                 transform: `translateY(${virtualRow.start}px)`,
                                                 paddingBottom: '16px'
                                             }}
@@ -1412,7 +1632,7 @@ function MessagesComponent() {
                                                 onClick={() => void handleDeleteMessage(message)}
                                                 disabled={deletingMessageId === message.id}
                                                 aria-label={tx('pages.messages.deleteMessage', undefined, 'Delete message')}
-                                                className="absolute -top-2 -start-2 z-10 flex h-8 w-8 items-center justify-center rounded-full border border-border bg-card text-muted-foreground opacity-100 shadow-sm transition hover:text-destructive lg:opacity-0 lg:group-hover/message:opacity-100 disabled:cursor-not-allowed disabled:opacity-60"
+                                                className={`absolute z-10 flex h-8 w-8 items-center justify-center rounded-full border border-border bg-card text-muted-foreground opacity-100 shadow-sm transition hover:text-destructive disabled:cursor-not-allowed disabled:opacity-60 lg:opacity-0 lg:group-hover/message:opacity-100 ${isAudioOnlyMessage ? 'top-1/2 -start-10 -translate-y-1/2' : '-top-2 -start-2'}`}
                                             >
                                                 {deletingMessageId === message.id ? (
                                                     <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -1422,43 +1642,67 @@ function MessagesComponent() {
                                             </button>
                                         )}
                                         <div
-                                            className={`rounded-2xl px-4 py-2 transition-all duration-200 ${
+                                            className={`rounded-2xl transition-all duration-200 ${
                                                 isDeletedMessage(message)
-                                                    ? 'border border-dashed border-border bg-card text-muted-foreground rounded-2xl'
+                                                    ? 'px-4 py-2 border border-dashed border-border bg-card text-muted-foreground rounded-2xl'
+                                                    : isImageOnlyMessage
+                                                    ? `overflow-hidden ${message.sender_id === user?.id ? 'rounded-br-none' : 'rounded-bl-none'} ${message.status === 'failed' ? 'ring-1 ring-red-400/60' : ''} ${message.status === 'sending' ? 'opacity-80' : ''}`
+                                                    : isAudioOnlyMessage
+                                                    ? message.sender_id === user?.id
+                                                        ? `px-3 py-2 bg-[var(--workspace-primary)] text-white rounded-br-none shadow-md min-w-[15.5rem] max-w-full ${message.status === 'failed' ? 'ring-1 ring-red-400/60' : ''} ${message.status === 'sending' ? 'opacity-80' : ''}`
+                                                        : 'px-3 py-2 bg-surface text-foreground rounded-bl-none border border-border shadow-sm min-w-[15.5rem] max-w-full'
                                                     : message.sender_id === user?.id
-                                                    ? `bg-[var(--workspace-primary)] text-white rounded-br-none shadow-md hover:shadow-lg ${message.status === 'failed' ? 'ring-1 ring-red-400/60' : ''} ${message.status === 'sending' ? 'opacity-80' : ''}`
-                                                    : 'bg-surface text-foreground rounded-bl-none border border-border shadow-sm hover:shadow-md'
+                                                    ? `px-4 py-2 bg-[var(--workspace-primary)] text-white rounded-br-none shadow-md hover:shadow-lg ${message.status === 'failed' ? 'ring-1 ring-red-400/60' : ''} ${message.status === 'sending' ? 'opacity-80' : ''}`
+                                                    : 'px-4 py-2 bg-surface text-foreground rounded-bl-none border border-border shadow-sm hover:shadow-md'
                                             }`}
                                         >
-                                            <p className={`text-sm break-words ${isDeletedMessage(message) ? 'italic' : ''}`}>
-                                                {getMessageDisplayText(message, deletedMessageLabel)}
-                                            </p>
-                                            {!isDeletedMessage(message) && message.attachments && message.attachments.length > 0 && (
-                                                <div className="mt-2 space-y-2">
-                                                    {message.attachments.map((att, i) => {
+                                            {shouldRenderMessageText ? (
+                                                <p className={`text-sm break-words ${isDeletedMessage(message) ? 'italic' : ''}`}>
+                                                    {messageText}
+                                                </p>
+                                            ) : null}
+                                            {!isDeletedMessage(message) && hasAttachments && (
+                                                <div className={`${shouldRenderMessageText ? 'mt-2 ' : ''}space-y-2`}>
+                                                    {attachments.map((att, i) => {
                                                         const isImage = att.type?.startsWith('image/');
                                                         if (isImage) {
                                                             return (
-                                                                <a key={i} href={att.url} target="_blank" rel="noopener noreferrer">
-                                                                    <img src={att.url} alt={att.name} className="w-full rounded-lg" />
-                                                                </a>
+                                                                <button
+                                                                    key={i}
+                                                                    type="button"
+                                                                    onClick={() => {
+                                                                        void handleOpenAttachment(att);
+                                                                    }}
+                                                                    aria-label={tx('pages.messages.a11y.openImageAttachment', undefined, 'Open image attachment')}
+                                                                    className={isImageOnlyMessage ? 'block no-underline' : 'block overflow-hidden rounded-lg no-underline'}
+                                                                >
+                                                                    <img src={att.url} alt={att.name} className={isImageOnlyMessage ? 'block w-full' : 'block w-full rounded-lg'} />
+                                                                </button>
                                                             );
                                                         }
-                                                        const isAudio = att.type?.startsWith('audio/');
+                                                        const isAudio = att.type?.startsWith('audio/') || /\.(mp3|wav|ogg|m4a|webm)$/i.test(att.name || '');
                                                         if (isAudio) {
-                                                            return <audio key={i} controls src={att.url} className="w-full max-w-xs" />;
+                                                            return (
+                                                                <audio
+                                                                    key={i}
+                                                                    controls
+                                                                    src={att.url}
+                                                                    className={`block min-w-[12rem] ${isAudioOnlyMessage ? 'w-full' : 'w-full max-w-xs'}`}
+                                                                />
+                                                            );
                                                         }
                                                         return (
-                                                            <a
+                                                            <button
                                                                 key={i}
-                                                                href={att.url}
-                                                                target="_blank"
-                                                                rel="noopener noreferrer"
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    void handleOpenAttachment(att);
+                                                                }}
                                                                 className="flex items-center gap-2 p-2 rounded-lg hover:bg-[var(--color-background-elevated)]"
                                                             >
                                                                 <FileText className="w-4 h-4 shrink-0" />
                                                                 <span className="text-xs truncate">{att.name}</span>
-                                                            </a>
+                                                            </button>
                                                         );
                                                     })}
                                                 </div>
@@ -1580,7 +1824,7 @@ function MessagesComponent() {
                         )}
                         
                         <div className="flex items-end gap-2">
-                            <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileChange} accept="image/*,application/pdf,.doc,.docx" />
+                            <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileChange} accept={MESSAGE_ATTACHMENT_ACCEPT} />
                             
                             <button
                                 onClick={() => fileInputRef.current?.click()}
@@ -1675,7 +1919,7 @@ function MessagesComponent() {
                         <h3 className="font-bold text-lg text-foreground">
                             {selectedConversation.otherUser.full_name}
                         </h3>
-                        <p className="text-muted-foreground">@{selectedConversation.otherUser.username || tx('pages.messages.userFallback', undefined, 'user')}</p>
+                        <p className="text-muted-foreground">{getConversationIdentityLabel(selectedConversation)}</p>
                     </div>
 
                     {/* Quick Actions */}
