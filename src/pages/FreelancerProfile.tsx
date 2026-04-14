@@ -20,6 +20,7 @@ import {
     Images,
     Plus,
     Edit2,
+    Trash2,
     Settings,
     MessageSquare,
     ArrowLeft,
@@ -364,6 +365,7 @@ function ProfileView({
     onSaveBio,
     onSaveSkills,
     onSaveTools,
+    onRefreshWorkSamples,
 }: ProfilePageProps & {
     freelancer: FreelancerData;
     onOpenContact: () => void;
@@ -377,6 +379,7 @@ function ProfileView({
     onSaveBio: (bio: string) => Promise<void>;
     onSaveSkills: (skills: string[]) => Promise<void>;
     onSaveTools: (tools: string[]) => Promise<void>;
+    onRefreshWorkSamples: () => Promise<void>;
 }) {
     const navigate = useNavigate();
     const { showToast } = useToast();
@@ -408,6 +411,7 @@ function ProfileView({
     const [savingTools, setSavingTools] = useState(false);
     const [activeWorkSampleId, setActiveWorkSampleId] = useState<string | null>(null);
     const [activeWorkImageIndex, setActiveWorkImageIndex] = useState(0);
+    const [deletingWorkSampleId, setDeletingWorkSampleId] = useState<string | null>(null);
 
     const isSavingAnySection = savingAvatar || savingBasics || savingBio || savingSkills || savingTools;
 
@@ -541,6 +545,43 @@ function ProfileView({
         setActiveWorkSampleId(null);
         setActiveWorkImageIndex(0);
     }, []);
+
+    const editWorkSample = useCallback((workSampleId: string) => {
+        navigate(`${ROUTES.freelancerPortfolio}?edit=${encodeURIComponent(workSampleId)}`);
+    }, [navigate]);
+
+    const deleteWorkSample = useCallback(async (workSampleId: string) => {
+        const confirmed = window.confirm('Delete this work sample? This action cannot be undone.');
+        if (!confirmed) {
+            return;
+        }
+
+        try {
+            setDeletingWorkSampleId(workSampleId);
+
+            const { error } = await supabase
+                .from('portfolio_items')
+                .delete()
+                .eq('id', workSampleId)
+                .eq('freelancer_id', freelancer.id);
+
+            if (error) {
+                throw error;
+            }
+
+            if (activeWorkSampleId === workSampleId) {
+                closeWorkSampleViewer();
+            }
+
+            showToast('Work sample deleted', 'success');
+            await onRefreshWorkSamples();
+        } catch (error) {
+            logger.error('Failed to delete work sample', error);
+            showToast('Could not delete work sample', 'error');
+        } finally {
+            setDeletingWorkSampleId(null);
+        }
+    }, [activeWorkSampleId, closeWorkSampleViewer, freelancer.id, onRefreshWorkSamples, showToast]);
 
     const showPreviousWorkSample = useCallback(() => {
         if (workSamples.length <= 1) {
@@ -1264,18 +1305,42 @@ function ProfileView({
                                                         </a>
                                                     ) : <span />}
 
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => openWorkSampleViewer(item.id)}
-                                                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold transition-colors"
-                                                        style={{
-                                                            borderColor: `color-mix(in srgb, ${accentColor} 38%, #2f2f2f)`,
-                                                            color: accentColor,
-                                                            background: `color-mix(in srgb, ${accentColor} 10%, transparent)`,
-                                                        }}
-                                                    >
-                                                        View full project
-                                                    </button>
+                                                    <div className="flex items-center gap-2">
+                                                        {isOwner ? (
+                                                            <>
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => editWorkSample(item.id)}
+                                                                    className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-white/15 text-xs font-semibold text-white/75 hover:text-white transition-colors"
+                                                                >
+                                                                    <Edit2 className="w-3.5 h-3.5" />
+                                                                    Edit
+                                                                </button>
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => { void deleteWorkSample(item.id); }}
+                                                                    disabled={deletingWorkSampleId === item.id}
+                                                                    className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-red-500/35 text-xs font-semibold text-red-300 hover:text-red-200 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                                                                >
+                                                                    <Trash2 className="w-3.5 h-3.5" />
+                                                                    {deletingWorkSampleId === item.id ? 'Deleting...' : 'Delete'}
+                                                                </button>
+                                                            </>
+                                                        ) : null}
+
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => openWorkSampleViewer(item.id)}
+                                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold transition-colors"
+                                                            style={{
+                                                                borderColor: `color-mix(in srgb, ${accentColor} 38%, #2f2f2f)`,
+                                                                color: accentColor,
+                                                                background: `color-mix(in srgb, ${accentColor} 10%, transparent)`,
+                                                            }}
+                                                        >
+                                                            View full project
+                                                        </button>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </article>
@@ -2390,6 +2455,7 @@ export default function FreelancerProfile() {
                 onSaveBio={saveBio}
                 onSaveSkills={saveSkills}
                 onSaveTools={saveTools}
+                onRefreshWorkSamples={() => loadFreelancer(false)}
             />
 
             {freelancer?.id ? (

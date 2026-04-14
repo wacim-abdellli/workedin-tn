@@ -289,6 +289,9 @@ function FreelancerDashboardPage() {
   const contracts = stats?.activeContractsList ?? [];
   const monthlyEarnings = chartData[chartData.length - 1]?.earnings ?? 0;
   const lastMonthEarnings = chartData[chartData.length - 2]?.earnings ?? 0;
+  const ownFreelancerProfilePath = profile?.id
+    ? `/freelancer/${profile.username || profile.id}`
+    : ROUTES.settingsProfile;
 
   const checklist = [
     {
@@ -339,7 +342,7 @@ function FreelancerDashboardPage() {
         "Tools listed",
       ),
       done: (freelancerProfile?.tools?.length ?? 0) > 0,
-      path: "/onboarding/freelancer",
+      path: ownFreelancerProfilePath,
     },
     {
       label: tx(
@@ -350,10 +353,13 @@ function FreelancerDashboardPage() {
       done:
         typeof freelancerProfile?.project_preferences === "object" &&
         freelancerProfile?.project_preferences !== null &&
-        "summary" in freelancerProfile.project_preferences &&
-        typeof freelancerProfile.project_preferences.summary === "string" &&
-        freelancerProfile.project_preferences.summary.trim().length > 10,
-      path: "/onboarding/freelancer",
+        (("summary" in freelancerProfile.project_preferences &&
+          typeof freelancerProfile.project_preferences.summary === "string" &&
+          freelancerProfile.project_preferences.summary.trim().length > 10) ||
+          ("bio" in freelancerProfile.project_preferences &&
+            typeof freelancerProfile.project_preferences.bio === "string" &&
+            freelancerProfile.project_preferences.bio.trim().length > 10)),
+      path: ownFreelancerProfilePath,
     },
   ];
 

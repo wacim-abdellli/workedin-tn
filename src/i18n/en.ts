@@ -1561,7 +1561,7 @@ export const en: Translations = {
             "stopRecording": "Stop recording",
             "recordVoice": "Record voice message",
             "recording": "Recording...",
-            "voiceMemo": "Voice memo",
+            "voiceMemo": "Audio note",
             "userFallback": "user",
             "loadingConversations": "Loading conversations...",
             "loadingMessages": "Loading messages...",

@@ -1559,7 +1559,7 @@ export const ar = {
             "stopRecording": "إيقاف التسجيل",
             "recordVoice": "تسجيل مقطع صوتي",
             "recording": "جاري التسجيل...",
-            "voiceMemo": "رسالة صوتية",
+            "voiceMemo": "مقطع صوتي",
             "userFallback": "user",
             "loadingConversations": "جاري تحميل المحادثات...",
             "loadingMessages": "جاري تحميل الرسائل...",

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo, type CSSProperties } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import {
@@ -6,24 +6,30 @@ import {
     Send,
     Paperclip,
     Trash2,
-    ChevronLeft,
-    Plus,
+    ArrowLeft,
     FileText,
-    User,
-    Briefcase,
     Loader2,
     Mic,
     Square,
     X,
     FileAudio,
-    WifiOff,
     Clock,
+    Play,
+    Pause,
+    AlertCircle,
+    MoreVertical,
+    CheckCheck,
+    CornerUpLeft,
+    Download,
+    Image as ImageIcon,
+    User,
+    Mail,
+    Flag,
 } from 'lucide-react';
 import { Header } from '../components/layout';
 import Button from '../components/ui/Button';
 import Modal from '../components/ui/Modal';
 import SEO, { SEO_CONFIG } from '../components/common/SEO';
-import EmptyState from '../components/ui/EmptyState';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../components/ui/Toast';
@@ -147,6 +153,372 @@ const MESSAGE_ATTACHMENT_ACCEPT = [
     '.webm',
 ].join(',');
 
+const extractMessageAttachmentPath = (value: string | null | undefined): string | null => {
+    const raw = String(value || '').trim();
+    if (!raw) return null;
+
+    if (!/^(https?:)/i.test(raw)) {
+        const normalized = raw.replace(/^\/+/, '');
+        const withoutPublicPrefix = normalized.replace(/^storage\/v1\/object\/public\/message_attachments\//i, '');
+        const objectPath = withoutPublicPrefix.startsWith('message_attachments/')
+            ? withoutPublicPrefix.slice('message_attachments/'.length)
+            : withoutPublicPrefix;
+        return objectPath || null;
+    }
+
+    try {
+        const parsed = new URL(raw);
+        const decodedPath = decodeURIComponent(parsed.pathname);
+        const marker = '/message_attachments/';
+        const markerIndex = decodedPath.indexOf(marker);
+        if (markerIndex === -1) return null;
+
+        const candidate = decodedPath.slice(markerIndex + marker.length);
+        return candidate || null;
+    } catch {
+        return null;
+    }
+};
+
+const hasSignature = (bytes: Uint8Array, signature: number[], offset = 0) => {
+    if (bytes.length < offset + signature.length) return false;
+    return signature.every((value, index) => bytes[offset + index] === value);
+};
+
+const detectAudioMimeTypeFromBuffer = (buffer: ArrayBuffer): string | null => {
+    const bytes = new Uint8Array(buffer);
+    if (bytes.length < 4) return null;
+
+    if (hasSignature(bytes, [0x1a, 0x45, 0xdf, 0xa3])) return 'audio/webm';
+    if (hasSignature(bytes, [0x52, 0x49, 0x46, 0x46]) && hasSignature(bytes, [0x57, 0x41, 0x56, 0x45], 8)) return 'audio/wav';
+    if (hasSignature(bytes, [0x4f, 0x67, 0x67, 0x53])) return 'audio/ogg';
+    if (hasSignature(bytes, [0x49, 0x44, 0x33]) || (bytes[0] === 0xff && (bytes[1] & 0xe0) === 0xe0)) return 'audio/mpeg';
+    if (hasSignature(bytes, [0x66, 0x74, 0x79, 0x70], 4)) return 'audio/mp4';
+
+    return null;
+};
+
+const inferAudioMimeType = (mimeType: string | null | undefined, fileName: string | null | undefined) => {
+    const normalized = normalizeMimeType(mimeType);
+    if (normalized.startsWith('audio/')) return normalized;
+
+    const lowerName = String(fileName || '').toLowerCase();
+    if (lowerName.endsWith('.mp3')) return 'audio/mpeg';
+    if (lowerName.endsWith('.wav')) return 'audio/wav';
+    if (lowerName.endsWith('.ogg')) return 'audio/ogg';
+    if (lowerName.endsWith('.m4a')) return 'audio/mp4';
+    return 'audio/webm';
+};
+
+const formatAudioTime = (seconds: number) => {
+    if (!Number.isFinite(seconds) || seconds < 0) return '0:00';
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60).toString().padStart(2, '0');
+    return `${mins}:${secs}`;
+};
+
+type MessageAttachment = NonNullable<Message['attachments']>[number];
+
+const isImageAttachment = (attachment: MessageAttachment) =>
+    attachment.type?.startsWith('image/') || /\.(png|jpe?g|gif|webp|avif|svg)$/i.test(attachment.name || '');
+
+const isAudioAttachment = (attachment: MessageAttachment) =>
+    attachment.type?.startsWith('audio/') || /\.(mp3|wav|ogg|m4a|webm)$/i.test(attachment.name || '');
+
+const formatAttachmentSize = (size: string | number | null | undefined) => {
+    const parsedSize = typeof size === 'string' ? Number(size) : size;
+    if (!Number.isFinite(parsedSize) || !parsedSize || parsedSize <= 0) return null;
+    if (parsedSize < 1024) return `${parsedSize} B`;
+    if (parsedSize < 1024 * 1024) return `${(parsedSize / 1024).toFixed(1)} KB`;
+    return `${(parsedSize / (1024 * 1024)).toFixed(1)} MB`;
+};
+
+const getAttachmentExtensionLabel = (name: string | null | undefined, mimeType: string | null | undefined) => {
+    const rawName = String(name || '').trim();
+    if (rawName.includes('.')) {
+        const ext = rawName.split('.').pop();
+        if (ext) return ext.toUpperCase();
+    }
+
+    const normalizedMimeType = normalizeMimeType(mimeType);
+    if (normalizedMimeType.includes('/')) {
+        return normalizedMimeType.split('/')[1]?.toUpperCase() || 'FILE';
+    }
+
+    return 'FILE';
+};
+
+type MessageAudioPlayerProps = {
+    src: string;
+    rawSource?: string;
+    name: string;
+    mimeType?: string;
+    isOwn: boolean;
+};
+
+function MessageAudioPlayer({ src, rawSource, name, mimeType, isOwn }: MessageAudioPlayerProps) {
+    const { tx } = useTranslation();
+    const audioRef = useRef<HTMLAudioElement | null>(null);
+    const fallbackObjectUrlRef = useRef<string | null>(null);
+    const didAttemptBlobFallbackRef = useRef(false);
+
+    const [playbackSrc, setPlaybackSrc] = useState(src);
+    const [isPlaying, setIsPlaying] = useState(false);
+    const [duration, setDuration] = useState(0);
+    const [currentTime, setCurrentTime] = useState(0);
+    const [isLoading, setIsLoading] = useState(false);
+    const [hasError, setHasError] = useState(false);
+
+    const waveformBars = useMemo(() => (
+        Array.from({ length: 18 }, (_, index) => {
+            const seeded = Math.sin((index + 1.8) * 1.57) * 0.5 + 0.5;
+            return 6 + Math.round(seeded * 13);
+        })
+    ), []);
+
+    const progressRatio = duration > 0 ? Math.min(currentTime / duration, 1) : 0;
+    const defaultDuration = duration > 0 ? duration : 14;
+
+    const displayAudioName = useMemo(() => {
+        const rawName = String(name || '').trim();
+        if (!rawName) return tx('pages.messages.voiceMemo', undefined, 'Audio note');
+
+        const lowerName = rawName.toLowerCase();
+        if (
+            lowerName.includes('voice memo')
+            || lowerName.includes('voice_memo')
+            || lowerName.includes('message vocal')
+            || rawName.includes('رسالة صوتية')
+        ) {
+            return tx('pages.messages.voiceMemo', undefined, 'Audio note');
+        }
+
+        return rawName;
+    }, [name, tx]);
+
+    useEffect(() => {
+        setPlaybackSrc(src);
+        setIsPlaying(false);
+        setDuration(0);
+        setCurrentTime(0);
+        setIsLoading(false);
+        setHasError(false);
+        didAttemptBlobFallbackRef.current = false;
+
+        if (fallbackObjectUrlRef.current) {
+            URL.revokeObjectURL(fallbackObjectUrlRef.current);
+            fallbackObjectUrlRef.current = null;
+        }
+    }, [src]);
+
+    useEffect(() => {
+        return () => {
+            if (fallbackObjectUrlRef.current) {
+                URL.revokeObjectURL(fallbackObjectUrlRef.current);
+                fallbackObjectUrlRef.current = null;
+            }
+        };
+    }, []);
+
+    const tryBlobFallback = useCallback(async (): Promise<boolean> => {
+        if (!src) {
+            setHasError(true);
+            return false;
+        }
+
+        let incomingBlob: Blob | null = null;
+
+        try {
+            const response = await fetch(src, { cache: 'no-store' });
+            if (response.ok) {
+                incomingBlob = await response.blob();
+            }
+        } catch {
+            // fallback below
+        }
+
+        if (!incomingBlob) {
+            const attachmentPath = extractMessageAttachmentPath(rawSource || src);
+            if (attachmentPath) {
+                const { data, error } = await supabase.storage
+                    .from('message_attachments')
+                    .download(attachmentPath);
+
+                if (!error && data) {
+                    incomingBlob = data;
+                }
+            }
+        }
+
+        if (!incomingBlob) {
+            setHasError(true);
+            return false;
+        }
+
+        const buffer = await incomingBlob.arrayBuffer();
+        const detectedMimeType = detectAudioMimeTypeFromBuffer(buffer);
+        const effectiveMimeType = detectedMimeType || inferAudioMimeType(mimeType || incomingBlob.type, name);
+        const normalizedBlob = new Blob([buffer], { type: effectiveMimeType });
+
+        if (fallbackObjectUrlRef.current) {
+            URL.revokeObjectURL(fallbackObjectUrlRef.current);
+            fallbackObjectUrlRef.current = null;
+        }
+
+        const objectUrl = URL.createObjectURL(normalizedBlob);
+        fallbackObjectUrlRef.current = objectUrl;
+
+        setPlaybackSrc(objectUrl);
+        setHasError(false);
+        return true;
+    }, [mimeType, name, rawSource, src]);
+
+    const togglePlay = async () => {
+        const player = audioRef.current;
+        if (!player || hasError) return;
+
+        try {
+            if (player.paused) {
+                setIsLoading(true);
+                await player.play();
+                setIsPlaying(true);
+            } else {
+                player.pause();
+                setIsPlaying(false);
+            }
+        } catch {
+            if (!didAttemptBlobFallbackRef.current) {
+                didAttemptBlobFallbackRef.current = true;
+                const recovered = await tryBlobFallback();
+                if (recovered) {
+                    setIsPlaying(false);
+                    return;
+                }
+            }
+
+            setHasError(true);
+            setIsPlaying(false);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleAudioError = () => {
+        if (didAttemptBlobFallbackRef.current) {
+            setHasError(true);
+            setIsPlaying(false);
+            setIsLoading(false);
+            return;
+        }
+
+        didAttemptBlobFallbackRef.current = true;
+        void tryBlobFallback();
+    };
+
+    const playedBars = Math.round(progressRatio * waveformBars.length);
+
+    return (
+        <div className="min-w-[200px]">
+            <audio
+                ref={audioRef}
+                src={playbackSrc}
+                preload="metadata"
+                onLoadedMetadata={(event) => {
+                    setDuration(event.currentTarget.duration || 0);
+                    setHasError(false);
+                }}
+                onTimeUpdate={(event) => {
+                    setCurrentTime(event.currentTarget.currentTime || 0);
+                }}
+                onPlay={() => {
+                    setIsPlaying(true);
+                    setIsLoading(false);
+                }}
+                onPause={() => {
+                    setIsPlaying(false);
+                    setIsLoading(false);
+                }}
+                onEnded={() => {
+                    setIsPlaying(false);
+                    setCurrentTime(duration || 0);
+                }}
+                onError={handleAudioError}
+            />
+
+            <div className="flex items-center gap-3">
+                <button
+                    type="button"
+                    onClick={() => {
+                        void togglePlay();
+                    }}
+                    disabled={hasError}
+                    aria-label={`${isPlaying ? tx('pages.messages.pauseAudio', undefined, 'Pause audio') : tx('pages.messages.playAudio', undefined, 'Play audio')} ${displayAudioName}`}
+                    className={`w-8 h-8 rounded-full shrink-0 flex items-center justify-center transition-colors disabled:opacity-50 ${
+                        isOwn
+                            ? 'bg-white text-purple-600 hover:bg-gray-100'
+                            : 'bg-purple-500 text-white hover:bg-purple-400'
+                    }`}
+                >
+                    {isLoading ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : isPlaying ? (
+                        <Pause className="h-4 w-4" />
+                    ) : (
+                        <Play className="h-4 w-4" />
+                    )}
+                </button>
+
+                <div className="flex gap-0.5 items-center flex-1 h-6" role="presentation">
+                    {waveformBars.map((barHeight, index) => {
+                        const isActiveBar = index < playedBars;
+                        return (
+                            <div
+                                key={index}
+                                className={`w-1 rounded-full transition-colors ${
+                                    isOwn
+                                        ? (isActiveBar ? 'bg-purple-200' : 'bg-purple-300')
+                                        : (isActiveBar ? 'bg-gray-400' : 'bg-gray-500')
+                                }`}
+                                style={{ height: `${barHeight}px` }}
+                            />
+                        );
+                    })}
+                </div>
+
+                <span className={`text-[10px] font-medium tracking-wide shrink-0 ${isOwn ? 'text-purple-100' : 'text-gray-400'}`}>
+                    {formatAudioTime(defaultDuration)}
+                </span>
+            </div>
+
+            {hasError ? (
+                <div className={`mt-1 flex items-center gap-1 text-[10px] ${isOwn ? 'text-purple-100' : 'text-gray-400'}`}>
+                    <AlertCircle className="h-3.5 w-3.5" />
+                    <span>{tx('pages.messages.audioPreviewUnavailable', undefined, 'Audio preview unavailable.')}</span>
+                </div>
+            ) : null}
+        </div>
+    );
+}
+
+const resolveMessageAttachmentUrl = (url: string | null | undefined) => {
+    const raw = String(url || '').trim();
+    if (!raw) return '';
+    if (/^(https?:|blob:|data:)/i.test(raw)) return raw;
+
+    const normalized = raw.replace(/^\/+/, '');
+    const withoutPublicPrefix = normalized.replace(/^storage\/v1\/object\/public\/message_attachments\//i, '');
+    const objectPath = withoutPublicPrefix.startsWith('message_attachments/')
+        ? withoutPublicPrefix.slice('message_attachments/'.length)
+        : withoutPublicPrefix;
+
+    if (!objectPath) return raw;
+
+    return supabase.storage
+        .from('message_attachments')
+        .getPublicUrl(objectPath)
+        .data.publicUrl;
+};
+
 const openBlobAsPreviewOrDownload = (blob: Blob, fileName: string, canPreviewInTab: boolean) => {
     const objectUrl = URL.createObjectURL(blob);
 
@@ -178,6 +550,71 @@ const openBlobAsPreviewOrDownload = (blob: Blob, fileName: string, canPreviewInT
 
 type ThreadMessage = Message & {
     status?: 'sending' | 'failed';
+};
+
+type ReplyMetadata = {
+    messageId: string;
+    senderName: string;
+    previewText: string;
+};
+
+const REPLY_TOKEN_PREFIX = '[[reply:';
+const REPLY_TOKEN_SUFFIX = ']]';
+const MAX_REPLY_PREVIEW_LENGTH = 120;
+
+const truncateText = (value: string, maxLength: number) => (
+    value.length > maxLength ? `${value.slice(0, maxLength - 1)}...` : value
+);
+
+const parseReplyMetadataFromContent = (content: string | null | undefined) => {
+    const rawContent = String(content || '');
+
+    if (!rawContent.startsWith(REPLY_TOKEN_PREFIX)) {
+        return { replyMetadata: null as ReplyMetadata | null, bodyText: rawContent };
+    }
+
+    const suffixIndex = rawContent.indexOf(REPLY_TOKEN_SUFFIX);
+    if (suffixIndex <= REPLY_TOKEN_PREFIX.length) {
+        return { replyMetadata: null as ReplyMetadata | null, bodyText: rawContent };
+    }
+
+    const encodedPayload = rawContent.slice(REPLY_TOKEN_PREFIX.length, suffixIndex);
+    const bodyText = rawContent.slice(suffixIndex + REPLY_TOKEN_SUFFIX.length).trimStart();
+
+    try {
+        const parsedPayload = JSON.parse(decodeURIComponent(encodedPayload)) as Partial<ReplyMetadata>;
+        if (
+            !parsedPayload
+            || typeof parsedPayload.messageId !== 'string'
+            || typeof parsedPayload.senderName !== 'string'
+            || typeof parsedPayload.previewText !== 'string'
+        ) {
+            return { replyMetadata: null as ReplyMetadata | null, bodyText: rawContent };
+        }
+
+        const replyMetadata: ReplyMetadata = {
+            messageId: parsedPayload.messageId,
+            senderName: truncateText(parsedPayload.senderName.trim() || 'User', 60),
+            previewText: truncateText(parsedPayload.previewText.trim() || 'Attachment', MAX_REPLY_PREVIEW_LENGTH),
+        };
+
+        return { replyMetadata, bodyText };
+    } catch {
+        return { replyMetadata: null as ReplyMetadata | null, bodyText: rawContent };
+    }
+};
+
+const serializeReplyMetadataIntoContent = (bodyText: string, replyMetadata: ReplyMetadata | null) => {
+    const normalizedBody = bodyText.trim();
+    if (!replyMetadata) return normalizedBody;
+
+    const payload = encodeURIComponent(JSON.stringify({
+        messageId: replyMetadata.messageId,
+        senderName: truncateText(replyMetadata.senderName.trim() || 'User', 60),
+        previewText: truncateText(replyMetadata.previewText.trim() || 'Attachment', MAX_REPLY_PREVIEW_LENGTH),
+    }));
+
+    return `${REPLY_TOKEN_PREFIX}${payload}${REPLY_TOKEN_SUFFIX}${normalizedBody ? ` ${normalizedBody}` : ''}`;
 };
 
 const MAX_CACHED_CONVERSATIONS = 50;
@@ -232,7 +669,7 @@ const normalizeComparableUrl = (value: string) => (
 const shouldHideAttachmentUrlText = (message: ThreadMessage | null | undefined) => {
     if (!message || isDeletedMessage(message)) return false;
 
-    const content = message.content?.trim();
+    const content = parseReplyMetadataFromContent(message.content).bodyText.trim();
     if (!content || !/^https?:\/\/\S+$/i.test(content)) return false;
 
     const attachments = message.attachments ?? [];
@@ -247,14 +684,33 @@ const shouldHideAttachmentUrlText = (message: ThreadMessage | null | undefined) 
 
 const getMessageDisplayText = (message: ThreadMessage | null | undefined, deletedLabel: string) => {
     if (!message) return null;
-    return isDeletedMessage(message) ? deletedLabel : message.content;
+    return isDeletedMessage(message) ? deletedLabel : parseReplyMetadataFromContent(message.content).bodyText;
+};
+
+const getMessageReplyMetadata = (message: ThreadMessage | null | undefined) => {
+    if (!message || isDeletedMessage(message)) return null;
+    return parseReplyMetadataFromContent(message.content).replyMetadata;
 };
 
 const getThreadPreview = (threadMessages: ThreadMessage[], deletedLabel: string) => {
     const lastMessage = threadMessages[threadMessages.length - 1] ?? null;
+    const rawPreviewText = getMessageDisplayText(lastMessage, deletedLabel)?.trim() || '';
+
+    let resolvedPreviewText: string | null = rawPreviewText;
+
+    if (!resolvedPreviewText && lastMessage && !isDeletedMessage(lastMessage)) {
+        const lastMessageAttachments = lastMessage.attachments ?? [];
+        if (lastMessageAttachments.some((attachment) => isAudioAttachment(attachment))) {
+            resolvedPreviewText = 'Audio note';
+        } else if (lastMessageAttachments.some((attachment) => isImageAttachment(attachment))) {
+            resolvedPreviewText = 'Image';
+        } else if (lastMessageAttachments.length > 0) {
+            resolvedPreviewText = 'Attachment';
+        }
+    }
 
     return {
-        last_message_text: getMessageDisplayText(lastMessage, deletedLabel),
+        last_message_text: resolvedPreviewText,
         last_message_at: lastMessage?.created_at ?? null,
     };
 };
@@ -280,7 +736,7 @@ function MessagesComponent() {
     const { tx, language } = useTranslation();
     const deletedMessageLabel = tx('pages.messages.deletedMessage', undefined, 'Message deleted');
     const messagesEndRef = useRef<HTMLDivElement>(null);
-    const messageInputRef = useRef<HTMLInputElement>(null);
+    const messageInputRef = useRef<HTMLTextAreaElement>(null);
 
     const conversationsParentRef = useRef<HTMLDivElement>(null);
     const messagesParentRef = useRef<HTMLDivElement>(null);
@@ -302,7 +758,13 @@ function MessagesComponent() {
     const [page, setPage] = useState(0);
     const [hasMoreConversations, setHasMoreConversations] = useState(true);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
+    const [audioPreviewUrl, setAudioPreviewUrl] = useState<string | null>(null);
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [replyTarget, setReplyTarget] = useState<ReplyMetadata | null>(null);
+    const [highlightedMessageId, setHighlightedMessageId] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const menuRef = useRef<HTMLDivElement>(null);
+    const replyHighlightTimeoutRef = useRef<number | null>(null);
      const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const {
         isRecording,
@@ -322,9 +784,20 @@ function MessagesComponent() {
     const messageRequestIdRef = useRef(0);
     const messageCacheRef = useRef<Record<string, ThreadMessage[]>>({});
     const prefetchedConversationIdsRef = useRef<Set<string>>(new Set());
+    const previewHydratedConversationIdsRef = useRef<Set<string>>(new Set());
 
     const conversationScopes = resolveConversationScopes(activeMode ?? profile?.active_mode);
     const conversationsModeCacheKey = resolveModeCacheKey(activeMode ?? profile?.active_mode);
+
+    const deleteModalWorkspaceVars = useMemo(() => {
+        return {
+            '--workspace-primary': '#9333ea',
+            '--workspace-primary-hover': '#a855f7',
+            '--workspace-primary-active': '#7e22ce',
+            '--workspace-primary-dim': 'rgba(147, 51, 234, 0.14)',
+            '--workspace-primary-text': '#ffffff',
+        } as CSSProperties;
+    }, []);
 
     const getConversationIdentityLabel = useCallback((conversation: Conversation) => {
         const username = conversation.otherUser.username?.trim();
@@ -344,7 +817,7 @@ function MessagesComponent() {
     }, [activeMode, profile?.active_mode, tx]);
 
     const handleOpenAttachment = useCallback(async (attachment: NonNullable<Message['attachments']>[number]) => {
-        const sourceUrl = attachment.url?.trim();
+        const sourceUrl = resolveMessageAttachmentUrl(attachment.url);
         if (!sourceUrl) {
             showToast(tx('pages.messages.errors.invalidAttachment', undefined, 'Attachment link is not available'), 'error');
             return;
@@ -365,8 +838,23 @@ function MessagesComponent() {
             const blob = await response.blob();
             openBlobAsPreviewOrDownload(blob, attachment.name || 'attachment', canPreviewInTab);
         } catch (error) {
-            console.error('[Messages] Failed to open attachment via blob URL:', error);
-            showToast(tx('pages.messages.errors.openAttachment', undefined, 'Failed to open attachment right now'), 'error');
+            try {
+                const attachmentPath = extractMessageAttachmentPath(attachment.url);
+                if (!attachmentPath) throw error;
+
+                const { data, error: downloadError } = await supabase.storage
+                    .from('message_attachments')
+                    .download(attachmentPath);
+
+                if (downloadError || !data) {
+                    throw downloadError || error;
+                }
+
+                openBlobAsPreviewOrDownload(data, attachment.name || 'attachment', canPreviewInTab);
+            } catch (downloadError) {
+                console.error('[Messages] Failed to open attachment via fallback:', downloadError);
+                showToast(tx('pages.messages.errors.openAttachment', undefined, 'Failed to open attachment right now'), 'error');
+            }
         }
     }, [showToast, tx]);
 
@@ -415,6 +903,57 @@ function MessagesComponent() {
         showToast(audioRecorderError.message, 'error');
     }, [audioRecorderError, showToast]);
 
+    useEffect(() => {
+        if (!isMenuOpen) return;
+
+        const handlePointerDown = (event: MouseEvent) => {
+            if (!menuRef.current?.contains(event.target as Node)) {
+                setIsMenuOpen(false);
+            }
+        };
+
+        const handleEscape = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') {
+                setIsMenuOpen(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handlePointerDown);
+        document.addEventListener('keydown', handleEscape);
+
+        return () => {
+            document.removeEventListener('mousedown', handlePointerDown);
+            document.removeEventListener('keydown', handleEscape);
+        };
+    }, [isMenuOpen]);
+
+    useEffect(() => {
+        setIsMenuOpen(false);
+        setReplyTarget(null);
+    }, [selectedConversation?.id]);
+
+    useEffect(() => {
+        return () => {
+            if (replyHighlightTimeoutRef.current) {
+                window.clearTimeout(replyHighlightTimeoutRef.current);
+            }
+        };
+    }, []);
+
+    useEffect(() => {
+        if (!audioBlob) {
+            setAudioPreviewUrl(null);
+            return;
+        }
+
+        const objectUrl = URL.createObjectURL(audioBlob);
+        setAudioPreviewUrl(objectUrl);
+
+        return () => {
+            URL.revokeObjectURL(objectUrl);
+        };
+    }, [audioBlob]);
+
     // Sync pending queue when back online
     useEffect(() => {
         if (isOnline && pendingQueue.length > 0 && selectedConversation && user) {
@@ -445,7 +984,7 @@ function MessagesComponent() {
                             const { url, error } = await uploadMessageAttachment(audioFile, selectedConversation.id);
                             if (url && !error) {
                                 attachments.push({ 
-                                    name: tx('pages.messages.voiceMemo', undefined, 'Voice memo'), 
+                                    name: tx('pages.messages.voiceMemo', undefined, 'Audio note'), 
                                     url, 
                                     type: audioFile.type, 
                                     size: audioFile.size 
@@ -470,7 +1009,7 @@ function MessagesComponent() {
                             const { url, error } = await uploadMessageAttachment(audioFile, selectedConversation.id);
                             if (url && !error) {
                                 attachments.push({ 
-                                    name: tx('pages.messages.voiceMemo', undefined, 'Voice memo'), 
+                                    name: tx('pages.messages.voiceMemo', undefined, 'Audio note'), 
                                     url, 
                                     type: audioFile.type, 
                                     size: audioFile.size 
@@ -849,8 +1388,18 @@ function MessagesComponent() {
                     showToast(error.message, 'error');
                 }
             } else if (data) {
-                setMessages(data as ThreadMessage[]);
-                messageCacheRef.current[selectedConversation.id] = data as ThreadMessage[];
+                const threadMessages = data as ThreadMessage[];
+                setMessages(threadMessages);
+                messageCacheRef.current[selectedConversation.id] = threadMessages;
+
+                const lastMessage = threadMessages[threadMessages.length - 1] ?? null;
+                if (lastMessage) {
+                    updateConversationPreview(selectedConversation.id, (conversation) => ({
+                        ...conversation,
+                        last_message_text: getReplyPreviewTextForMessage(lastMessage),
+                        last_message_at: lastMessage.created_at,
+                    }));
+                }
             }
 
             setIsLoadingMessages(false);
@@ -931,7 +1480,7 @@ function MessagesComponent() {
 
                 updateConversationPreview(selectedConversation.id, (conversation) => ({
                     ...conversation,
-                    last_message_text: getMessageDisplayText(newMsg, deletedMessageLabel),
+                    last_message_text: getReplyPreviewTextForMessage(newMsg),
                     last_message_at: newMsg.created_at,
                     unread_count: newMsg.sender_id === user.id ? 0 : conversation.unread_count,
                 }));
@@ -1029,7 +1578,11 @@ function MessagesComponent() {
     }, [recordingTime, isRecording]);
 
     const handleSendMessage = async () => {
-        if ((!newMessage.trim() && !selectedFile && !audioBlob) || !selectedConversation || !user) return;
+        const messageContent = newMessage.trim();
+        const replyTargetSnapshot = replyTarget;
+        const serializedMessageContent = serializeReplyMetadataIntoContent(messageContent, replyTargetSnapshot);
+
+        if ((!messageContent && !selectedFile && !audioBlob) || !selectedConversation || !user) return;
 
         if (!isOnline) {
             // Store offline message with base64-encoded files for persistence
@@ -1078,7 +1631,7 @@ function MessagesComponent() {
             
             const offlineMsg = {
                 id: `pending_${Date.now()}`,
-                content: newMessage.trim(),
+                content: serializedMessageContent,
                 fileBase64,
                 fileName,
                 fileType,
@@ -1100,6 +1653,7 @@ function MessagesComponent() {
             }
             
             setNewMessage('');
+            setReplyTarget(null);
             if (audioBlob) cancelRecording();
             if (selectedFile) setSelectedFile(null);
             if (fileInputRef.current) fileInputRef.current.value = '';
@@ -1111,16 +1665,15 @@ function MessagesComponent() {
         stopTyping();
 
         const activeConversation = selectedConversation;
-        const messageContent = newMessage.trim();
         const fileToSend = selectedFile;
         const recordedAudio = audioBlob;
         const optimisticId = `temp_${Date.now()}`;
         const optimisticCreatedAt = new Date().toISOString();
         const previewText = messageContent
             || (recordedAudio
-                ? tx('pages.messages.voiceMemo', undefined, 'Voice memo')
+                ? tx('pages.messages.voiceMemo', undefined, 'Audio note')
                 : fileToSend?.name || tx('pages.messages.attachmentLabel', undefined, 'Attachment'));
-        const optimisticContent = messageContent || previewText;
+        const optimisticContent = serializedMessageContent || previewText;
         const previousPreview = {
             last_message_text: activeConversation.last_message_text,
             last_message_at: activeConversation.last_message_at,
@@ -1154,6 +1707,7 @@ function MessagesComponent() {
         }));
 
         setNewMessage('');
+        setReplyTarget(null);
         if (fileToSend) {
             setSelectedFile(null);
         }
@@ -1193,7 +1747,7 @@ function MessagesComponent() {
                         throw new Error(`${tx('pages.messages.errors.audioUpload', undefined, 'Failed to upload audio')}: ${error?.message || 'Unknown error'}`);
                     }
                     return {
-                        name: tx('pages.messages.voiceMemo', undefined, 'Voice memo'),
+                        name: tx('pages.messages.voiceMemo', undefined, 'Audio note'),
                         url,
                         type: audioFile.type,
                         size: audioFile.size,
@@ -1227,7 +1781,7 @@ function MessagesComponent() {
                 conversationId: activeConversation.id,
                 senderId: user.id,
                 receiverId: activeConversation.otherUser.id,
-                content: messageContent,
+                content: serializedMessageContent,
                 contractId: activeConversation.contract_id,
                 attachments: attachments.length > 0 ? attachments : undefined
             });
@@ -1277,6 +1831,9 @@ function MessagesComponent() {
             }));
             if (messageContent) {
                 setNewMessage((current) => current || messageContent);
+            }
+            if (replyTargetSnapshot) {
+                setReplyTarget((current) => current || replyTargetSnapshot);
             }
             showToast(message, 'error');
         } finally {
@@ -1354,509 +1911,762 @@ function MessagesComponent() {
         return date.toLocaleTimeString(language === 'ar' ? 'ar-TN' : language === 'fr' ? 'fr-FR' : 'en-US', { hour: '2-digit', minute: '2-digit' });
     };
 
-    const renderConversationList = useMemo(() => (
-        <div className="flex h-full flex-col border-e border-border bg-surface backdrop-blur-xl">
-            {/* Header */}
-            <div className="border-b border-[var(--color-border-default)] px-4 py-5">
-                <div className="mb-4 flex items-center justify-between">
-                    <div>
-                        <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--color-text-secondary)]">{tx('pages.messages.inbox', undefined, 'Inbox')}</p>
-                        <h2 className="text-[1.9rem] font-bold tracking-tight text-[var(--color-text-primary)]">{tx('pages.messages.title', undefined, 'Messages')}</h2>
-                    </div>
-                    <Button 
-                        variant="primary"
-                        size="sm"
-                        onClick={() => navigate(profile?.user_type === 'client' ? '/find-freelancers' : '/jobs')}
-                        title={tx('pages.messages.newConversation', undefined, 'Start a new conversation')}
-                        className="h-11 w-11 rounded-full border border-[var(--color-border-default)] p-0 shadow-sm hover:shadow-md text-[var(--color-text-primary)] transition-all bg-[var(--color-background-elevated)]"
-                    >
-                        <Plus className="w-4 h-4" />
-                    </Button>
-                </div>
+    const getReplyPreviewTextForMessage = useCallback((message: ThreadMessage) => {
+        const rawText = getMessageDisplayText(message, deletedMessageLabel)?.trim() || '';
+        if (rawText) {
+            return truncateText(rawText, MAX_REPLY_PREVIEW_LENGTH);
+        }
+
+        const attachments = message.attachments ?? [];
+        if (attachments.some((attachment) => isAudioAttachment(attachment))) {
+            return tx('pages.messages.voiceMemo', undefined, 'Audio note');
+        }
+        if (attachments.some((attachment) => isImageAttachment(attachment))) {
+            return tx('pages.messages.imageLabel', undefined, 'Image');
+        }
+        if (attachments.length > 0) {
+            return tx('pages.messages.attachmentLabel', undefined, 'Attachment');
+        }
+
+        return tx('pages.messages.attachmentLabel', undefined, 'Attachment');
+    }, [deletedMessageLabel, tx]);
+
+    const buildReplyMetadataFromMessage = useCallback((message: ThreadMessage): ReplyMetadata => {
+        const senderName = message.sender_id === user?.id
+            ? tx('common.you', undefined, 'You')
+            : selectedConversation?.otherUser.full_name
+                || message.sender?.full_name
+                || tx('pages.messages.userFallback', undefined, 'user');
+
+        return {
+            messageId: message.id,
+            senderName,
+            previewText: getReplyPreviewTextForMessage(message),
+        };
+    }, [getReplyPreviewTextForMessage, selectedConversation?.otherUser.full_name, tx, user?.id]);
+
+    const scrollToMessageById = useCallback((messageId: string) => {
+        const messageIndex = displayMessages.findIndex((message) => message.id === messageId);
+        if (messageIndex < 0) {
+            showToast(tx('pages.messages.replyTargetMissing', undefined, 'Original message is no longer available.'), 'info');
+            return;
+        }
+
+        messagesVirtualizer.scrollToIndex(messageIndex, { align: 'center' });
+        setHighlightedMessageId(messageId);
+        if (replyHighlightTimeoutRef.current) {
+            window.clearTimeout(replyHighlightTimeoutRef.current);
+        }
+        replyHighlightTimeoutRef.current = window.setTimeout(() => {
+            setHighlightedMessageId(null);
+        }, 1800);
+    }, [displayMessages, messagesVirtualizer, showToast, tx]);
+
+    const handleReplyToMessage = useCallback((message: ThreadMessage) => {
+        if (isDeletedMessage(message)) return;
+        setReplyTarget(buildReplyMetadataFromMessage(message));
+        messageInputRef.current?.focus();
+    }, [buildReplyMetadataFromMessage]);
+
+    const getConversationLastPreviewText = useCallback((conversationId: string, rawLastMessageText: string | null | undefined) => {
+        const inlinePreview = parseReplyMetadataFromContent(rawLastMessageText).bodyText.trim();
+        if (inlinePreview) return inlinePreview;
+
+        const cachedThread = messageCacheRef.current[conversationId];
+        if (!cachedThread || cachedThread.length === 0) return null;
+
+        return getReplyPreviewTextForMessage(cachedThread[cachedThread.length - 1]);
+    }, [getReplyPreviewTextForMessage]);
+
+    useEffect(() => {
+        if (isLoadingConversations || conversations.length === 0) return;
+
+        const candidates = conversations
+            .filter((conversation) => {
+                if (previewHydratedConversationIdsRef.current.has(conversation.id)) return false;
+                return !getConversationLastPreviewText(conversation.id, conversation.last_message_text);
+            })
+            .slice(0, 6);
+
+        if (candidates.length === 0) return;
+
+        let cancelled = false;
+
+        const hydrateMissingPreviews = async () => {
+            const updates = await Promise.all(candidates.map(async (conversation) => {
+                previewHydratedConversationIdsRef.current.add(conversation.id);
+
+                const { data, error } = await getMessages(conversation.id, 1, 0);
+                if (error || !data || data.length === 0) return null;
+
+                const threadMessages = data as ThreadMessage[];
+                const lastMessage = threadMessages[threadMessages.length - 1] ?? null;
+                if (!lastMessage) return null;
+
+                messageCacheRef.current[conversation.id] = threadMessages;
+                return {
+                    conversationId: conversation.id,
+                    previewText: getReplyPreviewTextForMessage(lastMessage),
+                    createdAt: lastMessage.created_at,
+                };
+            }));
+
+            if (cancelled) return;
+
+            const updatesById = new Map(
+                updates
+                    .filter((update): update is { conversationId: string; previewText: string; createdAt: string } => Boolean(update))
+                    .map((update) => [update.conversationId, update])
+            );
+
+            if (updatesById.size === 0) return;
+
+            setConversations((prev) => prev.map((conversation) => {
+                const update = updatesById.get(conversation.id);
+                if (!update) return conversation;
+
+                return {
+                    ...conversation,
+                    last_message_text: conversation.last_message_text || update.previewText,
+                    last_message_at: conversation.last_message_at || update.createdAt,
+                };
+            }));
+        };
+
+        void hydrateMissingPreviews();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [conversations, getConversationLastPreviewText, getReplyPreviewTextForMessage, isLoadingConversations]);
+
+    const renderConversationList = () => (
+        <div className={`${showMobileThread ? 'hidden md:flex' : 'flex'} w-full md:w-80 lg:w-96 border-r border-[#262626] flex-col bg-[#141414] shrink-0`}>
+            <div className="p-4 border-b border-[#262626]">
+                <h2 className="text-xl font-bold mb-4 text-white">{tx('pages.messages.title', undefined, 'Messages')}</h2>
                 <div className="relative">
-                    <Search className="absolute end-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-secondary)]" />
+                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
                     <input
                         type="text"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         placeholder={tx('pages.messages.searchPlaceholder', undefined, 'Search conversations...')}
-                        className="w-full rounded-xl border border-[var(--color-border-default)] bg-[var(--color-background-base)] py-3 pe-10 ps-4 text-sm text-[var(--color-text-primary)] shadow-sm focus:border-[var(--color-border-strong)] focus:ring-1 focus:ring-[var(--color-border-strong)]/20 placeholder:text-[var(--color-text-secondary)] transition-colors"
+                        className="w-full bg-[#0a0a0a] border border-[#262626] rounded-xl pl-10 pr-4 py-2.5 text-sm text-white outline-none ring-0 placeholder:text-gray-500 focus:border-[#262626] focus:outline-none focus:ring-0"
                     />
                 </div>
             </div>
 
-            {/* Tabs */}
-            <div className="flex gap-2 border-b border-[var(--color-border-default)] px-4 py-3">
-                {(['all', 'unread'] as const).map((f) => (
-                    <button
-                        key={f}
-                        onClick={() => setFilter(f)}
-                        className={`flex-1 py-3 text-sm font-medium transition-all rounded-lg ${
-                            filter === f
-                                ? 'shadow-sm border border-[color-mix(in_srgb,var(--workspace-primary)_20%,transparent)] bg-[color-mix(in_srgb,var(--workspace-primary)_15%,transparent)] text-[var(--workspace-primary)]'
-                                : 'text-muted hover:bg-surface hover:text-foreground border border-transparent'
-                        }`}
-                    >
-                        {f === 'all' ? tx('pages.messages.filters.all', undefined, 'All') : tx('pages.messages.filters.unread', undefined, 'Unread')}
-                    </button>
-                ))}
-            </div>
-
-            {/* Conversation List */}
-            <div ref={conversationsParentRef} className="flex-1 overflow-y-auto px-3 py-4 relative">
+            <div ref={conversationsParentRef} className="flex-1 overflow-y-auto">
                 {isLoadingConversations ? (
-                    <div className="flex items-center justify-center h-32">
-                        <div className="text-center">
-                            <Loader2 className="w-6 h-6 animate-spin text-[var(--workspace-primary)] mx-auto mb-2" />
-                            <p className="text-sm text-muted-foreground">{tx('pages.messages.loadingConversations', undefined, 'Loading conversations...')}</p>
-                        </div>
+                    <div className="h-full flex items-center justify-center px-6 py-10">
+                        <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
                     </div>
                 ) : filteredConversations.length === 0 ? (
-                    <div className="p-8 text-center">
-                        <EmptyState
-                            icon={Send}
-                            title={searchQuery ? tx('pages.messages.empty.noMatchingTitle', undefined, 'No matching conversations') : tx('pages.messages.empty.noConversationsTitle', undefined, 'No conversations yet')}
-                            description={searchQuery
-                                ? tx('pages.messages.empty.noMatchingDescription', undefined, 'Try a different name or clear your search.')
-                                : tx('pages.messages.empty.noConversationsDescription', undefined, 'Start by sending a proposal or contacting a freelancer.')}
-                        />
+                    <div className="h-full flex items-center justify-center px-6 py-10 text-center">
+                        <p className="text-sm text-gray-400">
+                            {searchQuery
+                                ? tx('pages.messages.empty.noMatchingTitle', undefined, 'No matching conversations')
+                                : tx('pages.messages.empty.noConversationsTitle', undefined, 'No conversations yet')}
+                        </p>
                     </div>
                 ) : (
                     <div style={{ height: `${conversationsVirtualizer.getTotalSize()}px`, width: '100%', position: 'relative' }}>
                         {conversationsVirtualizer.getVirtualItems().map((virtualRow) => {
                             const conversation = filteredConversations[virtualRow.index];
+                            const isActive = selectedConversation?.id === conversation.id;
+                            const previewText = getConversationLastPreviewText(conversation.id, conversation.last_message_text)
+                                || ((conversation.message_count ?? 0) > 0
+                                    ? tx('pages.messages.attachmentLabel', undefined, 'Attachment')
+                                    : tx('pages.messages.noMessagesYet', undefined, 'No messages yet'));
+
                             return (
-                        <div
-                            key={conversation.id}
-                            style={{
-                                position: 'absolute',
-                                top: 0,
-                                left: 0,
-                                width: '100%',
-                                height: `${virtualRow.size}px`,
-                                transform: `translateY(${virtualRow.start}px)`,
-                                paddingBottom: '12px'
-                            }}
-                        >
-                        <div
-                            onClick={() => handleSelectConversation(conversation)}
-                            onMouseEnter={() => { void prefetchConversationMessages(conversation.id); }}
-                            onFocus={() => { void prefetchConversationMessages(conversation.id); }}
-                            role="button"
-                            tabIndex={0}
-                            onKeyDown={(event) => {
-                                if (event.key === 'Enter' || event.key === ' ') {
-                                    event.preventDefault();
-                                    handleSelectConversation(conversation);
-                                }
-                            }}
-                            className={`group relative h-full overflow-hidden rounded-2xl border p-4 transition-all duration-300 cursor-pointer animate-in fade-in ${
-                                 selectedConversation?.id === conversation.id
-                                    ? 'border-[color-mix(in_srgb,var(--workspace-primary)_30%,transparent)] bg-[color-mix(in_srgb,var(--workspace-primary)_10%,transparent)] shadow-md'
-                                    : 'border-border bg-card hover:border-border-strong hover:bg-surface hover:shadow-sm'
-                             }`}
-                        >
-                            {selectedConversation?.id === conversation.id ? <div className="absolute inset-y-4 start-0 w-1 rounded-full bg-[var(--workspace-primary)]" /> : null}
-                            <div className="flex items-start gap-3">
-                                <div className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[var(--workspace-primary)] to-[var(--workspace-primary-mid)] font-bold text-white shadow-sm">
-                                    <span aria-hidden="true">{conversation.otherUser.full_name.charAt(0)}</span>
-                                    {conversation.otherUser.avatar_url && (
-                                        <img
-                                            src={conversation.otherUser.avatar_url}
-                                            alt={conversation.otherUser.full_name}
-                                            className="absolute inset-0 h-12 w-12 rounded-full object-cover ring-2 ring-card"
-                                            onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                                        />
-                                    )}
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                    <div className="flex items-center justify-between mb-1">
-                                        <h3
-                                            className={`font-medium truncate ${
-                                                conversation.unread_count > 0
-                                                    ? 'text-foreground font-bold'
-                                                    : 'text-foreground'
-                                            }`}
-                                        >
-                                            {conversation.otherUser.full_name}
-                                        </h3>
-                                        <span className="text-xs text-muted transition-colors group-hover:text-foreground/70">
-                                            {formatTime(conversation.last_message_at)}
-                                        </span>
-                                    </div>
-                                    <p
-                                        className={`text-sm truncate ${
-                                            conversation.unread_count > 0
-                                                ? 'text-foreground'
-                                                : 'text-muted'
-                                        } ${conversation.last_message_text === deletedMessageLabel ? 'italic' : ''}`}
+                                <div
+                                    key={conversation.id}
+                                    style={{
+                                        position: 'absolute',
+                                        top: 0,
+                                        left: 0,
+                                        width: '100%',
+                                        height: `${virtualRow.size}px`,
+                                        transform: `translateY(${virtualRow.start}px)`,
+                                    }}
+                                >
+                                    <div
+                                        onClick={() => handleSelectConversation(conversation)}
+                                        onMouseEnter={() => { void prefetchConversationMessages(conversation.id); }}
+                                        onFocus={() => { void prefetchConversationMessages(conversation.id); }}
+                                        role="button"
+                                        tabIndex={0}
+                                        onKeyDown={(event) => {
+                                            if (event.key === 'Enter' || event.key === ' ') {
+                                                event.preventDefault();
+                                                void handleSelectConversation(conversation);
+                                            }
+                                        }}
+                                        className={`p-4 flex gap-3 cursor-pointer transition-colors ${
+                                            isActive
+                                                ? 'bg-[#262626]/50 border-l-4 border-purple-500'
+                                                : 'hover:bg-[#262626]/30 border-l-4 border-transparent border-b border-[#262626]/50'
+                                        }`}
                                     >
-                                        {conversation.last_message_text || tx('pages.messages.noMessagesYet', undefined, 'No messages yet')}
-                                    </p>
-                                    <div className="flex items-center justify-between mt-3 gap-2">
-                                        <div className="flex items-center gap-2 flex-1">
-                                            {conversation.unread_count > 0 && (
-                                                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[var(--workspace-primary)] text-xs text-white shadow-sm font-semibold shrink-0" aria-label={`${conversation.unread_count} ${tx('pages.messages.unreadMessages', undefined, 'unread messages')}`}>
-                                                {conversation.unread_count}
-                                                <span className="sr-only">{tx('pages.messages.unreadMessages', undefined, 'unread messages')}</span>
-                                            </span>
-                                            )}
-                                            <span className="text-xs text-muted-foreground truncate">
-                                                {conversation.message_count ? `${conversation.message_count} ${conversation.message_count === 1 ? tx('pages.messages.singleMessage', undefined, 'message') : tx('pages.messages.multipleMessages', undefined, 'messages')}` : ''}
-                                            </span>
+                                        <button
+                                            type="button"
+                                            onClick={(event) => {
+                                                event.stopPropagation();
+                                                navigate(`/freelancer/${conversation.otherUser.id}`);
+                                            }}
+                                            aria-label={tx('pages.messages.profileAction', undefined, 'View profile')}
+                                            className="w-12 h-12 rounded-full bg-[#262626] shrink-0 relative overflow-hidden flex items-center justify-center text-sm font-semibold text-gray-200 transition-all hover:ring-2 hover:ring-purple-500/70"
+                                        >
+                                            <span aria-hidden="true">{conversation.otherUser.full_name.charAt(0)}</span>
+                                            {conversation.otherUser.avatar_url ? (
+                                                <img
+                                                    src={conversation.otherUser.avatar_url}
+                                                    alt={conversation.otherUser.full_name}
+                                                    className="absolute inset-0 h-full w-full object-cover"
+                                                    onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                                />
+                                            ) : null}
+                                        </button>
+
+                                        <div className="flex-1 min-w-0 flex flex-col overflow-hidden">
+                                            <div className="flex items-center justify-between gap-2">
+                                                <p className={`text-sm truncate ${conversation.unread_count > 0 ? 'font-semibold text-white' : 'text-gray-200'}`}>
+                                                    {conversation.otherUser.full_name}
+                                                </p>
+                                                <span className="text-xs text-gray-500 shrink-0">{formatTime(conversation.last_message_at)}</span>
+                                            </div>
+                                            <div className="mt-1 flex items-center gap-2">
+                                                <p className={`text-xs truncate ${conversation.unread_count > 0 ? 'text-gray-300' : 'text-gray-400'} ${previewText === deletedMessageLabel ? 'italic' : ''}`}>
+                                                    {previewText}
+                                                </p>
+                                                {conversation.unread_count > 0 ? (
+                                                    <span className="ml-auto shrink-0 min-w-5 h-5 px-1 rounded-full text-[10px] font-semibold text-white flex items-center justify-center bg-purple-600">
+                                                        {conversation.unread_count}
+                                                    </span>
+                                                ) : null}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-                        </div>
                             );
                         })}
                     </div>
                 )}
-                
-                {hasMoreConversations && filteredConversations.length > 0 && !searchQuery && (
-                    <div className="pt-4 pb-2 flex justify-center">
-                        <Button 
-                            variant="outline" 
-                            size="sm" 
-                            onClick={() => setPage(p => p + 1)}
+
+                {hasMoreConversations && filteredConversations.length > 0 && !searchQuery ? (
+                    <div className="px-4 py-4 border-t border-[#262626]">
+                        <button
+                            type="button"
+                            onClick={() => setPage((prev) => prev + 1)}
                             disabled={isLoadingMore}
+                            className="w-full rounded-xl border border-[#3a3a3a] bg-[#1a1a1a] px-3 py-2 text-sm text-gray-200 transition-colors hover:bg-[#262626] disabled:opacity-50 focus:border-purple-500"
                         >
                             {isLoadingMore ? tx('common.loading', undefined, 'Loading...') : tx('pages.messages.loadMore', undefined, 'Load more conversations')}
-                        </Button>
+                        </button>
                     </div>
-                )}
+                ) : null}
             </div>
         </div>
-    ), [searchQuery, filter, isLoadingConversations, isLoadingMore, selectedConversation, navigate, profile?.user_type, tx, language, deletedMessageLabel, filteredConversations, conversationsVirtualizer]);
+    );
 
     const renderMessageThread = () => (
-        <div className="flex flex-col h-full bg-background">
+        <div className={`${showMobileThread ? 'flex' : 'hidden md:flex'} flex-1 flex-col bg-[#0a0a0a] relative`}>
             {selectedConversation ? (
                 <>
-                    {/* Header */}
-                    <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-card">
-                        <div className="flex items-center gap-3">
+                    <div className="h-16 px-4 md:px-6 border-b border-[#262626] bg-[#141414] flex items-center justify-between shrink-0 relative">
+                        <div className="flex items-center gap-3 min-w-0">
                             <button
+                                type="button"
                                 onClick={() => setShowMobileThread(false)}
-                                aria-label="Back" className="lg:hidden p-3 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-surface rounded-lg transition-colors"
+                                aria-label={tx('common.back', undefined, 'Back')}
+                                className="md:hidden p-2.5 text-gray-400 hover:text-white hover:bg-[#262626] rounded-xl transition-colors"
                             >
-                                <ChevronLeft className="w-5 h-5" />
+                                <ArrowLeft className="w-4 h-4" />
                             </button>
-                            <div className="relative flex w-11 h-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[var(--workspace-primary)] to-[var(--workspace-primary-mid)] font-bold text-white">
+
+                            <button
+                                type="button"
+                                onClick={() => navigate(`/freelancer/${selectedConversation.otherUser.id}`)}
+                                aria-label={tx('pages.messages.profileAction', undefined, 'View profile')}
+                                className="relative w-10 h-10 rounded-full bg-[#262626] shrink-0 overflow-hidden flex items-center justify-center text-sm font-semibold text-gray-200 cursor-pointer hover:ring-2 hover:ring-purple-500 transition-all shadow-md"
+                            >
                                 <span aria-hidden="true">{selectedConversation.otherUser.full_name.charAt(0)}</span>
-                                {selectedConversation.otherUser.avatar_url && (
+                                {selectedConversation.otherUser.avatar_url ? (
                                     <img
                                         src={selectedConversation.otherUser.avatar_url}
                                         alt={selectedConversation.otherUser.full_name}
-                                        className="absolute inset-0 w-11 h-11 rounded-full object-cover ring-2 ring-border"
+                                        className="absolute inset-0 h-full w-full object-cover"
                                         onError={(e) => { e.currentTarget.style.display = 'none'; }}
                                     />
-                                )}
-                            </div>
-                            <div>
-                                <div className="flex items-center gap-2">
-                                    <h3 className="font-semibold text-foreground">{selectedConversation.otherUser.full_name}</h3>
-                                    {!isOnline && (
-                                        <span className="flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400">
-                                            <WifiOff className="w-3 h-3" />
-                                            {tx('pages.messages.offline.badge', undefined, 'Offline')}
-                                        </span>
-                                    )}
-                                </div>
-                                <p className="text-sm text-muted-foreground">{getConversationIdentityLabel(selectedConversation)}</p>
+                                ) : null}
+                            </button>
+
+                            <div className="min-w-0">
+                                <p className="font-bold text-white truncate">{selectedConversation.otherUser.full_name}</p>
+                                <p className="text-xs truncate text-purple-400">{getConversationIdentityLabel(selectedConversation)}</p>
                             </div>
                         </div>
 
+                        <button
+                            type="button"
+                            onClick={() => setIsMenuOpen((prev) => !prev)}
+                            aria-label={tx('common.more', undefined, 'More')}
+                            className="p-2 rounded-lg text-gray-400 cursor-pointer hover:text-white hover:bg-[#262626] transition-colors"
+                        >
+                            <MoreVertical className="w-4 h-4" />
+                        </button>
+
+                        {isMenuOpen ? (
+                            <div ref={menuRef} className="absolute right-6 top-16 mt-2 w-48 bg-[#141414] border border-[#262626] rounded-xl shadow-2xl z-50 py-1 overflow-hidden">
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        navigate(`/freelancer/${selectedConversation.otherUser.id}`);
+                                        setIsMenuOpen(false);
+                                    }}
+                                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm cursor-pointer transition-colors text-gray-300 hover:bg-[#262626] hover:text-white"
+                                >
+                                    <User className="w-4 h-4" />
+                                    <span>{tx('pages.messages.profileAction', undefined, 'View Profile')}</span>
+                                </button>
+
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setConversations((prev) => prev.map((conversation) => (
+                                            conversation.id === selectedConversation.id
+                                                ? { ...conversation, unread_count: Math.max(1, conversation.unread_count) }
+                                                : conversation
+                                        )));
+                                        setIsMenuOpen(false);
+                                    }}
+                                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm cursor-pointer transition-colors text-gray-300 hover:bg-[#262626] hover:text-white"
+                                >
+                                    <Mail className="w-4 h-4" />
+                                    <span>{tx('pages.messages.markUnread', undefined, 'Mark as Unread')}</span>
+                                </button>
+
+                                <div className="border-t border-[#262626] my-1" />
+
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        showToast(tx('pages.messages.reportSubmitted', undefined, 'User report queued for review'), 'success');
+                                        setIsMenuOpen(false);
+                                    }}
+                                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm cursor-pointer transition-colors text-red-500 hover:bg-red-500/10"
+                                >
+                                    <Flag className="w-4 h-4" />
+                                    <span>{tx('pages.messages.reportUser', undefined, 'Report User')}</span>
+                                </button>
+                            </div>
+                        ) : null}
                     </div>
 
-                    {/* Messages Container */}
-                    <div ref={messagesParentRef} className="flex-1 overflow-y-auto px-6 py-6 flex flex-col relative">
+                    <div ref={messagesParentRef} className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 flex flex-col">
                         {isLoadingMessages ? (
-                            <div className="flex items-center justify-center h-full">
-                                <div className="text-center">
-                                    <Loader2 className="w-8 h-8 animate-spin text-[var(--workspace-primary)] mx-auto mb-2" />
-                                    <p className="text-sm text-muted-foreground">{tx('pages.messages.loadingMessages', undefined, 'Loading messages...')}</p>
-                                </div>
+                            <div className="flex-1 flex items-center justify-center">
+                                <Loader2 className="h-7 w-7 animate-spin text-gray-400" />
                             </div>
-                        ) : messages.length === 0 ? (
-                            <div className="flex items-center justify-center h-full">
+                        ) : displayMessages.length === 0 && pendingQueue.length === 0 ? (
+                            <div className="flex-1 flex items-center justify-center">
                                 <div className="text-center">
-                                    <Send className="w-12 h-12 text-muted-foreground/50 mx-auto mb-2" />
-                                    <p className="text-muted-foreground">{tx('pages.messages.emptyThread', undefined, 'No messages yet. Start the conversation!')}</p>
+                                    <Send className="mx-auto h-10 w-10 text-gray-500" />
+                                    <p className="mt-3 text-sm text-gray-400">{tx('pages.messages.emptyThread', undefined, 'No messages yet. Start the conversation!')}</p>
                                 </div>
                             </div>
                         ) : (
-                            <div style={{ height: `${messagesVirtualizer.getTotalSize()}px`, width: '100%', position: 'relative' }}>
-                                {messagesVirtualizer.getVirtualItems().map((virtualRow) => {
-                                    const message = displayMessages[virtualRow.index];
-                                    const messageText = getMessageDisplayText(message, deletedMessageLabel);
-                                    const shouldRenderMessageText = Boolean(messageText) && !shouldHideAttachmentUrlText(message);
-                                    const attachments = message.attachments ?? [];
-                                    const hasAttachments = attachments.length > 0;
-                                    const imageAttachmentCount = attachments.filter((att) => att.type?.startsWith('image/')).length;
-                                    const audioAttachmentCount = attachments.filter((att) => (
-                                        att.type?.startsWith('audio/')
-                                        || /\.(mp3|wav|ogg|m4a|webm)$/i.test(att.name || '')
-                                    )).length;
-                                    const isImageOnlyMessage = !isDeletedMessage(message)
-                                        && !shouldRenderMessageText
-                                        && hasAttachments
-                                        && imageAttachmentCount === attachments.length;
-                                    const isAudioOnlyMessage = !isDeletedMessage(message)
-                                        && !shouldRenderMessageText
-                                        && hasAttachments
-                                        && audioAttachmentCount === attachments.length;
-                                    return (
-                                        <div
-                                            key={message.id}
-                                            ref={messagesVirtualizer.measureElement}
-                                            data-index={virtualRow.index}
-                                            style={{
-                                                position: 'absolute',
-                                                top: 0,
-                                                left: 0,
-                                                width: '100%',
-                                                transform: `translateY(${virtualRow.start}px)`,
-                                                paddingBottom: '16px'
-                                            }}
-                                        >
-                                <div
-                                    className={`group/message flex ${message.sender_id === user?.id ? 'justify-end' : 'justify-start'} rtl:flex-row-reverse animate-in fade-in slide-in-from-bottom-2 duration-300 w-full`}
-                                >
-                                    <div className={`relative max-w-xs lg:max-w-md ${message.sender_id === user?.id ? '' : 'mr-2'}`}>
-                                        {message.sender_id === user?.id && !message.status && !message.is_deleted && (
-                                            <button
-                                                type="button"
-                                                onClick={() => void handleDeleteMessage(message)}
-                                                disabled={deletingMessageId === message.id}
-                                                aria-label={tx('pages.messages.deleteMessage', undefined, 'Delete message')}
-                                                className={`absolute z-10 flex h-8 w-8 items-center justify-center rounded-full border border-border bg-card text-muted-foreground opacity-100 shadow-sm transition hover:text-destructive disabled:cursor-not-allowed disabled:opacity-60 lg:opacity-0 lg:group-hover/message:opacity-100 ${isAudioOnlyMessage ? 'top-1/2 -start-10 -translate-y-1/2' : '-top-2 -start-2'}`}
+                            <>
+                                <div className="flex justify-center mb-2">
+                                    <span className="bg-[#262626] text-gray-400 text-xs px-3 py-1 rounded-full">{tx('pages.messages.today', undefined, 'Today')}</span>
+                                </div>
+
+                                <div style={{ height: `${messagesVirtualizer.getTotalSize()}px`, width: '100%', position: 'relative' }}>
+                                    {messagesVirtualizer.getVirtualItems().map((virtualRow) => {
+                                        const message = displayMessages[virtualRow.index];
+                                        const isOwnMessage = message.sender_id === user?.id;
+                                        const messageText = getMessageDisplayText(message, deletedMessageLabel);
+                                        const replyMetadata = getMessageReplyMetadata(message);
+                                        const shouldRenderMessageText = Boolean(messageText) && !shouldHideAttachmentUrlText(message);
+                                        const attachments = message.attachments ?? [];
+                                        const hasAttachments = attachments.length > 0;
+                                        const imageAttachmentCount = attachments.filter((attachment) => isImageAttachment(attachment)).length;
+                                        const hasImageAttachment = imageAttachmentCount > 0;
+                                        const firstImageAttachmentIndex = attachments.findIndex((attachment) => isImageAttachment(attachment));
+                                        const shouldRenderImageCaption = shouldRenderMessageText && hasImageAttachment;
+                                        const shouldRenderStandaloneText = shouldRenderMessageText && !shouldRenderImageCaption;
+                                        const isImageOnlyMessage = !isDeletedMessage(message)
+                                            && !shouldRenderMessageText
+                                            && hasAttachments
+                                            && imageAttachmentCount === attachments.length;
+
+                                        return (
+                                            <div
+                                                key={message.id}
+                                                ref={messagesVirtualizer.measureElement}
+                                                data-index={virtualRow.index}
+                                                style={{
+                                                    position: 'absolute',
+                                                    top: 0,
+                                                    left: 0,
+                                                    width: '100%',
+                                                    transform: `translateY(${virtualRow.start}px)`,
+                                                    paddingBottom: '18px',
+                                                }}
                                             >
-                                                {deletingMessageId === message.id ? (
-                                                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                                                ) : (
-                                                    <Trash2 className="h-3.5 w-3.5" />
-                                                )}
-                                            </button>
-                                        )}
-                                        <div
-                                            className={`rounded-2xl transition-all duration-200 ${
-                                                isDeletedMessage(message)
-                                                    ? 'px-4 py-2 border border-dashed border-border bg-card text-muted-foreground rounded-2xl'
-                                                    : isImageOnlyMessage
-                                                    ? `overflow-hidden ${message.sender_id === user?.id ? 'rounded-br-none' : 'rounded-bl-none'} ${message.status === 'failed' ? 'ring-1 ring-red-400/60' : ''} ${message.status === 'sending' ? 'opacity-80' : ''}`
-                                                    : isAudioOnlyMessage
-                                                    ? message.sender_id === user?.id
-                                                        ? `px-3 py-2 bg-[var(--workspace-primary)] text-white rounded-br-none shadow-md min-w-[15.5rem] max-w-full ${message.status === 'failed' ? 'ring-1 ring-red-400/60' : ''} ${message.status === 'sending' ? 'opacity-80' : ''}`
-                                                        : 'px-3 py-2 bg-surface text-foreground rounded-bl-none border border-border shadow-sm min-w-[15.5rem] max-w-full'
-                                                    : message.sender_id === user?.id
-                                                    ? `px-4 py-2 bg-[var(--workspace-primary)] text-white rounded-br-none shadow-md hover:shadow-lg ${message.status === 'failed' ? 'ring-1 ring-red-400/60' : ''} ${message.status === 'sending' ? 'opacity-80' : ''}`
-                                                    : 'px-4 py-2 bg-surface text-foreground rounded-bl-none border border-border shadow-sm hover:shadow-md'
-                                            }`}
-                                        >
-                                            {shouldRenderMessageText ? (
-                                                <p className={`text-sm break-words ${isDeletedMessage(message) ? 'italic' : ''}`}>
-                                                    {messageText}
-                                                </p>
-                                            ) : null}
-                                            {!isDeletedMessage(message) && hasAttachments && (
-                                                <div className={`${shouldRenderMessageText ? 'mt-2 ' : ''}space-y-2`}>
-                                                    {attachments.map((att, i) => {
-                                                        const isImage = att.type?.startsWith('image/');
-                                                        if (isImage) {
-                                                            return (
-                                                                <button
-                                                                    key={i}
-                                                                    type="button"
-                                                                    onClick={() => {
-                                                                        void handleOpenAttachment(att);
-                                                                    }}
-                                                                    aria-label={tx('pages.messages.a11y.openImageAttachment', undefined, 'Open image attachment')}
-                                                                    className={isImageOnlyMessage ? 'block no-underline' : 'block overflow-hidden rounded-lg no-underline'}
-                                                                >
-                                                                    <img src={att.url} alt={att.name} className={isImageOnlyMessage ? 'block w-full' : 'block w-full rounded-lg'} />
-                                                                </button>
-                                                            );
-                                                        }
-                                                        const isAudio = att.type?.startsWith('audio/') || /\.(mp3|wav|ogg|m4a|webm)$/i.test(att.name || '');
-                                                        if (isAudio) {
-                                                            return (
-                                                                <audio
-                                                                    key={i}
-                                                                    controls
-                                                                    src={att.url}
-                                                                    className={`block min-w-[12rem] ${isAudioOnlyMessage ? 'w-full' : 'w-full max-w-xs'}`}
-                                                                />
-                                                            );
-                                                        }
-                                                        return (
+                                                <div className={`group/message flex w-full ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
+                                                    <div className="relative w-full max-w-[85%] md:max-w-[80%]">
+                                                        {isOwnMessage && !message.status && !message.is_deleted ? (
                                                             <button
-                                                                key={i}
+                                                                type="button"
+                                                                onClick={() => void handleDeleteMessage(message)}
+                                                                disabled={deletingMessageId === message.id}
+                                                                aria-label={tx('pages.messages.deleteMessage', undefined, 'Delete message')}
+                                                                className="absolute -left-9 top-2 z-10 h-7 w-7 rounded-full border border-[#3a3a3a] bg-[#141414] text-gray-500 hidden md:flex items-center justify-center hover:text-white hover:bg-[#262626] transition-colors transition-opacity opacity-0 group-hover/message:opacity-100 focus-visible:opacity-100 disabled:opacity-50"
+                                                            >
+                                                                {deletingMessageId === message.id ? (
+                                                                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                                                ) : (
+                                                                    <Trash2 className="h-3.5 w-3.5" />
+                                                                )}
+                                                            </button>
+                                                        ) : null}
+
+                                                        <div className={`flex items-end gap-2 ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
+                                                            {!isOwnMessage ? (
+                                                                <div className="w-6 h-6 rounded-full bg-[#262626] overflow-hidden shrink-0 flex items-center justify-center text-[10px] text-gray-300">
+                                                                    <span aria-hidden="true">{selectedConversation.otherUser.full_name.charAt(0)}</span>
+                                                                    {selectedConversation.otherUser.avatar_url ? (
+                                                                        <img
+                                                                            src={selectedConversation.otherUser.avatar_url}
+                                                                            alt={selectedConversation.otherUser.full_name}
+                                                                            className="absolute h-6 w-6 rounded-full object-cover"
+                                                                            onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                                                        />
+                                                                    ) : null}
+                                                                </div>
+                                                            ) : null}
+
+                                                            <div
+                                                                className={`max-w-[75%] ${
+                                                                    isDeletedMessage(message)
+                                                                        ? 'rounded-full border border-[#2a2a2a] bg-[#111111] text-gray-500 px-3 py-1.5 text-xs'
+                                                                        : (hasImageAttachment && (isImageOnlyMessage || shouldRenderImageCaption))
+                                                                        ? (isOwnMessage
+                                                                            ? `bg-purple-600 p-1 overflow-hidden rounded-2xl rounded-br-sm text-white ${message.status === 'failed' ? 'ring-1 ring-red-500/70' : ''} ${message.status === 'sending' ? 'opacity-80' : ''}`
+                                                                            : 'bg-[#141414] border border-[#262626] p-1 overflow-hidden rounded-2xl rounded-bl-sm text-gray-200')
+                                                                        : isOwnMessage
+                                                                        ? `bg-purple-600 text-white px-4 py-2 rounded-2xl rounded-br-sm text-sm shadow-md ${message.status === 'failed' ? 'ring-1 ring-red-500/70' : ''} ${message.status === 'sending' ? 'opacity-80' : ''}`
+                                                                        : 'bg-[#141414] border border-[#262626] text-gray-200 px-4 py-2 rounded-2xl rounded-bl-sm text-sm'
+                                                                } ${highlightedMessageId === message.id ? 'ring-1 ring-purple-400/70' : ''}`}
+                                                            >
+                                                                {replyMetadata ? (
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => {
+                                                                            scrollToMessageById(replyMetadata.messageId);
+                                                                        }}
+                                                                        className={`mb-2 w-full rounded-lg border px-2 py-1.5 text-left ${isOwnMessage ? 'border-purple-300/40 bg-purple-700/30 text-purple-100' : 'border-[#3a3a3a] bg-[#101010] text-gray-300'}`}
+                                                                        aria-label={tx('pages.messages.jumpToRepliedMessage', undefined, 'Jump to replied message')}
+                                                                    >
+                                                                        <p className="text-[10px] font-semibold uppercase tracking-wide opacity-90">{replyMetadata.senderName}</p>
+                                                                        <p className="text-xs truncate opacity-90">{replyMetadata.previewText}</p>
+                                                                    </button>
+                                                                ) : null}
+
+                                                                {shouldRenderStandaloneText ? (
+                                                                    <p className={`break-words ${isDeletedMessage(message) ? 'italic leading-tight' : ''}`}>
+                                                                        {messageText}
+                                                                    </p>
+                                                                ) : null}
+
+                                                                {!isDeletedMessage(message) && hasAttachments ? (
+                                                                    <div className={`${shouldRenderStandaloneText ? 'mt-3' : ''} space-y-2`}>
+                                                                        {attachments.map((att, index) => {
+                                                                            const attachmentUrl = resolveMessageAttachmentUrl(att.url);
+                                                                            const isImage = isImageAttachment(att);
+                                                                            const isAudio = isAudioAttachment(att);
+                                                                            const extensionLabel = getAttachmentExtensionLabel(att.name, att.type);
+                                                                            const fileSizeLabel = formatAttachmentSize(att.size);
+                                                                            const fileMetaLabel = fileSizeLabel ? `${extensionLabel} • ${fileSizeLabel}` : extensionLabel;
+
+                                                                            if (isImage) {
+                                                                                return (
+                                                                                    <button
+                                                                                        key={index}
+                                                                                        type="button"
+                                                                                        onClick={() => { void handleOpenAttachment(att); }}
+                                                                                        aria-label={tx('pages.messages.a11y.openImageAttachment', undefined, 'Open image attachment')}
+                                                                                        className="block w-full max-w-sm rounded-xl overflow-hidden"
+                                                                                    >
+                                                                                        <div className="relative">
+                                                                                            <img
+                                                                                                src={attachmentUrl}
+                                                                                                alt={att.name}
+                                                                                                className="w-full max-w-sm rounded-xl object-cover aspect-video cursor-pointer hover:opacity-90 transition-opacity"
+                                                                                                onError={(event) => {
+                                                                                                    event.currentTarget.style.display = 'none';
+                                                                                                    const fallback = event.currentTarget.nextElementSibling as HTMLElement | null;
+                                                                                                    if (fallback) fallback.style.display = 'flex';
+                                                                                                }}
+                                                                                            />
+                                                                                            <div className="hidden w-full max-w-sm rounded-xl aspect-video items-center justify-center bg-[#141414] border border-[#262626] text-gray-500">
+                                                                                                <ImageIcon className="h-6 w-6" />
+                                                                                            </div>
+                                                                                        </div>
+                                                                                        {shouldRenderImageCaption && index === firstImageAttachmentIndex ? (
+                                                                                            <p className={`px-3 py-2 text-sm break-words ${isOwnMessage ? 'text-purple-100' : 'text-gray-200'}`}>
+                                                                                                {messageText}
+                                                                                            </p>
+                                                                                        ) : null}
+                                                                                    </button>
+                                                                                );
+                                                                            }
+
+                                                                            if (isAudio) {
+                                                                                return (
+                                                                                    <MessageAudioPlayer
+                                                                                        key={index}
+                                                                                        src={attachmentUrl}
+                                                                                        rawSource={att.url}
+                                                                                        name={att.name}
+                                                                                        mimeType={att.type}
+                                                                                        isOwn={isOwnMessage}
+                                                                                    />
+                                                                                );
+                                                                            }
+
+                                                                            return (
+                                                                                <button
+                                                                                    key={index}
+                                                                                    type="button"
+                                                                                    onClick={() => { void handleOpenAttachment(att); }}
+                                                                                    className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-colors w-full max-w-sm ${
+                                                                                        isOwnMessage
+                                                                                            ? 'bg-purple-700/50 hover:bg-purple-700/80'
+                                                                                            : 'bg-[#141414] hover:bg-[#1a1a1a] border border-[#333]'
+                                                                                    }`}
+                                                                                    aria-label={tx('pages.messages.a11y.openAttachment', undefined, 'Open attachment')}
+                                                                                >
+                                                                                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${isOwnMessage ? 'bg-purple-500/40 text-purple-100' : 'bg-[#202020] text-purple-300'}`}>
+                                                                                        <FileText className="w-5 h-5" />
+                                                                                    </div>
+
+                                                                                    <div className="min-w-0 flex-1 text-start">
+                                                                                        <p className="font-semibold text-sm truncate text-gray-100">{att.name || tx('pages.messages.attachmentLabel', undefined, 'Attachment')}</p>
+                                                                                        <p className="text-xs opacity-70 text-gray-300">{fileMetaLabel}</p>
+                                                                                    </div>
+
+                                                                                    <Download className="w-4 h-4 opacity-50 hover:opacity-100 transition-opacity ml-auto shrink-0 text-gray-200" />
+                                                                                </button>
+                                                                            );
+                                                                        })}
+                                                                    </div>
+                                                                ) : null}
+                                                            </div>
+
+                                                            {isOwnMessage && !isDeletedMessage(message) && !message.status ? (
+                                                                <CheckCheck className={`h-3 w-3 mb-1 ${message.is_read ? 'text-purple-300' : 'text-gray-500'}`} />
+                                                            ) : null}
+                                                        </div>
+
+                                                        <p className={`mt-1 text-[11px] text-gray-500 flex items-center gap-1 ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
+                                                            <span>{formatMessageTime(message.created_at)}</span>
+                                                            {isOwnMessage && message.status === 'sending' ? <Clock className="h-3 w-3" /> : null}
+                                                            {isOwnMessage && message.status === 'failed' ? (
+                                                                <span className="text-red-400">{tx('pages.messages.sendFailed', undefined, 'Failed')}</span>
+                                                            ) : null}
+                                                        </p>
+
+                                                        {!isDeletedMessage(message) ? (
+                                                            <button
                                                                 type="button"
                                                                 onClick={() => {
-                                                                    void handleOpenAttachment(att);
+                                                                    handleReplyToMessage(message);
                                                                 }}
-                                                                className="flex items-center gap-2 p-2 rounded-lg hover:bg-[var(--color-background-elevated)]"
+                                                                className={`mt-1 inline-flex items-center gap-1 text-[11px] text-gray-500 hover:text-purple-300 transition-colors opacity-0 group-hover/message:opacity-100 ${isOwnMessage ? 'ms-auto' : ''}`}
+                                                                aria-label={tx('pages.messages.replyAction', undefined, 'Reply to message')}
                                                             >
-                                                                <FileText className="w-4 h-4 shrink-0" />
-                                                                <span className="text-xs truncate">{att.name}</span>
+                                                                <CornerUpLeft className="h-3 w-3" />
+                                                                <span>{tx('pages.messages.reply', undefined, 'Reply')}</span>
                                                             </button>
-                                                        );
-                                                    })}
+                                                        ) : null}
+                                                    </div>
                                                 </div>
-                                            )}
-                                        </div>
-                                        <p className={`text-xs mt-1 ${message.sender_id === user?.id ? 'text-end' : 'text-start'} text-muted-foreground flex items-center justify-${message.sender_id === user?.id ? 'end' : 'start'} gap-1`}>
-                                            <span>{formatMessageTime(message.created_at)}</span>
-                                            {message.sender_id === user?.id && message.status === 'sending' && (
-                                                <Loader2 className="w-3 h-3 animate-spin" />
-                                            )}
-                                            {message.sender_id === user?.id && message.status === 'failed' && (
-                                                <span className="text-[var(--color-status-error)]">
-                                                    {tx('pages.messages.sendFailed', undefined, 'Failed')}
-                                                </span>
-                                            )}
-                                            {message.sender_id === user?.id && !message.status && !message.is_deleted && (
-                                                <span className="flex items-center">
-                                                    {message.is_read ? (
-                                                        <span style={{ color: 'var(--color-brand-secondary)' }} title={tx('ui.read')}>✓✓</span>
-                                                    ) : (
-                                                        <span className="text-[var(--color-text-secondary)]" title={tx('ui.delivered')}>✓</span>
-                                                    )}
-                                                </span>
-                                            )}
-                                        </p>
-                                    </div>
-                                </div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        )}
-                        
-                        {/* Pending Queue Offline Messages */}
-                        {pendingQueue.map((pendingMsg, idx) => (
-                            <div key={`pending-${idx}`} className="flex justify-end rtl:flex-row-reverse animate-in fade-in slide-in-from-bottom-2 duration-300 w-full opacity-60 mb-4">
-                                <div className="max-w-xs lg:max-w-md">
-                                    <div className="rounded-2xl px-4 py-2 transition-all duration-200 bg-[var(--workspace-primary)] text-white rounded-br-none shadow-md">
-                                        <p className="text-sm break-words">{pendingMsg.content}</p>
-                                        {(pendingMsg.fileName || pendingMsg.audioFileName || pendingMsg.offlineFile || pendingMsg.offlineAudio) && (
-                                            <div className="mt-2 text-xs italic opacity-80 flex items-center gap-1">
-                                                <Paperclip className="w-3 h-3" />
-                                                <span>{pendingMsg.fileName || pendingMsg.audioFileName || pendingMsg.offlineFileName || pendingMsg.offlineFile?.name || tx('pages.messages.offline.attachmentPending', undefined, 'Attachment pending')}</span>
                                             </div>
-                                        )}
-                                    </div>
-                                    <p className="text-xs mt-1 text-end text-muted-foreground flex items-center justify-end gap-1">
-                                        <Clock className="w-3 h-3" /> {tx('pages.messages.offline.statusWaiting', undefined, 'Pending connection...')}
-                                    </p>
+                                        );
+                                    })}
                                 </div>
-                            </div>
-                        ))}
-                        <div ref={messagesEndRef} />
+
+                                {pendingQueue.map((pendingMsg, idx) => (
+                                    <div key={`pending-${idx}`} className="flex justify-end w-full opacity-70">
+                                        <div className="max-w-[80%]">
+                                            <div className="bg-purple-600 text-white px-4 py-2 rounded-2xl rounded-br-sm text-sm shadow-md">
+                                                <p className="text-sm break-words">{parseReplyMetadataFromContent(pendingMsg.content).bodyText || tx('pages.messages.attachmentLabel', undefined, 'Attachment')}</p>
+                                                {(pendingMsg.fileName || pendingMsg.audioFileName || pendingMsg.offlineFile || pendingMsg.offlineAudio) ? (
+                                                    <div className="mt-2 text-xs italic opacity-90 flex items-center gap-1">
+                                                        <Paperclip className="w-3 h-3" />
+                                                        <span>{pendingMsg.fileName || pendingMsg.audioFileName || pendingMsg.offlineFileName || pendingMsg.offlineFile?.name || tx('pages.messages.offline.attachmentPending', undefined, 'Attachment pending')}</span>
+                                                    </div>
+                                                ) : null}
+                                            </div>
+                                            <p className="mt-1 text-[11px] text-gray-500 flex items-center justify-end gap-1">
+                                                <Clock className="w-3 h-3" /> {tx('pages.messages.offline.statusWaiting', undefined, 'Pending connection...')}
+                                            </p>
+                                        </div>
+                                    </div>
+                                ))}
+
+                                <div ref={messagesEndRef} />
+                            </>
+                        )}
                     </div>
 
-                    {/* Typing Indicator */}
-                    {typingUsers.length > 0 && (
-                        <div className="px-6 py-2 border-t border-border/50">
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    {typingUsers.length > 0 ? (
+                        <div className="px-4 md:px-6 py-2 border-t border-[#262626]">
+                            <div className="flex items-center gap-2 text-xs text-gray-400">
                                 <div className="flex gap-1">
-                                    <div className="w-2 h-2 bg-[var(--workspace-primary)] rounded-full animate-pulse" />
-                                    <div className="w-2 h-2 bg-[var(--workspace-primary)] rounded-full animate-pulse animation-delay-200" />
-                                    <div className="w-2 h-2 bg-[var(--workspace-primary)] rounded-full animate-pulse animation-delay-400" />
+                                    <div className="w-1.5 h-1.5 rounded-full animate-pulse bg-purple-500" />
+                                    <div className="w-1.5 h-1.5 rounded-full animate-pulse bg-purple-500" />
+                                    <div className="w-1.5 h-1.5 rounded-full animate-pulse bg-purple-500" />
                                 </div>
                                 <span>
-                                    {typingUsers.length === 1 
-                                        ? `${selectedConversation?.otherUser.full_name || 'Someone'} ${tx('pages.messages.typingIndicator.singular', undefined, 'is typing...')}`
-                                        : `${typingUsers.length} ${tx('pages.messages.typingIndicator.plural', undefined, 'people are typing...')}`
-                                    }
+                                    {typingUsers.length === 1
+                                        ? `${selectedConversation.otherUser.full_name} ${tx('pages.messages.typingIndicator.singular', undefined, 'is typing...')}`
+                                        : `${typingUsers.length} ${tx('pages.messages.typingIndicator.plural', undefined, 'people are typing...')}`}
                                 </span>
                             </div>
                         </div>
-                    )}
+                    ) : null}
 
-                    {/* Input Area */}
-                    <div className="border-t border-border bg-card px-6 py-4">
-                        {(selectedFile || audioBlob || isRecording) && (
-                            <div className="mb-3">
+                    <div className="p-4 bg-[#141414] border-t border-[#262626] shrink-0">
+                        {replyTarget ? (
+                            <div className="mb-3 rounded-xl border border-[#333] bg-[#1a1a1a] px-3 py-2">
+                                <div className="flex items-start gap-2">
+                                    <span className="mt-0.5 h-8 w-1 rounded-full bg-purple-500" aria-hidden="true" />
+                                    <div className="min-w-0 flex-1">
+                                        <p className="text-xs font-semibold text-purple-300">{tx('pages.messages.replyingTo', undefined, 'Replying to')} {replyTarget.senderName}</p>
+                                        <p className="text-xs text-gray-300 truncate">{replyTarget.previewText}</p>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => setReplyTarget(null)}
+                                        className="rounded-md p-1 text-gray-400 hover:bg-[#262626] hover:text-white transition-colors"
+                                        aria-label={tx('pages.messages.cancelReply', undefined, 'Cancel reply')}
+                                    >
+                                        <X className="h-4 w-4" />
+                                    </button>
+                                </div>
+                            </div>
+                        ) : null}
+
+                        {(selectedFile || audioBlob || isRecording) ? (
+                            <div className="mb-3 space-y-2">
                                 {isRecording ? (
-                                    <div className="flex items-center gap-2 p-2 rounded-lg bg-[var(--color-status-error)]/10 border border-[var(--color-status-error)]/30">
-                                        <div className="w-2 h-2 rounded-full bg-[var(--color-status-error)] animate-pulse" />
-                                        <span className="text-sm text-[var(--color-status-error)]">{tx('ui.recording')}{Math.floor(recordingTime / 60).toString().padStart(2, '0')}:{(recordingTime % 60).toString().padStart(2, '0')}</span>
-                                        <button onClick={stopRecording} aria-label={tx('pages.messages.a11y.stopRecording', undefined, 'Stop recording')} className="ml-auto p-2 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-[var(--color-status-error)]/20 rounded-full transition-colors">
-                                            <Square className="w-4 h-4 fill-[var(--color-status-error)]" />
+                                    <div className="flex items-center gap-2 rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-200">
+                                        <div className="h-2 w-2 rounded-full bg-red-400 animate-pulse" />
+                                        <span>{tx('ui.recording', undefined, 'Recording')} {Math.floor(recordingTime / 60).toString().padStart(2, '0')}:{(recordingTime % 60).toString().padStart(2, '0')}</span>
+                                        <button
+                                            type="button"
+                                            onClick={stopRecording}
+                                            aria-label={tx('pages.messages.a11y.stopRecording', undefined, 'Stop recording')}
+                                            className="ml-auto p-2 rounded-lg text-red-200 hover:bg-red-500/20 transition-colors"
+                                        >
+                                            <Square className="w-4 h-4 fill-current" />
                                         </button>
                                     </div>
-                                ) : audioBlob ? (
-                                    <div className="flex flex-col gap-2 p-2 rounded-lg bg-surface border border-border">
-                                        <div className="flex items-center gap-2">
-                                            <FileAudio className="w-5 h-5 text-[var(--workspace-primary)]" />
-                                            <span className="text-sm flex-1">{tx('pages.messages.voiceMemo', undefined, 'Voice memo')} • {Math.floor(recordingTime / 60).toString().padStart(2, '0')}:{(recordingTime % 60).toString().padStart(2, '0')}</span>
-                                            <button onClick={cancelRecording} disabled={isSending} aria-label={tx('pages.messages.a11y.removeAttachedItem', undefined, 'Remove attached item')} className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-background rounded-full transition-colors disabled:opacity-50">
+                                ) : null}
+
+                                {audioBlob ? (
+                                    <div className="rounded-xl border border-[#3a3a3a] bg-[#1a1a1a] px-3 py-2">
+                                        <div className="flex items-center gap-2 text-sm text-gray-200">
+                                            <FileAudio className="w-4 h-4 text-purple-400" />
+                                            <span className="flex-1">{tx('pages.messages.voiceMemo', undefined, 'Audio note')} • {Math.floor(recordingTime / 60).toString().padStart(2, '0')}:{(recordingTime % 60).toString().padStart(2, '0')}</span>
+                                            <button
+                                                type="button"
+                                                onClick={cancelRecording}
+                                                disabled={isSending}
+                                                aria-label={tx('pages.messages.a11y.removeAttachedItem', undefined, 'Remove attached item')}
+                                                className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-[#262626] transition-colors disabled:opacity-50"
+                                            >
                                                 <X className="w-4 h-4" />
                                             </button>
                                         </div>
-                                        {isSending && uploadProgress > 0 && (
-                                            <div className="w-full bg-border rounded-full h-1.5 overflow-hidden">
-                                                <div className="bg-[var(--workspace-primary)] h-1.5 rounded-full transition-all duration-300" style={{ width: `${uploadProgress}%` }} />
+                                        {audioPreviewUrl ? (
+                                            <div className="mt-2 rounded-xl border border-[#262626] bg-[#141414] px-3 py-2">
+                                                <MessageAudioPlayer
+                                                    src={audioPreviewUrl}
+                                                    name={tx('pages.messages.voiceMemo', undefined, 'Audio note')}
+                                                    isOwn
+                                                />
                                             </div>
-                                        )}
+                                        ) : null}
                                     </div>
-                                ) : selectedFile ? (
-                                    <div className="flex flex-col gap-2 p-2 rounded-lg bg-surface border border-border">
-                                        <div className="flex items-center gap-2">
-                                            <FileText className="w-5 h-5 text-[var(--workspace-primary)]" />
-                                            <span className="text-sm flex-1 truncate">{selectedFile.name}</span>
-                                            <button onClick={() => setSelectedFile(null)} disabled={isSending} aria-label={tx('pages.messages.a11y.removeAttachedItem', undefined, 'Remove attached item')} className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-background rounded-full transition-colors disabled:opacity-50">
+                                ) : null}
+
+                                {selectedFile ? (
+                                    <div className="rounded-xl border border-[#3a3a3a] bg-[#1a1a1a] px-3 py-2">
+                                        <div className="flex items-center gap-2 text-sm text-gray-200">
+                                            <FileText className="w-4 h-4 text-purple-400" />
+                                            <span className="flex-1 truncate">{selectedFile.name}</span>
+                                            <button
+                                                type="button"
+                                                onClick={() => setSelectedFile(null)}
+                                                disabled={isSending}
+                                                aria-label={tx('pages.messages.a11y.removeAttachedItem', undefined, 'Remove attached item')}
+                                                className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-[#262626] transition-colors disabled:opacity-50"
+                                            >
                                                 <X className="w-4 h-4" />
                                             </button>
                                         </div>
-                                        {isSending && uploadProgress > 0 && (
-                                            <div className="w-full bg-border rounded-full h-1.5 overflow-hidden">
-                                                <div className="bg-[var(--workspace-primary)] h-1.5 rounded-full transition-all duration-300" style={{ width: `${uploadProgress}%` }} />
-                                            </div>
-                                        )}
                                     </div>
                                 ) : null}
                             </div>
-                        )}
-                        
-                        <div className="flex items-end gap-2">
-                            <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileChange} accept={MESSAGE_ATTACHMENT_ACCEPT} />
-                            
+                        ) : null}
+
+                        <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileChange} accept={MESSAGE_ATTACHMENT_ACCEPT} />
+
+                        <div className="bg-[#0a0a0a] border border-[#262626] rounded-2xl flex items-end p-1.5 transition-all shadow-inner">
                             <button
+                                type="button"
                                 onClick={() => fileInputRef.current?.click()}
                                 disabled={isSending || !!selectedFile}
-                                aria-label={tx('pages.messages.a11y.attachFile', undefined, 'Attach file')} className="p-3 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-surface rounded-lg transition-colors text-muted-foreground hover:text-foreground disabled:opacity-50"
+                                aria-label={tx('pages.messages.a11y.attachFile', undefined, 'Attach file')}
+                                className="p-2.5 text-gray-500 hover:text-white hover:bg-[#262626] rounded-xl cursor-pointer transition-all disabled:opacity-50"
                             >
-                                <Paperclip className="w-5 h-5" />
+                                <Paperclip className="w-4 h-4" />
                             </button>
-                            
+
                             <button
+                                type="button"
                                 onClick={isRecording ? stopRecording : startRecording}
                                 disabled={isSending}
                                 aria-label={isRecording
                                     ? tx('pages.messages.a11y.stopRecording', undefined, 'Stop recording')
                                     : tx('pages.messages.a11y.startRecording', undefined, 'Start recording')}
-                                className={`p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg transition-colors ${isRecording ? 'bg-[var(--color-status-error)] text-[var(--color-text-primary)] animate-pulse' : 'hover:bg-[var(--color-background-elevated)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'}`}
+                                className={`p-2.5 rounded-xl transition-all ${
+                                    isRecording
+                                        ? 'bg-red-500/20 text-red-300'
+                                        : 'text-gray-500 hover:text-white hover:bg-[#262626]'
+                                } disabled:opacity-50`}
                             >
-                                {isRecording ? <Square className="w-5 h-5 fill-current" /> : <Mic className="w-5 h-5" />}
+                                {isRecording ? <Square className="w-4 h-4 fill-current" /> : <Mic className="w-4 h-4" />}
                             </button>
-                            
-                            <input
-                                type="text"
+
+                            <textarea
                                 ref={messageInputRef}
                                 value={newMessage}
                                 onChange={(e) => {
                                     setNewMessage(e.target.value);
-                                    // Trigger typing indicator
                                     if (e.target.value.trim()) {
                                         startTyping();
                                     } else {
                                         stopTyping();
                                     }
+
+                                    e.currentTarget.style.height = '44px';
+                                    e.currentTarget.style.height = `${Math.min(e.currentTarget.scrollHeight, 128)}px`;
                                 }}
                                 onKeyDown={(e) => {
                                     if (e.key === 'Enter' && !e.shiftKey) {
@@ -1866,110 +2676,49 @@ function MessagesComponent() {
                                     }
                                 }}
                                 onBlur={stopTyping}
-                                placeholder={
-                                    selectedConversation 
-                                        ? `${tx('pages.messages.messageTo', undefined, 'Message')} ${selectedConversation.otherUser.full_name}...`
-                                        : tx('pages.messages.messagePlaceholder', undefined, 'Write your message...')
-                                }
+                                placeholder={tx('pages.messages.messagePlaceholder', undefined, 'Type a message...')}
                                 disabled={isSending || isRecording}
-                                className="flex-1 bg-surface border border-border rounded-2xl px-4 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-brand text-foreground placeholder:text-muted-foreground disabled:opacity-50"
+                                rows={1}
+                                className="flex-1 bg-transparent !border-0 !outline-none !ring-0 focus:!border-0 focus:!outline-none focus:!ring-0 text-white text-sm px-3 py-2.5 resize-none max-h-32 min-h-[44px] placeholder:text-gray-500 disabled:opacity-50"
                             />
-                            
-                            <Button
-                                variant="primary"
-                                onClick={handleSendMessage}
+
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    stopTyping();
+                                    void handleSendMessage();
+                                }}
                                 disabled={(!newMessage.trim() && !selectedFile && !audioBlob) || isSending || isRecording}
-                                isLoading={isSending}
-                                className="p-2.5 rounded-lg text-white hover:opacity-90 transition-opacity disabled:opacity-50"
+                                aria-label={tx('pages.messages.send', undefined, 'Send message')}
+                                className="bg-purple-600 hover:bg-purple-500 text-white p-2.5 rounded-xl cursor-pointer transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                <Send className="w-5 h-5" />
-                            </Button>
+                                {isSending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                            </button>
                         </div>
                     </div>
                 </>
             ) : (
-                <div className="flex items-center justify-center h-full">
+                <div className="flex-1 flex items-center justify-center px-6">
                     <div className="text-center">
-                        <Send className="w-16 h-16 text-muted-foreground/30 mx-auto mb-4" />
-                        <h3 className="text-lg font-semibold text-foreground mb-2">{tx('pages.messages.selectConversationTitle', undefined, 'Select a conversation')}</h3>
-                        <p className="text-muted-foreground">{tx('pages.messages.selectConversationDescription', undefined, 'Choose a conversation to start messaging')}</p>
+                        <Send className="mx-auto h-10 w-10 text-gray-500" />
+                        <h3 className="mt-3 text-lg font-semibold text-white">{tx('pages.messages.selectConversationTitle', undefined, 'Select a conversation')}</h3>
+                        <p className="mt-1 text-sm text-gray-400">{tx('pages.messages.selectConversationDescription', undefined, 'Choose a conversation to start messaging')}</p>
                     </div>
                 </div>
             )}
         </div>
     );
 
-    const renderContactDetails = () => (
-        <div className="h-full overflow-y-auto border-s border-border bg-background/95 backdrop-blur-sm p-6">
-            {selectedConversation ? (
-                <div className="space-y-6">
-                    {/* Profile */}
-                    <div className="rounded-2xl border border-border bg-card px-5 py-7 text-center shadow-sm">
-                        {selectedConversation.otherUser.avatar_url ? (
-                            <img
-                                src={selectedConversation.otherUser.avatar_url}
-                                alt={selectedConversation.otherUser.full_name}
-                                className="mx-auto mb-4 h-24 w-24 rounded-full object-cover ring-2 ring-border"
-                            />
-                        ) : (
-                            <div className="mx-auto mb-4 flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-[var(--workspace-primary)] to-[var(--workspace-primary-mid)] text-3xl font-bold text-white shadow-sm">
-                                {selectedConversation.otherUser.full_name.charAt(0)}
-                            </div>
-                        )}
-                        <h3 className="font-bold text-lg text-foreground">
-                            {selectedConversation.otherUser.full_name}
-                        </h3>
-                        <p className="text-muted-foreground">{getConversationIdentityLabel(selectedConversation)}</p>
-                    </div>
-
-                    {/* Quick Actions */}
-                    <div className="grid grid-cols-2 gap-3 rounded-2xl border border-border bg-card p-3 shadow-sm">
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => navigate(`/freelancer/${selectedConversation.otherUser.id}`)}
-                            className="border-border text-foreground hover:bg-surface hover:border-border transition-colors"
-                        >
-                            <User className="w-4 h-4 ms-1" />
-                            {tx('pages.messages.profileAction', undefined, 'Profile')}
-                        </Button>
-                        <Button variant="outline" size="sm" disabled className="border-border text-muted-foreground opacity-50">
-                            <Briefcase className="w-4 h-4 ms-1" />
-                            {tx('pages.messages.contractsAction', undefined, 'Contracts')}
-                        </Button>
-                    </div>
-
-                </div>
-            ) : (
-                <div className="h-full flex items-center justify-center">
-                    <p className="text-muted-foreground">{tx('pages.messages.selectConversationDetails', undefined, 'Select a conversation to view details')}</p>
-                </div>
-            )}
-        </div>
-    );
-
-        return (
+    return (
         <>
-            <div className="min-h-screen bg-background text-foreground">
+            <div className="min-h-screen bg-[#0a0a0a] text-white">
                 <SEO {...SEO_CONFIG.messages} url="/messages" noIndex />
                 <Header />
 
-                <div className="h-[calc(100vh-64px)] flex overflow-hidden">
-                    {/* Sidebar - Conversations List (Responsive) */}
-                    <div className={`shrink-0 border-e border-border flex-col bg-background w-full lg:w-80 ${showMobileThread ? 'hidden lg:flex' : 'flex'}`}>
-                        {renderConversationList}
-                    </div>
-
-                    {/* Main Message Area */}
-                    <div className={`flex-1 flex flex-col overflow-hidden ${showMobileThread ? 'flex' : 'hidden lg:flex'}`}>
-                        {renderMessageThread()}
-                    </div>
-
-                    {/* Right Sidebar - Contact Details */}
-                    <div className="w-80 shrink-0 border-s border-border bg-background hidden xl:flex flex-col">
-                        {renderContactDetails()}
-                    </div>
-                </div>
+                <main className="flex-1 w-full h-[calc(100vh-64px)] flex flex-col md:flex-row overflow-hidden">
+                    {renderConversationList()}
+                    {renderMessageThread()}
+                </main>
             </div>
 
             {/* Delete Message Modal */}
@@ -1982,7 +2731,7 @@ function MessagesComponent() {
                 title={tx('pages.messages.deleteMessage', undefined, 'Delete message')}
                 size="sm"
             >
-                <div className="space-y-5">
+                <div className="space-y-5" style={deleteModalWorkspaceVars}>
                     <p className="text-sm text-muted-foreground">
                         {tx('pages.messages.deleteMessagePrompt', undefined, 'Choose how you want to delete this message:')}
                     </p>
@@ -1999,18 +2748,18 @@ function MessagesComponent() {
                             variant="outline"
                             onClick={() => void confirmDeleteMessage('me')}
                             disabled={!!deletingMessageId}
-                            className="w-full"
+                            className="w-full border-2"
                         >
                             {tx('pages.messages.deleteForMe', undefined, 'Delete for me')}
                         </Button>
                         
                         <Button
                             type="button"
-                            variant="primary"
+                            variant="danger"
                             onClick={() => void confirmDeleteMessage('everyone')}
                             isLoading={!!deletingMessageId}
                             disabled={!!deletingMessageId}
-                            className="w-full bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            className="w-full"
                         >
                             {tx('pages.messages.deleteForEveryone', undefined, 'Delete for everyone')}
                         </Button>

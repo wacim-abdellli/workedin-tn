@@ -1,5 +1,5 @@
 import { logger } from '@/lib/logger';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
     Plus,
     LayoutGrid,
@@ -10,6 +10,7 @@ import {
     CalendarDays,
     ExternalLink,
 } from 'lucide-react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Header } from '../components/layout';
 import Button from '../components/ui/Button';
 import { useAuth } from '../contexts/AuthContext';
@@ -66,6 +67,8 @@ export default function PortfolioDashboard() {
     const { user } = useAuth();
     const { showToast } = useToast();
     const { t, tx } = useTranslation();
+    const location = useLocation();
+    const navigate = useNavigate();
 
     const cacheKey = user ? `portfolio_${user.id}` : null;
     const mediaBackfillKey = user ? `portfolio_media_backfill_${user.id}` : null;
@@ -88,6 +91,11 @@ export default function PortfolioDashboard() {
     const [editingItem, setEditingItem] = useState<PortfolioItem | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    const requestedEditId = useMemo(() => {
+        const params = new URLSearchParams(location.search);
+        return params.get('edit');
+    }, [location.search]);
+
     useEffect(() => {
         if (user) {
             // If cache hit, fetch in background without showing loader
@@ -95,6 +103,32 @@ export default function PortfolioDashboard() {
             loadPortfolio();
         }
     }, [user?.id]);
+
+    useEffect(() => {
+        if (!requestedEditId || isModalOpen || items.length === 0) {
+            return;
+        }
+
+        const targetItem = items.find((item) => item.id === requestedEditId);
+        if (!targetItem) {
+            return;
+        }
+
+        setEditingItem(targetItem);
+        setIsModalOpen(true);
+
+        const params = new URLSearchParams(location.search);
+        params.delete('edit');
+
+        const nextSearch = params.toString();
+        navigate(
+            {
+                pathname: location.pathname,
+                search: nextSearch ? `?${nextSearch}` : '',
+            },
+            { replace: true },
+        );
+    }, [isModalOpen, items, location.pathname, location.search, navigate, requestedEditId]);
 
     const loadPortfolio = async () => {
         try {

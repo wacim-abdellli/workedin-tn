@@ -1561,7 +1561,7 @@ export const fr: Translations = {
             "stopRecording": "Arrêter l'enregistrement",
             "recordVoice": "Enregistrer un message vocal",
             "recording": "Enregistrement...",
-            "voiceMemo": "Message vocal",
+            "voiceMemo": "Note audio",
             "userFallback": "user",
             "loadingConversations": "Chargement des conversations...",
             "loadingMessages": "Chargement des messages...",

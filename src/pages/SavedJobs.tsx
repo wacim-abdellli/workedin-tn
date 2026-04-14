@@ -1,295 +1,239 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Heart, Briefcase, User, Trash2, Loader2 } from 'lucide-react';
+import { Heart, MapPin, Clock, Star, Briefcase } from 'lucide-react';
 import { Header } from '@/components/layout';
 import { useAuth } from '@/contexts/AuthContext';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useTranslation } from '@/i18n';
-import { supabase } from '@/lib/supabase';
-import { useToast } from '@/components/ui/Toast';
-import EmptyState from '@/components/ui/EmptyState';
-import SEO from '@/components/common/SEO';
 
-interface SavedJob {
-  job_id: string;
-  jobs: {
-    id: string;
-    title: string;
-    category: string;
-    budget_min: number;
-    budget_max: number;
-    job_type: string;
-    status: string;
-    created_at: string;
-  } | null;
+type SavedItemsRole = 'client' | 'freelancer';
+
+interface SavedJobItem {
+  id: string;
+  title: string;
+  jobType: 'Fixed-price' | 'Hourly';
+  budget: string;
+  postedAgo: string;
 }
 
-interface SavedFreelancer {
-  freelancer_id: string;
-  freelancer_profiles: {
-    id: string;
-    title: string;
-    hourly_rate: number;
-    skills: { name: string }[];
-    profiles: {
-      id: string;
-      full_name: string;
-      avatar_url: string;
-      username: string;
-    };
-  } | null;
+interface SavedTalentItem {
+  id: string;
+  name: string;
+  title: string;
+  location: string;
+  rating: number;
+  hourlyRate: number;
 }
 
-export default function SavedJobs() {
-  const { user } = useAuth();
-  const { t, tx } = useTranslation();
-  const { showToast } = useToast();
-  const queryClient = useQueryClient();
-  const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<'jobs' | 'freelancers'>('jobs');
+interface SavedItemsProps {
+  role: SavedItemsRole;
+  savedJobs?: SavedJobItem[];
+  savedTalent?: SavedTalentItem[];
+}
 
-  // Fetch saved jobs
-  const { data: savedJobs = [], isLoading: loadingJobs } = useQuery<SavedJob[]>({
-    queryKey: ['saved-jobs', user?.id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('favorites')
-        .select('job_id, jobs(id, title, category, budget_min, budget_max, job_type, status, created_at)')
-        .eq('user_id', user!.id)
-        .not('job_id', 'is', null)
-        .order('created_at', { ascending: false });
-      if (error) throw error;
-      return (data || []) as unknown as SavedJob[];
-    },
-    enabled: !!user?.id,
-  });
+const SAVED_JOBS: SavedJobItem[] = [
+  {
+    id: 'job-1',
+    title: 'Build a React + Supabase dashboard for order analytics',
+    jobType: 'Fixed-price',
+    budget: '1500 TND',
+    postedAgo: 'Posted 1 day ago',
+  },
+  {
+    id: 'job-2',
+    title: 'Landing page redesign with modern motion and conversions focus',
+    jobType: 'Hourly',
+    budget: '45 TND/hr',
+    postedAgo: 'Posted 3 days ago',
+  },
+  {
+    id: 'job-3',
+    title: 'Migrate legacy Node API endpoints to typed service architecture',
+    jobType: 'Fixed-price',
+    budget: '2200 TND',
+    postedAgo: 'Posted 5 days ago',
+  },
+];
 
-  // Fetch saved freelancers
-  const { data: savedFreelancers = [], isLoading: loadingFreelancers } = useQuery<SavedFreelancer[]>({
-    queryKey: ['saved-freelancers', user?.id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('favorites')
-        .select('freelancer_id, freelancer_profiles(id, title, hourly_rate, skills, profiles(id, full_name, avatar_url, username))')
-        .eq('user_id', user!.id)
-        .not('freelancer_id', 'is', null)
-        .order('created_at', { ascending: false });
-      if (error) throw error;
-      return (data || []) as unknown as SavedFreelancer[];
-    },
-    enabled: !!user?.id,
-  });
+const SAVED_TALENT: SavedTalentItem[] = [
+  {
+    id: 'talent-1',
+    name: 'Aymen Ben Salem',
+    title: 'Full-Stack Engineer',
+    location: 'Tunis',
+    rating: 4.9,
+    hourlyRate: 45,
+  },
+  {
+    id: 'talent-2',
+    name: 'Meriem Trabelsi',
+    title: 'Product Designer',
+    location: 'Sfax',
+    rating: 4.8,
+    hourlyRate: 40,
+  },
+  {
+    id: 'talent-3',
+    name: 'Youssef Gharbi',
+    title: 'DevOps Specialist',
+    location: 'Sousse',
+    rating: 4.7,
+    hourlyRate: 55,
+  },
+];
 
-  // Remove saved job mutation
-  const removeJobMutation = useMutation({
-    mutationFn: async (jobId: string) => {
-      const { error } = await supabase
-        .from('favorites')
-        .delete()
-        .eq('user_id', user!.id)
-        .eq('job_id', jobId);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['saved-jobs', user?.id] });
-      showToast(tx('savedJobs.removed', undefined, 'Removed from saved'), 'success');
-    },
-    onError: () => {
-      showToast(tx('common.error', undefined, 'Something went wrong'), 'error');
-    },
-  });
+const getInitials = (name: string) => {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return 'U';
+  if (parts.length === 1) return parts[0].slice(0, 1).toUpperCase();
+  return `${parts[0].slice(0, 1)}${parts[1].slice(0, 1)}`.toUpperCase();
+};
 
-  // Remove saved freelancer mutation
-  const removeFreelancerMutation = useMutation({
-    mutationFn: async (freelancerId: string) => {
-      const { error } = await supabase
-        .from('favorites')
-        .delete()
-        .eq('user_id', user!.id)
-        .eq('freelancer_id', freelancerId);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['saved-freelancers', user?.id] });
-      showToast(tx('savedFreelancers.removed', undefined, 'Removed from saved'), 'success');
-    },
-    onError: () => {
-      showToast(tx('common.error', undefined, 'Something went wrong'), 'error');
-    },
-  });
+export function SavedItems({
+  role,
+  savedJobs = SAVED_JOBS,
+  savedTalent = SAVED_TALENT,
+}: SavedItemsProps) {
+  const isFreelancer = role === 'freelancer';
+  const title = isFreelancer ? 'Saved Jobs' : 'Saved Talent';
+  const subtitle = isFreelancer
+    ? 'Keep track of jobs you want to apply for.'
+    : 'Keep track of top freelancers for your projects.';
 
-  const isLoading = loadingJobs || loadingFreelancers;
+  const roleItems = isFreelancer ? savedJobs : savedTalent;
 
-  const validJobs = savedJobs.filter((item) => item.jobs !== null);
-  const validFreelancers = savedFreelancers.filter((item) => item.freelancer_profiles !== null);
+  const titleHoverClass = isFreelancer
+    ? 'group-hover:text-purple-400'
+    : 'group-hover:text-orange-500';
+  const actionButtonClass = isFreelancer
+    ? 'bg-purple-600 hover:bg-purple-700'
+    : 'bg-orange-500 hover:bg-orange-600';
+  const heartClass = isFreelancer
+    ? 'text-purple-500 fill-purple-500'
+    : 'text-orange-500 fill-orange-500';
 
   return (
-    <div className="page-shell">
-      <SEO
-        title={tx('savedJobs.seo.title', undefined, 'Saved Items')}
-        description={tx('savedJobs.seo.description', undefined, 'View your saved jobs and freelancers')}
-        noIndex
-      />
-      <Header />
-      <div className="page-shell-content">
-        {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold" style={{ color: 'var(--color-text-primary)' }}>
-            {tx('savedJobs.title', undefined, 'Saved Items')}
-          </h1>
-          <p className="text-sm mt-1" style={{ color: 'var(--color-text-tertiary)' }}>
-            {tx('savedJobs.subtitle', undefined, 'Jobs and freelancers you bookmarked for later')}
-          </p>
-        </div>
+    <div className="min-h-screen bg-[#0a0a0a] text-white py-8 pt-24">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <header>
+          <h1 className="text-3xl font-bold mb-2 text-white">{title}</h1>
+          <p className="text-gray-400 mb-8">{subtitle}</p>
+        </header>
 
-        {/* Tabs */}
-        <div className="tabs-row mb-6">
-          <button
-            onClick={() => setActiveTab('jobs')}
-            className={`tab-pill ${activeTab === 'jobs' ? 'tab-pill-active' : ''}`}
-          >
-            <Briefcase className="w-4 h-4 mr-2" />
-            {tx('savedJobs.jobsTab', undefined, 'Jobs')} ({validJobs.length})
-          </button>
-          <button
-            onClick={() => setActiveTab('freelancers')}
-            className={`tab-pill ${activeTab === 'freelancers' ? 'tab-pill-active' : ''}`}
-          >
-            <User className="w-4 h-4 mr-2" />
-            {tx('savedJobs.freelancersTab', undefined, 'Freelancers')} ({validFreelancers.length})
-          </button>
-        </div>
+        <section className="bg-[#141414] border border-[#262626] rounded-2xl overflow-hidden flex flex-col">
+          {roleItems.length === 0 ? (
+            <div className="py-20 flex flex-col items-center justify-center text-center">
+              <Heart className="w-12 h-12 text-gray-600 mb-4" />
+              <h2 className="text-xl font-bold text-white mb-2">Nothing saved yet</h2>
+              <button
+                type="button"
+                className={`text-white px-5 py-2.5 rounded-xl text-sm font-medium transition-all ${actionButtonClass}`}
+              >
+                {isFreelancer ? 'Browse Jobs' : 'Browse Freelancers'}
+              </button>
+            </div>
+          ) : isFreelancer ? (
+            savedJobs.map((job) => (
+              <article
+                key={job.id}
+                className="p-6 border-b border-[#262626] last:border-b-0 hover:bg-[#262626]/20 transition-colors flex flex-col md:flex-row md:items-center justify-between gap-6 group"
+              >
+                <div className="min-w-0">
+                  <h3 className={`text-lg font-bold text-white transition-colors line-clamp-1 mb-2 cursor-pointer ${titleHoverClass}`}>
+                    {job.title}
+                  </h3>
+                  <div className="flex flex-wrap items-center gap-4 text-xs text-gray-400">
+                    <span className="inline-flex items-center gap-1.5">
+                      <Briefcase className="w-3.5 h-3.5" />
+                      {job.jobType}
+                    </span>
+                    <span>
+                      Budget: <span className="text-white">{job.budget}</span>
+                    </span>
+                    <span className="inline-flex items-center gap-1.5">
+                      <Clock className="w-3.5 h-3.5" />
+                      {job.postedAgo}
+                    </span>
+                  </div>
+                </div>
 
-        {/* Content */}
-        {isLoading ? (
-          <div className="flex justify-center py-12">
-            <Loader2 className="w-8 h-8 animate-spin" style={{ color: 'var(--workspace-primary)' }} />
-          </div>
-        ) : activeTab === 'jobs' ? (
-          validJobs.length === 0 ? (
-            <EmptyState
-              icon={Heart}
-              title={tx('savedJobs.emptyJobsTitle', undefined, 'No saved jobs yet')}
-              description={tx('savedJobs.emptyJobsDescription', undefined, 'Browse jobs and save the ones you like to view them here later.')}
-              action={{
-                label: tx('savedJobs.browseJobs', undefined, 'Browse jobs'),
-                onClick: () => navigate('/jobs'),
-                variant: 'primary',
-              }}
-            />
-          ) : (
-            <div className="space-y-3">
-              {validJobs.map((item) => {
-                const job = item.jobs!;
-                return (
-                  <div
-                    key={item.job_id}
-                    className="list-card"
+                <div className="flex items-center gap-4 shrink-0">
+                  <button
+                    type="button"
+                    className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition-all"
                   >
-                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-                      <Link to={`/jobs/${job.id}`} className="flex-1 min-w-0">
-                        <h3 className="list-card-title hover:underline">{job.title}</h3>
-                        <div className="flex flex-wrap items-center gap-2 mt-2">
-                          <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'var(--color-bg-muted)', color: 'var(--color-text-secondary)' }}>
-                            {job.category}
-                          </span>
-                          <span className="text-sm font-semibold" style={{ color: 'var(--workspace-primary)' }}>
-                            {job.budget_min}-{job.budget_max} {tx('common.currency', undefined, 'TND')}
-                          </span>
-                        </div>
-                      </Link>
-                      <button
-                        onClick={() => removeJobMutation.mutate(job.id)}
-                        className="p-2 rounded-lg transition-colors hover:bg-red-50 dark:hover:bg-red-900/20"
-                        style={{ color: 'var(--color-text-tertiary)' }}
-                        title={tx('savedJobs.remove', undefined, 'Remove from saved')}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )
-        ) : (
-          validFreelancers.length === 0 ? (
-            <EmptyState
-              icon={User}
-              title={tx('savedJobs.emptyFreelancersTitle', undefined, 'No saved freelancers yet')}
-              description={tx('savedJobs.emptyFreelancersDescription', undefined, 'Find talent and save freelancers to contact them later.')}
-              action={{
-                label: tx('savedJobs.findFreelancers', undefined, 'Find freelancers'),
-                onClick: () => navigate('/find-freelancers'),
-                variant: 'primary',
-              }}
-            />
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {validFreelancers.map((item) => {
-                const freelancer = item.freelancer_profiles!;
-                const profile = freelancer.profiles;
-                return (
-                  <div
-                    key={item.freelancer_id}
-                    className="rounded-xl border p-4 transition-all hover:shadow-md"
-                    style={{ borderColor: 'var(--color-border-subtle)', background: 'var(--color-background-elevated)' }}
+                    Apply Now
+                  </button>
+                  <button
+                    type="button"
+                    aria-label="Remove saved job"
+                    className={`p-2 rounded-full border border-[#262626] bg-[#0a0a0a] hover:text-gray-400 hover:fill-transparent transition-all cursor-pointer ${heartClass}`}
                   >
-                    <div className="flex items-start justify-between gap-3">
-                      <Link to={`/freelancer/${profile.username || profile.id}`} className="flex items-center gap-3 min-w-0">
-                        <div
-                          className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shrink-0"
-                          style={{ background: 'var(--workspace-primary)', color: 'white' }}
-                        >
-                          {profile.full_name?.charAt(0) || 'U'}
-                        </div>
-                        <div className="min-w-0">
-                          <p className="font-semibold truncate" style={{ color: 'var(--color-text-primary)' }}>
-                            {profile.full_name}
-                          </p>
-                          <p className="text-xs truncate" style={{ color: 'var(--color-text-tertiary)' }}>
-                            {freelancer.title}
-                          </p>
-                        </div>
-                      </Link>
-                      <button
-                        onClick={() => removeFreelancerMutation.mutate(freelancer.id)}
-                        className="p-1.5 rounded-lg transition-colors hover:bg-red-50 dark:hover:bg-red-900/20 shrink-0"
-                        style={{ color: 'var(--color-text-tertiary)' }}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                    {freelancer.hourly_rate && (
-                      <p className="text-sm font-semibold mt-3" style={{ color: 'var(--workspace-primary)' }}>
-                        {freelancer.hourly_rate} {tx('common.currencyPerHour', undefined, 'TND/hr')}
-                      </p>
-                    )}
-                    {freelancer.skills && freelancer.skills.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mt-2">
-                        {freelancer.skills.slice(0, 3).map((skill, idx) => (
-                          <span
-                            key={idx}
-                            className="text-xs px-2 py-0.5 rounded-full"
-                            style={{ background: 'var(--color-bg-muted)', color: 'var(--color-text-secondary)' }}
-                          >
-                            {skill.name}
-                          </span>
-                        ))}
-                        {freelancer.skills.length > 3 && (
-                          <span className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
-                            +{freelancer.skills.length - 3}
-                          </span>
-                        )}
-                      </div>
-                    )}
+                    <Heart className="w-4 h-4" />
+                  </button>
+                </div>
+              </article>
+            ))
+          ) : (
+            savedTalent.map((talent) => (
+              <article
+                key={talent.id}
+                className="p-6 border-b border-[#262626] last:border-b-0 hover:bg-[#262626]/20 transition-colors flex flex-col md:flex-row md:items-center justify-between gap-6 group"
+              >
+                <div className="flex items-start gap-4 min-w-0">
+                  <div className="w-12 h-12 rounded-full bg-[#262626] shrink-0 flex items-center justify-center text-sm font-semibold text-white">
+                    {getInitials(talent.name)}
                   </div>
-                );
-              })}
-            </div>
-          )
-        )}
+
+                  <div className="min-w-0">
+                    <h3 className={`text-lg font-bold text-white transition-colors line-clamp-1 cursor-pointer ${titleHoverClass}`}>
+                      {talent.name}
+                    </h3>
+                    <p className="text-sm text-gray-400 mb-1 line-clamp-1">{talent.title}</p>
+                    <p className="inline-flex items-center gap-1.5 text-xs text-gray-500">
+                      <MapPin className="w-3.5 h-3.5" />
+                      {talent.location}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-4 shrink-0">
+                  <div className="flex items-center gap-4 text-sm mr-4">
+                    <span className="inline-flex items-center gap-1 text-gray-400">
+                      <Star className="w-4 h-4 text-orange-500 fill-orange-500" />
+                      <span className="text-white">{talent.rating.toFixed(1)}</span>
+                    </span>
+                    <span className="text-white font-medium">{talent.hourlyRate} TND/hr</span>
+                  </div>
+
+                  <button
+                    type="button"
+                    className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-xl text-sm font-medium transition-all"
+                  >
+                    Invite to Job
+                  </button>
+
+                  <button
+                    type="button"
+                    aria-label="Remove saved freelancer"
+                    className={`p-2 rounded-full border border-[#262626] bg-[#0a0a0a] hover:text-gray-400 hover:fill-transparent transition-all cursor-pointer ${heartClass}`}
+                  >
+                    <Heart className="w-4 h-4" />
+                  </button>
+                </div>
+              </article>
+            ))
+          )}
+        </section>
       </div>
     </div>
+  );
+}
+
+export default function SavedJobsPage() {
+  const { activeMode } = useAuth();
+  const role: SavedItemsRole = activeMode === 'client' ? 'client' : 'freelancer';
+
+  return (
+    <>
+      <Header />
+      <SavedItems role={role} />
+    </>
   );
 }
