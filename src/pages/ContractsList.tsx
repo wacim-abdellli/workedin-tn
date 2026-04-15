@@ -277,7 +277,9 @@ export default function ContractsList() {
         <section className="bg-purple-900/10 border border-purple-500/20 rounded-xl p-4 flex gap-4 items-start mb-8">
           <AlertShield className="text-purple-400 shrink-0 mt-0.5 w-5 h-5" />
           <div>
-            <p className="text-sm font-bold text-purple-300">Payment Protection</p>
+            <p className="text-sm font-bold text-purple-300">
+              {tx("contracts.paymentProtectionTitle", undefined, "Payment Protection")}
+            </p>
             <p className="text-sm text-purple-200/70 mt-1">
               Always communicate and request payments through WorkedIn. Contracts paid outside
               the platform are not protected by our secure escrow system.

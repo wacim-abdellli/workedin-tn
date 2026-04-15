@@ -21,6 +21,7 @@ import { useToast } from '../components/ui/Toast';
 import { supabase } from '../lib/supabase';
 import { logger } from '../lib/logger';
 import { getVerificationStatus, subscribeToVerificationChanges, type VerificationStatus } from '@/lib/verificationStatus';
+import { useTranslation } from '@/i18n';
 
 type SettingsTab = 'account' | 'notifications' | 'payment' | 'privacy';
 type NotificationKey = 'new_job' | 'messages' | 'payments' | 'reviews' | 'marketing';
@@ -68,6 +69,7 @@ function AccountSettings({
   goToNotifications: () => void;
   accentColor: string;
 }) {
+  const { tx } = useTranslation();
   const tokens = accentTokens(accentColor);
   const identityVerified = identityStatus === 'verified';
   const identityPending = identityStatus === 'pending';
@@ -75,16 +77,16 @@ function AccountSettings({
   return (
     <div className="bg-[#141414] border border-[#262626] rounded-2xl p-6 relative overflow-hidden">
       <div className="absolute top-0 left-0 right-0 h-px" style={{ background: `linear-gradient(90deg, ${accentColor} 0%, transparent 80%)` }} />
-      <h2 className="text-xl font-bold mb-1">Account Overview</h2>
-      <p className="text-sm text-gray-400 mb-8">Manage your workspace and general account details.</p>
+      <h2 className="text-xl font-bold mb-1">{tx('pages.settings.account.overviewTitle', undefined, 'Account Overview')}</h2>
+      <p className="text-sm text-gray-400 mb-8">{tx('pages.settings.account.overviewDescription', undefined, 'Manage your workspace and general account details.')}</p>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
         <div className="bg-[#0a0a0a] border border-[#262626] rounded-xl p-4 transition-colors" style={{ borderColor: tokens.accentBorder }}>
-          <p className="text-xs text-gray-500 mb-1">Current workspace</p>
+          <p className="text-xs text-gray-500 mb-1">{tx('pages.settings.account.currentWorkspace', undefined, 'Current workspace')}</p>
           <p className="text-sm font-semibold text-white">{activeMode === 'freelancer' ? 'Freelancer' : 'Client'}</p>
         </div>
         <div className="bg-[#0a0a0a] border border-[#262626] rounded-xl p-4 transition-colors" style={{ borderColor: tokens.accentBorder }}>
-          <p className="text-xs text-gray-500 mb-1">Account type</p>
+          <p className="text-xs text-gray-500 mb-1">{tx('pages.settings.account.accountType', undefined, 'Account type')}</p>
           <p className="text-sm font-semibold text-white">{accountType}</p>
         </div>
         <div className="bg-[#0a0a0a] border border-[#262626] rounded-xl p-4 transition-colors" style={{ borderColor: tokens.accentBorder }}>
@@ -96,7 +98,7 @@ function AccountSettings({
         </div>
       </div>
 
-      <h3 className="text-sm font-semibold text-gray-200 mb-3">Quick Actions</h3>
+      <h3 className="text-sm font-semibold text-gray-200 mb-3">{tx('pages.settings.account.quickActions', undefined, 'Quick Actions')}</h3>
 
       <button
         type="button"
@@ -104,7 +106,7 @@ function AccountSettings({
         className="w-full flex justify-between items-center p-4 border border-[#262626] rounded-xl mb-3 hover:bg-[#1a1a1a] cursor-pointer transition-all"
         style={{ borderColor: tokens.accentBorder }}
       >
-        <span className="text-sm text-white">Open public profile editor</span>
+        <span className="text-sm text-white">{tx('pages.settings.account.openPublicProfileEditor', undefined, 'Open public profile editor')}</span>
         <ExternalLink className="w-4 h-4 text-gray-500" />
       </button>
 
@@ -114,7 +116,7 @@ function AccountSettings({
         className="w-full flex justify-between items-center p-4 border border-[#262626] rounded-xl mb-3 hover:bg-[#1a1a1a] cursor-pointer transition-all"
         style={{ borderColor: tokens.accentBorder }}
       >
-        <span className="text-sm text-white">Go to dashboard</span>
+        <span className="text-sm text-white">{tx('pages.settings.account.goToDashboard', undefined, 'Go to dashboard')}</span>
         <ExternalLink className="w-4 h-4 text-gray-500" />
       </button>
 
@@ -124,7 +126,7 @@ function AccountSettings({
         className="w-full flex justify-between items-center p-4 border border-[#262626] rounded-xl hover:bg-[#1a1a1a] cursor-pointer transition-all"
         style={{ borderColor: tokens.accentBorder }}
       >
-        <span className="text-sm text-white">Manage notifications</span>
+        <span className="text-sm text-white">{tx('pages.settings.account.manageNotifications', undefined, 'Manage notifications')}</span>
         <ExternalLink className="w-4 h-4 text-gray-500" />
       </button>
     </div>
@@ -140,6 +142,7 @@ function NotificationSettingsTab({
   accentColor: string;
   showToast: (message: string, variant?: 'success' | 'error' | 'info') => void;
 }) {
+  const { tx } = useTranslation();
   const [notifications, setNotifications] = useState<NotificationState>(DEFAULT_NOTIFICATIONS);
   const [loading, setLoading] = useState(true);
   const [savingKey, setSavingKey] = useState<NotificationKey | null>(null);
@@ -180,7 +183,7 @@ function NotificationSettingsTab({
         }
       } catch (error) {
         logger.error('Failed to load notification settings', error);
-        if (!cached) showToast('Failed to load notification settings', 'error');
+        if (!cached) showToast(tx('pages.settings.notifications.toasts.loadError', undefined, 'Failed to load notification settings'), 'error');
       } finally {
         setLoading(false);
       }
@@ -229,7 +232,7 @@ function NotificationSettingsTab({
     } catch (error) {
       logger.error('Failed to save notification settings', error);
       setNotifications(notifications);
-      showToast('Could not save notification settings', 'error');
+      showToast(tx('pages.settings.notifications.toasts.saveError', undefined, 'Could not save notification settings'), 'error');
     } finally {
       setSavingKey(null);
     }
@@ -285,6 +288,7 @@ function PaymentSettingsTab({
   accentColor: string;
   showToast: (message: string, variant?: 'success' | 'error' | 'info') => void;
 }) {
+  const { tx } = useTranslation();
   const [methods, setMethods] = useState<PaymentMethodRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [adding, setAdding] = useState(false);
@@ -313,7 +317,7 @@ function PaymentSettingsTab({
       setMethods((data ?? []) as PaymentMethodRow[]);
     } catch (error) {
       logger.error('Failed to load payment methods', error);
-      showToast('Failed to load payment methods', 'error');
+      showToast(tx('pages.settings.payment.toasts.loadError', undefined, 'Failed to load payment methods'), 'error');
     } finally {
       setLoading(false);
     }
@@ -349,10 +353,10 @@ function PaymentSettingsTab({
       setMethods((prev) => [...prev, data as PaymentMethodRow]);
       setForm({ type: 'd17', details: '' });
       setAdding(false);
-      showToast('Payment method added', 'success');
+      showToast(tx('pages.settings.payment.toasts.added', undefined, 'Payment method added'), 'success');
     } catch (error) {
       logger.error('Failed to add payment method', error);
-      showToast('Could not add payment method', 'error');
+      showToast(tx('pages.settings.payment.toasts.addError', undefined, 'Could not add payment method'), 'error');
     } finally {
       setSaving(false);
     }
@@ -379,10 +383,10 @@ function PaymentSettingsTab({
       }
 
       setMethods((prev) => prev.map((method) => ({ ...method, is_default: method.id === id })));
-      showToast('Default payment method updated', 'success');
+      showToast(tx('pages.settings.payment.toasts.defaultUpdated', undefined, 'Default payment method updated'), 'success');
     } catch (error) {
       logger.error('Failed to set default payment method', error);
-      showToast('Could not update default payment method', 'error');
+      showToast(tx('pages.settings.payment.toasts.defaultUpdateError', undefined, 'Could not update default payment method'), 'error');
     }
   };
 
@@ -398,10 +402,10 @@ function PaymentSettingsTab({
       }
 
       setMethods((prev) => prev.filter((method) => method.id !== id));
-      showToast('Payment method removed', 'success');
+      showToast(tx('pages.settings.payment.toasts.removed', undefined, 'Payment method removed'), 'success');
     } catch (error) {
       logger.error('Failed to remove payment method', error);
-      showToast('Could not remove payment method', 'error');
+      showToast(tx('pages.settings.payment.toasts.removeError', undefined, 'Could not remove payment method'), 'error');
     }
   };
 
@@ -409,7 +413,7 @@ function PaymentSettingsTab({
     <div className="bg-[#141414] border border-[#262626] rounded-2xl p-6 relative overflow-hidden">
       <div className="absolute top-0 left-0 right-0 h-px" style={{ background: `linear-gradient(90deg, ${accentColor} 0%, transparent 80%)` }} />
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-bold">Payment Methods</h2>
+        <h2 className="text-xl font-bold">{tx('pages.settings.payment.title', undefined, 'Payment Methods')}</h2>
         <button
           type="button"
           onClick={() => setAdding((prev) => !prev)}
@@ -417,7 +421,7 @@ function PaymentSettingsTab({
           style={{ background: accentColor }}
         >
           <Plus className="w-4 h-4" />
-          Add method
+          {tx('pages.settings.payment.addMethod', undefined, 'Add method')}
         </button>
       </div>
 
@@ -427,11 +431,11 @@ function PaymentSettingsTab({
             <select
               value={form.type}
               onChange={(event) => setForm((prev) => ({ ...prev, type: event.target.value }))}
-              className="bg-[#0a0a0a] border border-[#262626] rounded-lg text-white p-3 outline-none"
+              className="bg-[var(--input-bg)] border border-[var(--input-border)] rounded-lg text-[var(--text-primary)] p-3 outline-none"
             >
               <option value="d17">D17</option>
               <option value="flouci">Flouci</option>
-              <option value="bank_transfer">Bank transfer</option>
+              <option value="bank_transfer">{tx('pages.settings.payment.bankTransfer', undefined, 'Bank transfer')}</option>
             </select>
 
             <input
@@ -470,8 +474,8 @@ function PaymentSettingsTab({
       ) : methods.length === 0 ? (
         <div className="text-center py-16 border border-dashed border-[#262626] rounded-2xl bg-[#0a0a0a]">
           <CreditCard className="w-12 h-12 text-gray-600 mx-auto" />
-          <p className="text-lg font-semibold text-white mt-4">No payment method added yet</p>
-          <p className="text-sm text-gray-400 mt-2">Add a payout method now so contracts are ready when you need them.</p>
+          <p className="text-lg font-semibold text-white mt-4">{tx('pages.settings.payment.empty.title', undefined, 'No payment method added yet')}</p>
+          <p className="text-sm text-gray-400 mt-2">{tx('pages.settings.payment.empty.description', undefined, 'Add a payout method now so contracts are ready when you need them.')}</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -500,7 +504,7 @@ function PaymentSettingsTab({
                     onClick={() => void setDefault(method.id)}
                     className="text-xs px-3 py-1.5 rounded-lg border border-[#262626] text-gray-300 hover:text-white"
                   >
-                    Set default
+                    {tx('pages.settings.payment.setDefault', undefined, 'Set default')}
                   </button>
                 )}
 
@@ -508,7 +512,7 @@ function PaymentSettingsTab({
                   type="button"
                   onClick={() => void removeMethod(method.id)}
                   className="p-2 rounded-lg border border-[#262626] text-gray-400 hover:text-red-400"
-                  aria-label="Delete payment method"
+                  aria-label={tx('pages.settings.payment.deleteMethod', undefined, 'Delete payment method')}
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
@@ -536,6 +540,7 @@ function PrivacySettingsTab({
   onSignOutAll: () => Promise<void>;
   showToast: (message: string, variant?: 'success' | 'error' | 'info') => void;
 }) {
+  const { tx } = useTranslation();
   const [submittingDeleteRequest, setSubmittingDeleteRequest] = useState(false);
 
   const requestDeleteAccount = async () => {
@@ -555,7 +560,7 @@ function PrivacySettingsTab({
         .maybeSingle();
 
       if (openRequest) {
-        showToast('A deletion request is already in progress', 'info');
+        showToast(tx('pages.settings.privacy.toasts.deleteRequestInProgress', undefined, 'A deletion request is already in progress'), 'info');
         return;
       }
 
@@ -574,10 +579,10 @@ function PrivacySettingsTab({
         throw error;
       }
 
-      showToast('Account deletion request submitted', 'info');
+      showToast(tx('pages.settings.privacy.toasts.deleteRequestSubmitted', undefined, 'Account deletion request submitted'), 'info');
     } catch (error) {
       logger.error('Failed to submit account deletion request', error);
-      showToast('Could not submit deletion request', 'error');
+      showToast(tx('pages.settings.privacy.toasts.deleteRequestError', undefined, 'Could not submit deletion request'), 'error');
     } finally {
       setSubmittingDeleteRequest(false);
     }
@@ -586,18 +591,18 @@ function PrivacySettingsTab({
   return (
     <div className="bg-[#141414] border border-[#262626] rounded-2xl p-6 relative overflow-hidden">
       <div className="absolute top-0 left-0 right-0 h-px" style={{ background: `linear-gradient(90deg, ${accentColor} 0%, transparent 80%)` }} />
-      <h2 className="text-xl font-bold mb-6">Security & Privacy</h2>
+      <h2 className="text-xl font-bold mb-6">{tx('pages.settings.privacy.title', undefined, 'Security & Privacy')}</h2>
 
       <div className="border border-[#262626] rounded-xl p-4 mb-4 bg-[#0a0a0a]">
-        <p className="text-sm font-semibold text-white mb-1">Change password</p>
+        <p className="text-sm font-semibold text-white mb-1">{tx('pages.settings.privacy.changePassword', undefined, 'Change password')}</p>
         <p className="text-sm text-gray-400">
           You signed in with {authProvider}. Password management is handled by your identity provider.
         </p>
       </div>
 
       <div className="border border-[#262626] rounded-xl p-4 bg-[#0a0a0a]">
-        <p className="text-sm font-semibold text-white mb-1">Active sessions</p>
-        <p className="text-sm text-gray-400">This device is your current session.</p>
+        <p className="text-sm font-semibold text-white mb-1">{tx('pages.settings.privacy.activeSessions', undefined, 'Active sessions')}</p>
+        <p className="text-sm text-gray-400">{tx('pages.settings.privacy.currentSession', undefined, 'This device is your current session.')}</p>
         <button
           type="button"
           onClick={() => void onSignOutAll()}
@@ -605,17 +610,17 @@ function PrivacySettingsTab({
           style={{ borderColor: `color-mix(in srgb, ${accentColor} 45%, #262626)` }}
         >
           <RefreshCw className="w-4 h-4" />
-          Sign out from all devices
+          {tx('pages.settings.privacy.signOutAllDevices', undefined, 'Sign out from all devices')}
         </button>
       </div>
 
       <div className="border border-red-900/50 bg-red-500/5 rounded-xl p-6 mt-8">
         <div className="flex items-center gap-2 text-red-500 font-semibold">
           <AlertTriangle className="w-4 h-4" />
-          <span>Delete account</span>
+          <span>{tx('pages.settings.privacy.deleteAccount', undefined, 'Delete account')}</span>
         </div>
         <p className="text-red-200/70 text-sm mt-1">
-          Your account and all data will be permanently deleted. This action cannot be undone.
+          {tx('pages.settings.privacy.deleteAccountWarning', undefined, 'Your account and all data will be permanently deleted. This action cannot be undone.')}
         </p>
         <button
           type="button"
@@ -634,6 +639,7 @@ export default function Settings() {
   const navigate = useNavigate();
   const { user, profile, activeMode, signOut, refreshProfile } = useAuth();
   const { showToast } = useToast();
+  const { tx } = useTranslation();
 
   const [activeTab, setActiveTab] = useState<SettingsTab>('account');
   const [identityStatus, setIdentityStatus] = useState<VerificationStatus>(profile?.cin_verified ? 'verified' : 'missing');
@@ -704,7 +710,7 @@ export default function Settings() {
       navigate('/login', { replace: true });
     } catch (error) {
       logger.error('Failed to sign out all sessions', error);
-      showToast('Could not sign out all devices', 'error');
+      showToast(tx('pages.settings.privacy.toasts.signOutAllError', undefined, 'Could not sign out all devices'), 'error');
     }
   };
 
@@ -823,7 +829,7 @@ export default function Settings() {
                   className="flex items-center gap-3 w-full p-3 rounded-xl text-sm font-medium text-gray-500 hover:text-red-400 transition-colors"
                 >
                   <LogOut className="w-4 h-4" />
-                  <span>Sign Out</span>
+                  <span>{tx('pages.settings.actions.signOut', undefined, 'Sign Out')}</span>
                 </button>
               </div>
             </div>

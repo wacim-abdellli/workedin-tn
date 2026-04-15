@@ -72,7 +72,7 @@ const DESCRIPTION_SNIPPETS = [
 ] as const;
 
 const FIELD_CLASS =
-  'bg-[#0a0a0a] border border-[#262626] rounded-xl focus:border-orange-500 focus:ring-1 focus:ring-orange-500/70 text-white p-3.5 w-full outline-none transition-all placeholder-gray-600 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]';
+  'bg-[var(--input-bg)] border border-[var(--input-border)] rounded-xl focus:border-orange-500 focus:ring-1 focus:ring-orange-500/70 text-[var(--text-primary)] p-3.5 w-full outline-none transition-all placeholder:text-[var(--text-muted)]';
 
 const JOB_POST_DEFAULT_VALUES: Partial<JobFormData> = {
   job_type: 'fixed_price',
@@ -820,11 +820,11 @@ export default function JobPost() {
                       }}
                       className={FIELD_CLASS}
                     >
-                      <option value="" className="bg-[#0a0a0a] text-gray-500">
+                      <option value="">
                         {tx('jobs.new.fields.selectCategory', undefined, 'Select category')}
                       </option>
                       {categories.map((category) => (
-                        <option key={category.id} value={category.id} className="bg-[#0a0a0a] text-white">
+                        <option key={category.id} value={category.id}>
                           {category.name}
                         </option>
                       ))}
@@ -850,7 +850,7 @@ export default function JobPost() {
                       disabled={!selectedCategory}
                       className={`${FIELD_CLASS} disabled:opacity-50`}
                     >
-                      <option value="" className="bg-[#0a0a0a] text-gray-500">
+                      <option value="">
                         {tx('jobs.new.fields.selectSubcategory', undefined, 'Select subcategory')}
                       </option>
                       {availableSubcategories.map((subcategory) => (
@@ -1021,7 +1021,7 @@ export default function JobPost() {
 
                   <div className="rounded-xl border border-[#2b2b2b] bg-[#111111] p-4">
                     <div className="flex items-center justify-between mb-2">
-                      <p className="text-xs uppercase tracking-wide text-gray-400">Quality Score</p>
+                      <p className="text-xs uppercase tracking-wide text-gray-400">{tx('jobs.new.quality.title', undefined, 'Quality Score')}</p>
                       <p className="text-sm font-semibold text-white">{qualityScore}%</p>
                     </div>
                     <div className="h-2 rounded-full bg-[#262626] overflow-hidden mb-3">

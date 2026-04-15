@@ -144,11 +144,34 @@ export const ar = {
                 "reviewDescription": "راجع تفاصيل المشروع قبل نشره وإرساله مباشرة."
             },
             "stepCounter": "الخطوة {{current}} من {{total}}",
+            "currentPhase": "المرحلة الحالية",
+            "progress": "التقدم",
+            "step1": {
+                "subtitle": "ابدأ بعنوان واضح وسياق قوي."
+            },
+            "fields": {
+                "title": "عنوان المشروع",
+                "mainCategory": "التصنيف الرئيسي",
+                "selectCategory": "اختر التصنيف",
+                "subcategory": "التخصص الفرعي",
+                "selectSubcategory": "اختر التخصص الفرعي",
+                "description": "وصف المشروع",
+                "requiredSkills": "المهارات المطلوبة (بحد أقصى 5)",
+                "suggested": "مقترح:",
+                "attachments": "المرفقات (اختياري)",
+                "attachmentsDrop": "اسحب الملفات هنا أو اضغط للتصفح",
+                "chooseFiles": "اختيار الملفات"
+            },
+            "quality": {
+                "title": "درجة الجودة"
+            },
             "autosave": {
                 "saving": "جاري الحفظ...",
                 "saved": "تم الحفظ",
                 "lastSaved": "آخر حفظ: {{time}}",
-                "ready": "الحفظ التلقائي جاهز"
+                "ready": "الحفظ التلقائي جاهز",
+                "savedAt": "تم الحفظ عند {{time}}",
+                "notSaved": "لم يتم الحفظ بعد"
             },
             "wizard": {
                 "badge": "مسار نشر المشروع",
@@ -1590,6 +1613,89 @@ export const ar = {
             }
         },
         "freelancerProfile": {
+            "actions": {
+                "changeProfilePicture": "تغيير صورة الملف الشخصي",
+                "editProfile": "تعديل الملف الشخصي",
+                "openLink": "فتح الرابط",
+                "viewFullProject": "عرض المشروع الكامل",
+                "openProjectLink": "فتح رابط المشروع",
+                "previousProject": "المشروع السابق",
+                "nextProject": "المشروع التالي"
+            },
+            "cta": {
+                "viewPublicProfile": "عرض الملف العام",
+                "viewPublicProfileDescription": "عاين ملفك كما يراه العملاء والزوار.",
+                "portfolioDashboard": "لوحة معرض الأعمال",
+                "portfolioDashboardDescription": "أضف ورتب أفضل نماذج أعمالك.",
+                "myProposals": "عروضي",
+                "myProposalsDescription": "تابع الحالات وتابع أسرع.",
+                "workspaceSettings": "إعدادات مساحة العمل",
+                "workspaceSettingsDescription": "الإشعارات والأمان والتحكم في الحساب.",
+                "hireMe": "وظّفني",
+                "sendMessage": "إرسال رسالة"
+            },
+            "form": {
+                "fullName": "الاسم الكامل",
+                "professionalTitle": "المسمى المهني",
+                "hourlyRateTnd": "السعر بالساعة (د.ت)"
+            },
+            "info": {
+                "memberSince": "عضو منذ",
+                "lastSeen": "آخر ظهور"
+            },
+            "labels": {
+                "skillsUsed": "المهارات المستخدمة",
+                "toolsUsed": "الأدوات المستخدمة"
+            },
+            "publicPreview": {
+                "title": "معاينة الملف العام",
+                "description": "أنت تشاهد ملفك كما يراه المستخدمون الآخرون.",
+                "exit": "الخروج من المعاينة"
+            },
+            "reviews": {
+                "empty": "لا توجد تقييمات بعد. أكمل أول عقد لتتلقى آراء العملاء."
+            },
+            "sections": {
+                "coreStrengths": "نقاط القوة الأساسية",
+                "selectedWork": "الأعمال المختارة",
+                "clientTrust": "ثقة العملاء",
+                "workInformation": "معلومات العمل"
+            },
+            "stats": {
+                "hourlyRate": "السعر بالساعة"
+            },
+            "toasts": {
+                "workSampleDeleted": "تم حذف نموذج العمل",
+                "workSampleDeleteError": "تعذر حذف نموذج العمل",
+                "profileUpdated": "تم تحديث تفاصيل الملف الشخصي",
+                "profileUpdateError": "تعذر تحديث تفاصيل الملف الشخصي",
+                "bioUpdated": "تم تحديث النبذة",
+                "bioUpdateError": "تعذر تحديث النبذة",
+                "skillsUpdated": "تم تحديث المهارات",
+                "skillsUpdateError": "تعذر تحديث المهارات",
+                "toolsUpdated": "تم تحديث الأدوات",
+                "toolsUpdateError": "تعذر تحديث الأدوات",
+                "avatarUpdated": "تم تحديث صورة الملف الشخصي",
+                "loginRequired": "يرجى تسجيل الدخول للمتابعة",
+                "contactDisabledOwnProfile": "وضع المعاينة العامة: إجراء التواصل معطّل على ملفك الشخصي."
+            },
+            "validation": {
+                "fullNameRequired": "الاسم الكامل مطلوب",
+                "validHourlyRate": "يرجى إدخال سعر ساعة صالح",
+                "avatarType": "يرجى رفع صورة بصيغة JPG أو PNG أو WEBP أو GIF.",
+                "avatarSize": "يجب أن يكون حجم الصورة أقل من 5 ميغابايت."
+            },
+            "verifications": {
+                "paymentMethod": "طريقة الدفع"
+            },
+            "viewer": {
+                "close": "إغلاق عارض الأعمال",
+                "previousImage": "الصورة السابقة",
+                "nextImage": "الصورة التالية"
+            },
+            "workSamples": {
+                "emptyTitle": "لا توجد نماذج أعمال بعد"
+            },
             "portfolio": {
                 "skillsUsed": "المهارات المستخدمة",
                 "visitProject": "زيارة المشروع"
@@ -1657,6 +1763,99 @@ export const ar = {
         "login": {
             "finishingSignIn": "جارٍ إنهاء تسجيل الدخول",
             "finishingSignInDescription": "نحن نؤكد جلستك الآمنة ونحوّلك إلى مساحة العمل المناسبة."
+        },
+        "jobBoard": {
+            "header": {
+                "title": "ابحث عن عمل",
+                "subtitle": "تصفح فرص العمل الحر في تونس وقدّم بثقة."
+            },
+            "filters": {
+                "clearAll": "مسح الكل",
+                "jobType": "نوع العمل",
+                "searchPlaceholder": "ابحث عن وظائف..."
+            },
+            "actions": {
+                "applyNow": "قدم الآن"
+            },
+            "empty": {
+                "filtered": "لا توجد وظائف مطابقة للفلاتر المحددة."
+            },
+            "errors": {
+                "loadFailed": "تعذر تحميل الوظائف. يرجى المحاولة مرة أخرى."
+            },
+            "toasts": {
+                "savedJobsUpdateError": "تعذر تحديث الوظائف المحفوظة"
+            }
+        },
+        "savedJobs": {
+            "empty": {
+                "title": "لا يوجد شيء محفوظ بعد"
+            },
+            "labels": {
+                "budget": "الميزانية:"
+            },
+            "actions": {
+                "applyNow": "قدم الآن",
+                "removeSavedJob": "إزالة الوظيفة المحفوظة",
+                "inviteToJob": "دعوة إلى الوظيفة",
+                "removeSavedFreelancer": "إزالة المستقل المحفوظ"
+            }
+        },
+        "settings": {
+            "account": {
+                "overviewTitle": "نظرة عامة على الحساب",
+                "overviewDescription": "أدر مساحة العمل والتفاصيل العامة لحسابك.",
+                "currentWorkspace": "مساحة العمل الحالية",
+                "accountType": "نوع الحساب",
+                "quickActions": "إجراءات سريعة",
+                "openPublicProfileEditor": "فتح محرر الملف العام",
+                "goToDashboard": "الذهاب إلى لوحة التحكم",
+                "manageNotifications": "إدارة الإشعارات"
+            },
+            "actions": {
+                "signOut": "تسجيل الخروج"
+            },
+            "notifications": {
+                "toasts": {
+                    "loadError": "فشل تحميل إعدادات الإشعارات",
+                    "saveError": "تعذر حفظ إعدادات الإشعارات"
+                }
+            },
+            "payment": {
+                "title": "طرق الدفع",
+                "addMethod": "إضافة طريقة",
+                "bankTransfer": "تحويل بنكي",
+                "setDefault": "تعيين كافتراضي",
+                "deleteMethod": "حذف طريقة الدفع",
+                "empty": {
+                    "title": "لم تتم إضافة طريقة دفع بعد",
+                    "description": "أضف طريقة سحب الآن لتكون العقود جاهزة عندما تحتاجها."
+                },
+                "toasts": {
+                    "loadError": "فشل تحميل طرق الدفع",
+                    "added": "تمت إضافة طريقة الدفع",
+                    "addError": "تعذر إضافة طريقة الدفع",
+                    "defaultUpdated": "تم تحديث طريقة الدفع الافتراضية",
+                    "defaultUpdateError": "تعذر تحديث الطريقة الافتراضية",
+                    "removed": "تمت إزالة طريقة الدفع",
+                    "removeError": "تعذر إزالة طريقة الدفع"
+                }
+            },
+            "privacy": {
+                "title": "الأمان والخصوصية",
+                "changePassword": "تغيير كلمة المرور",
+                "activeSessions": "الجلسات النشطة",
+                "currentSession": "هذا الجهاز هو جلستك الحالية.",
+                "signOutAllDevices": "تسجيل الخروج من كل الأجهزة",
+                "deleteAccount": "حذف الحساب",
+                "deleteAccountWarning": "سيتم حذف حسابك وجميع بياناتك نهائياً. لا يمكن التراجع عن هذا الإجراء.",
+                "toasts": {
+                    "deleteRequestInProgress": "يوجد طلب حذف قيد التنفيذ بالفعل",
+                    "deleteRequestSubmitted": "تم إرسال طلب حذف الحساب",
+                    "deleteRequestError": "تعذر إرسال طلب الحذف",
+                    "signOutAllError": "تعذر تسجيل الخروج من كل الأجهزة"
+                }
+            }
         }
     },
     "search": {
@@ -2311,7 +2510,7 @@ export const ar = {
             "archiveSuccess": "تم أرشفة العرض",
             "archiveError": "فشل أرشفة العرض",
             "submitSuccess": "تم إرسال العرض بنجاح!",
-            "withdrawSuccess": "تم سحب العرض واسترداد الكونيكتس",
+            "withdrawSuccess": "تم سحب العرض بنجاح",
             "withdrawError": "حدث خطأ في سحب العرض"
         },
         "contract": {
@@ -2527,7 +2726,9 @@ export const ar = {
             }
         },
         "card": {
-            "clientPrefix": "العميل"
+            "clientPrefix": "العميل",
+            "editItem": "تعديل عنصر معرض الأعمال",
+            "deleteItem": "حذف عنصر معرض الأعمال"
         }
     },
     "jobProposals": {
@@ -2567,7 +2768,7 @@ export const ar = {
         "loginToSave": "سجل الدخول لحفظ الوظيفة",
         "proposalSent": "تم إرسال العرض بنجاح!",
         "proposalError": "حدث خطأ في إرسال العرض",
-        "proposalWithdrawn": "تم سحب العرض واسترداد الكونيكتس",
+        "proposalWithdrawn": "تم سحب العرض بنجاح",
         "withdrawError": "حدث خطأ في سحب العرض",
         "linkCopied": "تم نسخ الرابط",
         "fixedPrice": "سعر ثابت",
@@ -2603,20 +2804,25 @@ export const ar = {
         "attachments": "الملفات المرفقة",
         "file": "ملف {{index}}",
         "defaultClient": "عميل",
-        "connectsNeeded": "تحتاج إلى {{count}} كونيكتس لإرسال عرض. رصيدك الحالي: {{balance}}",
         "jobNotFound": "الوظيفة غير موجودة",
         "submitProposal": "إرسال عرض",
         "withdrawProposal": "سحب العرض",
         "browseJobs": "تصفح الوظائف",
         "submissionRequirements": "متطلبات التقديم",
-        "connectsRequiredDescription": "يحتاج هذا العرض إلى كونيكتس قبل الإرسال.",
         "readyToSubmit": "جاهز للتقديم",
-        "insufficientBalance": "الرصيد غير كافٍ",
-        "balance": "الرصيد",
-        "required": "المطلوب",
+        "insufficientBalance": "تم الوصول إلى الحد اليومي",
+        "balance": "المستخدم اليوم",
+        "required": "الحد اليومي",
         "remaining": "المتبقي",
-        "connectsDeductionWarning": "سيتم خصم {{count}} كونيكتس مباشرة بعد إرسال العرض.",
-        "additionalConnectsNeeded": "تحتاج إلى {{count}} كونيكتس إضافية قبل إرسال هذا العرض.",
+        "used": "المستخدم",
+        "limit": "الحد",
+        "dailyApplyLimitTitle": "الحد اليومي للتقديم",
+        "dailyApplyLimitDescription": "لتقليل الرسائل المزعجة، يمكنك إرسال حتى {{limit}} عروض يومياً.",
+        "dailyApplyLimitReached": "لقد وصلت إلى الحد اليومي وهو {{limit}} طلبات. يمكنك المحاولة مرة أخرى غداً.",
+        "dailyApplyAvailable": "متاح اليوم",
+        "dailyApplyReached": "تم بلوغ الحد",
+        "dailyApplyRemainingHint": "متبقٍ {{remaining}} طلبات تقديم اليوم.",
+        "dailyApplyResetHint": "تم الوصول إلى الحد اليومي. يمكنك التقديم مرة أخرى غداً.",
         "memberSince": "عضو منذ",
         "postedJobs": "الوظائف المنشورة",
         "totalSpending": "إجمالي الإنفاق",
@@ -2955,6 +3161,18 @@ export const ar = {
             "highlightPaymentsDescription": "تدفقات الضمان أولاً تحافظ على توافق دفعات العميل وتسليم الموظف المستقل.",
             "highlightLocaleTitle": "مبني لتونس",
             "highlightLocaleDescription": "تدفقات اللغة العربية والفرنسية والإنجليزية معدلة للعمل الحر المحلي.",
+            "hero": {
+                "workSmarter": "اعمل بذكاء.",
+                "earnFairly": "واكسب بعدل."
+            },
+            "form": {
+                "welcomeBack": "مرحباً بعودتك.",
+                "subtitle": "سجّل الدخول إلى مساحة عمل WorkedIn.",
+                "google": "المتابعة باستخدام Google",
+                "orEmail": "أو سجّل الدخول بالبريد الإلكتروني",
+                "forgotPassword": "هل نسيت كلمة المرور؟",
+                "createOne": "إنشاء حساب"
+            },
             "createAccountAction": "إنشاء حساب",
             "finishingSignIn": "إنهاء دخولك",
             "finishingSignInDescription": "نحن نؤكد جلستك الآمنة وننقلك إلى مساحة العمل الصحيحة.",

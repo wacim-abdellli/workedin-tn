@@ -31,14 +31,10 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
             ? {
                 focus: 'focus:border-purple-500 focus:ring-purple-500/20',
                 icon: 'text-purple-400',
-                optionSelected: '[&>option:checked]:bg-purple-500/20 [&>option:checked]:text-purple-300',
-                optionHover: '[&>option:hover]:bg-purple-500/10',
             }
             : {
                 focus: 'focus:border-[#E8820C] focus:ring-[#E8820C]/20',
                 icon: 'text-[#E8820C]',
-                optionSelected: '[&>option:checked]:bg-[#E8820C]/20 [&>option:checked]:text-amber-300',
-                optionHover: '[&>option:hover]:bg-[#E8820C]/10',
             };
 
         const selectStyles = `
@@ -46,9 +42,9 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
             appearance-none
             rounded-xl
             border
-            border-gray-800
-            bg-[#111111]
-            text-white
+            border-[var(--input-border)]
+            bg-[var(--input-bg)]
+            text-[var(--text-primary)]
             text-base
             px-4
             py-3
@@ -56,7 +52,7 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
             shadow-sm
             transition-all
             duration-200
-            hover:border-gray-700
+            hover:border-[var(--border-strong)]
             focus:outline-none 
             focus:ring-2 
             focus:ring-offset-0
@@ -67,7 +63,6 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
             }
             disabled:cursor-not-allowed 
             disabled:opacity-50 
-            disabled:bg-[#0a0a0a]
         `;
 
         const selectId = props.id || props.name;
@@ -80,7 +75,7 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
                 {label && (
                     <label
                         htmlFor={selectId}
-                        className="mb-2 block text-sm font-medium text-gray-300 transition-colors"
+                        className="mb-2 block text-sm font-medium text-[var(--text-secondary)] transition-colors"
                     >
                         {label}
                     </label>
@@ -92,9 +87,7 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
                         aria-invalid={!!error}
                         aria-describedby={descriptionIds || undefined}
                         className={`${selectStyles} ${className}`}
-                        style={{
-                            colorScheme: 'dark',
-                        }}
+                        style={{ colorScheme: 'inherit' }}
                         {...props}
                     >
                         {placeholder && (
@@ -128,7 +121,7 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
                 {hint && !error && (
                     <p
                         id={hintId}
-                        className="mt-1.5 text-sm text-gray-400"
+                        className="mt-1.5 text-sm text-[var(--text-muted)]"
                     >
                         {hint}
                     </p>

@@ -440,14 +440,14 @@ export default function PortfolioDashboard() {
                                             <button
                                                 className="p-2.5 bg-black/60 rounded-full text-white/80 hover:text-white transition-colors border border-white/15"
                                                 onClick={() => openEditModal(item)}
-                                                aria-label="Edit portfolio item"
+                                                aria-label={tx('portfolio.card.editItem', undefined, 'Edit portfolio item')}
                                             >
                                                 <Edit2 className="w-4 h-4" />
                                             </button>
                                             <button
                                                 className="p-2.5 bg-black/60 rounded-full text-white/80 hover:text-red-400 transition-colors border border-white/15"
                                                 onClick={() => handleDelete(item.id)}
-                                                aria-label="Delete portfolio item"
+                                                aria-label={tx('portfolio.card.deleteItem', undefined, 'Delete portfolio item')}
                                             >
                                                 <Trash2 className="w-4 h-4" />
                                             </button>

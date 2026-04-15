@@ -181,8 +181,8 @@ function Login() {
                             fontWeight: 800, lineHeight: 1.05,
                             letterSpacing: '-1.5px', color: '#fff', marginBottom: 20,
                         }}>
-                            Work smarter.<br />
-                            <span style={{ color: '#E8820C' }}>Earn fairly.</span>
+                            {tx('authPages.login.hero.workSmarter', undefined, 'Work smarter.')}<br />
+                            <span style={{ color: '#E8820C' }}>{tx('authPages.login.hero.earnFairly', undefined, 'Earn fairly.')}</span>
                         </h1>
 
                         <p style={{ fontSize: 15, color: '#888', lineHeight: 1.6, maxWidth: 340, marginBottom: 40 }}>
@@ -261,9 +261,9 @@ function Login() {
 
                     <div style={{ marginBottom: 36 }}>
                         <h2 style={{ fontSize: 26, fontWeight: 800, color: '#fff', letterSpacing: '-0.5px', marginBottom: 6 }}>
-                            Welcome back.
+                            {tx('authPages.login.form.welcomeBack', undefined, 'Welcome back.')}
                         </h2>
-                        <p style={{ fontSize: 14, color: '#666' }}>Sign in to your WorkedIn workspace.</p>
+                        <p style={{ fontSize: 14, color: '#666' }}>{tx('authPages.login.form.subtitle', undefined, 'Sign in to your WorkedIn workspace.')}</p>
                     </div>
 
                     <button
@@ -285,12 +285,12 @@ function Login() {
                             <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
                             <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
                         </svg>
-                        <span style={{ fontSize: 14, fontWeight: 600, color: '#fff' }}>Continue with Google</span>
+                        <span style={{ fontSize: 14, fontWeight: 600, color: '#fff' }}>{tx('authPages.login.form.google', undefined, 'Continue with Google')}</span>
                     </button>
 
                     <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
                         <div style={{ flex: 1, height: 1, background: '#1e1e1e' }} />
-                        <span style={{ fontSize: 12, color: '#444', fontWeight: 600 }}>or sign in with email</span>
+                        <span style={{ fontSize: 12, color: '#444', fontWeight: 600 }}>{tx('authPages.login.form.orEmail', undefined, 'or sign in with email')}</span>
                         <div style={{ flex: 1, height: 1, background: '#1e1e1e' }} />
                     </div>
 
@@ -328,7 +328,7 @@ function Login() {
                                     onClick={() => navigate('/forgot-password')}
                                     style={{ fontSize: 12, color: '#E8820C', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600, fontFamily: "'Outfit', sans-serif" }}
                                 >
-                                    Forgot password?
+                                    {tx('authPages.login.form.forgotPassword', undefined, 'Forgot password?')}
                                 </button>
                             </div>
                             <input
@@ -377,7 +377,7 @@ function Login() {
                             onClick={() => navigate('/signup', { state: location.state })}
                             style={{ color: '#E8820C', fontWeight: 700, background: 'none', border: 'none', cursor: 'pointer', fontFamily: "'Outfit', sans-serif", fontSize: 13 }}
                         >
-                            Create one
+                            {tx('authPages.login.form.createOne', undefined, 'Create one')}
                         </button>
                     </p>
                 </div>

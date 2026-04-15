@@ -360,6 +360,7 @@ function ProfileView({
     viewerRole,
     freelancer,
     onOpenContact,
+    onHireNow,
     onSaveAvatar,
     onSaveBasics,
     onSaveBio,
@@ -369,6 +370,7 @@ function ProfileView({
 }: ProfilePageProps & {
     freelancer: FreelancerData;
     onOpenContact: () => void;
+    onHireNow: () => void;
     onSaveAvatar: (file: File) => Promise<void>;
     onSaveBasics: (payload: {
         fullName: string;
@@ -383,6 +385,7 @@ function ProfileView({
 }) {
     const navigate = useNavigate();
     const { showToast } = useToast();
+    const { tx } = useTranslation();
     const avatarInputRef = useRef<HTMLInputElement | null>(null);
 
     const [editingBasics, setEditingBasics] = useState(false);
@@ -551,7 +554,11 @@ function ProfileView({
     }, [navigate]);
 
     const deleteWorkSample = useCallback(async (workSampleId: string) => {
-        const confirmed = window.confirm('Delete this work sample? This action cannot be undone.');
+        const confirmed = window.confirm(tx(
+            'pages.freelancerProfile.workSamples.deleteConfirm',
+            undefined,
+            'Delete this work sample? This action cannot be undone.',
+        ));
         if (!confirmed) {
             return;
         }
@@ -573,15 +580,15 @@ function ProfileView({
                 closeWorkSampleViewer();
             }
 
-            showToast('Work sample deleted', 'success');
+            showToast(tx('pages.freelancerProfile.toasts.workSampleDeleted', undefined, 'Work sample deleted'), 'success');
             await onRefreshWorkSamples();
         } catch (error) {
             logger.error('Failed to delete work sample', error);
-            showToast('Could not delete work sample', 'error');
+            showToast(tx('pages.freelancerProfile.toasts.workSampleDeleteError', undefined, 'Could not delete work sample'), 'error');
         } finally {
             setDeletingWorkSampleId(null);
         }
-    }, [activeWorkSampleId, closeWorkSampleViewer, freelancer.id, onRefreshWorkSamples, showToast]);
+    }, [activeWorkSampleId, closeWorkSampleViewer, freelancer.id, onRefreshWorkSamples, showToast, tx]);
 
     const showPreviousWorkSample = useCallback(() => {
         if (workSamples.length <= 1) {
@@ -690,12 +697,12 @@ function ProfileView({
         const parsedRate = Number(hourlyRateDraft);
 
         if (!normalizedName) {
-            showToast('Full name is required', 'warning');
+            showToast(tx('pages.freelancerProfile.validation.fullNameRequired', undefined, 'Full name is required'), 'warning');
             return;
         }
 
         if (!Number.isFinite(parsedRate) || parsedRate < 0) {
-            showToast('Please enter a valid hourly rate', 'warning');
+            showToast(tx('pages.freelancerProfile.validation.validHourlyRate', undefined, 'Please enter a valid hourly rate'), 'warning');
             return;
         }
 
@@ -708,10 +715,10 @@ function ProfileView({
                 availability: availabilityDraft,
             });
             setEditingBasics(false);
-            showToast('Profile details updated', 'success');
+            showToast(tx('pages.freelancerProfile.toasts.profileUpdated', undefined, 'Profile details updated'), 'success');
         } catch (error) {
             logger.error('Failed to save profile details', error);
-            showToast('Could not update profile details', 'error');
+            showToast(tx('pages.freelancerProfile.toasts.profileUpdateError', undefined, 'Could not update profile details'), 'error');
         } finally {
             setSavingBasics(false);
         }
@@ -722,10 +729,10 @@ function ProfileView({
             setSavingBio(true);
             await onSaveBio(bioDraft);
             setEditingBio(false);
-            showToast('Bio updated', 'success');
+            showToast(tx('pages.freelancerProfile.toasts.bioUpdated', undefined, 'Bio updated'), 'success');
         } catch (error) {
             logger.error('Failed to save bio', error);
-            showToast('Could not update bio', 'error');
+            showToast(tx('pages.freelancerProfile.toasts.bioUpdateError', undefined, 'Could not update bio'), 'error');
         } finally {
             setSavingBio(false);
         }
@@ -736,10 +743,10 @@ function ProfileView({
             setSavingSkills(true);
             await onSaveSkills(selectedSkillNames);
             setEditingSkills(false);
-            showToast('Skills updated', 'success');
+            showToast(tx('pages.freelancerProfile.toasts.skillsUpdated', undefined, 'Skills updated'), 'success');
         } catch (error) {
             logger.error('Failed to save skills', error);
-            showToast('Could not update skills', 'error');
+            showToast(tx('pages.freelancerProfile.toasts.skillsUpdateError', undefined, 'Could not update skills'), 'error');
         } finally {
             setSavingSkills(false);
         }
@@ -750,10 +757,10 @@ function ProfileView({
             setSavingTools(true);
             await onSaveTools(selectedToolNames);
             setEditingTools(false);
-            showToast('Tools updated', 'success');
+            showToast(tx('pages.freelancerProfile.toasts.toolsUpdated', undefined, 'Tools updated'), 'success');
         } catch (error) {
             logger.error('Failed to save tools', error);
-            showToast('Could not update tools', 'error');
+            showToast(tx('pages.freelancerProfile.toasts.toolsUpdateError', undefined, 'Could not update tools'), 'error');
         } finally {
             setSavingTools(false);
         }
@@ -769,19 +776,19 @@ function ProfileView({
 
         const allowedTypes = new Set(['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif']);
         if (!allowedTypes.has(file.type)) {
-            showToast('Please upload JPG, PNG, WEBP, or GIF image.', 'warning');
+            showToast(tx('pages.freelancerProfile.validation.avatarType', undefined, 'Please upload JPG, PNG, WEBP, or GIF image.'), 'warning');
             return;
         }
 
         if (file.size > 5 * 1024 * 1024) {
-            showToast('Image size should be less than 5MB.', 'warning');
+            showToast(tx('pages.freelancerProfile.validation.avatarSize', undefined, 'Image size should be less than 5MB.'), 'warning');
             return;
         }
 
         try {
             setSavingAvatar(true);
             await onSaveAvatar(file);
-            showToast('Profile picture updated', 'success');
+            showToast(tx('pages.freelancerProfile.toasts.avatarUpdated', undefined, 'Profile picture updated'), 'success');
         } catch (error) {
             logger.error('Failed to upload profile picture', error);
             const fallbackErrorText = getAvatarUpdateErrorMessage(error);
@@ -854,7 +861,7 @@ function ProfileView({
                                         onClick={() => avatarInputRef.current?.click()}
                                         disabled={isSavingAnySection}
                                         className="absolute -bottom-1 -left-1 h-9 w-9 rounded-full border border-white/15 bg-[#111111] text-gray-200 inline-flex items-center justify-center hover:text-white transition-colors"
-                                        title="Change profile picture"
+                                        title={tx('pages.freelancerProfile.actions.changeProfilePicture', undefined, 'Change profile picture')}
                                     >
                                         <Camera className="w-4 h-4" />
                                     </button>
@@ -879,7 +886,7 @@ function ProfileView({
                                             className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1.5 rounded-lg border border-white/10 text-white/65 hover:text-white transition-colors"
                                         >
                                             <Edit2 className="w-3.5 h-3.5" />
-                                            Edit profile
+                                            {tx('pages.freelancerProfile.actions.editProfile', undefined, 'Edit profile')}
                                         </button>
                                     ) : null}
                                 </div>
@@ -910,7 +917,7 @@ function ProfileView({
                                 {editingBasics && isOwner ? (
                                     <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3 rounded-xl border border-white/10 bg-black/30 p-3.5">
                                         <div>
-                                            <label className="text-xs text-white/50">Full name</label>
+                                            <label className="text-xs text-white/50">{tx('pages.freelancerProfile.form.fullName', undefined, 'Full name')}</label>
                                             <input
                                                 type="text"
                                                 value={fullNameDraft}
@@ -920,7 +927,7 @@ function ProfileView({
                                         </div>
 
                                         <div>
-                                            <label className="text-xs text-white/50">Professional title</label>
+                                            <label className="text-xs text-white/50">{tx('pages.freelancerProfile.form.professionalTitle', undefined, 'Professional title')}</label>
                                             <input
                                                 type="text"
                                                 value={titleDraft}
@@ -930,7 +937,7 @@ function ProfileView({
                                         </div>
 
                                         <div>
-                                            <label className="text-xs text-white/50">Hourly rate (TND)</label>
+                                            <label className="text-xs text-white/50">{tx('pages.freelancerProfile.form.hourlyRateTnd', undefined, 'Hourly rate (TND)')}</label>
                                             <input
                                                 type="number"
                                                 min={0}
@@ -945,7 +952,7 @@ function ProfileView({
                                             <select
                                                 value={availabilityDraft}
                                                 onChange={(event) => setAvailabilityDraft(event.target.value as FreelancerData['availability'])}
-                                                className="mt-1 w-full bg-[#0b0b0b] border border-white/10 rounded-lg text-white p-2.5 outline-none"
+                                                className="mt-1 w-full bg-[var(--input-bg)] border border-[var(--input-border)] rounded-lg text-[var(--text-primary)] p-2.5 outline-none"
                                             >
                                                 {availabilityOptions.map((option) => (
                                                     <option key={option.value} value={option.value}>
@@ -1062,7 +1069,7 @@ function ProfileView({
                                 <div className="flex items-center gap-2.5">
                                     <div className="w-1 h-5 rounded-full" style={{ background: accentColor }} />
                                     <span className="text-xs font-bold uppercase tracking-[0.12em]" style={{ color: `${accentColor}CC` }}>
-                                        Core strengths
+                                        {tx('pages.freelancerProfile.sections.coreStrengths', undefined, 'Core strengths')}
                                     </span>
                                 </div>
                                 <button
@@ -1079,7 +1086,7 @@ function ProfileView({
                             </div>
                         ) : (
                             <ProfileSectionHeader
-                                title="Core strengths"
+                                title={tx('pages.freelancerProfile.sections.coreStrengths', undefined, 'Core strengths')}
                                 accentColor={accentColor}
                                 isOwner={isOwner}
                                 onEdit={() => setEditingSkills(true)}
@@ -1208,7 +1215,7 @@ function ProfileView({
 
                     <ProfileSectionCard>
                         <ProfileSectionHeader
-                            title="Selected work"
+                            title={tx('pages.freelancerProfile.sections.selectedWork', undefined, 'Selected work')}
                             accentColor={accentColor}
                         />
 
@@ -1301,7 +1308,7 @@ function ProfileView({
                                                             className="inline-flex items-center gap-1 text-xs text-[#c4b5fd] hover:text-[#ddd6fe] transition-colors"
                                                         >
                                                             <ExternalLink className="w-3.5 h-3.5" />
-                                                            Open link
+                                                            {tx('pages.freelancerProfile.actions.openLink', undefined, 'Open link')}
                                                         </a>
                                                     ) : <span />}
 
@@ -1338,7 +1345,7 @@ function ProfileView({
                                                                 background: `color-mix(in srgb, ${accentColor} 10%, transparent)`,
                                                             }}
                                                         >
-                                                            View full project
+                                                            {tx('pages.freelancerProfile.actions.viewFullProject', undefined, 'View full project')}
                                                         </button>
                                                     </div>
                                                 </div>
@@ -1350,7 +1357,7 @@ function ProfileView({
                         ) : (
                             <ProfileEmptyState
                                 icon={<Briefcase className="w-10 h-10" />}
-                                title="No work samples added yet"
+                                title={tx('pages.freelancerProfile.workSamples.emptyTitle', undefined, 'No work samples added yet')}
                                 description="Showcase case studies, shipped products, and measurable outcomes."
                                 cta={isOwner ? 'Add your first work sample' : undefined}
                                 onCta={isOwner ? () => navigate(ROUTES.freelancerPortfolio) : undefined}
@@ -1376,7 +1383,7 @@ function ProfileView({
                                             type="button"
                                             onClick={closeWorkSampleViewer}
                                             className="absolute top-3 right-3 z-20 h-9 w-9 rounded-full border border-white/20 bg-black/65 text-white/80 hover:text-white transition-colors inline-flex items-center justify-center"
-                                            aria-label="Close portfolio viewer"
+                                            aria-label={tx('pages.freelancerProfile.viewer.close', undefined, 'Close portfolio viewer')}
                                         >
                                             <X className="w-4 h-4" />
                                         </button>
@@ -1401,7 +1408,7 @@ function ProfileView({
                                                         type="button"
                                                         onClick={showPreviousWorkImage}
                                                         className="absolute left-4 top-1/2 -translate-y-1/2 h-9 w-9 rounded-full border border-white/20 bg-black/65 text-white/80 hover:text-white transition-colors inline-flex items-center justify-center"
-                                                        aria-label="Previous image"
+                                                        aria-label={tx('pages.freelancerProfile.viewer.previousImage', undefined, 'Previous image')}
                                                     >
                                                         <ChevronLeft className="w-4 h-4" />
                                                     </button>
@@ -1409,7 +1416,7 @@ function ProfileView({
                                                         type="button"
                                                         onClick={showNextWorkImage}
                                                         className="absolute right-4 top-1/2 -translate-y-1/2 h-9 w-9 rounded-full border border-white/20 bg-black/65 text-white/80 hover:text-white transition-colors inline-flex items-center justify-center"
-                                                        aria-label="Next image"
+                                                        aria-label={tx('pages.freelancerProfile.viewer.nextImage', undefined, 'Next image')}
                                                     >
                                                         <ChevronRight className="w-4 h-4" />
                                                     </button>
@@ -1487,14 +1494,14 @@ function ProfileView({
                                                         className="inline-flex items-center gap-2 text-[#c4b5fd] hover:text-[#ddd6fe] transition-colors"
                                                     >
                                                         <ExternalLink className="w-4 h-4" />
-                                                        Open project link
+                                                        {tx('pages.freelancerProfile.actions.openProjectLink', undefined, 'Open project link')}
                                                     </a>
                                                 ) : null}
                                             </div>
 
                                             {activeWorkSample.skills_used && activeWorkSample.skills_used.length > 0 ? (
                                                 <div>
-                                                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-white/45 mb-2">Skills used</p>
+                                                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-white/45 mb-2">{tx('pages.freelancerProfile.labels.skillsUsed', undefined, 'Skills used')}</p>
                                                     <div className="flex flex-wrap gap-1.5">
                                                         {activeWorkSample.skills_used.map((skill) => (
                                                             <span
@@ -1515,7 +1522,7 @@ function ProfileView({
 
                                             {activeWorkSample.tools_used && activeWorkSample.tools_used.length > 0 ? (
                                                 <div>
-                                                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-white/45 mb-2">Tools used</p>
+                                                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-white/45 mb-2">{tx('pages.freelancerProfile.labels.toolsUsed', undefined, 'Tools used')}</p>
                                                     <div className="flex flex-wrap gap-1.5">
                                                         {activeWorkSample.tools_used.map((tool) => (
                                                             <span
@@ -1538,14 +1545,14 @@ function ProfileView({
                                                     className="inline-flex items-center gap-1.5 rounded-lg border border-white/15 px-3 py-2 text-xs text-white/75 hover:text-white transition-colors"
                                                 >
                                                     <ChevronLeft className="w-3.5 h-3.5" />
-                                                    Previous project
+                                                    {tx('pages.freelancerProfile.actions.previousProject', undefined, 'Previous project')}
                                                 </button>
                                                 <button
                                                     type="button"
                                                     onClick={showNextWorkSample}
                                                     className="inline-flex items-center gap-1.5 rounded-lg border border-white/15 px-3 py-2 text-xs text-white/75 hover:text-white transition-colors"
                                                 >
-                                                    Next project
+                                                    {tx('pages.freelancerProfile.actions.nextProject', undefined, 'Next project')}
                                                     <ChevronRight className="w-3.5 h-3.5" />
                                                 </button>
                                             </div>
@@ -1558,7 +1565,7 @@ function ProfileView({
 
                     <ProfileSectionCard>
                         <ProfileSectionHeader
-                            title="Client trust"
+                            title={tx('pages.freelancerProfile.sections.clientTrust', undefined, 'Client trust')}
                             accentColor={accentColor}
                         />
 
@@ -1621,7 +1628,7 @@ function ProfileView({
                             </div>
                         ) : (
                             <p className="mt-5 text-sm text-white/45 text-center">
-                                No reviews yet. Complete your first contract to receive feedback.
+                                {tx('pages.freelancerProfile.reviews.empty', undefined, 'No reviews yet. Complete your first contract to receive feedback.')}
                             </p>
                         )}
                     </ProfileSectionCard>
@@ -1647,10 +1654,10 @@ function ProfileView({
                                     />
                                     <span className="inline-flex items-center gap-2 text-base font-semibold text-white relative z-10">
                                         <Eye className="w-4 h-4 text-white/90" />
-                                        View Public Profile
+                                        {tx('pages.freelancerProfile.cta.viewPublicProfile', undefined, 'View Public Profile')}
                                     </span>
                                     <span className="mt-1 block text-xs text-white/75 relative z-10">
-                                        Preview exactly how clients and visitors see your profile.
+                                        {tx('pages.freelancerProfile.cta.viewPublicProfileDescription', undefined, 'Preview exactly how clients and visitors see your profile.')}
                                     </span>
                                 </button>
                             ) : null}
@@ -1663,9 +1670,9 @@ function ProfileView({
                                 >
                                     <span className="inline-flex items-center gap-2 text-base font-semibold text-white">
                                         <Briefcase className="w-4 h-4" style={{ color: accentColor }} />
-                                        Portfolio Dashboard
+                                        {tx('pages.freelancerProfile.cta.portfolioDashboard', undefined, 'Portfolio Dashboard')}
                                     </span>
-                                    <span className="mt-1 block text-xs text-white/45">Add and organize your best work samples.</span>
+                                    <span className="mt-1 block text-xs text-white/45">{tx('pages.freelancerProfile.cta.portfolioDashboardDescription', undefined, 'Add and organize your best work samples.')}</span>
                                 </button>
                             ) : null}
 
@@ -1677,9 +1684,9 @@ function ProfileView({
                                 >
                                     <span className="inline-flex items-center gap-2 text-base font-semibold text-white">
                                         <MessageSquare className="w-4 h-4" style={{ color: accentColor }} />
-                                        My Proposals
+                                        {tx('pages.freelancerProfile.cta.myProposals', undefined, 'My Proposals')}
                                     </span>
-                                    <span className="mt-1 block text-xs text-white/45">Track statuses and follow up faster.</span>
+                                    <span className="mt-1 block text-xs text-white/45">{tx('pages.freelancerProfile.cta.myProposalsDescription', undefined, 'Track statuses and follow up faster.')}</span>
                                 </button>
                             ) : null}
 
@@ -1691,19 +1698,19 @@ function ProfileView({
                                 >
                                     <span className="inline-flex items-center gap-2 text-base font-semibold text-white/90">
                                         <Settings className="w-4 h-4 text-white/80" />
-                                        Workspace Settings
+                                        {tx('pages.freelancerProfile.cta.workspaceSettings', undefined, 'Workspace Settings')}
                                     </span>
-                                    <span className="mt-1 block text-xs text-white/45">Notifications, security, and account controls.</span>
+                                    <span className="mt-1 block text-xs text-white/45">{tx('pages.freelancerProfile.cta.workspaceSettingsDescription', undefined, 'Notifications, security, and account controls.')}</span>
                                 </button>
                             ) : null}
 
                             {viewerRole === 'client' ? (
                                 <button
-                                    onClick={onOpenContact}
+                                    onClick={onHireNow}
                                     className="w-full text-white rounded-xl py-3 font-semibold transition-colors"
                                     style={{ background: accentColor }}
                                 >
-                                    Hire Me
+                                    {tx('pages.freelancerProfile.cta.hireMe', undefined, 'Hire Me')}
                                 </button>
                             ) : null}
 
@@ -1718,7 +1725,7 @@ function ProfileView({
                                     }}
                                 >
                                     <MessageSquare className="w-4 h-4" />
-                                    Send Message
+                                    {tx('pages.freelancerProfile.cta.sendMessage', undefined, 'Send Message')}
                                 </button>
                             ) : null}
 
@@ -1728,7 +1735,7 @@ function ProfileView({
                                     className="w-full bg-transparent border border-white/10 text-white/75 rounded-xl py-3 font-semibold transition-colors hover:text-white inline-flex items-center justify-center gap-2"
                                 >
                                     <MessageSquare className="w-4 h-4" />
-                                    Send Message
+                                    {tx('pages.freelancerProfile.cta.sendMessage', undefined, 'Send Message')}
                                 </button>
                             ) : null}
                         </div>
@@ -1757,7 +1764,7 @@ function ProfileView({
                         <ProfileStatCard
                             icon={<Coins className="w-4 h-4" />}
                             value={`${freelancer.hourly_rate} TND/h`}
-                            label="Hourly rate"
+                            label={tx('pages.freelancerProfile.stats.hourlyRate', undefined, 'Hourly rate')}
                             accentColor={accentColor}
                         />
                     </section>
@@ -1765,7 +1772,7 @@ function ProfileView({
                     <ProfileSectionCard>
                         <ProfileInfoHeader
                             icon={<ShieldCheck className="w-4 h-4" />}
-                            title="Work information"
+                            title={tx('pages.freelancerProfile.sections.workInformation', undefined, 'Work information')}
                             accentColor={accentColor}
                         />
 
@@ -1779,11 +1786,11 @@ function ProfileView({
                                 }
                             />
                             <ProfileInfoRow
-                                label="Member since"
+                                label={tx('pages.freelancerProfile.info.memberSince', undefined, 'Member since')}
                                 value={new Date(freelancer.joined_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long' })}
                             />
                             <ProfileInfoRow
-                                label="Last seen"
+                                label={tx('pages.freelancerProfile.info.lastSeen', undefined, 'Last seen')}
                                 value={<span className="text-green-400">Recently</span>}
                             />
                         </div>
@@ -1811,7 +1818,7 @@ function ProfileView({
                             </div>
                             <div className="flex items-center gap-2.5 text-sm text-white/75 py-1.5">
                                 {freelancer.verifications.payment ? <CheckCircle className="w-4 h-4 text-green-500" /> : <Circle className="w-4 h-4 text-white/35" />}
-                                <span>Payment method</span>
+                                <span>{tx('pages.freelancerProfile.verifications.paymentMethod', undefined, 'Payment method')}</span>
                             </div>
                         </div>
                     </ProfileSectionCard>
@@ -2347,15 +2354,35 @@ export default function FreelancerProfile() {
         return 'client';
     }, [activeMode, isPublicPreview, profile?.user_type, profile?.username, user, usernameOrId]);
 
-    const openContactModal = () => {
+    const canStartInteraction = () => {
         if (!user?.id) {
-            showToast('Please log in to continue', 'info');
+            showToast(tx('pages.freelancerProfile.toasts.loginRequired', undefined, 'Please log in to continue'), 'info');
             navigate(ROUTES.login, { state: { from: `/freelancer/${usernameOrId || ''}` } });
-            return;
+            return false;
         }
 
         if (freelancer?.id && user.id === freelancer.id) {
-            showToast('Public preview mode: contact action is disabled on your own profile.', 'info');
+            showToast(tx('pages.freelancerProfile.toasts.contactDisabledOwnProfile', undefined, 'Public preview mode: contact action is disabled on your own profile.'), 'info');
+            return false;
+        }
+
+        if (!freelancer?.id) {
+            return false;
+        }
+
+        return true;
+    };
+
+    const openContactModal = () => {
+        if (!canStartInteraction()) {
+            return;
+        }
+
+        setShowContactModal(true);
+    };
+
+    const startHireFlow = () => {
+        if (!canStartInteraction()) {
             return;
         }
 
@@ -2363,7 +2390,18 @@ export default function FreelancerProfile() {
             return;
         }
 
-        setShowContactModal(true);
+        const inviteFreelancerId = freelancer.id;
+        const inviteFreelancerName = freelancer.full_name || 'this freelancer';
+        navigate(
+            `${ROUTES.jobsNew}?invite=${encodeURIComponent(inviteFreelancerId)}`,
+            {
+                state: {
+                    inviteFreelancerId,
+                    inviteFreelancerName,
+                },
+            },
+        );
+        showToast(`Create a project to hire ${inviteFreelancerName}.`, 'info');
     };
 
     if (isLoading && !freelancer) {
@@ -2432,8 +2470,8 @@ export default function FreelancerProfile() {
                 <div className="max-w-6xl mx-auto px-6 pt-5">
                     <div className="bg-[#141414] border border-[#262626] rounded-xl px-4 py-3 flex items-center justify-between gap-3">
                         <div>
-                            <p className="text-sm font-semibold text-white">Public Profile Preview</p>
-                            <p className="text-xs text-gray-400">You are viewing your profile as other users see it.</p>
+                            <p className="text-sm font-semibold text-white">{tx('pages.freelancerProfile.publicPreview.title', undefined, 'Public Profile Preview')}</p>
+                            <p className="text-xs text-gray-400">{tx('pages.freelancerProfile.publicPreview.description', undefined, 'You are viewing your profile as other users see it.')}</p>
                         </div>
                         <button
                             type="button"
@@ -2441,7 +2479,7 @@ export default function FreelancerProfile() {
                             className="inline-flex items-center gap-2 rounded-lg border border-[#3a3a3a] px-3 py-2 text-sm text-gray-200 hover:text-white hover:border-[#565656] transition-colors"
                         >
                             <ArrowLeft className="w-4 h-4" />
-                            Exit Preview
+                            {tx('pages.freelancerProfile.publicPreview.exit', undefined, 'Exit Preview')}
                         </button>
                     </div>
                 </div>
@@ -2450,6 +2488,7 @@ export default function FreelancerProfile() {
                 viewerRole={viewerRole}
                 freelancer={freelancer}
                 onOpenContact={openContactModal}
+                onHireNow={startHireFlow}
                 onSaveAvatar={saveAvatar}
                 onSaveBasics={saveProfileBasics}
                 onSaveBio={saveBio}
@@ -2464,6 +2503,7 @@ export default function FreelancerProfile() {
                     onClose={() => setShowContactModal(false)}
                     freelancerId={freelancer.id}
                     freelancerName={freelancer.full_name}
+                    accentColor="#8B5CF6"
                 />
             ) : null}
         </div>

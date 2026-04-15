@@ -1,45 +1,21 @@
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { m } from "framer-motion";
-import {
-  ArrowRight,
-  Bell,
-  Briefcase,
-  Check,
-  DollarSign,
-  FileText,
-  MessageSquare,
-  Search,
-  Settings,
-  Target,
-  TrendingDown,
-  TrendingUp,
-  User,
-} from "lucide-react";
+import { Briefcase, FileText, Sparkles, User } from "lucide-react";
 
-import {
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts";
 import { Header } from "../components/layout";
 import SEO, { SEO_CONFIG } from "../components/common/SEO";
 import EmptyState from "../components/ui/EmptyState";
-import SkeletonCard from "../components/common/SkeletonCard";
-import Button from "../components/ui/Button";
-import Badge from "../components/ui/Badge";
-import { DashWidget } from "../components/dashboard/DashWidget";
-import { ProfileRing } from "../components/dashboard/ProfileRing";
 import { useAuth } from "../contexts/AuthContext";
 import { useTranslation } from "../i18n";
 import { dashboardQueryKeys } from "../lib/dashboardQueries";
 import { ROUTES } from "../lib/routes";
 import { supabase } from "../lib/supabase";
 import { formatCurrency } from "../lib/currencyUtils";
+import {
+  DAILY_PROPOSAL_LIMIT,
+  getDailyProposalUsage,
+} from "../services/proposals";
 
 type DashboardNotification = {
   id: string;
@@ -65,7 +41,6 @@ type DashboardStats = {
   walletBalance: number;
   pendingBalance: number;
   profileViews: number;
-  connectsBalance: number;
   freelancerTitle: string | null;
   notifications: DashboardNotification[];
   milestones: DashboardMilestone[];
@@ -93,29 +68,89 @@ type MatchedJob = {
   budget_max: number | null;
 };
 
-const motionEase = [0.16, 1, 0.3, 1] as const;
-
-const containerVariants = {
-  hidden: {},
-  show: { transition: { staggerChildren: 0.07 } },
+type ContractRow = {
+  id: string;
+  jobTitle: string;
+  clientName: string;
+  submitPath: string;
 };
 
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: motionEase } },
+type ProposalRow = {
+  id: string;
+  jobTitle: string;
+  proposedRate: string;
+  status: string;
 };
 
-function getTimeGreeting(tx: any): string {
-  const h = new Date().getHours();
-  if (h < 12)
-    return tx("dashboard.greeting.morning", undefined, "Good morning");
-  if (h < 18)
-    return tx("dashboard.greeting.afternoon", undefined, "Good afternoon");
-  return tx("dashboard.greeting.evening", undefined, "Good evening");
+function proposalStatusLabel(
+  status: string,
+  tx: (key: string, params?: any, fallback?: string) => string,
+) {
+  if (status === "viewed") {
+    return tx(
+      "dashboard.freelancer.proposalStatus.viewed",
+      undefined,
+      "Viewed by Client",
+    );
+  }
+  if (status === "shortlisted") {
+    return tx(
+      "dashboard.freelancer.proposalStatus.shortlisted",
+      undefined,
+      "Shortlisted",
+    );
+  }
+  if (status === "pending") {
+    return tx(
+      "dashboard.freelancer.proposalStatus.submitted",
+      undefined,
+      "Submitted",
+    );
+  }
+
+  return tx(`status.${status}`, undefined, status);
+}
+
+function proposalStatusClass(status: string) {
+  if (status === "accepted" || status === "shortlisted") {
+    return "border border-emerald-500/30 bg-emerald-500/10 text-emerald-300";
+  }
+  if (status === "viewed") {
+    return "border border-blue-500/30 bg-blue-500/10 text-blue-300";
+  }
+  if (status === "rejected") {
+    return "border border-rose-500/30 bg-rose-500/10 text-rose-300";
+  }
+  return "border border-purple-500/30 bg-purple-500/10 text-purple-300";
+}
+
+function formatJobBudget(
+  job: MatchedJob,
+  language: Parameters<typeof formatCurrency>[2],
+) {
+  const min = Number(job.budget_min ?? 0);
+  const max = Number(job.budget_max ?? 0);
+
+  if (min > 0 && max > 0) {
+    return `${formatCurrency(min, true, language)} - ${formatCurrency(max, true, language)}`;
+  }
+  if (max > 0) {
+    return formatCurrency(max, true, language);
+  }
+  if (min > 0) {
+    return formatCurrency(min, true, language);
+  }
+
+  return "-";
 }
 
 function FreelancerDashboardPage() {
-  const { profile, freelancerProfile, isLoading: isAuthLoading, isFullyReady } = useAuth();
+  const {
+    profile,
+    freelancerProfile,
+    isLoading: isAuthLoading,
+    isFullyReady,
+  } = useAuth();
   const navigate = useNavigate();
   const { language, tx } = useTranslation();
 
@@ -158,7 +193,7 @@ function FreelancerDashboardPage() {
           .maybeSingle(),
         supabase
           .from("freelancer_profiles")
-          .select("profile_views,title,connects_balance")
+          .select("profile_views,title")
           .eq("id", userId)
           .maybeSingle(),
         supabase
@@ -205,7 +240,6 @@ function FreelancerDashboardPage() {
         walletBalance: Number(walletRes.data?.balance ?? 0),
         pendingBalance: Number(walletRes.data?.pending_balance ?? 0),
         profileViews: Number(viewsRes.data?.profile_views ?? 0),
-        connectsBalance: Number(viewsRes.data?.connects_balance ?? 0),
         freelancerTitle: viewsRes.data?.title ?? null,
         notifications: (notificationsRes.data ?? []) as DashboardNotification[],
         milestones: (milestonesRes.data ?? []) as DashboardMilestone[],
@@ -285,10 +319,24 @@ function FreelancerDashboardPage() {
     staleTime: 60_000,
   });
 
+  const {
+    data: dailyProposalUsage = {
+      used: 0,
+      remaining: DAILY_PROPOSAL_LIMIT,
+      limit: DAILY_PROPOSAL_LIMIT,
+    },
+  } = useQuery({
+    queryKey: ["dailyProposalUsage", profile?.id],
+    queryFn: () => getDailyProposalUsage(profile!.id),
+    enabled: !!profile?.id,
+    staleTime: 60_000,
+  });
+
   const recentProposals = stats?.recentProposals ?? [];
   const contracts = stats?.activeContractsList ?? [];
   const monthlyEarnings = chartData[chartData.length - 1]?.earnings ?? 0;
   const lastMonthEarnings = chartData[chartData.length - 2]?.earnings ?? 0;
+
   const ownFreelancerProfilePath = profile?.id
     ? `/freelancer/${profile.username || profile.id}`
     : ROUTES.settingsProfile;
@@ -370,22 +418,58 @@ function FreelancerDashboardPage() {
     (checklist.filter((item) => item.done).length / checklist.length) * 100,
   );
 
-  const statsData = {
-    activeContracts: stats?.activeContracts ?? 0,
-    totalProposals: stats?.pendingProposals ?? 0,
-    totalEarnings: formatCurrency(stats?.totalEarnings ?? 0, true, language),
-    rating: "—",
-    monthlyEarnings,
-    lastMonthEarnings,
-  };
+  const completionValue = profileCompletion;
+  const firstName = profile?.full_name?.split(" ")[0] || "Freelancer";
+  const activeContractsCount = stats?.activeContracts ?? 0;
+  const pendingProposalsCount = stats?.pendingProposals ?? 0;
+  const profileViewsCount = stats?.profileViews ?? 0;
+  const monthlyEarningsLabel = formatCurrency(monthlyEarnings, true, language);
+
+  const activeContractRows = useMemo<ContractRow[]>(
+    () =>
+      contracts.slice(0, 3).map((contract) => ({
+        id: contract.id,
+        jobTitle: contract.title,
+        clientName:
+          contract.client?.full_name ||
+          tx("dashboard.freelancer.clientFallback", undefined, "Client"),
+        submitPath: `/contracts/${contract.id}`,
+      })),
+    [contracts, tx],
+  );
+
+  const proposalRows = useMemo<ProposalRow[]>(
+    () =>
+      recentProposals.slice(0, 4).map((proposal) => ({
+        id: proposal.id,
+        jobTitle:
+          proposal.job?.title ||
+          tx("dashboard.freelancer.untitledJob", undefined, "Untitled job"),
+        proposedRate: formatCurrency(proposal.bid_amount ?? 0, true, language),
+        status: proposal.status,
+      })),
+    [language, recentProposals, tx],
+  );
 
   if (isAuthLoading || !isFullyReady) {
     return (
-      <div className="min-h-screen bg-[var(--color-background-base)]">
+      <div className="min-h-screen bg-[#0a0a0a] text-white">
         <SEO {...SEO_CONFIG.dashboard} url="/freelancer/dashboard" noIndex />
         <Header />
-        <main className="container mx-auto px-[var(--spacing-4)] sm:px-[var(--spacing-6)] lg:px-[var(--spacing-8)] pt-[var(--spacing-20)] pb-[var(--spacing-12)] max-w-7xl">
-          <SkeletonCard />
+        <main className="min-h-screen bg-[#0a0a0a] text-white pt-10 pb-12">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col gap-8">
+            <div className="animate-pulse rounded-2xl border border-[#262626] bg-[#141414] h-36" />
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+              <div className="lg:col-span-8 space-y-8">
+                <div className="animate-pulse rounded-2xl border border-[#262626] bg-[#141414] h-72" />
+                <div className="animate-pulse rounded-2xl border border-[#262626] bg-[#141414] h-64" />
+              </div>
+              <div className="lg:col-span-4 space-y-6">
+                <div className="animate-pulse rounded-2xl border border-[#262626] bg-[#141414] h-48" />
+                <div className="animate-pulse rounded-2xl border border-[#262626] bg-[#141414] h-64" />
+              </div>
+            </div>
+          </div>
         </main>
       </div>
     );
@@ -393,832 +477,423 @@ function FreelancerDashboardPage() {
 
   if (!profile?.id) {
     return (
-      <div className="min-h-screen bg-[var(--color-background-base)]">
+      <div className="min-h-screen bg-[#0a0a0a] text-white">
         <SEO {...SEO_CONFIG.dashboard} url="/freelancer/dashboard" noIndex />
         <Header />
-        <main className="container mx-auto px-[var(--spacing-4)] sm:px-[var(--spacing-6)] lg:px-[var(--spacing-8)] pt-[var(--spacing-20)] pb-[var(--spacing-12)] max-w-7xl">
-          <EmptyState
-            icon={User}
-            title={tx('dashboard.freelancer.profileUnavailable', undefined, 'Profile unavailable')}
-            description={tx('dashboard.freelancer.profileUnavailableDesc', undefined, 'We could not load your account profile yet. Please try again.')}
-            action={{
-              label: tx('common.retry', undefined, 'Retry'),
-              onClick: () => window.location.reload(),
-            }}
-          />
+        <main className="min-h-screen bg-[#0a0a0a] text-white pt-10 pb-12">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <EmptyState
+              icon={User}
+              title={tx("dashboard.freelancer.profileUnavailable", undefined, "Profile unavailable")}
+              description={tx(
+                "dashboard.freelancer.profileUnavailableDesc",
+                undefined,
+                "We could not load your account profile yet. Please try again.",
+              )}
+              action={{
+                label: tx("common.retry", undefined, "Retry"),
+                onClick: () => window.location.reload(),
+              }}
+            />
+          </div>
         </main>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[var(--color-background-base)]">
+    <div className="min-h-screen bg-[#0a0a0a] text-white">
       <SEO {...SEO_CONFIG.dashboard} url="/freelancer/dashboard" noIndex />
       <Header />
 
-      <main className="container mx-auto px-[var(--spacing-4)] sm:px-[var(--spacing-6)] lg:px-[var(--spacing-8)] pt-[var(--spacing-20)] pb-[var(--spacing-12)] max-w-7xl">
-        <m.div
-          initial={{ opacity: 0, y: -12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, ease: motionEase }}
-          className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-[var(--spacing-6)] mb-[var(--spacing-10)]"
-        >
-          <div>
-            <p className="text-[var(--font-fontSize-xs)] font-[var(--font-fontWeight-semibold)] uppercase tracking-[0.2em] mb-[var(--spacing-1)] text-[var(--color-brand-primary)]">
-              {getTimeGreeting(tx)}
-            </p>
-            <h1 className="font-display text-[var(--font-fontSize-4xl)] sm:text-[var(--font-fontSize-5xl)] font-[var(--font-fontWeight-bold)] tracking-tight text-[var(--color-text-primary)]">
-              {profile.full_name?.split(" ")[0] || "Freelancer"}
-            </h1>
-          </div>
+      <main className="min-h-screen bg-[#0a0a0a] text-white pt-10 pb-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col gap-8">
+          <section className="relative overflow-hidden border border-[#2a2a2a] rounded-2xl bg-[#121212] p-5 sm:p-6 lg:p-7">
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(90%_160%_at_0%_0%,rgba(168,85,247,0.22)_0%,transparent_48%),radial-gradient(75%_140%_at_100%_0%,rgba(88,28,135,0.28)_0%,transparent_52%)]" />
+            <div className="pointer-events-none absolute -top-10 right-8 h-28 w-28 rounded-full bg-purple-500/20 blur-3xl" />
 
-          <div className="flex flex-wrap gap-[var(--spacing-3)]">
-            {[
-              {
-                label: tx(
-                  "dashboard.freelancer.contractsLabel",
-                  undefined,
-                  "Contracts",
-                ),
-                value: statsData.activeContracts,
-              },
-              {
-                label: tx(
-                  "dashboard.freelancer.proposalsLabel",
-                  undefined,
-                  "Proposals",
-                ),
-                value: statsData.totalProposals,
-              },
-              {
-                label: tx(
-                  "dashboard.freelancer.earningsLabel",
-                  undefined,
-                  "Earnings",
-                ),
-                value: statsData.totalEarnings,
-                accent: true,
-              },
-              {
-                label: tx(
-                  "dashboard.freelancer.ratingLabel",
-                  undefined,
-                  "Rating",
-                ),
-                value: `${statsData.rating}/5`,
-              },
-            ].map((stat) => (
-              <div
-                key={stat.label}
-                className="flex flex-col items-center px-[var(--spacing-4)] py-[var(--spacing-2)] rounded-[var(--radius-2xl)] border"
-                style={{
-                  background: stat.accent
-                    ? "var(--workspace-primary-hover)"
-                    : "var(--color-background-subtle)",
-                  borderColor: stat.accent
-                    ? "transparent"
-                    : "var(--color-border-subtle)",
-                }}
-              >
-                <span
-                  className="font-display font-[var(--font-fontWeight-bold)] text-[var(--font-fontSize-lg)] leading-tight"
-                  style={{
-                    color: stat.accent
-                      ? "var(--workspace-primary-text, #fff)"
-                      : "var(--color-text-primary)",
-                  }}
-                >
-                  {stat.value}
-                </span>
-                <span
-                  className="text-[11px] font-[var(--font-fontWeight-medium)] uppercase tracking-wider"
-                  style={{
-                    color: stat.accent
-                      ? "rgba(255,255,255,0.96)"
-                      : "var(--color-text-tertiary)",
-                  }}
-                >
-                  {stat.label}
-                </span>
+            <div className="relative flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+              <div className="min-w-0">
+                <div className="inline-flex items-center gap-2 rounded-full border border-purple-500/25 bg-purple-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-purple-200">
+                  <Sparkles className="h-3.5 w-3.5" />
+                  {tx("dashboard.freelancer.commandCenter", undefined, "Freelancer Command Center")}
+                </div>
+
+                <div className="mt-4 flex items-center gap-4 min-w-0">
+                  {profile.avatar_url ? (
+                    <img
+                      src={profile.avatar_url}
+                      alt={firstName}
+                      className="h-14 w-14 rounded-full border border-[#383838] object-cover ring-2 ring-purple-500/30"
+                    />
+                  ) : (
+                    <div className="h-14 w-14 rounded-full border border-[#383838] bg-[#161616] flex items-center justify-center ring-2 ring-purple-500/30">
+                      <User className="h-6 w-6 text-purple-300" />
+                    </div>
+                  )}
+
+                  <div className="min-w-0">
+                    <h1 className="text-2xl sm:text-3xl font-black tracking-tight truncate text-white">
+                      {tx("dashboard.freelancer.welcomeBack", undefined, "Welcome back")}, {firstName}
+                    </h1>
+                    <p className="text-purple-200/80 text-sm mt-1">
+                      {tx(
+                        "dashboard.freelancer.commandCenterSubtitle",
+                        undefined,
+                        "Here is what's happening with your freelance business today.",
+                      )}
+                    </p>
+                    <p className="text-xs text-purple-200/60 mt-1">
+                      {tx(
+                        "dashboard.freelancer.matchingHint",
+                        { count: jobs.length },
+                        `${jobs.length} fresh job matches are currently visible for you.`,
+                      )}
+                    </p>
+                  </div>
+                </div>
               </div>
-            ))}
-          </div>
-        </m.div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-[var(--spacing-5)]">
-          <m.div
-            className="lg:col-span-2 space-y-[var(--spacing-5)]"
-            variants={containerVariants}
-            initial="hidden"
-            animate="show"
-          >
-            <m.div variants={itemVariants}>
-              <DashWidget
-                title={tx(
-                  "dashboard.freelancer.activeContracts",
-                  undefined,
-                  "Active Contracts",
-                )}
-                icon={<Briefcase className="w-4 h-4" />}
-                action={{
-                  label: tx(
-                    "dashboard.freelancer.viewAll",
-                    undefined,
-                    "View all",
-                  ),
-                  onClick: () => navigate("/contracts"),
-                }}
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 w-full lg:w-auto lg:min-w-[440px]">
+                <div className="rounded-xl border border-[#2f2f2f] bg-[#101010]/90 px-4 py-3">
+                  <p className="text-[10px] uppercase tracking-[0.18em] text-purple-200/60">
+                    {tx(
+                      "dashboard.freelancer.dailyApplicationsRemaining",
+                      undefined,
+                      "Applications left today",
+                    )}
+                  </p>
+                  <p className="mt-1 text-2xl font-bold text-white">{dailyProposalUsage.remaining}</p>
+                </div>
+
+                <div className="rounded-xl border border-[#2f2f2f] bg-[#101010]/90 px-4 py-3">
+                  <p className="text-[10px] uppercase tracking-[0.18em] text-purple-200/60">
+                    {tx("dashboard.freelancer.activeContracts", undefined, "Active Contracts")}
+                  </p>
+                  <p className="mt-1 text-2xl font-bold text-white">{activeContractsCount}</p>
+                </div>
+
+                <div className="rounded-xl border border-[#2f2f2f] bg-[#101010]/90 px-4 py-3 col-span-2 sm:col-span-1">
+                  <p className="text-[10px] uppercase tracking-[0.18em] text-purple-200/60">
+                    {tx("dashboard.freelancer.pendingProposals", undefined, "Pending Proposals")}
+                  </p>
+                  <p className="mt-1 text-2xl font-bold text-white">{pendingProposalsCount}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="relative mt-4 flex flex-wrap items-center gap-3">
+              <span className="inline-flex items-center rounded-full border border-purple-500/25 bg-purple-500/10 px-3 py-1 text-xs text-purple-200/90">
+                {tx("dashboard.freelancer.profileViews", undefined, "Profile Views")}: {profileViewsCount}
+              </span>
+              <button
+                type="button"
+                onClick={() => navigate(ROUTES.jobs)}
+                className="inline-flex items-center rounded-full border border-[#323232] bg-[#111111] px-3 py-1 text-xs font-medium text-purple-200 hover:border-purple-500/40 hover:text-purple-100 transition-colors"
               >
+                {tx("dashboard.freelancer.browseJobs", undefined, "Browse Jobs")}
+              </button>
+            </div>
+          </section>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            <section className="lg:col-span-8">
+              <section className="bg-[#141414] border border-[#262626] rounded-2xl flex flex-col overflow-hidden mb-8">
+                <header className="px-6 py-4 border-b border-[#262626] flex justify-between items-center">
+                  <h2 className="text-sm font-semibold uppercase tracking-[0.14em] text-purple-300">
+                    {tx("dashboard.freelancer.activeContracts", undefined, "Active Contracts")}
+                  </h2>
+                  <button
+                    type="button"
+                    onClick={() => navigate("/contracts")}
+                    className="text-sm text-purple-500 hover:text-purple-400 transition-colors"
+                  >
+                    {tx("dashboard.freelancer.viewAll", undefined, "View All")} -&gt;
+                  </button>
+                </header>
+
                 {isLoading ? (
-                  <SkeletonCard />
-                ) : contracts.length === 0 ? (
-                  <EmptyState
-                    icon={Briefcase}
-                    title={tx(
+                  <div className="p-6 space-y-3">
+                    <div className="animate-pulse h-14 rounded-lg bg-[#1b1b1b] border border-[#262626]" />
+                    <div className="animate-pulse h-14 rounded-lg bg-[#1b1b1b] border border-[#262626]" />
+                    <div className="animate-pulse h-14 rounded-lg bg-[#1b1b1b] border border-[#262626]" />
+                  </div>
+                ) : activeContractRows.length === 0 ? (
+                  <div className="px-6 py-8 text-sm text-purple-200/70">
+                    {tx(
                       "dashboard.freelancer.noActiveContracts",
                       undefined,
-                      "No active contracts",
+                      "No active contracts yet.",
                     )}
-                    description={tx(
-                      "dashboard.freelancer.submitProposalsToStart",
-                      undefined,
-                      "Submit proposals to start getting contracts",
-                    )}
-                    action={{
-                      label: tx(
-                        "dashboard.freelancer.browseJobs",
-                        undefined,
-                        "Browse Jobs",
-                      ),
-                      onClick: () => navigate("/jobs"),
-                    }}
-                  />
+                  </div>
                 ) : (
-                  <div className="space-y-[var(--spacing-3)]">
-                    {contracts.slice(0, 3).map((contract) => (
+                  <div>
+                    {activeContractRows.map((row, index) => (
                       <div
-                        key={contract.id}
-                        className="group relative overflow-hidden rounded-xl border border-[var(--color-border-subtle)] bg-[var(--color-background-elevated)] p-[var(--spacing-4)] cursor-pointer transition-all duration-200 hover:border-[var(--color-brand-primary)] hover:shadow-md hover:-translate-y-0.5"
-                        onClick={() => navigate(`/contracts/${contract.id}`)}
+                        key={row.id}
+                        className={`px-6 py-4 hover:bg-[#262626]/30 transition-colors flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 ${index < activeContractRows.length - 1 ? "border-b border-[#262626]" : ""}`}
                       >
-                        <div className="flex items-start justify-between gap-[var(--spacing-4)]">
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-center gap-[var(--spacing-2)] mb-[var(--spacing-2)]">
-                              <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 bg-gradient-to-br from-green-500 to-emerald-600">
-                                <Briefcase className="w-5 h-5 text-white" />
-                              </div>
-                              <div className="min-w-0 flex-1">
-                                <p className="font-[var(--font-fontWeight-bold)] text-[var(--font-fontSize-base)] truncate text-[var(--color-text-primary)] group-hover:text-[var(--color-brand-primary)] transition-colors">
-                                  {contract.title}
-                                </p>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-[var(--spacing-3)] text-[var(--font-fontSize-xs)] ml-12">
-                              <span className="text-[var(--color-text-tertiary)]">
-                                {contract.client?.full_name ??
-                                  tx(
-                                    "dashboard.freelancer.clientFallback",
-                                    undefined,
-                                    "Client",
-                                  )}
-                              </span>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-[var(--spacing-2)] shrink-0">
-                            <Badge
-                              variant={
-                                contract.status === "active"
-                                  ? "success"
-                                  : "warning"
-                              }
-                            >
-                              {tx(
-                                `status.${contract.status}`,
-                                undefined,
-                                contract.status,
-                              )}
-                            </Badge>
-                            <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-all duration-200 group-hover:translate-x-1 text-[var(--color-brand-primary)]" />
-                          </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold text-white truncate">{row.jobTitle}</p>
+                          <p className="text-xs text-purple-300/70 mt-1 truncate">{row.clientName}</p>
                         </div>
+
+                        <button
+                          type="button"
+                          onClick={() => navigate(row.submitPath)}
+                          className="rounded-xl bg-purple-600 hover:bg-purple-500 px-4 py-2 text-xs font-semibold text-white transition-colors"
+                        >
+                          {tx("dashboard.freelancer.submitWork", undefined, "Submit Work")}
+                        </button>
                       </div>
                     ))}
                   </div>
                 )}
-              </DashWidget>
-            </m.div>
+              </section>
 
-            <m.div variants={itemVariants}>
-              <DashWidget
-                title={tx(
-                  "dashboard.freelancer.recentProposals",
-                  undefined,
-                  "Recent Proposals",
-                )}
-                icon={<FileText className="w-4 h-4" />}
-                action={{
-                  label: tx(
-                    "dashboard.freelancer.viewAll",
-                    undefined,
-                    "View all",
-                  ),
-                  onClick: () => navigate("/my-proposals"),
-                }}
-              >
+              <section className="bg-[#141414] border border-[#262626] rounded-2xl flex flex-col overflow-hidden">
+                <header className="px-6 py-4 border-b border-[#262626] flex justify-between items-center">
+                  <h2 className="text-sm font-semibold uppercase tracking-[0.14em] text-purple-300">
+                    {tx("dashboard.freelancer.recentProposals", undefined, "Recent Proposals")}
+                  </h2>
+                  <button
+                    type="button"
+                    onClick={() => navigate("/my-proposals")}
+                    className="text-sm text-purple-500 hover:text-purple-400 transition-colors"
+                  >
+                    {tx("dashboard.freelancer.viewAll", undefined, "View All")} -&gt;
+                  </button>
+                </header>
+
                 {isLoading ? (
-                  <SkeletonCard />
-                ) : recentProposals.length === 0 ? (
-                  <EmptyState
-                    icon={FileText}
-                    title={tx(
+                  <div className="p-6 space-y-3">
+                    <div className="animate-pulse h-12 rounded-lg bg-[#1b1b1b] border border-[#262626]" />
+                    <div className="animate-pulse h-12 rounded-lg bg-[#1b1b1b] border border-[#262626]" />
+                    <div className="animate-pulse h-12 rounded-lg bg-[#1b1b1b] border border-[#262626]" />
+                  </div>
+                ) : proposalRows.length === 0 ? (
+                  <div className="px-6 py-8 text-sm text-purple-200/70">
+                    {tx(
                       "dashboard.freelancer.noProposalsYet",
                       undefined,
-                      "No proposals yet",
+                      "No proposals yet.",
                     )}
-                    description={tx(
-                      "dashboard.freelancer.browseAndSendProposal",
-                      undefined,
-                      "Browse open jobs and send your first proposal",
-                    )}
-                    action={{
-                      label: tx(
-                        "dashboard.freelancer.browseJobs",
-                        undefined,
-                        "Browse Jobs",
-                      ),
-                      onClick: () => navigate("/jobs"),
-                    }}
-                  />
+                  </div>
                 ) : (
-                  <div className="space-y-[var(--spacing-3)]">
-                    {recentProposals.slice(0, 4).map((proposal) => (
+                  <div>
+                    {proposalRows.map((row, index) => (
                       <div
-                        key={proposal.id}
-                        className="group relative overflow-hidden rounded-xl border border-[var(--color-border-subtle)] bg-[var(--color-background-elevated)] p-[var(--spacing-4)] transition-all duration-200 hover:border-[var(--color-brand-primary)] hover:shadow-md hover:-translate-y-0.5"
+                        key={row.id}
+                        className={`px-6 py-3 hover:bg-[#262626]/30 transition-colors flex items-center justify-between gap-3 ${index < proposalRows.length - 1 ? "border-b border-[#262626]" : ""}`}
                       >
-                        <div className="flex items-start justify-between gap-[var(--spacing-4)]">
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-center gap-[var(--spacing-2)] mb-[var(--spacing-2)]">
-                              <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 bg-gradient-to-br from-blue-500 to-indigo-600">
-                                <FileText className="w-5 h-5 text-white" />
-                              </div>
-                              <div className="min-w-0 flex-1">
-                                <p className="font-[var(--font-fontWeight-bold)] text-[var(--font-fontSize-base)] truncate text-[var(--color-text-primary)] group-hover:text-[var(--color-brand-primary)] transition-colors">
-                                  {proposal.job?.title ??
-                                    tx(
-                                      "dashboard.freelancer.untitledJob",
-                                      undefined,
-                                      "Untitled job",
-                                    )}
-                                </p>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-[var(--spacing-3)] text-[var(--font-fontSize-xs)] ml-12">
-                              <span className="font-[var(--font-fontWeight-semibold)] text-[var(--color-brand-primary)]">
-                                {formatCurrency(
-                                  proposal.bid_amount ?? 0,
-                                  true,
-                                  language,
-                                )}
-                              </span>
-                              <span className="w-1 h-1 rounded-full bg-[var(--color-text-tertiary)]" />
-                              <span className="text-[var(--color-text-tertiary)]">
-                                {new Date(proposal.created_at).toLocaleDateString(
-                                  locale,
-                                )}
-                              </span>
-                            </div>
-                          </div>
-                          <Badge
-                            variant={
-                              proposal.status === "accepted"
-                                ? "success"
-                                : proposal.status === "rejected"
-                                  ? "danger"
-                                  : proposal.status === "pending"
-                                    ? "warning"
-                                    : "default"
-                            }
-                          >
-                            {tx(
-                              `status.${proposal.status}`,
-                              undefined,
-                              proposal.status,
-                            )}
-                          </Badge>
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-white truncate">{row.jobTitle}</p>
+                          <p className="text-xs text-purple-300/70 mt-1">{row.proposedRate}</p>
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </DashWidget>
-            </m.div>
 
-            <m.div variants={itemVariants}>
-              <DashWidget
-                title={tx(
-                  "dashboard.freelancer.earningsChart",
-                  undefined,
-                  "Earnings",
-                )}
-                icon={<DollarSign className="w-4 h-4" />}
-                action={{
-                  label: tx(
-                    "dashboard.freelancer.viewEarnings",
-                    undefined,
-                    "Full report",
-                  ),
-                  onClick: () => navigate("/freelancer/earnings"),
-                }}
-              >
-                {chartData.every((d) => d.earnings === 0) ? (
-                  <EmptyState
-                    icon={DollarSign}
-                    title={tx(
-                      "dashboard.freelancer.noEarningsYet",
-                      undefined,
-                      "No earnings yet",
-                    )}
-                    description={tx(
-                      "dashboard.freelancer.completeContractToEarn",
-                      undefined,
-                      "Complete a contract to start earning",
-                    )}
-                    action={{
-                      label: tx(
-                        "dashboard.freelancer.browseJobs",
-                        undefined,
-                        "Browse Jobs",
-                      ),
-                      onClick: () => navigate("/jobs"),
-                    }}
-                  />
-                ) : (
-                  <div className="h-40">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart
-                        data={chartData}
-                        margin={{ top: 4, right: 4, left: -28, bottom: 0 }}
-                      >
-                        <defs>
-                          <linearGradient
-                            id="dashEarningsGrad"
-                            x1="0"
-                            y1="0"
-                            x2="0"
-                            y2="1"
-                          >
-                            <stop
-                              offset="5%"
-                              stopColor="var(--workspace-primary)"
-                              stopOpacity={0.2}
-                            />
-                            <stop
-                              offset="95%"
-                              stopColor="var(--workspace-primary)"
-                              stopOpacity={0}
-                            />
-                          </linearGradient>
-                        </defs>
-                        <XAxis
-                          dataKey="month"
-                          axisLine={false}
-                          tickLine={false}
-                          tick={{
-                            fill: "var(--color-text-tertiary)",
-                            fontSize: 10,
-                          }}
-                        />
-                        <YAxis
-                          axisLine={false}
-                          tickLine={false}
-                          tick={{
-                            fill: "var(--color-text-tertiary)",
-                            fontSize: 10,
-                          }}
-                        />
-                        <Tooltip
-                          contentStyle={{
-                            background: "var(--color-background-elevated)",
-                            border: "1px solid var(--color-border-subtle)",
-                            borderRadius: 8,
-                            color: "var(--color-text-primary)",
-                            fontSize: 11,
-                          }}
-                          formatter={(val) => [
-                            `${Number(val ?? 0).toLocaleString(locale)} TND`,
-                          ]}
-                        />
-                        <Area
-                          type="monotone"
-                          dataKey="earnings"
-                          stroke="var(--workspace-primary)"
-                          strokeWidth={2}
-                          fillOpacity={1}
-                          fill="url(#dashEarningsGrad)"
-                        />
-                      </AreaChart>
-                    </ResponsiveContainer>
-                  </div>
-                )}
-              </DashWidget>
-            </m.div>
-
-            <m.div variants={itemVariants}>
-              <DashWidget
-                title={tx(
-                  "dashboard.freelancer.matchedForYou",
-                  undefined,
-                  "Matched for You",
-                )}
-                icon={<Target className="w-4 h-4" />}
-                action={{
-                  label: tx(
-                    "dashboard.freelancer.seeAllJobs",
-                    undefined,
-                    "See all jobs",
-                  ),
-                  onClick: () => navigate("/jobs"),
-                }}
-              >
-                {isLoadingJobs ? (
-                  <SkeletonCard />
-                ) : jobs.length === 0 ? (
-                  <EmptyState
-                    icon={Target}
-                    title={tx(
-                      "dashboard.freelancer.noMatchesYet",
-                      undefined,
-                      "No matches yet",
-                    )}
-                    description={tx(
-                      "dashboard.freelancer.addSkillsToMatch",
-                      undefined,
-                      "Add skills to your profile to get matched jobs",
-                    )}
-                    action={{
-                      label: tx(
-                        "dashboard.freelancer.updateProfile",
-                        undefined,
-                        "Update Profile",
-                      ),
-                      onClick: () => navigate("/settings"),
-                    }}
-                  />
-                ) : (
-                  <div className="space-y-[var(--spacing-3)]">
-                    {jobs.slice(0, 3).map((job) => (
-                      <div
-                        key={job.id}
-                        className="group relative overflow-hidden rounded-xl border border-[var(--color-border-subtle)] bg-[var(--color-background-elevated)] p-[var(--spacing-4)] cursor-pointer transition-all duration-200 hover:border-[var(--color-brand-primary)] hover:shadow-md hover:-translate-y-0.5"
-                        onClick={() => navigate(`/jobs/${job.id}`)}
-                      >
-                        <div className="flex items-start justify-between gap-[var(--spacing-4)]">
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-center gap-[var(--spacing-2)] mb-[var(--spacing-2)]">
-                              <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 bg-gradient-to-br from-[var(--workspace-primary)] to-[var(--workspace-primary-hover)]">
-                                <Target className="w-5 h-5 text-white" />
-                              </div>
-                              <div className="min-w-0 flex-1">
-                                <p className="font-[var(--font-fontWeight-bold)] text-[var(--font-fontSize-base)] truncate text-[var(--color-text-primary)] group-hover:text-[var(--color-brand-primary)] transition-colors">
-                                  {job.title}
-                                </p>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-[var(--spacing-3)] text-[var(--font-fontSize-xs)] ml-12">
-                              <span className="font-[var(--font-fontWeight-semibold)] text-[var(--color-brand-primary)]">
-                                {job.budget_min ?? 0}–{job.budget_max ?? 0} TND
-                              </span>
-                              <span className="w-1 h-1 rounded-full bg-[var(--color-text-tertiary)]" />
-                              <span className="text-[var(--color-text-tertiary)]">
-                                {tx(
-                                  `categories.${job.category}`,
-                                  undefined,
-                                  job.category ?? "General",
-                                )}
-                              </span>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-[var(--spacing-2)] shrink-0">
-                            <span className="text-[var(--font-fontSize-xs)] font-[var(--font-fontWeight-semibold)] px-[var(--spacing-3)] py-[var(--spacing-1.5)] rounded-lg bg-gradient-to-r from-[var(--workspace-primary)] to-[var(--workspace-primary-hover)] text-white shadow-sm">
-                              {tx(
-                                "dashboard.freelancer.apply",
-                                undefined,
-                                "Apply",
-                              )}
-                            </span>
-                            <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-all duration-200 group-hover:translate-x-1 text-[var(--color-brand-primary)]" />
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </DashWidget>
-            </m.div>
-
-            {(stats?.milestones?.length ?? 0) > 0 && (
-              <m.div variants={itemVariants}>
-                <DashWidget
-                  title={tx(
-                    "dashboard.freelancer.upcomingMilestones",
-                    undefined,
-                    "Upcoming Milestones",
-                  )}
-                  icon={<Target className="w-4 h-4" />}
-                  action={{
-                    label: tx(
-                      "dashboard.freelancer.viewContracts",
-                      undefined,
-                      "View contracts",
-                    ),
-                    onClick: () => navigate("/contracts"),
-                  }}
-                >
-                  <div className="divide-y divide-[var(--color-border-subtle)]">
-                    {stats!.milestones.map((m) => (
-                      <div
-                        key={m.id}
-                        className="flex items-center justify-between py-[var(--spacing-3)] px-[var(--spacing-1)]"
-                      >
-                        <div className="min-w-0 flex-1">
-                          <p className="text-[var(--font-fontSize-sm)] font-[var(--font-fontWeight-medium)] truncate text-[var(--color-text-primary)]">
-                            {m.description}
-                          </p>
-                          {m.due_date && (
-                            <p className="text-[var(--font-fontSize-xs)] text-[var(--color-text-tertiary)] mt-[var(--spacing-0.5)]">
-                              {tx(
-                                "dashboard.freelancer.dueDate",
-                                undefined,
-                                "Due:",
-                              )}{" "}
-                              {new Date(m.due_date).toLocaleDateString(locale)}
-                            </p>
-                          )}
-                        </div>
-                        <p className="text-[var(--font-fontSize-sm)] font-[var(--font-fontWeight-bold)] text-[var(--color-text-primary)] shrink-0 ml-[var(--spacing-4)]">
-                          {formatCurrency(m.amount, true, language)}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                </DashWidget>
-              </m.div>
-            )}
-          </m.div>
-
-          <m.div
-            className="space-y-5"
-            variants={containerVariants}
-            initial="hidden"
-            animate="show"
-          >
-            <m.div variants={itemVariants}>
-              <DashWidget
-                title={tx(
-                  "dashboard.freelancer.profileStrength",
-                  undefined,
-                  "Profile Strength",
-                )}
-                icon={<User className="w-4 h-4" />}
-              >
-                <div className="flex flex-col items-center py-[var(--spacing-2)]">
-                  <ProfileRing value={profileCompletion} />
-                  <div className="w-full mt-[var(--spacing-5)] space-y-[var(--spacing-2)]">
-                    {checklist.map((item) => (
-                      <div
-                        key={item.label}
-                        className="flex items-center gap-[var(--spacing-3)]"
-                      >
-                        <div
-                          className="w-4 h-4 rounded-full flex items-center justify-center shrink-0"
-                          style={{
-                            background: item.done
-                              ? "var(--color-brand-primary)"
-                              : "var(--color-border-default)",
-                          }}
-                        >
-                          {item.done && (
-                            <Check className="w-2.5 h-2.5 text-white" />
-                          )}
-                        </div>
                         <span
-                          className="text-[var(--font-fontSize-sm)]"
-                          style={{
-                            color: item.done
-                              ? "var(--color-text-primary)"
-                              : "var(--color-text-tertiary)",
-                          }}
+                          className={`px-2.5 py-1 rounded-full text-[11px] font-semibold whitespace-nowrap ${proposalStatusClass(row.status)}`}
                         >
-                          {item.label}
+                          {proposalStatusLabel(row.status, tx)}
                         </span>
                       </div>
                     ))}
                   </div>
-                  {profileCompletion < 100 && (
-                    <Button
+                )}
+              </section>
+
+              <section className="bg-[#141414] border border-[#262626] rounded-2xl flex flex-col overflow-hidden mt-8">
+                <header className="px-6 py-4 border-b border-[#262626] flex justify-between items-center">
+                  <h2 className="text-sm font-semibold uppercase tracking-[0.14em] text-purple-300">
+                    {tx("dashboard.freelancer.matchedForYou", undefined, "Matched Jobs")}
+                  </h2>
+                  <button
+                    type="button"
+                    onClick={() => navigate(ROUTES.jobs)}
+                    className="text-sm text-purple-500 hover:text-purple-400 transition-colors"
+                  >
+                    {tx("dashboard.freelancer.viewAll", undefined, "View All")} -&gt;
+                  </button>
+                </header>
+
+                {isLoadingJobs ? (
+                  <div className="p-6 space-y-3">
+                    <div className="animate-pulse h-14 rounded-lg bg-[#1b1b1b] border border-[#262626]" />
+                    <div className="animate-pulse h-14 rounded-lg bg-[#1b1b1b] border border-[#262626]" />
+                  </div>
+                ) : jobs.length === 0 ? (
+                  <div className="px-6 py-8 text-sm text-purple-200/70">
+                    {tx(
+                      "dashboard.freelancer.noMatchesYet",
+                      undefined,
+                      "No new job matches right now.",
+                    )}
+                  </div>
+                ) : (
+                  <div>
+                    {jobs.map((job, index) => (
+                      <button
+                        key={job.id}
+                        type="button"
+                        onClick={() => navigate(`/jobs/${job.id}`)}
+                        className={`w-full text-left px-6 py-4 hover:bg-[#262626]/30 transition-colors ${index < jobs.length - 1 ? "border-b border-[#262626]" : ""}`}
+                      >
+                        <p className="text-sm font-semibold text-white truncate">{job.title}</p>
+                        <div className="mt-1 flex items-center gap-2 text-xs text-purple-300/70">
+                          <span>
+                            {job.category
+                              ? tx(`categories.${job.category}`, undefined, job.category)
+                              : tx("common.general", undefined, "General")}
+                          </span>
+                          <span className="text-purple-400/50">•</span>
+                          <span>{formatJobBudget(job, language)}</span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </section>
+
+              <section className="bg-[#141414] border border-[#262626] rounded-2xl p-6 mt-8">
+                <h2 className="text-sm font-semibold uppercase tracking-[0.14em] text-purple-300">
+                  {tx("dashboard.freelancer.performanceSnapshot", undefined, "Performance Snapshot")}
+                </h2>
+
+                <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="rounded-xl border border-[#262626] bg-[#101010] p-3">
+                    <p className="text-[11px] uppercase tracking-[0.14em] text-purple-300/60">
+                      {tx("dashboard.freelancer.pendingProposals", undefined, "Pending Proposals")}
+                    </p>
+                    <p className="mt-2 text-xl font-bold text-white">{stats?.pendingProposals ?? 0}</p>
+                  </div>
+
+                  <div className="rounded-xl border border-[#262626] bg-[#101010] p-3">
+                    <p className="text-[11px] uppercase tracking-[0.14em] text-purple-300/60">
+                      {tx("dashboard.freelancer.profileViews", undefined, "Profile Views")}
+                    </p>
+                    <p className="mt-2 text-xl font-bold text-white">{stats?.profileViews ?? 0}</p>
+                  </div>
+
+                  <div className="rounded-xl border border-[#262626] bg-[#101010] p-3">
+                    <p className="text-[11px] uppercase tracking-[0.14em] text-purple-300/60">
+                      {tx("dashboard.freelancer.walletBalance", undefined, "Wallet Balance")}
+                    </p>
+                    <p className="mt-2 text-xl font-bold text-white">
+                      {formatCurrency(stats?.walletBalance ?? 0, true, language)}
+                    </p>
+                  </div>
+                </div>
+              </section>
+            </section>
+
+            <aside className="lg:col-span-4">
+              <div className="flex flex-col gap-6 sticky top-28">
+                <section className="bg-[#141414] border border-[#262626] rounded-2xl p-6">
+                  <p className="text-sm font-semibold uppercase tracking-[0.14em] text-purple-300">
+                    {tx("dashboard.freelancer.earningsThisMonth", undefined, "Earnings this month")}
+                  </p>
+                  <p className="text-3xl font-black text-white mt-2">{monthlyEarningsLabel}</p>
+
+                  <p className="text-xs text-purple-300/70 mt-2">
+                    {tx(
+                      "dashboard.freelancer.lastMonthReference",
+                      { value: formatCurrency(lastMonthEarnings, true, language) },
+                      `Last month: ${formatCurrency(lastMonthEarnings, true, language)}`,
+                    )}
+                  </p>
+
+                  <p className="text-xs text-purple-300/70 mt-1">
+                    {tx(
+                      "dashboard.freelancer.pendingBalance",
+                      { value: formatCurrency(stats?.pendingBalance ?? 0, true, language) },
+                      `Pending balance: ${formatCurrency(stats?.pendingBalance ?? 0, true, language)}`,
+                    )}
+                  </p>
+
+                  <button
+                    type="button"
+                    onClick={() => navigate("/wallet")}
+                    className="w-full mt-4 bg-[#262626] hover:bg-[#333] text-white py-2.5 rounded-xl text-sm font-medium transition-colors"
+                  >
+                    {tx("dashboard.freelancer.withdrawFunds", undefined, "Withdraw Funds")}
+                  </button>
+                </section>
+
+                <section className="bg-[#141414] border border-[#262626] rounded-2xl p-6">
+                  <p className="text-sm font-semibold uppercase tracking-[0.14em] text-purple-300">
+                    {tx("dashboard.freelancer.profileCompletion", undefined, "Profile Completion")}
+                  </p>
+
+                  <div className="mt-5 flex items-center justify-center">
+                    <div
+                      className="h-32 w-32 rounded-full flex items-center justify-center"
+                      style={{
+                        background: `conic-gradient(rgb(168 85 247) ${completionValue}%, #262626 ${completionValue}% 100%)`,
+                      }}
+                    >
+                      <div className="h-24 w-24 rounded-full border border-[#262626] bg-[#141414] flex items-center justify-center">
+                        <span className="text-lg font-bold text-white">{completionValue}%</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <p className="mt-4 text-sm font-semibold text-white">{completionValue}% Complete</p>
+                  <p className="mt-2 text-sm text-purple-300/70">
+                    {tx(
+                      "dashboard.freelancer.profilePrompt",
+                      undefined,
+                      "Add portfolio items to reach 100% and boost your visibility.",
+                    )}
+                  </p>
+
+                  {completionValue < 100 ? (
+                    <button
                       type="button"
-                      size="sm"
-                      className="mt-[var(--spacing-4)] w-full"
-                      rightIcon={<ArrowRight className="w-4 h-4" />}
                       onClick={() => navigate(nextProfileFixPath)}
+                      className="w-full mt-4 bg-purple-600 hover:bg-purple-500 text-white py-2.5 rounded-xl text-sm font-medium transition-colors"
                     >
                       {tx(
                         "dashboard.freelancer.profileStrength.completeProfile",
                         undefined,
-                        "Complete profile",
+                        "Complete Profile",
                       )}
-                    </Button>
-                  )}
-                </div>
-              </DashWidget>
-            </m.div>
+                    </button>
+                  ) : null}
+                </section>
 
-            <m.div variants={itemVariants}>
-              <DashWidget
-                title={tx(
-                  "dashboard.freelancer.thisMonth",
-                  undefined,
-                  "This Month",
-                )}
-                icon={<DollarSign className="w-4 h-4" />}
-              >
-                <div className="space-y-[var(--spacing-3)]">
-                  <div>
-                    <p className="font-display font-[var(--font-fontWeight-bold)] text-[var(--font-fontSize-3xl)] text-[var(--color-text-primary)]">
-                      {formatCurrency(
-                        statsData.monthlyEarnings,
-                        true,
-                        language,
-                      )}
-                    </p>
-                    <div className="flex items-center gap-[var(--spacing-2)] mt-[var(--spacing-1)]">
-                      {statsData.monthlyEarnings >=
-                      statsData.lastMonthEarnings ? (
-                        <TrendingUp
-                          className="w-3.5 h-3.5"
-                          style={{ color: "var(--color-status-success)" }}
-                        />
-                      ) : (
-                        <TrendingDown
-                          className="w-3.5 h-3.5"
-                          style={{ color: "var(--color-status-error)" }}
-                        />
-                      )}
-                      <span className="text-[var(--font-fontSize-xs)] text-[var(--color-text-tertiary)]">
-                        {tx(
-                          "dashboard.freelancer.vsLastMonth",
-                          undefined,
-                          "vs last month",
-                        )}
-                      </span>
-                    </div>
-                  </div>
+                <section className="bg-[#141414] border border-[#262626] rounded-2xl p-6">
+                  <p className="text-sm font-semibold uppercase tracking-[0.14em] text-purple-300">
+                    {tx("dashboard.freelancer.quickActions", undefined, "Quick Actions")}
+                  </p>
 
-                  {(stats?.walletBalance ?? 0) > 0 && (
-                    <div
-                      className="flex items-center justify-between rounded-lg px-3 py-2"
-                      style={{
-                        background: "var(--color-background-subtle)",
-                        borderColor: "var(--color-border-subtle)",
-                      }}
-                    >
-                      <span className="text-xs text-[var(--color-text-secondary)]">
-                        {tx(
-                          "dashboard.freelancer.walletBalance",
-                          undefined,
-                          "Wallet balance",
-                        )}
-                      </span>
-                      <span className="text-xs font-bold text-[var(--color-text-primary)]">
-                        {formatCurrency(stats!.walletBalance, true, language)}
-                      </span>
-                    </div>
-                  )}
-
-                  <div
-                    className="flex items-center justify-between rounded-lg px-3 py-2"
-                    style={{ background: "var(--color-background-subtle)" }}
-                  >
-                    <span className="text-xs text-[var(--color-text-secondary)]">
-                      {tx(
-                        "dashboard.freelancer.connects",
-                        undefined,
-                        "Connects",
-                      )}
-                    </span>
-                    <span
-                      className="text-xs font-bold"
-                      style={{ color: "var(--workspace-primary)" }}
-                    >
-                      {stats?.connectsBalance ?? 0}
-                    </span>
-                  </div>
-
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full"
-                    onClick={() => navigate("/wallet")}
-                  >
-                    {tx(
-                      "dashboard.freelancer.viewWallet",
-                      undefined,
-                      "View Wallet",
-                    )}{" "}
-                    <ArrowRight className="w-3.5 h-3.5 ml-1" />
-                  </Button>
-                </div>
-              </DashWidget>
-            </m.div>
-
-            {(stats?.notifications?.length ?? 0) > 0 && (
-              <m.div variants={itemVariants}>
-                <DashWidget
-                  title={tx(
-                    "dashboard.freelancer.notifications",
-                    undefined,
-                    "Notifications",
-                  )}
-                  icon={<Bell className="w-4 h-4" />}
-                  action={{
-                    label: tx(
-                      "dashboard.freelancer.viewAll",
-                      undefined,
-                      "View all",
-                    ),
-                    onClick: () => navigate("/notifications"),
-                  }}
-                >
-                  <div className="space-y-[var(--spacing-2)]">
-                    {stats!.notifications.slice(0, 3).map((n) => (
-                      <div
-                        key={n.id}
-                        className="flex items-start gap-[var(--spacing-2)] py-[var(--spacing-1)]"
+                  <div className="mt-4 flex flex-col gap-2">
+                    {[
+                      {
+                        label: tx("dashboard.freelancer.browseJobs", undefined, "Browse Jobs"),
+                        icon: Briefcase,
+                        path: ROUTES.jobs,
+                      },
+                      {
+                        label: tx("nav.myProposals", undefined, "My Proposals"),
+                        icon: FileText,
+                        path: ROUTES.myProposals,
+                      },
+                    ].map((action) => (
+                      <button
+                        key={action.label}
+                        type="button"
+                        onClick={() => navigate(action.path)}
+                        className="w-full rounded-xl border border-[#262626] bg-[#101010] hover:bg-[#262626]/40 text-white px-3 py-2.5 text-sm font-medium transition-colors flex items-center justify-between"
                       >
-                        <div
-                          className="w-1.5 h-1.5 rounded-full mt-1.5 shrink-0"
-                          style={{ background: "var(--workspace-primary)" }}
-                        />
-                        <p className="text-[var(--font-fontSize-xs)] text-[var(--color-text-secondary)] line-clamp-2">
-                          {n.title || n.body}
-                        </p>
-                      </div>
+                        <span>{action.label}</span>
+                        <action.icon className="h-4 w-4 text-purple-400" />
+                      </button>
                     ))}
                   </div>
-                </DashWidget>
-              </m.div>
-            )}
-
-            <m.div variants={itemVariants}>
-              <DashWidget
-                title={tx(
-                  "dashboard.freelancer.quickActions",
-                  undefined,
-                  "Quick Actions",
-                )}
-                icon={<Settings className="w-4 h-4" />}
-              >
-                <div className="space-y-[var(--spacing-2)]">
-                  {[
-                    {
-                      label: tx(
-                        "dashboard.freelancer.browseJobs",
-                        undefined,
-                        "Browse Jobs",
-                      ),
-                      icon: Search,
-                      path: ROUTES.jobs,
-                    },
-                    {
-                      label: tx("nav.myProposals", undefined, "My Proposals"),
-                      icon: FileText,
-                      path: ROUTES.myProposals,
-                    },
-                    {
-                      label: tx("nav.portfolio", undefined, "Portfolio"),
-                      icon: Briefcase,
-                      path: ROUTES.freelancerPortfolio,
-                    },
-                    {
-                      label: tx("nav.messages", undefined, "Messages"),
-                      icon: MessageSquare,
-                      path: ROUTES.messages,
-                    },
-                  ].map((action) => (
-                    <button
-                      key={action.label}
-                      onClick={() => navigate(action.path)}
-                      className="w-full flex items-center gap-[var(--spacing-3)] px-[var(--spacing-3)] py-[var(--spacing-2)] rounded-xl text-[var(--font-fontSize-sm)] font-[var(--font-fontWeight-medium)] transition-all duration-[var(--animation-hover-duration)] text-left text-[var(--color-text-secondary)] hover:bg-[var(--color-background-muted)] hover:text-[var(--color-text-primary)]"
-                    >
-                      <action.icon className="w-4 h-4 shrink-0 text-[var(--color-brand-primary)]" />
-                      {action.label}
-                    </button>
-                  ))}
-                </div>
-              </DashWidget>
-            </m.div>
-          </m.div>
+                </section>
+              </div>
+            </aside>
+          </div>
         </div>
       </main>
     </div>

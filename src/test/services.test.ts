@@ -115,11 +115,9 @@ describe('Proposals Service', () => {
         expect(mockFrom).toHaveBeenCalledWith('proposals');
     });
 
-    it('withdrawProposal throws to prevent non-atomic legacy deletes', async () => {
-        await expect(proposalsService.withdrawProposal('proposal-1')).rejects.toThrow(
-            'withdrawProposal() is deprecated. Use withdrawProposalWithRefund() for the atomic refund-safe path.',
-        );
-        expect(mockFrom).not.toHaveBeenCalledWith('proposals');
+    it('withdrawProposal deletes pending proposal', async () => {
+        await proposalsService.withdrawProposal('proposal-1');
+        expect(mockFrom).toHaveBeenCalledWith('proposals');
     });
 });
 

@@ -30,136 +30,94 @@ export default function JobWizardLayout({
 
     const current = steps[currentStep - 1];
     const completion = Math.round((currentStep / steps.length) * 100);
+    const stepsLeft = Math.max(steps.length - currentStep, 0);
 
     return (
-        <div className="mx-auto max-w-6xl space-y-5 lg:space-y-6">
-            <section
-                className="radius-shell overflow-hidden border p-6 transition-all duration-300 hover:-translate-y-0.5 sm:p-8 lg:p-9"
-                style={{
-                    borderColor: 'color-mix(in srgb, var(--workspace-primary) 20%, var(--border))',
-                    background: 'radial-gradient(circle at top left, color-mix(in srgb, var(--workspace-primary) 12%, transparent), transparent 28%), radial-gradient(circle at top right, color-mix(in srgb, #f59e0b 8%, transparent), transparent 24%), linear-gradient(145deg, color-mix(in srgb, var(--card-bg) 96%, white), color-mix(in srgb, var(--surface-bg) 94%, white))',
-                    boxShadow: '0 36px 90px -52px color-mix(in srgb, var(--workspace-primary) 30%, transparent)',
-                }}
-            >
-                <div className="grid gap-6 xl:grid-cols-[minmax(0,1.08fr)_320px]">
-                    <div className="space-y-5">
-                        <div className="inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] shadow-sm"
-                            style={{
-                                borderColor: 'color-mix(in srgb, var(--workspace-primary) 24%, transparent)',
-                                background: 'color-mix(in srgb, var(--workspace-primary) 10%, var(--card-bg))',
-                                color: 'var(--workspace-primary-active)',
-                            }}>
+        <div className="mx-auto w-full max-w-[1200px] px-2 pb-6 sm:px-4 lg:px-6">
+            <div className="grid gap-4 lg:grid-cols-[280px_minmax(0,1fr)] xl:gap-5">
+                <aside className="lg:sticky lg:top-24 lg:self-start">
+                    <div className="rounded-2xl border border-[#262626] bg-[#141414] p-4 shadow-[0_24px_56px_-44px_rgba(0,0,0,0.9)] sm:p-5">
+                        <div className="inline-flex items-center gap-2 rounded-full border border-orange-500/30 bg-orange-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-orange-300">
                             <Sparkles className="h-3.5 w-3.5" />
                             {tx('jobs.new.wizard.badge', undefined, 'Project posting flow')}
                         </div>
 
-                        <div>
-                            <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl" style={{ color: 'var(--text-primary)' }}>
-                                {title}
-                            </h1>
-                            <p className="mt-3 max-w-2xl text-sm leading-7 sm:text-base" style={{ color: 'var(--text-secondary)' }}>
-                                {description}
-                            </p>
-                        </div>
-
-                        {meta ? (
-                            <div className="flex flex-wrap items-center gap-3">{meta}</div>
-                        ) : null}
-                    </div>
-
-                    <div className="rounded-[1.9rem] border p-5 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_28px_60px_-44px_var(--workspace-primary-shadow,rgba(109,40,217,0.35))]"
-                        style={{
-                            borderColor: 'color-mix(in srgb, var(--workspace-primary) 18%, var(--border))',
-                            background: 'color-mix(in srgb, var(--card-bg) 88%, transparent)',
-                            boxShadow: '0 20px 40px -32px rgba(15,23,42,0.45)',
-                        }}>
-                        <p className="text-xs font-semibold uppercase tracking-[0.18em]" style={{ color: 'var(--workspace-primary-active)' }}>
+                        <p className="mt-4 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#f59e0b]">
                             {tx('jobs.new.wizard.currentPhase', undefined, 'Current phase')}
                         </p>
-                        <h2 className="mt-3 text-xl font-semibold" style={{ color: 'var(--text-primary)' }}>
-                            {current?.title}
-                        </h2>
-                        <p className="mt-2 text-sm leading-6" style={{ color: 'var(--text-secondary)' }}>
+                        <h2 className="mt-1 text-lg font-semibold text-white">{current?.title}</h2>
+                        <p className="mt-1 text-sm text-[#b3b3b3]">
                             {current?.description || tx('jobs.new.stepCounter', { current: currentStep, total: steps.length }, `Step ${currentStep} of ${steps.length}`)}
                         </p>
 
-                        <div className="mt-5 space-y-3">
-                            <div className="flex items-center justify-between text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
+                        <div className="mt-4 space-y-2">
+                            <div className="flex items-center justify-between text-xs text-[#b3b3b3]">
                                 <span>{tx('jobs.new.wizard.progress', undefined, 'Progress')}</span>
-                                <span>{completion}%</span>
+                                <span className="font-semibold text-white">{completion}%</span>
                             </div>
-                            <div className="h-2.5 overflow-hidden rounded-full bg-black/[0.06] dark:bg-white/10">
-                                <div className="h-full rounded-full transition-[width] duration-300" style={{ width: `${completion}%`, background: 'linear-gradient(135deg, var(--workspace-primary) 0%, var(--workspace-primary-hover) 100%)' }} />
+                            <div className="h-1.5 overflow-hidden rounded-full bg-[#262626]">
+                                <div className="h-full rounded-full bg-gradient-to-r from-orange-500 to-amber-400 transition-[width] duration-300" style={{ width: `${completion}%` }} />
                             </div>
-                            <div className="flex items-center justify-between text-xs" style={{ color: 'var(--text-muted)' }}>
+                            <div className="flex items-center justify-between text-[11px] text-[#7d7d7d]">
                                 <span>{tx('jobs.new.stepCounter', { current: currentStep, total: steps.length }, `Step ${currentStep} of ${steps.length}`)}</span>
-                                <span>{tx('jobs.new.wizard.stepsLeft', { count: steps.length - currentStep }, `${steps.length - currentStep} steps left`)}</span>
+                                <span>{tx('jobs.new.wizard.stepsLeft', { count: stepsLeft }, `${stepsLeft} steps left`)}</span>
                             </div>
                         </div>
-                    </div>
-                </div>
-            </section>
 
-            <section className="premium-panel radius-shell p-4 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_28px_70px_-52px_rgba(245,158,11,0.24)] sm:p-5">
-                <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-                    {steps.map((step) => {
-                        const isCompleted = step.id < currentStep;
-                        const isCurrent = step.id === currentStep;
+                        <ol className="mt-5 space-y-2">
+                            {steps.map((step) => {
+                                const isCompleted = step.id < currentStep;
+                                const isCurrent = step.id === currentStep;
 
-                        return (
-                            <div
-                                key={step.id}
-                                className="rounded-[1.5rem] border p-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_18px_36px_-26px_rgba(245,158,11,0.2)]"
-                                style={isCurrent
-                                    ? {
-                                        borderColor: 'color-mix(in srgb, var(--workspace-primary) 34%, transparent)',
-                                        background: 'color-mix(in srgb, var(--workspace-primary) 12%, transparent)',
-                                        boxShadow: '0 24px 48px -34px color-mix(in srgb, var(--workspace-primary) 44%, transparent)',
-                                    }
-                                    : isCompleted
-                                        ? {
-                                            borderColor: 'color-mix(in srgb, var(--workspace-primary) 30%, transparent)',
-                                            background: 'color-mix(in srgb, var(--workspace-primary) 10%, transparent)',
-                                        }
-                                        : {
-                                            borderColor: 'var(--border)',
-                                            background: 'color-mix(in srgb, var(--card-bg) 85%, transparent)',
-                                        }}
-                            >
-                                <div className="flex items-start gap-3">
-                                    <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl text-sm font-semibold ${isCurrent
-                                        ? 'text-white'
-                                        : isCompleted
-                                            ? 'bg-[color:var(--workspace-primary)]/15 text-[color:var(--workspace-primary)] dark:bg-[color:var(--workspace-primary)]/15 dark:text-[#fbbf24]'
-                                        : 'bg-muted text-muted dark:bg-white/8 dark:text-[#8b8aa0]'}`}
-                                        style={isCurrent ? { background: 'linear-gradient(135deg, var(--workspace-primary), #f59e0b)' } : undefined}
+                                return (
+                                    <li
+                                        key={step.id}
+                                        className={`rounded-xl border p-3 transition-all ${isCurrent
+                                            ? 'border-orange-500/45 bg-orange-500/10'
+                                            : isCompleted
+                                                ? 'border-orange-500/25 bg-orange-500/5'
+                                                : 'border-[#262626] bg-[#101010]'
+                                            }`}
                                     >
-                                        {isCompleted ? <Check className="h-4 w-4" /> : step.id}
-                                    </div>
+                                        <div className="flex items-start gap-3">
+                                            <span
+                                                className={`mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-lg text-xs font-semibold ${isCurrent
+                                                    ? 'bg-orange-500 text-white'
+                                                    : isCompleted
+                                                        ? 'bg-orange-500/20 text-orange-300'
+                                                        : 'bg-[#262626] text-[#8a8a8a]'
+                                                    }`}
+                                            >
+                                                {isCompleted ? <Check className="h-3.5 w-3.5" /> : step.id}
+                                            </span>
+                                            <div className="min-w-0">
+                                                <p className={`text-sm font-medium ${isCurrent || isCompleted ? 'text-white' : 'text-[#b3b3b3]'}`}>
+                                                    {step.title}
+                                                </p>
+                                                {step.description ? (
+                                                    <p className="mt-0.5 text-xs leading-5 text-[#7d7d7d]">{step.description}</p>
+                                                ) : null}
+                                            </div>
+                                        </div>
+                                    </li>
+                                );
+                            })}
+                        </ol>
+                    </div>
+                </aside>
 
-                                    <div className="min-w-0">
-                                        <p className="text-[11px] font-semibold uppercase tracking-[0.18em]" style={{ color: 'var(--text-muted)' }}>
-                                            {tx('jobs.new.stepCounter', { current: step.id, total: steps.length }, `Step ${step.id} of ${steps.length}`)}
-                                        </p>
-                                        <p className="text-sm font-semibold" style={{ color: isCurrent || isCompleted ? 'var(--text-primary)' : 'var(--text-secondary)' }}>
-                                            {step.title}
-                                        </p>
-                                        {step.description ? (
-                                            <p className="mt-1 text-xs leading-5" style={{ color: 'var(--text-muted)' }}>
-                                                {step.description}
-                                            </p>
-                                        ) : null}
-                                    </div>
-                                </div>
-                            </div>
-                        );
-                    })}
+                <div className="min-w-0 space-y-4">
+                    <section className="rounded-2xl border border-[#262626] bg-[#141414] p-4 shadow-[0_24px_56px_-44px_rgba(0,0,0,0.9)] sm:p-5">
+                        <h1 className="text-2xl font-semibold tracking-tight text-white sm:text-3xl">{title}</h1>
+                        <p className="mt-2 text-sm leading-6 text-[#b3b3b3] sm:text-[15px]">{description}</p>
+                        {meta ? <div className="mt-4 flex flex-wrap items-center gap-2">{meta}</div> : null}
+                    </section>
+
+                    <section className="rounded-2xl border border-[#262626] bg-[#141414] p-4 shadow-[0_24px_56px_-44px_rgba(0,0,0,0.9)] sm:p-5 lg:p-6">
+                        {children}
+                    </section>
                 </div>
-            </section>
-
-            <section className="premium-panel radius-shell overflow-hidden border p-6 shadow-[0_28px_70px_-52px_rgba(15,23,42,0.55)] sm:p-8" style={{ borderColor: 'var(--border)' }}>
-                {children}
-            </section>
+            </div>
         </div>
     );
 }

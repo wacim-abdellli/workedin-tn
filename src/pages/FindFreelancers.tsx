@@ -1,6 +1,6 @@
  import { useCallback, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Filter, Grid, List, Search, SlidersHorizontal, Sparkles, X } from 'lucide-react';
 
 import SEO, { SEO_CONFIG } from '../components/common/SEO';
@@ -70,6 +70,7 @@ const SKILL_OPTIONS = ['React', 'Node.js', 'Logo Design', 'Translation', 'Conten
 
 export default function FindFreelancers() {
     const navigate = useNavigate();
+    const queryClient = useQueryClient();
     const { t, tx } = useTranslation();
     const { user, profile, freelancerProfile } = useAuth();
     const { showToast } = useToast();
@@ -79,7 +80,6 @@ export default function FindFreelancers() {
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
     const [sortBy, setSortBy] = useState('recommended');
     const [showFilters, setShowFilters] = useState(false);
-    const [savedFreelancers, setSavedFreelancers] = useState<string[]>([]);
     const [selectedCategories, setSelectedCategories] = useState<FreelancerCategory[]>([]);
     const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
     const [minRating, setMinRating] = useState(0);
@@ -176,6 +176,52 @@ export default function FindFreelancers() {
         staleTime: 60_000,
     });
 
+    const { data: savedFreelancers = [] } = useQuery({
+        queryKey: ['saved-freelancers', user?.id],
+        queryFn: async () => {
+            if (!user?.id) return [];
+            const { data, error } = await profilesService.getSavedFreelancerIds(user.id);
+            if (error) {
+                console.error('getSavedFreelancerIds error:', error);
+                return [];
+            }
+
+            return (data ?? [])
+                .map((item) => item.freelancer_id)
+                .filter((id): id is string => Boolean(id));
+        },
+        enabled: Boolean(user?.id),
+        staleTime: 5 * 60 * 1000,
+    });
+
+    const toggleSavedMutation = useMutation({
+        mutationFn: async ({ freelancerId, isSaved }: { freelancerId: string; isSaved: boolean }) => {
+            if (!user?.id) {
+                throw new Error('AUTH_REQUIRED');
+            }
+
+            const { error } = await profilesService.toggleFreelancerFavorite(user.id, freelancerId, isSaved);
+            if (error) {
+                throw error;
+            }
+        },
+        onSuccess: (_, variables) => {
+            queryClient.invalidateQueries({ queryKey: ['saved-freelancers', user?.id] });
+            showToast(
+                variables.isSaved
+                    ? tx('findFreelancers.toasts.removedFromSaved', undefined, 'Removed from saved freelancers')
+                    : tx('findFreelancers.toasts.savedFreelancer', undefined, 'Saved freelancer'),
+                'success',
+            );
+        },
+        onError: () => {
+            showToast(
+                tx('findFreelancers.toasts.updateSavedFailed', undefined, 'Could not update saved freelancers'),
+                'error',
+            );
+        },
+    });
+
     const toggleSaved = useCallback((id: string) => {
         if (!saveDecision.allowed) {
             showToast(getAccessMessage(saveDecision.reason, saveDecision.completion), 'warning');
@@ -185,8 +231,11 @@ export default function FindFreelancers() {
             return;
         }
 
-        setSavedFreelancers((prev) => (prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]));
-    }, [navigate, saveDecision, showToast]);
+        toggleSavedMutation.mutate({
+            freelancerId: id,
+            isSaved: savedFreelancers.includes(id),
+        });
+    }, [navigate, saveDecision, savedFreelancers, showToast, toggleSavedMutation]);
 
     const savedFreelancerIds = useMemo(() => new Set(savedFreelancers), [savedFreelancers]);
 

@@ -34,12 +34,11 @@ const CustomSelect = forwardRef<HTMLButtonElement, CustomSelectProps>(
             }
         }, [value]);
 
-        // Role-specific colors
+        // Role-specific accents
         const colors = variant === 'freelancer'
             ? {
                 focus: 'focus:border-purple-500 focus:ring-purple-500/20',
                 icon: 'text-purple-400',
-                dropdownBg: 'bg-[#1a1a1a]',
                 optionHover: 'hover:bg-purple-500/20',
                 optionSelected: 'bg-purple-500/30 text-purple-300',
                 checkIcon: 'text-purple-400',
@@ -47,7 +46,6 @@ const CustomSelect = forwardRef<HTMLButtonElement, CustomSelectProps>(
             : {
                 focus: 'focus:border-[#E8820C] focus:ring-[#E8820C]/20',
                 icon: 'text-[#E8820C]',
-                dropdownBg: 'bg-[#1a1a1a]',
                 optionHover: 'hover:bg-[#E8820C]/20',
                 optionSelected: 'bg-[#E8820C]/30 text-amber-300',
                 checkIcon: 'text-[#E8820C]',
@@ -88,12 +86,13 @@ const CustomSelect = forwardRef<HTMLButtonElement, CustomSelectProps>(
                 {label && (
                     <label
                         htmlFor={selectId}
-                        className="mb-2 block text-sm font-medium text-gray-300 transition-colors"
+                        className="mb-2 block text-sm font-medium text-[var(--text-secondary)] transition-colors"
                     >
                         {label}
                     </label>
                 )}
                 <div className="relative">
+                    {name ? <input type="hidden" name={name} value={selectedValue} /> : null}
                     <button
                         ref={ref}
                         type="button"
@@ -109,9 +108,9 @@ const CustomSelect = forwardRef<HTMLButtonElement, CustomSelectProps>(
                             appearance-none
                             rounded-xl
                             border
-                            ${isOpen ? 'border-[#333]' : 'border-[#222]'}
-                            bg-[#111111]
-                            text-white
+                            ${isOpen ? 'border-[var(--border-strong)]' : 'border-[var(--input-border)]'}
+                            bg-[var(--input-bg)]
+                            text-[var(--text-primary)]
                             text-base
                             font-medium
                             px-4
@@ -120,7 +119,7 @@ const CustomSelect = forwardRef<HTMLButtonElement, CustomSelectProps>(
                             shadow-sm
                             transition-all
                             duration-200
-                            hover:border-[#333]
+                            hover:border-[var(--border-strong)]
                             focus:outline-none 
                             focus:ring-2 
                             focus:ring-offset-0
@@ -128,8 +127,8 @@ const CustomSelect = forwardRef<HTMLButtonElement, CustomSelectProps>(
                             truncate
                             ${colors.focus}
                             ${error ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''}
-                            ${disabled ? 'cursor-not-allowed opacity-50 bg-[#0a0a0a]' : 'cursor-pointer'}
-                            ${!selectedValue && placeholder ? 'text-gray-500' : ''}
+                            ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}
+                            ${!selectedValue && placeholder ? 'text-[var(--text-muted)]' : ''}
                             ${className}
                         `}
                     >
@@ -144,8 +143,8 @@ const CustomSelect = forwardRef<HTMLButtonElement, CustomSelectProps>(
                         <div 
                             className={`
                                 absolute z-50 w-full mt-2 
-                                ${colors.dropdownBg} 
-                                border border-[#333]
+                                bg-[var(--card-bg)] 
+                                border border-[var(--border)]
                                 rounded-xl 
                                 shadow-2xl shadow-black/50
                                 overflow-hidden
@@ -172,7 +171,7 @@ const CustomSelect = forwardRef<HTMLButtonElement, CustomSelectProps>(
                                                 font-medium
                                                 ${isSelected 
                                                     ? `${colors.optionSelected} font-semibold` 
-                                                    : 'text-gray-200'
+                                                    : 'text-[var(--text-primary)]'
                                                 }
                                                 ${!option.disabled && !isSelected ? colors.optionHover : ''}
                                                 ${option.disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
@@ -201,7 +200,7 @@ const CustomSelect = forwardRef<HTMLButtonElement, CustomSelectProps>(
                 {hint && !error && (
                     <p
                         id={hintId}
-                        className="mt-1.5 text-sm text-gray-400"
+                        className="mt-1.5 text-sm text-[var(--text-muted)]"
                     >
                         {hint}
                     </p>

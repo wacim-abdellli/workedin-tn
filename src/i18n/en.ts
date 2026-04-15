@@ -146,11 +146,34 @@ export const en: Translations = {
                 "reviewDescription": "Validate the brief before sending it live."
             },
             "stepCounter": "Step {{current}} of {{total}}",
+            "currentPhase": "Current phase",
+            "progress": "Progress",
+            "step1": {
+                "subtitle": "Start with a clear title and strong context."
+            },
+            "fields": {
+                "title": "Project title",
+                "mainCategory": "Main category",
+                "selectCategory": "Select category",
+                "subcategory": "Subcategory",
+                "selectSubcategory": "Select subcategory",
+                "description": "Project description",
+                "requiredSkills": "Required skills (max 5)",
+                "suggested": "Suggested:",
+                "attachments": "Attachments (optional)",
+                "attachmentsDrop": "Drag files here or click to browse",
+                "chooseFiles": "Choose files"
+            },
+            "quality": {
+                "title": "Quality Score"
+            },
             "autosave": {
                 "saving": "Saving...",
                 "saved": "Saved",
                 "lastSaved": "Last saved: {{time}}",
-                "ready": "Autosave ready"
+                "ready": "Autosave ready",
+                "savedAt": "Saved at {{time}}",
+                "notSaved": "Not saved yet"
             },
             "wizard": {
                 "badge": "Project posting flow",
@@ -1592,6 +1615,89 @@ export const en: Translations = {
             }
         },
         "freelancerProfile": {
+            "actions": {
+                "changeProfilePicture": "Change profile picture",
+                "editProfile": "Edit profile",
+                "openLink": "Open link",
+                "viewFullProject": "View full project",
+                "openProjectLink": "Open project link",
+                "previousProject": "Previous project",
+                "nextProject": "Next project"
+            },
+            "cta": {
+                "viewPublicProfile": "View Public Profile",
+                "viewPublicProfileDescription": "Preview exactly how clients and visitors see your profile.",
+                "portfolioDashboard": "Portfolio Dashboard",
+                "portfolioDashboardDescription": "Add and organize your best work samples.",
+                "myProposals": "My Proposals",
+                "myProposalsDescription": "Track statuses and follow up faster.",
+                "workspaceSettings": "Workspace Settings",
+                "workspaceSettingsDescription": "Notifications, security, and account controls.",
+                "hireMe": "Hire Me",
+                "sendMessage": "Send Message"
+            },
+            "form": {
+                "fullName": "Full name",
+                "professionalTitle": "Professional title",
+                "hourlyRateTnd": "Hourly rate (TND)"
+            },
+            "info": {
+                "memberSince": "Member since",
+                "lastSeen": "Last seen"
+            },
+            "labels": {
+                "skillsUsed": "Skills used",
+                "toolsUsed": "Tools used"
+            },
+            "publicPreview": {
+                "title": "Public Profile Preview",
+                "description": "You are viewing your profile as other users see it.",
+                "exit": "Exit Preview"
+            },
+            "reviews": {
+                "empty": "No reviews yet. Complete your first contract to receive feedback."
+            },
+            "sections": {
+                "coreStrengths": "Core strengths",
+                "selectedWork": "Selected work",
+                "clientTrust": "Client trust",
+                "workInformation": "Work information"
+            },
+            "stats": {
+                "hourlyRate": "Hourly rate"
+            },
+            "toasts": {
+                "workSampleDeleted": "Work sample deleted",
+                "workSampleDeleteError": "Could not delete work sample",
+                "profileUpdated": "Profile details updated",
+                "profileUpdateError": "Could not update profile details",
+                "bioUpdated": "Bio updated",
+                "bioUpdateError": "Could not update bio",
+                "skillsUpdated": "Skills updated",
+                "skillsUpdateError": "Could not update skills",
+                "toolsUpdated": "Tools updated",
+                "toolsUpdateError": "Could not update tools",
+                "avatarUpdated": "Profile picture updated",
+                "loginRequired": "Please log in to continue",
+                "contactDisabledOwnProfile": "Public preview mode: contact action is disabled on your own profile."
+            },
+            "validation": {
+                "fullNameRequired": "Full name is required",
+                "validHourlyRate": "Please enter a valid hourly rate",
+                "avatarType": "Please upload JPG, PNG, WEBP, or GIF image.",
+                "avatarSize": "Image size should be less than 5MB."
+            },
+            "verifications": {
+                "paymentMethod": "Payment method"
+            },
+            "viewer": {
+                "close": "Close portfolio viewer",
+                "previousImage": "Previous image",
+                "nextImage": "Next image"
+            },
+            "workSamples": {
+                "emptyTitle": "No work samples added yet"
+            },
             "portfolio": {
                 "skillsUsed": "Skills Used",
                 "visitProject": "Visit Project"
@@ -1659,6 +1765,99 @@ export const en: Translations = {
         "login": {
             "finishingSignIn": "Securing session...",
             "finishingSignInDescription": "Hang tight while we prepare your workspace."
+        },
+        "jobBoard": {
+            "header": {
+                "title": "Find Work",
+                "subtitle": "Browse and apply to freelance opportunities in Tunisia."
+            },
+            "filters": {
+                "clearAll": "Clear All",
+                "jobType": "Job Type",
+                "searchPlaceholder": "Search jobs..."
+            },
+            "actions": {
+                "applyNow": "Apply Now"
+            },
+            "empty": {
+                "filtered": "No jobs found for the selected filters."
+            },
+            "errors": {
+                "loadFailed": "Failed to load jobs. Please try again."
+            },
+            "toasts": {
+                "savedJobsUpdateError": "Could not update saved jobs"
+            }
+        },
+        "savedJobs": {
+            "empty": {
+                "title": "Nothing saved yet"
+            },
+            "labels": {
+                "budget": "Budget:"
+            },
+            "actions": {
+                "applyNow": "Apply Now",
+                "removeSavedJob": "Remove saved job",
+                "inviteToJob": "Invite to Job",
+                "removeSavedFreelancer": "Remove saved freelancer"
+            }
+        },
+        "settings": {
+            "account": {
+                "overviewTitle": "Account Overview",
+                "overviewDescription": "Manage your workspace and general account details.",
+                "currentWorkspace": "Current workspace",
+                "accountType": "Account type",
+                "quickActions": "Quick Actions",
+                "openPublicProfileEditor": "Open public profile editor",
+                "goToDashboard": "Go to dashboard",
+                "manageNotifications": "Manage notifications"
+            },
+            "actions": {
+                "signOut": "Sign Out"
+            },
+            "notifications": {
+                "toasts": {
+                    "loadError": "Failed to load notification settings",
+                    "saveError": "Could not save notification settings"
+                }
+            },
+            "payment": {
+                "title": "Payment Methods",
+                "addMethod": "Add method",
+                "bankTransfer": "Bank transfer",
+                "setDefault": "Set default",
+                "deleteMethod": "Delete payment method",
+                "empty": {
+                    "title": "No payment method added yet",
+                    "description": "Add a payout method now so contracts are ready when you need them."
+                },
+                "toasts": {
+                    "loadError": "Failed to load payment methods",
+                    "added": "Payment method added",
+                    "addError": "Could not add payment method",
+                    "defaultUpdated": "Default payment method updated",
+                    "defaultUpdateError": "Could not update default payment method",
+                    "removed": "Payment method removed",
+                    "removeError": "Could not remove payment method"
+                }
+            },
+            "privacy": {
+                "title": "Security & Privacy",
+                "changePassword": "Change password",
+                "activeSessions": "Active sessions",
+                "currentSession": "This device is your current session.",
+                "signOutAllDevices": "Sign out from all devices",
+                "deleteAccount": "Delete account",
+                "deleteAccountWarning": "Your account and all data will be permanently deleted. This action cannot be undone.",
+                "toasts": {
+                    "deleteRequestInProgress": "A deletion request is already in progress",
+                    "deleteRequestSubmitted": "Account deletion request submitted",
+                    "deleteRequestError": "Could not submit deletion request",
+                    "signOutAllError": "Could not sign out all devices"
+                }
+            }
         }
     },
     "search": {
@@ -2361,7 +2560,7 @@ export const en: Translations = {
             "archiveSuccess": "Proposal archived",
             "archiveError": "Failed to archive proposal",
             "submitSuccess": "Proposal submitted successfully!",
-            "withdrawSuccess": "Proposal withdrawn and connects refunded",
+            "withdrawSuccess": "Proposal withdrawn successfully",
             "withdrawError": "Failed to withdraw proposal"
         },
         "contract": {
@@ -2529,7 +2728,9 @@ export const en: Translations = {
             }
         },
         "card": {
-            "clientPrefix": "Client"
+            "clientPrefix": "Client",
+            "editItem": "Edit portfolio item",
+            "deleteItem": "Delete portfolio item"
         }
     },
     "jobProposals": {
@@ -2569,7 +2770,7 @@ export const en: Translations = {
         "loginToSave": "Login to save job",
         "proposalSent": "Proposal sent successfully!",
         "proposalError": "Error submitting proposal",
-        "proposalWithdrawn": "Proposal withdrawn and connects refunded",
+        "proposalWithdrawn": "Proposal withdrawn successfully",
         "withdrawError": "Error withdrawing proposal",
         "linkCopied": "Link copied",
         "fixedPrice": "Fixed Price",
@@ -2605,20 +2806,25 @@ export const en: Translations = {
         "attachments": "Attachments",
         "file": "File {{index}}",
         "defaultClient": "Client",
-        "connectsNeeded": "You need {{count}} connects to submit a proposal. Your current balance: {{balance}}",
         "jobNotFound": "Job not found",
         "submitProposal": "Submit Proposal",
         "withdrawProposal": "Withdraw Proposal",
         "browseJobs": "Browse Jobs",
         "submissionRequirements": "Submission Requirements",
-        "connectsRequiredDescription": "This proposal requires connects before sending.",
         "readyToSubmit": "Ready to submit",
-        "insufficientBalance": "Insufficient balance",
-        "balance": "Balance",
-        "required": "Required",
+        "insufficientBalance": "Daily limit reached",
+        "balance": "Used today",
+        "required": "Daily limit",
         "remaining": "Remaining",
-        "connectsDeductionWarning": "{{count}} connects will be deducted immediately after submitting the proposal.",
-        "additionalConnectsNeeded": "You need {{count}} additional connects before submitting this proposal.",
+        "used": "Used",
+        "limit": "Limit",
+        "dailyApplyLimitTitle": "Daily application limit",
+        "dailyApplyLimitDescription": "To reduce spam, you can submit up to {{limit}} proposals per day.",
+        "dailyApplyLimitReached": "You reached your daily limit of {{limit}} applications. Try again tomorrow.",
+        "dailyApplyAvailable": "Available today",
+        "dailyApplyReached": "Limit reached",
+        "dailyApplyRemainingHint": "{{remaining}} applications remaining today.",
+        "dailyApplyResetHint": "Daily limit reached. You can apply again tomorrow.",
         "memberSince": "Member since",
         "postedJobs": "Posted Jobs",
         "totalSpending": "Total Spending",
@@ -2957,6 +3163,18 @@ export const en: Translations = {
             "highlightPaymentsDescription": "Funds are held safely until the milestone or project is delivered.",
             "highlightLocaleTitle": "Local & Global",
             "highlightLocaleDescription": "Optimized for local talent with fast transactions.",
+            "hero": {
+                "workSmarter": "Work smarter.",
+                "earnFairly": "Earn fairly."
+            },
+            "form": {
+                "welcomeBack": "Welcome back.",
+                "subtitle": "Sign in to your WorkedIn workspace.",
+                "google": "Continue with Google",
+                "orEmail": "or sign in with email",
+                "forgotPassword": "Forgot password?",
+                "createOne": "Create one"
+            },
             "createAccountAction": "Create account",
             "finishingSignIn": "Securing session...",
             "finishingSignInDescription": "Hang tight while we prepare your workspace.",

@@ -1,6 +1,10 @@
+import { useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Heart, MapPin, Clock, Star, Briefcase } from 'lucide-react';
 import { Header } from '@/components/layout';
 import { useAuth } from '@/contexts/AuthContext';
+import * as profilesService from '@/services/profiles';
+import { useTranslation } from '@/i18n';
 
 type SavedItemsRole = 'client' | 'freelancer';
 
@@ -21,62 +25,53 @@ interface SavedTalentItem {
   hourlyRate: number;
 }
 
+interface SavedJobRecord {
+  id: string;
+  title: string;
+  job_type: 'fixed_price' | 'hourly';
+  budget_min?: number | null;
+  budget_max?: number | null;
+  hourly_rate?: number | null;
+  posted_at: string;
+}
+
+interface SavedJobRow {
+  jobs?: SavedJobRecord | SavedJobRecord[] | null;
+}
+
+interface SavedFreelancerProfile {
+  id: string;
+  full_name?: string | null;
+  location?: string | null;
+  freelancer_profiles?: {
+    title?: string | null;
+    hourly_rate?: number | null;
+    success_rate?: number | null;
+  }[];
+}
+
 interface SavedItemsProps {
   role: SavedItemsRole;
   savedJobs?: SavedJobItem[];
   savedTalent?: SavedTalentItem[];
+  isLoading?: boolean;
 }
 
-const SAVED_JOBS: SavedJobItem[] = [
-  {
-    id: 'job-1',
-    title: 'Build a React + Supabase dashboard for order analytics',
-    jobType: 'Fixed-price',
-    budget: '1500 TND',
-    postedAgo: 'Posted 1 day ago',
-  },
-  {
-    id: 'job-2',
-    title: 'Landing page redesign with modern motion and conversions focus',
-    jobType: 'Hourly',
-    budget: '45 TND/hr',
-    postedAgo: 'Posted 3 days ago',
-  },
-  {
-    id: 'job-3',
-    title: 'Migrate legacy Node API endpoints to typed service architecture',
-    jobType: 'Fixed-price',
-    budget: '2200 TND',
-    postedAgo: 'Posted 5 days ago',
-  },
-];
+const formatTimeAgo = (value: string) => {
+  const then = new Date(value).getTime();
+  if (!Number.isFinite(then)) {
+    return 'Posted recently';
+  }
 
-const SAVED_TALENT: SavedTalentItem[] = [
-  {
-    id: 'talent-1',
-    name: 'Aymen Ben Salem',
-    title: 'Full-Stack Engineer',
-    location: 'Tunis',
-    rating: 4.9,
-    hourlyRate: 45,
-  },
-  {
-    id: 'talent-2',
-    name: 'Meriem Trabelsi',
-    title: 'Product Designer',
-    location: 'Sfax',
-    rating: 4.8,
-    hourlyRate: 40,
-  },
-  {
-    id: 'talent-3',
-    name: 'Youssef Gharbi',
-    title: 'DevOps Specialist',
-    location: 'Sousse',
-    rating: 4.7,
-    hourlyRate: 55,
-  },
-];
+  const diffMs = Date.now() - then;
+  const diffDays = Math.max(0, Math.floor(diffMs / (1000 * 60 * 60 * 24)));
+
+  if (diffDays === 0) return 'Posted today';
+  if (diffDays === 1) return 'Posted 1 day ago';
+  if (diffDays < 7) return `Posted ${diffDays} days ago`;
+  const weeks = Math.floor(diffDays / 7);
+  return `Posted ${weeks} week${weeks > 1 ? 's' : ''} ago`;
+};
 
 const getInitials = (name: string) => {
   const parts = name.trim().split(/\s+/).filter(Boolean);
@@ -87,9 +82,11 @@ const getInitials = (name: string) => {
 
 export function SavedItems({
   role,
-  savedJobs = SAVED_JOBS,
-  savedTalent = SAVED_TALENT,
+  savedJobs = [],
+  savedTalent = [],
+  isLoading = false,
 }: SavedItemsProps) {
+  const { tx } = useTranslation();
   const isFreelancer = role === 'freelancer';
   const title = isFreelancer ? 'Saved Jobs' : 'Saved Talent';
   const subtitle = isFreelancer
@@ -117,10 +114,16 @@ export function SavedItems({
         </header>
 
         <section className="bg-[#141414] border border-[#262626] rounded-2xl overflow-hidden flex flex-col">
-          {roleItems.length === 0 ? (
+          {isLoading ? (
+            <div className="p-6 space-y-3">
+              <div className="h-14 rounded-xl border border-[#262626] bg-[#1a1a1a] animate-pulse" />
+              <div className="h-14 rounded-xl border border-[#262626] bg-[#1a1a1a] animate-pulse" />
+              <div className="h-14 rounded-xl border border-[#262626] bg-[#1a1a1a] animate-pulse" />
+            </div>
+          ) : roleItems.length === 0 ? (
             <div className="py-20 flex flex-col items-center justify-center text-center">
               <Heart className="w-12 h-12 text-gray-600 mb-4" />
-              <h2 className="text-xl font-bold text-white mb-2">Nothing saved yet</h2>
+              <h2 className="text-xl font-bold text-white mb-2">{tx('pages.savedJobs.empty.title', undefined, 'Nothing saved yet')}</h2>
               <button
                 type="button"
                 className={`text-white px-5 py-2.5 rounded-xl text-sm font-medium transition-all ${actionButtonClass}`}
@@ -144,7 +147,7 @@ export function SavedItems({
                       {job.jobType}
                     </span>
                     <span>
-                      Budget: <span className="text-white">{job.budget}</span>
+                      {tx('pages.savedJobs.labels.budget', undefined, 'Budget:')} <span className="text-white">{job.budget}</span>
                     </span>
                     <span className="inline-flex items-center gap-1.5">
                       <Clock className="w-3.5 h-3.5" />
@@ -158,11 +161,11 @@ export function SavedItems({
                     type="button"
                     className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition-all"
                   >
-                    Apply Now
+                    {tx('pages.savedJobs.actions.applyNow', undefined, 'Apply Now')}
                   </button>
                   <button
                     type="button"
-                    aria-label="Remove saved job"
+                    aria-label={tx('pages.savedJobs.actions.removeSavedJob', undefined, 'Remove saved job')}
                     className={`p-2 rounded-full border border-[#262626] bg-[#0a0a0a] hover:text-gray-400 hover:fill-transparent transition-all cursor-pointer ${heartClass}`}
                   >
                     <Heart className="w-4 h-4" />
@@ -206,12 +209,12 @@ export function SavedItems({
                     type="button"
                     className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-xl text-sm font-medium transition-all"
                   >
-                    Invite to Job
+                    {tx('pages.savedJobs.actions.inviteToJob', undefined, 'Invite to Job')}
                   </button>
 
                   <button
                     type="button"
-                    aria-label="Remove saved freelancer"
+                    aria-label={tx('pages.savedJobs.actions.removeSavedFreelancer', undefined, 'Remove saved freelancer')}
                     className={`p-2 rounded-full border border-[#262626] bg-[#0a0a0a] hover:text-gray-400 hover:fill-transparent transition-all cursor-pointer ${heartClass}`}
                   >
                     <Heart className="w-4 h-4" />
@@ -227,13 +230,125 @@ export function SavedItems({
 }
 
 export default function SavedJobsPage() {
-  const { activeMode } = useAuth();
+  const { activeMode, user } = useAuth();
   const role: SavedItemsRole = activeMode === 'client' ? 'client' : 'freelancer';
+
+  const {
+    data: savedJobs = [],
+    isLoading: isSavedJobsLoading,
+  } = useQuery({
+    queryKey: ['saved-jobs-page', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [] as SavedJobItem[];
+
+      const { data, error } = await profilesService.getSavedJobs(user.id);
+      if (error) {
+        console.error('getSavedJobs error:', error);
+        return [] as SavedJobItem[];
+      }
+
+      return ((data ?? []) as SavedJobRow[])
+        .map((row) => (Array.isArray(row.jobs) ? row.jobs[0] : row.jobs))
+        .filter((job): job is SavedJobRecord => Boolean(job))
+        .map((job) => ({
+          id: job.id,
+          title: job.title,
+          jobType: (job.job_type === 'hourly' ? 'Hourly' : 'Fixed-price') as SavedJobItem['jobType'],
+          budget:
+            job.job_type === 'hourly'
+              ? `${job.hourly_rate ?? 0} TND/hr`
+              : `${job.budget_min ?? 0} - ${job.budget_max ?? 0} TND`,
+          postedAgo: formatTimeAgo(job.posted_at),
+        }));
+    },
+    enabled: role === 'freelancer' && Boolean(user?.id),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const {
+    data: savedFreelancerIds = [],
+    isLoading: isSavedFreelancerIdsLoading,
+  } = useQuery({
+    queryKey: ['saved-freelancer-ids-page', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [] as string[];
+
+      const { data, error } = await profilesService.getSavedFreelancerIds(user.id);
+      if (error) {
+        console.error('getSavedFreelancerIds error:', error);
+        return [] as string[];
+      }
+
+      return (data ?? [])
+        .map((row) => row.freelancer_id)
+        .filter((id): id is string => Boolean(id));
+    },
+    enabled: role === 'client' && Boolean(user?.id),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const {
+    data: savedFreelancerPool = [],
+    isLoading: isSavedFreelancerPoolLoading,
+  } = useQuery({
+    queryKey: ['saved-freelancer-pool-page', user?.id],
+    queryFn: async () => {
+      const { data, error } = await profilesService.getFreelancers({ excludeId: user?.id }, 1, 200);
+      if (error) {
+        console.error('getFreelancers error:', error);
+        return [] as SavedFreelancerProfile[];
+      }
+
+      return (data ?? []) as SavedFreelancerProfile[];
+    },
+    enabled: role === 'client' && Boolean(user?.id) && savedFreelancerIds.length > 0,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const savedTalent = useMemo(() => {
+    if (role !== 'client' || savedFreelancerIds.length === 0) {
+      return [] as SavedTalentItem[];
+    }
+
+    const freelancerById = new Map(savedFreelancerPool.map((freelancer) => [freelancer.id, freelancer]));
+
+    return savedFreelancerIds
+      .map((id) => {
+        const freelancer = freelancerById.get(id);
+        if (!freelancer) return null;
+
+        const profile = Array.isArray(freelancer.freelancer_profiles)
+          ? freelancer.freelancer_profiles[0]
+          : undefined;
+
+        const successRate = Number(profile?.success_rate ?? 0);
+
+        return {
+          id: freelancer.id,
+          name: freelancer.full_name || 'Freelancer',
+          title: profile?.title || 'Freelancer',
+          location: freelancer.location || 'Tunisia',
+          rating: successRate > 0 ? Math.min(5, successRate / 20) : 0,
+          hourlyRate: Number(profile?.hourly_rate ?? 0),
+        };
+      })
+      .filter((freelancer): freelancer is SavedTalentItem => Boolean(freelancer));
+  }, [role, savedFreelancerIds, savedFreelancerPool]);
+
+  const isLoading =
+    role === 'freelancer'
+      ? isSavedJobsLoading
+      : isSavedFreelancerIdsLoading || isSavedFreelancerPoolLoading;
 
   return (
     <>
       <Header />
-      <SavedItems role={role} />
+      <SavedItems
+        role={role}
+        savedJobs={savedJobs}
+        savedTalent={savedTalent}
+        isLoading={isLoading}
+      />
     </>
   );
 }

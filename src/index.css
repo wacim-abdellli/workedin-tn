@@ -219,6 +219,21 @@ select {
   color: var(--text-primary) !important;
 }
 
+/* Native select popup theming across the app */
+:root select {
+  color-scheme: light;
+}
+
+.dark select {
+  color-scheme: dark;
+}
+
+select option,
+select optgroup {
+  background-color: var(--card-bg);
+  color: var(--text-primary);
+}
+
 input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not(
     [type="file"]
   )::placeholder,

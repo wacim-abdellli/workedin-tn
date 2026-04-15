@@ -114,13 +114,24 @@ export default function Header() {
       ? ['freelancer', 'contract', 'shared']
       : ['client', 'contract', 'shared'];
 
+    // Reset immediately so the old mode's count doesn't bleed into the new mode
+    // while the async fetch is in flight. Without this, switching from freelancer
+    // (3 unread) to client briefly shows "3" in client mode.
+    setUnreadCount(0);
+
     let cancelled = false;
     const loadUnreadCount = async () => {
       const { count } = await getTotalUnreadCount(user.id, unreadScopes);
       if (!cancelled) setUnreadCount(count);
     };
 
-    // Debounce slightly to avoid double-fire on workspace switch
+    // Tear down any existing channel before creating a new one for the updated scopes
+    if (conversationsChannelRef.current) {
+      conversationsChannelRef.current.unsubscribe();
+      conversationsChannelRef.current = null;
+    }
+
+    // Debounce slightly to coalesce rapid workspace-switch events
     const timer = setTimeout(() => { void loadUnreadCount(); }, 100);
 
     conversationsChannelRef.current = subscribeToConversations(user.id, unreadScopes, () => {

@@ -1,5 +1,5 @@
 import { useFormContext } from 'react-hook-form';
-import { FileText, DollarSign, Calendar, Clock, MapPin, Briefcase, File, Globe, Lock } from 'lucide-react';
+import { FileText, DollarSign, Calendar, Clock, MapPin, Briefcase, Paperclip, Globe, Lock } from 'lucide-react';
 import { useTranslation } from '../../i18n';
 import type { Skill } from '../../types';
 import { getCategoryName, getSubcategoryName } from '../../lib/jobCategories';
@@ -19,7 +19,7 @@ interface StepReviewValues {
     duration?: string;
     deadline?: string;
     visibility?: 'public' | 'invite_only';
-    attachments_files?: File[];
+    attachments_files?: globalThis.File[];
     required_skills?: Skill[];
 }
 
@@ -43,162 +43,155 @@ export default function StepReview() {
     };
 
     return (
-        <div className="space-y-8">
-            <div className="space-y-4">
-                <div className="inline-flex items-center gap-2 rounded-full border border-primary-100 bg-primary-50/70 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-primary-700 dark:border-white/10 border-border dark:white/[0.04] dark:text-primary-200">
-                    <FileText className="w-3.5 h-3.5" />
+        <div className="space-y-6">
+            <header className="space-y-3">
+                <div className="inline-flex items-center gap-2 rounded-full border border-orange-500/30 bg-orange-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-orange-300">
+                    <FileText className="h-3.5 w-3.5" />
                     {tx('jobs.new.stepReview.badge', undefined, 'Final check')}
                 </div>
-                <h3 className="text-2xl font-semibold tracking-tight text-[#171420] dark:text-white">
+                <h3 className="text-xl font-semibold tracking-tight text-white sm:text-2xl">
                     {tx('jobs.new.stepReview.title', undefined, 'Review and publish')}
                 </h3>
-                <p className="max-w-3xl text-sm leading-7 text-[#5c5971] dark:text-[#aca9bd] sm:text-base">
+                <p className="text-sm leading-6 text-[#b3b3b3]">
                     {tx('jobs.new.stepReview.subtitle', undefined, 'Review the brief one last time before it goes live to freelancers.')}
                 </p>
-            </div>
+            </header>
 
-            <div className="flex gap-3 rounded-2xl border border-amber-200 bg-amber-50/80 p-4 text-sm text-amber-800 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-200">
-                <FileText className="w-5 h-5 flex-shrink-0" />
-                <p>{tx('jobs.new.stepReview.warning', undefined, 'يرجى مراجعة تفاصيل الوظيفة بدقة قبل النشر. بعد النشر، ستتمكن من تعديل بعض التفاصيل فقط.')}</p>
-            </div>
+            <section className="flex gap-3 rounded-xl border border-orange-500/20 bg-orange-500/5 p-3 text-sm text-[#cfcfcf]">
+                <FileText className="h-4.5 w-4.5 shrink-0 text-orange-300" />
+                <p className="text-[#b3b3b3]">
+                    {tx('jobs.new.stepReview.warning', undefined, 'يرجى مراجعة تفاصيل الوظيفة بدقة قبل النشر. بعد النشر، ستتمكن من تعديل بعض التفاصيل فقط.')}
+                </p>
+            </section>
 
-            <div className="space-y-6">
-                {/* Header Preview */}
-                <div className="rounded-[1.85rem] border border-primary-100/70 bg-card/80 p-6 shadow-sm dark:border-white/10 border-border dark:white/[0.04]">
-                    <h2 className="mb-2 text-2xl font-bold text-foreground dark:text-white">{values.title}</h2>
-                    <div className="flex flex-wrap gap-4 text-sm text-muted">
-                        <span className="flex items-center gap-1 rounded-full bg-muted px-3 py-1 dark:bg-white/10">
-                            <Briefcase className="w-4 h-4" />
-                            {getCategoryName(values.category, language)}
-                        </span>
-                        <span className="flex items-center gap-1 rounded-full bg-muted px-3 py-1 dark:bg-white/10">
-                            <MapPin className="w-4 h-4" />
-                            {getSubcategoryName(values.category, values.subcategory, language)}
-                        </span>
-                        <span className="flex items-center gap-1 rounded-full bg-muted px-3 py-1 dark:bg-white/10">
-                            <Clock className="w-4 h-4" />
-                            {values.posted_at ? new Date(values.posted_at).toLocaleDateString(language === 'ar' ? 'ar-TN' : language === 'fr' ? 'fr-FR' : 'en-US') : tx('jobs.new.stepReview.now', undefined, 'الآن')}
-                        </span>
-                    </div>
+            <section className="rounded-xl border border-[#2d2d2d] bg-[#101010] p-4 sm:p-5">
+                <h4 className="text-lg font-semibold text-white">{values.title || '—'}</h4>
+                <div className="mt-3 flex flex-wrap gap-2 text-xs text-[#b3b3b3]">
+                    <span className="inline-flex items-center gap-1 rounded-full border border-[#2d2d2d] bg-[#141414] px-2.5 py-1">
+                        <Briefcase className="h-3.5 w-3.5" />
+                        {getCategoryName(values.category, language) || '—'}
+                    </span>
+                    <span className="inline-flex items-center gap-1 rounded-full border border-[#2d2d2d] bg-[#141414] px-2.5 py-1">
+                        <MapPin className="h-3.5 w-3.5" />
+                        {getSubcategoryName(values.category, values.subcategory, language) || '—'}
+                    </span>
+                    <span className="inline-flex items-center gap-1 rounded-full border border-[#2d2d2d] bg-[#141414] px-2.5 py-1">
+                        <Clock className="h-3.5 w-3.5" />
+                        {values.posted_at
+                            ? new Date(values.posted_at).toLocaleDateString(language === 'ar' ? 'ar-TN' : language === 'fr' ? 'fr-FR' : 'en-US')
+                            : tx('jobs.new.stepReview.now', undefined, 'الآن')}
+                    </span>
                 </div>
+            </section>
 
-                {/* Description */}
-                <div>
-                    <h3 className="mb-3 font-bold text-foreground dark:text-white">{tx('jobs.new.stepReview.projectDescription', undefined, 'وصف المشروع')}</h3>
-                    <p className="whitespace-pre-line leading-relaxed text-muted-foreground">
-                        {values.description}
+            <section className="rounded-xl border border-[#2d2d2d] bg-[#101010] p-4 sm:p-5">
+                <h4 className="mb-2 text-sm font-semibold uppercase tracking-[0.16em] text-[#7d7d7d]">
+                    {tx('jobs.new.stepReview.projectDescription', undefined, 'وصف المشروع')}
+                </h4>
+                <p className="whitespace-pre-line text-sm leading-6 text-[#b3b3b3]">{values.description || '—'}</p>
+            </section>
+
+            <section className="grid gap-3 sm:grid-cols-2">
+                <div className="rounded-xl border border-[#2d2d2d] bg-[#101010] p-4">
+                    <p className="mb-1 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#7d7d7d]">
+                        <DollarSign className="h-4 w-4" />
+                        {tx('jobs.new.stepReview.budget', undefined, 'الميزانية')}
+                    </p>
+                    <p className="text-sm text-white">
+                        {values.job_type === 'fixed_price'
+                            ? tx('jobs.new.stepReview.budgetRange', { min: values.budget_min ?? 0, max: values.budget_max ?? 0 }, `${values.budget_min ?? 0} - ${values.budget_max ?? 0} د.ت`)
+                            : tx('jobs.new.stepReview.hourlyBudget', { rate: values.hourly_rate ?? 0 }, `${values.hourly_rate ?? 0} د.ت / ساعة`)}
                     </p>
                 </div>
 
-                {/* Details Grid */}
-                <div className="grid grid-cols-1 gap-6 rounded-[1.85rem] border border-primary-100/70 bg-card/80 p-6 shadow-sm dark:border-white/10 border-border dark:white/[0.04] md:grid-cols-2">
-                    <div className="space-y-4">
-                        <div className="flex gap-4">
-                            <DollarSign className="mt-1 h-5 w-5 text-muted" />
-                            <div>
-                                <h4 className="font-bold text-foreground dark:text-white">{tx('jobs.new.stepReview.budget', undefined, 'الميزانية')}</h4>
-                                <p className="text-muted-foreground">
-                                    {values.job_type === 'fixed_price'
-                                        ? tx('jobs.new.stepReview.budgetRange', { min: values.budget_min ?? 0, max: values.budget_max ?? 0 }, `${values.budget_min ?? 0} - ${values.budget_max ?? 0} د.ت`)
-                                        : tx('jobs.new.stepReview.hourlyBudget', { rate: values.hourly_rate ?? 0 }, `${values.hourly_rate ?? 0} د.ت / ساعة`)
-                                    }
-                                </p>
-                            </div>
-                        </div>
-
-                        <div className="flex gap-4">
-                            <Briefcase className="mt-1 h-5 w-5 text-muted" />
-                            <div>
-                                <h4 className="font-bold text-foreground dark:text-white">{tx('jobs.new.stepReview.experienceLevel', undefined, 'المستوى المطلوب')}</h4>
-                                <p className="text-muted-foreground">{values.experience_level ? experienceMap[values.experience_level] : '—'}</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="space-y-4">
-                        <div className="flex gap-4">
-                            <Calendar className="mt-1 h-5 w-5 text-muted" />
-                            <div>
-                                <h4 className="font-bold text-foreground dark:text-white">{tx('jobs.new.stepReview.projectDuration', undefined, 'مدة المشروع')}</h4>
-                                <p className="text-muted-foreground">{values.duration ? durationMap[values.duration] : '—'}</p>
-                            </div>
-                        </div>
-
-                        <div className="flex gap-4">
-                            <Calendar className="mt-1 h-5 w-5 text-muted" />
-                            <div>
-                                <h4 className="font-bold text-foreground dark:text-white">{tx('jobs.new.stepReview.deadline', undefined, 'الموعد النهائي')}</h4>
-                                <p className="text-muted-foreground">{values.deadline ? new Date(values.deadline).toLocaleDateString(language === 'ar' ? 'ar-TN' : language === 'fr' ? 'fr-FR' : 'en-US') : '—'}</p>
-                            </div>
-                        </div>
-
-                        <div className="flex gap-4">
-                            <MapPin className="mt-1 h-5 w-5 text-muted" />
-                            <div>
-                                <h4 className="font-bold text-foreground dark:text-white">{tx('jobs.new.stepReview.visibility', undefined, 'الموقع')}</h4>
-                                <p className="text-muted-foreground">{values.visibility === 'invite_only' ? tx('jobs.new.stepReview.inviteOnlyVisibility', undefined, 'خاص (دعوة فقط)') : tx('jobs.new.stepReview.publicVisibility', undefined, 'عام (الجميع)')}</p>
-                            </div>
-                        </div>
-                    </div>
+                <div className="rounded-xl border border-[#2d2d2d] bg-[#101010] p-4">
+                    <p className="mb-1 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#7d7d7d]">
+                        <Briefcase className="h-4 w-4" />
+                        {tx('jobs.new.stepReview.experienceLevel', undefined, 'المستوى المطلوب')}
+                    </p>
+                    <p className="text-sm text-white">{values.experience_level ? experienceMap[values.experience_level] : '—'}</p>
                 </div>
 
-                {values.job_type === 'hourly' && values.estimated_hours ? (
-                    <div className="rounded-[1.5rem] border border-primary-100/70 bg-primary-50/60 px-4 py-3 text-sm text-primary-700 dark:border-white/10 border-border dark:white/[0.04] dark:text-primary-200">
-                        {tx('jobs.new.stepReview.estimatedHours', { hours: values.estimated_hours }, `${values.estimated_hours} estimated hours per week`)}
-                    </div>
-                ) : null}
-
-                {/* Visibility */}
-                <div className="rounded-[1.85rem] border border-primary-100/70 bg-card/80 p-6 shadow-sm dark:border-white/10 border-border dark:white/[0.04]">
-                    <div className="flex items-center gap-3">
-                        <div className="rounded-lg bg-primary-50 p-2 text-primary-600 dark:bg-primary-900/20 dark:text-primary-300">
-                            {values.visibility === 'public' ? <Globe className="w-5 h-5" /> : <Lock className="w-5 h-5" />}
-                        </div>
-                        <div>
-                            <p className="text-sm text-muted">{tx('jobs.new.stepReview.privacyLevel', undefined, 'مستوى الخصوصية')}</p>
-                            <p className="font-medium text-foreground dark:text-white">
-                                {values.visibility === 'public'
-                                    ? tx('jobs.new.stepVisibility.publicTitle', undefined, 'عام للجميع')
-                                    : tx('jobs.new.stepVisibility.inviteOnlyTitle', undefined, 'دعوة فقط')}
-                            </p>
-                        </div>
-                    </div>
+                <div className="rounded-xl border border-[#2d2d2d] bg-[#101010] p-4">
+                    <p className="mb-1 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#7d7d7d]">
+                        <Calendar className="h-4 w-4" />
+                        {tx('jobs.new.stepReview.projectDuration', undefined, 'مدة المشروع')}
+                    </p>
+                    <p className="text-sm text-white">{values.duration ? durationMap[values.duration] : '—'}</p>
                 </div>
 
-                {/* Attachments */}
-                {values.attachments_files && values.attachments_files.length > 0 && (
-                    <div className="rounded-[1.85rem] border border-primary-100/70 bg-card/80 p-6 shadow-sm dark:border-white/10 border-border dark:white/[0.04]">
-                        <div className="flex items-start gap-3">
-                            <div className="rounded-lg bg-surface p-2 text-muted dark:bg-white/10">
-                                <File className="w-5 h-5" />
-                            </div>
-                            <div className="w-full">
-                                <p className="mb-2 text-sm text-muted">{tx('jobs.new.stepReview.attachments', undefined, 'الملفات المرفقة')}</p>
-                                <div className="space-y-2">
-                                    {values.attachments_files.map((file: File, index: number) => (
-                                        <div key={index} className="flex items-center gap-2 rounded-lg border border-border bg-surface p-2 text-sm dark:border-white/10 dark:white/[0.03]">
-                                            <span className="truncate font-medium text-muted-foreground">{file.name}</span>
-                                            <span className="text-muted text-xs">{tx('jobs.new.stepReview.fileSize', { size: (file.size / 1024 / 1024).toFixed(2) }, `(${(file.size / 1024 / 1024).toFixed(2)} MB)`)}</span>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                )}
+                <div className="rounded-xl border border-[#2d2d2d] bg-[#101010] p-4">
+                    <p className="mb-1 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#7d7d7d]">
+                        <Calendar className="h-4 w-4" />
+                        {tx('jobs.new.stepReview.deadline', undefined, 'الموعد النهائي')}
+                    </p>
+                    <p className="text-sm text-white">
+                        {values.deadline
+                            ? new Date(values.deadline).toLocaleDateString(language === 'ar' ? 'ar-TN' : language === 'fr' ? 'fr-FR' : 'en-US')
+                            : '—'}
+                    </p>
+                </div>
+            </section>
 
-                {/* Skills */}
-                <div className="rounded-[1.85rem] border border-primary-100/70 bg-card/80 p-6 shadow-sm dark:border-white/10 border-border dark:white/[0.04]">
-                    <h3 className="mb-3 font-bold text-foreground dark:text-white">{tx('jobs.new.stepReview.requiredSkills', undefined, 'المهارات المطلوبة')}</h3>
-                    <div className="flex flex-wrap gap-2">
-                        {values.required_skills?.map((skill) => (
-                            <span key={skill.id} className="rounded-full bg-primary-50 px-3 py-1 text-sm font-medium text-primary-700 dark:bg-primary-900/20 dark:text-primary-300">
-                                {language === 'ar' ? skill.name_ar : language === 'fr' ? skill.name_fr : skill.name_en}
-                            </span>
+            <section className="rounded-xl border border-[#2d2d2d] bg-[#101010] p-4 sm:p-5">
+                <div className="flex items-center gap-3">
+                    <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-orange-500/15 text-orange-300">
+                        {values.visibility === 'public' ? <Globe className="h-4.5 w-4.5" /> : <Lock className="h-4.5 w-4.5" />}
+                    </span>
+                    <div>
+                        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#7d7d7d]">
+                            {tx('jobs.new.stepReview.privacyLevel', undefined, 'مستوى الخصوصية')}
+                        </p>
+                        <p className="text-sm font-medium text-white">
+                            {values.visibility === 'public'
+                                ? tx('jobs.new.stepVisibility.publicTitle', undefined, 'عام للجميع')
+                                : tx('jobs.new.stepVisibility.inviteOnlyTitle', undefined, 'دعوة فقط')}
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            {values.job_type === 'hourly' && values.estimated_hours ? (
+                <section className="rounded-xl border border-orange-500/25 bg-orange-500/5 px-3 py-2 text-sm text-orange-200">
+                    {tx('jobs.new.stepReview.estimatedHours', { hours: values.estimated_hours }, `${values.estimated_hours} estimated hours per week`)}
+                </section>
+            ) : null}
+
+            {values.attachments_files && values.attachments_files.length > 0 ? (
+                <section className="rounded-xl border border-[#2d2d2d] bg-[#101010] p-4 sm:p-5">
+                    <p className="mb-2 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#7d7d7d]">
+                        <Paperclip className="h-4 w-4" />
+                        {tx('jobs.new.stepReview.attachments', undefined, 'الملفات المرفقة')}
+                    </p>
+                    <div className="space-y-2">
+                        {values.attachments_files.map((file, index) => (
+                            <div key={`${file.name}-${index}`} className="rounded-lg border border-[#2d2d2d] bg-[#141414] px-3 py-2 text-sm text-[#b3b3b3]">
+                                <span className="font-medium text-white">{file.name}</span>
+                                <span className="ms-2 text-xs text-[#8f8f8f]">
+                                    {tx('jobs.new.stepReview.fileSize', { size: (file.size / 1024 / 1024).toFixed(2) }, `(${(file.size / 1024 / 1024).toFixed(2)} MB)`)}
+                                </span>
+                            </div>
                         ))}
                     </div>
+                </section>
+            ) : null}
+
+            <section className="rounded-xl border border-[#2d2d2d] bg-[#101010] p-4 sm:p-5">
+                <h4 className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#7d7d7d]">
+                    {tx('jobs.new.stepReview.requiredSkills', undefined, 'المهارات المطلوبة')}
+                </h4>
+                <div className="flex flex-wrap gap-2">
+                    {values.required_skills?.length ? (
+                        values.required_skills.map((skill) => (
+                            <span key={skill.id} className="rounded-full border border-orange-500/30 bg-orange-500/10 px-2.5 py-1 text-xs font-medium text-orange-200">
+                                {language === 'ar' ? skill.name_ar : language === 'fr' ? skill.name_fr : skill.name_en}
+                            </span>
+                        ))
+                    ) : (
+                        <span className="text-sm text-[#8f8f8f]">—</span>
+                    )}
                 </div>
-            </div>
+            </section>
         </div>
     );
 }

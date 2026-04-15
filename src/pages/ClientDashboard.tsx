@@ -1,27 +1,21 @@
+import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { m } from 'framer-motion';
 import {
-    ArrowRight,
     Briefcase,
-    DollarSign,
     FileText,
     FolderOpen,
     MessageSquare,
     Plus,
-    Settings,
+    Sparkles,
     Users,
 } from 'lucide-react';
 
 import { useTranslation } from '../i18n';
 import { useAuth } from '../contexts/AuthContext';
 import { Header } from '../components/layout';
-import Button from '../components/ui/Button';
-import Badge from '../components/ui/Badge';
-import SkeletonCard from '../components/common/SkeletonCard';
 import EmptyState from '../components/ui/EmptyState';
 import SEO, { SEO_CONFIG } from '../components/common/SEO';
-import { DashWidget } from '../components/dashboard/DashWidget';
 import { dashboardQueryKeys } from '../lib/dashboardQueries';
 import { supabase } from '../lib/supabase';
 import { formatCurrency } from '../lib/currencyUtils';
@@ -29,11 +23,14 @@ import { formatCurrency } from '../lib/currencyUtils';
 interface DashboardContract {
     id: string;
     status: string;
-    freelancer: {
-        full_name: string | null;
-    } | Array<{
-        full_name: string | null;
-    }> | null;
+    freelancer:
+        | {
+            full_name: string | null;
+        }
+        | Array<{
+            full_name: string | null;
+        }>
+        | null;
 }
 
 interface DashboardJob {
@@ -45,15 +42,7 @@ interface DashboardJob {
     created_at: string;
     proposals_count: number;
     contracts: DashboardContract[] | null;
-    budget_type?: string | null;
 }
-
-type DashboardNotification = {
-    id: string;
-    title: string | null;
-    body: string | null;
-    created_at: string;
-};
 
 type DashboardStats = {
     activeJobs: number;
@@ -61,7 +50,6 @@ type DashboardStats = {
     totalSpent: number;
     proposalsWaitingReview: number;
     totalProposals: number;
-    unreadNotifications: DashboardNotification[];
 };
 
 type RecentProposal = {
@@ -79,23 +67,65 @@ type RecentProposal = {
     } | null;
 };
 
-const motionEase = [0.16, 1, 0.3, 1] as const;
-
-const containerVariants = {
-    hidden: {},
-    show: { transition: { staggerChildren: 0.07 } },
+type ActiveContract = {
+    id: string;
+    title: string;
+    status: string;
+    total_amount: number | null;
+    created_at: string;
+    freelancer: {
+        id: string;
+        full_name: string | null;
+        avatar_url: string | null;
+    } | null;
 };
 
-const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: motionEase } },
-};
+function getTimeGreeting(
+    tx: (key: string, params?: any, fallback?: string) => string,
+): string {
+    const hour = new Date().getHours();
+    if (hour < 12) {
+        return tx('dashboard.greeting.morning', undefined, 'Good morning');
+    }
+    if (hour < 18) {
+        return tx('dashboard.greeting.afternoon', undefined, 'Good afternoon');
+    }
 
-function getTimeGreeting(tx: any): string {
-    const h = new Date().getHours();
-    if (h < 12) return tx('dashboard.greeting.morning', undefined, 'Good morning');
-    if (h < 18) return tx('dashboard.greeting.afternoon', undefined, 'Good afternoon');
     return tx('dashboard.greeting.evening', undefined, 'Good evening');
+}
+
+function jobStatusClass(status: string) {
+    if (status === 'open') {
+        return 'border border-orange-500/30 bg-orange-500/10 text-orange-200';
+    }
+    if (status === 'in_progress') {
+        return 'border border-blue-500/30 bg-blue-500/10 text-blue-200';
+    }
+    if (status === 'completed') {
+        return 'border border-emerald-500/30 bg-emerald-500/10 text-emerald-200';
+    }
+
+    return 'border border-zinc-500/30 bg-zinc-500/10 text-zinc-200';
+}
+
+function formatBudgetRange(
+    job: DashboardJob,
+    language: Parameters<typeof formatCurrency>[2],
+) {
+    const min = Number(job.budget_min ?? 0);
+    const max = Number(job.budget_max ?? 0);
+
+    if (min > 0 && max > 0) {
+        return `${formatCurrency(min, true, language)} - ${formatCurrency(max, true, language)}`;
+    }
+    if (max > 0) {
+        return formatCurrency(max, true, language);
+    }
+    if (min > 0) {
+        return formatCurrency(min, true, language);
+    }
+
+    return '-';
 }
 
 function ClientDashboardPage() {
@@ -103,28 +133,54 @@ function ClientDashboardPage() {
     const { profile, isLoading: isAuthLoading, isFullyReady } = useAuth();
     const navigate = useNavigate();
 
+    const locale = useMemo(() => {
+        if (language === 'ar') return 'ar-TN';
+        if (language === 'fr') return 'fr-FR';
+        return 'en-US';
+    }, [language]);
+
     const { data: stats, isLoading: isStatsLoading } = useQuery({
         queryKey: dashboardQueryKeys.clientStats(profile?.id),
         enabled: !!profile?.id,
-        queryFn: async (): Promise<DashboardStats & { jobs: DashboardJob[]; activeContracts: any[]; proposals: RecentProposal[] }> => {
+        queryFn: async (): Promise<
+            DashboardStats & {
+                jobs: DashboardJob[];
+                activeContracts: ActiveContract[];
+                proposals: RecentProposal[];
+            }
+        > => {
             const userId = profile!.id;
 
-            const [activeJobsRes, completedContractsRes, walletRes, jobsSummaryRes, notificationsRes, jobsRes, activeContractsRes, proposalsRes] = await Promise.all([
-                supabase.from('jobs').select('id', { count: 'exact', head: true })
+            const [
+                activeJobsRes,
+                completedContractsRes,
+                walletRes,
+                jobsSummaryRes,
+                jobsRes,
+                activeContractsRes,
+                proposalsRes,
+            ] = await Promise.all([
+                supabase
+                    .from('jobs')
+                    .select('id', { count: 'exact', head: true })
                     .eq('client_id', userId)
                     .in('status', ['open', 'in_progress']),
-                supabase.from('contracts').select('id', { count: 'exact', head: true })
+                supabase
+                    .from('contracts')
+                    .select('id', { count: 'exact', head: true })
                     .eq('client_id', userId)
                     .eq('status', 'completed'),
-                supabase.from('wallets').select('total_withdrawn').eq('user_id', userId).maybeSingle(),
-                supabase.from('jobs').select('status, proposals_count').eq('client_id', userId),
-                supabase.from('notifications').select('id,title,body,created_at')
+                supabase
+                    .from('wallets')
+                    .select('total_withdrawn')
                     .eq('user_id', userId)
-                    .neq('type', 'message')
-                    .eq('is_read', false)
-                    .order('created_at', { ascending: false })
-                    .limit(4),
-                supabase.from('jobs')
+                    .maybeSingle(),
+                supabase
+                    .from('jobs')
+                    .select('status, proposals_count')
+                    .eq('client_id', userId),
+                supabase
+                    .from('jobs')
                     .select(`
                         id, title, budget_min, budget_max, status, created_at,
                         proposals_count,
@@ -133,13 +189,15 @@ function ClientDashboardPage() {
                     .eq('client_id', userId)
                     .order('created_at', { ascending: false })
                     .limit(6),
-                supabase.from('contracts')
+                supabase
+                    .from('contracts')
                     .select('id, title, status, total_amount, created_at, freelancer:public_profiles!contracts_freelancer_id_fkey(id, full_name, avatar_url)')
                     .eq('client_id', userId)
                     .eq('status', 'active')
                     .order('created_at', { ascending: false })
                     .limit(5),
-                supabase.from('proposals')
+                supabase
+                    .from('proposals')
                     .select('id, job_id, bid_amount, created_at, job:jobs!inner(title, client_id), freelancer:public_profiles!proposals_freelancer_id_fkey(full_name, avatar_url)')
                     .eq('job.client_id', userId)
                     .eq('status', 'pending')
@@ -153,33 +211,63 @@ function ClientDashboardPage() {
                 activeJobs: activeJobsRes.count ?? 0,
                 completedContracts: completedContractsRes.count ?? 0,
                 totalSpent: Number(walletRes.data?.total_withdrawn ?? 0),
-                proposalsWaitingReview: jobSummaryRows.filter((job) => job.status === 'open' && (job.proposals_count ?? 0) > 0).length,
-                totalProposals: jobSummaryRows.reduce((sum, job) => sum + Number(job.proposals_count ?? 0), 0),
-                unreadNotifications: notificationsRes.data ?? [],
+                proposalsWaitingReview: jobSummaryRows.filter(
+                    (job) => job.status === 'open' && (job.proposals_count ?? 0) > 0,
+                ).length,
+                totalProposals: jobSummaryRows.reduce(
+                    (sum, job) => sum + Number(job.proposals_count ?? 0),
+                    0,
+                ),
                 jobs: (jobsRes.data ?? []) as unknown as DashboardJob[],
-                activeContracts: (activeContractsRes.data ?? []) as unknown as any[],
+                activeContracts: (activeContractsRes.data ??
+                    []) as unknown as ActiveContract[],
                 proposals: (proposalsRes.data ?? []) as unknown as RecentProposal[],
             };
         },
         staleTime: 60_000,
-    })
+    });
 
     const statsData = {
-        totalJobs: (stats?.jobs?.length ?? 0),
+        totalJobs: stats?.jobs?.length ?? 0,
         activeJobs: stats?.activeJobs ?? 0,
         totalProposals: stats?.totalProposals ?? 0,
         totalSpent: stats?.totalSpent ?? 0,
-        monthlySpending: (stats?.activeContracts ?? []).reduce((sum, contract) => sum + Number(contract.total_amount ?? 0), 0),
-        activeContracts: (stats?.activeContracts?.length ?? 0),
+        monthlySpending: (stats?.activeContracts ?? []).reduce(
+            (sum, contract) => sum + Number(contract.total_amount ?? 0),
+            0,
+        ),
+        activeContracts: stats?.activeContracts?.length ?? 0,
     };
+
+    const firstName =
+        profile?.full_name?.split(' ')[0] ||
+        tx('dashboard.client.clientFallback', undefined, 'Client');
+    const proposalsWaitingReview = stats?.proposalsWaitingReview ?? 0;
+    const jobs = stats?.jobs ?? [];
+    const proposals = stats?.proposals ?? [];
+    const activeContracts = stats?.activeContracts ?? [];
+    const formatDate = (value: string) =>
+        new Date(value).toLocaleDateString(locale);
 
     if (isAuthLoading || !isFullyReady) {
         return (
-            <div className="min-h-screen bg-[var(--color-background-base)]">
+            <div className="min-h-screen bg-[#0a0a0a] text-white">
                 <SEO {...SEO_CONFIG.dashboard} url="/client/dashboard" noIndex />
                 <Header />
-                <main className="container mx-auto px-[var(--spacing-4)] sm:px-[var(--spacing-6)] lg:px-[var(--spacing-8)] pt-[var(--spacing-20)] pb-[var(--spacing-12)] max-w-7xl">
-                    <SkeletonCard />
+                <main className="min-h-screen bg-[#0a0a0a] text-white pt-10 pb-12">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col gap-8">
+                        <div className="animate-pulse rounded-2xl border border-[#262626] bg-[#141414] h-40" />
+                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                            <div className="lg:col-span-8 space-y-8">
+                                <div className="animate-pulse rounded-2xl border border-[#262626] bg-[#141414] h-72" />
+                                <div className="animate-pulse rounded-2xl border border-[#262626] bg-[#141414] h-64" />
+                            </div>
+                            <div className="lg:col-span-4 space-y-6">
+                                <div className="animate-pulse rounded-2xl border border-[#262626] bg-[#141414] h-52" />
+                                <div className="animate-pulse rounded-2xl border border-[#262626] bg-[#141414] h-64" />
+                            </div>
+                        </div>
+                    </div>
                 </main>
             </div>
         );
@@ -187,308 +275,600 @@ function ClientDashboardPage() {
 
     if (!profile?.id) {
         return (
-            <div className="min-h-screen bg-[var(--color-background-base)]">
+            <div className="min-h-screen bg-[#0a0a0a] text-white">
                 <SEO {...SEO_CONFIG.dashboard} url="/client/dashboard" noIndex />
                 <Header />
-                <main className="container mx-auto px-[var(--spacing-4)] sm:px-[var(--spacing-6)] lg:px-[var(--spacing-8)] pt-[var(--spacing-20)] pb-[var(--spacing-12)] max-w-7xl">
-                    <EmptyState
-                        icon={Users}
-                        title={tx('dashboard.client.profileUnavailable', undefined, 'Profile unavailable')}
-                        description={tx('dashboard.client.profileUnavailableDesc', undefined, 'We could not load your account profile yet. Please try again.')}
-                        action={{
-                            label: tx('common.retry', undefined, 'Retry'),
-                            onClick: () => window.location.reload(),
-                        }}
-                    />
+                <main className="min-h-screen bg-[#0a0a0a] text-white pt-10 pb-12">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <EmptyState
+                            icon={Users}
+                            title={tx(
+                                'dashboard.client.profileUnavailable',
+                                undefined,
+                                'Profile unavailable',
+                            )}
+                            description={tx(
+                                'dashboard.client.profileUnavailableDesc',
+                                undefined,
+                                'We could not load your account profile yet. Please try again.',
+                            )}
+                            action={{
+                                label: tx('common.retry', undefined, 'Retry'),
+                                onClick: () => window.location.reload(),
+                            }}
+                        />
+                    </div>
                 </main>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-[var(--color-background-base)]">
+        <div className="min-h-screen bg-[#0a0a0a] text-white">
             <SEO {...SEO_CONFIG.dashboard} url="/client/dashboard" noIndex />
             <Header />
 
-            <main className="container mx-auto px-[var(--spacing-4)] sm:px-[var(--spacing-6)] lg:px-[var(--spacing-8)] pt-[var(--spacing-20)] pb-[var(--spacing-12)] max-w-7xl">
-                <m.div
-                    initial={{ opacity: 0, y: -12 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4, ease: motionEase }}
-                    className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-[var(--spacing-6)] mb-[var(--spacing-10)]"
-                >
-                    <div>
-                        <p className="text-[var(--font-fontSize-xs)] font-[var(--font-fontWeight-semibold)] uppercase tracking-[0.2em] mb-[var(--spacing-1)] text-[var(--color-brand-primary)]">
-                            {getTimeGreeting(tx)}
-                        </p>
-                        <h1 className="font-display text-[var(--font-fontSize-4xl)] sm:text-[var(--font-fontSize-5xl)] font-[var(--font-fontWeight-bold)] tracking-tight text-[var(--color-text-primary)]">
-                            {profile.full_name?.split(' ')[0] || 'Client'}
-                        </h1>
-                    </div>
+            <main className="min-h-screen bg-[#0a0a0a] text-white pt-10 pb-12">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col gap-8">
+                    <section className="relative overflow-hidden border border-[#2b2b2b] rounded-2xl bg-[#121212] p-5 sm:p-6 lg:p-7">
+                        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(90%_160%_at_0%_0%,rgba(249,115,22,0.16)_0%,transparent_48%),radial-gradient(75%_140%_at_100%_0%,rgba(154,52,18,0.2)_0%,transparent_52%)]" />
+                        <div className="pointer-events-none absolute -top-10 right-8 h-28 w-28 rounded-full bg-orange-500/20 blur-3xl" />
 
-                    <div className="flex flex-wrap gap-[var(--spacing-3)]">
-                        {[
-                            { label: tx('dashboard.client.projectsLabel', undefined, 'Projects'), value: statsData.totalJobs },
-                            { label: tx('dashboard.client.activeLabel', undefined, 'Active'), value: statsData.activeJobs },
-                            { label: tx('dashboard.client.proposalsLabel', undefined, 'Proposals'), value: statsData.totalProposals },
-                            { label: tx('dashboard.client.spentLabel', undefined, 'Spent'), value: formatCurrency(statsData.totalSpent, true, language), accent: true },
-                        ].map((stat) => (
-                            <div
-                                key={stat.label}
-                                className="flex flex-col items-center px-4 py-2 rounded-2xl border"
-                                style={{
-                                    background: stat.accent ? 'var(--workspace-primary-hover)' : 'var(--color-background-subtle)',
-                                    borderColor: stat.accent ? 'transparent' : 'var(--color-border-subtle)',
-                                }}
-                            >
-                                <span className="font-display font-bold text-lg leading-tight" style={{ color: stat.accent ? '#fff' : 'var(--color-text-primary)' }}>
-                                    {stat.value}
-                                </span>
-                                <span className="text-[11px] font-medium uppercase tracking-wider" style={{ color: stat.accent ? 'rgba(255,255,255,0.96)' : 'var(--color-text-tertiary)' }}>
-                                    {stat.label}
-                                </span>
+                        <div className="relative flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+                            <div className="min-w-0">
+                                <div className="inline-flex items-center gap-2 rounded-full border border-orange-500/30 bg-orange-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-orange-200">
+                                    <Sparkles className="h-3.5 w-3.5" />
+                                    {tx(
+                                        'dashboard.client.commandCenter',
+                                        undefined,
+                                        'Client Command Center',
+                                    )}
+                                </div>
+
+                                <div className="mt-4 flex items-center gap-4 min-w-0">
+                                    {profile.avatar_url ? (
+                                        <img
+                                            src={profile.avatar_url}
+                                            alt={firstName}
+                                            className="h-14 w-14 rounded-full border border-[#3a3a3a] object-cover ring-2 ring-orange-500/30"
+                                        />
+                                    ) : (
+                                        <div className="h-14 w-14 rounded-full border border-[#3a3a3a] bg-[#161616] flex items-center justify-center ring-2 ring-orange-500/30">
+                                            <Users className="h-6 w-6 text-orange-300" />
+                                        </div>
+                                    )}
+
+                                    <div className="min-w-0">
+                                        <h1 className="font-display text-2xl sm:text-3xl font-bold tracking-tight truncate text-white">
+                                            {tx(
+                                                'dashboard.client.welcomeBack',
+                                                undefined,
+                                                'Welcome back',
+                                            )}
+                                            , {firstName}
+                                        </h1>
+                                        <p className="text-orange-100/80 text-sm mt-1">
+                                            {tx(
+                                                'dashboard.client.commandCenterSubtitle',
+                                                undefined,
+                                                'Track projects, proposals, and spending from one place.',
+                                            )}
+                                        </p>
+                                        <p className="text-xs text-orange-100/60 mt-1">
+                                            {getTimeGreeting(tx)}
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
-                        ))}
-                    </div>
-                </m.div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-[var(--spacing-5)]">
-                    <m.div className="lg:col-span-2 space-y-[var(--spacing-5)]" variants={containerVariants} initial="hidden" animate="show">
-                        <m.div variants={itemVariants}>
-                            <DashWidget title={tx('dashboard.client.activeProjects', undefined, 'Active Projects')} icon={<FolderOpen className="w-4 h-4" />} action={{ label: tx('dashboard.client.viewAll', undefined, 'View all'), onClick: () => navigate('/client/jobs') }}>
-                                {isStatsLoading ? (
-                                    <SkeletonCard />
-                                ) : (stats?.jobs?.length ?? 0) === 0 ? (
-                                    <EmptyState
-                                        icon={FolderOpen}
-                                        title={tx('dashboard.client.noActiveProjects', undefined, 'No active projects')}
-                                        description={tx('dashboard.client.postFirstProject', undefined, 'Post your first project to find talented freelancers')}
-                                        className="min-h-[360px] rounded-[1.6rem] border"
-                                        action={{ label: tx('dashboard.client.postAProject', undefined, 'Post a Project'), onClick: () => navigate('/jobs/new') }}
-                                    />
-                                ) : (
-                                    <div className="space-y-[var(--spacing-3)]">
-                                        {(stats?.jobs ?? []).slice(0, 3).map((job) => (
-                                            <div
-                                                key={job.id}
-                                                className="group relative overflow-hidden rounded-xl border border-[var(--color-border-subtle)] bg-[var(--color-background-elevated)] p-[var(--spacing-4)] cursor-pointer transition-all duration-200 hover:border-[var(--color-brand-primary)] hover:shadow-md hover:-translate-y-0.5"
-                                                onClick={() => navigate(`/jobs/${job.id}`)}
-                                            >
-                                                <div className="flex items-start justify-between gap-[var(--spacing-4)]">
-                                                    <div className="min-w-0 flex-1">
-                                                        <div className="flex items-center gap-[var(--spacing-2)] mb-[var(--spacing-2)]">
-                                                            <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 bg-gradient-to-br from-[var(--workspace-primary)] to-[var(--workspace-primary-hover)]">
-                                                                <FolderOpen className="w-5 h-5 text-white" />
-                                                            </div>
-                                                            <div className="min-w-0 flex-1">
-                                                                <p className="font-[var(--font-fontWeight-bold)] text-[var(--font-fontSize-base)] truncate text-[var(--color-text-primary)] group-hover:text-[var(--color-brand-primary)] transition-colors">
-                                                                    {job.title}
-                                                                </p>
-                                                            </div>
-                                                        </div>
-                                                        <div className="flex items-center gap-[var(--spacing-3)] text-[var(--font-fontSize-xs)] text-[var(--color-text-tertiary)] ml-12">
-                                                            <span className="flex items-center gap-1">
-                                                                <FileText className="w-3.5 h-3.5" />
-                                                                {job.proposals_count ?? 0} {tx('dashboard.client.proposalsCountText', undefined, 'proposals')}
-                                                            </span>
-                                                            <span className="w-1 h-1 rounded-full bg-[var(--color-text-tertiary)]" />
-                                                            <span>{new Date(job.created_at).toLocaleDateString()}</span>
-                                                        </div>
-                                                    </div>
-                                                    <div className="flex items-center gap-[var(--spacing-2)] shrink-0">
-                                                        <Badge variant={job.status === 'open' ? 'info' : job.status === 'in_progress' ? 'warning' : 'default'}>
-                                                            {tx(`status.${job.status}`, undefined, job.status)}
-                                                        </Badge>
-                                                        <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-all duration-200 group-hover:translate-x-1 text-[var(--color-brand-primary)]" />
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        ))}
+                            <div className="grid grid-cols-2 gap-3 w-full lg:w-auto lg:min-w-[440px]">
+                                {[
+                                    {
+                                        label: tx(
+                                            'dashboard.client.projectsLabel',
+                                            undefined,
+                                            'Projects',
+                                        ),
+                                        value: statsData.totalJobs,
+                                    },
+                                    {
+                                        label: tx(
+                                            'dashboard.client.activeLabel',
+                                            undefined,
+                                            'Active',
+                                        ),
+                                        value: statsData.activeJobs,
+                                    },
+                                    {
+                                        label: tx(
+                                            'dashboard.client.proposalsLabel',
+                                            undefined,
+                                            'Proposals',
+                                        ),
+                                        value: statsData.totalProposals,
+                                    },
+                                    {
+                                        label: tx(
+                                            'dashboard.client.spentLabel',
+                                            undefined,
+                                            'Spent',
+                                        ),
+                                        value: formatCurrency(
+                                            statsData.totalSpent,
+                                            true,
+                                            language,
+                                        ),
+                                    },
+                                ].map((stat) => (
+                                    <div
+                                        key={stat.label}
+                                        className="rounded-xl border border-[#333] bg-[#101010]/90 px-4 py-3"
+                                    >
+                                        <p className="text-[10px] uppercase tracking-[0.18em] text-orange-100/65">
+                                            {stat.label}
+                                        </p>
+                                        <p className="mt-1 text-2xl font-bold text-white">
+                                            {stat.value}
+                                        </p>
                                     </div>
-                                )}
-                            </DashWidget>
-                        </m.div>
+                                ))}
+                            </div>
+                        </div>
 
-                        <m.div variants={itemVariants}>
-                            <DashWidget title={tx('dashboard.client.recentProposals', undefined, 'Recent Proposals')} icon={<FileText className="w-4 h-4" />}>
-                                {isStatsLoading ? (
-                                    <SkeletonCard />
-                                ) : (stats?.proposals?.length ?? 0) === 0 ? (
-                                    <EmptyState
-                                        icon={FileText}
-                                        title={tx('dashboard.client.noProposalsYet', undefined, 'No proposals yet')}
-                                        description={tx('dashboard.client.postJobToReceiveProposals', undefined, 'Post a project to start receiving proposals')}
-                                        className="rounded-[1.5rem] border"
-                                    />
-                                ) : (
-                                    <div className="space-y-[var(--spacing-3)]">
-                                        {(stats?.proposals ?? []).slice(0, 4).map((proposal) => (
-                                            <div
-                                                key={proposal.id}
-                                                className="group relative overflow-hidden rounded-xl border border-[var(--color-border-subtle)] bg-[var(--color-background-elevated)] p-[var(--spacing-4)] cursor-pointer transition-all duration-200 hover:border-[var(--color-brand-primary)] hover:shadow-md hover:-translate-y-0.5"
-                                                onClick={() => navigate(`/client/jobs/${proposal.job_id}/proposals`)}
-                                            >
-                                                <div className="flex items-center justify-between gap-[var(--spacing-4)]">
-                                                    <div className="flex items-center gap-[var(--spacing-3)] min-w-0 flex-1">
-                                                        <div className="relative w-11 h-11 rounded-full overflow-hidden shrink-0 ring-2 ring-[var(--color-border-subtle)] group-hover:ring-[var(--color-brand-primary)] transition-all">
-                                                            {proposal.freelancer?.avatar_url ? (
-                                                                <img src={proposal.freelancer.avatar_url} className="w-full h-full object-cover" alt="" />
-                                                            ) : (
-                                                                <div className="w-full h-full flex items-center justify-center text-[var(--font-fontSize-sm)] font-[var(--font-fontWeight-bold)] bg-gradient-to-br from-[var(--workspace-primary)] to-[var(--workspace-primary-hover)] text-white">
-                                                                    {proposal.freelancer?.full_name?.[0] ?? 'F'}
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                        <div className="min-w-0 flex-1">
-                                                            <p className="font-[var(--font-fontWeight-bold)] text-[var(--font-fontSize-sm)] truncate text-[var(--color-text-primary)] group-hover:text-[var(--color-brand-primary)] transition-colors">
-                                                                {proposal.freelancer?.full_name ?? tx('dashboard.client.freelancerFallback', undefined, 'Freelancer')}
-                                                            </p>
-                                                            <p className="text-[var(--font-fontSize-xs)] truncate text-[var(--color-text-tertiary)] mt-0.5">
-                                                                {proposal.job?.title ?? tx('dashboard.client.untitledJob', undefined, 'Untitled job')}
-                                                            </p>
-                                                            <p className="text-[var(--font-fontSize-xs)] font-[var(--font-fontWeight-semibold)] text-[var(--color-brand-primary)] mt-1">
-                                                                {formatCurrency(proposal.bid_amount ?? 0, true, language)}
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                    <div className="flex items-center gap-[var(--spacing-2)] shrink-0">
-                                                        <Badge variant="warning">{tx('dashboard.client.reviewBadge', undefined, 'Review')}</Badge>
-                                                        <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-all duration-200 group-hover:translate-x-1 text-[var(--color-brand-primary)]" />
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
+                        <div className="relative mt-4 flex flex-wrap items-center gap-3">
+                            <span className="inline-flex items-center rounded-full border border-orange-500/30 bg-orange-500/10 px-3 py-1 text-xs text-orange-200/90">
+                                {tx(
+                                    'dashboard.client.reviewQueue',
+                                    undefined,
+                                    'Review Queue',
                                 )}
-                            </DashWidget>
-                        </m.div>
-
-                        <m.div variants={itemVariants}>
-                            <DashWidget title={tx('dashboard.client.activeContracts', undefined, 'Active Contracts')} icon={<Briefcase className="w-4 h-4" />} action={{ label: tx('dashboard.client.viewAll', undefined, 'View all'), onClick: () => navigate('/contracts') }}>
-                                {isStatsLoading ? (
-                                    <SkeletonCard />
-                                ) : (stats?.activeContracts?.length ?? 0) === 0 ? (
-                                    <EmptyState
-                                        icon={Briefcase}
-                                        title={tx('dashboard.client.noActiveContracts', undefined, 'No active contracts')}
-                                        description={tx('dashboard.client.acceptProposalToStart', undefined, 'Accept a proposal to start a contract')}
-                                        className="rounded-[1.5rem] border"
-                                    />
-                                ) : (
-                                    <div className="space-y-[var(--spacing-3)]">
-                                        {(stats?.activeContracts ?? []).slice(0, 3).map((contract) => (
-                                            <div
-                                                key={contract.id}
-                                                className="group relative overflow-hidden rounded-xl border border-[var(--color-border-subtle)] bg-[var(--color-background-elevated)] p-[var(--spacing-4)] cursor-pointer transition-all duration-200 hover:border-[var(--color-brand-primary)] hover:shadow-md hover:-translate-y-0.5"
-                                                onClick={() => navigate(`/contracts/${contract.id}`)}
-                                            >
-                                                <div className="flex items-start justify-between gap-[var(--spacing-4)]">
-                                                    <div className="min-w-0 flex-1">
-                                                        <div className="flex items-center gap-[var(--spacing-2)] mb-[var(--spacing-2)]">
-                                                            <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 bg-gradient-to-br from-green-500 to-emerald-600">
-                                                                <Briefcase className="w-5 h-5 text-white" />
-                                                            </div>
-                                                            <div className="min-w-0 flex-1">
-                                                                <p className="font-[var(--font-fontWeight-bold)] text-[var(--font-fontSize-base)] truncate text-[var(--color-text-primary)] group-hover:text-[var(--color-brand-primary)] transition-colors">
-                                                                    {contract.title}
-                                                                </p>
-                                                            </div>
-                                                        </div>
-                                                        <div className="flex items-center gap-[var(--spacing-3)] text-[var(--font-fontSize-xs)] ml-12">
-                                                            <span className="text-[var(--color-text-tertiary)]">
-                                                                {contract.freelancer?.full_name ?? tx('dashboard.client.freelancerFallback', undefined, 'Freelancer')}
-                                                            </span>
-                                                            <span className="w-1 h-1 rounded-full bg-[var(--color-text-tertiary)]" />
-                                                            <span className="font-[var(--font-fontWeight-semibold)] text-[var(--color-brand-primary)]">
-                                                                {formatCurrency(contract.total_amount ?? 0, true, language)}
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                    <div className="flex items-center gap-[var(--spacing-2)] shrink-0">
-                                                        <Badge variant={contract.status === 'active' ? 'success' : 'warning'}>
-                                                            {tx(`status.${contract.status}`, undefined, contract.status)}
-                                                        </Badge>
-                                                        <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-all duration-200 group-hover:translate-x-1 text-[var(--color-brand-primary)]" />
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </DashWidget>
-                        </m.div>
-                    </m.div>
-
-                    <m.div className="space-y-[var(--spacing-5)]" variants={containerVariants} initial="hidden" animate="show">
-                        <m.div variants={itemVariants}>
-                            <div
-                                className="relative overflow-hidden rounded-[var(--radius-2xl)] p-[var(--spacing-6)] sm:p-[var(--spacing-8)]"
-                                style={{ background: 'var(--workspace-primary)' }}
+                                : {proposalsWaitingReview}
+                            </span>
+                            <button
+                                type="button"
+                                onClick={() => navigate('/jobs/new')}
+                                className="inline-flex items-center rounded-full border border-[#373737] bg-[#111111] px-3 py-1 text-xs font-medium text-orange-200 hover:border-orange-500/40 hover:text-orange-100 transition-colors"
                             >
-                                {/* Decorative elements */}
-                                <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/20 to-transparent" />
-                                <div className="pointer-events-none absolute -right-12 -top-12 h-40 w-40 rounded-full bg-white/10 blur-3xl" />
-                                <div className="pointer-events-none absolute -bottom-12 -left-12 h-40 w-40 rounded-full bg-black/10 blur-3xl" />
-                                
-                                <div className="relative z-10">
-                                    <div className="mb-[var(--spacing-4)] inline-flex h-12 w-12 items-center justify-center rounded-full border border-white/30 bg-white/20 shadow-inner backdrop-blur-md">
-                                        <Plus className="h-6 w-6 text-white" />
+                                {tx(
+                                    'dashboard.client.postAProject',
+                                    undefined,
+                                    'Post a Project',
+                                )}
+                            </button>
+                        </div>
+                    </section>
+
+                    <div className="flex flex-col gap-8">
+                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+                            <section className="lg:col-span-8 h-full bg-[#141414] border border-[#262626] rounded-2xl flex flex-col overflow-hidden">
+                                <header className="px-6 py-4 border-b border-[#262626] flex justify-between items-center">
+                                    <h2 className="text-sm font-semibold uppercase tracking-[0.14em] text-orange-300">
+                                        {tx(
+                                            'dashboard.client.activeProjects',
+                                            undefined,
+                                            'Active Projects',
+                                        )}
+                                    </h2>
+                                    <button
+                                        type="button"
+                                        onClick={() => navigate('/client/jobs')}
+                                        className="text-sm text-orange-400 hover:text-orange-300 transition-colors"
+                                    >
+                                        {tx(
+                                            'dashboard.client.viewAll',
+                                            undefined,
+                                            'View All',
+                                        )}{' '}
+                                        -&gt;
+                                    </button>
+                                </header>
+
+                                {isStatsLoading ? (
+                                    <div className="p-6 space-y-3">
+                                        <div className="animate-pulse h-14 rounded-lg bg-[#1b1b1b] border border-[#262626]" />
+                                        <div className="animate-pulse h-14 rounded-lg bg-[#1b1b1b] border border-[#262626]" />
+                                        <div className="animate-pulse h-14 rounded-lg bg-[#1b1b1b] border border-[#262626]" />
                                     </div>
-                                    <h3 className="mb-[var(--spacing-2)] font-display text-[1.75rem] font-bold tracking-tight text-white leading-tight">
-                                        {tx('dashboard.client.needSomethingDone', undefined, 'Need something done?')}
+                                ) : jobs.length === 0 ? (
+                                    <div className="px-6 py-8">
+                                        <p className="text-sm text-orange-100/70">
+                                            {tx(
+                                                'dashboard.client.noActiveProjects',
+                                                undefined,
+                                                'No active projects yet.',
+                                            )}
+                                        </p>
+                                        <button
+                                            type="button"
+                                            onClick={() => navigate('/jobs/new')}
+                                            className="mt-4 rounded-xl bg-orange-600 hover:bg-orange-500 px-4 py-2 text-xs font-semibold text-white transition-colors"
+                                        >
+                                            {tx(
+                                                'dashboard.client.postAProject',
+                                                undefined,
+                                                'Post a Project',
+                                            )}
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div>
+                                        {jobs.slice(0, 3).map((job, index) => (
+                                            <button
+                                                key={job.id}
+                                                type="button"
+                                                onClick={() => navigate(`/jobs/${job.id}`)}
+                                                className={`w-full text-left px-6 py-4 hover:bg-[#262626]/30 transition-colors ${index < Math.min(jobs.length, 3) - 1 ? 'border-b border-[#262626]' : ''}`}
+                                            >
+                                                <div className="flex items-start justify-between gap-4">
+                                                    <div className="min-w-0">
+                                                        <p className="text-sm font-semibold text-white truncate">
+                                                            {job.title}
+                                                        </p>
+                                                        <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-orange-100/70">
+                                                            <span>
+                                                                {job.proposals_count}{' '}
+                                                                {tx(
+                                                                    'dashboard.client.proposalsCountText',
+                                                                    undefined,
+                                                                    'proposals',
+                                                                )}
+                                                            </span>
+                                                            <span className="text-orange-300/50">•</span>
+                                                            <span>
+                                                                {formatDate(new Date(job.created_at).toISOString())}
+                                                            </span>
+                                                            <span className="text-orange-300/50">•</span>
+                                                            <span>
+                                                                {formatBudgetRange(job, language)}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <span
+                                                        className={`px-2.5 py-1 rounded-full text-[11px] font-semibold whitespace-nowrap ${jobStatusClass(job.status)}`}
+                                                    >
+                                                        {tx(
+                                                            `status.${job.status}`,
+                                                            undefined,
+                                                            job.status,
+                                                        )}
+                                                    </span>
+                                                </div>
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                            </section>
+
+                            <section className="lg:col-span-4 h-full relative overflow-hidden rounded-2xl border border-orange-500/30 bg-gradient-to-br from-orange-500/15 via-[#181818] to-[#121212] p-6">
+                                <div className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-orange-500/25 blur-2xl" />
+
+                                <div className="relative">
+                                    <div className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-orange-400/40 bg-orange-500/20 text-orange-200">
+                                        <Plus className="h-5 w-5" />
+                                    </div>
+                                    <h3 className="mt-4 text-xl font-bold text-white leading-tight">
+                                        {tx(
+                                            'dashboard.client.needSomethingDone',
+                                            undefined,
+                                            'Need something done?',
+                                        )}
                                     </h3>
-                                    <p className="mb-[var(--spacing-8)] text-[15px] font-medium leading-relaxed text-white/80">
-                                        {tx('dashboard.client.postProjectFree', undefined, 'Post a project free. Get proposals from verified Tunisian talent.')}
+                                    <p className="mt-2 text-sm text-orange-100/75">
+                                        {tx(
+                                            'dashboard.client.postProjectFree',
+                                            undefined,
+                                            'Post a project free. Get proposals from verified Tunisian talent.',
+                                        )}
                                     </p>
                                     <button
+                                        type="button"
                                         onClick={() => navigate('/jobs/new')}
-                                        className="group flex w-full items-center justify-center gap-[var(--spacing-2)] rounded-xl bg-black/80 px-[var(--spacing-4)] py-[var(--spacing-3)] text-sm font-bold text-white shadow-lg transition-all duration-150 hover:-translate-y-0.5 hover:bg-black/90 active:translate-y-0"
+                                        className="mt-4 w-full rounded-xl bg-orange-600 hover:bg-orange-500 py-2.5 text-sm font-semibold text-white transition-colors"
                                     >
-                                        {tx('dashboard.client.postProjectFreeCta', undefined, 'Post a project — it\'s free')}
-                                        <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                                        {tx(
+                                            'dashboard.client.postProjectFreeCta',
+                                            undefined,
+                                            "Post a project - it's free",
+                                        )}
                                     </button>
                                 </div>
-                            </div>
-                        </m.div>
+                            </section>
+                        </div>
 
-                        <m.div variants={itemVariants}>
-                            <DashWidget title={tx('dashboard.client.thisMonth', undefined, 'This Month')} icon={<DollarSign className="w-4 h-4" />}>
-                                <div>
-                                    <p className="font-display font-[var(--font-fontWeight-bold)] text-[var(--font-fontSize-3xl)] text-[var(--color-text-primary)]">
-                                        {formatCurrency(statsData.monthlySpending, true, language)}
-                                    </p>
-                                    <p className="text-[var(--font-fontSize-xs)] mt-[var(--spacing-1)] text-[var(--color-text-tertiary)]">
-                                        {tx('dashboard.client.acrossActiveContracts', { count: statsData.activeContracts }, `Across ${statsData.activeContracts} active contracts`)}
-                                    </p>
-                                    <Button variant="outline" size="sm" className="mt-[var(--spacing-4)] w-full" onClick={() => navigate('/wallet')}>
-                                        {tx('dashboard.client.viewWallet', undefined, 'View Wallet')} <ArrowRight className="w-3.5 h-3.5 ml-1" />
-                                    </Button>
-                                </div>
-                            </DashWidget>
-                        </m.div>
+                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+                            <section className="lg:col-span-8 h-full bg-[#141414] border border-[#262626] rounded-2xl flex flex-col overflow-hidden">
+                                <header className="px-6 py-4 border-b border-[#262626] flex justify-between items-center">
+                                    <h2 className="text-sm font-semibold uppercase tracking-[0.14em] text-orange-300">
+                                        {tx(
+                                            'dashboard.client.recentProposals',
+                                            undefined,
+                                            'Recent Proposals',
+                                        )}
+                                    </h2>
+                                    <button
+                                        type="button"
+                                        onClick={() => navigate('/client/jobs')}
+                                        className="text-sm text-orange-400 hover:text-orange-300 transition-colors"
+                                    >
+                                        {tx(
+                                            'dashboard.client.viewAll',
+                                            undefined,
+                                            'View All',
+                                        )}{' '}
+                                        -&gt;
+                                    </button>
+                                </header>
 
-                        <m.div variants={itemVariants}>
-                            <DashWidget title={tx('dashboard.client.quickActions', undefined, 'Quick Actions')} icon={<Settings className="w-4 h-4" />}>
-                                <div className="space-y-[var(--spacing-2)]">
+                                {isStatsLoading ? (
+                                    <div className="p-6 space-y-3">
+                                        <div className="animate-pulse h-14 rounded-lg bg-[#1b1b1b] border border-[#262626]" />
+                                        <div className="animate-pulse h-14 rounded-lg bg-[#1b1b1b] border border-[#262626]" />
+                                        <div className="animate-pulse h-14 rounded-lg bg-[#1b1b1b] border border-[#262626]" />
+                                    </div>
+                                ) : proposals.length === 0 ? (
+                                    <div className="px-6 py-8 text-sm text-orange-100/70">
+                                        {tx(
+                                            'dashboard.client.noProposalsYet',
+                                            undefined,
+                                            'No proposals yet.',
+                                        )}
+                                    </div>
+                                ) : (
+                                    <div>
+                                        {proposals.slice(0, 4).map((proposal, index) => (
+                                            <div
+                                                key={proposal.id}
+                                                className={`px-6 py-4 hover:bg-[#262626]/30 transition-colors flex items-center justify-between gap-3 ${index < Math.min(proposals.length, 4) - 1 ? 'border-b border-[#262626]' : ''}`}
+                                            >
+                                                <div className="flex items-center gap-3 min-w-0">
+                                                    <div className="relative h-10 w-10 rounded-full overflow-hidden border border-[#3a3a3a] shrink-0">
+                                                        {proposal.freelancer?.avatar_url ? (
+                                                            <img
+                                                                src={proposal.freelancer.avatar_url}
+                                                                alt={proposal.freelancer?.full_name || ''}
+                                                                className="h-full w-full object-cover"
+                                                            />
+                                                        ) : (
+                                                            <div className="h-full w-full bg-orange-500/20 text-orange-200 flex items-center justify-center text-xs font-bold uppercase">
+                                                                {proposal.freelancer?.full_name?.[0] || 'F'}
+                                                            </div>
+                                                        )}
+                                                    </div>
+
+                                                    <div className="min-w-0">
+                                                        <p className="text-sm font-semibold text-white truncate">
+                                                            {proposal.freelancer?.full_name ||
+                                                                tx(
+                                                                    'dashboard.client.freelancerFallback',
+                                                                    undefined,
+                                                                    'Freelancer',
+                                                                )}
+                                                        </p>
+                                                        <p className="text-xs text-orange-100/70 truncate mt-1">
+                                                            {proposal.job?.title ||
+                                                                tx(
+                                                                    'dashboard.client.untitledJob',
+                                                                    undefined,
+                                                                    'Untitled job',
+                                                                )}
+                                                        </p>
+                                                    </div>
+                                                </div>
+
+                                                <div className="text-right shrink-0">
+                                                    <p className="text-sm font-semibold text-white">
+                                                        {formatCurrency(
+                                                            proposal.bid_amount ?? 0,
+                                                            true,
+                                                            language,
+                                                        )}
+                                                    </p>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() =>
+                                                            navigate(
+                                                                `/client/jobs/${proposal.job_id}/proposals`,
+                                                            )
+                                                        }
+                                                        className="mt-1 text-xs text-orange-300 hover:text-orange-200 transition-colors"
+                                                    >
+                                                        {tx(
+                                                            'dashboard.client.reviewBadge',
+                                                            undefined,
+                                                            'Review',
+                                                        )}
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </section>
+
+                            <section className="lg:col-span-4 h-full bg-[#141414] border border-[#262626] rounded-2xl p-6">
+                                <p className="text-sm font-semibold uppercase tracking-[0.14em] text-orange-300">
+                                    {tx('dashboard.client.thisMonth', undefined, 'This Month')}
+                                </p>
+                                <p className="text-3xl font-black text-white mt-2">
+                                    {formatCurrency(
+                                        statsData.monthlySpending,
+                                        true,
+                                        language,
+                                    )}
+                                </p>
+
+                                <p className="text-xs text-orange-100/70 mt-2">
+                                    {tx(
+                                        'dashboard.client.acrossActiveContracts',
+                                        { count: statsData.activeContracts },
+                                        `Across ${statsData.activeContracts} active contracts`,
+                                    )}
+                                </p>
+
+                                <button
+                                    type="button"
+                                    onClick={() => navigate('/wallet')}
+                                    className="w-full mt-4 bg-[#262626] hover:bg-[#333] text-white py-2.5 rounded-xl text-sm font-medium transition-colors"
+                                >
+                                    {tx(
+                                        'dashboard.client.viewWallet',
+                                        undefined,
+                                        'View Wallet',
+                                    )}
+                                </button>
+                            </section>
+                        </div>
+
+                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+                            <section className="lg:col-span-8 h-full bg-[#141414] border border-[#262626] rounded-2xl flex flex-col overflow-hidden">
+                                <header className="px-6 py-4 border-b border-[#262626] flex justify-between items-center">
+                                    <h2 className="text-sm font-semibold uppercase tracking-[0.14em] text-orange-300">
+                                        {tx(
+                                            'dashboard.client.activeContracts',
+                                            undefined,
+                                            'Active Contracts',
+                                        )}
+                                    </h2>
+                                    <button
+                                        type="button"
+                                        onClick={() => navigate('/contracts')}
+                                        className="text-sm text-orange-400 hover:text-orange-300 transition-colors"
+                                    >
+                                        {tx(
+                                            'dashboard.client.viewAll',
+                                            undefined,
+                                            'View All',
+                                        )}{' '}
+                                        -&gt;
+                                    </button>
+                                </header>
+
+                                {isStatsLoading ? (
+                                    <div className="p-6 space-y-3">
+                                        <div className="animate-pulse h-14 rounded-lg bg-[#1b1b1b] border border-[#262626]" />
+                                        <div className="animate-pulse h-14 rounded-lg bg-[#1b1b1b] border border-[#262626]" />
+                                    </div>
+                                ) : activeContracts.length === 0 ? (
+                                    <div className="px-6 py-8 text-sm text-orange-100/70">
+                                        {tx(
+                                            'dashboard.client.noActiveContracts',
+                                            undefined,
+                                            'No active contracts yet.',
+                                        )}
+                                    </div>
+                                ) : (
+                                    <div>
+                                        {activeContracts
+                                            .slice(0, 3)
+                                            .map((contract, index) => (
+                                                <div
+                                                    key={contract.id}
+                                                    className={`px-6 py-4 hover:bg-[#262626]/30 transition-colors flex items-center justify-between gap-3 ${index < Math.min(activeContracts.length, 3) - 1 ? 'border-b border-[#262626]' : ''}`}
+                                                >
+                                                    <div className="min-w-0">
+                                                        <p className="text-sm font-semibold text-white truncate">
+                                                            {contract.title}
+                                                        </p>
+                                                        <p className="text-xs text-orange-100/70 truncate mt-1">
+                                                            {contract.freelancer?.full_name ||
+                                                                tx(
+                                                                    'dashboard.client.freelancerFallback',
+                                                                    undefined,
+                                                                    'Freelancer',
+                                                                )}
+                                                        </p>
+                                                    </div>
+
+                                                    <div className="text-right shrink-0">
+                                                        <p className="text-sm font-semibold text-white">
+                                                            {formatCurrency(
+                                                                contract.total_amount ?? 0,
+                                                                true,
+                                                                language,
+                                                            )}
+                                                        </p>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() =>
+                                                                navigate(`/contracts/${contract.id}`)
+                                                            }
+                                                            className="mt-1 text-xs text-orange-300 hover:text-orange-200 transition-colors"
+                                                        >
+                                                            {tx(
+                                                                'dashboard.client.openContract',
+                                                                undefined,
+                                                                'Open',
+                                                            )}
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                    </div>
+                                )}
+                            </section>
+
+                            <section className="lg:col-span-4 h-full bg-[#141414] border border-[#262626] rounded-2xl p-6">
+                                <p className="text-sm font-semibold uppercase tracking-[0.14em] text-orange-300">
+                                    {tx(
+                                        'dashboard.client.quickActions',
+                                        undefined,
+                                        'Quick Actions',
+                                    )}
+                                </p>
+
+                                <div className="mt-4 flex flex-col gap-2">
                                     {[
-                                        { label: tx('nav.findFreelancers', undefined, 'Find Freelancers'), icon: Users, path: '/find-freelancers' },
-                                        { label: tx('nav.myProjects', undefined, 'My Projects'), icon: FolderOpen, path: '/client/jobs' },
-                                        { label: tx('nav.contracts', undefined, 'Contracts'), icon: Briefcase, path: '/contracts' },
-                                        { label: tx('nav.messages', undefined, 'Messages'), icon: MessageSquare, path: '/messages' },
+                                        {
+                                            label: tx(
+                                                'nav.findFreelancers',
+                                                undefined,
+                                                'Find Freelancers',
+                                            ),
+                                            icon: Users,
+                                            path: '/find-freelancers',
+                                        },
+                                        {
+                                            label: tx(
+                                                'nav.myProjects',
+                                                undefined,
+                                                'My Projects',
+                                            ),
+                                            icon: FolderOpen,
+                                            path: '/client/jobs',
+                                        },
+                                        {
+                                            label: tx(
+                                                'nav.contracts',
+                                                undefined,
+                                                'Contracts',
+                                            ),
+                                            icon: Briefcase,
+                                            path: '/contracts',
+                                        },
+                                        {
+                                            label: tx(
+                                                'nav.messages',
+                                                undefined,
+                                                'Messages',
+                                            ),
+                                            icon: MessageSquare,
+                                            path: '/messages',
+                                        },
                                     ].map((action) => (
                                         <button
                                             key={action.label}
+                                            type="button"
                                             onClick={() => navigate(action.path)}
-                                            className="w-full flex items-center gap-[var(--spacing-3)] px-[var(--spacing-3)] py-[var(--spacing-2)] rounded-xl text-[var(--font-fontSize-sm)] font-[var(--font-fontWeight-medium)] transition-all duration-[var(--animation-hover-duration)] text-left text-[var(--color-text-secondary)] hover:bg-[var(--color-background-muted)] hover:text-[var(--color-text-primary)]"
+                                            className="w-full rounded-xl border border-[#262626] bg-[#101010] hover:bg-[#262626]/40 text-white px-3 py-2.5 text-sm font-medium transition-colors flex items-center justify-between"
                                         >
-                                            <action.icon className="w-4 h-4 shrink-0 text-[var(--color-brand-primary)]" />
-                                            {action.label}
+                                            <span>{action.label}</span>
+                                            <action.icon className="h-4 w-4 text-orange-300" />
                                         </button>
                                     ))}
                                 </div>
-                            </DashWidget>
-                        </m.div>
-                    </m.div>
+                            </section>
+                        </div>
+                    </div>
                 </div>
             </main>
         </div>

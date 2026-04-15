@@ -1,6 +1,7 @@
 import { BadgeCheck, CheckCircle2, MapPin, Star } from "lucide-react";
 
 import OptimizedImage from "@/components/common/OptimizedImage";
+import { useTranslation } from "@/i18n";
 
 interface ClientInfoSidebarProps {
   clientName?: string;
@@ -45,9 +46,13 @@ export default function ClientInfoSidebar({
   emailVerified = false,
   memberSince = "Mar 2026",
 }: ClientInfoSidebarProps) {
+  const { tx } = useTranslation();
+
   return (
     <aside className="bg-[#141414] border border-[#262626] rounded-2xl p-6 flex flex-col">
-      <h3 className="text-base font-bold text-white mb-6">About the Client</h3>
+      <h3 className="text-base font-bold text-white mb-6">
+        {tx("jobDetail.aboutClient", undefined, "About the Client")}
+      </h3>
 
       <div className="flex items-center gap-4 mb-4">
         {avatarUrl ? (
@@ -81,44 +86,56 @@ export default function ClientInfoSidebar({
         <div className="grid grid-cols-2 gap-y-6 gap-x-4">
           <div>
             <span className="text-white font-bold text-lg">{jobsPosted}</span>
-            <span className="text-xs text-gray-500 block">Jobs Posted</span>
+            <span className="text-xs text-gray-500 block">
+              {tx("jobDetail.postedJobs", undefined, "Jobs Posted")}
+            </span>
           </div>
           <div>
             <span className="text-white font-bold text-lg">{hireRate}</span>
-            <span className="text-xs text-gray-500 block">Hire Rate</span>
+            <span className="text-xs text-gray-500 block">
+              {tx("jobDetail.hireRate", undefined, "Hire Rate")}
+            </span>
           </div>
           <div>
             <span className="text-white font-bold text-lg">{totalSpent}</span>
-            <span className="text-xs text-gray-500 block">Total Spent</span>
+            <span className="text-xs text-gray-500 block">
+              {tx("jobDetail.totalSpending", undefined, "Total Spent")}
+            </span>
           </div>
           <div>
             <span className="text-white font-bold text-lg">{avgHourlyPaid}</span>
-            <span className="text-xs text-gray-500 block">Avg Hourly Paid</span>
+            <span className="text-xs text-gray-500 block">
+              {tx("jobDetail.avgHourlyPaid", undefined, "Avg Hourly Paid")}
+            </span>
           </div>
         </div>
       </div>
 
       <div className="border-t border-[#262626] mt-6 pt-6">
-        <h4 className="text-sm font-semibold text-white mb-4">Client Verifications</h4>
+        <h4 className="text-sm font-semibold text-white mb-4">
+          {tx("jobDetail.clientVerifications", undefined, "Client Verifications")}
+        </h4>
 
         <div className="flex flex-col gap-3 text-sm">
           <div className="flex items-center gap-2.5 text-gray-300">
             <BadgeCheck className={`w-4 h-4 ${paymentVerified ? "text-green-500" : "text-gray-500"}`} />
-            <span>Payment method verified</span>
+            <span>{tx("jobDetail.paymentMethodVerified", undefined, "Payment method verified")}</span>
           </div>
 
           <div className="flex items-center gap-2.5 text-gray-300">
             <CheckCircle2 className={`w-4 h-4 ${phoneVerified ? "text-green-500" : "text-gray-500"}`} />
-            <span>Phone number verified</span>
+            <span>{tx("jobDetail.phoneNumberVerified", undefined, "Phone number verified")}</span>
           </div>
 
           <div className="flex items-center gap-2.5 text-gray-300">
             <CheckCircle2 className={`w-4 h-4 ${emailVerified ? "text-green-500" : "text-gray-500"}`} />
-            <span>Email address verified</span>
+            <span>{tx("jobDetail.emailAddressVerified", undefined, "Email address verified")}</span>
           </div>
         </div>
 
-        <span className="text-xs text-gray-500 mt-6 block">Member since {memberSince}</span>
+        <span className="text-xs text-gray-500 mt-6 block">
+          {tx("jobDetail.memberSince", undefined, "Member since")} {memberSince}
+        </span>
       </div>
     </aside>
   );

@@ -56,8 +56,12 @@ function ClientOnboardingPage() {
   return (
     <>
       <SEO
-        title="Client Onboarding"
-        description="Set up your client account in a fast, focused flow."
+        title={tx("onboarding.client.seoTitle", undefined, "Client Onboarding")}
+        description={tx(
+          "onboarding.client.seoDescription",
+          undefined,
+          "Set up your client account in a fast, focused flow.",
+        )}
       />
       <ProgressiveOnboarding
         role="client"

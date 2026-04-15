@@ -34,11 +34,6 @@ import type { Skill } from "../types";
 import ProposalModal from "../components/proposals/ProposalModal";
 import type { ProposalFormData } from "../components/proposals/ProposalModal";
 import { sendNewProposalEmail } from "../lib/email";
-import {
-  withdrawProposalWithRefund,
-  getConnectsBalance,
-  CONNECTS_COST,
-} from "../services/connects";
 import SimilarJobCard from "../components/jobs/SimilarJobCard";
 import ClientInfoSidebar from "../components/jobs/ClientInfoSidebar";
 import OptimizedImage from "../components/common/OptimizedImage";
@@ -284,17 +279,18 @@ function JobDetail() {
       enabled: !!job?.client_id,
     });
 
-  // Connects balance (only for freelancers)
-  const { data: connectsBalance = { balance: 0, used: 0 } } = useQuery({
-    queryKey: ["connectsBalance", user?.id],
-    queryFn: () => getConnectsBalance(user!.id),
+  const {
+    data: dailyProposalUsage = {
+      used: 0,
+      remaining: proposalsService.DAILY_PROPOSAL_LIMIT,
+      limit: proposalsService.DAILY_PROPOSAL_LIMIT,
+    },
+  } = useQuery({
+    queryKey: ["dailyProposalUsage", user?.id],
+    queryFn: () => proposalsService.getDailyProposalUsage(user!.id),
     enabled: !!user?.id && !!freelancerProfile,
   });
-  const connectsAvailable = connectsBalance?.balance ?? 0;
-  const connectsRemainingAfterSubmit = Math.max(
-    connectsAvailable - CONNECTS_COST,
-    0,
-  );
+  const canSubmitToday = dailyProposalUsage.remaining > 0;
 
   // Toggle Save Mutation
   const toggleSaveMutation = useMutation({
@@ -351,12 +347,12 @@ function JobDetail() {
       return;
     }
 
-    if (connectsAvailable < CONNECTS_COST) {
+    if (!canSubmitToday) {
       showToast(
         tx(
-          "jobDetail.connectsNeeded",
-          { count: CONNECTS_COST, balance: connectsAvailable },
-          `You need ${CONNECTS_COST} connects to submit a proposal. Your current balance: ${connectsAvailable}`,
+          "jobDetail.dailyApplyLimitReached",
+          { limit: dailyProposalUsage.limit },
+          `You reached your daily limit of ${dailyProposalUsage.limit} applications. Try again tomorrow.`,
         ),
         "warning",
       );
@@ -377,17 +373,6 @@ function JobDetail() {
     }) => {
       if (!user || !jobId) throw new Error("Missing auth or job");
 
-      // Check connects balance before submitting
-      if (connectsAvailable < CONNECTS_COST) {
-        throw new Error(
-          tx(
-            "jobDetail.connectsNeeded",
-            { count: CONNECTS_COST, balance: connectsAvailable },
-            `You need ${CONNECTS_COST} connects to submit a proposal. Your current balance: ${connectsAvailable}`,
-          ),
-        );
-      }
-
       const { error, data: proposalId } = await proposalsService.createProposal(
         {
           job_id: jobId,
@@ -407,18 +392,11 @@ function JobDetail() {
       await queryClient.cancelQueries({
         queryKey: ["myProposal", jobId, user?.id],
       });
-      await queryClient.cancelQueries({
-        queryKey: ["connectsBalance", user?.id],
-      });
 
       // Snapshot previous values
       const previousProposal = queryClient.getQueryData([
         "myProposal",
         jobId,
-        user?.id,
-      ]);
-      const previousConnects = queryClient.getQueryData([
-        "connectsBalance",
         user?.id,
       ]);
 
@@ -439,20 +417,10 @@ function JobDetail() {
         optimisticProposal,
       );
 
-      // Optimistically update connects balance
-      const newBalance = Math.max(
-        (connectsBalance?.balance ?? 0) - CONNECTS_COST,
-        0,
-      );
-      queryClient.setQueryData(["connectsBalance", user?.id], {
-        balance: newBalance,
-        used: (connectsBalance?.used ?? 0) + CONNECTS_COST,
-      });
-
       // Close modal immediately for instant feedback
       setShowProposalModal(false);
 
-      return { previousProposal, previousConnects };
+      return { previousProposal };
     },
     onSuccess: () => {
       // Invalidate to get real data from server
@@ -460,7 +428,7 @@ function JobDetail() {
         queryKey: ["myProposal", jobId, user?.id],
       });
       queryClient.invalidateQueries({
-        queryKey: ["connectsBalance", user?.id],
+        queryKey: ["dailyProposalUsage", user?.id],
       });
       showToast(t.jobDetail.proposalSent, "success");
 
@@ -475,12 +443,6 @@ function JobDetail() {
         queryClient.setQueryData(
           ["myProposal", jobId, user?.id],
           context.previousProposal,
-        );
-      }
-      if (context?.previousConnects !== undefined) {
-        queryClient.setQueryData(
-          ["connectsBalance", user?.id],
-          context.previousConnects,
         );
       }
 
@@ -503,18 +465,14 @@ function JobDetail() {
   const withdrawProposalMutation = useMutation({
     mutationFn: async () => {
       if (!myProposal) throw new Error("No proposal to withdraw");
-      // Atomic RPC: validates ownership + status + idempotency,
-      // deletes the proposal, and refunds connects in one transaction.
-      await withdrawProposalWithRefund(myProposal.id);
+      const { error } = await proposalsService.withdrawProposal(myProposal.id);
+      if (error) throw error;
     },
     retry: 2,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 5000),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["myProposal", jobId, user?.id],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ["connectsBalance", user?.id],
       });
       showToast(t.jobDetail.proposalWithdrawn, "success");
     },
@@ -1067,6 +1025,7 @@ function JobDetail() {
                     size="lg"
                     className="w-full"
                     onClick={openProposalFlow}
+                    disabled={!canSubmitToday}
                     rightIcon={<Send className="w-5 h-5" />}
                   >
                     {tx("jobDetail.submitProposal", undefined, "Submit Proposal")}
@@ -1076,7 +1035,7 @@ function JobDetail() {
                     <div
                       className="rounded-lg border p-4"
                       style={
-                        connectsAvailable >= CONNECTS_COST
+                        canSubmitToday
                           ? {
                               borderColor: "var(--color-status-info)",
                               background:
@@ -1092,7 +1051,7 @@ function JobDetail() {
                       <div
                         className="flex items-center justify-between gap-4"
                         style={
-                          connectsAvailable >= CONNECTS_COST
+                          canSubmitToday
                             ? {
                                 color:
                                   "var(--color-status-info-text, var(--color-status-info))",
@@ -1106,16 +1065,16 @@ function JobDetail() {
                         <div>
                           <p className="text-sm font-semibold">
                             {tx(
-                              "jobDetail.submissionRequirements",
+                              "jobDetail.dailyApplyLimitTitle",
                               undefined,
-                              "Submission Requirements",
+                              "Daily application limit",
                             )}
                           </p>
                           <p className="mt-1 text-xs opacity-80">
                             {tx(
-                              "jobDetail.connectsRequiredDescription",
-                              undefined,
-                              "This proposal requires connects before sending.",
+                              "jobDetail.dailyApplyLimitDescription",
+                              { limit: dailyProposalUsage.limit },
+                              "To reduce spam, you can submit up to {{limit}} proposals per day.",
                             )}
                           </p>
                         </div>
@@ -1124,21 +1083,21 @@ function JobDetail() {
                           style={{
                             background: "var(--color-background-elevated)",
                             color:
-                              connectsAvailable >= CONNECTS_COST
+                              canSubmitToday
                                 ? "var(--color-status-info)"
                                 : "var(--color-status-error)",
                           }}
                         >
-                          {connectsAvailable >= CONNECTS_COST
+                          {canSubmitToday
                             ? tx(
-                                "jobDetail.readyToSubmit",
+                                "jobDetail.dailyApplyAvailable",
                                 undefined,
-                                "Ready to submit",
+                                "Available today",
                               )
                             : tx(
-                                "jobDetail.insufficientBalance",
+                                "jobDetail.dailyApplyReached",
                                 undefined,
-                                "Insufficient balance",
+                                "Limit reached",
                               )}
                         </span>
                       </div>
@@ -1147,7 +1106,7 @@ function JobDetail() {
                         <div
                           className="rounded-lg p-3 border"
                           style={
-                            connectsAvailable >= CONNECTS_COST
+                            canSubmitToday
                               ? {
                                   borderColor: "var(--color-status-info)",
                                   background:
@@ -1161,16 +1120,16 @@ function JobDetail() {
                           }
                         >
                           <p className="text-[11px] font-medium uppercase tracking-wider opacity-70">
-                            {tx("jobDetail.balance", undefined, "Balance")}
+                            {tx("jobDetail.used", undefined, "Used")}
                           </p>
                           <p className="mt-2 text-lg font-bold">
-                            {connectsAvailable}
+                            {dailyProposalUsage.used}
                           </p>
                         </div>
                         <div
                           className="rounded-lg p-3 border"
                           style={
-                            connectsAvailable >= CONNECTS_COST
+                            canSubmitToday
                               ? {
                                   borderColor: "var(--color-status-info)",
                                   background:
@@ -1184,16 +1143,16 @@ function JobDetail() {
                           }
                         >
                           <p className="text-[11px] font-medium uppercase tracking-wider opacity-70">
-                            {tx("jobDetail.required", undefined, "Required")}
+                            {tx("jobDetail.limit", undefined, "Limit")}
                           </p>
                           <p className="mt-2 text-lg font-bold">
-                            {CONNECTS_COST}
+                            {dailyProposalUsage.limit}
                           </p>
                         </div>
                         <div
                           className="rounded-lg p-3 border"
                           style={
-                            connectsAvailable >= CONNECTS_COST
+                            canSubmitToday
                               ? {
                                   borderColor: "var(--color-status-info)",
                                   background:
@@ -1210,22 +1169,22 @@ function JobDetail() {
                             {tx("jobDetail.remaining", undefined, "Remaining")}
                           </p>
                           <p className="mt-2 text-lg font-bold">
-                            {connectsRemainingAfterSubmit}
+                            {dailyProposalUsage.remaining}
                           </p>
                         </div>
                       </div>
 
                       <p className="mt-3 text-xs leading-6 opacity-80">
-                        {connectsAvailable >= CONNECTS_COST
+                        {canSubmitToday
                           ? tx(
-                              "jobDetail.connectsDeductionWarning",
-                              { count: CONNECTS_COST },
-                              `${CONNECTS_COST} connects will be deducted immediately after submitting the proposal.`,
+                              "jobDetail.dailyApplyRemainingHint",
+                              { remaining: dailyProposalUsage.remaining },
+                              "{{remaining}} applications remaining today.",
                             )
                           : tx(
-                              "jobDetail.additionalConnectsNeeded",
-                              { count: CONNECTS_COST - connectsAvailable },
-                              `You need ${CONNECTS_COST - connectsAvailable} additional connects before submitting this proposal.`,
+                              "jobDetail.dailyApplyResetHint",
+                              undefined,
+                              "Daily limit reached. You can apply again tomorrow.",
                             )}
                       </p>
                     </div>

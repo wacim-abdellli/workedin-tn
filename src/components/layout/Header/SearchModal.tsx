@@ -3,12 +3,13 @@ import { useNavigate } from 'react-router-dom'
 import {
   Briefcase,
   ClipboardList,
-  Clock3,
+  Clock,
   FileText,
   FolderOpen,
   Loader2,
   PlusCircle,
   Search,
+  Settings,
   Users,
   Wallet,
   X,
@@ -22,47 +23,21 @@ interface SearchModalProps {
   onClose: () => void
 }
 
-type FilterKey = 'talent' | 'jobs' | 'projects'
-type Role = 'public' | 'client' | 'freelancer'
+type Role = 'client' | 'freelancer'
+type FilterPill = 'talent' | 'jobs' | 'projects'
 
 type SearchItem = {
-  id: string
+  key: string
   label: string
-  href: string
+  href?: string
+  shortcut?: string
   meta?: string
-  kind: FilterKey
-  Icon: typeof Search
+  filter: FilterPill
+  Icon: typeof Briefcase
+  onSelect?: () => void
 }
 
 const RECENT_SEARCHES_KEY = 'WorkedIn-recent-searches'
-
-const INACTIVE_PILL_CLASS =
-  'bg-transparent text-gray-400 border border-transparent hover:bg-[#262626] px-4 py-1.5 rounded-full text-sm font-medium cursor-pointer transition-all'
-
-const ROLE_FILTERS: Array<{ key: FilterKey; label: string }> = [
-  { key: 'talent', label: 'Talent' },
-  { key: 'jobs', label: 'Jobs' },
-  { key: 'projects', label: 'Projects' },
-]
-
-const pushRecentSearch = (value: string) => {
-  const normalized = value.trim()
-  if (!normalized) return [] as string[]
-
-  try {
-    const raw = window.localStorage.getItem(RECENT_SEARCHES_KEY)
-    const parsed = raw ? JSON.parse(raw) : []
-    const existing = Array.isArray(parsed)
-      ? parsed.filter((item): item is string => typeof item === 'string')
-      : []
-
-    const next = [normalized, ...existing.filter((item) => item !== normalized)].slice(0, 6)
-    window.localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(next))
-    return next
-  } catch {
-    return [normalized]
-  }
-}
 
 export default function SearchModal({ onClose }: SearchModalProps) {
   const { user, activeMode } = useAuth()
@@ -70,18 +45,125 @@ export default function SearchModal({ onClose }: SearchModalProps) {
   const navigate = useNavigate()
   const inputRef = useRef<HTMLInputElement>(null)
 
-  const role: Role = !user ? 'public' : activeMode === 'freelancer' ? 'freelancer' : 'client'
-  const isFreelancer = role === 'freelancer'
+  const role: Role = activeMode === 'client' ? 'client' : 'freelancer'
+
+  const activePillClass = role === 'client'
+    ? 'bg-orange-500/10 text-orange-500 border border-orange-500/20 px-4 py-1.5 rounded-full text-sm font-medium transition-all'
+    : 'bg-purple-500/10 text-purple-400 border border-purple-500/20 px-4 py-1.5 rounded-full text-sm font-medium transition-all'
+
+  const inactivePillClass = 'bg-transparent text-gray-400 border border-transparent hover:bg-[#262626] px-4 py-1.5 rounded-full text-sm font-medium cursor-pointer transition-all'
+
+  const inputFocusRingClass = role === 'client'
+    ? 'focus-within:ring-1 focus-within:ring-orange-500/70'
+    : 'focus-within:ring-1 focus-within:ring-purple-500/70'
+
+  const selectedItemClass = role === 'client' ? 'bg-orange-500/10' : 'bg-purple-500/10'
+  const iconHoverClass = role === 'client' ? 'group-hover:text-orange-500' : 'group-hover:text-purple-500'
 
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<SearchItem[]>([])
-  const [isLoading, setIsLoading] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [selectedIndex, setSelectedIndex] = useState(0)
   const [recentSearches, setRecentSearches] = useState<string[]>([])
-  const [activeFilter, setActiveFilter] = useState<FilterKey>(isFreelancer ? 'jobs' : 'talent')
+  const [activeFilter, setActiveFilter] = useState<FilterPill>(role === 'client' ? 'talent' : 'jobs')
 
-  useEffect(() => {
-    setActiveFilter(isFreelancer ? 'jobs' : 'talent')
-  }, [isFreelancer])
+  const trimmedQuery = query.trim()
+  const isSearching = trimmedQuery.length >= 2
+
+  const freelancerQuickLinks: SearchItem[] = [
+    {
+      key: 'quick-browse-jobs',
+      label: tx('pages.searchModal.shortcuts.browseAllJobs', undefined, 'Browse all jobs'),
+      href: '/jobs',
+      shortcut: 'Ctrl+J',
+      filter: 'jobs',
+      Icon: Briefcase,
+    },
+    {
+      key: 'quick-my-proposals',
+      label: tx('pages.searchModal.shortcuts.myProposals', undefined, 'My proposals'),
+      href: '/my-proposals',
+      shortcut: 'Ctrl+P',
+      filter: 'projects',
+      Icon: FileText,
+    },
+    {
+      key: 'quick-my-earnings',
+      label: tx('pages.searchModal.shortcuts.myEarnings', undefined, 'My earnings'),
+      href: '/freelancer/earnings',
+      shortcut: 'Ctrl+E',
+      filter: 'projects',
+      Icon: Wallet,
+    },
+    {
+      key: 'quick-settings',
+      label: tx('pages.searchModal.shortcuts.settings', undefined, 'Settings'),
+      href: '/settings',
+      shortcut: 'Ctrl+,',
+      filter: 'projects',
+      Icon: Settings,
+    },
+  ]
+
+  const clientQuickLinks: SearchItem[] = [
+    {
+      key: 'quick-post-project',
+      label: tx('pages.searchModal.shortcuts.postProject', undefined, 'Post a project'),
+      href: '/jobs/new',
+      shortcut: 'Ctrl+N',
+      filter: 'projects',
+      Icon: PlusCircle,
+    },
+    {
+      key: 'quick-my-projects',
+      label: tx('pages.searchModal.shortcuts.myProjects', undefined, 'My projects'),
+      href: '/client/jobs',
+      shortcut: 'Ctrl+P',
+      filter: 'projects',
+      Icon: FolderOpen,
+    },
+    {
+      key: 'quick-find-freelancers',
+      label: tx('pages.searchModal.shortcuts.findFreelancers', undefined, 'Find freelancers'),
+      href: '/find-freelancers',
+      shortcut: 'Ctrl+F',
+      filter: 'talent',
+      Icon: Users,
+    },
+    {
+      key: 'quick-contracts',
+      label: tx('pages.searchModal.shortcuts.contracts', undefined, 'Contracts'),
+      href: '/contracts',
+      shortcut: 'Ctrl+C',
+      filter: 'projects',
+      Icon: ClipboardList,
+    },
+  ]
+
+  const quickLinks = role === 'client' ? clientQuickLinks : freelancerQuickLinks
+
+  const rememberRecentSearch = (term: string) => {
+    const normalized = term.trim()
+    if (!normalized) return
+
+    setRecentSearches((prev) => {
+      const next = [normalized, ...prev.filter((item) => item !== normalized)].slice(0, 6)
+      window.localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(next))
+      return next
+    })
+  }
+
+  const goToHref = (href: string) => {
+    navigate(href)
+    onClose()
+  }
+
+  const goToSearchResults = () => {
+    if (!trimmedQuery) return
+    rememberRecentSearch(trimmedQuery)
+    navigate(`/search?q=${encodeURIComponent(trimmedQuery)}`)
+    onClose()
+  }
 
   useEffect(() => {
     inputRef.current?.focus()
@@ -91,191 +173,43 @@ export default function SearchModal({ onClose }: SearchModalProps) {
     try {
       const raw = window.localStorage.getItem(RECENT_SEARCHES_KEY)
       if (!raw) return
-
       const parsed = JSON.parse(raw)
-      if (!Array.isArray(parsed)) return
-
-      const normalized = parsed.filter((item): item is string => typeof item === 'string').slice(0, 6)
-      setRecentSearches(normalized)
+      if (Array.isArray(parsed)) {
+        setRecentSearches(parsed.filter((item): item is string => typeof item === 'string').slice(0, 6))
+      }
     } catch {
       setRecentSearches([])
     }
   }, [])
 
-  const searchFocusClass = isFreelancer
-    ? 'focus-within:ring-1 focus-within:ring-purple-500'
-    : 'focus-within:ring-1 focus-within:ring-orange-500'
-
-  const activePillClass = isFreelancer
-    ? 'bg-purple-500/10 text-purple-400 border border-purple-500/20 px-4 py-1.5 rounded-full text-sm font-medium transition-all'
-    : 'bg-orange-500/10 text-orange-500 border border-orange-500/20 px-4 py-1.5 rounded-full text-sm font-medium transition-all'
-
-  const iconHoverAccentClass = isFreelancer ? 'group-hover:text-purple-500' : 'group-hover:text-orange-500'
-  const roleBadgeClass = isFreelancer ? 'text-purple-400' : 'text-orange-500'
-
-  const clientQuickLinks: SearchItem[] = [
-    {
-      id: 'client-post-project',
-      label: tx('pages.searchModal.shortcuts.postProject', undefined, 'Post a project'),
-      href: '/jobs/new',
-      meta: 'Ctrl+N',
-      kind: 'projects',
-      Icon: PlusCircle,
-    },
-    {
-      id: 'client-my-projects',
-      label: tx('pages.searchModal.shortcuts.myProjects', undefined, 'My projects'),
-      href: '/client/jobs',
-      meta: 'Ctrl+P',
-      kind: 'projects',
-      Icon: FolderOpen,
-    },
-    {
-      id: 'client-find-freelancers',
-      label: tx('pages.searchModal.shortcuts.findFreelancers', undefined, 'Find freelancers'),
-      href: '/find-freelancers',
-      meta: 'Ctrl+F',
-      kind: 'talent',
-      Icon: Users,
-    },
-    {
-      id: 'client-contracts',
-      label: tx('pages.searchModal.shortcuts.contracts', undefined, 'Contracts'),
-      href: '/contracts',
-      meta: 'Ctrl+C',
-      kind: 'projects',
-      Icon: ClipboardList,
-    },
-  ]
-
-  const freelancerQuickLinks: SearchItem[] = [
-    {
-      id: 'freelancer-browse-jobs',
-      label: tx('pages.searchModal.shortcuts.browseAllJobs', undefined, 'Browse all jobs'),
-      href: '/jobs',
-      meta: 'Ctrl+J',
-      kind: 'jobs',
-      Icon: Briefcase,
-    },
-    {
-      id: 'freelancer-proposals',
-      label: tx('pages.searchModal.shortcuts.myProposals', undefined, 'My proposals'),
-      href: '/my-proposals',
-      meta: 'Ctrl+P',
-      kind: 'projects',
-      Icon: FileText,
-    },
-    {
-      id: 'freelancer-earnings',
-      label: tx('pages.searchModal.shortcuts.myEarnings', undefined, 'My earnings'),
-      href: '/freelancer/earnings',
-      meta: 'Ctrl+E',
-      kind: 'projects',
-      Icon: Wallet,
-    },
-    {
-      id: 'freelancer-find-talent',
-      label: tx('pages.searchModal.shortcuts.findFreelancers', undefined, 'Find freelancers'),
-      href: '/find-freelancers',
-      meta: 'Ctrl+F',
-      kind: 'talent',
-      Icon: Users,
-    },
-  ]
-
-  const publicQuickLinks: SearchItem[] = [
-    {
-      id: 'public-browse-jobs',
-      label: tx('pages.searchModal.shortcuts.browseJobs', undefined, 'Browse jobs'),
-      href: '/jobs',
-      kind: 'jobs',
-      Icon: Briefcase,
-    },
-    {
-      id: 'public-find-freelancers',
-      label: tx('pages.searchModal.shortcuts.findFreelancers', undefined, 'Find freelancers'),
-      href: '/find-freelancers',
-      kind: 'talent',
-      Icon: Users,
-    },
-    {
-      id: 'public-create-account',
-      label: tx('pages.searchModal.shortcuts.createAccount', undefined, 'Create account'),
-      href: '/signup',
-      kind: 'projects',
-      Icon: PlusCircle,
-    },
-  ]
-
-  const quickLinks = useMemo(() => {
-    if (role === 'client') return clientQuickLinks
-    if (role === 'freelancer') return freelancerQuickLinks
-    return publicQuickLinks
-  }, [role])
-
-  const quickLinkMatches = useMemo(
-    () => quickLinks.filter((item) => item.kind === activeFilter),
-    [activeFilter, quickLinks],
-  )
-
-  const trimmedQuery = query.trim()
-  const isSearching = trimmedQuery.length >= 2
-
-  const workspaceTitle = role === 'client'
-    ? tx('pages.searchModal.workspaceClient', undefined, 'Client workspace')
-    : role === 'freelancer'
-      ? tx('pages.searchModal.workspaceFreelancer', undefined, 'Freelancer workspace')
-      : tx('pages.searchModal.globalTitle', undefined, 'Global search')
-
-  const saveRecentAndClose = (href: string) => {
-    if (trimmedQuery) {
-      const nextRecent = pushRecentSearch(trimmedQuery)
-      setRecentSearches(nextRecent)
-    }
-
-    navigate(href)
-    onClose()
-  }
-
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        onClose()
-        return
-      }
-
-      if (event.key === 'Enter' && isSearching && results.length > 0) {
-        event.preventDefault()
-        saveRecentAndClose(results[0].href)
-      }
-    }
-
-    document.addEventListener('keydown', handleKeyDown)
-    return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [isSearching, onClose, results, trimmedQuery])
-
   useEffect(() => {
     if (!isSearching) {
       setResults([])
-      setIsLoading(false)
       return
     }
 
-    let cancelled = false
-
     const timer = window.setTimeout(async () => {
-      setIsLoading(true)
+      setLoading(true)
 
-      const localMatches = quickLinks
-        .filter((item) => item.kind === activeFilter)
-        .filter((item) => {
-          const haystack = `${item.label} ${item.meta || ''}`.toLowerCase()
-          return haystack.includes(trimmedQuery.toLowerCase())
-        })
+      if (role === 'client') {
+        const { data } = await supabase
+          .from('public_profiles')
+          .select('id, full_name, username, location, user_type')
+          .in('user_type', ['freelancer', 'both'])
+          .or(`full_name.ilike.%${trimmedQuery}%,username.ilike.%${trimmedQuery}%,location.ilike.%${trimmedQuery}%`)
+          .limit(8)
 
-      let remoteMatches: SearchItem[] = []
-
-      if (activeFilter === 'jobs') {
+        setResults(
+          (data || []).map((profile) => ({
+            key: `talent-${profile.id}`,
+            label: profile.full_name || profile.username || tx('pages.searchModal.unknownFreelancer', undefined, 'Freelancer'),
+            href: `/freelancer/${profile.username || profile.id}`,
+            meta: profile.location || tx('pages.searchModal.freelancerResultMeta', undefined, 'Freelancer profile'),
+            filter: 'talent' as const,
+            Icon: Users,
+          }))
+        )
+      } else {
         const { data } = await supabase
           .from('jobs')
           .select('id, title, budget_min, budget_max')
@@ -283,179 +217,255 @@ export default function SearchModal({ onClose }: SearchModalProps) {
           .eq('status', 'open')
           .limit(8)
 
-        remoteMatches = (data || []).map((job) => ({
-          id: `job-${job.id}`,
-          label: job.title,
-          href: `/jobs/${job.id}`,
-          meta: `${job.budget_min}-${job.budget_max} ${tx('common.tnd', undefined, 'TND')}`,
-          kind: 'jobs' as const,
-          Icon: Briefcase,
-        }))
+        setResults(
+          (data || []).map((job) => ({
+            key: `job-${job.id}`,
+            label: job.title,
+            href: `/jobs/${job.id}`,
+            meta: `${job.budget_min}-${job.budget_max} ${tx('common.tnd', undefined, 'TND')}`,
+            filter: 'jobs' as const,
+            Icon: Briefcase,
+          }))
+        )
       }
 
-      if (activeFilter === 'talent') {
-        const { data } = await supabase
-          .from('public_profiles')
-          .select('id, full_name, username, location')
-          .in('user_type', ['freelancer', 'both'])
-          .or(`full_name.ilike.%${trimmedQuery}%,username.ilike.%${trimmedQuery}%,location.ilike.%${trimmedQuery}%`)
-          .limit(8)
+      setLoading(false)
+    }, 250)
 
-        remoteMatches = (data || []).map((profile) => ({
-          id: `talent-${profile.id}`,
-          label: profile.full_name || profile.username || tx('pages.searchModal.unknownFreelancer', undefined, 'Freelancer'),
-          href: `/freelancer/${profile.username || profile.id}`,
-          meta: profile.location || tx('pages.searchModal.freelancerResultMeta', undefined, 'Freelancer profile'),
-          kind: 'talent' as const,
-          Icon: Users,
-        }))
+    return () => window.clearTimeout(timer)
+  }, [isSearching, role, trimmedQuery, tx])
+
+  const recentSearchItems = useMemo<SearchItem[]>(() => {
+    return recentSearches.map((term) => ({
+      key: `recent-${term}`,
+      label: term,
+      meta: tx('pages.searchModal.recentSection', undefined, 'Recent jumps'),
+      filter: role === 'client' ? 'talent' : 'jobs',
+      Icon: Clock,
+      onSelect: () => setQuery(term),
+    }))
+  }, [recentSearches, role, tx])
+
+  const filteredQuickLinks = useMemo(() => {
+    return quickLinks.filter((item) => item.filter === activeFilter)
+  }, [activeFilter, quickLinks])
+
+  const filteredSearchResults = useMemo(() => {
+    return results.filter((item) => item.filter === activeFilter)
+  }, [activeFilter, results])
+
+  const visibleItems = isSearching
+    ? filteredSearchResults
+    : [...filteredQuickLinks, ...recentSearchItems]
+
+  useEffect(() => {
+    setSelectedIndex(0)
+  }, [query, activeFilter])
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onClose()
+        return
       }
 
-      if (activeFilter === 'projects') {
-        remoteMatches = quickLinks
-          .filter((item) => item.kind === 'projects')
-          .filter((item) => item.label.toLowerCase().includes(trimmedQuery.toLowerCase()))
+      if (event.key === 'ArrowDown') {
+        event.preventDefault()
+        if (visibleItems.length === 0) return
+        setSelectedIndex((prev) => (prev + 1) % visibleItems.length)
+        return
       }
 
-      if (cancelled) return
+      if (event.key === 'ArrowUp') {
+        event.preventDefault()
+        if (visibleItems.length === 0) return
+        setSelectedIndex((prev) => (prev - 1 + visibleItems.length) % visibleItems.length)
+        return
+      }
 
-      const seen = new Set<string>()
-      const merged = [...localMatches, ...remoteMatches].filter((item) => {
-        const key = `${item.href}|${item.label}`
-        if (seen.has(key)) return false
-        seen.add(key)
-        return true
-      }).slice(0, 12)
+      if (event.key === 'Enter') {
+        if (isSearching) {
+          const selectedItem = visibleItems[selectedIndex]
+          if (selectedItem) {
+            if (selectedItem.onSelect) {
+              selectedItem.onSelect()
+            } else if (selectedItem.href) {
+              goToHref(selectedItem.href)
+            }
+          } else {
+            goToSearchResults()
+          }
+          return
+        }
 
-      setResults(merged)
-      setIsLoading(false)
-    }, 220)
+        const selectedItem = visibleItems[selectedIndex]
+        if (!selectedItem) return
 
-    return () => {
-      cancelled = true
-      window.clearTimeout(timer)
+        if (selectedItem.onSelect) {
+          selectedItem.onSelect()
+        } else if (selectedItem.href) {
+          goToHref(selectedItem.href)
+        }
+      }
     }
-  }, [activeFilter, isSearching, quickLinks, role, trimmedQuery, tx])
 
-  const displayItems = isSearching ? results : quickLinkMatches
+    document.addEventListener('keydown', onKeyDown)
+    return () => document.removeEventListener('keydown', onKeyDown)
+  }, [goToSearchResults, isSearching, onClose, selectedIndex, visibleItems])
 
-  const renderRecentSearches = !isSearching && recentSearches.length > 0
+  const workspaceLabel = role === 'client'
+    ? tx('pages.searchModal.workspaceClient', undefined, 'Client workspace')
+    : tx('pages.searchModal.workspaceFreelancer', undefined, 'Freelancer workspace')
+
+  const placeholder = role === 'client'
+    ? tx('pages.searchModal.placeholderClient', undefined, 'Search freelancers, skills...')
+    : tx('pages.searchModal.placeholderFreelancer', undefined, 'Search jobs, skills...')
 
   return (
-    <div
-      className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-start justify-center pt-[10vh] px-4"
-      onClick={onClose}
-    >
+    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-start justify-center pt-[10vh] px-4" onClick={onClose}>
       <div
         className="w-full max-w-3xl bg-[#141414] border border-[#262626] rounded-2xl shadow-2xl overflow-hidden flex flex-col"
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="p-4 border-b border-[#262626] flex items-center gap-3">
-          <div className={`flex w-full items-center gap-3 rounded-xl border border-[#262626] bg-[#0a0a0a] px-4 py-3 transition-all ${searchFocusClass}`}>
-            <Search className="text-gray-500 size-5 shrink-0" />
+        <div className="px-4 pt-4 pb-3 border-b border-[#262626]">
+          <p className="text-[11px] uppercase tracking-[0.22em] text-gray-500 font-semibold mb-2">{workspaceLabel}</p>
+          <div className={`p-4 border border-[#262626] rounded-xl bg-[#0a0a0a] flex items-center gap-3 transition-all ${inputFocusRingClass}`}>
+            <Search className="text-gray-500 h-5 w-5 shrink-0" />
             <input
               ref={inputRef}
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder={
-                role === 'freelancer'
-                  ? tx('pages.searchModal.placeholderFreelancer', undefined, 'Search jobs, skills...')
-                  : role === 'client'
-                    ? tx('pages.searchModal.placeholderClient', undefined, 'Search freelancers, skills...')
-                    : tx('globalSearch.placeholder', undefined, 'Search jobs, freelancers, skills...')
-              }
+              placeholder={placeholder}
               className="flex-1 bg-transparent text-white text-lg outline-none placeholder-gray-500"
             />
-            <span className="hidden sm:flex items-center justify-center px-2 py-1 bg-[#262626] text-gray-400 rounded text-xs font-mono">
+            {query ? (
+              <button
+                type="button"
+                onClick={() => setQuery('')}
+                className="rounded-md p-1 text-gray-400 hover:text-gray-200 hover:bg-[#262626] transition-colors"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            ) : null}
+            <div className="hidden sm:flex items-center justify-center px-2 py-1 bg-[#262626] text-gray-400 rounded text-xs font-mono">
               ESC
-            </span>
-            <button
-              type="button"
-              onClick={onClose}
-              className="sm:hidden inline-flex items-center justify-center text-gray-400 hover:text-white transition-colors"
-              aria-label={tx('common.close', undefined, 'Close')}
-            >
-              <X className="h-4 w-4" />
-            </button>
+            </div>
           </div>
         </div>
 
         <div className="flex items-center gap-2 p-4 border-b border-[#262626] bg-[#0a0a0a]/50">
-          {ROLE_FILTERS.map((filter) => (
+          {([
+            { key: 'talent', label: 'Talent' },
+            { key: 'jobs', label: 'Jobs' },
+            { key: 'projects', label: 'Projects' },
+          ] as const).map((pill) => (
             <button
-              key={filter.key}
+              key={pill.key}
               type="button"
-              onClick={() => setActiveFilter(filter.key)}
-              className={activeFilter === filter.key ? activePillClass : INACTIVE_PILL_CLASS}
+              onClick={() => setActiveFilter(pill.key)}
+              className={activeFilter === pill.key ? activePillClass : inactivePillClass}
             >
-              {filter.label}
+              {pill.label}
             </button>
           ))}
-
-          <span className={`ml-auto text-xs ${roleBadgeClass}`}>
-            {workspaceTitle}
-          </span>
         </div>
 
         <div className="p-2 max-h-[40vh] overflow-y-auto">
-          {isLoading ? (
-            <div className="px-4 py-6 flex items-center gap-3 text-gray-400">
-              <Loader2 className={`h-4 w-4 animate-spin ${isFreelancer ? 'text-purple-500' : 'text-orange-500'}`} />
-              <span className="text-sm">{tx('globalSearch.searching', undefined, 'Searching...')}</span>
-            </div>
-          ) : null}
-
-          {!isLoading && displayItems.length === 0 ? (
-            <div className="px-4 py-8 text-center">
-              <p className="text-sm text-gray-400">
-                {isSearching
-                  ? tx('globalSearch.noResultsFor', { query: trimmedQuery }, `No results for "${trimmedQuery}"`)
-                  : tx('pages.searchModal.tryDifferent', undefined, 'Try a different search term')}
-              </p>
-            </div>
-          ) : null}
-
-          {!isLoading && displayItems.map((item) => {
-            const Icon = item.Icon
-            return (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => saveRecentAndClose(item.href)}
-                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-[#262626]/50 cursor-pointer text-gray-300 transition-colors group"
-              >
-                <Icon className={`h-4 w-4 text-gray-500 transition-colors ${iconHoverAccentClass}`} />
-                <div className="min-w-0 flex-1 text-left">
-                  <p className="truncate text-sm font-medium text-gray-200">{item.label}</p>
-                  {item.meta ? <p className="truncate text-xs text-gray-500">{item.meta}</p> : null}
-                </div>
-              </button>
-            )
-          })}
-
-          {renderRecentSearches ? (
+          {!isSearching ? (
             <>
-              <div className="mt-2 border-t border-[#262626]" />
-              {recentSearches.map((recentTerm) => (
+              <p className="px-4 pt-2 pb-1 text-[11px] uppercase tracking-[0.18em] text-gray-500 font-semibold">
+                {tx('pages.searchModal.quickActions', undefined, 'Quick actions')}
+              </p>
+              {filteredQuickLinks.map((item, index) => {
+                const isSelected = selectedIndex === index
+                return (
+                  <button
+                    key={item.key}
+                    type="button"
+                    onMouseEnter={() => setSelectedIndex(index)}
+                    onClick={() => item.href && goToHref(item.href)}
+                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-[#262626]/50 cursor-pointer text-gray-300 transition-colors group ${isSelected ? selectedItemClass : ''}`}
+                  >
+                    <item.Icon className={`h-5 w-5 text-gray-500 transition-colors ${iconHoverClass}`} />
+                    <div className="min-w-0 flex-1 text-left">
+                      <p className="truncate text-sm font-medium text-gray-200">{item.label}</p>
+                      {item.shortcut ? <p className="text-xs text-gray-500 mt-0.5">{item.shortcut}</p> : null}
+                    </div>
+                  </button>
+                )
+              })}
+
+              {recentSearchItems.length > 0 ? (
+                <>
+                  <p className="px-4 pt-4 pb-1 text-[11px] uppercase tracking-[0.18em] text-gray-500 font-semibold">
+                    {tx('pages.searchModal.recentSection', undefined, 'Recent jumps')}
+                  </p>
+                  {recentSearchItems.map((item, recentIndex) => {
+                    const index = filteredQuickLinks.length + recentIndex
+                    const isSelected = selectedIndex === index
+                    return (
+                      <button
+                        key={item.key}
+                        type="button"
+                        onMouseEnter={() => setSelectedIndex(index)}
+                        onClick={item.onSelect}
+                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-[#262626]/50 cursor-pointer text-gray-300 transition-colors group ${isSelected ? selectedItemClass : ''}`}
+                      >
+                        <item.Icon className={`h-5 w-5 text-gray-500 transition-colors ${iconHoverClass}`} />
+                        <div className="min-w-0 flex-1 text-left">
+                          <p className="truncate text-sm font-medium text-gray-200">{item.label}</p>
+                          {item.meta ? <p className="text-xs text-gray-500 mt-0.5">{item.meta}</p> : null}
+                        </div>
+                      </button>
+                    )
+                  })}
+                </>
+              ) : null}
+            </>
+          ) : loading ? (
+            <div className="px-4 py-10 text-center text-gray-400">
+              <Loader2 className="h-6 w-6 animate-spin mx-auto mb-2" />
+              {tx('globalSearch.searching', undefined, 'Searching...')}
+            </div>
+          ) : filteredSearchResults.length === 0 ? (
+            <div className="px-4 py-10 text-center text-gray-500">
+              <Search className="h-6 w-6 mx-auto mb-2" />
+              <p>{tx('globalSearch.noResultsFor', { query }, `No results for "${query}"`)}</p>
+            </div>
+          ) : (
+            filteredSearchResults.map((item, index) => {
+              const isSelected = selectedIndex === index
+              return (
                 <button
-                  key={`recent-${recentTerm}`}
+                  key={item.key}
                   type="button"
-                  onClick={() => {
-                    setQuery(recentTerm)
-                  }}
-                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-[#262626]/50 cursor-pointer text-gray-300 transition-colors group"
+                  onMouseEnter={() => setSelectedIndex(index)}
+                  onClick={() => item.href && goToHref(item.href)}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-[#262626]/50 cursor-pointer text-gray-300 transition-colors group ${isSelected ? selectedItemClass : ''}`}
                 >
-                  <Clock3 className={`h-4 w-4 text-gray-500 transition-colors ${iconHoverAccentClass}`} />
+                  <item.Icon className={`h-5 w-5 text-gray-500 transition-colors ${iconHoverClass}`} />
                   <div className="min-w-0 flex-1 text-left">
-                    <p className="truncate text-sm font-medium text-gray-200">{recentTerm}</p>
-                    <p className="truncate text-xs text-gray-500">{tx('pages.searchModal.recentSection', undefined, 'Recent jumps')}</p>
+                    <p className="truncate text-sm font-medium text-gray-200">{item.label}</p>
+                    {item.meta ? <p className="text-xs text-gray-500 mt-0.5">{item.meta}</p> : null}
                   </div>
                 </button>
-              ))}
-            </>
-          ) : null}
+              )
+            })
+          )}
+        </div>
+
+        <div className="px-4 py-2 border-t border-[#262626] bg-[#0a0a0a] text-xs text-gray-500 flex items-center justify-between">
+          <span>{tx('globalSearch.toNavigate', undefined, 'Use arrows to navigate')}</span>
+          <button
+            type="button"
+            onClick={goToSearchResults}
+            className={role === 'client' ? 'text-orange-500 hover:text-orange-400 transition-colors' : 'text-purple-400 hover:text-purple-300 transition-colors'}
+          >
+            {tx('pages.searchModal.searchEverything', { query: trimmedQuery || '...' }, 'Search everything')}
+          </button>
         </div>
       </div>
     </div>
   )
 }
+

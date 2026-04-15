@@ -4,7 +4,8 @@
 import { supabase, uploadFile } from '@/lib/supabase';
 import { canApplyToJob, getAccessMessage } from '@/lib/marketplaceAccess';
 import type { FreelancerProfile, Profile } from '@/types';
-import { CONNECTS_COST } from './connects';
+
+export const DAILY_PROPOSAL_LIMIT = 6;
 
 export interface CreateProposalInput {
     job_id: string;
@@ -14,10 +15,53 @@ export interface CreateProposalInput {
     delivery_time_days: number; // matches DB column name
 }
 
+export interface DailyProposalUsage {
+    used: number;
+    remaining: number;
+    limit: number;
+}
+
+const getDayWindow = (date = new Date()) => {
+    const dayStart = new Date(date);
+    dayStart.setHours(0, 0, 0, 0);
+
+    const dayEnd = new Date(dayStart);
+    dayEnd.setDate(dayEnd.getDate() + 1);
+
+    return { dayStart, dayEnd };
+};
+
+export async function getDailyProposalUsage(
+    freelancerId: string,
+    date = new Date(),
+): Promise<DailyProposalUsage> {
+    const { dayStart, dayEnd } = getDayWindow(date);
+
+    const { count, error } = await supabase
+        .from('proposals')
+        .select('id', { count: 'exact', head: true })
+        .eq('freelancer_id', freelancerId)
+        .gte('created_at', dayStart.toISOString())
+        .lt('created_at', dayEnd.toISOString());
+
+    if (error) throw error;
+
+    const used = count ?? 0;
+    return {
+        used,
+        remaining: Math.max(DAILY_PROPOSAL_LIMIT - used, 0),
+        limit: DAILY_PROPOSAL_LIMIT,
+    };
+}
+
 function normalizeProposalError(error: unknown) {
     const message = error instanceof Error ? error.message : String(error);
-    if (message.includes('rate_limit_exceeded')) {
-        return new Error("You've reached the proposal limit. Try again in an hour.");
+    if (
+        message.includes('daily_apply_limit_reached') ||
+        message.includes('daily_proposal_limit_reached') ||
+        message.includes('rate_limit_exceeded')
+    ) {
+        return new Error(`You've reached today's proposal limit (${DAILY_PROPOSAL_LIMIT}). Try again tomorrow.`);
     }
     return error instanceof Error ? error : new Error(message);
 }
@@ -53,9 +97,7 @@ export async function getProposalsByFreelancer(freelancerId: string) {
 
 export async function createProposal(data: CreateProposalInput, files: File[] = []) {
     try {
-        // --- Pre-flight access check (fast client-side guard) ---
-        // The DB RPC re-enforces all constraints server-side, so this is a UX
-        // convenience only — it is not the authoritative security boundary.
+        // Pre-flight access check (UX guard): keep behavior aligned with marketplace gating.
         const { data: profile, error: profileError } = await supabase
             .from('profiles')
             .select('*')
@@ -85,7 +127,25 @@ export async function createProposal(data: CreateProposalInput, files: File[] = 
             };
         }
 
-        // --- Upload attachments (must complete before the atomic RPC) ---
+        // Prevent duplicate proposals for the same job/freelancer pair.
+        const { data: existingProposal, error: existingProposalError } = await supabase
+            .from('proposals')
+            .select('id')
+            .eq('job_id', data.job_id)
+            .eq('freelancer_id', data.freelancer_id)
+            .maybeSingle();
+
+        if (existingProposalError) throw existingProposalError;
+        if (existingProposal?.id) {
+            return { data: existingProposal.id, error: null };
+        }
+
+        const usage = await getDailyProposalUsage(data.freelancer_id);
+        if (usage.remaining <= 0) {
+            throw new Error('daily_apply_limit_reached');
+        }
+
+        // Upload attachments before insert.
         const attachmentUrls: string[] = await Promise.all(
             files.map(async (file) => {
                 const path = `${data.freelancer_id}/${data.job_id}/${Date.now()}-${file.name}`;
@@ -93,40 +153,34 @@ export async function createProposal(data: CreateProposalInput, files: File[] = 
             })
         );
 
-        // --- Atomic proposal insert + connects deduction in one DB transaction ---
-        // submit_proposal_atomic (migration 20260407020000) inserts the proposal
-        // AND deducts connects within a single plpgsql transaction. Any failure
-        // rolls back both operations — no orphaned proposals, no free submissions.
-        //
-        // p_attachments: the DB parameter is JSONB (proposals.attachments column).
-        // PostgREST serializes a JS string[] to a JSON array (["url1","url2"]) which
-        // Postgres accepts as JSONB. No explicit cast needed on the JS side.
-        const { data: result, error } = await supabase.rpc('submit_proposal_atomic', {
-            p_job_id:             data.job_id,
-            p_cover_letter:       data.cover_letter,
-            p_bid_amount:         data.bid_amount,
-            p_delivery_time_days: data.delivery_time_days,
-            p_attachments:        attachmentUrls,   // string[] → serialized as JSON array (JSONB)
-            p_connects_cost:      CONNECTS_COST,
-        });
+        const { data: insertedProposal, error } = await supabase
+            .from('proposals')
+            .insert({
+                job_id: data.job_id,
+                freelancer_id: data.freelancer_id,
+                cover_letter: data.cover_letter,
+                bid_amount: data.bid_amount,
+                delivery_time_days: data.delivery_time_days,
+                attachments: attachmentUrls,
+                status: 'pending',
+            })
+            .select('id')
+            .single();
 
         if (error) throw error;
 
-        const rpcResult = result as { success: boolean; proposal_id: string; existing: boolean };
-        if (!rpcResult?.success) {
-            throw new Error('Proposal submission failed');
-        }
-
-        return { data: rpcResult.proposal_id ?? null, error: null };
+        return { data: insertedProposal?.id ?? null, error: null };
     } catch (error) {
         return { data: null, error: normalizeProposalError(error) };
     }
 }
 
-export async function withdrawProposal(_proposalId: string) {
-    throw new Error(
-        'withdrawProposal() is deprecated. Use withdrawProposalWithRefund() for the atomic refund-safe path.',
-    );
+export async function withdrawProposal(proposalId: string) {
+    return supabase
+        .from('proposals')
+        .delete()
+        .eq('id', proposalId)
+        .eq('status', 'pending');
 }
 
 export async function updateProposalStatus(proposalId: string, status: string) {

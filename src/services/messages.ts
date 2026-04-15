@@ -121,6 +121,9 @@ export interface Conversation {
     created_at: string;
     updated_at: string;
     conversation_scope?: ConversationScope;
+    /** Per-participant inbox columns — which mode-inbox each user sees this conversation in. */
+    inbox_participant_1?: string;
+    inbox_participant_2?: string;
     otherUser: {
         id: string;
         full_name: string;
@@ -171,6 +174,8 @@ interface ConversationRow {
     created_at: string;
     updated_at: string;
     conversation_scope?: ConversationScope;
+    inbox_participant_1?: string;
+    inbox_participant_2?: string;
     messages?: { count: number }[];
     participant1?: ConversationParticipantRow | ConversationParticipantRow[] | null;
     participant2?: ConversationParticipantRow | ConversationParticipantRow[] | null;
@@ -189,57 +194,64 @@ export async function getConversations(
         const end = start + limit - 1;
         const scopes = options?.scopes;
 
+        // Determine which inbox values to filter on.
+        // scopes like ['freelancer','contract','shared'] map 1-to-1 to inbox column values.
+        // We always include 'shared' because shared conversations appear in all inboxes.
+        const inboxValues = scopes && scopes.length > 0 ? scopes : null;
+
         const buildQuery = (
             participantColumn: 'participant_1' | 'participant_2',
-            includeScopeColumn: boolean
+            inboxColumn: 'inbox_participant_1' | 'inbox_participant_2',
+            includeScopeColumns: boolean
         ) => {
             let query = (supabase
                 .from('conversations') as any)
                 .select(
-                    includeScopeColumn
-                        ? 'id, participant_1, participant_2, contract_id, last_message_text, last_message_at, unread_count_1, unread_count_2, created_at, updated_at, conversation_scope'
+                    includeScopeColumns
+                        ? 'id, participant_1, participant_2, contract_id, last_message_text, last_message_at, unread_count_1, unread_count_2, created_at, updated_at, conversation_scope, inbox_participant_1, inbox_participant_2'
                         : 'id, participant_1, participant_2, contract_id, last_message_text, last_message_at, unread_count_1, unread_count_2, created_at, updated_at',
                     { count: 'estimated' }
                 )
                 .eq(participantColumn, userId)
                 .order('last_message_at', { ascending: false });
 
-            if (includeScopeColumn && scopes && scopes.length > 0) {
-                query = query.in('conversation_scope', scopes);
+            // Use per-participant inbox column for filtering when available
+            if (includeScopeColumns && inboxValues && inboxValues.length > 0) {
+                query = query.in(inboxColumn, inboxValues);
             }
 
             return query;
         };
 
-        const runQueries = async (includeScopeColumn: boolean) => Promise.all([
-            supabaseWithRetry(() => buildQuery('participant_1', includeScopeColumn),
+        const runQueries = async (includeInboxCols: boolean) => Promise.all([
+            supabaseWithRetry(() => buildQuery('participant_1', 'inbox_participant_1', includeInboxCols),
                 { timeoutMs: CONVERSATIONS_TIMEOUT_MS }),
-            supabaseWithRetry(() => buildQuery('participant_2', includeScopeColumn),
+            supabaseWithRetry(() => buildQuery('participant_2', 'inbox_participant_2', includeInboxCols),
                 { timeoutMs: CONVERSATIONS_TIMEOUT_MS }),
         ]);
 
-        // Step 1: Get conversations efficiently using UNION pattern (replaces .or() which defeats indexes)
-        // Two separate indexed queries are faster than .or() with full table scan
-        // Only select needed columns to reduce payload size and query time
+        // Try with inbox columns first; fall back to no-scope query if column missing
         let [result1, result2] = await runQueries(true);
 
-        if (
-            isMissingSchemaColumn(result1.error, 'conversations', 'conversation_scope')
-            || isMissingSchemaColumn(result2.error, 'conversations', 'conversation_scope')
-        ) {
+        const hasSchemaError = (err: unknown) =>
+            isMissingSchemaColumn(err, 'conversations', 'inbox_participant_1') ||
+            isMissingSchemaColumn(err, 'conversations', 'inbox_participant_2') ||
+            isMissingSchemaColumn(err, 'conversations', 'conversation_scope');
+
+        if (hasSchemaError(result1.error) || hasSchemaError(result2.error)) {
+            // DB schema not yet migrated — fall back to unfiltered query
             [result1, result2] = await runQueries(false);
         }
 
         if (result1.error) throw result1.error;
         if (result2.error) throw result2.error;
 
-        // Merge and deduplicate results in memory
+        // Merge and deduplicate results, sort by activity
         const allConversations = [
             ...(result1.data ?? []),
             ...(result2.data ?? [])
         ] as ConversationRow[];
 
-        // Remove duplicates and sort by last_message_at
         const uniqueConversations = Array.from(
             new Map(allConversations.map(conv => [conv.id, conv])).values()
         ).sort((a, b) => {
@@ -248,23 +260,16 @@ export async function getConversations(
             return bTime - aTime;
         });
 
-        // Apply pagination in memory (limit and offset on deduplicated results)
         const paginatedConversations = uniqueConversations.slice(start, end + 1);
         const count = uniqueConversations.length;
 
-        const data = paginatedConversations;
-        const error = null;
-
-        if (error) throw error;
-
-        const rows = (data ?? []) as unknown as ConversationRow[];
+        const rows = paginatedConversations as unknown as ConversationRow[];
         const otherUserIds = Array.from(new Set(rows.map((conv) => (
             conv.participant_1 === userId ? conv.participant_2 : conv.participant_1
         )).filter(Boolean)));
 
-        // Step 2: Get profiles in parallel (message counts removed for scalability)
         const [profilesResult] = await Promise.all([
-            otherUserIds.length > 0 
+            otherUserIds.length > 0
                 ? supabaseWithRetry(() => supabase
                     .from('public_profiles')
                     .select('id, full_name, avatar_url, username')
@@ -274,7 +279,6 @@ export async function getConversations(
 
         if (profilesResult.error) throw profilesResult.error;
 
-        // Build profiles map
         const profilesById = new Map<string, ConversationParticipantRow>();
         for (const profile of (profilesResult.data ?? []) as ConversationParticipantRow[]) {
             profilesById.set(profile.id, profile);
@@ -298,6 +302,8 @@ export async function getConversations(
                 created_at: conv.created_at,
                 updated_at: conv.updated_at,
                 conversation_scope: conv.conversation_scope ?? 'shared',
+                inbox_participant_1: conv.inbox_participant_1,
+                inbox_participant_2: conv.inbox_participant_2,
                 otherUser: {
                     id: otherUser?.id || '',
                     full_name: otherUser?.full_name || 'Unknown User',
@@ -305,7 +311,7 @@ export async function getConversations(
                     username: otherUser?.username || null,
                 },
                 unread_count: unread_count || 0,
-                message_count: undefined, // Message counting removed for performance and scalability
+                message_count: undefined,
             };
         });
 
@@ -317,40 +323,64 @@ export async function getConversations(
 
 export async function getTotalUnreadCount(userId: string, scopes?: ConversationScope[]) {
     try {
+        // When scopes are provided (mode-specific badge count), use per-participant
+        // inbox columns so the count reflects only conversations in the correct inbox.
+        // inbox_participant_1/2 is set at creation time per the role context of each party.
         if (scopes && scopes.length > 0) {
             let [participant1Result, participant2Result] = await Promise.all([
                 supabaseWithRetry(() => supabase
                     .from('conversations')
                     .select('unread_count_1')
                     .eq('participant_1', userId)
-                    .in('conversation_scope', scopes),
+                    .in('inbox_participant_1', scopes),
                     { timeoutMs: 12000 }
                 ),
                 supabaseWithRetry(() => supabase
                     .from('conversations')
                     .select('unread_count_2')
                     .eq('participant_2', userId)
-                    .in('conversation_scope', scopes),
+                    .in('inbox_participant_2', scopes),
                     { timeoutMs: 12000 }
                 ),
             ]);
 
-            if (
-                isMissingSchemaColumn(participant1Result.error, 'conversations', 'conversation_scope')
-                || isMissingSchemaColumn(participant2Result.error, 'conversations', 'conversation_scope')
-            ) {
-                participant1Result = await supabaseWithRetry(() => supabase
-                    .from('conversations')
-                    .select('unread_count_1')
-                    .eq('participant_1', userId),
-                    { timeoutMs: 12000 }
-                );
-                participant2Result = await supabaseWithRetry(() => supabase
-                    .from('conversations')
-                    .select('unread_count_2')
-                    .eq('participant_2', userId),
-                    { timeoutMs: 12000 }
-                );
+            // Fallback: if inbox columns don't exist yet (pre-migration), try conversation_scope
+            const hasInboxError =
+                isMissingSchemaColumn(participant1Result.error, 'conversations', 'inbox_participant_1')
+                || isMissingSchemaColumn(participant2Result.error, 'conversations', 'inbox_participant_2');
+
+            if (hasInboxError) {
+                [participant1Result, participant2Result] = await Promise.all([
+                    supabaseWithRetry(() => supabase
+                        .from('conversations')
+                        .select('unread_count_1')
+                        .eq('participant_1', userId)
+                        .in('conversation_scope', scopes),
+                        { timeoutMs: 12000 }
+                    ),
+                    supabaseWithRetry(() => supabase
+                        .from('conversations')
+                        .select('unread_count_2')
+                        .eq('participant_2', userId)
+                        .in('conversation_scope', scopes),
+                        { timeoutMs: 12000 }
+                    ),
+                ]);
+
+                // Final fallback: no scope filtering at all
+                if (
+                    isMissingSchemaColumn(participant1Result.error, 'conversations', 'conversation_scope')
+                    || isMissingSchemaColumn(participant2Result.error, 'conversations', 'conversation_scope')
+                ) {
+                    participant1Result = await supabaseWithRetry(() => supabase
+                        .from('conversations').select('unread_count_1').eq('participant_1', userId),
+                        { timeoutMs: 12000 }
+                    );
+                    participant2Result = await supabaseWithRetry(() => supabase
+                        .from('conversations').select('unread_count_2').eq('participant_2', userId),
+                        { timeoutMs: 12000 }
+                    );
+                }
             }
 
             if (participant1Result.error) throw participant1Result.error;
@@ -368,6 +398,7 @@ export async function getTotalUnreadCount(userId: string, scopes?: ConversationS
             return { count: participant1Unread + participant2Unread, error: null };
         }
 
+        // No scope filter: use the server-side RPC for the global total
         const { data, error } = await supabaseWithRetry(() => supabase
             .rpc('get_total_unread_count', { custom_user_id: userId })
         , { timeoutMs: 12000 });
@@ -542,10 +573,25 @@ export function subscribeToConversations(
                 (newRecord && (newRecord.participant_1 === userId || newRecord.participant_2 === userId)) ||
                 (oldRecord && (oldRecord.participant_1 === userId || oldRecord.participant_2 === userId));
 
-            const scopeMatch = !scopes || scopes.length === 0 || [newRecord?.conversation_scope, oldRecord?.conversation_scope]
-                .some((scopeValue) => typeof scopeValue === 'string' && scopes.includes(scopeValue as ConversationScope));
-                
-            if (isParticipant && scopeMatch) callback(payload);
+            if (!isParticipant) return;
+
+            // Scope guard: prefer the new record's scope (authoritative post-update state).
+            // Fall back to old record only when new record doesn't carry the column
+            // (e.g. partial UPDATE payloads). This prevents events where
+            // oldRecord.conversation_scope is undefined from matching every scope.
+            if (scopes && scopes.length > 0) {
+                const authoritative: string | undefined =
+                    (typeof newRecord?.conversation_scope === 'string' && newRecord.conversation_scope)
+                        ? newRecord.conversation_scope
+                        : (typeof oldRecord?.conversation_scope === 'string' && oldRecord.conversation_scope)
+                            ? oldRecord.conversation_scope
+                            : undefined;
+
+                // Unknown scope → let through as safe default (caller decides).
+                if (authoritative !== undefined && !scopes.includes(authoritative as ConversationScope)) return;
+            }
+
+            callback(payload);
         }
     );
 

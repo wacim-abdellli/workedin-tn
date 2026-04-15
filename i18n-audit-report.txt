@@ -1,0 +1,4 @@
+# i18n audit report
+mode: strict
+findings: 0
+

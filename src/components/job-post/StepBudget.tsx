@@ -1,197 +1,249 @@
 import { useFormContext } from 'react-hook-form';
 import { DollarSign, Clock, Calendar, TrendingUp } from 'lucide-react';
-import Input from '../ui/Input';
 import { useTranslation } from '../../i18n';
 
+interface StepBudgetValues {
+    job_type?: 'fixed_price' | 'hourly';
+    budget_min?: number;
+    budget_max?: number;
+    hourly_rate?: number;
+    estimated_hours?: number;
+    duration?: string;
+    deadline?: string;
+    experience_level?: 'beginner' | 'intermediate' | 'expert';
+}
+
 export default function StepBudget() {
-    const { register, watch, formState: { errors } } = useFormContext();
+    const {
+        register,
+        watch,
+        formState: { errors },
+    } = useFormContext<StepBudgetValues>();
     const { tx } = useTranslation();
-    const jobType = watch('job_type');
+
+    const jobType = watch('job_type') || 'fixed_price';
+    const duration = watch('duration');
+    const experienceLevel = watch('experience_level');
     const today = new Date().toISOString().split('T')[0];
 
+    const fieldClass =
+        'w-full rounded-xl border border-[#2d2d2d] bg-[#0f0f0f] px-3 py-2.5 text-sm text-white outline-none transition placeholder:text-[#707070] focus:border-orange-500/70 focus:ring-2 focus:ring-orange-500/25';
+
+    const durationOptions = [
+        {
+            value: 'less_than_1_month',
+            label: tx('jobs.new.stepBudget.durationLessThan1Month', undefined, 'أقل من شهر'),
+        },
+        {
+            value: '1_3_months',
+            label: tx('jobs.new.stepBudget.duration1To3Months', undefined, 'من 1 إلى 3 أشهر'),
+        },
+        {
+            value: '3_6_months',
+            label: tx('jobs.new.stepBudget.duration3To6Months', undefined, 'من 3 إلى 6 أشهر'),
+        },
+        {
+            value: 'more_than_6_months',
+            label: tx('jobs.new.stepBudget.durationMoreThan6Months', undefined, 'أكثر من 6 أشهر'),
+        },
+    ] as const;
+
+    const experienceOptions = [
+        {
+            value: 'beginner',
+            label: tx('jobs.new.stepBudget.beginner', undefined, 'مبتدئ'),
+        },
+        {
+            value: 'intermediate',
+            label: tx('jobs.new.stepBudget.intermediate', undefined, 'متوسط'),
+        },
+        {
+            value: 'expert',
+            label: tx('jobs.new.stepBudget.expert', undefined, 'خبير'),
+        },
+    ] as const;
+
     return (
-        <div className="space-y-8">
-            <div className="space-y-4">
-                <div
-                    className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em]"
-                    style={{
-                        borderColor: 'color-mix(in srgb, var(--workspace-primary) 18%, transparent)',
-                        background: 'color-mix(in srgb, var(--workspace-primary) 12%, var(--card-bg))',
-                        color: 'var(--workspace-primary)',
-                    }}
-                >
-                    <DollarSign className="w-3.5 h-3.5" />
+        <div className="space-y-6">
+            <header className="space-y-3">
+                <div className="inline-flex items-center gap-2 rounded-full border border-orange-500/30 bg-orange-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-orange-300">
+                    <DollarSign className="h-3.5 w-3.5" />
                     {tx('jobs.new.stepBudget.badge', undefined, 'Pricing setup')}
                 </div>
-                <h3 className="text-2xl font-semibold tracking-tight text-[#171420] dark:text-white">
+                <h3 className="text-xl font-semibold tracking-tight text-white sm:text-2xl">
                     {tx('jobs.new.stepBudget.title', undefined, 'الميزانية والمدة')}
                 </h3>
-                <p className="max-w-3xl text-sm leading-7 text-[#5c5971] dark:text-[#aca9bd] sm:text-base">
+                <p className="text-sm leading-6 text-[#b3b3b3]">
                     {tx('jobs.new.stepBudget.subtitle', undefined, 'حدد طريقة الدفع المناسبة وميزانية المشروع')}
                 </p>
-            </div>
+            </header>
 
-            {/* Job Type */}
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <label className={`
-                    cursor-pointer rounded-[1.7rem] border-2 p-6 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_20px_40px_-30px_var(--workspace-primary-shadow,rgba(109,40,217,0.28))]
-                    ${jobType === 'fixed_price'
-                        ? 'border-[color:var(--workspace-primary)]/40 bg-[color:var(--workspace-primary)]/12 ring-1 ring-[color:var(--workspace-primary)]/30 shadow-[0_20px_40px_-30px_rgba(245,158,11,0.35)]'
-                            : 'border-border bg-[var(--card-bg)] hover:border-[color:var(--workspace-primary)]/24 hover:bg-[color:var(--workspace-primary)]/8'
-                    }
-                `}>
-                    <input
-                        type="radio"
-                        value="fixed_price"
-                        {...register('job_type')}
-                        className="sr-only"
-                    />
-                    <div className="flex items-center gap-4 mb-2">
-                        <div className={`rounded-lg p-2 ${jobType === 'fixed_price' ? 'bg-[color:var(--workspace-primary)]/18 text-[color:var(--workspace-primary)]' : 'bg-[var(--surface-bg)] text-[var(--text-muted)]'}`}>
-                            <DollarSign className="w-6 h-6" />
+            <section className="grid gap-3 sm:grid-cols-2">
+                <label
+                    className={`cursor-pointer rounded-xl border p-4 transition ${jobType === 'fixed_price'
+                        ? 'border-orange-500/45 bg-orange-500/10'
+                        : 'border-[#2d2d2d] bg-[#101010] hover:border-orange-500/35 hover:bg-orange-500/5'
+                        }`}
+                >
+                    <input type="radio" value="fixed_price" {...register('job_type')} className="sr-only" />
+                    <div className="flex items-start gap-3">
+                        <span className={`inline-flex h-9 w-9 items-center justify-center rounded-lg ${jobType === 'fixed_price' ? 'bg-orange-500 text-white' : 'bg-[#222] text-[#8f8f8f]'}`}>
+                            <DollarSign className="h-4.5 w-4.5" />
+                        </span>
+                        <div className="space-y-1">
+                            <p className="text-sm font-semibold text-white">{tx('jobs.new.stepBudget.fixedPrice', undefined, 'سعر ثابت')}</p>
+                            <p className="text-xs leading-5 text-[#9a9a9a]">
+                                {tx('jobs.new.stepBudget.fixedPriceDescription', undefined, 'ادفع مبلغاً ثابتاً للمشروع بالكامل عند اكتماله.')}
+                            </p>
                         </div>
-                        <span className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>{tx('jobs.new.stepBudget.fixedPrice', undefined, 'سعر ثابت')}</span>
                     </div>
-                    <p className="pe-14 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                        {tx('jobs.new.stepBudget.fixedPriceDescription', undefined, 'ادفع مبلغاً ثابتاً للمشروع بالكامل عند اكتماله.')}
-                    </p>
                 </label>
 
-                <label className={`
-                    cursor-pointer rounded-[1.7rem] border-2 p-6 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_20px_40px_-30px_var(--workspace-primary-shadow,rgba(109,40,217,0.28))]
-                    ${jobType === 'hourly'
-                        ? 'border-[color:var(--workspace-primary)]/40 bg-[color:var(--workspace-primary)]/12 ring-1 ring-[color:var(--workspace-primary)]/30 shadow-[0_20px_40px_-30px_rgba(245,158,11,0.35)]'
-                            : 'border-border bg-[var(--card-bg)] hover:border-[color:var(--workspace-primary)]/24 hover:bg-[color:var(--workspace-primary)]/8'
-                    }
-                `}>
-                    <input
-                        type="radio"
-                        value="hourly"
-                        {...register('job_type')}
-                        className="sr-only"
-                    />
-                    <div className="flex items-center gap-4 mb-2">
-                        <div className={`rounded-lg p-2 ${jobType === 'hourly' ? 'bg-[color:var(--workspace-primary)]/18 text-[color:var(--workspace-primary)]' : 'bg-[var(--surface-bg)] text-[var(--text-muted)]'}`}>
-                            <Clock className="w-6 h-6" />
+                <label
+                    className={`cursor-pointer rounded-xl border p-4 transition ${jobType === 'hourly'
+                        ? 'border-orange-500/45 bg-orange-500/10'
+                        : 'border-[#2d2d2d] bg-[#101010] hover:border-orange-500/35 hover:bg-orange-500/5'
+                        }`}
+                >
+                    <input type="radio" value="hourly" {...register('job_type')} className="sr-only" />
+                    <div className="flex items-start gap-3">
+                        <span className={`inline-flex h-9 w-9 items-center justify-center rounded-lg ${jobType === 'hourly' ? 'bg-orange-500 text-white' : 'bg-[#222] text-[#8f8f8f]'}`}>
+                            <Clock className="h-4.5 w-4.5" />
+                        </span>
+                        <div className="space-y-1">
+                            <p className="text-sm font-semibold text-white">{tx('jobs.new.stepBudget.hourly', undefined, 'بالساعة')}</p>
+                            <p className="text-xs leading-5 text-[#9a9a9a]">
+                                {tx('jobs.new.stepBudget.hourlyDescription', undefined, 'ادفع للمستقل بناءً على عدد ساعات العمل.')}
+                            </p>
                         </div>
-                        <span className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>{tx('jobs.new.stepBudget.hourly', undefined, 'بالساعة')}</span>
                     </div>
-                    <p className="pe-14 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                        {tx('jobs.new.stepBudget.hourlyDescription', undefined, 'ادفع للمستقل بناءً على عدد ساعات العمل.')}
-                    </p>
                 </label>
-            </div>
+            </section>
 
-            {/* Budget Inputs */}
-            <div
-                className="rounded-[1.8rem] border p-6 shadow-sm"
-                style={{
-                    borderColor: 'color-mix(in srgb, var(--workspace-primary) 18%, var(--border))',
-                    background: 'linear-gradient(145deg, color-mix(in srgb, var(--card-bg) 94%, var(--page-bg)), color-mix(in srgb, var(--surface-bg) 90%, var(--page-bg)))',
-                    boxShadow: '0 24px 60px -48px rgba(15,23,42,0.42)',
-                }}
-            >
+            <section className="rounded-xl border border-[#2d2d2d] bg-[#101010] p-4 sm:p-5">
                 {jobType === 'fixed_price' ? (
-                    <div className="space-y-4">
-                        <label className="block text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{tx('jobs.new.stepBudget.estimatedBudget', undefined, 'ميزانية المشروع التقديرية (د.ت)')}</label>
-                        <div className="grid grid-cols-2 gap-4">
-                            <Input
-                                placeholder={tx('jobs.new.stepBudget.min', undefined, 'من')}
-                                type="number"
-                                {...register('budget_min', { valueAsNumber: true })}
-                                error={errors.budget_min?.message as string}
-                            />
-                            <Input
-                                placeholder={tx('jobs.new.stepBudget.max', undefined, 'إلى')}
-                                type="number"
-                                {...register('budget_max', { valueAsNumber: true })}
-                                error={errors.budget_max?.message as string}
-                            />
+                    <div className="space-y-3">
+                        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#7d7d7d]">
+                            {tx('jobs.new.stepBudget.estimatedBudget', undefined, 'ميزانية المشروع التقديرية (د.ت)')}
+                        </p>
+                        <div className="grid gap-3 sm:grid-cols-2">
+                            <div>
+                                <label className="mb-1 block text-xs text-[#9a9a9a]">
+                                    {tx('jobs.new.stepBudget.min', undefined, 'من')}
+                                </label>
+                                <input
+                                    type="number"
+                                    className={fieldClass}
+                                    placeholder={tx('jobs.new.stepBudget.min', undefined, 'من')}
+                                    {...register('budget_min', { valueAsNumber: true })}
+                                />
+                                {errors.budget_min ? <p className="mt-1 text-xs text-red-400">{errors.budget_min.message as string}</p> : null}
+                            </div>
+                            <div>
+                                <label className="mb-1 block text-xs text-[#9a9a9a]">
+                                    {tx('jobs.new.stepBudget.max', undefined, 'إلى')}
+                                </label>
+                                <input
+                                    type="number"
+                                    className={fieldClass}
+                                    placeholder={tx('jobs.new.stepBudget.max', undefined, 'إلى')}
+                                    {...register('budget_max', { valueAsNumber: true })}
+                                />
+                                {errors.budget_max ? <p className="mt-1 text-xs text-red-400">{errors.budget_max.message as string}</p> : null}
+                            </div>
                         </div>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="space-y-2">
-                            <label className="block text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{tx('jobs.new.stepBudget.hourlyRate', undefined, 'السعر بالساعة (د.ت)')}</label>
-                            <Input
+                    <div className="grid gap-3 sm:grid-cols-2">
+                        <div>
+                            <label className="mb-1 block text-xs text-[#9a9a9a]">
+                                {tx('jobs.new.stepBudget.hourlyRate', undefined, 'السعر بالساعة (د.ت)')}
+                            </label>
+                            <input
+                                type="number"
+                                className={fieldClass}
                                 placeholder={tx('jobs.new.stepBudget.hourlyRateExample', undefined, 'مثال: 20')}
-                                type="number"
                                 {...register('hourly_rate', { valueAsNumber: true })}
-                                error={errors.hourly_rate?.message as string}
                             />
+                            {errors.hourly_rate ? <p className="mt-1 text-xs text-red-400">{errors.hourly_rate.message as string}</p> : null}
                         </div>
-                        <div className="space-y-2">
-                            <label className="block text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{tx('jobs.new.stepBudget.weeklyHours', undefined, 'الساعات المتوقعة أسبوعياً')}</label>
-                            <Input
-                                placeholder={tx('jobs.new.stepBudget.weeklyHoursExample', undefined, 'مثال: 20')}
+                        <div>
+                            <label className="mb-1 block text-xs text-[#9a9a9a]">
+                                {tx('jobs.new.stepBudget.weeklyHours', undefined, 'الساعات المتوقعة أسبوعياً')}
+                            </label>
+                            <input
                                 type="number"
+                                className={fieldClass}
+                                placeholder={tx('jobs.new.stepBudget.weeklyHoursExample', undefined, 'مثال: 20')}
                                 {...register('estimated_hours', { valueAsNumber: true })}
-                                error={errors.estimated_hours?.message as string}
                             />
+                            {errors.estimated_hours ? <p className="mt-1 text-xs text-red-400">{errors.estimated_hours.message as string}</p> : null}
                         </div>
                     </div>
                 )}
-            </div>
+            </section>
 
-            {/* Additional Info */}
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-                <div className="space-y-3 rounded-[1.6rem] border p-5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_36px_-28px_rgba(15,23,42,0.34)]" style={{ borderColor: 'color-mix(in srgb, var(--workspace-primary) 16%, var(--border))', background: 'color-mix(in srgb, var(--card-bg) 94%, var(--page-bg))' }}>
-                    <label className="flex items-center gap-2 text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
-                        <Calendar className="h-5 w-5 text-[color:var(--text-muted)]" />
+            <section className="grid gap-3 lg:grid-cols-[1.2fr_0.8fr]">
+                <div className="rounded-xl border border-[#2d2d2d] bg-[#101010] p-4 sm:p-5">
+                    <label className="mb-2 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#7d7d7d]">
+                        <Calendar className="h-4 w-4" />
                         {tx('jobs.new.stepBudget.duration', undefined, 'مدة المشروع')}
                     </label>
-                    <select
-                        {...register('duration')}
-                        className="w-full appearance-none rounded-2xl border border-border bg-card px-4 py-3 text-foreground dark:text-white transition-all duration-200 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:border-white/10 border-border dark:bg-[var(--color-bg-muted)] dark:text-white"
-                    >
-                        <option value="">{tx('jobs.new.stepBudget.selectDuration', undefined, 'اختر المدة')}</option>
-                        <option value="less_than_1_month">{tx('jobs.new.stepBudget.durationLessThan1Month', undefined, 'أقل من شهر')}</option>
-                        <option value="1_3_months">{tx('jobs.new.stepBudget.duration1To3Months', undefined, 'من 1 إلى 3 أشهر')}</option>
-                        <option value="3_6_months">{tx('jobs.new.stepBudget.duration3To6Months', undefined, 'من 3 إلى 6 أشهر')}</option>
-                        <option value="more_than_6_months">{tx('jobs.new.stepBudget.durationMoreThan6Months', undefined, 'أكثر من 6 أشهر')}</option>
-                    </select>
-                    {errors.duration && (
-                        <p className="text-red-500 text-xs">{errors.duration.message as string}</p>
-                    )}
+                    <div className="grid gap-2 sm:grid-cols-2">
+                        {durationOptions.map((option) => {
+                            const isSelected = duration === option.value;
+                            return (
+                                <label
+                                    key={option.value}
+                                    className={`cursor-pointer rounded-lg border px-3 py-2.5 text-sm transition ${isSelected
+                                        ? 'border-orange-500/45 bg-orange-500/10 text-orange-200'
+                                        : 'border-[#313131] bg-[#141414] text-[#b3b3b3] hover:border-orange-500/35 hover:bg-orange-500/5'
+                                        }`}
+                                >
+                                    <input type="radio" value={option.value} {...register('duration')} className="sr-only" />
+                                    {option.label}
+                                </label>
+                            );
+                        })}
+                    </div>
+                    {errors.duration ? <p className="mt-2 text-xs text-red-400">{errors.duration.message as string}</p> : null}
                 </div>
 
-                <div className="space-y-3 rounded-[1.6rem] border p-5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_36px_-28px_rgba(15,23,42,0.34)]" style={{ borderColor: 'color-mix(in srgb, var(--workspace-primary) 16%, var(--border))', background: 'color-mix(in srgb, var(--card-bg) 94%, var(--page-bg))' }}>
-                    <label className="flex items-center gap-2 text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
-                        <Calendar className="h-5 w-5 text-[color:var(--text-muted)]" />
+                <div className="rounded-xl border border-[#2d2d2d] bg-[#101010] p-4 sm:p-5">
+                    <label className="mb-2 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#7d7d7d]">
+                        <Calendar className="h-4 w-4" />
                         {tx('jobs.new.stepBudget.deadline', undefined, 'الموعد النهائي')}
                     </label>
-                    <Input
-                        type="date"
-                        min={today}
-                        {...register('deadline')}
-                        error={errors.deadline?.message as string}
-                    />
+                    <input type="date" min={today} className={fieldClass} {...register('deadline')} />
+                    {errors.deadline ? <p className="mt-2 text-xs text-red-400">{errors.deadline.message as string}</p> : null}
                 </div>
+            </section>
 
-                <div className="space-y-3 rounded-[1.6rem] border p-5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_36px_-28px_rgba(15,23,42,0.34)]" style={{ borderColor: 'color-mix(in srgb, var(--workspace-primary) 16%, var(--border))', background: 'color-mix(in srgb, var(--card-bg) 94%, var(--page-bg))' }}>
-                    <label className="flex items-center gap-2 text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
-                        <TrendingUp className="h-5 w-5 text-[color:var(--text-muted)]" />
-                        {tx('jobs.new.stepBudget.experienceLevel', undefined, 'مستوى الخبرة المطلوب')}
-                    </label>
-                    <div className="grid gap-2">
-                        <label className="inline-flex items-center gap-2 rounded-2xl border px-3 py-2.5 cursor-pointer" style={{ borderColor: 'var(--border)', background: 'var(--card-bg)' }}>
-                            <input type="radio" value="beginner" {...register('experience_level')} className="text-[color:var(--workspace-primary)] focus:ring-[color:var(--workspace-primary)]" />
-                            <span style={{ color: 'var(--text-secondary)' }}>{tx('jobs.new.stepBudget.beginner', undefined, 'مبتدئ (Beginner)')}</span>
-                        </label>
-                        <label className="inline-flex items-center gap-2 rounded-2xl border px-3 py-2.5 cursor-pointer" style={{ borderColor: 'var(--border)', background: 'var(--card-bg)' }}>
-                            <input type="radio" value="intermediate" {...register('experience_level')} className="text-[color:var(--workspace-primary)] focus:ring-[color:var(--workspace-primary)]" />
-                            <span style={{ color: 'var(--text-secondary)' }}>{tx('jobs.new.stepBudget.intermediate', undefined, 'متوسط (Intermediate)')}</span>
-                        </label>
-                        <label className="inline-flex items-center gap-2 rounded-2xl border px-3 py-2.5 cursor-pointer" style={{ borderColor: 'var(--border)', background: 'var(--card-bg)' }}>
-                            <input type="radio" value="expert" {...register('experience_level')} className="text-[color:var(--workspace-primary)] focus:ring-[color:var(--workspace-primary)]" />
-                            <span style={{ color: 'var(--text-secondary)' }}>{tx('jobs.new.stepBudget.expert', undefined, 'خبير (Expert)')}</span>
-                        </label>
-                    </div>
-                    {errors.experience_level && (
-                        <p className="text-red-500 text-xs">{errors.experience_level.message as string}</p>
-                    )}
+            <section className="rounded-xl border border-[#2d2d2d] bg-[#101010] p-4 sm:p-5">
+                <label className="mb-2 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#7d7d7d]">
+                    <TrendingUp className="h-4 w-4" />
+                    {tx('jobs.new.stepBudget.experienceLevel', undefined, 'مستوى الخبرة المطلوب')}
+                </label>
+
+                <div className="grid gap-2 sm:grid-cols-3">
+                    {experienceOptions.map((option) => {
+                        const isSelected = experienceLevel === option.value;
+                        return (
+                            <label
+                                key={option.value}
+                                className={`cursor-pointer rounded-lg border px-3 py-2.5 text-sm transition ${isSelected
+                                    ? 'border-orange-500/45 bg-orange-500/10 text-orange-200'
+                                    : 'border-[#313131] bg-[#141414] text-[#b3b3b3] hover:border-orange-500/35 hover:bg-orange-500/5'
+                                    }`}
+                            >
+                                <input type="radio" value={option.value} {...register('experience_level')} className="sr-only" />
+                                {option.label}
+                            </label>
+                        );
+                    })}
                 </div>
-            </div>
+                {errors.experience_level ? <p className="mt-2 text-xs text-red-400">{errors.experience_level.message as string}</p> : null}
+            </section>
         </div>
     );
 }

@@ -439,10 +439,20 @@ export default function ClientProfile() {
       });
 
       setIsEditingProfile(false);
-      showToast("Client profile updated", "success");
+      showToast(
+        tx("pages.clientProfile.toasts.profileUpdated", undefined, "Client profile updated"),
+        "success",
+      );
     } catch (error) {
       logger.error("Failed to update client profile", error);
-      showToast("Failed to update client profile", "error");
+      showToast(
+        tx(
+          "pages.clientProfile.toasts.profileUpdateFailed",
+          undefined,
+          "Failed to update client profile",
+        ),
+        "error",
+      );
     } finally {
       setIsSavingProfile(false);
     }

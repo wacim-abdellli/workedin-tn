@@ -146,11 +146,34 @@ export const fr: Translations = {
                 "reviewDescription": "Vérifiez le brief avant de le publier."
             },
             "stepCounter": "Étape {{current}} sur {{total}}",
+            "currentPhase": "Phase en cours",
+            "progress": "Progression",
+            "step1": {
+                "subtitle": "Commencez par un titre clair et un contexte solide."
+            },
+            "fields": {
+                "title": "Titre du projet",
+                "mainCategory": "Catégorie principale",
+                "selectCategory": "Choisir la catégorie",
+                "subcategory": "Sous-catégorie",
+                "selectSubcategory": "Choisir la sous-catégorie",
+                "description": "Description du projet",
+                "requiredSkills": "Compétences requises (max 5)",
+                "suggested": "Suggestions :",
+                "attachments": "Pièces jointes (optionnel)",
+                "attachmentsDrop": "Glissez les fichiers ici ou cliquez pour parcourir",
+                "chooseFiles": "Choisir des fichiers"
+            },
+            "quality": {
+                "title": "Score de qualité"
+            },
             "autosave": {
                 "saving": "Enregistrement...",
                 "saved": "Enregistré",
                 "lastSaved": "Dernière sauvegarde : {{time}}",
-                "ready": "Sauvegarde auto prête"
+                "ready": "Sauvegarde auto prête",
+                "savedAt": "Enregistré à {{time}}",
+                "notSaved": "Pas encore enregistré"
             },
             "wizard": {
                 "badge": "Parcours de publication",
@@ -1592,6 +1615,89 @@ export const fr: Translations = {
             }
         },
         "freelancerProfile": {
+            "actions": {
+                "changeProfilePicture": "Changer la photo de profil",
+                "editProfile": "Modifier le profil",
+                "openLink": "Ouvrir le lien",
+                "viewFullProject": "Voir le projet complet",
+                "openProjectLink": "Ouvrir le lien du projet",
+                "previousProject": "Projet précédent",
+                "nextProject": "Projet suivant"
+            },
+            "cta": {
+                "viewPublicProfile": "Voir le profil public",
+                "viewPublicProfileDescription": "Prévisualisez exactement comment les clients et visiteurs voient votre profil.",
+                "portfolioDashboard": "Tableau de bord du portfolio",
+                "portfolioDashboardDescription": "Ajoutez et organisez vos meilleurs exemples.",
+                "myProposals": "Mes propositions",
+                "myProposalsDescription": "Suivez les statuts et relancez plus vite.",
+                "workspaceSettings": "Paramètres de l'espace",
+                "workspaceSettingsDescription": "Notifications, sécurité et contrôles du compte.",
+                "hireMe": "M'embaucher",
+                "sendMessage": "Envoyer un message"
+            },
+            "form": {
+                "fullName": "Nom complet",
+                "professionalTitle": "Titre professionnel",
+                "hourlyRateTnd": "Taux horaire (TND)"
+            },
+            "info": {
+                "memberSince": "Membre depuis",
+                "lastSeen": "Vu pour la dernière fois"
+            },
+            "labels": {
+                "skillsUsed": "Compétences utilisées",
+                "toolsUsed": "Outils utilisés"
+            },
+            "publicPreview": {
+                "title": "Aperçu du profil public",
+                "description": "Vous voyez votre profil tel que les autres utilisateurs le voient.",
+                "exit": "Quitter l'aperçu"
+            },
+            "reviews": {
+                "empty": "Pas encore d'avis. Terminez votre premier contrat pour recevoir des retours."
+            },
+            "sections": {
+                "coreStrengths": "Forces clés",
+                "selectedWork": "Travaux sélectionnés",
+                "clientTrust": "Confiance client",
+                "workInformation": "Informations de travail"
+            },
+            "stats": {
+                "hourlyRate": "Taux horaire"
+            },
+            "toasts": {
+                "workSampleDeleted": "Exemple de travail supprimé",
+                "workSampleDeleteError": "Impossible de supprimer l'exemple de travail",
+                "profileUpdated": "Détails du profil mis à jour",
+                "profileUpdateError": "Impossible de mettre à jour les détails du profil",
+                "bioUpdated": "Bio mise à jour",
+                "bioUpdateError": "Impossible de mettre à jour la bio",
+                "skillsUpdated": "Compétences mises à jour",
+                "skillsUpdateError": "Impossible de mettre à jour les compétences",
+                "toolsUpdated": "Outils mis à jour",
+                "toolsUpdateError": "Impossible de mettre à jour les outils",
+                "avatarUpdated": "Photo de profil mise à jour",
+                "loginRequired": "Veuillez vous connecter pour continuer",
+                "contactDisabledOwnProfile": "Mode aperçu public : l'action de contact est désactivée sur votre propre profil."
+            },
+            "validation": {
+                "fullNameRequired": "Le nom complet est requis",
+                "validHourlyRate": "Veuillez saisir un taux horaire valide",
+                "avatarType": "Veuillez importer une image JPG, PNG, WEBP ou GIF.",
+                "avatarSize": "La taille de l'image doit être inférieure à 5 Mo."
+            },
+            "verifications": {
+                "paymentMethod": "Moyen de paiement"
+            },
+            "viewer": {
+                "close": "Fermer la visionneuse du portfolio",
+                "previousImage": "Image précédente",
+                "nextImage": "Image suivante"
+            },
+            "workSamples": {
+                "emptyTitle": "Aucun exemple de travail ajouté pour le moment"
+            },
             "portfolio": {
                 "skillsUsed": "Compétences utilisées",
                 "visitProject": "Visiter le projet"
@@ -1659,6 +1765,99 @@ export const fr: Translations = {
         "login": {
             "finishingSignIn": "Finalisation de la connexion",
             "finishingSignInDescription": "Nous confirmons votre session sécurisée et vous redirigeons vers le bon espace."
+        },
+        "jobBoard": {
+            "header": {
+                "title": "Trouver du travail",
+                "subtitle": "Parcourez et postulez à des opportunités freelance en Tunisie."
+            },
+            "filters": {
+                "clearAll": "Tout effacer",
+                "jobType": "Type de mission",
+                "searchPlaceholder": "Rechercher des missions..."
+            },
+            "actions": {
+                "applyNow": "Postuler"
+            },
+            "empty": {
+                "filtered": "Aucune mission trouvée avec les filtres sélectionnés."
+            },
+            "errors": {
+                "loadFailed": "Impossible de charger les missions. Veuillez réessayer."
+            },
+            "toasts": {
+                "savedJobsUpdateError": "Impossible de mettre à jour les missions sauvegardées"
+            }
+        },
+        "savedJobs": {
+            "empty": {
+                "title": "Rien n'est encore sauvegardé"
+            },
+            "labels": {
+                "budget": "Budget :"
+            },
+            "actions": {
+                "applyNow": "Postuler",
+                "removeSavedJob": "Retirer la mission sauvegardée",
+                "inviteToJob": "Inviter au projet",
+                "removeSavedFreelancer": "Retirer le freelance sauvegardé"
+            }
+        },
+        "settings": {
+            "account": {
+                "overviewTitle": "Vue du compte",
+                "overviewDescription": "Gérez votre espace de travail et les détails généraux du compte.",
+                "currentWorkspace": "Espace de travail actuel",
+                "accountType": "Type de compte",
+                "quickActions": "Actions rapides",
+                "openPublicProfileEditor": "Ouvrir l'éditeur du profil public",
+                "goToDashboard": "Aller au tableau de bord",
+                "manageNotifications": "Gérer les notifications"
+            },
+            "actions": {
+                "signOut": "Se déconnecter"
+            },
+            "notifications": {
+                "toasts": {
+                    "loadError": "Échec du chargement des paramètres de notification",
+                    "saveError": "Impossible d'enregistrer les paramètres de notification"
+                }
+            },
+            "payment": {
+                "title": "Méthodes de paiement",
+                "addMethod": "Ajouter une méthode",
+                "bankTransfer": "Virement bancaire",
+                "setDefault": "Définir par défaut",
+                "deleteMethod": "Supprimer la méthode de paiement",
+                "empty": {
+                    "title": "Aucune méthode de paiement ajoutée",
+                    "description": "Ajoutez maintenant une méthode de retrait afin que les contrats soient prêts quand vous en avez besoin."
+                },
+                "toasts": {
+                    "loadError": "Échec du chargement des méthodes de paiement",
+                    "added": "Méthode de paiement ajoutée",
+                    "addError": "Impossible d'ajouter la méthode de paiement",
+                    "defaultUpdated": "Méthode de paiement par défaut mise à jour",
+                    "defaultUpdateError": "Impossible de mettre à jour la méthode par défaut",
+                    "removed": "Méthode de paiement supprimée",
+                    "removeError": "Impossible de supprimer la méthode de paiement"
+                }
+            },
+            "privacy": {
+                "title": "Sécurité et confidentialité",
+                "changePassword": "Changer le mot de passe",
+                "activeSessions": "Sessions actives",
+                "currentSession": "Cet appareil est votre session actuelle.",
+                "signOutAllDevices": "Se déconnecter de tous les appareils",
+                "deleteAccount": "Supprimer le compte",
+                "deleteAccountWarning": "Votre compte et toutes vos données seront supprimés définitivement. Cette action est irréversible.",
+                "toasts": {
+                    "deleteRequestInProgress": "Une demande de suppression est déjà en cours",
+                    "deleteRequestSubmitted": "Demande de suppression de compte envoyée",
+                    "deleteRequestError": "Impossible d'envoyer la demande de suppression",
+                    "signOutAllError": "Impossible de déconnecter tous les appareils"
+                }
+            }
         }
     },
     "search": {
@@ -2361,7 +2560,7 @@ export const fr: Translations = {
             "archiveSuccess": "Proposition archivée",
             "archiveError": "Échec de l'archivage",
             "submitSuccess": "Proposition soumise avec succès !",
-            "withdrawSuccess": "Proposition retirée et connects remboursés",
+            "withdrawSuccess": "Proposition retirée avec succès",
             "withdrawError": "Échec du retrait"
         },
         "contract": {
@@ -2529,7 +2728,9 @@ export const fr: Translations = {
             }
         },
         "card": {
-            "clientPrefix": "Client"
+            "clientPrefix": "Client",
+            "editItem": "Modifier l'élément du portfolio",
+            "deleteItem": "Supprimer l'élément du portfolio"
         }
     },
     "jobProposals": {
@@ -2569,7 +2770,7 @@ export const fr: Translations = {
         "loginToSave": "Connectez-vous pour enregistrer",
         "proposalSent": "Proposition envoyée avec succès!",
         "proposalError": "Erreur lors de l'envoi de la proposition",
-        "proposalWithdrawn": "Proposition retirée et connects remboursés",
+        "proposalWithdrawn": "Proposition retirée avec succès",
         "withdrawError": "Erreur lors du retrait",
         "linkCopied": "Lien copié",
         "fixedPrice": "Prix fixe",
@@ -2605,20 +2806,25 @@ export const fr: Translations = {
         "attachments": "Pièces jointes",
         "file": "Fichier {{index}}",
         "defaultClient": "Client",
-        "connectsNeeded": "Vous avez besoin de {{count}} connects pour envoyer une proposition. Votre solde actuel: {{balance}}",
         "jobNotFound": "Travail non trouvé",
         "submitProposal": "Envoyer une proposition",
         "withdrawProposal": "Retirer la proposition",
         "browseJobs": "Parcourir les travaux",
         "submissionRequirements": "Exigences de soumission",
-        "connectsRequiredDescription": "Cette proposition nécessite des connects avant l'envoi.",
         "readyToSubmit": "Prêt à soumettre",
-        "insufficientBalance": "Solde insuffisant",
-        "balance": "Solde",
-        "required": "Requis",
+        "insufficientBalance": "Limite quotidienne atteinte",
+        "balance": "Utilisées aujourd'hui",
+        "required": "Limite quotidienne",
         "remaining": "Restant",
-        "connectsDeductionWarning": "{{count}} connects seront déduits immédiatement après l'envoi de la proposition.",
-        "additionalConnectsNeeded": "Vous avez besoin de {{count}} connects supplémentaires avant d'envoyer cette proposition.",
+        "used": "Utilisées",
+        "limit": "Limite",
+        "dailyApplyLimitTitle": "Limite quotidienne de candidatures",
+        "dailyApplyLimitDescription": "Pour réduire le spam, vous pouvez envoyer jusqu'à {{limit}} propositions par jour.",
+        "dailyApplyLimitReached": "Vous avez atteint la limite quotidienne de {{limit}} candidatures. Réessayez demain.",
+        "dailyApplyAvailable": "Disponible aujourd'hui",
+        "dailyApplyReached": "Limite atteinte",
+        "dailyApplyRemainingHint": "Il vous reste {{remaining}} candidatures aujourd'hui.",
+        "dailyApplyResetHint": "Limite quotidienne atteinte. Vous pourrez candidater à nouveau demain.",
         "memberSince": "Membre depuis",
         "postedJobs": "Travaux publiés",
         "totalSpending": "Total dépensé",
@@ -2957,6 +3163,18 @@ export const fr: Translations = {
             "highlightPaymentsDescription": "Les flux de séquestre en premier maintiennent les paiements des clients et la livraison des indépendants alignés.",
             "highlightLocaleTitle": "Local et Global",
             "highlightLocaleDescription": "Les flux en arabe, français et anglais adaptés au travail indépendant local.",
+            "hero": {
+                "workSmarter": "Travaillez plus intelligemment.",
+                "earnFairly": "Gagnez équitablement."
+            },
+            "form": {
+                "welcomeBack": "Bon retour.",
+                "subtitle": "Connectez-vous à votre espace WorkedIn.",
+                "google": "Continuer avec Google",
+                "orEmail": "ou se connecter avec l'e-mail",
+                "forgotPassword": "Mot de passe oublié ?",
+                "createOne": "En créer un"
+            },
             "createAccountAction": "Créer un compte",
             "finishingSignIn": "Sécurisation de la session...",
             "finishingSignInDescription": "Nous confirmons votre session sécurisée et vous envoyons au bon espace de travail.",

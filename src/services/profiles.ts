@@ -163,6 +163,27 @@ export async function getSavedJobs(userId: string) {
         .not('job_id', 'is', null);
 }
 
+export async function getSavedFreelancerIds(userId: string) {
+    return supabase
+        .from('favorites')
+        .select('freelancer_id')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .not('freelancer_id', 'is', null);
+}
+
+export async function toggleFreelancerFavorite(userId: string, freelancerId: string, isSaved: boolean) {
+    if (isSaved) {
+        return supabase
+            .from('favorites')
+            .delete()
+            .eq('user_id', userId)
+            .eq('freelancer_id', freelancerId);
+    }
+
+    return supabase.from('favorites').insert({ user_id: userId, freelancer_id: freelancerId });
+}
+
 // --- REVIEWS ---
 
 export async function getReviewsByUser(userId: string) {

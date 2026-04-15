@@ -715,10 +715,40 @@ const getThreadPreview = (threadMessages: ThreadMessage[], deletedLabel: string)
     };
 };
 
-const getCounterpartyRoleFromScope = (
-    scope: Conversation['conversation_scope'] | undefined,
+/**
+ * Derive the counterparty role label for a conversation.
+ *
+ * With the new per-participant inbox system we can read the inbox assignment
+ * directly: MY inbox assignment tells me my role, so the counterparty's role
+ * is the opposite.
+ *
+ * Falls back to the legacy conversation_scope heuristic when the inbox columns
+ * are not yet present (pre-migration data).
+ */
+const getCounterpartyRoleFromConversation = (
+    conversation: Conversation,
+    userId: string | undefined,
     activeMode: string | null | undefined
 ): 'client' | 'freelancer' | null => {
+    // Use per-participant inbox columns when available (post-migration)
+    if (userId) {
+        const isParticipant1 = conversation.participant_1 === userId;
+        const myInbox = isParticipant1
+            ? conversation.inbox_participant_1
+            : conversation.inbox_participant_2;
+
+        if (myInbox === 'client') return 'freelancer';    // I am client → they are freelancer
+        if (myInbox === 'freelancer') return 'client';    // I am freelancer → they are client
+        if (myInbox === 'contract') {
+            // For contract conversations use active mode as hint
+            if (activeMode === 'client') return 'freelancer';
+            if (activeMode === 'freelancer') return 'client';
+        }
+        // myInbox === 'shared' or undefined → fall through to legacy heuristic
+    }
+
+    // Legacy fallback: derive from conversation_scope
+    const scope = conversation.conversation_scope;
     if (scope === 'client') return 'freelancer';
     if (scope === 'freelancer') return 'client';
     if (scope === 'contract') {
@@ -801,8 +831,9 @@ function MessagesComponent() {
 
     const getConversationIdentityLabel = useCallback((conversation: Conversation) => {
         const username = conversation.otherUser.username?.trim();
-        const counterpartyRole = getCounterpartyRoleFromScope(
-            conversation.conversation_scope,
+        const counterpartyRole = getCounterpartyRoleFromConversation(
+            conversation,
+            user?.id,
             activeMode ?? profile?.active_mode
         );
 
@@ -814,7 +845,7 @@ function MessagesComponent() {
         if (roleLabel) return roleLabel;
 
         return `@${username || tx('pages.messages.userFallback', undefined, 'user')}`;
-    }, [activeMode, profile?.active_mode, tx]);
+    }, [activeMode, profile?.active_mode, user?.id, tx]);
 
     const handleOpenAttachment = useCallback(async (attachment: NonNullable<Message['attachments']>[number]) => {
         const sourceUrl = resolveMessageAttachmentUrl(attachment.url);
@@ -1229,9 +1260,20 @@ function MessagesComponent() {
     };
 
 
+    // On mode switch: reset all conversation state, then immediately hydrate from the
+    // new mode's session cache if available. Combining these into one effect ensures
+    // the reset always happens before the cache load — no flash of wrong-mode data.
     useEffect(() => {
+        // 1. Reset everything for the incoming mode
+        setConversations([]);
+        setSelectedConversation(null);
+        setMessages([]);
+        setPage(0);
+        setHasMoreConversations(true);
+
         if (!user?.id) return;
 
+        // 2. Load the new mode's cached conversations (different key per mode)
         const cachedConversations = readSessionCache<Conversation[]>(getConversationsCacheKey(user.id, conversationsModeCacheKey));
         if (cachedConversations && cachedConversations.length > 0) {
             setConversations(cachedConversations);
@@ -1239,13 +1281,6 @@ function MessagesComponent() {
         }
     }, [user?.id, conversationsModeCacheKey]);
 
-    useEffect(() => {
-        setConversations([]);
-        setSelectedConversation(null);
-        setMessages([]);
-        setPage(0);
-        setHasMoreConversations(true);
-    }, [conversationsModeCacheKey]);
 
     useEffect(() => {
         if (!user?.id || conversations.length === 0) return;
@@ -1494,8 +1529,11 @@ function MessagesComponent() {
         };
      }, [selectedConversation?.id, user?.id]);
 
-    // Subscribe to ALL new messages for this user (not just selected conversation)
-    // This ensures new conversations appear in the sidebar immediately
+    // Subscribe to ALL new messages directed at this user (not just the selected conversation).
+    // This keeps the sidebar conversation list fresh in real-time.
+    // IMPORTANT: scope-gated — only processes messages that belong to conversations
+    // already visible in the current mode's inbox (freelancer vs client). This prevents
+    // a freelancer-scoped message from appearing in the client inbox and vice-versa.
     useEffect(() => {
         if (!user?.id) return;
 
@@ -1513,40 +1551,47 @@ function MessagesComponent() {
                 },
                 (payload: any) => {
                     const newMsg = payload.new as unknown as Message;
-                    
-                    // Update or add conversation to the list
+
                     setConversations(prev => {
                         const convIdx = prev.findIndex(c => c.id === newMsg.conversation_id);
-                        
-                        if (convIdx > -1) {
-                            // Conversation exists - update it and move to top
-                            const updated = [...prev];
-                            const conv = updated[convIdx];
-                            updated.splice(convIdx, 1); // Remove from current position
-                            
-                            // Update last message info
-                            conv.last_message_text = newMsg.content;
-                            conv.last_message_at = newMsg.created_at;
-                            
-                            // Increment unread count if it's not the currently selected conversation
-                            if (selectedConversation?.id !== newMsg.conversation_id) {
-                                const isParticipant1 = conv.participant_1 === user.id;
-                                if (isParticipant1) {
-                                    conv.unread_count_1 = (conv.unread_count_1 || 0) + 1;
-                                } else {
-                                    conv.unread_count_2 = (conv.unread_count_2 || 0) + 1;
-                                }
-                            }
-                            
-                            // Add to top of list
-                            return [conv, ...updated];
-                        } else {
-                            // Reload from server when a completely new conversation arrives using existing fetch triggers
-                            setPage((prevPage) => prevPage === 0 ? prevPage : 0);
-                            // We can't safely call loadConversations from here since it's defined elsewhere,
-                            // but setting page triggers reload if needed, or we can just fetch the single new conversation.
+
+                        // ── Scope gate ────────────────────────────────────────────────
+                        // If the conversation isn't in our current scoped list it means
+                        // it belongs to a different mode (e.g. freelancer message arriving
+                        // while in client mode). Do NOT mutate state — return as-is.
+                        if (convIdx === -1) {
+                            // A truly new conversation (never loaded yet) — trigger a
+                            // page-0 reload which will fetch with the correct scopes.
+                            setPage(prevPage => prevPage === 0 ? prevPage : 0);
                             return prev;
                         }
+
+                        // Conversation exists in the current scoped list — update it
+                        const updated = [...prev];
+                        // Clone the conversation object so we don't mutate the array directly
+                        const conv: Conversation = { ...updated[convIdx] };
+                        updated.splice(convIdx, 1); // Remove from current position
+
+                        // Update last message preview
+                        conv.last_message_text = newMsg.content;
+                        conv.last_message_at = newMsg.created_at;
+
+                        // Increment unread count if it's not the currently selected conversation.
+                        // Update BOTH the raw participant fields AND the derived display field
+                        // so the conversation badge renders correctly without a DB round-trip.
+                        if (selectedConversation?.id !== newMsg.conversation_id) {
+                            const isParticipant1 = conv.participant_1 === user.id;
+                            if (isParticipant1) {
+                                conv.unread_count_1 = (conv.unread_count_1 || 0) + 1;
+                            } else {
+                                conv.unread_count_2 = (conv.unread_count_2 || 0) + 1;
+                            }
+                            // Keep the display field in sync — this is what the UI badge reads
+                            conv.unread_count = (conv.unread_count || 0) + 1;
+                        }
+
+                        // Bubble the conversation to the top of the list
+                        return [conv, ...updated];
                     });
                 }
             )
@@ -1558,6 +1603,7 @@ function MessagesComponent() {
             }
         };
     }, [user?.id, selectedConversation?.id]);
+
     useEffect(() => {
         if (selectedConversation && newMessage !== undefined) {
             const draftKey = `draft_${selectedConversation.id}`;
@@ -2051,7 +2097,7 @@ function MessagesComponent() {
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         placeholder={tx('pages.messages.searchPlaceholder', undefined, 'Search conversations...')}
-                        className="w-full bg-[#0a0a0a] border border-[#262626] rounded-xl pl-10 pr-4 py-2.5 text-sm text-white outline-none ring-0 placeholder:text-gray-500 focus:border-[#262626] focus:outline-none focus:ring-0"
+                        className="w-full bg-[#0a0a0a] border border-[#262626] rounded-xl pl-10 pr-4 py-2.5 text-sm text-white outline-none placeholder:text-gray-500 focus:border-purple-500"
                     />
                 </div>
             </div>
@@ -2627,7 +2673,7 @@ function MessagesComponent() {
 
                         <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileChange} accept={MESSAGE_ATTACHMENT_ACCEPT} />
 
-                        <div className="bg-[#0a0a0a] border border-[#262626] rounded-2xl flex items-end p-1.5 transition-all shadow-inner">
+                        <div className="bg-[#0a0a0a] border border-[#262626] rounded-2xl flex items-end p-1.5 focus-within:border-purple-500 focus-within:ring-1 focus-within:ring-purple-500 transition-all shadow-inner">
                             <button
                                 type="button"
                                 onClick={() => fileInputRef.current?.click()}
@@ -2679,7 +2725,7 @@ function MessagesComponent() {
                                 placeholder={tx('pages.messages.messagePlaceholder', undefined, 'Type a message...')}
                                 disabled={isSending || isRecording}
                                 rows={1}
-                                className="flex-1 bg-transparent !border-0 !outline-none !ring-0 focus:!border-0 focus:!outline-none focus:!ring-0 text-white text-sm px-3 py-2.5 resize-none max-h-32 min-h-[44px] placeholder:text-gray-500 disabled:opacity-50"
+                                className="flex-1 bg-transparent border-0 ring-0 focus:ring-0 focus:border-transparent text-white text-sm px-3 py-2.5 outline-none resize-none max-h-32 min-h-[44px] placeholder:text-gray-500 disabled:opacity-50"
                             />
 
                             <button

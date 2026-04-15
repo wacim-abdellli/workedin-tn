@@ -101,8 +101,12 @@ function FreelancerOnboardingPage() {
   return (
     <>
       <SEO
-        title="Freelancer Onboarding"
-        description="Complete your freelancer profile in guided steps."
+        title={tx("onboarding.freelancer.seoTitle", undefined, "Freelancer Onboarding")}
+        description={tx(
+          "onboarding.freelancer.seoDescription",
+          undefined,
+          "Complete your freelancer profile in guided steps.",
+        )}
       />
       <ProgressiveOnboarding
         role="freelancer"

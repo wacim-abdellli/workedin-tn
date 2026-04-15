@@ -50,10 +50,12 @@ type CompletePayload =
   | { role: "freelancer"; data: FreelancerOnboardingData }
   | { role: "client"; data: ClientOnboardingData };
 
+type Awaitable<T> = T | Promise<T>;
+
 interface OnboardingFlowProps {
   role: OnboardingRole;
   onSaveExit?: () => void;
-  onComplete?: (payload: CompletePayload) => void | Promise<void>;
+  onComplete?: (payload: CompletePayload) => Awaitable<void>;
 }
 
 interface SharedLayoutProps {
@@ -613,7 +615,7 @@ function OnboardingLayout({
 
 interface RoleFlowBaseProps {
   onSaveExit: () => void;
-  onComplete?: (payload: CompletePayload) => void | Promise<void>;
+  onComplete?: (payload: CompletePayload) => Awaitable<void>;
 }
 
 export function FreelancerOnboarding({ onSaveExit, onComplete }: RoleFlowBaseProps) {
