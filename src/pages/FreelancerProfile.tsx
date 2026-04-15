@@ -58,7 +58,7 @@ import type {
     FreelancerUsernameLookupRow,
     PortfolioItemRow,
 } from '../types/freelancer';
-import { PREDEFINED_SKILLS, PREDEFINED_TOOLS } from '@/types';
+import { PREDEFINED_SKILLS, PREDEFINED_TOOLS, type Skill } from '@/types';
 
 interface ProfilePageProps {
     // 'owner': The freelancer viewing their own profile
@@ -68,12 +68,47 @@ interface ProfilePageProps {
     viewerRole: 'owner' | 'client' | 'freelancer' | 'guest';
 }
 
-function getFreelancerSkillName(skillValue: FreelancerSkillValue): string {
+function getFreelancerSkillName(skillValue: FreelancerSkillValue | Skill): string {
     if (typeof skillValue === 'string') {
         return skillValue;
     }
 
-    return typeof skillValue?.name === 'string' ? skillValue.name : '';
+    if (skillValue && typeof skillValue === 'object' && 'name_en' in skillValue && typeof skillValue.name_en === 'string') {
+        return skillValue.name_en;
+    }
+
+    if (skillValue && typeof skillValue === 'object' && 'name' in skillValue && typeof skillValue.name === 'string') {
+        return skillValue.name;
+    }
+
+    return '';
+}
+
+const SKILL_LABEL_BY_ID = new Map(PREDEFINED_SKILLS.map((skill) => [skill.id, skill.name_en] as const));
+const SKILL_ID_BY_LABEL = new Map(PREDEFINED_SKILLS.map((skill) => [skill.name_en.toLowerCase(), skill.id] as const));
+
+function resolveFreelancerSkillLabel(skillValue: FreelancerSkillValue | Skill): string {
+    const rawValue = getFreelancerSkillName(skillValue).trim();
+    if (!rawValue) {
+        return '';
+    }
+
+    const mappedLabel = SKILL_LABEL_BY_ID.get(rawValue);
+    if (mappedLabel) {
+        return mappedLabel;
+    }
+
+    return rawValue;
+}
+
+function resolveFreelancerSkillId(skillLabel: string): string {
+    const normalizedLabel = skillLabel.trim();
+    if (!normalizedLabel) {
+        return '';
+    }
+
+    const mappedId = SKILL_ID_BY_LABEL.get(normalizedLabel.toLowerCase());
+    return mappedId || normalizedLabel;
 }
 
 function getSingleReviewer(reviewer: FreelancerReviewRow['reviewer']) {
@@ -212,6 +247,82 @@ function formatPortfolioMonth(value?: string): string {
         year: 'numeric',
         month: 'short',
     });
+}
+
+function isHttpUrl(value: string): boolean {
+    try {
+        const parsed = new URL(value);
+        return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+    } catch {
+        return false;
+    }
+}
+
+function stripTrailingUrlPunctuation(value: string): string {
+    return value.replace(/[),.;!?]+$/g, '');
+}
+
+function extractHttpUrlsFromText(value: string): string[] {
+    const urlPattern = /(https?:\/\/[^\s]+)/gi;
+    const matches = value.match(urlPattern) ?? [];
+    const unique: string[] = [];
+    const seen = new Set<string>();
+
+    matches.forEach((rawMatch) => {
+        const cleaned = stripTrailingUrlPunctuation(rawMatch.trim());
+        if (!cleaned || !isHttpUrl(cleaned)) {
+            return;
+        }
+
+        const key = cleaned.toLowerCase();
+        if (seen.has(key)) {
+            return;
+        }
+
+        seen.add(key);
+        unique.push(cleaned);
+    });
+
+    return unique;
+}
+
+function sanitizePortfolioTextFields(descriptionValue: string | null | undefined, projectUrlValue: string | null | undefined): {
+    description: string | undefined;
+    projectUrl: string | undefined;
+} {
+    const rawDescription = (descriptionValue || '').trim();
+    const rawProjectUrl = (projectUrlValue || '').trim();
+
+    const descriptionUrls = rawDescription ? extractHttpUrlsFromText(rawDescription) : [];
+    const candidateUrls = [rawProjectUrl, ...descriptionUrls]
+        .map((value) => value.trim())
+        .filter(Boolean);
+
+    const sanitizedProjectUrl = candidateUrls.find((value) => isHttpUrl(value));
+
+    if (!rawDescription) {
+        return {
+            description: undefined,
+            projectUrl: sanitizedProjectUrl,
+        };
+    }
+
+    if (descriptionUrls.length === 0) {
+        return {
+            description: rawDescription,
+            projectUrl: sanitizedProjectUrl,
+        };
+    }
+
+    const withoutUrls = rawDescription
+        .replace(/https?:\/\/[^\s]+/gi, ' ')
+        .replace(/\s{2,}/g, ' ')
+        .trim();
+
+    return {
+        description: withoutUrls.length >= 8 ? withoutUrls : undefined,
+        projectUrl: sanitizedProjectUrl,
+    };
 }
 
 function CompactMultiSelectEditor({
@@ -470,7 +581,7 @@ function ProfileView({
     }, [resetBasicsDraft]);
 
     useEffect(() => {
-        setSelectedSkillNames(freelancer.skills.map((skill) => skill.name_en).filter(Boolean));
+        setSelectedSkillNames(freelancer.skills.map((skill) => resolveFreelancerSkillLabel(skill)).filter(Boolean));
     }, [freelancer.skills]);
 
     useEffect(() => {
@@ -478,7 +589,7 @@ function ProfileView({
     }, [freelancer.tools]);
 
     const strengths = freelancer.skills.length > 0
-        ? freelancer.skills.map((skill) => skill.name_en).filter(Boolean)
+        ? freelancer.skills.map((skill) => resolveFreelancerSkillLabel(skill)).filter(Boolean)
         : ['Web Development', 'Web Research'];
 
     const tools = freelancer.tools.length > 0
@@ -1075,7 +1186,7 @@ function ProfileView({
                                 <button
                                     type="button"
                                     onClick={() => {
-                                        setSelectedSkillNames(freelancer.skills.map((skill) => skill.name_en).filter(Boolean));
+                                        setSelectedSkillNames(freelancer.skills.map((skill) => resolveFreelancerSkillLabel(skill)).filter(Boolean));
                                         setSkillSearchQuery('');
                                         setEditingSkills(false);
                                     }}
@@ -2024,12 +2135,20 @@ export default function FreelancerProfile() {
             return;
         }
 
-        const skillEntries = skillNames.map((name) => ({
-            name,
-            name_en: name,
-            name_ar: name,
-            name_fr: name,
-        }));
+        const resolvedSkillIds = skillNames
+            .map((name) => resolveFreelancerSkillId(name))
+            .filter(Boolean);
+
+        const skillEntries = resolvedSkillIds.map((skillId) => {
+            const skill = PREDEFINED_SKILLS.find((item) => item.id === skillId);
+
+            return {
+                name: skillId,
+                name_en: skill?.name_en || skillId,
+                name_ar: skill?.name_ar || skillId,
+                name_fr: skill?.name_fr || skillId,
+            };
+        });
 
         const { error } = await supabase
             .from('freelancer_profiles')
@@ -2048,12 +2167,16 @@ export default function FreelancerProfile() {
 
             return {
                 ...prev,
-                skills: skillNames.map((name, index) => ({
-                    id: `${name}-${index}`,
-                    name_en: name,
-                    name_ar: name,
-                    name_fr: name,
-                })),
+                skills: resolvedSkillIds.map((skillId, index) => {
+                    const skill = PREDEFINED_SKILLS.find((item) => item.id === skillId);
+
+                    return {
+                        id: skillId || `${index}`,
+                        name_en: skill?.name_en || skillId,
+                        name_ar: skill?.name_ar || skillId,
+                        name_fr: skill?.name_fr || skillId,
+                    };
+                }),
             };
         });
     }, [user?.id]);
@@ -2222,6 +2345,10 @@ export default function FreelancerProfile() {
                             skills: portfolioSkills,
                             tools: portfolioTools,
                         } = splitPortfolioSkillsAndTools(item.skills_used, item.tools_used);
+                        const {
+                            description: sanitizedDescription,
+                            projectUrl: sanitizedProjectUrl,
+                        } = sanitizePortfolioTextFields(item.description, item.project_url);
 
                         const normalizedMediaUrls = Array.isArray(item.media_urls)
                             ? item.media_urls
@@ -2238,10 +2365,10 @@ export default function FreelancerProfile() {
                             id: item.id,
                             title: item.title || '',
                             thumbnail_url: resolvedThumbnailUrl,
-                            description: item.description || undefined,
+                            description: sanitizedDescription,
                             client_name: item.client_name || undefined,
                             completion_date: item.completion_date || undefined,
-                            project_url: item.project_url || undefined,
+                            project_url: sanitizedProjectUrl,
                             skills_used: portfolioSkills.length > 0 ? portfolioSkills : undefined,
                             tools_used: portfolioTools.length > 0 ? portfolioTools : undefined,
                             media_urls: normalizedMediaUrls.length > 0 ? normalizedMediaUrls : undefined,
@@ -2503,6 +2630,9 @@ export default function FreelancerProfile() {
                     onClose={() => setShowContactModal(false)}
                     freelancerId={freelancer.id}
                     freelancerName={freelancer.full_name}
+                    freelancerAvatar={freelancer.avatar_url}
+                    freelancerTitle={freelancer.title}
+                    hourlyRate={freelancer.hourly_rate}
                     accentColor="#8B5CF6"
                 />
             ) : null}

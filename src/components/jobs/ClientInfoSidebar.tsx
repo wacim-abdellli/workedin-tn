@@ -1,5 +1,4 @@
 import { BadgeCheck, CheckCircle2, MapPin, Star } from "lucide-react";
-
 import OptimizedImage from "@/components/common/OptimizedImage";
 import { useTranslation } from "@/i18n";
 
@@ -16,20 +15,13 @@ interface ClientInfoSidebarProps {
   phoneVerified?: boolean;
   emailVerified?: boolean;
   memberSince?: string;
+  onViewProfile?: () => void;
 }
 
 function getInitials(value: string): string {
-  const parts = value
-    .split(" ")
-    .map((chunk) => chunk.trim())
-    .filter(Boolean)
-    .slice(0, 2);
-
-  if (parts.length === 0) {
-    return "CL";
-  }
-
-  return parts.map((part) => part[0]?.toUpperCase() ?? "").join("");
+  const parts = value.split(" ").map((c) => c.trim()).filter(Boolean).slice(0, 2);
+  if (parts.length === 0) return "CL";
+  return parts.map((p) => p[0]?.toUpperCase() ?? "").join("");
 }
 
 export default function ClientInfoSidebar({
@@ -45,97 +37,104 @@ export default function ClientInfoSidebar({
   phoneVerified = false,
   emailVerified = false,
   memberSince = "Mar 2026",
+  onViewProfile,
 }: ClientInfoSidebarProps) {
   const { tx } = useTranslation();
 
+  const statGrid = [
+    { value: jobsPosted,    label: tx("jobDetail.postedJobs",     undefined, "Jobs Posted")    },
+    { value: hireRate,      label: tx("jobDetail.hireRate",        undefined, "Hire Rate")      },
+    { value: totalSpent,    label: tx("jobDetail.totalSpending",   undefined, "Total Spent")    },
+    { value: avgHourlyPaid, label: tx("jobDetail.avgHourlyPaid",   undefined, "Avg Hourly Paid")},
+  ];
+
+  const verifications = [
+    { label: tx("jobDetail.paymentMethodVerified", undefined, "Payment method verified"), ok: paymentVerified },
+    { label: tx("jobDetail.phoneNumberVerified",   undefined, "Phone number verified"),  ok: phoneVerified   },
+    { label: tx("jobDetail.emailAddressVerified",  undefined, "Email address verified"),  ok: emailVerified   },
+  ];
+
   return (
-    <aside className="bg-[#141414] border border-[#262626] rounded-2xl p-6 flex flex-col">
-      <h3 className="text-base font-bold text-white mb-6">
-        {tx("jobDetail.aboutClient", undefined, "About the Client")}
-      </h3>
-
-      <div className="flex items-center gap-4 mb-4">
-        {avatarUrl ? (
-          <OptimizedImage
-            src={avatarUrl}
-            alt={clientName}
-            className="w-12 h-12 rounded-full"
-            imgClassName="object-cover"
-          />
-        ) : (
-          <div className="w-12 h-12 rounded-full bg-[#262626] flex items-center justify-center text-gray-400 text-sm font-semibold">
-            {getInitials(clientName)}
-          </div>
+    <aside
+      className="rounded-2xl border border-white/8 p-5 flex flex-col gap-5"
+      style={{ background: 'rgba(255,255,255,0.025)' }}
+    >
+      {/* Header */}
+      <div className="flex items-center justify-between gap-3">
+        <h3 className="text-sm font-bold text-white/80">
+          {tx("jobDetail.aboutClient", undefined, "About the Client")}
+        </h3>
+        {onViewProfile && (
+          <button
+            type="button"
+            onClick={onViewProfile}
+            className="text-[11px] font-semibold text-cyan-300 hover:text-cyan-200 transition-colors whitespace-nowrap"
+          >
+            {tx("jobDetail.viewClientProfile", undefined, "View profile")}
+          </button>
         )}
+      </div>
 
-        <div>
-          <p className="font-semibold text-white">{clientName}</p>
-          <p className="text-xs text-gray-400 mt-1 flex items-center gap-1">
-            <MapPin className="w-3.5 h-3.5" />
+      {/* Avatar + Name */}
+      <div className="flex items-center gap-3">
+        <div className="relative shrink-0">
+          {avatarUrl ? (
+            <OptimizedImage
+              src={avatarUrl}
+              alt={clientName}
+              className="w-11 h-11 rounded-full ring-2 ring-white/8"
+              imgClassName="object-cover"
+            />
+          ) : (
+            <div
+              className="w-11 h-11 rounded-full flex items-center justify-center text-sm font-bold text-white ring-2 ring-white/8"
+              style={{ background: 'linear-gradient(135deg,#4f46e5,#7c3aed)' }}
+            >
+              {getInitials(clientName)}
+            </div>
+          )}
+        </div>
+        <div className="min-w-0">
+          <p className="font-semibold text-white text-sm truncate">{clientName}</p>
+          <p className="text-xs text-white/45 mt-0.5 flex items-center gap-1">
+            <MapPin className="w-3 h-3 shrink-0" />
             {location}
           </p>
         </div>
       </div>
 
-      <div className="flex items-center gap-2 mb-6">
-        <Star className="text-orange-500 fill-orange-500 w-4 h-4" />
-        <span className="text-sm text-gray-300">{ratingText}</span>
+      {/* Rating */}
+      <div className="flex items-center gap-2">
+        <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400 shrink-0" />
+        <span className="text-xs text-white/60">{ratingText}</span>
       </div>
 
-      <div className="border-t border-[#262626] pt-6">
-        <div className="grid grid-cols-2 gap-y-6 gap-x-4">
-          <div>
-            <span className="text-white font-bold text-lg">{jobsPosted}</span>
-            <span className="text-xs text-gray-500 block">
-              {tx("jobDetail.postedJobs", undefined, "Jobs Posted")}
-            </span>
+      {/* Stats Grid */}
+      <div className="grid grid-cols-2 gap-2 pt-4 border-t border-white/8">
+        {statGrid.map(({ value, label }) => (
+          <div key={label} className="rounded-xl bg-black/20 border border-white/6 p-3">
+            <p className="text-base font-black text-white leading-none">{value}</p>
+            <p className="text-[10px] text-white/40 mt-1 leading-tight">{label}</p>
           </div>
-          <div>
-            <span className="text-white font-bold text-lg">{hireRate}</span>
-            <span className="text-xs text-gray-500 block">
-              {tx("jobDetail.hireRate", undefined, "Hire Rate")}
-            </span>
-          </div>
-          <div>
-            <span className="text-white font-bold text-lg">{totalSpent}</span>
-            <span className="text-xs text-gray-500 block">
-              {tx("jobDetail.totalSpending", undefined, "Total Spent")}
-            </span>
-          </div>
-          <div>
-            <span className="text-white font-bold text-lg">{avgHourlyPaid}</span>
-            <span className="text-xs text-gray-500 block">
-              {tx("jobDetail.avgHourlyPaid", undefined, "Avg Hourly Paid")}
-            </span>
-          </div>
-        </div>
+        ))}
       </div>
 
-      <div className="border-t border-[#262626] mt-6 pt-6">
-        <h4 className="text-sm font-semibold text-white mb-4">
-          {tx("jobDetail.clientVerifications", undefined, "Client Verifications")}
+      {/* Verifications */}
+      <div className="pt-4 border-t border-white/8 space-y-2.5">
+        <h4 className="text-xs font-bold text-white/60 uppercase tracking-wider">
+          {tx("jobDetail.clientVerifications", undefined, "Verifications")}
         </h4>
-
-        <div className="flex flex-col gap-3 text-sm">
-          <div className="flex items-center gap-2.5 text-gray-300">
-            <BadgeCheck className={`w-4 h-4 ${paymentVerified ? "text-green-500" : "text-gray-500"}`} />
-            <span>{tx("jobDetail.paymentMethodVerified", undefined, "Payment method verified")}</span>
+        {verifications.map(({ label, ok }) => (
+          <div key={label} className="flex items-center gap-2 text-xs">
+            {ok
+              ? <BadgeCheck className="w-4 h-4 text-emerald-400 shrink-0" />
+              : <CheckCircle2 className="w-4 h-4 text-white/20 shrink-0" />}
+            <span className={ok ? 'text-white/70' : 'text-white/30 line-through'}>{label}</span>
           </div>
-
-          <div className="flex items-center gap-2.5 text-gray-300">
-            <CheckCircle2 className={`w-4 h-4 ${phoneVerified ? "text-green-500" : "text-gray-500"}`} />
-            <span>{tx("jobDetail.phoneNumberVerified", undefined, "Phone number verified")}</span>
-          </div>
-
-          <div className="flex items-center gap-2.5 text-gray-300">
-            <CheckCircle2 className={`w-4 h-4 ${emailVerified ? "text-green-500" : "text-gray-500"}`} />
-            <span>{tx("jobDetail.emailAddressVerified", undefined, "Email address verified")}</span>
-          </div>
-        </div>
-
-        <span className="text-xs text-gray-500 mt-6 block">
+        ))}
+        <p className="text-[10px] text-white/25 pt-1">
           {tx("jobDetail.memberSince", undefined, "Member since")} {memberSince}
-        </span>
+        </p>
       </div>
     </aside>
   );

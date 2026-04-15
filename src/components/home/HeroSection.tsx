@@ -1,9 +1,10 @@
 import { memo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, ChevronRight, Shield, Zap, Star } from 'lucide-react';
+import { ArrowRight, ChevronRight, LayoutDashboard, Shield, Zap, Star } from 'lucide-react';
 import { m, useReducedMotion } from 'framer-motion';
 import { useWorkspaceStore } from '@/lib/workspaceState';
 import { useTranslation } from '@/i18n';
+import { useAuth } from '@/contexts/AuthContext';
 import TypewriterText from '@/components/ui/TypewriterText';
 
 interface HeroSectionProps {
@@ -21,7 +22,17 @@ function HeroSection({ stats }: HeroSectionProps) {
   const { tx } = useTranslation();
   const reduceMotion = useReducedMotion();
   const activeWorkspace = useWorkspaceStore((state) => state.activeWorkspace);
+  const { user, profile } = useAuth();
+  const isAuthenticated = Boolean(user);
   const isFreelancer = activeWorkspace === 'freelancer';
+  const firstName = profile?.full_name?.split(' ')[0] ?? user?.email?.split('@')[0] ?? null;
+  // Dashboard path depends on workspace mode
+  const dashboardPath = isFreelancer ? '/freelancer/dashboard' : '/client/dashboard';
+  // Workspace action for authenticated users
+  const workspaceActionPath = isFreelancer ? '/jobs' : '/find-freelancers';
+  const workspaceActionLabel = isFreelancer
+    ? tx('heroSection.freelancer.secondary')
+    : tx('heroSection.client.secondary', undefined, 'Find Freelancers');
   const enter = (duration: number, delay = 0) =>
     reduceMotion ? { duration: 0, delay: 0 } : { duration, delay, ease: easeOut };
 
@@ -224,32 +235,79 @@ function HeroSection({ stats }: HeroSectionProps) {
               transition={enter(0.5, 0.18)}
               className="mt-9 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center"
             >
-              <button
-                type="button"
-                onClick={() => navigate('/signup')}
-                className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl px-7 text-[0.9375rem] font-semibold text-white shadow-lg transition hover:brightness-110 active:scale-[0.99] sm:min-w-[200px]"
-                style={{
-                  background: 'linear-gradient(135deg, var(--workspace-primary) 0%, var(--workspace-primary-hover) 100%)',
-                  boxShadow: '0 12px 40px -12px color-mix(in srgb, var(--workspace-primary) 55%, transparent)',
-                }}
-              >
-                {heroContent.primaryCta}
-                <ArrowRight className="h-4 w-4 opacity-90" strokeWidth={2.25} />
-              </button>
-              <button
-                type="button"
-                onClick={() => navigate(isFreelancer ? '/jobs' : '/find-freelancers')}
-                className="inline-flex h-12 items-center justify-center gap-1 rounded-2xl border px-7 text-[0.9375rem] font-semibold transition hover:bg-[color-mix(in_srgb,var(--color-text-primary)_4%,transparent)] active:scale-[0.99]"
-                style={{
-                  color: 'var(--text-primary)',
-                  borderColor: 'color-mix(in srgb, var(--color-border-default) 90%, transparent)',
-                  background: 'color-mix(in srgb, var(--card-bg) 88%, transparent)',
-                }}
-              >
-                {heroContent.secondaryCta}
-                <ChevronRight className="h-4 w-4 opacity-70" strokeWidth={2} />
-              </button>
+              {isAuthenticated ? (
+                /* ── Authenticated hero CTAs ──────────────────────────── */
+                <>
+                  <button
+                    type="button"
+                    onClick={() => navigate(dashboardPath)}
+                    className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl px-7 text-[0.9375rem] font-semibold text-white shadow-lg transition hover:brightness-110 active:scale-[0.99] sm:min-w-[200px]"
+                    style={{
+                      background: 'linear-gradient(135deg, var(--workspace-primary) 0%, var(--workspace-primary-hover) 100%)',
+                      boxShadow: '0 12px 40px -12px color-mix(in srgb, var(--workspace-primary) 55%, transparent)',
+                    }}
+                  >
+                    <LayoutDashboard className="h-4 w-4 opacity-90" strokeWidth={2} />
+                    {tx('heroSection.auth.dashboard', undefined, 'Go to Dashboard')}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => navigate(workspaceActionPath)}
+                    className="inline-flex h-12 items-center justify-center gap-1 rounded-2xl border px-7 text-[0.9375rem] font-semibold transition hover:bg-[color-mix(in_srgb,var(--color-text-primary)_4%,transparent)] active:scale-[0.99]"
+                    style={{
+                      color: 'var(--text-primary)',
+                      borderColor: 'color-mix(in srgb, var(--color-border-default) 90%, transparent)',
+                      background: 'color-mix(in srgb, var(--card-bg) 88%, transparent)',
+                    }}
+                  >
+                    {workspaceActionLabel}
+                    <ArrowRight className="h-4 w-4 opacity-70" strokeWidth={2} />
+                  </button>
+                </>
+              ) : (
+                /* ── Guest / unauthenticated CTAs ───────────────────── */
+                <>
+                  <button
+                    type="button"
+                    onClick={() => navigate('/signup')}
+                    className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl px-7 text-[0.9375rem] font-semibold text-white shadow-lg transition hover:brightness-110 active:scale-[0.99] sm:min-w-[200px]"
+                    style={{
+                      background: 'linear-gradient(135deg, var(--workspace-primary) 0%, var(--workspace-primary-hover) 100%)',
+                      boxShadow: '0 12px 40px -12px color-mix(in srgb, var(--workspace-primary) 55%, transparent)',
+                    }}
+                  >
+                    {heroContent.primaryCta}
+                    <ArrowRight className="h-4 w-4 opacity-90" strokeWidth={2.25} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => navigate(isFreelancer ? '/jobs' : '/find-freelancers')}
+                    className="inline-flex h-12 items-center justify-center gap-1 rounded-2xl border px-7 text-[0.9375rem] font-semibold transition hover:bg-[color-mix(in_srgb,var(--color-text-primary)_4%,transparent)] active:scale-[0.99]"
+                    style={{
+                      color: 'var(--text-primary)',
+                      borderColor: 'color-mix(in srgb, var(--color-border-default) 90%, transparent)',
+                      background: 'color-mix(in srgb, var(--card-bg) 88%, transparent)',
+                    }}
+                  >
+                    {heroContent.secondaryCta}
+                    <ChevronRight className="h-4 w-4 opacity-70" strokeWidth={2} />
+                  </button>
+                </>
+              )}
             </m.div>
+
+            {/* Welcome greeting badge — only for authenticated users */}
+            {isAuthenticated && firstName && (
+              <m.p
+                initial={reduceMotion ? false : { opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={enter(0.4, 0.28)}
+                className="mt-5 text-sm"
+                style={{ color: 'var(--text-muted)' }}
+              >
+                {tx('heroSection.auth.welcomeBack', { name: firstName }, `Welcome back, ${firstName} 👋`)}
+              </m.p>
+            )}
 
             {/* Mobile / tablet: same stats as desktop panel */}
             <m.div

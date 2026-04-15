@@ -1612,7 +1612,17 @@ export const fr: Translations = {
                 "minutesAgo": "Il y a {{count}} min",
                 "hoursAgo": "Il y a {{count}} h",
                 "daysAgo": "Il y a {{count}} j"
-            }
+            },
+            "deletedMessage": "Ce message a été supprimé",
+            "deleteMessage": "Supprimer le message",
+            "deleteMessagePrompt": "Voulez-vous vraiment supprimer ce message ?",
+            "deleteForMe": "Supprimer pour moi",
+            "deleteForEveryone": "Supprimer pour tout le monde",
+            "loadMore": "Charger plus de messages",
+            "reacting": "Réaction...",
+            "copyMessage": "Copier le message",
+            "replyTo": "Répondre au message",
+            "edited": "Modifié"
         },
         "freelancerProfile": {
             "actions": {

@@ -1,7 +1,7 @@
  import { useCallback, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Filter, Grid, List, Search, SlidersHorizontal, Sparkles, X } from 'lucide-react';
+import { Bookmark, Filter, Grid, List, Search, SlidersHorizontal, Sparkles, UserCircle2, X } from 'lucide-react';
 
 import SEO, { SEO_CONFIG } from '../components/common/SEO';
 import EmptyState from '../components/ui/EmptyState';
@@ -205,8 +205,49 @@ export default function FindFreelancers() {
                 throw error;
             }
         },
+        onMutate: async ({ freelancerId, isSaved }) => {
+            if (!user?.id) {
+                return {
+                    previousSavedFreelancers: [] as string[],
+                    previousSavedFreelancerIdsPage: [] as string[],
+                };
+            }
+
+            await queryClient.cancelQueries({ queryKey: ['saved-freelancers', user.id] });
+            await queryClient.cancelQueries({ queryKey: ['saved-freelancer-ids-page', user.id] });
+
+            const previousSavedFreelancers = queryClient.getQueryData<string[]>(['saved-freelancers', user.id]) ?? [];
+            const previousSavedFreelancerIdsPage = queryClient.getQueryData<string[]>(['saved-freelancer-ids-page', user.id]) ?? [];
+
+            const patchIds = (previous: string[]) => {
+                if (isSaved) {
+                    return previous.filter((id) => id !== freelancerId);
+                }
+
+                if (previous.includes(freelancerId)) {
+                    return previous;
+                }
+
+                return [freelancerId, ...previous];
+            };
+
+            queryClient.setQueryData<string[]>(['saved-freelancers', user.id], patchIds(previousSavedFreelancers));
+            queryClient.setQueryData<string[]>(['saved-freelancer-ids-page', user.id], patchIds(previousSavedFreelancerIdsPage));
+
+            return {
+                previousSavedFreelancers,
+                previousSavedFreelancerIdsPage,
+            };
+        },
         onSuccess: (_, variables) => {
-            queryClient.invalidateQueries({ queryKey: ['saved-freelancers', user?.id] });
+            if (!user?.id) {
+                return;
+            }
+
+            queryClient.invalidateQueries({ queryKey: ['saved-freelancers', user.id] });
+            queryClient.invalidateQueries({ queryKey: ['saved-freelancer-ids-page', user.id] });
+            queryClient.invalidateQueries({ queryKey: ['saved-freelancer-pool-page', user.id] });
+
             showToast(
                 variables.isSaved
                     ? tx('findFreelancers.toasts.removedFromSaved', undefined, 'Removed from saved freelancers')
@@ -214,7 +255,12 @@ export default function FindFreelancers() {
                 'success',
             );
         },
-        onError: () => {
+        onError: (_error, _variables, context) => {
+            if (user?.id && context) {
+                queryClient.setQueryData<string[]>(['saved-freelancers', user.id], context.previousSavedFreelancers);
+                queryClient.setQueryData<string[]>(['saved-freelancer-ids-page', user.id], context.previousSavedFreelancerIdsPage);
+            }
+
             showToast(
                 tx('findFreelancers.toasts.updateSavedFailed', undefined, 'Could not update saved freelancers'),
                 'error',
@@ -295,138 +341,170 @@ export default function FindFreelancers() {
         : '0.0';
 
     return (
-        <div className="min-h-screen transition-colors duration-300" style={{ background: 'var(--page-bg)', color: 'var(--text-primary)' }}>
+        <div className="min-h-screen bg-[#0a0a0f] text-white scroll-smooth">
             <SEO {...SEO_CONFIG.findFreelancers} url="/find-freelancers" canonical="https://workedin.tn/find-freelancers" />
             <Header />
 
-            <section className="relative overflow-hidden border-b pt-10 pb-16 backdrop-blur-xl" style={{ borderColor: 'var(--border)', background: 'var(--page-bg)' }}>
-                <div className="absolute inset-0" style={{ background: 'radial-gradient(circle at top left, color-mix(in srgb, var(--workspace-primary) 18%, transparent), transparent 35%), radial-gradient(circle at top right, color-mix(in srgb, var(--workspace-accent) 14%, transparent), transparent 28%), linear-gradient(180deg, color-mix(in srgb, var(--page-bg) 92%, white), color-mix(in srgb, var(--page-bg) 100%, transparent))' }} />
-                <div className="container-custom relative z-10">
-                    <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
-                        <div className="max-w-3xl">
-                            <div className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-bold shadow-sm backdrop-blur" style={{ borderColor: 'color-mix(in srgb, var(--workspace-primary) 20%, transparent)', background: 'color-mix(in srgb, var(--workspace-primary) 7%, var(--card-bg))', color: 'var(--workspace-primary)' }}>
-                                <Sparkles className="h-3 w-3" />
-                                <span>{copy.hero.badge}</span>
+            {/* ── Hero ── */}
+            <section className="relative overflow-hidden pt-7 pb-7">
+                <div className="pointer-events-none absolute inset-0" style={{ background: 'radial-gradient(ellipse 60% 80% at 10% 50%, color-mix(in srgb,var(--workspace-primary) 10%,transparent) 0%, transparent 60%)' }} />
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                        {/* Left: title + subtitle */}
+                        <div className="min-w-0">
+                            <div
+                                className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[10px] font-bold mb-2"
+                                style={{
+                                    background: 'color-mix(in srgb,var(--workspace-primary) 12%,transparent)',
+                                    border: '1px solid color-mix(in srgb,var(--workspace-primary) 25%,transparent)',
+                                    color: 'var(--workspace-primary)',
+                                }}
+                            >
+                                <Sparkles className="h-2.5 w-2.5" />
+                                {copy.hero.badge}
                             </div>
-                            <h1 className="mt-4 text-4xl font-extrabold tracking-[-0.03em] md:text-5xl" style={{ color: 'var(--text-primary)' }}>
+                            <h1 className="text-2xl font-black tracking-tight leading-tight">
                                 {copy.hero.title}{' '}
-                                <span className="bg-clip-text text-transparent" style={{ backgroundImage: 'linear-gradient(90deg, var(--workspace-primary), var(--workspace-primary-mid))' }}>
-                                    {copy.hero.titleHighlight}
-                                </span>
+                                <span style={{ color: 'var(--workspace-primary)' }}>{copy.hero.titleHighlight}</span>
                             </h1>
-                            <p className="mt-4 max-w-2xl text-base leading-7 md:text-lg" style={{ color: 'var(--text-secondary)' }}>
+                            <p className="text-white/40 text-sm mt-1 max-w-lg">
                                 {copy.hero.subtitle}
-                                <span className="hidden md:inline">{copy.hero.subtitleDesktop}</span>
                             </p>
-                            <div className="mt-6 grid gap-3 sm:grid-cols-3">
-                                <div className="rounded-[24px] px-4 py-4 border" style={{ background: 'color-mix(in srgb, var(--card-bg) 88%, transparent)', borderColor: 'var(--border)' }}>
-                                    <div className="text-xs uppercase tracking-[0.18em]" style={{ color: 'var(--text-muted)' }}>{copy.heroStats.talentPool}</div>
-                                    <div className="mt-2 text-2xl font-bold">{(freelancersData?.length || 0).toLocaleString()}+</div>
-                                </div>
-                                <div className="rounded-[24px] px-4 py-4 border" style={{ background: 'color-mix(in srgb, var(--card-bg) 88%, transparent)', borderColor: 'var(--border)' }}>
-                                    <div className="text-xs uppercase tracking-[0.18em]" style={{ color: 'var(--text-muted)' }}>{copy.heroStats.verified}</div>
-                                    <div className="mt-2 text-2xl font-bold">{(freelancersData || []).filter((f: FreelancerRecord) => f.is_verified).length}</div>
-                                </div>
-                                <div className="rounded-[24px] px-4 py-4 border" style={{ background: 'color-mix(in srgb, var(--card-bg) 88%, transparent)', borderColor: 'var(--border)' }}>
-                                    <div className="text-xs uppercase tracking-[0.18em]" style={{ color: 'var(--text-muted)' }}>{copy.heroStats.fastReplies}</div>
-                                    <div className="mt-2 text-2xl font-bold">4.9/5</div>
-                                </div>
-                            </div>
                         </div>
 
-                        <div className="inline-flex w-fit items-center gap-2 rounded-2xl border p-1.5 shadow-lg backdrop-blur" style={{ borderColor: 'var(--border)', background: 'color-mix(in srgb, var(--card-bg) 88%, transparent)' }}>
-                            <button
-                                type="button"
-                                onClick={() => setViewMode('grid')}
-                                aria-label="عرض شبْ�`"
-                                aria-pressed={viewMode === 'grid'}
-                                className="rounded-xl p-2.5 transition-colors"
-                                style={viewMode === 'grid' ? { background: 'color-mix(in srgb, var(--workspace-primary) 12%, transparent)', color: 'var(--workspace-primary)' } : { color: 'var(--text-muted)' }}
-                            >
-                                <Grid className="h-5 w-5" />
-                            </button>
-                            <div className="h-6 w-px bg-border" />
-                            <button
-                                type="button"
-                                onClick={() => setViewMode('list')}
-                                aria-label="عرض �ائ�&ة"
-                                aria-pressed={viewMode === 'list'}
-                                className="rounded-xl p-2.5 transition-colors"
-                                style={viewMode === 'list' ? { background: 'color-mix(in srgb, var(--workspace-primary) 12%, transparent)', color: 'var(--workspace-primary)' } : { color: 'var(--text-muted)' }}
-                            >
-                                <List className="h-5 w-5" />
-                            </button>
+                        {/* Right: stats + view toggle */}
+                        <div className="flex items-center gap-3 shrink-0">
+                            {[
+                                { label: copy.heroStats.talentPool, value: `${(freelancersData?.length || 0).toLocaleString()}+` },
+                                { label: copy.heroStats.verified,   value: String((freelancersData || []).filter((f: FreelancerRecord) => f.is_verified).length) },
+                            ].map(({ label, value }) => (
+                                <div key={label} className="rounded-xl border border-white/8 bg-white/4 px-3 py-2 text-center hidden sm:block">
+                                    <p className="text-base font-black text-white">{value}</p>
+                                    <p className="text-[9px] uppercase tracking-widest text-white/30">{label}</p>
+                                </div>
+                            ))}
+
+                            {/* View toggle */}
+                            <div className="flex items-center gap-0.5 rounded-xl border border-white/8 bg-white/4 p-1">
+                                {([
+                                    { mode: 'grid', Icon: Grid, label: 'Grid' },
+                                    { mode: 'list', Icon: List, label: 'List' },
+                                ] as const).map(({ mode, Icon, label }) => (
+                                    <button
+                                        key={mode}
+                                        type="button"
+                                        aria-label={label}
+                                        aria-pressed={viewMode === mode}
+                                        onClick={() => setViewMode(mode)}
+                                        className="rounded-lg p-2 transition-all"
+                                        style={viewMode === mode
+                                            ? { background: 'color-mix(in srgb,var(--workspace-primary) 15%,transparent)', color: 'var(--workspace-primary)' }
+                                            : { color: 'rgba(255,255,255,0.3)' }
+                                        }
+                                    >
+                                        <Icon className="h-4 w-4" />
+                                    </button>
+                                ))}
+                            </div>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <div className="container-custom py-10">
-                <div className="mb-6 lg:hidden">
-                    <Button onClick={() => setShowFilters(true)} className="w-full justify-between">
+            {/* ── Body ── */}
+            <div className="max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+
+                {/* Mobile filter button */}
+                <div className="mb-5 lg:hidden pt-5">
+                    <button
+                        type="button"
+                        onClick={() => setShowFilters(true)}
+                        className="w-full flex items-center justify-between rounded-2xl border border-white/8 bg-white/4 px-5 py-3 text-sm font-semibold text-white"
+                    >
                         <span className="flex items-center gap-2">
-                            <SlidersHorizontal className="h-5 w-5" />
+                            <SlidersHorizontal className="h-4 w-4 opacity-60" />
                             {copy.filterToggle}
                         </span>
-                        <span className="rounded-full bg-card/20 px-2 py-0.5 text-xs">{filteredFreelancers.length}</span>
-                    </Button>
+                        {activeFilterCount > 0 && (
+                            <span className="rounded-full px-2 py-0.5 text-xs font-bold" style={{ background: 'color-mix(in srgb,var(--workspace-primary) 15%,transparent)', color: 'var(--workspace-primary)', border: '1px solid color-mix(in srgb,var(--workspace-primary) 25%,transparent)' }}>
+                                {activeFilterCount}
+                            </span>
+                        )}
+                    </button>
                 </div>
 
-                <div className="flex items-start gap-8">
-                    <aside className="sticky top-28 hidden w-80 shrink-0 lg:block z-10">
-                        <div className="rounded-[28px] p-6 border" style={{ background: 'color-mix(in srgb, var(--card-bg) 90%, transparent)', borderColor: 'var(--border)', boxShadow: '0 24px 60px -44px color-mix(in srgb, var(--workspace-primary) 28%, transparent)' }}>
-                            <div className="mb-6 flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                    <Filter className="h-5 w-5" style={{ color: 'var(--workspace-primary)' }} />
-                                    <h2 className="text-lg font-bold">{copy.filterTitle}</h2>
-                                </div>
-                                {activeFilterCount > 0 ? (
-                                    <button type="button" onClick={clearFilters} className="text-xs font-semibold text-red-500 hover:underline">
+                {/* Two-column layout — roomy viewport with sticky filter rail */}
+                <div className="flex items-start gap-6 pt-6">
+                    {/* Sidebar — scrolls independently, stays on screen */}
+                    <aside className="hidden lg:flex flex-col w-64 shrink-0 sticky top-20 max-h-[calc(100vh-6rem)] z-10">
+                        <div className="freelancer-scroll rounded-2xl border border-white/8 p-5 flex flex-col overflow-y-auto" style={{ background: 'rgba(255,255,255,0.025)' }}>
+                            <div className="flex items-center justify-between mb-5">
+                                <h2 className="flex items-center gap-2 text-sm font-bold text-white">
+                                    <Filter className="h-4 w-4 opacity-60" />
+                                    {copy.filterTitle}
+                                </h2>
+                                {activeFilterCount > 0 && (
+                                    <button type="button" onClick={clearFilters} className="text-xs text-rose-400 hover:text-rose-300 transition-colors font-semibold">
                                         {copy.clearAll}
                                     </button>
-                                ) : null}
+                                )}
                             </div>
                             <FilterSidebar
-                                searchQuery={searchQuery}
-                                setSearchQuery={setSearchQuery}
-                                availableOnly={availableOnly}
-                                setAvailableOnly={setAvailableOnly}
-                                selectedCategories={selectedCategories}
-                                setSelectedCategories={setSelectedCategories}
-                                selectedSkills={selectedSkills}
-                                setSelectedSkills={setSelectedSkills}
-                                rateRange={rateRange}
-                                setRateRange={setRateRange}
-                                minRating={minRating}
-                                setMinRating={setMinRating}
-                                verifiedOnly={verifiedOnly}
-                                setVerifiedOnly={setVerifiedOnly}
-                                clearFilters={clearFilters}
-                                copy={copy}
-                                tx={tx}
-                                categoryOptions={CATEGORY_OPTIONS}
-                                skillOptions={SKILL_OPTIONS}
+                                searchQuery={searchQuery} setSearchQuery={setSearchQuery}
+                                availableOnly={availableOnly} setAvailableOnly={setAvailableOnly}
+                                selectedCategories={selectedCategories} setSelectedCategories={setSelectedCategories}
+                                selectedSkills={selectedSkills} setSelectedSkills={setSelectedSkills}
+                                rateRange={rateRange} setRateRange={setRateRange}
+                                minRating={minRating} setMinRating={setMinRating}
+                                verifiedOnly={verifiedOnly} setVerifiedOnly={setVerifiedOnly}
+                                clearFilters={clearFilters} copy={copy} tx={tx}
+                                categoryOptions={CATEGORY_OPTIONS} skillOptions={SKILL_OPTIONS}
                             />
                         </div>
                     </aside>
 
-                    <main className="min-w-0 flex-1 overflow-hidden">
-                        <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                            <div className="flex flex-wrap items-center gap-3 text-sm" style={{ color: 'var(--text-muted)' }}>
-                                <span>{copy.resultsCount.replace('{{count}}', filteredFreelancers.length.toString())}</span>
-                                {activeFilterCount > 0 ? (
-                                    <span className="rounded-full border px-3 py-1 text-xs font-semibold" style={{ borderColor: 'color-mix(in srgb, var(--workspace-primary) 18%, transparent)', background: 'color-mix(in srgb, var(--workspace-primary) 8%, transparent)', color: 'var(--workspace-primary)' }}>
+                    {/* Main */}
+                    <main className="min-w-0 flex-1">
+                        {/* Toolbar */}
+                        <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                            <div className="flex items-center gap-2.5">
+                                <p className="text-sm text-white/45">
+                                    {copy.resultsCount.replace('{{count}}', filteredFreelancers.length.toString())}
+                                </p>
+                                {activeFilterCount > 0 && (
+                                    <span className="rounded-full text-xs font-semibold px-2.5 py-0.5"
+                                        style={{ background: 'color-mix(in srgb,var(--workspace-primary) 12%,transparent)', color: 'var(--workspace-primary)', border: '1px solid color-mix(in srgb,var(--workspace-primary) 25%,transparent)' }}>
                                         {activeFilterCount} {copy.activeFilters}
                                     </span>
-                                ) : null}
+                                )}
                             </div>
+                            <div className="flex flex-wrap items-center justify-end gap-2">
+                                <Button
+                                    variant="ghost"
+                                    onClick={() => navigate('/saved')}
+                                    className="!h-10 !rounded-xl !border !border-white/10 !bg-white/5 !px-3 !text-xs !font-semibold !text-white/80 hover:!border-white/20 hover:!text-white"
+                                >
+                                    <span className="inline-flex items-center gap-1.5">
+                                        <Bookmark className="h-3.5 w-3.5" />
+                                        {tx('nav.saved', undefined, 'Saved')}
+                                    </span>
+                                </Button>
 
-                            <div className="flex items-center gap-2 rounded-full border px-3 py-2 shadow-sm backdrop-blur" style={{ borderColor: 'var(--border)', background: 'color-mix(in srgb, var(--card-bg) 90%, transparent)' }}>
-                                <span className="hidden text-sm sm:inline" style={{ color: 'var(--text-muted)' }}>{copy.sort.label}</span>
+                                <Button
+                                    variant="ghost"
+                                    onClick={() => navigate('/profile')}
+                                    className="!h-10 !rounded-xl !border !border-white/10 !bg-white/5 !px-3 !text-xs !font-semibold !text-white/80 hover:!border-white/20 hover:!text-white"
+                                >
+                                    <span className="inline-flex items-center gap-1.5">
+                                        <UserCircle2 className="h-3.5 w-3.5" />
+                                        {tx('nav.account', undefined, 'Account')}
+                                    </span>
+                                </Button>
+
                                 <select
                                     value={sortBy}
-                                    onChange={(event) => setSortBy(event.target.value)}
-                                    className="cursor-pointer border-none bg-transparent pe-8 text-sm font-semibold focus:outline-none"
+                                    onChange={(e) => setSortBy(e.target.value)}
+                                    className="rounded-xl bg-white/5 border border-white/10 px-3 py-2 text-sm text-white/70 outline-none appearance-none cursor-pointer focus:border-[var(--workspace-primary)] transition-colors"
                                 >
                                     <option value="recommended">{copy.sort.recommended}</option>
                                     <option value="rating">{copy.sort.rating}</option>
@@ -435,42 +513,35 @@ export default function FindFreelancers() {
                             </div>
                         </div>
 
-                        {!isLoading && filteredFreelancers.length > 0 ? (
-                            <div className="mb-6 grid gap-3 sm:grid-cols-3">
-                                <div className="rounded-[24px] border px-4 py-4 shadow-sm backdrop-blur" style={{ borderColor: 'var(--border)', background: 'color-mix(in srgb, var(--card-bg) 90%, transparent)' }}>
-                                    <div className="text-xs uppercase tracking-[0.18em]" style={{ color: 'var(--text-muted)' }}>{copy.resultStats.availableNow}</div>
-                                    <div className="mt-2 text-2xl font-bold">
-                                        {filteredFreelancers.filter((freelancer) => freelancer.is_available).length}
+                        {/* Result stats */}
+                        {!isLoading && filteredFreelancers.length > 0 && (
+                            <div className="mb-5 grid grid-cols-3 gap-3">
+                                {[
+                                    { label: copy.resultStats.availableNow, value: filteredFreelancers.filter((f) => f.is_available).length },
+                                    { label: copy.resultStats.averageRate, value: `${averageRate} TND` },
+                                    { label: copy.resultStats.topRating, value: topRating },
+                                ].map(({ label, value }) => (
+                                    <div key={label} className="rounded-xl border border-white/8 bg-white/3 px-4 py-3">
+                                        <p className="text-base font-black text-white">{value}</p>
+                                        <p className="text-[10px] uppercase tracking-wider text-white/30 mt-0.5">{label}</p>
                                     </div>
-                                </div>
-                                <div className="rounded-[24px] border px-4 py-4 shadow-sm backdrop-blur" style={{ borderColor: 'var(--border)', background: 'color-mix(in srgb, var(--card-bg) 90%, transparent)' }}>
-                                    <div className="text-xs uppercase tracking-[0.18em]" style={{ color: 'var(--text-muted)' }}>{copy.resultStats.averageRate}</div>
-                                    <div className="mt-2 text-2xl font-bold">{averageRate} TND</div>
-                                </div>
-                                <div className="rounded-[24px] border px-4 py-4 shadow-sm backdrop-blur" style={{ borderColor: 'var(--border)', background: 'color-mix(in srgb, var(--card-bg) 90%, transparent)' }}>
-                                    <div className="text-xs uppercase tracking-[0.18em]" style={{ color: 'var(--text-muted)' }}>{copy.resultStats.topRating}</div>
-                                    <div className="mt-2 text-2xl font-bold">{topRating}</div>
-                                </div>
+                                ))}
                             </div>
-                        ) : null}
+                        )}
 
+                        {/* Cards */}
                         {isLoading ? (
-                            viewMode === 'grid' ? (
-                                <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
-                                    {Array.from({ length: 6 }).map((_, index) => (
-                                        <SkeletonProfile key={index} />
-                                    ))}
-                                </div>
-                            ) : (
-                                <SkeletonList count={6} />
-                            )
+                            <div className={viewMode === 'grid' ? 'grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3' : 'space-y-3'}>
+                                {Array.from({ length: 6 }).map((_, i) => (
+                                    <div key={i} className="rounded-2xl border border-white/8 bg-white/3 animate-pulse h-48" />
+                                ))}
+                            </div>
                         ) : filteredFreelancers.length > 0 ? (
-                            <div className={`${viewMode === 'grid' ? 'grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3' : 'space-y-4'} cv-auto`}>
+                            <div className={viewMode === 'grid' ? 'grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3' : 'space-y-3'}>
                                 {filteredFreelancers.map((freelancer, index) => (
-                                    <div key={freelancer.id} className="animate-slide-up" style={{ animationDelay: `${index * 50}ms` }}>
+                                    <div key={freelancer.id} style={{ animationDelay: `${index * 40}ms`, animation: 'fadeUp 0.35s ease both' }}>
                                         <FreelancerCard
-                                            freelancer={freelancer}
-                                            viewMode={viewMode}
+                                            freelancer={freelancer} viewMode={viewMode}
                                             isSaved={savedFreelancerIds.has(freelancer.id)}
                                             onToggleSave={toggleSaved}
                                         />
@@ -482,64 +553,102 @@ export default function FindFreelancers() {
                                 icon={Search}
                                 title={copy.noResults.title}
                                 description={copy.noResults.description}
-                                action={{
-                                    label: copy.noResults.action,
-                                    onClick: clearFilters,
-                                    variant: 'primary',
-                                }}
-                                className="rounded-[32px]"
+                                action={{ label: copy.noResults.action, onClick: clearFilters, variant: 'primary' }}
+                                className="rounded-2xl"
                             />
                         )}
                     </main>
                 </div>
             </div>
 
-            {showFilters ? (
+            {/* Mobile filter drawer */}
+            {showFilters && (
                 <div className="fixed inset-0 z-50 lg:hidden">
                     <button
                         type="button"
-                        className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+                        className="absolute inset-0 bg-black/75 backdrop-blur-sm"
                         onClick={() => setShowFilters(false)}
                     />
-                    <div className="absolute inset-x-0 bottom-0 top-16 flex flex-col rounded-t-[32px] border border-[var(--color-border-default)] bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)] shadow-2xl">
-                        <div className="flex items-center justify-between border-b border-[var(--color-border-default)] px-6 py-5">
-                            <h2 className="text-lg font-bold">{copy.filterTitle}</h2>
-                            <button type="button" onClick={() => setShowFilters(false)} className="rounded-full bg-[var(--color-bg-muted)] p-2">
-                                <X className="h-5 w-5" />
+                    <div
+                        className="absolute inset-x-0 bottom-0 top-16 flex flex-col rounded-t-3xl border border-white/8"
+                        style={{ background: '#12121a' }}
+                    >
+                        <div className="flex items-center justify-between border-b border-white/8 px-5 py-4">
+                            <h2 className="text-base font-bold text-white">{copy.filterTitle}</h2>
+                            <button type="button" onClick={() => setShowFilters(false)}
+                                className="flex h-8 w-8 items-center justify-center rounded-xl bg-white/8 text-white/60 hover:text-white transition-colors">
+                                <X className="h-4 w-4" />
                             </button>
                         </div>
-                        <div className="flex-1 overflow-y-auto px-6 py-6">
+                        <div className="freelancer-scroll flex-1 overflow-y-auto px-5 py-5">
                             <FilterSidebar
-                                searchQuery={searchQuery}
-                                setSearchQuery={setSearchQuery}
-                                availableOnly={availableOnly}
-                                setAvailableOnly={setAvailableOnly}
-                                selectedCategories={selectedCategories}
-                                setSelectedCategories={setSelectedCategories}
-                                selectedSkills={selectedSkills}
-                                setSelectedSkills={setSelectedSkills}
-                                rateRange={rateRange}
-                                setRateRange={setRateRange}
-                                minRating={minRating}
-                                setMinRating={setMinRating}
-                                verifiedOnly={verifiedOnly}
-                                setVerifiedOnly={setVerifiedOnly}
-                                clearFilters={clearFilters}
-                                copy={copy}
-                                tx={tx}
-                                categoryOptions={CATEGORY_OPTIONS}
-                                skillOptions={SKILL_OPTIONS}
+                                searchQuery={searchQuery} setSearchQuery={setSearchQuery}
+                                availableOnly={availableOnly} setAvailableOnly={setAvailableOnly}
+                                selectedCategories={selectedCategories} setSelectedCategories={setSelectedCategories}
+                                selectedSkills={selectedSkills} setSelectedSkills={setSelectedSkills}
+                                rateRange={rateRange} setRateRange={setRateRange}
+                                minRating={minRating} setMinRating={setMinRating}
+                                verifiedOnly={verifiedOnly} setVerifiedOnly={setVerifiedOnly}
+                                clearFilters={clearFilters} copy={copy} tx={tx}
+                                categoryOptions={CATEGORY_OPTIONS} skillOptions={SKILL_OPTIONS}
                             />
                         </div>
-                        <div className="border-t border-[var(--color-border-default)] p-6">
-                            <Button className="w-full" onClick={() => setShowFilters(false)}>
+                        <div className="border-t border-white/8 p-5">
+                            <button
+                                type="button"
+                                onClick={() => setShowFilters(false)}
+                                className="w-full h-12 rounded-2xl font-bold text-white text-sm"
+                                style={{ background: 'linear-gradient(135deg,var(--workspace-primary) 0%,color-mix(in srgb,var(--workspace-primary) 70%,#000) 100%)' }}
+                            >
                                 {copy.resultsCount.replace('{{count}}', filteredFreelancers.length.toString())}
-                            </Button>
+                            </button>
                         </div>
                     </div>
                 </div>
-            ) : null}
+            )}
+
+            <style>{`
+                @keyframes fadeUp {
+                    from { opacity: 0; transform: translateY(12px); }
+                    to   { opacity: 1; transform: translateY(0); }
+                }
+
+                .freelancer-scroll {
+                    scrollbar-width: thin;
+                    scrollbar-color: color-mix(in srgb, var(--workspace-primary) 42%, rgba(255,255,255,0.2)) transparent;
+                    overscroll-behavior: contain;
+                    scrollbar-gutter: stable;
+                }
+
+                .freelancer-scroll::-webkit-scrollbar {
+                    width: 10px;
+                    height: 10px;
+                }
+
+                .freelancer-scroll::-webkit-scrollbar-track {
+                    background: rgba(255,255,255,0.02);
+                    border-radius: 999px;
+                }
+
+                .freelancer-scroll::-webkit-scrollbar-thumb {
+                    background: linear-gradient(
+                        180deg,
+                        color-mix(in srgb, var(--workspace-primary) 55%, rgba(255,255,255,0.25)),
+                        color-mix(in srgb, var(--workspace-primary) 32%, rgba(255,255,255,0.18))
+                    );
+                    border-radius: 999px;
+                    border: 2px solid transparent;
+                    background-clip: padding-box;
+                }
+
+                .freelancer-scroll::-webkit-scrollbar-thumb:hover {
+                    background: linear-gradient(
+                        180deg,
+                        color-mix(in srgb, var(--workspace-primary) 72%, rgba(255,255,255,0.3)),
+                        color-mix(in srgb, var(--workspace-primary) 44%, rgba(255,255,255,0.22))
+                    );
+                }
+            `}</style>
         </div>
     );
 }
-

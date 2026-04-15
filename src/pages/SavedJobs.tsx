@@ -291,11 +291,28 @@ export default function SavedJobsPage() {
     data: savedFreelancerPool = [],
     isLoading: isSavedFreelancerPoolLoading,
   } = useQuery({
-    queryKey: ['saved-freelancer-pool-page', user?.id],
+    queryKey: ['saved-freelancer-pool-page', user?.id, savedFreelancerIds.join(',')],
     queryFn: async () => {
-      const { data, error } = await profilesService.getFreelancers({ excludeId: user?.id }, 1, 200);
+      if (!savedFreelancerIds.length) {
+        return [] as SavedFreelancerProfile[];
+      }
+
+      const { data, error } = await profilesService.supabase
+        .from('public_profiles')
+        .select(`
+          id,
+          full_name,
+          location,
+          freelancer_profiles!inner (
+            title,
+            hourly_rate,
+            success_rate
+          )
+        `)
+        .in('id', savedFreelancerIds);
+
       if (error) {
-        console.error('getFreelancers error:', error);
+        console.error('getSavedFreelancerProfiles error:', error);
         return [] as SavedFreelancerProfile[];
       }
 

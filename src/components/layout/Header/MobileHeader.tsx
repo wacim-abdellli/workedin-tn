@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import {
+  Bookmark,
   LogOut,
   Moon,
   Repeat2,
@@ -246,6 +247,22 @@ export function MobileHeader({
 
             {user ? (
               <>
+                <button
+                  onClick={() => { navigate("/saved"); setMobileMenuOpen(false); }}
+                  className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-colors"
+                  style={{ color: "var(--color-text-primary)" }}
+                >
+                  <Bookmark className="h-4 w-4 flex-shrink-0" />
+                  {t.nav?.saved || "Saved"}
+                </button>
+                <button
+                  onClick={() => { navigate("/profile"); setMobileMenuOpen(false); }}
+                  className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-colors"
+                  style={{ color: "var(--color-text-primary)" }}
+                >
+                  <User className="h-4 w-4 flex-shrink-0" />
+                  {t.nav?.profile || "Profile"}
+                </button>
                 <button
                   onClick={() => { navigate("/dashboard"); setMobileMenuOpen(false); }}
                   className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-colors"

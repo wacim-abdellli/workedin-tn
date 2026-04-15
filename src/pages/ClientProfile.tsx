@@ -245,7 +245,7 @@ function ProfileSkeleton() {
 
 export default function ClientProfile() {
   const { clientId } = useParams<{ clientId: string }>();
-  const { user, updateProfile, profile } = useAuth();
+  const { user, updateProfile, profile, activeMode } = useAuth();
   const { tx, language } = useTranslation() as any;
   const navigate = useNavigate();
   const location = useLocation();
@@ -255,6 +255,7 @@ export default function ClientProfile() {
   const [bioDraft, setBioDraft] = useState("");
   const [locationDraft, setLocationDraft] = useState("");
   const [isSavingProfile, setIsSavingProfile] = useState(false);
+  const [isStartingConversation, setIsStartingConversation] = useState(false);
 
   const isPublicPreview = useMemo(() => {
     const params = new URLSearchParams(location.search);
@@ -455,6 +456,72 @@ export default function ClientProfile() {
       );
     } finally {
       setIsSavingProfile(false);
+    }
+  };
+
+  const handleStartConversation = async () => {
+    if (!user) {
+      showToast(
+        tx("clientProfile.loginRequired", undefined, "You need to sign in to send a message"),
+        "error",
+      );
+      return;
+    }
+
+    if (!client?.id) {
+      showToast(
+        tx("clientProfile.notFound", undefined, "Client profile not found"),
+        "error",
+      );
+      return;
+    }
+
+    if (user.id === client.id) {
+      showToast(
+        tx("clientProfile.cannotMessageSelf", undefined, "You cannot message yourself"),
+        "warning",
+      );
+      return;
+    }
+
+    setIsStartingConversation(true);
+    try {
+      const preferredScope = activeMode === "freelancer" ? "freelancer" : "client";
+
+      let { data: conversationId, error } = await supabase.rpc("get_or_create_conversation", {
+        user1: user.id,
+        user2: client.id,
+        p_scope: preferredScope,
+      });
+
+      if (error) {
+        const message = typeof error.message === "string" ? error.message.toLowerCase() : "";
+        if (
+          message.includes("p_scope") ||
+          (message.includes("get_or_create_conversation") && message.includes("does not exist"))
+        ) {
+          const legacyResult = await supabase.rpc("get_or_create_conversation", {
+            user1: user.id,
+            user2: client.id,
+          });
+          conversationId = legacyResult.data;
+          error = legacyResult.error;
+        }
+      }
+
+      if (error || !conversationId) {
+        throw error || new Error(tx("clientProfile.startConversationFailed", undefined, "Failed to start conversation"));
+      }
+
+      navigate(`${ROUTES.messages}?conversation=${conversationId}`);
+    } catch (error: any) {
+      logger.error("Error starting client conversation", error);
+      showToast(
+        error?.message || tx("clientProfile.startConversationError", undefined, "Something went wrong while starting the conversation"),
+        "error",
+      );
+    } finally {
+      setIsStartingConversation(false);
     }
   };
 
@@ -1040,12 +1107,17 @@ export default function ClientProfile() {
 
                   {canContact ? (
                     <button
-                      onClick={() => navigate(ROUTES.messages)}
+                      onClick={() => {
+                        void handleStartConversation();
+                      }}
+                      disabled={isStartingConversation}
                       className="w-full text-white rounded-xl py-3 font-semibold transition-colors inline-flex items-center justify-center gap-2"
                       style={{ background: accentColor }}
                     >
                       <MessageSquare className="w-4 h-4" />
-                      {tx("clientProfile.sendMessage", undefined, "Send Message")}
+                      {isStartingConversation
+                        ? tx("common.loading", undefined, "Loading...")
+                        : tx("clientProfile.sendMessage", undefined, "Send Message")}
                     </button>
                   ) : null}
                 </div>

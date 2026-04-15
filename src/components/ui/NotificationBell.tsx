@@ -9,9 +9,13 @@ import { getDisplayNotification } from '@/lib/notificationDisplay';
 function iconForType(type: AppNotification['type']) {
     switch (type) {
         case 'message':  return <MessageSquare className="h-4 w-4" />;
-        case 'proposal': return <Sparkles className="h-4 w-4" />;
+        case 'proposal':
+        case 'new_proposal':
+            return <Sparkles className="h-4 w-4" />;
         case 'payment':  return <Wallet className="h-4 w-4" />;
-        case 'contract': return <ShieldAlert className="h-4 w-4" />;
+        case 'contract':
+        case 'contract_update':
+            return <ShieldAlert className="h-4 w-4" />;
         default:         return <Bell className="h-4 w-4" />;
     }
 }

@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState, type ChangeEvent, type DragEvent } from 'react';
 import { FormProvider, useForm, type SubmitHandler } from 'react-hook-form';
+import { useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { z } from 'zod';
 import SEO from '../components/common/SEO';
@@ -27,6 +28,7 @@ import { useToast } from '../components/ui/Toast';
 import { useAuth } from '../contexts/AuthContext';
 import { useAutosave } from '../hooks/useAutosave';
 import { useTranslation } from '../i18n';
+import { dashboardQueryKeys, invalidateClientDashboardQueries } from '../lib/dashboardQueries';
 import { getJobCategories, JOB_CATEGORIES } from '../lib/jobCategories';
 import { getStorageConfigErrorMessage, supabase, uploadFile } from '../lib/supabase';
 import { supabaseWithRetry } from '../lib/supabaseWithRetry';
@@ -194,6 +196,7 @@ function formatTime(date: Date) {
 
 export default function JobPost() {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const { showToast } = useToast();
   const { tx, language } = useTranslation();
   const navigate = useNavigate();
@@ -626,6 +629,12 @@ export default function JobPost() {
       if (status === 'draft') {
         showToast(tx('jobs.new.toasts.draftSaved', undefined, 'Draft saved successfully'), 'success');
       } else {
+        await Promise.all([
+          invalidateClientDashboardQueries(queryClient, user.id),
+          queryClient.invalidateQueries({ queryKey: dashboardQueryKeys.clientStats(user.id) }),
+          queryClient.invalidateQueries({ queryKey: ['client-jobs'] }),
+          queryClient.invalidateQueries({ queryKey: ['client-stats', user.id] }),
+        ]);
         showToast(tx('jobs.new.toasts.jobPosted', undefined, 'Job posted successfully!'), 'success');
         navigate(insertedJob?.id ? `/jobs/posted/${insertedJob.id}` : '/jobs', { replace: true });
       }

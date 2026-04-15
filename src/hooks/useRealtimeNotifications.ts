@@ -15,7 +15,7 @@ function shouldShowIncomingToast(_notification: AppNotification) {
 export interface AppNotification {
     id: string;
     user_id: string;
-    type: 'message' | 'proposal' | 'contract' | 'payment' | 'system' | 'review';
+    type: 'message' | 'proposal' | 'new_proposal' | 'contract' | 'contract_update' | 'payment' | 'system' | 'review';
     title: string;
     body: string;
     is_read: boolean;

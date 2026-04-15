@@ -53,6 +53,84 @@ function getProjectHost(value: string): string {
     }
 }
 
+function isHttpUrl(value: string): boolean {
+    try {
+        const parsed = new URL(value);
+        return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+    } catch {
+        return false;
+    }
+}
+
+function stripTrailingUrlPunctuation(value: string): string {
+    return value.replace(/[),.;!?]+$/g, '');
+}
+
+function extractHttpUrlsFromText(value: string): string[] {
+    const urlPattern = /(https?:\/\/[^\s]+)/gi;
+    const matches = value.match(urlPattern) ?? [];
+    const unique: string[] = [];
+    const seen = new Set<string>();
+
+    matches.forEach((rawMatch) => {
+        const cleaned = stripTrailingUrlPunctuation(rawMatch.trim());
+        if (!cleaned || !isHttpUrl(cleaned)) {
+            return;
+        }
+
+        const key = cleaned.toLowerCase();
+        if (seen.has(key)) {
+            return;
+        }
+
+        seen.add(key);
+        unique.push(cleaned);
+    });
+
+    return unique;
+}
+
+function sanitizePortfolioTextFields(descriptionValue: string | null | undefined, projectUrlValue: string | null | undefined): {
+    description: string | null;
+    projectUrl: string | null;
+} {
+    const rawDescription = (descriptionValue || '').trim();
+    const rawProjectUrl = (projectUrlValue || '').trim();
+
+    const descriptionUrls = rawDescription ? extractHttpUrlsFromText(rawDescription) : [];
+    const candidateUrls = [rawProjectUrl, ...descriptionUrls]
+        .map((value) => value.trim())
+        .filter(Boolean);
+
+    const sanitizedProjectUrl = candidateUrls.find((value) => isHttpUrl(value)) || null;
+
+    if (!rawDescription) {
+        return {
+            description: null,
+            projectUrl: sanitizedProjectUrl,
+        };
+    }
+
+    if (descriptionUrls.length === 0) {
+        return {
+            description: rawDescription,
+            projectUrl: sanitizedProjectUrl,
+        };
+    }
+
+    const withoutUrls = rawDescription
+        .replace(/https?:\/\/[^\s]+/gi, ' ')
+        .replace(/\s{2,}/g, ' ')
+        .trim();
+
+    const sanitizedDescription = withoutUrls.length >= 8 ? withoutUrls : '';
+
+    return {
+        description: sanitizedDescription || null,
+        projectUrl: sanitizedProjectUrl,
+    };
+}
+
 function isMissingColumnError(error: unknown, columnName: string): boolean {
     if (!error || typeof error !== 'object') {
         return false;
@@ -215,12 +293,16 @@ export default function PortfolioDashboard() {
 
         const normalizedSkills = normalizePortfolioTextArray(data.skills_used);
         const normalizedTools = normalizePortfolioTextArray(data.tools_used);
+        const {
+            description: sanitizedDescription,
+            projectUrl: sanitizedProjectUrl,
+        } = sanitizePortfolioTextFields(data.description, data.project_url);
 
         const payload = {
             title: data.title.trim(),
-            description: data.description?.trim() || null,
+            description: sanitizedDescription,
             client_name: data.client_name?.trim() || null,
-            project_url: data.project_url?.trim() || null,
+            project_url: sanitizedProjectUrl,
             completion_date: data.completion_date || null,
             skills_used: normalizedSkills,
             tools_used: normalizedTools,

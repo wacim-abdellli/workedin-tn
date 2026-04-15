@@ -1,13 +1,13 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
+  Bookmark,
   ChevronDown,
   ExternalLink,
   LogOut,
   Repeat2,
   Settings,
   Shield,
-  User,
   CheckCircle2,
   Loader2,
 } from "lucide-react";
@@ -341,7 +341,7 @@ export function UserMenu({ isDesktopCondensed = false }: UserMenuProps) {
             <div className="p-1.5">
               {[
                 { icon: ExternalLink, label: t.nav?.profile || "My Profile", path: "/profile" },
-                { icon: User, label: t.nav?.dashboard || "Dashboard", path: "/dashboard" },
+                { icon: Bookmark, label: t.nav?.saved || "Saved", path: "/saved" },
                 { icon: Settings, label: t.nav?.settings || "Settings", path: "/settings" },
               ].map(({ icon: Icon, label, path }) => (
                 <button

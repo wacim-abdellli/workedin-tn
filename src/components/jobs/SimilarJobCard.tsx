@@ -1,4 +1,4 @@
-import { Clock, MapPin } from 'lucide-react';
+import { Clock } from 'lucide-react';
 import { useTranslation } from '@/i18n';
 
 interface Job {
@@ -23,110 +23,73 @@ export default function SimilarJobCard({ job, onClick }: SimilarJobCardProps) {
     const { tx } = useTranslation();
 
     const timeAgo = (date: string) => {
-        const seconds = Math.floor((new Date().getTime() - new Date(date).getTime()) / 1000);
-        if (seconds < 3600) return tx('time.lessThanHour', undefined, 'منذ ساعة');
-        if (seconds < 86400) return tx('time.hours', { count: Math.floor(seconds / 3600) }, `منذ ${Math.floor(seconds / 3600)} ساعة`);
-        return tx('time.days', { count: Math.floor(seconds / 86400) }, `منذ ${Math.floor(seconds / 86400)} يوم`);
+        const seconds = Math.floor((Date.now() - new Date(date).getTime()) / 1000);
+        if (seconds < 3600) return tx('time.lessThanHour', undefined, 'Just now');
+        if (seconds < 86400) return tx('time.hours', { count: Math.floor(seconds / 3600) }, `${Math.floor(seconds / 3600)}h ago`);
+        return tx('time.days', { count: Math.floor(seconds / 86400) }, `${Math.floor(seconds / 86400)}d ago`);
     };
 
     const skills = job.skills || job.required_skills || [];
+
     const budgetLabel = job.job_type === 'fixed_price'
-        ? `${job.budget_min ?? '?'} - ${job.budget_max ?? '?'} ${tx('common.currency', undefined, 'TND')}`
+        ? `${job.budget_min ?? '?'} – ${job.budget_max ?? '?'} ${tx('common.currency', undefined, 'TND')}`
         : `${job.hourly_rate ?? '?'} ${tx('common.currencyPerHour', undefined, 'TND/h')}`;
-    const typeLabel = job.job_type === 'fixed_price'
-        ? tx('jobs.type.fixed', undefined, 'سعر ثابت')
-        : tx('jobs.type.hourly', undefined, 'بالساعة');
+
+    const isFixed = job.job_type === 'fixed_price';
 
     return (
         <div
             onClick={onClick}
             role="button"
             tabIndex={0}
-            onKeyDown={e => e.key === 'Enter' && onClick?.()}
-            className="group p-4 rounded-xl cursor-pointer transition-all duration-200 hover:-translate-y-0.5 border"
-            style={{
-                background: 'var(--color-background-subtle)',
-                borderColor: 'var(--color-border-subtle)',
-            }}
-            onMouseEnter={e => {
-                e.currentTarget.style.background = 'var(--color-background-elevated)';
-                e.currentTarget.style.borderColor = 'color-mix(in srgb, var(--workspace-primary) 30%, transparent)';
-                e.currentTarget.style.boxShadow = 'var(--shadow-md)';
-            }}
-            onMouseLeave={e => {
-                e.currentTarget.style.background = 'var(--color-background-subtle)';
-                e.currentTarget.style.borderColor = 'var(--color-border-subtle)';
-                e.currentTarget.style.boxShadow = 'none';
-            }}
+            onKeyDown={(e) => e.key === 'Enter' && onClick?.()}
+            className="group relative p-4 rounded-xl cursor-pointer transition-all duration-200 border border-white/8 hover:border-white/16 hover:-translate-y-0.5"
+            style={{ background: 'rgba(255,255,255,0.03)' }}
         >
-            <div className="flex justify-between items-start mb-2">
+            {/* Type + Time */}
+            <div className="flex items-center justify-between mb-2.5">
                 <span
-                    className="text-xs font-medium px-2 py-0.5 rounded-full"
+                    className="text-[10px] font-semibold px-2.5 py-0.5 rounded-full"
                     style={{
-                        color: 'var(--workspace-primary)',
-                        background: 'var(--workspace-primary-light)',
+                        background: isFixed ? 'rgba(59,130,246,0.12)' : 'rgba(16,185,129,0.12)',
+                        color: isFixed ? '#60a5fa' : '#34d399',
+                        border: `1px solid ${isFixed ? 'rgba(59,130,246,0.2)' : 'rgba(16,185,129,0.2)'}`,
                     }}
                 >
-                    {typeLabel}
+                    {isFixed ? tx('jobs.type.fixed', undefined, 'Fixed') : tx('jobs.type.hourly', undefined, 'Hourly')}
                 </span>
-                <span
-                    className="text-xs flex items-center gap-1"
-                    style={{ color: 'var(--color-text-tertiary)' }}
-                >
+                <span className="text-[10px] text-white/35 flex items-center gap-1">
                     <Clock className="w-3 h-3" />
                     {timeAgo(job.posted_at)}
                 </span>
             </div>
 
-            <h4
-                className="mb-2 line-clamp-2 break-words font-bold text-sm transition-colors [overflow-wrap:anywhere]"
-                style={{ color: 'var(--color-text-primary)' }}
-            >
+            {/* Title */}
+            <h4 className="mb-2 line-clamp-2 font-bold text-sm text-white/85 group-hover:text-white transition-colors [overflow-wrap:anywhere]">
                 {job.title}
             </h4>
 
-            <div className="flex items-center gap-2 mb-3 text-sm flex-wrap">
-                <span className="font-semibold" style={{ color: 'var(--workspace-primary)' }}>
-                    {budgetLabel}
-                </span>
-                {job.location && (
-                    <>
-                        <span style={{ color: 'var(--color-border-default)' }}>•</span>
-                        <span
-                            className="flex items-center gap-1 text-xs"
-                            style={{ color: 'var(--color-text-tertiary)' }}
-                        >
-                            <MapPin className="w-3 h-3" />
-                            {job.location}
-                        </span>
-                    </>
-                )}
-            </div>
+            {/* Budget */}
+            <p
+                className="text-sm font-bold mb-3"
+                style={{ color: 'var(--workspace-primary,#8b5cf6)' }}
+            >
+                {budgetLabel}
+            </p>
 
+            {/* Skills */}
             {skills.length > 0 && (
                 <div className="flex flex-wrap gap-1">
-                    {skills.slice(0, 3).map((skill, index) => (
+                    {skills.slice(0, 3).map((skill, i) => (
                         <span
-                            key={index}
-                            className="break-words rounded-md px-2 py-1 text-[10px] [overflow-wrap:anywhere] border"
-                            style={{
-                                background: 'var(--color-background-elevated)',
-                                borderColor: 'var(--color-border-subtle)',
-                                color: 'var(--color-text-secondary)',
-                            }}
+                            key={i}
+                            className="rounded-full px-2 py-0.5 text-[10px] border border-white/8 bg-white/4 text-white/50 [overflow-wrap:anywhere]"
                         >
                             {skill}
                         </span>
                     ))}
                     {skills.length > 3 && (
-                        <span
-                            className="rounded-md px-2 py-1 text-[10px] border"
-                            style={{
-                                background: 'var(--color-background-elevated)',
-                                borderColor: 'var(--color-border-subtle)',
-                                color: 'var(--color-text-tertiary)',
-                            }}
-                        >
+                        <span className="rounded-full px-2 py-0.5 text-[10px] border border-white/8 bg-white/4 text-white/35">
                             +{skills.length - 3}
                         </span>
                     )}

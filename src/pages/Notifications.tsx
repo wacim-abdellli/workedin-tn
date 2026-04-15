@@ -12,9 +12,13 @@ import { getDisplayNotification } from '@/lib/notificationDisplay';
 function iconForType(type: AppNotification['type']) {
     switch (type) {
         case 'message':  return <MessageSquare className="h-5 w-5" />;
-        case 'proposal': return <Sparkles className="h-5 w-5" />;
+        case 'proposal':
+        case 'new_proposal':
+            return <Sparkles className="h-5 w-5" />;
         case 'payment':  return <Wallet className="h-5 w-5" />;
-        case 'contract': return <ShieldAlert className="h-5 w-5" />;
+        case 'contract':
+        case 'contract_update':
+            return <ShieldAlert className="h-5 w-5" />;
         default:         return <Bell className="h-5 w-5" />;
     }
 }
@@ -22,8 +26,10 @@ function iconForType(type: AppNotification['type']) {
 const TYPE_COLOR: Record<AppNotification['type'], CSSProperties> = {
     message: { background: 'color-mix(in srgb, var(--color-brand-accent) 16%, transparent)', color: 'var(--color-brand-accent)' },
     proposal: { background: 'color-mix(in srgb, var(--color-brand-accent) 16%, transparent)', color: 'var(--color-brand-accent)' },
+    new_proposal: { background: 'color-mix(in srgb, var(--color-brand-accent) 16%, transparent)', color: 'var(--color-brand-accent)' },
     payment: { background: 'color-mix(in srgb, var(--color-status-success) 16%, transparent)', color: 'var(--color-status-success)' },
     contract: { background: 'color-mix(in srgb, var(--color-brand-accent) 16%, transparent)', color: 'var(--color-brand-accent)' },
+    contract_update: { background: 'color-mix(in srgb, var(--color-brand-accent) 16%, transparent)', color: 'var(--color-brand-accent)' },
     system: { background: 'color-mix(in srgb, var(--color-background-muted) 16%, transparent)', color: 'var(--color-text-secondary)' },
     review: { background: 'color-mix(in srgb, var(--color-brand-accent) 12%, transparent)', color: 'var(--color-brand-accent)' },
 };

@@ -1610,7 +1610,17 @@ export const ar = {
                 "minutesAgo": "منذ {{count}} دقيقة",
                 "hoursAgo": "منذ {{count}} ساعة",
                 "daysAgo": "منذ {{count}} يوم"
-            }
+            },
+            "deletedMessage": "تم حذف هذه الرسالة",
+            "deleteMessage": "حذف الرسالة",
+            "deleteMessagePrompt": "هل أنت متأكد من حذف هذه الرسالة؟",
+            "deleteForMe": "حذف لي فقط",
+            "deleteForEveryone": "حذف للجميع",
+            "loadMore": "تحميل المزيد من الرسائل",
+            "reacting": "جارٍ التفاعل...",
+            "copyMessage": "نسخ الرسالة",
+            "replyTo": "الرد على الرسالة",
+            "edited": "تم التعديل"
         },
         "freelancerProfile": {
             "actions": {

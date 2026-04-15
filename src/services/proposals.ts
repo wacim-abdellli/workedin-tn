@@ -31,22 +31,44 @@ const getDayWindow = (date = new Date()) => {
     return { dayStart, dayEnd };
 };
 
+/** Safely extract a human-readable message from any error shape */
+function extractMessage(err: unknown, fallback = 'An error occurred'): string {
+    if (!err) return fallback;
+    if (typeof err === 'string') return err || fallback;
+    if (err instanceof Error) return err.message || fallback;
+    // PostgrestError or similar object with a message property
+    if (typeof (err as any)?.message === 'string') return (err as any).message || fallback;
+    if (typeof (err as any)?.details === 'string') return (err as any).details || fallback;
+    if (typeof (err as any)?.hint === 'string') return (err as any).hint || fallback;
+    return fallback;
+}
+
+/** Convert any thrown value into a proper Error */
+function toError(err: unknown, fallback = 'An error occurred'): Error {
+    return err instanceof Error ? err : new Error(extractMessage(err, fallback));
+}
+
 export async function getDailyProposalUsage(
     freelancerId: string,
     date = new Date(),
 ): Promise<DailyProposalUsage> {
     const { dayStart, dayEnd } = getDayWindow(date);
 
-    const { count, error } = await supabase
+    // Use count without head:true to avoid 400 on some Supabase RLS configurations
+    const { data, error } = await supabase
         .from('proposals')
-        .select('id', { count: 'exact', head: true })
+        .select('id')
         .eq('freelancer_id', freelancerId)
         .gte('created_at', dayStart.toISOString())
         .lt('created_at', dayEnd.toISOString());
 
-    if (error) throw error;
+    if (error) {
+        // If we can't count (e.g. RLS blocks it), assume 0 used — don't crash
+        console.warn('[proposals] getDailyProposalUsage error (non-fatal):', extractMessage(error));
+        return { used: 0, remaining: DAILY_PROPOSAL_LIMIT, limit: DAILY_PROPOSAL_LIMIT };
+    }
 
-    const used = count ?? 0;
+    const used = data?.length ?? 0;
     return {
         used,
         remaining: Math.max(DAILY_PROPOSAL_LIMIT - used, 0),
@@ -54,8 +76,8 @@ export async function getDailyProposalUsage(
     };
 }
 
-function normalizeProposalError(error: unknown) {
-    const message = error instanceof Error ? error.message : String(error);
+function normalizeProposalError(error: unknown): Error {
+    const message = extractMessage(error, 'Failed to submit proposal');
     if (
         message.includes('daily_apply_limit_reached') ||
         message.includes('daily_proposal_limit_reached') ||
@@ -63,7 +85,7 @@ function normalizeProposalError(error: unknown) {
     ) {
         return new Error(`You've reached today's proposal limit (${DAILY_PROPOSAL_LIMIT}). Try again tomorrow.`);
     }
-    return error instanceof Error ? error : new Error(message);
+    return toError(error, 'Failed to submit proposal');
 }
 
 // --- READ ---
@@ -97,14 +119,14 @@ export async function getProposalsByFreelancer(freelancerId: string) {
 
 export async function createProposal(data: CreateProposalInput, files: File[] = []) {
     try {
-        // Pre-flight access check (UX guard): keep behavior aligned with marketplace gating.
+        // Pre-flight access check (UX guard)
         const { data: profile, error: profileError } = await supabase
             .from('profiles')
             .select('*')
             .eq('id', data.freelancer_id)
             .maybeSingle();
 
-        if (profileError) throw profileError;
+        if (profileError) throw toError(profileError, 'Failed to load profile');
 
         const { data: fp, error: fpError } = await supabase
             .from('freelancer_profiles')
@@ -112,7 +134,7 @@ export async function createProposal(data: CreateProposalInput, files: File[] = 
             .eq('id', data.freelancer_id)
             .maybeSingle();
 
-        if (fpError) throw fpError;
+        if (fpError) throw toError(fpError, 'Failed to load freelancer profile');
 
         const accessDecision = canApplyToJob({
             isAuthenticated: true,
@@ -127,7 +149,7 @@ export async function createProposal(data: CreateProposalInput, files: File[] = 
             };
         }
 
-        // Prevent duplicate proposals for the same job/freelancer pair.
+        // Prevent duplicate proposals
         const { data: existingProposal, error: existingProposalError } = await supabase
             .from('proposals')
             .select('id')
@@ -135,17 +157,18 @@ export async function createProposal(data: CreateProposalInput, files: File[] = 
             .eq('freelancer_id', data.freelancer_id)
             .maybeSingle();
 
-        if (existingProposalError) throw existingProposalError;
+        if (existingProposalError) throw toError(existingProposalError, 'Failed to check existing proposal');
         if (existingProposal?.id) {
             return { data: existingProposal.id, error: null };
         }
 
+        // Daily limit check
         const usage = await getDailyProposalUsage(data.freelancer_id);
         if (usage.remaining <= 0) {
             throw new Error('daily_apply_limit_reached');
         }
 
-        // Upload attachments before insert.
+        // Upload attachments before insert
         const attachmentUrls: string[] = await Promise.all(
             files.map(async (file) => {
                 const path = `${data.freelancer_id}/${data.job_id}/${Date.now()}-${file.name}`;
@@ -167,7 +190,7 @@ export async function createProposal(data: CreateProposalInput, files: File[] = 
             .select('id')
             .single();
 
-        if (error) throw error;
+        if (error) throw toError(error, 'Failed to insert proposal');
 
         return { data: insertedProposal?.id ?? null, error: null };
     } catch (error) {

@@ -83,10 +83,17 @@ export async function switchWorkspace({
   } as Profile;
 
   const target = getWorkspaceTargetRoute(nextProfile, freelancerProfile, targetWorkspace);
+
+  // After a workspace switch, land on the most immediately useful page
+  // for the new mode — this visually confirms the switch happened.
+  // If the user still needs onboarding, respect that redirect first.
+  const switchLandingPath =
+    targetWorkspace === 'freelancer' ? '/jobs' : '/find-freelancers';
+  const landingPath = target.isOnboarded ? switchLandingPath : target.path;
+
   sessionStorage.setItem('workspace_switched', targetWorkspace);
 
-  // Navigate directly to the target dashboard instead of home page
-  navigate(target.path, {
+  navigate(landingPath, {
     state: {
       switching: true,
       workspace: targetWorkspace,
