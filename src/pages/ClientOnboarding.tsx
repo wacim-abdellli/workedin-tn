@@ -43,6 +43,7 @@ function ClientOnboardingPage() {
         communication_preferences: mergedCommunicationPreferences,
         user_type: promoteUserTypeForWorkspace(profile?.user_type, "client"),
         active_mode: "client",
+        onboarding_completed: true,
         client_onboarding_completed: true,
       });
 

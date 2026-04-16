@@ -55,6 +55,9 @@ vi.mock('react-router-dom', async () => {
 
 vi.mock('@/i18n', () => ({
     useTranslation: () => ({
+        language: 'ar',
+        dir: 'rtl',
+        setLanguage: vi.fn(),
         t: {
             common: {
                 back: 'الرجوع للخلف',
@@ -270,7 +273,7 @@ describe('ContractWorkspace', () => {
         });
     });
 
-    it('renders loading and empty states from the initial contract query', () => {
+    it('renders loading and non-blank empty states from the initial contract query', () => {
         queryMocks.useQuery.mockImplementation(({ queryKey }: { queryKey: unknown[] }) => {
             if (queryKey[0] === 'contract') {
                 return { data: undefined, isLoading: true };
@@ -294,8 +297,8 @@ describe('ContractWorkspace', () => {
 
         const emptyView = renderWorkspace();
 
-        // When contract is null, the component returns null (no render)
-        expect(emptyView.container).toBeEmptyDOMElement();
+        expect(emptyView.getByText('Contract not found')).toBeInTheDocument();
+        expect(emptyView.getByRole('button', { name: 'Try again' })).toBeInTheDocument();
     });
 
     it('exposes mobile tab semantics and labeled modal fields for accessibility', async () => {
@@ -303,12 +306,12 @@ describe('ContractWorkspace', () => {
 
         expect(screen.getByRole('button', { name: 'الرجوع للخلف' })).toBeInTheDocument();
 
-        const tablist = screen.getByRole('tablist', { name: 'تبويبات مساحة العمل' });
+        const tablist = screen.getByRole('tablist', { name: 'Workspace tabs' });
         expect(tablist).toBeInTheDocument();
 
-        const chatTab = screen.getByRole('tab', { name: 'إظهار المحادثة' });
-        const detailsTab = screen.getByRole('tab', { name: 'إظهار التفاصيل' });
-        const filesTab = screen.getByRole('tab', { name: 'إظهار الملفات' });
+        const chatTab = screen.getByRole('tab', { name: 'Show chat' });
+        const detailsTab = screen.getByRole('tab', { name: 'Show details' });
+        const filesTab = screen.getByRole('tab', { name: 'Show files' });
 
         expect(chatTab).toHaveAttribute('aria-selected', 'true');
         expect(chatTab).toHaveAttribute('aria-controls', 'workspace-panel-chat');
@@ -319,10 +322,10 @@ describe('ContractWorkspace', () => {
         expect(detailsTab).toHaveAttribute('aria-selected', 'true');
 
         fireEvent.click(screen.getByRole('button', { name: 'Open deliver' }));
-        expect(screen.getByLabelText('ملاحظات التسليم')).toBeInTheDocument();
+        expect(screen.getByLabelText('Delivery notes')).toBeInTheDocument();
 
         fireEvent.click(screen.getByRole('button', { name: 'Open dispute' }));
-        expect(screen.getByLabelText('سبب النزاع')).toBeInTheDocument();
+        expect(screen.getByLabelText('Dispute reason')).toBeInTheDocument();
     });
 
     it('renders the workspace and wires the major contract actions', async () => {
@@ -347,8 +350,8 @@ describe('ContractWorkspace', () => {
         });
 
         fireEvent.click(screen.getByRole('button', { name: 'Open deliver' }));
-        fireEvent.change(screen.getByPlaceholderText(/ملاحظات التسليم/), { target: { value: 'Ready for review' } });
-        fireEvent.click(screen.getByRole('button', { name: 'تأكيد التسليم' }));
+        fireEvent.change(screen.getByPlaceholderText(/Delivery notes/), { target: { value: 'Ready for review' } });
+        fireEvent.click(screen.getByRole('button', { name: 'Confirm Delivery' }));
         await waitFor(() => {
             expect(hookMocks.deliverWork).toHaveBeenCalledWith('Ready for review');
         });
@@ -366,8 +369,8 @@ describe('ContractWorkspace', () => {
         });
 
         fireEvent.click(screen.getByRole('button', { name: 'Open dispute' }));
-        fireEvent.change(screen.getByPlaceholderText(/اشرح سبب النزاع/), { target: { value: 'Need help' } });
-        fireEvent.click(screen.getByRole('button', { name: 'فتح نزاع' }));
+        fireEvent.change(screen.getByPlaceholderText(/Explain reason for dispute/), { target: { value: 'Need help' } });
+        fireEvent.click(screen.getByRole('button', { name: 'Open Dispute' }));
         await waitFor(() => {
             expect(hookMocks.openDispute).toHaveBeenCalledWith('Need help');
         });
@@ -397,7 +400,7 @@ describe('ContractWorkspace', () => {
         fireEvent.click(screen.getByRole('button', { name: 'Upload file' }));
 
         fireEvent.click(screen.getByRole('button', { name: 'Open deliver' }));
-        fireEvent.click(screen.getByRole('button', { name: /تأكيد التسليم/ }));
+        fireEvent.click(screen.getByRole('button', { name: /Confirm Delivery/ }));
 
         fireEvent.click(screen.getByRole('button', { name: 'Request changes' }));
 
@@ -405,8 +408,8 @@ describe('ContractWorkspace', () => {
         fireEvent.click(screen.getByRole('button', { name: 'Confirm payment' }));
 
         fireEvent.click(screen.getByRole('button', { name: 'Open dispute' }));
-        fireEvent.change(screen.getByPlaceholderText(/اشرح سبب النزاع/), { target: { value: 'Still broken' } });
-        fireEvent.click(screen.getByRole('button', { name: /فتح نزاع/ }));
+        fireEvent.change(screen.getByPlaceholderText(/Explain reason for dispute/), { target: { value: 'Still broken' } });
+        fireEvent.click(screen.getByRole('button', { name: /Open Dispute/ }));
 
         fireEvent.click(screen.getByRole('button', { name: 'Open review' }));
         fireEvent.click(screen.getByRole('button', { name: 'Submit review' }));

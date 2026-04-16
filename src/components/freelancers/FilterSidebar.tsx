@@ -1,4 +1,4 @@
-import { Award, BadgeCheck, Briefcase, Search, Star, Zap } from 'lucide-react';
+import { Award, Briefcase, Search, Star } from 'lucide-react';
 
 type FreelancerCategory = 'Design' | 'Development' | 'Writing' | 'Marketing' | 'Video' | 'Consulting';
 
@@ -16,24 +16,6 @@ interface FilterSidebarProps {
     clearFilters: () => void;
     copy: any; tx: (key: string, params?: any, fallback?: string) => string;
     categoryOptions: FreelancerCategory[]; skillOptions: string[];
-}
-
-function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) {
-    return (
-        <button
-            type="button"
-            role="switch"
-            aria-checked={checked}
-            onClick={() => onChange(!checked)}
-            className="relative flex h-6 w-10 shrink-0 items-center rounded-full transition-colors"
-            style={{ background: checked ? 'var(--workspace-primary,#8b5cf6)' : 'rgba(255,255,255,0.1)' }}
-        >
-            <span
-                className="h-4 w-4 rounded-full bg-white shadow-sm transition-transform"
-                style={{ transform: checked ? 'translateX(20px)' : 'translateX(2px)' }}
-            />
-        </button>
-    );
 }
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
@@ -59,6 +41,23 @@ export default function FilterSidebar({
     clearFilters, copy, tx,
     categoryOptions, skillOptions,
 }: FilterSidebarProps) {
+    const statusFilters = [
+        {
+            key: 'available' as const,
+            checked: availableOnly,
+            onToggle: () => setAvailableOnly(!availableOnly),
+            label: copy.availableNow,
+            description: copy.availableNowDesc,
+        },
+        {
+            key: 'verified' as const,
+            checked: verifiedOnly,
+            onToggle: () => setVerifiedOnly(!verifiedOnly),
+            label: copy.verifiedOnly,
+            description: copy.verifiedOnlyDesc,
+        },
+    ];
+
     return (
         <div className="space-y-6">
             {/* Search */}
@@ -73,24 +72,40 @@ export default function FilterSidebar({
                 />
             </div>
 
-            {/* Available now */}
-            <div className="rounded-xl border border-white/8 p-3.5 flex items-center justify-between gap-3"
-                style={{ background: availableOnly ? COLORS.primaryLight : 'rgba(255,255,255,0.03)' }}>
-                <div>
-                    <p className="text-sm font-semibold text-white">{copy.availableNow}</p>
-                    <p className="text-xs text-white/40 mt-0.5">{copy.availableNowDesc}</p>
+            {/* Status */}
+            <div className="pt-4 border-t border-white/8">
+                <SectionLabel>{tx('findFreelancers.status', undefined, 'Status')}</SectionLabel>
+                <div className="space-y-2.5">
+                    {statusFilters.map((statusFilter) => (
+                        <label key={statusFilter.key} className="flex items-start gap-2.5 cursor-pointer group rounded-lg px-2 py-1.5 transition-colors hover:bg-white/4">
+                            <div
+                                className="w-4 h-4 mt-0.5 rounded-[4px] border flex items-center justify-center shrink-0 transition-all"
+                                style={{
+                                    borderColor: statusFilter.checked ? COLORS.primary : 'rgba(255,255,255,0.2)',
+                                    background: statusFilter.checked ? COLORS.primary : 'transparent',
+                                }}
+                            >
+                                {statusFilter.checked && (
+                                    <svg className="w-2.5 h-2.5 text-white" viewBox="0 0 10 10" fill="none">
+                                        <path d="M2 5l2.5 2.5L8 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                    </svg>
+                                )}
+                                <input
+                                    type="checkbox"
+                                    className="sr-only"
+                                    checked={statusFilter.checked}
+                                    onChange={statusFilter.onToggle}
+                                />
+                            </div>
+                            <span className="min-w-0">
+                                <span className={`block text-sm transition-colors ${statusFilter.checked ? 'text-white' : 'text-white/60 group-hover:text-white/85'}`}>
+                                    {statusFilter.label}
+                                </span>
+                                <span className="block text-[11px] text-white/35 mt-0.5">{statusFilter.description}</span>
+                            </span>
+                        </label>
+                    ))}
                 </div>
-                <Toggle checked={availableOnly} onChange={setAvailableOnly} />
-            </div>
-
-            {/* Verified only */}
-            <div className="rounded-xl border border-white/8 p-3.5 flex items-center justify-between gap-3"
-                style={{ background: verifiedOnly ? COLORS.primaryLight : 'rgba(255,255,255,0.03)' }}>
-                <div>
-                    <p className="text-sm font-semibold text-white">{copy.verifiedOnly}</p>
-                    <p className="text-xs text-white/40 mt-0.5">{copy.verifiedOnlyDesc}</p>
-                </div>
-                <Toggle checked={verifiedOnly} onChange={setVerifiedOnly} />
             </div>
 
             {/* Category */}
@@ -136,7 +151,7 @@ export default function FilterSidebar({
                                 onClick={() => setSelectedSkills((p) => p.includes(skill) ? p.filter((s) => s !== skill) : [...p, skill])}
                                 className="rounded-full text-xs font-medium px-3 py-1 transition-all border"
                                 style={{
-                                    background: active ? COLORS.primaryLight : 'rgba(255,255,255,0.05)',
+                                    background: active ? COLORS.primaryLight : 'rgba(255,255,255,0.04)',
                                     color: active ? COLORS.primary : 'rgba(255,255,255,0.55)',
                                     borderColor: active ? COLORS.primaryBorder : 'rgba(255,255,255,0.1)',
                                 }}
@@ -202,7 +217,7 @@ export default function FilterSidebar({
             <button
                 type="button"
                 onClick={clearFilters}
-                className="w-full rounded-xl border border-white/10 py-2.5 text-sm font-medium text-white/50 hover:text-white hover:border-white/20 transition-all"
+                className="w-full rounded-xl border border-white/10 py-2.5 text-sm font-medium text-white/55 hover:text-white hover:border-white/20 hover:bg-white/5 transition-all"
             >
                 {copy.clearFilters}
             </button>

@@ -21,6 +21,7 @@ import { z } from 'zod';
 import SEO from '../components/common/SEO';
 import { Header } from '../components/layout';
 import StepBudget from '../components/job-post/StepBudget';
+import JobLinksInput from '../components/job-post/JobLinksInput';
 import StepReview from '../components/job-post/StepReview';
 import StepVisibility from '../components/job-post/StepVisibility';
 import Modal from '../components/ui/Modal';
@@ -30,6 +31,11 @@ import { useAutosave } from '../hooks/useAutosave';
 import { useTranslation } from '../i18n';
 import { dashboardQueryKeys, invalidateClientDashboardQueries } from '../lib/dashboardQueries';
 import { getJobCategories, JOB_CATEGORIES } from '../lib/jobCategories';
+import {
+  isMissingJobReferenceLinksColumnError,
+  MAX_JOB_REFERENCE_LINKS,
+  sanitizeJobReferenceLinks,
+} from '../lib/jobLinks';
 import { getStorageConfigErrorMessage, supabase, uploadFile } from '../lib/supabase';
 import { supabaseWithRetry } from '../lib/supabaseWithRetry';
 import { PREDEFINED_SKILLS, type Skill } from '../types';
@@ -83,6 +89,7 @@ const JOB_POST_DEFAULT_VALUES: Partial<JobFormData> = {
   experience_level: 'intermediate',
   subcategory: '',
   attachments_files: [],
+  reference_links: [],
 };
 
 const optionalNumber = (message: string) =>
@@ -124,6 +131,26 @@ const createJobSchema = (tx: ReturnType<typeof useTranslation>['tx']) =>
         .array(z.any())
         .min(1, tx('jobs.new.validation.skillsRequired', undefined, 'Please select at least one skill'))
         .max(5),
+      reference_links: z
+        .array(z.string().trim())
+        .max(
+          MAX_JOB_REFERENCE_LINKS,
+          tx(
+            'jobs.new.validation.maxReferenceLinks',
+            { count: MAX_JOB_REFERENCE_LINKS },
+            `Maximum ${MAX_JOB_REFERENCE_LINKS} links`,
+          ),
+        )
+        .optional()
+        .refine(
+          (links) => {
+            if (!links) return true;
+            return sanitizeJobReferenceLinks(links, MAX_JOB_REFERENCE_LINKS).length === links.length;
+          },
+          {
+            message: tx('jobs.new.validation.referenceLinksInvalid', undefined, 'Please enter valid links only'),
+          },
+        ),
       attachments_files: z
         .array(z.instanceof(File))
         .max(5, tx('jobs.new.validation.maxFiles', undefined, 'Maximum 5 files'))
@@ -265,6 +292,7 @@ export default function JobPost() {
   const selectedCategory = methods.watch('category') || '';
   const selectedSubcategory = methods.watch('subcategory') || '';
   const selectedSkills = methods.watch('required_skills') || [];
+  const referenceLinks = methods.watch('reference_links') || [];
   const attachments = methods.watch('attachments_files') || [];
   const title = methods.watch('title') || '';
   const description = methods.watch('description') || '';
@@ -441,7 +469,7 @@ export default function JobPost() {
     let fieldsToValidate: Array<keyof JobFormData> = [];
 
     if (currentStep === 1) {
-      fieldsToValidate = ['title', 'category', 'subcategory', 'description', 'required_skills'];
+      fieldsToValidate = ['title', 'category', 'subcategory', 'description', 'required_skills', 'reference_links'];
     } else if (currentStep === 2) {
       fieldsToValidate = [
         'job_type',
@@ -552,31 +580,49 @@ export default function JobPost() {
     try {
       const uploadedUrls: string[] = [];
       if (data.attachments_files && data.attachments_files.length > 0) {
-        let attachmentsSkipped = false;
-        let attachmentWarningMessage: string | null = null;
+        let hasStorageConfigError = false;
+        const failedFiles: string[] = [];
 
-        for (const file of data.attachments_files as File[]) {
-          const fileExt = file.name.split('.').pop();
-          const fileName = `${Math.random()}.${fileExt}`;
+        for (const [index, file] of (data.attachments_files as File[]).entries()) {
+          const fileExtRaw = file.name.split('.').pop() || 'bin';
+          const fileExt = fileExtRaw.toLowerCase().replace(/[^a-z0-9]/g, '') || 'bin';
+          const fileName = `attach-${index + 1}-${Date.now()}-${Math.floor(Math.random() * 1_000_000)}.${fileExt}`;
           const filePath = `${user.id}/${fileName}`;
 
           try {
             uploadedUrls.push(await uploadFile('attachments', filePath, file));
           } catch (uploadError) {
-            attachmentsSkipped = true;
-            attachmentWarningMessage =
-              uploadError instanceof Error && uploadError.message.includes('bucket')
-                ? getStorageConfigErrorMessage('attachments')
-                : tx(
-                    'jobs.new.errors.attachmentsPartial',
-                    { file: file.name },
-                    `Some attachments could not be uploaded (${file.name}).`
-                  );
+            failedFiles.push(file.name);
+            if (uploadError instanceof Error && uploadError.message.toLowerCase().includes('bucket')) {
+              hasStorageConfigError = true;
+            }
           }
         }
 
-        if (attachmentsSkipped) {
-          showToast(attachmentWarningMessage || getStorageConfigErrorMessage('attachments'), 'warning');
+        if (failedFiles.length > 0 && uploadedUrls.length === 0) {
+          const allFailedMessage = hasStorageConfigError
+            ? getStorageConfigErrorMessage('attachments')
+            : tx(
+                'jobs.new.errors.attachmentsUploadFailed',
+                undefined,
+                'Attachments upload failed. Please retry with smaller or different files.'
+              );
+
+          throw new Error(allFailedMessage);
+        }
+
+        if (failedFiles.length > 0) {
+          const previewNames = failedFiles.slice(0, 2).join(', ');
+          const moreCount = Math.max(0, failedFiles.length - 2);
+          const partialWarning = hasStorageConfigError
+            ? getStorageConfigErrorMessage('attachments')
+            : tx(
+                'jobs.new.errors.attachmentsPartial',
+                { file: `${previewNames}${moreCount > 0 ? ` +${moreCount}` : ''}` },
+                `Some attachments could not be uploaded (${previewNames}${moreCount > 0 ? ` +${moreCount}` : ''}).`
+              );
+
+          showToast(partialWarning, 'warning');
         }
       }
 
@@ -601,13 +647,30 @@ export default function JobPost() {
         deadline: data.deadline,
         visibility: data.visibility,
         attachments: uploadedUrls,
+        reference_links: sanitizeJobReferenceLinks(data.reference_links || [], MAX_JOB_REFERENCE_LINKS),
         status: 'open' as const,
         required_skills: data.required_skills || [],
       };
 
-      const { data: insertedJob, error } = await supabaseWithRetry(() =>
-        supabase.from('jobs').insert(jobData).select('id').single()
-      );
+      let insertResult = await supabaseWithRetry(() => supabase.from('jobs').insert(jobData).select('id').single());
+
+      if (insertResult.error && isMissingJobReferenceLinksColumnError(insertResult.error)) {
+        const { reference_links, ...legacyJobData } = jobData;
+        insertResult = await supabaseWithRetry(() => supabase.from('jobs').insert(legacyJobData).select('id').single());
+
+        if (!insertResult.error && (data.reference_links?.length || 0) > 0) {
+          showToast(
+            tx(
+              'jobs.new.warnings.linksTemporarilyUnavailable',
+              undefined,
+              'Links were saved in the form but could not be persisted yet. Please run latest migrations.',
+            ),
+            'warning',
+          );
+        }
+      }
+
+      const { data: insertedJob, error } = insertResult;
 
       if (error) {
         logger.error('Supabase job insert error:', error);
@@ -955,6 +1018,26 @@ export default function JobPost() {
                         )}
                       </li>
                     </ul>
+                  </div>
+                </div>
+
+                <div className="space-y-3" data-field="reference_links">
+                  <div className="rounded-2xl border border-[#262626] bg-[#0f0f0f] p-4 sm:p-5">
+                    <JobLinksInput
+                      value={referenceLinks}
+                      onChange={(links) => {
+                        methods.setValue('reference_links', links, {
+                          shouldDirty: true,
+                          shouldValidate: true,
+                        });
+                      }}
+                      maxLinks={MAX_JOB_REFERENCE_LINKS}
+                    />
+                    {methods.formState.errors.reference_links ? (
+                      <p className="mt-2 text-red-400 text-xs">
+                        {methods.formState.errors.reference_links.message as string}
+                      </p>
+                    ) : null}
                   </div>
                 </div>
 

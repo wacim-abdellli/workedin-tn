@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback, useMemo, type CSSProperties } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import {
     Search,
@@ -53,6 +53,12 @@ import { useReadReceipts } from '../hooks/useReadReceipts';
 import { useTranslation } from '../i18n';
 import ErrorBoundary from '../components/ErrorBoundary';
 import { validateUploadSelection } from '../lib/uploadPolicy';
+import {
+    normalizeContractStatus,
+    resolveMessagingLifecyclePolicy,
+    type ContractMessagingStatus,
+    type MessagingPolicyTone,
+} from '../lib/messagingLifecycle';
 
 // Helper functions for offline file handling
 const fileToBase64 = (file: File): Promise<string> => {
@@ -715,6 +721,22 @@ const getThreadPreview = (threadMessages: ThreadMessage[], deletedLabel: string)
     };
 };
 
+const getLifecycleBannerClassName = (tone: MessagingPolicyTone) => {
+    switch (tone) {
+        case 'success':
+            return 'border-emerald-500/40 bg-emerald-500/10 text-emerald-200';
+        case 'warning':
+            return 'border-amber-500/40 bg-amber-500/10 text-amber-100';
+        case 'danger':
+            return 'border-red-500/40 bg-red-500/10 text-red-100';
+        case 'info':
+            return 'border-blue-500/40 bg-blue-500/10 text-blue-100';
+        case 'none':
+        default:
+            return 'border-[#333] bg-[#141414] text-gray-300';
+    }
+};
+
 /**
  * Derive the counterparty role label for a conversation.
  *
@@ -760,6 +782,7 @@ const getCounterpartyRoleFromConversation = (
 
 function MessagesComponent() {
     const navigate = useNavigate();
+    const location = useLocation();
     const [searchParams] = useSearchParams();
     const { user, profile, activeMode } = useAuth();
     const { showToast } = useToast();
@@ -785,6 +808,7 @@ function MessagesComponent() {
     const [uploadProgress, setUploadProgress] = useState(0);
     const [isOnline, setIsOnline] = useState(navigator.onLine);
     const [pendingQueue, setPendingQueue] = useState<any[]>([]);
+    const [contractStatusById, setContractStatusById] = useState<Record<string, ContractMessagingStatus>>({});
     const [page, setPage] = useState(0);
     const [hasMoreConversations, setHasMoreConversations] = useState(true);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -818,6 +842,38 @@ function MessagesComponent() {
 
     const conversationScopes = resolveConversationScopes(activeMode ?? profile?.active_mode);
     const conversationsModeCacheKey = resolveModeCacheKey(activeMode ?? profile?.active_mode);
+    const contractConversationIds = useMemo(() => {
+        return Array.from(
+            new Set(
+                conversations
+                    .map((conversation) => conversation.contract_id)
+                    .filter((contractId): contractId is string => Boolean(contractId))
+            )
+        ).sort();
+    }, [conversations]);
+    const contractConversationIdsKey = useMemo(() => contractConversationIds.join('|'), [contractConversationIds]);
+
+    const getConversationLifecyclePolicy = useCallback((conversation: Conversation) => {
+        const isContractConversation = Boolean(conversation.contract_id);
+        const contractStatus = conversation.contract_id
+            ? contractStatusById[conversation.contract_id]
+            : null;
+
+        return resolveMessagingLifecyclePolicy({
+            kind: isContractConversation ? 'contract' : 'direct',
+            contractStatus,
+        });
+    }, [contractStatusById]);
+
+    const selectedConversationPolicy = useMemo(() => {
+        if (!selectedConversation) return null;
+        return getConversationLifecyclePolicy(selectedConversation);
+    }, [getConversationLifecyclePolicy, selectedConversation]);
+
+    const canSendInSelectedConversation = selectedConversationPolicy?.canSend ?? false;
+    const canAttachInSelectedConversation = selectedConversationPolicy?.canAttachFiles ?? false;
+    const canSendVoiceInSelectedConversation = selectedConversationPolicy?.canSendVoiceNotes ?? false;
+    const canReplyInSelectedConversation = selectedConversationPolicy?.canReply ?? false;
 
     const deleteModalWorkspaceVars = useMemo(() => {
         return {
@@ -846,6 +902,40 @@ function MessagesComponent() {
 
         return `@${username || tx('pages.messages.userFallback', undefined, 'user')}`;
     }, [activeMode, profile?.active_mode, user?.id, tx]);
+
+    const getConversationContextLabel = useCallback((conversation: Conversation) => {
+        const lifecyclePolicy = getConversationLifecyclePolicy(conversation);
+
+        if (lifecyclePolicy.kind === 'direct') {
+            return tx('pages.messages.directContext', undefined, lifecyclePolicy.contextLabelFallback);
+        }
+
+        const contractLabel = tx('pages.messages.contractContext', undefined, 'Contract chat');
+        let statusLabel: string | null = null;
+
+        switch (lifecyclePolicy.contractStatus) {
+            case 'active':
+                statusLabel = tx('contract.inProgress', undefined, 'Active');
+                break;
+            case 'pending_payment':
+                statusLabel = tx('contract.pendingPayment', undefined, 'Pending payment');
+                break;
+            case 'completed':
+                statusLabel = tx('contract.completed', undefined, 'Completed');
+                break;
+            case 'cancelled':
+                statusLabel = tx('contract.cancelled', undefined, 'Cancelled');
+                break;
+            case 'disputed':
+                statusLabel = tx('contract.disputeOpened', undefined, 'Disputed');
+                break;
+            case 'unknown':
+            default:
+                statusLabel = null;
+        }
+
+        return statusLabel ? `${contractLabel} • ${statusLabel}` : contractLabel;
+    }, [getConversationLifecyclePolicy, tx]);
 
     const handleOpenAttachment = useCallback(async (attachment: NonNullable<Message['attachments']>[number]) => {
         const sourceUrl = resolveMessageAttachmentUrl(attachment.url);
@@ -964,6 +1054,26 @@ function MessagesComponent() {
     }, [selectedConversation?.id]);
 
     useEffect(() => {
+        if (!selectedConversationPolicy || selectedConversationPolicy.canSend) return;
+
+        if (replyTarget) {
+            setReplyTarget(null);
+        }
+
+        if (selectedFile) {
+            setSelectedFile(null);
+        }
+
+        if (audioBlob) {
+            cancelRecording();
+        }
+
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
+    }, [audioBlob, cancelRecording, replyTarget, selectedConversationPolicy, selectedFile]);
+
+    useEffect(() => {
         return () => {
             if (replyHighlightTimeoutRef.current) {
                 window.clearTimeout(replyHighlightTimeoutRef.current);
@@ -988,6 +1098,11 @@ function MessagesComponent() {
     // Sync pending queue when back online
     useEffect(() => {
         if (isOnline && pendingQueue.length > 0 && selectedConversation && user) {
+            const selectedLifecyclePolicy = getConversationLifecyclePolicy(selectedConversation);
+            if (!selectedLifecyclePolicy.canSend) {
+                return;
+            }
+
             const syncQueue = async () => {
                 const currentQueue = [...pendingQueue];
                 setPendingQueue([]);
@@ -1302,17 +1417,85 @@ function MessagesComponent() {
         cacheMessagesForConversation(selectedConversation.id, messages);
     }, [selectedConversation?.id, messages]);
 
-    // Auto-select conversation from URL param ?conversation=ID
     useEffect(() => {
-        const targetId = searchParams.get('conversation');
-        if (!targetId || conversations.length === 0) return;
-        const match = conversations.find(c => c.id === targetId);
-        if (match) {
-            handleSelectConversation(match);
-            // Clean the URL param without re-navigating
-            navigate('/messages', { replace: true });
+        if (contractConversationIds.length === 0) {
+            setContractStatusById({});
+            return;
         }
-    }, [searchParams, conversations]);
+
+        let cancelled = false;
+
+        const loadContractStatuses = async () => {
+            const { data, error } = await supabase
+                .from('contracts')
+                .select('id, status')
+                .in('id', contractConversationIds);
+
+            if (cancelled) return;
+
+            if (error) {
+                console.warn('[Messages] Failed to load contract statuses for lifecycle policy', error);
+                return;
+            }
+
+            const nextStatuses: Record<string, ContractMessagingStatus> = {};
+            for (const contractId of contractConversationIds) {
+                nextStatuses[contractId] = 'unknown';
+            }
+
+            for (const row of (data ?? []) as Array<{ id: string; status: string | null }>) {
+                if (!row?.id) continue;
+                nextStatuses[row.id] = normalizeContractStatus(row.status);
+            }
+
+            setContractStatusById((prev) => {
+                const previousKeys = Object.keys(prev);
+                const nextKeys = Object.keys(nextStatuses);
+
+                const isSameShape = previousKeys.length === nextKeys.length
+                    && nextKeys.every((key) => Object.prototype.hasOwnProperty.call(prev, key));
+                if (!isSameShape) return nextStatuses;
+
+                const isSameValues = nextKeys.every((key) => prev[key] === nextStatuses[key]);
+                return isSameValues ? prev : nextStatuses;
+            });
+        };
+
+        void loadContractStatuses();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [contractConversationIdsKey]);
+
+    // Auto-select conversation from URL params or navigation state.
+    // Supports:
+    // - /messages?conversation=<conversationId>
+    // - /messages?contract=<contractId>
+    // - navigate('/messages', { state: { contractId } })
+    useEffect(() => {
+        if (conversations.length === 0) return;
+
+        const targetConversationId = searchParams.get('conversation');
+        const stateContractId = (location.state as { contractId?: string } | null)?.contractId || null;
+        const targetContractId = searchParams.get('contract') || stateContractId;
+
+        let match: Conversation | undefined;
+
+        if (targetConversationId) {
+            match = conversations.find((conversation) => conversation.id === targetConversationId);
+        }
+
+        if (!match && targetContractId) {
+            match = conversations.find((conversation) => conversation.contract_id === targetContractId);
+        }
+
+        if (match) {
+            void handleSelectConversation(match);
+            // Clean transient route hints after selection.
+            navigate('/messages', { replace: true, state: null });
+        }
+    }, [searchParams, conversations, location.state]);
 
     // Load conversations
     useEffect(() => {
@@ -1630,6 +1813,40 @@ function MessagesComponent() {
 
         if ((!messageContent && !selectedFile && !audioBlob) || !selectedConversation || !user) return;
 
+        if (selectedConversationPolicy && !selectedConversationPolicy.canSend) {
+            const blockedMessage = selectedConversationPolicy.blockedReasonFallback
+                || 'This conversation is read-only right now.';
+            showToast(
+                tx(
+                    'pages.messages.readOnlyThread',
+                    { message: blockedMessage },
+                    blockedMessage,
+                ),
+                'warning'
+            );
+            return;
+        }
+
+        if (selectedFile && selectedConversationPolicy && !selectedConversationPolicy.canAttachFiles) {
+            const blockedMessage = selectedConversationPolicy.blockedReasonFallback
+                || 'Attachments are disabled for this conversation.';
+            showToast(
+                tx('pages.messages.readOnlyThread', { message: blockedMessage }, blockedMessage),
+                'warning'
+            );
+            return;
+        }
+
+        if (audioBlob && selectedConversationPolicy && !selectedConversationPolicy.canSendVoiceNotes) {
+            const blockedMessage = selectedConversationPolicy.blockedReasonFallback
+                || 'Voice notes are disabled for this conversation.';
+            showToast(
+                tx('pages.messages.readOnlyThread', { message: blockedMessage }, blockedMessage),
+                'warning'
+            );
+            return;
+        }
+
         if (!isOnline) {
             // Store offline message with base64-encoded files for persistence
             const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB limit for offline storage
@@ -1892,6 +2109,21 @@ function MessagesComponent() {
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
+            if (!canAttachInSelectedConversation) {
+                const blockedMessage = selectedConversationPolicy?.blockedReasonFallback
+                    || 'Attachments are disabled for this conversation.';
+                showToast(
+                    tx(
+                        'pages.messages.readOnlyThread',
+                        { message: blockedMessage },
+                        blockedMessage,
+                    ),
+                    'warning'
+                );
+                e.target.value = '';
+                return;
+            }
+
             const validation = validateUploadSelection({
                 bucket: 'message_attachments',
                 fileName: file.name,
@@ -1915,8 +2147,25 @@ function MessagesComponent() {
         return true;
     });
 
+    const displayConversations = useMemo(() => {
+        const seenKeys = new Set<string>();
+        const deduped: Conversation[] = [];
+
+        for (const conversation of filteredConversations) {
+            const groupingKey = conversation.contract_id
+                ? `contract:${conversation.contract_id}`
+                : `direct:${conversation.otherUser.id}:${conversation.conversation_scope ?? 'shared'}`;
+
+            if (seenKeys.has(groupingKey)) continue;
+            seenKeys.add(groupingKey);
+            deduped.push(conversation);
+        }
+
+        return deduped;
+    }, [filteredConversations]);
+
     const conversationsVirtualizer = useVirtualizer({
-        count: filteredConversations.length,
+        count: displayConversations.length,
         getScrollElement: () => conversationsParentRef.current,
         estimateSize: () => 80,
         overscan: 5,
@@ -2009,10 +2258,11 @@ function MessagesComponent() {
     }, [displayMessages, messagesVirtualizer, showToast, tx]);
 
     const handleReplyToMessage = useCallback((message: ThreadMessage) => {
+        if (!canReplyInSelectedConversation) return;
         if (isDeletedMessage(message)) return;
         setReplyTarget(buildReplyMetadataFromMessage(message));
         messageInputRef.current?.focus();
-    }, [buildReplyMetadataFromMessage]);
+    }, [buildReplyMetadataFromMessage, canReplyInSelectedConversation]);
 
     const getConversationLastPreviewText = useCallback((conversationId: string, rawLastMessageText: string | null | undefined) => {
         const inlinePreview = parseReplyMetadataFromContent(rawLastMessageText).bodyText.trim();
@@ -2107,7 +2357,7 @@ function MessagesComponent() {
                     <div className="h-full flex items-center justify-center px-6 py-10">
                         <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
                     </div>
-                ) : filteredConversations.length === 0 ? (
+                ) : displayConversations.length === 0 ? (
                     <div className="h-full flex items-center justify-center px-6 py-10 text-center">
                         <p className="text-sm text-gray-400">
                             {searchQuery
@@ -2118,7 +2368,7 @@ function MessagesComponent() {
                 ) : (
                     <div style={{ height: `${conversationsVirtualizer.getTotalSize()}px`, width: '100%', position: 'relative' }}>
                         {conversationsVirtualizer.getVirtualItems().map((virtualRow) => {
-                            const conversation = filteredConversations[virtualRow.index];
+                            const conversation = displayConversations[virtualRow.index];
                             const isActive = selectedConversation?.id === conversation.id;
                             const previewText = getConversationLastPreviewText(conversation.id, conversation.last_message_text)
                                 || ((conversation.message_count ?? 0) > 0
@@ -2182,6 +2432,9 @@ function MessagesComponent() {
                                                 </p>
                                                 <span className="text-xs text-gray-500 shrink-0">{formatTime(conversation.last_message_at)}</span>
                                             </div>
+                                            <p className="mt-0.5 text-[10px] uppercase tracking-wide text-purple-400/90 truncate">
+                                                {getConversationContextLabel(conversation)}
+                                            </p>
                                             <div className="mt-1 flex items-center gap-2">
                                                 <p className={`text-xs truncate ${conversation.unread_count > 0 ? 'text-gray-300' : 'text-gray-400'} ${previewText === deletedMessageLabel ? 'italic' : ''}`}>
                                                     {previewText}
@@ -2200,7 +2453,7 @@ function MessagesComponent() {
                     </div>
                 )}
 
-                {hasMoreConversations && filteredConversations.length > 0 && !searchQuery ? (
+                {hasMoreConversations && displayConversations.length > 0 && !searchQuery ? (
                     <div className="px-4 py-4 border-t border-[#262626]">
                         <button
                             type="button"
@@ -2254,14 +2507,26 @@ function MessagesComponent() {
                             </div>
                         </div>
 
-                        <button
-                            type="button"
-                            onClick={() => setIsMenuOpen((prev) => !prev)}
-                            aria-label={tx('common.more', undefined, 'More')}
-                            className="p-2 rounded-lg text-gray-400 cursor-pointer hover:text-white hover:bg-[#262626] transition-colors"
-                        >
-                            <MoreVertical className="w-4 h-4" />
-                        </button>
+                        <div className="flex items-center gap-2">
+                            {selectedConversation.contract_id ? (
+                                <button
+                                    type="button"
+                                    onClick={() => navigate(`/contracts/${selectedConversation.contract_id}`)}
+                                    className="hidden sm:inline-flex items-center rounded-lg border border-[#3a3a3a] px-2.5 py-1.5 text-xs font-medium text-purple-300 transition-colors hover:border-purple-500 hover:text-purple-200"
+                                >
+                                    {tx('pages.messages.openContract', undefined, 'Open Contract')}
+                                </button>
+                            ) : null}
+
+                            <button
+                                type="button"
+                                onClick={() => setIsMenuOpen((prev) => !prev)}
+                                aria-label={tx('common.more', undefined, 'More')}
+                                className="p-2 rounded-lg text-gray-400 cursor-pointer hover:text-white hover:bg-[#262626] transition-colors"
+                            >
+                                <MoreVertical className="w-4 h-4" />
+                            </button>
+                        </div>
 
                         {isMenuOpen ? (
                             <div ref={menuRef} className="absolute right-6 top-16 mt-2 w-48 bg-[#141414] border border-[#262626] rounded-xl shadow-2xl z-50 py-1 overflow-hidden">
@@ -2309,6 +2574,19 @@ function MessagesComponent() {
                             </div>
                         ) : null}
                     </div>
+
+                    {selectedConversationPolicy && selectedConversationPolicy.bannerTone !== 'none' && selectedConversationPolicy.bannerFallback ? (
+                        <div className={`mx-4 md:mx-6 mt-4 rounded-xl border px-3 py-2 text-xs flex items-start gap-2 ${getLifecycleBannerClassName(selectedConversationPolicy.bannerTone)}`}>
+                            <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
+                            <p>
+                                {tx(
+                                    'pages.messages.lifecycleBanner',
+                                    { message: selectedConversationPolicy.bannerFallback },
+                                    selectedConversationPolicy.bannerFallback,
+                                )}
+                            </p>
+                        </div>
+                    ) : null}
 
                     <div ref={messagesParentRef} className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 flex flex-col">
                         {isLoadingMessages ? (
@@ -2525,7 +2803,7 @@ function MessagesComponent() {
                                                             ) : null}
                                                         </p>
 
-                                                        {!isDeletedMessage(message) ? (
+                                                        {!isDeletedMessage(message) && canReplyInSelectedConversation ? (
                                                             <button
                                                                 type="button"
                                                                 onClick={() => {
@@ -2677,7 +2955,7 @@ function MessagesComponent() {
                             <button
                                 type="button"
                                 onClick={() => fileInputRef.current?.click()}
-                                disabled={isSending || !!selectedFile}
+                                disabled={isSending || !!selectedFile || !canAttachInSelectedConversation}
                                 aria-label={tx('pages.messages.a11y.attachFile', undefined, 'Attach file')}
                                 className="p-2.5 text-gray-500 hover:text-white hover:bg-[#262626] rounded-xl cursor-pointer transition-all disabled:opacity-50"
                             >
@@ -2686,8 +2964,28 @@ function MessagesComponent() {
 
                             <button
                                 type="button"
-                                onClick={isRecording ? stopRecording : startRecording}
-                                disabled={isSending}
+                                onClick={() => {
+                                    if (!canSendVoiceInSelectedConversation) {
+                                        const blockedMessage = selectedConversationPolicy?.blockedReasonFallback
+                                            || 'Voice notes are disabled for this conversation.';
+                                        showToast(
+                                            tx(
+                                                'pages.messages.readOnlyThread',
+                                                { message: blockedMessage },
+                                                blockedMessage,
+                                            ),
+                                            'warning'
+                                        );
+                                        return;
+                                    }
+
+                                    if (isRecording) {
+                                        stopRecording();
+                                    } else {
+                                        startRecording();
+                                    }
+                                }}
+                                disabled={isSending || !canSendVoiceInSelectedConversation}
                                 aria-label={isRecording
                                     ? tx('pages.messages.a11y.stopRecording', undefined, 'Stop recording')
                                     : tx('pages.messages.a11y.startRecording', undefined, 'Start recording')}
@@ -2722,8 +3020,18 @@ function MessagesComponent() {
                                     }
                                 }}
                                 onBlur={stopTyping}
-                                placeholder={tx('pages.messages.messagePlaceholder', undefined, 'Type a message...')}
-                                disabled={isSending || isRecording}
+                                placeholder={canSendInSelectedConversation
+                                    ? tx('pages.messages.messagePlaceholder', undefined, 'Type a message...')
+                                    : (() => {
+                                        const blockedMessage = selectedConversationPolicy?.blockedReasonFallback
+                                            || 'This conversation is read-only.';
+                                        return tx(
+                                            'pages.messages.readOnlyPlaceholder',
+                                            { message: blockedMessage },
+                                            blockedMessage,
+                                        );
+                                    })()}
+                                disabled={isSending || isRecording || !canSendInSelectedConversation}
                                 rows={1}
                                 className="flex-1 bg-transparent border-0 ring-0 focus:ring-0 focus:border-transparent text-white text-sm px-3 py-2.5 outline-none resize-none max-h-32 min-h-[44px] placeholder:text-gray-500 disabled:opacity-50"
                             />
@@ -2734,7 +3042,7 @@ function MessagesComponent() {
                                     stopTyping();
                                     void handleSendMessage();
                                 }}
-                                disabled={(!newMessage.trim() && !selectedFile && !audioBlob) || isSending || isRecording}
+                                disabled={(!newMessage.trim() && !selectedFile && !audioBlob) || isSending || isRecording || !canSendInSelectedConversation}
                                 aria-label={tx('pages.messages.send', undefined, 'Send message')}
                                 className="bg-purple-600 hover:bg-purple-500 text-white p-2.5 rounded-xl cursor-pointer transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                             >

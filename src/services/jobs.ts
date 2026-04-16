@@ -28,6 +28,7 @@ export interface CreateJobInput {
     experience_level: string;
     visibility: string;
     attachments?: string[];
+    reference_links?: string[];
     required_skills?: Skill[];
 }
 

@@ -36,6 +36,14 @@ export async function getUnreadCount(userId: string): Promise<number> {
 
 // --- WRITE ---
 
+// Client-side alias map — aligns with the DB's notification_type_enum.
+// Some call sites use shorthand aliases ('proposal', 'contract') that older
+// DB versions reject. Always normalize before the RPC call.
+const NOTIFICATION_TYPE_ALIASES: Record<string, string> = {
+    proposal: 'new_proposal',
+    contract: 'contract_update',
+};
+
 export async function insertNotification(data: {
     user_id: string;
     type: AppNotification['type'];
@@ -44,9 +52,10 @@ export async function insertNotification(data: {
     related_id?: string;
     link?: string;
 }) {
+    const normalizedType = NOTIFICATION_TYPE_ALIASES[data.type] ?? data.type;
     const { error } = await supabase.rpc('create_notification', {
         p_user_id: data.user_id,
-        p_type: data.type,
+        p_type: normalizedType,
         p_title: data.title,
         p_body: data.body,
         p_related_id: data.related_id,

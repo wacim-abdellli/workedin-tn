@@ -34,12 +34,39 @@ const OG_LOCALE: Record<Language, string> = {
 
 const DEFAULT_IMAGE = '/logos/logo-og.svg';
 const SITE_URL = import.meta.env.VITE_APP_URL || 'https://workedin.tn';
+const TITLE_SEPARATOR = ' | ';
 
 const resolveLocalizedText = (value: LocalizedText | undefined, language: Language): string => {
     if (!value) return '';
     if (typeof value === 'string') return value;
 
     return value[language] || value.en || value.fr || value.ar || '';
+};
+
+const escapeRegExp = (value: string): string => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+const buildSeoTitle = (rawTitle: string, siteName: string): string => {
+    const normalizedTitle = rawTitle.replace(/\s+/g, ' ').trim();
+    if (!normalizedTitle) return siteName;
+
+    const escapedSiteName = escapeRegExp(siteName);
+    const brandAffixPattern = new RegExp(
+        `^${escapedSiteName}\\s*[-|:–—]+\\s*|\\s*[-|:–—]+\\s*${escapedSiteName}$`,
+        'gi',
+    );
+
+    let pageTitle = normalizedTitle;
+    let previous = '';
+    while (pageTitle !== previous) {
+        previous = pageTitle;
+        pageTitle = pageTitle.replace(brandAffixPattern, '').trim();
+    }
+
+    if (!pageTitle || pageTitle.toLocaleLowerCase() === siteName.toLocaleLowerCase()) {
+        return siteName;
+    }
+
+    return `${pageTitle}${TITLE_SEPARATOR}${siteName}`;
 };
 
 export default function SEO({
@@ -62,10 +89,7 @@ export default function SEO({
     const resolvedKeywords = resolveLocalizedText(keywords, language);
     const resolvedLocale = locale || OG_LOCALE[language];
 
-    const fullTitle =
-        resolvedTitle && resolvedTitle !== siteName && resolvedTitle !== 'WorkedIn'
-            ? `WorkedIn - ${resolvedTitle}`
-            : siteName;
+    const fullTitle = buildSeoTitle(resolvedTitle, siteName);
 
     const fullImageUrl = image.startsWith('http') ? image : `${SITE_URL}${image}`;
     const resolvedUrl = url ? (url.startsWith('http') ? url : `${SITE_URL}${url}`) : undefined;

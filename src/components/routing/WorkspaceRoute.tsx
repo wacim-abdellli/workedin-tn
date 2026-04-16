@@ -1,8 +1,8 @@
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import type { ReactNode } from 'react';
 import { useWorkspaceStore, loadWorkspaceForUser } from '../../lib/workspaceState';
 import { useAuth } from '../../contexts/AuthContext';
-import { getWorkspaceDashboardPath, resolveActiveWorkspace } from '@/lib/workspaceRoutes';
+import { getWorkspaceDashboardPath, getWorkspaceJobsPath, resolveActiveWorkspace } from '@/lib/workspaceRoutes';
 import { FullScreenLoader } from '@/components/ui';
 import { useTranslation } from "../../i18n";
 
@@ -13,8 +13,20 @@ interface WorkspaceRouteProps {
 
 export function WorkspaceRoute({ workspace, children }: WorkspaceRouteProps) {
     const { tx } = useTranslation();
+  const location = useLocation();
   const { activeWorkspace } = useWorkspaceStore();
   const { isFullyReady, profile, freelancerProfile, user } = useAuth();
+
+  const isFreelancerMarketplacePath =
+    location.pathname === '/jobs' || location.pathname.startsWith('/jobs/');
+
+  const getMismatchRedirectPath = (targetWorkspace: 'freelancer' | 'client') => {
+    if (workspace === 'freelancer' && targetWorkspace === 'client' && isFreelancerMarketplacePath) {
+      return getWorkspaceJobsPath('client');
+    }
+
+    return getWorkspaceDashboardPath(targetWorkspace);
+  };
 
   // Show loader while auth is resolving — prevents black screen on direct URL load
   if (!isFullyReady) {
@@ -29,7 +41,7 @@ export function WorkspaceRoute({ workspace, children }: WorkspaceRouteProps) {
       );
     }
     // Saved workspace doesn't match — redirect immediately without waiting
-    return <Navigate to={getWorkspaceDashboardPath(savedWorkspace)} replace />;
+    return <Navigate to={getMismatchRedirectPath(savedWorkspace)} replace />;
   }
 
   const resolvedWorkspace = resolveActiveWorkspace(profile, freelancerProfile, activeWorkspace);
@@ -37,7 +49,7 @@ export function WorkspaceRoute({ workspace, children }: WorkspaceRouteProps) {
   if (resolvedWorkspace !== workspace) {
     return (
       <Navigate
-        to={getWorkspaceDashboardPath(resolvedWorkspace)}
+        to={getMismatchRedirectPath(resolvedWorkspace)}
         replace
       />
     );

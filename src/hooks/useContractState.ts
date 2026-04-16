@@ -147,25 +147,30 @@ export function useContractState({
                 const receiverId = getCounterpartyId(contract, userRole);
                 if (!receiverId) throw new Error('Unable to determine message recipient');
 
-                await updateStatus('completed', {
-                    delivery_note: note,
-                    completed_at: new Date().toISOString(),
-                });
+                const trimmedNote = note.trim();
+                const deliveryMessage = trimmedNote
+                    ? `[[delivery]] ${trimmedNote}`
+                    : '[[delivery]] Work delivered and ready for review';
 
                 const { error: messageError } = await sendContractMessage({
                     contract_id: contractId,
                     sender_id: userId,
                     receiver_id: receiverId,
-                    content: `Work has been delivered: ${note}`,
+                    content: deliveryMessage,
                     message_type: 'delivery',
                 });
 
                 if (messageError) throw messageError;
+
+                setContract((current) => current ? {
+                    ...current,
+                    delivery_note: trimmedNote || 'submitted',
+                } : current);
             } finally {
                 setIsDelivering(false);
             }
         },
-        [contract, contractId, userId, userRole, updateStatus]
+        [contract, contractId, userId, userRole]
     );
 
     const acceptWork = useCallback(

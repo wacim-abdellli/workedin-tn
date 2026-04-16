@@ -103,13 +103,13 @@ function FreelancerCard({ freelancer, viewMode = 'grid', isSaved = false, onTogg
   // GRID
   return (
     <div
-      className="group relative flex flex-col rounded-2xl border border-white/8 p-5 cursor-pointer transition-all duration-200 hover:border-white/16 hover:-translate-y-1"
-      style={{ background: 'linear-gradient(160deg,#141420 0%,#0f0f1a 100%)' }}
+      className="group relative flex flex-col rounded-2xl border border-white/8 p-5 cursor-pointer transition-all duration-200 hover:border-white/16 hover:-translate-y-0.5"
+      style={{ background: 'rgba(255,255,255,0.025)' }}
       onClick={() => navigate(`/freelancer/${freelancer.id}`)}
     >
       {/* Glow on hover */}
       <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
-        style={{ background: 'linear-gradient(135deg,rgba(139,92,246,0.05) 0%,transparent 60%)' }} />
+        style={{ background: 'linear-gradient(135deg,color-mix(in srgb,var(--workspace-primary,#8b5cf6) 8%,transparent) 0%,transparent 65%)' }} />
 
       {/* Save button */}
       {onToggleSave && (

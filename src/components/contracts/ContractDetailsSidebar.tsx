@@ -27,6 +27,7 @@ interface ContractDetailsSidebarProps {
     contract: ContractSidebarData | null;
     userRole: 'client' | 'freelancer';
     currentStatus: string;
+    deliverySubmitted?: boolean;
     isActionLoading?: boolean;
     onDeliver: () => void;
     onRequestChanges: () => void;
@@ -40,6 +41,7 @@ export default function ContractDetailsSidebar({
     contract,
     userRole,
     currentStatus,
+    deliverySubmitted = false,
     isActionLoading,
     onDeliver,
     onRequestChanges,
@@ -108,37 +110,49 @@ export default function ContractDetailsSidebar({
                 <div className="space-y-3">
                     {/* Freelancer: Deliver */}
                     {userRole === 'freelancer' && currentStatus === 'active' && (
-                        <Button
-                            variant="primary"
-                            className="w-full justify-center"
-                            onClick={onDeliver}
-                            isLoading={isActionLoading}
-                        >
-                            <CheckCircle className="w-4 h-4 ml-2" />
-                            {t.contract.deliverWork}
-                        </Button>
+                        deliverySubmitted ? (
+                            <div className="w-full rounded-xl border border-blue-200 bg-blue-50 px-3 py-2.5 text-center text-xs font-medium text-blue-700">
+                                {tx('contract.deliverySubmittedWaiting', undefined, 'Delivery submitted. Waiting for client review.')}
+                            </div>
+                        ) : (
+                            <Button
+                                variant="primary"
+                                className="w-full justify-center"
+                                onClick={onDeliver}
+                                isLoading={isActionLoading}
+                            >
+                                <CheckCircle className="w-4 h-4 ml-2" />
+                                {t.contract.deliverWork}
+                            </Button>
+                        )
                     )}
 
                     {/* Client: Accept or Request Changes */}
                     {userRole === 'client' && currentStatus === 'active' && (
-                        <div className="grid grid-cols-2 gap-2">
-                            <Button
-                                variant="primary"
-                                className="w-full justify-center"
-                                onClick={onAcceptAndPay}
-                                isLoading={isActionLoading}
-                            >
-                                <CheckCircle className="w-4 h-4 ml-2" />
-                                {t.contract.acceptAndPay}
-                            </Button>
-                            <Button
-                                variant="outline"
-                                className="w-full justify-center"
-                                onClick={onRequestChanges}
-                            >
-                                {t.contract.requestChanges}
-                            </Button>
-                        </div>
+                        deliverySubmitted ? (
+                            <div className="grid grid-cols-2 gap-2">
+                                <Button
+                                    variant="primary"
+                                    className="w-full justify-center"
+                                    onClick={onAcceptAndPay}
+                                    isLoading={isActionLoading}
+                                >
+                                    <CheckCircle className="w-4 h-4 ml-2" />
+                                    {t.contract.acceptAndPay}
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    className="w-full justify-center"
+                                    onClick={onRequestChanges}
+                                >
+                                    {t.contract.requestChanges}
+                                </Button>
+                            </div>
+                        ) : (
+                            <div className="w-full rounded-xl border border-[#262626] bg-card px-3 py-2.5 text-center text-xs text-muted">
+                                {tx('contract.waitingForDelivery', undefined, 'Waiting for freelancer delivery before review.')}
+                            </div>
+                        )
                     )}
 
                     {/* ReviewButton */}

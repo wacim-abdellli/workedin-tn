@@ -8,7 +8,7 @@ import { Header } from '@/components/layout';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from '@/i18n';
-import { supabase } from '@/lib/supabase';
+import { getStorageConfigErrorMessage, supabase, uploadFile } from '@/lib/supabase';
 import { useToast } from '@/components/ui/Toast';
 import SEO from '@/components/common/SEO';
 import Button from '@/components/ui/Button';
@@ -20,6 +20,12 @@ import StepBudget from '@/components/job-post/StepBudget';
 import StepVisibility from '@/components/job-post/StepVisibility';
 import StepReview from '@/components/job-post/StepReview';
 import { JOB_CATEGORIES } from '@/lib/jobCategories';
+import { PREDEFINED_SKILLS, type Skill } from '@/types';
+import {
+  isMissingJobReferenceLinksColumnError,
+  MAX_JOB_REFERENCE_LINKS,
+  sanitizeJobReferenceLinks,
+} from '@/lib/jobLinks';
 
 interface JobData {
   id: string;
@@ -34,7 +40,9 @@ interface JobData {
   hourly_rate: number | null;
   duration: string;
   experience_level: string;
-  required_skills: { name: string }[];
+  required_skills: unknown[];
+  attachments?: string[];
+  reference_links?: string[];
   visibility: string;
   deadline: string;
   status: string;
@@ -44,6 +52,153 @@ const optionalNumber = (message: string) => z.preprocess(
   (value) => (value === '' || value === null || value === undefined ? undefined : Number(value)),
   z.number().min(1, message).optional()
 );
+
+type DurationValue = 'less_than_1_month' | '1_3_months' | '3_6_months' | 'more_than_6_months';
+
+const DURATION_ALIASES: Record<string, DurationValue> = {
+  less_than_1_month: 'less_than_1_month',
+  less_than_one_month: 'less_than_1_month',
+  '1_3_months': '1_3_months',
+  one_to_three_months: '1_3_months',
+  '3_6_months': '3_6_months',
+  three_to_six_months: '3_6_months',
+  more_than_6_months: 'more_than_6_months',
+  more_than_six_months: 'more_than_6_months',
+};
+
+const skillLookup = (() => {
+  const lookup = new Map<string, Skill>();
+  for (const skill of PREDEFINED_SKILLS) {
+    lookup.set(skill.id.trim().toLowerCase(), skill);
+    lookup.set(skill.name_en.trim().toLowerCase(), skill);
+    lookup.set(skill.name_fr.trim().toLowerCase(), skill);
+    lookup.set(skill.name_ar.trim().toLowerCase(), skill);
+  }
+  return lookup;
+})();
+
+function normalizeDateForInput(rawValue: unknown): string {
+  if (typeof rawValue !== 'string') return '';
+
+  const trimmed = rawValue.trim();
+  if (!trimmed) return '';
+
+  const exactDate = trimmed.match(/^(\d{4}-\d{2}-\d{2})/);
+  if (exactDate?.[1]) {
+    return exactDate[1];
+  }
+
+  const parsed = new Date(trimmed);
+  if (!Number.isNaN(parsed.getTime())) {
+    return parsed.toISOString().slice(0, 10);
+  }
+
+  return '';
+}
+
+function normalizeDuration(rawValue: unknown): DurationValue | '' {
+  if (typeof rawValue !== 'string') return '';
+  const normalized = rawValue.trim().toLowerCase();
+  return DURATION_ALIASES[normalized] || '';
+}
+
+function normalizeVisibility(rawValue: unknown): 'public' | 'invite_only' {
+  if (typeof rawValue !== 'string') return 'public';
+  const normalized = rawValue.trim().toLowerCase();
+  if (normalized === 'invite_only' || normalized === 'private') return 'invite_only';
+  return 'public';
+}
+
+function buildFallbackSkill(label: string, index: number): Skill {
+  const trimmed = label.trim();
+  const slug = trimmed
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+  const fallbackId = slug ? `legacy-${slug}` : `legacy-skill-${index}`;
+
+  return {
+    id: fallbackId,
+    name_en: trimmed,
+    name_fr: trimmed,
+    name_ar: trimmed,
+  };
+}
+
+function normalizeRequiredSkills(rawSkills: unknown): Skill[] {
+  if (!Array.isArray(rawSkills)) return [];
+
+  const normalizedSkills: Skill[] = [];
+  const seenIds = new Set<string>();
+
+  rawSkills.forEach((rawSkill, index) => {
+    let candidate: Skill | null = null;
+    let fallbackLabel = '';
+
+    if (typeof rawSkill === 'string') {
+      const key = rawSkill.trim().toLowerCase();
+      candidate = skillLookup.get(key) || null;
+      fallbackLabel = rawSkill;
+    } else if (rawSkill && typeof rawSkill === 'object') {
+      const maybeSkill = rawSkill as Partial<Skill> & { name?: unknown };
+
+      const potentialKeys = [
+        typeof maybeSkill.id === 'string' ? maybeSkill.id : '',
+        typeof maybeSkill.name === 'string' ? maybeSkill.name : '',
+        typeof maybeSkill.name_en === 'string' ? maybeSkill.name_en : '',
+        typeof maybeSkill.name_fr === 'string' ? maybeSkill.name_fr : '',
+        typeof maybeSkill.name_ar === 'string' ? maybeSkill.name_ar : '',
+      ]
+        .map((value) => value.trim().toLowerCase())
+        .filter(Boolean);
+
+      for (const key of potentialKeys) {
+        const mapped = skillLookup.get(key);
+        if (mapped) {
+          candidate = mapped;
+          break;
+        }
+      }
+
+      if (!candidate && typeof maybeSkill.id === 'string' && maybeSkill.id.trim()) {
+        const resolvedName =
+          (typeof maybeSkill.name_en === 'string' && maybeSkill.name_en.trim())
+          || (typeof maybeSkill.name_fr === 'string' && maybeSkill.name_fr.trim())
+          || (typeof maybeSkill.name_ar === 'string' && maybeSkill.name_ar.trim())
+          || maybeSkill.id.trim();
+
+        candidate = {
+          id: maybeSkill.id.trim(),
+          name_en: resolvedName,
+          name_fr: typeof maybeSkill.name_fr === 'string' && maybeSkill.name_fr.trim() ? maybeSkill.name_fr.trim() : resolvedName,
+          name_ar: typeof maybeSkill.name_ar === 'string' && maybeSkill.name_ar.trim() ? maybeSkill.name_ar.trim() : resolvedName,
+        };
+      }
+
+      fallbackLabel =
+        (typeof maybeSkill.name_en === 'string' && maybeSkill.name_en)
+        || (typeof maybeSkill.name_fr === 'string' && maybeSkill.name_fr)
+        || (typeof maybeSkill.name_ar === 'string' && maybeSkill.name_ar)
+        || (typeof maybeSkill.name === 'string' && maybeSkill.name)
+        || (typeof maybeSkill.id === 'string' && maybeSkill.id)
+        || '';
+    }
+
+    if (!candidate && fallbackLabel.trim()) {
+      candidate = buildFallbackSkill(fallbackLabel, index + 1);
+    }
+
+    if (!candidate) return;
+
+    const dedupeId = candidate.id.trim().toLowerCase();
+    if (!dedupeId || seenIds.has(dedupeId)) return;
+
+    seenIds.add(dedupeId);
+    normalizedSkills.push(candidate);
+  });
+
+  return normalizedSkills;
+}
 
 export default function EditJob() {
   const { jobId } = useParams<{ jobId: string }>();
@@ -62,6 +217,27 @@ export default function EditJob() {
     subcategory: z.string().min(1, tx('jobs.new.validation.subcategoryRequired', undefined, 'Please select a subcategory')),
     description: z.string().trim().min(80, tx('jobs.new.validation.descriptionMin', undefined, 'Description must be at least 80 characters')).max(2000),
     required_skills: z.array(z.any()).min(1, tx('jobs.new.validation.skillsRequired', undefined, 'Please select at least one skill')).max(5),
+    existing_attachments: z.array(z.string().trim()).optional(),
+    reference_links: z
+      .array(z.string().trim())
+      .max(
+        MAX_JOB_REFERENCE_LINKS,
+        tx(
+          'jobs.new.validation.maxReferenceLinks',
+          { count: MAX_JOB_REFERENCE_LINKS },
+          `Maximum ${MAX_JOB_REFERENCE_LINKS} links`,
+        ),
+      )
+      .optional()
+      .refine(
+        (links) => {
+          if (!links) return true;
+          return sanitizeJobReferenceLinks(links, MAX_JOB_REFERENCE_LINKS).length === links.length;
+        },
+        {
+          message: tx('jobs.new.validation.referenceLinksInvalid', undefined, 'Please enter valid links only'),
+        },
+      ),
     attachments_files: z.array(z.instanceof(File)).max(5).optional(),
     job_type: z.enum(['fixed_price', 'hourly']),
     budget_min: optionalNumber(tx('jobs.new.validation.budgetMin', undefined, 'Minimum budget must be at least 1')),
@@ -106,6 +282,8 @@ export default function EditJob() {
       job_type: 'fixed_price',
       visibility: 'public',
       required_skills: [],
+      existing_attachments: [],
+      reference_links: [],
       experience_level: 'intermediate',
       subcategory: '',
     },
@@ -135,15 +313,19 @@ export default function EditJob() {
         category: job.category || '',
         subcategory: job.subcategory || '',
         description: job.description || '',
-        required_skills: job.required_skills || [],
+        required_skills: normalizeRequiredSkills(job.required_skills),
+        existing_attachments: Array.isArray(job.attachments)
+          ? job.attachments.filter((item): item is string => typeof item === 'string' && item.trim().length > 0)
+          : [],
+        reference_links: sanitizeJobReferenceLinks(job.reference_links || [], MAX_JOB_REFERENCE_LINKS),
         job_type: job.job_type || 'fixed_price',
         budget_min: job.budget_min ?? undefined,
         budget_max: job.budget_max ?? undefined,
         hourly_rate: job.hourly_rate ?? undefined,
-        duration: job.duration || '',
+        duration: normalizeDuration(job.duration),
         experience_level: (job.experience_level as 'beginner' | 'intermediate' | 'expert') || 'intermediate',
-        deadline: job.deadline || '',
-        visibility: (job.visibility as 'public' | 'invite_only') || 'public',
+        deadline: normalizeDateForInput(job.deadline),
+        visibility: normalizeVisibility(job.visibility),
         attachments_files: [],
       });
     }
@@ -188,7 +370,7 @@ export default function EditJob() {
   const handleNext = async () => {
     let fieldsToValidate: Array<keyof EditJobFormData> = [];
     if (currentStep === 1) {
-      fieldsToValidate = ['title', 'category', 'subcategory', 'description', 'required_skills'];
+      fieldsToValidate = ['title', 'category', 'subcategory', 'description', 'required_skills', 'reference_links'];
     } else if (currentStep === 2) {
       fieldsToValidate = ['job_type', 'budget_min', 'budget_max', 'hourly_rate', 'duration', 'experience_level', 'deadline'];
     } else if (currentStep === 3) {
@@ -221,27 +403,97 @@ export default function EditJob() {
     };
 
     try {
-      const { error } = await supabase
-        .from('jobs')
-        .update({
-          title: data.title,
-          description: data.description,
-          category: data.category,
-          subcategory: data.subcategory,
-          job_type: data.job_type,
-          budget_min: toNumberOrNull(data.budget_min),
-          budget_max: toNumberOrNull(data.budget_max),
-          hourly_rate: toNumberOrNull(data.hourly_rate),
-          duration: data.duration,
-          experience_level: data.experience_level,
-          deadline: data.deadline,
-          visibility: data.visibility,
-          required_skills: data.required_skills || [],
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', jobId);
+      const existingAttachments = Array.isArray(data.existing_attachments)
+        ? data.existing_attachments.filter((item): item is string => typeof item === 'string' && item.trim().length > 0)
+        : [];
 
-      if (error) throw error;
+      const uploadedUrls: string[] = [];
+
+      if (data.attachments_files && data.attachments_files.length > 0) {
+        let hasStorageConfigError = false;
+        const failedFiles: string[] = [];
+
+        for (const [index, file] of data.attachments_files.entries()) {
+          const fileExtRaw = file.name.split('.').pop() || 'bin';
+          const fileExt = fileExtRaw.toLowerCase().replace(/[^a-z0-9]/g, '') || 'bin';
+          const fileName = `attach-${index + 1}-${Date.now()}-${Math.floor(Math.random() * 1_000_000)}.${fileExt}`;
+          const filePath = `${user.id}/${fileName}`;
+
+          try {
+            uploadedUrls.push(await uploadFile('attachments', filePath, file));
+          } catch (uploadError) {
+            failedFiles.push(file.name);
+            if (uploadError instanceof Error && uploadError.message.toLowerCase().includes('bucket')) {
+              hasStorageConfigError = true;
+            }
+          }
+        }
+
+        if (failedFiles.length > 0 && uploadedUrls.length === 0) {
+          const allFailedMessage = hasStorageConfigError
+            ? getStorageConfigErrorMessage('attachments')
+            : tx(
+                'jobs.new.errors.attachmentsUploadFailed',
+                undefined,
+                'Attachments upload failed. Please retry with smaller or different files.'
+              );
+          throw new Error(allFailedMessage);
+        }
+
+        if (failedFiles.length > 0) {
+          const previewNames = failedFiles.slice(0, 2).join(', ');
+          const moreCount = Math.max(0, failedFiles.length - 2);
+          const partialWarning = hasStorageConfigError
+            ? getStorageConfigErrorMessage('attachments')
+            : tx(
+                'jobs.new.errors.attachmentsPartial',
+                { file: `${previewNames}${moreCount > 0 ? ` +${moreCount}` : ''}` },
+                `Some attachments could not be uploaded (${previewNames}${moreCount > 0 ? ` +${moreCount}` : ''}).`
+              );
+          showToast(partialWarning, 'warning');
+        }
+      }
+
+      const attachments = Array.from(new Set([...existingAttachments, ...uploadedUrls]));
+
+      const updatePayload = {
+        title: data.title,
+        description: data.description,
+        category: data.category,
+        subcategory: data.subcategory,
+        job_type: data.job_type,
+        budget_min: toNumberOrNull(data.budget_min),
+        budget_max: toNumberOrNull(data.budget_max),
+        hourly_rate: toNumberOrNull(data.hourly_rate),
+        duration: data.duration,
+        experience_level: data.experience_level,
+        deadline: data.deadline,
+        visibility: data.visibility,
+        attachments,
+        reference_links: sanitizeJobReferenceLinks(data.reference_links || [], MAX_JOB_REFERENCE_LINKS),
+        required_skills: data.required_skills || [],
+        updated_at: new Date().toISOString(),
+      };
+
+      let updateResult = await supabase.from('jobs').update(updatePayload).eq('id', jobId);
+
+      if (updateResult.error && isMissingJobReferenceLinksColumnError(updateResult.error)) {
+        const { reference_links, ...legacyPayload } = updatePayload;
+        updateResult = await supabase.from('jobs').update(legacyPayload).eq('id', jobId);
+
+        if (!updateResult.error && (data.reference_links?.length || 0) > 0) {
+          showToast(
+            tx(
+              'jobs.new.warnings.linksTemporarilyUnavailable',
+              undefined,
+              'Links were saved in the form but could not be persisted yet. Please run latest migrations.',
+            ),
+            'warning',
+          );
+        }
+      }
+
+      if (updateResult.error) throw updateResult.error;
 
       queryClient.invalidateQueries({ queryKey: ['job-edit', jobId] });
       queryClient.invalidateQueries({ queryKey: ['job', jobId] });
@@ -250,7 +502,14 @@ export default function EditJob() {
       navigate(`/jobs/${jobId}`, { replace: true });
     } catch (err) {
       console.error('Update error:', err);
-      showToast(tx('editJob.error', undefined, 'Failed to update job'), 'error');
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : typeof err === 'object' && err !== null && 'message' in err && typeof (err as { message?: unknown }).message === 'string'
+            ? (err as { message: string }).message
+            : tx('editJob.error', undefined, 'Failed to update job');
+
+      showToast(errorMessage || tx('editJob.error', undefined, 'Failed to update job'), 'error');
     } finally {
       setIsSubmitting(false);
     }
@@ -309,7 +568,7 @@ export default function EditJob() {
           <FormProvider {...methods}>
             <form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-8">
               {currentStep === 1 && <StepJobBasics />}
-              {currentStep === 2 && <StepBudget />}
+              {currentStep === 2 && <StepBudget allowPastDeadline />}
               {currentStep === 3 && <StepVisibility />}
               {currentStep === 4 && <StepReview />}
 

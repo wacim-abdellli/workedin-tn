@@ -166,18 +166,40 @@ export function getWorkspaceSettingsPath(): string {
 }
 
 export function isClientWorkspaceReady(profile: ProfileLike): boolean {
-  // Strict separation: client workspace readiness is controlled only by
-  // the client-specific onboarding flag.
-  return profile?.client_onboarding_completed === true;
+  if (!profile) {
+    return false;
+  }
+
+  if (profile.client_onboarding_completed === true) {
+    return true;
+  }
+
+  // Legacy fallback: older schemas only persisted onboarding_completed.
+  if (typeof profile.client_onboarding_completed !== 'boolean') {
+    return profile.onboarding_completed === true;
+  }
+
+  return false;
 }
 
 export function isFreelancerWorkspaceReady(
   profile: ProfileLike,
   freelancerProfile?: FreelancerProfile | null
 ): boolean {
-  // Strict separation: freelancer workspace readiness is controlled only by
-  // the freelancer-specific onboarding flag.
-  return profile?.freelancer_onboarding_completed === true;
+  if (!profile) {
+    return false;
+  }
+
+  if (profile.freelancer_onboarding_completed === true) {
+    return true;
+  }
+
+  // Legacy fallback: older schemas only persisted onboarding_completed.
+  if (typeof profile.freelancer_onboarding_completed !== 'boolean') {
+    return profile.onboarding_completed === true;
+  }
+
+  return false;
 }
 
 export function isWorkspaceReady(

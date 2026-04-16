@@ -1,35 +1,37 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
     ArrowLeft,
     CheckCircle,
     MessageSquare,
     Info,
-    FileText
+    FileText,
+    AlertCircle,
 } from 'lucide-react';
-import { useTranslation } from '../i18n';
-import { useAuth } from '../contexts/AuthContext';
-import { useToast } from '../components/ui/Toast';
-import Modal from '../components/ui/Modal';
-import Button from '../components/ui/Button';
-import { ReviewForm } from '../components/ui/Reviews';
-import PaymentModal from '../components/ui/PaymentModal';
-import { Header } from '../components/layout';
-import { useRealtimeChat } from '../hooks/useRealtimeChat';
-import { useFileUpload } from '../hooks/useFileUpload';
-import { useContractState } from '../hooks/useContractState';
-import { supabase } from '../lib/supabase';
-import { getContractById } from '../services/contracts';
-import { submitReview as submitReviewRequest } from '../services/reviews';
+import { useTranslation } from '@/i18n';
+import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/components/ui/Toast';
+import Modal from '@/components/ui/Modal';
+import Button from '@/components/ui/Button';
+import { ReviewForm } from '@/components/ui/Reviews';
+import PaymentModal from '@/components/ui/PaymentModal';
+import { Header } from '@/components/layout';
+import { useRealtimeChat } from '@/hooks/useRealtimeChat';
+import { useFileUpload } from '@/hooks/useFileUpload';
+import { useContractState } from '@/hooks/useContractState';
+import { supabase } from '@/lib/supabase';
+import { getContractById } from '@/services/contracts';
+import { submitReview as submitReviewRequest } from '@/services/reviews';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import SEO from '../components/common/SEO';
-import { sendDisputeOpenedEmail } from '../lib/email';
-import { Skeleton } from '../components/common/SkeletonCard';
-import ErrorBoundary from '../components/ErrorBoundary';
+import SEO from '@/components/common/SEO';
+import { sendDisputeOpenedEmail } from '@/lib/email';
+import { Skeleton } from '@/components/common/SkeletonCard';
+import ErrorBoundary from '@/components/ErrorBoundary';
+import { resolveMessagingLifecyclePolicy } from '@/lib/messagingLifecycle';
 
 // Components
-import ChatSection from '../components/contracts/ChatSection';
-import ContractDetailsSidebar from '../components/contracts/ContractDetailsSidebar';
+import ChatSection from '@/components/contracts/ChatSection';
+import ContractDetailsSidebar from '@/components/contracts/ContractDetailsSidebar';
 
 function ContractWorkspaceComponent() {
     const { contractId } = useParams<{ contractId: string }>();
@@ -51,7 +53,13 @@ function ContractWorkspaceComponent() {
     const [disputeReason, setDisputeReason] = useState('');
 
     // Load initial contract data
-    const { data: contractData, isLoading: isInitialLoading } = useQuery({
+    const {
+        data: contractData,
+        isLoading: isInitialLoading,
+        isError: isContractError,
+        error: contractError,
+        refetch: refetchContract,
+    } = useQuery({
         queryKey: ['contract', contractId],
         queryFn: async () => {
             if (!contractId) throw new Error('No contract id');
@@ -78,6 +86,8 @@ function ContractWorkspaceComponent() {
             };
         },
         enabled: !!contractId,
+        retry: 5,
+        retryDelay: (attemptIndex) => Math.min(500 * 2 ** attemptIndex, 4000),
     });
 
     // Determine user role
@@ -151,6 +161,16 @@ function ContractWorkspaceComponent() {
 
     const handleSendMessage = async (content: string) => {
         if (!contractData || !user) return;
+
+        if (!lifecyclePolicy.canSend) {
+            const blockedMessage = lifecyclePolicy.blockedReasonFallback || 'This conversation is read-only right now.';
+            showToast(
+                tx('pages.messages.readOnlyThread', { message: blockedMessage }, blockedMessage),
+                'warning'
+            );
+            return;
+        }
+
         const receiverId = userRole === 'client' ? contractData.freelancer.id : contractData.client.id;
 
         try {
@@ -163,6 +183,16 @@ function ContractWorkspaceComponent() {
 
     const handleFileUpload = async (file: File) => {
         if (!contractData || !user) return;
+
+        if (!lifecyclePolicy.canSend || !lifecyclePolicy.canAttachFiles) {
+            const blockedMessage = lifecyclePolicy.blockedReasonFallback || 'Attachments are disabled for this conversation.';
+            showToast(
+                tx('pages.messages.readOnlyThread', { message: blockedMessage }, blockedMessage),
+                'warning'
+            );
+            return;
+        }
+
         const receiverId = userRole === 'client' ? contractData.freelancer.id : contractData.client.id;
 
         try {
@@ -170,7 +200,7 @@ function ContractWorkspaceComponent() {
             await sendMessage(`📎 ${file.name}`, receiverId, [
                 { name: file.name, url: uploaded.url, type: file.type, size: (file.size / 1024).toFixed(1) + 'KB' }
             ]);
-            showToast(`${tx('contract.fileUploaded', undefined, 'تم رفع:')} ${file.name}`, 'success');
+            showToast(`${tx('contract.fileUploaded', undefined, 'File uploaded:')} ${file.name}`, 'success');
         } catch (error) {
             showToast(error instanceof Error ? error.message : t.contract.fileUploadError, 'error');
         }
@@ -294,6 +324,27 @@ function ContractWorkspaceComponent() {
     };
 
     const currentStatus = contractState?.status || contractData?.status || 'active';
+    const lifecyclePolicy = useMemo(() => {
+        return resolveMessagingLifecyclePolicy({
+            kind: 'contract',
+            contractStatus: currentStatus,
+        });
+    }, [currentStatus]);
+
+    const deliverySubmitted = useMemo(() => {
+        if (currentStatus === 'completed') return true;
+        if (contractState?.delivery_note) return true;
+
+        const freelancerId = contractData?.freelancer?.id;
+        if (!freelancerId) return false;
+
+        return messages.some((message) => {
+            if (message.sender_id !== freelancerId) return false;
+            const normalized = String(message.content || '').trim().toLowerCase();
+            return normalized.startsWith('[[delivery]]')
+                || normalized.startsWith('work has been delivered:');
+        });
+    }, [contractData?.freelancer?.id, contractState?.delivery_note, currentStatus, messages]);
 
     if (isInitialLoading) {
         return (
@@ -329,7 +380,63 @@ function ContractWorkspaceComponent() {
         );
     }
 
-    if (!contractData) return null;
+    if (isContractError) {
+        const message =
+            contractError instanceof Error
+                ? contractError.message
+                : tx('contract.loadFailedMessage', undefined, 'Unable to load this contract right now.');
+
+        return (
+            <div className="flex min-h-screen flex-col bg-card">
+                <Header />
+                <div className="flex flex-1 items-center justify-center px-4">
+                    <div className="w-full max-w-xl rounded-2xl border border-red-500/20 bg-card p-6 text-center shadow-lg">
+                        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-500/10 text-red-400">
+                            <AlertCircle className="h-6 w-6" />
+                        </div>
+                        <h2 className="mb-2 text-xl font-bold text-foreground dark:text-white">
+                            {tx('contract.loadFailedTitle', undefined, 'Contract unavailable')}
+                        </h2>
+                        <p className="mb-5 text-sm text-muted">{message}</p>
+                        <div className="flex flex-wrap items-center justify-center gap-3">
+                            <Button variant="outline" onClick={() => refetchContract()}>
+                                {tx('common.tryAgain', undefined, 'Try again')}
+                            </Button>
+                            <Button variant="primary" onClick={() => navigate('/contracts')}>
+                                {tx('contract.backToContracts', undefined, 'Back to contracts')}
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    if (!contractData) {
+        return (
+            <div className="flex min-h-screen flex-col bg-card">
+                <Header />
+                <div className="flex flex-1 items-center justify-center px-4">
+                    <div className="w-full max-w-lg rounded-2xl border border-border bg-card p-6 text-center shadow-lg">
+                        <h2 className="mb-2 text-xl font-bold text-foreground dark:text-white">
+                            {tx('contract.notFoundTitle', undefined, 'Contract not found')}
+                        </h2>
+                        <p className="mb-5 text-sm text-muted">
+                            {tx('contract.notFoundDescription', undefined, 'This contract may still be syncing. You can retry or return to your contracts list.')}
+                        </p>
+                        <div className="flex flex-wrap items-center justify-center gap-3">
+                            <Button variant="outline" onClick={() => refetchContract()}>
+                                {tx('common.tryAgain', undefined, 'Try again')}
+                            </Button>
+                            <Button variant="primary" onClick={() => navigate('/contracts')}>
+                                {tx('contract.backToContracts', undefined, 'Back to contracts')}
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="flex flex-col h-screen bg-card">
@@ -366,13 +473,13 @@ function ContractWorkspaceComponent() {
                 </div>
                 <div className="hidden md:flex items-center gap-2">
                     <Button variant="outline" size="sm" onClick={() => window.location.href = `/jobs/${contractData.job.id}`}>
-                        {t.common.viewJob || 'View Job'}
+                        {tx('common.viewJob', undefined, 'View Job')}
                     </Button>
                 </div>
             </div>
 
             {/* Mobile Tabs */}
-            <div className="md:hidden shrink-0 border-b border-border bg-card z-10 overflow-x-auto" role="tablist" aria-label={tx('contract.tabs.ariaLabel', undefined, 'تبويبات مساحة العمل')}>
+            <div className="md:hidden shrink-0 border-b border-border bg-card z-10 overflow-x-auto" role="tablist" aria-label={tx('contract.tabs.ariaLabel', undefined, 'Workspace tabs')}>
                 <div className="flex min-w-max">
                     <button
                         type="button"
@@ -381,10 +488,10 @@ function ContractWorkspaceComponent() {
                         id="workspace-tab-chat"
                         aria-selected={activeMobileTab === 'chat'}
                         aria-controls="workspace-panel-chat"
-                        aria-label={tx('contract.tabs.chatAria', undefined, 'إظهار المحادثة')}
+                        aria-label={tx('contract.tabs.chatAria', undefined, 'Show chat')}
                         className={`flex min-h-[48px] min-w-[118px] shrink-0 items-center justify-center gap-2 whitespace-nowrap border-b-2 px-4 py-3 text-sm font-medium transition-colors ${activeMobileTab === 'chat' ? 'border-primary-600 text-primary-600' : 'border-transparent text-muted'}`}
                     >
-                        <MessageSquare className="w-4 h-4" />{tx('contract.tabs.chat', undefined, 'المراسلة')}</button>
+                        <MessageSquare className="w-4 h-4" />{tx('contract.tabs.chat', undefined, 'Chat')}</button>
                     <button
                         type="button"
                         onClick={() => setActiveMobileTab('details')}
@@ -392,10 +499,10 @@ function ContractWorkspaceComponent() {
                         id="workspace-tab-details"
                         aria-selected={activeMobileTab === 'details'}
                         aria-controls="workspace-panel-details"
-                        aria-label={tx('contract.tabs.detailsAria', undefined, 'إظهار التفاصيل')}
+                        aria-label={tx('contract.tabs.detailsAria', undefined, 'Show details')}
                         className={`flex min-h-[48px] min-w-[118px] shrink-0 items-center justify-center gap-2 whitespace-nowrap border-b-2 px-4 py-3 text-sm font-medium transition-colors ${activeMobileTab === 'details' ? 'border-primary-600 text-primary-600' : 'border-transparent text-muted'}`}
                     >
-                        <Info className="w-4 h-4" />{tx('contract.tabs.details', undefined, 'التفاصيل')}</button>
+                        <Info className="w-4 h-4" />{tx('contract.tabs.details', undefined, 'Details')}</button>
                     <button
                         type="button"
                         onClick={() => setActiveMobileTab('files')}
@@ -403,10 +510,10 @@ function ContractWorkspaceComponent() {
                         id="workspace-tab-files"
                         aria-selected={activeMobileTab === 'files'}
                         aria-controls="workspace-panel-files"
-                        aria-label={tx('contract.tabs.filesAria', undefined, 'إظهار الملفات')}
+                        aria-label={tx('contract.tabs.filesAria', undefined, 'Show files')}
                         className={`flex min-h-[48px] min-w-[118px] shrink-0 items-center justify-center gap-2 whitespace-nowrap border-b-2 px-4 py-3 text-sm font-medium transition-colors ${activeMobileTab === 'files' ? 'border-primary-600 text-primary-600' : 'border-transparent text-muted'}`}
                     >
-                        <FileText className="w-4 h-4" />{tx('contract.tabs.files', undefined, 'الملفات')}</button>
+                        <FileText className="w-4 h-4" />{tx('contract.tabs.files', undefined, 'Files')}</button>
                 </div>
             </div>
 
@@ -433,6 +540,9 @@ function ContractWorkspaceComponent() {
                         otherUserTyping={otherUserTyping}
                         onTyping={() => setTyping(true)}
                         isLoadingHistory={messagesLoading}
+                        isComposerDisabled={!lifecyclePolicy.canSend}
+                        disabledReason={lifecyclePolicy.blockedReasonFallback}
+                        canAttachFiles={lifecyclePolicy.canAttachFiles}
                     />
                 </div>
 
@@ -449,6 +559,7 @@ function ContractWorkspaceComponent() {
                         contract={contractData}
                         userRole={userRole}
                         currentStatus={currentStatus}
+                        deliverySubmitted={deliverySubmitted}
                         isActionLoading={isDelivering || isAccepting}
                         onDeliver={() => setIsDeliverModalOpen(true)}
                         onRequestChanges={handleRequestChanges}
@@ -470,7 +581,7 @@ function ContractWorkspaceComponent() {
                 >
                     <div className="p-8 text-center text-muted">
                         <FileText className="w-12 h-12 mx-auto mb-3 opacity-20" />
-                        <p>{tx('contract.filesListEmpty', undefined, 'قائمة الملفات (راجع تبويب المراسلة للمرفقات)')}</p>
+                        <p>{tx('contract.filesListEmpty', undefined, 'Files list (check chat for attachments)')}</p>
                     </div>
                 </div>
 
@@ -483,23 +594,23 @@ function ContractWorkspaceComponent() {
                 title={t.contract.deliverWork}
             >
                 <div className="space-y-4">
-                    <p className="text-muted">{tx('contract.deliverNoteLabel', undefined, 'أضف ملاحظة للعميل حول التسليم')}</p>
+                    <p className="text-muted">{tx('contract.deliverNoteLabel', undefined, 'Add a note for the client')}</p>
                     <textarea
                         value={deliveryNote}
                         onChange={(e) => setDeliveryNote(e.target.value)}
-                        placeholder={tx('contract.deliverNotePlaceholder', undefined, 'ملاحظات التسليم (اختياري)...')}
+                        placeholder={tx('contract.deliverNotePlaceholder', undefined, 'Delivery notes (optional)...')}
                         rows={4}
                         className="input resize-none w-full"
-                        aria-label={tx('contract.deliverNoteAria', undefined, 'ملاحظات التسليم')}
+                        aria-label={tx('contract.deliverNoteAria', undefined, 'Delivery notes')}
                     />
                     <div className="flex gap-3 justify-end">
-                        <Button variant="outline" onClick={() => setIsDeliverModalOpen(false)}>{t.common?.cancel || 'إلغاء'}</Button>
+                        <Button variant="outline" onClick={() => setIsDeliverModalOpen(false)}>{t.common?.cancel || 'Cancel'}</Button>
                         <Button
                             variant="primary"
                             onClick={handleDeliverWork}
                             isLoading={isDelivering}
                         >
-                            {tx('contract.confirmDelivery', undefined, 'تأكيد التسليم')}
+                            {tx('contract.confirmDelivery', undefined, 'Confirm Delivery')}
                         </Button>
                     </div>
                 </div>
@@ -526,27 +637,27 @@ function ContractWorkspaceComponent() {
                 <div className="space-y-4">
                     <div className="p-4 bg-yellow-50 rounded-xl">
                         <p className="text-yellow-800">
-                            {tx('contract.disputeWarning', undefined, 'فتح نزاع سيعلق العمل حتى يتم حل المشكلة. سيقوم فريقنا بمراجعة الحالة خلال 48 ساعة.')}
+                            {tx('contract.disputeWarning', undefined, 'Opening a dispute will suspend the contract. Our team will review your case within 48 hours.')}
                         </p>
                     </div>
                     <textarea
                         value={disputeReason}
                         onChange={(e) => setDisputeReason(e.target.value)}
-                        placeholder={tx('contract.disputeReasonPlaceholder', undefined, 'اشرح سبب النزاع...')}
+                        placeholder={tx('contract.disputeReasonPlaceholder', undefined, 'Explain reason for dispute...')}
                         rows={4}
                         className="input resize-none w-full"
                         required
-                        aria-label={tx('contract.disputeReasonAria', undefined, 'سبب النزاع')}
+                        aria-label={tx('contract.disputeReasonAria', undefined, 'Dispute reason')}
                     />
                     <div className="flex gap-3 justify-end">
-                        <Button variant="outline" onClick={() => setIsDisputeModalOpen(false)}>{t.common?.cancel || 'إلغاء'}</Button>
+                        <Button variant="outline" onClick={() => setIsDisputeModalOpen(false)}>{t.common?.cancel || 'Cancel'}</Button>
                         <Button
                             variant="secondary"
                             onClick={handleOpenDispute}
                             isLoading={isDisputing}
                             disabled={!disputeReason.trim()}
                         >
-                            {tx('contract.openDisputeAction', undefined, 'فتح نزاع')}
+                            {tx('contract.openDisputeAction', undefined, 'Open Dispute')}
                         </Button>
                     </div>
                 </div>
@@ -557,7 +668,7 @@ function ContractWorkspaceComponent() {
                 <Modal
                     isOpen={isReviewModalOpen}
                     onClose={() => setIsReviewModalOpen(false)}
-                    title={tx('contract.reviewExperience', undefined, 'تقييم التجربة')}
+                    title={tx('contract.reviewExperience', undefined, 'Review Experience')}
                 >
                     <ReviewForm
                         jobTitle={contractData.job.title}

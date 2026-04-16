@@ -119,6 +119,39 @@ describe('workspace routing guards', () => {
         expect(screen.getByTestId('location')).toHaveTextContent('/freelancer/dashboard');
     });
 
+    it('WorkspaceRoute sends client-mode access on freelancer jobs route to /jobs/new', () => {
+        authState.profile = {
+            id: 'user-2b',
+            user_type: 'both',
+            active_mode: 'client',
+            client_onboarding_completed: true,
+            freelancer_onboarding_completed: true,
+        };
+        authState.freelancerProfile = { id: 'user-2b', title: 'Designer', skills: ['figma'] };
+        workspaceState.activeWorkspace = 'client';
+
+        render(
+            <I18nProvider>
+                <MemoryRouter initialEntries={['/jobs']}>
+                    <Routes>
+                        <Route
+                            path="/jobs"
+                            element={
+                                <WorkspaceRoute workspace="freelancer">
+                                    <div>Freelancer marketplace route</div>
+                                </WorkspaceRoute>
+                            }
+                        />
+                        <Route path="/jobs/new" element={<LocationProbe />} />
+                        <Route path="*" element={<LocationProbe />} />
+                    </Routes>
+                </MemoryRouter>
+            </I18nProvider>
+        );
+
+        expect(screen.getByTestId('location')).toHaveTextContent('/jobs/new');
+    });
+
     it('ProtectedRoute does not treat freelancer completion as client completion', () => {
         authState.profile = {
             id: 'user-3',

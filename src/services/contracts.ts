@@ -3,10 +3,37 @@
  */
 import { supabase } from '@/lib/supabase';
 
+function getErrorText(error: unknown): string {
+    if (!error || typeof error !== 'object') return '';
+
+    const candidate = error as {
+        message?: unknown;
+        details?: unknown;
+        hint?: unknown;
+    };
+
+    return [candidate.message, candidate.details, candidate.hint]
+        .filter((value): value is string => typeof value === 'string')
+        .join(' ')
+        .toLowerCase();
+}
+
+function canRetryWithManualHydration(error: unknown): boolean {
+    const text = getErrorText(error);
+    if (!text) return false;
+
+    return (
+        text.includes('relationship')
+        || text.includes('schema cache')
+        || text.includes('column')
+        || text.includes('does not exist')
+    );
+}
+
 // --- READ ---
 
 export async function getContractById(contractId: string) {
-    return supabase
+    const directResult = await supabase
         .from('contracts')
         .select(`
             id, status, title, amount, total_amount, created_at, client_id, freelancer_id, job_id,
@@ -17,6 +44,69 @@ export async function getContractById(contractId: string) {
         `)
         .eq('id', contractId)
         .single();
+
+    if (!directResult.error || !canRetryWithManualHydration(directResult.error)) {
+        return directResult;
+    }
+
+    const { data: baseContract, error: baseError } = await supabase
+        .from('contracts')
+        .select('*')
+        .eq('id', contractId)
+        .single();
+
+    if (baseError || !baseContract) {
+        return { data: null, error: baseError || directResult.error };
+    }
+
+    const [jobResult, clientResult, freelancerResult, milestonesResult] = await Promise.all([
+        supabase
+            .from('jobs')
+            .select('id, title, category')
+            .eq('id', baseContract.job_id)
+            .maybeSingle(),
+        supabase
+            .from('public_profiles')
+            .select('id, full_name, avatar_url')
+            .eq('id', baseContract.client_id)
+            .maybeSingle(),
+        supabase
+            .from('public_profiles')
+            .select('id, full_name, avatar_url')
+            .eq('id', baseContract.freelancer_id)
+            .maybeSingle(),
+        supabase
+            .from('milestones')
+            .select('id, description, amount, status, due_date')
+            .eq('contract_id', contractId),
+    ]);
+
+    if (jobResult.error) {
+        return { data: null, error: jobResult.error };
+    }
+
+    if (clientResult.error) {
+        return { data: null, error: clientResult.error };
+    }
+
+    if (freelancerResult.error) {
+        return { data: null, error: freelancerResult.error };
+    }
+
+    if (milestonesResult.error) {
+        return { data: null, error: milestonesResult.error };
+    }
+
+    return {
+        data: {
+            ...baseContract,
+            job: jobResult.data,
+            client: clientResult.data,
+            freelancer: freelancerResult.data,
+            milestones: milestonesResult.data || [],
+        },
+        error: null,
+    };
 }
 
 export async function getContractsByUser(userId: string) {

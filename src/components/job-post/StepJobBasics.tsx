@@ -1,12 +1,15 @@
 import { useEffect } from 'react';
 import { useFormContext, Controller } from 'react-hook-form';
-import { FileText, Grid, Lightbulb } from 'lucide-react';
+import { ExternalLink, FileText, Grid, Lightbulb, Trash2 } from 'lucide-react';
 import Input from '../ui/Input';
 import { FileUpload } from '../common/FileUpload';
+import JobLinksInput from './JobLinksInput';
 import { PREDEFINED_SKILLS } from '../../types';
 import { useTranslation } from '../../i18n';
 import type { Skill } from '../../types';
 import { getJobCategories } from '../../lib/jobCategories';
+import { MAX_JOB_REFERENCE_LINKS } from '../../lib/jobLinks';
+import { supabase } from '../../lib/supabase';
 
 type JobSkill = Skill;
 
@@ -17,6 +20,34 @@ interface StepJobBasicsFormValues {
     description?: string;
     required_skills?: JobSkill[];
     attachments_files?: File[];
+    existing_attachments?: string[];
+    reference_links?: string[];
+}
+
+function resolveExistingAttachmentUrl(rawValue: string): string {
+    const trimmed = rawValue.trim();
+    if (!trimmed) return '';
+
+    if (/^https?:\/\//i.test(trimmed)) {
+        return trimmed;
+    }
+
+    const normalizedPath = trimmed.replace(/^\/+/, '').replace(/^attachments\//i, '');
+    return supabase.storage.from('attachments').getPublicUrl(normalizedPath).data.publicUrl;
+}
+
+function extractAttachmentName(rawValue: string, index: number): string {
+    const normalized = rawValue.split('?')[0].split('#')[0].replace(/\\/g, '/');
+    const filename = normalized.split('/').pop();
+    const fallback = `attachment-${index + 1}`;
+
+    if (!filename) return fallback;
+
+    try {
+        return decodeURIComponent(filename);
+    } catch {
+        return filename;
+    }
 }
 
 export default function StepJobBasics() {
@@ -33,6 +64,7 @@ export default function StepJobBasics() {
     const selectedCategory = watch('category') || '';
     const selectedSubcategory = watch('subcategory') || '';
     const selectedSkills = watch('required_skills') || [];
+    const existingAttachments = watch('existing_attachments') || [];
 
     const categories = getJobCategories(language);
     const subcategories = categories.find((category) => category.id === selectedCategory)?.subcategories ?? [];
@@ -62,6 +94,14 @@ export default function StepJobBasics() {
 
     const categoryRegister = register('category');
     const subcategoryRegister = register('subcategory');
+
+    const removeExistingAttachment = (targetIndex: number) => {
+        setValue(
+            'existing_attachments',
+            existingAttachments.filter((_, index) => index !== targetIndex),
+            { shouldDirty: true, shouldValidate: true }
+        );
+    };
 
     return (
         <div className="space-y-6">
@@ -190,6 +230,66 @@ export default function StepJobBasics() {
             </section>
 
             <section className="rounded-xl border border-[#2d2d2d] bg-[#101010] p-4 sm:p-5">
+                <Controller
+                    name="reference_links"
+                    control={control}
+                    render={({ field }) => (
+                        <JobLinksInput
+                            value={field.value || []}
+                            onChange={field.onChange}
+                            maxLinks={MAX_JOB_REFERENCE_LINKS}
+                        />
+                    )}
+                />
+                {errors.reference_links ? (
+                    <p className="mt-2 text-xs text-red-400">{errors.reference_links.message as string}</p>
+                ) : null}
+            </section>
+
+            <section className="rounded-xl border border-[#2d2d2d] bg-[#101010] p-4 sm:p-5">
+                {existingAttachments.length > 0 ? (
+                    <div className="mb-4 space-y-2 rounded-xl border border-[#2d2d2d] bg-[#141414] p-3.5">
+                        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#9a9a9a]">
+                            {tx('jobs.new.stepBasics.currentAttachments', undefined, 'Current attachments')}
+                        </p>
+                        {existingAttachments.map((attachment, index) => {
+                            const attachmentUrl = resolveExistingAttachmentUrl(attachment);
+                            const filename = extractAttachmentName(attachment, index);
+
+                            return (
+                                <div
+                                    key={`${attachment}-${index}`}
+                                    className="flex items-center justify-between gap-3 rounded-lg border border-[#2d2d2d] bg-[#101010] px-3 py-2"
+                                >
+                                    <div className="min-w-0">
+                                        <p className="text-sm font-medium text-white">
+                                            {tx('jobs.new.stepBasics.attachmentLabel', { index: index + 1 }, `Attachment ${index + 1}`)}
+                                        </p>
+                                        <a
+                                            href={attachmentUrl}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="mt-0.5 inline-flex max-w-full items-center gap-1 truncate text-xs text-[#9a9a9a] transition hover:text-orange-300"
+                                        >
+                                            <span className="truncate">{filename}</span>
+                                            <ExternalLink className="h-3.5 w-3.5 shrink-0" />
+                                        </a>
+                                    </div>
+
+                                    <button
+                                        type="button"
+                                        onClick={() => removeExistingAttachment(index)}
+                                        className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-[#8f8f8f] transition hover:bg-white/5 hover:text-red-300"
+                                        aria-label={tx('jobs.new.stepBasics.removeExistingAttachment', undefined, 'Remove attachment')}
+                                    >
+                                        <Trash2 className="h-4 w-4" />
+                                    </button>
+                                </div>
+                            );
+                        })}
+                    </div>
+                ) : null}
+
                 <Controller
                     name="attachments_files"
                     control={control}

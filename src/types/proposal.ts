@@ -3,7 +3,8 @@
  */
 
 /** Status of a proposal */
-export type ProposalStatus = 'new' | 'shortlisted' | 'rejected' | 'archived' | 'hired' | 'accepted';
+export type ProposalStatus = 'pending' | 'new' | 'shortlisted' | 'rejected' | 'archived' | 'hired' | 'accepted' | 'withdrawn';
+
 
 /** Attachment on a proposal */
 export interface ProposalAttachment {
@@ -48,6 +49,9 @@ export interface ProposalFilters {
     maxBid?: number;
     minRating?: number;
     verifiedOnly?: boolean;
+    highRated?: boolean;
+    hasPortfolio?: boolean;
+    experience?: string[];
     sortBy?: 'newest' | 'oldest' | 'lowest_bid' | 'highest_bid' | 'rating';
 }
 

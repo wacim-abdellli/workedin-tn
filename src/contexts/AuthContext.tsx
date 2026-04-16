@@ -6,7 +6,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { clearAllAuthData } from '@/lib/authUtils';
 import { invalidateFreelancerDashboardQueries } from '@/lib/dashboardQueries';
 import { logger } from '@/lib/logger';
-import { sanitizeFreelancerProfileData } from '@/lib/schemaValidation';
+import { sanitizeFreelancerProfileData, sanitizeProfileData } from '@/lib/schemaValidation';
 import { supabase, withTimeout } from '@/lib/supabase';
 import { supabaseWithRetry } from '@/lib/supabaseWithRetry';
 import { useWorkspaceStore, saveWorkspaceForUser, clearWorkspaceForUser, loadWorkspaceForUser, type Workspace } from '@/lib/workspaceState';
@@ -75,6 +75,41 @@ function withModeAwareAvatar(profile: Profile): Profile {
     ...profile,
     avatar_url: resolveModeAvatarUrl(profile),
   };
+}
+
+const PROFILES_UPDATE_MAX_RETRIES = 6;
+
+function getErrorMessageText(error: unknown): string {
+  if (error instanceof Error) {
+    return error.message || '';
+  }
+
+  if (error && typeof error === 'object' && 'message' in error && typeof error.message === 'string') {
+    return error.message;
+  }
+
+  return String(error || '');
+}
+
+function extractMissingProfilesColumn(error: unknown): string | null {
+  const message = getErrorMessageText(error).toLowerCase();
+  if (!message || !message.includes('profiles')) {
+    return null;
+  }
+
+  // PostgREST schema-cache error format.
+  const schemaCacheMatch = message.match(/could not find the ['"]?([a-z0-9_]+)['"]? column of ['"]?profiles['"]?/i);
+  if (schemaCacheMatch?.[1]) {
+    return schemaCacheMatch[1];
+  }
+
+  // Postgres relation error format.
+  const relationMatch = message.match(/column ['"]?([a-z0-9_]+)['"]? of relation ['"]?profiles['"]? does not exist/i);
+  if (relationMatch?.[1]) {
+    return relationMatch[1];
+  }
+
+  return null;
 }
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -731,19 +766,44 @@ export function AuthProvider({ children }: AuthProviderProps) {
        await ensureProfileExists(user);
      }
 
-     await supabaseWithRetry(
-       () =>
-         supabase
-           .from('profiles')
-           .update({
-             ...data,
-             updated_at: new Date().toISOString(),
-           })
-           .eq('id', user.id),
-       { timeoutMs: 3000 }
-     );
+     const safeData = sanitizeProfileData(data as Record<string, unknown>) as Partial<Profile>;
+     const updatePayload: Record<string, unknown> = { ...safeData };
+     let persistedData: Partial<Profile> = safeData;
 
-     const nextProfileRaw = profile ? { ...profile, ...data } : ({ id: user.id, ...data } as Profile);
+     for (let attempt = 0; attempt < PROFILES_UPDATE_MAX_RETRIES; attempt += 1) {
+       try {
+         await supabaseWithRetry(
+           () =>
+             supabase
+               .from('profiles')
+               .update({
+                 ...updatePayload,
+                 updated_at: new Date().toISOString(),
+               })
+               .eq('id', user.id),
+           { timeoutMs: 3000 }
+         );
+
+         persistedData = updatePayload as Partial<Profile>;
+         break;
+       } catch (error) {
+         const missingColumn = extractMissingProfilesColumn(error);
+         const canRetry = missingColumn && Object.prototype.hasOwnProperty.call(updatePayload, missingColumn);
+
+         if (!canRetry || attempt === PROFILES_UPDATE_MAX_RETRIES - 1) {
+           throw error;
+         }
+
+         logger.warn(
+           `[AuthContext] Retrying profile update without unsupported column "${missingColumn}".`
+         );
+         delete updatePayload[missingColumn];
+       }
+     }
+
+     const nextProfileRaw = profile
+       ? { ...profile, ...persistedData }
+       : ({ id: user.id, ...persistedData } as Profile);
      const nextProfile = withModeAwareAvatar(nextProfileRaw);
      setProfile(nextProfile);
      syncWorkspaceFromProfile(nextProfile, freelancerProfile);

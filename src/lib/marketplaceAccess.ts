@@ -10,6 +10,7 @@ export type AccessReason =
   | 'auth_required'
   | 'role_selection_required'
   | 'freelancer_role_required'
+  | 'freelancer_workspace_required'
   | 'client_role_required'
   | 'freelancer_onboarding_required'
   | 'client_onboarding_required'
@@ -142,6 +143,15 @@ export function canApplyToJob(context: AccessContext): AccessDecision {
     };
   }
 
+  // Dual-role users must be in freelancer workspace before applying.
+  if (profile.user_type === 'both' && profile.active_mode === 'client') {
+    return {
+      allowed: false,
+      reason: 'freelancer_workspace_required',
+      state,
+    };
+  }
+
   if (!profile.freelancer_onboarding_completed) {
     return {
       allowed: false,
@@ -237,6 +247,8 @@ export function getAccessMessage(reason: AccessReason, completion?: number): str
       return 'Choose your account type first.';
     case 'freelancer_role_required':
       return 'Only freelancer accounts can apply to jobs.';
+    case 'freelancer_workspace_required':
+      return 'Switch to Freelancer workspace before applying to jobs.';
     case 'client_role_required':
       return 'Only client accounts can publish jobs.';
     case 'freelancer_onboarding_required':

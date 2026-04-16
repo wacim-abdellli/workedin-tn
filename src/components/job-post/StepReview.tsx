@@ -1,8 +1,9 @@
 import { useFormContext } from 'react-hook-form';
-import { FileText, DollarSign, Calendar, Clock, MapPin, Briefcase, Paperclip, Globe, Lock } from 'lucide-react';
+import { FileText, DollarSign, Calendar, Clock, MapPin, Briefcase, Paperclip, Globe, Lock, ExternalLink } from 'lucide-react';
 import { useTranslation } from '../../i18n';
 import type { Skill } from '../../types';
 import { getCategoryName, getSubcategoryName } from '../../lib/jobCategories';
+import { getJobReferenceLinkMeta, sanitizeJobReferenceLinks } from '../../lib/jobLinks';
 
 interface StepReviewValues {
     title?: string;
@@ -20,13 +21,33 @@ interface StepReviewValues {
     deadline?: string;
     visibility?: 'public' | 'invite_only';
     attachments_files?: globalThis.File[];
+    existing_attachments?: string[];
     required_skills?: Skill[];
+    reference_links?: string[];
+}
+
+function extractExistingAttachmentName(rawValue: string, index: number): string {
+    const normalized = rawValue.split('?')[0].split('#')[0].replace(/\\/g, '/');
+    const filename = normalized.split('/').pop();
+    const fallback = `attachment-${index + 1}`;
+
+    if (!filename) return fallback;
+
+    try {
+        return decodeURIComponent(filename);
+    } catch {
+        return filename;
+    }
 }
 
 export default function StepReview() {
     const { watch } = useFormContext<StepReviewValues>();
     const { language, tx } = useTranslation();
     const values = watch();
+    const existingAttachments = (values.existing_attachments || []).filter(
+        (item): item is string => typeof item === 'string' && item.trim().length > 0,
+    );
+    const referenceLinks = sanitizeJobReferenceLinks(values.reference_links || []);
 
     // Helper text mappings
     const durationMap: Record<string, string> = {
@@ -166,12 +187,83 @@ export default function StepReview() {
                     <div className="space-y-2">
                         {values.attachments_files.map((file, index) => (
                             <div key={`${file.name}-${index}`} className="rounded-lg border border-[#2d2d2d] bg-[#141414] px-3 py-2 text-sm text-[#b3b3b3]">
-                                <span className="font-medium text-white">{file.name}</span>
-                                <span className="ms-2 text-xs text-[#8f8f8f]">
+                                <p className="font-medium text-white">
+                                    {tx('jobs.new.stepReview.attachmentLabel', { index: index + 1 }, `Attachment ${index + 1}`)}
+                                </p>
+                                <p className="text-xs text-[#8f8f8f] mt-0.5">{file.name}</p>
+                                <span className="inline-block mt-1 text-xs text-[#8f8f8f]">
                                     {tx('jobs.new.stepReview.fileSize', { size: (file.size / 1024 / 1024).toFixed(2) }, `(${(file.size / 1024 / 1024).toFixed(2)} MB)`)}
                                 </span>
                             </div>
                         ))}
+                    </div>
+                </section>
+            ) : null}
+
+            {existingAttachments.length > 0 ? (
+                <section className="rounded-xl border border-[#2d2d2d] bg-[#101010] p-4 sm:p-5">
+                    <p className="mb-2 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#7d7d7d]">
+                        <Paperclip className="h-4 w-4" />
+                        {tx('jobs.new.stepReview.currentAttachments', undefined, 'Current attachments')}
+                    </p>
+                    <div className="space-y-2">
+                        {existingAttachments.map((attachment, index) => {
+                            const href = /^https?:\/\//i.test(attachment.trim()) ? attachment.trim() : undefined;
+
+                            return (
+                                <div key={`${attachment}-${index}`} className="rounded-lg border border-[#2d2d2d] bg-[#141414] px-3 py-2 text-sm text-[#b3b3b3]">
+                                    <p className="font-medium text-white">
+                                        {tx('jobs.new.stepReview.attachmentLabel', { index: index + 1 }, `Attachment ${index + 1}`)}
+                                    </p>
+                                    {href ? (
+                                        <a
+                                            href={href}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="mt-0.5 inline-flex items-center gap-1 text-xs text-[#8f8f8f] transition hover:text-orange-300"
+                                        >
+                                            <span>{extractExistingAttachmentName(attachment, index)}</span>
+                                            <ExternalLink className="h-3.5 w-3.5" />
+                                        </a>
+                                    ) : (
+                                        <p className="text-xs text-[#8f8f8f] mt-0.5">{extractExistingAttachmentName(attachment, index)}</p>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
+                </section>
+            ) : null}
+
+            {referenceLinks.length > 0 ? (
+                <section className="rounded-xl border border-[#2d2d2d] bg-[#101010] p-4 sm:p-5">
+                    <p className="mb-2 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#7d7d7d]">
+                        <Globe className="h-4 w-4" />
+                        {tx('jobs.new.stepReview.links', undefined, 'Reference links')}
+                    </p>
+                    <div className="space-y-2">
+                        {referenceLinks.map((link, index) => {
+                            const meta = getJobReferenceLinkMeta(link);
+                            if (!meta) return null;
+
+                            return (
+                                <a
+                                    key={`${link}-${index}`}
+                                    href={meta.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="group flex items-center justify-between rounded-lg border border-[#2d2d2d] bg-[#141414] px-3 py-2 text-sm text-[#b3b3b3] transition hover:border-orange-500/35 hover:text-white"
+                                >
+                                    <div className="min-w-0">
+                                        <p className="truncate font-medium text-white">
+                                            {tx('jobs.new.stepReview.linkLabel', { index: index + 1 }, `Link ${index + 1}`)} - {meta.platformLabel}
+                                        </p>
+                                        <p className="truncate text-xs text-[#8f8f8f]">{meta.hostname}</p>
+                                    </div>
+                                    <ExternalLink className="h-4 w-4 shrink-0 text-[#8f8f8f] transition group-hover:text-orange-300" />
+                                </a>
+                            );
+                        })}
                     </div>
                 </section>
             ) : null}

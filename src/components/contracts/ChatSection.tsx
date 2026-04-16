@@ -24,6 +24,9 @@ interface ChatSectionProps {
     otherUserTyping: boolean;
     onTyping: () => void;
     isLoadingHistory: boolean;
+    isComposerDisabled?: boolean;
+    disabledReason?: string | null;
+    canAttachFiles?: boolean;
 }
 
 export default function ChatSection({
@@ -36,7 +39,10 @@ export default function ChatSection({
     uploadProgress,
     otherUserTyping,
     onTyping,
-    isLoadingHistory
+    isLoadingHistory,
+    isComposerDisabled = false,
+    disabledReason = null,
+    canAttachFiles = true,
 }: ChatSectionProps) {
     const { t, tx } = useTranslation();
     const [newMessage, setNewMessage] = useState('');
@@ -54,6 +60,7 @@ export default function ChatSection({
 
     const handleSend = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (isComposerDisabled) return;
         if (!newMessage.trim()) return;
 
         await onSendMessage(newMessage);
@@ -61,6 +68,11 @@ export default function ChatSection({
     };
 
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (isComposerDisabled || !canAttachFiles) {
+            e.target.value = '';
+            return;
+        }
+
         const file = e.target.files?.[0];
         if (file) {
             await onFileUpload(file);
@@ -84,7 +96,7 @@ export default function ChatSection({
             <ErrorBoundary fallback={
                 <div className="flex-1 flex items-center justify-center text-muted">
                     <div className="text-center">
-                        <p>{t.common?.error || 'حدث خطأ في تحميل الرسائل'}</p>
+                        <p>{t.common?.error || 'Failed to load messages'}</p>
                     </div>
                 </div>
             }>
@@ -100,7 +112,7 @@ export default function ChatSection({
                         <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
                             <Send className="w-8 h-8 opacity-50" />
                         </div>
-                        <p>{t.contract?.startConversation || 'ابدأ المحادثة الآن'}</p>
+                        <p>{t.contract?.startConversation || 'Start the conversation now'}</p>
                     </div>
                 ) : (
                     messages.map((message, index) => {
@@ -222,6 +234,12 @@ export default function ChatSection({
 
             {/* Input Area */}
             <div className="p-4 bg-card border-t border-border shrink-0">
+                {isComposerDisabled && disabledReason ? (
+                    <div className="mb-3 rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-100">
+                        {disabledReason}
+                    </div>
+                ) : null}
+
                 {isUploading && (
                     <div className="mb-3" role="status" aria-live="polite">
                         <div className="flex items-center justify-between text-xs text-primary-600 mb-1">
@@ -247,8 +265,8 @@ export default function ChatSection({
                         type="button"
                         onClick={() => fileInputRef.current?.click()}
                         className="h-12 w-12 flex items-center justify-center text-muted hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-colors"
-                        disabled={isUploading}
-                        aria-label={t.contract?.attachFile || 'إرفاق ملف'}
+                        disabled={isUploading || isComposerDisabled || !canAttachFiles}
+                        aria-label={t.contract?.attachFile || 'Attach file'}
                     >
                         <Paperclip className="w-5 h-5" />
                     </button>
@@ -258,7 +276,9 @@ export default function ChatSection({
                             value={newMessage}
                             onChange={(e) => {
                                 setNewMessage(e.target.value);
-                                onTyping();
+                                if (!isComposerDisabled) {
+                                    onTyping();
+                                }
                             }}
                             onKeyDown={(e) => {
                                 if (e.key === 'Enter' && !e.shiftKey) {
@@ -266,11 +286,14 @@ export default function ChatSection({
                                     handleSend(e);
                                 }
                             }}
-                            placeholder={t.contract?.typeMessage || "اكتب رسالتك هنا..."}
+                            placeholder={isComposerDisabled
+                                ? (disabledReason || tx('pages.messages.readOnlyPlaceholder', undefined, 'This conversation is read-only.'))
+                                : (t.contract?.typeMessage || "Write your message here...")}
+                            disabled={isComposerDisabled || isSending}
                             className="w-full max-h-32 bg-transparent border-none focus:ring-0 p-0 text-sm resize-none scrollbar-hide my-auto"
                             rows={1}
                             style={{ minHeight: '24px' }}
-                            aria-label={t.contract?.typeMessage || "اكتب رسالتك هنا..."}
+                            aria-label={t.contract?.typeMessage || "Write your message here..."}
                         />
                     </div>
 
@@ -278,9 +301,9 @@ export default function ChatSection({
                         type="submit"
                         variant="primary"
                         className="h-[48px] w-[48px] p-0 rounded-xl flex items-center justify-center shrink-0 shadow-lg shadow-primary-200"
-                        disabled={!newMessage.trim() || isSending}
+                        disabled={!newMessage.trim() || isSending || isComposerDisabled}
                         isLoading={isSending}
-                        aria-label={t.contract?.sendMessage || 'إرسال الرسالة'}
+                        aria-label={t.contract?.sendMessage || 'Send message'}
                     >
                         <Send className="ms-1 w-5 h-5 rtl:rotate-180" />
                     </Button>

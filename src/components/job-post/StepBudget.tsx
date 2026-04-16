@@ -13,7 +13,11 @@ interface StepBudgetValues {
     experience_level?: 'beginner' | 'intermediate' | 'expert';
 }
 
-export default function StepBudget() {
+interface StepBudgetProps {
+    allowPastDeadline?: boolean;
+}
+
+export default function StepBudget({ allowPastDeadline = false }: StepBudgetProps) {
     const {
         register,
         watch,
@@ -214,7 +218,7 @@ export default function StepBudget() {
                         <Calendar className="h-4 w-4" />
                         {tx('jobs.new.stepBudget.deadline', undefined, 'الموعد النهائي')}
                     </label>
-                    <input type="date" min={today} className={fieldClass} {...register('deadline')} />
+                    <input type="date" min={allowPastDeadline ? undefined : today} className={fieldClass} {...register('deadline')} />
                     {errors.deadline ? <p className="mt-2 text-xs text-red-400">{errors.deadline.message as string}</p> : null}
                 </div>
             </section>

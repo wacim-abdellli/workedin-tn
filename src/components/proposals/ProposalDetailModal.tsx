@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import {
-    X, MessageSquare, Star, MapPin,
-    Clock, Briefcase, FileText,
-    Download, ArrowLeft, Archive
+    MessageSquare, Star, MapPin, Clock, Briefcase,
+    Archive, CheckCircle, Loader2, User,
+    DollarSign, TrendingUp, Shield, FileText, Download,
+    ChevronDown, X,
 } from 'lucide-react';
-import Button from '../ui/Button';
 import type { ProposalAttachment } from '../../types/proposal';
-import { useTranslation } from "../../i18n";
+import { useTranslation } from '../../i18n';
 
 interface ProposalDetailFreelancer {
     full_name: string;
@@ -33,325 +33,430 @@ interface ProposalDetailData {
     freelancer: ProposalDetailFreelancer;
 }
 
-interface ProposalDetailModalProps {
+interface ProposalDetailPaneProps {
     proposal: ProposalDetailData | null;
-    isOpen: boolean;
+    isHiring?: boolean;
     onClose: () => void;
     onMessage: () => void;
     onShortlist: () => void;
     onHire: () => void;
     onArchive: () => void;
+    onUnarchive: () => void;
+    isShortlisted?: boolean;
 }
 
-export default function ProposalDetailModal({
+const SERVICE_FEE_RATE = 0.10;
+
+function Avatar({ name, url, online, size = 'lg' }: { name: string; url: string | null; online: boolean; size?: 'sm' | 'md' | 'lg' }) {
+    const initials = name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+    const s = size === 'lg' ? 'w-16 h-16 text-xl' : size === 'md' ? 'w-12 h-12 text-base' : 'w-9 h-9 text-xs';
+    const dot = size === 'lg' ? 'w-3.5 h-3.5 border-2 bottom-0 right-0' : 'w-2.5 h-2.5 border-2 bottom-0 right-0';
+    return (
+        <div className="relative shrink-0">
+            {url ? (
+                <img src={url} alt={name} className={`${s} rounded-2xl object-cover`}
+                    style={{ border: '2px solid color-mix(in srgb, var(--border) 50%, transparent)' }} />
+            ) : (
+                <div className={`${s} rounded-2xl flex items-center justify-center font-black`}
+                    style={{
+                        background: 'linear-gradient(135deg, color-mix(in srgb, var(--workspace-primary) 22%, var(--card-bg)), color-mix(in srgb, var(--workspace-primary) 8%, var(--card-bg)))',
+                        border: '2px solid color-mix(in srgb, var(--workspace-primary) 20%, transparent)',
+                        color: 'var(--workspace-primary-mid)',
+                    }}>
+                    {initials || <User className="w-4 h-4" />}
+                </div>
+            )}
+            {online && (
+                <span className={`absolute ${dot} rounded-full`}
+                    style={{ background: '#22c55e', borderColor: 'var(--card-bg)' }} />
+            )}
+        </div>
+    );
+}
+
+function StatusPill({ status }: { status: string }) {
+    const s = status === 'pending' ? 'new' : status;
+    const map: Record<string, { label: string; color: string; bg: string }> = {
+        new: { label: 'New', color: '#818cf8', bg: 'rgba(99,102,241,0.14)' },
+        shortlisted: { label: 'Shortlisted', color: '#fbbf24', bg: 'rgba(245,158,11,0.14)' },
+        archived: { label: 'Archived', color: '#94a3b8', bg: 'rgba(100,116,139,0.14)' },
+        accepted: { label: 'Accepted', color: '#4ade80', bg: 'rgba(34,197,94,0.14)' },
+        rejected: { label: 'Declined', color: '#f87171', bg: 'rgba(239,68,68,0.14)' },
+    };
+    const b = map[s] ?? { label: s, color: '#94a3b8', bg: 'rgba(100,116,139,0.14)' };
+    return (
+        <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold"
+            style={{ background: b.bg, color: b.color }}>
+            <span className="w-1.5 h-1.5 rounded-full" style={{ background: b.color }} />
+            {b.label}
+        </span>
+    );
+}
+
+const TABS = ['proposal', 'profile', 'portfolio', 'reviews'] as const;
+type Tab = typeof TABS[number];
+
+export default function ProposalDetailPane({
     proposal,
-    isOpen,
+    isHiring = false,
     onClose,
     onMessage,
     onShortlist,
     onHire,
-    onArchive
-}: ProposalDetailModalProps) {
+    onArchive,
+    onUnarchive,
+    isShortlisted = false,
+}: ProposalDetailPaneProps) {
     const { tx } = useTranslation();
-    const [activeTab, setActiveTab] = useState('proposal');
+    const [activeTab, setActiveTab] = useState<Tab>('proposal');
+    const [hireConfirm, setHireConfirm] = useState(false);
+    const [archiveOpen, setArchiveOpen] = useState(false);
 
-    // Close on ESC
     useEffect(() => {
-        const handleEscape = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') onClose();
-        };
-        document.addEventListener('keydown', handleEscape);
-        return () => document.removeEventListener('keydown', handleEscape);
-    }, [onClose]);
+        setActiveTab('proposal');
+        setHireConfirm(false);
+        setArchiveOpen(false);
+    }, [proposal?.id]);
 
-    if (!isOpen || !proposal) return null;
+    if (!proposal) return null;
 
     const { freelancer } = proposal;
+    const isArchived = proposal.status === 'archived';
+    const fee = Math.round(proposal.bid_amount * SERVICE_FEE_RATE);
+    const total = proposal.bid_amount + fee;
 
-    const tabs = [
-        { id: 'proposal', label: 'العرض' },
-        { id: 'profile', label: 'الملف الشخصي' },
-        { id: 'portfolio', label: 'معرض الأعمال' },
-        { id: 'work-history', label: 'تاريخ العمل' },
-        { id: 'reviews', label: 'التقييمات' },
-    ];
+    const tabLabels: Record<Tab, string> = {
+        proposal: tx('jobProposals.modal.tabProposal', undefined, 'Proposal'),
+        profile: tx('jobProposals.modal.tabProfile', undefined, 'Profile'),
+        portfolio: tx('jobProposals.modal.tabPortfolio', undefined, 'Portfolio'),
+        reviews: tx('jobProposals.modal.tabReviews', undefined, 'Reviews'),
+    };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-0 md:p-4 bg-black/70 backdrop-blur-sm">
-            <div className="bg-card w-full h-full md:h-[90vh] md:max-w-7xl md:rounded-2xl shadow-2xl flex flex-col md:flex-row overflow-hidden relative animate-in fade-in zoom-in-95 duration-200">
+        <div className="flex flex-col h-full overflow-hidden">
 
-                {/* Close Button (Mobile & Desktop) */}
-                <button
-                    onClick={onClose}
-                    className="absolute top-4 end-4 z-50 p-2 bg-card/90 rounded-full hover:bg-secondary md:hidden"
-                >
-                    <X className="w-6 h-6" />
+            {/* ── HERO HEADER ── */}
+            <div
+                className="relative px-6 pt-6 pb-5 shrink-0 border-b overflow-hidden"
+                style={{
+                    background: 'linear-gradient(160deg, color-mix(in srgb, var(--workspace-primary) 10%, var(--card-bg)) 0%, var(--card-bg) 70%)',
+                    borderColor: 'color-mix(in srgb, var(--border) 50%, transparent)',
+                }}
+            >
+                {/* Glow blobs */}
+                <div aria-hidden className="pointer-events-none absolute -top-12 -right-12 w-40 h-40 rounded-full blur-3xl opacity-20"
+                    style={{ background: 'var(--workspace-primary)' }} />
+
+                {/* Close on mobile breakpoint */}
+                <button onClick={onClose} className="absolute top-4 right-4 p-1.5 rounded-lg hover:bg-black/10 dark:hover:bg-white/10 z-10" style={{ color: 'var(--text-muted)' }}>
+                    <X className="w-4 h-4" />
                 </button>
 
-                {/* LEFT SIDEBAR (Freelancer Info) */}
-                <div className="w-full md:w-80 bg-surface border-e border-border flex flex-col overflow-y-auto">
+                <div className="relative flex items-start gap-4">
+                    <Avatar name={freelancer.full_name} url={freelancer.avatar_url} online={freelancer.is_online} size="lg" />
 
-                    {/* Header (Mobile only) */}
-                    <div className="md:hidden p-4 border-b flex items-center gap-3">
-                        <button onClick={onClose}><ArrowLeft className="w-6 h-6 rtl:rotate-180" /></button>
-                        <h2 className="font-bold text-lg truncate">{freelancer.full_name}</h2>
-                    </div>
-
-                    <div className="p-6 text-center border-b border-border">
-                        <div className="relative inline-block mb-4">
-                            <img
-                                src={freelancer.avatar_url || 'https://via.placeholder.com/150'}
-                                alt={freelancer.full_name}
-                                className="w-24 h-24 rounded-full border-4 border-white shadow-sm object-cover"
-                            />
+                    <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap mb-1">
+                            <h2 className="text-lg font-black leading-tight" style={{ color: 'var(--text-primary)' }}>
+                                {freelancer.full_name}
+                            </h2>
+                            <StatusPill status={proposal.status} />
                             {freelancer.is_online && (
-                                <span className="absolute bottom-1 end-1 w-5 h-5 bg-green-500 border-4 border-white rounded-full"></span>
+                                <span className="text-[10px] font-bold rounded-full px-2 py-0.5" style={{ background: 'rgba(34,197,94,0.14)', color: '#4ade80' }}>
+                                    Online
+                                </span>
                             )}
                         </div>
-                        <h3 className="font-bold text-xl text-foreground dark:text-white mb-1">{freelancer.full_name}</h3>
-                        <p className="text-muted text-sm mb-3">{freelancer.title || 'مستقل'}</p>
 
-                        <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground mb-4">
-                            <MapPin className="w-4 h-4" />
-                            <span>{freelancer.country || 'تونس'}</span>
-                        </div>
+                        <p className="text-sm mb-2" style={{ color: 'var(--text-muted)' }}>
+                            {freelancer.title || 'Freelancer'}
+                        </p>
 
-                        <div className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${freelancer.availability === 'available' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
-                            {freelancer.availability === 'available' ? 'متاح للعمل' : 'مشغول حالياً'}
+                        <div className="flex flex-wrap gap-3 text-xs" style={{ color: 'var(--text-secondary)' }}>
+                            {freelancer.country && (
+                                <span className="flex items-center gap-1">
+                                    <MapPin className="w-3 h-3" /> {freelancer.country}
+                                </span>
+                            )}
+                            {(freelancer.rating ?? 0) > 0 && (
+                                <span className="flex items-center gap-1">
+                                    <Star className="w-3 h-3" style={{ color: '#f59e0b', fill: '#f59e0b' }} />
+                                    <strong style={{ color: 'var(--text-primary)' }}>{freelancer.rating.toFixed(1)}</strong>
+                                    <span>({freelancer.reviews_count} reviews)</span>
+                                </span>
+                            )}
+                            {(freelancer.jobs_completed ?? 0) > 0 && (
+                                <span className="flex items-center gap-1">
+                                    <Briefcase className="w-3 h-3" />
+                                    <strong style={{ color: 'var(--text-primary)' }}>{freelancer.jobs_completed}</strong> jobs
+                                </span>
+                            )}
+                            {(freelancer.success_rate ?? 0) > 0 && (
+                                <span className="flex items-center gap-1">
+                                    <TrendingUp className="w-3 h-3" />
+                                    <strong style={{ color: 'var(--text-primary)' }}>{freelancer.success_rate}%</strong> success
+                                </span>
+                            )}
                         </div>
                     </div>
+                </div>
 
-                    <div className="p-6 border-b border-border space-y-4">
-                        <div className="flex justify-between items-center">
-                            <span className="text-muted text-sm">{tx('dynamic_key_2137084368')}</span>
-                            <div className="flex items-center gap-1 font-bold">
-                                <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-                                {freelancer.rating} <span className="text-muted text-xs font-normal">({freelancer.reviews_count})</span>
+                {/* Bid + delivery strip */}
+                <div
+                    className="relative mt-4 flex items-center justify-between gap-4 rounded-xl px-4 py-3 border"
+                    style={{
+                        background: 'color-mix(in srgb, var(--workspace-primary) 5%, var(--page-bg))',
+                        borderColor: 'color-mix(in srgb, var(--workspace-primary) 18%, transparent)',
+                    }}
+                >
+                    <div className="flex items-baseline gap-1.5">
+                        <DollarSign className="w-4 h-4 mb-0.5" style={{ color: 'var(--workspace-primary-mid)' }} />
+                        <span className="text-2xl font-black" style={{ color: 'var(--workspace-primary-mid)' }}>{proposal.bid_amount}</span>
+                        <span className="text-sm font-semibold" style={{ color: 'var(--text-muted)' }}>TND bid</span>
+                    </div>
+                    <div className="h-6 w-px" style={{ background: 'color-mix(in srgb, var(--border) 60%, transparent)' }} />
+                    {proposal.duration > 0 && (
+                        <div className="flex items-center gap-1.5 text-sm" style={{ color: 'var(--text-secondary)' }}>
+                            <Clock className="w-3.5 h-3.5" style={{ color: '#22c55e' }} />
+                            <strong style={{ color: 'var(--text-primary)' }}>{proposal.duration}</strong> day delivery
+                        </div>
+                    )}
+                    <div className="h-6 w-px" style={{ background: 'color-mix(in srgb, var(--border) 60%, transparent)' }} />
+                    <div className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                        +{fee} TND fee → <strong style={{ color: 'var(--text-primary)' }}>{total} TND total</strong>
+                    </div>
+                </div>
+            </div>
+
+            {/* ── ACTION BAR ── */}
+            <div
+                className="flex items-center gap-2 px-5 py-3 shrink-0 border-b"
+                style={{ borderColor: 'color-mix(in srgb, var(--border) 50%, transparent)', background: 'var(--card-bg)' }}
+            >
+                {hireConfirm ? (
+                    <div className="flex items-center gap-2 flex-1 flex-wrap">
+                        <span className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>
+                            Confirm hire?
+                        </span>
+                        <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                            A contract will be created.
+                        </span>
+                        <button type="button" onClick={() => setHireConfirm(false)}
+                            className="rounded-xl border px-3 py-1.5 text-xs font-semibold transition-all hover:opacity-80"
+                            style={{ borderColor: 'color-mix(in srgb, var(--border) 70%, transparent)', color: 'var(--text-secondary)' }}>
+                            Cancel
+                        </button>
+                        <button type="button" onClick={() => { setHireConfirm(false); onHire(); }}
+                            disabled={isHiring}
+                            className="flex items-center gap-1.5 rounded-xl px-4 py-1.5 text-xs font-bold transition-all hover:brightness-110 disabled:opacity-60"
+                            style={{ background: '#22c55e', color: '#fff' }}>
+                            {isHiring ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle className="w-3.5 h-3.5" />}
+                            Yes, Hire!
+                        </button>
+                    </div>
+                ) : (
+                    <>
+                        <button type="button" onClick={() => setHireConfirm(true)}
+                            disabled={isHiring}
+                            className="flex items-center gap-2 rounded-xl px-5 py-2 text-sm font-bold transition-all hover:brightness-110 disabled:opacity-60"
+                            style={{
+                                background: 'var(--workspace-primary)',
+                                color: '#fff',
+                                boxShadow: '0 4px 16px -4px color-mix(in srgb, var(--workspace-primary) 55%, transparent)',
+                            }}>
+                            {isHiring ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                            {tx('jobProposals.hire', undefined, 'Hire Now')}
+                        </button>
+
+                        <button type="button" onClick={onMessage}
+                            className="flex items-center gap-1.5 rounded-xl border px-3.5 py-2 text-sm font-semibold transition-all hover:bg-black/5 dark:hover:bg-white/5"
+                            style={{ borderColor: 'color-mix(in srgb, var(--border) 70%, transparent)', color: 'var(--text-secondary)' }}>
+                            <MessageSquare className="w-4 h-4" />
+                            {tx('jobProposals.message', undefined, 'Chat')}
+                        </button>
+
+                        <button type="button" onClick={onShortlist}
+                            className="flex items-center gap-1.5 rounded-xl border px-3.5 py-2 text-sm font-semibold transition-all hover:brightness-105"
+                            style={{
+                                borderColor: isShortlisted ? 'color-mix(in srgb, #f59e0b 40%, transparent)' : 'color-mix(in srgb, var(--border) 70%, transparent)',
+                                color: isShortlisted ? '#fbbf24' : 'var(--text-secondary)',
+                                background: isShortlisted ? 'rgba(245,158,11,0.1)' : 'transparent',
+                            }}>
+                            <Star className={`w-4 h-4 ${isShortlisted ? 'fill-current' : ''}`} />
+                            {isShortlisted ? tx('jobProposals.saved', undefined, 'Saved') : tx('jobProposals.save', undefined, 'Save')}
+                        </button>
+
+                        {/* Archive dropdown */}
+                        <div className="relative ms-auto">
+                            <button type="button" onClick={() => setArchiveOpen(v => !v)}
+                                className="flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-semibold transition-all hover:opacity-70"
+                                style={{ borderColor: 'color-mix(in srgb, var(--border) 70%, transparent)', color: 'var(--text-muted)' }}>
+                                <Archive className="w-3.5 h-3.5" />
+                                More
+                                <ChevronDown className={`w-3 h-3 transition-transform ${archiveOpen ? 'rotate-180' : ''}`} />
+                            </button>
+                            {archiveOpen && (
+                                <div
+                                    className="absolute end-0 top-full mt-1 rounded-xl border shadow-xl z-20 py-1 w-40"
+                                    style={{ background: 'var(--card-bg)', borderColor: 'color-mix(in srgb, var(--border) 60%, transparent)' }}>
+                                    <button type="button" onClick={() => { setArchiveOpen(false); if (isArchived) onUnarchive(); else onArchive(); }}
+                                        className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold hover:opacity-80"
+                                        style={{ color: isArchived ? 'var(--workspace-primary-mid)' : '#f87171' }}>
+                                        <Archive className="w-3.5 h-3.5" />
+                                        {isArchived
+                                            ? tx('jobProposals.modal.unarchive', undefined, 'Unarchive Proposal')
+                                            : tx('jobProposals.modal.archive', undefined, 'Archive Proposal')}
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    </>
+                )}
+            </div>
+
+            {/* ── TABS ── */}
+            <div
+                className="flex shrink-0 border-b px-5 gap-1"
+                style={{ borderColor: 'color-mix(in srgb, var(--border) 50%, transparent)', background: 'var(--card-bg)' }}
+            >
+                {TABS.map(tab => (
+                    <button
+                        key={tab}
+                        type="button"
+                        onClick={() => setActiveTab(tab)}
+                        className="relative py-3 px-1 text-xs font-bold transition-colors border-b-2"
+                        style={{
+                            borderBottomColor: activeTab === tab ? 'var(--workspace-primary)' : 'transparent',
+                            color: activeTab === tab ? 'var(--workspace-primary-mid)' : 'var(--text-muted)',
+                            marginBottom: '-1px',
+                        }}
+                    >
+                        {tabLabels[tab]}
+                    </button>
+                ))}
+            </div>
+
+            {/* ── CONTENT ── */}
+            <div className="flex-1 overflow-y-auto overflow-x-hidden p-6" style={{ background: 'var(--page-bg)', minWidth: 0 }}>
+
+                {/* PROPOSAL */}
+                {activeTab === 'proposal' && (
+                    <div className="space-y-5 animate-in fade-in duration-200 max-w-2xl">
+                        <div className="flex items-center gap-2 text-xs" style={{ color: 'var(--text-muted)' }}>
+                            <Clock className="w-3.5 h-3.5" />
+                            Submitted {new Date(proposal.created_at).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' })}
+                        </div>
+
+                        {/* Cover letter */}
+                        <div>
+                            <h3 className="text-sm font-bold mb-2.5" style={{ color: 'var(--text-primary)' }}>
+                                {tx('jobProposals.modal.coverLetter', undefined, 'Cover Letter')}
+                            </h3>
+                            <div
+                                className="rounded-2xl border p-5 text-sm leading-relaxed"
+                                style={{
+                                    background: 'var(--card-bg)',
+                                    borderColor: 'color-mix(in srgb, var(--border) 50%, transparent)',
+                                    color: 'var(--text-secondary)',
+                                    /* All three properties needed to absolutely stop overflow */
+                                    wordBreak: 'break-all',
+                                    overflowWrap: 'anywhere',
+                                    whiteSpace: 'pre-wrap',
+                                    overflow: 'hidden',
+                                    minWidth: 0,
+                                }}
+                            >
+                                {proposal.cover_letter || (
+                                    <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                                        {tx('jobProposals.noCoverLetter', undefined, 'No cover letter provided.')}
+                                    </span>
+                                )}
                             </div>
                         </div>
-                        <div className="flex justify-between items-center">
-                            <span className="text-muted text-sm">{tx('dynamic_key_611934998')}</span>
-                            <span className="font-bold">{freelancer.jobs_completed}</span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                            <span className="text-muted text-sm">{tx('dynamic_key_1659906949')}</span>
-                            <span className="font-bold text-green-600">{freelancer.success_rate || 95}%</span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                            <span className="text-muted text-sm">{tx('dynamic_key_29050573')}</span>
-                            <span className="font-bold">{tx('dynamic_key_1259492927')}</span>
-                        </div>
-                    </div>
 
-                    <div className="p-6">
-                        <h4 className="font-bold text-sm mb-3">{tx('dynamic_key_1693322708')}</h4>
-                        <div className="flex flex-wrap gap-2">
-                            {['React', 'Node.js', 'UI Design', 'TypeScript'].map(skill => (
-                                <span key={skill} className="px-2.5 py-1 bg-card border border-border rounded-lg text-xs font-medium text-muted-foreground">
-                                    {skill}
-                                </span>
+                        {/* Attachments */}
+                        {proposal.attachments && proposal.attachments.length > 0 && (
+                            <div>
+                                <h3 className="text-sm font-bold mb-2.5" style={{ color: 'var(--text-primary)' }}>
+                                    {tx('jobProposals.modal.attachments', undefined, 'Attachments')}
+                                </h3>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                                    {proposal.attachments.map((file, idx) => (
+                                        <div key={idx}
+                                            className="flex items-center gap-3 p-3 rounded-xl border cursor-pointer group transition-all hover:brightness-95"
+                                            style={{ background: 'var(--card-bg)', borderColor: 'color-mix(in srgb, var(--border) 50%, transparent)' }}>
+                                            <div className="h-9 w-9 rounded-xl flex items-center justify-center shrink-0"
+                                                style={{ background: 'color-mix(in srgb, var(--workspace-primary) 10%, transparent)' }}>
+                                                <FileText className="w-4 h-4" style={{ color: 'var(--workspace-primary-mid)' }} />
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-xs font-semibold truncate" style={{ color: 'var(--text-primary)' }}>{file.name}</p>
+                                                <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>{file.size}</p>
+                                            </div>
+                                            <Download className="w-4 h-4 opacity-0 group-hover:opacity-60 transition-opacity" style={{ color: 'var(--text-muted)' }} />
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {/* PROFILE */}
+                {activeTab === 'profile' && (
+                    <div className="space-y-5 animate-in fade-in duration-200 max-w-2xl">
+                        {freelancer.bio ? (
+                            <div>
+                                <h3 className="text-sm font-bold mb-2" style={{ color: 'var(--text-primary)' }}>About</h3>
+                                <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)', wordBreak: 'break-word' }}>{freelancer.bio}</p>
+                            </div>
+                        ) : (
+                            <div className="text-center py-12" style={{ color: 'var(--text-muted)' }}>
+                                <User className="w-10 h-10 mx-auto mb-3 opacity-20" />
+                                <p className="text-sm">No profile info available.</p>
+                            </div>
+                        )}
+                        <div className="grid grid-cols-2 gap-2.5">
+                            {[
+                                { label: 'Jobs Completed', value: freelancer.jobs_completed, icon: Briefcase },
+                                { label: 'Success Rate', value: `${freelancer.success_rate}%`, icon: TrendingUp },
+                                { label: 'Rating', value: freelancer.rating > 0 ? `${freelancer.rating.toFixed(1)} ★` : '—', icon: Star },
+                                { label: 'Reviews', value: freelancer.reviews_count, icon: Shield },
+                            ].map(({ label, value, icon: Icon }) => (
+                                <div key={label} className="rounded-2xl border p-4"
+                                    style={{ background: 'var(--card-bg)', borderColor: 'color-mix(in srgb, var(--border) 50%, transparent)' }}>
+                                    <Icon className="w-4 h-4 mb-2" style={{ color: 'var(--workspace-primary-mid)' }} />
+                                    <p className="text-xl font-black mb-0.5" style={{ color: 'var(--text-primary)' }}>{String(value)}</p>
+                                    <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>{label}</p>
+                                </div>
                             ))}
                         </div>
                     </div>
-                </div>
+                )}
 
-                {/* CENTER CONTENT */}
-                <div className="flex-1 flex flex-col min-w-0 bg-card">
-
-                    {/* Modal Header */}
-                    <div className="h-16 border-b border-border flex items-center justify-between px-6 bg-card sticky top-0 z-20">
-                        <div className="flex items-center gap-4">
-                            {/* Tabs */}
-                            <div className="flex items-center gap-1 bg-muted/50 p-1 rounded-lg">
-                                {tabs.map(tab => (
-                                    <button
-                                        key={tab.id}
-                                        onClick={() => setActiveTab(tab.id)}
-                                        className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${activeTab === tab.id
-                                            ? 'bg-card text-foreground dark:text-white shadow-sm'
-                                            : 'text-muted hover:text-foreground dark:text-white hover:bg-secondary'
-                                            }`}
-                                    >
-                                        {tab.label}
-                                    </button>
-                                ))}
-                            </div>
+                {/* PORTFOLIO */}
+                {activeTab === 'portfolio' && (
+                    <div className="text-center py-16 animate-in fade-in duration-200" style={{ color: 'var(--text-muted)' }}>
+                        <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4"
+                            style={{ background: 'color-mix(in srgb, var(--workspace-primary) 10%, transparent)' }}>
+                            <Briefcase className="w-6 h-6" style={{ color: 'var(--workspace-primary-mid)', opacity: 0.6 }} />
                         </div>
-
-                        {/* Desktop Actions */}
-                        <div className="hidden md:flex items-center gap-2">
-                            <button onClick={onClose} className="p-2 hover:bg-muted rounded-full transition-colors">
-                                <X className="w-5 h-5 text-muted" />
-                            </button>
-                        </div>
+                        <p className="text-sm font-semibold mb-1" style={{ color: 'var(--text-secondary)' }}>No portfolio items</p>
+                        <p className="text-xs">The freelancer hasn't added portfolio items yet.</p>
                     </div>
+                )}
 
-                    {/* Scrollable Content */}
-                    <div className="flex-1 overflow-y-auto p-8 relative">
-
-                        {/* TAB: PROPOSAL */}
-                        {activeTab === 'proposal' && (
-                            <div className="animate-in fade-in duration-300 space-y-8">
-                                <div>
-                                    <div className="flex items-center gap-2 text-sm text-muted mb-4">
-                                        <Clock className="w-4 h-4" />
-                                        <span>{tx('dynamic_key_1718339647')}{new Date(proposal.created_at).toLocaleDateString('ar-TN')}</span>
-                                        <span className="text-muted">|</span>
-                                        <span className={proposal.status === 'viewed' ? 'text-green-600' : 'text-muted'}>
-                                            {proposal.status === 'viewed' ? 'تمت المشاهدة' : 'جديد'}
-                                        </span>
-                                    </div>
-                                    <h3 className="text-xl font-bold mb-4">{tx('dynamic_key_365411007')}</h3>
-                                    <div className="prose prose-lg max-w-none text-muted-foreground leading-relaxed whitespace-pre-wrap">
-                                        {proposal.cover_letter}
-                                    </div>
-                                </div>
-
-                                {proposal.attachments && proposal.attachments.length > 0 && (
-                                    <div className="pt-6 border-t border-border">
-                                        <h3 className="font-bold mb-4">{tx('dynamic_key_1712849267')}</h3>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            {proposal.attachments.map((file, idx: number) => (
-                                                <div key={idx} className="flex items-center gap-3 p-3 border border-border rounded-xl hover:bg-surface transition-colors cursor-pointer group">
-                                                    <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
-                                                        <FileText className="w-5 h-5" />
-                                                    </div>
-                                                    <div className="flex-1 min-w-0">
-                                                        <p className="font-medium text-sm truncate">{file.name}</p>
-                                                        <p className="text-xs text-muted">{file.size}</p>
-                                                    </div>
-                                                    <Download className="w-4 h-4 text-muted opacity-0 group-hover:opacity-100 transition-opacity" />
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        )}
-
-                        {/* TAB: PROFILE */}
-                        {activeTab === 'profile' && (
-                            <div className="animate-in fade-in duration-300 space-y-8">
-                                <section>
-                                    <h3 className="font-bold text-lg mb-3">{tx('dynamic_key_1039014200')}</h3>
-                                    <p className="text-muted-foreground leading-relaxed">
-                                        {freelancer.bio || 'لا توجد نبذة شخصية.'}
-                                    </p>
-                                </section>
-
-                                <section>
-                                    <h3 className="font-bold text-lg mb-3">{tx('dynamic_key_623032746')}</h3>
-                                    <div className="space-y-2">
-                                        <div className="flex justify-between p-3 bg-surface rounded-lg">
-                                            <span>{tx('dynamic_key_2144569262')}</span>
-                                            <span className="text-muted">{tx('dynamic_key_1262868023')}</span>
-                                        </div>
-                                        <div className="flex justify-between p-3 bg-surface rounded-lg">
-                                            <span>{tx('dynamic_key_1827230247')}</span>
-                                            <span className="text-muted">{tx('dynamic_key_1530851603')}</span>
-                                        </div>
-                                    </div>
-                                </section>
-                            </div>
-                        )}
-
-                        {/* TAB: PORTFOLIO */}
-                        {activeTab === 'portfolio' && (
-                            <div className="animate-in fade-in duration-300">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div className="aspect-video bg-muted rounded-xl flex items-center justify-center text-muted">
-                                        {tx('dynamic_key_2133212330')}</div>
-                                    <div className="aspect-video bg-muted rounded-xl flex items-center justify-center text-muted">
-                                        {tx('dynamic_key_418944631')}</div>
-                                </div>
-                            </div>
-                        )}
-
-                        {/* TAB: WORK HISTORY */}
-                        {activeTab === 'work-history' && (
-                            <div className="animate-in fade-in duration-300 text-center py-10 text-muted">
-                                <Briefcase className="w-12 h-12 mx-auto mb-3 opacity-20" />
-                                <p>{tx('dynamic_key_1842506838')}</p>
-                            </div>
-                        )}
-
-                        {/* TAB: REVIEWS */}
-                        {activeTab === 'reviews' && (
-                            <div className="animate-in fade-in duration-300 text-center py-10 text-muted">
-                                <Star className="w-12 h-12 mx-auto mb-3 opacity-20" />
-                                <p>{tx('dynamic_key_41921266')}</p>
-                            </div>
-                        )}
-                    </div>
-                </div>
-
-                {/* RIGHT SIDEBAR (Bid Stats & Actions) */}
-                <div className="w-full md:w-80 bg-surface border-s border-border p-6 flex flex-col gap-6">
-
-                    {/* Bid Card */}
-                    <div className="bg-card rounded-xl shadow-sm border border-border p-6">
-                        <h4 className="font-bold text-foreground dark:text-white mb-4">{tx('dynamic_key_617719072')}</h4>
-                        <div className="mb-4 text-center">
-                            <p className="text-sm text-muted mb-1">{tx('dynamic_key_549959251')}</p>
-                            <p className="text-3xl font-bold text-primary-600">{proposal.bid_amount} <span className="text-lg text-muted font-normal">{tx('dynamic_key_1524267')}</span></p>
+                {/* REVIEWS */}
+                {activeTab === 'reviews' && (
+                    <div className="text-center py-16 animate-in fade-in duration-200" style={{ color: 'var(--text-muted)' }}>
+                        <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4"
+                            style={{ background: 'rgba(245,158,11,0.10)' }}>
+                            <Star className="w-6 h-6" style={{ color: '#fbbf24', opacity: 0.6 }} />
                         </div>
-
-                        <div className="space-y-3 py-4 border-t border-border">
-                            <div className="flex justify-between text-sm">
-                                <span className="text-muted-foreground">{tx('dynamic_key_451961555')}</span>
-                                <span className="font-medium">{proposal.duration} {tx('dynamic_key_1598663')}</span>
-                            </div>
-                            <div className="flex justify-between text-sm">
-                                <span className="text-muted-foreground">{tx('dynamic_key_1265703203')}</span>
-                                <span className="font-medium text-muted">{(proposal.bid_amount * 0.1).toFixed(0)} {tx('dynamic_key_1524267')}</span>
-                            </div>
-                            <div className="flex justify-between text-base font-bold pt-2 border-t border-dashed">
-                                <span>{tx('dynamic_key_614661587')}</span>
-                                <span>{(proposal.bid_amount * 1.1).toFixed(0)} {tx('dynamic_key_1524267')}</span>
-                            </div>
-                        </div>
-
-                        <div className="bg-blue-50 text-blue-800 text-xs p-3 rounded-lg mt-4 leading-relaxed">
-                            {tx('dynamic_key_1111663922')}</div>
+                        <p className="text-sm font-semibold mb-1" style={{ color: 'var(--text-secondary)' }}>No reviews yet</p>
+                        <p className="text-xs">Reviews appear after completed contracts.</p>
                     </div>
-
-                    {/* Actions */}
-                    <div className="space-y-3 mt-auto">
-                        <Button
-                            variant="primary"
-                            size="lg"
-                            className="w-full justify-center text-lg"
-                            onClick={onHire}
-                        >
-                            {tx('dynamic_key_2071077264')}</Button>
-
-                        <div className="grid grid-cols-2 gap-2">
-                            <Button
-                                variant="outline"
-                                className="w-full justify-center"
-                                onClick={onMessage}
-                            >
-                                <MessageSquare className="w-4 h-4 ms-2" />
-                                {tx('dynamic_key_217425117')}</Button>
-                            <Button
-                                variant={proposal.status === 'shortlisted' ? 'secondary' : 'outline'}
-                                className="w-full justify-center"
-                                onClick={onShortlist}
-                            >
-                                <Star className={`w-4 h-4 ms-2 ${proposal.status === 'shortlisted' ? 'fill-current' : ''}`} />
-                                {proposal.status === 'shortlisted' ? 'في القائمة' : 'تفضيل'}
-                            </Button>
-                        </div>
-
-                        <button
-                            onClick={onArchive}
-                            className="w-full flex items-center justify-center gap-2 text-muted hover:text-red-500 text-sm py-2 transition-colors"
-                        >
-                            <Archive className="w-4 h-4" />
-                            {tx('dynamic_key_6717295')}</button>
-                    </div>
-                </div>
-
+                )}
             </div>
         </div>
     );

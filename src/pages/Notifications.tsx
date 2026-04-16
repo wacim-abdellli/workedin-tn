@@ -96,7 +96,7 @@ export default function Notifications() {
                                 <Bell className="w-8 h-8" style={{ color: 'var(--color-brand-accent)' }} />
                             </div>
                             <h3 className="text-lg font-semibold text-[var(--color-text-primary)]">{t.notifications?.empty || 'No notifications yet'}</h3>
-                            <p className="text-sm text-[var(--color-text-secondary)] mt-2 max-w-sm mx-auto">{t.notifications?.emptyDesc || "We'll notify you when something important happens with your projects or payments."}</p>
+                            <p className="text-sm text-[var(--color-text-secondary)] mt-2 max-w-sm mx-auto">{tx('notifications.emptyDesc', undefined, "We'll notify you when something important happens with your projects or payments.")}</p>
                         </div>
                     ) : (
                         notifications.map((rawNotification) => {

@@ -88,6 +88,7 @@ function FreelancerOnboardingPage() {
       await updateProfile({
         user_type: promoteUserTypeForWorkspace(profile?.user_type, "freelancer"),
         active_mode: "freelancer",
+        onboarding_completed: true,
         freelancer_onboarding_completed: true,
       });
 

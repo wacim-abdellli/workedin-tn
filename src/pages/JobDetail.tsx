@@ -1,20 +1,32 @@
 import { logger } from "@/lib/logger";
 import { supabase } from "../lib/supabase";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useParams, useNavigate, useLocation, Link } from "react-router-dom";
 import {
+  Box,
   Heart,
   Clock,
   Briefcase,
   Eye,
   Users,
+  Figma,
+  FolderOpen,
   FileText,
   Download,
   Share2,
   Flag,
   CheckCircle,
   ChevronRight,
+  ExternalLink,
+  Facebook,
+  Github,
+  Globe,
+  Instagram,
+  Linkedin,
+  Palette,
   Send,
+  Twitter,
+  Youtube,
 } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -44,6 +56,11 @@ import {
 } from "../lib/marketplaceAccess";
 import { localizeGovernorate } from "../lib/governorates";
 import { ROUTES, getClientJobProposalsRoute } from "../lib/routes";
+import {
+  getJobReferenceLinkMeta,
+  sanitizeJobReferenceLinks,
+  type JobLinkPlatform,
+} from "../lib/jobLinks";
 
 // Types
 interface Job {
@@ -68,6 +85,7 @@ interface Job {
   posted_at: string;
   deadline?: string;
   attachments?: string[];
+  reference_links?: string[];
   client?: {
     id: string;
     full_name: string;
@@ -153,6 +171,30 @@ function formatDate(date: string, language: string): string {
   });
 }
 
+function resolveJobAttachmentUrl(rawValue: string): string {
+  const trimmed = rawValue.trim();
+  if (!trimmed) return '';
+
+  if (/^https?:\/\//i.test(trimmed)) {
+    return trimmed;
+  }
+
+  const normalizedPath = trimmed.replace(/^\/+/, '').replace(/^attachments\//i, '');
+  return supabase.storage.from('attachments').getPublicUrl(normalizedPath).data.publicUrl;
+}
+
+function getAttachmentExtension(urlOrPath: string): string {
+  const withoutQuery = urlOrPath.split('?')[0].split('#')[0].toLowerCase();
+  const dotIndex = withoutQuery.lastIndexOf('.');
+  if (dotIndex < 0) return '';
+  return withoutQuery.slice(dotIndex + 1);
+}
+
+function isImageAttachment(urlOrPath: string): boolean {
+  const extension = getAttachmentExtension(urlOrPath);
+  return ['jpg', 'jpeg', 'png', 'webp', 'gif', 'bmp', 'avif'].includes(extension);
+}
+
 const EXPERIENCE_LABELS: Record<string, string> = {
   beginner: "beginner",
   intermediate: "intermediate",
@@ -169,6 +211,36 @@ const CATEGORY_LABELS: Record<string, string> = {
   data: "data",
   other: "other",
 };
+
+const LINK_BADGE_STYLE: Record<JobLinkPlatform, string> = {
+  google_drive: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/25',
+  linkedin: 'bg-sky-500/15 text-sky-300 border-sky-500/25',
+  github: 'bg-zinc-400/15 text-zinc-200 border-zinc-400/25',
+  youtube: 'bg-rose-500/15 text-rose-300 border-rose-500/25',
+  instagram: 'bg-fuchsia-500/15 text-fuchsia-300 border-fuchsia-500/25',
+  facebook: 'bg-blue-500/15 text-blue-300 border-blue-500/25',
+  x: 'bg-slate-500/15 text-slate-200 border-slate-500/25',
+  tiktok: 'bg-cyan-500/15 text-cyan-300 border-cyan-500/25',
+  dropbox: 'bg-indigo-500/15 text-indigo-300 border-indigo-500/25',
+  behance: 'bg-violet-500/15 text-violet-300 border-violet-500/25',
+  figma: 'bg-orange-500/15 text-orange-300 border-orange-500/25',
+  website: 'bg-white/10 text-white/80 border-white/15',
+};
+
+function JobLinkPlatformIcon({ platform }: { platform: JobLinkPlatform }) {
+  if (platform === 'google_drive') return <FolderOpen className="h-4 w-4" />;
+  if (platform === 'linkedin') return <Linkedin className="h-4 w-4" />;
+  if (platform === 'github') return <Github className="h-4 w-4" />;
+  if (platform === 'youtube') return <Youtube className="h-4 w-4" />;
+  if (platform === 'instagram') return <Instagram className="h-4 w-4" />;
+  if (platform === 'facebook') return <Facebook className="h-4 w-4" />;
+  if (platform === 'x') return <Twitter className="h-4 w-4" />;
+  if (platform === 'tiktok') return <Box className="h-4 w-4" />;
+  if (platform === 'dropbox') return <Box className="h-4 w-4" />;
+  if (platform === 'behance') return <Palette className="h-4 w-4" />;
+  if (platform === 'figma') return <Figma className="h-4 w-4" />;
+  return <Globe className="h-4 w-4" />;
+}
 
 // Main Component
 function JobDetail() {
@@ -194,6 +266,9 @@ function JobDetail() {
     profile,
     freelancerProfile,
   });
+  const requiresFreelancerWorkspace =
+    applyDecision.reason === 'freelancer_role_required' ||
+    applyDecision.reason === 'freelancer_workspace_required';
 
   const getSkillLabel = (skill: string | Skill) => {
     if (typeof skill === "string") {
@@ -299,6 +374,45 @@ function JobDetail() {
         )
       : 0;
   const canViewClientProfile = Boolean(job?.client_id) && user?.id !== job?.client_id;
+
+  const attachmentItems = useMemo(() => {
+    if (!job?.attachments || job.attachments.length === 0) return [];
+
+    return job.attachments
+      .map((rawAttachment, index) => {
+        const url = resolveJobAttachmentUrl(rawAttachment);
+        if (!url) return null;
+
+        const extension = getAttachmentExtension(rawAttachment || url);
+        return {
+          url,
+          extension,
+          isImage: isImageAttachment(rawAttachment || url),
+          displayIndex: index + 1,
+        };
+      })
+      .filter(
+        (
+          item,
+        ): item is {
+          url: string;
+          extension: string;
+          isImage: boolean;
+          displayIndex: number;
+        } => Boolean(item),
+      );
+  }, [job?.attachments]);
+
+  const imageAttachments = attachmentItems.filter((item) => item.isImage);
+  const fileAttachments = attachmentItems.filter((item) => !item.isImage);
+  const pdfAttachments = fileAttachments.filter((item) => item.extension === 'pdf');
+  const otherFileAttachments = fileAttachments.filter((item) => item.extension !== 'pdf');
+
+  const referenceLinkItems = useMemo(() => {
+    return sanitizeJobReferenceLinks(job?.reference_links || [])
+      .map((link) => getJobReferenceLinkMeta(link))
+      .filter((item): item is NonNullable<typeof item> => Boolean(item));
+  }, [job?.reference_links]);
 
   // Toggle Save Mutation
   const toggleSaveMutation = useMutation({
@@ -756,6 +870,42 @@ function JobDetail() {
               </div>
             </div>
 
+            {/* Reference Links */}
+            {referenceLinkItems.length > 0 && (
+              <div className="rounded-2xl border border-white/8 p-6 sm:p-8" style={{ background: 'rgba(255,255,255,0.025)' }}>
+                <h2 className="text-base font-bold text-white mb-4 flex items-center gap-2">
+                  <Globe className="w-4 h-4 opacity-60" />
+                  {tx('jobDetail.referenceLinks', undefined, 'Reference links')}
+                </h2>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {referenceLinkItems.map((item, index) => (
+                    <a
+                      key={`${item.url}-${index}`}
+                      href={item.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group rounded-xl border border-white/10 bg-white/4 p-3.5 transition-colors hover:bg-white/8"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0 flex items-start gap-3">
+                          <span className={`inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border ${LINK_BADGE_STYLE[item.platform]}`}>
+                            <JobLinkPlatformIcon platform={item.platform} />
+                          </span>
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-semibold text-white">
+                              {item.platformLabel}
+                            </p>
+                            <p className="truncate text-xs text-white/45">{item.hostname}</p>
+                          </div>
+                        </div>
+                        <ExternalLink className="h-4 w-4 shrink-0 text-white/35 transition group-hover:text-white/70" />
+                      </div>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Skills */}
             {job.required_skills && job.required_skills.length > 0 && (
               <div className="rounded-2xl border border-white/8 p-6 sm:p-8" style={{ background: 'rgba(255,255,255,0.025)' }}>
@@ -791,16 +941,76 @@ function JobDetail() {
             )}
 
             {/* Attachments */}
-            {job.attachments && job.attachments.length > 0 && (
+            {attachmentItems.length > 0 && (
               <div className="rounded-2xl border border-white/8 p-6 sm:p-8" style={{ background: 'rgba(255,255,255,0.025)' }}>
                 <h2 className="text-base font-bold text-white mb-4">{t.jobDetail.attachments}</h2>
-                <div className="space-y-2">
-                  {job.attachments.map((url, index) => {
-                    const filename = url.split('/').pop() || t.jobDetail.file.replace('{{index}}', String(index + 1));
-                    return (
+
+                {imageAttachments.length > 0 ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+                    {imageAttachments.map((item) => (
                       <a
-                        key={index}
-                        href={url}
+                        key={`${item.url}-${item.displayIndex}`}
+                        href={item.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="group overflow-hidden rounded-xl border border-white/10 bg-white/4 hover:bg-white/8 transition-colors"
+                      >
+                        <div className="aspect-[4/3] bg-black/30">
+                          <img
+                            src={item.url}
+                            alt={tx('jobDetail.attachmentLabel', { index: item.displayIndex }, `Attachment ${item.displayIndex}`)}
+                            loading="lazy"
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div className="px-3 py-2 flex items-center justify-between">
+                          <span className="text-sm text-white/85">
+                            {tx('jobDetail.attachmentLabel', { index: item.displayIndex }, `Attachment ${item.displayIndex}`)}
+                          </span>
+                          <span className="text-[11px] text-white/45 uppercase">{item.extension || 'IMG'}</span>
+                        </div>
+                      </a>
+                    ))}
+                  </div>
+                ) : null}
+
+                {pdfAttachments.length > 0 ? (
+                  <div className="grid grid-cols-1 gap-3 mb-4">
+                    {pdfAttachments.map((item) => (
+                      <div
+                        key={`${item.url}-${item.displayIndex}`}
+                        className="rounded-xl border border-white/10 bg-white/4 overflow-hidden"
+                      >
+                        <div className="px-3 py-2 flex items-center justify-between border-b border-white/10">
+                          <span className="text-sm text-white/85">
+                            {tx('jobDetail.attachmentLabel', { index: item.displayIndex }, `Attachment ${item.displayIndex}`)}
+                          </span>
+                          <a
+                            href={item.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-[11px] text-white/60 hover:text-white/90 transition-colors"
+                          >
+                            {tx('jobDetail.openFile', undefined, 'Open file')}
+                          </a>
+                        </div>
+                        <iframe
+                          src={item.url}
+                          title={tx('jobDetail.attachmentLabel', { index: item.displayIndex }, `Attachment ${item.displayIndex}`)}
+                          className="w-full h-72 bg-black/20"
+                          loading="lazy"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
+
+                {otherFileAttachments.length > 0 ? (
+                  <div className="space-y-2">
+                    {otherFileAttachments.map((item) => (
+                      <a
+                        key={`${item.url}-${item.displayIndex}`}
+                        href={item.url}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex items-center justify-between p-3.5 rounded-xl border border-white/8 bg-white/4 hover:bg-white/8 transition-colors group"
@@ -809,13 +1019,18 @@ function JobDetail() {
                           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-500/15 text-violet-400">
                             <FileText className="w-4 h-4" />
                           </div>
-                          <span className="text-sm text-white/80 group-hover:text-white transition-colors">{filename}</span>
+                          <div className="min-w-0">
+                            <p className="text-sm text-white/85">
+                              {tx('jobDetail.attachmentLabel', { index: item.displayIndex }, `Attachment ${item.displayIndex}`)}
+                            </p>
+                            <p className="text-[11px] text-white/45 uppercase">{item.extension || tx('jobDetail.fileType', undefined, 'FILE')}</p>
+                          </div>
                         </div>
                         <Download className="w-4 h-4 text-white/30 group-hover:text-white/60 transition-colors" />
                       </a>
-                    );
-                  })}
-                </div>
+                    ))}
+                  </div>
+                ) : null}
               </div>
             )}
 
@@ -865,6 +1080,60 @@ function JobDetail() {
                   <Button variant="primary" className="w-full rounded-xl" onClick={() => navigate(getClientJobProposalsRoute(job.id))}>
                     {tx('jobDetail.manageJob', undefined, 'Manage job')}
                   </Button>
+                </div>
+              ) : !applyDecision.allowed ? (
+                <div className="space-y-4">
+                  {/* Contextual access message */}
+                  <div
+                    className="rounded-2xl p-5 text-center"
+                    style={{
+                      background: requiresFreelancerWorkspace
+                        ? 'linear-gradient(135deg, rgba(245,158,11,0.08) 0%, rgba(15,23,42,0.7) 100%)'
+                        : 'linear-gradient(135deg, rgba(59,130,246,0.08) 0%, rgba(15,23,42,0.7) 100%)',
+                      border: `1px solid ${requiresFreelancerWorkspace ? 'rgba(245,158,11,0.2)' : 'rgba(59,130,246,0.2)'}`,
+                    }}
+                  >
+                    <div className="w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-3"
+                      style={{
+                        background: requiresFreelancerWorkspace
+                          ? 'rgba(245,158,11,0.15)' : 'rgba(59,130,246,0.15)',
+                      }}>
+                      {requiresFreelancerWorkspace ? (
+                        <Briefcase className="w-6 h-6 text-amber-400" />
+                      ) : applyDecision.reason === 'auth_required' ? (
+                        <Send className="w-6 h-6 text-blue-400" />
+                      ) : (
+                        <CheckCircle className="w-6 h-6 text-blue-400" />
+                      )}
+                    </div>
+                    <h3 className="font-bold text-white text-sm mb-1">
+                      {requiresFreelancerWorkspace
+                        ? tx('jobDetail.clientCantApplyTitle', undefined, 'Client accounts cannot apply')
+                        : applyDecision.reason === 'auth_required'
+                        ? tx('jobDetail.loginRequiredTitle', undefined, 'Sign in to apply')
+                        : applyDecision.reason === 'freelancer_onboarding_required'
+                        ? tx('jobDetail.completeOnboardingTitle', undefined, 'Complete onboarding first')
+                        : applyDecision.reason === 'freelancer_profile_incomplete'
+                        ? tx('jobDetail.completeProfileTitle', undefined, 'Complete your profile')
+                        : tx('jobDetail.cannotApplyTitle', undefined, 'Cannot apply yet')}
+                    </h3>
+                    <p className="text-xs text-white/45 mb-4 leading-relaxed">
+                      {getAccessMessage(applyDecision.reason, applyDecision.completion)}
+                    </p>
+                    {applyDecision.nextStepPath && (
+                      <Button
+                        variant="outline"
+                        className="w-full rounded-xl"
+                        onClick={() => navigate(applyDecision.nextStepPath!, { state: { from: location.pathname } })}
+                      >
+                        {requiresFreelancerWorkspace
+                          ? tx('jobDetail.switchToFreelancer', undefined, 'Switch to Freelancer')
+                          : applyDecision.reason === 'auth_required'
+                          ? tx('jobDetail.signIn', undefined, 'Sign in')
+                          : tx('jobDetail.completeNow', undefined, 'Complete now')}
+                      </Button>
+                    )}
+                  </div>
                 </div>
               ) : (
                 <div className="space-y-4">

@@ -56,10 +56,19 @@ export function NotificationBell({ className = '' }: { className?: string }) {
         const mins = Math.floor(diffMs / 60000);
         const hours = Math.floor(diffMs / 3600000);
         const days = Math.floor(diffMs / 86400000);
-        if (mins < 1) return t.common.time.now;
-        if (mins < 60) return language === 'en' ? `${mins}${t.common.time.minute} ${t.common.time.ago}` : `${t.common.time.ago} ${mins} ${t.common.time.minute}`;
-        if (hours < 24) return language === 'en' ? `${hours}${t.common.time.hour} ${t.common.time.ago}` : `${t.common.time.ago} ${hours} ${t.common.time.hour}`;
-        return language === 'en' ? `${days}${t.common.time.day} ${t.common.time.ago}` : `${t.common.time.ago} ${days} ${t.common.time.day}`;
+        
+        if (mins < 1) return t.jobs?.time?.now || 'Just now';
+        
+        const ago = t.jobs?.time?.ago || 'ago';
+        const agoPrefix = t.jobs?.time?.ago_prefix || '';
+        const minute = t.jobs?.time?.minute || 'min';
+        const hour = t.jobs?.time?.hour || 'h';
+        const day = t.jobs?.time?.day || 'd';
+        const prefixStr = agoPrefix ? `${agoPrefix} ` : '';
+        
+        if (mins < 60) return language === 'en' ? `${mins}${minute} ${ago}` : `${prefixStr}${mins} ${minute} ${ago}`;
+        if (hours < 24) return language === 'en' ? `${hours}${hour} ${ago}` : `${prefixStr}${hours} ${hour} ${ago}`;
+        return language === 'en' ? `${days}${day} ${ago}` : `${prefixStr}${days} ${day} ${ago}`;
     };
 
     const handleNotificationClick = async (n: AppNotification) => {
@@ -102,7 +111,7 @@ export function NotificationBell({ className = '' }: { className?: string }) {
                         {isLoading ? (
                             <div className="p-12 text-center">
                                 <Loader2 className="mx-auto mb-3 h-8 w-8 animate-spin text-brand/50" />
-                                <p className="text-sm text-muted">{t.common?.loading || 'Loading...'}</p>
+                                <p className="text-sm text-muted">{tx('dashboard.loading', undefined, 'Loading...')}</p>
                             </div>
                         ) : notifications.length === 0 ? (
                             <div className="p-12 text-center">

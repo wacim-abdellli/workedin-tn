@@ -1259,6 +1259,7 @@ export const fr: Translations = {
         "openWorkspace": "Ouvrir l'espace de travail ->"
     },
     "common": {
+        "viewJob": "Voir la mission",
         "loading": "Chargement...",
         "loadingContent": "Chargement du contenu",
         "error": "Erreur",
@@ -1418,9 +1419,53 @@ export const fr: Translations = {
         "viewAll": "Voir toutes les notifications",
         "delete": "Supprimer la notification",
         "identity": {
+            "submitted": {
+                "title": "Demande de vérification reçue",
+                "body": "Votre demande de vérification d'identité a été reçue. Notre équipe examine vos documents."
+            },
+            "verified": {
+                "title": "Identité vérifiée avec succès",
+                "body": "Votre compte est désormais vérifié. Vous avez reçu le badge de vérification."
+            },
             "rejected": {
                 "title": "Demande de verification rejetee",
                 "body": "Votre demande de verification d'identite a ete rejetee. Assurez-vous que les images sont claires puis renvoyez votre demande."
+            }
+        },
+        "message": {
+            "title": "Nouveau message de {{sender}}",
+            "deleted": "Ce message a été supprimé"
+        },
+        "proposal": {
+            "accepted": {
+                "title": "Proposition acceptée",
+                "body": "Votre proposition sur '{{jobTitle}}' a été acceptée !"
+            },
+            "new": {
+                "title": "Nouvelle proposition reçue",
+                "body": "{{freelancer}} a soumis une proposition pour '{{jobTitle}}'"
+            }
+        },
+        "contract": {
+            "active": {
+                "title": "Contrat démarré",
+                "body": "{{body}}"
+            },
+            "completed": {
+                "title": "Contrat terminé",
+                "body": "{{body}}"
+            },
+            "cancelled": {
+                "title": "Contrat annulé",
+                "body": "{{body}}"
+            },
+            "disputed": {
+                "title": "Contrat en litige",
+                "body": "{{body}}"
+            },
+            "update": {
+                "title": "Mise à jour du contrat",
+                "body": "{{body}}"
             }
         }
     },
@@ -1475,17 +1520,24 @@ export const fr: Translations = {
             "rejected": "Refusées",
             "all": "Toutes",
             "loading": "Chargement des propositions...",
-            "emptyTitle": "Aucune proposition pour le moment",
-            "emptyDescription": "Parcourez les projets ouverts et envoyez votre première proposition.",
+            "emptyTitle": "Vous n'avez encore postulé à aucune mission",
+            "emptyTabTitle": "Aucune proposition {{tab}}",
+            "emptyDescription": "Parcourez les projets ouverts et envoyez votre première proposition pour commencer.",
+            "emptyTabHint": "Vous avez des propositions, mais aucune en {{tab}} pour l'instant. Essayez l'onglet Toutes.",
             "browseJobs": "Parcourir les missions",
             "unknownProject": "Projet inconnu",
             "yourBid": "Votre offre : {{amount}} TND",
             "deliveryDays": "Livraison en {{days}} jours",
             "submittedAgo": "Envoyé {{time}}",
+            "justNow": "À l'instant",
+            "minsAgo": "Il y a {{mins}} min",
+            "hoursAgo": "Il y a {{hours}}h",
             "today": "Aujourd'hui",
             "oneDayAgo": "Il y a 1 jour",
             "daysAgo": "Il y a {{days}} jours",
-            "viewContract": "Voir le contrat"
+            "viewContract": "Voir le contrat",
+            "viewJob": "Voir la mission",
+            "proposalAccepted": "Votre proposition a été acceptée !"
         },
         "freelancerEarnings": {
             "seoTitle": "Gains | WorkedIn",
@@ -1578,6 +1630,9 @@ export const fr: Translations = {
             "selectConversationDetails": "Sélectionnez une conversation pour voir les détails",
             "profileAction": "Profil",
             "contractsAction": "Contrats",
+            "directContext": "Discussion directe",
+            "contractContext": "Discussion du contrat",
+            "openContract": "Ouvrir le contrat",
             "archiveConversation": "Archiver la conversation",
             "deleteConversation": "Supprimer la conversation",
             "attachFile": "Joindre un fichier",
@@ -1622,7 +1677,10 @@ export const fr: Translations = {
             "reacting": "Réaction...",
             "copyMessage": "Copier le message",
             "replyTo": "Répondre au message",
-            "edited": "Modifié"
+            "edited": "Modifié",
+            "readOnlyThread": "{{message}}",
+            "readOnlyPlaceholder": "{{message}}",
+            "lifecycleBanner": "{{message}}"
         },
         "freelancerProfile": {
             "actions": {
@@ -1784,7 +1842,8 @@ export const fr: Translations = {
             "filters": {
                 "clearAll": "Tout effacer",
                 "jobType": "Type de mission",
-                "searchPlaceholder": "Rechercher des missions..."
+                "searchPlaceholder": "Rechercher des missions...",
+                "showing": "Affichage"
             },
             "actions": {
                 "applyNow": "Postuler"
@@ -1872,7 +1931,18 @@ export const fr: Translations = {
     },
     "search": {
         "placeholder": "Rechercher...",
-        "trending": "Tendances",
+        "trending": {
+            "logoDesign": "Création de logo",
+            "reactJs": "React JS",
+            "translation": "Traduction",
+            "uiux": "UI/UX"
+        },
+        "trendingMeta": {
+            "logoDesign": "Populaire en ce moment",
+            "reactJs": "Forte demande",
+            "translation": "Évolue vite",
+            "uiux": "Tendance cette semaine"
+        },
         "recent": "Recherches récentes",
         "clearAll": "Tout effacer",
         "jobs": "Missions",
@@ -1881,15 +1951,90 @@ export const fr: Translations = {
         "resultsFor": "Résultats pour",
         "noResults": "Aucun résultat trouvé",
         "noResultsDesc": "Nous n'avons rien trouvé correspondant à votre recherche",
-        "suggestions": {
-            "mobileApp": "Application mobile",
-            "logo": "Logo",
-            "seo": "SEO",
+        "negotiable": "Négociable",
+        "budgetNegotiable": "Négociable",
+        "resultsLabel": "résultats pour",
+        "filters": "Filtres",
+        "filterSections": {
+            "category": "Catégorie",
+            "budgetRange": "Fourchette de budget"
+        },
+        "filtersTitle": "Filtres",
+        "resetFilters": "Effacer tous les filtres",
+        "tabs": {
+            "all": "Tout",
+            "jobs": "Missions",
+            "freelancers": "Freelances"
+        },
+        "categories": {
+            "development": "Développement",
+            "design": "Design",
+            "marketing": "Marketing",
+            "writing": "Rédaction"
+        },
+        "budgets": {
+            "0_50": "Moins de 50 TND",
+            "50_100": "50 – 100 TND",
+            "100_250": "100 – 250 TND",
+            "250_500": "250 – 500 TND",
+            "500_plus": "500+ TND",
+            "range1": "Moins de 50 TND",
+            "range2": "50 – 100 TND",
+            "range3": "100 – 250 TND",
+            "range4": "250 – 500 TND",
+            "range5": "500+ TND"
+        },
+        "sort": {
+            "newest": "Plus récents",
+            "budgetHigh": "Budget : Élevé à Bas",
+            "budgetLow": "Budget : Bas à Élevé",
+            "proposalsHigh": "Plus de propositions"
+        },
+        "pagination": {
+            "prev": "Préc.",
+            "next": "Suiv.",
+            "pageOf": "Page {{page}} sur {{total}}"
+        },
+        "empty": {
+            "titlePrefix": "Trouvez Votre",
+            "titleHighlight": "Match Parfait",
+            "subtitle": "Découvrez des freelances talentueux et des projets incroyables en quelques clics.",
+            "trendingTitle": "Tendances du moment",
+            "browseAllJobs": "Ou parcourir toutes les missions",
+            "tipLabel": "Astuce",
+            "tipSpecific": "Soyez précis avec vos mots-clés pour trouver le meilleur résultat",
+            "popularLabel": "Populaire",
+            "tipPopular": "React et UI/UX design sont en tendance cette semaine",
+            "proTipLabel": "Pro Tip",
+            "tipFilters": "Utilisez les filtres pour affiner par budget et catégorie"
+        },
+        "noResultsView": {
+            "title": "Aucun résultat pour",
+            "subtitle": "Pas de panique ! Essayez ces suggestions :",
+            "didYouMeanPlaceholder": "Et si vous essayiez un mot-clé plus large ?",
+            "suggestionFiltersTitle": "Élargir vos filtres",
+            "suggestionFiltersBody": "Supprimez les filtres de budget ou de catégorie",
+            "suggestionKeywordsTitle": "Essayez d'autres mots-clés",
+            "suggestionKeywordsBody": "Une formulation différente donne de meilleurs résultats",
+            "suggestionCategoriesTitle": "Parcourir les catégories populaires",
+            "suggestionCategoriesBody": "Découvrez les compétences tendance"
+        },
+        "error": {
+            "title": "Une erreur est survenue",
+            "description": "Nous avons des difficultés à effectuer la recherche.",
+            "retry": "Réessayer"
+        },
+        "resultsCount": "Affichage de {{count}} résultats pour \"{{query}}\"",
+        "labels": {
+            "freelancer": "Freelance",
+            "projects": "projets",
+            "successRate": "réussite"
+        },
+        "trendingTags": {
             "logoDesign": "Création de logo",
             "reactJs": "React JS",
             "translation": "Traduction",
-            "videoEditing": "Montage vidéo",
-            "python": "Python"
+            "uiux": "UI/UX"
         }
     },
     "onboarding": {
@@ -2753,7 +2898,9 @@ export const fr: Translations = {
         "hireSuccess": "Freelance embauché avec succès! 🎉",
         "hireError": "Échec de l'embauche. Veuillez réessayer",
         "proposalArchived": "Proposition archivée",
+        "proposalUnarchived": "Proposition restaurée",
         "archiveError": "Échec de l'archivage",
+        "unarchiveError": "Échec de la restauration",
         "defaultUser": "Utilisateur",
         "defaultCountry": "Tunisie",
         "defaultFreelancer": "Freelance",
@@ -2771,7 +2918,83 @@ export const fr: Translations = {
         "archived": "Archivé",
         "noProposals": "Pas encore de propositions",
         "noProposalsDesc": "Vous n'avez pas encore reçu de propositions pour ce travail. Essayez de partager pour augmenter la visibilité.",
-        "shareProject": "Partager le travail"
+        "shareProject": "Partager le travail",
+        "jobDetails": "Détails de la mission",
+        "expectedDuration": "Durée prévue",
+        "viewJob": "Voir la mission",
+        "aiTitle": "Recommandations IA",
+        "aiDesc": "Nous avons analysé vos exigences et trouvé 3 freelances correspondant à votre projet à 95%.",
+        "viewSuggestions": "Voir les suggestions",
+        "filterTitle": "Filtrer les propositions",
+        "searchPlaceholder": "Rechercher des propositions...",
+        "sortBy": "Trier par",
+        "sort": {
+            "recommended": "Meilleure correspondance",
+            "lowestBid": "Offre la plus basse",
+            "highestBid": "Offre la plus haute",
+            "newest": "Plus récent",
+            "rating": "Mieux noté"
+        },
+        "freelancerLevel": "Niveau du freelance",
+        "extraFilters": "Autres filtres",
+        "verifiedOnly": "Compte vérifié uniquement",
+        "highRated": "4 étoiles et plus",
+        "hasPortfolio": "A un portfolio",
+        "clearFilters": "Effacer les filtres",
+        "shortlisted": "Sélectionné",
+        "verified": "Vérifié",
+        "topRated": "Top Noté",
+        "jobsDone": "missions terminées",
+        "successRate": "taux de succès",
+        "noCoverLetter": "Aucune lettre de motivation fournie.",
+        "readMore": "Lire la suite",
+        "showLess": "Réduire",
+        "receivedOn": "Reçu le",
+        "proposalBid": "Montant de l'offre",
+        "days": "jours",
+        "deliveryTbd": "Non défini",
+        "hire": "Recruter",
+        "unarchive": "Restaurer",
+        "message": "Chat",
+        "save": "Sauvegarder",
+        "saved": "Sauvegardé",
+        "modal": {
+            "tabProposal": "Offre",
+            "tabProfile": "Profil",
+            "tabPortfolio": "Portfolio",
+            "tabReviews": "Avis",
+            "freelancer": "Freelancer",
+            "available": "Disponible",
+            "busy": "Occupé",
+            "rating": "Note",
+            "jobsDone": "Missions effectuées",
+            "successRate": "Taux de succès",
+            "reviews": "Avis",
+            "responseTime": "Temps de réponse",
+            "responseTimeValue": "~1 heure",
+            "about": "À propos",
+            "noProfile": "Aucune information de profil disponible.",
+            "noPortfolio": "Aucun élément de portfolio",
+            "noPortfolioHint": "Le freelancer n'a pas encore ajouté de portfolio.",
+            "noReviews": "Aucun avis pour l'instant",
+            "noReviewsHint": "Les avis apparaissent après des contrats terminés.",
+            "submittedOn": "Envoyé le",
+            "coverLetter": "Lettre de motivation",
+            "attachments": "Pièces jointes",
+            "proposalDetails": "Détails de l'offre",
+            "freelancerBid": "Offre du freelancer",
+            "delivery": "Livraison",
+            "serviceFee": "Frais de service (10%)",
+            "total": "Total à payer",
+            "escrowNote": "Le paiement est conservé en séquestre jusqu'à votre validation.",
+            "confirmHire": "Embaucher ce freelancer ?",
+            "confirmHireDesc": "Un contrat sera créé et le paiement mis en séquestre.",
+            "confirmYes": "Oui, Embaucher !",
+            "archive": "Archiver l'offre",
+            "unarchive": "Restaurer l'offre",
+            "accepted": "Accepté",
+            "rejected": "Non sélectionné"
+        }
     },
     "jobDetail": {
         "jobSaved": "Travail enregistré",
@@ -2852,6 +3075,41 @@ export const fr: Translations = {
         "viewProposal": "Voir la proposition",
         "yourJob": "C'est votre mission",
         "manageJob": "Gérer la mission"
+    },
+    "proposalModal": {
+        "jobContext": "CONTEXTE DE LA MISSION",
+        "platformFee": "Frais plateforme ({{percent}}%)",
+        "youReceive": "Vous recevrez",
+        "deliveryTime": "Délai de livraison",
+        "coverLetter": "Lettre de motivation",
+        "coverLetterPlaceholder": "Décrivez votre approche, vos expériences pertinentes et pourquoi vous êtes le meilleur candidat...",
+        "coverLetterMinHint": "Minimum {{count}} caractères",
+        "attachmentsOptional": "Pièces jointes (optionnelles)",
+        "addFile": "Ajouter un fichier",
+        "fileLimit": "Max {{size}} Mo par fichier",
+        "title": "Soumettre une proposition",
+        "bidLabel": "Votre offre :",
+        "cancel": "Annuler",
+        "submit": "Soumettre la proposition",
+        "submitting": "Envoi en cours...",
+        "delivery": {
+            "oneDay": "1 jour",
+            "twoDays": "2 jours",
+            "threeDays": "3 jours",
+            "fiveDays": "5 jours",
+            "oneWeek": "1 semaine",
+            "twoWeeks": "2 semaines",
+            "oneMonth": "1 mois",
+            "twoMonths": "2 mois"
+        },
+        "validation": {
+            "coverLetterMin": "La lettre de motivation doit contenir au moins {{count}} caractères",
+            "coverLetterMax": "La lettre de motivation ne doit pas dépasser {{count}} caractères",
+            "bidMin": "L'offre minimale est de {{amount}} {{currency}}",
+            "bidMax": "L'offre maximale est de {{amount}} {{currency}}",
+            "deliveryMin": "La livraison minimale est de {{count}} jour",
+            "deliveryMax": "La livraison maximale est de {{count}} jours"
+        }
     },
     "reviews": {
         "client": "Client",

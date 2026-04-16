@@ -4,6 +4,7 @@ import {
   defineRoute,
   withErrorBoundary,
   withProtected,
+  withWorkspace,
   type AppRouteDefinition,
 } from './routeDefinitions';
 
@@ -119,18 +120,26 @@ export const publicRoutes: AppRouteDefinition[] = [
     withErrorBoundary(<VerifyEmail />),
   ),
   defineRoute(
-    { path: '/jobs', page: 'JobBoard', section: 'public', guard: 'protected', errorBoundary: true },
-    withErrorBoundary(withProtected(<JobBoard />)),
+    {
+      path: '/jobs',
+      page: 'JobBoard',
+      section: 'public',
+      guard: 'protected-workspace',
+      workspace: 'freelancer',
+      errorBoundary: true,
+    },
+    withErrorBoundary(withProtected(withWorkspace('freelancer', <JobBoard />))),
   ),
   defineRoute(
     {
       path: '/jobs/:jobId',
       page: 'JobDetail',
       section: 'public',
-      guard: 'protected',
+      guard: 'protected-workspace',
+      workspace: 'freelancer',
       errorBoundary: true,
     },
-    withErrorBoundary(withProtected(<JobDetail />)),
+    withErrorBoundary(withProtected(withWorkspace('freelancer', <JobDetail />))),
   ),
   defineRoute(
     {

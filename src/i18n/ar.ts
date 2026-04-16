@@ -1257,6 +1257,7 @@ export const ar = {
         "openWorkspace": "فتح مساحة العمل ->"
     },
     "common": {
+        "viewJob": "عرض المهمة",
         "loading": "جاري التحميل...",
         "loadingContent": "تحميل المحتوى",
         "error": "حدث خطأ",
@@ -1416,9 +1417,53 @@ export const ar = {
         "viewAll": "عرض كل الإشعارات",
         "delete": "حذف الإشعار",
         "identity": {
+            "submitted": {
+                "title": "تم استلام طلب التوثيق",
+                "body": "تم استلام طلب توثيق الهوية الخاص بك. فريقنا يقوم بمراجعة مستنداتك."
+            },
+            "verified": {
+                "title": "تم توثيق هويتك بنجاح",
+                "body": "حسابك الآن موثق. لقد حصلت على شارة التوثيق الزرقاء."
+            },
             "rejected": {
                 "title": "تم رفض طلب توثيق الهوية",
                 "body": "تم رفض طلب توثيق الهوية. يرجى التأكد من وضوح الصور ثم إعادة التقديم."
+            }
+        },
+        "message": {
+            "title": "رسالة جديدة من {{sender}}",
+            "deleted": "تم حذف هذه الرسالة"
+        },
+        "proposal": {
+            "accepted": {
+                "title": "تم قبول العرض",
+                "body": "تم قبول عرضك على المشروع '{{jobTitle}}'!"
+            },
+            "new": {
+                "title": "عرض جديد",
+                "body": "قدّم {{freelancer}} عرضاً على '{{jobTitle}}'"
+            }
+        },
+        "contract": {
+            "active": {
+                "title": "بدء العقد",
+                "body": "{{body}}"
+            },
+            "completed": {
+                "title": "اكتمل العقد",
+                "body": "{{body}}"
+            },
+            "cancelled": {
+                "title": "تم إلغاء العقد",
+                "body": "{{body}}"
+            },
+            "disputed": {
+                "title": "نزاع على العقد",
+                "body": "{{body}}"
+            },
+            "update": {
+                "title": "تحديث على العقد",
+                "body": "{{body}}"
             }
         }
     },
@@ -1473,17 +1518,24 @@ export const ar = {
             "rejected": "مرفوضة",
             "all": "الكل",
             "loading": "جارٍ تحميل العروض...",
-            "emptyTitle": "لا توجد عروض بعد",
-            "emptyDescription": "تصفح المشاريع المفتوحة وقدّم أول عرض لك.",
+            "emptyTitle": "لم تتقدم بعد لأي وظيفة",
+            "emptyTabTitle": "لا توجد عروض {{tab}}",
+            "emptyDescription": "تصفح المشاريع المفتوحة وقدّم أول عرض لك للبدء في العمل.",
+            "emptyTabHint": "لديك عروض، لكن لا يوجد أي منها في {{tab}} الآن. جرّب تبويب الكل.",
             "browseJobs": "تصفح الوظائف",
             "unknownProject": "مشروع غير معروف",
             "yourBid": "عرضك: {{amount}} د.ت",
             "deliveryDays": "{{days}} يوم للتسليم",
             "submittedAgo": "تم الإرسال {{time}}",
+            "justNow": "الآن",
+            "minsAgo": "منذ {{mins}} دقيقة",
+            "hoursAgo": "منذ {{hours}} ساعة",
             "today": "اليوم",
             "oneDayAgo": "منذ يوم",
             "daysAgo": "منذ {{days}} أيام",
-            "viewContract": "عرض العقد"
+            "viewContract": "عرض العقد",
+            "viewJob": "عرض الوظيفة",
+            "proposalAccepted": "تم قبول عرضك!"
         },
         "freelancerEarnings": {
             "seoTitle": "الأرباح | WorkedIn",
@@ -1576,6 +1628,9 @@ export const ar = {
             "selectConversationDetails": "اختر محادثة لعرض التفاصيل",
             "profileAction": "الملف الشخصي",
             "contractsAction": "العقود",
+            "directContext": "محادثة مباشرة",
+            "contractContext": "محادثة العقد",
+            "openContract": "فتح العقد",
             "archiveConversation": "أرشفة المحادثة",
             "deleteConversation": "حذف المحادثة",
             "attachFile": "إرفاق ملف",
@@ -1620,7 +1675,10 @@ export const ar = {
             "reacting": "جارٍ التفاعل...",
             "copyMessage": "نسخ الرسالة",
             "replyTo": "الرد على الرسالة",
-            "edited": "تم التعديل"
+            "edited": "تم التعديل",
+            "readOnlyThread": "{{message}}",
+            "readOnlyPlaceholder": "{{message}}",
+            "lifecycleBanner": "{{message}}"
         },
         "freelancerProfile": {
             "actions": {
@@ -1782,7 +1840,8 @@ export const ar = {
             "filters": {
                 "clearAll": "مسح الكل",
                 "jobType": "نوع العمل",
-                "searchPlaceholder": "ابحث عن وظائف..."
+                "searchPlaceholder": "ابحث عن وظائف...",
+                "showing": "يعرض"
             },
             "actions": {
                 "applyNow": "قدم الآن"
@@ -1870,7 +1929,18 @@ export const ar = {
     },
     "search": {
         "placeholder": "بحث...",
-        "trending": "الأكثر بحثاً",
+        "trending": {
+            "logoDesign": "تصميم شعار",
+            "reactJs": "React JS",
+            "translation": "ترجمة",
+            "uiux": "UI/UX"
+        },
+        "trendingMeta": {
+            "logoDesign": "شائع الآن",
+            "reactJs": "طلب مرتفع",
+            "translation": "ينمو بسرعة",
+            "uiux": "رائج هذا الأسبوع"
+        },
         "recent": "عمليات البحث الأخيرة",
         "clearAll": "مسح الكل",
         "jobs": "وظائف",
@@ -1879,15 +1949,90 @@ export const ar = {
         "resultsFor": "نتائج البحث عن",
         "noResults": "لا توجد نتائج",
         "noResultsDesc": "لم نجد أي نتيجة تطابق بحثك",
-        "suggestions": {
-            "mobileApp": "تطبيقات الجوال",
-            "logo": "شعار",
-            "seo": "سيو",
+        "negotiable": "قابل للتفاوض",
+        "budgetNegotiable": "قابل للتفاوض",
+        "resultsLabel": "نتيجة لـ",
+        "filters": "التصفية",
+        "filterSections": {
+            "category": "الفئة",
+            "budgetRange": "نطاق الميزانية"
+        },
+        "filtersTitle": "التصفية",
+        "resetFilters": "مسح جميع الفلاتر",
+        "tabs": {
+            "all": "الكل",
+            "jobs": "وظائف",
+            "freelancers": "مستقلين"
+        },
+        "categories": {
+            "development": "تطوير",
+            "design": "تصميم",
+            "marketing": "تسويق",
+            "writing": "كتابة"
+        },
+        "budgets": {
+            "0_50": "أقل من 50 د.ت",
+            "50_100": "50 – 100 د.ت",
+            "100_250": "100 – 250 د.ت",
+            "250_500": "250 – 500 د.ت",
+            "500_plus": "+500 د.ت",
+            "range1": "أقل من 50 د.ت",
+            "range2": "50 – 100 د.ت",
+            "range3": "100 – 250 د.ت",
+            "range4": "250 – 500 د.ت",
+            "range5": "+500 د.ت"
+        },
+        "sort": {
+            "newest": "الأحدث أولاً",
+            "budgetHigh": "الميزانية: الأعلى أولاً",
+            "budgetLow": "الميزانية: الأقل أولاً",
+            "proposalsHigh": "الأكثر عروضاً"
+        },
+        "pagination": {
+            "prev": "السابق",
+            "next": "التالي",
+            "pageOf": "الصفحة {{page}} من {{total}}"
+        },
+        "empty": {
+            "titlePrefix": "اعثر على",
+            "titleHighlight": "المطابقة المثالية",
+            "subtitle": "اكتشف مستقلين موهوبين ومشاريع رائعة ببضع نقرات فقط.",
+            "trendingTitle": "الأكثر رواجاً الآن",
+            "browseAllJobs": "أو تصفح جميع الوظائف",
+            "tipLabel": "نصيحة",
+            "tipSpecific": "كن دقيقاً في الكلمات المفتاحية للعثور على أفضل نتيجة بسرعة",
+            "popularLabel": "شائع",
+            "tipPopular": "React وتصميم UI/UX في الصدارة هذا الأسبوع",
+            "proTipLabel": "نصيحة احترافية",
+            "tipFilters": "استخدم الفلاتر لتضييق النتائج حسب الميزانية والفئة"
+        },
+        "noResultsView": {
+            "title": "لا توجد نتائج لـ",
+            "subtitle": "لا تقلق! جرّب هذه الاقتراحات:",
+            "didYouMeanPlaceholder": "هل تقصد تجربة كلمة مفتاحية أوسع؟",
+            "suggestionFiltersTitle": "وسّع الفلاتر",
+            "suggestionFiltersBody": "أزل فلاتر الميزانية أو الفئة",
+            "suggestionKeywordsTitle": "جرّب كلمات مختلفة",
+            "suggestionKeywordsBody": "صياغة مختلفة تعطي نتائج أفضل",
+            "suggestionCategoriesTitle": "تصفح الفئات الشائعة",
+            "suggestionCategoriesBody": "اطلع على المهارات الرائجة"
+        },
+        "error": {
+            "title": "حدث خطأ",
+            "description": "نواجه صعوبة في البحث حالياً.",
+            "retry": "حاول مجدداً"
+        },
+        "resultsCount": "عرض {{count}} نتيجة لـ \"{{query}}\"",
+        "labels": {
+            "freelancer": "مستقل",
+            "projects": "مشروع",
+            "successRate": "نجاح"
+        },
+        "trendingTags": {
             "logoDesign": "تصميم شعار",
             "reactJs": "React JS",
             "translation": "ترجمة",
-            "videoEditing": "مونتاج فيديو",
-            "python": "Python"
+            "uiux": "UI/UX"
         }
     },
     "onboarding": {
@@ -2751,7 +2896,9 @@ export const ar = {
         "hireSuccess": "تم توظيف المستقل بنجاح! 🎉",
         "hireError": "فشل توظيف المستقل. حاول مرة أخرى",
         "proposalArchived": "تم أرشفة العرض",
+        "proposalUnarchived": "تمت إعادة العرض إلى النشط",
         "archiveError": "فشل أرشفة العرض",
+        "unarchiveError": "فشلت استعادة العرض",
         "defaultUser": "مستخدم",
         "defaultCountry": "تونس",
         "defaultFreelancer": "مستقل",
@@ -2769,7 +2916,83 @@ export const ar = {
         "archived": "مؤرشفة",
         "noProposals": "لا توجد عروض بعد",
         "noProposalsDesc": "لم تتلقى أي عروض لهذا المشروع حتى الآن. جرب مشاركة المشروع لزيادة المشاهدات.",
-        "shareProject": "مشاركة المشروع"
+        "shareProject": "مشاركة المشروع",
+        "jobDetails": "تفاصيل الوظيفة",
+        "expectedDuration": "المدة المتوقعة",
+        "viewJob": "عرض الوظيفة",
+        "aiTitle": "توصيات الذكاء الاصطناعي",
+        "aiDesc": "قمنا بتحليل متطلباتك وعثرنا على 3 مستقلين يتطابقون مع مشروعك بنسبة 95%.",
+        "viewSuggestions": "عرض الاقتراحات",
+        "filterTitle": "تصفية العروض",
+        "searchPlaceholder": "البحث في العروض...",
+        "sortBy": "ترتيب حسب",
+        "sort": {
+            "recommended": "الأنسب",
+            "lowestBid": "أقل سعر",
+            "highestBid": "أعلى سعر",
+            "newest": "الأحدث",
+            "rating": "الأعلى تقييماً"
+        },
+        "freelancerLevel": "مستوى المستقل",
+        "extraFilters": "فلاتر أخرى",
+        "verifiedOnly": "حسابات موثقة فقط",
+        "highRated": "4 نجوم فأكثر",
+        "hasPortfolio": "لديه أعمال",
+        "clearFilters": "مسح الفلاتر",
+        "shortlisted": "في القائمة المختصرة",
+        "verified": "موثق",
+        "topRated": "الأعلى تقييماً",
+        "jobsDone": "مشروع منجز",
+        "successRate": "معدل النجاح",
+        "noCoverLetter": "لم يتم تقديم خطاب تقديم.",
+        "readMore": "قراءة المزيد",
+        "showLess": "عرض أقل",
+        "receivedOn": "تم الاستلام",
+        "proposalBid": "مبلغ العرض",
+        "days": "أيام",
+        "deliveryTbd": "غير محدد",
+        "hire": "توظيف",
+        "unarchive": "استعادة",
+        "message": "محادثة",
+        "save": "حفظ",
+        "saved": "محفوظ",
+        "modal": {
+            "tabProposal": "العرض",
+            "tabProfile": "الملف الشخصي",
+            "tabPortfolio": "معرض الأعمال",
+            "tabReviews": "التقييمات",
+            "freelancer": "مستقل",
+            "available": "متاح للعمل",
+            "busy": "مشغول حالياً",
+            "rating": "التقييم",
+            "jobsDone": "المشاريع المكتملة",
+            "successRate": "نسبة النجاح",
+            "reviews": "التقييمات",
+            "responseTime": "سرعة الرد",
+            "responseTimeValue": "ساعة تقريباً",
+            "about": "نبذة شخصية",
+            "noProfile": "لا توجد معلومات شخصية متاحة.",
+            "noPortfolio": "لا توجد أعمال في المعرض",
+            "noPortfolioHint": "لم يضف المستقل أي أعمال بعد.",
+            "noReviews": "لا توجد تقييمات بعد",
+            "noReviewsHint": "تظهر التقييمات بعد إتمام العقود.",
+            "submittedOn": "تم التقديم في",
+            "coverLetter": "خطاب التقديم",
+            "attachments": "المرفقات",
+            "proposalDetails": "تفاصيل العرض",
+            "freelancerBid": "قيمة العرض",
+            "delivery": "مدة التسليم",
+            "serviceFee": "رسوم الخدمة (10%)",
+            "total": "الإجمالي للدفع",
+            "escrowNote": "الدفع معلق بشكل آمن في حساب الضمان حتى يتم تسليم العمل والموافقة عليه.",
+            "confirmHire": "توظيف هذا المستقل؟",
+            "confirmHireDesc": "سيتم إنشاء عقد والاحتفاظ بالدفع في حساب الضمان.",
+            "confirmYes": "نعم، وظّفه!",
+            "archive": "أرشفة العرض",
+            "unarchive": "إلغاء أرشفة العرض",
+            "accepted": "مقبول",
+            "rejected": "غير مختار"
+        }
     },
     "jobDetail": {
         "jobSaved": "تم حفظ الوظيفة",
@@ -2850,6 +3073,41 @@ export const ar = {
         "viewProposal": "عرض العرض",
         "yourJob": "هذه وظيفتك",
         "manageJob": "إدارة الوظيفة"
+    },
+    "proposalModal": {
+        "jobContext": "سياق الوظيفة",
+        "platformFee": "رسوم المنصة ({{percent}}%)",
+        "youReceive": "ستحصل على",
+        "deliveryTime": "مدة التسليم",
+        "coverLetter": "خطاب التقديم",
+        "coverLetterPlaceholder": "صف نهجك وخبراتك ذات الصلة وسبب كونك الأنسب لهذه الوظيفة...",
+        "coverLetterMinHint": "{{count}} حرف على الأقل",
+        "attachmentsOptional": "المرفقات (اختياري)",
+        "addFile": "إضافة ملف",
+        "fileLimit": "الحد الأقصى {{size}} ميغابايت لكل ملف",
+        "title": "تقديم عرض",
+        "bidLabel": "عرضك:",
+        "cancel": "إلغاء",
+        "submit": "تقديم العرض",
+        "submitting": "جارٍ الإرسال...",
+        "delivery": {
+            "oneDay": "يوم واحد",
+            "twoDays": "يومان",
+            "threeDays": "3 أيام",
+            "fiveDays": "5 أيام",
+            "oneWeek": "أسبوع",
+            "twoWeeks": "أسبوعان",
+            "oneMonth": "شهر",
+            "twoMonths": "شهران"
+        },
+        "validation": {
+            "coverLetterMin": "يجب أن يحتوي خطاب التقديم على {{count}} حرف على الأقل",
+            "coverLetterMax": "يجب ألا يتجاوز خطاب التقديم {{count}} حرف",
+            "bidMin": "الحد الأدنى للعرض هو {{amount}} {{currency}}",
+            "bidMax": "الحد الأقصى للعرض هو {{amount}} {{currency}}",
+            "deliveryMin": "الحد الأدنى للتسليم هو {{count}} يوم",
+            "deliveryMax": "الحد الأقصى للتسليم هو {{count}} يوم"
+        }
     },
     "reviews": {
         "client": "عميل",
