@@ -19,6 +19,19 @@ type ProposalRow = {
   created_at: string;
   status: string;
   jobs?: { id?: string | null; title?: string | null; category?: string | null } | null;
+  linked_contract?: {
+    id: string;
+    title: string | null;
+    status: string | null;
+  } | null;
+};
+
+type ContractLinkRow = {
+  id: string;
+  proposal_id: string | null;
+  job_id: string | null;
+  title: string | null;
+  status: string | null;
 };
 
 const TAB_STATUS_MAP: Record<ProposalTab, string[]> = {
@@ -98,6 +111,8 @@ export default function MyProposals() {
       // Hydrate job titles in parallel
       const jobIds = [...new Set(rows.map((r: ProposalRow) => r.job_id).filter(Boolean))] as string[];
       const jobsById = new Map<string, { id: string; title: string | null; category: string | null }>();
+      const contractsByProposalId = new Map<string, ContractLinkRow>();
+      const contractsByJobId = new Map<string, ContractLinkRow>();
 
       if (jobIds.length > 0) {
         const { data: jobData } = await supabase
@@ -107,9 +122,28 @@ export default function MyProposals() {
         (jobData ?? []).forEach((j: { id: string; title: string | null; category: string | null }) => jobsById.set(j.id, j));
       }
 
+      const { data: contractsData } = await supabase
+        .from("contracts")
+        .select("id, proposal_id, job_id, title, status")
+        .eq("freelancer_id", user.id);
+
+      (contractsData ?? []).forEach((contract) => {
+        const row = contract as ContractLinkRow;
+        if (row.proposal_id) {
+          contractsByProposalId.set(row.proposal_id, row);
+        }
+        if (row.job_id) {
+          contractsByJobId.set(row.job_id, row);
+        }
+      });
+
       return rows.map((row: ProposalRow) => ({
         ...row,
         jobs: row.job_id ? (jobsById.get(row.job_id) ?? null) : null,
+        linked_contract:
+          contractsByProposalId.get(row.id)
+          ?? (row.job_id ? contractsByJobId.get(row.job_id) : null)
+          ?? null,
       })) as ProposalRow[];
     },
     enabled: !!user?.id,
@@ -118,15 +152,21 @@ export default function MyProposals() {
     refetchOnWindowFocus: false,
   });
 
-  const proposals = !allData ? []
-    : activeTab === "all" ? allData
-    : allData.filter(p => TAB_STATUS_MAP[activeTab].includes(String(p.status || "").toLowerCase()));
+  const sanitizedData = (allData ?? []).filter((proposal) => (
+    Boolean(proposal.jobs?.id) || Boolean(proposal.linked_contract?.id)
+  ));
+
+  const hiddenOrphanCount = Math.max(0, (allData?.length ?? 0) - sanitizedData.length);
+
+  const proposals = activeTab === "all"
+    ? sanitizedData
+    : sanitizedData.filter((proposal) => TAB_STATUS_MAP[activeTab].includes(String(proposal.status || "").toLowerCase()));
 
   const stats = {
-    sent: allData?.length ?? 0,
-    pending: allData?.filter(p => TAB_STATUS_MAP.pending.includes(String(p.status || "").toLowerCase())).length ?? 0,
-    accepted: allData?.filter(p => TAB_STATUS_MAP.accepted.includes(String(p.status || "").toLowerCase())).length ?? 0,
-    rejected: allData?.filter(p => TAB_STATUS_MAP.rejected.includes(String(p.status || "").toLowerCase())).length ?? 0,
+    sent: sanitizedData.length,
+    pending: sanitizedData.filter((proposal) => TAB_STATUS_MAP.pending.includes(String(proposal.status || "").toLowerCase())).length,
+    accepted: sanitizedData.filter((proposal) => TAB_STATUS_MAP.accepted.includes(String(proposal.status || "").toLowerCase())).length,
+    rejected: sanitizedData.filter((proposal) => TAB_STATUS_MAP.rejected.includes(String(proposal.status || "").toLowerCase())).length,
   };
 
   const formatTimeAgo = (dateStr: string) => {
@@ -268,6 +308,22 @@ export default function MyProposals() {
           <div className="space-y-3">
             {proposals.map(proposal => {
               const isAccepted = normalizeToTab(proposal.status) === "accepted";
+              const contractId = proposal.linked_contract?.id ?? null;
+              const hasLiveJob = Boolean(proposal.jobs?.id);
+              const targetPath = contractId
+                ? `/contracts/${contractId}`
+                : hasLiveJob
+                  ? `/jobs/${proposal.jobs?.id}`
+                  : null;
+
+              const title = proposal.jobs?.title
+                ?? proposal.linked_contract?.title
+                ?? tx("pages.myProposals.archivedProject", undefined, "Archived Project");
+
+              const cardActionLabel = contractId
+                ? tx("pages.myProposals.viewContract", undefined, "View Contract")
+                : tx("pages.myProposals.viewJob", undefined, "View Job");
+
               return (
                 <div key={proposal.id}
                   className="group rounded-2xl border overflow-hidden transition-all duration-200 hover:shadow-lg cursor-pointer"
@@ -277,9 +333,9 @@ export default function MyProposals() {
                       ? "color-mix(in srgb, var(--color-status-success) 35%, transparent)"
                       : "color-mix(in srgb, var(--border) 70%, transparent)",
                   }}
-                  onClick={() => proposal.job_id && navigate(`/jobs/${proposal.job_id}`)}
+                  onClick={() => { if (targetPath) navigate(targetPath); }}
                   role="button" tabIndex={0}
-                  onKeyDown={e => { if (e.key === "Enter" && proposal.job_id) navigate(`/jobs/${proposal.job_id}`); }}>
+                  onKeyDown={e => { if (e.key === "Enter" && targetPath) navigate(targetPath); }}>
 
                   {/* Accent bar */}
                   <div className="h-1 w-full" style={{
@@ -293,10 +349,15 @@ export default function MyProposals() {
                     <div className="flex items-start justify-between gap-4 mb-3">
                       <div className="flex-1 min-w-0">
                         <h3 className="font-bold text-base leading-tight truncate" style={{ color: "var(--text-primary)" }}>
-                          {proposal.jobs?.title ?? tx("pages.myProposals.unknownProject", undefined, "Unknown Project")}
+                          {title}
                         </h3>
                         {proposal.jobs?.category && (
                           <p className="text-xs mt-0.5 truncate" style={{ color: "var(--text-muted)" }}>{proposal.jobs.category}</p>
+                        )}
+                        {!proposal.jobs?.id && contractId && (
+                          <p className="text-[11px] mt-1" style={{ color: "var(--text-muted)" }}>
+                            {tx("pages.myProposals.originalJobArchived", undefined, "Original job post is archived")}
+                          </p>
                         )}
                       </div>
                       <span className="flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1 text-xs font-semibold shrink-0" style={pillStyle(proposal.status)}>
@@ -324,7 +385,10 @@ export default function MyProposals() {
                           🎉 {tx("pages.myProposals.proposalAccepted", undefined, "Your proposal was accepted!")}
                         </p>
                         <button type="button"
-                          onClick={e => { e.stopPropagation(); navigate("/contracts"); }}
+                          onClick={e => {
+                            e.stopPropagation();
+                            navigate(contractId ? `/contracts/${contractId}` : "/contracts");
+                          }}
                           className="flex items-center gap-1 text-sm font-bold hover:opacity-80"
                           style={{ color: "var(--color-status-success)" }}>
                           {tx("pages.myProposals.viewContract", undefined, "View Contract")}
@@ -337,13 +401,29 @@ export default function MyProposals() {
                   {/* Hover indicator */}
                   <div className="flex items-center justify-end px-5 pb-3 -mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
                     <span className="flex items-center gap-1 text-xs font-medium" style={{ color: "var(--workspace-primary-mid)" }}>
-                      {tx("pages.myProposals.viewJob", undefined, "View Job")}
+                      {cardActionLabel}
                       <ChevronRight className="w-3.5 h-3.5" />
                     </span>
                   </div>
                 </div>
               );
             })}
+
+            {hiddenOrphanCount > 0 && (
+              <div className="rounded-xl border px-4 py-3 text-sm"
+                style={{
+                  background: "color-mix(in srgb, var(--color-status-warning) 8%, transparent)",
+                  borderColor: "color-mix(in srgb, var(--color-status-warning) 22%, transparent)",
+                  color: "var(--text-secondary)",
+                }}
+              >
+                {tx(
+                  "pages.myProposals.orphanedHiddenHint",
+                  { count: hiddenOrphanCount },
+                  `${hiddenOrphanCount} old proposal(s) were hidden because their jobs are no longer available.`,
+                )}
+              </div>
+            )}
           </div>
         )}
       </div>

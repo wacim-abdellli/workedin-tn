@@ -25,6 +25,8 @@ import {
     User,
     Mail,
     Flag,
+    CheckCircle,
+    AlertTriangle,
 } from 'lucide-react';
 import { Header } from '../components/layout';
 import Button from '../components/ui/Button';
@@ -38,6 +40,7 @@ import {
     getMessages,
     deleteMessage,
     sendMessage,
+    sendContractMessage,
     uploadMessageAttachment,
     markConversationRead,
     subscribeToConversation,
@@ -53,6 +56,7 @@ import { useReadReceipts } from '../hooks/useReadReceipts';
 import { useTranslation } from '../i18n';
 import ErrorBoundary from '../components/ErrorBoundary';
 import { validateUploadSelection } from '../lib/uploadPolicy';
+import ContractDetailsSidebar from '../components/contracts/ContractDetailsSidebar';
 import {
     normalizeContractStatus,
     resolveMessagingLifecyclePolicy,
@@ -558,6 +562,17 @@ type ThreadMessage = Message & {
     status?: 'sending' | 'failed';
 };
 
+type ContractSessionMeta = {
+    id: string;
+    status: string | null;
+    title: string | null;
+    amount: number | null;
+    total_amount: number | null;
+    client_id: string | null;
+    freelancer_id: string | null;
+    job_id: string | null;
+};
+
 type ReplyMetadata = {
     messageId: string;
     senderName: string;
@@ -630,9 +645,38 @@ const getConversationsCacheKey = (userId: string, modeKey: string) => `messages:
 const getMessagesCacheKey = (conversationId: string) => `messages:thread:${conversationId}`;
 
 const resolveConversationScopes = (activeMode: string | null | undefined): ConversationScope[] => {
+    // Contract sessions must stay reachable from inbox for both workspace modes.
     if (activeMode === 'freelancer') return ['freelancer', 'contract', 'shared'];
     if (activeMode === 'client') return ['client', 'contract', 'shared'];
     return ['client', 'freelancer', 'contract', 'shared'];
+};
+
+const isConversationVisibleInMode = (
+    conversation: Conversation,
+    userId: string | undefined,
+    activeMode: string | null | undefined,
+) => {
+    if (!userId) return true;
+    if (activeMode !== 'client' && activeMode !== 'freelancer') return true;
+
+    const isParticipant1 = conversation.participant_1 === userId;
+    const myInbox = isParticipant1
+        ? conversation.inbox_participant_1
+        : conversation.inbox_participant_2;
+
+    // Prefer per-participant inbox columns when present.
+    if (myInbox === 'client' || myInbox === 'freelancer' || myInbox === 'shared') {
+        return myInbox === activeMode || myInbox === 'shared';
+    }
+    if (myInbox === 'contract') return true;
+
+    // Legacy fallback when inbox columns are absent.
+    const scope = conversation.conversation_scope;
+    if (scope === 'shared') return true;
+    if (scope === 'client' || scope === 'freelancer') return scope === activeMode;
+    if (scope === 'contract') return true;
+
+    return true;
 };
 
 const resolveModeCacheKey = (activeMode: string | null | undefined) => {
@@ -809,6 +853,7 @@ function MessagesComponent() {
     const [isOnline, setIsOnline] = useState(navigator.onLine);
     const [pendingQueue, setPendingQueue] = useState<any[]>([]);
     const [contractStatusById, setContractStatusById] = useState<Record<string, ContractMessagingStatus>>({});
+    const [contractSessionMetaById, setContractSessionMetaById] = useState<Record<string, ContractSessionMeta>>({});
     const [page, setPage] = useState(0);
     const [hasMoreConversations, setHasMoreConversations] = useState(true);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -816,6 +861,15 @@ function MessagesComponent() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [replyTarget, setReplyTarget] = useState<ReplyMetadata | null>(null);
     const [highlightedMessageId, setHighlightedMessageId] = useState<string | null>(null);
+    const [isDeliverModalOpen, setIsDeliverModalOpen] = useState(false);
+    const [isAcceptModalOpen, setIsAcceptModalOpen] = useState(false);
+    const [isDisputeModalOpen, setIsDisputeModalOpen] = useState(false);
+    const [deliveryNote, setDeliveryNote] = useState('');
+    const [disputeReason, setDisputeReason] = useState('');
+    const [isDeliveringContractWork, setIsDeliveringContractWork] = useState(false);
+    const [isAcceptingContractWork, setIsAcceptingContractWork] = useState(false);
+    const [isRequestingContractChanges, setIsRequestingContractChanges] = useState(false);
+    const [isOpeningContractDispute, setIsOpeningContractDispute] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const menuRef = useRef<HTMLDivElement>(null);
     const replyHighlightTimeoutRef = useRef<number | null>(null);
@@ -874,6 +928,102 @@ function MessagesComponent() {
     const canAttachInSelectedConversation = selectedConversationPolicy?.canAttachFiles ?? false;
     const canSendVoiceInSelectedConversation = selectedConversationPolicy?.canSendVoiceNotes ?? false;
     const canReplyInSelectedConversation = selectedConversationPolicy?.canReply ?? false;
+
+    const selectedContractId = selectedConversation?.contract_id || null;
+    const selectedContractMeta = selectedContractId ? contractSessionMetaById[selectedContractId] : null;
+    const isContractSession = Boolean(selectedContractId);
+
+    const selectedContractUserRole: 'client' | 'freelancer' = useMemo(() => {
+        const activeWorkspace = activeMode ?? profile?.active_mode;
+        if (activeWorkspace === 'client') return 'client';
+        if (activeWorkspace === 'freelancer') return 'freelancer';
+
+        if (selectedContractMeta?.client_id && selectedContractMeta.client_id === user?.id) {
+            return 'client';
+        }
+
+        return 'freelancer';
+    }, [activeMode, profile?.active_mode, selectedContractMeta?.client_id, user?.id]);
+
+    const selectedContractStatus = selectedContractId
+        ? (contractStatusById[selectedContractId] ?? normalizeContractStatus(selectedContractMeta?.status))
+        : null;
+
+    const currentUserDisplayName = profile?.full_name || tx('common.you', undefined, 'You');
+    const currentUserAvatar = profile?.avatar_url || null;
+
+    const contractSidebarData = useMemo(() => {
+        if (!isContractSession || !selectedConversation) return null;
+
+        const fallbackTitle = tx('pages.messages.contractSessionFallbackTitle', undefined, 'Contract session');
+        const title = selectedContractMeta?.title?.trim() || fallbackTitle;
+        const amountValue = selectedContractMeta?.total_amount
+            ?? selectedContractMeta?.amount
+            ?? 0;
+
+        const otherParticipant = selectedConversation.otherUser;
+
+        const clientProfile = selectedContractUserRole === 'client'
+            ? {
+                full_name: currentUserDisplayName,
+                avatar_url: currentUserAvatar,
+            }
+            : {
+                full_name: otherParticipant.full_name,
+                avatar_url: otherParticipant.avatar_url,
+            };
+
+        const freelancerProfile = selectedContractUserRole === 'freelancer'
+            ? {
+                full_name: currentUserDisplayName,
+                avatar_url: currentUserAvatar,
+            }
+            : {
+                full_name: otherParticipant.full_name,
+                avatar_url: otherParticipant.avatar_url,
+            };
+
+        return {
+            amount: amountValue,
+            job: {
+                title,
+                deadline: undefined,
+            },
+            client: clientProfile,
+            freelancer: freelancerProfile,
+        };
+    }, [
+        currentUserAvatar,
+        currentUserDisplayName,
+        isContractSession,
+        selectedContractMeta?.amount,
+        selectedContractMeta?.title,
+        selectedContractMeta?.total_amount,
+        selectedContractUserRole,
+        selectedConversation,
+        tx,
+    ]);
+
+    const contractDeliverySubmitted = useMemo(() => {
+        if (!isContractSession) return false;
+        if (selectedContractStatus === 'completed') return true;
+
+        const freelancerId = selectedContractUserRole === 'client'
+            ? selectedConversation?.otherUser.id
+            : user?.id;
+
+        if (!freelancerId) return false;
+
+        return messages.some((message) => {
+            if (message.sender_id !== freelancerId) return false;
+            const normalized = String(parseReplyMetadataFromContent(message.content).bodyText || '').trim().toLowerCase();
+            return normalized.startsWith('[[delivery]]')
+                || normalized.startsWith('work has been delivered:')
+                || normalized.startsWith('work delivered and ready for review');
+        });
+    }, [isContractSession, messages, selectedContractStatus, selectedContractUserRole, selectedConversation?.otherUser.id, user?.id]);
+
+    const isAnyContractActionLoading = isDeliveringContractWork || isAcceptingContractWork || isRequestingContractChanges;
 
     const deleteModalWorkspaceVars = useMemo(() => {
         return {
@@ -1051,6 +1201,11 @@ function MessagesComponent() {
     useEffect(() => {
         setIsMenuOpen(false);
         setReplyTarget(null);
+        setIsDeliverModalOpen(false);
+        setIsAcceptModalOpen(false);
+        setIsDisputeModalOpen(false);
+        setDeliveryNote('');
+        setDisputeReason('');
     }, [selectedConversation?.id]);
 
     useEffect(() => {
@@ -1391,10 +1546,13 @@ function MessagesComponent() {
         // 2. Load the new mode's cached conversations (different key per mode)
         const cachedConversations = readSessionCache<Conversation[]>(getConversationsCacheKey(user.id, conversationsModeCacheKey));
         if (cachedConversations && cachedConversations.length > 0) {
-            setConversations(cachedConversations);
+            const visibleCachedConversations = cachedConversations.filter((conversation) => (
+                isConversationVisibleInMode(conversation, user.id, activeMode ?? profile?.active_mode)
+            ));
+            setConversations(visibleCachedConversations);
             setIsLoadingConversations(false);
         }
-    }, [user?.id, conversationsModeCacheKey]);
+    }, [user?.id, conversationsModeCacheKey, activeMode, profile?.active_mode]);
 
 
     useEffect(() => {
@@ -1420,6 +1578,7 @@ function MessagesComponent() {
     useEffect(() => {
         if (contractConversationIds.length === 0) {
             setContractStatusById({});
+            setContractSessionMetaById({});
             return;
         }
 
@@ -1428,7 +1587,7 @@ function MessagesComponent() {
         const loadContractStatuses = async () => {
             const { data, error } = await supabase
                 .from('contracts')
-                .select('id, status')
+                .select('id, status, title, amount, total_amount, client_id, freelancer_id, job_id')
                 .in('id', contractConversationIds);
 
             if (cancelled) return;
@@ -1439,13 +1598,24 @@ function MessagesComponent() {
             }
 
             const nextStatuses: Record<string, ContractMessagingStatus> = {};
+            const nextMeta: Record<string, ContractSessionMeta> = {};
             for (const contractId of contractConversationIds) {
                 nextStatuses[contractId] = 'unknown';
             }
 
-            for (const row of (data ?? []) as Array<{ id: string; status: string | null }>) {
+            for (const row of (data ?? []) as Array<ContractSessionMeta>) {
                 if (!row?.id) continue;
                 nextStatuses[row.id] = normalizeContractStatus(row.status);
+                nextMeta[row.id] = {
+                    id: row.id,
+                    status: row.status,
+                    title: row.title ?? null,
+                    amount: row.amount ?? null,
+                    total_amount: row.total_amount ?? null,
+                    client_id: row.client_id ?? null,
+                    freelancer_id: row.freelancer_id ?? null,
+                    job_id: row.job_id ?? null,
+                };
             }
 
             setContractStatusById((prev) => {
@@ -1459,6 +1629,8 @@ function MessagesComponent() {
                 const isSameValues = nextKeys.every((key) => prev[key] === nextStatuses[key]);
                 return isSameValues ? prev : nextStatuses;
             });
+
+            setContractSessionMetaById(nextMeta);
         };
 
         void loadContractStatuses();
@@ -1515,14 +1687,18 @@ function MessagesComponent() {
                 setIsLoadingConversations(false);
                 setIsLoadingMore(false);
             } else if (data) {
+                const scopedData = data.filter((conversation) => (
+                    isConversationVisibleInMode(conversation, user.id, activeMode ?? profile?.active_mode)
+                ));
+
                 if (append) {
                     setConversations(prev => {
                         const existingIds = new Set(prev.map(c => c.id));
-                        const uniqueNew = data.filter(c => !existingIds.has(c.id));
+                        const uniqueNew = scopedData.filter(c => !existingIds.has(c.id));
                         return sortConversationsByActivity([...prev, ...uniqueNew]);
                     });
                 } else {
-                    setConversations(sortConversationsByActivity(data));
+                    setConversations(sortConversationsByActivity(scopedData));
                 }
                 setHasMoreConversations((currentPage + 1) * limit < (count || 0));
                 setIsLoadingConversations(false);
@@ -1805,6 +1981,160 @@ function MessagesComponent() {
             showToast(tx('pages.messages.errors.recordingLimit', undefined, 'Recording limit reached (5 minutes)'), 'warning');
         }
     }, [recordingTime, isRecording]);
+
+    const syncContractStatusLocally = useCallback((contractId: string, status: ContractMessagingStatus) => {
+        setContractStatusById((prev) => ({
+            ...prev,
+            [contractId]: status,
+        }));
+
+        setContractSessionMetaById((prev) => {
+            const existing = prev[contractId];
+            if (!existing) return prev;
+            return {
+                ...prev,
+                [contractId]: {
+                    ...existing,
+                    status,
+                },
+            };
+        });
+    }, []);
+
+    const handleDeliverContractWork = useCallback(async () => {
+        if (!selectedConversation || !selectedConversation.contract_id || !user?.id) return;
+
+        setIsDeliveringContractWork(true);
+        try {
+            const trimmedNote = deliveryNote.trim();
+            const messageContent = trimmedNote
+                ? `[[delivery]] ${trimmedNote}`
+                : '[[delivery]] Work delivered and ready for review';
+
+            const { error } = await sendContractMessage({
+                contract_id: selectedConversation.contract_id,
+                sender_id: user.id,
+                receiver_id: selectedConversation.otherUser.id,
+                content: messageContent,
+                message_type: 'delivery',
+            });
+
+            if (error) throw error;
+
+            setIsDeliverModalOpen(false);
+            setDeliveryNote('');
+            showToast(tx('contract.workDelivered', undefined, 'Work delivered successfully'), 'success');
+        } catch (error) {
+            const message = error instanceof Error
+                ? error.message
+                : tx('contract.deliverError', undefined, 'Failed to deliver work');
+            showToast(message, 'error');
+        } finally {
+            setIsDeliveringContractWork(false);
+        }
+    }, [deliveryNote, selectedConversation, showToast, tx, user?.id]);
+
+    const handleRequestContractChanges = useCallback(async () => {
+        if (!selectedConversation || !selectedConversation.contract_id || !user?.id) return;
+
+        setIsRequestingContractChanges(true);
+        try {
+            const changeNote = tx('contract.requestRevision', undefined, 'Please revise according to feedback');
+            const { error } = await sendContractMessage({
+                contract_id: selectedConversation.contract_id,
+                sender_id: user.id,
+                receiver_id: selectedConversation.otherUser.id,
+                content: `Changes requested: ${changeNote}`,
+                message_type: 'feedback',
+            });
+
+            if (error) throw error;
+
+            showToast(tx('contract.revisionSent', undefined, 'Revision request sent'), 'info');
+        } catch (error) {
+            const message = error instanceof Error
+                ? error.message
+                : tx('contract.error', undefined, 'Action failed');
+            showToast(message, 'error');
+        } finally {
+            setIsRequestingContractChanges(false);
+        }
+    }, [selectedConversation, showToast, tx, user?.id]);
+
+    const handleAcceptContractAndPay = useCallback(async () => {
+        if (!selectedConversation || !selectedConversation.contract_id || !user?.id) return;
+
+        setIsAcceptingContractWork(true);
+        try {
+            const { error: releaseError } = await supabase.rpc('release_contract_payment_atomic', {
+                p_contract_id: selectedConversation.contract_id,
+            });
+
+            if (releaseError) throw releaseError;
+
+            syncContractStatusLocally(selectedConversation.contract_id, 'completed');
+
+            const { error: messageError } = await sendContractMessage({
+                contract_id: selectedConversation.contract_id,
+                sender_id: user.id,
+                receiver_id: selectedConversation.otherUser.id,
+                content: 'Work has been accepted and payment released',
+                message_type: 'system',
+            });
+
+            if (messageError) throw messageError;
+
+            setIsAcceptModalOpen(false);
+            showToast(tx('contract.workAccepted', undefined, 'Work accepted and payment released'), 'success');
+        } catch (error) {
+            const message = error instanceof Error
+                ? error.message
+                : tx('contract.acceptError', undefined, 'Failed to accept work');
+            showToast(message, 'error');
+        } finally {
+            setIsAcceptingContractWork(false);
+        }
+    }, [selectedConversation, showToast, syncContractStatusLocally, tx, user?.id]);
+
+    const handleOpenContractDispute = useCallback(async () => {
+        if (!selectedConversation || !selectedConversation.contract_id || !user?.id) return;
+        if (!disputeReason.trim()) return;
+
+        setIsOpeningContractDispute(true);
+        try {
+            const { error: disputeError } = await supabase.rpc('open_dispute_atomic', {
+                p_contract_id: selectedConversation.contract_id,
+                p_reason: disputeReason.trim(),
+            });
+
+            if (disputeError) throw disputeError;
+
+            syncContractStatusLocally(selectedConversation.contract_id, 'disputed');
+
+            const { error: messageError } = await sendContractMessage({
+                contract_id: selectedConversation.contract_id,
+                sender_id: user.id,
+                receiver_id: selectedConversation.otherUser.id,
+                content: `Dispute opened: ${disputeReason.trim()}`,
+                message_type: 'dispute',
+            });
+
+            if (messageError) {
+                console.warn('[Messages] Dispute opened but follow-up message failed', messageError);
+            }
+
+            setIsDisputeModalOpen(false);
+            setDisputeReason('');
+            showToast(tx('contract.disputeOpened', undefined, 'Dispute opened successfully'), 'warning');
+        } catch (error) {
+            const message = error instanceof Error
+                ? error.message
+                : tx('contract.disputeError', undefined, 'Failed to open dispute');
+            showToast(message, 'error');
+        } finally {
+            setIsOpeningContractDispute(false);
+        }
+    }, [disputeReason, selectedConversation, showToast, syncContractStatusLocally, tx, user?.id]);
 
     const handleSendMessage = async () => {
         const messageContent = newMessage.trim();
@@ -2139,11 +2469,29 @@ function MessagesComponent() {
         }
     };
 
+    const getConversationSidebarTitle = useCallback((conversation: Conversation) => {
+        const contractTitle = conversation.contract_id
+            ? contractSessionMetaById[conversation.contract_id]?.title?.trim()
+            : '';
+
+        if (contractTitle) {
+            return tx('pages.messages.contractSidebarTitle', { title: contractTitle }, `Job: ${contractTitle}`);
+        }
+
+        return conversation.otherUser.full_name;
+    }, [contractSessionMetaById, tx]);
+
     // Filter conversations based on search and filter
     const filteredConversations = conversations.filter((c) => {
         if (filter === 'unread' && c.unread_count === 0) return false;
-        if (searchQuery && !c.otherUser.full_name.toLowerCase().includes(searchQuery.toLowerCase()))
-            return false;
+        if (searchQuery) {
+            const normalizedQuery = searchQuery.toLowerCase();
+            const byName = c.otherUser.full_name.toLowerCase().includes(normalizedQuery);
+            const contractTitle = c.contract_id
+                ? (contractSessionMetaById[c.contract_id]?.title || '').toLowerCase()
+                : '';
+            if (!byName && !contractTitle.includes(normalizedQuery)) return false;
+        }
         return true;
     });
 
@@ -2428,7 +2776,7 @@ function MessagesComponent() {
                                         <div className="flex-1 min-w-0 flex flex-col overflow-hidden">
                                             <div className="flex items-center justify-between gap-2">
                                                 <p className={`text-sm truncate ${conversation.unread_count > 0 ? 'font-semibold text-white' : 'text-gray-200'}`}>
-                                                    {conversation.otherUser.full_name}
+                                                    {getConversationSidebarTitle(conversation)}
                                                 </p>
                                                 <span className="text-xs text-gray-500 shrink-0">{formatTime(conversation.last_message_at)}</span>
                                             </div>
@@ -2472,7 +2820,8 @@ function MessagesComponent() {
     const renderMessageThread = () => (
         <div className={`${showMobileThread ? 'flex' : 'hidden md:flex'} flex-1 flex-col bg-[#0a0a0a] relative`}>
             {selectedConversation ? (
-                <>
+                <div className="flex h-full min-h-0 flex-1">
+                    <div className="flex min-w-0 flex-1 flex-col">
                     <div className="h-16 px-4 md:px-6 border-b border-[#262626] bg-[#141414] flex items-center justify-between shrink-0 relative">
                         <div className="flex items-center gap-3 min-w-0">
                             <button
@@ -3050,7 +3399,31 @@ function MessagesComponent() {
                             </button>
                         </div>
                     </div>
-                </>
+
+                    </div>
+
+                    {isContractSession && contractSidebarData ? (
+                        <aside className="hidden xl:block w-[360px] 2xl:w-[390px] shrink-0 border-l border-[#262626] bg-[#111111]">
+                            <ContractDetailsSidebar
+                                contract={contractSidebarData}
+                                userRole={selectedContractUserRole}
+                                currentStatus={selectedContractStatus || 'unknown'}
+                                deliverySubmitted={contractDeliverySubmitted}
+                                isActionLoading={isAnyContractActionLoading}
+                                onDeliver={() => setIsDeliverModalOpen(true)}
+                                onRequestChanges={() => {
+                                    void handleRequestContractChanges();
+                                }}
+                                onAcceptAndPay={() => setIsAcceptModalOpen(true)}
+                                onDispute={() => setIsDisputeModalOpen(true)}
+                                onReview={() => {
+                                    showToast(tx('contract.reviewSoon', undefined, 'Review flow coming here soon'), 'info');
+                                }}
+                                hasLeftReview
+                            />
+                        </aside>
+                    ) : null}
+                </div>
             ) : (
                 <div className="flex-1 flex items-center justify-center px-6">
                     <div className="text-center">
@@ -3074,6 +3447,111 @@ function MessagesComponent() {
                     {renderMessageThread()}
                 </main>
             </div>
+
+            <Modal
+                isOpen={isDeliverModalOpen}
+                onClose={() => setIsDeliverModalOpen(false)}
+                title={tx('contract.deliverWork', undefined, 'Deliver Work')}
+                size="md"
+            >
+                <div className="space-y-4">
+                    <p className="text-sm text-muted-foreground">
+                        {tx('contract.deliverNoteLabel', undefined, 'Add a note for the client')}
+                    </p>
+                    <textarea
+                        value={deliveryNote}
+                        onChange={(event) => setDeliveryNote(event.target.value)}
+                        rows={4}
+                        className="w-full resize-none rounded-xl border border-[#333] bg-[#0f0f0f] px-3 py-2 text-sm text-white outline-none focus:border-purple-500"
+                        placeholder={tx('contract.deliverNotePlaceholder', undefined, 'Delivery notes (optional)...')}
+                        aria-label={tx('contract.deliverNoteAria', undefined, 'Delivery notes')}
+                    />
+                    <div className="flex items-center justify-end gap-3">
+                        <Button variant="ghost" onClick={() => setIsDeliverModalOpen(false)}>
+                            {tx('common.cancel', undefined, 'Cancel')}
+                        </Button>
+                        <Button
+                            variant="primary"
+                            onClick={() => {
+                                void handleDeliverContractWork();
+                            }}
+                            isLoading={isDeliveringContractWork}
+                            leftIcon={<CheckCircle className="h-4 w-4" />}
+                        >
+                            {tx('contract.confirmDelivery', undefined, 'Confirm Delivery')}
+                        </Button>
+                    </div>
+                </div>
+            </Modal>
+
+            <Modal
+                isOpen={isAcceptModalOpen}
+                onClose={() => setIsAcceptModalOpen(false)}
+                title={tx('contract.acceptAndPay', undefined, 'Accept and Pay')}
+                size="sm"
+            >
+                <div className="space-y-4">
+                    <p className="text-sm text-muted-foreground">
+                        {tx('contract.acceptAndPayConfirm', undefined, 'This will mark the contract as completed and release payment.')}
+                    </p>
+                    <div className="flex items-center justify-end gap-3">
+                        <Button variant="ghost" onClick={() => setIsAcceptModalOpen(false)}>
+                            {tx('common.cancel', undefined, 'Cancel')}
+                        </Button>
+                        <Button
+                            variant="primary"
+                            onClick={() => {
+                                void handleAcceptContractAndPay();
+                            }}
+                            isLoading={isAcceptingContractWork}
+                            leftIcon={<CheckCircle className="h-4 w-4" />}
+                        >
+                            {tx('contract.acceptAndPay', undefined, 'Accept and Pay')}
+                        </Button>
+                    </div>
+                </div>
+            </Modal>
+
+            <Modal
+                isOpen={isDisputeModalOpen}
+                onClose={() => setIsDisputeModalOpen(false)}
+                title={tx('contract.openDispute', undefined, 'Open Dispute')}
+                size="md"
+            >
+                <div className="space-y-4">
+                    <div className="rounded-xl border border-amber-500/35 bg-amber-500/10 px-3 py-2 text-sm text-amber-200">
+                        <div className="flex items-start gap-2">
+                            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+                            <p>
+                                {tx('contract.disputeWarning', undefined, 'Opening a dispute will suspend the contract while it is reviewed.')}
+                            </p>
+                        </div>
+                    </div>
+                    <textarea
+                        value={disputeReason}
+                        onChange={(event) => setDisputeReason(event.target.value)}
+                        rows={4}
+                        className="w-full resize-none rounded-xl border border-[#333] bg-[#0f0f0f] px-3 py-2 text-sm text-white outline-none focus:border-purple-500"
+                        placeholder={tx('contract.disputeReasonPlaceholder', undefined, 'Explain reason for dispute...')}
+                        aria-label={tx('contract.disputeReasonAria', undefined, 'Dispute reason')}
+                    />
+                    <div className="flex items-center justify-end gap-3">
+                        <Button variant="ghost" onClick={() => setIsDisputeModalOpen(false)}>
+                            {tx('common.cancel', undefined, 'Cancel')}
+                        </Button>
+                        <Button
+                            variant="danger"
+                            onClick={() => {
+                                void handleOpenContractDispute();
+                            }}
+                            isLoading={isOpeningContractDispute}
+                            disabled={!disputeReason.trim()}
+                        >
+                            {tx('contract.openDisputeAction', undefined, 'Open Dispute')}
+                        </Button>
+                    </div>
+                </div>
+            </Modal>
 
             {/* Delete Message Modal */}
             <Modal

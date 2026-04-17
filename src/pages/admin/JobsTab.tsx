@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Briefcase, Eye, Loader2, Search, Trash2 } from 'lucide-react';
+import { AlertTriangle, Briefcase, Eye, Loader2, Search, Trash2 } from 'lucide-react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Button from '@/components/ui/Button';
 import Modal from '@/components/ui/Modal';
@@ -21,6 +21,24 @@ interface ConfirmActionState {
     message: string;
     actionType: 'danger' | 'warning' | 'primary';
     onConfirm: () => void;
+}
+
+interface AdminContractStatusRow {
+    id: string;
+    job_id: string;
+    status: string;
+    created_at: string;
+    updated_at: string | null;
+}
+
+interface AdminJobStatusMismatch {
+    jobId: string;
+    jobTitle: string;
+    currentJobStatus: string;
+    expectedJobStatus: string;
+    latestContractStatus: string;
+    contractId: string;
+    contractUpdatedAt: string;
 }
 
 function normalizeAdminJobClient(client: AdminJobRow['client']): AdminJob['client'] {
@@ -76,6 +94,74 @@ export async function fetchAdminJobs(): Promise<AdminJob[]> {
     }
 }
 
+const normalizeStatus = (value: string | null | undefined) => String(value || '').toLowerCase();
+
+const expectedJobStatusFromContract = (contractStatus: string) => {
+    const normalized = normalizeStatus(contractStatus);
+    if (normalized === 'completed') return 'completed';
+    if (normalized === 'cancelled' || normalized === 'canceled') return 'cancelled';
+    if (normalized === 'disputed') return 'disputed';
+    return 'in_progress';
+};
+
+async function fetchAdminJobStatusMismatches(): Promise<AdminJobStatusMismatch[]> {
+    const client = supabase;
+
+    const [{ data: jobsData, error: jobsError }, { data: contractsData, error: contractsError }] = await Promise.all([
+        client
+            .from('jobs')
+            .select('id,title,status')
+            .order('created_at', { ascending: false })
+            .limit(500),
+        client
+            .from('contracts')
+            .select('id,job_id,status,created_at,updated_at')
+            .order('updated_at', { ascending: false })
+            .limit(1000),
+    ]);
+
+    if (jobsError) throw new Error(`Failed to fetch jobs for consistency check: ${jobsError.message}`);
+    if (contractsError && contractsError.code !== 'PGRST116') {
+        throw new Error(`Failed to fetch contracts for consistency check: ${contractsError.message}`);
+    }
+
+    const latestContractByJob = new Map<string, AdminContractStatusRow>();
+    ((contractsData ?? []) as AdminContractStatusRow[]).forEach((contract) => {
+        if (!contract.job_id) return;
+
+        const current = latestContractByJob.get(contract.job_id);
+        if (!current) {
+            latestContractByJob.set(contract.job_id, contract);
+            return;
+        }
+
+        const currentTime = new Date(current.updated_at || current.created_at).getTime();
+        const nextTime = new Date(contract.updated_at || contract.created_at).getTime();
+        if (nextTime >= currentTime) {
+            latestContractByJob.set(contract.job_id, contract);
+        }
+    });
+
+    return ((jobsData ?? []) as Array<{ id: string; title: string; status: string }>).flatMap((job) => {
+        const latestContract = latestContractByJob.get(job.id);
+        if (!latestContract) return [];
+
+        const expectedStatus = expectedJobStatusFromContract(latestContract.status);
+        const normalizedCurrentStatus = normalizeStatus(job.status);
+        if (normalizedCurrentStatus === expectedStatus) return [];
+
+        return [{
+            jobId: job.id,
+            jobTitle: job.title,
+            currentJobStatus: normalizedCurrentStatus || 'unknown',
+            expectedJobStatus: expectedStatus,
+            latestContractStatus: normalizeStatus(latestContract.status) || 'unknown',
+            contractId: latestContract.id,
+            contractUpdatedAt: latestContract.updated_at || latestContract.created_at,
+        } satisfies AdminJobStatusMismatch];
+    });
+}
+
 export default function JobsTab() {
      const { showToast } = useToast();
      const { language, tx } = useTranslation();
@@ -83,7 +169,7 @@ export default function JobsTab() {
      const locale = language === 'ar' ? 'ar-TN' : language === 'fr' ? 'fr-FR' : 'en-US';
 
     const [jobSearch, setJobSearch] = useState('');
-    const [jobFilter, setJobFilter] = useState<'all' | 'open' | 'in_progress' | 'completed' | 'cancelled'>('all');
+    const [jobFilter, setJobFilter] = useState<'all' | 'open' | 'in_progress' | 'disputed' | 'completed' | 'cancelled'>('all');
     const [confirmAction, setConfirmAction] = useState<ConfirmActionState>({
         isOpen: false,
         title: '',
@@ -108,6 +194,17 @@ export default function JobsTab() {
         staleTime: 30000,
         refetchOnWindowFocus: false,
         refetchOnMount: false,
+    });
+
+    const {
+        data: statusMismatches = [],
+        isLoading: isCheckingStatusConsistency,
+    } = useQuery({
+        queryKey: ['admin-job-status-mismatches'],
+        queryFn: fetchAdminJobStatusMismatches,
+        retry: 1,
+        staleTime: 30000,
+        refetchOnWindowFocus: false,
     });
 
     const updateJobsCache = (updater: (prev: AdminJob[]) => AdminJob[]) => {
@@ -196,11 +293,76 @@ export default function JobsTab() {
                                  { value: 'all', label: tx('dashboard.admin.jobs.allStatuses', undefined, 'All statuses') },
                                  { value: 'open', label: tx('dashboard.admin.jobs.statusOpen', undefined, 'Open') },
                                  { value: 'in_progress', label: tx('dashboard.admin.jobs.statusInProgress', undefined, 'In progress') },
+                                 { value: 'disputed', label: tx('dashboard.admin.jobs.statusDisputed', undefined, 'Disputed') },
                                  { value: 'completed', label: tx('dashboard.admin.jobs.statusCompleted', undefined, 'Completed') },
                                  { value: 'cancelled', label: tx('dashboard.admin.jobs.statusCancelled', undefined, 'Cancelled') },
                              ]}
                          />
                     </div>
+                </div>
+
+                <div className={panelClass}>
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div className="space-y-1">
+                            <p className="text-sm font-semibold text-foreground flex items-center gap-2">
+                                <AlertTriangle className="w-4 h-4 text-amber-300" />
+                                {tx('dashboard.admin.jobs.consistencyTitle', undefined, 'Lifecycle consistency check')}
+                            </p>
+                            <p className="text-xs text-muted">
+                                {tx('dashboard.admin.jobs.consistencyDescription', undefined, 'Compares jobs.status with the latest linked contract status.')}
+                            </p>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => queryClient.invalidateQueries({ queryKey: ['admin-job-status-mismatches'] })}
+                            className={`${adminActionButtonClass} border-amber-500/20 text-amber-200 hover:bg-amber-500/12`}
+                        >
+                            {tx('dashboard.admin.jobs.refreshCheck', undefined, 'Refresh check')}
+                        </button>
+                    </div>
+
+                    {isCheckingStatusConsistency ? (
+                        <div className="mt-3 flex items-center gap-2 text-sm text-muted">
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            {tx('dashboard.admin.jobs.consistencyLoading', undefined, 'Checking consistency...')}
+                        </div>
+                    ) : statusMismatches.length === 0 ? (
+                        <div className="mt-3 rounded-xl border border-emerald-500/20 bg-emerald-500/8 px-3 py-2 text-sm text-emerald-300">
+                            {tx('dashboard.admin.jobs.consistencyHealthy', undefined, 'No status mismatch detected between jobs and latest contracts.')}
+                        </div>
+                    ) : (
+                        <div className="mt-3 rounded-xl border border-amber-500/25 bg-amber-500/8 p-3">
+                            <p className="text-sm font-semibold text-amber-200 mb-2">
+                                {tx(
+                                    'dashboard.admin.jobs.consistencyCount',
+                                    { count: statusMismatches.length },
+                                    `${statusMismatches.length} job(s) have status drift`,
+                                )}
+                            </p>
+                            <div className="space-y-2 max-h-44 overflow-y-auto pr-1">
+                                {statusMismatches.slice(0, 12).map((item) => (
+                                    <div key={item.jobId} className="rounded-lg border border-amber-500/20 bg-black/20 px-3 py-2 text-xs">
+                                        <p className="font-semibold text-foreground">{item.jobTitle}</p>
+                                        <p className="text-muted mt-1">
+                                            {tx('dashboard.admin.jobs.currentStatus', undefined, 'Current')}: {item.currentJobStatus} | {tx('dashboard.admin.jobs.expectedStatus', undefined, 'Expected')}: {item.expectedJobStatus} ({tx('dashboard.admin.jobs.fromContract', undefined, 'from contract')}: {item.latestContractStatus})
+                                        </p>
+                                        <p className="text-muted mt-1">
+                                            #{item.jobId.slice(0, 8)} · #{item.contractId.slice(0, 8)}
+                                        </p>
+                                    </div>
+                                ))}
+                                {statusMismatches.length > 12 && (
+                                    <p className="text-xs text-muted">
+                                        {tx(
+                                            'dashboard.admin.jobs.consistencyMore',
+                                            { count: statusMismatches.length - 12 },
+                                            `+${statusMismatches.length - 12} more mismatches`,
+                                        )}
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 {isLoading ? (
@@ -257,11 +419,13 @@ export default function JobsTab() {
                                                     <span className={`px-3 py-1.5 rounded-full text-xs font-semibold ${
                                                          job.status === 'open' ? adminPillClass('emerald') :
                                                          job.status === 'in_progress' ? adminPillClass('blue') :
+                                                           job.status === 'disputed' ? adminPillClass('amber') :
                                                          job.status === 'completed' ? adminPillClass('violet') :
                                                          adminPillClass('neutral')
                                                      }`}>
                                                     {job.status === 'open' ? tx('dashboard.admin.jobs.statusOpen', undefined, 'Open') :
                                                           job.status === 'in_progress' ? tx('dashboard.admin.jobs.statusInProgress', undefined, 'In progress') :
+                                                            job.status === 'disputed' ? tx('dashboard.admin.jobs.statusDisputed', undefined, 'Disputed') :
                                                           job.status === 'completed' ? tx('dashboard.admin.jobs.statusCompleted', undefined, 'Completed') : tx('dashboard.admin.jobs.statusCancelled', undefined, 'Cancelled')}
                                                     </span>
                                                 </td>
@@ -296,11 +460,13 @@ export default function JobsTab() {
                                         <span className={`px-2 py-1 rounded-full text-xs font-medium shrink-0 ml-2 ${
                                               job.status === 'open' ? adminPillClass('emerald') :
                                               job.status === 'in_progress' ? adminPillClass('blue') :
+                                                job.status === 'disputed' ? adminPillClass('amber') :
                                               job.status === 'completed' ? adminPillClass('violet') :
                                               adminPillClass('neutral')
                                           }`}>
                                              {job.status === 'open' ? tx('dashboard.admin.jobs.statusOpen', undefined, 'Open') :
                                               job.status === 'in_progress' ? tx('dashboard.admin.jobs.statusInProgress', undefined, 'In progress') :
+                                                job.status === 'disputed' ? tx('dashboard.admin.jobs.statusDisputed', undefined, 'Disputed') :
                                               job.status === 'completed' ? tx('dashboard.admin.jobs.statusCompleted', undefined, 'Completed') : tx('dashboard.admin.jobs.statusCancelled', undefined, 'Cancelled')}
                                          </span>
                                     </div>

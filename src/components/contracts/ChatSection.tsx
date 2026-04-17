@@ -91,187 +91,200 @@ export default function ChatSection({
     };
 
     return (
-        <div className="flex flex-col h-full bg-card">
-            {/* Messages List */}
+        <div className="flex h-full flex-col bg-gradient-to-b from-card via-card to-surface/60">
             <ErrorBoundary fallback={
-                <div className="flex-1 flex items-center justify-center text-muted">
+                <div className="flex flex-1 items-center justify-center text-muted">
                     <div className="text-center">
                         <p>{t.common?.error || 'Failed to load messages'}</p>
                     </div>
                 </div>
             }>
-                <div className="flex-1 overflow-y-auto p-4 space-y-6 bg-surface/50" role="log" aria-live="polite" aria-relevant="additions text">
-                {isLoadingHistory && (
-                    <div className="flex justify-center py-4">
-                        <Loader2 className="w-6 h-6 animate-spin text-primary-600" />
-                    </div>
-                )}
+                <div className="relative flex-1 overflow-y-auto px-4 pb-5 pt-4 sm:px-6" role="log" aria-live="polite" aria-relevant="additions text">
+                    <div className="pointer-events-none absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-primary-500/10 to-transparent" />
 
-                {messages.length === 0 && !isLoadingHistory ? (
-                    <div className="flex flex-col items-center justify-center h-full text-muted">
-                        <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
-                            <Send className="w-8 h-8 opacity-50" />
+                    {isLoadingHistory && (
+                        <div className="flex justify-center py-6">
+                            <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card/90 px-3 py-1.5 text-xs text-muted-foreground shadow-sm backdrop-blur">
+                                <Loader2 className="h-4 w-4 animate-spin text-primary-600" />
+                                <span>{tx('common.loading', undefined, 'Loading')}</span>
+                            </div>
                         </div>
-                        <p>{t.contract?.startConversation || 'Start the conversation now'}</p>
-                    </div>
-                ) : (
-                    messages.map((message, index) => {
-                        const isOwn = message.sender_id === currentUser?.id;
-                        const showDateSeparator = index === 0 ||
-                            new Date(message.created_at).toDateString() !== new Date(messages[index - 1].created_at).toDateString();
+                    )}
 
-                        if (message.type === 'system') {
-                            return (
-                                <div key={message.id} className="flex justify-center my-4">
-                                    <SanitizedHtml
-                                        as="span"
-                                        html={message.content}
-                                        className="bg-secondary text-muted-foreground text-xs px-3 py-1 rounded-full"
-                                    />
+                    {messages.length === 0 && !isLoadingHistory ? (
+                        <div className="flex h-full items-center justify-center py-8">
+                            <div className="w-full max-w-md rounded-3xl border border-border bg-card/80 p-8 text-center shadow-sm backdrop-blur">
+                                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary-500/15">
+                                    <Send className="h-7 w-7 text-primary-400" />
                                 </div>
-                            );
-                        }
+                                <p className="text-base font-medium text-foreground">
+                                    {t.contract?.startConversation || 'Start the conversation now'}
+                                </p>
+                                <p className="mt-2 text-sm text-muted-foreground">
+                                    {tx('contract.firstMessageHint', undefined, 'Share context, files, and next steps to keep the project moving.')}
+                                </p>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="space-y-5 pb-2">
+                            {messages.map((message, index) => {
+                                const isOwn = message.sender_id === currentUser?.id;
+                                const showDateSeparator = index === 0
+                                    || new Date(message.created_at).toDateString() !== new Date(messages[index - 1].created_at).toDateString();
 
-                        return (
-                            <div key={message.id}>
-                                {showDateSeparator && (
-                                    <div className="flex justify-center my-6">
-                                        <span className="bg-card border border-border text-muted text-xs px-3 py-1 rounded-full shadow-sm">
-                                            {formatDateSeparator(message.created_at)}
-                                        </span>
-                                    </div>
-                                )}
-
-                                <div className={`flex gap-3 ${isOwn ? 'justify-end' : 'justify-start'}`}>
-                                    {!isOwn && (
-                                        <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center shrink-0 self-end mb-1">
-                                            {message.sender?.avatar_url ? (
-                                                  <img src={message.sender.avatar_url} alt={message.sender.full_name || 'User'} className="w-8 h-8 rounded-full object-cover" />
-                                            ) : (
-                                                <span className="text-xs font-bold text-primary-700">
-                                                    {message.sender?.full_name?.charAt(0)}
-                                                </span>
-                                            )}
+                                if (message.type === 'system') {
+                                    return (
+                                        <div key={message.id} className="flex justify-center py-1">
+                                            <SanitizedHtml
+                                                as="span"
+                                                html={message.content}
+                                                className="rounded-full border border-border bg-card/80 px-3 py-1 text-[11px] text-muted-foreground shadow-sm"
+                                            />
                                         </div>
-                                    )}
+                                    );
+                                }
 
-                                    <div className={`flex flex-col max-w-[70%] ${isOwn ? 'items-end' : 'items-start'}`}>
-                                        <div className={`pk-3 py-2 px-4 rounded-2xl shadow-sm text-sm ${isOwn
-                                            ? 'bg-primary-600 text-white rounded-br-sm'
-                                            : 'bg-card border border-border text-foreground rounded-bl-sm'
-                                            }`}>
-                                            {/* Text Content */}
-                                            {message.content && (
-                                                <SanitizedHtml
-                                                    html={message.content}
-                                                    className="leading-relaxed whitespace-pre-wrap"
-                                                />
-                                            )}
+                                return (
+                                    <div key={message.id}>
+                                        {showDateSeparator && (
+                                            <div className="relative my-5 flex items-center justify-center">
+                                                <div className="absolute inset-x-0 h-px bg-border" />
+                                                <span className="relative rounded-full border border-border bg-card px-3 py-1 text-[11px] text-muted-foreground">
+                                                    {formatDateSeparator(message.created_at)}
+                                                </span>
+                                            </div>
+                                        )}
 
-                                            {/* Attachments */}
-                                            {message.attachments && message.attachments.length > 0 && (
-                                                <div className="mt-2 space-y-2">
-                                                    {message.attachments.map((file, idx) => (
-                                                        <div key={idx} className={`flex items-center gap-3 p-2 rounded-lg ${isOwn ? 'bg-primary-700/50' : 'bg-surface border border-border'
-                                                            }`}>
-                                                            <div className={`p-2 rounded-lg ${isOwn ? 'bg-card/10' : 'bg-card'}`}>
-                                                                <FileText className="w-5 h-5" />
-                                                            </div>
-                                                            <div className="flex-1 min-w-0">
-                                                                <p className="font-medium truncate text-xs">{file.name}</p>
-                                                                <p className={`text-[10px] ${isOwn ? 'text-white/70' : 'text-muted'}`}>{file.size}</p>
-                                                            </div>
-                                                            <a
-                                                                href={file.url}
-                                                                target="_blank"
-                                                                rel="noopener noreferrer"
-                                                                className={`h-10 w-10 flex items-center justify-center rounded-full transition-colors ${isOwn ? 'hover:bg-card/20' : 'hover:bg-muted'
-                                                                    }`}
-                                                                aria-label={`تحميل المرفق: ${file.name}`}
-                                                            >
-                                                                <Download className="w-4 h-4" />
-                                                            </a>
-                                                        </div>
-                                                    ))}
+                                        <div className={`flex gap-3 ${isOwn ? 'justify-end' : 'justify-start'}`}>
+                                            {!isOwn && (
+                                                <div className="mt-auto mb-1 flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-border bg-surface">
+                                                    {message.sender?.avatar_url ? (
+                                                        <img src={message.sender.avatar_url} alt={message.sender.full_name || 'User'} className="h-9 w-9 object-cover" />
+                                                    ) : (
+                                                        <span className="text-xs font-bold text-primary-500">
+                                                            {message.sender?.full_name?.charAt(0)}
+                                                        </span>
+                                                    )}
                                                 </div>
                                             )}
-                                        </div>
 
-                                        {/* Meta: Time & Read Receipt */}
-                                        <div className="flex items-center gap-1 mt-1 px-1">
-                                            <span className="text-[10px] text-muted">
-                                                {formatTime(message.created_at)}
-                                            </span>
-                                            {isOwn && (
-                                                message.is_read
-                                                    ? <CheckCheck className="w-3 h-3 text-blue-500" />
-                                                    : <Check className="w-3 h-3 text-muted" />
-                                            )}
+                                            <div className={`flex max-w-[78%] flex-col ${isOwn ? 'items-end' : 'items-start'}`}>
+                                                <div
+                                                    className={`rounded-2xl px-4 py-3 text-sm shadow-sm ${isOwn
+                                                        ? 'rounded-br-md border border-primary-400/30 bg-gradient-to-br from-primary-500 to-primary-600 text-white'
+                                                        : 'rounded-bl-md border border-border bg-card text-foreground'
+                                                        }`}
+                                                >
+                                                    {message.content && (
+                                                        <SanitizedHtml
+                                                            html={message.content}
+                                                            className="leading-relaxed whitespace-pre-wrap"
+                                                        />
+                                                    )}
+
+                                                    {message.attachments && message.attachments.length > 0 && (
+                                                        <div className="mt-3 space-y-2">
+                                                            {message.attachments.map((file, idx) => (
+                                                                <div
+                                                                    key={idx}
+                                                                    className={`flex items-center gap-3 rounded-xl border p-2.5 ${isOwn
+                                                                        ? 'border-white/25 bg-black/10'
+                                                                        : 'border-border bg-surface'
+                                                                        }`}
+                                                                >
+                                                                    <div className={`rounded-lg p-2 ${isOwn ? 'bg-white/15' : 'bg-card border border-border'}`}>
+                                                                        <FileText className="h-4 w-4" />
+                                                                    </div>
+                                                                    <div className="min-w-0 flex-1">
+                                                                        <p className="truncate text-xs font-medium">{file.name}</p>
+                                                                        <p className={`text-[10px] ${isOwn ? 'text-white/80' : 'text-muted-foreground'}`}>{file.size}</p>
+                                                                    </div>
+                                                                    <a
+                                                                        href={file.url}
+                                                                        target="_blank"
+                                                                        rel="noopener noreferrer"
+                                                                        className={`flex h-9 w-9 items-center justify-center rounded-lg transition-colors ${isOwn ? 'hover:bg-white/20' : 'hover:bg-muted'}`}
+                                                                        aria-label={`تحميل المرفق: ${file.name}`}
+                                                                    >
+                                                                        <Download className="h-4 w-4" />
+                                                                    </a>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                                <div className="mt-1.5 flex items-center gap-1 px-1 text-[10px] text-muted-foreground">
+                                                    <span>{formatTime(message.created_at)}</span>
+                                                    {isOwn && (
+                                                        message.is_read
+                                                            ? <CheckCheck className="h-3.5 w-3.5 text-sky-500" />
+                                                            : <Check className="h-3.5 w-3.5 text-muted-foreground" />
+                                                    )}
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
+                                );
+                            })}
+
+                            {otherUserTyping && (
+                                <div className="flex justify-start gap-3" role="status" aria-live="polite">
+                                    <span className="sr-only">{tx('dynamic_key_229505028')}</span>
+                                    <div className="h-9 w-9 rounded-2xl border border-border bg-surface animate-pulse" />
+                                    <div className="flex items-center gap-1 rounded-2xl rounded-bl-md border border-border bg-card px-4 py-3 shadow-sm">
+                                        <div className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted-foreground/70" style={{ animationDelay: '0ms' }} />
+                                        <div className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted-foreground/70" style={{ animationDelay: '150ms' }} />
+                                        <div className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted-foreground/70" style={{ animationDelay: '300ms' }} />
+                                    </div>
                                 </div>
-                            </div>
-                        );
-                    })
-                )}
-
-                {/* Typing Indicator */}
-                {otherUserTyping && (
-                    <div className="flex justify-start gap-3" role="status" aria-live="polite">
-                        <span className="sr-only">{tx('dynamic_key_229505028')}</span>
-                        <div className="w-8 h-8 rounded-full bg-secondary animate-pulse" />
-                        <div className="bg-card border border-border rounded-2xl rounded-bl-sm px-4 py-3 shadow-sm flex items-center gap-1">
-                            <div className="w-1.5 h-1.5 rounded-full bg-muted animate-bounce" style={{ animationDelay: '0ms' }} />
-                            <div className="w-1.5 h-1.5 rounded-full bg-muted animate-bounce" style={{ animationDelay: '150ms' }} />
-                            <div className="w-1.5 h-1.5 rounded-full bg-muted animate-bounce" style={{ animationDelay: '300ms' }} />
+                            )}
                         </div>
-                    </div>
-                )}
+                    )}
 
-                <div ref={messagesEndRef} />
+                    <div ref={messagesEndRef} />
                 </div>
             </ErrorBoundary>
 
-            {/* Input Area */}
-            <div className="p-4 bg-card border-t border-border shrink-0">
+            <div className="shrink-0 border-t border-border bg-card/95 px-4 py-4 backdrop-blur sm:px-6">
                 {isComposerDisabled && disabledReason ? (
-                    <div className="mb-3 rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-100">
+                    <div className="mb-3 rounded-xl border border-amber-500/30 bg-amber-500/12 px-3 py-2 text-xs text-amber-300">
                         {disabledReason}
                     </div>
                 ) : null}
 
                 {isUploading && (
                     <div className="mb-3" role="status" aria-live="polite">
-                        <div className="flex items-center justify-between text-xs text-primary-600 mb-1">
+                        <div className="mb-1 flex items-center justify-between text-xs text-primary-500">
                             <span>{tx('dynamic_key_1393796300')}</span>
                             <span>{Math.round(uploadProgress)}%</span>
                         </div>
-                        <div className="h-1 bg-muted rounded-full overflow-hidden">
-                            <div className="h-full bg-primary-600 transition-all duration-300" style={{ width: `${uploadProgress}%` }} />
+                        <div className="h-1.5 overflow-hidden rounded-full bg-muted">
+                            <div className="h-full bg-primary-500 transition-all duration-300" style={{ width: `${uploadProgress}%` }} />
                         </div>
                     </div>
                 )}
 
-                <form onSubmit={handleSend} className="flex gap-2 items-end">
+                <form onSubmit={handleSend} className="flex items-end gap-2">
                     <input
                         type="file"
                         ref={fileInputRef}
                         className="hidden"
                         onChange={handleFileChange}
-                        multiple={false} // Start with single file for simplicity
+                        multiple={false}
                     />
 
                     <button
                         type="button"
                         onClick={() => fileInputRef.current?.click()}
-                        className="h-12 w-12 flex items-center justify-center text-muted hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-colors"
+                        className="flex h-12 w-12 items-center justify-center rounded-xl border border-border bg-surface text-muted-foreground transition-colors hover:border-primary-400/40 hover:text-primary-500"
                         disabled={isUploading || isComposerDisabled || !canAttachFiles}
                         aria-label={t.contract?.attachFile || 'Attach file'}
                     >
-                        <Paperclip className="w-5 h-5" />
+                        <Paperclip className="h-5 w-5" />
                     </button>
 
-                    <div className="flex-1 min-h-[48px] bg-surface border border-border rounded-xl px-4 py-3 focus-within:ring-2 focus-within:ring-primary-100 focus-within:border-primary-400 transition-all">
+                    <div className="flex min-h-[48px] flex-1 items-end rounded-xl border border-border bg-surface/80 px-4 py-3 transition-all focus-within:border-primary-400/60 focus-within:ring-2 focus-within:ring-primary-500/20">
                         <textarea
                             value={newMessage}
                             onChange={(e) => {
@@ -290,7 +303,7 @@ export default function ChatSection({
                                 ? (disabledReason || tx('pages.messages.readOnlyPlaceholder', undefined, 'This conversation is read-only.'))
                                 : (t.contract?.typeMessage || "Write your message here...")}
                             disabled={isComposerDisabled || isSending}
-                            className="w-full max-h-32 bg-transparent border-none focus:ring-0 p-0 text-sm resize-none scrollbar-hide my-auto"
+                            className="my-auto max-h-32 w-full resize-none border-none bg-transparent p-0 text-sm leading-relaxed focus:ring-0 scrollbar-hide"
                             rows={1}
                             style={{ minHeight: '24px' }}
                             aria-label={t.contract?.typeMessage || "Write your message here..."}
@@ -300,12 +313,12 @@ export default function ChatSection({
                     <Button
                         type="submit"
                         variant="primary"
-                        className="h-[48px] w-[48px] p-0 rounded-xl flex items-center justify-center shrink-0 shadow-lg shadow-primary-200"
+                        className="flex h-[48px] w-[48px] shrink-0 items-center justify-center rounded-xl p-0"
                         disabled={!newMessage.trim() || isSending || isComposerDisabled}
                         isLoading={isSending}
                         aria-label={t.contract?.sendMessage || 'Send message'}
                     >
-                        <Send className="ms-1 w-5 h-5 rtl:rotate-180" />
+                        <Send className="ms-1 h-5 w-5 rtl:rotate-180" />
                     </Button>
                 </form>
             </div>

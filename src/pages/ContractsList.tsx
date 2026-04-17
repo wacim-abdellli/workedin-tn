@@ -37,10 +37,11 @@ type JobRecord = {
 
 type ContractRowRaw = {
   id: string;
-  title: string | null;
+  job_id?: string | null;
+  title?: string | null;
   status: string | null;
   amount: number | null;
-  total_amount: number | null;
+  total_amount?: number | null;
   created_at: string;
   client_id: string;
   freelancer_id: string;
@@ -61,12 +62,30 @@ type ContractRow = {
   job: JobRecord | null;
 };
 
-function toSingle<T>(value: T | T[] | null): T | null {
-  if (!value) {
-    return null;
-  }
+function getErrorText(error: unknown): string {
+  if (!error || typeof error !== "object") return "";
 
-  return Array.isArray(value) ? value[0] ?? null : value;
+  const candidate = error as {
+    message?: unknown;
+    details?: unknown;
+    hint?: unknown;
+  };
+
+  return [candidate.message, candidate.details, candidate.hint]
+    .filter((value): value is string => typeof value === "string")
+    .join(" ")
+    .toLowerCase();
+}
+
+function canRetryWithLegacySelect(error: unknown): boolean {
+  const text = getErrorText(error);
+  if (!text) return false;
+
+  return (
+    text.includes("column")
+    || text.includes("does not exist")
+    || text.includes("schema cache")
+  );
 }
 
 function normalizeStatus(value: string | null): ContractStatus {
@@ -171,28 +190,94 @@ export default function ContractsList() {
         return [] as ContractRow[];
       }
 
-      const query = supabase
+      const primaryQuery = supabase
         .from("contracts")
-        .select(
-          `id, title, status, amount, total_amount, created_at, client_id, freelancer_id,
-           client:public_profiles!client_id(id, full_name, avatar_url),
-           freelancer:public_profiles!freelancer_id(id, full_name, avatar_url),
-           job:jobs(id, title, job_type, budget_min, budget_max, hourly_rate)`,
-        )
+        .select("id, job_id, title, status, amount, total_amount, created_at, client_id, freelancer_id")
         .order("created_at", { ascending: false });
 
-      const scopedQuery = isFreelancerWorkspace
-        ? query.eq("freelancer_id", user.id)
-        : query.eq("client_id", user.id);
+      const scopedPrimaryQuery = isFreelancerWorkspace
+        ? primaryQuery.eq("freelancer_id", user.id)
+        : primaryQuery.eq("client_id", user.id);
 
-      const { data, error } = await scopedQuery;
+      const primaryResult = await scopedPrimaryQuery;
 
-      if (error && error.code !== "PGRST116") {
-        throw error;
+      let baseRows = (primaryResult.data ?? []) as ContractRowRaw[];
+      let baseError = primaryResult.error;
+
+      if (baseError && baseError.code !== "PGRST116" && canRetryWithLegacySelect(baseError)) {
+        const legacyQuery = supabase
+          .from("contracts")
+          .select("id, job_id, status, amount, created_at, client_id, freelancer_id")
+          .order("created_at", { ascending: false });
+
+        const scopedLegacyQuery = isFreelancerWorkspace
+          ? legacyQuery.eq("freelancer_id", user.id)
+          : legacyQuery.eq("client_id", user.id);
+
+        const legacyResult = await scopedLegacyQuery;
+        baseRows = (legacyResult.data ?? []) as ContractRowRaw[];
+        baseError = legacyResult.error;
       }
 
-      return (data ?? []).map((row) => {
-        const raw = row as ContractRowRaw;
+      if (baseError && baseError.code !== "PGRST116") {
+        throw baseError;
+      }
+
+      if (baseRows.length === 0) {
+        return [] as ContractRow[];
+      }
+
+      const jobIds = [...new Set(baseRows.map((row) => row.job_id).filter(Boolean))] as string[];
+      const partnerIds = [...new Set(baseRows.flatMap((row) => [row.client_id, row.freelancer_id]).filter(Boolean))] as string[];
+
+      const jobsById = new Map<string, JobRecord>();
+      const profilesById = new Map<string, PartnerRecord>();
+
+      if (jobIds.length > 0) {
+        const { data: jobsData, error: jobsError } = await supabase
+          .from("jobs")
+          .select("id, title, job_type, budget_min, budget_max, hourly_rate")
+          .in("id", jobIds);
+
+        if (jobsError) {
+          console.warn("[ContractsList] job hydration failed", jobsError);
+        } else {
+          (jobsData ?? []).forEach((job) => {
+            const row = job as JobRecord;
+            jobsById.set(row.id, row);
+          });
+        }
+      }
+
+      if (partnerIds.length > 0) {
+        const { data: publicProfilesData, error: publicProfilesError } = await supabase
+          .from("public_profiles")
+          .select("id, full_name, avatar_url")
+          .in("id", partnerIds);
+
+        if (!publicProfilesError) {
+          (publicProfilesData ?? []).forEach((profile) => {
+            const row = profile as PartnerRecord;
+            profilesById.set(row.id, row);
+          });
+        } else {
+          const { data: profilesData, error: profilesError } = await supabase
+            .from("profiles")
+            .select("id, full_name, avatar_url")
+            .in("id", partnerIds);
+
+          if (profilesError) {
+            console.warn("[ContractsList] profile hydration failed", profilesError);
+          } else {
+            (profilesData ?? []).forEach((profile) => {
+              const row = profile as PartnerRecord;
+              profilesById.set(row.id, row);
+            });
+          }
+        }
+      }
+
+      return baseRows.map((raw) => {
         return {
           id: raw.id,
           title: raw.title,
@@ -200,9 +285,9 @@ export default function ContractsList() {
           status: normalizeStatus(raw.status),
           amount: raw.amount ?? 0,
           totalAmount: raw.total_amount ?? raw.amount ?? 0,
-          client: toSingle(raw.client),
-          freelancer: toSingle(raw.freelancer),
-          job: toSingle(raw.job),
+          client: profilesById.get(raw.client_id) ?? null,
+          freelancer: profilesById.get(raw.freelancer_id) ?? null,
+          job: raw.job_id ? (jobsById.get(raw.job_id) ?? null) : null,
         } as ContractRow;
       });
     },

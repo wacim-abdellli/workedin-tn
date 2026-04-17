@@ -7,6 +7,9 @@ import {
     Info,
     FileText,
     AlertCircle,
+    Briefcase,
+    Calendar,
+    DollarSign,
 } from 'lucide-react';
 import { useTranslation } from '@/i18n';
 import { useAuth } from '@/contexts/AuthContext';
@@ -324,6 +327,49 @@ function ContractWorkspaceComponent() {
     };
 
     const currentStatus = contractState?.status || contractData?.status || 'active';
+    const statusMeta = useMemo(() => {
+        if (currentStatus === 'active') {
+            return {
+                dot: 'bg-emerald-400',
+                chip: 'border-emerald-400/35 bg-emerald-400/12 text-emerald-300',
+                label: t.contract.inProgress,
+            };
+        }
+
+        if (currentStatus === 'completed') {
+            return {
+                dot: 'bg-sky-400',
+                chip: 'border-sky-400/35 bg-sky-400/12 text-sky-300',
+                label: tx('contract.completed', undefined, 'Completed'),
+            };
+        }
+
+        if (currentStatus === 'disputed') {
+            return {
+                dot: 'bg-amber-400',
+                chip: 'border-amber-400/35 bg-amber-400/12 text-amber-300',
+                label: t.contract.disputeOpened,
+            };
+        }
+
+        return {
+            dot: 'bg-muted',
+            chip: 'border-border bg-surface text-muted-foreground',
+            label: currentStatus,
+        };
+    }, [currentStatus, t.contract.disputeOpened, t.contract.inProgress, tx]);
+
+    const startedAtLabel = useMemo(() => {
+        const source = contractData?.started_at;
+        if (!source) return '—';
+
+        const date = new Date(String(source));
+        if (Number.isNaN(date.getTime())) return '—';
+        return date.toLocaleDateString();
+    }, [contractData?.started_at]);
+
+    const amountLabel = `${contractData?.amount ?? 0} ${tx('dynamic_key_1524267')}`;
+
     const lifecyclePolicy = useMemo(() => {
         return resolveMessagingLifecyclePolicy({
             kind: 'contract',
@@ -439,7 +485,7 @@ function ContractWorkspaceComponent() {
     }
 
     return (
-        <div className="flex flex-col h-screen bg-card">
+        <div className="flex min-h-screen flex-col bg-gradient-to-b from-card via-card to-surface/70">
             <SEO
                 title={contractData ? `${contractData.job.title} | ${t.contract.workspaceTitle}` : t.contract.workspaceTitle}
                 description={t.contract.seoDescription || "Track conversation, files, and payment status for your contract from the workspace."}
@@ -447,40 +493,61 @@ function ContractWorkspaceComponent() {
             />
             <Header />
 
-            {/* Contract Header Bar */}
-            <div className="h-16 border-b border-border flex items-center justify-between px-4 sticky top-0 bg-card z-10 shrink-0">
-                <div className="flex items-center gap-3">
-                    <button
-                        type="button"
-                        onClick={() => navigate(-1)}
-                        className="p-2 hover:bg-muted rounded-full md:hidden"
-                        aria-label={t.common.back}
-                    >
-                        <ArrowLeft className="w-5 h-5 text-muted rtl:rotate-180" />
-                    </button>
-                    <div>
-                        <h1 className="font-bold text-lg leading-tight truncate max-w-[200px] md:max-w-md flex items-center gap-2">
-                            {contractData.job.title}
-                            {contractData.status === 'completed' && <CheckCircle className="w-4 h-4 text-green-500" />}
-                        </h1>
-                        <div className="flex items-center gap-2 text-xs text-muted">
-                            <span className={`w-2 h-2 rounded-full ${currentStatus === 'active' ? 'bg-green-500' :
-                                currentStatus === 'completed' ? 'bg-blue-500' : 'bg-muted'
-                                }`}></span>
-                            <span>{t.contract.status}: {currentStatus === 'active' ? t.contract.inProgress : currentStatus}</span>
+            <div className="sticky top-0 z-20 shrink-0 border-b border-border bg-card/95 backdrop-blur">
+                <div className="mx-auto flex w-full max-w-[1600px] items-center justify-between gap-3 px-4 py-3 md:px-6">
+                    <div className="flex min-w-0 items-center gap-3">
+                        <button
+                            type="button"
+                            onClick={() => navigate(-1)}
+                            className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-surface/60 text-muted-foreground transition-colors hover:bg-surface"
+                            aria-label={t.common.back}
+                        >
+                            <ArrowLeft className="h-5 w-5 rtl:rotate-180" />
+                        </button>
+
+                        <div className="min-w-0">
+                            <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                                {tx('contract.workspaceTitle', undefined, 'Workspace')}
+                            </p>
+                            <h1 className="mt-0.5 flex items-center gap-2 truncate text-lg font-semibold leading-tight text-foreground md:text-xl">
+                                <span className="truncate">{contractData.job.title}</span>
+                                {contractData.status === 'completed' && <CheckCircle className="h-4 w-4 text-emerald-400" />}
+                            </h1>
                         </div>
                     </div>
-                </div>
-                <div className="hidden md:flex items-center gap-2">
-                    <Button variant="outline" size="sm" onClick={() => window.location.href = `/jobs/${contractData.job.id}`}>
+
+                    <div className="flex items-center gap-2">
+                        <span className={`hidden rounded-full border px-2.5 py-1 text-xs font-medium md:inline-flex ${statusMeta.chip}`}>
+                            {statusMeta.label}
+                        </span>
+                        <Button variant="outline" size="sm" onClick={() => window.location.href = `/jobs/${contractData.job.id}`}>
                         {tx('common.viewJob', undefined, 'View Job')}
-                    </Button>
+                        </Button>
+                    </div>
+                </div>
+
+                <div className="mx-auto hidden w-full max-w-[1600px] grid-cols-4 gap-3 px-6 pb-3 md:grid">
+                    <div className="flex items-center gap-2 rounded-xl border border-border bg-surface/70 px-3 py-2 text-xs text-muted-foreground">
+                        <Briefcase className="h-4 w-4" />
+                        <span>{tx('contract.role', undefined, 'Role')}: {userRole}</span>
+                    </div>
+                    <div className="flex items-center gap-2 rounded-xl border border-border bg-surface/70 px-3 py-2 text-xs text-muted-foreground">
+                        <Calendar className="h-4 w-4" />
+                        <span>{tx('contract.startedAt', undefined, 'Started')}: {startedAtLabel}</span>
+                    </div>
+                    <div className="flex items-center gap-2 rounded-xl border border-border bg-surface/70 px-3 py-2 text-xs text-muted-foreground">
+                        <DollarSign className="h-4 w-4" />
+                        <span>{tx('contract.amount', undefined, 'Amount')}: {amountLabel}</span>
+                    </div>
+                    <div className="flex items-center gap-2 rounded-xl border border-border bg-surface/70 px-3 py-2 text-xs text-muted-foreground">
+                        <span className={`h-2.5 w-2.5 rounded-full ${statusMeta.dot}`} />
+                        <span>{t.contract.status}: {statusMeta.label}</span>
+                    </div>
                 </div>
             </div>
 
-            {/* Mobile Tabs */}
-            <div className="md:hidden shrink-0 border-b border-border bg-card z-10 overflow-x-auto" role="tablist" aria-label={tx('contract.tabs.ariaLabel', undefined, 'Workspace tabs')}>
-                <div className="flex min-w-max">
+            <div className="md:hidden shrink-0 border-b border-border bg-card/95 px-3 py-2" role="tablist" aria-label={tx('contract.tabs.ariaLabel', undefined, 'Workspace tabs')}>
+                <div className="flex min-w-max items-center gap-2 rounded-xl border border-border bg-surface/60 p-1">
                     <button
                         type="button"
                         onClick={() => setActiveMobileTab('chat')}
@@ -489,9 +556,10 @@ function ContractWorkspaceComponent() {
                         aria-selected={activeMobileTab === 'chat'}
                         aria-controls="workspace-panel-chat"
                         aria-label={tx('contract.tabs.chatAria', undefined, 'Show chat')}
-                        className={`flex min-h-[48px] min-w-[118px] shrink-0 items-center justify-center gap-2 whitespace-nowrap border-b-2 px-4 py-3 text-sm font-medium transition-colors ${activeMobileTab === 'chat' ? 'border-primary-600 text-primary-600' : 'border-transparent text-muted'}`}
+                        className={`flex min-h-[44px] min-w-[108px] shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium transition-colors ${activeMobileTab === 'chat' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'}`}
                     >
-                        <MessageSquare className="w-4 h-4" />{tx('contract.tabs.chat', undefined, 'Chat')}</button>
+                        <MessageSquare className="w-4 h-4" />{tx('contract.tabs.chat', undefined, 'Chat')}
+                    </button>
                     <button
                         type="button"
                         onClick={() => setActiveMobileTab('details')}
@@ -500,9 +568,10 @@ function ContractWorkspaceComponent() {
                         aria-selected={activeMobileTab === 'details'}
                         aria-controls="workspace-panel-details"
                         aria-label={tx('contract.tabs.detailsAria', undefined, 'Show details')}
-                        className={`flex min-h-[48px] min-w-[118px] shrink-0 items-center justify-center gap-2 whitespace-nowrap border-b-2 px-4 py-3 text-sm font-medium transition-colors ${activeMobileTab === 'details' ? 'border-primary-600 text-primary-600' : 'border-transparent text-muted'}`}
+                        className={`flex min-h-[44px] min-w-[108px] shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium transition-colors ${activeMobileTab === 'details' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'}`}
                     >
-                        <Info className="w-4 h-4" />{tx('contract.tabs.details', undefined, 'Details')}</button>
+                        <Info className="w-4 h-4" />{tx('contract.tabs.details', undefined, 'Details')}
+                    </button>
                     <button
                         type="button"
                         onClick={() => setActiveMobileTab('files')}
@@ -511,19 +580,19 @@ function ContractWorkspaceComponent() {
                         aria-selected={activeMobileTab === 'files'}
                         aria-controls="workspace-panel-files"
                         aria-label={tx('contract.tabs.filesAria', undefined, 'Show files')}
-                        className={`flex min-h-[48px] min-w-[118px] shrink-0 items-center justify-center gap-2 whitespace-nowrap border-b-2 px-4 py-3 text-sm font-medium transition-colors ${activeMobileTab === 'files' ? 'border-primary-600 text-primary-600' : 'border-transparent text-muted'}`}
+                        className={`flex min-h-[44px] min-w-[108px] shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium transition-colors ${activeMobileTab === 'files' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'}`}
                     >
-                        <FileText className="w-4 h-4" />{tx('contract.tabs.files', undefined, 'Files')}</button>
+                        <FileText className="w-4 h-4" />{tx('contract.tabs.files', undefined, 'Files')}
+                    </button>
                 </div>
             </div>
 
-            {/* Main Content Area (Split View) */}
-            <div className="flex-1 flex overflow-hidden relative">
-
-                {/* Left: Chat Section (60% Desktop) */}
-                <div className={`
-                    absolute inset-0 z-0 bg-card md:static md:w-[60%] flex flex-col transition-transform duration-300
-                    ${activeMobileTab === 'chat' ? 'translate-x-0' : 'translate-x-full md:translate-x-0'}
+            <div className="flex-1 overflow-hidden md:px-4 md:pb-4">
+                <div className="relative mx-auto flex h-full w-full max-w-[1600px] overflow-hidden md:gap-4 md:pt-4">
+                    <div className={`
+                    absolute inset-0 z-0 flex flex-col transition-transform duration-300
+                    ${activeMobileTab === 'chat' ? 'translate-x-0' : 'translate-x-full'}
+                    md:static md:w-[64%] md:translate-x-0 md:overflow-hidden md:rounded-3xl md:border md:border-border md:shadow-[0_18px_45px_-28px_rgba(0,0,0,0.6)]
                 `}
                     id="workspace-panel-chat"
                     role="tabpanel"
@@ -546,10 +615,10 @@ function ContractWorkspaceComponent() {
                     />
                 </div>
 
-                {/* Right: Contract Details (40% Desktop) */}
-                <div className={`
-                    absolute inset-0 z-0 bg-surface md:static md:w-[40%] md:border-s md:border-border transition-transform duration-300
-                    ${activeMobileTab === 'details' ? 'translate-x-0' : 'translate-x-full md:translate-x-0'}
+                    <div className={`
+                    absolute inset-0 z-0 transition-transform duration-300
+                    ${activeMobileTab === 'details' ? 'translate-x-0' : 'translate-x-full'}
+                    md:static md:w-[36%] md:translate-x-0 md:overflow-hidden md:rounded-3xl md:border md:border-border md:shadow-[0_18px_45px_-28px_rgba(0,0,0,0.6)]
                 `}
                     id="workspace-panel-details"
                     role="tabpanel"
@@ -570,8 +639,7 @@ function ContractWorkspaceComponent() {
                     />
                 </div>
 
-                {/* Files Tab (Mobile Only) */}
-                <div className={`
+                    <div className={`
                     absolute inset-0 z-0 bg-card md:hidden transition-transform duration-300
                     ${activeMobileTab === 'files' ? 'translate-x-0' : 'translate-x-full'}
                 `}
@@ -579,12 +647,14 @@ function ContractWorkspaceComponent() {
                     role="tabpanel"
                     aria-labelledby="workspace-tab-files"
                 >
-                    <div className="p-8 text-center text-muted">
-                        <FileText className="w-12 h-12 mx-auto mb-3 opacity-20" />
-                        <p>{tx('contract.filesListEmpty', undefined, 'Files list (check chat for attachments)')}</p>
+                    <div className="mx-4 mt-4 rounded-3xl border border-border bg-card p-8 text-center text-muted-foreground shadow-sm">
+                        <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-surface">
+                            <FileText className="h-7 w-7 opacity-60" />
+                        </div>
+                        <p className="text-sm">{tx('contract.filesListEmpty', undefined, 'Files list (check chat for attachments)')}</p>
                     </div>
                 </div>
-
+                </div>
             </div>
 
             {/* Deliver Work Modal */}

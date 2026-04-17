@@ -1,4 +1,5 @@
 import { lazy } from 'react';
+import { Navigate, useParams } from 'react-router-dom';
 
 import {
   defineRoute,
@@ -12,11 +13,16 @@ const ContractsList = lazy(() => import('@/pages/ContractsList'));
 const JobProposals = lazy(() => import('@/pages/JobProposals'));
 const JobPostSuccess = lazy(() => import('@/pages/JobPostSuccess'));
 const JobMatches = lazy(() => import('@/pages/JobMatches'));
-const ContractWorkspace = lazy(() => import('@/pages/ContractWorkspace'));
 const LeaveReview = lazy(() => import('@/pages/LeaveReview'));
 const PaymentSuccess = lazy(() => import('@/pages/PaymentSuccess'));
 const PaymentFailed = lazy(() => import('@/pages/PaymentFailed'));
 const EditJob = lazy(() => import('@/pages/EditJob'));
+
+function ContractSessionRedirect() {
+  const { contractId } = useParams<{ contractId: string }>();
+  const target = contractId ? `/messages?contract=${encodeURIComponent(contractId)}` : '/messages';
+  return <Navigate to={target} replace state={contractId ? { contractId } : null} />;
+}
 
 export const contractRoutes: AppRouteDefinition[] = [
   defineRoute(
@@ -75,12 +81,12 @@ export const contractRoutes: AppRouteDefinition[] = [
   defineRoute(
     {
       path: '/contracts/:contractId',
-      page: 'ContractWorkspace',
+      page: 'ContractSessionRedirect',
       section: 'contracts',
       guard: 'protected',
-      errorBoundary: true,
+      errorBoundary: false,
     },
-    withErrorBoundary(withProtected(<ContractWorkspace />)),
+    withProtected(<ContractSessionRedirect />),
   ),
   defineRoute(
     {

@@ -16,7 +16,7 @@ import {
 import { useEffect, useMemo, useRef, useState, type ChangeEvent, type DragEvent } from 'react';
 import { FormProvider, useForm, type SubmitHandler } from 'react-hook-form';
 import { useQueryClient } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { z } from 'zod';
 import SEO from '../components/common/SEO';
 import { Header } from '../components/layout';
@@ -217,8 +217,36 @@ const createJobSchema = (tx: ReturnType<typeof useTranslation>['tx']) =>
 
 type JobFormData = z.infer<ReturnType<typeof createJobSchema>>;
 
+type RepostPrefillData = Partial<JobFormData> & {
+  sourceJobId?: string;
+};
+
+type RepostLocationState = {
+  repostFromJob?: RepostPrefillData;
+};
+
 function formatTime(date: Date) {
   return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
+function toDateInputString(date: Date) {
+  return date.toISOString().slice(0, 10);
+}
+
+function normalizeFutureDeadlineInput(rawDeadline: unknown) {
+  const startOfToday = new Date();
+  startOfToday.setHours(0, 0, 0, 0);
+
+  if (typeof rawDeadline === 'string' && rawDeadline.trim()) {
+    const candidate = new Date(rawDeadline);
+    if (!Number.isNaN(candidate.getTime()) && candidate >= startOfToday) {
+      return toDateInputString(candidate);
+    }
+  }
+
+  const fallback = new Date(startOfToday);
+  fallback.setDate(fallback.getDate() + 14);
+  return toDateInputString(fallback);
 }
 
 export default function JobPost() {
@@ -227,6 +255,7 @@ export default function JobPost() {
   const { showToast } = useToast();
   const { tx, language } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const jobSchema = createJobSchema(tx);
 
@@ -239,6 +268,7 @@ export default function JobPost() {
   const [showRestoreDraftModal, setShowRestoreDraftModal] = useState(false);
   const [draftToRestore, setDraftToRestore] = useState<{ data: JobFormData; timestamp: Date } | null>(null);
   const hasCheckedDraftRef = useRef(false);
+  const hasAppliedRepostPrefillRef = useRef(false);
 
   const methods = useForm<JobFormData>({
     resolver: zodResolver(jobSchema) as any,
@@ -259,6 +289,50 @@ export default function JobPost() {
     data: autosaveData as JobFormData,
     storageKey: 'workedin_job_draft',
   });
+
+  useEffect(() => {
+    if (hasAppliedRepostPrefillRef.current) return;
+
+    const state = location.state as RepostLocationState | null;
+    const repostFromJob = state?.repostFromJob;
+    if (!repostFromJob || typeof repostFromJob !== 'object') return;
+
+    hasAppliedRepostPrefillRef.current = true;
+    hasCheckedDraftRef.current = true;
+
+    const normalizedJobType = repostFromJob.job_type === 'hourly' ? 'hourly' : 'fixed_price';
+    const safeSkills = Array.isArray(repostFromJob.required_skills) ? repostFromJob.required_skills : [];
+    const safeLinks = Array.isArray(repostFromJob.reference_links)
+      ? sanitizeJobReferenceLinks(repostFromJob.reference_links as string[], MAX_JOB_REFERENCE_LINKS)
+      : [];
+
+    const normalizedPrefill: JobFormData = {
+      ...(JOB_POST_DEFAULT_VALUES as JobFormData),
+      ...(repostFromJob as Partial<JobFormData>),
+      job_type: normalizedJobType,
+      required_skills: safeSkills as Skill[],
+      reference_links: safeLinks,
+      deadline: normalizeFutureDeadlineInput(repostFromJob.deadline),
+      estimated_hours:
+        normalizedJobType === 'hourly'
+          ? (typeof repostFromJob.estimated_hours === 'number' && repostFromJob.estimated_hours > 0
+              ? repostFromJob.estimated_hours
+              : 20)
+          : undefined,
+      attachments_files: [],
+    };
+
+    methods.reset(normalizedPrefill);
+    setDraftToRestore(null);
+    setShowRestoreDraftModal(false);
+
+    showToast(
+      tx('jobs.new.toasts.repostPrefilled', undefined, 'Previous project loaded. Review and publish when ready.'),
+      'info',
+    );
+
+    navigate(location.pathname, { replace: true, state: null });
+  }, [location.pathname, location.state, methods, navigate, showToast, tx]);
 
   useEffect(() => {
     if (hasCheckedDraftRef.current) return;
@@ -695,6 +769,7 @@ export default function JobPost() {
         await Promise.all([
           invalidateClientDashboardQueries(queryClient, user.id),
           queryClient.invalidateQueries({ queryKey: dashboardQueryKeys.clientStats(user.id) }),
+          queryClient.invalidateQueries({ queryKey: ['client-jobs-v3'] }),
           queryClient.invalidateQueries({ queryKey: ['client-jobs'] }),
           queryClient.invalidateQueries({ queryKey: ['client-stats', user.id] }),
         ]);
