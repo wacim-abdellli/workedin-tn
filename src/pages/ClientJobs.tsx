@@ -104,14 +104,31 @@ const normalizeVisibilityForRepost = (visibility: string | null | undefined): 'p
 
 const normalize = (value: string | null | undefined) => String(value || '').toLowerCase();
 
-const deriveJobStatus = (jobStatus: string, contract: ContractStatusRow | null): DerivedJobStatus => {
+const deriveJobStatus = (
+  jobStatus: string,
+  contract: ContractStatusRow | null,
+  proposalsCount: number,
+): DerivedJobStatus => {
   const normalizedJobStatus = normalize(jobStatus);
   const normalizedContractStatus = normalize(contract?.status);
 
-  if (normalizedContractStatus === 'completed' || normalizedJobStatus === 'completed') return 'finished_success';
-  if (normalizedContractStatus === 'cancelled' || normalizedContractStatus === 'canceled' || normalizedJobStatus === 'cancelled') return 'finished_unsuccessful';
-  if (normalizedContractStatus === 'disputed' || normalizedJobStatus === 'disputed' || normalizedJobStatus === 'in_review') return 'needs_attention';
-  if (normalizedContractStatus === 'active' || normalizedJobStatus === 'in_progress' || normalizedJobStatus === 'matched') return 'in_progress';
+  // Contract state is the strongest signal when a contract exists.
+  if (contract) {
+    if (normalizedContractStatus === 'completed') return 'finished_success';
+    if (normalizedContractStatus === 'cancelled' || normalizedContractStatus === 'canceled') return 'finished_unsuccessful';
+    if (normalizedContractStatus === 'disputed') return 'needs_attention';
+    return 'in_progress';
+  }
+
+  if (normalizedJobStatus === 'completed') return 'finished_success';
+  if (normalizedJobStatus === 'cancelled' || normalizedJobStatus === 'canceled' || normalizedJobStatus === 'closed') return 'finished_unsuccessful';
+  if (normalizedJobStatus === 'disputed' || normalizedJobStatus === 'in_review') return 'needs_attention';
+
+  // Without a contract, only keep in-progress if there is still proposal activity.
+  if ((normalizedJobStatus === 'in_progress' || normalizedJobStatus === 'matched') && proposalsCount > 0) {
+    return 'in_progress';
+  }
+
   return 'open';
 };
 
@@ -163,15 +180,18 @@ export default function ClientJobs() {
 
       return ((jobsResult.data ?? []) as unknown as ClientJobRow[]).map((job) => {
         const latestContract = latestContractByJob.get(job.id) ?? null;
+        const proposalsCount = Number(job.proposals?.[0]?.count ?? 0);
         return {
           ...job,
           latestContract,
-          derivedStatus: deriveJobStatus(job.status, latestContract),
+          derivedStatus: deriveJobStatus(job.status, latestContract, proposalsCount),
         };
       });
     },
     enabled: !!user?.id,
-    staleTime: 20_000,
+    staleTime: 0,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
   });
 
   const jobs = useMemo(() => {
@@ -255,6 +275,14 @@ export default function ClientJobs() {
     return 'status-pill-neutral';
   }
 
+  const resultTextClass = (job: EnrichedClientJob) => {
+    if (job.derivedStatus === 'finished_success') return 'text-emerald-300';
+    if (job.derivedStatus === 'finished_unsuccessful') return 'text-red-300';
+    if (job.derivedStatus === 'needs_attention') return 'text-amber-300';
+    if (job.derivedStatus === 'in_progress') return 'text-amber-200';
+    return 'text-gray-300';
+  }
+
   const formatBudget = (job: EnrichedClientJob) => {
     if (normalizeJobTypeForRepost(job.job_type) === 'hourly') {
       const hourlyRate = Number(job.hourly_rate ?? 0);
@@ -305,11 +333,11 @@ export default function ClientJobs() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div>
             <h1 className="text-2xl font-bold text-foreground dark:text-white">{tx('pages.clientJobs.title', undefined, 'My Projects')}</h1>
-            <p className="text-muted mt-1">{tx('pages.clientJobs.subtitle', undefined, 'Manage your posted projects and proposals')}</p>
+            <p className="text-muted mt-1">{tx('pages.clientJobs.subtitle', undefined, 'Manage your posted projects and active contracts')}</p>
           </div>
           <button
             onClick={() => navigate('/jobs/new')}
-            className="bg-amber-500 hover:bg-amber-400 text-white font-medium flex items-center justify-center gap-2 px-4 py-2 rounded-xl transition-colors"
+            className="bg-amber-600 hover:bg-amber-500 text-white font-medium flex items-center justify-center gap-2 px-4 py-2 rounded-xl transition-colors"
           >
             {tx('pages.clientJobs.postProject', undefined, 'Post a project')}
           </button>
@@ -317,19 +345,19 @@ export default function ClientJobs() {
 
         {/* Stats row */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <div className="stat-card">
+          <div className="rounded-2xl border border-[#2f333b] bg-[#171a21] p-4">
             <p className="text-sm text-muted font-medium">{tx('pages.clientJobs.open', undefined, 'Open')}</p>
             <p className="text-2xl font-bold text-amber-600 dark:text-amber-400 mt-1">{stats.open}</p>
           </div>
-          <div className="stat-card">
+          <div className="rounded-2xl border border-[#2f333b] bg-[#171a21] p-4">
             <p className="text-sm text-muted font-medium">{tx('pages.clientJobs.inProgress', undefined, 'In progress')}</p>
             <p className="text-2xl font-bold text-foreground dark:text-white mt-1">{stats.inProgress}</p>
           </div>
-          <div className="stat-card">
+          <div className="rounded-2xl border border-[#2f333b] bg-[#171a21] p-4">
             <p className="text-sm text-muted font-medium">{tx('pages.clientJobs.needsAttention', undefined, 'Needs attention')}</p>
             <p className="text-2xl font-bold text-amber-600 dark:text-amber-400 mt-1">{stats.needsAttention}</p>
           </div>
-          <div className="stat-card">
+          <div className="rounded-2xl border border-[#2f333b] bg-[#171a21] p-4">
             <p className="text-sm text-muted font-medium">{tx('pages.clientJobs.finished', undefined, 'Finished')}</p>
             <p className="text-2xl font-bold text-foreground dark:text-white mt-1">{stats.finished}</p>
             <p className="text-xs text-muted mt-1">
@@ -338,42 +366,15 @@ export default function ClientJobs() {
           </div>
         </div>
 
-        {/* Lifecycle legend */}
-        <div className="rounded-2xl border px-4 py-3 mb-6"
-          style={{ background: 'var(--card-bg)', borderColor: 'color-mix(in srgb, var(--border) 70%, transparent)' }}>
-          <p className="text-sm font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>
-            {tx('pages.clientJobs.lifecycleLegendTitle', undefined, 'Project lifecycle')}
-          </p>
-          <div className="flex flex-wrap gap-x-4 gap-y-2 text-xs" style={{ color: 'var(--text-secondary)' }}>
-            <span className="inline-flex items-center gap-2">
-              <span className="h-2.5 w-2.5 rounded-full" style={{ background: 'var(--color-status-warning)' }} />
-              {tx('pages.clientJobs.legendOpen', undefined, 'Open: waiting for hiring decision')}
-            </span>
-            <span className="inline-flex items-center gap-2">
-              <span className="h-2.5 w-2.5 rounded-full" style={{ background: 'var(--workspace-primary)' }} />
-              {tx('pages.clientJobs.legendProgress', undefined, 'In progress: active contract running')}
-            </span>
-            <span className="inline-flex items-center gap-2">
-              <span className="h-2.5 w-2.5 rounded-full" style={{ background: 'var(--color-status-error)' }} />
-              {tx('pages.clientJobs.legendAttention', undefined, 'Needs attention: dispute/review action needed')}
-            </span>
-            <span className="inline-flex items-center gap-2">
-              <span className="h-2.5 w-2.5 rounded-full" style={{ background: 'var(--color-status-success)' }} />
-              {tx('pages.clientJobs.legendFinished', undefined, 'Finished: completed or cancelled outcome')}
-            </span>
-          </div>
-        </div>
-
         {/* Filter tabs */}
-        <div className="tabs-row mb-6 overflow-x-auto pb-2">
+        <div className="mb-6 flex flex-wrap gap-2 rounded-2xl border border-[#2f333b] bg-[#15181d] p-1.5">
           {(['all', 'active', 'attention', 'finished'] as const).map(tab => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`tab-pill whitespace-nowrap
-                ${activeTab === tab 
-                  ? 'tab-pill-active bg-accent-100 text-accent-700 dark:bg-accent-900/30 dark:text-accent-300' 
-                  : 'text-muted hover:text-foreground'
+              className={`rounded-xl px-4 py-2 text-sm font-medium transition-colors ${activeTab === tab
+                ? 'bg-[#242a34] text-amber-300 border border-amber-500/40'
+                : 'text-gray-400 border border-transparent hover:text-gray-200 hover:bg-[#1d222b]'
                 }`}
             >
               {tabLabel(tab)}
@@ -410,7 +411,7 @@ export default function ClientJobs() {
               <button
                 type="button"
                 onClick={() => setActiveTab('all')}
-                className="list-action-btn-primary"
+                className="inline-flex items-center justify-center rounded-lg border border-amber-500/30 bg-amber-500/12 px-3 py-1.5 text-sm font-medium text-amber-200 hover:bg-amber-500/20"
               >
                 {tx('pages.clientJobs.showAll', undefined, 'Show all projects')}
               </button>
@@ -421,15 +422,15 @@ export default function ClientJobs() {
             {jobs.map((job) => (
               <div 
                 key={job.id}
-                className="list-card"
+                className="rounded-2xl border border-[#2f333b] bg-[#171a21] px-4 py-4 sm:px-5"
               >
                 <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-3">
                   <div>
-                    <h3 className="list-card-title mb-2">
+                    <h3 className="mb-2 text-lg font-semibold text-gray-100">
                       {job.title}
                     </h3>
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 text-xs font-medium px-2 py-1 rounded-full">
+                      <span className="rounded-full border border-amber-500/20 bg-amber-500/10 px-2 py-1 text-xs font-medium text-amber-200">
                         {job.category || tx('pages.clientJobs.uncategorized', undefined, 'Uncategorized')}
                       </span>
                       <span className={`whitespace-nowrap ${statusPillClass(job)}`}>
@@ -437,11 +438,11 @@ export default function ClientJobs() {
                       </span>
                     </div>
                   </div>
-                  <div className="list-actions">
+                  <div className="flex items-center gap-2 sm:flex-col sm:items-end shrink-0">
                     {job.latestContract?.id ? (
                       <button
                         onClick={() => navigate(`/contracts/${job.latestContract?.id}`)}
-                        className="list-action-btn-primary"
+                        className="inline-flex items-center justify-center rounded-lg border border-amber-500/30 bg-amber-500/12 px-3 py-1.5 text-sm font-medium text-amber-200 hover:bg-amber-500/20"
                       >
                         {job.derivedStatus === 'finished_success' || job.derivedStatus === 'finished_unsuccessful'
                           ? tx('pages.clientJobs.viewResult', undefined, 'View result')
@@ -450,7 +451,7 @@ export default function ClientJobs() {
                     ) : job.proposals && job.proposals[0]?.count > 0 && (
                       <button 
                         onClick={() => navigate(`/client/jobs/${job.id}/proposals`)}
-                        className="list-action-btn-primary"
+                        className="inline-flex items-center justify-center rounded-lg border border-amber-500/30 bg-amber-500/12 px-3 py-1.5 text-sm font-medium text-amber-200 hover:bg-amber-500/20"
                       >
                         {tx('pages.clientJobs.viewProposals', undefined, 'View proposals')}
                       </button>
@@ -458,7 +459,7 @@ export default function ClientJobs() {
                     {job.derivedStatus === 'open' && (
                       <button
                         onClick={() => navigate(getJobEditRoute(job.id))}
-                        className="list-action-btn-secondary"
+                        className="inline-flex items-center justify-center rounded-lg border border-[#3b414d] bg-[#1c212b] px-3 py-1.5 text-sm font-medium text-gray-200 hover:bg-[#232934]"
                       >
                         {tx('pages.clientJobs.edit', undefined, 'Edit')}
                       </button>
@@ -466,7 +467,7 @@ export default function ClientJobs() {
                     {job.derivedStatus === 'finished_unsuccessful' && (
                       <button
                         onClick={() => handleRepost(job)}
-                        className="list-action-btn-secondary"
+                        className="inline-flex items-center justify-center rounded-lg border border-[#3b414d] bg-[#1c212b] px-3 py-1.5 text-sm font-medium text-gray-200 hover:bg-[#232934]"
                       >
                         {tx('pages.clientJobs.repostProject', undefined, 'Repost project')}
                       </button>
@@ -475,10 +476,10 @@ export default function ClientJobs() {
                 </div>
                 
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mb-3">
-                  <p className="text-foreground dark:text-white font-semibold flex items-center gap-1">
+                  <p className="font-semibold text-gray-100 flex items-center gap-1">
                     {formatBudget(job)}
                   </p>
-                  <p className="status-pill-neutral px-2 py-0.5">
+                  <p className="inline-flex items-center gap-1 rounded-full border border-[#3b414d] bg-[#1c212b] px-2 py-0.5 text-xs font-medium text-gray-300">
                     {job.job_type === 'fixed' || job.job_type === 'fixed_price'
                       ? tx('pages.clientJobs.fixedPrice', undefined, 'Fixed Price')
                       : tx('pages.clientJobs.hourlyRate', undefined, 'Hourly Rate')}
@@ -488,7 +489,7 @@ export default function ClientJobs() {
                   </p>
                 </div>
 
-                <p className="text-sm font-medium mb-2" style={{ color: 'var(--workspace-primary-mid)' }}>
+                <p className={`mb-2 text-sm font-medium ${resultTextClass(job)}`}>
                   {outcomeText(job)}
                 </p>
                 

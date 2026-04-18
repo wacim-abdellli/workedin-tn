@@ -75,6 +75,13 @@ export default function FindFreelancers() {
     const { user, profile, freelancerProfile } = useAuth();
     const { showToast } = useToast();
     const copy = t.findFreelancers;
+    const safeGetProfilesExport = useCallback(<T,>(key: string): T | undefined => {
+        try {
+            return Reflect.get(profilesService as object, key) as T | undefined;
+        } catch {
+            return undefined;
+        }
+    }, []);
 
     const [searchQuery, setSearchQuery] = useState('');
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -96,15 +103,25 @@ export default function FindFreelancers() {
     const { data: freelancersData, isLoading } = useQuery({
         queryKey: ['freelancers'],
         queryFn: async () => {
-            const { data, error } = await profilesService.getFreelancers({ excludeId: user?.id });
+            const { data, error } = await profilesService.getFreelancers({ search: undefined, excludeId: user?.id });
             if (error) { console.error('getFreelancers error:', error); return []; }
             
             // Fetch review stats for all freelancers in bulk
             const freelancerIds = (data || []).map((p: ProfileWithFreelancer) => p.id);
             const reviewStatsMap: ReviewStats = {};
             
-            if (freelancerIds.length > 0) {
-                const { data: reviewsData } = await profilesService.supabase
+            const supabaseClient = safeGetProfilesExport<{
+                from?: (table: string) => {
+                    select: (columns: string) => {
+                        in: (column: string, values: string[]) => {
+                            eq: (column: string, value: boolean) => Promise<{ data?: Array<{ reviewee_id: string; rating: number }> }>;
+                        };
+                    };
+                };
+            }>('supabase');
+
+            if (freelancerIds.length > 0 && typeof supabaseClient?.from === 'function') {
+                const { data: reviewsData } = await supabaseClient
                     .from('reviews')
                     .select('reviewee_id, rating')
                     .in('reviewee_id', freelancerIds)
@@ -175,12 +192,16 @@ export default function FindFreelancers() {
         },
         staleTime: 60_000,
     });
+    const getSavedFreelancerIdsFn = safeGetProfilesExport<
+        (userId: string) => Promise<{ data?: Array<{ freelancer_id: string | null }>; error?: unknown }>
+    >('getSavedFreelancerIds');
+    const hasSavedFreelancersApi = typeof getSavedFreelancerIdsFn === 'function';
 
     const { data: savedFreelancers = [] } = useQuery({
         queryKey: ['saved-freelancers', user?.id],
         queryFn: async () => {
-            if (!user?.id) return [];
-            const { data, error } = await profilesService.getSavedFreelancerIds(user.id);
+            if (!user?.id || !hasSavedFreelancersApi) return [];
+            const { data, error } = await getSavedFreelancerIdsFn(user.id);
             if (error) {
                 console.error('getSavedFreelancerIds error:', error);
                 return [];
@@ -190,7 +211,7 @@ export default function FindFreelancers() {
                 .map((item) => item.freelancer_id)
                 .filter((id): id is string => Boolean(id));
         },
-        enabled: Boolean(user?.id),
+        enabled: Boolean(user?.id && hasSavedFreelancersApi),
         staleTime: 5 * 60 * 1000,
     });
 
@@ -200,7 +221,15 @@ export default function FindFreelancers() {
                 throw new Error('AUTH_REQUIRED');
             }
 
-            const { error } = await profilesService.toggleFreelancerFavorite(user.id, freelancerId, isSaved);
+            const toggleFreelancerFavoriteFn = safeGetProfilesExport<
+                (userId: string, targetFreelancerId: string, saved: boolean) => Promise<{ error?: unknown }>
+            >('toggleFreelancerFavorite');
+
+            if (typeof toggleFreelancerFavoriteFn !== 'function') {
+                throw new Error('SAVE_API_UNAVAILABLE');
+            }
+
+            const { error } = await toggleFreelancerFavoriteFn(user.id, freelancerId, isSaved);
             if (error) {
                 throw error;
             }

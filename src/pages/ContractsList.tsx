@@ -190,14 +190,22 @@ export default function ContractsList() {
         return [] as ContractRow[];
       }
 
+      const withWorkspaceScope = <T,>(query: T): T => {
+        const typedQuery = query as {
+          eq: (column: string, value: string) => unknown;
+        };
+
+        return (isFreelancerWorkspace
+          ? typedQuery.eq("freelancer_id", user.id)
+          : typedQuery.eq("client_id", user.id)) as T;
+      };
+
       const primaryQuery = supabase
         .from("contracts")
         .select("id, job_id, title, status, amount, total_amount, created_at, client_id, freelancer_id")
         .order("created_at", { ascending: false });
 
-      const scopedPrimaryQuery = isFreelancerWorkspace
-        ? primaryQuery.eq("freelancer_id", user.id)
-        : primaryQuery.eq("client_id", user.id);
+      const scopedPrimaryQuery = withWorkspaceScope(primaryQuery);
 
       const primaryResult = await scopedPrimaryQuery;
 
@@ -210,17 +218,28 @@ export default function ContractsList() {
           .select("id, job_id, status, amount, created_at, client_id, freelancer_id")
           .order("created_at", { ascending: false });
 
-        const scopedLegacyQuery = isFreelancerWorkspace
-          ? legacyQuery.eq("freelancer_id", user.id)
-          : legacyQuery.eq("client_id", user.id);
+        const scopedLegacyQuery = withWorkspaceScope(legacyQuery);
 
         const legacyResult = await scopedLegacyQuery;
         baseRows = (legacyResult.data ?? []) as ContractRowRaw[];
         baseError = legacyResult.error;
       }
 
+      if (baseError && baseError.code !== "PGRST116" && canRetryWithLegacySelect(baseError)) {
+        const minimalQuery = supabase
+          .from("contracts")
+          .select("id, status, amount, created_at, client_id, freelancer_id")
+          .order("created_at", { ascending: false });
+
+        const scopedMinimalQuery = withWorkspaceScope(minimalQuery);
+        const minimalResult = await scopedMinimalQuery;
+        baseRows = (minimalResult.data ?? []) as ContractRowRaw[];
+        baseError = minimalResult.error;
+      }
+
       if (baseError && baseError.code !== "PGRST116") {
-        throw baseError;
+        console.warn("[ContractsList] contracts query failed", baseError);
+        return [] as ContractRow[];
       }
 
       if (baseRows.length === 0) {
@@ -292,7 +311,9 @@ export default function ContractsList() {
       });
     },
     enabled: !!user?.id,
-    staleTime: 60_000,
+    staleTime: 0,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
   });
 
   const counts = useMemo(() => {
@@ -404,8 +425,10 @@ export default function ContractsList() {
           </div>
 
           {error ? (
-            <div className="p-6 border-b border-[#262626]">
-              <p className="text-sm text-red-300">{tx("contracts.loadError", undefined, "Failed to load contracts.")}</p>
+            <div className="p-6 border-b border-[#262626] bg-red-500/5">
+              <p className="text-sm text-red-300">
+                {tx("contracts.loadError", undefined, "Failed to load contracts.")}
+              </p>
             </div>
           ) : null}
 
@@ -421,6 +444,16 @@ export default function ContractsList() {
                   <div className="h-4 w-1/4 bg-[#262626] rounded" />
                 </div>
               ))}
+            </div>
+          ) : error ? (
+            <div className="py-20 flex flex-col items-center justify-center text-center">
+              <div className="size-16 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-300 mb-6">
+                <AlertShield className="w-7 h-7" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2">{tx("contracts.loadError", undefined, "Failed to load contracts.")}</h3>
+              <p className="text-sm text-gray-400 max-w-md">
+                {tx("common.tryAgain", undefined, "Try again in a moment.")}
+              </p>
             </div>
           ) : filteredContracts.length > 0 ? (
             filteredContracts.map((contract) => {

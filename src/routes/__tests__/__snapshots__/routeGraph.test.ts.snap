@@ -399,9 +399,9 @@ exports[`route graph > matches the approved route snapshot 1`] = `
     "workspace": "client",
   },
   {
-    "errorBoundary": true,
+    "errorBoundary": false,
     "guard": "protected",
-    "page": "ContractWorkspace",
+    "page": "ContractSessionRedirect",
     "path": "/contracts/:contractId",
     "redirectTo": null,
     "section": "contracts",

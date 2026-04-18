@@ -1,5 +1,5 @@
 import { logger } from '@/lib/logger';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { QueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { sendContractMessage } from '../services/messages';
@@ -162,15 +162,15 @@ export function useContractState({
 
                 if (messageError) throw messageError;
 
-                setContract((current) => current ? {
-                    ...current,
+                await updateStatus('completed', {
                     delivery_note: trimmedNote || 'submitted',
-                } : current);
+                    completed_at: new Date().toISOString(),
+                });
             } finally {
                 setIsDelivering(false);
             }
         },
-        [contract, contractId, userId, userRole]
+        [contract, contractId, updateStatus, userId, userRole]
     );
 
     const acceptWork = useCallback(
@@ -284,6 +284,10 @@ export function useContractState({
     const canDeliver = userRole === 'freelancer' && contract?.status === 'active';
     const canAccept = userRole === 'client' && contract?.status === 'active';
     const canDispute = contract?.status === 'active';
+
+    useEffect(() => {
+        void refresh();
+    }, [refresh]);
 
     return {
         contract,

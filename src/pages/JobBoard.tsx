@@ -13,6 +13,7 @@ import {
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { useAuth } from '../contexts/AuthContext';
+import { supabase } from '../lib/supabase';
 import * as jobsService from '../services/jobs';
 import * as profilesService from '../services/profiles';
 import { Header, Footer } from '../components/layout';
@@ -46,6 +47,11 @@ interface Job {
     payment_verified?: boolean;
   };
 }
+
+type JobEngagementState = {
+  proposalJobIds: string[];
+  contractJobIds: string[];
+};
 
 interface FilterState {
   search: string;
@@ -260,7 +266,77 @@ function JobBoard() {
     return jobsPages?.pages.flatMap((page) => page.data as Job[]) || [];
   }, [jobsPages]);
 
-  const totalCount = jobsPages?.pages[0]?.count || 0;
+  const isFreelancerViewer = Boolean(
+    user?.id && ((profile?.active_mode ?? '') === 'freelancer' || freelancerProfile),
+  );
+
+  const listedJobIds = useMemo(() => {
+    return Array.from(new Set(jobs.map((job) => job.id).filter(Boolean)));
+  }, [jobs]);
+
+  const listedJobIdsKey = useMemo(() => listedJobIds.join('|'), [listedJobIds]);
+
+  const { data: jobEngagementState } = useQuery({
+    queryKey: ['job-board-engagement-state', user?.id, listedJobIdsKey],
+    enabled: isFreelancerViewer && listedJobIds.length > 0,
+    staleTime: 0,
+    refetchOnMount: 'always',
+    queryFn: async (): Promise<JobEngagementState> => {
+      const [proposalResult, contractResult] = await Promise.all([
+        supabase
+          .from('proposals')
+          .select('job_id')
+          .eq('freelancer_id', user!.id)
+          .in('job_id', listedJobIds),
+        supabase
+          .from('contracts')
+          .select('job_id, status')
+          .eq('freelancer_id', user!.id)
+          .in('job_id', listedJobIds),
+      ]);
+
+      if (proposalResult.error) {
+        console.warn('[JobBoard] Failed to load proposal engagement state', proposalResult.error);
+      }
+
+      if (contractResult.error) {
+        console.warn('[JobBoard] Failed to load contract engagement state', contractResult.error);
+      }
+
+      const proposalJobIds = Array.from(new Set(
+        ((proposalResult.data ?? []) as Array<{ job_id: string | null }>)
+          .map((row) => row.job_id)
+          .filter((jobId): jobId is string => typeof jobId === 'string' && jobId.length > 0),
+      ));
+
+      const contractJobIds = Array.from(new Set(
+        ((contractResult.data ?? []) as Array<{ job_id: string | null; status: string | null }>)
+          .filter((row) => {
+            const normalizedStatus = String(row.status || '').toLowerCase();
+            return normalizedStatus !== 'cancelled' && normalizedStatus !== 'canceled';
+          })
+          .map((row) => row.job_id)
+          .filter((jobId): jobId is string => typeof jobId === 'string' && jobId.length > 0),
+      ));
+
+      return {
+        proposalJobIds,
+        contractJobIds,
+      };
+    },
+  });
+
+  const proposalJobIds = useMemo(() => new Set(jobEngagementState?.proposalJobIds ?? []), [jobEngagementState]);
+  const contractJobIds = useMemo(() => new Set(jobEngagementState?.contractJobIds ?? []), [jobEngagementState]);
+
+  const visibleJobs = useMemo(() => {
+    if (!isFreelancerViewer) return jobs;
+    // Find Work should only show opportunities the freelancer can still apply to.
+    return jobs.filter((job) => !contractJobIds.has(job.id) && !proposalJobIds.has(job.id));
+  }, [contractJobIds, isFreelancerViewer, jobs, proposalJobIds]);
+
+  const totalJobsCount = jobsPages?.pages?.[0]?.count ?? jobs.length;
+  const displayedCount = isFreelancerViewer ? visibleJobs.length : totalJobsCount;
   const isLoading = isFetching && !isFetchingNextPage;
   const selectedSortOption =
     SORT_OPTIONS.find((option) => option.value === filters.sortBy) || SORT_OPTIONS[0];
@@ -589,8 +665,9 @@ function JobBoard() {
             </div>
 
             {/* Count */}
-            <p className="text-xs text-white/35">
-              {tx('pages.jobBoard.filters.showing', { count: totalCount }, `Showing ${totalCount} jobs`)}
+            <p className="text-xs text-white/35 flex items-center gap-1.5">
+              <span className="font-semibold text-white tabular-nums">{displayedCount}</span>
+              <span>{tx('pages.jobBoard.filters.showing', { count: displayedCount }, 'jobs')}</span>
             </p>
 
             {/* Loading skeletons */}
@@ -615,17 +692,18 @@ function JobBoard() {
             )}
 
             {/* Empty */}
-            {!isLoading && !error && jobs.length === 0 && (
+            {!isLoading && !error && visibleJobs.length === 0 && (
               <div className="rounded-2xl border border-white/8 p-10 text-center" style={{ background: 'rgba(255,255,255,0.025)' }}>
                 <p className="text-white/50">{tx('pages.jobBoard.empty.filtered', undefined, 'No jobs found for the selected filters.')}</p>
               </div>
             )}
 
             {/* Job cards */}
-            {!error && jobs.length > 0 && (
+            {!error && visibleJobs.length > 0 && (
               <div className="flex flex-col gap-3">
-                {jobs.map((job) => {
+                {visibleJobs.map((job) => {
                   const isSaved = savedJobIds.has(job.id);
+                  const isAlreadyApplied = isFreelancerViewer && proposalJobIds.has(job.id);
                   const skillLabels = (job.required_skills || []).map((s) => toSkillLabel(s, language)).filter(Boolean).slice(0, 5);
                   const postedAgo = formatTimeAgo(job.posted_at);
                   const clientName = job.client?.full_name || 'Client';
@@ -637,7 +715,16 @@ function JobBoard() {
                   return (
                     <article
                       key={job.id}
+                      role="button"
+                      tabIndex={0}
+                      aria-label={job.title || 'Untitled job'}
                       onClick={() => navigate(`/jobs/${job.id}`)}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter' || event.key === ' ') {
+                          event.preventDefault();
+                          navigate(`/jobs/${job.id}`);
+                        }
+                      }}
                       className="group relative rounded-2xl border border-white/8 p-5 sm:p-6 cursor-pointer transition-all duration-200 hover:border-white/16 hover:-translate-y-0.5"
                       style={{ background: 'rgba(255,255,255,0.025)' }}
                     >
@@ -729,12 +816,20 @@ function JobBoard() {
                             <button
                               type="button"
                               onClick={(e) => { e.stopPropagation(); navigate(`/jobs/${job.id}`); }}
-                              className="h-8 px-4 rounded-xl text-xs font-bold text-white transition-all hover:brightness-110 active:scale-[0.97]"
-                              style={{
-                                background: 'linear-gradient(135deg,var(--workspace-primary,#8b5cf6) 0%,color-mix(in srgb,var(--workspace-primary,#8b5cf6) 70%,#6d28d9) 100%)',
-                              }}
+                              className={`h-8 px-4 rounded-xl text-xs font-bold transition-all active:scale-[0.97] ${
+                                isAlreadyApplied
+                                  ? 'text-white/70 border border-white/15 bg-white/5 hover:bg-white/10'
+                                  : 'text-white hover:brightness-110'
+                              }`}
+                              style={isAlreadyApplied
+                                ? undefined
+                                : {
+                                  background: 'linear-gradient(135deg,var(--workspace-primary,#8b5cf6) 0%,color-mix(in srgb,var(--workspace-primary,#8b5cf6) 70%,#6d28d9) 100%)',
+                                }}
                             >
-                              {tx('pages.jobBoard.actions.applyNow', undefined, 'Apply Now')}
+                              {isAlreadyApplied
+                                ? tx('pages.jobBoard.actions.applied', undefined, 'Applied')
+                                : tx('pages.jobBoard.actions.applyNow', undefined, 'Apply Now')}
                             </button>
                           </div>
                         </div>
@@ -754,7 +849,7 @@ function JobBoard() {
                   disabled={isFetchingNextPage}
                   className="rounded-xl border border-white/10 bg-white/4 px-6 py-2.5 text-sm text-white/60 hover:text-white hover:bg-white/8 disabled:opacity-50 transition-all"
                 >
-                  {isFetchingNextPage ? 'Loading...' : 'Load More'}
+                  {isFetchingNextPage ? 'Loading...' : 'Load more'}
                 </button>
               </div>
             )}

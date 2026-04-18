@@ -31,6 +31,7 @@ import {
 import { Header } from '../components/layout';
 import Button from '../components/ui/Button';
 import Modal from '../components/ui/Modal';
+import { ReviewForm } from '../components/ui/Reviews';
 import SEO, { SEO_CONFIG } from '../components/common/SEO';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
@@ -49,6 +50,8 @@ import {
     type Conversation,
     type Message,
 } from '../services/messages';
+import { getJobById } from '../services/jobs';
+import { submitReview as submitReviewRequest } from '../services/reviews';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 import { useAudioRecorder } from '../hooks/useAudioRecorder';
 import { useTypingIndicator } from '../hooks/useTypingIndicator';
@@ -56,7 +59,7 @@ import { useReadReceipts } from '../hooks/useReadReceipts';
 import { useTranslation } from '../i18n';
 import ErrorBoundary from '../components/ErrorBoundary';
 import { validateUploadSelection } from '../lib/uploadPolicy';
-import ContractDetailsSidebar from '../components/contracts/ContractDetailsSidebar';
+import ContractDetailsSidebar from '@/components/contracts/ContractDetailsSidebar';
 import {
     normalizeContractStatus,
     resolveMessagingLifecyclePolicy,
@@ -264,9 +267,10 @@ type MessageAudioPlayerProps = {
     name: string;
     mimeType?: string;
     isOwn: boolean;
+    accentVariant?: 'amber' | 'violet';
 };
 
-function MessageAudioPlayer({ src, rawSource, name, mimeType, isOwn }: MessageAudioPlayerProps) {
+function MessageAudioPlayer({ src, rawSource, name, mimeType, isOwn, accentVariant = 'amber' }: MessageAudioPlayerProps) {
     const { tx } = useTranslation();
     const audioRef = useRef<HTMLAudioElement | null>(null);
     const fallbackObjectUrlRef = useRef<string | null>(null);
@@ -278,6 +282,7 @@ function MessageAudioPlayer({ src, rawSource, name, mimeType, isOwn }: MessageAu
     const [currentTime, setCurrentTime] = useState(0);
     const [isLoading, setIsLoading] = useState(false);
     const [hasError, setHasError] = useState(false);
+    const isVioletAccent = accentVariant === 'violet';
 
     const waveformBars = useMemo(() => (
         Array.from({ length: 18 }, (_, index) => {
@@ -465,8 +470,8 @@ function MessageAudioPlayer({ src, rawSource, name, mimeType, isOwn }: MessageAu
                     aria-label={`${isPlaying ? tx('pages.messages.pauseAudio', undefined, 'Pause audio') : tx('pages.messages.playAudio', undefined, 'Play audio')} ${displayAudioName}`}
                     className={`w-8 h-8 rounded-full shrink-0 flex items-center justify-center transition-colors disabled:opacity-50 ${
                         isOwn
-                            ? 'bg-white text-purple-600 hover:bg-gray-100'
-                            : 'bg-purple-500 text-white hover:bg-purple-400'
+                            ? (isVioletAccent ? 'bg-white text-violet-600 hover:bg-gray-100' : 'bg-white text-amber-600 hover:bg-gray-100')
+                            : (isVioletAccent ? 'bg-violet-500 text-white hover:bg-violet-400' : 'bg-amber-500 text-white hover:bg-amber-400')
                     }`}
                 >
                     {isLoading ? (
@@ -486,7 +491,9 @@ function MessageAudioPlayer({ src, rawSource, name, mimeType, isOwn }: MessageAu
                                 key={index}
                                 className={`w-1 rounded-full transition-colors ${
                                     isOwn
-                                        ? (isActiveBar ? 'bg-purple-200' : 'bg-purple-300')
+                                        ? (isVioletAccent
+                                            ? (isActiveBar ? 'bg-violet-200' : 'bg-violet-300')
+                                            : (isActiveBar ? 'bg-amber-200' : 'bg-amber-300'))
                                         : (isActiveBar ? 'bg-gray-400' : 'bg-gray-500')
                                 }`}
                                 style={{ height: `${barHeight}px` }}
@@ -495,13 +502,13 @@ function MessageAudioPlayer({ src, rawSource, name, mimeType, isOwn }: MessageAu
                     })}
                 </div>
 
-                <span className={`text-[10px] font-medium tracking-wide shrink-0 ${isOwn ? 'text-purple-100' : 'text-gray-400'}`}>
+                <span className={`text-[10px] font-medium tracking-wide shrink-0 ${isOwn ? (isVioletAccent ? 'text-violet-100' : 'text-amber-100') : 'text-gray-400'}`}>
                     {formatAudioTime(defaultDuration)}
                 </span>
             </div>
 
             {hasError ? (
-                <div className={`mt-1 flex items-center gap-1 text-[10px] ${isOwn ? 'text-purple-100' : 'text-gray-400'}`}>
+                <div className={`mt-1 flex items-center gap-1 text-[10px] ${isOwn ? (isVioletAccent ? 'text-violet-100' : 'text-amber-100') : 'text-gray-400'}`}>
                     <AlertCircle className="h-3.5 w-3.5" />
                     <span>{tx('pages.messages.audioPreviewUnavailable', undefined, 'Audio preview unavailable.')}</span>
                 </div>
@@ -571,6 +578,30 @@ type ContractSessionMeta = {
     client_id: string | null;
     freelancer_id: string | null;
     job_id: string | null;
+    proposal_id?: string | null;
+    linked_contract_id?: string | null;
+};
+
+type ContractMilestone = {
+    id: string;
+    contract_id: string | null;
+    title: string | null;
+    description: string | null;
+    amount: number | null;
+    status: string | null;
+    due_date: string | null;
+    order_index: number | null;
+    created_at: string | null;
+};
+
+type ContractSharedFile = {
+    id: string;
+    name: string;
+    url: string;
+    type: string | null;
+    size: number | string | null;
+    uploadedAt: string | null;
+    senderName: string;
 };
 
 type ReplyMetadata = {
@@ -640,12 +671,12 @@ const serializeReplyMetadataIntoContent = (bodyText: string, replyMetadata: Repl
 
 const MAX_CACHED_CONVERSATIONS = 50;
 const MAX_CACHED_MESSAGES = 200;
+const ENABLE_MESSAGES_SESSION_CACHE = false;
 
 const getConversationsCacheKey = (userId: string, modeKey: string) => `messages:conversations:${userId}:${modeKey}`;
 const getMessagesCacheKey = (conversationId: string) => `messages:thread:${conversationId}`;
 
 const resolveConversationScopes = (activeMode: string | null | undefined): ConversationScope[] => {
-    // Contract sessions must stay reachable from inbox for both workspace modes.
     if (activeMode === 'freelancer') return ['freelancer', 'contract', 'shared'];
     if (activeMode === 'client') return ['client', 'contract', 'shared'];
     return ['client', 'freelancer', 'contract', 'shared'];
@@ -685,6 +716,7 @@ const resolveModeCacheKey = (activeMode: string | null | undefined) => {
 };
 
 const readSessionCache = <T,>(key: string): T | null => {
+    if (!ENABLE_MESSAGES_SESSION_CACHE) return null;
     try {
         const raw = sessionStorage.getItem(key);
         return raw ? JSON.parse(raw) as T : null;
@@ -694,6 +726,7 @@ const readSessionCache = <T,>(key: string): T | null => {
 };
 
 const writeSessionCache = (key: string, value: unknown) => {
+    if (!ENABLE_MESSAGES_SESSION_CACHE) return;
     try {
         sessionStorage.setItem(key, JSON.stringify(value));
     } catch {
@@ -854,6 +887,8 @@ function MessagesComponent() {
     const [pendingQueue, setPendingQueue] = useState<any[]>([]);
     const [contractStatusById, setContractStatusById] = useState<Record<string, ContractMessagingStatus>>({});
     const [contractSessionMetaById, setContractSessionMetaById] = useState<Record<string, ContractSessionMeta>>({});
+    const [milestonesByContractId, setMilestonesByContractId] = useState<Record<string, ContractMilestone[]>>({});
+    const [hasReviewedContractById, setHasReviewedContractById] = useState<Record<string, boolean>>({});
     const [page, setPage] = useState(0);
     const [hasMoreConversations, setHasMoreConversations] = useState(true);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -864,12 +899,14 @@ function MessagesComponent() {
     const [isDeliverModalOpen, setIsDeliverModalOpen] = useState(false);
     const [isAcceptModalOpen, setIsAcceptModalOpen] = useState(false);
     const [isDisputeModalOpen, setIsDisputeModalOpen] = useState(false);
+    const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
     const [deliveryNote, setDeliveryNote] = useState('');
     const [disputeReason, setDisputeReason] = useState('');
     const [isDeliveringContractWork, setIsDeliveringContractWork] = useState(false);
     const [isAcceptingContractWork, setIsAcceptingContractWork] = useState(false);
     const [isRequestingContractChanges, setIsRequestingContractChanges] = useState(false);
     const [isOpeningContractDispute, setIsOpeningContractDispute] = useState(false);
+    const [isContractSidebarVisible, setIsContractSidebarVisible] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const menuRef = useRef<HTMLDivElement>(null);
     const replyHighlightTimeoutRef = useRef<number | null>(null);
@@ -932,9 +969,20 @@ function MessagesComponent() {
     const selectedContractId = selectedConversation?.contract_id || null;
     const selectedContractMeta = selectedContractId ? contractSessionMetaById[selectedContractId] : null;
     const isContractSession = Boolean(selectedContractId);
+    const activeWorkspace = activeMode ?? profile?.active_mode;
+    const isFreelancerWorkspace = activeWorkspace === 'freelancer';
+
+    useEffect(() => {
+        if (!isContractSession) {
+            setIsContractSidebarVisible(false);
+            setIsReviewModalOpen(false);
+            return;
+        }
+
+        setIsReviewModalOpen(false);
+    }, [isContractSession, selectedContractId]);
 
     const selectedContractUserRole: 'client' | 'freelancer' = useMemo(() => {
-        const activeWorkspace = activeMode ?? profile?.active_mode;
         if (activeWorkspace === 'client') return 'client';
         if (activeWorkspace === 'freelancer') return 'freelancer';
 
@@ -943,23 +991,234 @@ function MessagesComponent() {
         }
 
         return 'freelancer';
-    }, [activeMode, profile?.active_mode, selectedContractMeta?.client_id, user?.id]);
+    }, [activeWorkspace, selectedContractMeta?.client_id, user?.id]);
 
     const selectedContractStatus = selectedContractId
         ? (contractStatusById[selectedContractId] ?? normalizeContractStatus(selectedContractMeta?.status))
         : null;
 
+    const selectedContractMilestones = selectedContractId
+        ? (milestonesByContractId[selectedContractId] ?? [])
+        : [];
+
+    const selectedContractHasReview = selectedContractId
+        ? (hasReviewedContractById[selectedContractId] ?? false)
+        : true;
+
+    const accentClasses = useMemo(() => ({
+        selectedConversationBorder: isFreelancerWorkspace ? 'border-violet-500' : 'border-amber-500',
+        avatarHoverRing: isFreelancerWorkspace ? 'hover:ring-violet-500/60' : 'hover:ring-amber-500/60',
+        headerAvatarHoverRing: isFreelancerWorkspace ? 'hover:ring-violet-500' : 'hover:ring-amber-500',
+        contextLabelText: isFreelancerWorkspace ? 'text-violet-300/90' : 'text-amber-300/90',
+        unreadBadgeBg: isFreelancerWorkspace ? 'bg-violet-600' : 'bg-amber-600',
+        inputFocusBorder: isFreelancerWorkspace ? 'focus:border-violet-500' : 'focus:border-amber-500',
+        headerMetaText: isFreelancerWorkspace ? 'text-violet-300' : 'text-amber-300',
+        contractToggleActive: isFreelancerWorkspace
+            ? 'border-violet-500/50 bg-violet-500/12 text-violet-200 hover:bg-violet-500/20'
+            : 'border-amber-500/50 bg-amber-500/12 text-amber-200 hover:bg-amber-500/20',
+        contractToggleIdle: isFreelancerWorkspace
+            ? 'border-[#3a3a3a] text-violet-300 hover:border-violet-500 hover:text-violet-200'
+            : 'border-[#3a3a3a] text-amber-300 hover:border-amber-500 hover:text-amber-200',
+        ownBubbleBg: isFreelancerWorkspace ? 'bg-violet-600' : 'bg-amber-600',
+        ownReplyCard: isFreelancerWorkspace
+            ? 'border-violet-300/40 bg-violet-700/30 text-violet-100'
+            : 'border-amber-300/40 bg-amber-700/30 text-amber-100',
+        ownTextMuted: isFreelancerWorkspace ? 'text-violet-100' : 'text-amber-100',
+        ownAttachmentCard: isFreelancerWorkspace
+            ? 'bg-violet-700/50 hover:bg-violet-700/80'
+            : 'bg-amber-700/50 hover:bg-amber-700/80',
+        ownAttachmentIcon: isFreelancerWorkspace
+            ? 'bg-violet-500/40 text-violet-100'
+            : 'bg-amber-500/40 text-amber-100',
+        neutralAttachmentIcon: isFreelancerWorkspace ? 'text-violet-300' : 'text-amber-300',
+        readReceipt: isFreelancerWorkspace ? 'text-violet-300' : 'text-amber-300',
+        replyActionHover: isFreelancerWorkspace ? 'hover:text-violet-300' : 'hover:text-amber-300',
+        highlightRing: isFreelancerWorkspace ? 'ring-violet-400/70' : 'ring-amber-400/70',
+        typingDot: isFreelancerWorkspace ? 'bg-violet-500' : 'bg-amber-500',
+        replyStripe: isFreelancerWorkspace ? 'bg-violet-500' : 'bg-amber-500',
+        iconAccent: isFreelancerWorkspace ? 'text-violet-400' : 'text-amber-400',
+        sendButton: isFreelancerWorkspace ? 'bg-violet-600 hover:bg-violet-500' : 'bg-amber-600 hover:bg-amber-500',
+    }), [isFreelancerWorkspace]);
+
+    useEffect(() => {
+        if (!selectedContractId) return;
+
+        let cancelled = false;
+
+        const loadMilestones = async () => {
+            try {
+                const { data, error } = await supabase
+                    .from('milestones')
+                    .select('id, contract_id, title, description, amount, status, due_date, order_index, created_at')
+                    .eq('contract_id', selectedContractId)
+                    .order('order_index', { ascending: true });
+
+                if (error) {
+                    const shouldRetryWithoutOrder = typeof error.message === 'string'
+                        && error.message.toLowerCase().includes('order_index');
+
+                    if (!shouldRetryWithoutOrder) {
+                        console.warn('[Messages] Failed to load contract milestones', error);
+                        return;
+                    }
+
+                    const fallback = await supabase
+                        .from('milestones')
+                        .select('id, contract_id, title, description, amount, status, due_date, created_at')
+                        .eq('contract_id', selectedContractId)
+                        .order('created_at', { ascending: true });
+
+                    if (fallback.error) {
+                        console.warn('[Messages] Failed to load contract milestones fallback', fallback.error);
+                        return;
+                    }
+
+                    if (cancelled) return;
+
+                    const fallbackRows = (fallback.data ?? []).map((row) => ({
+                        ...row,
+                        order_index: null,
+                    })) as ContractMilestone[];
+
+                    setMilestonesByContractId((prev) => ({
+                        ...prev,
+                        [selectedContractId]: fallbackRows,
+                    }));
+
+                    return;
+                }
+
+                if (cancelled) return;
+
+                setMilestonesByContractId((prev) => ({
+                    ...prev,
+                    [selectedContractId]: (data ?? []) as ContractMilestone[],
+                }));
+            } catch (caughtError) {
+                console.warn('[Messages] Failed to load contract milestones', caughtError);
+            }
+        };
+
+        void loadMilestones();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [selectedContractId]);
+
+    useEffect(() => {
+        if (!selectedContractId || !user?.id) return;
+
+        let cancelled = false;
+
+        const loadReviewStatus = async () => {
+            try {
+                const { data, error } = await supabase
+                    .from('reviews')
+                    .select('id')
+                    .eq('contract_id', selectedContractId)
+                    .eq('reviewer_id', user.id)
+                    .maybeSingle();
+
+                if (cancelled) return;
+
+                if (error) {
+                    console.warn('[Messages] Failed to load review status for contract', error);
+                    return;
+                }
+
+                setHasReviewedContractById((prev) => ({
+                    ...prev,
+                    [selectedContractId]: Boolean(data?.id),
+                }));
+            } catch (caughtError) {
+                console.warn('[Messages] Failed to load review status for contract', caughtError);
+            }
+        };
+
+        void loadReviewStatus();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [selectedContractId, user?.id]);
+
     const currentUserDisplayName = profile?.full_name || tx('common.you', undefined, 'You');
     const currentUserAvatar = profile?.avatar_url || null;
+
+    const contractSharedFiles = useMemo<ContractSharedFile[]>(() => {
+        if (!isContractSession || !selectedContractId) return [];
+
+        const dedupe = new Set<string>();
+        const files: ContractSharedFile[] = [];
+
+        for (let messageIndex = messages.length - 1; messageIndex >= 0; messageIndex -= 1) {
+            const message = messages[messageIndex];
+            if (message.contract_id !== selectedContractId) continue;
+
+            const attachments = message.attachments ?? [];
+            if (attachments.length === 0) continue;
+
+            const senderName = message.sender_id === user?.id
+                ? tx('common.you', undefined, 'You')
+                : (selectedConversation?.otherUser.full_name || tx('pages.messages.userFallback', undefined, 'User'));
+
+            for (const [attachmentIndex, attachment] of attachments.entries()) {
+                if (!attachment?.url) continue;
+
+                const dedupeKey = `${attachment.url}|${attachment.name || ''}`;
+                if (dedupe.has(dedupeKey)) continue;
+                dedupe.add(dedupeKey);
+
+                files.push({
+                    id: `${message.id}-${attachmentIndex}`,
+                    name: attachment.name || tx('pages.messages.attachmentLabel', undefined, 'Attachment'),
+                    url: attachment.url,
+                    type: attachment.type || null,
+                    size: attachment.size ?? null,
+                    uploadedAt: message.created_at || null,
+                    senderName,
+                });
+
+                if (files.length >= 12) return files;
+            }
+        }
+
+        return files;
+    }, [
+        isContractSession,
+        messages,
+        selectedContractId,
+        selectedConversation?.otherUser.full_name,
+        tx,
+        user?.id,
+    ]);
 
     const contractSidebarData = useMemo(() => {
         if (!isContractSession || !selectedConversation) return null;
 
-        const fallbackTitle = tx('pages.messages.contractSessionFallbackTitle', undefined, 'Contract session');
+        const fallbackTitle = tx(
+            'pages.messages.contractSessionFallbackTitle',
+            undefined,
+            'Contract project',
+        );
         const title = selectedContractMeta?.title?.trim() || fallbackTitle;
         const amountValue = selectedContractMeta?.total_amount
             ?? selectedContractMeta?.amount
             ?? 0;
+
+        const firstUpcomingDueDate = selectedContractMilestones
+            .filter((milestone) => {
+                if (!milestone.due_date) return false;
+                const normalizedStatus = String(milestone.status || '').trim().toLowerCase();
+                return normalizedStatus !== 'completed'
+                    && normalizedStatus !== 'approved'
+                    && normalizedStatus !== 'paid'
+                    && normalizedStatus !== 'cancelled'
+                    && normalizedStatus !== 'canceled';
+            })
+            .map((milestone) => milestone.due_date as string)
+            .sort((a, b) => new Date(a).getTime() - new Date(b).getTime())[0];
 
         const otherParticipant = selectedConversation.otherUser;
 
@@ -987,16 +1246,28 @@ function MessagesComponent() {
             amount: amountValue,
             job: {
                 title,
-                deadline: undefined,
+                deadline: firstUpcomingDueDate,
             },
+            milestones: selectedContractMilestones.map((milestone) => ({
+                id: milestone.id,
+                title: milestone.title,
+                description: milestone.description,
+                amount: milestone.amount,
+                status: milestone.status,
+                due_date: milestone.due_date,
+            })),
+            sharedFiles: contractSharedFiles,
             client: clientProfile,
             freelancer: freelancerProfile,
         };
     }, [
+        contractSharedFiles,
         currentUserAvatar,
         currentUserDisplayName,
         isContractSession,
+        selectedContractMilestones,
         selectedContractMeta?.amount,
+        selectedContractId,
         selectedContractMeta?.title,
         selectedContractMeta?.total_amount,
         selectedContractUserRole,
@@ -1023,7 +1294,10 @@ function MessagesComponent() {
         });
     }, [isContractSession, messages, selectedContractStatus, selectedContractUserRole, selectedConversation?.otherUser.id, user?.id]);
 
-    const isAnyContractActionLoading = isDeliveringContractWork || isAcceptingContractWork || isRequestingContractChanges;
+    const isAnyContractActionLoading = isDeliveringContractWork
+        || isAcceptingContractWork
+        || isRequestingContractChanges
+        || isOpeningContractDispute;
 
     const deleteModalWorkspaceVars = useMemo(() => {
         return {
@@ -1053,6 +1327,22 @@ function MessagesComponent() {
         return `@${username || tx('pages.messages.userFallback', undefined, 'user')}`;
     }, [activeMode, profile?.active_mode, user?.id, tx]);
 
+    const getConversationWorkDescriptor = useCallback((conversation: Conversation) => {
+        if (!conversation.contract_id) {
+            return tx('pages.messages.directMessage', undefined, 'Direct message');
+        }
+
+        const contractMeta = contractSessionMetaById[conversation.contract_id];
+        const jobTitle = (contractMeta?.title || '').trim();
+        const unknownProjectLabel = tx('contracts.unknownProject', undefined, 'Unknown project');
+
+        if (jobTitle) {
+            return tx('pages.messages.contractProjectWithTitle', { title: jobTitle }, `Contract project • ${jobTitle}`);
+        }
+
+        return tx('pages.messages.contractProjectWithTitle', { title: unknownProjectLabel }, `Contract project • ${unknownProjectLabel}`);
+    }, [contractSessionMetaById, tx]);
+
     const getConversationContextLabel = useCallback((conversation: Conversation) => {
         const lifecyclePolicy = getConversationLifecyclePolicy(conversation);
 
@@ -1060,6 +1350,7 @@ function MessagesComponent() {
             return tx('pages.messages.directContext', undefined, lifecyclePolicy.contextLabelFallback);
         }
 
+        const workDescriptor = getConversationWorkDescriptor(conversation);
         const contractLabel = tx('pages.messages.contractContext', undefined, 'Contract chat');
         let statusLabel: string | null = null;
 
@@ -1084,8 +1375,9 @@ function MessagesComponent() {
                 statusLabel = null;
         }
 
-        return statusLabel ? `${contractLabel} • ${statusLabel}` : contractLabel;
-    }, [getConversationLifecyclePolicy, tx]);
+        if (statusLabel && workDescriptor) return `${workDescriptor} • ${statusLabel}`;
+        return workDescriptor || [contractLabel, statusLabel].filter(Boolean).join(' • ');
+    }, [getConversationLifecyclePolicy, getConversationWorkDescriptor, tx]);
 
     const handleOpenAttachment = useCallback(async (attachment: NonNullable<Message['attachments']>[number]) => {
         const sourceUrl = resolveMessageAttachmentUrl(attachment.url);
@@ -1529,43 +1821,23 @@ function MessagesComponent() {
         setDeletingMessageId(null);
     };
 
-
-    // On mode switch: reset all conversation state, then immediately hydrate from the
-    // new mode's session cache if available. Combining these into one effect ensures
-    // the reset always happens before the cache load — no flash of wrong-mode data.
+    // On mode switch: reset all conversation state and always refetch from server.
     useEffect(() => {
-        // 1. Reset everything for the incoming mode
         setConversations([]);
         setSelectedConversation(null);
         setMessages([]);
         setPage(0);
         setHasMoreConversations(true);
-
-        if (!user?.id) return;
-
-        // 2. Load the new mode's cached conversations (different key per mode)
-        const cachedConversations = readSessionCache<Conversation[]>(getConversationsCacheKey(user.id, conversationsModeCacheKey));
-        if (cachedConversations && cachedConversations.length > 0) {
-            const visibleCachedConversations = cachedConversations.filter((conversation) => (
-                isConversationVisibleInMode(conversation, user.id, activeMode ?? profile?.active_mode)
-            ));
-            setConversations(visibleCachedConversations);
-            setIsLoadingConversations(false);
-        }
+        setIsLoadingConversations(true);
     }, [user?.id, conversationsModeCacheKey, activeMode, profile?.active_mode]);
 
 
     useEffect(() => {
         if (!user?.id || conversations.length === 0) return;
-        writeSessionCache(
-            getConversationsCacheKey(user.id, conversationsModeCacheKey),
-            conversations.slice(0, MAX_CACHED_CONVERSATIONS)
-        );
-
         conversations.slice(0, 4).forEach((conversation) => {
             void prefetchConversationMessages(conversation.id);
         });
-    }, [user?.id, conversations, conversationsModeCacheKey]);
+    }, [user?.id, conversations]);
 
     useEffect(() => {
         if (!selectedConversation?.id) return;
@@ -1579,22 +1851,265 @@ function MessagesComponent() {
         if (contractConversationIds.length === 0) {
             setContractStatusById({});
             setContractSessionMetaById({});
+            setMilestonesByContractId({});
+            setHasReviewedContractById({});
             return;
         }
 
         let cancelled = false;
 
         const loadContractStatuses = async () => {
-            const { data, error } = await supabase
-                .from('contracts')
-                .select('id, status, title, amount, total_amount, client_id, freelancer_id, job_id')
-                .in('id', contractConversationIds);
+            type ContractSessionRow = Omit<ContractSessionMeta, 'linked_contract_id'> & {
+                proposal_id?: string | null;
+                created_at?: string | null;
+            };
 
-            if (cancelled) return;
+            try {
+                const { data, error } = await supabase
+                    .from('contracts')
+                    .select('id, proposal_id, status, title, amount, total_amount, client_id, freelancer_id, job_id, created_at')
+                    .in('id', contractConversationIds);
 
-            if (error) {
-                console.warn('[Messages] Failed to load contract statuses for lifecycle policy', error);
-                return;
+                if (cancelled) return;
+
+                if (error) {
+                    console.warn('[Messages] Failed to load contract statuses for lifecycle policy', error);
+                    return;
+                }
+
+            const rowByConversationContractId = new Map<string, ContractSessionRow>();
+            const hydrateRow = (conversationContractId: string, row: ContractSessionRow) => {
+                if (!conversationContractId) return;
+
+                const existing = rowByConversationContractId.get(conversationContractId);
+                if (!existing) {
+                    rowByConversationContractId.set(conversationContractId, row);
+                    return;
+                }
+
+                const existingTitle = typeof existing.title === 'string' ? existing.title.trim() : '';
+                const incomingTitle = typeof row.title === 'string' ? row.title.trim() : '';
+                const shouldReplace = (!existingTitle && !!incomingTitle)
+                    || (!existing.job_id && !!row.job_id);
+
+                if (shouldReplace) {
+                    rowByConversationContractId.set(conversationContractId, row);
+                }
+            };
+
+            const primaryRows = (data ?? []) as Array<ContractSessionRow>;
+            for (const row of primaryRows) {
+                if (!row?.id) continue;
+                hydrateRow(row.id, row);
+            }
+
+            let unresolvedConversationContractIds = contractConversationIds.filter(
+                (contractId) => !rowByConversationContractId.has(contractId)
+            );
+
+            if (unresolvedConversationContractIds.length > 0) {
+                const { data: proposalLinkedRows, error: proposalLinkedError } = await supabase
+                    .from('contracts')
+                    .select('id, proposal_id, status, title, amount, total_amount, client_id, freelancer_id, job_id, created_at')
+                    .in('proposal_id', unresolvedConversationContractIds);
+
+                if (cancelled) return;
+
+                if (proposalLinkedError) {
+                    console.warn('[Messages] Failed to load proposal-linked contract statuses for lifecycle policy', proposalLinkedError);
+                } else {
+                    for (const row of (proposalLinkedRows ?? []) as Array<ContractSessionRow>) {
+                        const proposalId = typeof row?.proposal_id === 'string' ? row.proposal_id : '';
+                        if (!proposalId) continue;
+                        hydrateRow(proposalId, row);
+                    }
+
+                    unresolvedConversationContractIds = unresolvedConversationContractIds.filter(
+                        (contractId) => !rowByConversationContractId.has(contractId)
+                    );
+                }
+            }
+
+            if (unresolvedConversationContractIds.length > 0) {
+                const { data: jobLinkedRows, error: jobLinkedError } = await supabase
+                    .from('contracts')
+                    .select('id, proposal_id, status, title, amount, total_amount, client_id, freelancer_id, job_id, created_at')
+                    .in('job_id', unresolvedConversationContractIds);
+
+                if (cancelled) return;
+
+                if (jobLinkedError) {
+                    console.warn('[Messages] Failed to load job-linked contract statuses for lifecycle policy', jobLinkedError);
+                } else {
+                    for (const row of (jobLinkedRows ?? []) as Array<ContractSessionRow>) {
+                        const jobId = typeof row?.job_id === 'string' ? row.job_id : '';
+                        if (!jobId) continue;
+                        hydrateRow(jobId, row);
+                    }
+                }
+            }
+
+            if (unresolvedConversationContractIds.length > 0 && user?.id) {
+                const conversationByContractId = new Map<string, Conversation>();
+                for (const conversation of conversations) {
+                    if (!conversation.contract_id) continue;
+                    conversationByContractId.set(conversation.contract_id, conversation);
+                }
+
+                const partnerIdByConversationContractId: Record<string, string> = {};
+                for (const unresolvedId of unresolvedConversationContractIds) {
+                    const partnerId = conversationByContractId.get(unresolvedId)?.otherUser.id;
+                    if (!partnerId) continue;
+                    partnerIdByConversationContractId[unresolvedId] = partnerId;
+                }
+
+                const partnerIds = Array.from(new Set(Object.values(partnerIdByConversationContractId)));
+
+                if (partnerIds.length > 0) {
+                    const [asClientResult, asFreelancerResult] = await Promise.all([
+                        supabase
+                            .from('contracts')
+                            .select('id, proposal_id, status, title, amount, total_amount, client_id, freelancer_id, job_id, created_at')
+                            .eq('client_id', user.id)
+                            .in('freelancer_id', partnerIds),
+                        supabase
+                            .from('contracts')
+                            .select('id, proposal_id, status, title, amount, total_amount, client_id, freelancer_id, job_id, created_at')
+                            .eq('freelancer_id', user.id)
+                            .in('client_id', partnerIds),
+                    ]);
+
+                    if (cancelled) return;
+
+                    if (asClientResult.error) {
+                        console.warn('[Messages] Failed partner contract lookup (as client)', asClientResult.error);
+                    }
+                    if (asFreelancerResult.error) {
+                        console.warn('[Messages] Failed partner contract lookup (as freelancer)', asFreelancerResult.error);
+                    }
+
+                    const pickPreferredRow = (current: ContractSessionRow | undefined, candidate: ContractSessionRow) => {
+                        if (!current) return candidate;
+
+                        const currentTitle = typeof current.title === 'string' ? current.title.trim() : '';
+                        const candidateTitle = typeof candidate.title === 'string' ? candidate.title.trim() : '';
+                        if (!currentTitle && candidateTitle) return candidate;
+                        if (currentTitle && !candidateTitle) return current;
+
+                        const currentCreatedAt = Date.parse(String(current.created_at || ''));
+                        const candidateCreatedAt = Date.parse(String(candidate.created_at || ''));
+                        if (!Number.isFinite(currentCreatedAt)) return candidate;
+                        if (!Number.isFinite(candidateCreatedAt)) return current;
+                        return candidateCreatedAt > currentCreatedAt ? candidate : current;
+                    };
+
+                    const partnerBestRow: Record<string, ContractSessionRow> = {};
+                    const partnerRows = [
+                        ...((asClientResult.data ?? []) as Array<ContractSessionRow>),
+                        ...((asFreelancerResult.data ?? []) as Array<ContractSessionRow>),
+                    ];
+
+                    for (const row of partnerRows) {
+                        if (!row) continue;
+                        const partnerId = row.client_id === user.id ? row.freelancer_id : row.client_id;
+                        if (!partnerId) continue;
+
+                        partnerBestRow[partnerId] = pickPreferredRow(partnerBestRow[partnerId], row);
+                    }
+
+                    for (const unresolvedId of unresolvedConversationContractIds) {
+                        const partnerId = partnerIdByConversationContractId[unresolvedId];
+                        if (!partnerId) continue;
+                        const row = partnerBestRow[partnerId];
+                        if (!row) continue;
+                        hydrateRow(unresolvedId, row);
+                    }
+                }
+            }
+
+            unresolvedConversationContractIds = contractConversationIds.filter(
+                (contractId) => !rowByConversationContractId.has(contractId)
+            );
+
+            const proposalJobIdByProposalId: Record<string, string> = {};
+            if (unresolvedConversationContractIds.length > 0) {
+                const { data: proposalRows, error: proposalRowsError } = await supabase
+                    .from('proposals')
+                    .select('id, job_id')
+                    .in('id', unresolvedConversationContractIds);
+
+                if (cancelled) return;
+
+                if (proposalRowsError) {
+                    console.warn('[Messages] Failed to load proposal rows for conversation title fallback', proposalRowsError);
+                } else {
+                    for (const proposal of (proposalRows ?? []) as Array<{ id: string; job_id: string | null }>) {
+                        const proposalId = typeof proposal?.id === 'string' ? proposal.id : '';
+                        const jobId = typeof proposal?.job_id === 'string' ? proposal.job_id : '';
+                        if (!proposalId || !jobId) continue;
+                        proposalJobIdByProposalId[proposalId] = jobId;
+                    }
+                }
+            }
+
+            const resolvedRows = Array.from(rowByConversationContractId.entries());
+            const jobIdsNeedingTitle = Array.from(new Set(
+                resolvedRows
+                    .filter(([, row]) => {
+                        if (!row?.job_id) return false;
+                        const existingTitle = typeof row.title === 'string' ? row.title.trim() : '';
+                        return existingTitle.length === 0;
+                    })
+                    .map(([, row]) => row.job_id as string)
+            ));
+
+            const fallbackJobIds = Array.from(new Set([
+                ...jobIdsNeedingTitle,
+                ...unresolvedConversationContractIds,
+                ...Object.values(proposalJobIdByProposalId),
+            ]));
+
+            const jobTitleById: Record<string, string> = {};
+
+            if (fallbackJobIds.length > 0) {
+                const { data: jobsData, error: jobsError } = await supabase
+                    .from('jobs')
+                    .select('id, title')
+                    .in('id', fallbackJobIds);
+
+                if (cancelled) return;
+
+                if (jobsError) {
+                    console.warn('[Messages] Failed to load job titles for contract conversations', jobsError);
+                } else {
+                    for (const job of (jobsData ?? []) as Array<{ id: string; title: string | null }>) {
+                        const normalizedTitle = typeof job.title === 'string' ? job.title.trim() : '';
+                        if (!job.id || !normalizedTitle) continue;
+                        jobTitleById[job.id] = normalizedTitle;
+                    }
+                }
+
+                const missingJobTitleIds = fallbackJobIds.filter((jobId) => !jobTitleById[jobId]).slice(0, 16);
+                if (missingJobTitleIds.length > 0) {
+                    const resolvedViaPublicLookup = await Promise.all(missingJobTitleIds.map(async (jobId) => {
+                        const { data: jobData, error: jobError } = await getJobById(jobId);
+                        if (jobError || !jobData) return null;
+
+                        const title = typeof (jobData as { title?: string | null }).title === 'string'
+                            ? (jobData as { title?: string | null }).title?.trim()
+                            : '';
+                        if (!title) return null;
+
+                        return { jobId, title };
+                    }));
+
+                    if (cancelled) return;
+
+                    for (const resolved of resolvedViaPublicLookup) {
+                        if (!resolved) continue;
+                        jobTitleById[resolved.jobId] = resolved.title;
+                    }
+                }
             }
 
             const nextStatuses: Record<string, ContractMessagingStatus> = {};
@@ -1603,34 +2118,73 @@ function MessagesComponent() {
                 nextStatuses[contractId] = 'unknown';
             }
 
-            for (const row of (data ?? []) as Array<ContractSessionMeta>) {
-                if (!row?.id) continue;
-                nextStatuses[row.id] = normalizeContractStatus(row.status);
-                nextMeta[row.id] = {
-                    id: row.id,
+            for (const [conversationContractId, row] of resolvedRows) {
+                if (!row) continue;
+
+                const existingTitle = typeof row.title === 'string' ? row.title.trim() : '';
+                const resolvedTitle = existingTitle || (row.job_id ? jobTitleById[row.job_id] : '') || null;
+
+                nextStatuses[conversationContractId] = normalizeContractStatus(row.status);
+                nextMeta[conversationContractId] = {
+                    id: conversationContractId,
                     status: row.status,
-                    title: row.title ?? null,
+                    title: resolvedTitle,
                     amount: row.amount ?? null,
                     total_amount: row.total_amount ?? null,
                     client_id: row.client_id ?? null,
                     freelancer_id: row.freelancer_id ?? null,
                     job_id: row.job_id ?? null,
+                    proposal_id: row.proposal_id ?? null,
+                    linked_contract_id: row.id ?? null,
                 };
             }
 
-            setContractStatusById((prev) => {
-                const previousKeys = Object.keys(prev);
-                const nextKeys = Object.keys(nextStatuses);
+            for (const unresolvedId of unresolvedConversationContractIds) {
+                if (nextMeta[unresolvedId]) continue;
 
-                const isSameShape = previousKeys.length === nextKeys.length
-                    && nextKeys.every((key) => Object.prototype.hasOwnProperty.call(prev, key));
-                if (!isSameShape) return nextStatuses;
+                const jobIdFromProposal = proposalJobIdByProposalId[unresolvedId] || null;
+                const resolvedJobId = jobIdFromProposal || unresolvedId;
+                const resolvedTitle = jobTitleById[resolvedJobId] || null;
 
-                const isSameValues = nextKeys.every((key) => prev[key] === nextStatuses[key]);
-                return isSameValues ? prev : nextStatuses;
-            });
+                if (!resolvedTitle) continue;
 
-            setContractSessionMetaById(nextMeta);
+                nextMeta[unresolvedId] = {
+                    id: unresolvedId,
+                    status: null,
+                    title: resolvedTitle,
+                    amount: null,
+                    total_amount: null,
+                    client_id: null,
+                    freelancer_id: null,
+                    job_id: resolvedJobId,
+                    proposal_id: jobIdFromProposal ? unresolvedId : null,
+                    linked_contract_id: null,
+                };
+            }
+
+                setContractStatusById((prev) => {
+                    const previousKeys = Object.keys(prev);
+                    const nextKeys = Object.keys(nextStatuses);
+
+                    const isSameShape = previousKeys.length === nextKeys.length
+                        && nextKeys.every((key) => Object.prototype.hasOwnProperty.call(prev, key));
+                    if (!isSameShape) return nextStatuses;
+
+                    const isSameValues = nextKeys.every((key) => prev[key] === nextStatuses[key]);
+                    return isSameValues ? prev : nextStatuses;
+                });
+
+                setContractSessionMetaById(nextMeta);
+            } catch (caughtError) {
+                if (cancelled) return;
+
+                console.warn('[Messages] Contract status hydration fallback to unknown', caughtError);
+                const fallbackStatuses: Record<string, ContractMessagingStatus> = {};
+                for (const contractId of contractConversationIds) {
+                    fallbackStatuses[contractId] = 'unknown';
+                }
+                setContractStatusById(fallbackStatuses);
+            }
         };
 
         void loadContractStatuses();
@@ -1638,7 +2192,7 @@ function MessagesComponent() {
         return () => {
             cancelled = true;
         };
-    }, [contractConversationIdsKey]);
+    }, [contractConversationIdsKey, conversations, user?.id]);
 
     // Auto-select conversation from URL params or navigation state.
     // Supports:
@@ -2136,6 +2690,27 @@ function MessagesComponent() {
         }
     }, [disputeReason, selectedConversation, showToast, syncContractStatusLocally, tx, user?.id]);
 
+    const handleSubmitContractReview = useCallback(async (rating: number, comment: string) => {
+        if (!selectedContractId || !user?.id) {
+            throw new Error('Missing contract context for review submission.');
+        }
+
+        const { error } = await submitReviewRequest(selectedContractId, rating, comment);
+        if (error) {
+            const errMessage = typeof error === 'object' && error !== null && 'message' in error
+                ? String((error as { message?: string }).message || '')
+                : '';
+            throw new Error(errMessage || tx('contract.error', undefined, 'An error occurred'));
+        }
+
+        setHasReviewedContractById((prev) => ({
+            ...prev,
+            [selectedContractId]: true,
+        }));
+        setIsReviewModalOpen(false);
+        showToast(tx('contract.reviewSent', undefined, 'Review submitted successfully'), 'success');
+    }, [selectedContractId, showToast, tx, user?.id]);
+
     const handleSendMessage = async () => {
         const messageContent = newMessage.trim();
         const replyTargetSnapshot = replyTarget;
@@ -2470,15 +3045,20 @@ function MessagesComponent() {
     };
 
     const getConversationSidebarTitle = useCallback((conversation: Conversation) => {
+        const personName = conversation.otherUser.full_name;
         const contractTitle = conversation.contract_id
             ? contractSessionMetaById[conversation.contract_id]?.title?.trim()
             : '';
 
         if (contractTitle) {
-            return tx('pages.messages.contractSidebarTitle', { title: contractTitle }, `Job: ${contractTitle}`);
+            return tx(
+                'pages.messages.contractSidebarTitle',
+                { name: personName, title: contractTitle },
+                `${personName} • ${contractTitle}`,
+            );
         }
 
-        return conversation.otherUser.full_name;
+        return personName;
     }, [contractSessionMetaById, tx]);
 
     // Filter conversations based on search and filter
@@ -2502,7 +3082,7 @@ function MessagesComponent() {
         for (const conversation of filteredConversations) {
             const groupingKey = conversation.contract_id
                 ? `contract:${conversation.contract_id}`
-                : `direct:${conversation.otherUser.id}:${conversation.conversation_scope ?? 'shared'}`;
+                : `direct:${conversation.otherUser.id}`;
 
             if (seenKeys.has(groupingKey)) continue;
             seenKeys.add(groupingKey);
@@ -2685,17 +3265,23 @@ function MessagesComponent() {
     }, [conversations, getConversationLastPreviewText, getReplyPreviewTextForMessage, isLoadingConversations]);
 
     const renderConversationList = () => (
-        <div className={`${showMobileThread ? 'hidden md:flex' : 'flex'} w-full md:w-80 lg:w-96 border-r border-[#262626] flex-col bg-[#141414] shrink-0`}>
-            <div className="p-4 border-b border-[#262626]">
+        <div className={`${showMobileThread ? 'hidden md:flex' : 'flex'} w-full md:w-80 lg:w-96 border-r border-[#2d3138] flex-col bg-[#15181d] shrink-0`}>
+            <div className="p-4 border-b border-[#2d3138]">
                 <h2 className="text-xl font-bold mb-4 text-white">{tx('pages.messages.title', undefined, 'Messages')}</h2>
-                <div className="relative">
-                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
+                <div
+                    className="flex h-10 w-full items-center gap-2 rounded-2xl px-3 text-sm transition-colors focus-within:bg-[#141922]"
+                    style={{
+                        background: 'color-mix(in srgb, var(--color-text-primary) 4%, transparent)',
+                    }}
+                >
+                    <Search className="h-4 w-4 shrink-0 text-gray-500" />
                     <input
+                        id="messages-conversation-search"
                         type="text"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         placeholder={tx('pages.messages.searchPlaceholder', undefined, 'Search conversations...')}
-                        className="w-full bg-[#0a0a0a] border border-[#262626] rounded-xl pl-10 pr-4 py-2.5 text-sm text-white outline-none placeholder:text-gray-500 focus:border-purple-500"
+                        className="w-full border-0 bg-transparent p-0 text-sm text-white outline-none placeholder:text-gray-500 focus:outline-none focus:ring-0"
                     />
                 </div>
             </div>
@@ -2749,8 +3335,8 @@ function MessagesComponent() {
                                         }}
                                         className={`p-4 flex gap-3 cursor-pointer transition-colors ${
                                             isActive
-                                                ? 'bg-[#262626]/50 border-l-4 border-purple-500'
-                                                : 'hover:bg-[#262626]/30 border-l-4 border-transparent border-b border-[#262626]/50'
+                                                ? `bg-[#222730] border-l-4 ${accentClasses.selectedConversationBorder}`
+                                                : 'hover:bg-[#1f232b] border-l-4 border-transparent border-b border-[#2d3138]'
                                         }`}
                                     >
                                         <button
@@ -2760,7 +3346,7 @@ function MessagesComponent() {
                                                 navigate(`/freelancer/${conversation.otherUser.id}`);
                                             }}
                                             aria-label={tx('pages.messages.profileAction', undefined, 'View profile')}
-                                            className="w-12 h-12 rounded-full bg-[#262626] shrink-0 relative overflow-hidden flex items-center justify-center text-sm font-semibold text-gray-200 transition-all hover:ring-2 hover:ring-purple-500/70"
+                                            className={`w-12 h-12 rounded-full bg-[#262a32] shrink-0 relative overflow-hidden flex items-center justify-center text-sm font-semibold text-gray-200 transition-all hover:ring-2 ${accentClasses.avatarHoverRing}`}
                                         >
                                             <span aria-hidden="true">{conversation.otherUser.full_name.charAt(0)}</span>
                                             {conversation.otherUser.avatar_url ? (
@@ -2780,7 +3366,7 @@ function MessagesComponent() {
                                                 </p>
                                                 <span className="text-xs text-gray-500 shrink-0">{formatTime(conversation.last_message_at)}</span>
                                             </div>
-                                            <p className="mt-0.5 text-[10px] uppercase tracking-wide text-purple-400/90 truncate">
+                                            <p className={`mt-0.5 text-[11px] tracking-wide truncate ${accentClasses.contextLabelText}`}>
                                                 {getConversationContextLabel(conversation)}
                                             </p>
                                             <div className="mt-1 flex items-center gap-2">
@@ -2788,7 +3374,7 @@ function MessagesComponent() {
                                                     {previewText}
                                                 </p>
                                                 {conversation.unread_count > 0 ? (
-                                                    <span className="ml-auto shrink-0 min-w-5 h-5 px-1 rounded-full text-[10px] font-semibold text-white flex items-center justify-center bg-purple-600">
+                                                    <span className={`ml-auto shrink-0 min-w-5 h-5 px-1 rounded-full text-[10px] font-semibold text-white flex items-center justify-center ${accentClasses.unreadBadgeBg}`}>
                                                         {conversation.unread_count}
                                                     </span>
                                                 ) : null}
@@ -2802,12 +3388,12 @@ function MessagesComponent() {
                 )}
 
                 {hasMoreConversations && displayConversations.length > 0 && !searchQuery ? (
-                    <div className="px-4 py-4 border-t border-[#262626]">
+                    <div className="px-4 py-4 border-t border-[#2d3138]">
                         <button
                             type="button"
                             onClick={() => setPage((prev) => prev + 1)}
                             disabled={isLoadingMore}
-                            className="w-full rounded-xl border border-[#3a3a3a] bg-[#1a1a1a] px-3 py-2 text-sm text-gray-200 transition-colors hover:bg-[#262626] disabled:opacity-50 focus:border-purple-500"
+                            className={`w-full rounded-xl border border-[#3a3a3a] bg-[#1b1f26] px-3 py-2 text-sm text-gray-200 transition-colors hover:bg-[#252a33] disabled:opacity-50 ${accentClasses.inputFocusBorder}`}
                         >
                             {isLoadingMore ? tx('common.loading', undefined, 'Loading...') : tx('pages.messages.loadMore', undefined, 'Load more conversations')}
                         </button>
@@ -2837,7 +3423,7 @@ function MessagesComponent() {
                                 type="button"
                                 onClick={() => navigate(`/freelancer/${selectedConversation.otherUser.id}`)}
                                 aria-label={tx('pages.messages.profileAction', undefined, 'View profile')}
-                                className="relative w-10 h-10 rounded-full bg-[#262626] shrink-0 overflow-hidden flex items-center justify-center text-sm font-semibold text-gray-200 cursor-pointer hover:ring-2 hover:ring-purple-500 transition-all shadow-md"
+                                className={`relative w-10 h-10 rounded-full bg-[#262626] shrink-0 overflow-hidden flex items-center justify-center text-sm font-semibold text-gray-200 cursor-pointer hover:ring-2 transition-all shadow-md ${accentClasses.headerAvatarHoverRing}`}
                             >
                                 <span aria-hidden="true">{selectedConversation.otherUser.full_name.charAt(0)}</span>
                                 {selectedConversation.otherUser.avatar_url ? (
@@ -2852,7 +3438,9 @@ function MessagesComponent() {
 
                             <div className="min-w-0">
                                 <p className="font-bold text-white truncate">{selectedConversation.otherUser.full_name}</p>
-                                <p className="text-xs truncate text-purple-400">{getConversationIdentityLabel(selectedConversation)}</p>
+                                <p className={`text-xs truncate ${accentClasses.headerMetaText}`}>
+                                    {`${getConversationIdentityLabel(selectedConversation)} • ${getConversationWorkDescriptor(selectedConversation)}`}
+                                </p>
                             </div>
                         </div>
 
@@ -2860,10 +3448,18 @@ function MessagesComponent() {
                             {selectedConversation.contract_id ? (
                                 <button
                                     type="button"
-                                    onClick={() => navigate(`/contracts/${selectedConversation.contract_id}`)}
-                                    className="hidden sm:inline-flex items-center rounded-lg border border-[#3a3a3a] px-2.5 py-1.5 text-xs font-medium text-purple-300 transition-colors hover:border-purple-500 hover:text-purple-200"
+                                    onClick={() => setIsContractSidebarVisible((prev) => !prev)}
+                                    aria-expanded={isContractSidebarVisible}
+                                    aria-controls="contract-workspace-sidebar"
+                                    className={`hidden xl:inline-flex items-center rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-colors ${
+                                        isContractSidebarVisible
+                                            ? accentClasses.contractToggleActive
+                                            : accentClasses.contractToggleIdle
+                                    }`}
                                 >
-                                    {tx('pages.messages.openContract', undefined, 'Open Contract')}
+                                    {isContractSidebarVisible
+                                        ? tx('pages.messages.hideContract', undefined, 'Hide Contract')
+                                        : tx('pages.messages.openContract', undefined, 'Open Contract')}
                                 </button>
                             ) : null}
 
@@ -3027,12 +3623,12 @@ function MessagesComponent() {
                                                                         ? 'rounded-full border border-[#2a2a2a] bg-[#111111] text-gray-500 px-3 py-1.5 text-xs'
                                                                         : (hasImageAttachment && (isImageOnlyMessage || shouldRenderImageCaption))
                                                                         ? (isOwnMessage
-                                                                            ? `bg-purple-600 p-1 overflow-hidden rounded-2xl rounded-br-sm text-white ${message.status === 'failed' ? 'ring-1 ring-red-500/70' : ''} ${message.status === 'sending' ? 'opacity-80' : ''}`
+                                                                            ? `${accentClasses.ownBubbleBg} p-1 overflow-hidden rounded-2xl rounded-br-sm text-white ${message.status === 'failed' ? 'ring-1 ring-red-500/70' : ''} ${message.status === 'sending' ? 'opacity-80' : ''}`
                                                                             : 'bg-[#141414] border border-[#262626] p-1 overflow-hidden rounded-2xl rounded-bl-sm text-gray-200')
                                                                         : isOwnMessage
-                                                                        ? `bg-purple-600 text-white px-4 py-2 rounded-2xl rounded-br-sm text-sm shadow-md ${message.status === 'failed' ? 'ring-1 ring-red-500/70' : ''} ${message.status === 'sending' ? 'opacity-80' : ''}`
+                                                                        ? `${accentClasses.ownBubbleBg} text-white px-4 py-2 rounded-2xl rounded-br-sm text-sm shadow-md ${message.status === 'failed' ? 'ring-1 ring-red-500/70' : ''} ${message.status === 'sending' ? 'opacity-80' : ''}`
                                                                         : 'bg-[#141414] border border-[#262626] text-gray-200 px-4 py-2 rounded-2xl rounded-bl-sm text-sm'
-                                                                } ${highlightedMessageId === message.id ? 'ring-1 ring-purple-400/70' : ''}`}
+                                                                } ${highlightedMessageId === message.id ? `ring-1 ${accentClasses.highlightRing}` : ''}`}
                                                             >
                                                                 {replyMetadata ? (
                                                                     <button
@@ -3040,7 +3636,7 @@ function MessagesComponent() {
                                                                         onClick={() => {
                                                                             scrollToMessageById(replyMetadata.messageId);
                                                                         }}
-                                                                        className={`mb-2 w-full rounded-lg border px-2 py-1.5 text-left ${isOwnMessage ? 'border-purple-300/40 bg-purple-700/30 text-purple-100' : 'border-[#3a3a3a] bg-[#101010] text-gray-300'}`}
+                                                                        className={`mb-2 w-full rounded-lg border px-2 py-1.5 text-left ${isOwnMessage ? accentClasses.ownReplyCard : 'border-[#3a3a3a] bg-[#101010] text-gray-300'}`}
                                                                         aria-label={tx('pages.messages.jumpToRepliedMessage', undefined, 'Jump to replied message')}
                                                                     >
                                                                         <p className="text-[10px] font-semibold uppercase tracking-wide opacity-90">{replyMetadata.senderName}</p>
@@ -3089,7 +3685,7 @@ function MessagesComponent() {
                                                                                             </div>
                                                                                         </div>
                                                                                         {shouldRenderImageCaption && index === firstImageAttachmentIndex ? (
-                                                                                            <p className={`px-3 py-2 text-sm break-words ${isOwnMessage ? 'text-purple-100' : 'text-gray-200'}`}>
+                                                                                            <p className={`px-3 py-2 text-sm break-words ${isOwnMessage ? accentClasses.ownTextMuted : 'text-gray-200'}`}>
                                                                                                 {messageText}
                                                                                             </p>
                                                                                         ) : null}
@@ -3106,6 +3702,7 @@ function MessagesComponent() {
                                                                                         name={att.name}
                                                                                         mimeType={att.type}
                                                                                         isOwn={isOwnMessage}
+                                                                                        accentVariant={isFreelancerWorkspace ? 'violet' : 'amber'}
                                                                                     />
                                                                                 );
                                                                             }
@@ -3117,12 +3714,12 @@ function MessagesComponent() {
                                                                                     onClick={() => { void handleOpenAttachment(att); }}
                                                                                     className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-colors w-full max-w-sm ${
                                                                                         isOwnMessage
-                                                                                            ? 'bg-purple-700/50 hover:bg-purple-700/80'
+                                                                                            ? accentClasses.ownAttachmentCard
                                                                                             : 'bg-[#141414] hover:bg-[#1a1a1a] border border-[#333]'
                                                                                     }`}
                                                                                     aria-label={tx('pages.messages.a11y.openAttachment', undefined, 'Open attachment')}
                                                                                 >
-                                                                                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${isOwnMessage ? 'bg-purple-500/40 text-purple-100' : 'bg-[#202020] text-purple-300'}`}>
+                                                                                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${isOwnMessage ? accentClasses.ownAttachmentIcon : `bg-[#202020] ${accentClasses.neutralAttachmentIcon}`}`}>
                                                                                         <FileText className="w-5 h-5" />
                                                                                     </div>
 
@@ -3140,7 +3737,7 @@ function MessagesComponent() {
                                                             </div>
 
                                                             {isOwnMessage && !isDeletedMessage(message) && !message.status ? (
-                                                                <CheckCheck className={`h-3 w-3 mb-1 ${message.is_read ? 'text-purple-300' : 'text-gray-500'}`} />
+                                                                <CheckCheck className={`h-3 w-3 mb-1 ${message.is_read ? accentClasses.readReceipt : 'text-gray-500'}`} />
                                                             ) : null}
                                                         </div>
 
@@ -3158,7 +3755,7 @@ function MessagesComponent() {
                                                                 onClick={() => {
                                                                     handleReplyToMessage(message);
                                                                 }}
-                                                                className={`mt-1 inline-flex items-center gap-1 text-[11px] text-gray-500 hover:text-purple-300 transition-colors opacity-0 group-hover/message:opacity-100 ${isOwnMessage ? 'ms-auto' : ''}`}
+                                                                className={`mt-1 inline-flex items-center gap-1 text-[11px] text-gray-500 transition-colors opacity-0 group-hover/message:opacity-100 ${accentClasses.replyActionHover} ${isOwnMessage ? 'ms-auto' : ''}`}
                                                                 aria-label={tx('pages.messages.replyAction', undefined, 'Reply to message')}
                                                             >
                                                                 <CornerUpLeft className="h-3 w-3" />
@@ -3175,7 +3772,7 @@ function MessagesComponent() {
                                 {pendingQueue.map((pendingMsg, idx) => (
                                     <div key={`pending-${idx}`} className="flex justify-end w-full opacity-70">
                                         <div className="max-w-[80%]">
-                                            <div className="bg-purple-600 text-white px-4 py-2 rounded-2xl rounded-br-sm text-sm shadow-md">
+                                            <div className={`${accentClasses.ownBubbleBg} text-white px-4 py-2 rounded-2xl rounded-br-sm text-sm shadow-md`}>
                                                 <p className="text-sm break-words">{parseReplyMetadataFromContent(pendingMsg.content).bodyText || tx('pages.messages.attachmentLabel', undefined, 'Attachment')}</p>
                                                 {(pendingMsg.fileName || pendingMsg.audioFileName || pendingMsg.offlineFile || pendingMsg.offlineAudio) ? (
                                                     <div className="mt-2 text-xs italic opacity-90 flex items-center gap-1">
@@ -3200,9 +3797,9 @@ function MessagesComponent() {
                         <div className="px-4 md:px-6 py-2 border-t border-[#262626]">
                             <div className="flex items-center gap-2 text-xs text-gray-400">
                                 <div className="flex gap-1">
-                                    <div className="w-1.5 h-1.5 rounded-full animate-pulse bg-purple-500" />
-                                    <div className="w-1.5 h-1.5 rounded-full animate-pulse bg-purple-500" />
-                                    <div className="w-1.5 h-1.5 rounded-full animate-pulse bg-purple-500" />
+                                    <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${accentClasses.typingDot}`} />
+                                    <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${accentClasses.typingDot}`} />
+                                    <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${accentClasses.typingDot}`} />
                                 </div>
                                 <span>
                                     {typingUsers.length === 1
@@ -3217,9 +3814,9 @@ function MessagesComponent() {
                         {replyTarget ? (
                             <div className="mb-3 rounded-xl border border-[#333] bg-[#1a1a1a] px-3 py-2">
                                 <div className="flex items-start gap-2">
-                                    <span className="mt-0.5 h-8 w-1 rounded-full bg-purple-500" aria-hidden="true" />
+                                    <span className={`mt-0.5 h-8 w-1 rounded-full ${accentClasses.replyStripe}`} aria-hidden="true" />
                                     <div className="min-w-0 flex-1">
-                                        <p className="text-xs font-semibold text-purple-300">{tx('pages.messages.replyingTo', undefined, 'Replying to')} {replyTarget.senderName}</p>
+                                        <p className={`text-xs font-semibold ${accentClasses.headerMetaText}`}>{tx('pages.messages.replyingTo', undefined, 'Replying to')} {replyTarget.senderName}</p>
                                         <p className="text-xs text-gray-300 truncate">{replyTarget.previewText}</p>
                                     </div>
                                     <button
@@ -3254,7 +3851,7 @@ function MessagesComponent() {
                                 {audioBlob ? (
                                     <div className="rounded-xl border border-[#3a3a3a] bg-[#1a1a1a] px-3 py-2">
                                         <div className="flex items-center gap-2 text-sm text-gray-200">
-                                            <FileAudio className="w-4 h-4 text-purple-400" />
+                                            <FileAudio className={`w-4 h-4 ${accentClasses.iconAccent}`} />
                                             <span className="flex-1">{tx('pages.messages.voiceMemo', undefined, 'Audio note')} • {Math.floor(recordingTime / 60).toString().padStart(2, '0')}:{(recordingTime % 60).toString().padStart(2, '0')}</span>
                                             <button
                                                 type="button"
@@ -3272,6 +3869,7 @@ function MessagesComponent() {
                                                     src={audioPreviewUrl}
                                                     name={tx('pages.messages.voiceMemo', undefined, 'Audio note')}
                                                     isOwn
+                                                    accentVariant={isFreelancerWorkspace ? 'violet' : 'amber'}
                                                 />
                                             </div>
                                         ) : null}
@@ -3281,7 +3879,7 @@ function MessagesComponent() {
                                 {selectedFile ? (
                                     <div className="rounded-xl border border-[#3a3a3a] bg-[#1a1a1a] px-3 py-2">
                                         <div className="flex items-center gap-2 text-sm text-gray-200">
-                                            <FileText className="w-4 h-4 text-purple-400" />
+                                            <FileText className={`w-4 h-4 ${accentClasses.iconAccent}`} />
                                             <span className="flex-1 truncate">{selectedFile.name}</span>
                                             <button
                                                 type="button"
@@ -3300,7 +3898,7 @@ function MessagesComponent() {
 
                         <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileChange} accept={MESSAGE_ATTACHMENT_ACCEPT} />
 
-                        <div className="bg-[#0a0a0a] border border-[#262626] rounded-2xl flex items-end p-1.5 focus-within:border-purple-500 focus-within:ring-1 focus-within:ring-purple-500 transition-all shadow-inner">
+                        <div className="bg-[#0a0a0a] rounded-2xl flex items-end p-1.5 transition-all shadow-inner">
                             <button
                                 type="button"
                                 onClick={() => fileInputRef.current?.click()}
@@ -3348,6 +3946,7 @@ function MessagesComponent() {
                             </button>
 
                             <textarea
+                                id="messages-thread-composer-input"
                                 ref={messageInputRef}
                                 value={newMessage}
                                 onChange={(e) => {
@@ -3393,7 +3992,7 @@ function MessagesComponent() {
                                 }}
                                 disabled={(!newMessage.trim() && !selectedFile && !audioBlob) || isSending || isRecording || !canSendInSelectedConversation}
                                 aria-label={tx('pages.messages.send', undefined, 'Send message')}
-                                className="bg-purple-600 hover:bg-purple-500 text-white p-2.5 rounded-xl cursor-pointer transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                                className={`${accentClasses.sendButton} text-white p-2.5 rounded-xl cursor-pointer transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed`}
                             >
                                 {isSending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                             </button>
@@ -3403,25 +4002,47 @@ function MessagesComponent() {
                     </div>
 
                     {isContractSession && contractSidebarData ? (
-                        <aside className="hidden xl:block w-[360px] 2xl:w-[390px] shrink-0 border-l border-[#262626] bg-[#111111]">
-                            <ContractDetailsSidebar
-                                contract={contractSidebarData}
-                                userRole={selectedContractUserRole}
-                                currentStatus={selectedContractStatus || 'unknown'}
-                                deliverySubmitted={contractDeliverySubmitted}
-                                isActionLoading={isAnyContractActionLoading}
-                                onDeliver={() => setIsDeliverModalOpen(true)}
-                                onRequestChanges={() => {
-                                    void handleRequestContractChanges();
-                                }}
-                                onAcceptAndPay={() => setIsAcceptModalOpen(true)}
-                                onDispute={() => setIsDisputeModalOpen(true)}
-                                onReview={() => {
-                                    showToast(tx('contract.reviewSoon', undefined, 'Review flow coming here soon'), 'info');
-                                }}
-                                hasLeftReview
-                            />
-                        </aside>
+                        <div
+                            className={`hidden xl:block shrink-0 overflow-hidden transition-[width,opacity] duration-300 ease-out ${
+                                isContractSidebarVisible
+                                    ? 'w-[360px] 2xl:w-[390px] opacity-100'
+                                    : 'w-0 opacity-0 pointer-events-none'
+                            }`}
+                            aria-hidden={!isContractSidebarVisible}
+                        >
+                            <aside
+                                id="contract-workspace-sidebar"
+                                className={`h-full w-[360px] 2xl:w-[390px] border-l border-[#262626] bg-[#111111] transition-transform duration-300 ease-out ${
+                                    isContractSidebarVisible ? 'translate-x-0' : 'translate-x-6'
+                                }`}
+                            >
+                                <ContractDetailsSidebar
+                                    contract={contractSidebarData}
+                                    userRole={selectedContractUserRole}
+                                    currentStatus={selectedContractStatus || 'unknown'}
+                                    deliverySubmitted={contractDeliverySubmitted}
+                                    isActionLoading={isAnyContractActionLoading}
+                                    onDeliver={() => setIsDeliverModalOpen(true)}
+                                    onRequestChanges={() => {
+                                        void handleRequestContractChanges();
+                                    }}
+                                    onAcceptAndPay={() => setIsAcceptModalOpen(true)}
+                                    onDispute={() => setIsDisputeModalOpen(true)}
+                                    onReview={() => {
+                                        setIsReviewModalOpen(true);
+                                    }}
+                                    onOpenSharedFile={(file: { url: string; name: string; type?: string | null; size?: number | string | null }) => {
+                                        void handleOpenAttachment({
+                                            url: file.url,
+                                            name: file.name,
+                                            type: file.type || 'application/octet-stream',
+                                            size: file.size ?? 0,
+                                        });
+                                    }}
+                                    hasLeftReview={selectedContractHasReview}
+                                />
+                            </aside>
+                        </div>
                     ) : null}
                 </div>
             ) : (
@@ -3462,7 +4083,7 @@ function MessagesComponent() {
                         value={deliveryNote}
                         onChange={(event) => setDeliveryNote(event.target.value)}
                         rows={4}
-                        className="w-full resize-none rounded-xl border border-[#333] bg-[#0f0f0f] px-3 py-2 text-sm text-white outline-none focus:border-purple-500"
+                        className="w-full resize-none rounded-xl border border-[#333] bg-[#0f0f0f] px-3 py-2 text-sm text-white outline-none focus:border-amber-500"
                         placeholder={tx('contract.deliverNotePlaceholder', undefined, 'Delivery notes (optional)...')}
                         aria-label={tx('contract.deliverNoteAria', undefined, 'Delivery notes')}
                     />
@@ -3531,7 +4152,7 @@ function MessagesComponent() {
                         value={disputeReason}
                         onChange={(event) => setDisputeReason(event.target.value)}
                         rows={4}
-                        className="w-full resize-none rounded-xl border border-[#333] bg-[#0f0f0f] px-3 py-2 text-sm text-white outline-none focus:border-purple-500"
+                        className="w-full resize-none rounded-xl border border-[#333] bg-[#0f0f0f] px-3 py-2 text-sm text-white outline-none focus:border-amber-500"
                         placeholder={tx('contract.disputeReasonPlaceholder', undefined, 'Explain reason for dispute...')}
                         aria-label={tx('contract.disputeReasonAria', undefined, 'Dispute reason')}
                     />
@@ -3551,6 +4172,20 @@ function MessagesComponent() {
                         </Button>
                     </div>
                 </div>
+            </Modal>
+
+            <Modal
+                isOpen={isReviewModalOpen}
+                onClose={() => setIsReviewModalOpen(false)}
+                title={tx('contract.reviewExperience', undefined, 'Review Experience')}
+                size="md"
+            >
+                <ReviewForm
+                    jobTitle={contractSidebarData?.job?.title || tx('contract.untitledJob', undefined, 'Untitled job')}
+                    recipientName={selectedConversation?.otherUser.full_name || tx('pages.messages.userFallback', undefined, 'User')}
+                    onSubmit={handleSubmitContractReview}
+                    onCancel={() => setIsReviewModalOpen(false)}
+                />
             </Modal>
 
             {/* Delete Message Modal */}

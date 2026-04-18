@@ -147,9 +147,10 @@ export default function MyProposals() {
       })) as ProposalRow[];
     },
     enabled: !!user?.id,
-    staleTime: 20_000,
+    staleTime: 0,
     retry: 1,
-    refetchOnWindowFocus: false,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: true,
   });
 
   const sanitizedData = (allData ?? []).filter((proposal) => (

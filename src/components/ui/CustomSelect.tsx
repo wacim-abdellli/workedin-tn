@@ -37,14 +37,12 @@ const CustomSelect = forwardRef<HTMLButtonElement, CustomSelectProps>(
         // Role-specific accents
         const colors = variant === 'freelancer'
             ? {
-                focus: 'focus:border-purple-500 focus:ring-purple-500/20',
                 icon: 'text-purple-400',
                 optionHover: 'hover:bg-purple-500/20',
                 optionSelected: 'bg-purple-500/30 text-purple-300',
                 checkIcon: 'text-purple-400',
             }
             : {
-                focus: 'focus:border-[#E8820C] focus:ring-[#E8820C]/20',
                 icon: 'text-[#E8820C]',
                 optionHover: 'hover:bg-[#E8820C]/20',
                 optionSelected: 'bg-[#E8820C]/30 text-amber-300',
@@ -108,7 +106,7 @@ const CustomSelect = forwardRef<HTMLButtonElement, CustomSelectProps>(
                             appearance-none
                             rounded-xl
                             border
-                            ${isOpen ? 'border-[var(--border-strong)]' : 'border-[var(--input-border)]'}
+                            border-[var(--color-border-default)]
                             bg-[var(--input-bg)]
                             text-[var(--text-primary)]
                             text-base
@@ -116,17 +114,15 @@ const CustomSelect = forwardRef<HTMLButtonElement, CustomSelectProps>(
                             px-4
                             py-3
                             pe-10
-                            shadow-sm
+                            shadow-none
                             transition-all
                             duration-200
-                            hover:border-[var(--border-strong)]
+                            hover:border-[var(--color-border-strong)]
                             focus:outline-none 
-                            focus:ring-2 
-                            focus:ring-offset-0
+                            focus:border-[var(--workspace-primary)]
+                            ${error ? 'border-red-500 focus:border-red-500' : ''}
                             text-left
                             truncate
-                            ${colors.focus}
-                            ${error ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''}
                             ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}
                             ${!selectedValue && placeholder ? 'text-[var(--text-muted)]' : ''}
                             ${className}

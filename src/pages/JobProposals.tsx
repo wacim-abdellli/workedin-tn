@@ -38,6 +38,8 @@ const TABS = [
 
 type TabKey = typeof TABS[number]['key'];
 
+const ENABLE_JOB_PROPOSALS_SESSION_CACHE = false;
+
 export default function JobProposals() {
     const { jobId } = useParams<{ jobId: string }>();
     const navigate = useNavigate();
@@ -49,7 +51,7 @@ export default function JobProposals() {
     const CACHE_VERSION = 'v3';
     const cacheKey = jobId ? `jp_cache_${CACHE_VERSION}_${jobId}` : null;
     const readCache = () => {
-        if (!cacheKey) return null;
+        if (!ENABLE_JOB_PROPOSALS_SESSION_CACHE || !cacheKey) return null;
         try {
             const r = sessionStorage.getItem(cacheKey);
             if (!r) return null;
@@ -59,7 +61,7 @@ export default function JobProposals() {
         } catch { return null; }
     };
     const writeCache = (job: JobData, proposals: Proposal[]) => {
-        if (!cacheKey) return;
+        if (!ENABLE_JOB_PROPOSALS_SESSION_CACHE || !cacheKey) return;
         try { sessionStorage.setItem(cacheKey, JSON.stringify({ job, proposals, ts: Date.now() })); } catch { /* ignore */ }
     };
 
@@ -87,7 +89,19 @@ export default function JobProposals() {
                     withTimeout(supabase.from('jobs').select('*').eq('id', jobId).single(), 10000),
                     withTimeout(
                         supabase.from('proposals')
-                            .select('id, job_id, freelancer_id, cover_letter, bid_amount, delivery_time_days, attachments, status, created_at')
+                            .select(`
+                                id,
+                                job_id,
+                                freelancer_id,
+                                cover_letter,
+                                bid_amount,
+                                delivery_time_days,
+                                attachments,
+                                status,
+                                created_at,
+                                freelancer:public_profiles!freelancer_id(id, full_name, avatar_url, location),
+                                freelancer_profile:freelancer_profiles!freelancer_id(title, jobs_completed, success_rate)
+                            `)
                             .eq('job_id', jobId)
                             .order('created_at', { ascending: false }),
                         10000
@@ -104,23 +118,14 @@ export default function JobProposals() {
                 }
 
                 const rows = proposalsRes.data || [];
-                const freelancerIds = [...new Set(rows.map((r: Record<string, unknown>) => r.freelancer_id as string).filter(Boolean))];
-                const profilesById = new Map<string, Record<string, unknown>>();
-                const freelancerProfilesById = new Map<string, Record<string, unknown>>();
-
-                if (freelancerIds.length > 0) {
-                    const [profilesRes, fpRes] = await Promise.all([
-                        supabase.from('profiles').select('id, full_name, avatar_url').in('id', freelancerIds),
-                        supabase.from('freelancer_profiles').select('id, title, jobs_completed, success_rate').in('id', freelancerIds),
-                    ]);
-                    (profilesRes.data || []).forEach((p: Record<string, unknown>) => profilesById.set(p.id as string, p));
-                    (fpRes.data || []).forEach((p: Record<string, unknown>) => freelancerProfilesById.set(p.id as string, p));
-                }
-
                 const transformedProposals: Proposal[] = rows.map((p: Record<string, unknown>) => {
                     const fid = p.freelancer_id as string;
-                    const profile = profilesById.get(fid) ?? {};
-                    const fp = freelancerProfilesById.get(fid) ?? {};
+                    const profile = (Array.isArray(p.freelancer)
+                        ? p.freelancer[0]
+                        : p.freelancer) as Record<string, unknown> | undefined;
+                    const fp = (Array.isArray(p.freelancer_profile)
+                        ? p.freelancer_profile[0]
+                        : p.freelancer_profile) as Record<string, unknown> | undefined;
                     return {
                         id: p.id as string,
                         job_id: p.job_id as string,
@@ -133,14 +138,14 @@ export default function JobProposals() {
                         attachments: (p.attachments as Array<{ name: string; size: string }>) || [],
                         freelancer: {
                             id: fid,
-                            full_name: profile.full_name as string || t.jobProposals.defaultUser,
-                            title: fp.title as string || '',
-                            avatar_url: profile.avatar_url as string || null,
+                            full_name: (profile?.full_name as string) || t.jobProposals.defaultUser,
+                            title: (fp?.title as string) || '',
+                            avatar_url: (profile?.avatar_url as string) || null,
                             country: '',
                             rating: 0,
                             reviews_count: 0,
-                            jobs_completed: fp.jobs_completed as number || 0,
-                            success_rate: fp.success_rate as number || 0,
+                            jobs_completed: (fp?.jobs_completed as number) || 0,
+                            success_rate: (fp?.success_rate as number) || 0,
                             is_verified: true,
                             is_online: false,
                             bio: '',
@@ -550,6 +555,7 @@ export default function JobProposals() {
                                     proposal={proposal}
                                     isSelected={selectedProposal?.id === proposal.id}
                                     onClick={() => setSelectedProposal(proposal)}
+                                    onHire={() => hireMutation.mutate(proposal.id)}
                                 />
                             ))
                         )}

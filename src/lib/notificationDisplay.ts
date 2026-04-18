@@ -81,7 +81,7 @@ export function getDisplayNotification(notification: AppNotification, tx: Tx): A
     // 4. New Proposal (Freelancer to Client)
     // "عرض جديد على وظيفتك" -> "Freelancer قدّم عرضاً على JobTitle"
     if (notification.type === 'proposal' && includesAny(haystack, ['عرض جديد على وظيفتك', 'new proposal'])) {
-        const matchAr = body.match(/(.+?)\s+قدّم عرضاً على\s+\"(.+?)\"/);
+        const matchAr = body.match(/(.+?)\s+قدّم عرضاً على\s+"(.+?)"/);
         const freelancerName = matchAr ? matchAr[1] : 'A freelancer';
         const jobTitle = matchAr ? matchAr[2] : 'your project';
 

@@ -15,8 +15,8 @@ if (import.meta.env.PROD) {
 export const queryClient = new QueryClient({
     defaultOptions: {
         queries: {
-            staleTime: 2 * 60_000,   // Data is fresh for 2 minutes
-            gcTime: 30 * 60_000,     // Cache for 30 minutes
+            staleTime: 30_000,
+            gcTime: 5 * 60_000,
             retry: 2,
             refetchOnWindowFocus: false,
         },

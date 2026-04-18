@@ -43,13 +43,11 @@ const Input = forwardRef<HTMLInputElement | HTMLTextAreaElement, CombinedInputPr
             transition-all duration-150
             placeholder:text-[var(--color-text-disabled)]
             focus:outline-none 
-            focus:ring-2 
-            focus:ring-offset-0
             ${error
-                ? 'border-[var(--color-status-error)] focus:border-[var(--color-status-error)] focus:ring-[var(--color-status-error)]/20'
+                ? 'border-[var(--color-status-error)] focus:border-[var(--color-status-error)]'
                 : success
-                    ? 'border-[var(--color-status-success)] focus:border-[var(--color-status-success)] focus:ring-[var(--color-status-success)]/20'
-                    : 'border-[var(--color-border-default)] hover:border-[var(--color-border-strong)] focus:border-[var(--workspace-primary)] focus:ring-[var(--workspace-primary)]/20'
+                    ? 'border-[var(--color-status-success)] focus:border-[var(--color-status-success)]'
+                    : 'border-[var(--color-border-default)] hover:border-[var(--color-border-strong)] focus:border-[var(--workspace-primary)]'
             }
             ${leftIcon ? 'ps-11' : 'px-4'}
             ${rightIcon ? 'pe-11' : 'px-4'}
@@ -57,6 +55,7 @@ const Input = forwardRef<HTMLInputElement | HTMLTextAreaElement, CombinedInputPr
             disabled:cursor-not-allowed 
             disabled:opacity-50 
             disabled:bg-[var(--color-background-muted)]
+            disabled:border-[var(--color-border-subtle)]
         `;
 
         const inputId = (props as any).id || (props as any).name;

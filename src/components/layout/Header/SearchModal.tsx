@@ -138,8 +138,15 @@ export default function SearchModal({ onClose }: SearchModalProps) {
       if (e.key === 'ArrowUp') { e.preventDefault(); setSelectedIndex((p) => (p - 1 + visibleItems.length) % Math.max(1, visibleItems.length)); return }
       if (e.key === 'Enter') {
         const item = visibleItems[selectedIndex]
-        if (item) { item.onSelect ? item.onSelect() : item.href && go(item.href) }
-        else if (isSearching) goToResults()
+        if (item) {
+          if (item.onSelect) {
+            item.onSelect()
+          } else if (item.href) {
+            go(item.href)
+          }
+        } else if (isSearching) {
+          goToResults()
+        }
       }
     }
     document.addEventListener('keydown', onKey)

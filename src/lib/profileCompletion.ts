@@ -84,21 +84,25 @@ export function calculateFreelancerProfileCompletion(
         {
             id: 'years_experience',
             label: 'سنوات الخبرة',
-            completed: !!freelancerProfile?.years_experience && freelancerProfile.years_experience > 0,
+            completed: Boolean(
+                (freelancerProfile?.years_experience ?? 0) > 0
+                || (freelancerProfile?.languages?.length ?? 0) > 0
+                || (freelancerProfile?.education?.length ?? 0) > 0
+            ),
             weight: 8,
             link: '/onboarding/freelancer',
         },
         {
             id: 'tools',
             label: 'الأدوات الأساسية',
-            completed: (freelancerProfile?.tools?.length ?? 0) > 0,
+            completed: (freelancerProfile?.tools?.length ?? 0) > 0 || (freelancerProfile?.skills?.length ?? 0) >= 3,
             weight: 6,
             link: '/onboarding/freelancer',
         },
         {
             id: 'industries',
             label: 'مجالات العمل',
-            completed: (freelancerProfile?.industries?.length ?? 0) > 0,
+            completed: (freelancerProfile?.industries?.length ?? 0) > 0 || !!freelancerProfile?.title,
             weight: 6,
             link: '/onboarding/freelancer',
         },
@@ -118,7 +122,7 @@ export function calculateFreelancerProfileCompletion(
                 && 'summary' in freelancerProfile.project_preferences
                 && typeof freelancerProfile.project_preferences.summary === 'string'
                 && freelancerProfile.project_preferences.summary.trim().length > 10
-            ),
+            ) || !!profile?.bio,
             weight: 8,
             link: '/onboarding/freelancer',
         },
@@ -167,70 +171,70 @@ export function calculateClientProfileCompletion(profile: Profile | null): Profi
             id: 'avatar',
             label: 'إضافة صورة شخصية',
             completed: !!profile?.avatar_url,
-            weight: 10,
+            weight: 20,
             link: '/settings?tab=profile',
         },
         {
             id: 'full_name',
             label: 'إكمال الاسم الكامل',
             completed: !!profile?.full_name && profile.full_name.length > 2,
-            weight: 12,
+            weight: 25,
             link: '/settings?tab=profile',
         },
         {
             id: 'bio',
             label: 'إضافة نبذة عن الشركة/العمل',
             completed: !!profile?.bio && profile.bio.length > 20,
-            weight: 8,
+            weight: 20,
             link: '/settings?tab=profile',
         },
         {
             id: 'phone',
             label: 'إضافة رقم الهاتف',
             completed: !!profile?.phone,
-            weight: 8,
+            weight: 15,
             link: '/settings?tab=profile',
         },
         {
             id: 'location',
             label: 'تحديد الموقع',
             completed: !!profile?.location,
-            weight: 8,
+            weight: 5,
             link: '/settings?tab=profile',
         },
         {
             id: 'company_name',
             label: 'اسم الشركة',
             completed: !!profile?.company_name,
-            weight: 14,
+            weight: 5,
             link: '/onboarding/client',
         },
         {
             id: 'company_industry',
             label: 'مجال الشركة',
             completed: !!profile?.company_industry,
-            weight: 10,
+            weight: 4,
             link: '/onboarding/client',
         },
         {
             id: 'hiring_needs',
             label: 'احتياجات التوظيف',
             completed: (profile?.hiring_needs?.length ?? 0) > 0,
-            weight: 12,
+            weight: 3,
             link: '/onboarding/client',
         },
         {
             id: 'project_budget_preference',
             label: 'تفضيل الميزانية',
             completed: !!profile?.project_budget_preference,
-            weight: 9,
+            weight: 2,
             link: '/onboarding/client',
         },
         {
             id: 'project_timeline_preference',
             label: 'تفضيل الجدول الزمني',
             completed: !!profile?.project_timeline_preference,
-            weight: 9,
+            weight: 1,
             link: '/settings?tab=profile',
         },
     ];

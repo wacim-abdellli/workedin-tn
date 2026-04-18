@@ -213,10 +213,31 @@ input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not(
     [type="file"]
   ),
 textarea,
-select {
-  background-color: var(--input-bg) !important;
-  border-color: var(--input-border) !important;
+select,
+button[aria-haspopup="listbox"] {
+  background-color: var(--input-bg, var(--color-bg-secondary)) !important;
+  border: 1px solid var(--color-border-default) !important;
+  border-color: var(--color-border-default) !important;
+  box-shadow: none !important;
+  outline: none !important;
   color: var(--text-primary) !important;
+}
+
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not(
+    [type="file"]
+  ):focus,
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not(
+    [type="file"]
+  ):focus-visible,
+textarea:focus,
+textarea:focus-visible,
+select:focus,
+select:focus-visible,
+button[aria-haspopup="listbox"]:focus,
+button[aria-haspopup="listbox"]:focus-visible {
+  border-color: var(--workspace-primary) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--workspace-primary) 22%, transparent) !important;
+  outline: none !important;
 }
 
 /* Native select popup theming across the app */
@@ -240,6 +261,26 @@ input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not(
 textarea::placeholder {
   color: var(--text-placeholder) !important;
   opacity: 1;
+}
+
+/* Keep the Messages left-panel search as a single clean pill (no inner border/ring). */
+#messages-conversation-search,
+#messages-conversation-search:focus,
+#messages-conversation-search:focus-visible {
+  border: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  outline: none !important;
+}
+
+/* Keep the Messages thread composer borderless inside its dark shell. */
+#messages-thread-composer-input,
+#messages-thread-composer-input:focus,
+#messages-thread-composer-input:focus-visible {
+  border: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  outline: none !important;
 }
 
 /* RTL Support */
@@ -295,6 +336,15 @@ h6 {
 :focus-visible {
   outline: 2px solid rgba(148, 163, 184, 0.45);
   outline-offset: 2px;
+}
+
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not(
+    [type="file"]
+  ):focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+button[aria-haspopup="listbox"]:focus-visible {
+  outline: none !important;
 }
 
 /* Selection */
@@ -598,8 +648,9 @@ h6 {
       background-color var(--motion-fast) var(--motion-ease-standard),
       color var(--motion-fast) var(--motion-ease-standard);
     background: var(--color-bg-secondary);
-    border: 2px solid var(--color-border);
+    border: 1px solid var(--color-border-default);
     color: var(--color-fg);
+    box-shadow: none;
   }
 
   .input::placeholder {
@@ -610,16 +661,19 @@ h6 {
   .input:focus {
     @apply outline-none;
     border-color: var(--workspace-primary);
-    box-shadow: 0 0 0 4px var(--workspace-primary-dim, rgba(147, 51, 234, 0.12));
+    box-shadow: 0 0 0 3px
+      color-mix(in srgb, var(--workspace-primary) 22%, transparent);
   }
 
   .input-error {
     @apply input;
-    border-color: #ef4444;
+    border-color: var(--color-status-error);
   }
 
   .input-error:focus {
-    box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
+    border-color: var(--color-status-error);
+    box-shadow: 0 0 0 3px
+      color-mix(in srgb, var(--color-status-error) 18%, transparent);
   }
 
   .form-control {
@@ -630,8 +684,9 @@ h6 {
       background-color var(--motion-fast) var(--motion-ease-standard),
       color var(--motion-fast) var(--motion-ease-standard);
     background: var(--color-bg-secondary);
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-border-default);
     color: var(--color-fg);
+    box-shadow: none;
   }
 
   .form-control::placeholder {
@@ -642,7 +697,8 @@ h6 {
   .form-control:focus {
     @apply outline-none;
     border-color: var(--workspace-primary);
-    box-shadow: 0 0 0 3px var(--workspace-primary-dim, rgba(147, 51, 234, 0.1));
+    box-shadow: 0 0 0 3px
+      color-mix(in srgb, var(--workspace-primary) 22%, transparent);
   }
 
   .input-base {

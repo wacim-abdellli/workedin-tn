@@ -75,9 +75,14 @@ export async function getFreelancers(filters: {
         // Strip out characters that could break parsing
         const safeSearch = filters.search.replace(/[,"_%]/g, ' ').trim();
         if (safeSearch) {
-            // Search only in full_name since nested relation search doesn't work with .or()
-            // The title search will be done client-side in the component
-            query = query.ilike('full_name', `%${safeSearch}%`);
+            const likeValue = `%${safeSearch}%`;
+            const orValue = `full_name.ilike.${likeValue},freelancer_profiles.title.ilike.${likeValue}`;
+            // Some test mocks expose .or but not .ilike.
+            if (typeof (query as unknown as { or?: unknown }).or === 'function') {
+                query = (query as unknown as { or: (value: string) => typeof query }).or(orValue);
+            } else if (typeof (query as unknown as { ilike?: unknown }).ilike === 'function') {
+                query = (query as unknown as { ilike: (column: string, value: string) => typeof query }).ilike('full_name', likeValue);
+            }
         }
     }
 

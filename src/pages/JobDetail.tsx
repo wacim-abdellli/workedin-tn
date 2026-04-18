@@ -354,17 +354,16 @@ function JobDetail() {
       enabled: !!job?.client_id,
     });
 
-  const {
-    data: dailyProposalUsage = {
-      used: 0,
-      remaining: proposalsService.DAILY_PROPOSAL_LIMIT,
-      limit: proposalsService.DAILY_PROPOSAL_LIMIT,
-    },
-  } = useQuery({
+  const { data: dailyProposalUsageData } = useQuery({
     queryKey: ["dailyProposalUsage", user?.id],
     queryFn: () => proposalsService.getDailyProposalUsage(user!.id),
     enabled: !!user?.id && !!freelancerProfile,
   });
+  const dailyProposalUsage = dailyProposalUsageData ?? {
+    used: 0,
+    remaining: 6,
+    limit: 6,
+  };
   const canSubmitToday = dailyProposalUsage.remaining > 0;
   const dailyUsagePercent =
     dailyProposalUsage.limit > 0

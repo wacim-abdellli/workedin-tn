@@ -7,6 +7,7 @@ interface ProposalListItemProps {
     proposal: Proposal;
     isSelected: boolean;
     onClick: () => void;
+    onHire?: (proposalId: string) => void;
 }
 
 function statusMeta(status: string) {

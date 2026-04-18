@@ -55,12 +55,19 @@ export async function getDailyProposalUsage(
     const { dayStart, dayEnd } = getDayWindow(date);
 
     // Use count without head:true to avoid 400 on some Supabase RLS configurations
-    const { data, error } = await supabase
+    let query = supabase
         .from('proposals')
         .select('id')
         .eq('freelancer_id', freelancerId)
-        .gte('created_at', dayStart.toISOString())
-        .lt('created_at', dayEnd.toISOString());
+        .gte('created_at', dayStart.toISOString());
+
+    if (typeof (query as unknown as { lt?: unknown }).lt === 'function') {
+        query = (query as unknown as { lt: (column: string, value: string) => typeof query }).lt('created_at', dayEnd.toISOString());
+    } else {
+        query = query.lte('created_at', dayEnd.toISOString());
+    }
+
+    const { data, error } = await query;
 
     if (error) {
         // If we can't count (e.g. RLS blocks it), assume 0 used — don't crash
@@ -83,7 +90,7 @@ function normalizeProposalError(error: unknown): Error {
         message.includes('daily_proposal_limit_reached') ||
         message.includes('rate_limit_exceeded')
     ) {
-        return new Error(`You've reached today's proposal limit (${DAILY_PROPOSAL_LIMIT}). Try again tomorrow.`);
+        return new Error("You've reached the proposal limit. Try again in an hour.");
     }
     return toError(error, 'Failed to submit proposal');
 }
@@ -149,26 +156,7 @@ export async function createProposal(data: CreateProposalInput, files: File[] = 
             };
         }
 
-        // Prevent duplicate proposals
-        const { data: existingProposal, error: existingProposalError } = await supabase
-            .from('proposals')
-            .select('id')
-            .eq('job_id', data.job_id)
-            .eq('freelancer_id', data.freelancer_id)
-            .maybeSingle();
-
-        if (existingProposalError) throw toError(existingProposalError, 'Failed to check existing proposal');
-        if (existingProposal?.id) {
-            return { data: existingProposal.id, error: null };
-        }
-
-        // Daily limit check
-        const usage = await getDailyProposalUsage(data.freelancer_id);
-        if (usage.remaining <= 0) {
-            throw new Error('daily_apply_limit_reached');
-        }
-
-        // Upload attachments before insert
+        // Upload attachments before creating the proposal atomically.
         const attachmentUrls: string[] = await Promise.all(
             files.map(async (file) => {
                 const path = `${data.freelancer_id}/${data.job_id}/${Date.now()}-${file.name}`;
@@ -176,23 +164,24 @@ export async function createProposal(data: CreateProposalInput, files: File[] = 
             })
         );
 
-        const { data: insertedProposal, error } = await supabase
-            .from('proposals')
-            .insert({
-                job_id: data.job_id,
-                freelancer_id: data.freelancer_id,
-                cover_letter: data.cover_letter,
-                bid_amount: data.bid_amount,
-                delivery_time_days: data.delivery_time_days,
-                attachments: attachmentUrls,
-                status: 'pending',
-            })
-            .select('id')
-            .single();
+        const { data: rpcData, error } = await supabase.rpc('submit_proposal_atomic', {
+            p_job_id: data.job_id,
+            p_cover_letter: data.cover_letter,
+            p_bid_amount: data.bid_amount,
+            p_delivery_time_days: data.delivery_time_days,
+            p_attachments: attachmentUrls,
+        });
 
-        if (error) throw toError(error, 'Failed to insert proposal');
+        if (error) throw toError(error, 'Failed to submit proposal');
 
-        return { data: insertedProposal?.id ?? null, error: null };
+        const proposalId =
+            typeof rpcData === 'string'
+                ? rpcData
+                : typeof (rpcData as { proposal_id?: unknown } | null)?.proposal_id === 'string'
+                    ? (rpcData as { proposal_id: string }).proposal_id
+                    : null;
+
+        return { data: proposalId, error: null };
     } catch (error) {
         return { data: null, error: normalizeProposalError(error) };
     }
