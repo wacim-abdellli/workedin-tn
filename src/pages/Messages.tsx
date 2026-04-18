@@ -67,82 +67,19 @@ import {
     type MessagingPolicyTone,
 } from '../lib/messagingLifecycle';
 
-// Helper functions for offline file handling
-const fileToBase64 = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = () => resolve(reader.result as string);
-        reader.onerror = error => reject(error);
-    });
-};
-
-const base64ToFile = (base64: string, filename: string, mimeType: string): File => {
-    const arr = base64.split(',');
-    const bstr = atob(arr[1]);
-    let n = bstr.length;
-    const u8arr = new Uint8Array(n);
-    while (n--) {
-        u8arr[n] = bstr.charCodeAt(n);
-    }
-    return new File([u8arr], filename, { type: mimeType });
-};
-
-const blobToBase64 = (blob: Blob): Promise<string> => {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(blob);
-        reader.onload = () => resolve(reader.result as string);
-        reader.onerror = error => reject(error);
-    });
-};
-
-const normalizeMimeType = (mimeType: string | null | undefined) => (
-    (mimeType || '').split(';')[0].trim().toLowerCase()
-);
-
-const canonicalizeVoiceMimeType = (mimeType: string | null | undefined) => {
-    const normalized = normalizeMimeType(mimeType);
-
-    if (!normalized) return 'audio/webm';
-
-    if (normalized === 'audio/x-wav' || normalized === 'audio/wav') return 'audio/wav';
-    if (['audio/mp3', 'audio/x-mp3', 'audio/x-mpeg', 'audio/mpeg'].includes(normalized)) return 'audio/mpeg';
-    if (['audio/x-m4a', 'audio/m4a', 'audio/mp4a-latm', 'audio/aac', 'audio/mp4', 'video/mp4'].includes(normalized)) return 'audio/mp4';
-    if (normalized === 'audio/ogg' || normalized === 'video/ogg') return 'audio/ogg';
-    if (normalized === 'audio/webm' || normalized === 'video/webm') return 'audio/webm';
-
-    return normalized.startsWith('audio/') ? normalized : 'audio/webm';
-};
-
-const getAudioExtensionFromMimeType = (mimeType: string) => {
-    switch (canonicalizeVoiceMimeType(mimeType)) {
-        case 'audio/mp4':
-            return 'm4a';
-        case 'audio/mpeg':
-            return 'mp3';
-        case 'audio/wav':
-        case 'audio/x-wav':
-            return 'wav';
-        case 'audio/ogg':
-            return 'ogg';
-        case 'audio/webm':
-        default:
-            return 'webm';
-    }
-};
-
-const buildVoiceMemoFile = (audio: Blob, timestamp: number = Date.now()) => {
-    const canonicalMimeType = canonicalizeVoiceMimeType(audio.type);
-    const extension = getAudioExtensionFromMimeType(canonicalMimeType);
-    const fileName = `voice_memo_${timestamp}.${extension}`;
-
-    return {
-        fileName,
-        mimeType: canonicalMimeType,
-        file: new File([audio], fileName, { type: canonicalMimeType }),
-    };
-};
+import {
+  fileToBase64,
+  base64ToFile,
+  blobToBase64,
+  normalizeMimeType,
+  canonicalizeVoiceMimeType,
+  getAudioExtensionFromMimeType,
+  buildVoiceMemoFile,
+  hasSignature,
+  detectAudioMimeTypeFromBuffer,
+  inferAudioMimeType,
+  formatAudioTime
+} from '../lib/audioProcessing';
 
 const MESSAGE_ATTACHMENT_ACCEPT = [
     'image/*',
@@ -193,41 +130,9 @@ const extractMessageAttachmentPath = (value: string | null | undefined): string 
     }
 };
 
-const hasSignature = (bytes: Uint8Array, signature: number[], offset = 0) => {
-    if (bytes.length < offset + signature.length) return false;
-    return signature.every((value, index) => bytes[offset + index] === value);
-};
-
-const detectAudioMimeTypeFromBuffer = (buffer: ArrayBuffer): string | null => {
-    const bytes = new Uint8Array(buffer);
-    if (bytes.length < 4) return null;
-
-    if (hasSignature(bytes, [0x1a, 0x45, 0xdf, 0xa3])) return 'audio/webm';
-    if (hasSignature(bytes, [0x52, 0x49, 0x46, 0x46]) && hasSignature(bytes, [0x57, 0x41, 0x56, 0x45], 8)) return 'audio/wav';
-    if (hasSignature(bytes, [0x4f, 0x67, 0x67, 0x53])) return 'audio/ogg';
-    if (hasSignature(bytes, [0x49, 0x44, 0x33]) || (bytes[0] === 0xff && (bytes[1] & 0xe0) === 0xe0)) return 'audio/mpeg';
-    if (hasSignature(bytes, [0x66, 0x74, 0x79, 0x70], 4)) return 'audio/mp4';
-
-    return null;
-};
-
-const inferAudioMimeType = (mimeType: string | null | undefined, fileName: string | null | undefined) => {
-    const normalized = normalizeMimeType(mimeType);
-    if (normalized.startsWith('audio/')) return normalized;
-
-    const lowerName = String(fileName || '').toLowerCase();
-    if (lowerName.endsWith('.mp3')) return 'audio/mpeg';
-    if (lowerName.endsWith('.wav')) return 'audio/wav';
-    if (lowerName.endsWith('.ogg')) return 'audio/ogg';
-    if (lowerName.endsWith('.m4a')) return 'audio/mp4';
-    return 'audio/webm';
-};
-
-const formatAudioTime = (seconds: number) => {
-    if (!Number.isFinite(seconds) || seconds < 0) return '0:00';
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60).toString().padStart(2, '0');
-    return `${mins}:${secs}`;
+const truncateText = (text: string | null | undefined, max: number): string => {
+    if (!text) return '';
+    return text.length > max ? text.slice(0, max) + '...' : text;
 };
 
 type MessageAttachment = NonNullable<Message['attachments']>[number];
@@ -261,262 +166,7 @@ const getAttachmentExtensionLabel = (name: string | null | undefined, mimeType: 
     return 'FILE';
 };
 
-type MessageAudioPlayerProps = {
-    src: string;
-    rawSource?: string;
-    name: string;
-    mimeType?: string;
-    isOwn: boolean;
-    accentVariant?: 'amber' | 'violet';
-};
-
-function MessageAudioPlayer({ src, rawSource, name, mimeType, isOwn, accentVariant = 'amber' }: MessageAudioPlayerProps) {
-    const { tx } = useTranslation();
-    const audioRef = useRef<HTMLAudioElement | null>(null);
-    const fallbackObjectUrlRef = useRef<string | null>(null);
-    const didAttemptBlobFallbackRef = useRef(false);
-
-    const [playbackSrc, setPlaybackSrc] = useState(src);
-    const [isPlaying, setIsPlaying] = useState(false);
-    const [duration, setDuration] = useState(0);
-    const [currentTime, setCurrentTime] = useState(0);
-    const [isLoading, setIsLoading] = useState(false);
-    const [hasError, setHasError] = useState(false);
-    const isVioletAccent = accentVariant === 'violet';
-
-    const waveformBars = useMemo(() => (
-        Array.from({ length: 18 }, (_, index) => {
-            const seeded = Math.sin((index + 1.8) * 1.57) * 0.5 + 0.5;
-            return 6 + Math.round(seeded * 13);
-        })
-    ), []);
-
-    const progressRatio = duration > 0 ? Math.min(currentTime / duration, 1) : 0;
-    const defaultDuration = duration > 0 ? duration : 14;
-
-    const displayAudioName = useMemo(() => {
-        const rawName = String(name || '').trim();
-        if (!rawName) return tx('pages.messages.voiceMemo', undefined, 'Audio note');
-
-        const lowerName = rawName.toLowerCase();
-        if (
-            lowerName.includes('voice memo')
-            || lowerName.includes('voice_memo')
-            || lowerName.includes('message vocal')
-            || rawName.includes('رسالة صوتية')
-        ) {
-            return tx('pages.messages.voiceMemo', undefined, 'Audio note');
-        }
-
-        return rawName;
-    }, [name, tx]);
-
-    useEffect(() => {
-        setPlaybackSrc(src);
-        setIsPlaying(false);
-        setDuration(0);
-        setCurrentTime(0);
-        setIsLoading(false);
-        setHasError(false);
-        didAttemptBlobFallbackRef.current = false;
-
-        if (fallbackObjectUrlRef.current) {
-            URL.revokeObjectURL(fallbackObjectUrlRef.current);
-            fallbackObjectUrlRef.current = null;
-        }
-    }, [src]);
-
-    useEffect(() => {
-        return () => {
-            if (fallbackObjectUrlRef.current) {
-                URL.revokeObjectURL(fallbackObjectUrlRef.current);
-                fallbackObjectUrlRef.current = null;
-            }
-        };
-    }, []);
-
-    const tryBlobFallback = useCallback(async (): Promise<boolean> => {
-        if (!src) {
-            setHasError(true);
-            return false;
-        }
-
-        let incomingBlob: Blob | null = null;
-
-        try {
-            const response = await fetch(src, { cache: 'no-store' });
-            if (response.ok) {
-                incomingBlob = await response.blob();
-            }
-        } catch {
-            // fallback below
-        }
-
-        if (!incomingBlob) {
-            const attachmentPath = extractMessageAttachmentPath(rawSource || src);
-            if (attachmentPath) {
-                const { data, error } = await supabase.storage
-                    .from('message_attachments')
-                    .download(attachmentPath);
-
-                if (!error && data) {
-                    incomingBlob = data;
-                }
-            }
-        }
-
-        if (!incomingBlob) {
-            setHasError(true);
-            return false;
-        }
-
-        const buffer = await incomingBlob.arrayBuffer();
-        const detectedMimeType = detectAudioMimeTypeFromBuffer(buffer);
-        const effectiveMimeType = detectedMimeType || inferAudioMimeType(mimeType || incomingBlob.type, name);
-        const normalizedBlob = new Blob([buffer], { type: effectiveMimeType });
-
-        if (fallbackObjectUrlRef.current) {
-            URL.revokeObjectURL(fallbackObjectUrlRef.current);
-            fallbackObjectUrlRef.current = null;
-        }
-
-        const objectUrl = URL.createObjectURL(normalizedBlob);
-        fallbackObjectUrlRef.current = objectUrl;
-
-        setPlaybackSrc(objectUrl);
-        setHasError(false);
-        return true;
-    }, [mimeType, name, rawSource, src]);
-
-    const togglePlay = async () => {
-        const player = audioRef.current;
-        if (!player || hasError) return;
-
-        try {
-            if (player.paused) {
-                setIsLoading(true);
-                await player.play();
-                setIsPlaying(true);
-            } else {
-                player.pause();
-                setIsPlaying(false);
-            }
-        } catch {
-            if (!didAttemptBlobFallbackRef.current) {
-                didAttemptBlobFallbackRef.current = true;
-                const recovered = await tryBlobFallback();
-                if (recovered) {
-                    setIsPlaying(false);
-                    return;
-                }
-            }
-
-            setHasError(true);
-            setIsPlaying(false);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    const handleAudioError = () => {
-        if (didAttemptBlobFallbackRef.current) {
-            setHasError(true);
-            setIsPlaying(false);
-            setIsLoading(false);
-            return;
-        }
-
-        didAttemptBlobFallbackRef.current = true;
-        void tryBlobFallback();
-    };
-
-    const playedBars = Math.round(progressRatio * waveformBars.length);
-
-    return (
-        <div className="min-w-[200px]">
-            <audio
-                ref={audioRef}
-                src={playbackSrc}
-                preload="metadata"
-                onLoadedMetadata={(event) => {
-                    setDuration(event.currentTarget.duration || 0);
-                    setHasError(false);
-                }}
-                onTimeUpdate={(event) => {
-                    setCurrentTime(event.currentTarget.currentTime || 0);
-                }}
-                onPlay={() => {
-                    setIsPlaying(true);
-                    setIsLoading(false);
-                }}
-                onPause={() => {
-                    setIsPlaying(false);
-                    setIsLoading(false);
-                }}
-                onEnded={() => {
-                    setIsPlaying(false);
-                    setCurrentTime(duration || 0);
-                }}
-                onError={handleAudioError}
-            />
-
-            <div className="flex items-center gap-3">
-                <button
-                    type="button"
-                    onClick={() => {
-                        void togglePlay();
-                    }}
-                    disabled={hasError}
-                    aria-label={`${isPlaying ? tx('pages.messages.pauseAudio', undefined, 'Pause audio') : tx('pages.messages.playAudio', undefined, 'Play audio')} ${displayAudioName}`}
-                    className={`w-8 h-8 rounded-full shrink-0 flex items-center justify-center transition-colors disabled:opacity-50 ${
-                        isOwn
-                            ? (isVioletAccent ? 'bg-white text-violet-600 hover:bg-gray-100' : 'bg-white text-amber-600 hover:bg-gray-100')
-                            : (isVioletAccent ? 'bg-violet-500 text-white hover:bg-violet-400' : 'bg-amber-500 text-white hover:bg-amber-400')
-                    }`}
-                >
-                    {isLoading ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : isPlaying ? (
-                        <Pause className="h-4 w-4" />
-                    ) : (
-                        <Play className="h-4 w-4" />
-                    )}
-                </button>
-
-                <div className="flex gap-0.5 items-center flex-1 h-6" role="presentation">
-                    {waveformBars.map((barHeight, index) => {
-                        const isActiveBar = index < playedBars;
-                        return (
-                            <div
-                                key={index}
-                                className={`w-1 rounded-full transition-colors ${
-                                    isOwn
-                                        ? (isVioletAccent
-                                            ? (isActiveBar ? 'bg-violet-200' : 'bg-violet-300')
-                                            : (isActiveBar ? 'bg-amber-200' : 'bg-amber-300'))
-                                        : (isActiveBar ? 'bg-gray-400' : 'bg-gray-500')
-                                }`}
-                                style={{ height: `${barHeight}px` }}
-                            />
-                        );
-                    })}
-                </div>
-
-                <span className={`text-[10px] font-medium tracking-wide shrink-0 ${isOwn ? (isVioletAccent ? 'text-violet-100' : 'text-amber-100') : 'text-gray-400'}`}>
-                    {formatAudioTime(defaultDuration)}
-                </span>
-            </div>
-
-            {hasError ? (
-                <div className={`mt-1 flex items-center gap-1 text-[10px] ${isOwn ? (isVioletAccent ? 'text-violet-100' : 'text-amber-100') : 'text-gray-400'}`}>
-                    <AlertCircle className="h-3.5 w-3.5" />
-                    <span>{tx('pages.messages.audioPreviewUnavailable', undefined, 'Audio preview unavailable.')}</span>
-                </div>
-            ) : null}
-        </div>
-    );
-}
-
+import { MessageAudioPlayer } from '../components/chat/MessageAudioPlayer';
 const resolveMessageAttachmentUrl = (url: string | null | undefined) => {
     const raw = String(url || '').trim();
     if (!raw) return '';
@@ -604,71 +254,11 @@ type ContractSharedFile = {
     senderName: string;
 };
 
-type ReplyMetadata = {
-    messageId: string;
-    senderName: string;
-    previewText: string;
-};
-
-const REPLY_TOKEN_PREFIX = '[[reply:';
-const REPLY_TOKEN_SUFFIX = ']]';
-const MAX_REPLY_PREVIEW_LENGTH = 120;
-
-const truncateText = (value: string, maxLength: number) => (
-    value.length > maxLength ? `${value.slice(0, maxLength - 1)}...` : value
-);
-
-const parseReplyMetadataFromContent = (content: string | null | undefined) => {
-    const rawContent = String(content || '');
-
-    if (!rawContent.startsWith(REPLY_TOKEN_PREFIX)) {
-        return { replyMetadata: null as ReplyMetadata | null, bodyText: rawContent };
-    }
-
-    const suffixIndex = rawContent.indexOf(REPLY_TOKEN_SUFFIX);
-    if (suffixIndex <= REPLY_TOKEN_PREFIX.length) {
-        return { replyMetadata: null as ReplyMetadata | null, bodyText: rawContent };
-    }
-
-    const encodedPayload = rawContent.slice(REPLY_TOKEN_PREFIX.length, suffixIndex);
-    const bodyText = rawContent.slice(suffixIndex + REPLY_TOKEN_SUFFIX.length).trimStart();
-
-    try {
-        const parsedPayload = JSON.parse(decodeURIComponent(encodedPayload)) as Partial<ReplyMetadata>;
-        if (
-            !parsedPayload
-            || typeof parsedPayload.messageId !== 'string'
-            || typeof parsedPayload.senderName !== 'string'
-            || typeof parsedPayload.previewText !== 'string'
-        ) {
-            return { replyMetadata: null as ReplyMetadata | null, bodyText: rawContent };
-        }
-
-        const replyMetadata: ReplyMetadata = {
-            messageId: parsedPayload.messageId,
-            senderName: truncateText(parsedPayload.senderName.trim() || 'User', 60),
-            previewText: truncateText(parsedPayload.previewText.trim() || 'Attachment', MAX_REPLY_PREVIEW_LENGTH),
-        };
-
-        return { replyMetadata, bodyText };
-    } catch {
-        return { replyMetadata: null as ReplyMetadata | null, bodyText: rawContent };
-    }
-};
-
-const serializeReplyMetadataIntoContent = (bodyText: string, replyMetadata: ReplyMetadata | null) => {
-    const normalizedBody = bodyText.trim();
-    if (!replyMetadata) return normalizedBody;
-
-    const payload = encodeURIComponent(JSON.stringify({
-        messageId: replyMetadata.messageId,
-        senderName: truncateText(replyMetadata.senderName.trim() || 'User', 60),
-        previewText: truncateText(replyMetadata.previewText.trim() || 'Attachment', MAX_REPLY_PREVIEW_LENGTH),
-    }));
-
-    return `${REPLY_TOKEN_PREFIX}${payload}${REPLY_TOKEN_SUFFIX}${normalizedBody ? ` ${normalizedBody}` : ''}`;
-};
-
+import {
+  type ReplyMetadata,
+  parseReplyMetadataFromContent,
+  serializeReplyMetadataIntoContent
+} from '../lib/messageReplies';
 const MAX_CACHED_CONVERSATIONS = 50;
 const MAX_CACHED_MESSAGES = 200;
 const ENABLE_MESSAGES_SESSION_CACHE = false;
@@ -814,6 +404,181 @@ const getLifecycleBannerClassName = (tone: MessagingPolicyTone) => {
     }
 };
 
+const isMissingSchemaColumnError = (error: unknown, tableName: string, columnName: string): boolean => {
+    if (!error || typeof error !== 'object') return false;
+    const candidate = error as { message?: unknown };
+    const message = typeof candidate.message === 'string' ? candidate.message.toLowerCase() : '';
+    return message.includes('could not find')
+        && message.includes('schema cache')
+        && message.includes(tableName.toLowerCase())
+        && message.includes(columnName.toLowerCase());
+};
+
+type ContractConversationLookupRow = {
+    id: string;
+    participant_1: string;
+    participant_2: string;
+    contract_id: string | null;
+    last_message_text: string | null;
+    last_message_at: string | null;
+    unread_count_1: number | null;
+    unread_count_2: number | null;
+    created_at: string;
+    updated_at: string;
+    conversation_scope?: ConversationScope | null;
+    inbox_participant_1?: string | null;
+    inbox_participant_2?: string | null;
+};
+
+const extractRpcConversationId = (payload: unknown): string | null => {
+    if (typeof payload === 'string' && payload.trim().length > 0) return payload;
+    if (payload && typeof payload === 'object') {
+        const candidate = payload as { id?: unknown; conversation_id?: unknown };
+        if (typeof candidate.id === 'string' && candidate.id.trim().length > 0) return candidate.id;
+        if (typeof candidate.conversation_id === 'string' && candidate.conversation_id.trim().length > 0) return candidate.conversation_id;
+    }
+    return null;
+};
+
+const hydrateConversationRow = async (
+    userId: string,
+    row: ContractConversationLookupRow,
+): Promise<Conversation> => {
+    const otherUserId = row.participant_1 === userId ? row.participant_2 : row.participant_1;
+
+    let profile: { id: string; full_name: string | null; avatar_url: string | null; username?: string | null } | null = null;
+    if (otherUserId) {
+        const publicProfileResult = await supabase
+            .from('public_profiles')
+            .select('id, full_name, avatar_url, username')
+            .eq('id', otherUserId)
+            .maybeSingle();
+
+        if (publicProfileResult.data) {
+            profile = publicProfileResult.data;
+        } else {
+            const profileResult = await supabase
+                .from('profiles')
+                .select('id, full_name, avatar_url')
+                .eq('id', otherUserId)
+                .maybeSingle();
+
+            if (profileResult.data) {
+                profile = profileResult.data;
+            }
+        }
+    }
+
+    const isParticipant1 = row.participant_1 === userId;
+
+    return {
+        id: row.id,
+        participant_1: row.participant_1,
+        participant_2: row.participant_2,
+        contract_id: row.contract_id,
+        last_message_text: row.last_message_text,
+        last_message_at: row.last_message_at,
+        unread_count_1: row.unread_count_1 ?? 0,
+        unread_count_2: row.unread_count_2 ?? 0,
+        created_at: row.created_at,
+        updated_at: row.updated_at,
+        conversation_scope: row.conversation_scope ?? 'shared',
+        inbox_participant_1: row.inbox_participant_1 ?? undefined,
+        inbox_participant_2: row.inbox_participant_2 ?? undefined,
+        otherUser: {
+            id: profile?.id || otherUserId || '',
+            full_name: profile?.full_name || 'Unknown User',
+            avatar_url: profile?.avatar_url || null,
+            username: profile?.username || null,
+        },
+        unread_count: isParticipant1 ? (row.unread_count_1 ?? 0) : (row.unread_count_2 ?? 0),
+    };
+};
+
+const fetchConversationById = async (
+    userId: string,
+    conversationId: string,
+): Promise<Conversation | null> => {
+    const buildLookup = (includeScopeColumns: boolean) => {
+        const selectColumns = includeScopeColumns
+            ? 'id, participant_1, participant_2, contract_id, last_message_text, last_message_at, unread_count_1, unread_count_2, created_at, updated_at, conversation_scope, inbox_participant_1, inbox_participant_2'
+            : 'id, participant_1, participant_2, contract_id, last_message_text, last_message_at, unread_count_1, unread_count_2, created_at, updated_at';
+
+        return supabase
+            .from('conversations')
+            .select(selectColumns)
+            .eq('id', conversationId)
+            .maybeSingle();
+    };
+
+    let lookupResult = await buildLookup(true);
+
+    const needsLegacySelect = (
+        isMissingSchemaColumnError(lookupResult.error, 'conversations', 'conversation_scope')
+        || isMissingSchemaColumnError(lookupResult.error, 'conversations', 'inbox_participant_1')
+        || isMissingSchemaColumnError(lookupResult.error, 'conversations', 'inbox_participant_2')
+    );
+
+    if (needsLegacySelect) {
+        lookupResult = await buildLookup(false);
+    }
+
+    const row = lookupResult.data as ContractConversationLookupRow | null;
+    if (!row) return null;
+    if (row.participant_1 !== userId && row.participant_2 !== userId) return null;
+
+    return hydrateConversationRow(userId, row);
+};
+
+const fetchConversationByContractId = async (
+    userId: string,
+    contractId: string
+): Promise<Conversation | null> => {
+    const buildLookup = (
+        participantColumn: 'participant_1' | 'participant_2',
+        includeScopeColumns: boolean
+    ) => {
+        const selectColumns = includeScopeColumns
+            ? 'id, participant_1, participant_2, contract_id, last_message_text, last_message_at, unread_count_1, unread_count_2, created_at, updated_at, conversation_scope, inbox_participant_1, inbox_participant_2'
+            : 'id, participant_1, participant_2, contract_id, last_message_text, last_message_at, unread_count_1, unread_count_2, created_at, updated_at';
+
+        return supabase
+            .from('conversations')
+            .select(selectColumns)
+            .eq('contract_id', contractId)
+            .eq(participantColumn, userId)
+            .order('updated_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+    };
+
+    let [participant1Result, participant2Result] = await Promise.all([
+        buildLookup('participant_1', true),
+        buildLookup('participant_2', true),
+    ]);
+
+    const needsLegacySelect = (
+        isMissingSchemaColumnError(participant1Result.error, 'conversations', 'conversation_scope')
+        || isMissingSchemaColumnError(participant1Result.error, 'conversations', 'inbox_participant_1')
+        || isMissingSchemaColumnError(participant1Result.error, 'conversations', 'inbox_participant_2')
+        || isMissingSchemaColumnError(participant2Result.error, 'conversations', 'conversation_scope')
+        || isMissingSchemaColumnError(participant2Result.error, 'conversations', 'inbox_participant_1')
+        || isMissingSchemaColumnError(participant2Result.error, 'conversations', 'inbox_participant_2')
+    );
+
+    if (needsLegacySelect) {
+        [participant1Result, participant2Result] = await Promise.all([
+            buildLookup('participant_1', false),
+            buildLookup('participant_2', false),
+        ]);
+    }
+
+    const row = (participant1Result.data || participant2Result.data) as ContractConversationLookupRow | null;
+    if (!row) return null;
+
+    return hydrateConversationRow(userId, row);
+};
+
 /**
  * Derive the counterparty role label for a conversation.
  *
@@ -930,6 +695,7 @@ function MessagesComponent() {
     const messageCacheRef = useRef<Record<string, ThreadMessage[]>>({});
     const prefetchedConversationIdsRef = useRef<Set<string>>(new Set());
     const previewHydratedConversationIdsRef = useRef<Set<string>>(new Set());
+    const contractBootstrapAttemptsRef = useRef<Set<string>>(new Set());
 
     const conversationScopes = resolveConversationScopes(activeMode ?? profile?.active_mode);
     const conversationsModeCacheKey = resolveModeCacheKey(activeMode ?? profile?.active_mode);
@@ -943,6 +709,18 @@ function MessagesComponent() {
         ).sort();
     }, [conversations]);
     const contractConversationIdsKey = useMemo(() => contractConversationIds.join('|'), [contractConversationIds]);
+    const routeContractId = useMemo(() => {
+        const fromQuery = searchParams.get('contract');
+        if (fromQuery) return fromQuery;
+
+        return (location.state as { contractId?: string } | null)?.contractId || null;
+    }, [searchParams, location.state]);
+    const routeOtherUserId = useMemo(() => {
+        const fromQuery = searchParams.get('with');
+        if (fromQuery) return fromQuery;
+
+        return (location.state as { otherUserId?: string } | null)?.otherUserId || null;
+    }, [searchParams, location.state]);
 
     const getConversationLifecyclePolicy = useCallback((conversation: Conversation) => {
         const isContractConversation = Boolean(conversation.contract_id);
@@ -2194,6 +1972,232 @@ function MessagesComponent() {
         };
     }, [contractConversationIdsKey, conversations, user?.id]);
 
+    // Bootstrap and force-load contract conversations when arriving via /messages?contract=<id>.
+    // This keeps messaging functional even if scope metadata is stale or the conversation row was not pre-created.
+    useEffect(() => {
+        if (!user?.id || !routeContractId || isLoadingConversations) return;
+
+        const hasExistingContractConversation = conversations.some(
+            (conversation) => conversation.contract_id === routeContractId
+        );
+        if (hasExistingContractConversation) return;
+
+        const attemptKey = `${user.id}:${routeContractId}`;
+        if (contractBootstrapAttemptsRef.current.has(attemptKey)) return;
+        contractBootstrapAttemptsRef.current.add(attemptKey);
+
+        let cancelled = false;
+
+        const bootstrapContractConversation = async () => {
+            const directExistingConversation = await fetchConversationByContractId(user.id, routeContractId);
+            if (cancelled) return;
+
+            if (directExistingConversation) {
+                setConversations((prev) => {
+                    const withoutExisting = prev.filter((conversation) => conversation.id !== directExistingConversation.id);
+                    return sortConversationsByActivity([...withoutExisting, directExistingConversation]);
+                });
+                await handleSelectConversation(directExistingConversation);
+                navigate('/messages', { replace: true, state: null });
+                return;
+            }
+
+            const contractConversationRpcResult = await supabase.rpc('get_or_create_contract_conversation', {
+                p_contract_id: routeContractId,
+            });
+
+            if (cancelled) return;
+
+            if (!contractConversationRpcResult.error) {
+                const conversationIdFromContractRpc = extractRpcConversationId(contractConversationRpcResult.data);
+                if (conversationIdFromContractRpc) {
+                    const conversationFromContractRpcId = await fetchConversationById(user.id, conversationIdFromContractRpc);
+                    if (cancelled) return;
+
+                    if (conversationFromContractRpcId) {
+                        setConversations((prev) => {
+                            const withoutExisting = prev.filter((conversation) => conversation.id !== conversationFromContractRpcId.id);
+                            return sortConversationsByActivity([...withoutExisting, conversationFromContractRpcId]);
+                        });
+                        await handleSelectConversation(conversationFromContractRpcId);
+                        navigate('/messages', { replace: true, state: null });
+                        return;
+                    }
+                }
+
+                const conversationFromContractRpc = await fetchConversationByContractId(user.id, routeContractId);
+                if (cancelled) return;
+
+                if (conversationFromContractRpc) {
+                    setConversations((prev) => {
+                        const withoutExisting = prev.filter((conversation) => conversation.id !== conversationFromContractRpc.id);
+                        return sortConversationsByActivity([...withoutExisting, conversationFromContractRpc]);
+                    });
+                    await handleSelectConversation(conversationFromContractRpc);
+                    navigate('/messages', { replace: true, state: null });
+                    return;
+                }
+            } else {
+                const normalizedRpcMessage = String(contractConversationRpcResult.error.message || '').toLowerCase();
+                const rpcMissing = normalizedRpcMessage.includes('get_or_create_contract_conversation')
+                    && normalizedRpcMessage.includes('does not exist');
+
+                if (!rpcMissing) {
+                    console.warn('[Messages] get_or_create_contract_conversation RPC failed; using fallback bootstrap', contractConversationRpcResult.error);
+                }
+            }
+
+            let otherUserId: string | null = routeOtherUserId || null;
+
+            if (!otherUserId) {
+                const { data: contractRow, error: contractError } = await supabase
+                    .from('contracts')
+                    .select('id, client_id, freelancer_id')
+                    .eq('id', routeContractId)
+                    .maybeSingle();
+
+                if (cancelled) return;
+
+                if (contractError || !contractRow) {
+                    console.warn('[Messages] Contract conversation bootstrap failed to load contract', contractError);
+                    contractBootstrapAttemptsRef.current.delete(attemptKey);
+                    return;
+                }
+
+                const isClient = contractRow.client_id === user.id;
+                const isFreelancer = contractRow.freelancer_id === user.id;
+                if (!isClient && !isFreelancer) {
+                    contractBootstrapAttemptsRef.current.delete(attemptKey);
+                    return;
+                }
+
+                otherUserId = isClient ? contractRow.freelancer_id : contractRow.client_id;
+            }
+
+            if (!otherUserId) {
+                contractBootstrapAttemptsRef.current.delete(attemptKey);
+                return;
+            }
+
+            let rpcResult = await supabase.rpc('get_or_create_conversation', {
+                user1: user.id,
+                user2: otherUserId,
+                p_contract_id: routeContractId,
+                p_scope: 'contract',
+            });
+
+            if (rpcResult.error) {
+                const normalizedError = String(rpcResult.error.message || '').toLowerCase();
+                const shouldRetryLegacy = normalizedError.includes('p_scope')
+                    || (normalizedError.includes('get_or_create_conversation') && normalizedError.includes('does not exist'));
+
+                if (shouldRetryLegacy) {
+                    rpcResult = await supabase.rpc('get_or_create_conversation', {
+                        user1: user.id,
+                        user2: otherUserId,
+                        p_contract_id: routeContractId,
+                    });
+                }
+            }
+
+            if (cancelled) return;
+
+            if (rpcResult.error) {
+                console.warn('[Messages] Contract conversation bootstrap RPC failed; trying existing conversation fallback', rpcResult.error);
+            }
+
+            const conversationIdFromLegacyRpc = extractRpcConversationId(rpcResult.data);
+            if (conversationIdFromLegacyRpc) {
+                const conversationFromLegacyRpcId = await fetchConversationById(user.id, conversationIdFromLegacyRpc);
+
+                if (cancelled) return;
+
+                if (conversationFromLegacyRpcId) {
+                    setConversations((prev) => {
+                        const withoutExisting = prev.filter((conversation) => conversation.id !== conversationFromLegacyRpcId.id);
+                        return sortConversationsByActivity([...withoutExisting, conversationFromLegacyRpcId]);
+                    });
+                    await handleSelectConversation(conversationFromLegacyRpcId);
+                    navigate('/messages', { replace: true, state: null });
+                    return;
+                }
+            }
+
+            const forcedContractConversation = await fetchConversationByContractId(user.id, routeContractId);
+
+            if (cancelled) return;
+
+            if (forcedContractConversation) {
+                setConversations((prev) => {
+                    const withoutExisting = prev.filter((conversation) => conversation.id !== forcedContractConversation.id);
+                    return sortConversationsByActivity([...withoutExisting, forcedContractConversation]);
+                });
+                await handleSelectConversation(forcedContractConversation);
+                navigate('/messages', { replace: true, state: null });
+                return;
+            }
+
+            // Final fallback: if contract-linked thread cannot be resolved on this DB revision,
+            // open/create a direct thread with the same partner instead of leaving an empty screen.
+            let fallbackDirectRpc = await supabase.rpc('get_or_create_conversation', {
+                user1: user.id,
+                user2: otherUserId,
+                p_contract_id: null,
+                p_scope: 'shared',
+            });
+
+            if (fallbackDirectRpc.error) {
+                const fallbackDirectError = String(fallbackDirectRpc.error.message || '').toLowerCase();
+                const retryLegacyDirect = fallbackDirectError.includes('p_scope')
+                    || (fallbackDirectError.includes('get_or_create_conversation') && fallbackDirectError.includes('does not exist'));
+
+                if (retryLegacyDirect) {
+                    fallbackDirectRpc = await supabase.rpc('get_or_create_conversation', {
+                        user1: user.id,
+                        user2: otherUserId,
+                        p_contract_id: null,
+                    });
+                }
+            }
+
+            if (!fallbackDirectRpc.error) {
+                const directConversationId = extractRpcConversationId(fallbackDirectRpc.data);
+                if (directConversationId) {
+                    const directConversation = await fetchConversationById(user.id, directConversationId);
+                    if (cancelled) return;
+
+                    if (directConversation) {
+                        setConversations((prev) => {
+                            const withoutExisting = prev.filter((conversation) => conversation.id !== directConversation.id);
+                            return sortConversationsByActivity([...withoutExisting, directConversation]);
+                        });
+                        await handleSelectConversation(directConversation);
+                        navigate('/messages', { replace: true, state: null });
+                        return;
+                    }
+                }
+            }
+
+            contractBootstrapAttemptsRef.current.delete(attemptKey);
+        };
+
+        void bootstrapContractConversation();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [
+        user?.id,
+        routeContractId,
+        routeOtherUserId,
+        isLoadingConversations,
+        conversations,
+        activeMode,
+        profile?.active_mode,
+        handleSelectConversation,
+        navigate,
+    ]);
+
     // Auto-select conversation from URL params or navigation state.
     // Supports:
     // - /messages?conversation=<conversationId>
@@ -2203,8 +2207,7 @@ function MessagesComponent() {
         if (conversations.length === 0) return;
 
         const targetConversationId = searchParams.get('conversation');
-        const stateContractId = (location.state as { contractId?: string } | null)?.contractId || null;
-        const targetContractId = searchParams.get('contract') || stateContractId;
+        const targetContractId = routeContractId;
 
         let match: Conversation | undefined;
 
@@ -2221,7 +2224,7 @@ function MessagesComponent() {
             // Clean transient route hints after selection.
             navigate('/messages', { replace: true, state: null });
         }
-    }, [searchParams, conversations, location.state]);
+    }, [searchParams, conversations, routeContractId]);
 
     // Load conversations
     useEffect(() => {
@@ -2241,9 +2244,18 @@ function MessagesComponent() {
                 setIsLoadingConversations(false);
                 setIsLoadingMore(false);
             } else if (data) {
-                const scopedData = data.filter((conversation) => (
+                let scopedData = data.filter((conversation) => (
                     isConversationVisibleInMode(conversation, user.id, activeMode ?? profile?.active_mode)
+                    || (routeContractId ? conversation.contract_id === routeContractId : false)
                 ));
+
+                if (routeContractId && !scopedData.some((conversation) => conversation.contract_id === routeContractId)) {
+                    const directRouteConversation = await fetchConversationByContractId(user.id, routeContractId);
+                    if (directRouteConversation) {
+                        const withoutExisting = scopedData.filter((conversation) => conversation.id !== directRouteConversation.id);
+                        scopedData = sortConversationsByActivity([...withoutExisting, directRouteConversation]);
+                    }
+                }
 
                 if (append) {
                     setConversations(prev => {
@@ -2303,7 +2315,7 @@ function MessagesComponent() {
                 conversationsChannelRef.current.unsubscribe();
             }
         };
-    }, [user?.id, page, conversationScopes.join('|')]);
+    }, [user?.id, page, conversationScopes.join('|'), routeContractId, activeMode, profile?.active_mode]);
 
     // Reset pagination when filter or search changes
     useEffect(() => {
@@ -3137,7 +3149,10 @@ function MessagesComponent() {
     const getReplyPreviewTextForMessage = useCallback((message: ThreadMessage) => {
         const rawText = getMessageDisplayText(message, deletedMessageLabel)?.trim() || '';
         if (rawText) {
-            return truncateText(rawText, MAX_REPLY_PREVIEW_LENGTH);
+            const maxReplyPreviewLength = 120;
+            return rawText.length > maxReplyPreviewLength
+                ? `${rawText.slice(0, maxReplyPreviewLength - 1)}...`
+                : rawText;
         }
 
         const attachments = message.attachments ?? [];

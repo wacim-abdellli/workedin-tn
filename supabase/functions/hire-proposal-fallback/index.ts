@@ -116,7 +116,7 @@ Deno.serve(async (req) => {
 
     const { data: proposalRow, error: proposalError } = await adminClient
       .from('proposals')
-      .select('id,job_id,freelancer_id,bid_amount,job:jobs(id,client_id,title,description,job_type)')
+      .select('id,job_id,freelancer_id,bid_amount,status,job:jobs(id,client_id,title,description,job_type)')
       .eq('id', proposalId)
       .maybeSingle()
 
@@ -144,6 +144,12 @@ Deno.serve(async (req) => {
 
     if (!jobRow) {
       return jsonResponse(corsHeaders, 400, { error: 'Proposal is missing an associated job' })
+    }
+
+    const proposalStatus = String((proposalRow as { status?: unknown }).status ?? '').toLowerCase()
+    const hireableStatuses = new Set(['new', 'pending', 'shortlisted'])
+    if (!hireableStatuses.has(proposalStatus)) {
+      return jsonResponse(corsHeaders, 409, { error: 'Only new, pending, or shortlisted proposals can be hired' })
     }
 
     if (jobRow.client_id !== userId) {

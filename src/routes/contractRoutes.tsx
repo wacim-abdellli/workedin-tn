@@ -1,5 +1,5 @@
 import { lazy } from 'react';
-import { Navigate, useParams } from 'react-router-dom';
+import { Navigate, useLocation, useParams } from 'react-router-dom';
 
 import {
   defineRoute,
@@ -20,8 +20,14 @@ const EditJob = lazy(() => import('@/pages/EditJob'));
 
 function ContractSessionRedirect() {
   const { contractId } = useParams<{ contractId: string }>();
-  const target = contractId ? `/messages?contract=${encodeURIComponent(contractId)}` : '/messages';
-  return <Navigate to={target} replace state={contractId ? { contractId } : null} />;
+  const location = useLocation();
+  const routeState = (location.state as { otherUserId?: string | null } | null) ?? null;
+  const encodedContractId = contractId ? encodeURIComponent(contractId) : '';
+  const encodedOtherUserId = routeState?.otherUserId ? encodeURIComponent(routeState.otherUserId) : '';
+  const target = contractId
+    ? `/messages?contract=${encodedContractId}${encodedOtherUserId ? `&with=${encodedOtherUserId}` : ''}`
+    : '/messages';
+  return <Navigate to={target} replace state={contractId ? { contractId, otherUserId: routeState?.otherUserId ?? null } : null} />;
 }
 
 export const contractRoutes: AppRouteDefinition[] = [

@@ -20,7 +20,7 @@ CREATE TYPE job_category_enum AS ENUM ('design', 'development', 'writing', 'tran
 CREATE TYPE job_duration_enum AS ENUM ('less_than_1_month', '1_3_months', '3_6_months', 'more_than_6_months');
 CREATE TYPE experience_level_enum AS ENUM ('beginner', 'intermediate', 'expert');
 CREATE TYPE job_visibility_enum AS ENUM ('public', 'invite_only');
-CREATE TYPE job_status_enum AS ENUM ('open', 'in_progress', 'completed', 'cancelled', 'closed');
+CREATE TYPE job_status_enum AS ENUM ('open', 'in_progress', 'completed', 'cancelled', 'closed', 'disputed');
 CREATE TYPE proposal_status_enum AS ENUM ('pending', 'accepted', 'rejected', 'withdrawn');
 CREATE TYPE contract_status_enum AS ENUM ('active', 'completed', 'cancelled', 'disputed');
 CREATE TYPE payment_status_enum AS ENUM ('pending', 'in_escrow', 'released', 'refunded');

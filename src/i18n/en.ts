@@ -2895,7 +2895,7 @@ export const en: Translations = {
         "removedFromShortlist": "Removed from shortlist",
         "addedToShortlist": "Added to shortlist",
         "shortlistError": "Error updating shortlist",
-        "hireSuccess": "Freelancer hired successfully! ðŸŽ‰",
+        "hireSuccess": "Freelancer hired successfully!",
         "hireError": "Failed to hire freelancer. Try again",
         "proposalArchived": "Proposal archived",
         "proposalUnarchived": "Proposal moved to active",

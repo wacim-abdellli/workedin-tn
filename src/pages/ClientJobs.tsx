@@ -1,13 +1,15 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getJobEditRoute } from '@/lib/routes'
 import { FolderOpen } from 'lucide-react'
 import { Header } from '@/components/layout'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from '@/i18n'
 import EmptyState from '@/components/ui/EmptyState'
+import { useToast } from '@/components/ui/Toast'
+import Modal from '@/components/ui/Modal'
 interface JobProposalCountRow {
   count: number;
 }
@@ -155,34 +157,60 @@ const pickLatestContractByJob = (rows: ContractStatusRow[]) => {
 export default function ClientJobs() {
   const { user } = useAuth()
   const { tx } = useTranslation()
+  const { showToast } = useToast()
+  const queryClient = useQueryClient()
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState<JobListTab>('all')
+  const [deletingJobId, setDeletingJobId] = useState<string | null>(null)
+  const [jobToConfirmDelete, setJobToConfirmDelete] = useState<EnrichedClientJob | null>(null)
 
   const { data: allJobs = [], isLoading } = useQuery<EnrichedClientJob[]>({
     queryKey: ['client-jobs-v3', user?.id],
     queryFn: async () => {
-      const [jobsResult, contractsResult] = await Promise.all([
-        supabase
-          .from('jobs')
-          .select('id, title, category, subcategory, description, status, budget_min, budget_max, hourly_rate, job_type, duration, experience_level, visibility, deadline, required_skills, reference_links, created_at, proposals(count)')
-          .eq('client_id', user?.id)
-          .order('created_at', { ascending: false }),
+      const jobsResult = await supabase
+        .from('jobs')
+        .select('id, title, category, subcategory, description, status, budget_min, budget_max, hourly_rate, job_type, duration, experience_level, visibility, deadline, required_skills, reference_links, created_at')
+        .eq('client_id', user?.id)
+        .order('created_at', { ascending: false });
+
+      if (jobsResult.error) throw jobsResult.error;
+
+      const jobsRows = ((jobsResult.data ?? []) as unknown as ClientJobRow[]);
+      const jobIds = jobsRows.map((job) => job.id);
+
+      const [contractsResult, proposalsResult] = await Promise.all([
         supabase
           .from('contracts')
           .select('id, job_id, status, payment_status, created_at, updated_at')
           .eq('client_id', user?.id),
+        jobIds.length > 0
+          ? supabase
+              .from('proposals')
+              .select('job_id')
+              .in('job_id', jobIds)
+          : Promise.resolve({ data: [], error: null }),
       ]);
 
-      if (jobsResult.error) throw jobsResult.error;
-      if (contractsResult.error && contractsResult.error.code !== 'PGRST116') throw contractsResult.error;
+      const contractsRows = contractsResult.error
+        ? []
+        : ((contractsResult.data ?? []) as ContractStatusRow[]);
 
-      const latestContractByJob = pickLatestContractByJob((contractsResult.data ?? []) as ContractStatusRow[]);
+      const proposalCountsByJob = new Map<string, number>();
+      if (!proposalsResult.error) {
+        for (const row of (proposalsResult.data ?? []) as Array<{ job_id: string | null }>) {
+          if (!row.job_id) continue;
+          proposalCountsByJob.set(row.job_id, (proposalCountsByJob.get(row.job_id) ?? 0) + 1);
+        }
+      }
 
-      return ((jobsResult.data ?? []) as unknown as ClientJobRow[]).map((job) => {
+      const latestContractByJob = pickLatestContractByJob(contractsRows);
+
+      return jobsRows.map((job) => {
         const latestContract = latestContractByJob.get(job.id) ?? null;
-        const proposalsCount = Number(job.proposals?.[0]?.count ?? 0);
+        const proposalsCount = proposalCountsByJob.get(job.id) ?? 0;
         return {
           ...job,
+          proposals: [{ count: proposalsCount }],
           latestContract,
           derivedStatus: deriveJobStatus(job.status, latestContract, proposalsCount),
         };
@@ -324,6 +352,41 @@ export default function ClientJobs() {
     navigate('/jobs/new', { state: { repostFromJob } });
   };
 
+  const handleDeleteJob = useCallback((job: EnrichedClientJob) => {
+    if (!user?.id) return;
+
+    if (job.latestContract) {
+      showToast(tx('pages.clientJobs.deleteBlocked', undefined, 'Cannot delete a project that already has a contract.'), 'info');
+      return;
+    }
+
+    setJobToConfirmDelete(job);
+  }, [showToast, tx, user?.id]);
+
+  const confirmDeleteJob = useCallback(async () => {
+    const job = jobToConfirmDelete;
+    if (!job || !user?.id) return;
+
+    try {
+      setDeletingJobId(job.id);
+      setJobToConfirmDelete(null);
+      const { error } = await supabase
+        .from('jobs')
+        .delete()
+        .eq('id', job.id)
+        .eq('client_id', user.id);
+
+      if (error) throw error;
+
+      showToast(tx('pages.clientJobs.deleteSuccess', undefined, 'Project deleted'), 'success');
+      await queryClient.invalidateQueries({ queryKey: ['client-jobs-v3', user.id] });
+    } catch {
+      showToast(tx('pages.clientJobs.deleteError', undefined, 'Failed to delete project'), 'error');
+    } finally {
+      setDeletingJobId(null);
+    }
+  }, [jobToConfirmDelete, queryClient, showToast, tx, user?.id]);
+
   return (
     <div className="page-shell">
       <Header />
@@ -457,12 +520,23 @@ export default function ClientJobs() {
                       </button>
                     )}
                     {job.derivedStatus === 'open' && (
-                      <button
-                        onClick={() => navigate(getJobEditRoute(job.id))}
-                        className="inline-flex items-center justify-center rounded-lg border border-[#3b414d] bg-[#1c212b] px-3 py-1.5 text-sm font-medium text-gray-200 hover:bg-[#232934]"
-                      >
-                        {tx('pages.clientJobs.edit', undefined, 'Edit')}
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => navigate(getJobEditRoute(job.id))}
+                          className="inline-flex items-center justify-center rounded-lg border border-[#3b414d] bg-[#1c212b] px-3 py-1.5 text-sm font-medium text-gray-200 hover:bg-[#232934]"
+                        >
+                          {tx('pages.clientJobs.edit', undefined, 'Edit')}
+                        </button>
+                        <button
+                          onClick={() => void handleDeleteJob(job)}
+                          disabled={deletingJobId === job.id}
+                          className="inline-flex items-center justify-center rounded-lg border border-red-500/30 bg-red-500/12 px-3 py-1.5 text-sm font-medium text-red-200 hover:bg-red-500/20 disabled:opacity-60"
+                        >
+                          {deletingJobId === job.id
+                            ? tx('pages.clientJobs.deleting', undefined, 'Deleting...')
+                            : tx('pages.clientJobs.delete', undefined, 'Delete')}
+                        </button>
+                      </div>
                     )}
                     {job.derivedStatus === 'finished_unsuccessful' && (
                       <button
@@ -501,6 +575,34 @@ export default function ClientJobs() {
           </div>
         )}
       </div>
+
+      <Modal
+        isOpen={!!jobToConfirmDelete}
+        onClose={() => setJobToConfirmDelete(null)}
+        title={tx('pages.clientJobs.deleteConfirmTitle', undefined, 'Delete Project')}
+        size="md"
+        footer={
+          <div className="flex justify-end gap-3 mt-4">
+            <button
+              onClick={() => setJobToConfirmDelete(null)}
+              className="px-4 py-2 rounded-xl text-gray-300 hover:text-white transition-colors border border-[#3b414d] hover:bg-[#232934]"
+            >
+              {tx('common.cancel', undefined, 'Cancel')}
+            </button>
+            <button
+              onClick={confirmDeleteJob}
+              disabled={!!deletingJobId}
+              className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-xl font-medium transition-colors disabled:opacity-50"
+            >
+              {tx('pages.clientJobs.delete', undefined, 'Delete')}
+            </button>
+          </div>
+        }
+      >
+        <p className="text-gray-300 mt-2">
+          {tx('pages.clientJobs.deleteConfirmText', undefined, 'Are you sure you want to delete this project permanently? This action cannot be undone.')}
+        </p>
+      </Modal>
     </div>
   )
 }

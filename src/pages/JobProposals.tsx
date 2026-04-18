@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Share2, Edit, MoreVertical, Loader2 } from 'lucide-react';
 import { Header } from '../components/layout';
@@ -39,6 +39,7 @@ const TABS = [
 type TabKey = typeof TABS[number]['key'];
 
 const ENABLE_JOB_PROPOSALS_SESSION_CACHE = false;
+const HIREABLE_STATUSES: ProposalStatus[] = ['new', 'pending', 'shortlisted'];
 
 export default function JobProposals() {
     const { jobId } = useParams<{ jobId: string }>();
@@ -77,47 +78,133 @@ export default function JobProposals() {
     );
     const [job, setJob] = useState<JobData | null>(cached?.job ?? null);
     const [filters, setFilters] = useState<ProposalFilters>({});
+    const proposalsLoadErrorShownRef = useRef(false);
 
     useEffect(() => {
         if (!jobId) return;
         const hasCached = !!cached;
         if (!hasCached) setLoading(true);
 
+        const showLoadErrorToastOnce = () => {
+            if (hasCached || proposalsLoadErrorShownRef.current) return;
+            proposalsLoadErrorShownRef.current = true;
+            showToast(t.jobProposals.loadProposalsError, 'error');
+        };
+
+        const proposalSelectColumns = `
+            id,
+            job_id,
+            freelancer_id,
+            cover_letter,
+            bid_amount,
+            delivery_time_days,
+            attachments,
+            status,
+            created_at,
+            freelancer:public_profiles!freelancer_id(id, full_name, avatar_url, location),
+            freelancer_profile:freelancer_profiles!freelancer_id(title, jobs_completed, success_rate)
+        `;
+
+        const baseProposalSelectColumns = `
+            id,
+            job_id,
+            freelancer_id,
+            cover_letter,
+            bid_amount,
+            delivery_time_days,
+            attachments,
+            status,
+            created_at
+        `;
+
+        const fetchProposalsRows = async () => {
+            const joinedResult = await withTimeout(
+                supabase.from('proposals')
+                    .select(proposalSelectColumns)
+                    .eq('job_id', jobId)
+                    .order('created_at', { ascending: false }),
+                10000
+            );
+
+            if (!joinedResult.error) {
+                return joinedResult.data || [];
+            }
+
+            logger.warn('Proposals joined query failed; retrying with fallback queries', joinedResult.error);
+
+            const basicResult = await withTimeout(
+                supabase.from('proposals')
+                    .select(baseProposalSelectColumns)
+                    .eq('job_id', jobId)
+                    .order('created_at', { ascending: false }),
+                10000
+            );
+
+            if (basicResult.error) {
+                throw basicResult.error;
+            }
+
+            const basicRows = (basicResult.data || []) as Array<Record<string, unknown>>;
+            const freelancerIds = Array.from(new Set(
+                basicRows
+                    .map((row) => (typeof row.freelancer_id === 'string' ? row.freelancer_id : ''))
+                    .filter(Boolean)
+            ));
+
+            if (freelancerIds.length === 0) {
+                return basicRows;
+            }
+
+            const [publicProfilesResult, freelancerProfilesResult] = await Promise.all([
+                withTimeout(
+                    supabase.from('public_profiles')
+                        .select('id, full_name, avatar_url, location')
+                        .in('id', freelancerIds),
+                    10000
+                ),
+                withTimeout(
+                    supabase.from('freelancer_profiles')
+                        .select('id, title, jobs_completed, success_rate')
+                        .in('id', freelancerIds),
+                    10000
+                ),
+            ]);
+
+            const publicProfileMap = new Map<string, Record<string, unknown>>();
+            for (const profile of (publicProfilesResult.data || []) as Array<Record<string, unknown>>) {
+                const id = String(profile.id || '');
+                if (!id) continue;
+                publicProfileMap.set(id, profile);
+            }
+
+            const freelancerProfileMap = new Map<string, Record<string, unknown>>();
+            for (const profile of (freelancerProfilesResult.data || []) as Array<Record<string, unknown>>) {
+                const id = String(profile.id || '');
+                if (!id) continue;
+                freelancerProfileMap.set(id, profile);
+            }
+
+            return basicRows.map((row) => {
+                const id = typeof row.freelancer_id === 'string' ? row.freelancer_id : '';
+                return {
+                    ...row,
+                    freelancer: id ? publicProfileMap.get(id) : undefined,
+                    freelancer_profile: id ? freelancerProfileMap.get(id) : undefined,
+                };
+            });
+        };
+
         const fetchAll = async () => {
             try {
-                const [jobRes, proposalsRes] = await Promise.all([
+                const [jobRes, proposalsRows] = await Promise.all([
                     withTimeout(supabase.from('jobs').select('*').eq('id', jobId).single(), 10000),
-                    withTimeout(
-                        supabase.from('proposals')
-                            .select(`
-                                id,
-                                job_id,
-                                freelancer_id,
-                                cover_letter,
-                                bid_amount,
-                                delivery_time_days,
-                                attachments,
-                                status,
-                                created_at,
-                                freelancer:public_profiles!freelancer_id(id, full_name, avatar_url, location),
-                                freelancer_profile:freelancer_profiles!freelancer_id(title, jobs_completed, success_rate)
-                            `)
-                            .eq('job_id', jobId)
-                            .order('created_at', { ascending: false }),
-                        10000
-                    ),
+                    fetchProposalsRows(),
                 ]);
 
                 if (jobRes.error) throw jobRes.error;
                 setJob(jobRes.data);
 
-                if (proposalsRes.error) {
-                    logger.error('Proposals query error', proposalsRes.error);
-                    if (!hasCached) showToast(t.jobProposals.loadProposalsError, 'error');
-                    return;
-                }
-
-                const rows = proposalsRes.data || [];
+                const rows = proposalsRows || [];
                 const transformedProposals: Proposal[] = rows.map((p: Record<string, unknown>) => {
                     const fid = p.freelancer_id as string;
                     const profile = (Array.isArray(p.freelancer)
@@ -156,23 +243,33 @@ export default function JobProposals() {
                 setProposals(transformedProposals);
                 setShortlistedIds(transformedProposals.filter(p => p.status === 'shortlisted').map(p => p.id));
                 writeCache(jobRes.data, transformedProposals);
+                proposalsLoadErrorShownRef.current = false;
             } catch (error) {
                 logger.error('Failed to fetch proposals', error);
-                if (!hasCached) showToast(t.jobProposals.loadProposalsError, 'error');
+                showLoadErrorToastOnce();
             } finally {
                 setLoading(false);
             }
         };
 
         void fetchAll();
-    }, [jobId]);
+    }, [cached, jobId, showToast, t.jobProposals.loadProposalsError]);
 
     const handleMessage = useCallback(async (proposalId: string) => {
         const proposal = proposals.find(p => p.id === proposalId);
         if (!proposal) return;
         try {
-            const { data: contract } = await supabase.from('contracts').select('id').eq('proposal_id', proposalId).single();
-            if (contract) navigate(`/contracts/${contract.id}`);
+            const { data: contract } = await supabase
+                .from('contracts')
+                .select('id')
+                .eq('proposal_id', proposalId)
+                .maybeSingle();
+
+            if (contract?.id) {
+                navigate(`/messages?contract=${contract.id}&with=${proposal.freelancer_id}`, {
+                    state: { contractId: contract.id, otherUserId: proposal.freelancer_id },
+                });
+            }
             else showToast(t.jobProposals.hireFirst, 'info');
         } catch {
             showToast(t.jobProposals.hireFirst, 'info');
@@ -213,6 +310,16 @@ export default function JobProposals() {
         return normalized.includes('contract_type')
             && normalized.includes('job_type_enum')
             && normalized.includes('text');
+    };
+
+    const isMissingDisputedJobStatusError = (error: unknown): boolean => {
+        if (!error || typeof error !== 'object') return false;
+        const candidate = error as { message?: unknown; details?: unknown; hint?: unknown };
+        const message = typeof candidate.message === 'string' ? candidate.message : '';
+        const details = typeof candidate.details === 'string' ? candidate.details : '';
+        const hint = typeof candidate.hint === 'string' ? candidate.hint : '';
+        const normalized = `${message} ${details} ${hint}`.toLowerCase();
+        return normalized.includes('job_status_enum') && normalized.includes('disputed');
     };
 
     const invokeHireProposalFallback = async (proposalId: string): Promise<{ contract_id?: string }> => {
@@ -268,6 +375,11 @@ export default function JobProposals() {
                 : typeof payload.message === 'string'
                     ? payload.message
                     : 'Failed to create contract via fallback';
+
+            if (message.toLowerCase().includes('job_status_enum') && message.toLowerCase().includes('disputed')) {
+                throw new Error('Hiring is temporarily unavailable until the latest database migrations are applied.');
+            }
+
             throw new Error(message);
         }
 
@@ -280,6 +392,9 @@ export default function JobProposals() {
         mutationFn: async (proposalId: string) => {
             const proposal = proposals.find(p => p.id === proposalId);
             if (!proposal || !job || !user) throw new Error('Missing required data');
+            if (!HIREABLE_STATUSES.includes(proposal.status)) {
+                throw new Error('Only new, pending, or shortlisted proposals can be hired.');
+            }
 
             let contractId: string | undefined;
 
@@ -295,31 +410,90 @@ export default function JobProposals() {
 
                 const fallbackResult = await invokeHireProposalFallback(proposalId);
                 contractId = fallbackResult.contract_id;
+            } else if (isMissingDisputedJobStatusError(hireError)) {
+                throw new Error('Hiring is temporarily unavailable until the latest database migrations are applied.');
             } else {
                 throw hireError;
             }
 
             if (!contractId) throw new Error('Atomic hire did not return a contract id');
 
-            await supabase.rpc('notify_proposal_accepted', { p_contract_id: contractId });
+            void (async () => {
+                try {
+                    const { error } = await supabase.rpc('notify_proposal_accepted', { p_contract_id: contractId });
+                    if (error) {
+                        logger.warn('notify_proposal_accepted failed after hire', error);
+                    }
+                } catch (notifyError) {
+                    logger.warn('notify_proposal_accepted threw after hire', notifyError);
+                }
+            })();
 
             if (contractId) {
-                import('../lib/email').then(({ sendProposalAcceptedEmail }) => { sendProposalAcceptedEmail(contractId); });
+                void import('../lib/email')
+                    .then(({ sendProposalAcceptedEmail }) => {
+                        sendProposalAcceptedEmail(contractId);
+                    })
+                    .catch((emailError) => {
+                        logger.warn('sendProposalAcceptedEmail import failed after hire', emailError);
+                    });
             }
 
-            return { id: contractId };
+            void (async () => {
+                try {
+                    const { error } = await supabase.rpc('notify_unselected_proposals', {
+                        p_job_id: job.id,
+                        p_accepted_proposal_id: proposalId,
+                        p_contract_id: contractId,
+                    });
+
+                    if (error) {
+                        const message = String(error.message || '').toLowerCase();
+                        const missingRpc = message.includes('notify_unselected_proposals') && message.includes('does not exist');
+                        if (!missingRpc) {
+                            logger.warn('notify_unselected_proposals failed after hire', error);
+                        }
+                    }
+                } catch (notifyOthersError) {
+                    logger.warn('notify_unselected_proposals threw after hire', notifyOthersError);
+                }
+            })();
+
+            return { id: contractId, freelancerId: proposal.freelancer_id };
         },
         retry: 2,
         retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 5000),
         onSuccess: (contract) => {
             showToast(t.jobProposals.hireSuccess, 'success');
-            navigate(`/contracts/${contract.id}`);
+            navigate(`/messages?contract=${contract.id}&with=${contract.freelancerId}`, {
+                state: { contractId: contract.id, otherUserId: contract.freelancerId },
+            });
         },
         onError: (error) => {
             logger.error('Hire error', error);
+            if (isMissingDisputedJobStatusError(error)) {
+                showToast('Hiring is temporarily unavailable until the latest database migrations are applied.', 'error');
+                return;
+            }
             showToast((error as Error)?.message || t.jobProposals.hireError, 'error');
         },
     });
+
+    const handleHire = useCallback((proposalId: string) => {
+        const proposal = proposals.find(p => p.id === proposalId);
+        const hireStatusBlockedLabel = 'This proposal can no longer be hired.';
+        if (!proposal) {
+            showToast(t.jobProposals.hireError, 'error');
+            return;
+        }
+
+        if (!HIREABLE_STATUSES.includes(proposal.status)) {
+            showToast(hireStatusBlockedLabel, 'warning');
+            return;
+        }
+
+        hireMutation.mutate(proposalId);
+    }, [proposals, hireMutation, showToast, t.jobProposals.hireError]);
 
     const handleArchive = useCallback(async (proposalId: string) => {
         try {
@@ -355,6 +529,26 @@ export default function JobProposals() {
             showToast(t.jobProposals.unarchiveError || 'Failed to unarchive proposal', 'error');
         }
     }, [showToast]);
+
+    const rejectedLabel = t.jobProposals?.modal?.rejected || 'Proposal declined';
+    const shortlistErrorLabel = t.jobProposals?.shortlistError || 'Error updating proposal status';
+
+    const handleReject = useCallback(async (proposalId: string) => {
+        try {
+            const { error } = await withTimeout(
+                supabase.from('proposals').update({ status: 'rejected' }).eq('id', proposalId),
+                15000
+            );
+            if (error) throw error;
+
+            setProposals(prev => prev.map(p => p.id === proposalId ? { ...p, status: 'rejected' as ProposalStatus } : p));
+            setShortlistedIds(prev => prev.filter(id => id !== proposalId));
+            showToast(rejectedLabel, 'success');
+        } catch (error) {
+            logger.error('Reject proposal error', error);
+            showToast(shortlistErrorLabel, 'error');
+        }
+    }, [showToast, rejectedLabel, shortlistErrorLabel]);
 
     // Filtered proposals
     const displayedProposals = proposals.filter(p => {
@@ -477,15 +671,14 @@ export default function JobProposals() {
             </div>
 
             {/* ── SPLIT PANE CONTENT ── */}
-            <div className="flex flex-1 overflow-hidden">
+            <div className="flex flex-1 overflow-hidden min-h-0">
 
                 {/* ═══ LEFT: Proposals list ═══ */}
                 <div
-                    className="w-full sm:w-[340px] md:w-[380px] xl:w-[420px] shrink-0 flex flex-col border-e overflow-hidden"
+                    className={`w-full sm:w-[340px] md:w-[380px] xl:w-[420px] shrink-0 flex-col border-e overflow-hidden min-h-0 ${selectedProposal ? 'hidden sm:flex' : 'flex'}`}
                     style={{
                         background: 'var(--card-bg)',
                         borderColor: 'color-mix(in srgb, var(--border) 50%, transparent)',
-                        display: selectedProposal ? 'none sm:flex' : 'flex',
                     }}
                 >
                     {/* Search + sort */}
@@ -555,7 +748,7 @@ export default function JobProposals() {
                                     proposal={proposal}
                                     isSelected={selectedProposal?.id === proposal.id}
                                     onClick={() => setSelectedProposal(proposal)}
-                                    onHire={() => hireMutation.mutate(proposal.id)}
+                                    onHire={() => handleHire(proposal.id)}
                                 />
                             ))
                         )}
@@ -563,16 +756,17 @@ export default function JobProposals() {
                 </div>
 
                 {/* ═══ RIGHT: Detail pane ═══ */}
-                <div className="flex-1 flex flex-col overflow-hidden">
+                <div className="flex-1 min-h-0 min-w-0 flex flex-col overflow-hidden">
                     {liveSelectedProposal ? (
                         <ProposalDetailPane
                             proposal={liveSelectedProposal}
                             isHiring={hireMutation.isPending}
                             isShortlisted={isSelectedShortlisted}
                             onClose={() => setSelectedProposal(null)}
-                            onHire={() => hireMutation.mutate(liveSelectedProposal.id)}
+                            onHire={() => handleHire(liveSelectedProposal.id)}
                             onMessage={() => handleMessage(liveSelectedProposal.id)}
                             onShortlist={() => handleShortlist(liveSelectedProposal.id)}
+                            onReject={() => handleReject(liveSelectedProposal.id)}
                             onArchive={() => handleArchive(liveSelectedProposal.id)}
                             onUnarchive={() => handleUnarchive(liveSelectedProposal.id)}
                         />

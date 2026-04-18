@@ -16,6 +16,7 @@ import {
   Share2,
   Flag,
   CheckCircle,
+  XCircle,
   ChevronRight,
   ExternalLink,
   Facebook,
@@ -373,6 +374,30 @@ function JobDetail() {
         )
       : 0;
   const canViewClientProfile = Boolean(job?.client_id) && user?.id !== job?.client_id;
+
+  const normalizedProposalStatus = String(myProposal?.status || '').toLowerCase();
+  const isAcceptedProposal = ['accepted', 'hired'].includes(normalizedProposalStatus);
+  const isDeclinedProposal = ['rejected', 'declined', 'archived'].includes(normalizedProposalStatus);
+  const isWithdrawnProposal = ['withdrawn', 'canceled', 'cancelled'].includes(normalizedProposalStatus);
+  const canWithdrawCurrentProposal = Boolean(
+    myProposal && !isAcceptedProposal && !isDeclinedProposal && !isWithdrawnProposal,
+  );
+
+  const proposalCardTitle = isAcceptedProposal
+    ? tx('jobDetail.proposalAccepted', undefined, 'Your proposal was accepted')
+    : isDeclinedProposal
+    ? tx('jobDetail.proposalDeclined', undefined, 'Your proposal was declined')
+    : isWithdrawnProposal
+    ? tx('jobDetail.proposalWithdrawnTitle', undefined, 'Your proposal was withdrawn')
+    : tx('jobDetail.proposalSubmitted', undefined, 'Your proposal was submitted');
+
+  const proposalStatusLabel = isAcceptedProposal
+    ? tx('jobDetail.proposalAcceptedStatus', undefined, 'Accepted')
+    : isDeclinedProposal
+    ? tx('jobDetail.proposalDeclinedStatus', undefined, 'Declined')
+    : isWithdrawnProposal
+    ? tx('jobDetail.proposalWithdrawnStatus', undefined, 'Withdrawn')
+    : tx('jobDetail.proposalPendingStatus', undefined, 'Pending');
 
   const attachmentItems = useMemo(() => {
     if (!job?.attachments || job.attachments.length === 0) return [];
@@ -1059,18 +1084,34 @@ function JobDetail() {
             >
               {myProposal ? (
                 <div className="text-center py-2">
-                  <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-3 bg-emerald-500/15">
-                    <CheckCircle className="w-7 h-7 text-emerald-400" />
+                  <div className={cn(
+                    'w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-3',
+                    isDeclinedProposal
+                      ? 'bg-rose-500/15'
+                      : isWithdrawnProposal
+                      ? 'bg-amber-500/15'
+                      : 'bg-emerald-500/15',
+                  )}>
+                    {isDeclinedProposal ? (
+                      <XCircle className="w-7 h-7 text-rose-400" />
+                    ) : isWithdrawnProposal ? (
+                      <Clock className="w-7 h-7 text-amber-400" />
+                    ) : (
+                      <CheckCircle className="w-7 h-7 text-emerald-400" />
+                    )}
                   </div>
-                  <h3 className="font-bold text-white text-base mb-1">{tx('jobDetail.proposalSubmitted', undefined, 'Proposal submitted!')}</h3>
+                  <h3 className="font-bold text-white text-base mb-1">{proposalCardTitle}</h3>
+                  <p className="text-xs text-white/45 mb-1">{proposalStatusLabel}</p>
                   <p className="text-sm text-white/50 mb-4">{tx('jobDetail.yourBid', undefined, 'Your bid:')} {myProposal.bid_amount} {tx('common.currency', undefined, 'TND')}</p>
                   <div className="space-y-2">
                     <Button variant="outline" className="w-full rounded-xl" onClick={() => navigate(ROUTES.myProposals)}>
                       {tx('jobDetail.viewProposal', undefined, 'View proposal')}
                     </Button>
-                    <Button variant="ghost" className="w-full rounded-xl text-rose-400 hover:text-rose-300" onClick={withdrawProposal}>
-                      {tx('jobDetail.withdrawProposal', undefined, 'Withdraw proposal')}
-                    </Button>
+                    {canWithdrawCurrentProposal && (
+                      <Button variant="ghost" className="w-full rounded-xl text-rose-400 hover:text-rose-300" onClick={withdrawProposal}>
+                        {tx('jobDetail.withdrawProposal', undefined, 'Withdraw proposal')}
+                      </Button>
+                    )}
                   </div>
                 </div>
               ) : user?.id === job.client_id ? (

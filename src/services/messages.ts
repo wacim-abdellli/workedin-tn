@@ -215,9 +215,13 @@ export async function getConversations(
                 .eq(participantColumn, userId)
                 .order('last_message_at', { ascending: false });
 
-            // Use per-participant inbox column for filtering when available
+            // Use per-participant inbox column for filtering when available.
+            // Include null inbox values so legacy rows remain visible after schema upgrades.
             if (includeScopeColumns && inboxValues && inboxValues.length > 0) {
-                query = query.in(inboxColumn, inboxValues);
+                const safeInboxValues = inboxValues.filter((value) => /^[a-z_]+$/i.test(value));
+                if (safeInboxValues.length > 0) {
+                    query = query.or(`${inboxColumn}.in.(${safeInboxValues.join(',')}),${inboxColumn}.is.null`);
+                }
             }
 
             return query;

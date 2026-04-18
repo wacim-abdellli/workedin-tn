@@ -1,4 +1,6 @@
  import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { PROFILES_UPDATE_MAX_RETRIES, extractMissingProfilesColumn } from '../lib/profileHydrationUtils';
+import { useAuthRealtime } from '../hooks/useAuthRealtime';
 import type { ReactNode } from 'react';
 import type { Session, User } from '@supabase/supabase-js';
 import { useQueryClient } from '@tanstack/react-query';
@@ -76,42 +78,6 @@ function withModeAwareAvatar(profile: Profile): Profile {
     avatar_url: resolveModeAvatarUrl(profile),
   };
 }
-
-const PROFILES_UPDATE_MAX_RETRIES = 6;
-
-function getErrorMessageText(error: unknown): string {
-  if (error instanceof Error) {
-    return error.message || '';
-  }
-
-  if (error && typeof error === 'object' && 'message' in error && typeof error.message === 'string') {
-    return error.message;
-  }
-
-  return String(error || '');
-}
-
-function extractMissingProfilesColumn(error: unknown): string | null {
-  const message = getErrorMessageText(error).toLowerCase();
-  if (!message || !message.includes('profiles')) {
-    return null;
-  }
-
-  // PostgREST schema-cache error format.
-  const schemaCacheMatch = message.match(/could not find the ['"]?([a-z0-9_]+)['"]? column of ['"]?profiles['"]?/i);
-  if (schemaCacheMatch?.[1]) {
-    return schemaCacheMatch[1];
-  }
-
-  // Postgres relation error format.
-  const relationMatch = message.match(/column ['"]?([a-z0-9_]+)['"]? of relation ['"]?profiles['"]? does not exist/i);
-  if (relationMatch?.[1]) {
-    return relationMatch[1];
-  }
-
-  return null;
-}
-// ─────────────────────────────────────────────────────────────────────────────
 
 interface AuthContextType {
   user: User | null;
@@ -588,54 +554,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
     };
   }, [fetchProfile, syncWorkspaceFromProfile]);
 
-  useEffect(() => {
-    if (!user?.id) return;
-
-    const channel = supabase
-      .channel(`profile-status-${user.id}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'profiles',
-          filter: `id=eq.${user.id}`,
-        },
-        (payload) => {
-          const updated = payload.new as Partial<Profile> | null;
-          if (!updated) return;
-
-          const nextStatus = updated.account_status;
-
-          if (nextStatus === 'suspended' || nextStatus === 'archived') {
-            logger.warn('[Auth] Account status changed to restricted state. Signing out immediately:', nextStatus);
-            setProfile((prev) => (prev ? withModeAwareAvatar({ ...prev, ...updated } as Profile) : prev));
-            setFreelancerProfile(null);
-            setSession(null);
-            setUser(null);
-            setIsProfileReady(true);
-            setIsLoading(false);
-            clearProfileCache();
-            clearWorkspaceForUser();
-            void supabase.auth.signOut({ scope: 'local' }).catch((error) => {
-              logger.warn('[Auth] Forced signout after suspension failed:', error);
-            });
-            return;
-          }
-
-          setProfile((prev) => {
-            if (!prev) return prev;
-            const next = withModeAwareAvatar({ ...prev, ...updated } as Profile);
-            return next;
-          });
-        }
-      )
-      .subscribe();
-
-    return () => {
-      void supabase.removeChannel(channel);
-    };
-  }, [user?.id]);
+  useAuthRealtime({
+    userId: user?.id,
+    setProfile,
+    setFreelancerProfile,
+    setSession,
+    setUser,
+    setIsProfileReady,
+    setIsLoading,
+    clearProfileCache,
+    clearWorkspaceForUser,
+    withModeAwareAvatar
+  });
 
   // Absolute loading safety net - only runs once on mount to prevent reset loops
   useEffect(() => {

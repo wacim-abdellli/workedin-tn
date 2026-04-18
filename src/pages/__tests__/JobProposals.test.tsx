@@ -309,12 +309,28 @@ describe('JobProposals', () => {
                     fn: 'notify_proposal_accepted',
                     params: { p_contract_id: 'contract-77' },
                 },
+                {
+                    fn: 'notify_unselected_proposals',
+                    params: {
+                        p_job_id: 'job-1',
+                        p_accepted_proposal_id: 'proposal-1',
+                        p_contract_id: 'contract-77',
+                    },
+                },
             ]);
         });
 
         expect(supabaseState.state.rpcCalls.some((call) => call.fn === 'create_notification')).toBe(false);
         expect(toastMocks.showToast).toHaveBeenCalledWith('Proposal hired successfully', 'success');
-        expect(routeMocks.navigate).toHaveBeenCalledWith('/contracts/contract-77');
+        expect(routeMocks.navigate).toHaveBeenCalledWith(
+            '/messages?contract=contract-77&with=freelancer-1',
+            {
+                state: {
+                    contractId: 'contract-77',
+                    otherUserId: 'freelancer-1',
+                },
+            }
+        );
 
         await waitFor(() => {
             expect(emailMocks.sendProposalAcceptedEmail).toHaveBeenCalledWith('contract-77');

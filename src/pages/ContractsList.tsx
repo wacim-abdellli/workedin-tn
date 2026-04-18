@@ -510,7 +510,10 @@ export default function ContractsList() {
                     <div className="flex items-center gap-3">
                       <button
                         type="button"
-                        onClick={() => navigate("/messages", { state: { contractId: contract.id } })}
+                        onClick={() => navigate(
+                          `/messages?contract=${contract.id}${partner?.id ? `&with=${partner.id}` : ''}`,
+                          { state: { contractId: contract.id, otherUserId: partner?.id || null } }
+                        )}
                         className="border border-[#262626] text-gray-300 hover:text-purple-400 hover:border-purple-500 px-4 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-2"
                       >
                         <MessageSquare className="w-4 h-4" />
@@ -519,7 +522,9 @@ export default function ContractsList() {
 
                       <button
                         type="button"
-                        onClick={() => navigate(`/contracts/${contract.id}`)}
+                        onClick={() => navigate(`/contracts/${contract.id}`, {
+                          state: { otherUserId: partner?.id || null },
+                        })}
                         className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-2"
                       >
                         <FileSignature className="w-4 h-4" />
